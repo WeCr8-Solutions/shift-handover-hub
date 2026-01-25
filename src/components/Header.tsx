@@ -2,9 +2,12 @@ import { Clock, Factory, Bell } from "lucide-react";
 import { getCurrentShift } from "@/lib/mockData";
 import { StatusBadge } from "./StatusBadge";
 import { UserMenu } from "./UserMenu";
+import { TeamSelector } from "./TeamSelector";
+import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 
 export function Header() {
+  const { user } = useAuth();
   const [currentTime, setCurrentTime] = useState(new Date());
   const shift = getCurrentShift();
 
@@ -31,7 +34,10 @@ export function Header() {
           </div>
 
           {/* Status Bar */}
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
+            {/* Team Selector */}
+            {user && <TeamSelector />}
+
             {/* Current Shift */}
             <div className="flex items-center gap-2">
               <StatusBadge status={shiftStatus}>
