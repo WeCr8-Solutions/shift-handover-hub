@@ -1,6 +1,7 @@
 import { Clock, Factory, Bell } from "lucide-react";
 import { getCurrentShift } from "@/lib/mockData";
 import { StatusBadge } from "./StatusBadge";
+import { UserMenu } from "./UserMenu";
 import { useEffect, useState } from "react";
 
 export function Header() {
@@ -56,6 +57,9 @@ export function Header() {
               <Bell className="w-5 h-5 text-muted-foreground" />
               <span className="absolute top-1 right-1 w-2 h-2 bg-status-critical rounded-full" />
             </button>
+
+            {/* User Menu */}
+            <UserMenu />
           </div>
         </div>
       </div>
