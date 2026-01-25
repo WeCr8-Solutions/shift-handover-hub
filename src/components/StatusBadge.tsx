@@ -30,6 +30,8 @@ export function StatusBadge({ status, children, className, pulse }: StatusBadgeP
 export function getJobStateStatus(state: JobState): "ok" | "warning" | "critical" | "waiting" | "info" {
   switch (state) {
     case "Part Running":
+    case "Processing":
+    case "Ready for Pickup":
       return "ok";
     case "Setup in Progress":
     case "First Article in Process":
@@ -37,6 +39,7 @@ export function getJobStateStatus(state: JobState): "ok" | "warning" | "critical
     case "Waiting on QA":
     case "Waiting on Tooling":
     case "Waiting on Material":
+    case "On Hold":
       return "waiting";
     case "Machine Down / Issue":
       return "critical";
@@ -49,6 +52,8 @@ export function getJobStateShortName(state: JobState): string {
   switch (state) {
     case "Part Running":
       return "Running";
+    case "Processing":
+      return "Processing";
     case "Setup in Progress":
       return "Setup";
     case "First Article in Process":
@@ -61,6 +66,10 @@ export function getJobStateShortName(state: JobState): string {
       return "Material";
     case "Machine Down / Issue":
       return "Down";
+    case "Ready for Pickup":
+      return "Ready";
+    case "On Hold":
+      return "On Hold";
     default:
       return state;
   }

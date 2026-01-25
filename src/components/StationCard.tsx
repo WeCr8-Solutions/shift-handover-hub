@@ -1,10 +1,11 @@
-import { MachineInfo, JobState } from "@/types/handoff";
+import { StationInfo, JobState } from "@/types/handoff";
 import { StatusBadge, getJobStateStatus, getJobStateShortName } from "./StatusBadge";
-import { AlertTriangle, Droplets, Wind, Wrench, Check } from "lucide-react";
+import { workCenterIcons, workCenterColors } from "@/lib/workCenterIcons";
+import { AlertTriangle, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface MachineCardProps {
-  machine: MachineInfo;
+interface StationCardProps {
+  station: StationInfo;
   onClick?: () => void;
 }
 
@@ -12,6 +13,7 @@ function getStateDataAttr(state?: JobState): string {
   if (!state) return "idle";
   switch (state) {
     case "Part Running":
+    case "Processing":
       return "running";
     case "Setup in Progress":
     case "First Article in Process":
@@ -19,27 +21,70 @@ function getStateDataAttr(state?: JobState): string {
     case "Waiting on QA":
     case "Waiting on Tooling":
     case "Waiting on Material":
+    case "On Hold":
       return "waiting";
     case "Machine Down / Issue":
       return "down";
+    case "Ready for Pickup":
+      return "running";
     default:
       return "idle";
   }
 }
 
-export function MachineCard({ machine, onClick }: MachineCardProps) {
-  const { currentJob, condition } = machine;
-  const stateAttr = getStateDataAttr(currentJob?.state);
-  
-  const hasIssues = 
-    condition.coolantLevel === "Low" ||
-    condition.airPressure === "Low" ||
-    condition.chipCondition === "Needs Cleaning" ||
-    condition.wayLube === "Check" ||
-    condition.guardsDoors === "Issue" ||
-    condition.activeAlarms;
+function hasConditionIssue(condition: StationInfo["condition"]): boolean {
+  if ("status" in condition) {
+    return condition.status === "Issue";
+  }
+  if ("coolantLevel" in condition) {
+    return (
+      condition.coolantLevel === "Low" ||
+      condition.airPressure === "Low" ||
+      condition.chipCondition === "Needs Cleaning" ||
+      condition.wayLube === "Check" ||
+      condition.guardsDoors === "Issue" ||
+      condition.activeAlarms
+    );
+  }
+  if ("gasLevel" in condition) {
+    return (
+      condition.gasLevel === "Low" ||
+      condition.wireLevel === "Low" ||
+      condition.tipCondition === "Replace" ||
+      condition.groundConnection === "Issue"
+    );
+  }
+  if ("waterPressure" in condition) {
+    return (
+      condition.waterPressure === "Low" ||
+      condition.abrasiveLevel === "Low" ||
+      condition.nozzleCondition !== "OK" ||
+      condition.tankLevel === "Low"
+    );
+  }
+  return false;
+}
 
-  const progress = currentJob 
+function hasAlarm(condition: StationInfo["condition"]): boolean {
+  if ("activeAlarms" in condition) {
+    return condition.activeAlarms;
+  }
+  if ("status" in condition) {
+    return condition.status === "Issue";
+  }
+  return false;
+}
+
+export function StationCard({ station, onClick }: StationCardProps) {
+  const { currentJob, condition, workCenterType } = station;
+  const stateAttr = getStateDataAttr(currentJob?.state);
+  const hasIssues = hasConditionIssue(condition);
+  const hasActiveAlarm = hasAlarm(condition);
+  
+  const Icon = workCenterIcons[workCenterType];
+  const iconColor = workCenterColors[workCenterType];
+
+  const progress = currentJob && currentJob.partsRequired > 0
     ? Math.round((currentJob.partsComplete / currentJob.partsRequired) * 100) 
     : 0;
 
@@ -51,16 +96,22 @@ export function MachineCard({ machine, onClick }: MachineCardProps) {
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
-        <div>
-          <h3 className="font-mono text-sm font-semibold text-foreground">
-            {machine.machineId}
-          </h3>
-          <p className="text-xs text-muted-foreground">{machine.name}</p>
+        <div className="flex items-start gap-3">
+          <div className={cn("p-2 rounded-lg bg-secondary", iconColor)}>
+            <Icon className="w-4 h-4" />
+          </div>
+          <div>
+            <h3 className="font-mono text-sm font-semibold text-foreground">
+              {station.stationId}
+            </h3>
+            <p className="text-xs text-muted-foreground">{station.name}</p>
+            <p className="text-[10px] text-muted-foreground/70">{workCenterType}</p>
+          </div>
         </div>
         {currentJob && (
           <StatusBadge 
             status={getJobStateStatus(currentJob.state)}
-            pulse={currentJob.state === "Part Running"}
+            pulse={currentJob.state === "Part Running" || currentJob.state === "Processing"}
           >
             {getJobStateShortName(currentJob.state)}
           </StatusBadge>
@@ -68,7 +119,7 @@ export function MachineCard({ machine, onClick }: MachineCardProps) {
       </div>
 
       {/* Current Job Info */}
-      {currentJob && (
+      {currentJob && currentJob.workOrder !== "TOOL-MGMT" && (
         <div className="space-y-2 mb-3">
           <div className="flex items-center justify-between">
             <span className="data-label">Work Order</span>
@@ -86,7 +137,7 @@ export function MachineCard({ machine, onClick }: MachineCardProps) {
       )}
 
       {/* Progress Bar */}
-      {currentJob && (
+      {currentJob && currentJob.partsRequired > 0 && (
         <div className="mb-3">
           <div className="flex items-center justify-between mb-1">
             <span className="data-label">Progress</span>
@@ -109,58 +160,27 @@ export function MachineCard({ machine, onClick }: MachineCardProps) {
         </div>
       )}
 
-      {/* Condition Indicators */}
+      {/* Status Footer */}
       <div className="flex items-center gap-2 pt-2 border-t border-border">
-        <ConditionIcon 
-          ok={condition.coolantLevel === "OK"} 
-          icon={Droplets} 
-          label="Coolant" 
-        />
-        <ConditionIcon 
-          ok={condition.airPressure === "OK"} 
-          icon={Wind} 
-          label="Air" 
-        />
-        <ConditionIcon 
-          ok={condition.chipCondition === "Clear"} 
-          icon={Wrench} 
-          label="Chips" 
-        />
-        {condition.activeAlarms && (
-          <div className="ml-auto flex items-center gap-1 text-status-critical">
+        {hasActiveAlarm && (
+          <div className="flex items-center gap-1 text-status-critical">
             <AlertTriangle className="w-3.5 h-3.5" />
-            <span className="text-xs font-medium">ALARM</span>
+            <span className="text-xs font-medium">ISSUE</span>
           </div>
         )}
-        {!hasIssues && (
+        {hasIssues && !hasActiveAlarm && (
+          <div className="flex items-center gap-1 text-status-warning">
+            <AlertTriangle className="w-3.5 h-3.5" />
+            <span className="text-xs">Attention</span>
+          </div>
+        )}
+        {!hasIssues && !hasActiveAlarm && (
           <div className="ml-auto flex items-center gap-1 text-status-ok">
             <Check className="w-3.5 h-3.5" />
             <span className="text-xs">All OK</span>
           </div>
         )}
       </div>
-    </div>
-  );
-}
-
-function ConditionIcon({ 
-  ok, 
-  icon: Icon, 
-  label 
-}: { 
-  ok: boolean; 
-  icon: React.ComponentType<{ className?: string }>; 
-  label: string;
-}) {
-  return (
-    <div 
-      className={cn(
-        "flex items-center gap-1 px-1.5 py-0.5 rounded text-xs",
-        ok ? "text-muted-foreground" : "text-status-warning bg-status-warning/10"
-      )}
-      title={`${label}: ${ok ? "OK" : "Needs Attention"}`}
-    >
-      <Icon className="w-3 h-3" />
     </div>
   );
 }

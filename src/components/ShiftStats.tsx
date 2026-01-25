@@ -1,17 +1,21 @@
-import { mockMachines, mockHandoffRecords } from "@/lib/mockData";
-import { Activity, AlertTriangle, Wrench, Clock } from "lucide-react";
+import { mockStations, mockHandoffRecords } from "@/lib/mockData";
+import { Activity, AlertTriangle, Wrench, Clock, Pause } from "lucide-react";
 
 export function ShiftStats() {
-  const runningMachines = mockMachines.filter(
-    (m) => m.currentJob?.state === "Part Running"
+  const runningStations = mockStations.filter(
+    (s) => s.currentJob?.state === "Part Running" || s.currentJob?.state === "Processing"
   ).length;
   
-  const downMachines = mockMachines.filter(
-    (m) => m.currentJob?.state === "Machine Down / Issue"
+  const downStations = mockStations.filter(
+    (s) => s.currentJob?.state === "Machine Down / Issue"
   ).length;
   
-  const setupMachines = mockMachines.filter(
-    (m) => m.currentJob?.state === "Setup in Progress" || m.currentJob?.state === "First Article in Process"
+  const setupStations = mockStations.filter(
+    (s) => s.currentJob?.state === "Setup in Progress" || s.currentJob?.state === "First Article in Process"
+  ).length;
+
+  const waitingStations = mockStations.filter(
+    (s) => s.currentJob?.state?.includes("Waiting") || s.currentJob?.state === "On Hold"
   ).length;
 
   const pendingHandoffs = mockHandoffRecords.length;
@@ -19,27 +23,35 @@ export function ShiftStats() {
   const stats = [
     {
       label: "Running",
-      value: runningMachines,
-      total: mockMachines.length,
+      value: runningStations,
+      total: mockStations.length,
       icon: Activity,
       color: "text-status-ok",
       bgColor: "bg-status-ok/10",
     },
     {
       label: "Down",
-      value: downMachines,
-      total: mockMachines.length,
+      value: downStations,
+      total: mockStations.length,
       icon: AlertTriangle,
       color: "text-status-critical",
       bgColor: "bg-status-critical/10",
     },
     {
       label: "In Setup",
-      value: setupMachines,
-      total: mockMachines.length,
+      value: setupStations,
+      total: mockStations.length,
       icon: Wrench,
       color: "text-status-warning",
       bgColor: "bg-status-warning/10",
+    },
+    {
+      label: "Waiting",
+      value: waitingStations,
+      total: mockStations.length,
+      icon: Pause,
+      color: "text-status-waiting",
+      bgColor: "bg-status-waiting/10",
     },
     {
       label: "Recent Handoffs",
@@ -51,7 +63,7 @@ export function ShiftStats() {
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
       {stats.map((stat) => (
         <div
           key={stat.label}
