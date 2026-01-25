@@ -24,7 +24,7 @@ export function Header() {
               <Factory className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-lg font-semibold text-foreground">ShiftSync</h1>
+              <h1 className="text-lg font-semibold text-foreground">JobLine<span className="text-primary">.ai</span></h1>
               <p className="text-xs text-muted-foreground">Manufacturing Handoff System</p>
             </div>
           </div>
