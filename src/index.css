@@ -2,95 +2,61 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 220 20% 10%;
+    --foreground: 210 20% 95%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 220 18% 13%;
+    --card-foreground: 210 20% 95%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 220 18% 13%;
+    --popover-foreground: 210 20% 95%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 185 70% 45%;
+    --primary-foreground: 220 20% 10%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 220 15% 20%;
+    --secondary-foreground: 210 20% 90%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 220 15% 18%;
+    --muted-foreground: 215 15% 55%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 185 60% 40%;
+    --accent-foreground: 210 20% 98%;
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 70% 50%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 220 15% 22%;
+    --input: 220 15% 22%;
+    --ring: 185 70% 45%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
+    /* Status colors */
+    --status-ok: 142 70% 45%;
+    --status-warning: 38 92% 50%;
+    --status-critical: 0 70% 50%;
+    --status-waiting: 220 70% 55%;
+    --status-info: 185 70% 45%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    /* Machine states */
+    --state-running: 142 70% 45%;
+    --state-setup: 38 92% 50%;
+    --state-waiting: 220 70% 55%;
+    --state-down: 0 70% 50%;
 
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
+    --sidebar-background: 220 20% 8%;
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary: 185 70% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent: 220 15% 15%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-border: 220 15% 18%;
+    --sidebar-ring: 185 70% 45%;
   }
 }
 
@@ -100,6 +66,97 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+@layer components {
+  .status-badge {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium uppercase tracking-wide;
+  }
+
+  .status-ok {
+    @apply bg-[hsl(var(--status-ok)/0.15)] text-[hsl(var(--status-ok))] border border-[hsl(var(--status-ok)/0.3)];
+  }
+
+  .status-warning {
+    @apply bg-[hsl(var(--status-warning)/0.15)] text-[hsl(var(--status-warning))] border border-[hsl(var(--status-warning)/0.3)];
+  }
+
+  .status-critical {
+    @apply bg-[hsl(var(--status-critical)/0.15)] text-[hsl(var(--status-critical))] border border-[hsl(var(--status-critical)/0.3)];
+  }
+
+  .status-waiting {
+    @apply bg-[hsl(var(--status-waiting)/0.15)] text-[hsl(var(--status-waiting))] border border-[hsl(var(--status-waiting)/0.3)];
+  }
+
+  .status-info {
+    @apply bg-[hsl(var(--status-info)/0.15)] text-[hsl(var(--status-info))] border border-[hsl(var(--status-info)/0.3)];
+  }
+
+  .machine-card {
+    @apply relative overflow-hidden rounded-lg border bg-card p-4 transition-all duration-200 hover:border-primary/50;
+  }
+
+  .machine-card::before {
+    content: '';
+    @apply absolute left-0 top-0 bottom-0 w-1;
+  }
+
+  .machine-card[data-state="running"]::before {
+    @apply bg-[hsl(var(--state-running))];
+  }
+
+  .machine-card[data-state="setup"]::before {
+    @apply bg-[hsl(var(--state-setup))];
+  }
+
+  .machine-card[data-state="waiting"]::before {
+    @apply bg-[hsl(var(--state-waiting))];
+  }
+
+  .machine-card[data-state="down"]::before {
+    @apply bg-[hsl(var(--state-down))];
+  }
+
+  .glow-pulse {
+    animation: glow-pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes glow-pulse {
+    0%, 100% {
+      box-shadow: 0 0 5px hsl(var(--status-ok) / 0.3);
+    }
+    50% {
+      box-shadow: 0 0 20px hsl(var(--status-ok) / 0.5);
+    }
+  }
+
+  .section-header {
+    @apply text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3;
+  }
+
+  .data-label {
+    @apply text-xs text-muted-foreground;
+  }
+
+  .data-value {
+    @apply font-mono text-sm text-foreground;
+  }
+
+  .checklist-item {
+    @apply flex items-center justify-between py-2 border-b border-border/50 last:border-0;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent;
   }
 }
