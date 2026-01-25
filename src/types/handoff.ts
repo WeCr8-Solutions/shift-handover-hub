@@ -2,6 +2,22 @@ export type Shift = "Day" | "Swing" | "Night";
 
 export type TriState = "Yes" | "No" | "N/A";
 
+export type WorkCenterType =
+  | "CNC Mill"
+  | "CNC Lathe"
+  | "Water Jet"
+  | "Press Brake"
+  | "TIG Welding"
+  | "MIG Welding"
+  | "Electron Beam Welding"
+  | "Punch Press"
+  | "Hardware Installation"
+  | "Deburr Station"
+  | "Shipping"
+  | "Incoming Inspection"
+  | "Outgoing Inspection"
+  | "Tool Crib";
+
 export type JobState =
   | "Part Running"
   | "Setup in Progress"
@@ -9,7 +25,10 @@ export type JobState =
   | "Waiting on QA"
   | "Waiting on Tooling"
   | "Waiting on Material"
-  | "Machine Down / Issue";
+  | "Machine Down / Issue"
+  | "Processing"
+  | "Ready for Pickup"
+  | "On Hold";
 
 export type DelayCode =
   | "None"
@@ -21,6 +40,7 @@ export type DelayCode =
   | "Setup"
   | "Operator"
   | "Inspection"
+  | "Shipping"
   | "Unknown";
 
 export type ConditionStatus = "OK" | "Low" | "Check" | "Clear" | "Needs Cleaning" | "Issue";
@@ -59,14 +79,43 @@ export interface MachineReadiness {
   notes?: string;
 }
 
+// Generic equipment readiness for non-CNC stations
+export interface EquipmentReadiness {
+  equipmentReady: TriState;
+  safetyChecksComplete: TriState;
+  toolsAvailable: TriState;
+  materialsStaged: TriState;
+  workInstructionsAvailable: TriState;
+  ppeVerified: TriState;
+  notes?: string;
+}
+
 export interface MachineCondition {
-  coolantLevel: "OK" | "Low";
-  airPressure: "OK" | "Low";
-  chipCondition: "Clear" | "Needs Cleaning";
-  wayLube: "OK" | "Check";
+  coolantLevel: "OK" | "Low" | "N/A";
+  airPressure: "OK" | "Low" | "N/A";
+  chipCondition: "Clear" | "Needs Cleaning" | "N/A";
+  wayLube: "OK" | "Check" | "N/A";
   guardsDoors: "OK" | "Issue";
   activeAlarms: boolean;
   alarmNotes?: string;
+}
+
+// Station-specific conditions
+export interface WeldingCondition {
+  gasLevel: "OK" | "Low";
+  wireLevel: "OK" | "Low";
+  tipCondition: "OK" | "Replace";
+  groundConnection: "OK" | "Issue";
+  ventilationOK: boolean;
+  notes?: string;
+}
+
+export interface WaterJetCondition {
+  waterPressure: "OK" | "Low";
+  abrasiveLevel: "OK" | "Low";
+  nozzleCondition: "OK" | "Worn" | "Replace";
+  tankLevel: "OK" | "Low";
+  notes?: string;
 }
 
 export interface QualityStatus {
@@ -80,7 +129,7 @@ export interface QualityStatus {
 }
 
 export interface SetupProcess {
-  fixtureInstalled: "Yes" | "Partial" | "Removed";
+  fixtureInstalled: "Yes" | "Partial" | "Removed" | "N/A";
   clampsBoltsTorqued: TriState;
   fixtureOrientationVerified: TriState;
   specialInstructionsFollowed: TriState;
@@ -125,12 +174,16 @@ export interface ShiftHandoffRecord {
   shift: Shift;
   workOrder: string;
   workCenter: string;
+  workCenterType: WorkCenterType;
   machineId: string;
   part: Part;
   personnel: Personnel;
   jobState: JobStateInfo;
-  machineReadiness: MachineReadiness;
-  machineCondition: MachineCondition;
+  machineReadiness?: MachineReadiness;
+  equipmentReadiness?: EquipmentReadiness;
+  machineCondition?: MachineCondition;
+  weldingCondition?: WeldingCondition;
+  waterJetCondition?: WaterJetCondition;
   qualityStatus: QualityStatus;
   setupProcess: SetupProcess;
   materialsStatus: MaterialsStatus;
@@ -142,10 +195,11 @@ export interface ShiftHandoffRecord {
   updatedAt: string;
 }
 
-export interface MachineInfo {
-  machineId: string;
+export interface StationInfo {
+  stationId: string;
   name: string;
   workCenter: string;
+  workCenterType: WorkCenterType;
   currentJob?: {
     workOrder: string;
     partNumber: string;
@@ -154,5 +208,33 @@ export interface MachineInfo {
     partsComplete: number;
     partsRequired: number;
   };
-  condition: MachineCondition;
+  condition: MachineCondition | WeldingCondition | WaterJetCondition | { status: "OK" | "Issue"; notes?: string };
+  isActive: boolean;
 }
+
+// Work center type categories for filtering/grouping
+export const WORK_CENTER_CATEGORIES = {
+  "CNC Machining": ["CNC Mill", "CNC Lathe"],
+  "Cutting": ["Water Jet", "Punch Press"],
+  "Forming": ["Press Brake"],
+  "Welding": ["TIG Welding", "MIG Welding", "Electron Beam Welding"],
+  "Finishing": ["Hardware Installation", "Deburr Station"],
+  "Logistics": ["Shipping", "Incoming Inspection", "Outgoing Inspection", "Tool Crib"],
+} as const;
+
+export const ALL_WORK_CENTER_TYPES: WorkCenterType[] = [
+  "CNC Mill",
+  "CNC Lathe",
+  "Water Jet",
+  "Press Brake",
+  "TIG Welding",
+  "MIG Welding",
+  "Electron Beam Welding",
+  "Punch Press",
+  "Hardware Installation",
+  "Deburr Station",
+  "Shipping",
+  "Incoming Inspection",
+  "Outgoing Inspection",
+  "Tool Crib",
+];

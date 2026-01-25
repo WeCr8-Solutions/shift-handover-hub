@@ -1,7 +1,9 @@
 import { ShiftHandoffRecord } from "@/types/handoff";
 import { StatusBadge, getJobStateStatus, getJobStateShortName } from "./StatusBadge";
+import { workCenterIcons, workCenterColors } from "@/lib/workCenterIcons";
 import { Clock, User, FileText } from "lucide-react";
 import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface HandoffCardProps {
   record: ShiftHandoffRecord;
@@ -10,6 +12,8 @@ interface HandoffCardProps {
 
 export function HandoffCard({ record, onClick }: HandoffCardProps) {
   const createdDate = new Date(record.createdAt);
+  const Icon = workCenterIcons[record.workCenterType];
+  const iconColor = workCenterColors[record.workCenterType];
 
   return (
     <div 
@@ -17,21 +21,31 @@ export function HandoffCard({ record, onClick }: HandoffCardProps) {
       onClick={onClick}
     >
       <div className="flex items-start justify-between mb-3">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="font-mono text-sm font-semibold text-foreground">
-              {record.machineId}
-            </span>
-            <span className="text-muted-foreground">•</span>
-            <span className="font-mono text-xs text-muted-foreground">
-              {record.workOrder}
-            </span>
+        <div className="flex items-start gap-3">
+          <div className={cn("p-2 rounded-lg bg-secondary", iconColor)}>
+            <Icon className="w-4 h-4" />
           </div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Clock className="w-3 h-3" />
-            <span>{format(createdDate, "MMM d, yyyy HH:mm")}</span>
-            <span className="text-muted-foreground/50">•</span>
-            <span>{record.shift} Shift</span>
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="font-mono text-sm font-semibold text-foreground">
+                {record.machineId}
+              </span>
+              <span className="text-muted-foreground">•</span>
+              <span className="font-mono text-xs text-muted-foreground">
+                {record.workOrder}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary">
+                {record.workCenterType}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+              <Clock className="w-3 h-3" />
+              <span>{format(createdDate, "MMM d, yyyy HH:mm")}</span>
+              <span className="text-muted-foreground/50">•</span>
+              <span>{record.shift} Shift</span>
+            </div>
           </div>
         </div>
         <StatusBadge status={getJobStateStatus(record.jobState.primaryState)}>

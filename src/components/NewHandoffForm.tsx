@@ -5,23 +5,28 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { mockMachines, getCurrentShift } from "@/lib/mockData";
-import { JobState, TriState } from "@/types/handoff";
+import { mockStations, getCurrentShift } from "@/lib/mockData";
+import { JobState, TriState, ALL_WORK_CENTER_TYPES, WorkCenterType } from "@/types/handoff";
+import { workCenterIcons, workCenterColors, getCategoryForType } from "@/lib/workCenterIcons";
 import { X, Check, Minus, Save, ChevronRight, ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 const jobStates: JobState[] = [
   "Part Running",
+  "Processing",
   "Setup in Progress",
   "First Article in Process",
   "Waiting on QA",
   "Waiting on Tooling",
   "Waiting on Material",
   "Machine Down / Issue",
+  "Ready for Pickup",
+  "On Hold",
 ];
 
-const readinessItems = [
+// CNC-specific readiness items
+const cncReadinessItems = [
   { key: "programLoaded", label: "Program Loaded" },
   { key: "programVerifiedAgainstSetup", label: "Program Verified Against Setup" },
   { key: "toolsInstalled", label: "Tools Installed" },
@@ -32,6 +37,20 @@ const readinessItems = [
   { key: "proveOutCompleted", label: "Prove Out Completed" },
 ];
 
+// Generic equipment readiness items
+const equipmentReadinessItems = [
+  { key: "equipmentReady", label: "Equipment Ready" },
+  { key: "safetyChecksComplete", label: "Safety Checks Complete" },
+  { key: "toolsAvailable", label: "Tools/Consumables Available" },
+  { key: "materialsStaged", label: "Materials Staged" },
+  { key: "workInstructionsAvailable", label: "Work Instructions Available" },
+  { key: "ppeVerified", label: "PPE Verified" },
+];
+
+function isCNCType(type: WorkCenterType): boolean {
+  return type === "CNC Mill" || type === "CNC Lathe";
+}
+
 interface NewHandoffFormProps {
   onClose: () => void;
 }
@@ -39,7 +58,8 @@ interface NewHandoffFormProps {
 export function NewHandoffForm({ onClose }: NewHandoffFormProps) {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    machineId: "",
+    stationId: "",
+    workCenterType: "" as WorkCenterType | "",
     workOrder: "",
     partNumber: "",
     partRevision: "",
@@ -48,13 +68,21 @@ export function NewHandoffForm({ onClose }: NewHandoffFormProps) {
     incomingOperator: "",
     jobState: "" as JobState | "",
     jobStateReason: "",
-    readiness: Object.fromEntries(readinessItems.map((item) => [item.key, "N/A" as TriState])),
+    cncReadiness: Object.fromEntries(cncReadinessItems.map((item) => [item.key, "N/A" as TriState])),
+    equipmentReadiness: Object.fromEntries(equipmentReadinessItems.map((item) => [item.key, "N/A" as TriState])),
     readinessNotes: "",
+    // Condition fields
     coolantLevel: "OK",
     airPressure: "OK",
     chipCondition: "Clear",
+    gasLevel: "OK",
+    wireLevel: "OK",
+    tipCondition: "OK",
+    waterPressure: "OK",
+    abrasiveLevel: "OK",
     activeAlarms: false,
     alarmNotes: "",
+    // Quality
     partsCompleted: 0,
     scrapCount: 0,
     reworkCount: 0,
@@ -66,12 +94,24 @@ export function NewHandoffForm({ onClose }: NewHandoffFormProps) {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const updateReadiness = (key: string) => {
-    const currentValue = formData.readiness[key];
+  const handleStationChange = (stationId: string) => {
+    const station = mockStations.find((s) => s.stationId === stationId);
+    if (station) {
+      setFormData((prev) => ({
+        ...prev,
+        stationId,
+        workCenterType: station.workCenterType,
+      }));
+    }
+  };
+
+  const updateReadiness = (key: string, isCNC: boolean) => {
+    const readinessKey = isCNC ? "cncReadiness" : "equipmentReadiness";
+    const currentValue = formData[readinessKey][key];
     const nextValue: TriState = currentValue === "N/A" ? "Yes" : currentValue === "Yes" ? "No" : "N/A";
     setFormData((prev) => ({
       ...prev,
-      readiness: { ...prev.readiness, [key]: nextValue },
+      [readinessKey]: { ...prev[readinessKey], [key]: nextValue },
     }));
   };
 
@@ -81,6 +121,18 @@ export function NewHandoffForm({ onClose }: NewHandoffFormProps) {
   };
 
   const totalSteps = 4;
+  const isCNC = formData.workCenterType && isCNCType(formData.workCenterType);
+  const isWelding = formData.workCenterType?.includes("Welding");
+  const isWaterJet = formData.workCenterType === "Water Jet";
+  const readinessItems = isCNC ? cncReadinessItems : equipmentReadinessItems;
+
+  // Group stations by category
+  const stationsByCategory = mockStations.reduce((acc, station) => {
+    const category = getCategoryForType(station.workCenterType);
+    if (!acc[category]) acc[category] = [];
+    acc[category].push(station);
+    return acc;
+  }, {} as Record<string, typeof mockStations>);
 
   return (
     <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -91,6 +143,9 @@ export function NewHandoffForm({ onClose }: NewHandoffFormProps) {
             <h2 className="text-lg font-semibold text-foreground">New Shift Handoff</h2>
             <p className="text-xs text-muted-foreground">
               {getCurrentShift()} Shift • {new Date().toLocaleDateString()}
+              {formData.workCenterType && (
+                <span className="ml-2 text-primary">• {formData.workCenterType}</span>
+              )}
             </p>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-secondary rounded-lg transition-colors">
@@ -114,7 +169,7 @@ export function NewHandoffForm({ onClose }: NewHandoffFormProps) {
           <p className="text-xs text-muted-foreground mt-2">
             Step {step} of {totalSteps}:{" "}
             {step === 1 && "Job Information"}
-            {step === 2 && "Machine Readiness"}
+            {step === 2 && "Equipment Readiness"}
             {step === 3 && "Condition & Quality"}
             {step === 4 && "Summary & Sign-off"}
           </p>
@@ -124,22 +179,37 @@ export function NewHandoffForm({ onClose }: NewHandoffFormProps) {
         <div className="flex-1 overflow-y-auto p-4">
           {step === 1 && (
             <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Station / Work Center</Label>
+                <Select value={formData.stationId} onValueChange={handleStationChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select station" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-80">
+                    {Object.entries(stationsByCategory).map(([category, stations]) => (
+                      <div key={category}>
+                        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide bg-secondary/50">
+                          {category}
+                        </div>
+                        {stations.map((s) => {
+                          const Icon = workCenterIcons[s.workCenterType];
+                          return (
+                            <SelectItem key={s.stationId} value={s.stationId}>
+                              <div className="flex items-center gap-2">
+                                <Icon className={cn("w-4 h-4", workCenterColors[s.workCenterType])} />
+                                <span className="font-mono">{s.stationId}</span>
+                                <span className="text-muted-foreground">- {s.name}</span>
+                              </div>
+                            </SelectItem>
+                          );
+                        })}
+                      </div>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Machine</Label>
-                  <Select value={formData.machineId} onValueChange={(v) => updateField("machineId", v)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select machine" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {mockMachines.map((m) => (
-                        <SelectItem key={m.machineId} value={m.machineId}>
-                          {m.machineId} - {m.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
                 <div className="space-y-2">
                   <Label>Work Order</Label>
                   <Input
@@ -148,6 +218,21 @@ export function NewHandoffForm({ onClose }: NewHandoffFormProps) {
                     placeholder="WO-2024-XXXX"
                     className="font-mono"
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label>Job State</Label>
+                  <Select value={formData.jobState} onValueChange={(v) => updateField("jobState", v)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select current state" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {jobStates.map((state) => (
+                        <SelectItem key={state} value={state}>
+                          {state}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
@@ -200,23 +285,7 @@ export function NewHandoffForm({ onClose }: NewHandoffFormProps) {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label>Job State</Label>
-                <Select value={formData.jobState} onValueChange={(v) => updateField("jobState", v)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select current state" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {jobStates.map((state) => (
-                      <SelectItem key={state} value={state}>
-                        {state}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {(formData.jobState.includes("Waiting") || formData.jobState.includes("Down")) && (
+              {(formData.jobState.includes("Waiting") || formData.jobState.includes("Down") || formData.jobState === "On Hold") && (
                 <div className="space-y-2">
                   <Label>Reason</Label>
                   <Textarea
@@ -239,11 +308,11 @@ export function NewHandoffForm({ onClose }: NewHandoffFormProps) {
                 {readinessItems.map((item) => (
                   <button
                     key={item.key}
-                    onClick={() => updateReadiness(item.key)}
+                    onClick={() => updateReadiness(item.key, !!isCNC)}
                     className="w-full flex items-center justify-between py-3 px-3 rounded-lg hover:bg-secondary transition-colors"
                   >
                     <span className="text-sm text-foreground">{item.label}</span>
-                    <TriStateIcon value={formData.readiness[item.key]} />
+                    <TriStateIcon value={isCNC ? formData.cncReadiness[item.key] : formData.equipmentReadiness[item.key]} />
                   </button>
                 ))}
               </div>
@@ -252,7 +321,7 @@ export function NewHandoffForm({ onClose }: NewHandoffFormProps) {
                 <Textarea
                   value={formData.readinessNotes}
                   onChange={(e) => updateField("readinessNotes", e.target.value)}
-                  placeholder="Any notes about machine readiness..."
+                  placeholder="Any notes about equipment readiness..."
                   rows={2}
                 />
               </div>
@@ -261,63 +330,124 @@ export function NewHandoffForm({ onClose }: NewHandoffFormProps) {
 
           {step === 3 && (
             <div className="space-y-4">
-              <div className="section-header">Machine Condition</div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Coolant Level</Label>
-                  <Select value={formData.coolantLevel} onValueChange={(v) => updateField("coolantLevel", v)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="OK">OK</SelectItem>
-                      <SelectItem value="Low">Low</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Air Pressure</Label>
-                  <Select value={formData.airPressure} onValueChange={(v) => updateField("airPressure", v)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="OK">OK</SelectItem>
-                      <SelectItem value="Low">Low</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Chip Condition</Label>
-                  <Select value={formData.chipCondition} onValueChange={(v) => updateField("chipCondition", v)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Clear">Clear</SelectItem>
-                      <SelectItem value="Needs Cleaning">Needs Cleaning</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2 flex items-end">
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      id="alarms"
-                      checked={formData.activeAlarms}
-                      onCheckedChange={(v) => updateField("activeAlarms", v)}
-                    />
-                    <Label htmlFor="alarms" className="text-status-critical">Active Alarms</Label>
+              <div className="section-header">Equipment Condition</div>
+              
+              {/* CNC-specific conditions */}
+              {isCNC && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Coolant Level</Label>
+                    <Select value={formData.coolantLevel} onValueChange={(v) => updateField("coolantLevel", v)}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="OK">OK</SelectItem>
+                        <SelectItem value="Low">Low</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
+                  <div className="space-y-2">
+                    <Label>Air Pressure</Label>
+                    <Select value={formData.airPressure} onValueChange={(v) => updateField("airPressure", v)}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="OK">OK</SelectItem>
+                        <SelectItem value="Low">Low</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Chip Condition</Label>
+                    <Select value={formData.chipCondition} onValueChange={(v) => updateField("chipCondition", v)}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Clear">Clear</SelectItem>
+                        <SelectItem value="Needs Cleaning">Needs Cleaning</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
+
+              {/* Welding-specific conditions */}
+              {isWelding && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Gas Level</Label>
+                    <Select value={formData.gasLevel} onValueChange={(v) => updateField("gasLevel", v)}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="OK">OK</SelectItem>
+                        <SelectItem value="Low">Low</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Wire Level</Label>
+                    <Select value={formData.wireLevel} onValueChange={(v) => updateField("wireLevel", v)}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="OK">OK</SelectItem>
+                        <SelectItem value="Low">Low</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Tip/Tungsten Condition</Label>
+                    <Select value={formData.tipCondition} onValueChange={(v) => updateField("tipCondition", v)}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="OK">OK</SelectItem>
+                        <SelectItem value="Replace">Needs Replace</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
+
+              {/* Water Jet-specific conditions */}
+              {isWaterJet && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Water Pressure</Label>
+                    <Select value={formData.waterPressure} onValueChange={(v) => updateField("waterPressure", v)}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="OK">OK</SelectItem>
+                        <SelectItem value="Low">Low</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Abrasive Level</Label>
+                    <Select value={formData.abrasiveLevel} onValueChange={(v) => updateField("abrasiveLevel", v)}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="OK">OK</SelectItem>
+                        <SelectItem value="Low">Low</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="alarms"
+                    checked={formData.activeAlarms}
+                    onCheckedChange={(v) => updateField("activeAlarms", v)}
+                  />
+                  <Label htmlFor="alarms" className="text-status-critical">Active Issues/Alarms</Label>
                 </div>
               </div>
 
               {formData.activeAlarms && (
                 <div className="space-y-2">
-                  <Label>Alarm Notes</Label>
+                  <Label>Issue/Alarm Notes</Label>
                   <Textarea
                     value={formData.alarmNotes}
                     onChange={(e) => updateField("alarmNotes", e.target.value)}
-                    placeholder="Describe active alarms..."
+                    placeholder="Describe active issues or alarms..."
                     rows={2}
                   />
                 </div>
@@ -387,8 +517,12 @@ export function NewHandoffForm({ onClose }: NewHandoffFormProps) {
                 <h4 className="text-sm font-semibold mb-3">Handoff Preview</h4>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
                   <div>
-                    <span className="text-muted-foreground">Machine: </span>
-                    <span className="font-mono">{formData.machineId || "—"}</span>
+                    <span className="text-muted-foreground">Station: </span>
+                    <span className="font-mono">{formData.stationId || "—"}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Type: </span>
+                    <span>{formData.workCenterType || "—"}</span>
                   </div>
                   <div>
                     <span className="text-muted-foreground">Work Order: </span>
