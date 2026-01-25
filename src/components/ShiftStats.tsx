@@ -1,30 +1,57 @@
-import { mockStations, mockHandoffRecords } from "@/lib/mockData";
 import { Activity, AlertTriangle, Wrench, Clock, Pause } from "lucide-react";
+import { useCurrentTeam } from "@/contexts/TeamContext";
+import { useStations, useHandoffRecords } from "@/hooks/useStations";
+import { useAuth } from "@/contexts/AuthContext";
+import { mockStations, mockHandoffRecords } from "@/lib/mockData";
+import { useMemo } from "react";
 
 export function ShiftStats() {
-  const runningStations = mockStations.filter(
-    (s) => s.currentJob?.state === "Part Running" || s.currentJob?.state === "Processing"
+  const { user } = useAuth();
+  const { currentTeam } = useCurrentTeam();
+  const { stations: dbStations, loading: stationsLoading } = useStations(currentTeam?.id);
+  const { records: dbRecords, loading: recordsLoading } = useHandoffRecords(currentTeam?.id);
+
+  // Use database data when logged in, mock data when not
+  const stations = useMemo(() => {
+    if (!user) return mockStations;
+    return dbStations.map((s) => ({
+      ...s,
+      currentJob: s.current_status ? {
+        state: s.current_status.current_job_state,
+      } : undefined,
+    }));
+  }, [user, dbStations]);
+
+  const handoffRecords = useMemo(() => {
+    if (!user) return mockHandoffRecords;
+    return dbRecords;
+  }, [user, dbRecords]);
+
+  const runningStations = stations.filter(
+    (s: any) => s.currentJob?.state === "Part Running" || s.currentJob?.state === "Processing"
   ).length;
   
-  const downStations = mockStations.filter(
-    (s) => s.currentJob?.state === "Machine Down / Issue"
+  const downStations = stations.filter(
+    (s: any) => s.currentJob?.state === "Machine Down / Issue"
   ).length;
   
-  const setupStations = mockStations.filter(
-    (s) => s.currentJob?.state === "Setup in Progress" || s.currentJob?.state === "First Article in Process"
+  const setupStations = stations.filter(
+    (s: any) => s.currentJob?.state === "Setup in Progress" || s.currentJob?.state === "First Article in Process"
   ).length;
 
-  const waitingStations = mockStations.filter(
-    (s) => s.currentJob?.state?.includes("Waiting") || s.currentJob?.state === "On Hold"
+  const waitingStations = stations.filter(
+    (s: any) => s.currentJob?.state?.includes("Waiting") || s.currentJob?.state === "On Hold"
   ).length;
 
-  const pendingHandoffs = mockHandoffRecords.length;
+  const pendingHandoffs = handoffRecords.length;
+
+  const isLoading = user && (stationsLoading || recordsLoading);
 
   const stats = [
     {
       label: "Running",
       value: runningStations,
-      total: mockStations.length,
+      total: stations.length,
       icon: Activity,
       color: "text-status-ok",
       bgColor: "bg-status-ok/10",
@@ -32,7 +59,7 @@ export function ShiftStats() {
     {
       label: "Down",
       value: downStations,
-      total: mockStations.length,
+      total: stations.length,
       icon: AlertTriangle,
       color: "text-status-critical",
       bgColor: "bg-status-critical/10",
@@ -40,7 +67,7 @@ export function ShiftStats() {
     {
       label: "In Setup",
       value: setupStations,
-      total: mockStations.length,
+      total: stations.length,
       icon: Wrench,
       color: "text-status-warning",
       bgColor: "bg-status-warning/10",
@@ -48,7 +75,7 @@ export function ShiftStats() {
     {
       label: "Waiting",
       value: waitingStations,
-      total: mockStations.length,
+      total: stations.length,
       icon: Pause,
       color: "text-status-waiting",
       bgColor: "bg-status-waiting/10",
@@ -75,8 +102,8 @@ export function ShiftStats() {
             </div>
             <div>
               <p className="text-2xl font-bold font-mono text-foreground">
-                {stat.value}
-                {stat.total && (
+                {isLoading ? "..." : stat.value}
+                {stat.total !== undefined && !isLoading && (
                   <span className="text-sm text-muted-foreground font-normal">
                     /{stat.total}
                   </span>

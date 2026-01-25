@@ -5,10 +5,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { mockStations, getCurrentShift } from "@/lib/mockData";
-import { JobState, TriState, ALL_WORK_CENTER_TYPES, WorkCenterType } from "@/types/handoff";
+import { getCurrentShift } from "@/lib/mockData";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCurrentTeam } from "@/contexts/TeamContext";
+import { useStations, HandoffRecord } from "@/hooks/useStations";
+import { JobState, TriState, WorkCenterType, Shift } from "@/types/handoff";
 import { workCenterIcons, workCenterColors, getCategoryForType } from "@/lib/workCenterIcons";
-import { X, Check, Minus, Save, ChevronRight, ChevronLeft } from "lucide-react";
+import { X, Check, Minus, Save, ChevronRight, ChevronLeft, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -53,18 +56,27 @@ function isCNCType(type: WorkCenterType): boolean {
 
 interface NewHandoffFormProps {
   onClose: () => void;
+  onSubmit?: (record: Omit<HandoffRecord, "id" | "created_at" | "updated_at" | "record_version">) => Promise<{ data: any; error: any }>;
 }
 
-export function NewHandoffForm({ onClose }: NewHandoffFormProps) {
+export function NewHandoffForm({ onClose, onSubmit }: NewHandoffFormProps) {
+  const { user, profile } = useAuth();
+  const { currentTeam } = useCurrentTeam();
+  const { stations } = useStations(currentTeam?.id);
+  
   const [step, setStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     stationId: "",
+    stationDbId: "" as string,
     workCenterType: "" as WorkCenterType | "",
+    workCenter: "",
+    machineId: "",
     workOrder: "",
     partNumber: "",
     partRevision: "",
     operationNumber: "",
-    outgoingOperator: "",
+    outgoingOperator: profile?.display_name || "",
     incomingOperator: "",
     jobState: "" as JobState | "",
     jobStateReason: "",
@@ -94,13 +106,16 @@ export function NewHandoffForm({ onClose }: NewHandoffFormProps) {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleStationChange = (stationId: string) => {
-    const station = mockStations.find((s) => s.stationId === stationId);
+  const handleStationChange = (stationDbId: string) => {
+    const station = stations.find((s) => s.id === stationDbId);
     if (station) {
       setFormData((prev) => ({
         ...prev,
-        stationId,
-        workCenterType: station.workCenterType,
+        stationId: station.station_id,
+        stationDbId: station.id,
+        workCenterType: station.work_center_type,
+        workCenter: station.work_center,
+        machineId: station.station_id,
       }));
     }
   };
@@ -115,9 +130,90 @@ export function NewHandoffForm({ onClose }: NewHandoffFormProps) {
     }));
   };
 
-  const handleSubmit = () => {
-    toast.success("Handoff record created successfully!");
-    onClose();
+  const handleSubmit = async () => {
+    if (!user || !onSubmit) {
+      toast.success("Handoff record created successfully!");
+      onClose();
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    const isCNC = formData.workCenterType && isCNCType(formData.workCenterType);
+    const isWelding = formData.workCenterType?.includes("Welding");
+    const isWaterJet = formData.workCenterType === "Water Jet";
+
+    const record: Omit<HandoffRecord, "id" | "created_at" | "updated_at" | "record_version"> = {
+      team_id: currentTeam?.id || null,
+      station_id: formData.stationDbId || null,
+      date: new Date().toISOString().split("T")[0],
+      shift: getCurrentShift() as Shift,
+      work_order: formData.workOrder,
+      work_center: formData.workCenter || formData.workCenterType,
+      work_center_type: formData.workCenterType as WorkCenterType,
+      machine_id: formData.machineId || formData.stationId,
+      part_number: formData.partNumber,
+      part_revision: formData.partRevision,
+      operation_number: formData.operationNumber,
+      outgoing_operator_id: user.id,
+      incoming_operator_id: null,
+      outgoing_operator_name: formData.outgoingOperator,
+      incoming_operator_name: formData.incomingOperator,
+      supervisor_name: null,
+      primary_state: formData.jobState as JobState,
+      state_reason: formData.jobStateReason || null,
+      delay_code: "None",
+      machine_readiness: isCNC ? formData.cncReadiness : null,
+      equipment_readiness: !isCNC ? formData.equipmentReadiness : null,
+      machine_condition: isCNC ? {
+        coolantLevel: formData.coolantLevel,
+        airPressure: formData.airPressure,
+        chipCondition: formData.chipCondition,
+        activeAlarms: formData.activeAlarms,
+        alarmNotes: formData.alarmNotes,
+      } : null,
+      welding_condition: isWelding ? {
+        gasLevel: formData.gasLevel,
+        wireLevel: formData.wireLevel,
+        tipCondition: formData.tipCondition,
+      } : null,
+      water_jet_condition: isWaterJet ? {
+        waterPressure: formData.waterPressure,
+        abrasiveLevel: formData.abrasiveLevel,
+      } : null,
+      last_good_part_timestamp: new Date().toISOString(),
+      parts_completed_this_shift: formData.partsCompleted,
+      scrap_count: formData.scrapCount,
+      rework_count: formData.reworkCount,
+      critical_dims_verified: formData.criticalDimsVerified,
+      qa_notified: "N/A",
+      quality_notes: null,
+      fixture_installed: "N/A",
+      clamps_bolts_torqued: "N/A",
+      fixture_orientation_verified: "N/A",
+      special_instructions_followed: "N/A",
+      process_notes_for_next_shift: null,
+      raw_material_available: true,
+      next_material_lot_ready: false,
+      material_issues_noted: false,
+      material_notes: null,
+      handoff_summary: formData.handoffSummary,
+      outgoing_time: new Date().toISOString(),
+      incoming_time: null,
+      supervisor_time: null,
+      tooling_notes: [],
+      issues_follow_ups: [],
+    };
+
+    const { error } = await onSubmit(record);
+    setIsSubmitting(false);
+
+    if (error) {
+      toast.error("Failed to create handoff: " + error.message);
+    } else {
+      toast.success("Handoff record created successfully!");
+      onClose();
+    }
   };
 
   const totalSteps = 4;
@@ -127,12 +223,12 @@ export function NewHandoffForm({ onClose }: NewHandoffFormProps) {
   const readinessItems = isCNC ? cncReadinessItems : equipmentReadinessItems;
 
   // Group stations by category
-  const stationsByCategory = mockStations.reduce((acc, station) => {
-    const category = getCategoryForType(station.workCenterType);
+  const stationsByCategory = stations.reduce((acc, station) => {
+    const category = getCategoryForType(station.work_center_type);
     if (!acc[category]) acc[category] = [];
     acc[category].push(station);
     return acc;
-  }, {} as Record<string, typeof mockStations>);
+  }, {} as Record<string, typeof stations>);
 
   return (
     <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -181,23 +277,23 @@ export function NewHandoffForm({ onClose }: NewHandoffFormProps) {
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label>Station / Work Center</Label>
-                <Select value={formData.stationId} onValueChange={handleStationChange}>
+                <Select value={formData.stationDbId} onValueChange={handleStationChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select station" />
                   </SelectTrigger>
                   <SelectContent className="max-h-80">
-                    {Object.entries(stationsByCategory).map(([category, stations]) => (
+                    {Object.entries(stationsByCategory).map(([category, stationList]) => (
                       <div key={category}>
                         <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide bg-secondary/50">
                           {category}
                         </div>
-                        {stations.map((s) => {
-                          const Icon = workCenterIcons[s.workCenterType];
+                        {stationList.map((s) => {
+                          const Icon = workCenterIcons[s.work_center_type];
                           return (
-                            <SelectItem key={s.stationId} value={s.stationId}>
+                            <SelectItem key={s.id} value={s.id}>
                               <div className="flex items-center gap-2">
-                                <Icon className={cn("w-4 h-4", workCenterColors[s.workCenterType])} />
-                                <span className="font-mono">{s.stationId}</span>
+                                <Icon className={cn("w-4 h-4", workCenterColors[s.work_center_type])} />
+                                <span className="font-mono">{s.station_id}</span>
                                 <span className="text-muted-foreground">- {s.name}</span>
                               </div>
                             </SelectItem>
@@ -205,6 +301,11 @@ export function NewHandoffForm({ onClose }: NewHandoffFormProps) {
                         })}
                       </div>
                     ))}
+                    {stations.length === 0 && (
+                      <div className="p-4 text-center text-sm text-muted-foreground">
+                        No stations available. Create a team and add stations first.
+                      </div>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -562,7 +663,7 @@ export function NewHandoffForm({ onClose }: NewHandoffFormProps) {
           <Button
             variant="outline"
             onClick={() => setStep((s) => Math.max(1, s - 1))}
-            disabled={step === 1}
+            disabled={step === 1 || isSubmitting}
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
             Back
@@ -574,9 +675,18 @@ export function NewHandoffForm({ onClose }: NewHandoffFormProps) {
               <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           ) : (
-            <Button onClick={handleSubmit} disabled={!formData.handoffSummary}>
-              <Save className="w-4 h-4 mr-1" />
-              Submit Handoff
+            <Button onClick={handleSubmit} disabled={!formData.handoffSummary || isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4 mr-1" />
+                  Submit Handoff
+                </>
+              )}
             </Button>
           )}
         </div>

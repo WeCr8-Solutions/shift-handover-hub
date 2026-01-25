@@ -14,6 +14,243 @@ export type Database = {
   }
   public: {
     Tables: {
+      current_station_status: {
+        Row: {
+          condition_notes: string | null
+          condition_status: string | null
+          current_job_part_number: string | null
+          current_job_state: string | null
+          current_job_work_order: string | null
+          current_operator_id: string | null
+          current_operator_name: string | null
+          id: string
+          last_handoff_id: string | null
+          parts_complete: number | null
+          parts_required: number | null
+          station_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          condition_notes?: string | null
+          condition_status?: string | null
+          current_job_part_number?: string | null
+          current_job_state?: string | null
+          current_job_work_order?: string | null
+          current_operator_id?: string | null
+          current_operator_name?: string | null
+          id?: string
+          last_handoff_id?: string | null
+          parts_complete?: number | null
+          parts_required?: number | null
+          station_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          condition_notes?: string | null
+          condition_status?: string | null
+          current_job_part_number?: string | null
+          current_job_state?: string | null
+          current_job_work_order?: string | null
+          current_operator_id?: string | null
+          current_operator_name?: string | null
+          id?: string
+          last_handoff_id?: string | null
+          parts_complete?: number | null
+          parts_required?: number | null
+          station_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "current_station_status_last_handoff_id_fkey"
+            columns: ["last_handoff_id"]
+            isOneToOne: false
+            referencedRelation: "handoff_records"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "current_station_status_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: true
+            referencedRelation: "stations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      handoff_records: {
+        Row: {
+          clamps_bolts_torqued: string | null
+          created_at: string
+          critical_dims_verified: boolean
+          date: string
+          delay_code: string | null
+          equipment_readiness: Json | null
+          fixture_installed: string | null
+          fixture_orientation_verified: string | null
+          handoff_summary: string
+          id: string
+          incoming_operator_id: string | null
+          incoming_operator_name: string
+          incoming_time: string | null
+          issues_follow_ups: Json | null
+          last_good_part_timestamp: string | null
+          machine_condition: Json | null
+          machine_id: string
+          machine_readiness: Json | null
+          material_issues_noted: boolean
+          material_notes: string | null
+          next_material_lot_ready: boolean
+          operation_number: string
+          outgoing_operator_id: string | null
+          outgoing_operator_name: string
+          outgoing_time: string | null
+          part_number: string
+          part_revision: string
+          parts_completed_this_shift: number
+          primary_state: string
+          process_notes_for_next_shift: string | null
+          qa_notified: string | null
+          quality_notes: string | null
+          raw_material_available: boolean
+          record_version: number
+          rework_count: number
+          scrap_count: number
+          shift: string
+          special_instructions_followed: string | null
+          state_reason: string | null
+          station_id: string | null
+          supervisor_name: string | null
+          supervisor_time: string | null
+          team_id: string | null
+          tooling_notes: Json | null
+          updated_at: string
+          water_jet_condition: Json | null
+          welding_condition: Json | null
+          work_center: string
+          work_center_type: string
+          work_order: string
+        }
+        Insert: {
+          clamps_bolts_torqued?: string | null
+          created_at?: string
+          critical_dims_verified?: boolean
+          date: string
+          delay_code?: string | null
+          equipment_readiness?: Json | null
+          fixture_installed?: string | null
+          fixture_orientation_verified?: string | null
+          handoff_summary: string
+          id?: string
+          incoming_operator_id?: string | null
+          incoming_operator_name: string
+          incoming_time?: string | null
+          issues_follow_ups?: Json | null
+          last_good_part_timestamp?: string | null
+          machine_condition?: Json | null
+          machine_id: string
+          machine_readiness?: Json | null
+          material_issues_noted?: boolean
+          material_notes?: string | null
+          next_material_lot_ready?: boolean
+          operation_number: string
+          outgoing_operator_id?: string | null
+          outgoing_operator_name: string
+          outgoing_time?: string | null
+          part_number: string
+          part_revision: string
+          parts_completed_this_shift?: number
+          primary_state: string
+          process_notes_for_next_shift?: string | null
+          qa_notified?: string | null
+          quality_notes?: string | null
+          raw_material_available?: boolean
+          record_version?: number
+          rework_count?: number
+          scrap_count?: number
+          shift: string
+          special_instructions_followed?: string | null
+          state_reason?: string | null
+          station_id?: string | null
+          supervisor_name?: string | null
+          supervisor_time?: string | null
+          team_id?: string | null
+          tooling_notes?: Json | null
+          updated_at?: string
+          water_jet_condition?: Json | null
+          welding_condition?: Json | null
+          work_center: string
+          work_center_type: string
+          work_order: string
+        }
+        Update: {
+          clamps_bolts_torqued?: string | null
+          created_at?: string
+          critical_dims_verified?: boolean
+          date?: string
+          delay_code?: string | null
+          equipment_readiness?: Json | null
+          fixture_installed?: string | null
+          fixture_orientation_verified?: string | null
+          handoff_summary?: string
+          id?: string
+          incoming_operator_id?: string | null
+          incoming_operator_name?: string
+          incoming_time?: string | null
+          issues_follow_ups?: Json | null
+          last_good_part_timestamp?: string | null
+          machine_condition?: Json | null
+          machine_id?: string
+          machine_readiness?: Json | null
+          material_issues_noted?: boolean
+          material_notes?: string | null
+          next_material_lot_ready?: boolean
+          operation_number?: string
+          outgoing_operator_id?: string | null
+          outgoing_operator_name?: string
+          outgoing_time?: string | null
+          part_number?: string
+          part_revision?: string
+          parts_completed_this_shift?: number
+          primary_state?: string
+          process_notes_for_next_shift?: string | null
+          qa_notified?: string | null
+          quality_notes?: string | null
+          raw_material_available?: boolean
+          record_version?: number
+          rework_count?: number
+          scrap_count?: number
+          shift?: string
+          special_instructions_followed?: string | null
+          state_reason?: string | null
+          station_id?: string | null
+          supervisor_name?: string | null
+          supervisor_time?: string | null
+          team_id?: string | null
+          tooling_notes?: Json | null
+          updated_at?: string
+          water_jet_condition?: Json | null
+          welding_condition?: Json | null
+          work_center?: string
+          work_center_type?: string
+          work_order?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "handoff_records_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "stations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "handoff_records_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -43,6 +280,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      stations: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          station_id: string
+          team_id: string | null
+          updated_at: string
+          work_center: string
+          work_center_type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          station_id: string
+          team_id?: string | null
+          updated_at?: string
+          work_center: string
+          work_center_type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          station_id?: string
+          team_id?: string | null
+          updated_at?: string
+          work_center?: string
+          work_center_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stations_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       team_members: {
         Row: {
