@@ -5,11 +5,11 @@ import { useQueue, QueueStatus, QueueItemType } from "@/hooks/useQueue";
 import { Header } from "@/components/Header";
 import { QueueKanbanBoard } from "@/components/queue/QueueKanbanBoard";
 import { QueueListView } from "@/components/queue/QueueListView";
+import { QueueCalendarView } from "@/components/queue/QueueCalendarView";
 import { QueueFilters } from "@/components/queue/QueueFilters";
 import { CreateQueueItemDialog } from "@/components/queue/CreateQueueItemDialog";
 import { QueueItemDetailDialog } from "@/components/queue/QueueItemDetailDialog";
 import { QueueStatsCards } from "@/components/queue/QueueStatsCards";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Loader2, LayoutGrid, List, Plus, Calendar } from "lucide-react";
 
@@ -136,10 +136,10 @@ export default function Queue() {
               />
             )}
             {view === "calendar" && (
-              <div className="text-center py-12 text-muted-foreground">
-                <Calendar className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                <p>Calendar view coming soon</p>
-              </div>
+              <QueueCalendarView
+                items={items}
+                onItemClick={setSelectedItemId}
+              />
             )}
           </>
         )}
