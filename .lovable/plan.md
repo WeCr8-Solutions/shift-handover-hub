@@ -1,153 +1,113 @@
 
-# Plan: Add Manufacturing Shop Setup Step to Onboarding Flow
+# Plan: Fix Team Creation for First-Time Users
 
-## Problem Summary
-After the welcome modal, new users are taken directly to the dashboard tour without any opportunity to set up their manufacturing shop (teams, stations, users). The `/setup` page with Excel bulk upload exists but is not integrated into the onboarding flow.
+## Problem
+Users cannot create teams because:
+1. The INSERT works, but the `.select().single()` fails because no SELECT policy allows the creator to see their own team
+2. New users only get "operator" role, but SELECT policies require "admin/supervisor" or existing team membership
 
-## Solution Overview
-Insert a dedicated "Shop Setup" step into the onboarding flow that directs new users to the `/setup` page where they can:
-1. Use Excel bulk upload for quick setup
-2. Or manually configure teams, stations, and users
+## Solution
 
----
+### Part 1: Database Migration - Add Missing SELECT Policy
 
-## Implementation Steps
+Add a policy that allows team creators to view their teams:
 
-### Step 1: Update Onboarding Steps Definition
-**File:** `src/hooks/useOnboarding.ts`
-
-Add a new `shop-setup` step after `welcome`:
-
-```typescript
-export type OnboardingStep = 
-  | 'welcome'
-  | 'shop-setup'        // NEW - added after welcome
-  | 'dashboard-overview'
-  | 'station-cards'
-  // ... rest unchanged
-
-export const ONBOARDING_STEPS = [
-  { id: 'welcome', title: 'Welcome to JobLine.ai', description: "Let's take a quick tour" },
-  { id: 'shop-setup', title: 'Set Up Your Shop', description: 'Configure teams, stations, and users' },  // NEW
-  { id: 'dashboard-overview', title: 'Dashboard Overview', description: 'Your command center' },
-  // ... rest unchanged
-];
+```sql
+-- Allow users to see teams they created (needed for RETURNING clause)
+CREATE POLICY "Users can view teams they created" 
+ON public.teams 
+FOR SELECT 
+TO authenticated
+USING (auth.uid() = created_by);
 ```
 
-### Step 2: Update Welcome Modal Navigation
-**File:** `src/components/onboarding/WelcomeModal.tsx`
+This enables the INSERT + SELECT flow to work for team creators.
 
-Modify `handleStartTour` to navigate to `/setup` when on the welcome step:
+### Part 2: Give First-Time Users Admin Privileges
 
-```typescript
-const handleStartTour = () => {
-  setIsOpen(false);
-  
-  if (currentStep === 'welcome') {
-    navigate('/setup');  // NEW: Go to setup page first
-  } else if (currentStep === 'shop-setup') {
-    navigate('/setup');  // NEW: Handle shop-setup step
-  } else if (currentStep === 'dashboard-overview' || currentStep === 'station-cards') {
-    navigate('/dashboard');
-  }
-  // ... rest unchanged
-  
-  setTimeout(() => startTour(), 300);
-};
+Update the `handle_new_user` database function to also assign the "admin" role to new signups, allowing them to fully configure their manufacturing shop:
+
+```sql
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $function$
+BEGIN
+  -- Create profile record
+  INSERT INTO public.profiles (user_id, email, display_name)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    COALESCE(NEW.raw_user_meta_data->>'display_name', split_part(NEW.email, '@', 1))
+  );
+
+  -- Create operator role (base access)
+  INSERT INTO public.user_roles (user_id, role)
+  VALUES (NEW.id, 'operator');
+
+  -- Also give admin role for first-time setup (can create teams, manage shop)
+  INSERT INTO public.user_roles (user_id, role)
+  VALUES (NEW.id, 'admin');
+
+  RETURN NEW;
+END;
+$function$;
 ```
 
-Also add the new step icon and update the steps display.
+### Part 3: Grant Admin Role to Existing User
 
-### Step 3: Update GuidedTour Route Mapping
-**File:** `src/components/onboarding/GuidedTour.tsx`
+Run a one-time insert to give the current user admin privileges:
 
-Update the `ROUTE_TO_STEP` mapping:
-
-```typescript
-const ROUTE_TO_STEP: Record<string, OnboardingStep> = {
-  '/setup': 'shop-setup',       // CHANGED from 'welcome'
-  '/dashboard': 'dashboard-overview',
-  '/teams': 'team-management',
-  '/admin': 'admin-features',
-};
-```
-
-### Step 4: Update OnboardingProgress Component
-**File:** `src/components/onboarding/OnboardingProgress.tsx`
-
-Update the `handleStartTour` function to handle the new step:
-
-```typescript
-const handleStartTour = () => {
-  if (currentStep === 'welcome' || currentStep === 'shop-setup') {
-    navigate('/setup');  // NEW: Navigate to setup for both welcome and shop-setup
-  } else if (currentStep === 'dashboard-overview' || currentStep === 'station-cards') {
-    navigate('/dashboard');
-  }
-  // ... rest unchanged
-};
-```
-
-### Step 5: Enhance Setup Page Tour Experience
-**File:** `src/pages/Setup.tsx`
-
-Add a "Continue to Dashboard" button that:
-1. Marks the `shop-setup` step as complete
-2. Navigates to the dashboard to continue the tour
-
-```typescript
-// Add after the setup completion card
-<Button onClick={() => {
-  completeStep('shop-setup');
-  navigate('/dashboard');
-  setTimeout(() => startTour(), 300);
-}}>
-  Continue Tour to Dashboard
-</Button>
+```sql
+INSERT INTO public.user_roles (user_id, role) 
+VALUES ('47d2772a-6c62-48d6-bb3b-a23055543a76', 'admin')
+ON CONFLICT (user_id, role) DO NOTHING;
 ```
 
 ---
 
 ## Technical Details
 
-### Files to Modify
-| File | Changes |
-|------|---------|
-| `src/hooks/useOnboarding.ts` | Add `shop-setup` to OnboardingStep type and ONBOARDING_STEPS array |
-| `src/components/onboarding/WelcomeModal.tsx` | Update navigation logic and add Factory icon for shop-setup |
-| `src/components/onboarding/GuidedTour.tsx` | Update ROUTE_TO_STEP mapping for /setup |
-| `src/components/onboarding/OnboardingProgress.tsx` | Update handleStartTour navigation logic |
-| `src/pages/Setup.tsx` | Add tour continuation button and integrate with onboarding context |
+### Why This Works
+| Issue | Fix |
+|-------|-----|
+| SELECT fails after INSERT | New policy: "Users can view teams they created" |
+| User lacks admin/supervisor role | Updated `handle_new_user` to add admin role on signup |
+| Existing user blocked | One-time SQL to grant admin role |
 
-### User Flow After Implementation
+### User Flow After Fix
 ```text
-1. New User Signs Up
+1. User signs up
         ↓
-2. Welcome Modal Appears
+2. handle_new_user trigger fires:
+   - Creates profile
+   - Assigns "operator" role
+   - Assigns "admin" role (NEW)
         ↓
-3. Click "Start Tour"
+3. User goes to Setup page
         ↓
-4. Navigate to /setup (Shop Setup page)
+4. User creates team:
+   - INSERT succeeds (auth.uid() = created_by)
+   - SELECT succeeds (new policy: created_by = auth.uid())
+   - team_members INSERT succeeds (user becomes "owner")
         ↓
-5. Guided tour highlights:
-   - Setup progress tracker
-   - Excel bulk upload option
-   - Manual setup steps
-        ↓
-6. User completes setup OR clicks "Continue to Dashboard"
-        ↓
-7. Navigate to /dashboard for dashboard tour
-        ↓
-8. Continue through remaining tour steps
+5. User can now manage their manufacturing shop
 ```
 
-### Edge Cases Handled
-- Users who skip setup can return via Profile page
-- Restart button will go to /setup first
-- Existing users with partial onboarding will see appropriate current step
-- The flow works whether user uses Excel upload or manual setup
+### Files Changed
+| File | Change |
+|------|--------|
+| Database migration | Add SELECT policy for team creators |
+| Database migration | Update `handle_new_user` to add admin role |
+| Database migration | Grant admin role to existing user |
 
 ---
 
-## Summary
-This plan integrates the existing `/setup` page with its Excel bulk upload feature into the main onboarding flow. New users will now be guided through shop setup before being shown the dashboard, ensuring they understand how to configure their manufacturing floor from the start.
+## Security Considerations
+
+- Roles remain in separate `user_roles` table (not on profiles)
+- Admin role allows team/station management per existing RLS policies
+- Team ownership established via `team_members` table with "owner" role
+- This follows your requirement: "Operator + team owner" where admin enables team creation
