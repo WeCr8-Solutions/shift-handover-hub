@@ -9,6 +9,7 @@ import { StationManagement } from "@/components/admin/StationManagement";
 import { TeamOversight } from "@/components/admin/TeamOversight";
 import { ActivityLogs } from "@/components/admin/ActivityLogs";
 import { BulkUploadDialog } from "@/components/BulkUploadDialog";
+import { TourTriggerButton } from "@/components/onboarding";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -63,7 +64,8 @@ export default function Admin() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={() => setBulkUploadOpen(true)}>
+            <TourTriggerButton />
+            <Button variant="outline" onClick={() => setBulkUploadOpen(true)} data-tour="bulk-upload">
               <FileSpreadsheet className="w-4 h-4 mr-2" />
               Bulk Upload
             </Button>
@@ -75,11 +77,13 @@ export default function Admin() {
         </div>
 
         {/* Stats Overview */}
-        <AdminStatsCards stats={stats} loading={statsLoading} />
+        <div data-tour="admin-stats">
+          <AdminStatsCards stats={stats} loading={statsLoading} />
+        </div>
 
         {/* Management Tabs */}
         <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList>
+          <TabsList data-tour="admin-tabs">
             <TabsTrigger value="overview" className="gap-2">
               <LayoutDashboard className="w-4 h-4" />
               Overview

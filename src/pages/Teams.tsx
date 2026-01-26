@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Header } from "@/components/Header";
 import { TeamManagement } from "@/components/TeamManagement";
+import { TourTriggerButton } from "@/components/onboarding";
 import { Loader2 } from "lucide-react";
 
 export default function Teams() {
@@ -31,7 +32,13 @@ export default function Teams() {
     <div className="min-h-screen bg-background">
       <Header />
       <main className="container py-6">
-        <TeamManagement />
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-2xl font-bold">Teams</h1>
+          <TourTriggerButton />
+        </div>
+        <div data-tour="team-list">
+          <TeamManagement />
+        </div>
       </main>
     </div>
   );

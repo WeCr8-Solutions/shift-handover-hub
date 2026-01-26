@@ -133,7 +133,7 @@ export default function Setup() {
           </div>
 
           {/* Progress */}
-          <Card>
+          <Card data-tour="setup-progress">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium">Setup Progress</span>
@@ -144,7 +144,7 @@ export default function Setup() {
           </Card>
 
           {/* Quick Setup Option */}
-          <Card className="border-primary/50 bg-gradient-to-br from-primary/5 to-transparent">
+          <Card className="border-primary/50 bg-gradient-to-br from-primary/5 to-transparent" data-tour="quick-setup">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <FileSpreadsheet className="w-5 h-5 text-primary" />
@@ -163,7 +163,7 @@ export default function Setup() {
           </Card>
 
           {/* Manual Setup Steps */}
-          <div className="space-y-4">
+          <div className="space-y-4" data-tour="manual-steps">
             <h2 className="text-lg font-semibold">Or set up manually:</h2>
 
             {/* Step 1: Teams */}
