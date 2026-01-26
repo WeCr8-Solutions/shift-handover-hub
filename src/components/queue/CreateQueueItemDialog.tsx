@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,15 +8,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CreateQueueItemInput, QueueItemType, QueuePriority } from "@/hooks/useQueue";
+import { useStations, Station } from "@/hooks/useStations";
+import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, Loader2 } from "lucide-react";
+import { CalendarIcon, Loader2, Wrench, Factory } from "lucide-react";
+import { workCenterIcons, workCenterColors } from "@/lib/workCenterIcons";
+import { WorkCenterType, WORK_CENTER_CATEGORIES } from "@/types/handoff";
 
 interface CreateQueueItemDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCreate: (input: CreateQueueItemInput) => Promise<{ error: string | null }>;
+  preselectedStationId?: string;
 }
 
 const typeOptions: { value: QueueItemType; label: string; description: string }[] = [
@@ -26,30 +31,56 @@ const typeOptions: { value: QueueItemType; label: string; description: string }[
   { value: "support_ticket", label: "Support Ticket", description: "Support or issue ticket" },
 ];
 
-const priorityOptions: { value: QueuePriority; label: string }[] = [
-  { value: "low", label: "Low" },
-  { value: "normal", label: "Normal" },
-  { value: "high", label: "High" },
-  { value: "urgent", label: "Urgent" },
-  { value: "critical", label: "Critical" },
+const priorityOptions: { value: QueuePriority; label: string; color: string }[] = [
+  { value: "low", label: "Low", color: "text-muted-foreground" },
+  { value: "normal", label: "Normal", color: "text-foreground" },
+  { value: "high", label: "High", color: "text-amber-500" },
+  { value: "urgent", label: "Urgent", color: "text-orange-500" },
+  { value: "critical", label: "Critical", color: "text-red-500" },
 ];
 
-export function CreateQueueItemDialog({ open, onOpenChange, onCreate }: CreateQueueItemDialogProps) {
+export function CreateQueueItemDialog({ open, onOpenChange, onCreate, preselectedStationId }: CreateQueueItemDialogProps) {
   const { toast } = useToast();
+  const { currentTeam } = useCurrentTeam();
+  const { stations, loading: stationsLoading } = useStations(currentTeam?.id);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<CreateQueueItemInput>({
-    item_type: "team_task",
+    item_type: "work_order",
     title: "",
     description: "",
     priority: "normal",
+    station_id: preselectedStationId,
   });
   const [dueDate, setDueDate] = useState<Date | undefined>();
+
+  // Update station_id when preselectedStationId changes
+  useEffect(() => {
+    if (preselectedStationId) {
+      setFormData(prev => ({ ...prev, station_id: preselectedStationId, item_type: "work_order" }));
+    }
+  }, [preselectedStationId]);
+
+  // Group stations by work center type for easier selection
+  const stationsByCategory = stations.reduce((acc, station) => {
+    const type = station.work_center_type;
+    if (!acc[type]) acc[type] = [];
+    acc[type].push(station);
+    return acc;
+  }, {} as Record<WorkCenterType, Station[]>);
+
+  const selectedStation = formData.station_id ? stations.find(s => s.id === formData.station_id) : null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.title.trim()) {
       toast({ title: "Error", description: "Title is required", variant: "destructive" });
+      return;
+    }
+
+    // For work orders, require station assignment
+    if (formData.item_type === "work_order" && !formData.station_id) {
+      toast({ title: "Error", description: "Please assign a machine/station for the work order", variant: "destructive" });
       return;
     }
 
@@ -63,14 +94,15 @@ export function CreateQueueItemDialog({ open, onOpenChange, onCreate }: CreateQu
     if (error) {
       toast({ title: "Error", description: error, variant: "destructive" });
     } else {
-      toast({ title: "Success", description: "Queue item created" });
+      toast({ title: "Success", description: `${formData.item_type === "work_order" ? "Work order" : "Queue item"} created` });
       onOpenChange(false);
       // Reset form
       setFormData({
-        item_type: "team_task",
+        item_type: "work_order",
         title: "",
         description: "",
         priority: "normal",
+        station_id: undefined,
       });
       setDueDate(undefined);
     }
@@ -78,15 +110,19 @@ export function CreateQueueItemDialog({ open, onOpenChange, onCreate }: CreateQu
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create Queue Item</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <Factory className="w-5 h-5 text-primary" />
+            Create {formData.item_type === "work_order" ? "Work Order" : "Queue Item"}
+          </DialogTitle>
           <DialogDescription>
-            Add a new item to the queue for tracking and prioritization
+            Add a new item to the queue for live tracking and prioritization
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Type and Priority Row */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Type</Label>
@@ -100,7 +136,9 @@ export function CreateQueueItemDialog({ open, onOpenChange, onCreate }: CreateQu
                 <SelectContent>
                   {typeOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
-                      {option.label}
+                      <div className="flex flex-col">
+                        <span>{option.label}</span>
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -119,7 +157,7 @@ export function CreateQueueItemDialog({ open, onOpenChange, onCreate }: CreateQu
                 <SelectContent>
                   {priorityOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
-                      {option.label}
+                      <span className={option.color}>{option.label}</span>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -127,29 +165,79 @@ export function CreateQueueItemDialog({ open, onOpenChange, onCreate }: CreateQu
             </div>
           </div>
 
+          {/* Machine/Station Assignment - Required for Work Orders */}
+          {(formData.item_type === "work_order" || formData.item_type === "station_task") && (
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Wrench className="w-4 h-4" />
+                Assign to Machine/Station {formData.item_type === "work_order" && <span className="text-red-500">*</span>}
+              </Label>
+              <Select
+                value={formData.station_id || "none"}
+                onValueChange={(value) => setFormData({ ...formData, station_id: value === "none" ? undefined : value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a machine..." />
+                </SelectTrigger>
+                <SelectContent className="max-h-64">
+                  {formData.item_type !== "work_order" && (
+                    <SelectItem value="none">No station (team-wide)</SelectItem>
+                  )}
+                  {stationsLoading ? (
+                    <div className="flex items-center justify-center p-4">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    </div>
+                  ) : stations.length === 0 ? (
+                    <div className="p-4 text-sm text-muted-foreground text-center">
+                      No stations configured. Add stations in Admin.
+                    </div>
+                  ) : (
+                    Object.entries(stationsByCategory).map(([type, typeStations]) => {
+                      const Icon = workCenterIcons[type as WorkCenterType];
+                      const colorClass = workCenterColors[type as WorkCenterType];
+                      return (
+                        <div key={type}>
+                          <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground flex items-center gap-2 bg-muted/50">
+                            <Icon className={cn("w-3 h-3", colorClass)} />
+                            {type}
+                          </div>
+                          {typeStations.map((station) => (
+                            <SelectItem key={station.id} value={station.id}>
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium">{station.station_id}</span>
+                                <span className="text-muted-foreground">- {station.name}</span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </div>
+                      );
+                    })
+                  )}
+                </SelectContent>
+              </Select>
+              {selectedStation && (
+                <p className="text-xs text-muted-foreground">
+                  {selectedStation.work_center} • {selectedStation.work_center_type}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Title */}
           <div className="space-y-2">
             <Label>Title</Label>
             <Input
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              placeholder="Enter item title..."
+              placeholder={formData.item_type === "work_order" ? "e.g., Setup and run Part #12345" : "Enter item title..."}
             />
           </div>
 
-          <div className="space-y-2">
-            <Label>Description</Label>
-            <Textarea
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Enter item description..."
-              rows={3}
-            />
-          </div>
-
+          {/* Work Order Specific Fields */}
           {formData.item_type === "work_order" && (
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-4 gap-4 p-3 bg-muted/30 rounded-lg border">
               <div className="space-y-2">
-                <Label>Work Order</Label>
+                <Label className="text-xs">Work Order #</Label>
                 <Input
                   value={formData.work_order || ""}
                   onChange={(e) => setFormData({ ...formData, work_order: e.target.value })}
@@ -157,7 +245,7 @@ export function CreateQueueItemDialog({ open, onOpenChange, onCreate }: CreateQu
                 />
               </div>
               <div className="space-y-2">
-                <Label>Part Number</Label>
+                <Label className="text-xs">Part Number</Label>
                 <Input
                   value={formData.part_number || ""}
                   onChange={(e) => setFormData({ ...formData, part_number: e.target.value })}
@@ -165,7 +253,15 @@ export function CreateQueueItemDialog({ open, onOpenChange, onCreate }: CreateQu
                 />
               </div>
               <div className="space-y-2">
-                <Label>Quantity</Label>
+                <Label className="text-xs">Operation #</Label>
+                <Input
+                  value={formData.operation_number || ""}
+                  onChange={(e) => setFormData({ ...formData, operation_number: e.target.value })}
+                  placeholder="OP-10"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Quantity</Label>
                 <Input
                   type="number"
                   value={formData.quantity || ""}
@@ -176,12 +272,25 @@ export function CreateQueueItemDialog({ open, onOpenChange, onCreate }: CreateQu
             </div>
           )}
 
+          {/* Description */}
+          <div className="space-y-2">
+            <Label>Description / Notes</Label>
+            <Textarea
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              placeholder="Enter setup instructions, special requirements, or notes..."
+              rows={3}
+            />
+          </div>
+
+          {/* Scheduling Row */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Due Date</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
+                    type="button"
                     variant="outline"
                     className={cn(
                       "w-full justify-start text-left font-normal",
@@ -221,7 +330,7 @@ export function CreateQueueItemDialog({ open, onOpenChange, onCreate }: CreateQu
             </Button>
             <Button type="submit" disabled={loading}>
               {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              Create Item
+              Create {formData.item_type === "work_order" ? "Work Order" : "Item"}
             </Button>
           </DialogFooter>
         </form>
