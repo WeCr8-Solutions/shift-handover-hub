@@ -431,6 +431,184 @@ export type Database = {
         }
         Relationships: []
       }
+      queue_item_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          queue_item_id: string
+          user_id: string
+          user_name: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          queue_item_id: string
+          user_id: string
+          user_name: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          queue_item_id?: string
+          user_id?: string
+          user_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "queue_item_comments_queue_item_id_fkey"
+            columns: ["queue_item_id"]
+            isOneToOne: false
+            referencedRelation: "queue_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      queue_item_history: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          new_value: Json | null
+          old_value: Json | null
+          queue_item_id: string
+          user_id: string
+          user_name: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+          queue_item_id: string
+          user_id: string
+          user_name: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+          queue_item_id?: string
+          user_id?: string
+          user_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "queue_item_history_queue_item_id_fkey"
+            columns: ["queue_item_id"]
+            isOneToOne: false
+            referencedRelation: "queue_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      queue_items: {
+        Row: {
+          assigned_by: string | null
+          assigned_to: string | null
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          due_date: string | null
+          estimated_duration: number | null
+          id: string
+          item_type: Database["public"]["Enums"]["queue_item_type"]
+          metadata: Json | null
+          operation_number: string | null
+          part_number: string | null
+          position: number
+          priority: Database["public"]["Enums"]["queue_priority"]
+          quantity: number | null
+          scheduled_end: string | null
+          scheduled_start: string | null
+          started_at: string | null
+          station_id: string | null
+          status: Database["public"]["Enums"]["queue_status"]
+          tags: string[] | null
+          team_id: string | null
+          title: string
+          updated_at: string
+          work_order: string | null
+        }
+        Insert: {
+          assigned_by?: string | null
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          estimated_duration?: number | null
+          id?: string
+          item_type?: Database["public"]["Enums"]["queue_item_type"]
+          metadata?: Json | null
+          operation_number?: string | null
+          part_number?: string | null
+          position?: number
+          priority?: Database["public"]["Enums"]["queue_priority"]
+          quantity?: number | null
+          scheduled_end?: string | null
+          scheduled_start?: string | null
+          started_at?: string | null
+          station_id?: string | null
+          status?: Database["public"]["Enums"]["queue_status"]
+          tags?: string[] | null
+          team_id?: string | null
+          title: string
+          updated_at?: string
+          work_order?: string | null
+        }
+        Update: {
+          assigned_by?: string | null
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          estimated_duration?: number | null
+          id?: string
+          item_type?: Database["public"]["Enums"]["queue_item_type"]
+          metadata?: Json | null
+          operation_number?: string | null
+          part_number?: string | null
+          position?: number
+          priority?: Database["public"]["Enums"]["queue_priority"]
+          quantity?: number | null
+          scheduled_end?: string | null
+          scheduled_start?: string | null
+          started_at?: string | null
+          station_id?: string | null
+          status?: Database["public"]["Enums"]["queue_status"]
+          tags?: string[] | null
+          team_id?: string | null
+          title?: string
+          updated_at?: string
+          work_order?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "queue_items_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "stations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "queue_items_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stations: {
         Row: {
           created_at: string
@@ -630,6 +808,19 @@ export type Database = {
         | "team_member_removed"
         | "profile_updated"
       app_role: "admin" | "operator" | "supervisor" | "viewer"
+      queue_item_type:
+        | "work_order"
+        | "station_task"
+        | "team_task"
+        | "support_ticket"
+      queue_priority: "low" | "normal" | "high" | "urgent" | "critical"
+      queue_status:
+        | "pending"
+        | "queued"
+        | "in_progress"
+        | "on_hold"
+        | "completed"
+        | "cancelled"
       team_role: "owner" | "admin" | "member"
     }
     CompositeTypes: {
@@ -776,6 +967,21 @@ export const Constants = {
         "profile_updated",
       ],
       app_role: ["admin", "operator", "supervisor", "viewer"],
+      queue_item_type: [
+        "work_order",
+        "station_task",
+        "team_task",
+        "support_ticket",
+      ],
+      queue_priority: ["low", "normal", "high", "urgent", "critical"],
+      queue_status: [
+        "pending",
+        "queued",
+        "in_progress",
+        "on_hold",
+        "completed",
+        "cancelled",
+      ],
       team_role: ["owner", "admin", "member"],
     },
   },

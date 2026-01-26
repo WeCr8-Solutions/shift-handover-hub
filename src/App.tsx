@@ -13,6 +13,7 @@ import Teams from "./pages/Teams";
 import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
 import Testing from "./pages/Testing";
+import Queue from "./pages/Queue";
 import Setup from "./pages/Setup";
 import NotFound from "./pages/NotFound";
 
@@ -37,6 +38,7 @@ const App = () => (
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/admin" element={<Admin />} />
                 <Route path="/testing" element={<Testing />} />
+                <Route path="/queue" element={<Queue />} />
                 <Route path="/setup" element={<Setup />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
