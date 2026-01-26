@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_logs: {
+        Row: {
+          activity_type: Database["public"]["Enums"]["activity_type"]
+          created_at: string
+          description: string
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          user_display_name: string | null
+          user_email: string | null
+          user_id: string
+        }
+        Insert: {
+          activity_type: Database["public"]["Enums"]["activity_type"]
+          created_at?: string
+          description: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          user_display_name?: string | null
+          user_email?: string | null
+          user_id: string
+        }
+        Update: {
+          activity_type?: Database["public"]["Enums"]["activity_type"]
+          created_at?: string
+          description?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          user_display_name?: string | null
+          user_email?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       current_station_status: {
         Row: {
           condition_notes: string | null
@@ -427,6 +463,22 @@ export type Database = {
       }
     }
     Enums: {
+      activity_type:
+        | "login"
+        | "logout"
+        | "signup"
+        | "handoff_created"
+        | "handoff_updated"
+        | "station_created"
+        | "station_updated"
+        | "station_deleted"
+        | "team_created"
+        | "team_updated"
+        | "team_deleted"
+        | "user_role_changed"
+        | "team_member_added"
+        | "team_member_removed"
+        | "profile_updated"
       app_role: "admin" | "operator" | "supervisor" | "viewer"
       team_role: "owner" | "admin" | "member"
     }
@@ -556,6 +608,23 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      activity_type: [
+        "login",
+        "logout",
+        "signup",
+        "handoff_created",
+        "handoff_updated",
+        "station_created",
+        "station_updated",
+        "station_deleted",
+        "team_created",
+        "team_updated",
+        "team_deleted",
+        "user_role_changed",
+        "team_member_added",
+        "team_member_removed",
+        "profile_updated",
+      ],
       app_role: ["admin", "operator", "supervisor", "viewer"],
       team_role: ["owner", "admin", "member"],
     },

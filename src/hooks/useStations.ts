@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTeams } from "./useTeams";
+import { useActivityLog } from "./useActivityLog";
 import { WorkCenterType, JobState, Shift } from "@/types/handoff";
 
 export interface Station {
@@ -208,6 +209,7 @@ export function useStations(teamId?: string | null) {
 
 export function useHandoffRecords(teamId?: string | null) {
   const { user } = useAuth();
+  const { logActivity } = useActivityLog();
   const [records, setRecords] = useState<HandoffRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -274,6 +276,20 @@ export function useHandoffRecords(teamId?: string | null) {
       .insert(record)
       .select()
       .single();
+
+    if (!error && data) {
+      await logActivity(
+        "handoff_created",
+        `Created handoff for ${record.work_center} - ${record.machine_id}`,
+        {
+          handoff_id: data.id,
+          work_order: record.work_order,
+          part_number: record.part_number,
+          shift: record.shift,
+          station_id: record.station_id,
+        }
+      );
+    }
 
     return { data, error };
   };

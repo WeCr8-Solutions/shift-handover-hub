@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -41,6 +41,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const logActivity = useCallback(
+    async (
+      userId: string,
+      activityType: "login" | "logout" | "signup",
+      description: string,
+      email?: string,
+      displayName?: string
+    ) => {
+      try {
+        await supabase.from("activity_logs").insert({
+          user_id: userId,
+          user_email: email || null,
+          user_display_name: displayName || null,
+          activity_type: activityType,
+          description,
+        });
+      } catch (error) {
+        console.error("Failed to log activity:", error);
+      }
+    },
+    []
+  );
+
   useEffect(() => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -53,6 +76,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setTimeout(() => {
             fetchProfile(session.user.id);
           }, 0);
+          
+          // Log login event
+          if (event === "SIGNED_IN") {
+            logActivity(
+              session.user.id,
+              "login",
+              "User signed in",
+              session.user.email,
+              session.user.user_metadata?.display_name
+            );
+          }
         } else {
           setProfile(null);
         }
@@ -74,12 +108,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [logActivity]);
 
   const signUp = async (email: string, password: string, displayName: string) => {
     const redirectUrl = `${window.location.origin}/`;
     
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -89,6 +123,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         },
       },
     });
+    
+    // Log signup event if successful
+    if (!error && data.user) {
+      await logActivity(
+        data.user.id,
+        "signup",
+        "New user account created",
+        email,
+        displayName
+      );
+    }
     
     return { error: error as Error | null };
   };
@@ -103,6 +148,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
+    // Log logout before signing out
+    if (user) {
+      await logActivity(
+        user.id,
+        "logout",
+        "User signed out",
+        user.email,
+        profile?.display_name
+      );
+    }
+    
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
