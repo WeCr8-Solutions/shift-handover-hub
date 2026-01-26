@@ -1,0 +1,125 @@
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { QueueStatus, QueueItemType } from "@/hooks/useQueue";
+import { X } from "lucide-react";
+
+interface QueueFiltersProps {
+  filters: {
+    status?: QueueStatus[];
+    item_type?: QueueItemType[];
+    station_id?: string;
+    assigned_to?: string;
+  };
+  onFiltersChange: (filters: QueueFiltersProps["filters"]) => void;
+}
+
+const statusOptions: { value: QueueStatus; label: string }[] = [
+  { value: "pending", label: "Pending" },
+  { value: "queued", label: "Queued" },
+  { value: "in_progress", label: "In Progress" },
+  { value: "on_hold", label: "On Hold" },
+  { value: "completed", label: "Completed" },
+  { value: "cancelled", label: "Cancelled" },
+];
+
+const typeOptions: { value: QueueItemType; label: string }[] = [
+  { value: "work_order", label: "Work Order" },
+  { value: "station_task", label: "Station Task" },
+  { value: "team_task", label: "Team Task" },
+  { value: "support_ticket", label: "Support Ticket" },
+];
+
+export function QueueFilters({ filters, onFiltersChange }: QueueFiltersProps) {
+  const activeFilters = [
+    ...(filters.status || []).map((s) => ({ type: "status" as const, value: s })),
+    ...(filters.item_type || []).map((t) => ({ type: "item_type" as const, value: t })),
+  ];
+
+  const removeFilter = (type: "status" | "item_type", value: string) => {
+    if (type === "status") {
+      onFiltersChange({
+        ...filters,
+        status: filters.status?.filter((s) => s !== value),
+      });
+    } else {
+      onFiltersChange({
+        ...filters,
+        item_type: filters.item_type?.filter((t) => t !== value),
+      });
+    }
+  };
+
+  const clearFilters = () => {
+    onFiltersChange({});
+  };
+
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      <Select
+        value=""
+        onValueChange={(value) => {
+          const currentStatus = filters.status || [];
+          if (!currentStatus.includes(value as QueueStatus)) {
+            onFiltersChange({
+              ...filters,
+              status: [...currentStatus, value as QueueStatus],
+            });
+          }
+        }}
+      >
+        <SelectTrigger className="w-[150px]">
+          <SelectValue placeholder="Add status..." />
+        </SelectTrigger>
+        <SelectContent>
+          {statusOptions.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      <Select
+        value=""
+        onValueChange={(value) => {
+          const currentTypes = filters.item_type || [];
+          if (!currentTypes.includes(value as QueueItemType)) {
+            onFiltersChange({
+              ...filters,
+              item_type: [...currentTypes, value as QueueItemType],
+            });
+          }
+        }}
+      >
+        <SelectTrigger className="w-[150px]">
+          <SelectValue placeholder="Add type..." />
+        </SelectTrigger>
+        <SelectContent>
+          {typeOptions.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      {activeFilters.length > 0 && (
+        <>
+          <div className="h-6 w-px bg-border" />
+          {activeFilters.map((filter, index) => (
+            <Badge key={`${filter.type}-${filter.value}-${index}`} variant="secondary" className="gap-1">
+              {filter.value.replace("_", " ")}
+              <button onClick={() => removeFilter(filter.type, filter.value)}>
+                <X className="w-3 h-3" />
+              </button>
+            </Badge>
+          ))}
+          <Button variant="ghost" size="sm" onClick={clearFilters}>
+            Clear all
+          </Button>
+        </>
+      )}
+    </div>
+  );
+}

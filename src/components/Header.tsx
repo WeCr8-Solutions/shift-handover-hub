@@ -1,4 +1,4 @@
-import { Clock, Bell, Shield } from "lucide-react";
+import { Clock, Bell, Shield, ListTodo } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getCurrentShift } from "@/lib/mockData";
 import { StatusBadge } from "./StatusBadge";
@@ -37,6 +37,20 @@ export function Header() {
           <div className="flex items-center gap-4">
             {/* Team Selector */}
             {user && <TeamSelector />}
+
+            {/* Queue Link */}
+            {user && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" asChild>
+                    <Link to="/queue">
+                      <ListTodo className="w-5 h-5" />
+                    </Link>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Queue Management</TooltipContent>
+              </Tooltip>
+            )}
 
             {/* Admin Link */}
             {hasAdminAccess && (
