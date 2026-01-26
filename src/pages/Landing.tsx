@@ -256,6 +256,11 @@ export default function Landing() {
 
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="max-w-4xl mx-auto text-center">
+            {/* Logo above hero text */}
+            <div className="flex justify-center mb-6 sm:mb-8">
+              <img src={joblineLogo} alt="JobLine.ai" className="h-12 sm:h-16 md:h-20 w-auto" />
+            </div>
+            
             <Badge variant="outline" className="mb-4 sm:mb-6 px-3 sm:px-4 py-1 sm:py-1.5 text-xs sm:text-sm border-primary/30 bg-primary/5">
               <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1.5 sm:mr-2 text-primary" />
               Built for Manufacturing Teams
