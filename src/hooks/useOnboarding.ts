@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export type OnboardingStep = 
   | 'welcome'
+  | 'shop-setup'
   | 'dashboard-overview'
   | 'station-cards'
   | 'handoff-submission'
@@ -14,6 +15,7 @@ export type OnboardingStep =
 
 export const ONBOARDING_STEPS: { id: OnboardingStep; title: string; description: string }[] = [
   { id: 'welcome', title: 'Welcome to JobLine.ai', description: 'Let\'s take a quick tour of the platform' },
+  { id: 'shop-setup', title: 'Set Up Your Shop', description: 'Configure teams, stations, and users' },
   { id: 'dashboard-overview', title: 'Dashboard Overview', description: 'Your command center for shift operations' },
   { id: 'station-cards', title: 'Station Cards', description: 'Monitor machine status at a glance' },
   { id: 'handoff-submission', title: 'Shift Handoffs', description: 'Submit detailed handoff reports' },

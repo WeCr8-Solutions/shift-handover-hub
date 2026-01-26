@@ -7,6 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Header } from '@/components/Header';
 import { BulkUploadDialog } from '@/components/BulkUploadDialog';
+import { useOnboardingContext } from '@/components/onboarding/OnboardingProvider';
 import { 
   ArrowRight, 
   Building2, 
@@ -15,7 +16,8 @@ import {
   FileSpreadsheet, 
   CheckCircle2,
   Sparkles,
-  Play
+  Play,
+  LayoutDashboard
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -31,6 +33,7 @@ interface SetupStatus {
 export default function Setup() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const { completeStep, startTour, showTour, isComplete: onboardingComplete } = useOnboardingContext();
   const [setupStatus, setSetupStatus] = useState<SetupStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [bulkUploadOpen, setBulkUploadOpen] = useState(false);
@@ -260,22 +263,44 @@ export default function Setup() {
             </Card>
           </div>
 
-          {/* Go to Dashboard */}
-          {isSetupComplete && (
-            <Card className="bg-gradient-to-br from-green-500/10 to-transparent border-green-500/30">
-              <CardContent className="pt-6 text-center">
-                <CheckCircle2 className="w-12 h-12 mx-auto mb-4 text-green-500" />
-                <h3 className="text-lg font-semibold mb-2">You're all set!</h3>
-                <p className="text-muted-foreground mb-4">
-                  Your manufacturing floor is configured and ready for shift handoffs.
-                </p>
-                <Button size="lg" onClick={() => navigate('/dashboard')}>
-                  <Play className="w-4 h-4 mr-2" />
-                  Go to Dashboard
-                </Button>
-              </CardContent>
-            </Card>
-          )}
+          {/* Continue Tour / Go to Dashboard */}
+          <Card className={isSetupComplete 
+            ? "bg-gradient-to-br from-green-500/10 to-transparent border-green-500/30"
+            : "bg-gradient-to-br from-primary/5 to-transparent border-primary/30"
+          }>
+            <CardContent className="pt-6 text-center">
+              {isSetupComplete ? (
+                <>
+                  <CheckCircle2 className="w-12 h-12 mx-auto mb-4 text-green-500" />
+                  <h3 className="text-lg font-semibold mb-2">You're all set!</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Your manufacturing floor is configured and ready for shift handoffs.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <LayoutDashboard className="w-12 h-12 mx-auto mb-4 text-primary" />
+                  <h3 className="text-lg font-semibold mb-2">Ready to explore?</h3>
+                  <p className="text-muted-foreground mb-4">
+                    You can set up later. Continue to the dashboard to see how JobLine works.
+                  </p>
+                </>
+              )}
+              <Button 
+                size="lg" 
+                onClick={() => {
+                  completeStep('shop-setup');
+                  navigate('/dashboard');
+                  if (!onboardingComplete) {
+                    setTimeout(() => startTour(), 300);
+                  }
+                }}
+              >
+                <LayoutDashboard className="w-4 h-4 mr-2" />
+                {isSetupComplete ? 'Go to Dashboard' : 'Continue to Dashboard'}
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </main>
 
