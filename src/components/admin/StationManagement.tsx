@@ -239,14 +239,14 @@ export function StationManagement({ isAdmin }: StationManagementProps) {
       <div className="space-y-2">
         <Label htmlFor="team">Assign to Team</Label>
         <Select
-          value={formData.team_id}
-          onValueChange={(v) => setFormData({ ...formData, team_id: v })}
+          value={formData.team_id || "none"}
+          onValueChange={(v) => setFormData({ ...formData, team_id: v === "none" ? "" : v })}
         >
           <SelectTrigger>
             <SelectValue placeholder="No team (global)" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">No team (global)</SelectItem>
+            <SelectItem value="none">No team (global)</SelectItem>
             {teams.map((team) => (
               <SelectItem key={team.id} value={team.id}>{team.name}</SelectItem>
             ))}
