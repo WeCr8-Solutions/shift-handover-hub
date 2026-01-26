@@ -7,9 +7,10 @@ import { AdminStatsCards } from "@/components/admin/AdminStatsCards";
 import { UserManagement } from "@/components/admin/UserManagement";
 import { StationManagement } from "@/components/admin/StationManagement";
 import { TeamOversight } from "@/components/admin/TeamOversight";
+import { ActivityLogs } from "@/components/admin/ActivityLogs";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Shield, LayoutDashboard, Users, Wrench, Building2 } from "lucide-react";
+import { Loader2, Shield, LayoutDashboard, Users, Wrench, Building2, Activity } from "lucide-react";
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -86,6 +87,10 @@ export default function Admin() {
               <Building2 className="w-4 h-4" />
               Teams
             </TabsTrigger>
+            <TabsTrigger value="activity" className="gap-2">
+              <Activity className="w-4 h-4" />
+              Activity Logs
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
@@ -106,6 +111,10 @@ export default function Admin() {
 
           <TabsContent value="teams">
             <TeamOversight isAdmin={isAdmin} />
+          </TabsContent>
+
+          <TabsContent value="activity">
+            <ActivityLogs />
           </TabsContent>
         </Tabs>
       </main>

@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Database } from "@/integrations/supabase/types";
+import { Database, Json } from "@/integrations/supabase/types";
+import { useActivityLog } from "@/hooks/useActivityLog";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
-type TeamRole = Database["public"]["Enums"]["team_role"];
 
 export interface UserWithRole {
   id: string;
@@ -85,6 +85,7 @@ export function useAdminAccess() {
 export function useAllUsers() {
   const [users, setUsers] = useState<UserWithRole[]>([]);
   const [loading, setLoading] = useState(true);
+  const { logActivity } = useActivityLog();
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -136,7 +137,8 @@ export function useAllUsers() {
   const updateUserRole = async (
     userId: string,
     role: AppRole,
-    action: "add" | "remove"
+    action: "add" | "remove",
+    targetUserEmail?: string
   ) => {
     if (action === "add") {
       const { error } = await supabase
@@ -152,6 +154,13 @@ export function useAllUsers() {
       if (error) return { error };
     }
 
+    // Log the role change
+    await logActivity(
+      "user_role_changed",
+      `${action === "add" ? "Added" : "Removed"} '${role}' role ${action === "add" ? "to" : "from"} user`,
+      { target_user_id: userId, target_email: targetUserEmail, role, action }
+    );
+
     await fetchUsers();
     return { error: null };
   };
@@ -162,6 +171,7 @@ export function useAllUsers() {
 export function useAllTeams() {
   const [teams, setTeams] = useState<TeamWithStats[]>([]);
   const [loading, setLoading] = useState(true);
+  const { logActivity } = useActivityLog();
 
   const fetchTeams = useCallback(async () => {
     setLoading(true);
@@ -205,9 +215,16 @@ export function useAllTeams() {
     fetchTeams();
   }, [fetchTeams]);
 
-  const deleteTeam = async (teamId: string) => {
+  const deleteTeam = async (teamId: string, teamName?: string) => {
     const { error } = await supabase.from("teams").delete().eq("id", teamId);
     if (error) return { error };
+    
+    await logActivity(
+      "team_deleted",
+      `Deleted team: ${teamName || teamId}`,
+      { team_id: teamId, team_name: teamName }
+    );
+    
     await fetchTeams();
     return { error: null };
   };
@@ -218,6 +235,7 @@ export function useAllTeams() {
 export function useAllStations() {
   const [stations, setStations] = useState<StationWithTeam[]>([]);
   const [loading, setLoading] = useState(true);
+  const { logActivity } = useActivityLog();
 
   const fetchStations = useCallback(async () => {
     setLoading(true);
@@ -265,6 +283,13 @@ export function useAllStations() {
   }) => {
     const { error } = await supabase.from("stations").insert(station);
     if (error) return { error };
+    
+    await logActivity(
+      "station_created",
+      `Created station: ${station.name} (${station.station_id})`,
+      { station_id: station.station_id, name: station.name, work_center: station.work_center }
+    );
+    
     await fetchStations();
     return { error: null };
   };
@@ -277,17 +302,32 @@ export function useAllStations() {
       work_center_type: string;
       is_active: boolean;
       team_id: string | null;
-    }>
+    }>,
+    stationName?: string
   ) => {
     const { error } = await supabase.from("stations").update(updates).eq("id", id);
     if (error) return { error };
+    
+    await logActivity(
+      "station_updated",
+      `Updated station: ${stationName || id}`,
+      { station_id: id, updates }
+    );
+    
     await fetchStations();
     return { error: null };
   };
 
-  const deleteStation = async (id: string) => {
+  const deleteStation = async (id: string, stationName?: string) => {
     const { error } = await supabase.from("stations").delete().eq("id", id);
     if (error) return { error };
+    
+    await logActivity(
+      "station_deleted",
+      `Deleted station: ${stationName || id}`,
+      { station_id: id, station_name: stationName }
+    );
+    
     await fetchStations();
     return { error: null };
   };
