@@ -42,6 +42,7 @@ export function WelcomeModal() {
     isComplete, 
     isLoading, 
     showTour,
+    isNewSignup,
     startTour, 
     skipOnboarding,
     getProgress,
@@ -50,8 +51,9 @@ export function WelcomeModal() {
   
   const [isOpen, setIsOpen] = useState(true);
 
-  // Don't show if loading, complete, or tour is active
-  if (isLoading || isComplete || showTour || currentStep === 'complete') {
+  // Only show for new signups who haven't completed onboarding
+  // Don't show if loading, complete, tour is active, or not a new signup
+  if (isLoading || isComplete || showTour || currentStep === 'complete' || !isNewSignup) {
     return null;
   }
 

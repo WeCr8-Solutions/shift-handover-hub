@@ -39,6 +39,7 @@ export function useOnboarding() {
     isLoading: true,
   });
   const [showTour, setShowTour] = useState(false);
+  const [isNewSignup, setIsNewSignup] = useState(false);
 
   // Fetch onboarding state from database
   useEffect(() => {
@@ -84,7 +85,8 @@ export function useOnboarding() {
           isLoading: false,
         });
         
-        // Show tour for new users
+        // Mark as new signup and show tour only for brand new users
+        setIsNewSignup(true);
         setShowTour(true);
       }
     }
@@ -185,6 +187,7 @@ export function useOnboarding() {
     ...state,
     showTour,
     setShowTour,
+    isNewSignup,
     completeStep,
     skipOnboarding,
     resetOnboarding,
