@@ -400,34 +400,50 @@ export function NewHandoffForm({ onClose, onSubmit }: NewHandoffFormProps) {
   };
 
   // Handle keyboard navigation (defined after handleSubmit to avoid forward reference)
+  // Detect if user is on mobile/touch device
+  const isTouchDevice = typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+
   const handleKeyDown = useCallback((e: KeyboardEvent<HTMLDivElement>) => {
-    // Enter key advances to next step (unless in textarea or submitting)
-    if (e.key === 'Enter' && !e.shiftKey) {
-      const target = e.target as HTMLElement;
-      const isTextarea = target.tagName === 'TEXTAREA';
-      const isButton = target.tagName === 'BUTTON';
-      const isSelect = target.closest('[role="combobox"]') || target.closest('[data-radix-select-trigger]');
-      
-      // Don't intercept Enter in textareas, buttons, or select dropdowns
-      if (isTextarea || isButton || isSelect) return;
-      
-      e.preventDefault();
-      if (step < 4) {
-        handleNext();
-      } else if (!isSubmitting) {
-        handleSubmit();
+    const target = e.target as HTMLElement;
+    const tagName = target.tagName.toUpperCase();
+    
+    // Never intercept keyboard events in form inputs - let them behave naturally
+    const isFormInput = tagName === 'INPUT' || tagName === 'TEXTAREA' || tagName === 'SELECT';
+    const isInteractiveElement = target.closest('[role="combobox"]') || 
+                                  target.closest('[data-radix-select-trigger]') ||
+                                  target.closest('[role="listbox"]') ||
+                                  target.closest('[role="option"]') ||
+                                  target.isContentEditable;
+    
+    // Allow all keyboard events in form inputs and interactive elements
+    if (isFormInput || isInteractiveElement) {
+      // Only handle Escape in inputs to close the form
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        target.blur(); // First blur the input
+        handleClose();
       }
+      return;
     }
     
-    // Escape key closes the form
+    // Handle Enter only when NOT in any input (e.g., when focused on navigation buttons)
+    if (e.key === 'Enter' && !e.shiftKey && tagName === 'BUTTON') {
+      // Let buttons handle their own click events naturally
+      return;
+    }
+    
+    // Escape key closes the form when not in an input
     if (e.key === 'Escape') {
       e.preventDefault();
       handleClose();
     }
-  }, [step, handleNext, handleSubmit, handleClose, isSubmitting]);
+  }, [handleClose]);
 
-  // Focus first input when step changes
+  // Focus first input when step changes - disabled on touch devices to prevent keyboard popup
   useEffect(() => {
+    // Skip auto-focus on touch devices to prevent virtual keyboard from opening unexpectedly
+    if (isTouchDevice) return;
+    
     const timer = setTimeout(() => {
       if (formRef.current) {
         const firstInput = formRef.current.querySelector<HTMLElement>(
@@ -437,7 +453,7 @@ export function NewHandoffForm({ onClose, onSubmit }: NewHandoffFormProps) {
       }
     }, 100);
     return () => clearTimeout(timer);
-  }, [step]);
+  }, [step, isTouchDevice]);
 
   const totalSteps = 4;
   const isCNC = formData.workCenterType && isCNCType(formData.workCenterType);
