@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef, KeyboardEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -157,6 +157,7 @@ export function NewHandoffForm({ onClose, onSubmit }: NewHandoffFormProps) {
   const { currentTeam } = useCurrentTeam();
   const { stations } = useStations(currentTeam?.id);
   
+  const formRef = useRef<HTMLDivElement>(null);
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCloseDialog, setShowCloseDialog] = useState(false);
@@ -272,6 +273,7 @@ export function NewHandoffForm({ onClose, onSubmit }: NewHandoffFormProps) {
     setShowCloseDialog(false);
     onClose();
   }, [clearDraft, onClose]);
+
 
   const updateField = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -397,6 +399,46 @@ export function NewHandoffForm({ onClose, onSubmit }: NewHandoffFormProps) {
     }
   };
 
+  // Handle keyboard navigation (defined after handleSubmit to avoid forward reference)
+  const handleKeyDown = useCallback((e: KeyboardEvent<HTMLDivElement>) => {
+    // Enter key advances to next step (unless in textarea or submitting)
+    if (e.key === 'Enter' && !e.shiftKey) {
+      const target = e.target as HTMLElement;
+      const isTextarea = target.tagName === 'TEXTAREA';
+      const isButton = target.tagName === 'BUTTON';
+      const isSelect = target.closest('[role="combobox"]') || target.closest('[data-radix-select-trigger]');
+      
+      // Don't intercept Enter in textareas, buttons, or select dropdowns
+      if (isTextarea || isButton || isSelect) return;
+      
+      e.preventDefault();
+      if (step < 4) {
+        handleNext();
+      } else if (!isSubmitting) {
+        handleSubmit();
+      }
+    }
+    
+    // Escape key closes the form
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      handleClose();
+    }
+  }, [step, handleNext, handleSubmit, handleClose, isSubmitting]);
+
+  // Focus first input when step changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (formRef.current) {
+        const firstInput = formRef.current.querySelector<HTMLElement>(
+          'input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [role="combobox"]:not([disabled])'
+        );
+        firstInput?.focus();
+      }
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [step]);
+
   const totalSteps = 4;
   const isCNC = formData.workCenterType && isCNCType(formData.workCenterType);
   const isWelding = formData.workCenterType?.includes("Welding");
@@ -414,7 +456,11 @@ export function NewHandoffForm({ onClose, onSubmit }: NewHandoffFormProps) {
 
   return (
     <>
-    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div 
+      ref={formRef}
+      onKeyDown={handleKeyDown}
+      className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+    >
       <div className="bg-card border border-border rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
