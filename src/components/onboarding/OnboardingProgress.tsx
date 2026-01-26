@@ -1,7 +1,7 @@
+import { useNavigate } from 'react-router-dom';
 import { useOnboardingContext, ONBOARDING_STEPS } from './OnboardingProvider';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, Circle, Play, RotateCcw } from 'lucide-react';
 import {
   Card,
@@ -17,6 +17,7 @@ interface OnboardingProgressProps {
 }
 
 export function OnboardingProgress({ showRestart = true, compact = false }: OnboardingProgressProps) {
+  const navigate = useNavigate();
   const { 
     isComplete, 
     isLoading, 
@@ -32,13 +33,33 @@ export function OnboardingProgress({ showRestart = true, compact = false }: Onbo
   const progress = getProgress();
   const stepsToShow = ONBOARDING_STEPS.filter(s => s.id !== 'complete');
 
+  const handleStartTour = () => {
+    // Navigate to appropriate page based on current step
+    if (currentStep === 'welcome' || currentStep === 'dashboard-overview' || currentStep === 'station-cards') {
+      navigate('/dashboard');
+    } else if (currentStep === 'team-management') {
+      navigate('/teams');
+    } else if (currentStep === 'admin-features') {
+      navigate('/admin');
+    } else {
+      navigate('/dashboard');
+    }
+    setTimeout(() => startTour(), 300);
+  };
+
+  const handleRestart = async () => {
+    await resetOnboarding();
+    navigate('/dashboard');
+    setTimeout(() => startTour(), 300);
+  };
+
   if (compact) {
     return (
       <div className="flex items-center gap-3">
         <Progress value={progress} className="h-2 w-24" />
         <span className="text-sm text-muted-foreground">{progress}% complete</span>
         {!isComplete && (
-          <Button variant="ghost" size="sm" onClick={() => startTour()}>
+          <Button variant="ghost" size="sm" onClick={handleStartTour}>
             <Play className="w-3 h-3 mr-1" />
             Continue
           </Button>
@@ -60,10 +81,10 @@ export function OnboardingProgress({ showRestart = true, compact = false }: Onbo
             </CardDescription>
           </div>
           {isComplete && (
-            <Badge variant="secondary" className="bg-green-500/10 text-green-600">
+            <span className="inline-flex items-center rounded-md bg-green-500/10 px-2 py-1 text-xs font-medium text-green-600">
               <CheckCircle2 className="w-3 h-3 mr-1" />
               Complete
-            </Badge>
+            </span>
           )}
         </div>
       </CardHeader>
@@ -106,7 +127,7 @@ export function OnboardingProgress({ showRestart = true, compact = false }: Onbo
                   </p>
                 </div>
                 {isCurrent && !isComplete && (
-                  <Badge variant="outline" className="shrink-0">Current</Badge>
+                  <span className="inline-flex items-center rounded-md border border-border px-2 py-1 text-xs font-medium shrink-0">Current</span>
                 )}
               </div>
             );
@@ -116,13 +137,13 @@ export function OnboardingProgress({ showRestart = true, compact = false }: Onbo
         {/* Actions */}
         <div className="flex gap-2 pt-2">
           {!isComplete && (
-            <Button className="flex-1" onClick={() => startTour()}>
+            <Button className="flex-1" onClick={handleStartTour}>
               <Play className="w-4 h-4 mr-2" />
               {currentStep === 'welcome' ? 'Start Tour' : 'Continue Tour'}
             </Button>
           )}
           {showRestart && (
-            <Button variant="outline" onClick={resetOnboarding}>
+            <Button variant="outline" onClick={handleRestart}>
               <RotateCcw className="w-4 h-4 mr-2" />
               Restart
             </Button>
