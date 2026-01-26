@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTeams, useTeamMembers, Team } from "@/hooks/useTeams";
 import { useAuth } from "@/contexts/AuthContext";
+import { useStations } from "@/hooks/useStations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,8 +24,9 @@ import {
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Users, Plus, UserPlus, Trash2, Crown, Shield, User, Loader2 } from "lucide-react";
+import { Users, Plus, UserPlus, Trash2, Crown, Shield, User, Loader2, Wrench } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { TeamStationManager } from "./TeamStationManager";
 
 export function TeamManagement() {
   const { user } = useAuth();
@@ -34,6 +36,8 @@ export function TeamManagement() {
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showInviteDialog, setShowInviteDialog] = useState(false);
+  const [showStationManager, setShowStationManager] = useState(false);
+  const [newlyCreatedTeam, setNewlyCreatedTeam] = useState<Team | null>(null);
   const [newTeamName, setNewTeamName] = useState("");
   const [newTeamDescription, setNewTeamDescription] = useState("");
   const [isCreating, setIsCreating] = useState(false);
@@ -49,7 +53,7 @@ export function TeamManagement() {
     }
 
     setIsCreating(true);
-    const { error } = await createTeam(newTeamName, newTeamDescription);
+    const { data, error } = await createTeam(newTeamName, newTeamDescription);
     setIsCreating(false);
 
     if (error) {
@@ -64,6 +68,13 @@ export function TeamManagement() {
         description: `${newTeamName} has been created successfully.`,
       });
       setShowCreateDialog(false);
+      
+      // Store the created team and prompt for station setup
+      if (data) {
+        setNewlyCreatedTeam(data);
+        setShowStationManager(true);
+      }
+      
       setNewTeamName("");
       setNewTeamDescription("");
     }
@@ -179,47 +190,18 @@ export function TeamManagement() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {teams.map((team) => (
-            <Card
+            <TeamCard
               key={team.id}
-              className={`cursor-pointer transition-colors hover:border-primary/50 ${
-                selectedTeam?.id === team.id ? "border-primary" : ""
-              }`}
-              onClick={() => setSelectedTeam(selectedTeam?.id === team.id ? null : team)}
-            >
-              <CardHeader className="pb-2">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Users className="w-5 h-5 text-primary" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-base">{team.name}</CardTitle>
-                      {team.created_by === user?.id && (
-                        <Badge variant="secondary" className="text-xs">Owner</Badge>
-                      )}
-                    </div>
-                  </div>
-                  {team.created_by === user?.id && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteTeam(team.id, team.name);
-                      }}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="line-clamp-2">
-                  {team.description || "No description"}
-                </CardDescription>
-              </CardContent>
-            </Card>
+              team={team}
+              isSelected={selectedTeam?.id === team.id}
+              isOwner={team.created_by === user?.id}
+              onSelect={() => setSelectedTeam(selectedTeam?.id === team.id ? null : team)}
+              onDelete={() => handleDeleteTeam(team.id, team.name)}
+              onAddStations={() => {
+                setNewlyCreatedTeam(team);
+                setShowStationManager(true);
+              }}
+            />
           ))}
         </div>
       )}
@@ -232,7 +214,96 @@ export function TeamManagement() {
           setShowInviteDialog={setShowInviteDialog}
         />
       )}
+
+      {/* Station Manager Dialog */}
+      {newlyCreatedTeam && (
+        <TeamStationManager
+          teamId={newlyCreatedTeam.id}
+          teamName={newlyCreatedTeam.name}
+          open={showStationManager}
+          onOpenChange={setShowStationManager}
+          onComplete={() => {
+            setShowStationManager(false);
+            setNewlyCreatedTeam(null);
+          }}
+        />
+      )}
     </div>
+  );
+}
+
+interface TeamCardProps {
+  team: Team;
+  isSelected: boolean;
+  isOwner: boolean;
+  onSelect: () => void;
+  onDelete: () => void;
+  onAddStations: () => void;
+}
+
+function TeamCard({ team, isSelected, isOwner, onSelect, onDelete, onAddStations }: TeamCardProps) {
+  const { stations } = useStations(team.id);
+  const stationCount = stations.length;
+
+  return (
+    <Card
+      className={`cursor-pointer transition-colors hover:border-primary/50 ${
+        isSelected ? "border-primary" : ""
+      }`}
+      onClick={onSelect}
+    >
+      <CardHeader className="pb-2">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Users className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <CardTitle className="text-base">{team.name}</CardTitle>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                {isOwner && (
+                  <Badge variant="secondary" className="text-xs">Owner</Badge>
+                )}
+                <Badge variant="outline" className="text-xs gap-1">
+                  <Wrench className="w-3 h-3" />
+                  {stationCount}
+                </Badge>
+              </div>
+            </div>
+          </div>
+          {isOwner && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <CardDescription className="line-clamp-2">
+          {team.description || "No description"}
+        </CardDescription>
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full gap-2"
+          onClick={(e) => {
+            e.stopPropagation();
+            onAddStations();
+          }}
+        >
+          <Wrench className="w-4 h-4" />
+          {stationCount > 0 ? "Manage Stations" : "Add Stations"}
+        </Button>
+      </CardContent>
+    </Card>
   );
 }
 
