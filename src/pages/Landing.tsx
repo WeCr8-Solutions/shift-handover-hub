@@ -31,6 +31,7 @@ import joblineLogo from "@/assets/jobline-logo.png";
 const navLinks = [
   { href: "#features", label: "Features" },
   { href: "#how-it-works", label: "How it Works" },
+  { href: "/pricing", label: "Pricing", isRoute: true },
   { href: "#testimonials", label: "Testimonials" },
 ];
 
@@ -121,8 +122,12 @@ export default function Landing() {
     return () => clearInterval(interval);
   }, []);
 
-  const handleNavClick = (href: string) => {
+  const handleNavClick = (href: string, isRoute?: boolean) => {
     setMobileMenuOpen(false);
+    if (isRoute) {
+      navigate(href);
+      return;
+    }
     // Small delay to allow sheet to close before scrolling
     setTimeout(() => {
       const element = document.querySelector(href);
@@ -142,13 +147,23 @@ export default function Landing() {
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-6 xl:gap-8">
             {navLinks.map((link) => (
-              <a 
-                key={link.href}
-                href={link.href} 
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {link.label}
-              </a>
+              link.isRoute ? (
+                <button
+                  key={link.href}
+                  onClick={() => navigate(link.href)}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {link.label}
+                </button>
+              ) : (
+                <a 
+                  key={link.href}
+                  href={link.href} 
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {link.label}
+                </a>
+              )
             ))}
           </div>
 
@@ -191,7 +206,7 @@ export default function Landing() {
                       {navLinks.map((link) => (
                         <button
                           key={link.href}
-                          onClick={() => handleNavClick(link.href)}
+                          onClick={() => handleNavClick(link.href, link.isRoute)}
                           className="flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium text-foreground hover:bg-secondary transition-colors text-left"
                         >
                           {link.label}
