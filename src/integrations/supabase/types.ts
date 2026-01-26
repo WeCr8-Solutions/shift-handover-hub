@@ -534,6 +534,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_onboarding: {
+        Row: {
+          completed_at: string | null
+          completed_steps: string[] | null
+          created_at: string | null
+          current_step: string | null
+          id: string
+          is_complete: boolean | null
+          started_at: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          completed_steps?: string[] | null
+          created_at?: string | null
+          current_step?: string | null
+          id?: string
+          is_complete?: boolean | null
+          started_at?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          completed_steps?: string[] | null
+          created_at?: string | null
+          current_step?: string | null
+          id?: string
+          is_complete?: boolean | null
+          started_at?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

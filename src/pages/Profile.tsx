@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Loader2, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { OnboardingProgress } from "@/components/onboarding";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -74,7 +75,7 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="container py-6 max-w-2xl">
+      <main className="container py-6 max-w-2xl space-y-6">
         <Card>
           <CardHeader>
             <CardTitle>Profile Settings</CardTitle>
@@ -140,6 +141,9 @@ export default function Profile() {
             </Button>
           </CardContent>
         </Card>
+
+        {/* Onboarding Progress Card */}
+        <OnboardingProgress showRestart />
       </main>
     </div>
   );

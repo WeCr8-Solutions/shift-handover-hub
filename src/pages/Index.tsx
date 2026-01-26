@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, LayoutGrid, History, Loader2, Building2, Lightbulb } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
+import { TourTriggerButton } from "@/components/onboarding";
 
 // Convert database station to StationInfo for display
 function toStationInfo(station: Station): StationInfo {
@@ -147,7 +148,7 @@ const Index = () => {
 
       <main className="container py-6">
         {/* Stats Overview */}
-        <div className="mb-6">
+        <div className="mb-6" data-tour="shift-stats">
           <ShiftStats />
         </div>
 
@@ -183,11 +184,12 @@ const Index = () => {
 
             {user && (
               <div className="flex gap-2">
+                <TourTriggerButton />
                 <Button variant="outline" onClick={() => setShowPerformanceUpdate(true)} className="gap-2">
                   <Lightbulb className="w-4 h-4" />
                   Performance Update
                 </Button>
-                <Button onClick={() => setShowNewHandoff(true)} className="gap-2">
+                <Button onClick={() => setShowNewHandoff(true)} className="gap-2" data-tour="new-handoff">
                   <Plus className="w-4 h-4" />
                   New Handoff
                 </Button>
@@ -196,12 +198,14 @@ const Index = () => {
           </div>
 
           {/* Filter */}
-          <WorkCenterFilter 
+          <div data-tour="work-center-filter">
+          <WorkCenterFilter
             selectedTypes={selectedTypes} 
             onFilterChange={setSelectedTypes} 
           />
+          </div>
 
-          <TabsContent value="stations" className="mt-0">
+          <TabsContent value="stations" className="mt-0" data-tour="station-grid">
             {isLoading && user ? (
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="w-6 h-6 animate-spin text-primary" />
