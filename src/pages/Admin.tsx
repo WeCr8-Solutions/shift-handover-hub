@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAccess, useSystemStats } from "@/hooks/useAdminData";
@@ -8,15 +8,18 @@ import { UserManagement } from "@/components/admin/UserManagement";
 import { StationManagement } from "@/components/admin/StationManagement";
 import { TeamOversight } from "@/components/admin/TeamOversight";
 import { ActivityLogs } from "@/components/admin/ActivityLogs";
+import { BulkUploadDialog } from "@/components/BulkUploadDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Shield, LayoutDashboard, Users, Wrench, Building2, Activity } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Loader2, Shield, LayoutDashboard, Users, Wrench, Building2, Activity, FileSpreadsheet } from "lucide-react";
 
 export default function Admin() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { isAdmin, isSupervisor, hasAdminAccess, loading: accessLoading } = useAdminAccess();
   const { stats, loading: statsLoading } = useSystemStats();
+  const [bulkUploadOpen, setBulkUploadOpen] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -47,7 +50,7 @@ export default function Admin() {
       <Header />
       <main className="container mx-auto px-4 py-6 space-y-6">
         {/* Page Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
               <Shield className="w-5 h-5 text-primary" />
@@ -59,10 +62,16 @@ export default function Admin() {
               </p>
             </div>
           </div>
-          <Badge variant={isAdmin ? "default" : "secondary"} className="gap-1">
-            <Shield className="w-3 h-3" />
-            {isAdmin ? "Administrator" : "Supervisor"}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => setBulkUploadOpen(true)}>
+              <FileSpreadsheet className="w-4 h-4 mr-2" />
+              Bulk Upload
+            </Button>
+            <Badge variant={isAdmin ? "default" : "secondary"} className="gap-1">
+              <Shield className="w-3 h-3" />
+              {isAdmin ? "Administrator" : "Supervisor"}
+            </Badge>
+          </div>
         </div>
 
         {/* Stats Overview */}
@@ -118,6 +127,11 @@ export default function Admin() {
           </TabsContent>
         </Tabs>
       </main>
+
+      <BulkUploadDialog 
+        open={bulkUploadOpen} 
+        onOpenChange={setBulkUploadOpen}
+      />
     </div>
   );
 }
