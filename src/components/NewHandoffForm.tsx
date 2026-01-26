@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,9 +11,27 @@ import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useStations, HandoffRecord } from "@/hooks/useStations";
 import { JobState, TriState, WorkCenterType, Shift } from "@/types/handoff";
 import { workCenterIcons, workCenterColors, getCategoryForType } from "@/lib/workCenterIcons";
-import { X, Check, Minus, Save, ChevronRight, ChevronLeft, Loader2 } from "lucide-react";
+import { X, Check, Minus, Save, ChevronRight, ChevronLeft, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+const STORAGE_KEY = "handoff-form-draft";
 
 const jobStates: JobState[] = [
   "Part Running",
@@ -50,9 +68,84 @@ const equipmentReadinessItems = [
   { key: "ppeVerified", label: "PPE Verified" },
 ];
 
+const STEP_CONFIG = [
+  { id: 1, label: "Job Info", shortLabel: "Job" },
+  { id: 2, label: "Readiness", shortLabel: "Ready" },
+  { id: 3, label: "Condition", shortLabel: "Cond" },
+  { id: 4, label: "Summary", shortLabel: "Sum" },
+];
+
 function isCNCType(type: WorkCenterType): boolean {
   return type === "CNC Mill" || type === "CNC Lathe";
 }
+
+interface FormData {
+  stationId: string;
+  stationDbId: string;
+  workCenterType: WorkCenterType | "";
+  workCenter: string;
+  machineId: string;
+  workOrder: string;
+  partNumber: string;
+  partRevision: string;
+  operationNumber: string;
+  outgoingOperator: string;
+  incomingOperator: string;
+  jobState: JobState | "";
+  jobStateReason: string;
+  cncReadiness: Record<string, TriState>;
+  equipmentReadiness: Record<string, TriState>;
+  readinessNotes: string;
+  coolantLevel: string;
+  airPressure: string;
+  chipCondition: string;
+  gasLevel: string;
+  wireLevel: string;
+  tipCondition: string;
+  waterPressure: string;
+  abrasiveLevel: string;
+  activeAlarms: boolean;
+  alarmNotes: string;
+  partsCompleted: number;
+  scrapCount: number;
+  reworkCount: number;
+  criticalDimsVerified: boolean;
+  handoffSummary: string;
+}
+
+const getInitialFormData = (operatorName: string): FormData => ({
+  stationId: "",
+  stationDbId: "",
+  workCenterType: "",
+  workCenter: "",
+  machineId: "",
+  workOrder: "",
+  partNumber: "",
+  partRevision: "",
+  operationNumber: "",
+  outgoingOperator: operatorName,
+  incomingOperator: "",
+  jobState: "",
+  jobStateReason: "",
+  cncReadiness: Object.fromEntries(cncReadinessItems.map((item) => [item.key, "N/A" as TriState])),
+  equipmentReadiness: Object.fromEntries(equipmentReadinessItems.map((item) => [item.key, "N/A" as TriState])),
+  readinessNotes: "",
+  coolantLevel: "OK",
+  airPressure: "OK",
+  chipCondition: "Clear",
+  gasLevel: "OK",
+  wireLevel: "OK",
+  tipCondition: "OK",
+  waterPressure: "OK",
+  abrasiveLevel: "OK",
+  activeAlarms: false,
+  alarmNotes: "",
+  partsCompleted: 0,
+  scrapCount: 0,
+  reworkCount: 0,
+  criticalDimsVerified: false,
+  handoffSummary: "",
+});
 
 interface NewHandoffFormProps {
   onClose: () => void;
@@ -66,41 +159,119 @@ export function NewHandoffForm({ onClose, onSubmit }: NewHandoffFormProps) {
   
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    stationId: "",
-    stationDbId: "" as string,
-    workCenterType: "" as WorkCenterType | "",
-    workCenter: "",
-    machineId: "",
-    workOrder: "",
-    partNumber: "",
-    partRevision: "",
-    operationNumber: "",
-    outgoingOperator: profile?.display_name || "",
-    incomingOperator: "",
-    jobState: "" as JobState | "",
-    jobStateReason: "",
-    cncReadiness: Object.fromEntries(cncReadinessItems.map((item) => [item.key, "N/A" as TriState])),
-    equipmentReadiness: Object.fromEntries(equipmentReadinessItems.map((item) => [item.key, "N/A" as TriState])),
-    readinessNotes: "",
-    // Condition fields
-    coolantLevel: "OK",
-    airPressure: "OK",
-    chipCondition: "Clear",
-    gasLevel: "OK",
-    wireLevel: "OK",
-    tipCondition: "OK",
-    waterPressure: "OK",
-    abrasiveLevel: "OK",
-    activeAlarms: false,
-    alarmNotes: "",
-    // Quality
-    partsCompleted: 0,
-    scrapCount: 0,
-    reworkCount: 0,
-    criticalDimsVerified: false,
-    handoffSummary: "",
+  const [showCloseDialog, setShowCloseDialog] = useState(false);
+  const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
+  const [validationErrors, setValidationErrors] = useState<Record<number, string[]>>({});
+  const [hasDraft, setHasDraft] = useState(false);
+  
+  const [formData, setFormData] = useState<FormData>(() => {
+    // Try to restore from localStorage
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setHasDraft(true);
+        return { ...getInitialFormData(profile?.display_name || ""), ...parsed };
+      }
+    } catch (e) {
+      console.error("Failed to restore draft:", e);
+    }
+    return getInitialFormData(profile?.display_name || "");
   });
+
+  // Save draft to localStorage on form changes
+  useEffect(() => {
+    const hasContent = formData.stationDbId || formData.workOrder || formData.partNumber || formData.handoffSummary;
+    if (hasContent) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+    }
+  }, [formData]);
+
+  // Clear draft on successful submit
+  const clearDraft = useCallback(() => {
+    localStorage.removeItem(STORAGE_KEY);
+    setHasDraft(false);
+  }, []);
+
+  // Validation per step
+  const validateStep = useCallback((stepNum: number): string[] => {
+    const errors: string[] = [];
+    
+    if (stepNum === 1) {
+      if (!formData.stationDbId) errors.push("Station is required");
+      if (!formData.jobState) errors.push("Job State is required");
+      if (!formData.partNumber) errors.push("Part Number is required");
+      if (!formData.outgoingOperator) errors.push("Outgoing Operator is required");
+    } else if (stepNum === 4) {
+      if (!formData.handoffSummary.trim()) errors.push("Handoff Summary is required");
+    }
+    
+    return errors;
+  }, [formData]);
+
+  // Check if step is valid
+  const isStepValid = useCallback((stepNum: number): boolean => {
+    return validateStep(stepNum).length === 0;
+  }, [validateStep]);
+
+  // Get step status for UI
+  const getStepStatus = useCallback((stepNum: number): 'completed' | 'current' | 'incomplete' | 'error' => {
+    if (stepNum === step) return 'current';
+    if (completedSteps.has(stepNum)) return 'completed';
+    if (stepNum < step && !isStepValid(stepNum)) return 'error';
+    return 'incomplete';
+  }, [step, completedSteps, isStepValid]);
+
+  // Handle step navigation
+  const goToStep = useCallback((targetStep: number) => {
+    if (targetStep < 1 || targetStep > 4) return;
+    
+    // Validate current step before leaving
+    const errors = validateStep(step);
+    setValidationErrors(prev => ({ ...prev, [step]: errors }));
+    
+    // Mark current step as completed if valid
+    if (errors.length === 0) {
+      setCompletedSteps(prev => new Set([...prev, step]));
+    }
+    
+    setStep(targetStep);
+  }, [step, validateStep]);
+
+  const handleNext = useCallback(() => {
+    const errors = validateStep(step);
+    setValidationErrors(prev => ({ ...prev, [step]: errors }));
+    
+    if (errors.length > 0) {
+      toast.error(errors[0]);
+      return;
+    }
+    
+    setCompletedSteps(prev => new Set([...prev, step]));
+    setStep(s => Math.min(4, s + 1));
+  }, [step, validateStep]);
+
+  const handleBack = useCallback(() => {
+    setStep(s => Math.max(1, s - 1));
+  }, []);
+
+  // Handle close with unsaved changes warning
+  const handleClose = useCallback(() => {
+    const hasContent = formData.stationDbId || formData.workOrder || formData.partNumber || formData.handoffSummary;
+    if (hasContent) {
+      setShowCloseDialog(true);
+    } else {
+      onClose();
+    }
+  }, [formData, onClose]);
+
+  const confirmClose = useCallback((saveDraft: boolean) => {
+    if (!saveDraft) {
+      clearDraft();
+    }
+    setShowCloseDialog(false);
+    onClose();
+  }, [clearDraft, onClose]);
 
   const updateField = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -131,7 +302,16 @@ export function NewHandoffForm({ onClose, onSubmit }: NewHandoffFormProps) {
   };
 
   const handleSubmit = async () => {
+    // Validate final step
+    const errors = validateStep(4);
+    if (errors.length > 0) {
+      setValidationErrors(prev => ({ ...prev, [4]: errors }));
+      toast.error(errors[0]);
+      return;
+    }
+
     if (!user || !onSubmit) {
+      clearDraft();
       toast.success("Handoff record created successfully!");
       onClose();
       return;
@@ -139,9 +319,9 @@ export function NewHandoffForm({ onClose, onSubmit }: NewHandoffFormProps) {
 
     setIsSubmitting(true);
 
-    const isCNC = formData.workCenterType && isCNCType(formData.workCenterType);
-    const isWelding = formData.workCenterType?.includes("Welding");
-    const isWaterJet = formData.workCenterType === "Water Jet";
+    const isCNCSubmit = formData.workCenterType && isCNCType(formData.workCenterType);
+    const isWeldingSubmit = formData.workCenterType?.includes("Welding");
+    const isWaterJetSubmit = formData.workCenterType === "Water Jet";
 
     const record: Omit<HandoffRecord, "id" | "created_at" | "updated_at" | "record_version"> = {
       team_id: currentTeam?.id || null,
@@ -163,21 +343,21 @@ export function NewHandoffForm({ onClose, onSubmit }: NewHandoffFormProps) {
       primary_state: formData.jobState as JobState,
       state_reason: formData.jobStateReason || null,
       delay_code: "None",
-      machine_readiness: isCNC ? formData.cncReadiness : null,
-      equipment_readiness: !isCNC ? formData.equipmentReadiness : null,
-      machine_condition: isCNC ? {
+      machine_readiness: isCNCSubmit ? formData.cncReadiness : null,
+      equipment_readiness: !isCNCSubmit ? formData.equipmentReadiness : null,
+      machine_condition: isCNCSubmit ? {
         coolantLevel: formData.coolantLevel,
         airPressure: formData.airPressure,
         chipCondition: formData.chipCondition,
         activeAlarms: formData.activeAlarms,
         alarmNotes: formData.alarmNotes,
       } : null,
-      welding_condition: isWelding ? {
+      welding_condition: isWeldingSubmit ? {
         gasLevel: formData.gasLevel,
         wireLevel: formData.wireLevel,
         tipCondition: formData.tipCondition,
       } : null,
-      water_jet_condition: isWaterJet ? {
+      water_jet_condition: isWaterJetSubmit ? {
         waterPressure: formData.waterPressure,
         abrasiveLevel: formData.abrasiveLevel,
       } : null,
@@ -211,6 +391,7 @@ export function NewHandoffForm({ onClose, onSubmit }: NewHandoffFormProps) {
     if (error) {
       toast.error("Failed to create handoff: " + error.message);
     } else {
+      clearDraft();
       toast.success("Handoff record created successfully!");
       onClose();
     }
@@ -221,6 +402,7 @@ export function NewHandoffForm({ onClose, onSubmit }: NewHandoffFormProps) {
   const isWelding = formData.workCenterType?.includes("Welding");
   const isWaterJet = formData.workCenterType === "Water Jet";
   const readinessItems = isCNC ? cncReadinessItems : equipmentReadinessItems;
+  const currentStepErrors = validationErrors[step] || [];
 
   // Group stations by category
   const stationsByCategory = stations.reduce((acc, station) => {
@@ -231,54 +413,97 @@ export function NewHandoffForm({ onClose, onSubmit }: NewHandoffFormProps) {
   }, {} as Record<string, typeof stations>);
 
   return (
+    <>
     <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-card border border-border rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
           <div>
             <h2 className="text-lg font-semibold text-foreground">New Shift Handoff</h2>
-            <p className="text-xs text-muted-foreground">
-              {getCurrentShift()} Shift • {new Date().toLocaleDateString()}
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span>{getCurrentShift()} Shift • {new Date().toLocaleDateString()}</span>
               {formData.workCenterType && (
-                <span className="ml-2 text-primary">• {formData.workCenterType}</span>
+                <span className="text-primary">• {formData.workCenterType}</span>
               )}
-            </p>
+              {hasDraft && (
+                <span className="text-amber-500 font-medium">• Draft restored</span>
+              )}
+            </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-secondary rounded-lg transition-colors">
+          <button onClick={handleClose} className="p-2 hover:bg-secondary rounded-lg transition-colors">
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
 
-        {/* Progress */}
-        <div className="px-4 pt-4">
-          <div className="flex items-center gap-2">
-            {[1, 2, 3, 4].map((s) => (
-              <div
-                key={s}
-                className={cn(
-                  "flex-1 h-1 rounded-full transition-colors",
-                  s <= step ? "bg-primary" : "bg-secondary"
-                )}
-              />
-            ))}
+        {/* Interactive Step Progress */}
+        <TooltipProvider>
+          <div className="px-4 pt-4">
+            <div className="flex items-center gap-1">
+              {STEP_CONFIG.map((stepConfig, index) => {
+                const status = getStepStatus(stepConfig.id);
+                const isClickable = stepConfig.id <= step || completedSteps.has(stepConfig.id);
+                
+                return (
+                  <div key={stepConfig.id} className="flex items-center flex-1">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => isClickable && goToStep(stepConfig.id)}
+                          disabled={!isClickable}
+                          className={cn(
+                            "flex items-center gap-2 px-2 py-1.5 rounded-md text-xs font-medium transition-all w-full justify-center",
+                            status === 'current' && "bg-primary text-primary-foreground",
+                            status === 'completed' && "bg-primary/20 text-primary hover:bg-primary/30 cursor-pointer",
+                            status === 'error' && "bg-destructive/20 text-destructive hover:bg-destructive/30 cursor-pointer",
+                            status === 'incomplete' && "bg-secondary text-muted-foreground",
+                            !isClickable && "opacity-50 cursor-not-allowed"
+                          )}
+                        >
+                          {status === 'completed' && <CheckCircle2 className="w-3.5 h-3.5" />}
+                          {status === 'error' && <AlertCircle className="w-3.5 h-3.5" />}
+                          <span className="hidden sm:inline">{stepConfig.label}</span>
+                          <span className="sm:hidden">{stepConfig.shortLabel}</span>
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{stepConfig.label}</p>
+                        {status === 'completed' && <p className="text-green-500">Completed</p>}
+                        {status === 'error' && <p className="text-destructive">Has errors</p>}
+                      </TooltipContent>
+                    </Tooltip>
+                    {index < STEP_CONFIG.length - 1 && (
+                      <div className={cn(
+                        "h-0.5 w-2 mx-0.5",
+                        stepConfig.id < step ? "bg-primary" : "bg-secondary"
+                      )} />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            
+            {/* Validation Errors Display */}
+            {currentStepErrors.length > 0 && (
+              <div className="mt-3 p-2 rounded-md bg-destructive/10 border border-destructive/30">
+                <div className="flex items-center gap-2 text-destructive text-sm">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{currentStepErrors.join(", ")}</span>
+                </div>
+              </div>
+            )}
           </div>
-          <p className="text-xs text-muted-foreground mt-2">
-            Step {step} of {totalSteps}:{" "}
-            {step === 1 && "Job Information"}
-            {step === 2 && "Equipment Readiness"}
-            {step === 3 && "Condition & Quality"}
-            {step === 4 && "Summary & Sign-off"}
-          </p>
-        </div>
+        </TooltipProvider>
 
         {/* Form Content */}
         <div className="flex-1 overflow-y-auto p-4">
           {step === 1 && (
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Station / Work Center</Label>
+                <Label className="flex items-center gap-1">
+                  Station / Work Center <span className="text-destructive">*</span>
+                </Label>
                 <Select value={formData.stationDbId} onValueChange={handleStationChange}>
-                  <SelectTrigger>
+                  <SelectTrigger className={cn(!formData.stationDbId && currentStepErrors.includes("Station is required") && "border-destructive")}>
                     <SelectValue placeholder="Select station" />
                   </SelectTrigger>
                   <SelectContent className="max-h-80">
@@ -321,9 +546,11 @@ export function NewHandoffForm({ onClose, onSubmit }: NewHandoffFormProps) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Job State</Label>
+                  <Label className="flex items-center gap-1">
+                    Job State <span className="text-destructive">*</span>
+                  </Label>
                   <Select value={formData.jobState} onValueChange={(v) => updateField("jobState", v)}>
-                    <SelectTrigger>
+                    <SelectTrigger className={cn(!formData.jobState && currentStepErrors.includes("Job State is required") && "border-destructive")}>
                       <SelectValue placeholder="Select current state" />
                     </SelectTrigger>
                     <SelectContent>
@@ -339,12 +566,14 @@ export function NewHandoffForm({ onClose, onSubmit }: NewHandoffFormProps) {
 
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label>Part Number</Label>
+                  <Label className="flex items-center gap-1">
+                    Part Number <span className="text-destructive">*</span>
+                  </Label>
                   <Input
                     value={formData.partNumber}
                     onChange={(e) => updateField("partNumber", e.target.value)}
                     placeholder="PN-XXXX-X"
-                    className="font-mono"
+                    className={cn("font-mono", !formData.partNumber && currentStepErrors.includes("Part Number is required") && "border-destructive")}
                   />
                 </div>
                 <div className="space-y-2">
@@ -369,11 +598,14 @@ export function NewHandoffForm({ onClose, onSubmit }: NewHandoffFormProps) {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Outgoing Operator</Label>
+                  <Label className="flex items-center gap-1">
+                    Outgoing Operator <span className="text-destructive">*</span>
+                  </Label>
                   <Input
                     value={formData.outgoingOperator}
                     onChange={(e) => updateField("outgoingOperator", e.target.value)}
                     placeholder="Your name"
+                    className={cn(!formData.outgoingOperator && currentStepErrors.includes("Outgoing Operator is required") && "border-destructive")}
                   />
                 </div>
                 <div className="space-y-2">
@@ -601,12 +833,15 @@ export function NewHandoffForm({ onClose, onSubmit }: NewHandoffFormProps) {
           {step === 4 && (
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Handoff Summary *</Label>
+                <Label className="flex items-center gap-1">
+                  Handoff Summary <span className="text-destructive">*</span>
+                </Label>
                 <Textarea
                   value={formData.handoffSummary}
                   onChange={(e) => updateField("handoffSummary", e.target.value)}
                   placeholder="Summarize the current state and any important notes for the incoming operator..."
                   rows={4}
+                  className={cn(!formData.handoffSummary.trim() && currentStepErrors.includes("Handoff Summary is required") && "border-destructive")}
                 />
                 <p className="text-xs text-muted-foreground">
                   Provide a clear summary of the job status and any critical information.
@@ -662,7 +897,7 @@ export function NewHandoffForm({ onClose, onSubmit }: NewHandoffFormProps) {
         <div className="flex items-center justify-between p-4 border-t border-border">
           <Button
             variant="outline"
-            onClick={() => setStep((s) => Math.max(1, s - 1))}
+            onClick={handleBack}
             disabled={step === 1 || isSubmitting}
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
@@ -670,12 +905,12 @@ export function NewHandoffForm({ onClose, onSubmit }: NewHandoffFormProps) {
           </Button>
           
           {step < totalSteps ? (
-            <Button onClick={() => setStep((s) => Math.min(totalSteps, s + 1))}>
+            <Button onClick={handleNext}>
               Next
               <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           ) : (
-            <Button onClick={handleSubmit} disabled={!formData.handoffSummary || isSubmitting}>
+            <Button onClick={handleSubmit} disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-1 animate-spin" />
@@ -692,6 +927,27 @@ export function NewHandoffForm({ onClose, onSubmit }: NewHandoffFormProps) {
         </div>
       </div>
     </div>
+
+    {/* Close confirmation dialog */}
+    <AlertDialog open={showCloseDialog} onOpenChange={setShowCloseDialog}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Save your progress?</AlertDialogTitle>
+          <AlertDialogDescription>
+            You have unsaved changes. Would you like to save your progress as a draft so you can continue later?
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={() => confirmClose(false)}>
+            Discard
+          </AlertDialogCancel>
+          <AlertDialogAction onClick={() => confirmClose(true)}>
+            Save Draft
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
 
