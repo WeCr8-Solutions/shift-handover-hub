@@ -1,4 +1,4 @@
-import { Clock, Factory, Bell, Shield } from "lucide-react";
+import { Clock, Bell, Shield } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getCurrentShift } from "@/lib/mockData";
 import { StatusBadge } from "./StatusBadge";
@@ -9,6 +9,7 @@ import { useAdminAccess } from "@/hooks/useAdminData";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import joblineLogo from "@/assets/jobline-logo.png";
 
 export function Header() {
   const { user } = useAuth();
@@ -29,13 +30,7 @@ export function Header() {
         <div className="flex items-center justify-between">
           {/* Logo & Title */}
           <Link to="/dashboard" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 border border-primary/20">
-              <Factory className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-lg font-semibold text-foreground">JobLine<span className="text-primary">.ai</span></h1>
-              <p className="text-xs text-muted-foreground">Manufacturing Handoff System</p>
-            </div>
+            <img src={joblineLogo} alt="JobLine.ai" className="h-8 w-auto" />
           </Link>
 
           {/* Status Bar */}
