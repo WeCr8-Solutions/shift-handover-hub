@@ -287,6 +287,120 @@ export type Database = {
           },
         ]
       }
+      job_performance_updates: {
+        Row: {
+          affects_cycle_time: boolean | null
+          affects_quality: boolean | null
+          affects_safety: boolean | null
+          created_at: string
+          description: string
+          expected_benefit: string | null
+          id: string
+          image_urls: string[] | null
+          operation_number: string | null
+          part_number: string | null
+          priority: string
+          proposed_solution: string | null
+          requires_engineering_review: boolean | null
+          requires_fixture_modification: boolean | null
+          requires_program_update: boolean | null
+          requires_qa_approval: boolean | null
+          requires_tooling_change: boolean | null
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewer_id: string | null
+          reviewer_name: string | null
+          station_id: string | null
+          status: string
+          team_id: string | null
+          title: string
+          update_type: string
+          updated_at: string
+          user_id: string
+          user_name: string
+          work_order: string | null
+        }
+        Insert: {
+          affects_cycle_time?: boolean | null
+          affects_quality?: boolean | null
+          affects_safety?: boolean | null
+          created_at?: string
+          description: string
+          expected_benefit?: string | null
+          id?: string
+          image_urls?: string[] | null
+          operation_number?: string | null
+          part_number?: string | null
+          priority?: string
+          proposed_solution?: string | null
+          requires_engineering_review?: boolean | null
+          requires_fixture_modification?: boolean | null
+          requires_program_update?: boolean | null
+          requires_qa_approval?: boolean | null
+          requires_tooling_change?: boolean | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          reviewer_name?: string | null
+          station_id?: string | null
+          status?: string
+          team_id?: string | null
+          title: string
+          update_type: string
+          updated_at?: string
+          user_id: string
+          user_name: string
+          work_order?: string | null
+        }
+        Update: {
+          affects_cycle_time?: boolean | null
+          affects_quality?: boolean | null
+          affects_safety?: boolean | null
+          created_at?: string
+          description?: string
+          expected_benefit?: string | null
+          id?: string
+          image_urls?: string[] | null
+          operation_number?: string | null
+          part_number?: string | null
+          priority?: string
+          proposed_solution?: string | null
+          requires_engineering_review?: boolean | null
+          requires_fixture_modification?: boolean | null
+          requires_program_update?: boolean | null
+          requires_qa_approval?: boolean | null
+          requires_tooling_change?: boolean | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          reviewer_name?: string | null
+          station_id?: string | null
+          status?: string
+          team_id?: string | null
+          title?: string
+          update_type?: string
+          updated_at?: string
+          user_id?: string
+          user_name?: string
+          work_order?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_performance_updates_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "stations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_performance_updates_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
