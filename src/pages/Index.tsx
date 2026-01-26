@@ -5,6 +5,7 @@ import { StationCard } from "@/components/StationCard";
 import { HandoffCard } from "@/components/HandoffCard";
 import { ShiftStats } from "@/components/ShiftStats";
 import { NewHandoffForm } from "@/components/NewHandoffForm";
+import { JobPerformanceUpdateForm } from "@/components/JobPerformanceUpdateForm";
 import { WorkCenterFilter } from "@/components/WorkCenterFilter";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrentTeam } from "@/contexts/TeamContext";
@@ -12,7 +13,7 @@ import { useStations, useHandoffRecords, Station, HandoffRecord } from "@/hooks/
 import { mockStations, mockHandoffRecords } from "@/lib/mockData";
 import { WorkCenterType, StationInfo, ShiftHandoffRecord } from "@/types/handoff";
 import { Button } from "@/components/ui/button";
-import { Plus, LayoutGrid, History, Loader2, Building2 } from "lucide-react";
+import { Plus, LayoutGrid, History, Loader2, Building2, Lightbulb } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -114,6 +115,7 @@ const Index = () => {
   const { records: dbRecords, loading: recordsLoading, createHandoffRecord } = useHandoffRecords(currentTeam?.id);
   
   const [showNewHandoff, setShowNewHandoff] = useState(false);
+  const [showPerformanceUpdate, setShowPerformanceUpdate] = useState(false);
   const [selectedTypes, setSelectedTypes] = useState<WorkCenterType[]>([]);
 
   // Use database data when logged in, mock data when not
@@ -180,10 +182,16 @@ const Index = () => {
             </TabsList>
 
             {user && (
-              <Button onClick={() => setShowNewHandoff(true)} className="gap-2">
-                <Plus className="w-4 h-4" />
-                New Handoff
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setShowPerformanceUpdate(true)} className="gap-2">
+                  <Lightbulb className="w-4 h-4" />
+                  Performance Update
+                </Button>
+                <Button onClick={() => setShowNewHandoff(true)} className="gap-2">
+                  <Plus className="w-4 h-4" />
+                  New Handoff
+                </Button>
+              </div>
             )}
           </div>
 
@@ -248,6 +256,11 @@ const Index = () => {
           onClose={() => setShowNewHandoff(false)} 
           onSubmit={createHandoffRecord}
         />
+      )}
+
+      {/* Performance Update Modal */}
+      {showPerformanceUpdate && (
+        <JobPerformanceUpdateForm onClose={() => setShowPerformanceUpdate(false)} />
       )}
     </div>
   );
