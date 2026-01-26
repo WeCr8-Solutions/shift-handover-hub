@@ -35,7 +35,9 @@ export function OnboardingProgress({ showRestart = true, compact = false }: Onbo
 
   const handleStartTour = () => {
     // Navigate to appropriate page based on current step
-    if (currentStep === 'welcome' || currentStep === 'dashboard-overview' || currentStep === 'station-cards') {
+    if (currentStep === 'welcome' || currentStep === 'shop-setup') {
+      navigate('/setup');
+    } else if (currentStep === 'dashboard-overview' || currentStep === 'station-cards') {
       navigate('/dashboard');
     } else if (currentStep === 'team-management') {
       navigate('/teams');
@@ -49,7 +51,7 @@ export function OnboardingProgress({ showRestart = true, compact = false }: Onbo
 
   const handleRestart = async () => {
     await resetOnboarding();
-    navigate('/dashboard');
+    navigate('/setup');
     setTimeout(() => startTour(), 300);
   };
 
