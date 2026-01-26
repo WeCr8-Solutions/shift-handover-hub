@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/contexts/AuthContext";
 import { 
   ArrowRight, 
@@ -19,10 +20,18 @@ import {
   Lock,
   Smartphone,
   Globe,
-  ArrowUpRight
+  ArrowUpRight,
+  Menu,
+  X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import joblineLogo from "@/assets/jobline-logo.png";
+
+const navLinks = [
+  { href: "#features", label: "Features" },
+  { href: "#how-it-works", label: "How it Works" },
+  { href: "#testimonials", label: "Testimonials" },
+];
 
 const features = [
   {
@@ -101,6 +110,7 @@ export default function Landing() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [activeTestimonial, setActiveTestimonial] = useState(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -108,6 +118,15 @@ export default function Landing() {
     }, 5000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleNavClick = (href: string) => {
+    setMobileMenuOpen(false);
+    // Small delay to allow sheet to close before scrolling
+    setTimeout(() => {
+      const element = document.querySelector(href);
+      element?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+  };
 
   return (
     <div className="min-h-screen bg-background overflow-hidden">
@@ -118,10 +137,17 @@ export default function Landing() {
             <img src={joblineLogo} alt="JobLine.ai" className="h-6 sm:h-8 w-auto" />
           </div>
           
+          {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-6 xl:gap-8">
-            <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Features</a>
-            <a href="#how-it-works" className="text-sm text-muted-foreground hover:text-foreground transition-colors">How it Works</a>
-            <a href="#testimonials" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Testimonials</a>
+            {navLinks.map((link) => (
+              <a 
+                key={link.href}
+                href={link.href} 
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {link.label}
+              </a>
+            ))}
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
@@ -141,6 +167,78 @@ export default function Landing() {
                 </Button>
               </>
             )}
+
+            {/* Mobile Menu Button */}
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="lg:hidden h-9 w-9">
+                  <Menu className="h-5 w-5" />
+                  <span className="sr-only">Toggle menu</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[280px] sm:w-[320px] p-0">
+                <div className="flex flex-col h-full">
+                  {/* Mobile Menu Header */}
+                  <div className="flex items-center justify-between p-4 border-b border-border">
+                    <img src={joblineLogo} alt="JobLine.ai" className="h-6 w-auto" />
+                  </div>
+                  
+                  {/* Mobile Menu Links */}
+                  <div className="flex-1 overflow-y-auto py-4">
+                    <nav className="flex flex-col gap-1 px-3">
+                      {navLinks.map((link) => (
+                        <button
+                          key={link.href}
+                          onClick={() => handleNavClick(link.href)}
+                          className="flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium text-foreground hover:bg-secondary transition-colors text-left"
+                        >
+                          {link.label}
+                        </button>
+                      ))}
+                    </nav>
+                  </div>
+                  
+                  {/* Mobile Menu Footer */}
+                  <div className="p-4 border-t border-border space-y-3">
+                    {user ? (
+                      <Button 
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          navigate("/dashboard");
+                        }} 
+                        className="w-full gap-2"
+                      >
+                        Go to Dashboard
+                        <ArrowRight className="w-4 h-4" />
+                      </Button>
+                    ) : (
+                      <>
+                        <Button 
+                          onClick={() => {
+                            setMobileMenuOpen(false);
+                            navigate("/auth");
+                          }} 
+                          className="w-full gap-2"
+                        >
+                          Get Started
+                          <ArrowRight className="w-4 h-4" />
+                        </Button>
+                        <Button 
+                          variant="outline"
+                          onClick={() => {
+                            setMobileMenuOpen(false);
+                            navigate("/auth");
+                          }} 
+                          className="w-full"
+                        >
+                          Sign In
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </nav>
@@ -490,20 +588,33 @@ export default function Landing() {
       {/* Footer */}
       <footer className="border-t border-border py-8 sm:py-10 md:py-12">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-center gap-4 sm:gap-6 md:flex-row md:justify-between">
-            <div className="flex items-center gap-2 order-1">
+          <div className="flex flex-col items-center gap-4 sm:gap-6">
+            <div className="flex items-center gap-2">
               <img src={joblineLogo} alt="JobLine.ai" className="h-6 sm:h-8 w-auto" />
             </div>
             
-            <div className="flex items-center gap-4 sm:gap-6 text-xs sm:text-sm text-muted-foreground order-2 md:order-2">
+            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs sm:text-sm text-muted-foreground">
               <a href="#" className="hover:text-foreground transition-colors">Privacy</a>
               <a href="#" className="hover:text-foreground transition-colors">Terms</a>
               <a href="#" className="hover:text-foreground transition-colors">Contact</a>
             </div>
             
-            <p className="text-xs sm:text-sm text-muted-foreground order-3 md:order-3">
-              © 2026 JobLine.ai. All rights reserved.
-            </p>
+            <div className="flex flex-col items-center gap-2 text-center">
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                © 2026 JobLine.ai. All rights reserved.
+              </p>
+              <p className="text-xs text-muted-foreground">
+                A product of{" "}
+                <a 
+                  href="https://www.wecr8.info" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-primary hover:text-primary/80 transition-colors font-medium"
+                >
+                  WeCr8 Solutions LLC
+                </a>
+              </p>
+            </div>
           </div>
         </div>
       </footer>
