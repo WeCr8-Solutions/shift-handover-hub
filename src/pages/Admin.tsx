@@ -13,7 +13,8 @@ import { TourTriggerButton } from "@/components/onboarding";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Shield, LayoutDashboard, Users, Wrench, Building2, Activity, FileSpreadsheet } from "lucide-react";
+import { Loader2, Shield, LayoutDashboard, Users, Wrench, Building2, Activity, FileSpreadsheet, FlaskConical } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -65,6 +66,12 @@ export default function Admin() {
           </div>
           <div className="flex items-center gap-2">
             <TourTriggerButton />
+            <Button variant="outline" asChild>
+              <Link to="/testing">
+                <FlaskConical className="w-4 h-4 mr-2" />
+                Testing
+              </Link>
+            </Button>
             <Button variant="outline" onClick={() => setBulkUploadOpen(true)} data-tour="bulk-upload">
               <FileSpreadsheet className="w-4 h-4 mr-2" />
               Bulk Upload
