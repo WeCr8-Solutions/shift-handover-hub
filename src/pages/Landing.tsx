@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { 
   ArrowRight, 
@@ -111,6 +112,7 @@ export default function Landing() {
   const { user } = useAuth();
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [demoModalOpen, setDemoModalOpen] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -277,7 +279,12 @@ export default function Landing() {
                 Start Free Trial
                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
               </Button>
-              <Button size="lg" variant="outline" className="gap-2 text-sm sm:text-base px-6 sm:px-8 h-10 sm:h-12 w-full sm:w-auto">
+              <Button 
+                size="lg" 
+                variant="outline" 
+                onClick={() => setDemoModalOpen(true)}
+                className="gap-2 text-sm sm:text-base px-6 sm:px-8 h-10 sm:h-12 w-full sm:w-auto"
+              >
                 <Play className="w-4 h-4 sm:w-5 sm:h-5" />
                 Watch Demo
               </Button>
@@ -618,6 +625,69 @@ export default function Landing() {
           </div>
         </div>
       </footer>
+
+      {/* Demo Video Modal */}
+      <Dialog open={demoModalOpen} onOpenChange={setDemoModalOpen}>
+        <DialogContent className="sm:max-w-4xl p-0 bg-black border-border overflow-hidden">
+          <div className="relative w-full aspect-video">
+            {/* Close button overlay */}
+            <button
+              onClick={() => setDemoModalOpen(false)}
+              className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center text-white transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            
+            {/* Video placeholder - replace with actual video embed */}
+            <div className="w-full h-full bg-gradient-to-br from-secondary to-background flex flex-col items-center justify-center p-8">
+              <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mb-6 animate-pulse">
+                <Play className="w-10 h-10 text-primary ml-1" />
+              </div>
+              <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-2 text-center">
+                JobLine.ai Product Demo
+              </h3>
+              <p className="text-muted-foreground text-center text-sm sm:text-base max-w-md mb-6">
+                See how manufacturing teams are transforming their shift handoffs with real-time visibility and seamless communication.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center gap-3">
+                <Badge variant="outline" className="text-xs">
+                  <Clock className="w-3 h-3 mr-1" />
+                  3 min watch
+                </Badge>
+                <Badge variant="outline" className="text-xs">
+                  <Factory className="w-3 h-3 mr-1" />
+                  Real use cases
+                </Badge>
+              </div>
+              
+              {/* Placeholder message */}
+              <p className="text-xs text-muted-foreground mt-8 text-center">
+                Video coming soon. Contact us for a live demo.
+              </p>
+            </div>
+            
+            {/* 
+              To embed an actual video, replace the placeholder div above with:
+              
+              YouTube:
+              <iframe 
+                src="https://www.youtube.com/embed/YOUR_VIDEO_ID?autoplay=1" 
+                className="w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+              
+              Vimeo:
+              <iframe 
+                src="https://player.vimeo.com/video/YOUR_VIDEO_ID?autoplay=1"
+                className="w-full h-full"
+                allow="autoplay; fullscreen; picture-in-picture"
+                allowFullScreen
+              />
+            */}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
