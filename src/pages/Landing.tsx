@@ -6,11 +6,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { 
   ArrowRight, 
   Zap, 
-  Shield, 
   Users, 
   Clock, 
   BarChart3, 
-  CheckCircle2,
   ChevronRight,
   Play,
   Wrench,
@@ -24,6 +22,7 @@ import {
   ArrowUpRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import joblineLogo from "@/assets/jobline-logo.png";
 
 const features = [
   {
@@ -116,12 +115,7 @@ export default function Landing() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
-              <Factory className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-bold tracking-tight">
-              JobLine<span className="text-primary">.ai</span>
-            </span>
+            <img src={joblineLogo} alt="JobLine.ai" className="h-8 w-auto" />
           </div>
           
           <div className="hidden md:flex items-center gap-8">
@@ -498,12 +492,7 @@ export default function Landing() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
-                <Factory className="w-5 h-5 text-primary-foreground" />
-              </div>
-              <span className="text-xl font-bold tracking-tight">
-                JobLine<span className="text-primary">.ai</span>
-              </span>
+              <img src={joblineLogo} alt="JobLine.ai" className="h-8 w-auto" />
             </div>
             
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
