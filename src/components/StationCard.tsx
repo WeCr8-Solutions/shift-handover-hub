@@ -139,6 +139,15 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
     partNumber: string | null;
     priority: string;
   }[]>([]);
+
+  // State for completed work orders needing delivery (all completed items at this station)
+  const [completedNeedingDelivery, setCompletedNeedingDelivery] = useState<{
+    id: string;
+    workOrder: string;
+    partNumber: string | null;
+    nextStationName: string | null;
+    priority: string;
+  }[]>([]);
   
   // Update timer every minute
   useEffect(() => {
@@ -329,6 +338,44 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
       const priorityOrder = { critical: 0, urgent: 1, high: 2, normal: 3, low: 4 };
       incomingList.sort((a, b) => (priorityOrder[a.priority as keyof typeof priorityOrder] || 3) - (priorityOrder[b.priority as keyof typeof priorityOrder] || 3));
       setIncomingItems(incomingList);
+
+      // Fetch ALL completed items at this station that need delivery to next station
+      const completedList: typeof completedNeedingDelivery = [];
+      if (routingData && routingData.length > 0) {
+        for (const step of routingData) {
+          const { data: nextStep } = await supabase
+            .from("work_order_routing")
+            .select(`
+              id,
+              step_number,
+              operation_name,
+              status,
+              station_id,
+              stations:station_id (
+                name,
+                station_id
+              )
+            `)
+            .eq("queue_item_id", step.queue_item_id)
+            .eq("step_number", step.step_number + 1)
+            .eq("status", "pending")
+            .maybeSingle();
+
+          if (nextStep) {
+            const queueItem = step.queue_items as any;
+            const nextStation = nextStep.stations as any;
+            completedList.push({
+              id: step.queue_item_id,
+              workOrder: queueItem?.work_order || queueItem?.title || "Unknown",
+              partNumber: queueItem?.part_number || null,
+              nextStationName: nextStation?.name || nextStep.operation_name,
+              priority: queueItem?.priority || "normal",
+            });
+          }
+        }
+      }
+      completedList.sort((a, b) => (priorityOrder[a.priority as keyof typeof priorityOrder] || 3) - (priorityOrder[b.priority as keyof typeof priorityOrder] || 3));
+      setCompletedNeedingDelivery(completedList);
     };
     
     fetchStationData();
@@ -801,6 +848,69 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      {/* Completed Work - Needs Delivery Section */}
+      {completedNeedingDelivery.length > 0 && (
+        <div className={cn(
+          "mb-3 p-2.5 rounded-lg border-2 transition-all",
+          completedNeedingDelivery.some(i => i.priority === "critical") && "border-red-500 bg-red-500/10 animate-pulse",
+          completedNeedingDelivery.some(i => i.priority === "urgent") && !completedNeedingDelivery.some(i => i.priority === "critical") && "border-orange-500 bg-orange-500/10",
+          !completedNeedingDelivery.some(i => ["critical", "urgent"].includes(i.priority)) && "border-amber-500 bg-amber-500/10"
+        )}>
+          <div className="flex items-center gap-2 mb-2">
+            <div className={cn(
+              "p-1.5 rounded-full",
+              completedNeedingDelivery.some(i => i.priority === "critical") ? "bg-red-500" :
+              completedNeedingDelivery.some(i => i.priority === "urgent") ? "bg-orange-500" : "bg-amber-500"
+            )}>
+              <Truck className={cn(
+                "w-4 h-4 text-white",
+                completedNeedingDelivery.some(i => ["critical", "urgent"].includes(i.priority)) && "animate-bounce"
+              )} />
+            </div>
+            <div>
+              <span className={cn(
+                "text-xs font-bold uppercase tracking-wide",
+                completedNeedingDelivery.some(i => i.priority === "critical") ? "text-red-600" :
+                completedNeedingDelivery.some(i => i.priority === "urgent") ? "text-orange-600" : "text-amber-700"
+              )}>
+                ⚠️ {completedNeedingDelivery.length} NEEDS DELIVERY
+              </span>
+            </div>
+          </div>
+          <div className="space-y-1.5 pl-8">
+            {completedNeedingDelivery.slice(0, 3).map((item) => (
+              <div key={item.id} className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="text-[10px] bg-background font-mono">
+                    <Package className="w-2.5 h-2.5 mr-1" />
+                    {item.workOrder}
+                  </Badge>
+                  <ArrowRight className="w-3 h-3 text-muted-foreground" />
+                  <span className="text-[10px] text-muted-foreground font-medium">
+                    {item.nextStationName}
+                  </span>
+                </div>
+                {item.priority && item.priority !== "normal" && item.priority !== "low" && (
+                  <Badge className={cn(
+                    "text-[9px]",
+                    item.priority === "critical" && "bg-red-600",
+                    item.priority === "urgent" && "bg-orange-600",
+                    item.priority === "high" && "bg-amber-600"
+                  )}>
+                    {item.priority.toUpperCase()}
+                  </Badge>
+                )}
+              </div>
+            ))}
+            {completedNeedingDelivery.length > 3 && (
+              <span className="text-[10px] text-muted-foreground font-medium">
+                +{completedNeedingDelivery.length - 3} more awaiting pickup
+              </span>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Status Footer */}
       <div className="flex items-center gap-2 pt-2 border-t border-border">

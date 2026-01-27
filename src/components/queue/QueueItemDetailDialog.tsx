@@ -12,6 +12,7 @@ import { QueueItem, QueueItemComment, QueueItemHistory, QueueStatus, QueuePriori
 import { useStations } from "@/hooks/useStations";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useToast } from "@/hooks/use-toast";
+import { useAdminAccess } from "@/hooks/useAdminData";
 import { format, formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { 
@@ -84,6 +85,7 @@ export function QueueItemDetailDialog({
   const { toast } = useToast();
   const { currentTeam } = useCurrentTeam();
   const { stations } = useStations(currentTeam?.id);
+  const { hasAdminAccess } = useAdminAccess();
   const [comments, setComments] = useState<QueueItemComment[]>([]);
   const [history, setHistory] = useState<QueueItemHistory[]>([]);
   const [newComment, setNewComment] = useState("");
@@ -325,14 +327,14 @@ export function QueueItemDetailDialog({
               </Button>
             )}
             <div className="flex-1" />
-            {onOpenRouting && (
+            {onOpenRouting && hasAdminAccess && (
               <Button 
                 variant="outline" 
                 onClick={() => onOpenRouting(item)}
                 className="gap-2"
               >
                 <GitBranch className="w-4 h-4" />
-                Routing
+                Edit Routing
               </Button>
             )}
             <Button 
