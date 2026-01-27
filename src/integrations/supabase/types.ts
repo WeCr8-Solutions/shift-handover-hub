@@ -436,6 +436,80 @@ export type Database = {
           },
         ]
       }
+      organization_members: {
+        Row: {
+          id: string
+          joined_at: string
+          organization_id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          organization_id: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          organization_id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_members_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          billing_email: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          logo_url: string | null
+          name: string
+          slug: string
+          subscription_status: string | null
+          subscription_tier: string | null
+          updated_at: string
+        }
+        Insert: {
+          billing_email?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          name: string
+          slug: string
+          subscription_status?: string | null
+          subscription_tier?: string | null
+          updated_at?: string
+        }
+        Update: {
+          billing_email?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          name?: string
+          slug?: string
+          subscription_status?: string | null
+          subscription_tier?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -556,6 +630,7 @@ export type Database = {
           item_type: Database["public"]["Enums"]["queue_item_type"]
           metadata: Json | null
           operation_number: string | null
+          organization_id: string | null
           part_number: string | null
           position: number
           priority: Database["public"]["Enums"]["queue_priority"]
@@ -584,6 +659,7 @@ export type Database = {
           item_type?: Database["public"]["Enums"]["queue_item_type"]
           metadata?: Json | null
           operation_number?: string | null
+          organization_id?: string | null
           part_number?: string | null
           position?: number
           priority?: Database["public"]["Enums"]["queue_priority"]
@@ -612,6 +688,7 @@ export type Database = {
           item_type?: Database["public"]["Enums"]["queue_item_type"]
           metadata?: Json | null
           operation_number?: string | null
+          organization_id?: string | null
           part_number?: string | null
           position?: number
           priority?: Database["public"]["Enums"]["queue_priority"]
@@ -629,6 +706,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "queue_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "queue_items_station_id_fkey"
             columns: ["station_id"]
             isOneToOne: false
@@ -644,6 +728,91 @@ export type Database = {
           },
         ]
       }
+      routing_template_steps: {
+        Row: {
+          estimated_duration: number | null
+          id: string
+          instructions: string | null
+          operation_name: string
+          operation_type: string
+          step_number: number
+          template_id: string
+          work_center_type: string | null
+        }
+        Insert: {
+          estimated_duration?: number | null
+          id?: string
+          instructions?: string | null
+          operation_name: string
+          operation_type?: string
+          step_number: number
+          template_id: string
+          work_center_type?: string | null
+        }
+        Update: {
+          estimated_duration?: number | null
+          id?: string
+          instructions?: string | null
+          operation_name?: string
+          operation_type?: string
+          step_number?: number
+          template_id?: string
+          work_center_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "routing_template_steps_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "routing_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      routing_templates: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_default: boolean | null
+          name: string
+          organization_id: string
+          part_number_pattern: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_default?: boolean | null
+          name: string
+          organization_id: string
+          part_number_pattern?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_default?: boolean | null
+          name?: string
+          organization_id?: string
+          part_number_pattern?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "routing_templates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stations: {
         Row: {
           created_at: string
@@ -651,6 +820,7 @@ export type Database = {
           id: string
           is_active: boolean
           name: string
+          organization_id: string | null
           station_id: string
           team_id: string | null
           updated_at: string
@@ -663,6 +833,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           name: string
+          organization_id?: string | null
           station_id: string
           team_id?: string | null
           updated_at?: string
@@ -675,6 +846,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           name?: string
+          organization_id?: string | null
           station_id?: string
           team_id?: string | null
           updated_at?: string
@@ -687,6 +859,13 @@ export type Database = {
             columns: ["department_id"]
             isOneToOne: false
             referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -744,6 +923,7 @@ export type Database = {
           description: string | null
           id: string
           name: string
+          organization_id: string | null
           updated_at: string
         }
         Insert: {
@@ -752,6 +932,7 @@ export type Database = {
           description?: string | null
           id?: string
           name: string
+          organization_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -760,9 +941,18 @@ export type Database = {
           description?: string | null
           id?: string
           name?: string
+          organization_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "teams_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_onboarding: {
         Row: {
@@ -821,16 +1011,100 @@ export type Database = {
         }
         Relationships: []
       }
+      work_order_routing: {
+        Row: {
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          estimated_duration: number | null
+          expected_return_date: string | null
+          id: string
+          notes: string | null
+          operation_name: string
+          operation_type: string
+          outside_vendor: string | null
+          po_number: string | null
+          queue_item_id: string
+          started_at: string | null
+          station_id: string | null
+          status: string
+          step_number: number
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          estimated_duration?: number | null
+          expected_return_date?: string | null
+          id?: string
+          notes?: string | null
+          operation_name: string
+          operation_type?: string
+          outside_vendor?: string | null
+          po_number?: string | null
+          queue_item_id: string
+          started_at?: string | null
+          station_id?: string | null
+          status?: string
+          step_number: number
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          estimated_duration?: number | null
+          expected_return_date?: string | null
+          id?: string
+          notes?: string | null
+          operation_name?: string
+          operation_type?: string
+          outside_vendor?: string | null
+          po_number?: string | null
+          queue_item_id?: string
+          started_at?: string | null
+          station_id?: string | null
+          status?: string
+          step_number?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_order_routing_queue_item_id_fkey"
+            columns: ["queue_item_id"]
+            isOneToOne: false
+            referencedRelation: "queue_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_order_routing_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "stations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      get_user_org_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_org_admin: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_org_member: {
+        Args: { _org_id: string; _user_id: string }
         Returns: boolean
       }
       is_team_admin: {
