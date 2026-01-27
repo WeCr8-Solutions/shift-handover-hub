@@ -1,230 +1,253 @@
 
-# Plan: Complete Station Setup Flow After Team Creation
 
-## Overview
-This plan addresses the full workflow after team creation: fixing the team members display issue, enabling smooth station setup with department organization, and integrating with the job performance update and queue systems.
+# JobLine.ai ↔ Stripe Integration Plan
 
-## Current Issues Identified
+## Current State Analysis
 
-### Issue 1: Team Members Panel Broken
-The network request shows a 400 error when fetching team members:
-```
-"Could not find a relationship between 'team_members' and 'profiles'"
-```
-The `useTeamMembers` hook attempts to join `team_members` with `profiles` using a foreign key hint (`team_members_user_id_fkey`) that doesn't exist in the database.
+After analyzing your codebase, here's what already exists:
 
-### Issue 2: No Direct Path from Team to Station Creation
-After creating a team on the Teams page, users must navigate separately to the Admin page to add stations. There's no guided flow to add stations immediately after team creation.
+### What's Already Implemented
+1. **Edge Functions**:
+   - `create-checkout` - Creates Stripe checkout sessions for subscriptions
+   - `check-subscription` - Verifies subscription status against Stripe
+   - `customer-portal` - Opens Stripe billing portal for subscription management
 
-### Issue 3: Stations Lack Department Grouping
-The current station model has `work_center` (department) as a text field, but there's no dedicated departments table to properly organize and filter stations by department.
+2. **Frontend Hook** (`useSubscription.ts`):
+   - Manages subscription state (tier, status, expiry)
+   - Auto-refreshes every 60 seconds
+   - Checkout and portal integration
+
+3. **Pricing Page** (`Pricing.tsx`):
+   - Displays 3 tiers: Single ($8.99), Team ($24.99), Enterprise ($49.99)
+   - Checkout flow integrated
+   - Subscription management button
+
+4. **Database Schema (Partial)**:
+   - `organizations` table has: `subscription_tier`, `subscription_status`, `billing_email`
+   - `organization_members` table links users to orgs
+   - Missing: dedicated `subscriptions` table and `entitlements` table
+
+5. **Stripe Secret**: Already configured in environment
+
+### What's Missing (Gap Analysis)
+
+| Requirement | Status | Action Needed |
+|-------------|--------|---------------|
+| Dedicated subscriptions table | Missing | Create table |
+| Entitlements table | Missing | Create table |
+| Stripe webhook handler | Missing | Create edge function |
+| Org-based billing (not user) | Partial | Update checkout to use org |
+| stripe_customer_id on orgs | Missing | Add column |
+| Subscription sync from webhooks | Missing | Implement webhook handler |
+| Past due/canceled banners | Missing | Add UI components |
+| Entitlement enforcement | Missing | Add access control |
 
 ---
 
-## Solution Architecture
+## Implementation Plan
 
-```text
-+------------------+     +------------------+     +------------------+
-|   Create Team    | --> | Add Departments  | --> |  Add Stations    |
-+------------------+     +------------------+     +------------------+
-         |                       |                        |
-         v                       v                        v
-+------------------+     +------------------+     +------------------+
-|  Team Members    |     | Filter by Dept   |     | Handoff Tracking |
-+------------------+     +------------------+     +------------------+
-                                                          |
-                                                          v
-                                                 +------------------+
-                                                 | Performance      |
-                                                 | Updates & Queue  |
-                                                 +------------------+
-```
+### Phase 1: Database Schema Updates
 
----
-
-## Implementation Steps
-
-### Step 1: Fix Team Members Foreign Key Relationship
-
-**Database Migration Required**
-
-Add a foreign key constraint between `team_members.user_id` and `profiles.user_id`:
+Create migration to add missing tables and columns:
 
 ```sql
-ALTER TABLE public.team_members
-ADD CONSTRAINT team_members_user_id_profiles_fkey
-FOREIGN KEY (user_id) REFERENCES public.profiles(user_id)
-ON DELETE CASCADE;
-```
+-- Add stripe_customer_id to organizations
+ALTER TABLE organizations 
+ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT UNIQUE;
 
-This enables the Supabase client to perform the join query in `useTeamMembers`.
-
----
-
-### Step 2: Add "Quick Add Stations" Flow After Team Creation
-
-**File: src/components/TeamManagement.tsx**
-
-After a team is successfully created, show a prompt or dialog to immediately add stations to that team:
-
-- After `createTeam` succeeds, open a new "Add Stations" dialog
-- Pre-select the newly created team
-- Allow users to add multiple stations in quick succession
-- Provide option to use bulk upload or manual entry
-
-**UI Changes:**
-- Add "Add Stations" button on team cards
-- Add station count badge to team cards
-- Show inline station creation form after team creation success
-
----
-
-### Step 3: Create Departments Management (Optional Enhancement)
-
-**New Database Table: `departments`**
-
-```sql
-CREATE TABLE public.departments (
+-- Create subscriptions table for local sync
+CREATE TABLE IF NOT EXISTS subscriptions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  team_id UUID REFERENCES public.teams(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,
-  description TEXT,
+  organization_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
+  stripe_subscription_id TEXT UNIQUE NOT NULL,
+  stripe_customer_id TEXT NOT NULL,
+  stripe_price_id TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'active',  -- trialing, active, past_due, canceled, unpaid
+  current_period_start TIMESTAMPTZ,
+  current_period_end TIMESTAMPTZ,
+  cancel_at_period_end BOOLEAN DEFAULT false,
+  canceled_at TIMESTAMPTZ,
+  quantity INTEGER DEFAULT 1,
+  metadata JSONB,
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
-ALTER TABLE public.stations 
-ADD COLUMN department_id UUID REFERENCES public.departments(id) ON DELETE SET NULL;
+-- Create entitlements table for feature flags/limits
+CREATE TABLE IF NOT EXISTS entitlements (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID REFERENCES organizations(id) ON DELETE CASCADE UNIQUE,
+  plan TEXT NOT NULL DEFAULT 'free',
+  features JSONB DEFAULT '{}',  -- {"handoff_hub": true, "work_orders": true}
+  limits JSONB DEFAULT '{}',    -- {"work_orders_per_month": 50, "users": 1}
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Stripe webhook events log (for idempotency & debugging)
+CREATE TABLE IF NOT EXISTS stripe_events (
+  id TEXT PRIMARY KEY,  -- Stripe event ID
+  event_type TEXT NOT NULL,
+  processed_at TIMESTAMPTZ DEFAULT now(),
+  payload JSONB
+);
+
+-- Enable RLS
+ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE entitlements ENABLE ROW LEVEL SECURITY;
+ALTER TABLE stripe_events ENABLE ROW LEVEL SECURITY;
+
+-- RLS policies
+CREATE POLICY "Org members can view subscriptions" ON subscriptions
+  FOR SELECT USING (
+    organization_id IN (
+      SELECT organization_id FROM organization_members 
+      WHERE user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Org members can view entitlements" ON entitlements
+  FOR SELECT USING (
+    organization_id IN (
+      SELECT organization_id FROM organization_members 
+      WHERE user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Service role can manage all" ON stripe_events
+  FOR ALL USING (auth.role() = 'service_role');
 ```
 
-This allows stations to be organized into departments within a team (e.g., "CNC Bay 1", "Welding Area", "Quality Lab").
+### Phase 2: Stripe Webhook Edge Function
 
-**RLS Policies:**
-- Team members can view departments in their team
-- Team admins can create/update/delete departments
-- Admins can manage all departments
+Create `supabase/functions/stripe-webhook/index.ts`:
 
----
+Key events to handle:
+- `checkout.session.completed` - Create subscription record
+- `customer.subscription.created` - Sync subscription
+- `customer.subscription.updated` - Update status, period, cancel_at_period_end
+- `customer.subscription.deleted` - Mark canceled, update org to free
+- `invoice.payment_succeeded` - Set billing_status = active
+- `invoice.payment_failed` - Set billing_status = past_due
 
-### Step 4: Enhance Station Creation in Team Context
+The webhook will:
+1. Verify Stripe signature using `STRIPE_WEBHOOK_SECRET`
+2. Check idempotency via `stripe_events` table
+3. Update `organizations`, `subscriptions`, and `entitlements` tables
+4. Return 200 immediately after processing
 
-**File: src/components/TeamStationManager.tsx** (New Component)
+### Phase 3: Update Checkout Flow to Organization-Based
 
-Create a dedicated component for managing stations within a team context:
+Modify `create-checkout` edge function:
+1. Accept `org_id` parameter (optional, defaults to user's org)
+2. Look up or create `stripe_customer_id` on organization
+3. Store `org_id` in Stripe metadata for webhook correlation
+4. Support quantity parameter for per-seat billing
 
-- Shows stations filtered by the selected team
-- Allows grouping stations by work center (department)
-- Inline quick-add form for new stations
-- Bulk upload option with pre-filled team assignment
-- Visual grouping by work center type with icons
+### Phase 4: Update Subscription Hook
 
-**Key Features:**
-- Station cards grouped by work center
-- Quick status overview (active/inactive count)
-- Direct link to handoff creation for each station
-- Performance update shortcut per station
+Enhance `useSubscription.ts`:
+1. Read from local `subscriptions` table (not just Stripe API)
+2. Fall back to Stripe API check if no local record
+3. Add `pastDue`, `cancelAtPeriodEnd` states
+4. Add entitlements loading for feature gating
 
----
+### Phase 5: Entitlement Enforcement
 
-### Step 5: Add Station Quick Actions for Performance Updates
-
-**File: src/components/StationCard.tsx**
-
-Enhance station cards with quick action buttons:
-
-- "New Handoff" button
-- "Performance Update" button (pre-fills station context)
-- "View Queue" button (filters queue to this station)
-- Station-specific issue count badge
-
----
-
-### Step 6: Integrate with Queue System
-
-**File: src/hooks/useQueue.ts**
-
-Ensure queue items can be filtered and created with station context:
-
-- Add station filter to queue views
-- Pre-populate station when creating queue items from station context
-- Show queue item count per station on station cards
-
----
-
-## Technical Details
-
-### Database Changes Summary
-
-| Change | Type | Purpose |
-|--------|------|---------|
-| Add FK: team_members -> profiles | Migration | Fix team members display |
-| Create departments table | Migration (Optional) | Organize stations by department |
-| Add department_id to stations | Migration (Optional) | Link stations to departments |
-
-### Files to Create/Modify
-
-| File | Action | Description |
-|------|--------|-------------|
-| useTeams.ts | Modify | Handle FK join correctly |
-| TeamManagement.tsx | Modify | Add station quick-add after team creation |
-| TeamStationManager.tsx | Create | New component for team-scoped station management |
-| StationCard.tsx | Modify | Add quick action buttons |
-| Setup.tsx | Modify | Improve wizard flow guidance |
-
-### Component Flow
-
-```text
-Teams Page
-    |
-    +-- TeamManagement
-    |       |
-    |       +-- Create Team Dialog
-    |       |       |
-    |       |       +-- Success --> "Add Stations" prompt
-    |       |
-    |       +-- Team Card
-    |               |
-    |               +-- Click --> TeamMembersPanel
-    |               +-- "Add Stations" button --> Inline Station Form
-    |
-    +-- TeamStationManager (new)
-            |
-            +-- Stations grouped by Work Center
-            +-- Quick Add Station form
-            +-- Bulk Upload integration
+Create `src/hooks/useEntitlements.ts`:
+```typescript
+// Returns current org's feature flags and limits
+// getEntitlements() → { features: {...}, limits: {...} }
+// canAccess('analytics') → boolean
+// isWithinLimit('work_orders_per_month', currentCount) → boolean
 ```
 
----
+Create `src/components/EntitlementGate.tsx`:
+- Wrapper component that shows children only if entitled
+- Shows upgrade prompt otherwise
 
-## User Experience Flow
+### Phase 6: UI Enhancements
 
-1. **User creates a team** (e.g., "CNC Department")
-2. **System prompts**: "Would you like to add stations to CNC Department now?"
-3. **User clicks "Add Stations"**
-4. **Station creation form appears** with team pre-selected
-5. **User adds stations** (CNC-001, CNC-002, etc.) with work center grouping
-6. **Stations appear on dashboard** filtered by team
-7. **User can submit handoffs** from station cards
-8. **Performance updates** track improvements per station
-9. **Queue items** can be assigned to specific stations
+1. **Billing Status Banners** (`src/components/BillingBanner.tsx`):
+   - Past due warning with "Update Payment" CTA
+   - Cancellation pending notice with renewal date
+   - Trial expiring reminder
 
----
+2. **Upgrade CTAs**:
+   - Add upgrade buttons when hitting limits
+   - Show feature lock icons for gated features
 
-## Security Considerations
-
-- All new tables will have RLS enabled
-- Department access follows team membership
-- Station creation requires team admin or global admin role
-- Performance updates logged in activity audit
+3. **Dashboard Integration**:
+   - Show subscription status in header/settings
+   - Add billing section to Settings page
 
 ---
 
-## Summary
+## File Changes Summary
 
-This plan provides a complete solution for:
-1. Fixing the immediate team members display bug
-2. Creating a smooth station setup flow after team creation  
-3. Organizing stations by work center/department
-4. Integrating stations with handoff, performance update, and queue systems
+### New Files
+| File | Purpose |
+|------|---------|
+| `supabase/functions/stripe-webhook/index.ts` | Handle Stripe webhook events |
+| `src/hooks/useEntitlements.ts` | Feature gating & limits |
+| `src/components/BillingBanner.tsx` | Payment status alerts |
+| `src/components/EntitlementGate.tsx` | Feature access wrapper |
 
-The changes maintain backward compatibility with existing data while enabling the full manufacturing floor tracking workflow the user described.
+### Modified Files
+| File | Changes |
+|------|---------|
+| `supabase/functions/create-checkout/index.ts` | Add org_id support, store customer on org |
+| `supabase/functions/check-subscription/index.ts` | Read from local DB first |
+| `src/hooks/useSubscription.ts` | Add pastDue, cancelAtPeriodEnd, entitlements |
+| `src/pages/Pricing.tsx` | Show org billing status, annual toggle |
+| `src/components/Header.tsx` | Show billing status indicator |
+| `src/pages/Settings.tsx` | Add billing tab |
+| `supabase/config.toml` | Add stripe-webhook function config |
+
+### Database Migrations
+- Add `stripe_customer_id` to organizations
+- Create `subscriptions` table
+- Create `entitlements` table
+- Create `stripe_events` table
+- RLS policies for all new tables
+
+---
+
+## Environment Configuration
+
+A new secret is required:
+
+| Secret | Purpose |
+|--------|---------|
+| `STRIPE_WEBHOOK_SECRET` | Verify webhook signatures |
+
+Stripe price IDs are already hardcoded in `useSubscription.ts`. For flexibility, these can be moved to environment variables later.
+
+---
+
+## Testing Checklist
+
+1. Subscribe to Single plan via checkout → org.plan = single, status = active
+2. Upgrade Single → Team → subscription updated, entitlements change
+3. Downgrade Team → Single → takes effect at period end
+4. Cancel subscription → cancel_at_period_end = true, access until expiry
+5. Payment fails → past_due banner appears, portal link works
+6. Fix payment → status returns to active
+7. Check feature gates work (e.g., analytics blocked for lower tiers)
+8. Check user limits enforced (e.g., team member count)
+
+---
+
+## Recommended Order of Implementation
+
+1. **Database migration** (schema changes)
+2. **Stripe webhook function** (enables sync)
+3. **Update create-checkout** (org-based billing)
+4. **Entitlements hook** (feature gating)
+5. **Billing banner component** (status visibility)
+6. **Settings billing tab** (centralized management)
+7. **Feature gate components** (access control UI)
+8. **Testing in Stripe test mode**
+
+This plan bridges the gap between your current implementation and the full Stripe integration requirements, focusing on organization-based billing with proper webhook sync and entitlement enforcement.
+
