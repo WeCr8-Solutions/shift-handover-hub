@@ -615,7 +615,7 @@ export type Database = {
         Row: {
           billing_email: string | null
           created_at: string
-          created_by: string | null
+          created_by: string
           description: string | null
           id: string
           logo_url: string | null
@@ -629,7 +629,7 @@ export type Database = {
         Insert: {
           billing_email?: string | null
           created_at?: string
-          created_by?: string | null
+          created_by: string
           description?: string | null
           id?: string
           logo_url?: string | null
@@ -643,7 +643,7 @@ export type Database = {
         Update: {
           billing_email?: string | null
           created_at?: string
-          created_by?: string | null
+          created_by?: string
           description?: string | null
           id?: string
           logo_url?: string | null
@@ -1205,7 +1205,7 @@ export type Database = {
       teams: {
         Row: {
           created_at: string
-          created_by: string | null
+          created_by: string
           description: string | null
           id: string
           name: string
@@ -1214,7 +1214,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          created_by?: string | null
+          created_by: string
           description?: string | null
           id?: string
           name: string
@@ -1223,7 +1223,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
-          created_by?: string | null
+          created_by?: string
           description?: string | null
           id?: string
           name?: string
