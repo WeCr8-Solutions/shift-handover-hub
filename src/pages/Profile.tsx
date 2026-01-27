@@ -13,6 +13,7 @@ import { Loader2, Save, Building2, Users, Shield, Briefcase } from "lucide-react
 import { useToast } from "@/hooks/use-toast";
 import { OnboardingProgress } from "@/components/onboarding";
 import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useAdminAccess } from "@/hooks/useAdminData";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -25,6 +26,7 @@ export default function Profile() {
     primaryRole, 
     loading: orgLoading 
   } = useUserOrganization();
+  const { isDeveloper, loading: accessLoading } = useAdminAccess();
   
   const [displayName, setDisplayName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -67,7 +69,7 @@ export default function Profile() {
     }
   };
 
-  if (loading || orgLoading) {
+  if (loading || orgLoading || accessLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -201,7 +203,8 @@ export default function Profile() {
                         {organizationRole.charAt(0).toUpperCase() + organizationRole.slice(1)}
                       </Badge>
                     )}
-                    {organization.subscription_tier && (
+                    {/* Only show subscription tier to developers */}
+                    {isDeveloper && organization.subscription_tier && (
                       <Badge variant="secondary">
                         {organization.subscription_tier}
                       </Badge>

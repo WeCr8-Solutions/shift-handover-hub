@@ -11,7 +11,11 @@ import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
-export function OrganizationSettings() {
+interface OrganizationSettingsProps {
+  isDeveloper?: boolean;
+}
+
+export function OrganizationSettings({ isDeveloper = false }: OrganizationSettingsProps) {
   const { toast } = useToast();
   const { user } = useAuth();
   const { organization, organizationRole, teams, loading, refresh } = useUserOrganization();
@@ -104,14 +108,17 @@ export function OrganizationSettings() {
               <h3 className="font-semibold text-lg">{organization.name}</h3>
               <p className="text-sm text-muted-foreground">Slug: {organization.slug}</p>
             </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="capitalize">
-                {organization.subscription_tier || "Free"}
-              </Badge>
-              <Badge variant="outline" className="capitalize">
-                {organization.subscription_status || "Trial"}
-              </Badge>
-            </div>
+            {/* Only show subscription badges to developers */}
+            {isDeveloper && (
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="capitalize">
+                  {organization.subscription_tier || "Free"}
+                </Badge>
+                <Badge variant="outline" className="capitalize">
+                  {organization.subscription_status || "Trial"}
+                </Badge>
+              </div>
+            )}
           </div>
 
           {isAdmin && (
