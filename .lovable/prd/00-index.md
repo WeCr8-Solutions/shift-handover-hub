@@ -14,6 +14,8 @@
 | 04 | [Work Order & Queue](./04-work-order-queue.md) | ✅ Active | Manufacturing work order management |
 | 05 | [Handoff System](./05-handoff-system.md) | ✅ Active | Shift handoff documentation |
 | 06 | [Subscription & Billing](./06-subscription-billing.md) | ✅ Active | Stripe integration and entitlements |
+| 07 | [Admin & Supervisor Operations](./07-admin-supervisor-operations.md) | ✅ Active | Management workflows for stations, WOs, routing |
+| 08 | [Operator Workflow](./08-operator-workflow.md) | ✅ Active | Daily operator tasks and job execution |
 
 ---
 
