@@ -41,7 +41,7 @@ interface RoutingStep {
   id?: string;
   step_number: number;
   operation_name: string;
-  operation_type: 'internal' | 'outside_processing' | 'inspection' | 'shipping';
+  operation_type: 'engineering' | 'internal' | 'inspection' | 'outside_processing' | 'shipping';
   station_id?: string;
   station_name?: string;
   work_center_type?: string;
@@ -50,6 +50,7 @@ interface RoutingStep {
   outside_vendor?: string;
   po_number?: string;
   expected_return_date?: string;
+  enabled?: boolean; // For toggling steps on/off in template mode
 }
 
 interface WorkOrderRoutingEditorProps {
@@ -60,10 +61,28 @@ interface WorkOrderRoutingEditorProps {
 }
 
 const OPERATION_TYPES = [
-  { value: 'internal', label: 'Internal Process', icon: Factory, color: 'bg-blue-500' },
+  { value: 'engineering', label: 'Engineering/Programming', icon: Factory, color: 'bg-indigo-500' },
+  { value: 'internal', label: 'Machine Process', icon: Factory, color: 'bg-blue-500' },
+  { value: 'inspection', label: 'Quality Check', icon: ClipboardCheck, color: 'bg-purple-500' },
   { value: 'outside_processing', label: 'Outside Processing', icon: Truck, color: 'bg-orange-500' },
-  { value: 'inspection', label: 'Inspection/QC', icon: ClipboardCheck, color: 'bg-purple-500' },
-  { value: 'shipping', label: 'Shipping', icon: PackageCheck, color: 'bg-green-500' },
+  { value: 'shipping', label: 'Shipping/Delivery', icon: PackageCheck, color: 'bg-green-500' },
+];
+
+// Complete manufacturing flow with engineering, QC checkpoints, and all standard steps
+const DEFAULT_ROUTING_STEPS: RoutingStep[] = [
+  { step_number: 1, operation_name: 'Incoming Inspection', operation_type: 'inspection', enabled: true },
+  { step_number: 2, operation_name: 'Engineering Review', operation_type: 'engineering', enabled: true },
+  { step_number: 3, operation_name: 'Programming/CAM', operation_type: 'engineering', enabled: true },
+  { step_number: 4, operation_name: 'First Article Setup', operation_type: 'internal', enabled: true },
+  { step_number: 5, operation_name: 'First Article Inspection', operation_type: 'inspection', enabled: true },
+  { step_number: 6, operation_name: 'Production Run', operation_type: 'internal', enabled: true },
+  { step_number: 7, operation_name: 'In-Process Inspection', operation_type: 'inspection', enabled: false },
+  { step_number: 8, operation_name: 'Secondary Operation', operation_type: 'internal', enabled: false },
+  { step_number: 9, operation_name: 'Deburr/Finish', operation_type: 'internal', enabled: true },
+  { step_number: 10, operation_name: 'Outside Processing', operation_type: 'outside_processing', enabled: false },
+  { step_number: 11, operation_name: 'Final Inspection', operation_type: 'inspection', enabled: true },
+  { step_number: 12, operation_name: 'Packaging', operation_type: 'internal', enabled: true },
+  { step_number: 13, operation_name: 'Ship to Customer', operation_type: 'shipping', enabled: true },
 ];
 
 export function WorkOrderRoutingEditor({ 
@@ -80,6 +99,7 @@ export function WorkOrderRoutingEditor({
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [editingStep, setEditingStep] = useState<number | null>(null);
+  const [showTemplateMode, setShowTemplateMode] = useState(false);
 
   // Fetch stations for the organization
   useEffect(() => {
@@ -142,16 +162,16 @@ export function WorkOrderRoutingEditor({
         };
       }));
     } else {
-      // Initialize with common manufacturing flow
-      setSteps([
-        { step_number: 1, operation_name: 'Receive Material', operation_type: 'inspection' },
-        { step_number: 2, operation_name: 'First Operation', operation_type: 'internal' },
-        { step_number: 3, operation_name: 'Final Inspection', operation_type: 'inspection' },
-        { step_number: 4, operation_name: 'Ship to Customer', operation_type: 'shipping' },
-      ]);
+      // Initialize with complete manufacturing flow template
+      // Users can toggle steps on/off before saving
+      setSteps(DEFAULT_ROUTING_STEPS.map(s => ({ ...s })));
+      setShowTemplateMode(true);
     }
     setIsLoading(false);
   };
+
+  // Filter to only enabled steps for saving
+  const enabledSteps = steps.filter(s => s.enabled !== false);
 
   // Group stations by work center type for easier selection
   const stationsByType = stations.reduce((acc, station) => {
@@ -210,28 +230,32 @@ export function WorkOrderRoutingEditor({
         .delete()
         .eq('queue_item_id', queueItemId);
 
-      // Insert new steps with station_id for lifecycle tracking
+      // Only save enabled steps, renumber them sequentially
+      const stepsToSave = enabledSteps.map((s, idx) => ({
+        queue_item_id: queueItemId,
+        step_number: idx + 1,
+        operation_name: s.operation_name,
+        operation_type: s.operation_type,
+        station_id: s.station_id || null,
+        estimated_duration: s.estimated_duration,
+        notes: s.instructions,
+        outside_vendor: s.outside_vendor,
+        po_number: s.po_number,
+        expected_return_date: s.expected_return_date,
+      }));
+
       const { error } = await supabase
         .from('work_order_routing')
-        .insert(steps.map(s => ({
-          queue_item_id: queueItemId,
-          step_number: s.step_number,
-          operation_name: s.operation_name,
-          operation_type: s.operation_type,
-          station_id: s.station_id || null,
-          estimated_duration: s.estimated_duration,
-          notes: s.instructions,
-          outside_vendor: s.outside_vendor,
-          po_number: s.po_number,
-          expected_return_date: s.expected_return_date,
-        })));
+        .insert(stepsToSave);
 
       if (error) throw error;
 
       toast({
         title: 'Routing Saved',
-        description: `${steps.length} steps saved for work order ${workOrderNumber}`,
+        description: `${stepsToSave.length} steps saved for work order ${workOrderNumber}`,
       });
+
+      setShowTemplateMode(false);
 
       onClose?.();
     } catch (error: any) {
@@ -285,26 +309,48 @@ export function WorkOrderRoutingEditor({
         </Button>
       </div>
 
+      {/* Template Mode Header */}
+      {showTemplateMode && (
+        <div className="p-3 rounded-lg bg-primary/10 border border-primary/30">
+          <p className="text-sm font-medium flex items-center gap-2">
+            <ClipboardCheck className="w-4 h-4" />
+            Template Mode: Toggle steps on/off to customize your routing
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Enabled: {enabledSteps.length} steps • Disabled steps won't be saved
+          </p>
+        </div>
+      )}
+
       {/* Flow Visualization */}
       <div className="relative space-y-2">
         {steps.map((step, index) => {
           const opType = getOperationType(step.operation_type);
           const OpIcon = opType.icon;
           const isEditing = editingStep === index;
+          const isEnabled = step.enabled !== false;
 
           return (
             <div key={index}>
               {/* Step Card */}
-              <Card className={`relative ${isEditing ? 'ring-2 ring-primary' : ''}`}>
+              <Card className={`relative transition-all ${isEditing ? 'ring-2 ring-primary' : ''} ${!isEnabled ? 'opacity-50 bg-muted/30' : ''}`}>
                 <CardContent className="p-4">
                   <div className="flex items-start gap-4">
-                    {/* Step Number & Icon */}
+                    {/* Toggle & Step Number */}
                     <div className="flex flex-col items-center gap-1">
-                      <div className={`w-10 h-10 rounded-full ${opType.color} flex items-center justify-center text-white`}>
+                      {showTemplateMode && (
+                        <input
+                          type="checkbox"
+                          checked={isEnabled}
+                          onChange={(e) => updateStep(index, { enabled: e.target.checked })}
+                          className="w-4 h-4 rounded border-primary text-primary focus:ring-primary mb-1"
+                        />
+                      )}
+                      <div className={`w-10 h-10 rounded-full ${opType.color} flex items-center justify-center text-white ${!isEnabled ? 'grayscale' : ''}`}>
                         <OpIcon className="w-5 h-5" />
                       </div>
                       <Badge variant="outline" className="text-xs">
-                        Step {step.step_number}
+                        {isEnabled ? `Step ${enabledSteps.indexOf(step) + 1}` : 'Off'}
                       </Badge>
                     </div>
 
@@ -341,7 +387,7 @@ export function WorkOrderRoutingEditor({
                             </div>
                           </div>
 
-                          {(step.operation_type === 'internal' || step.operation_type === 'inspection') && (
+                          {(step.operation_type === 'internal' || step.operation_type === 'inspection' || step.operation_type === 'engineering') && (
                             <div className="grid grid-cols-2 gap-3">
                               <div className="space-y-1">
                                 <Label className="text-xs flex items-center gap-1">
