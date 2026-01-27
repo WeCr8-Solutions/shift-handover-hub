@@ -50,6 +50,63 @@ export type Database = {
         }
         Relationships: []
       }
+      app_settings: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_system: boolean | null
+          organization_id: string | null
+          setting_key: string
+          setting_type: string
+          setting_value: Json
+          team_id: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_system?: boolean | null
+          organization_id?: string | null
+          setting_key: string
+          setting_type?: string
+          setting_value?: Json
+          team_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_system?: boolean | null
+          organization_id?: string | null
+          setting_key?: string
+          setting_type?: string
+          setting_value?: Json
+          team_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "app_settings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "app_settings_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       current_station_status: {
         Row: {
           condition_notes: string | null
@@ -436,6 +493,54 @@ export type Database = {
           },
         ]
       }
+      notification_preferences: {
+        Row: {
+          created_at: string
+          email_handoff_alerts: boolean | null
+          email_machine_down: boolean | null
+          email_quality_alerts: boolean | null
+          email_shift_reminders: boolean | null
+          email_weekly_summary: boolean | null
+          id: string
+          push_enabled: boolean | null
+          push_urgent_only: boolean | null
+          quiet_hours_end: string | null
+          quiet_hours_start: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email_handoff_alerts?: boolean | null
+          email_machine_down?: boolean | null
+          email_quality_alerts?: boolean | null
+          email_shift_reminders?: boolean | null
+          email_weekly_summary?: boolean | null
+          id?: string
+          push_enabled?: boolean | null
+          push_urgent_only?: boolean | null
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email_handoff_alerts?: boolean | null
+          email_machine_down?: boolean | null
+          email_quality_alerts?: boolean | null
+          email_shift_reminders?: boolean | null
+          email_weekly_summary?: boolean | null
+          id?: string
+          push_enabled?: boolean | null
+          push_urgent_only?: boolean | null
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       organization_members: {
         Row: {
           id: string
@@ -813,6 +918,66 @@ export type Database = {
           },
         ]
       }
+      shift_schedules: {
+        Row: {
+          color: string | null
+          created_at: string
+          days_of_week: number[]
+          end_time: string
+          id: string
+          is_active: boolean | null
+          organization_id: string | null
+          shift_code: string
+          shift_name: string
+          start_time: string
+          team_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          days_of_week?: number[]
+          end_time: string
+          id?: string
+          is_active?: boolean | null
+          organization_id?: string | null
+          shift_code: string
+          shift_name: string
+          start_time: string
+          team_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          days_of_week?: number[]
+          end_time?: string
+          id?: string
+          is_active?: boolean | null
+          organization_id?: string | null
+          shift_code?: string
+          shift_name?: string
+          start_time?: string
+          team_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shift_schedules_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shift_schedules_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stations: {
         Row: {
           created_at: string
@@ -1010,6 +1175,68 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      work_center_config: {
+        Row: {
+          created_at: string
+          custom_fields: Json | null
+          default_cycle_time: number | null
+          default_setup_time: number | null
+          display_name: string
+          id: string
+          is_active: boolean | null
+          organization_id: string | null
+          requires_first_article: boolean | null
+          requires_qa_signoff: boolean | null
+          sort_order: number | null
+          track_rework: boolean | null
+          track_scrap: boolean | null
+          updated_at: string
+          work_center_type: string
+        }
+        Insert: {
+          created_at?: string
+          custom_fields?: Json | null
+          default_cycle_time?: number | null
+          default_setup_time?: number | null
+          display_name: string
+          id?: string
+          is_active?: boolean | null
+          organization_id?: string | null
+          requires_first_article?: boolean | null
+          requires_qa_signoff?: boolean | null
+          sort_order?: number | null
+          track_rework?: boolean | null
+          track_scrap?: boolean | null
+          updated_at?: string
+          work_center_type: string
+        }
+        Update: {
+          created_at?: string
+          custom_fields?: Json | null
+          default_cycle_time?: number | null
+          default_setup_time?: number | null
+          display_name?: string
+          id?: string
+          is_active?: boolean | null
+          organization_id?: string | null
+          requires_first_article?: boolean | null
+          requires_qa_signoff?: boolean | null
+          sort_order?: number | null
+          track_rework?: boolean | null
+          track_scrap?: boolean | null
+          updated_at?: string
+          work_center_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_center_config_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       work_order_routing: {
         Row: {

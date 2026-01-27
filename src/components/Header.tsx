@@ -1,4 +1,4 @@
-import { Clock, Bell, Shield, ListTodo } from "lucide-react";
+import { Clock, Bell, Shield, ListTodo, Settings } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getCurrentShift } from "@/lib/mockData";
 import { StatusBadge } from "./StatusBadge";
@@ -49,6 +49,20 @@ export function Header() {
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>Queue Management</TooltipContent>
+              </Tooltip>
+            )}
+
+            {/* Settings Link */}
+            {user && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" asChild>
+                    <Link to="/settings">
+                      <Settings className="w-5 h-5" />
+                    </Link>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Settings</TooltipContent>
               </Tooltip>
             )}
 
