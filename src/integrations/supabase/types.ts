@@ -1455,6 +1455,14 @@ export type Database = {
         Args: { _org_id: string; _user_id: string }
         Returns: boolean
       }
+      is_supervisor_for_team: {
+        Args: { _team_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_supervisor_in_org: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_team_admin: {
         Args: { _team_id: string; _user_id: string }
         Returns: boolean
