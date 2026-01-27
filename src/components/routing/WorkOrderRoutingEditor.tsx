@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUserOrganization } from '@/hooks/useUserOrganization';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { 
@@ -24,14 +25,25 @@ import {
   Loader2,
   Edit2,
   ChevronUp,
-  ChevronDown
+  ChevronDown,
+  MapPin
 } from 'lucide-react';
+
+interface Station {
+  id: string;
+  name: string;
+  station_id: string;
+  work_center: string;
+  work_center_type: string;
+}
 
 interface RoutingStep {
   id?: string;
   step_number: number;
   operation_name: string;
   operation_type: 'internal' | 'outside_processing' | 'inspection' | 'shipping';
+  station_id?: string;
+  station_name?: string;
   work_center_type?: string;
   estimated_duration?: number;
   instructions?: string;
@@ -54,13 +66,6 @@ const OPERATION_TYPES = [
   { value: 'shipping', label: 'Shipping', icon: PackageCheck, color: 'bg-green-500' },
 ];
 
-const WORK_CENTER_TYPES = [
-  'CNC Mill', 'CNC Lathe', 'Water Jet', 'TIG Welding', 'MIG Welding', 
-  'Press Brake', 'Punch Press', 'Deburr', 'Assembly', 'Incoming Inspection',
-  'In-Process Inspection', 'Final Inspection', 'Heat Treat', 'Plating', 
-  'Paint', 'Packaging', 'Tool Crib'
-];
-
 export function WorkOrderRoutingEditor({ 
   queueItemId, 
   workOrderNumber, 
@@ -68,11 +73,33 @@ export function WorkOrderRoutingEditor({
   onClose 
 }: WorkOrderRoutingEditorProps) {
   const { user } = useAuth();
+  const { organization } = useUserOrganization();
   const { toast } = useToast();
   const [steps, setSteps] = useState<RoutingStep[]>([]);
+  const [stations, setStations] = useState<Station[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [editingStep, setEditingStep] = useState<number | null>(null);
+
+  // Fetch stations for the organization
+  useEffect(() => {
+    const fetchStations = async () => {
+      if (!organization?.id) return;
+      
+      const { data, error } = await supabase
+        .from('stations')
+        .select('id, name, station_id, work_center, work_center_type')
+        .eq('organization_id', organization.id)
+        .eq('is_active', true)
+        .order('work_center_type', { ascending: true });
+      
+      if (!error && data) {
+        setStations(data);
+      }
+    };
+    
+    fetchStations();
+  }, [organization?.id]);
 
   useEffect(() => {
     fetchRouting();
@@ -82,25 +109,38 @@ export function WorkOrderRoutingEditor({
     setIsLoading(true);
     const { data, error } = await supabase
       .from('work_order_routing')
-      .select('*')
+      .select(`
+        *,
+        stations:station_id (
+          id,
+          name,
+          station_id,
+          work_center_type
+        )
+      `)
       .eq('queue_item_id', queueItemId)
       .order('step_number', { ascending: true });
 
     if (error) {
       console.error('Error fetching routing:', error);
     } else if (data && data.length > 0) {
-      setSteps(data.map(d => ({
-        id: d.id,
-        step_number: d.step_number,
-        operation_name: d.operation_name,
-        operation_type: d.operation_type as RoutingStep['operation_type'],
-        work_center_type: d.station_id || undefined,
-        estimated_duration: d.estimated_duration || undefined,
-        instructions: d.notes || undefined,
-        outside_vendor: d.outside_vendor || undefined,
-        po_number: d.po_number || undefined,
-        expected_return_date: d.expected_return_date || undefined,
-      })));
+      setSteps(data.map(d => {
+        const stationData = d.stations as any;
+        return {
+          id: d.id,
+          step_number: d.step_number,
+          operation_name: d.operation_name,
+          operation_type: d.operation_type as RoutingStep['operation_type'],
+          station_id: d.station_id || undefined,
+          station_name: stationData?.name || undefined,
+          work_center_type: stationData?.work_center_type || undefined,
+          estimated_duration: d.estimated_duration || undefined,
+          instructions: d.notes || undefined,
+          outside_vendor: d.outside_vendor || undefined,
+          po_number: d.po_number || undefined,
+          expected_return_date: d.expected_return_date || undefined,
+        };
+      }));
     } else {
       // Initialize with common manufacturing flow
       setSteps([
@@ -112,6 +152,14 @@ export function WorkOrderRoutingEditor({
     }
     setIsLoading(false);
   };
+
+  // Group stations by work center type for easier selection
+  const stationsByType = stations.reduce((acc, station) => {
+    const type = station.work_center_type || 'Other';
+    if (!acc[type]) acc[type] = [];
+    acc[type].push(station);
+    return acc;
+  }, {} as Record<string, Station[]>);
 
   const addStep = (afterIndex: number) => {
     const newStep: RoutingStep = {
@@ -162,7 +210,7 @@ export function WorkOrderRoutingEditor({
         .delete()
         .eq('queue_item_id', queueItemId);
 
-      // Insert new steps
+      // Insert new steps with station_id for lifecycle tracking
       const { error } = await supabase
         .from('work_order_routing')
         .insert(steps.map(s => ({
@@ -170,6 +218,7 @@ export function WorkOrderRoutingEditor({
           step_number: s.step_number,
           operation_name: s.operation_name,
           operation_type: s.operation_type,
+          station_id: s.station_id || null,
           estimated_duration: s.estimated_duration,
           notes: s.instructions,
           outside_vendor: s.outside_vendor,
@@ -292,21 +341,38 @@ export function WorkOrderRoutingEditor({
                             </div>
                           </div>
 
-                          {step.operation_type === 'internal' && (
+                          {(step.operation_type === 'internal' || step.operation_type === 'inspection') && (
                             <div className="grid grid-cols-2 gap-3">
                               <div className="space-y-1">
-                                <Label className="text-xs">Work Center</Label>
+                                <Label className="text-xs flex items-center gap-1">
+                                  <MapPin className="w-3 h-3" />
+                                  Assign Station
+                                </Label>
                                 <Select 
-                                  value={step.work_center_type || 'none'} 
-                                  onValueChange={(v) => updateStep(index, { work_center_type: v === 'none' ? undefined : v })}
+                                  value={step.station_id || 'none'} 
+                                  onValueChange={(v) => {
+                                    const selectedStation = stations.find(s => s.id === v);
+                                    updateStep(index, { 
+                                      station_id: v === 'none' ? undefined : v,
+                                      station_name: selectedStation?.name,
+                                      work_center_type: selectedStation?.work_center_type
+                                    });
+                                  }}
                                 >
                                   <SelectTrigger>
-                                    <SelectValue placeholder="Select..." />
+                                    <SelectValue placeholder="Select station..." />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    <SelectItem value="none">Not specified</SelectItem>
-                                    {WORK_CENTER_TYPES.map(t => (
-                                      <SelectItem key={t} value={t}>{t}</SelectItem>
+                                    <SelectItem value="none">Not assigned</SelectItem>
+                                    {Object.entries(stationsByType).map(([type, typeStations]) => (
+                                      <SelectGroup key={type}>
+                                        <SelectLabel className="text-xs text-muted-foreground">{type}</SelectLabel>
+                                        {typeStations.map(station => (
+                                          <SelectItem key={station.id} value={station.id}>
+                                            {station.name} ({station.station_id})
+                                          </SelectItem>
+                                        ))}
+                                      </SelectGroup>
                                     ))}
                                   </SelectContent>
                                 </Select>
@@ -371,12 +437,18 @@ export function WorkOrderRoutingEditor({
                         </div>
                       ) : (
                         <div className="space-y-1">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-medium">{step.operation_name}</span>
                             <Badge variant="secondary" className="text-xs">
                               {opType.label}
                             </Badge>
-                            {step.work_center_type && (
+                            {step.station_name && (
+                              <Badge variant="outline" className="text-xs gap-1">
+                                <MapPin className="w-3 h-3" />
+                                {step.station_name}
+                              </Badge>
+                            )}
+                            {!step.station_name && step.work_center_type && (
                               <Badge variant="outline" className="text-xs">
                                 {step.work_center_type}
                               </Badge>
