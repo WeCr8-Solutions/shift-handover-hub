@@ -1,0 +1,77 @@
+# JobLine.ai Product Requirements Documents
+
+**Last Updated**: 2025-01-27
+
+---
+
+## Document Index
+
+| # | Document | Status | Description |
+|---|----------|--------|-------------|
+| 01 | [User Roles & Access Control](./01-user-roles-access-control.md) | ✅ Active | Multi-tiered permission system |
+| 02 | [Organization & Team Management](./02-organization-team-management.md) | ✅ Active | Hierarchical structure management |
+| 03 | [Invite System](./03-invite-system.md) | ✅ Active | QR codes and invite code redemption |
+| 04 | [Work Order & Queue](./04-work-order-queue.md) | ✅ Active | Manufacturing work order management |
+| 05 | [Handoff System](./05-handoff-system.md) | ✅ Active | Shift handoff documentation |
+| 06 | [Subscription & Billing](./06-subscription-billing.md) | ✅ Active | Stripe integration and entitlements |
+
+---
+
+## Quick Reference
+
+### User Hierarchy
+```
+Platform Roles: admin > developer > supervisor > operator > viewer
+Org Roles:      owner > admin > member
+Team Roles:     owner > admin > member
+```
+
+### Key Flows
+1. **New User Signup** → Gets `operator` role → Creates/joins org → Joins team → Works
+2. **Invite Code** → Admin generates → User scans QR → Auto-joins org/team with roles
+3. **Work Order** → Created → Queued → Assigned → In Progress → Completed
+4. **Handoff** → Outgoing creates → Captures status → Incoming reviews → Station updated
+
+### Data Relationships
+```
+Organization
+├── Members (users with org roles)
+├── Teams
+│   ├── Team Members (users with team roles)
+│   ├── Departments
+│   └── Stations
+├── Entitlements (subscription features/limits)
+├── Invite Codes
+├── Queue Items (work orders)
+└── Handoff Records
+```
+
+---
+
+## Status Definitions
+
+| Status | Meaning |
+|--------|---------|
+| ✅ Active | Current, implemented, and maintained |
+| 🚧 Draft | In development, not yet implemented |
+| 📋 Planned | Approved for future development |
+| ⚠️ Deprecated | Being phased out |
+
+---
+
+## Contributing
+
+When updating PRDs:
+1. Update the version number
+2. Update "Last Updated" date
+3. Add to changelog if significant
+4. Update index if adding new PRD
+5. Cross-reference related PRDs
+
+---
+
+## Architecture Documents
+
+See also:
+- [User Role Architecture](../user-role-architecture.md) - Detailed role system with Mermaid diagrams
+- [Plan](../plan.md) - Development roadmap
