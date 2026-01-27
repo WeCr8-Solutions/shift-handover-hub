@@ -1,4 +1,4 @@
-import { Clock, Bell, Shield, ListTodo, Settings } from "lucide-react";
+import { Clock, Bell, Shield, ListTodo, Settings, Users, FlaskConical } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getCurrentShift } from "@/lib/mockData";
 import { StatusBadge } from "./StatusBadge";
@@ -13,7 +13,12 @@ import joblineLogo from "@/assets/jobline-logo.png";
 
 export function Header() {
   const { user } = useAuth();
-  const { hasAdminAccess } = useAdminAccess();
+  const { 
+    hasAdminAccess, 
+    hasOrgAdminAccess, 
+    hasOrgSupervisorAccess,
+    hasTestingAccess 
+  } = useAdminAccess();
   const [currentTime, setCurrentTime] = useState(new Date());
   const shift = getCurrentShift();
 
@@ -52,6 +57,20 @@ export function Header() {
               </Tooltip>
             )}
 
+            {/* Teams Link - Org Admins & Supervisors */}
+            {hasOrgSupervisorAccess && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" asChild>
+                    <Link to="/teams">
+                      <Users className="w-5 h-5" />
+                    </Link>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Team Management</TooltipContent>
+              </Tooltip>
+            )}
+
             {/* Settings Link */}
             {user && (
               <Tooltip>
@@ -66,7 +85,7 @@ export function Header() {
               </Tooltip>
             )}
 
-            {/* Admin Link */}
+            {/* Admin Link - Org Admins, Supervisors & Platform Admins */}
             {hasAdminAccess && (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -76,7 +95,23 @@ export function Header() {
                     </Link>
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Admin Dashboard</TooltipContent>
+                <TooltipContent>
+                  {hasOrgAdminAccess ? "Admin Dashboard" : "Supervisor Dashboard"}
+                </TooltipContent>
+              </Tooltip>
+            )}
+
+            {/* Testing Link - Developers only */}
+            {hasTestingAccess && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" asChild>
+                    <Link to="/testing">
+                      <FlaskConical className="w-5 h-5 text-purple-500" />
+                    </Link>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Testing Dashboard</TooltipContent>
               </Tooltip>
             )}
 

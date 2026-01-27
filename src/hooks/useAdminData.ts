@@ -50,9 +50,14 @@ export interface SystemStats {
 
 export function useAdminAccess() {
   const { user } = useAuth();
+  // Platform-level roles (from user_roles table)
   const [isAdmin, setIsAdmin] = useState(false);
   const [isSupervisor, setIsSupervisor] = useState(false);
   const [isDeveloper, setIsDeveloper] = useState(false);
+  // Organization-level roles (from organization_members table)
+  const [isOrgAdmin, setIsOrgAdmin] = useState(false);
+  const [isOrgOwner, setIsOrgOwner] = useState(false);
+  const [organizationId, setOrganizationId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -61,33 +66,72 @@ export function useAdminAccess() {
         setIsAdmin(false);
         setIsSupervisor(false);
         setIsDeveloper(false);
+        setIsOrgAdmin(false);
+        setIsOrgOwner(false);
+        setOrganizationId(null);
         setLoading(false);
         return;
       }
 
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id);
+      // Fetch platform roles and org membership in parallel
+      const [rolesResult, orgMembershipResult] = await Promise.all([
+        supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id),
+        supabase
+          .from("organization_members")
+          .select("organization_id, role")
+          .eq("user_id", user.id)
+          .maybeSingle()
+      ]);
 
-      if (roles) {
-        const roleList = roles.map((r) => r.role);
+      // Set platform-level roles
+      if (rolesResult.data) {
+        const roleList = rolesResult.data.map((r) => r.role);
         setIsAdmin(roleList.includes("admin"));
         setIsSupervisor(roleList.includes("supervisor"));
         setIsDeveloper(roleList.includes("developer"));
       }
+
+      // Set organization-level roles
+      if (orgMembershipResult.data) {
+        const orgRole = orgMembershipResult.data.role;
+        setOrganizationId(orgMembershipResult.data.organization_id);
+        setIsOrgOwner(orgRole === "owner");
+        setIsOrgAdmin(orgRole === "owner" || orgRole === "admin");
+      } else {
+        setOrganizationId(null);
+        setIsOrgOwner(false);
+        setIsOrgAdmin(false);
+      }
+
       setLoading(false);
     };
 
     checkAccess();
   }, [user]);
 
+  // Computed access levels combining platform and org roles
+  const hasPlatformAdminAccess = isAdmin; // Global platform admin
+  const hasOrgAdminAccess = isOrgAdmin || isAdmin; // Org owner/admin OR platform admin
+  const hasOrgSupervisorAccess = isSupervisor || hasOrgAdminAccess; // Supervisor OR org admin OR platform admin
+  
   return { 
+    // Platform roles
     isAdmin, 
     isSupervisor, 
     isDeveloper,
-    hasAdminAccess: isAdmin || isSupervisor, 
-    hasTestingAccess: isDeveloper, // Only developers can access testing
+    // Organization roles
+    isOrgAdmin,
+    isOrgOwner,
+    organizationId,
+    // Combined access checks
+    hasPlatformAdminAccess, // Only platform admins
+    hasOrgAdminAccess, // Org admins + platform admins
+    hasOrgSupervisorAccess, // Supervisors + org admins + platform admins
+    hasAdminAccess: hasOrgSupervisorAccess, // Legacy: anyone with supervisor+ access
+    hasTestingAccess: isDeveloper || isAdmin, // Developers and platform admins
     loading 
   };
 }
