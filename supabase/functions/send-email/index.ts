@@ -1,6 +1,6 @@
 import React from 'https://esm.sh/react@18.3.1'
 import { Resend } from 'https://esm.sh/resend@4.0.0'
-import { renderAsync } from 'https://esm.sh/@react-email/render@0.0.17'
+import { render } from 'https://esm.sh/@react-email/render@0.0.17?deps=react@18.3.1,react-dom@18.3.1'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.1'
 import { WelcomeEmail } from './_templates/welcome.tsx'
 import { PasswordResetEmail } from './_templates/password-reset.tsx'
@@ -120,7 +120,7 @@ Deno.serve(async (req) => {
     switch (type) {
       case 'welcome': {
         subject = 'Welcome to JobLine.ai! 🏭'
-        html = await renderAsync(
+        html = render(
           React.createElement(WelcomeEmail, {
             userName: data.userName as string,
             appUrl,
@@ -131,7 +131,7 @@ Deno.serve(async (req) => {
 
       case 'password-reset': {
         subject = 'Reset your JobLine.ai password'
-        html = await renderAsync(
+        html = render(
           React.createElement(PasswordResetEmail, {
             userName: data.userName as string,
             resetUrl: data.resetUrl as string,
@@ -143,7 +143,7 @@ Deno.serve(async (req) => {
 
       case 'team-invite': {
         subject = `You're invited to join ${data.teamName} on JobLine.ai`
-        html = await renderAsync(
+        html = render(
           React.createElement(TeamInviteEmail, {
             inviterName: data.inviterName as string,
             teamName: data.teamName as string,
@@ -156,7 +156,7 @@ Deno.serve(async (req) => {
 
       case 'promo-code': {
         subject = `${data.senderName} shared a special offer with you!`
-        html = await renderAsync(
+        html = render(
           React.createElement(PromoCodeEmail, {
             recipientName: data.recipientName as string,
             senderName: data.senderName as string,
@@ -171,7 +171,7 @@ Deno.serve(async (req) => {
 
       case 'handoff-notification': {
         subject = `New handoff for ${data.stationName} - ${data.shift} shift`
-        html = await renderAsync(
+        html = render(
           React.createElement(HandoffNotificationEmail, {
             recipientName: data.recipientName as string,
             stationName: data.stationName as string,

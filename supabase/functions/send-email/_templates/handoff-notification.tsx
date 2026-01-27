@@ -9,7 +9,7 @@ import {
   Preview,
   Section,
   Text,
-} from 'https://esm.sh/@react-email/components@0.0.22'
+} from 'https://esm.sh/@react-email/components@0.0.22?deps=react@18.3.1,react-dom@18.3.1'
 import * as React from 'https://esm.sh/react@18.3.1'
 
 interface HandoffNotificationEmailProps {
@@ -52,32 +52,34 @@ export const HandoffNotificationEmail = ({
 
         <Section style={detailsSection}>
           <table style={detailsTable}>
-            <tr>
-              <td style={labelCell}>Station:</td>
-              <td style={valueCell}>{stationName}</td>
-            </tr>
-            <tr>
-              <td style={labelCell}>Outgoing Operator:</td>
-              <td style={valueCell}>{outgoingOperator}</td>
-            </tr>
-            <tr>
-              <td style={labelCell}>Shift:</td>
-              <td style={valueCell}>{shift}</td>
-            </tr>
-            <tr>
-              <td style={labelCell}>Work Order:</td>
-              <td style={valueCell}>{workOrder}</td>
-            </tr>
-            <tr>
-              <td style={labelCell}>Part Number:</td>
-              <td style={valueCell}>{partNumber}</td>
-            </tr>
-            <tr>
-              <td style={labelCell}>Status:</td>
-              <td style={valueCell}>
-                <span style={getStatusStyle(status)}>{status}</span>
-              </td>
-            </tr>
+            <tbody>
+              <tr>
+                <td style={labelCell}>Station:</td>
+                <td style={valueCell}>{stationName}</td>
+              </tr>
+              <tr>
+                <td style={labelCell}>Outgoing Operator:</td>
+                <td style={valueCell}>{outgoingOperator}</td>
+              </tr>
+              <tr>
+                <td style={labelCell}>Shift:</td>
+                <td style={valueCell}>{shift}</td>
+              </tr>
+              <tr>
+                <td style={labelCell}>Work Order:</td>
+                <td style={valueCell}>{workOrder}</td>
+              </tr>
+              <tr>
+                <td style={labelCell}>Part Number:</td>
+                <td style={valueCell}>{partNumber}</td>
+              </tr>
+              <tr>
+                <td style={labelCell}>Status:</td>
+                <td style={valueCell}>
+                  <span style={getStatusStyle(status)}>{status}</span>
+                </td>
+              </tr>
+            </tbody>
           </table>
         </Section>
 
@@ -102,8 +104,8 @@ export const HandoffNotificationEmail = ({
   </Html>
 )
 
-function getStatusStyle(status: string) {
-  const baseStyle = {
+function getStatusStyle(status: string): React.CSSProperties {
+  const baseStyle: React.CSSProperties = {
     padding: '4px 8px',
     borderRadius: '4px',
     fontSize: '12px',
@@ -153,9 +155,9 @@ const detailsSection = {
   margin: '24px 0',
 }
 
-const detailsTable = {
+const detailsTable: React.CSSProperties = {
   width: '100%',
-  borderCollapse: 'collapse' as const,
+  borderCollapse: 'collapse',
 }
 
 const labelCell = {
