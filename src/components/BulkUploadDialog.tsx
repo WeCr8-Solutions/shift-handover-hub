@@ -29,9 +29,20 @@ interface BulkUploadDialogProps {
 }
 
 export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadDialogProps) {
-  const { progress, parseResult, uploadResult, parseFile, uploadData, resetState } = useBulkUpload();
+  const { 
+    progress, 
+    parseResult, 
+    uploadResult, 
+    parseFile, 
+    uploadData, 
+    resetState, 
+    canBulkUpload, 
+    organizationName 
+  } = useBulkUpload();
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  
+  const hasOrgAccess = canBulkUpload();
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -95,15 +106,38 @@ export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadD
           <DialogTitle className="flex items-center gap-2">
             <FileSpreadsheet className="w-5 h-5 text-primary" />
             Bulk Upload Data
+            {organizationName && (
+              <Badge variant="outline" className="ml-2 text-xs">
+                {organizationName}
+              </Badge>
+            )}
           </DialogTitle>
           <DialogDescription>
-            Upload Excel files to quickly set up teams, stations, and users.
+            Upload Excel files to quickly set up teams, stations, and users for your organization.
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex-1 overflow-auto space-y-4">
+          {/* Access Check */}
+          {!hasOrgAccess && (
+            <Card className="border-destructive">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3 text-destructive">
+                  <XCircle className="w-5 h-5" />
+                  <div>
+                    <p className="font-medium">Access Denied</p>
+                    <p className="text-sm text-muted-foreground">
+                      Only organization admins and owners can perform bulk uploads. 
+                      Please contact your organization administrator.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Step 1: Download Templates */}
-          {progress.stage === 'idle' && !parseResult && (
+          {hasOrgAccess && progress.stage === 'idle' && !parseResult && (
             <>
               <Card>
                 <CardHeader className="pb-3">

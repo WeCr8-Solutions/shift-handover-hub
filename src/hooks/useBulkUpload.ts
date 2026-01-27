@@ -1,7 +1,8 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { ParsedExcelData, parseExcelFile, ParseResult, ValidationError } from '@/lib/excelTemplates';
+import { useUserOrganization } from '@/hooks/useUserOrganization';
+import { ParsedExcelData, parseExcelFile, ParseResult } from '@/lib/excelTemplates';
 import { useToast } from '@/hooks/use-toast';
 
 export interface UploadProgress {
@@ -21,6 +22,7 @@ export interface UploadResult {
 
 export function useBulkUpload() {
   const { user } = useAuth();
+  const { organization, organizationRole } = useUserOrganization();
   const { toast } = useToast();
   const [progress, setProgress] = useState<UploadProgress>({
     stage: 'idle',
@@ -30,6 +32,12 @@ export function useBulkUpload() {
   });
   const [parseResult, setParseResult] = useState<ParseResult | null>(null);
   const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
+
+  // Check if user can perform bulk uploads (org admin/owner only)
+  const canBulkUpload = useCallback(() => {
+    if (!user || !organization) return false;
+    return organizationRole === 'owner' || organizationRole === 'admin';
+  }, [user, organization, organizationRole]);
 
   const resetState = useCallback(() => {
     setProgress({ stage: 'idle', message: '', current: 0, total: 0 });
@@ -70,6 +78,16 @@ export function useBulkUpload() {
       return null;
     }
 
+    if (!organization) {
+      toast({ title: 'Error', description: 'You must belong to an organization to upload data.', variant: 'destructive' });
+      return null;
+    }
+
+    if (!canBulkUpload()) {
+      toast({ title: 'Error', description: 'Only organization admins can perform bulk uploads.', variant: 'destructive' });
+      return null;
+    }
+
     const result: UploadResult = {
       teamsCreated: 0,
       stationsCreated: 0,
@@ -86,8 +104,12 @@ export function useBulkUpload() {
     // Step 1: Create teams first (so we can reference them)
     const teamNameToId: Record<string, string> = {};
     
-    // Fetch existing teams
-    const { data: existingTeams } = await supabase.from('teams').select('id, name');
+    // Fetch existing teams for THIS organization only
+    const { data: existingTeams } = await supabase
+      .from('teams')
+      .select('id, name')
+      .eq('organization_id', organization.id);
+    
     existingTeams?.forEach(team => {
       teamNameToId[team.name.toLowerCase()] = team.id;
     });
@@ -97,13 +119,18 @@ export function useBulkUpload() {
       setProgress({ stage: 'uploading', message: `Creating team: ${team.name}`, current: currentItem, total: totalItems });
 
       if (teamNameToId[team.name.toLowerCase()]) {
-        result.warnings.push(`Team "${team.name}" already exists, skipping.`);
+        result.warnings.push(`Team "${team.name}" already exists in your organization, skipping.`);
         continue;
       }
 
       const { data: newTeam, error } = await supabase
         .from('teams')
-        .insert({ name: team.name, description: team.description, created_by: user.id })
+        .insert({ 
+          name: team.name, 
+          description: team.description, 
+          created_by: user.id,
+          organization_id: organization.id // Scope to organization
+        })
         .select('id')
         .single();
 
@@ -129,15 +156,16 @@ export function useBulkUpload() {
       currentItem++;
       setProgress({ stage: 'uploading', message: `Creating station: ${station.name}`, current: currentItem, total: totalItems });
 
-      // Check if station already exists
+      // Check if station already exists in this organization
       const { data: existing } = await supabase
         .from('stations')
         .select('id')
         .eq('station_id', station.station_id)
+        .eq('organization_id', organization.id)
         .maybeSingle();
 
       if (existing) {
-        result.warnings.push(`Station "${station.station_id}" already exists, skipping.`);
+        result.warnings.push(`Station "${station.station_id}" already exists in your organization, skipping.`);
         continue;
       }
 
@@ -153,6 +181,7 @@ export function useBulkUpload() {
         work_center_type: station.work_center_type,
         team_id: teamId,
         is_active: station.is_active,
+        organization_id: organization.id, // Scope to organization
       });
 
       if (error) {
@@ -193,6 +222,7 @@ export function useBulkUpload() {
       activity_type: 'station_created',
       description: `Bulk upload: ${result.teamsCreated} teams, ${result.stationsCreated} stations`,
       metadata: {
+        organization_id: organization.id,
         teams_created: result.teamsCreated,
         stations_created: result.stationsCreated,
         users_invited: result.usersInvited,
@@ -208,7 +238,7 @@ export function useBulkUpload() {
 
     setUploadResult(result);
     return result;
-  }, [user, toast]);
+  }, [user, organization, canBulkUpload, toast]);
 
   return {
     progress,
@@ -217,5 +247,8 @@ export function useBulkUpload() {
     parseFile,
     uploadData,
     resetState,
+    canBulkUpload,
+    organizationId: organization?.id,
+    organizationName: organization?.name,
   };
 }
