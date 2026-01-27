@@ -171,11 +171,36 @@ export function useJobPerformanceUpdates(teamId?: string | null) {
       return { url: null, error: uploadError };
     }
 
-    const { data: urlData } = supabase.storage
+    // Use signed URL for private bucket (expires in 24 hours)
+    const { data: signedUrlData, error: signedUrlError } = await supabase.storage
       .from("performance-updates")
-      .getPublicUrl(fileName);
+      .createSignedUrl(fileName, 60 * 60 * 24); // 24 hours
 
-    return { url: urlData.publicUrl, error: null };
+    if (signedUrlError) {
+      return { url: null, error: signedUrlError };
+    }
+
+    // Store the file path (not URL) for later signed URL generation
+    return { url: fileName, error: null };
+  };
+
+  // Helper to get signed URLs for viewing images
+  const getSignedImageUrls = async (filePaths: string[]): Promise<string[]> => {
+    if (!filePaths.length) return [];
+    
+    const signedUrls = await Promise.all(
+      filePaths.map(async (path) => {
+        // If it's already a full URL (legacy), return as-is
+        if (path.startsWith('http')) return path;
+        
+        const { data } = await supabase.storage
+          .from("performance-updates")
+          .createSignedUrl(path, 60 * 60 * 24); // 24 hours
+        return data?.signedUrl || path;
+      })
+    );
+    
+    return signedUrls;
   };
 
   const updateStatus = async (
@@ -210,6 +235,7 @@ export function useJobPerformanceUpdates(teamId?: string | null) {
     loading,
     createUpdate,
     uploadImage,
+    getSignedImageUrls,
     updateStatus,
     refreshUpdates: fetchUpdates,
   };
