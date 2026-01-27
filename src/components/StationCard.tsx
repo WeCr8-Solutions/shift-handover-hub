@@ -129,6 +129,15 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
   } | null>(null);
   const [currentTime, setCurrentTime] = useState(Date.now());
   
+  // State for queued items waiting to be started at this station
+  const [queuedItems, setQueuedItems] = useState<{
+    id: string;
+    title: string;
+    workOrder: string | null;
+    partNumber: string | null;
+    priority: string;
+  }[]>([]);
+  
   // Update timer every minute
   useEffect(() => {
     const interval = setInterval(() => setCurrentTime(Date.now()), 60000);
@@ -159,14 +168,23 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
       
       setActiveQueueItem(activeItem as ActiveQueueItem | null);
       
-      // Get queue count (pending and queued items at this station)
-      const { count } = await supabase
+      // Get queued items (pending and queued items at this station) - for display
+      const { data: queuedData, count } = await supabase
         .from("queue_items")
-        .select("*", { count: "exact", head: true })
+        .select("id, title, work_order, part_number, priority", { count: "exact" })
         .eq("station_id", stationDbId)
-        .in("status", ["pending", "queued"]);
+        .in("status", ["pending", "queued"])
+        .order("priority", { ascending: false })
+        .limit(5);
       
       setQueueCount(count || 0);
+      setQueuedItems(queuedData?.map(q => ({
+        id: q.id,
+        title: q.title,
+        workOrder: q.work_order,
+        partNumber: q.part_number,
+        priority: q.priority,
+      })) || []);
 
       // Check for items ready for delivery (completed at this station, need to move to next)
       // This checks if there's a completed routing step at this station with a pending next step
@@ -500,6 +518,43 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
             {incomingItems.length > 3 && (
               <span className="text-[10px] text-muted-foreground">
                 +{incomingItems.length - 3} more
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Queued Items Display (items waiting to be started at this station) */}
+      {!activeQueueItem && queuedItems.length > 0 && (
+        <div className="mb-3 p-2.5 rounded-lg border border-purple-500/50 bg-purple-500/10">
+          <div className="flex items-center gap-2 mb-1.5">
+            <ListTodo className="w-4 h-4 text-purple-600" />
+            <span className="text-xs font-semibold text-purple-700">
+              {queueCount} {queueCount === 1 ? "Order" : "Orders"} in Queue
+            </span>
+          </div>
+          <div className="space-y-1.5">
+            {queuedItems.slice(0, 2).map((item) => (
+              <div key={item.id} className="flex items-center justify-between gap-2">
+                <Badge variant="outline" className="text-[10px] bg-background">
+                  <Package className="w-2.5 h-2.5 mr-1" />
+                  {item.workOrder || item.title}
+                </Badge>
+                {item.priority && item.priority !== "normal" && item.priority !== "low" && (
+                  <Badge variant="outline" className={cn(
+                    "text-[9px]",
+                    item.priority === "critical" && "bg-red-500/20 text-red-600 border-red-500/50",
+                    item.priority === "urgent" && "bg-orange-500/20 text-orange-600 border-orange-500/50",
+                    item.priority === "high" && "bg-amber-500/20 text-amber-600 border-amber-500/50"
+                  )}>
+                    {item.priority}
+                  </Badge>
+                )}
+              </div>
+            ))}
+            {queueCount > 2 && (
+              <span className="text-[10px] text-muted-foreground">
+                +{queueCount - 2} more in queue
               </span>
             )}
           </div>
