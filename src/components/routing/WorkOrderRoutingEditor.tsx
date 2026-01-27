@@ -61,14 +61,14 @@ interface WorkOrderRoutingEditorProps {
 }
 
 const OPERATION_TYPES = [
-  { value: 'quote', label: 'Quoting/Estimating', icon: Factory, color: 'bg-slate-500' },
-  { value: 'engineering', label: 'Engineering/Programming', icon: Factory, color: 'bg-indigo-500' },
-  { value: 'purchasing', label: 'Purchasing/Procurement', icon: Factory, color: 'bg-cyan-500' },
-  { value: 'receiving', label: 'Receiving/Material Handling', icon: Factory, color: 'bg-teal-500' },
-  { value: 'internal', label: 'Machine Process', icon: Factory, color: 'bg-blue-500' },
-  { value: 'inspection', label: 'Quality Check', icon: ClipboardCheck, color: 'bg-purple-500' },
-  { value: 'outside_processing', label: 'Outside Processing', icon: Truck, color: 'bg-orange-500' },
-  { value: 'shipping', label: 'Shipping/Delivery', icon: PackageCheck, color: 'bg-green-500' },
+  { value: 'quote', label: 'Quoting/Estimating', icon: Factory, color: 'bg-slate-500', ring: '' },
+  { value: 'engineering', label: 'Engineering/Programming', icon: Factory, color: 'bg-indigo-500', ring: '' },
+  { value: 'purchasing', label: 'Purchasing/Procurement', icon: Factory, color: 'bg-cyan-500', ring: '' },
+  { value: 'receiving', label: 'Receiving/Material Handling', icon: Factory, color: 'bg-teal-500', ring: '' },
+  { value: 'internal', label: 'Machine Process', icon: Factory, color: 'bg-blue-500', ring: '' },
+  { value: 'inspection', label: 'Quality Check', icon: ClipboardCheck, color: 'bg-purple-500', ring: '' },
+  { value: 'outside_processing', label: 'Outside Processing', icon: Truck, color: 'bg-amber-500', ring: 'ring-2 ring-amber-400 ring-offset-2 ring-offset-background' },
+  { value: 'shipping', label: 'Shipping/Delivery', icon: PackageCheck, color: 'bg-green-500', ring: '' },
 ];
 
 // Complete manufacturing lifecycle from quote to ship with all standard shop floor steps
@@ -99,15 +99,23 @@ const DEFAULT_ROUTING_STEPS: RoutingStep[] = [
   { step_number: 17, operation_name: 'Hardware Installation', operation_type: 'internal', enabled: false },
   { step_number: 18, operation_name: 'Assembly', operation_type: 'internal', enabled: false },
   
-  // Outside Processing
-  { step_number: 19, operation_name: 'Outside Processing - Heat Treat', operation_type: 'outside_processing', enabled: false },
-  { step_number: 20, operation_name: 'Outside Processing - Plating', operation_type: 'outside_processing', enabled: false },
-  { step_number: 21, operation_name: 'Outside Processing - Paint', operation_type: 'outside_processing', enabled: false },
+  // Outside Processing (distinct amber hue for external vendor steps)
+  { step_number: 19, operation_name: 'OP - Heat Treat', operation_type: 'outside_processing', enabled: false },
+  { step_number: 20, operation_name: 'OP - Plating (Zinc, Cadmium, Chrome)', operation_type: 'outside_processing', enabled: false },
+  { step_number: 21, operation_name: 'OP - Anodize (Type II/III)', operation_type: 'outside_processing', enabled: false },
+  { step_number: 22, operation_name: 'OP - Chem Film / Passivation', operation_type: 'outside_processing', enabled: false },
+  { step_number: 23, operation_name: 'OP - Paint / Powder Coat', operation_type: 'outside_processing', enabled: false },
+  { step_number: 24, operation_name: 'OP - NDT (X-Ray, FPI, MPI)', operation_type: 'outside_processing', enabled: false },
+  { step_number: 25, operation_name: 'OP - Grinding / Lapping', operation_type: 'outside_processing', enabled: false },
+  { step_number: 26, operation_name: 'OP - Other Surface Treatment', operation_type: 'outside_processing', enabled: false },
+  
+  // Post-OP Inspection (returns to shop)
+  { step_number: 27, operation_name: 'Post-OP Receiving Inspection', operation_type: 'inspection', enabled: false },
   
   // Final Phase
-  { step_number: 22, operation_name: 'Final Inspection', operation_type: 'inspection', enabled: true },
-  { step_number: 23, operation_name: 'Packaging', operation_type: 'internal', enabled: true },
-  { step_number: 24, operation_name: 'Ship to Customer', operation_type: 'shipping', enabled: true },
+  { step_number: 28, operation_name: 'Final Inspection', operation_type: 'inspection', enabled: true },
+  { step_number: 29, operation_name: 'Packaging', operation_type: 'internal', enabled: true },
+  { step_number: 30, operation_name: 'Ship to Customer', operation_type: 'shipping', enabled: true },
 ];
 
 export function WorkOrderRoutingEditor({ 
@@ -357,8 +365,8 @@ export function WorkOrderRoutingEditor({
 
           return (
             <div key={index}>
-              {/* Step Card */}
-              <Card className={`relative transition-all ${isEditing ? 'ring-2 ring-primary' : ''} ${!isEnabled ? 'opacity-50 bg-muted/30' : ''}`}>
+              {/* Step Card - Outside Processing gets amber hue/ring */}
+              <Card className={`relative transition-all ${isEditing ? 'ring-2 ring-primary' : ''} ${!isEnabled ? 'opacity-50 bg-muted/30' : ''} ${step.operation_type === 'outside_processing' && isEnabled ? 'border-amber-400 bg-amber-500/5 dark:bg-amber-500/10' : ''}`}>
                 <CardContent className="p-4">
                   <div className="flex items-start gap-4">
                     {/* Toggle & Step Number */}
@@ -371,10 +379,10 @@ export function WorkOrderRoutingEditor({
                           className="w-4 h-4 rounded border-primary text-primary focus:ring-primary mb-1"
                         />
                       )}
-                      <div className={`w-10 h-10 rounded-full ${opType.color} flex items-center justify-center text-white ${!isEnabled ? 'grayscale' : ''}`}>
+                      <div className={`w-10 h-10 rounded-full ${opType.color} flex items-center justify-center text-white ${!isEnabled ? 'grayscale' : ''} ${opType.ring}`}>
                         <OpIcon className="w-5 h-5" />
                       </div>
-                      <Badge variant="outline" className="text-xs">
+                      <Badge variant={step.operation_type === 'outside_processing' ? 'default' : 'outline'} className={`text-xs ${step.operation_type === 'outside_processing' && isEnabled ? 'bg-amber-500 text-white hover:bg-amber-600' : ''}`}>
                         {isEnabled ? `Step ${enabledSteps.indexOf(step) + 1}` : 'Off'}
                       </Badge>
                     </div>
