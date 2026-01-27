@@ -69,27 +69,83 @@ flowchart TD
     B --> E[Create user_onboarding record]
     
     C & D & E --> F[Welcome Modal]
-    F --> G{Create or Join Org?}
+    F --> G{How to join org?}
     
     G -->|Create New| H[Organization Setup]
     H --> I[User becomes org 'owner']
     I --> J[Create First Team]
     J --> K[User becomes team 'owner']
     
-    G -->|Invited by Admin| L[Added to Existing Org]
-    L --> M[User becomes org 'member']
-    M --> N[Org Admin assigns app roles]
-    N --> O[Added to Team by Admin]
-    O --> P[User becomes team 'member']
+    G -->|Use Invite Code| L1[Scan QR / Enter Code]
+    L1 --> L2[Validate Code]
+    L2 --> M[Added to Org with specified role]
+    M --> N[Assigned app role from invite]
+    N --> O[Auto-join team if specified]
+    
+    G -->|Added by Admin| L[Added via Admin Panel]
+    L --> M
     
     K --> Q[Setup Stations]
-    P --> Q
+    O --> Q
     Q --> R[Dashboard - Ready to Work]
     
     style A fill:#10b981,color:#fff
     style R fill:#3b82f6,color:#fff
     style I fill:#f59e0b,color:#fff
     style M fill:#8b5cf6,color:#fff
+    style L1 fill:#06b6d4,color:#fff
+```
+
+---
+
+## Invite Code System
+
+Org admins and supervisors can generate invite codes with:
+- **QR Code**: Scan to get invite link
+- **Secret Code**: 8-character alphanumeric code
+- **Direct Link**: `https://app.url/auth?invite=CODE`
+
+### Invite Code Features
+
+| Feature | Description |
+|---------|-------------|
+| Team Assignment | Auto-join specific team on redemption |
+| Org Role | Set as `admin` or `member` |
+| App Role | Assign `supervisor` or `operator` |
+| Expiration | Set expiry date (e.g., 7 days) |
+| Max Uses | Limit number of redemptions |
+| Usage Tracking | Track who used which code |
+
+### Invite Code Flow
+
+```mermaid
+sequenceDiagram
+    participant OA as Org Admin
+    participant S as System
+    participant NU as New User
+    participant DB as Database
+    
+    OA->>S: Create invite code
+    S->>DB: Insert organization_invites
+    S->>OA: Return QR code + secret code
+    
+    OA->>NU: Share QR code or link
+    
+    NU->>S: Scan QR / Click link / Enter code
+    S->>DB: Validate invite code
+    DB->>S: Return org, team, roles
+    
+    alt User not logged in
+        S->>NU: Redirect to signup with code
+        NU->>S: Complete signup
+    end
+    
+    NU->>S: Redeem invite code
+    S->>DB: Add to organization_members
+    S->>DB: Add to team_members (if specified)
+    S->>DB: Add app role (if specified)
+    S->>DB: Record redemption + increment uses
+    S->>NU: Welcome to organization!
 ```
 
 ---
