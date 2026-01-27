@@ -1,0 +1,71 @@
+# JobLine.ai - Digital Expeditor & Smart Shift Handoff System
+
+> JobLine.ai is a manufacturing execution software that streamlines shift handoffs, work order tracking, and production management for CNC machining and fabrication shops.
+
+## What is JobLine.ai?
+
+JobLine.ai is a digital expeditor and smart shift handoff system designed for manufacturing operations. It helps machine shops, fabrication facilities, and production teams:
+
+- **Track Work Orders**: Monitor jobs through every stage from material receiving to shipping
+- **Manage Shift Handoffs**: Seamless transition of work between operators across shifts
+- **Coordinate Routing**: Multi-step work order routing including outside processing vendors
+- **Monitor Station Status**: Real-time visibility into machine and workstation activity
+- **Improve Communication**: Reduce downtime and confusion during shift changes
+
+## Key Features
+
+### Work Order Queue Management
+- Priority-based scheduling (urgent, high, normal, low)
+- Status tracking (pending, in-progress, on-hold, completed)
+- Assignment to specific stations and operators
+- Due date and scheduling management
+
+### Shift Handoff System
+- Structured handoff forms for consistent information transfer
+- Machine condition documentation
+- Material and tooling status tracking
+- Quality notes and issue escalation
+- Supervisor acknowledgment workflow
+
+### Work Order Routing
+- Multi-operation routing templates
+- Support for internal and outside processing steps
+- Step-by-step completion tracking
+- Vendor management for external operations
+
+### Station & Team Management
+- Organize stations by work center type (CNC Mill, CNC Lathe, Welding, Assembly, etc.)
+- Team-based access control
+- Operator performance visibility
+- Real-time station status updates
+
+## Who Uses JobLine.ai?
+
+- **Machine Shop Owners**: Gain visibility into production floor operations
+- **Production Supervisors**: Manage teams, prioritize work, review handoffs
+- **CNC Operators**: Execute work orders, complete handoffs, report issues
+- **Quality Teams**: Track rework, scrap, and quality holds
+- **Schedulers**: Coordinate work order flow and outside processing
+
+## Industries Served
+
+- CNC Machining
+- Sheet Metal Fabrication
+- Aerospace Manufacturing
+- Precision Engineering
+- Medical Device Manufacturing
+- Automotive Parts Production
+- Custom Manufacturing
+
+## Contact & Links
+
+- Website: https://joblineai.lovable.app
+- Product: Manufacturing Execution & Shift Handoff Software
+
+## Technical Details
+
+- Web-based application (no installation required)
+- Mobile-responsive design
+- Real-time data synchronization
+- Role-based access control
+- Multi-tenant architecture for organizations and teams
