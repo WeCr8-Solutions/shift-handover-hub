@@ -1,12 +1,25 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { StationInfo, JobState } from "@/types/handoff";
 import { StatusBadge, getJobStateStatus, getJobStateShortName } from "./StatusBadge";
 import { workCenterIcons, workCenterColors } from "@/lib/workCenterIcons";
-import { AlertTriangle, Check } from "lucide-react";
+import { AlertTriangle, Check, Plus, ListTodo, Lightbulb, Play, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface StationCardProps {
   station: StationInfo;
+  stationDbId?: string; // Database UUID for linking to queue
   onClick?: () => void;
+  onNewHandoff?: () => void;
+  onPerformanceUpdate?: () => void;
+  onViewQueue?: () => void;
 }
 
 function getStateDataAttr(state?: JobState): string {
@@ -75,7 +88,8 @@ function hasAlarm(condition: StationInfo["condition"]): boolean {
   return false;
 }
 
-export function StationCard({ station, onClick }: StationCardProps) {
+export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPerformanceUpdate, onViewQueue }: StationCardProps) {
+  const navigate = useNavigate();
   const { currentJob, condition, workCenterType } = station;
   const stateAttr = getStateDataAttr(currentJob?.state);
   const hasIssues = hasConditionIssue(condition);
@@ -88,15 +102,24 @@ export function StationCard({ station, onClick }: StationCardProps) {
     ? Math.round((currentJob.partsComplete / currentJob.partsRequired) * 100) 
     : 0;
 
+  const handleViewQueue = () => {
+    if (onViewQueue) {
+      onViewQueue();
+    } else if (stationDbId) {
+      navigate(`/queue?station=${stationDbId}`);
+    } else {
+      navigate('/queue');
+    }
+  };
+
   return (
     <div
-      className={cn("machine-card cursor-pointer group")}
+      className={cn("machine-card group")}
       data-state={stateAttr}
-      onClick={onClick}
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
-        <div className="flex items-start gap-3">
+        <div className="flex items-start gap-3 cursor-pointer" onClick={onClick}>
           <div className={cn("p-2 rounded-lg bg-secondary", iconColor)}>
             <Icon className="w-4 h-4" />
           </div>
@@ -159,6 +182,42 @@ export function StationCard({ station, onClick }: StationCardProps) {
           </div>
         </div>
       )}
+
+      {/* Quick Actions */}
+      <div className="flex items-center gap-2 mb-3">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="flex-1 h-8 text-xs"
+          onClick={(e) => { e.stopPropagation(); handleViewQueue(); }}
+        >
+          <ListTodo className="w-3 h-3 mr-1" />
+          Queue
+        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="default" size="sm" className="h-8 text-xs">
+              <Plus className="w-3 h-3 mr-1" />
+              Actions
+              <ChevronRight className="w-3 h-3 ml-1" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem onClick={() => onNewHandoff?.()}>
+              <Play className="w-4 h-4 mr-2" />
+              New Handoff
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onPerformanceUpdate?.()}>
+              <Lightbulb className="w-4 h-4 mr-2" />
+              Performance Update
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleViewQueue}>
+              <ListTodo className="w-4 h-4 mr-2" />
+              View Queue
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
 
       {/* Status Footer */}
       <div className="flex items-center gap-2 pt-2 border-t border-border">

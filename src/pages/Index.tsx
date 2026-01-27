@@ -13,7 +13,7 @@ import { useStations, useHandoffRecords, Station, HandoffRecord } from "@/hooks/
 import { mockStations, mockHandoffRecords } from "@/lib/mockData";
 import { WorkCenterType, StationInfo, ShiftHandoffRecord } from "@/types/handoff";
 import { Button } from "@/components/ui/button";
-import { Plus, LayoutGrid, History, Loader2, Building2, Lightbulb } from "lucide-react";
+import { Plus, LayoutGrid, History, Loader2, Building2, Lightbulb, ListTodo } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { TourTriggerButton } from "@/components/onboarding";
@@ -118,6 +118,14 @@ const Index = () => {
   const [showNewHandoff, setShowNewHandoff] = useState(false);
   const [showPerformanceUpdate, setShowPerformanceUpdate] = useState(false);
   const [selectedTypes, setSelectedTypes] = useState<WorkCenterType[]>([]);
+  const [selectedStationForAction, setSelectedStationForAction] = useState<string | undefined>();
+
+  // Create a map of stationId to database id for linking
+  const stationIdToDbId = useMemo(() => {
+    const map: Record<string, string> = {};
+    dbStations.forEach(s => { map[s.station_id] = s.id; });
+    return map;
+  }, [dbStations]);
 
   // Use database data when logged in, mock data when not
   const stations: StationInfo[] = useMemo(() => {
@@ -183,8 +191,12 @@ const Index = () => {
             </TabsList>
 
             {user && (
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <TourTriggerButton />
+                <Button variant="outline" onClick={() => navigate("/queue")} className="gap-2">
+                  <ListTodo className="w-4 h-4" />
+                  Queue
+                </Button>
                 <Button variant="outline" onClick={() => setShowPerformanceUpdate(true)} className="gap-2">
                   <Lightbulb className="w-4 h-4" />
                   Performance Update
@@ -214,7 +226,27 @@ const Index = () => {
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {filteredStations.map((station) => (
-                    <StationCard key={station.stationId} station={station} />
+                    <StationCard 
+                      key={station.stationId} 
+                      station={station}
+                      stationDbId={stationIdToDbId[station.stationId]}
+                      onNewHandoff={() => {
+                        setSelectedStationForAction(stationIdToDbId[station.stationId]);
+                        setShowNewHandoff(true);
+                      }}
+                      onPerformanceUpdate={() => {
+                        setSelectedStationForAction(stationIdToDbId[station.stationId]);
+                        setShowPerformanceUpdate(true);
+                      }}
+                      onViewQueue={() => {
+                        const dbId = stationIdToDbId[station.stationId];
+                        if (dbId) {
+                          navigate(`/queue?station=${dbId}`);
+                        } else {
+                          navigate('/queue');
+                        }
+                      }}
+                    />
                   ))}
                 </div>
                 {filteredStations.length === 0 && (
