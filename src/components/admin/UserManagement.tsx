@@ -33,6 +33,7 @@ const ROLE_CONFIG: Record<AppRole, { label: string; color: string; icon: React.R
   supervisor: { label: "Supervisor", color: "bg-blue-500/10 text-blue-700 border-blue-200", icon: <UserCog className="w-3 h-3" /> },
   operator: { label: "Operator", color: "bg-green-500/10 text-green-700 border-green-200", icon: <UsersIcon className="w-3 h-3" /> },
   viewer: { label: "Viewer", color: "bg-gray-500/10 text-gray-700 border-gray-200", icon: <Eye className="w-3 h-3" /> },
+  developer: { label: "Developer", color: "bg-purple-500/10 text-purple-700 border-purple-200", icon: <Shield className="w-3 h-3" /> },
 };
 
 interface UserManagementProps {

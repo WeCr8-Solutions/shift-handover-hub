@@ -33,9 +33,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Loader2, MoreHorizontal, Search, Package, Route, Trash2, AlertCircle } from "lucide-react";
+import { Loader2, MoreHorizontal, Search, Package, Route, Trash2, AlertCircle, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { WorkOrderRoutingEditor } from "@/components/routing/WorkOrderRoutingEditor";
+import { CreateWorkOrderDialog } from "@/components/queue/CreateWorkOrderDialog";
+import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { format } from "date-fns";
 import { Database } from "@/integrations/supabase/types";
 
@@ -53,6 +55,7 @@ interface QueueItem {
   due_date: string | null;
   created_at: string;
   station_id: string | null;
+  organization_id: string | null;
   station?: { name: string; station_id: string } | null;
   team?: { name: string } | null;
 }
@@ -80,15 +83,17 @@ const PRIORITY_COLORS: Record<string, string> = {
 
 export function WorkOrderManagement({ isAdmin }: WorkOrderManagementProps) {
   const { toast } = useToast();
+  const { organization } = useUserOrganization();
   const [workOrders, setWorkOrders] = useState<QueueItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [routingEditorItem, setRoutingEditorItem] = useState<QueueItem | null>(null);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchWorkOrders();
-  }, [statusFilter]);
+  }, [statusFilter, organization?.id]);
 
   const fetchWorkOrders = async () => {
     setLoading(true);
@@ -103,6 +108,11 @@ export function WorkOrderManagement({ isAdmin }: WorkOrderManagementProps) {
       .eq("item_type", "work_order")
       .order("created_at", { ascending: false })
       .limit(100);
+
+    // Filter by organization for SaaS RLS
+    if (organization?.id) {
+      query = query.eq("organization_id", organization.id);
+    }
 
     if (statusFilter !== "all") {
       query = query.eq("status", statusFilter as QueueStatus);
@@ -202,6 +212,10 @@ export function WorkOrderManagement({ isAdmin }: WorkOrderManagementProps) {
               </CardDescription>
             </div>
             <div className="flex items-center gap-3">
+              <Button onClick={() => setCreateDialogOpen(true)}>
+                <Plus className="w-4 h-4 mr-2" />
+                Add Work Order
+              </Button>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-[140px]">
                   <SelectValue placeholder="All Statuses" />
@@ -373,6 +387,15 @@ export function WorkOrderManagement({ isAdmin }: WorkOrderManagementProps) {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Create Work Order Dialog */}
+      <CreateWorkOrderDialog
+        open={createDialogOpen}
+        onOpenChange={(open) => {
+          setCreateDialogOpen(open);
+          if (!open) fetchWorkOrders();
+        }}
+      />
     </>
   );
 }
