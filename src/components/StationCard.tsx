@@ -135,6 +135,13 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
     return () => clearInterval(interval);
   }, []);
   
+  // State for incoming queue items (work orders routed to this station, waiting for delivery)
+  const [incomingItems, setIncomingItems] = useState<{
+    itemId: string;
+    workOrder: string;
+    fromStationName: string | null;
+  }[]>([]);
+
   // Fetch active queue item and pending deliveries
   useEffect(() => {
     if (!stationDbId) return;
@@ -152,7 +159,7 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
       
       setActiveQueueItem(activeItem as ActiveQueueItem | null);
       
-      // Get queue count
+      // Get queue count (pending and queued items at this station)
       const { count } = await supabase
         .from("queue_items")
         .select("*", { count: "exact", head: true })
@@ -184,6 +191,7 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
         .order("step_number", { ascending: true })
         .limit(5);
 
+      let foundPendingDelivery = false;
       if (routingData && routingData.length > 0) {
         // For each completed step, check if there's a next step pending
         for (const step of routingData) {
@@ -214,10 +222,77 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
               nextStationName: nextStation?.name || nextStep.operation_name,
               nextStationId: nextStep.station_id,
             });
+            foundPendingDelivery = true;
             break;
           }
         }
       }
+      
+      // Clear pending delivery if none found
+      if (!foundPendingDelivery) {
+        setPendingDelivery(null);
+      }
+
+      // Check for incoming items (work orders routed TO this station that are in queue/pending)
+      // These are items where the previous routing step is completed and this station's step is pending
+      const { data: incomingRoutingData } = await supabase
+        .from("work_order_routing")
+        .select(`
+          id,
+          step_number,
+          operation_name,
+          status,
+          station_id,
+          queue_item_id,
+          queue_items!inner (
+            id,
+            title,
+            work_order,
+            status,
+            station_id
+          )
+        `)
+        .eq("station_id", stationDbId)
+        .eq("status", "pending")
+        .order("step_number", { ascending: true })
+        .limit(10);
+
+      const incomingList: typeof incomingItems = [];
+      if (incomingRoutingData && incomingRoutingData.length > 0) {
+        for (const step of incomingRoutingData) {
+          // Check if there's a previous step that's completed (meaning item is waiting for delivery to us)
+          if (step.step_number > 1) {
+            const { data: prevStep } = await supabase
+              .from("work_order_routing")
+              .select(`
+                id,
+                status,
+                station_id,
+                stations:station_id (
+                  name
+                )
+              `)
+              .eq("queue_item_id", step.queue_item_id)
+              .eq("step_number", step.step_number - 1)
+              .eq("status", "completed")
+              .maybeSingle();
+
+            if (prevStep) {
+              const queueItem = step.queue_items as any;
+              const prevStation = prevStep.stations as any;
+              // Only show if not already at our station
+              if (queueItem?.station_id !== stationDbId) {
+                incomingList.push({
+                  itemId: step.queue_item_id,
+                  workOrder: queueItem?.work_order || queueItem?.title || "Unknown",
+                  fromStationName: prevStation?.name || "Previous Station",
+                });
+              }
+            }
+          }
+        }
+      }
+      setIncomingItems(incomingList);
     };
     
     fetchStationData();
@@ -397,6 +472,36 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
               <MapPin className="w-2.5 h-2.5" />
               {pendingDelivery.nextStationName || "Next Station"}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Incoming Items Alert (work orders waiting to be delivered TO this station) */}
+      {incomingItems.length > 0 && (
+        <div className="mb-3 p-2.5 rounded-lg border border-blue-500/50 bg-blue-500/10">
+          <div className="flex items-center gap-2 mb-1.5">
+            <Package className="w-4 h-4 text-blue-600" />
+            <span className="text-xs font-semibold text-blue-700">
+              {incomingItems.length} Incoming {incomingItems.length === 1 ? "Order" : "Orders"}
+            </span>
+          </div>
+          <div className="space-y-1.5">
+            {incomingItems.slice(0, 3).map((item) => (
+              <div key={item.itemId} className="flex items-center gap-2">
+                <Badge variant="outline" className="text-[10px] bg-background">
+                  <Package className="w-2.5 h-2.5 mr-1" />
+                  {item.workOrder}
+                </Badge>
+                <span className="text-[10px] text-muted-foreground">
+                  from {item.fromStationName}
+                </span>
+              </div>
+            ))}
+            {incomingItems.length > 3 && (
+              <span className="text-[10px] text-muted-foreground">
+                +{incomingItems.length - 3} more
+              </span>
+            )}
           </div>
         </div>
       )}
