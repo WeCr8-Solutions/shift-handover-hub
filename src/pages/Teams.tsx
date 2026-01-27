@@ -1,14 +1,18 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Header } from "@/components/Header";
 import { TeamManagement } from "@/components/TeamManagement";
+import { OrganizationMemberManager } from "@/components/OrganizationMemberManager";
 import { TourTriggerButton } from "@/components/onboarding";
 import { Loader2 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Users, UsersRound } from "lucide-react";
 
 export default function Teams() {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+  const [activeTab, setActiveTab] = useState("teams");
 
   useEffect(() => {
     if (!loading && !user) {
@@ -32,13 +36,31 @@ export default function Teams() {
     <div className="min-h-screen bg-background">
       <Header />
       <main className="container py-6">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold">Teams</h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold">Teams & Members</h1>
           <TourTriggerButton />
         </div>
-        <div data-tour="team-list">
-          <TeamManagement />
-        </div>
+        
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="teams" className="gap-2">
+              <UsersRound className="w-4 h-4" />
+              Teams
+            </TabsTrigger>
+            <TabsTrigger value="org-members" className="gap-2">
+              <Users className="w-4 h-4" />
+              Organization Members
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="teams" data-tour="team-list">
+            <TeamManagement />
+          </TabsContent>
+
+          <TabsContent value="org-members">
+            <OrganizationMemberManager />
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );
