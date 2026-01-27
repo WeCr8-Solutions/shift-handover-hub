@@ -3,15 +3,18 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useAdminAccess } from "@/hooks/useAdminData";
 import { useState } from "react";
 import { format } from "date-fns";
 
 export function BillingBanner() {
   const { organization } = useUserOrganization();
   const { subscriptionEnd, openCustomerPortal } = useSubscription();
+  const { isDeveloper, loading: accessLoading } = useAdminAccess();
   const [dismissed, setDismissed] = useState(false);
 
-  if (dismissed || !organization) return null;
+  // Only show billing banners to developers
+  if (accessLoading || !isDeveloper || dismissed || !organization) return null;
 
   const status = organization.subscription_status;
   const cancelAtPeriodEnd = false; // Would come from subscriptions table
