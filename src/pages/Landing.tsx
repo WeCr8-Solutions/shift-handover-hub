@@ -658,26 +658,26 @@ export default function Landing() {
                     </div>
 
                     {/* Feature Highlights */}
-                    <div className="p-3 rounded-lg bg-gradient-to-br from-amber-500/10 to-orange-500/5 border border-amber-500/20">
-                      <h4 className="text-xs font-semibold mb-2 flex items-center gap-1.5">
-                        <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
+                    <div className="p-4 rounded-lg bg-gradient-to-br from-amber-500/10 to-orange-500/5 border border-amber-500/20">
+                      <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                        <Lightbulb className="w-4 h-4 text-amber-400" />
                         How It Works
                       </h4>
-                      <ul className="space-y-1.5 text-[10px] text-muted-foreground">
-                        <li className="flex items-start gap-1.5">
-                          <CheckCircle2 className="w-3 h-3 text-green-400 mt-0.5 flex-shrink-0" />
+                      <ul className="space-y-2.5 text-xs sm:text-sm text-muted-foreground">
+                        <li className="flex items-start gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
                           <span>Operators submit setup changes, adjustments & improvements</span>
                         </li>
-                        <li className="flex items-start gap-1.5">
-                          <CheckCircle2 className="w-3 h-3 text-green-400 mt-0.5 flex-shrink-0" />
+                        <li className="flex items-start gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
                           <span>Attach photos & mark impact areas (quality, safety, cycle time)</span>
                         </li>
-                        <li className="flex items-start gap-1.5">
-                          <CheckCircle2 className="w-3 h-3 text-green-400 mt-0.5 flex-shrink-0" />
+                        <li className="flex items-start gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
                           <span>Supervisors review, approve & track implementation</span>
                         </li>
-                        <li className="flex items-start gap-1.5">
-                          <CheckCircle2 className="w-3 h-3 text-green-400 mt-0.5 flex-shrink-0" />
+                        <li className="flex items-start gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
                           <span>Build a knowledge base of proven improvements</span>
                         </li>
                       </ul>
