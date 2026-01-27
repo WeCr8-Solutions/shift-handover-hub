@@ -97,11 +97,11 @@ export function WelcomeModal() {
             <Sparkles className="w-6 h-6 text-primary" />
           </div>
           <DialogTitle className="text-2xl">
-            {currentStep === 'welcome' ? 'Welcome to JobLine.ai!' : `Continue Your Tour`}
+            {currentStep === 'welcome' ? 'Welcome to JobLine.ai Digital Expeditor!' : `Continue Your Tour`}
           </DialogTitle>
           <DialogDescription className="text-base">
             {currentStep === 'welcome' 
-              ? 'Let\'s take a quick tour to help you get started with shift handoffs and manufacturing floor management.'
+              ? 'Let\'s set up your shop first, then take a tour to learn how to move work orders through your production line.'
               : `You're ${progress}% through the onboarding. Ready to continue?`
             }
           </DialogDescription>
