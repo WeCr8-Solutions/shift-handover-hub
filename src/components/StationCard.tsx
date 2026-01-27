@@ -3,10 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { StationInfo, JobState } from "@/types/handoff";
 import { StatusBadge, getJobStateStatus, getJobStateShortName } from "./StatusBadge";
 import { workCenterIcons, workCenterColors } from "@/lib/workCenterIcons";
-import { AlertTriangle, Check, Plus, ListTodo, Lightbulb, Play, ChevronRight, Clock, Package } from "lucide-react";
+import { AlertTriangle, Check, Plus, ListTodo, Lightbulb, Play, ChevronRight, Clock, Package, Pause, Timer, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +23,8 @@ interface ActiveQueueItem {
   part_number: string | null;
   status: string;
   started_at: string | null;
+  estimated_duration: number | null;
+  priority: string;
 }
 
 interface StationCardProps {
@@ -31,6 +34,7 @@ interface StationCardProps {
   onNewHandoff?: () => void;
   onPerformanceUpdate?: () => void;
   onViewQueue?: () => void;
+  onAddWorkOrder?: () => void;
 }
 
 function getStateDataAttr(state?: JobState): string {
@@ -99,24 +103,44 @@ function hasAlarm(condition: StationInfo["condition"]): boolean {
   return false;
 }
 
-export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPerformanceUpdate, onViewQueue }: StationCardProps) {
+export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPerformanceUpdate, onViewQueue, onAddWorkOrder }: StationCardProps) {
   const navigate = useNavigate();
   const { currentJob, condition, workCenterType } = station;
   const [activeQueueItem, setActiveQueueItem] = useState<ActiveQueueItem | null>(null);
+  const [queueCount, setQueueCount] = useState(0);
+  const [currentTime, setCurrentTime] = useState(Date.now());
+  
+  // Update timer every minute for duration display
+  useEffect(() => {
+    const interval = setInterval(() => setCurrentTime(Date.now()), 60000);
+    return () => clearInterval(interval);
+  }, []);
   
   // Fetch active queue item for this station
   useEffect(() => {
     if (!stationDbId) return;
     
     const fetchActiveItem = async () => {
+      // Get active/in-progress item
       const { data } = await supabase
         .from("queue_items")
-        .select("id, title, work_order, part_number, status, started_at")
+        .select("id, title, work_order, part_number, status, started_at, estimated_duration, priority")
         .eq("station_id", stationDbId)
-        .eq("status", "in_progress")
+        .in("status", ["in_progress", "on_hold"])
+        .order("status", { ascending: true }) // in_progress comes first
+        .limit(1)
         .maybeSingle();
       
       setActiveQueueItem(data as ActiveQueueItem | null);
+      
+      // Get queue count
+      const { count } = await supabase
+        .from("queue_items")
+        .select("*", { count: "exact", head: true })
+        .eq("station_id", stationDbId)
+        .in("status", ["pending", "queued"]);
+      
+      setQueueCount(count || 0);
     };
     
     fetchActiveItem();
@@ -167,11 +191,58 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
     }
   };
 
-  // Calculate elapsed time if work is in progress
-  const elapsedTime = activeQueueItem?.started_at 
-    ? Math.floor((Date.now() - new Date(activeQueueItem.started_at).getTime()) / 60000)
-    : null;
+  // Calculate elapsed time and remaining duration
+  const getTimeInfo = () => {
+    if (!activeQueueItem?.started_at) return null;
+    
+    const startTime = new Date(activeQueueItem.started_at).getTime();
+    const elapsedMs = currentTime - startTime;
+    const elapsedMins = Math.floor(elapsedMs / 60000);
+    const elapsedHours = Math.floor(elapsedMins / 60);
+    const elapsedDisplay = elapsedHours > 0 
+      ? `${elapsedHours}h ${elapsedMins % 60}m`
+      : `${elapsedMins}m`;
+    
+    if (!activeQueueItem.estimated_duration) {
+      return { elapsed: elapsedDisplay, remaining: null, progress: null, isOverdue: false };
+    }
+    
+    const estimatedMs = activeQueueItem.estimated_duration * 60000;
+    const remainingMs = estimatedMs - elapsedMs;
+    const remainingMins = Math.floor(remainingMs / 60000);
+    const isOverdue = remainingMs <= 0;
+    
+    let remainingDisplay: string;
+    if (isOverdue) {
+      const overdueMins = Math.abs(remainingMins);
+      const overdueHours = Math.floor(overdueMins / 60);
+      remainingDisplay = overdueHours > 0 
+        ? `+${overdueHours}h ${overdueMins % 60}m over`
+        : `+${overdueMins}m over`;
+    } else {
+      const remainingHours = Math.floor(remainingMins / 60);
+      remainingDisplay = remainingHours > 0 
+        ? `${remainingHours}h ${remainingMins % 60}m left`
+        : `${remainingMins}m left`;
+    }
+    
+    const progress = Math.min((elapsedMs / estimatedMs) * 100, 100);
+    
+    return { elapsed: elapsedDisplay, remaining: remainingDisplay, progress, isOverdue };
+  };
 
+  const timeInfo = getTimeInfo();
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case "critical": return "text-red-600 border-red-500/50 bg-red-500/10";
+      case "urgent": return "text-orange-600 border-orange-500/50 bg-orange-500/10";
+      case "high": return "text-amber-600 border-amber-500/50 bg-amber-500/10";
+      default: return "";
+    }
+  };
+
+  // Calculate elapsed time if work is in progress
   return (
     <div
       className={cn("machine-card group")}
@@ -191,40 +262,108 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
             <p className="text-[10px] text-muted-foreground/70">{workCenterType}</p>
           </div>
         </div>
-        {effectiveJob && (
-          <StatusBadge 
-            status={getJobStateStatus(effectiveJob.state)}
-            pulse={effectiveJob.state === "Part Running" || effectiveJob.state === "Processing"}
-          >
-            {getJobStateShortName(effectiveJob.state)}
-          </StatusBadge>
-        )}
+        <div className="flex flex-col items-end gap-1">
+          {effectiveJob && (
+            <StatusBadge 
+              status={getJobStateStatus(effectiveJob.state)}
+              pulse={effectiveJob.state === "Part Running" || effectiveJob.state === "Processing"}
+            >
+              {getJobStateShortName(effectiveJob.state)}
+            </StatusBadge>
+          )}
+          {queueCount > 0 && (
+            <span className="text-[10px] text-muted-foreground">
+              {queueCount} in queue
+            </span>
+          )}
+        </div>
       </div>
 
-      {/* Active Queue Item Alert */}
+      {/* Active Work Status Display */}
       {activeQueueItem && (
-        <div className="mb-3 p-2 bg-primary/10 border border-primary/20 rounded-lg">
-          <div className="flex items-center gap-2 mb-1">
-            <Badge variant="outline" className="text-[10px] bg-green-500/10 text-green-600 border-green-500/30">
-              <Play className="w-2.5 h-2.5 mr-1" />
-              IN PROGRESS
+        <div className={cn(
+          "mb-3 p-2 rounded-lg border",
+          activeQueueItem.status === "in_progress" && "bg-green-500/10 border-green-500/30",
+          activeQueueItem.status === "on_hold" && "bg-amber-500/10 border-amber-500/30",
+          getPriorityColor(activeQueueItem.priority) && activeQueueItem.priority !== "normal" && activeQueueItem.priority !== "low"
+        )}>
+          <div className="flex items-center justify-between mb-1.5">
+            <Badge 
+              variant="outline" 
+              className={cn(
+                "text-[10px]",
+                activeQueueItem.status === "in_progress" && "bg-green-500/10 text-green-600 border-green-500/30",
+                activeQueueItem.status === "on_hold" && "bg-amber-500/10 text-amber-600 border-amber-500/30"
+              )}
+            >
+              {activeQueueItem.status === "in_progress" ? (
+                <>
+                  <Play className="w-2.5 h-2.5 mr-1" />
+                  RUNNING
+                </>
+              ) : (
+                <>
+                  <Pause className="w-2.5 h-2.5 mr-1" />
+                  ON HOLD
+                </>
+              )}
             </Badge>
-            {elapsedTime !== null && (
-              <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                <Clock className="w-2.5 h-2.5" />
-                {elapsedTime}m
-              </span>
+            
+            {timeInfo && (
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                  <Timer className="w-2.5 h-2.5" />
+                  {timeInfo.elapsed}
+                </span>
+              </div>
             )}
           </div>
+          
           <div className="flex items-center gap-1 text-xs font-medium">
             <Package className="w-3 h-3 text-primary" />
             {activeQueueItem.work_order || activeQueueItem.title}
           </div>
+          
           {activeQueueItem.part_number && (
             <p className="text-[10px] text-muted-foreground mt-0.5">
               Part: {activeQueueItem.part_number}
             </p>
           )}
+
+          {/* Duration Progress */}
+          {timeInfo?.progress !== null && timeInfo?.progress !== undefined && (
+            <div className="mt-2">
+              <div className="flex items-center justify-between mb-1">
+                <span className={cn(
+                  "text-[10px] font-medium flex items-center gap-1",
+                  timeInfo.isOverdue ? "text-red-500" : "text-muted-foreground"
+                )}>
+                  {timeInfo.isOverdue && <AlertCircle className="w-2.5 h-2.5" />}
+                  {timeInfo.remaining}
+                </span>
+              </div>
+              <Progress 
+                value={timeInfo.progress} 
+                className={cn(
+                  "h-1",
+                  timeInfo.isOverdue && "[&>div]:bg-red-500"
+                )}
+              />
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Machine Down Status */}
+      {hasActiveAlarm && !activeQueueItem && (
+        <div className="mb-3 p-2 rounded-lg bg-red-500/10 border border-red-500/30">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-red-500" />
+            <div>
+              <span className="text-xs font-medium text-red-600">Machine Down</span>
+              <p className="text-[10px] text-muted-foreground">Requires attention</p>
+            </div>
+          </div>
         </div>
       )}
 
@@ -290,6 +429,10 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem onClick={() => onAddWorkOrder?.()}>
+              <Package className="w-4 h-4 mr-2" />
+              Add Work Order
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onNewHandoff?.()}>
               <Play className="w-4 h-4 mr-2" />
               New Handoff

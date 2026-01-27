@@ -7,13 +7,15 @@ import { ShiftStats } from "@/components/ShiftStats";
 import { NewHandoffForm } from "@/components/NewHandoffForm";
 import { JobPerformanceUpdateForm } from "@/components/JobPerformanceUpdateForm";
 import { WorkCenterFilter } from "@/components/WorkCenterFilter";
+import { OperatorWorkflowPanel } from "@/components/OperatorWorkflowPanel";
+import { CreateWorkOrderDialog } from "@/components/queue/CreateWorkOrderDialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useStations, useHandoffRecords, Station, HandoffRecord } from "@/hooks/useStations";
 import { mockStations, mockHandoffRecords } from "@/lib/mockData";
 import { WorkCenterType, StationInfo, ShiftHandoffRecord } from "@/types/handoff";
 import { Button } from "@/components/ui/button";
-import { Plus, LayoutGrid, History, Loader2, Building2, Lightbulb, ListTodo } from "lucide-react";
+import { Plus, LayoutGrid, History, Loader2, Building2, Lightbulb, ListTodo, Package } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { TourTriggerButton } from "@/components/onboarding";
@@ -117,6 +119,7 @@ const Index = () => {
   
   const [showNewHandoff, setShowNewHandoff] = useState(false);
   const [showPerformanceUpdate, setShowPerformanceUpdate] = useState(false);
+  const [showCreateWorkOrder, setShowCreateWorkOrder] = useState(false);
   const [selectedTypes, setSelectedTypes] = useState<WorkCenterType[]>([]);
   const [selectedStationForAction, setSelectedStationForAction] = useState<string | undefined>();
 
@@ -193,6 +196,14 @@ const Index = () => {
             {user && (
               <div className="flex gap-2 flex-wrap">
                 <TourTriggerButton />
+                <Button 
+                  onClick={() => setShowCreateWorkOrder(true)} 
+                  className="gap-2 bg-primary"
+                  data-tour="add-work-order"
+                >
+                  <Package className="w-4 h-4" />
+                  Add Work Order
+                </Button>
                 <Button variant="outline" onClick={() => navigate("/queue")} className="gap-2">
                   <ListTodo className="w-4 h-4" />
                   Queue
@@ -201,7 +212,7 @@ const Index = () => {
                   <Lightbulb className="w-4 h-4" />
                   Performance Update
                 </Button>
-                <Button onClick={() => setShowNewHandoff(true)} className="gap-2" data-tour="new-handoff">
+                <Button variant="outline" onClick={() => setShowNewHandoff(true)} className="gap-2" data-tour="new-handoff">
                   <Plus className="w-4 h-4" />
                   New Handoff
                 </Button>
@@ -223,38 +234,54 @@ const Index = () => {
                 <Loader2 className="w-6 h-6 animate-spin text-primary" />
               </div>
             ) : (
-              <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {filteredStations.map((station) => (
-                    <StationCard 
-                      key={station.stationId} 
-                      station={station}
-                      stationDbId={stationIdToDbId[station.stationId]}
-                      onNewHandoff={() => {
-                        setSelectedStationForAction(stationIdToDbId[station.stationId]);
-                        setShowNewHandoff(true);
-                      }}
-                      onPerformanceUpdate={() => {
-                        setSelectedStationForAction(stationIdToDbId[station.stationId]);
-                        setShowPerformanceUpdate(true);
-                      }}
-                      onViewQueue={() => {
-                        const dbId = stationIdToDbId[station.stationId];
-                        if (dbId) {
-                          navigate(`/queue?station=${dbId}`);
-                        } else {
-                          navigate('/queue');
-                        }
-                      }}
-                    />
-                  ))}
-                </div>
-                {filteredStations.length === 0 && (
-                  <div className="text-center py-12 text-muted-foreground">
-                    {user ? "No stations in this workspace. Create a team and add stations to get started." : "No stations match the selected filters."}
+              <div className="flex gap-6">
+                {/* Operator Workflow Panel - Left Sidebar */}
+                {user && (
+                  <div className="hidden lg:block w-80 flex-shrink-0">
+                    <div className="sticky top-4">
+                      <OperatorWorkflowPanel />
+                    </div>
                   </div>
                 )}
-              </>
+                
+                {/* Station Grid */}
+                <div className="flex-1">
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {filteredStations.map((station) => (
+                      <StationCard 
+                        key={station.stationId} 
+                        station={station}
+                        stationDbId={stationIdToDbId[station.stationId]}
+                        onNewHandoff={() => {
+                          setSelectedStationForAction(stationIdToDbId[station.stationId]);
+                          setShowNewHandoff(true);
+                        }}
+                        onPerformanceUpdate={() => {
+                          setSelectedStationForAction(stationIdToDbId[station.stationId]);
+                          setShowPerformanceUpdate(true);
+                        }}
+                        onViewQueue={() => {
+                          const dbId = stationIdToDbId[station.stationId];
+                          if (dbId) {
+                            navigate(`/queue?station=${dbId}`);
+                          } else {
+                            navigate('/queue');
+                          }
+                        }}
+                        onAddWorkOrder={() => {
+                          setSelectedStationForAction(stationIdToDbId[station.stationId]);
+                          setShowCreateWorkOrder(true);
+                        }}
+                      />
+                    ))}
+                  </div>
+                  {filteredStations.length === 0 && (
+                    <div className="text-center py-12 text-muted-foreground">
+                      {user ? "No stations in this workspace. Create a team and add stations to get started." : "No stations match the selected filters."}
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
           </TabsContent>
 
@@ -298,6 +325,13 @@ const Index = () => {
       {showPerformanceUpdate && (
         <JobPerformanceUpdateForm onClose={() => setShowPerformanceUpdate(false)} />
       )}
+
+      {/* Create Work Order Dialog */}
+      <CreateWorkOrderDialog
+        open={showCreateWorkOrder}
+        onOpenChange={setShowCreateWorkOrder}
+        preSelectedStationId={selectedStationForAction}
+      />
     </div>
   );
 };
