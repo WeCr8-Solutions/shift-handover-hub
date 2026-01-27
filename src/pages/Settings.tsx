@@ -2,9 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Loader2, Settings2, Factory, Bell, Clock, Wrench, Building2 } from "lucide-react";
+import { Loader2, Settings2, Factory, Bell, Clock, Wrench, Building2, CreditCard } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAppSettings } from "@/hooks/useAppSettings";
 import { GeneralSettings } from "@/components/settings/GeneralSettings";
@@ -13,6 +11,7 @@ import { ShiftSettings } from "@/components/settings/ShiftSettings";
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
 import { WorkCenterSettings } from "@/components/settings/WorkCenterSettings";
 import { OrganizationSettings } from "@/components/settings/OrganizationSettings";
+import { BillingSettings } from "@/components/settings/BillingSettings";
 
 export default function Settings() {
   const navigate = useNavigate();
@@ -48,7 +47,7 @@ export default function Settings() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6 h-auto gap-2 bg-transparent p-0">
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-7 h-auto gap-2 bg-transparent p-0">
             <TabsTrigger 
               value="general" 
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground border"
@@ -62,6 +61,13 @@ export default function Settings() {
             >
               <Building2 className="w-4 h-4 mr-2" />
               Organization
+            </TabsTrigger>
+            <TabsTrigger 
+              value="billing"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground border"
+            >
+              <CreditCard className="w-4 h-4 mr-2" />
+              Billing
             </TabsTrigger>
             <TabsTrigger 
               value="manufacturing"
@@ -99,6 +105,10 @@ export default function Settings() {
 
           <TabsContent value="organization">
             <OrganizationSettings />
+          </TabsContent>
+
+          <TabsContent value="billing">
+            <BillingSettings />
           </TabsContent>
 
           <TabsContent value="manufacturing">
