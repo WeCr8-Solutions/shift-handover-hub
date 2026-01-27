@@ -4,3 +4,4 @@ export { GuidedTour } from './GuidedTour';
 export { WelcomeModal } from './WelcomeModal';
 export { OnboardingProgress } from './OnboardingProgress';
 export { TourTriggerButton } from './TourTriggerButton';
+export { OrganizationSetup } from './OrganizationSetup';
