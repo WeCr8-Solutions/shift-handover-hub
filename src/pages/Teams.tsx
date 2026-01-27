@@ -4,10 +4,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Header } from "@/components/Header";
 import { TeamManagement } from "@/components/TeamManagement";
 import { OrganizationMemberManager } from "@/components/OrganizationMemberManager";
+import { InviteCodeGenerator } from "@/components/InviteCodeGenerator";
 import { TourTriggerButton } from "@/components/onboarding";
 import { Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, UsersRound } from "lucide-react";
+import { Users, UsersRound, QrCode } from "lucide-react";
 
 export default function Teams() {
   const navigate = useNavigate();
@@ -49,7 +50,11 @@ export default function Teams() {
             </TabsTrigger>
             <TabsTrigger value="org-members" className="gap-2">
               <Users className="w-4 h-4" />
-              Organization Members
+              Members
+            </TabsTrigger>
+            <TabsTrigger value="invites" className="gap-2">
+              <QrCode className="w-4 h-4" />
+              Invite Codes
             </TabsTrigger>
           </TabsList>
 
@@ -59,6 +64,10 @@ export default function Teams() {
 
           <TabsContent value="org-members">
             <OrganizationMemberManager />
+          </TabsContent>
+
+          <TabsContent value="invites">
+            <InviteCodeGenerator />
           </TabsContent>
         </Tabs>
       </main>

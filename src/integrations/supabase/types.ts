@@ -417,6 +417,35 @@ export type Database = {
           },
         ]
       }
+      invite_redemptions: {
+        Row: {
+          id: string
+          invite_id: string
+          redeemed_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          invite_id: string
+          redeemed_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          invite_id?: string
+          redeemed_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invite_redemptions_invite_id_fkey"
+            columns: ["invite_id"]
+            isOneToOne: false
+            referencedRelation: "organization_invites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       job_performance_updates: {
         Row: {
           affects_cycle_time: boolean | null
@@ -604,6 +633,69 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      organization_invites: {
+        Row: {
+          app_role: string | null
+          created_at: string
+          created_by: string
+          expires_at: string | null
+          id: string
+          invite_code: string
+          is_active: boolean
+          max_uses: number | null
+          org_role: string
+          organization_id: string
+          team_id: string | null
+          updated_at: string
+          uses_count: number
+        }
+        Insert: {
+          app_role?: string | null
+          created_at?: string
+          created_by: string
+          expires_at?: string | null
+          id?: string
+          invite_code: string
+          is_active?: boolean
+          max_uses?: number | null
+          org_role?: string
+          organization_id: string
+          team_id?: string | null
+          updated_at?: string
+          uses_count?: number
+        }
+        Update: {
+          app_role?: string | null
+          created_at?: string
+          created_by?: string
+          expires_at?: string | null
+          id?: string
+          invite_code?: string
+          is_active?: boolean
+          max_uses?: number | null
+          org_role?: string
+          organization_id?: string
+          team_id?: string | null
+          updated_at?: string
+          uses_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_invites_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_invites_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       organization_members: {
         Row: {

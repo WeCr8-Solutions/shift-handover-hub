@@ -1,16 +1,17 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Factory, Loader2, AlertCircle } from "lucide-react";
+import { Factory, Loader2, AlertCircle, Ticket } from "lucide-react";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { useEmail } from "@/hooks/useEmail";
 import { supabase } from "@/integrations/supabase/client";
+import { InviteCodeRedemption } from "@/components/InviteCodeRedemption";
 
 const emailSchema = z.string().email("Please enter a valid email address");
 const passwordSchema = z.string().min(6, "Password must be at least 6 characters");
@@ -18,12 +19,17 @@ const displayNameSchema = z.string().min(2, "Display name must be at least 2 cha
 
 export default function Auth() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, signIn, signUp, loading } = useAuth();
   const { toast } = useToast();
   const { sendWelcomeEmail } = useEmail();
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showInviteRedemption, setShowInviteRedemption] = useState(false);
+  
+  // Get invite code from URL if present
+  const inviteCode = searchParams.get("invite") || "";
   
   // Login form
   const [loginEmail, setLoginEmail] = useState("");
@@ -42,9 +48,14 @@ export default function Auth() {
 
   useEffect(() => {
     if (user && !loading) {
-      navigate("/dashboard");
+      // If user just logged in with an invite code, show redemption
+      if (inviteCode) {
+        setShowInviteRedemption(true);
+      } else {
+        navigate("/dashboard");
+      }
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, navigate, inviteCode]);
 
   const validateLogin = () => {
     const newErrors: Record<string, string> = {};
@@ -186,6 +197,44 @@ export default function Auth() {
     );
   }
 
+  // Show invite redemption for logged-in users with invite code
+  if (showInviteRedemption && user) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+        <div className="flex items-center gap-3 mb-8">
+          <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 border border-primary/20">
+            <Factory className="w-6 h-6 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-semibold text-foreground">
+              JobLine<span className="text-primary">.ai</span>
+            </h1>
+          </div>
+        </div>
+
+        <div className="w-full max-w-md">
+          <InviteCodeRedemption
+            initialCode={inviteCode}
+            onSuccess={() => {
+              toast({
+                title: "Welcome!",
+                description: "You've successfully joined the organization.",
+              });
+              navigate("/dashboard");
+            }}
+          />
+          <Button
+            variant="ghost"
+            className="w-full mt-4"
+            onClick={() => navigate("/dashboard")}
+          >
+            Skip for now
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   // Forgot Password View
   if (showForgotPassword) {
     return (
@@ -284,11 +333,26 @@ export default function Auth() {
         </div>
       </div>
 
+      {/* Invite Code Banner */}
+      {inviteCode && (
+        <div className="w-full max-w-md mb-4 p-3 bg-primary/10 border border-primary/20 rounded-lg">
+          <div className="flex items-center gap-2 text-sm">
+            <Ticket className="w-4 h-4 text-primary" />
+            <span>You have an invite code: <strong>{inviteCode}</strong></span>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Sign up or log in to join the organization
+          </p>
+        </div>
+      )}
+
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle>Welcome</CardTitle>
           <CardDescription>
-            Sign in to your account or create a new one
+            {inviteCode 
+              ? "Sign in or create an account to redeem your invite" 
+              : "Sign in to your account or create a new one"}
           </CardDescription>
         </CardHeader>
         <CardContent>
