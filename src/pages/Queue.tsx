@@ -98,7 +98,7 @@ export default function Queue() {
         </div>
 
         {/* Tabs for Queue vs Outside Processing */}
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "queue" | "outside-processing")}>
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "queue" | "outside-processing")} data-tour="queue-tabs">
           <TabsList>
             <TabsTrigger value="queue" className="flex items-center gap-2">
               <LayoutGrid className="w-4 h-4" />
@@ -116,8 +116,10 @@ export default function Queue() {
 
             {/* View Toggle and Filters */}
             <div className="flex items-center justify-between gap-4">
-              <QueueFilters filters={filters} onFiltersChange={setFilters} />
-              <div className="flex items-center border rounded-lg p-1">
+              <div data-tour="queue-filters">
+                <QueueFilters filters={filters} onFiltersChange={setFilters} />
+              </div>
+              <div className="flex items-center border rounded-lg p-1" data-tour="queue-views">
                 <Button
                   variant={view === "kanban" ? "default" : "ghost"}
                   size="sm"

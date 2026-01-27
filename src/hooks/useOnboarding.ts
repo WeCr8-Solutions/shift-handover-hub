@@ -15,16 +15,16 @@ export type OnboardingStep =
   | 'complete';
 
 export const ONBOARDING_STEPS: { id: OnboardingStep; title: string; description: string }[] = [
-  { id: 'welcome', title: 'Welcome to JobLine.ai', description: 'Let\'s take a quick tour of the platform' },
-  { id: 'organization-setup', title: 'Create Your Organization', description: 'Set up your company workspace' },
-  { id: 'shop-setup', title: 'Set Up Your Shop', description: 'Configure teams, stations, and users' },
-  { id: 'dashboard-overview', title: 'Dashboard Overview', description: 'Your command center for shift operations' },
-  { id: 'station-cards', title: 'Station Cards', description: 'Monitor machine status at a glance' },
-  { id: 'handoff-submission', title: 'Shift Handoffs', description: 'Submit detailed handoff reports' },
-  { id: 'performance-updates', title: 'Performance Updates', description: 'Suggest process improvements' },
-  { id: 'team-management', title: 'Team Management', description: 'Organize your workforce' },
-  { id: 'admin-features', title: 'Admin Features', description: 'Manage the entire system' },
-  { id: 'complete', title: 'All Set!', description: 'You\'re ready to use JobLine.ai' },
+  { id: 'welcome', title: 'Welcome to JobLine.ai', description: 'Your Digital Expeditor for manufacturing workflows' },
+  { id: 'organization-setup', title: 'Create Your Organization', description: 'Set up your company workspace with secure data isolation' },
+  { id: 'shop-setup', title: 'Set Up Your Shop', description: 'Configure teams, stations, routing templates, and users' },
+  { id: 'dashboard-overview', title: 'Digital Expeditor Dashboard', description: 'Track work orders through your production line' },
+  { id: 'station-cards', title: 'Select & Deliver Work Orders', description: 'Pick available jobs and confirm delivery to next station' },
+  { id: 'handoff-submission', title: 'Shift Handoffs', description: 'Document handoffs and continuous improvement notes' },
+  { id: 'performance-updates', title: 'Job Performance Updates', description: 'Suggest process improvements and track implementation' },
+  { id: 'team-management', title: 'Team Management', description: 'Organize operators, supervisors, and station assignments' },
+  { id: 'admin-features', title: 'Admin Features', description: 'Full system oversight and bulk data management' },
+  { id: 'complete', title: 'All Set!', description: 'You\'re ready to use JobLine.ai Digital Expeditor' },
 ];
 
 interface OnboardingState {

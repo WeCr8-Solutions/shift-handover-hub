@@ -356,33 +356,55 @@ export default function Setup() {
               {isSetupComplete ? (
                 <>
                   <CheckCircle2 className="w-12 h-12 mx-auto mb-4 text-green-500" />
-                  <h3 className="text-lg font-semibold mb-2">You're all set!</h3>
+                  <h3 className="text-lg font-semibold mb-2">Your Digital Expeditor is Ready!</h3>
                   <p className="text-muted-foreground mb-4">
-                    Your manufacturing floor is configured and ready for shift handoffs.
+                    Your manufacturing floor is configured. Take a quick tour to learn how to move work orders through your production line.
                   </p>
+                  <div className="flex gap-3 justify-center">
+                    <Button 
+                      variant="outline"
+                      onClick={() => {
+                        completeStep('shop-setup');
+                        navigate('/dashboard');
+                      }}
+                    >
+                      Skip Tour
+                    </Button>
+                    <Button 
+                      size="lg" 
+                      onClick={() => {
+                        completeStep('shop-setup');
+                        navigate('/dashboard');
+                        setTimeout(() => startTour('dashboard-overview'), 500);
+                      }}
+                    >
+                      <Play className="w-4 h-4 mr-2" />
+                      Take the Tour
+                    </Button>
+                  </div>
                 </>
               ) : (
                 <>
                   <LayoutDashboard className="w-12 h-12 mx-auto mb-4 text-primary" />
                   <h3 className="text-lg font-semibold mb-2">Ready to explore?</h3>
                   <p className="text-muted-foreground mb-4">
-                    You can set up later. Continue to the dashboard to see how JobLine works.
+                    Set up your data first, then take the tour to see how the Digital Expeditor helps you move jobs through production.
                   </p>
+                  <p className="text-xs text-muted-foreground mb-4">
+                    💡 Tip: Complete the setup steps above to unlock the full guided tour.
+                  </p>
+                  <Button 
+                    variant="outline"
+                    onClick={() => {
+                      completeStep('shop-setup');
+                      navigate('/dashboard');
+                    }}
+                  >
+                    <LayoutDashboard className="w-4 h-4 mr-2" />
+                    Preview Dashboard
+                  </Button>
                 </>
               )}
-              <Button 
-                size="lg" 
-                onClick={() => {
-                  completeStep('shop-setup');
-                  navigate('/dashboard');
-                  if (!onboardingComplete) {
-                    setTimeout(() => startTour(), 300);
-                  }
-                }}
-              >
-                <LayoutDashboard className="w-4 h-4 mr-2" />
-                {isSetupComplete ? 'Go to Dashboard' : 'Continue to Dashboard'}
-              </Button>
             </CardContent>
           </Card>
         </div>
