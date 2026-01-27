@@ -396,6 +396,161 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* App Preview Sections */}
+      <section className="py-8 sm:py-12 md:py-16">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12">
+            <Badge variant="outline" className="mb-3 sm:mb-4 text-xs sm:text-sm">See It In Action</Badge>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold">
+              Built for the Shop Floor
+            </h2>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-6 md:gap-8 max-w-6xl mx-auto">
+            {/* Queue Preview */}
+            <div className="bg-card border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-secondary/30">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-primary" />
+                  <span className="font-medium text-sm">Work Order Queue</span>
+                </div>
+              </div>
+              <div className="p-4 space-y-3">
+                {[
+                  { wo: "WO-2024-0847", part: "Bracket Assembly", qty: 150, status: "In Progress", priority: "high", station: "CNC-01" },
+                  { wo: "WO-2024-0851", part: "Shaft Housing", qty: 75, status: "Queued", priority: "urgent", station: "LATHE-02" },
+                  { wo: "WO-2024-0849", part: "Motor Mount", qty: 200, status: "Queued", priority: "normal", station: "MILL-03" },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-secondary/20 border border-border/50">
+                    <div className={cn(
+                      "w-1 h-10 rounded-full flex-shrink-0",
+                      item.priority === "urgent" ? "bg-red-500" : 
+                      item.priority === "high" ? "bg-amber-500" : "bg-blue-500"
+                    )} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-mono text-xs text-primary">{item.wo}</span>
+                        <Badge variant="outline" className={cn(
+                          "text-[10px] px-1.5 py-0",
+                          item.status === "In Progress" ? "border-green-500/50 text-green-400" : "border-muted-foreground/30"
+                        )}>
+                          {item.status}
+                        </Badge>
+                      </div>
+                      <div className="text-sm font-medium truncate">{item.part}</div>
+                      <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                        <span>Qty: {item.qty}</span>
+                        <span>•</span>
+                        <span>{item.station}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Handoff Preview */}
+            <div className="bg-card border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-secondary/30">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-primary" />
+                  <span className="font-medium text-sm">Recent Handoffs</span>
+                </div>
+              </div>
+              <div className="p-4 space-y-3">
+                {[
+                  { station: "CNC-01", from: "Mike R.", to: "Sarah C.", time: "2:03 PM", state: "Running", parts: "127/150" },
+                  { station: "LATHE-02", from: "James W.", to: "Tom B.", time: "2:00 PM", state: "Setup", parts: "0/75" },
+                  { station: "MILL-03", from: "Lisa M.", to: "Dave K.", time: "1:58 PM", state: "Running", parts: "45/200" },
+                ].map((handoff, i) => (
+                  <div key={i} className="p-3 rounded-lg bg-secondary/20 border border-border/50">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-mono text-xs font-medium">{handoff.station}</span>
+                      <span className="text-[10px] text-muted-foreground">{handoff.time}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm mb-2">
+                      <span className="text-muted-foreground">{handoff.from}</span>
+                      <ArrowRight className="w-3 h-3 text-primary" />
+                      <span className="font-medium">{handoff.to}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-[10px]">
+                      <Badge variant="outline" className={cn(
+                        "px-1.5 py-0",
+                        handoff.state === "Running" ? "border-green-500/50 text-green-400" : "border-amber-500/50 text-amber-400"
+                      )}>
+                        {handoff.state}
+                      </Badge>
+                      <span className="text-muted-foreground">Parts: {handoff.parts}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Routing Preview - Full Width */}
+          <div className="max-w-6xl mx-auto mt-6 md:mt-8">
+            <div className="bg-card border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-secondary/30">
+                <div className="flex items-center gap-2">
+                  <Gauge className="w-4 h-4 text-primary" />
+                  <span className="font-medium text-sm">Work Order Routing</span>
+                  <Badge variant="outline" className="ml-auto text-[10px]">WO-2024-0847</Badge>
+                </div>
+              </div>
+              <div className="p-4 overflow-x-auto">
+                <div className="flex items-center gap-2 min-w-max">
+                  {[
+                    { step: 1, name: "Material Receiving", status: "complete" },
+                    { step: 2, name: "Incoming Inspection", status: "complete" },
+                    { step: 3, name: "CNC Machining", status: "active" },
+                    { step: 4, name: "Deburr", status: "pending" },
+                    { step: 5, name: "Heat Treat", status: "pending", outside: true },
+                    { step: 6, name: "Final Inspection", status: "pending" },
+                    { step: 7, name: "Ship", status: "pending" },
+                  ].map((step, i, arr) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <div className={cn(
+                        "flex flex-col items-center gap-1 px-3 py-2 rounded-lg border min-w-[100px]",
+                        step.status === "complete" ? "bg-green-500/10 border-green-500/30" :
+                        step.status === "active" ? "bg-primary/10 border-primary/50" :
+                        "bg-secondary/30 border-border/50"
+                      )}>
+                        <div className={cn(
+                          "w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold",
+                          step.status === "complete" ? "bg-green-500 text-white" :
+                          step.status === "active" ? "bg-primary text-white" :
+                          "bg-muted text-muted-foreground"
+                        )}>
+                          {step.status === "complete" ? "✓" : step.step}
+                        </div>
+                        <span className={cn(
+                          "text-[10px] text-center leading-tight",
+                          step.status === "active" ? "font-medium" : "text-muted-foreground"
+                        )}>
+                          {step.name}
+                        </span>
+                        {step.outside && (
+                          <Badge variant="outline" className="text-[8px] px-1 py-0 border-amber-500/50 text-amber-400">
+                            Outside
+                          </Badge>
+                        )}
+                      </div>
+                      {i < arr.length - 1 && (
+                        <div className={cn(
+                          "w-4 h-0.5",
+                          step.status === "complete" ? "bg-green-500" : "bg-border"
+                        )} />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section id="features" className="py-12 sm:py-16 md:py-24 lg:py-32">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
