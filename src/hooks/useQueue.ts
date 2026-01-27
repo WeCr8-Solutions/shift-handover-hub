@@ -242,6 +242,38 @@ export function useQueue(filters?: {
 
       if (error) return { error: error.message };
 
+      // Sync with current_station_status when work starts or completes
+      if (oldItem?.station_id && input.status) {
+        if (input.status === "in_progress") {
+          // Update station status to show active work
+          await syncStationStatus(oldItem.station_id, {
+            current_job_work_order: oldItem.work_order || oldItem.title,
+            current_job_part_number: oldItem.part_number,
+            current_job_state: "Part Running",
+            current_operator_name: profile.display_name,
+            current_operator_id: user.id,
+            parts_complete: 0,
+            parts_required: oldItem.quantity || 0,
+          });
+        } else if (input.status === "completed" || input.status === "cancelled") {
+          // Clear station status when work completes
+          await syncStationStatus(oldItem.station_id, {
+            current_job_work_order: null,
+            current_job_part_number: null,
+            current_job_state: null,
+            current_operator_name: null,
+            current_operator_id: null,
+            parts_complete: null,
+            parts_required: null,
+          });
+        } else if (input.status === "on_hold") {
+          // Update station status to show on hold
+          await syncStationStatus(oldItem.station_id, {
+            current_job_state: "On Hold",
+          });
+        }
+      }
+
       // Log history
       if (logHistory && oldItem) {
         const changes: string[] = [];
@@ -272,6 +304,37 @@ export function useQueue(filters?: {
     },
     [user, profile, fetchItems]
   );
+
+  // Helper to sync station status when queue item changes
+  const syncStationStatus = async (
+    stationId: string,
+    status: {
+      current_job_work_order?: string | null;
+      current_job_part_number?: string | null;
+      current_job_state?: string | null;
+      current_operator_name?: string | null;
+      current_operator_id?: string | null;
+      parts_complete?: number | null;
+      parts_required?: number | null;
+    }
+  ) => {
+    const { data: existing } = await supabase
+      .from("current_station_status")
+      .select("id")
+      .eq("station_id", stationId)
+      .maybeSingle();
+
+    if (existing) {
+      await supabase
+        .from("current_station_status")
+        .update(status)
+        .eq("station_id", stationId);
+    } else {
+      await supabase
+        .from("current_station_status")
+        .insert({ station_id: stationId, ...status });
+    }
+  };
 
   const deleteItem = useCallback(
     async (id: string) => {

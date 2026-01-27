@@ -1,17 +1,28 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { StationInfo, JobState } from "@/types/handoff";
 import { StatusBadge, getJobStateStatus, getJobStateShortName } from "./StatusBadge";
 import { workCenterIcons, workCenterColors } from "@/lib/workCenterIcons";
-import { AlertTriangle, Check, Plus, ListTodo, Lightbulb, Play, ChevronRight } from "lucide-react";
+import { AlertTriangle, Check, Plus, ListTodo, Lightbulb, Play, ChevronRight, Clock, Package } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { supabase } from "@/integrations/supabase/client";
+
+interface ActiveQueueItem {
+  id: string;
+  title: string;
+  work_order: string | null;
+  part_number: string | null;
+  status: string;
+  started_at: string | null;
+}
 
 interface StationCardProps {
   station: StationInfo;
@@ -91,15 +102,59 @@ function hasAlarm(condition: StationInfo["condition"]): boolean {
 export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPerformanceUpdate, onViewQueue }: StationCardProps) {
   const navigate = useNavigate();
   const { currentJob, condition, workCenterType } = station;
-  const stateAttr = getStateDataAttr(currentJob?.state);
+  const [activeQueueItem, setActiveQueueItem] = useState<ActiveQueueItem | null>(null);
+  
+  // Fetch active queue item for this station
+  useEffect(() => {
+    if (!stationDbId) return;
+    
+    const fetchActiveItem = async () => {
+      const { data } = await supabase
+        .from("queue_items")
+        .select("id, title, work_order, part_number, status, started_at")
+        .eq("station_id", stationDbId)
+        .eq("status", "in_progress")
+        .maybeSingle();
+      
+      setActiveQueueItem(data as ActiveQueueItem | null);
+    };
+    
+    fetchActiveItem();
+    
+    // Subscribe to changes
+    const channel = supabase
+      .channel(`station-queue-${stationDbId}`)
+      .on("postgres_changes", {
+        event: "*",
+        schema: "public",
+        table: "queue_items",
+        filter: `station_id=eq.${stationDbId}`,
+      }, () => {
+        fetchActiveItem();
+      })
+      .subscribe();
+    
+    return () => { supabase.removeChannel(channel); };
+  }, [stationDbId]);
+  
+  const effectiveJob = currentJob || (activeQueueItem ? {
+    workOrder: activeQueueItem.work_order || activeQueueItem.title,
+    partNumber: activeQueueItem.part_number || "",
+    state: "Part Running" as JobState,
+    operator: "",
+    partsComplete: 0,
+    partsRequired: 0,
+  } : undefined);
+  
+  const stateAttr = getStateDataAttr(effectiveJob?.state);
   const hasIssues = hasConditionIssue(condition);
   const hasActiveAlarm = hasAlarm(condition);
   
   const Icon = workCenterIcons[workCenterType];
   const iconColor = workCenterColors[workCenterType];
 
-  const progress = currentJob && currentJob.partsRequired > 0
-    ? Math.round((currentJob.partsComplete / currentJob.partsRequired) * 100) 
+  const progress = effectiveJob && effectiveJob.partsRequired > 0
+    ? Math.round((effectiveJob.partsComplete / effectiveJob.partsRequired) * 100) 
     : 0;
 
   const handleViewQueue = () => {
@@ -111,6 +166,11 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
       navigate('/queue');
     }
   };
+
+  // Calculate elapsed time if work is in progress
+  const elapsedTime = activeQueueItem?.started_at 
+    ? Math.floor((Date.now() - new Date(activeQueueItem.started_at).getTime()) / 60000)
+    : null;
 
   return (
     <div
@@ -131,18 +191,45 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
             <p className="text-[10px] text-muted-foreground/70">{workCenterType}</p>
           </div>
         </div>
-        {currentJob && (
+        {effectiveJob && (
           <StatusBadge 
-            status={getJobStateStatus(currentJob.state)}
-            pulse={currentJob.state === "Part Running" || currentJob.state === "Processing"}
+            status={getJobStateStatus(effectiveJob.state)}
+            pulse={effectiveJob.state === "Part Running" || effectiveJob.state === "Processing"}
           >
-            {getJobStateShortName(currentJob.state)}
+            {getJobStateShortName(effectiveJob.state)}
           </StatusBadge>
         )}
       </div>
 
-      {/* Current Job Info */}
-      {currentJob && currentJob.workOrder !== "TOOL-MGMT" && (
+      {/* Active Queue Item Alert */}
+      {activeQueueItem && (
+        <div className="mb-3 p-2 bg-primary/10 border border-primary/20 rounded-lg">
+          <div className="flex items-center gap-2 mb-1">
+            <Badge variant="outline" className="text-[10px] bg-green-500/10 text-green-600 border-green-500/30">
+              <Play className="w-2.5 h-2.5 mr-1" />
+              IN PROGRESS
+            </Badge>
+            {elapsedTime !== null && (
+              <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                <Clock className="w-2.5 h-2.5" />
+                {elapsedTime}m
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-1 text-xs font-medium">
+            <Package className="w-3 h-3 text-primary" />
+            {activeQueueItem.work_order || activeQueueItem.title}
+          </div>
+          {activeQueueItem.part_number && (
+            <p className="text-[10px] text-muted-foreground mt-0.5">
+              Part: {activeQueueItem.part_number}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Current Job Info (from handoff records) */}
+      {currentJob && currentJob.workOrder !== "TOOL-MGMT" && !activeQueueItem && (
         <div className="space-y-2 mb-3">
           <div className="flex items-center justify-between">
             <span className="data-label">Work Order</span>
@@ -160,12 +247,12 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
       )}
 
       {/* Progress Bar */}
-      {currentJob && currentJob.partsRequired > 0 && (
+      {effectiveJob && effectiveJob.partsRequired > 0 && (
         <div className="mb-3">
           <div className="flex items-center justify-between mb-1">
             <span className="data-label">Progress</span>
             <span className="font-mono text-xs text-foreground">
-              {currentJob.partsComplete} / {currentJob.partsRequired}
+              {effectiveJob.partsComplete} / {effectiveJob.partsRequired}
             </span>
           </div>
           <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
