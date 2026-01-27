@@ -61,6 +61,22 @@ Organization
 
 ---
 
+## Role-Based Views
+
+For role-specific perspectives on these PRDs, see:
+
+| Role | Document |
+|------|----------|
+| Platform Admin & Developer | [roles/platform-admin-developer.md](./roles/platform-admin-developer.md) |
+| Org Owner & Admin | [roles/org-owner-admin.md](./roles/org-owner-admin.md) |
+| Supervisor | [roles/supervisor.md](./roles/supervisor.md) |
+| Operator | [roles/operator.md](./roles/operator.md) |
+| Viewer | [roles/viewer.md](./roles/viewer.md) |
+
+Full index: [roles/index.md](./roles/index.md)
+
+---
+
 ## Contributing
 
 When updating PRDs:
