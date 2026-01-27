@@ -148,19 +148,19 @@ export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadD
                     Download our Excel templates with sample data to get started.
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    <Button variant="outline" size="sm" onClick={() => downloadTemplate('all')}>
+                    <Button variant="outline" size="sm" onClick={() => void downloadTemplate('all')}>
                       <Download className="w-4 h-4 mr-2" />
                       Complete Setup Template
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={() => downloadTemplate('stations')}>
+                    <Button variant="ghost" size="sm" onClick={() => void downloadTemplate('stations')}>
                       <Wrench className="w-4 h-4 mr-2" />
                       Stations Only
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={() => downloadTemplate('teams')}>
+                    <Button variant="ghost" size="sm" onClick={() => void downloadTemplate('teams')}>
                       <Building2 className="w-4 h-4 mr-2" />
                       Teams Only
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={() => downloadTemplate('users')}>
+                    <Button variant="ghost" size="sm" onClick={() => void downloadTemplate('users')}>
                       <Users className="w-4 h-4 mr-2" />
                       Users Only
                     </Button>
