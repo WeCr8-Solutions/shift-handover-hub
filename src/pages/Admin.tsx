@@ -8,12 +8,14 @@ import { UserManagement } from "@/components/admin/UserManagement";
 import { StationManagement } from "@/components/admin/StationManagement";
 import { TeamOversight } from "@/components/admin/TeamOversight";
 import { ActivityLogs } from "@/components/admin/ActivityLogs";
+import { WorkOrderManagement } from "@/components/admin/WorkOrderManagement";
+import { RoutingTemplateManagement } from "@/components/admin/RoutingTemplateManagement";
 import { BulkUploadDialog } from "@/components/BulkUploadDialog";
 import { TourTriggerButton } from "@/components/onboarding";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Shield, LayoutDashboard, Users, Wrench, Building2, Activity, FileSpreadsheet, FlaskConical } from "lucide-react";
+import { Loader2, Shield, LayoutDashboard, Users, Wrench, Building2, Activity, FileSpreadsheet, FlaskConical, Package, Route } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function Admin() {
@@ -90,10 +92,18 @@ export default function Admin() {
 
         {/* Management Tabs */}
         <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList data-tour="admin-tabs">
+          <TabsList data-tour="admin-tabs" className="flex-wrap h-auto gap-1">
             <TabsTrigger value="overview" className="gap-2">
               <LayoutDashboard className="w-4 h-4" />
               Overview
+            </TabsTrigger>
+            <TabsTrigger value="work-orders" className="gap-2">
+              <Package className="w-4 h-4" />
+              Work Orders
+            </TabsTrigger>
+            <TabsTrigger value="routing" className="gap-2">
+              <Route className="w-4 h-4" />
+              Routing
             </TabsTrigger>
             <TabsTrigger value="users" className="gap-2">
               <Users className="w-4 h-4" />
@@ -109,7 +119,7 @@ export default function Admin() {
             </TabsTrigger>
             <TabsTrigger value="activity" className="gap-2">
               <Activity className="w-4 h-4" />
-              Activity Logs
+              Activity
             </TabsTrigger>
           </TabsList>
 
@@ -119,6 +129,14 @@ export default function Admin() {
               <TeamOversight isAdmin={isAdmin} />
             </div>
             <StationManagement isAdmin={isAdmin} />
+          </TabsContent>
+
+          <TabsContent value="work-orders">
+            <WorkOrderManagement isAdmin={isAdmin} />
+          </TabsContent>
+
+          <TabsContent value="routing">
+            <RoutingTemplateManagement isAdmin={isAdmin} />
           </TabsContent>
 
           <TabsContent value="users">
