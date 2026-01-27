@@ -23,7 +23,11 @@ import {
   Globe,
   ArrowUpRight,
   Menu,
-  X
+  X,
+  Lightbulb,
+  CheckCircle2,
+  Camera,
+  TrendingUp
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import joblineLogo from "@/assets/jobline-logo.png";
@@ -544,6 +548,141 @@ export default function Landing() {
                       )}
                     </div>
                   ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Continuous Improvement Preview - Full Width */}
+          <div className="max-w-6xl mx-auto mt-6 md:mt-8">
+            <div className="bg-card border border-border rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-amber-500/10">
+                <div className="flex items-center gap-2">
+                  <Lightbulb className="w-4 h-4 text-amber-400" />
+                  <span className="font-medium text-sm">Continuous Improvement Tracking</span>
+                  <Badge variant="outline" className="ml-auto text-[10px] border-amber-500/50 text-amber-400">
+                    <TrendingUp className="w-3 h-3 mr-1" />
+                    Kaizen
+                  </Badge>
+                </div>
+              </div>
+              <div className="p-4">
+                <div className="grid md:grid-cols-2 gap-4">
+                  {/* Performance Update Cards */}
+                  <div className="space-y-3">
+                    <p className="text-xs text-muted-foreground mb-2">Recent Operator Submissions</p>
+                    {[
+                      { 
+                        title: "Tool offset adjustment for better finish", 
+                        type: "setup_change", 
+                        author: "Mike R.", 
+                        station: "CNC-01",
+                        status: "approved",
+                        priority: "high",
+                        hasImage: true
+                      },
+                      { 
+                        title: "Coolant flow rate optimization", 
+                        type: "improvement", 
+                        author: "Sarah C.", 
+                        station: "LATHE-02",
+                        status: "pending",
+                        priority: "normal",
+                        hasImage: false
+                      },
+                      { 
+                        title: "Fixture clamp position change", 
+                        type: "adjustment", 
+                        author: "James W.", 
+                        station: "MILL-03",
+                        status: "implemented",
+                        priority: "critical",
+                        hasImage: true
+                      },
+                    ].map((update, i) => (
+                      <div key={i} className="p-3 rounded-lg bg-secondary/20 border border-border/50">
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <div className="flex items-center gap-2">
+                            <div className={cn(
+                              "w-2 h-2 rounded-full flex-shrink-0",
+                              update.priority === "critical" ? "bg-red-500" :
+                              update.priority === "high" ? "bg-amber-500" : "bg-blue-500"
+                            )} />
+                            <span className="text-sm font-medium leading-tight">{update.title}</span>
+                          </div>
+                          {update.hasImage && (
+                            <Camera className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+                          )}
+                        </div>
+                        <div className="flex items-center justify-between text-[10px]">
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <span>{update.author}</span>
+                            <span>•</span>
+                            <span className="font-mono">{update.station}</span>
+                          </div>
+                          <Badge variant="outline" className={cn(
+                            "px-1.5 py-0 text-[9px]",
+                            update.status === "approved" ? "border-blue-500/50 text-blue-400" :
+                            update.status === "implemented" ? "border-green-500/50 text-green-400" :
+                            "border-amber-500/50 text-amber-400"
+                          )}>
+                            {update.status === "implemented" && <CheckCircle2 className="w-2.5 h-2.5 mr-0.5" />}
+                            {update.status}
+                          </Badge>
+                        </div>
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          <Badge variant="outline" className="text-[8px] px-1 py-0 border-muted-foreground/30">
+                            {update.type.replace('_', ' ')}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Impact Metrics */}
+                  <div className="space-y-3">
+                    <p className="text-xs text-muted-foreground mb-2">Improvement Impact</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      {[
+                        { label: "Updates This Month", value: "47", trend: "+12%", color: "text-amber-400" },
+                        { label: "Implemented", value: "34", trend: "72%", color: "text-green-400" },
+                        { label: "Cycle Time Saved", value: "14h", trend: "-8%", color: "text-blue-400" },
+                        { label: "Quality Impact", value: "23", trend: "issues prevented", color: "text-purple-400" },
+                      ].map((stat, i) => (
+                        <div key={i} className="p-3 rounded-lg bg-secondary/30 border border-border/50 text-center">
+                          <div className={cn("text-xl sm:text-2xl font-bold", stat.color)}>{stat.value}</div>
+                          <div className="text-[10px] text-muted-foreground">{stat.label}</div>
+                          <div className="text-[9px] text-muted-foreground/60 mt-1">{stat.trend}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Feature Highlights */}
+                    <div className="p-3 rounded-lg bg-gradient-to-br from-amber-500/10 to-orange-500/5 border border-amber-500/20">
+                      <h4 className="text-xs font-semibold mb-2 flex items-center gap-1.5">
+                        <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
+                        How It Works
+                      </h4>
+                      <ul className="space-y-1.5 text-[10px] text-muted-foreground">
+                        <li className="flex items-start gap-1.5">
+                          <CheckCircle2 className="w-3 h-3 text-green-400 mt-0.5 flex-shrink-0" />
+                          <span>Operators submit setup changes, adjustments & improvements</span>
+                        </li>
+                        <li className="flex items-start gap-1.5">
+                          <CheckCircle2 className="w-3 h-3 text-green-400 mt-0.5 flex-shrink-0" />
+                          <span>Attach photos & mark impact areas (quality, safety, cycle time)</span>
+                        </li>
+                        <li className="flex items-start gap-1.5">
+                          <CheckCircle2 className="w-3 h-3 text-green-400 mt-0.5 flex-shrink-0" />
+                          <span>Supervisors review, approve & track implementation</span>
+                        </li>
+                        <li className="flex items-start gap-1.5">
+                          <CheckCircle2 className="w-3 h-3 text-green-400 mt-0.5 flex-shrink-0" />
+                          <span>Build a knowledge base of proven improvements</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
