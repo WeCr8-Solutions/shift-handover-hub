@@ -28,26 +28,79 @@ interface EmailRequest {
   data: Record<string, unknown>
 }
 
-// Simple in-memory rate limiting (resets on function cold start)
-const rateLimitMap = new Map<string, { count: number; resetTime: number }>()
-const RATE_LIMIT = 10 // emails per window
-const RATE_WINDOW_MS = 60 * 60 * 1000 // 1 hour
+// Rate limiting constants
+const RATE_LIMIT_USER = 10 // emails per hour per user
+const RATE_LIMIT_RECIPIENT = 3 // emails per 24h to same recipient
+const RATE_WINDOW_USER_MS = 60 * 60 * 1000 // 1 hour
+const RATE_WINDOW_RECIPIENT_MS = 24 * 60 * 60 * 1000 // 24 hours
 
-function checkRateLimit(userId: string): boolean {
-  const now = Date.now()
-  const userLimit = rateLimitMap.get(userId)
+// Create admin client for rate limit table (bypasses RLS)
+function getAdminClient() {
+  return createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  )
+}
+
+// Database-backed rate limiting - persists across cold starts and instances
+async function checkRateLimits(userId: string, recipient: string): Promise<{ allowed: boolean; reason?: string }> {
+  const adminClient = getAdminClient()
+  const now = new Date()
   
-  if (!userLimit || now > userLimit.resetTime) {
-    rateLimitMap.set(userId, { count: 1, resetTime: now + RATE_WINDOW_MS })
-    return true
+  // Check user rate limit (10 emails per hour)
+  const userWindowStart = new Date(now.getTime() - RATE_WINDOW_USER_MS).toISOString()
+  const { count: userCount, error: userError } = await adminClient
+    .from('email_rate_limits')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .gte('sent_at', userWindowStart)
+  
+  if (userError) {
+    console.error('Rate limit check failed:', userError)
+    // Fail open but log the issue
+    return { allowed: true }
   }
   
-  if (userLimit.count >= RATE_LIMIT) {
-    return false
+  if (userCount !== null && userCount >= RATE_LIMIT_USER) {
+    return { allowed: false, reason: 'Rate limit exceeded. Please try again later.' }
   }
   
-  userLimit.count++
-  return true
+  // Check recipient rate limit (3 emails per 24h to same address)
+  const recipientWindowStart = new Date(now.getTime() - RATE_WINDOW_RECIPIENT_MS).toISOString()
+  const { count: recipientCount, error: recipientError } = await adminClient
+    .from('email_rate_limits')
+    .select('*', { count: 'exact', head: true })
+    .eq('recipient', recipient.toLowerCase())
+    .gte('sent_at', recipientWindowStart)
+  
+  if (recipientError) {
+    console.error('Recipient rate limit check failed:', recipientError)
+    return { allowed: true }
+  }
+  
+  if (recipientCount !== null && recipientCount >= RATE_LIMIT_RECIPIENT) {
+    return { allowed: false, reason: 'Too many emails sent to this address. Please try again later.' }
+  }
+  
+  return { allowed: true }
+}
+
+// Record email send for rate limiting
+async function recordEmailSend(userId: string, emailType: string, recipient: string): Promise<void> {
+  const adminClient = getAdminClient()
+  
+  const { error } = await adminClient
+    .from('email_rate_limits')
+    .insert({
+      user_id: userId,
+      email_type: emailType,
+      recipient: recipient.toLowerCase()
+    })
+  
+  if (error) {
+    console.error('Failed to record email send:', error)
+    // Don't fail the request if recording fails
+  }
 }
 
 Deno.serve(async (req) => {
@@ -89,25 +142,32 @@ Deno.serve(async (req) => {
 
     console.log(`Authenticated request from user: ${userId} (${userEmail})`)
 
-    // Rate limiting check
-    if (!checkRateLimit(userId)) {
-      console.warn(`Rate limit exceeded for user: ${userId}`)
-      return new Response(
-        JSON.stringify({ error: 'Rate limit exceeded. Try again later.' }),
-        { status: 429, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-      )
-    }
-
     const { type, to, data }: EmailRequest = await req.json()
 
     if (!type || !to) {
-      throw new Error('Missing required fields: type and to')
+      return new Response(
+        JSON.stringify({ error: 'Missing required fields' }),
+        { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+      )
     }
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(to)) {
-      throw new Error('Invalid recipient email address')
+      return new Response(
+        JSON.stringify({ error: 'Invalid email address' }),
+        { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+      )
+    }
+
+    // Database-backed rate limiting check
+    const rateLimitResult = await checkRateLimits(userId, to)
+    if (!rateLimitResult.allowed) {
+      console.warn(`Rate limit exceeded for user: ${userId}, reason: ${rateLimitResult.reason}`)
+      return new Response(
+        JSON.stringify({ error: rateLimitResult.reason }),
+        { status: 429, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+      )
     }
 
     console.log(`Sending ${type} email to ${to} (requested by ${userEmail})`)
@@ -205,7 +265,10 @@ Deno.serve(async (req) => {
       throw error
     }
 
-    console.log('Email sent successfully:', emailData, `by user: ${userId}`)
+    // Record successful send for rate limiting
+    await recordEmailSend(userId, type, to)
+
+    console.log('Email sent successfully:', emailData?.id, `by user: ${userId}`)
 
     return new Response(
       JSON.stringify({ success: true, id: emailData?.id }),
@@ -216,9 +279,9 @@ Deno.serve(async (req) => {
     )
   } catch (error: unknown) {
     console.error('Error sending email:', error)
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    // Return generic error message to prevent information leakage
     return new Response(
-      JSON.stringify({ error: errorMessage }),
+      JSON.stringify({ error: 'An error occurred while sending the email. Please try again.' }),
       { 
         status: 500, 
         headers: { 'Content-Type': 'application/json', ...corsHeaders } 
