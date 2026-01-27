@@ -5,6 +5,9 @@ import { Database } from "@/integrations/supabase/types";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
+// Org admins can only assign these roles - platform roles (admin, developer) are reserved
+const ORG_ASSIGNABLE_ROLES: AppRole[] = ['supervisor', 'operator', 'viewer'];
+
 export interface OrganizationMember {
   id: string;
   user_id: string;
@@ -166,9 +169,9 @@ export function useOrganizationMembers(organizationId: string | null) {
   };
 
   const assignAppRole = async (userId: string, role: AppRole) => {
-    // Only allow supervisor and operator roles to be assigned by org admins
-    if (!["supervisor", "operator"].includes(role)) {
-      return { error: new Error("You can only assign supervisor or operator roles.") };
+    // Only allow org-assignable roles (supervisor, operator, viewer) by org admins
+    if (!ORG_ASSIGNABLE_ROLES.includes(role)) {
+      return { error: new Error("You can only assign supervisor, operator, or viewer roles.") };
     }
 
     // Check if user already has this role
@@ -194,9 +197,9 @@ export function useOrganizationMembers(organizationId: string | null) {
   };
 
   const removeAppRole = async (userId: string, role: AppRole) => {
-    // Only allow supervisor and operator roles to be removed by org admins
-    if (!["supervisor", "operator"].includes(role)) {
-      return { error: new Error("You can only remove supervisor or operator roles.") };
+    // Only allow org-assignable roles (supervisor, operator, viewer) to be removed by org admins
+    if (!ORG_ASSIGNABLE_ROLES.includes(role)) {
+      return { error: new Error("You can only remove supervisor, operator, or viewer roles.") };
     }
 
     const { error } = await supabase
