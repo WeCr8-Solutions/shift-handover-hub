@@ -52,6 +52,7 @@ export function useAdminAccess() {
   const { user } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
   const [isSupervisor, setIsSupervisor] = useState(false);
+  const [isDeveloper, setIsDeveloper] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -59,6 +60,7 @@ export function useAdminAccess() {
       if (!user) {
         setIsAdmin(false);
         setIsSupervisor(false);
+        setIsDeveloper(false);
         setLoading(false);
         return;
       }
@@ -72,6 +74,7 @@ export function useAdminAccess() {
         const roleList = roles.map((r) => r.role);
         setIsAdmin(roleList.includes("admin"));
         setIsSupervisor(roleList.includes("supervisor"));
+        setIsDeveloper(roleList.includes("developer"));
       }
       setLoading(false);
     };
@@ -79,7 +82,14 @@ export function useAdminAccess() {
     checkAccess();
   }, [user]);
 
-  return { isAdmin, isSupervisor, hasAdminAccess: isAdmin || isSupervisor, loading };
+  return { 
+    isAdmin, 
+    isSupervisor, 
+    isDeveloper,
+    hasAdminAccess: isAdmin || isSupervisor, 
+    hasTestingAccess: isDeveloper, // Only developers can access testing
+    loading 
+  };
 }
 
 export function useAllUsers() {

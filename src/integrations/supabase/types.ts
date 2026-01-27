@@ -1481,7 +1481,7 @@ export type Database = {
         | "team_member_added"
         | "team_member_removed"
         | "profile_updated"
-      app_role: "admin" | "operator" | "supervisor" | "viewer"
+      app_role: "admin" | "operator" | "supervisor" | "viewer" | "developer"
       queue_item_type:
         | "work_order"
         | "station_task"
@@ -1640,7 +1640,7 @@ export const Constants = {
         "team_member_removed",
         "profile_updated",
       ],
-      app_role: ["admin", "operator", "supervisor", "viewer"],
+      app_role: ["admin", "operator", "supervisor", "viewer", "developer"],
       queue_item_type: [
         "work_order",
         "station_task",

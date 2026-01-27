@@ -9,14 +9,13 @@ import { TestResultsPanel } from "@/components/testing/TestResultsPanel";
 import { TestCoverageCard } from "@/components/testing/TestCoverageCard";
 import { TestHistoryList } from "@/components/testing/TestHistoryList";
 import { TestSuiteSelector } from "@/components/testing/TestSuiteSelector";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, FlaskConical, Shield } from "lucide-react";
+import { Loader2, FlaskConical, Code } from "lucide-react";
 
 export default function Testing() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-  const { isAdmin, isSupervisor, hasAdminAccess, loading: accessLoading } = useAdminAccess();
+  const { isDeveloper, hasTestingAccess, loading: accessLoading } = useAdminAccess();
   const {
     isRunning,
     currentRun,
@@ -34,11 +33,12 @@ export default function Testing() {
     }
   }, [authLoading, user, navigate]);
 
+  // Only developers with the 'developer' role can access testing
   useEffect(() => {
-    if (!accessLoading && !hasAdminAccess && user) {
+    if (!accessLoading && !hasTestingAccess && user) {
       navigate("/dashboard");
     }
-  }, [accessLoading, hasAdminAccess, user, navigate]);
+  }, [accessLoading, hasTestingAccess, user, navigate]);
 
   if (authLoading || accessLoading) {
     return (
@@ -48,7 +48,7 @@ export default function Testing() {
     );
   }
 
-  if (!hasAdminAccess) {
+  if (!hasTestingAccess) {
     return null;
   }
 
@@ -70,9 +70,9 @@ export default function Testing() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant={isAdmin ? "default" : "secondary"} className="gap-1">
-              <Shield className="w-3 h-3" />
-              {isAdmin ? "Administrator" : "Supervisor"}
+            <Badge variant="default" className="gap-1 bg-purple-600">
+              <Code className="w-3 h-3" />
+              SDK Developer
             </Badge>
           </div>
         </div>
