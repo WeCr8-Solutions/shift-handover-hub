@@ -422,6 +422,10 @@ export type Database = {
           affects_cycle_time: boolean | null
           affects_quality: boolean | null
           affects_safety: boolean | null
+          assigned_at: string | null
+          assigned_by: string | null
+          assigned_station_id: string | null
+          assigned_team_id: string | null
           created_at: string
           description: string
           expected_benefit: string | null
@@ -454,6 +458,10 @@ export type Database = {
           affects_cycle_time?: boolean | null
           affects_quality?: boolean | null
           affects_safety?: boolean | null
+          assigned_at?: string | null
+          assigned_by?: string | null
+          assigned_station_id?: string | null
+          assigned_team_id?: string | null
           created_at?: string
           description: string
           expected_benefit?: string | null
@@ -486,6 +494,10 @@ export type Database = {
           affects_cycle_time?: boolean | null
           affects_quality?: boolean | null
           affects_safety?: boolean | null
+          assigned_at?: string | null
+          assigned_by?: string | null
+          assigned_station_id?: string | null
+          assigned_team_id?: string | null
           created_at?: string
           description?: string
           expected_benefit?: string | null
@@ -515,6 +527,20 @@ export type Database = {
           work_order?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "job_performance_updates_assigned_station_id_fkey"
+            columns: ["assigned_station_id"]
+            isOneToOne: false
+            referencedRelation: "stations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_performance_updates_assigned_team_id_fkey"
+            columns: ["assigned_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "job_performance_updates_station_id_fkey"
             columns: ["station_id"]
