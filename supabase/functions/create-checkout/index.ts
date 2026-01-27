@@ -7,7 +7,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const logStep = (step: string, details?: any) => {
+const logStep = (step: string, details?: unknown) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
 };
@@ -19,15 +19,16 @@ serve(async (req) => {
 
   const supabaseClient = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    { auth: { persistSession: false } }
   );
 
   try {
     logStep("Function started");
 
-    const { priceId } = await req.json();
+    const { priceId, orgId } = await req.json();
     if (!priceId) throw new Error("Price ID is required");
-    logStep("Price ID received", { priceId });
+    logStep("Price ID received", { priceId, orgId });
 
     const authHeader = req.headers.get("Authorization")!;
     const token = authHeader.replace("Bearer ", "");
@@ -40,19 +41,71 @@ serve(async (req) => {
       apiVersion: "2025-08-27.basil" 
     });
 
-    // Check if customer already exists
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    let customerId;
-    if (customers.data.length > 0) {
-      customerId = customers.data[0].id;
-      logStep("Existing customer found", { customerId });
+    // Get user's organization if orgId not provided
+    let organizationId = orgId;
+    let organizationName = "";
+    let billingEmail = user.email;
+
+    if (!organizationId) {
+      const { data: orgMember } = await supabaseClient
+        .from("organization_members")
+        .select("organization_id, organizations(id, name, stripe_customer_id, billing_email)")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (orgMember?.organization_id) {
+        organizationId = orgMember.organization_id;
+        const orgs = orgMember.organizations;
+        const org = Array.isArray(orgs) ? orgs[0] : orgs;
+        if (org) {
+          organizationName = org.name || "";
+          billingEmail = org.billing_email || user.email;
+        }
+        logStep("Found user organization", { organizationId, organizationName });
+      }
+    }
+
+    // Check if organization already has a Stripe customer
+    let customerId: string | undefined;
+    
+    if (organizationId) {
+      const { data: org } = await supabaseClient
+        .from("organizations")
+        .select("stripe_customer_id, name, billing_email")
+        .eq("id", organizationId)
+        .maybeSingle();
+
+      if (org?.stripe_customer_id) {
+        customerId = org.stripe_customer_id;
+        logStep("Existing Stripe customer found on org", { customerId });
+      } else {
+        organizationName = org?.name || "";
+        billingEmail = org?.billing_email || user.email;
+      }
+    }
+
+    // If no org customer, check for existing customer by email
+    if (!customerId) {
+      const customers = await stripe.customers.list({ email: billingEmail, limit: 1 });
+      if (customers.data.length > 0) {
+        customerId = customers.data[0].id;
+        logStep("Existing customer found by email", { customerId });
+        
+        // Store customer ID on org if we have one
+        if (organizationId) {
+          await supabaseClient
+            .from("organizations")
+            .update({ stripe_customer_id: customerId })
+            .eq("id", organizationId);
+        }
+      }
     }
 
     const origin = req.headers.get("origin") || "https://jobline.ai";
     
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      customer_email: customerId ? undefined : user.email,
+      customer_email: customerId ? undefined : billingEmail,
       line_items: [
         {
           price: priceId,
@@ -64,6 +117,14 @@ serve(async (req) => {
       cancel_url: `${origin}/pricing?subscription=cancelled`,
       metadata: {
         user_id: user.id,
+        org_id: organizationId || "",
+        org_name: organizationName,
+      },
+      subscription_data: {
+        metadata: {
+          user_id: user.id,
+          org_id: organizationId || "",
+        },
       },
     });
 
