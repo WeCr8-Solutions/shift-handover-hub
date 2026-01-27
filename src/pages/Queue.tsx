@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQueue, QueueStatus, QueueItemType } from "@/hooks/useQueue";
+import { useAdminAccess } from "@/hooks/useAdminData";
+import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { Header } from "@/components/Header";
 import { QueueKanbanBoard } from "@/components/queue/QueueKanbanBoard";
 import { QueueListView } from "@/components/queue/QueueListView";
@@ -13,24 +15,58 @@ import { QueueStatsCards } from "@/components/queue/QueueStatsCards";
 import { WorkOrderRoutingEditor } from "@/components/routing/WorkOrderRoutingEditor";
 import { OutsideProcessingManager } from "@/components/routing/OutsideProcessingManager";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, LayoutGrid, List, Plus, Calendar, Truck, GitBranch } from "lucide-react";
+import { Loader2, LayoutGrid, List, Plus, Calendar, Truck, GitBranch, Building2, Wrench, Eye } from "lucide-react";
 
 export default function Queue() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, loading: authLoading } = useAuth();
+  const { hasAdminAccess, loading: accessLoading } = useAdminAccess();
+  const { organization } = useUserOrganization();
+  
+  // Check if viewing a specific station from URL
+  const urlStationId = searchParams.get("station");
+  
   const [activeTab, setActiveTab] = useState<"queue" | "outside-processing">("queue");
   const [view, setView] = useState<"kanban" | "list" | "calendar">("kanban");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [routingEditorItem, setRoutingEditorItem] = useState<{ id: string; work_order: string; part_number?: string } | null>(null);
+  
+  // Scope control: org-wide for admins, station-specific for operators
+  const [viewScope, setViewScope] = useState<"organization" | "station">(
+    urlStationId ? "station" : "organization"
+  );
+  
   const [filters, setFilters] = useState<{
     status?: QueueStatus[];
     item_type?: QueueItemType[];
     station_id?: string;
     assigned_to?: string;
-  }>({});
+  }>({
+    // Pre-populate station filter from URL if present
+    station_id: urlStationId || undefined,
+  });
+
+  // Update scope based on role and URL
+  useEffect(() => {
+    if (!accessLoading) {
+      if (urlStationId) {
+        // URL station takes precedence
+        setViewScope("station");
+        setFilters(prev => ({ ...prev, station_id: urlStationId }));
+      } else if (!hasAdminAccess) {
+        // Operators default to station view (they need to select their station)
+        setViewScope("station");
+      } else {
+        // Admins/supervisors see org-wide by default
+        setViewScope("organization");
+      }
+    }
+  }, [accessLoading, hasAdminAccess, urlStationId]);
 
   const {
     items,
@@ -51,7 +87,7 @@ export default function Queue() {
     }
   }, [authLoading, user, navigate]);
 
-  if (authLoading) {
+  if (authLoading || accessLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -77,19 +113,76 @@ export default function Queue() {
     });
   };
 
+  const handleScopeChange = (scope: "organization" | "station") => {
+    setViewScope(scope);
+    if (scope === "organization") {
+      // Clear station filter for org-wide view
+      setFilters(prev => ({ ...prev, station_id: undefined }));
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <main className="container mx-auto px-4 py-6 space-y-6">
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold">Queue Management</h1>
-            <p className="text-sm text-muted-foreground">
-              Plan, prioritize, and track work orders, tasks, and support tickets
-            </p>
+          <div className="flex items-center gap-3">
+            <div>
+              <h1 className="text-2xl font-bold flex items-center gap-2">
+                Queue Management
+                {/* Scope Indicator */}
+                <Badge 
+                  variant="outline" 
+                  className={viewScope === "organization" ? "bg-primary/10 text-primary border-primary/30" : "bg-amber-500/10 text-amber-700 border-amber-500/30"}
+                >
+                  {viewScope === "organization" ? (
+                    <>
+                      <Building2 className="w-3 h-3 mr-1" />
+                      Organization
+                    </>
+                  ) : (
+                    <>
+                      <Wrench className="w-3 h-3 mr-1" />
+                      Station
+                    </>
+                  )}
+                </Badge>
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                {viewScope === "organization" 
+                  ? `All work orders across ${organization?.name || "organization"}`
+                  : filters.station_id 
+                    ? "Viewing station-specific queue"
+                    : "Select a station to view its queue"
+                }
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-2">
+            {/* Scope Toggle for Admins */}
+            {hasAdminAccess && (
+              <div className="flex items-center border rounded-lg p-1 mr-2">
+                <Button
+                  variant={viewScope === "organization" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => handleScopeChange("organization")}
+                  className="gap-1"
+                >
+                  <Building2 className="w-4 h-4" />
+                  <span className="hidden sm:inline">Org</span>
+                </Button>
+                <Button
+                  variant={viewScope === "station" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => handleScopeChange("station")}
+                  className="gap-1"
+                >
+                  <Wrench className="w-4 h-4" />
+                  <span className="hidden sm:inline">Station</span>
+                </Button>
+              </div>
+            )}
             <Button onClick={() => setCreateDialogOpen(true)}>
               <Plus className="w-4 h-4 mr-2" />
               Add Item
