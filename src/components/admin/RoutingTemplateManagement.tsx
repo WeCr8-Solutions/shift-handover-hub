@@ -43,7 +43,7 @@ import { Switch } from "@/components/ui/switch";
 import { 
   Loader2, MoreHorizontal, Plus, Search, Route, Trash2, Pencil, Copy, 
   Factory, Truck, ClipboardCheck, PackageCheck, ChevronUp, ChevronDown,
-  ArrowRight, GripVertical
+  ArrowRight, GripVertical, List, GitBranch
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -70,14 +70,14 @@ interface RoutingTemplate {
 }
 
 const OPERATION_TYPES = [
-  { value: 'quote', label: 'Quoting/Estimating', icon: Factory },
-  { value: 'engineering', label: 'Engineering/Programming', icon: Factory },
-  { value: 'purchasing', label: 'Purchasing/Procurement', icon: Factory },
-  { value: 'receiving', label: 'Receiving/Material Handling', icon: Factory },
-  { value: 'internal', label: 'Internal Process', icon: Factory },
-  { value: 'outside_processing', label: 'Outside Processing', icon: Truck },
-  { value: 'inspection', label: 'Inspection/QC', icon: ClipboardCheck },
-  { value: 'shipping', label: 'Shipping', icon: PackageCheck },
+  { value: 'quote', label: 'Quoting/Estimating', icon: Factory, color: 'bg-slate-500' },
+  { value: 'engineering', label: 'Engineering/Programming', icon: Factory, color: 'bg-indigo-500' },
+  { value: 'purchasing', label: 'Purchasing/Procurement', icon: Factory, color: 'bg-cyan-500' },
+  { value: 'receiving', label: 'Receiving/Material Handling', icon: Factory, color: 'bg-teal-500' },
+  { value: 'internal', label: 'Internal Process', icon: Factory, color: 'bg-blue-500' },
+  { value: 'outside_processing', label: 'Outside Processing', icon: Truck, color: 'bg-amber-500' },
+  { value: 'inspection', label: 'Inspection/QC', icon: ClipboardCheck, color: 'bg-purple-500' },
+  { value: 'shipping', label: 'Shipping', icon: PackageCheck, color: 'bg-green-500' },
 ];
 
 const WORK_CENTER_TYPES = [
@@ -124,8 +124,8 @@ export function RoutingTemplateManagement({ isAdmin }: RoutingTemplateManagement
     is_default: false,
   });
 
-  // Default comprehensive manufacturing template
-  const [steps, setSteps] = useState<RoutingTemplateStep[]>([
+  // Default comprehensive manufacturing template - the standard shop floor workflow
+  const getDefaultSteps = (): RoutingTemplateStep[] => [
     // Pre-Production
     { step_number: 1, operation_name: 'Quote Review & Approval', operation_type: 'quote', work_center_type: 'Quoting', estimated_duration: 30, instructions: 'Review quote and customer requirements' },
     { step_number: 2, operation_name: 'Engineering Review', operation_type: 'engineering', work_center_type: 'Engineering', estimated_duration: 60, instructions: 'Review drawings, tolerances, and material specs' },
@@ -142,11 +142,21 @@ export function RoutingTemplateManagement({ isAdmin }: RoutingTemplateManagement
     { step_number: 11, operation_name: 'Production Run', operation_type: 'internal', work_center_type: 'CNC Mill', estimated_duration: 240, instructions: 'Complete production quantity' },
     // Secondary Ops
     { step_number: 12, operation_name: 'Deburr/Finish', operation_type: 'internal', work_center_type: 'Deburr', estimated_duration: 30, instructions: 'Remove burrs and clean parts' },
+    // Outside Processing (amber hue reminder - toggle as needed)
+    { step_number: 13, operation_name: 'OP - Heat Treat', operation_type: 'outside_processing', work_center_type: 'Heat Treat', estimated_duration: 480, instructions: 'Send to vendor for heat treatment' },
+    { step_number: 14, operation_name: 'OP - Plating/Coating', operation_type: 'outside_processing', work_center_type: 'Plating', estimated_duration: 480, instructions: 'Zinc, Cad, Chrome, or other plating' },
+    { step_number: 15, operation_name: 'OP - Anodize', operation_type: 'outside_processing', work_center_type: 'Anodize', estimated_duration: 480, instructions: 'Type II or Type III anodizing' },
+    { step_number: 16, operation_name: 'OP - Paint/Powder Coat', operation_type: 'outside_processing', work_center_type: 'Paint', estimated_duration: 480, instructions: 'Paint or powder coat finish' },
+    // Post-OP
+    { step_number: 17, operation_name: 'Post-OP Receiving Inspection', operation_type: 'inspection', work_center_type: 'Incoming Inspection', estimated_duration: 30, instructions: 'Inspect parts returned from outside processing' },
     // Final
-    { step_number: 13, operation_name: 'Final Inspection', operation_type: 'inspection', work_center_type: 'Final Inspection', estimated_duration: 30, instructions: 'Final QC check before shipping' },
-    { step_number: 14, operation_name: 'Packaging', operation_type: 'internal', work_center_type: 'Packaging', estimated_duration: 15, instructions: 'Package per customer requirements' },
-    { step_number: 15, operation_name: 'Ship to Customer', operation_type: 'shipping', work_center_type: 'Shipping', estimated_duration: 15, instructions: 'Generate shipping labels and ship' },
-  ]);
+    { step_number: 18, operation_name: 'Final Inspection', operation_type: 'inspection', work_center_type: 'Final Inspection', estimated_duration: 30, instructions: 'Final QC check before shipping' },
+    { step_number: 19, operation_name: 'Packaging', operation_type: 'internal', work_center_type: 'Packaging', estimated_duration: 15, instructions: 'Package per customer requirements' },
+    { step_number: 20, operation_name: 'Ship to Customer', operation_type: 'shipping', work_center_type: 'Shipping', estimated_duration: 15, instructions: 'Generate shipping labels and ship' },
+  ];
+
+  const [steps, setSteps] = useState<RoutingTemplateStep[]>(getDefaultSteps());
+  const [viewMode, setViewMode] = useState<'list' | 'flowchart'>('list');
 
   const fetchTemplates = useCallback(async () => {
     if (!organization) return;
@@ -182,13 +192,9 @@ export function RoutingTemplateManagement({ isAdmin }: RoutingTemplateManagement
       part_number_pattern: "",
       is_default: false,
     });
-    setSteps([
-      { step_number: 1, operation_name: 'Receive Material', operation_type: 'inspection', work_center_type: null, estimated_duration: 15, instructions: null },
-      { step_number: 2, operation_name: 'First Operation', operation_type: 'internal', work_center_type: 'CNC Mill', estimated_duration: 60, instructions: null },
-      { step_number: 3, operation_name: 'Final Inspection', operation_type: 'inspection', work_center_type: null, estimated_duration: 30, instructions: null },
-      { step_number: 4, operation_name: 'Ship to Customer', operation_type: 'shipping', work_center_type: null, estimated_duration: 15, instructions: null },
-    ]);
+    setSteps(getDefaultSteps());
     setEditingTemplate(null);
+    setViewMode('list');
   };
 
   const handleCreate = async () => {
@@ -402,9 +408,9 @@ export function RoutingTemplateManagement({ isAdmin }: RoutingTemplateManagement
     t.part_number_pattern?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const getOpIcon = (type: string) => {
-    return OPERATION_TYPES.find(t => t.value === type)?.icon || Factory;
-  };
+  const getOpType = (type: string) => OPERATION_TYPES.find(t => t.value === type) || OPERATION_TYPES[4];
+  const getOpIcon = (type: string) => getOpType(type).icon;
+  const getOpColor = (type: string) => getOpType(type).color;
 
   if (!organization) {
     return (
@@ -471,97 +477,187 @@ export function RoutingTemplateManagement({ isAdmin }: RoutingTemplateManagement
       {/* Steps Editor */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <Label className="text-base">Routing Steps</Label>
-          <Button type="button" variant="outline" size="sm" onClick={addStep}>
-            <Plus className="w-4 h-4 mr-1" /> Add Step
-          </Button>
+          <Label className="text-base">Routing Steps ({steps.length} steps)</Label>
+          <div className="flex items-center gap-2">
+            {/* View Mode Toggle */}
+            <div className="flex items-center border rounded-lg p-0.5">
+              <Button 
+                type="button" 
+                variant={viewMode === 'list' ? 'secondary' : 'ghost'} 
+                size="sm" 
+                className="h-7 px-2"
+                onClick={() => setViewMode('list')}
+              >
+                <List className="w-4 h-4 mr-1" /> List
+              </Button>
+              <Button 
+                type="button" 
+                variant={viewMode === 'flowchart' ? 'secondary' : 'ghost'} 
+                size="sm" 
+                className="h-7 px-2"
+                onClick={() => setViewMode('flowchart')}
+              >
+                <GitBranch className="w-4 h-4 mr-1" /> Flow
+              </Button>
+            </div>
+            <Button type="button" variant="outline" size="sm" onClick={addStep}>
+              <Plus className="w-4 h-4 mr-1" /> Add Step
+            </Button>
+          </div>
         </div>
         
-        <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
-          {steps.map((step, index) => {
-            const OpIcon = getOpIcon(step.operation_type);
-            return (
-              <div key={index} className="flex items-center gap-2 p-3 rounded-lg border bg-background">
-                <div className="flex flex-col gap-0.5">
-                  <Button 
-                    type="button" 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-5 w-5" 
-                    onClick={() => moveStep(index, 'up')}
-                    disabled={index === 0}
-                  >
-                    <ChevronUp className="w-3 h-3" />
-                  </Button>
-                  <Button 
-                    type="button" 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-5 w-5" 
-                    onClick={() => moveStep(index, 'down')}
-                    disabled={index === steps.length - 1}
-                  >
-                    <ChevronDown className="w-3 h-3" />
-                  </Button>
-                </div>
-                
-                <Badge variant="outline" className="shrink-0">{step.step_number}</Badge>
-                
-                <div className="flex-1 grid grid-cols-4 gap-2">
-                  <Input
-                    value={step.operation_name}
-                    onChange={(e) => updateStep(index, { operation_name: e.target.value })}
-                    placeholder="Operation name"
-                  />
-                  <Select
-                    value={step.operation_type}
-                    onValueChange={(v) => updateStep(index, { operation_type: v })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {OPERATION_TYPES.map(t => (
-                        <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Select
-                    value={step.work_center_type || "none"}
-                    onValueChange={(v) => updateStep(index, { work_center_type: v === "none" ? null : v })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Work center" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">Not specified</SelectItem>
-                      {WORK_CENTER_TYPES.map(t => (
-                        <SelectItem key={t} value={t}>{t}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Input
-                    type="number"
-                    value={step.estimated_duration || ""}
-                    onChange={(e) => updateStep(index, { estimated_duration: parseInt(e.target.value) || null })}
-                    placeholder="Duration (min)"
-                  />
-                </div>
-                
-                <Button 
-                  type="button" 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-8 w-8 text-destructive"
-                  onClick={() => removeStep(index)}
-                  disabled={steps.length <= 1}
+        {viewMode === 'list' ? (
+          /* List View */
+          <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
+            {steps.map((step, index) => {
+              const OpIcon = getOpIcon(step.operation_type);
+              const isOutsideProcessing = step.operation_type === 'outside_processing';
+              return (
+                <div 
+                  key={index} 
+                  className={`flex items-center gap-2 p-3 rounded-lg border bg-background ${isOutsideProcessing ? 'border-amber-400 bg-amber-500/10' : ''}`}
                 >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </div>
-            );
-          })}
-        </div>
+                  <div className="flex flex-col gap-0.5">
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-5 w-5" 
+                      onClick={() => moveStep(index, 'up')}
+                      disabled={index === 0}
+                    >
+                      <ChevronUp className="w-3 h-3" />
+                    </Button>
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-5 w-5" 
+                      onClick={() => moveStep(index, 'down')}
+                      disabled={index === steps.length - 1}
+                    >
+                      <ChevronDown className="w-3 h-3" />
+                    </Button>
+                  </div>
+                  
+                  <Badge 
+                    variant={isOutsideProcessing ? 'default' : 'outline'} 
+                    className={`shrink-0 ${isOutsideProcessing ? 'bg-amber-500 hover:bg-amber-600' : ''}`}
+                  >
+                    {step.step_number}
+                  </Badge>
+                  
+                  <div className="flex-1 grid grid-cols-4 gap-2">
+                    <Input
+                      value={step.operation_name}
+                      onChange={(e) => updateStep(index, { operation_name: e.target.value })}
+                      placeholder="Operation name"
+                    />
+                    <Select
+                      value={step.operation_type}
+                      onValueChange={(v) => updateStep(index, { operation_type: v })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {OPERATION_TYPES.map(t => (
+                          <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Select
+                      value={step.work_center_type || "none"}
+                      onValueChange={(v) => updateStep(index, { work_center_type: v === "none" ? null : v })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Work center" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Not specified</SelectItem>
+                        {WORK_CENTER_TYPES.map(t => (
+                          <SelectItem key={t} value={t}>{t}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Input
+                      type="number"
+                      value={step.estimated_duration || ""}
+                      onChange={(e) => updateStep(index, { estimated_duration: parseInt(e.target.value) || null })}
+                      placeholder="Duration (min)"
+                    />
+                  </div>
+                  
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8 text-destructive"
+                    onClick={() => removeStep(index)}
+                    disabled={steps.length <= 1}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          /* Flowchart View */
+          <div className="max-h-[400px] overflow-y-auto pr-2">
+            <div className="flex flex-wrap gap-2 items-center p-4 bg-muted/30 rounded-lg border">
+              {steps.map((step, index) => {
+                const OpIcon = getOpIcon(step.operation_type);
+                const opColor = getOpColor(step.operation_type);
+                const isOutsideProcessing = step.operation_type === 'outside_processing';
+                return (
+                  <div key={index} className="flex items-center">
+                    <div 
+                      className={`relative group flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all cursor-pointer hover:scale-105 ${
+                        isOutsideProcessing 
+                          ? 'border-amber-400 bg-amber-500/20 ring-2 ring-amber-400/50' 
+                          : 'border-border bg-background hover:border-primary/50'
+                      }`}
+                      title={`${step.operation_name}\n${step.work_center_type || 'No work center'}\n${step.estimated_duration || 0} min`}
+                    >
+                      <div className={`w-8 h-8 rounded-full ${opColor} flex items-center justify-center text-white`}>
+                        <OpIcon className="w-4 h-4" />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-xs font-medium leading-tight max-w-[120px] truncate">{step.operation_name}</p>
+                        <p className="text-[10px] text-muted-foreground">{step.work_center_type || 'Unassigned'}</p>
+                      </div>
+                      <Badge variant="outline" className="absolute -top-2 -left-2 text-[10px] px-1.5 py-0 h-4">
+                        {step.step_number}
+                      </Badge>
+                      {/* Delete button on hover */}
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute -top-2 -right-2 h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => removeStep(index)}
+                        disabled={steps.length <= 1}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                    {index < steps.length - 1 && (
+                      <ArrowRight className={`w-5 h-5 mx-1 flex-shrink-0 ${
+                        steps[index + 1]?.operation_type === 'outside_processing' || isOutsideProcessing 
+                          ? 'text-amber-400' 
+                          : 'text-muted-foreground'
+                      }`} />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <p className="text-xs text-muted-foreground mt-2 text-center">
+              Hover over steps to see details • Outside processing steps highlighted in amber
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
