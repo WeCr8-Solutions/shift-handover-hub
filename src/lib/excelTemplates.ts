@@ -4,14 +4,14 @@ import { ALL_WORK_CENTER_TYPES } from '@/types/handoff';
 // Template data with sample rows
 export const STATIONS_TEMPLATE = {
   sheetName: 'Stations',
-  headers: ['Station ID', 'Station Name', 'Work Center', 'Work Center Type', 'Team Name (optional)', 'Active (yes/no)'],
+  headers: ['Station ID', 'Station Name', 'Work Center', 'Work Center Type', 'Team Name (optional)', 'Department (optional)', 'Active (yes/no)'],
   sampleData: [
-    ['CNC-001', 'Haas VF-2 Mill #1', 'CNC Bay 1', 'CNC Mill', 'Day Shift Team', 'yes'],
-    ['CNC-002', 'Haas VF-2 Mill #2', 'CNC Bay 1', 'CNC Mill', 'Day Shift Team', 'yes'],
-    ['LATHE-001', 'Mazak QT-250 Lathe', 'CNC Bay 2', 'CNC Lathe', 'Night Shift Team', 'yes'],
-    ['WJ-001', 'Flow Waterjet', 'Cutting Area', 'Water Jet', '', 'yes'],
-    ['WELD-001', 'TIG Station 1', 'Welding Bay', 'TIG Welding', 'Welding Team', 'yes'],
-    ['INSP-001', 'CMM Station', 'Quality Lab', 'Incoming Inspection', '', 'yes'],
+    ['CNC-001', 'Haas VF-2 Mill #1', 'CNC Bay 1', 'CNC Mill', 'Day Shift Team', 'Machining', 'yes'],
+    ['CNC-002', 'Haas VF-2 Mill #2', 'CNC Bay 1', 'CNC Mill', 'Day Shift Team', 'Machining', 'yes'],
+    ['LATHE-001', 'Mazak QT-250 Lathe', 'CNC Bay 2', 'CNC Lathe', 'Night Shift Team', 'Machining', 'yes'],
+    ['WJ-001', 'Flow Waterjet', 'Cutting Area', 'Water Jet', '', 'Cutting', 'yes'],
+    ['WELD-001', 'TIG Station 1', 'Welding Bay', 'TIG Welding', 'Welding Team', 'Fabrication', 'yes'],
+    ['INSP-001', 'CMM Station', 'Quality Lab', 'Incoming Inspection', '', 'Quality', 'yes'],
   ],
   validValues: {
     'Work Center Type': ALL_WORK_CENTER_TYPES,
@@ -21,13 +21,13 @@ export const STATIONS_TEMPLATE = {
 
 export const USERS_TEMPLATE = {
   sheetName: 'Users',
-  headers: ['Email', 'Display Name', 'Role', 'Team Name (optional)'],
+  headers: ['Email', 'Display Name', 'Role', 'Team Name (optional)', 'Department (optional)'],
   sampleData: [
-    ['john.smith@company.com', 'John Smith', 'operator', 'Day Shift Team'],
-    ['jane.doe@company.com', 'Jane Doe', 'supervisor', 'Day Shift Team'],
-    ['mike.wilson@company.com', 'Mike Wilson', 'operator', 'Night Shift Team'],
-    ['sarah.johnson@company.com', 'Sarah Johnson', 'admin', ''],
-    ['tom.brown@company.com', 'Tom Brown', 'viewer', ''],
+    ['john.smith@company.com', 'John Smith', 'operator', 'Day Shift Team', 'Machining'],
+    ['jane.doe@company.com', 'Jane Doe', 'supervisor', 'Day Shift Team', 'Machining'],
+    ['mike.wilson@company.com', 'Mike Wilson', 'operator', 'Night Shift Team', 'Fabrication'],
+    ['sarah.johnson@company.com', 'Sarah Johnson', 'admin', '', ''],
+    ['tom.brown@company.com', 'Tom Brown', 'viewer', '', 'Quality'],
   ],
   validValues: {
     'Role': ['admin', 'supervisor', 'operator', 'viewer'],
@@ -36,28 +36,46 @@ export const USERS_TEMPLATE = {
 
 export const TEAMS_TEMPLATE = {
   sheetName: 'Teams',
-  headers: ['Team Name', 'Description'],
+  headers: ['Team Name', 'Description', 'Departments (comma-separated)'],
   sampleData: [
-    ['Day Shift Team', 'Primary day shift operations team, 6AM-2PM'],
-    ['Night Shift Team', 'Night shift operations, 10PM-6AM'],
-    ['Swing Shift Team', 'Swing shift coverage, 2PM-10PM'],
-    ['Welding Team', 'Specialized welding and fabrication team'],
-    ['Quality Team', 'Quality assurance and inspection team'],
+    ['Day Shift Team', 'Primary day shift operations team, 6AM-2PM', 'Machining, Assembly'],
+    ['Night Shift Team', 'Night shift operations, 10PM-6AM', 'Machining, Fabrication'],
+    ['Swing Shift Team', 'Swing shift coverage, 2PM-10PM', 'Machining'],
+    ['Welding Team', 'Specialized welding and fabrication team', 'Fabrication'],
+    ['Quality Team', 'Quality assurance and inspection team', 'Quality, Shipping'],
   ],
   validValues: {},
 };
 
+export const ROUTING_TEMPLATE = {
+  sheetName: 'Routing Templates',
+  headers: ['Template Name', 'Part Number Pattern', 'Step #', 'Operation Name', 'Type', 'Work Center', 'Est. Duration (min)', 'Vendor (if outside)', 'Instructions'],
+  sampleData: [
+    ['Standard Machining', 'PART-*', '1', 'Receive Material', 'inspection', 'Receiving', '15', '', 'Verify material cert and dimensions'],
+    ['Standard Machining', 'PART-*', '2', 'Rough Mill', 'internal', 'CNC Mill', '60', '', 'Use program ROUGH-001'],
+    ['Standard Machining', 'PART-*', '3', 'Heat Treat', 'outside_processing', '', '480', 'ABC Heat Treat', 'HRC 58-62 required'],
+    ['Standard Machining', 'PART-*', '4', 'Finish Mill', 'internal', 'CNC Mill', '45', '', 'Use program FINISH-001'],
+    ['Standard Machining', 'PART-*', '5', 'Final Inspection', 'inspection', 'CMM', '30', '', 'Full FAI per drawing'],
+    ['Standard Machining', 'PART-*', '6', 'Ship to Customer', 'shipping', 'Shipping', '15', '', 'Pack per SOP-100'],
+  ],
+  validValues: {
+    'Type': ['internal', 'outside_processing', 'inspection', 'shipping'],
+  },
+};
+
 // Generate and download Excel template
-export function downloadTemplate(templateType: 'stations' | 'users' | 'teams' | 'all') {
+export function downloadTemplate(templateType: 'stations' | 'users' | 'teams' | 'routing' | 'all') {
   const workbook = XLSX.utils.book_new();
 
   const templates = templateType === 'all' 
-    ? [STATIONS_TEMPLATE, USERS_TEMPLATE, TEAMS_TEMPLATE]
+    ? [STATIONS_TEMPLATE, USERS_TEMPLATE, TEAMS_TEMPLATE, ROUTING_TEMPLATE]
     : templateType === 'stations' 
       ? [STATIONS_TEMPLATE]
       : templateType === 'users'
         ? [USERS_TEMPLATE]
-        : [TEAMS_TEMPLATE];
+        : templateType === 'teams'
+          ? [TEAMS_TEMPLATE]
+          : [ROUTING_TEMPLATE];
 
   templates.forEach(template => {
     // Create worksheet with headers and sample data
@@ -104,6 +122,7 @@ export interface ParsedExcelData {
     work_center: string;
     work_center_type: string;
     team_name: string;
+    department?: string;
     is_active: boolean;
   }>;
   users: Array<{
@@ -111,10 +130,25 @@ export interface ParsedExcelData {
     display_name: string;
     role: string;
     team_name: string;
+    department?: string;
   }>;
   teams: Array<{
     name: string;
     description: string;
+    departments?: string[];
+  }>;
+  routingTemplates: Array<{
+    template_name: string;
+    part_number_pattern: string;
+    steps: Array<{
+      step_number: number;
+      operation_name: string;
+      operation_type: 'internal' | 'outside_processing' | 'inspection' | 'shipping';
+      work_center_type?: string;
+      estimated_duration?: number;
+      outside_vendor?: string;
+      instructions?: string;
+    }>;
   }>;
 }
 
@@ -142,7 +176,7 @@ export function parseExcelFile(file: File): Promise<ParseResult> {
         const workbook = XLSX.read(data, { type: 'array' });
         
         const result: ParseResult = {
-          data: { stations: [], users: [], teams: [] },
+          data: { stations: [], users: [], teams: [], routingTemplates: [] },
           errors: [],
           warnings: [],
         };
@@ -166,11 +200,18 @@ export function parseExcelFile(file: File): Promise<ParseResult> {
           result.errors.push(...parsed.errors);
         }
 
+        if (workbook.SheetNames.includes('Routing Templates')) {
+          const parsed = parseRoutingSheet(workbook.Sheets['Routing Templates']);
+          result.data.routingTemplates = parsed.data;
+          result.errors.push(...parsed.errors);
+        }
+
         // Check if any data was found
         if (result.data.stations.length === 0 && 
             result.data.users.length === 0 && 
-            result.data.teams.length === 0) {
-          result.warnings.push('No valid data found. Make sure your sheets are named "Stations", "Users", or "Teams".');
+            result.data.teams.length === 0 &&
+            result.data.routingTemplates.length === 0) {
+          result.warnings.push('No valid data found. Make sure your sheets are named "Stations", "Users", "Teams", or "Routing Templates".');
         }
 
         resolve(result);
@@ -287,15 +328,80 @@ function parseTeamsSheet(sheet: XLSX.WorkSheet) {
     
     const name = String(row['Team Name'] || '').trim();
     const description = String(row['Description'] || '').trim();
+    const departmentsStr = String(row['Departments (comma-separated)'] || '').trim();
+    const departments = departmentsStr ? departmentsStr.split(',').map(d => d.trim()).filter(Boolean) : undefined;
 
     if (!name) {
       errors.push({ sheet: 'Teams', row: rowNum, column: 'Team Name', message: 'Required field', value: name });
     }
 
     if (name) {
-      data.push({ name, description });
+      data.push({ name, description, departments });
     }
   });
 
   return { data, errors };
+}
+
+function parseRoutingSheet(sheet: XLSX.WorkSheet) {
+  const rawData = XLSX.utils.sheet_to_json<Record<string, string>>(sheet, { defval: '' });
+  const errors: ValidationError[] = [];
+  const validTypes = ['internal', 'outside_processing', 'inspection', 'shipping'];
+
+  // Group rows by template name
+  const templateMap = new Map<string, ParsedExcelData['routingTemplates'][0]>();
+
+  rawData.forEach((row, index) => {
+    const rowNum = index + 2;
+    
+    const templateName = String(row['Template Name'] || '').trim();
+    const partPattern = String(row['Part Number Pattern'] || '').trim();
+    const stepNum = parseInt(String(row['Step #'] || '0'));
+    const opName = String(row['Operation Name'] || '').trim();
+    const opType = String(row['Type'] || 'internal').trim().toLowerCase();
+    const workCenter = String(row['Work Center'] || '').trim();
+    const duration = parseInt(String(row['Est. Duration (min)'] || '0'));
+    const vendor = String(row['Vendor (if outside)'] || '').trim();
+    const instructions = String(row['Instructions'] || '').trim();
+
+    if (!templateName) {
+      errors.push({ sheet: 'Routing Templates', row: rowNum, column: 'Template Name', message: 'Required field', value: templateName });
+      return;
+    }
+    if (!opName) {
+      errors.push({ sheet: 'Routing Templates', row: rowNum, column: 'Operation Name', message: 'Required field', value: opName });
+      return;
+    }
+    if (!validTypes.includes(opType)) {
+      errors.push({ 
+        sheet: 'Routing Templates', 
+        row: rowNum, 
+        column: 'Type', 
+        message: `Invalid type. Must be one of: ${validTypes.join(', ')}`,
+        value: opType 
+      });
+      return;
+    }
+
+    if (!templateMap.has(templateName)) {
+      templateMap.set(templateName, {
+        template_name: templateName,
+        part_number_pattern: partPattern,
+        steps: [],
+      });
+    }
+
+    const template = templateMap.get(templateName)!;
+    template.steps.push({
+      step_number: stepNum || template.steps.length + 1,
+      operation_name: opName,
+      operation_type: opType as 'internal' | 'outside_processing' | 'inspection' | 'shipping',
+      work_center_type: workCenter || undefined,
+      estimated_duration: duration || undefined,
+      outside_vendor: vendor || undefined,
+      instructions: instructions || undefined,
+    });
+  });
+
+  return { data: Array.from(templateMap.values()), errors };
 }

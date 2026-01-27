@@ -92,7 +92,7 @@ const TOUR_STEPS: Record<string, Step[]> = {
 
 // Map routes to onboarding steps
 const ROUTE_TO_STEP: Record<string, OnboardingStep> = {
-  '/setup': 'shop-setup',
+  '/setup': 'organization-setup',
   '/dashboard': 'dashboard-overview',
   '/teams': 'team-management',
   '/admin': 'admin-features',

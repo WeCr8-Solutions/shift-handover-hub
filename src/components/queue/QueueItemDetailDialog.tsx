@@ -16,7 +16,7 @@ import { format, formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { 
   Clock, User, Package, Send, History, MessageSquare, Trash2, Loader2,
-  Play, Pause, CheckCircle2, Wrench, FileText, AlertTriangle, ArrowRight
+  Play, Pause, CheckCircle2, Wrench, FileText, AlertTriangle, ArrowRight, GitBranch
 } from "lucide-react";
 
 interface QueueItemDetailDialogProps {
@@ -28,6 +28,7 @@ interface QueueItemDetailDialogProps {
   onAddComment: (itemId: string, content: string) => Promise<{ error: string | null }>;
   getComments: (itemId: string) => Promise<{ data: QueueItemComment[] | null; error: string | null }>;
   getHistory: (itemId: string) => Promise<{ data: QueueItemHistory[] | null; error: string | null }>;
+  onOpenRouting?: (item: { id: string; work_order?: string | null; part_number?: string | null }) => void;
 }
 
 const statusOptions: { value: QueueStatus; label: string }[] = [
@@ -77,6 +78,7 @@ export function QueueItemDetailDialog({
   onAddComment,
   getComments,
   getHistory,
+  onOpenRouting,
 }: QueueItemDetailDialogProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -323,6 +325,16 @@ export function QueueItemDetailDialog({
               </Button>
             )}
             <div className="flex-1" />
+            {onOpenRouting && (
+              <Button 
+                variant="outline" 
+                onClick={() => onOpenRouting(item)}
+                className="gap-2"
+              >
+                <GitBranch className="w-4 h-4" />
+                Routing
+              </Button>
+            )}
             <Button 
               variant="outline" 
               onClick={handleCreateHandoff}

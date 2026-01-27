@@ -7,6 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Header } from '@/components/Header';
 import { BulkUploadDialog } from '@/components/BulkUploadDialog';
+import { OrganizationSetup } from '@/components/onboarding/OrganizationSetup';
 import { useOnboardingContext } from '@/components/onboarding/OnboardingProvider';
 import { 
   ArrowRight, 
@@ -22,9 +23,11 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 
 interface SetupStatus {
+  hasOrganization: boolean;
   hasTeams: boolean;
   hasStations: boolean;
   hasTeamMembers: boolean;
+  organizationName: string | null;
   teamsCount: number;
   stationsCount: number;
   membersCount: number;
@@ -33,10 +36,11 @@ interface SetupStatus {
 export default function Setup() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-  const { completeStep, startTour, showTour, isComplete: onboardingComplete } = useOnboardingContext();
+  const { completeStep, startTour, showTour, isComplete: onboardingComplete, currentStep } = useOnboardingContext();
   const [setupStatus, setSetupStatus] = useState<SetupStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [bulkUploadOpen, setBulkUploadOpen] = useState(false);
+  const [showOrgSetup, setShowOrgSetup] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -48,13 +52,22 @@ export default function Setup() {
     async function checkSetupStatus() {
       if (!user) return;
       
-      const [teamsResult, stationsResult, membersResult] = await Promise.all([
+      const [orgResult, teamsResult, stationsResult, membersResult] = await Promise.all([
+        supabase
+          .from('organization_members')
+          .select('organization:organizations(id, name)')
+          .eq('user_id', user.id)
+          .maybeSingle(),
         supabase.from('teams').select('id', { count: 'exact', head: true }),
         supabase.from('stations').select('id', { count: 'exact', head: true }),
         supabase.from('team_members').select('id', { count: 'exact', head: true }),
       ]);
 
+      const hasOrg = !!orgResult.data?.organization;
+      
       setSetupStatus({
+        hasOrganization: hasOrg,
+        organizationName: orgResult.data?.organization?.name || null,
         hasTeams: (teamsResult.count || 0) > 0,
         hasStations: (stationsResult.count || 0) > 0,
         hasTeamMembers: (membersResult.count || 0) > 0,
@@ -62,21 +75,34 @@ export default function Setup() {
         stationsCount: stationsResult.count || 0,
         membersCount: membersResult.count || 0,
       });
+      
+      // Show org setup if they don't have one and we're at the org step
+      if (!hasOrg && (currentStep === 'organization-setup' || currentStep === 'welcome')) {
+        setShowOrgSetup(true);
+      }
+      
       setLoading(false);
     }
 
     checkSetupStatus();
-  }, [user]);
+  }, [user, currentStep]);
 
   const refreshStatus = () => {
     setLoading(true);
     if (user) {
       Promise.all([
+        supabase
+          .from('organization_members')
+          .select('organization:organizations(id, name)')
+          .eq('user_id', user.id)
+          .maybeSingle(),
         supabase.from('teams').select('id', { count: 'exact', head: true }),
         supabase.from('stations').select('id', { count: 'exact', head: true }),
         supabase.from('team_members').select('id', { count: 'exact', head: true }),
-      ]).then(([teamsResult, stationsResult, membersResult]) => {
+      ]).then(([orgResult, teamsResult, stationsResult, membersResult]) => {
         setSetupStatus({
+          hasOrganization: !!orgResult.data?.organization,
+          organizationName: orgResult.data?.organization?.name || null,
           hasTeams: (teamsResult.count || 0) > 0,
           hasStations: (stationsResult.count || 0) > 0,
           hasTeamMembers: (membersResult.count || 0) > 0,
@@ -89,14 +115,21 @@ export default function Setup() {
     }
   };
 
+  const handleOrgSetupComplete = () => {
+    setShowOrgSetup(false);
+    completeStep('organization-setup');
+    refreshStatus();
+  };
+
   const completedSteps = setupStatus ? 
+    (setupStatus.hasOrganization ? 1 : 0) +
     (setupStatus.hasTeams ? 1 : 0) + 
     (setupStatus.hasStations ? 1 : 0) + 
     (setupStatus.hasTeamMembers ? 1 : 0) : 0;
 
-  const progressPercent = (completedSteps / 3) * 100;
+  const progressPercent = (completedSteps / 4) * 100;
 
-  const isSetupComplete = completedSteps === 3;
+  const isSetupComplete = completedSteps === 4;
 
   if (authLoading || loading) {
     return (
@@ -108,6 +141,26 @@ export default function Setup() {
               <div className="h-8 bg-secondary rounded w-1/2 mx-auto" />
               <div className="h-4 bg-secondary rounded w-3/4 mx-auto" />
             </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Show organization setup modal
+  if (showOrgSetup) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="container mx-auto px-4 py-8 sm:py-12">
+          <div className="max-w-lg mx-auto">
+            <OrganizationSetup 
+              onComplete={handleOrgSetupComplete}
+              onSkip={() => {
+                setShowOrgSetup(false);
+                completeStep('organization-setup');
+              }}
+            />
           </div>
         </main>
       </div>
@@ -140,9 +193,40 @@ export default function Setup() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium">Setup Progress</span>
-                <span className="text-sm text-muted-foreground">{completedSteps}/3 complete</span>
+                <span className="text-sm text-muted-foreground">{completedSteps}/4 complete</span>
               </div>
               <Progress value={progressPercent} className="h-2" />
+            </CardContent>
+          </Card>
+
+          {/* Step 0: Organization */}
+          <Card className={setupStatus?.hasOrganization ? 'border-green-500/50' : 'border-primary/50'}>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  {setupStatus?.hasOrganization ? (
+                    <CheckCircle2 className="w-5 h-5 text-green-500" />
+                  ) : (
+                    <Building2 className="w-5 h-5 text-primary" />
+                  )}
+                  Organization
+                </CardTitle>
+                {setupStatus?.hasOrganization && (
+                  <Badge variant="secondary">{setupStatus.organizationName}</Badge>
+                )}
+              </div>
+              <CardDescription>
+                Your company workspace - keeps your data isolated and secure.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button 
+                variant={setupStatus?.hasOrganization ? 'outline' : 'default'}
+                onClick={() => setShowOrgSetup(true)}
+              >
+                {setupStatus?.hasOrganization ? 'Manage Organization' : 'Create Organization'}
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
             </CardContent>
           </Card>
 
@@ -154,7 +238,7 @@ export default function Setup() {
                 Quick Setup with Excel
               </CardTitle>
               <CardDescription>
-                Upload an Excel file with your teams, stations, and users to set everything up at once.
+                Upload an Excel file with your teams, stations, routing templates, and users.
               </CardDescription>
             </CardHeader>
             <CardContent>

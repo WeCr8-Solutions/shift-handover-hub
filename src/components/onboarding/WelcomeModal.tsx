@@ -27,6 +27,7 @@ import {
 
 const STEP_ICONS: Record<string, React.ReactNode> = {
   'welcome': <Sparkles className="w-5 h-5" />,
+  'organization-setup': <Factory className="w-5 h-5" />,
   'shop-setup': <Factory className="w-5 h-5" />,
   'dashboard-overview': <LayoutDashboard className="w-5 h-5" />,
   'station-cards': <LayoutDashboard className="w-5 h-5" />,
@@ -66,7 +67,7 @@ export function WelcomeModal() {
     setIsOpen(false);
     
     // Navigate to appropriate page based on current step
-    if (currentStep === 'welcome' || currentStep === 'shop-setup') {
+    if (currentStep === 'welcome' || currentStep === 'organization-setup' || currentStep === 'shop-setup') {
       navigate('/setup');
     } else if (currentStep === 'dashboard-overview' || currentStep === 'station-cards') {
       navigate('/dashboard');
