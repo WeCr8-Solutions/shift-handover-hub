@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { TeamProvider } from "@/contexts/TeamContext";
 import { OnboardingProvider, GuidedTour, WelcomeModal } from "@/components/onboarding";
+import { AnalyticsProvider } from "@/components/AnalyticsProvider";
 import Landing from "./pages/Landing";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -30,23 +31,25 @@ const App = () => (
             <Toaster />
             <Sonner />
             <BrowserRouter>
-              <GuidedTour />
-              <WelcomeModal />
-              <Routes>
-                <Route path="/" element={<Landing />} />
-                <Route path="/dashboard" element={<Index />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/teams" element={<Teams />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/admin" element={<Admin />} />
-                <Route path="/testing" element={<Testing />} />
-                <Route path="/queue" element={<Queue />} />
-                <Route path="/setup" element={<Setup />} />
-                <Route path="/pricing" element={<Pricing />} />
-                <Route path="/settings" element={<Settings />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+              <AnalyticsProvider>
+                <GuidedTour />
+                <WelcomeModal />
+                <Routes>
+                  <Route path="/" element={<Landing />} />
+                  <Route path="/dashboard" element={<Index />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/teams" element={<Teams />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/admin" element={<Admin />} />
+                  <Route path="/testing" element={<Testing />} />
+                  <Route path="/queue" element={<Queue />} />
+                  <Route path="/setup" element={<Setup />} />
+                  <Route path="/pricing" element={<Pricing />} />
+                  <Route path="/settings" element={<Settings />} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </AnalyticsProvider>
             </BrowserRouter>
           </TooltipProvider>
         </OnboardingProvider>
