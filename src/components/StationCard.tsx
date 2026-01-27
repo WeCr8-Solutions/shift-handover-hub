@@ -3,7 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { StationInfo, JobState } from "@/types/handoff";
 import { StatusBadge, getJobStateStatus, getJobStateShortName } from "./StatusBadge";
 import { workCenterIcons, workCenterColors } from "@/lib/workCenterIcons";
-import { AlertTriangle, Check, Plus, ListTodo, Lightbulb, Play, ChevronRight, Clock, Package, Pause, Timer, AlertCircle } from "lucide-react";
+import { 
+  AlertTriangle, Check, Plus, ListTodo, Lightbulb, Play, ChevronRight, 
+  Clock, Package, Pause, Timer, AlertCircle, Truck, MapPin, ArrowRight,
+  CheckCircle2
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,9 +31,18 @@ interface ActiveQueueItem {
   priority: string;
 }
 
+interface RoutingStep {
+  id: string;
+  step_number: number;
+  operation_name: string;
+  status: string;
+  station_id: string | null;
+  next_station_name?: string;
+}
+
 interface StationCardProps {
   station: StationInfo;
-  stationDbId?: string; // Database UUID for linking to queue
+  stationDbId?: string;
   onClick?: () => void;
   onNewHandoff?: () => void;
   onPerformanceUpdate?: () => void;
@@ -108,30 +121,36 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
   const { currentJob, condition, workCenterType } = station;
   const [activeQueueItem, setActiveQueueItem] = useState<ActiveQueueItem | null>(null);
   const [queueCount, setQueueCount] = useState(0);
+  const [pendingDelivery, setPendingDelivery] = useState<{
+    itemId: string;
+    workOrder: string;
+    nextStationName: string | null;
+    nextStationId: string | null;
+  } | null>(null);
   const [currentTime, setCurrentTime] = useState(Date.now());
   
-  // Update timer every minute for duration display
+  // Update timer every minute
   useEffect(() => {
     const interval = setInterval(() => setCurrentTime(Date.now()), 60000);
     return () => clearInterval(interval);
   }, []);
   
-  // Fetch active queue item for this station
+  // Fetch active queue item and pending deliveries
   useEffect(() => {
     if (!stationDbId) return;
     
-    const fetchActiveItem = async () => {
+    const fetchStationData = async () => {
       // Get active/in-progress item
-      const { data } = await supabase
+      const { data: activeItem } = await supabase
         .from("queue_items")
         .select("id, title, work_order, part_number, status, started_at, estimated_duration, priority")
         .eq("station_id", stationDbId)
         .in("status", ["in_progress", "on_hold"])
-        .order("status", { ascending: true }) // in_progress comes first
+        .order("status", { ascending: true })
         .limit(1)
         .maybeSingle();
       
-      setActiveQueueItem(data as ActiveQueueItem | null);
+      setActiveQueueItem(activeItem as ActiveQueueItem | null);
       
       // Get queue count
       const { count } = await supabase
@@ -141,9 +160,67 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
         .in("status", ["pending", "queued"]);
       
       setQueueCount(count || 0);
+
+      // Check for items ready for delivery (completed at this station, need to move to next)
+      // This checks if there's a completed routing step at this station with a pending next step
+      const { data: routingData } = await supabase
+        .from("work_order_routing")
+        .select(`
+          id,
+          step_number,
+          operation_name,
+          status,
+          station_id,
+          queue_item_id,
+          queue_items!inner (
+            id,
+            title,
+            work_order,
+            status
+          )
+        `)
+        .eq("station_id", stationDbId)
+        .eq("status", "completed")
+        .order("step_number", { ascending: true })
+        .limit(5);
+
+      if (routingData && routingData.length > 0) {
+        // For each completed step, check if there's a next step pending
+        for (const step of routingData) {
+          const { data: nextStep } = await supabase
+            .from("work_order_routing")
+            .select(`
+              id,
+              step_number,
+              operation_name,
+              status,
+              station_id,
+              stations:station_id (
+                name,
+                station_id
+              )
+            `)
+            .eq("queue_item_id", step.queue_item_id)
+            .eq("step_number", step.step_number + 1)
+            .eq("status", "pending")
+            .maybeSingle();
+
+          if (nextStep) {
+            const queueItem = step.queue_items as any;
+            const nextStation = nextStep.stations as any;
+            setPendingDelivery({
+              itemId: step.queue_item_id,
+              workOrder: queueItem?.work_order || queueItem?.title || "Unknown",
+              nextStationName: nextStation?.name || nextStep.operation_name,
+              nextStationId: nextStep.station_id,
+            });
+            break;
+          }
+        }
+      }
     };
     
-    fetchActiveItem();
+    fetchStationData();
     
     // Subscribe to changes
     const channel = supabase
@@ -154,7 +231,15 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
         table: "queue_items",
         filter: `station_id=eq.${stationDbId}`,
       }, () => {
-        fetchActiveItem();
+        fetchStationData();
+      })
+      .on("postgres_changes", {
+        event: "*",
+        schema: "public",
+        table: "work_order_routing",
+        filter: `station_id=eq.${stationDbId}`,
+      }, () => {
+        fetchStationData();
       })
       .subscribe();
     
@@ -242,7 +327,23 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
     }
   };
 
-  // Calculate elapsed time if work is in progress
+  const getStatusDisplay = (status: string) => {
+    switch (status) {
+      case "in_progress":
+        return { label: "IN PROGRESS", icon: Play, color: "bg-green-500/10 text-green-600 border-green-500/30" };
+      case "on_hold":
+        return { label: "ON HOLD", icon: Pause, color: "bg-amber-500/10 text-amber-600 border-amber-500/30" };
+      case "pending":
+        return { label: "PENDING", icon: Clock, color: "bg-blue-500/10 text-blue-600 border-blue-500/30" };
+      case "queued":
+        return { label: "QUEUED", icon: ListTodo, color: "bg-purple-500/10 text-purple-600 border-purple-500/30" };
+      case "completed":
+        return { label: "COMPLETED", icon: CheckCircle2, color: "bg-green-500/10 text-green-600 border-green-500/30" };
+      default:
+        return { label: status.toUpperCase(), icon: Clock, color: "bg-secondary" };
+    }
+  };
+
   return (
     <div
       className={cn("machine-card group")}
@@ -279,6 +380,27 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
         </div>
       </div>
 
+      {/* Pending Delivery Alert */}
+      {pendingDelivery && (
+        <div className="mb-3 p-2.5 rounded-lg border border-amber-500/50 bg-amber-500/10">
+          <div className="flex items-center gap-2 mb-1.5">
+            <Truck className="w-4 h-4 text-amber-600" />
+            <span className="text-xs font-semibold text-amber-700">Ready for Delivery</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-[10px] bg-background">
+              <Package className="w-2.5 h-2.5 mr-1" />
+              {pendingDelivery.workOrder}
+            </Badge>
+            <ArrowRight className="w-3 h-3 text-muted-foreground" />
+            <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+              <MapPin className="w-2.5 h-2.5" />
+              {pendingDelivery.nextStationName || "Next Station"}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Active Work Status Display */}
       {activeQueueItem && (
         <div className={cn(
@@ -288,26 +410,16 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
           getPriorityColor(activeQueueItem.priority) && activeQueueItem.priority !== "normal" && activeQueueItem.priority !== "low"
         )}>
           <div className="flex items-center justify-between mb-1.5">
-            <Badge 
-              variant="outline" 
-              className={cn(
-                "text-[10px]",
-                activeQueueItem.status === "in_progress" && "bg-green-500/10 text-green-600 border-green-500/30",
-                activeQueueItem.status === "on_hold" && "bg-amber-500/10 text-amber-600 border-amber-500/30"
-              )}
-            >
-              {activeQueueItem.status === "in_progress" ? (
-                <>
-                  <Play className="w-2.5 h-2.5 mr-1" />
-                  RUNNING
-                </>
-              ) : (
-                <>
-                  <Pause className="w-2.5 h-2.5 mr-1" />
-                  ON HOLD
-                </>
-              )}
-            </Badge>
+            {(() => {
+              const statusDisplay = getStatusDisplay(activeQueueItem.status);
+              const StatusIcon = statusDisplay.icon;
+              return (
+                <Badge variant="outline" className={cn("text-[10px]", statusDisplay.color)}>
+                  <StatusIcon className="w-2.5 h-2.5 mr-1" />
+                  {statusDisplay.label}
+                </Badge>
+              );
+            })()}
             
             {timeInfo && (
               <div className="flex items-center gap-2">
@@ -418,7 +530,7 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
           onClick={(e) => { e.stopPropagation(); handleViewQueue(); }}
         >
           <ListTodo className="w-3 h-3 mr-1" />
-          Queue
+          Queue {queueCount > 0 && `(${queueCount})`}
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -451,19 +563,25 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
 
       {/* Status Footer */}
       <div className="flex items-center gap-2 pt-2 border-t border-border">
-        {hasActiveAlarm && (
+        {pendingDelivery && (
+          <div className="flex items-center gap-1 text-amber-600">
+            <Truck className="w-3.5 h-3.5" />
+            <span className="text-xs font-medium">Delivery Needed</span>
+          </div>
+        )}
+        {hasActiveAlarm && !pendingDelivery && (
           <div className="flex items-center gap-1 text-status-critical">
             <AlertTriangle className="w-3.5 h-3.5" />
             <span className="text-xs font-medium">ISSUE</span>
           </div>
         )}
-        {hasIssues && !hasActiveAlarm && (
+        {hasIssues && !hasActiveAlarm && !pendingDelivery && (
           <div className="flex items-center gap-1 text-status-warning">
             <AlertTriangle className="w-3.5 h-3.5" />
             <span className="text-xs">Attention</span>
           </div>
         )}
-        {!hasIssues && !hasActiveAlarm && (
+        {!hasIssues && !hasActiveAlarm && !pendingDelivery && (
           <div className="ml-auto flex items-center gap-1 text-status-ok">
             <Check className="w-3.5 h-3.5" />
             <span className="text-xs">All OK</span>
