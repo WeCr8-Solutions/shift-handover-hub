@@ -70,6 +70,10 @@ interface RoutingTemplate {
 }
 
 const OPERATION_TYPES = [
+  { value: 'quote', label: 'Quoting/Estimating', icon: Factory },
+  { value: 'engineering', label: 'Engineering/Programming', icon: Factory },
+  { value: 'purchasing', label: 'Purchasing/Procurement', icon: Factory },
+  { value: 'receiving', label: 'Receiving/Material Handling', icon: Factory },
   { value: 'internal', label: 'Internal Process', icon: Factory },
   { value: 'outside_processing', label: 'Outside Processing', icon: Truck },
   { value: 'inspection', label: 'Inspection/QC', icon: ClipboardCheck },
@@ -77,10 +81,24 @@ const OPERATION_TYPES = [
 ];
 
 const WORK_CENTER_TYPES = [
-  'CNC Mill', 'CNC Lathe', 'Water Jet', 'TIG Welding', 'MIG Welding', 
-  'Press Brake', 'Punch Press', 'Deburr', 'Assembly', 'Incoming Inspection',
-  'In-Process Inspection', 'Final Inspection', 'Heat Treat', 'Plating', 
-  'Paint', 'Packaging', 'Tool Crib'
+  // Engineering & Planning
+  'Quoting', 'Engineering', 'Programming/CAM',
+  // Purchasing & Receiving
+  'Purchasing', 'Receiving', 'Material Handling',
+  // Cutting & Prep
+  'Saw', 'Water Jet', 'Laser Cutter', 'Plasma Cutter', 'Shear',
+  // Machining
+  'CNC Mill', 'CNC Lathe', 'Manual Mill', 'Manual Lathe', 'EDM', 'Grinder',
+  // Fabrication
+  'Press Brake', 'Punch Press', 'TIG Welding', 'MIG Welding', 'EB Welding', 'Spot Welding',
+  // Secondary Operations
+  'Deburr', 'Hardware Installation', 'Assembly', 'Tool Crib',
+  // Quality
+  'Incoming Inspection', 'In-Process Inspection', 'Final Inspection', 'CMM',
+  // Outside Processing
+  'Heat Treat', 'Plating', 'Paint', 'Anodize', 'Passivation',
+  // Shipping
+  'Packaging', 'Shipping'
 ];
 
 interface RoutingTemplateManagementProps {
@@ -106,11 +124,28 @@ export function RoutingTemplateManagement({ isAdmin }: RoutingTemplateManagement
     is_default: false,
   });
 
+  // Default comprehensive manufacturing template
   const [steps, setSteps] = useState<RoutingTemplateStep[]>([
-    { step_number: 1, operation_name: 'Receive Material', operation_type: 'inspection', work_center_type: null, estimated_duration: 15, instructions: null },
-    { step_number: 2, operation_name: 'First Operation', operation_type: 'internal', work_center_type: 'CNC Mill', estimated_duration: 60, instructions: null },
-    { step_number: 3, operation_name: 'Final Inspection', operation_type: 'inspection', work_center_type: null, estimated_duration: 30, instructions: null },
-    { step_number: 4, operation_name: 'Ship to Customer', operation_type: 'shipping', work_center_type: null, estimated_duration: 15, instructions: null },
+    // Pre-Production
+    { step_number: 1, operation_name: 'Quote Review & Approval', operation_type: 'quote', work_center_type: 'Quoting', estimated_duration: 30, instructions: 'Review quote and customer requirements' },
+    { step_number: 2, operation_name: 'Engineering Review', operation_type: 'engineering', work_center_type: 'Engineering', estimated_duration: 60, instructions: 'Review drawings, tolerances, and material specs' },
+    { step_number: 3, operation_name: 'Programming/CAM', operation_type: 'engineering', work_center_type: 'Programming/CAM', estimated_duration: 120, instructions: 'Create CNC programs and toolpaths' },
+    { step_number: 4, operation_name: 'Materials Purchasing', operation_type: 'purchasing', work_center_type: 'Purchasing', estimated_duration: 30, instructions: 'Order raw materials and special tooling' },
+    { step_number: 5, operation_name: 'Materials Receiving', operation_type: 'receiving', work_center_type: 'Receiving', estimated_duration: 15, instructions: 'Receive and verify material certifications' },
+    { step_number: 6, operation_name: 'Incoming Inspection', operation_type: 'inspection', work_center_type: 'Incoming Inspection', estimated_duration: 30, instructions: 'Verify material dimensions and condition' },
+    // Material Prep
+    { step_number: 7, operation_name: 'Material Cutting/Prep', operation_type: 'internal', work_center_type: 'Saw', estimated_duration: 30, instructions: 'Cut material to rough size' },
+    { step_number: 8, operation_name: 'Tool Setup & Prep', operation_type: 'internal', work_center_type: 'Tool Crib', estimated_duration: 45, instructions: 'Pull and verify tooling, fixtures, and gages' },
+    // Production
+    { step_number: 9, operation_name: 'First Article Setup', operation_type: 'internal', work_center_type: 'CNC Mill', estimated_duration: 90, instructions: 'Setup machine and run first article' },
+    { step_number: 10, operation_name: 'First Article Inspection', operation_type: 'inspection', work_center_type: 'CMM', estimated_duration: 60, instructions: 'Full dimensional inspection per drawing' },
+    { step_number: 11, operation_name: 'Production Run', operation_type: 'internal', work_center_type: 'CNC Mill', estimated_duration: 240, instructions: 'Complete production quantity' },
+    // Secondary Ops
+    { step_number: 12, operation_name: 'Deburr/Finish', operation_type: 'internal', work_center_type: 'Deburr', estimated_duration: 30, instructions: 'Remove burrs and clean parts' },
+    // Final
+    { step_number: 13, operation_name: 'Final Inspection', operation_type: 'inspection', work_center_type: 'Final Inspection', estimated_duration: 30, instructions: 'Final QC check before shipping' },
+    { step_number: 14, operation_name: 'Packaging', operation_type: 'internal', work_center_type: 'Packaging', estimated_duration: 15, instructions: 'Package per customer requirements' },
+    { step_number: 15, operation_name: 'Ship to Customer', operation_type: 'shipping', work_center_type: 'Shipping', estimated_duration: 15, instructions: 'Generate shipping labels and ship' },
   ]);
 
   const fetchTemplates = useCallback(async () => {

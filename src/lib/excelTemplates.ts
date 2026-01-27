@@ -51,15 +51,31 @@ export const ROUTING_TEMPLATE = {
   sheetName: 'Routing Templates',
   headers: ['Template Name', 'Part Number Pattern', 'Step #', 'Operation Name', 'Type', 'Work Center', 'Est. Duration (min)', 'Vendor (if outside)', 'Instructions'],
   sampleData: [
-    ['Standard Machining', 'PART-*', '1', 'Receive Material', 'inspection', 'Receiving', '15', '', 'Verify material cert and dimensions'],
-    ['Standard Machining', 'PART-*', '2', 'Rough Mill', 'internal', 'CNC Mill', '60', '', 'Use program ROUGH-001'],
-    ['Standard Machining', 'PART-*', '3', 'Heat Treat', 'outside_processing', '', '480', 'ABC Heat Treat', 'HRC 58-62 required'],
-    ['Standard Machining', 'PART-*', '4', 'Finish Mill', 'internal', 'CNC Mill', '45', '', 'Use program FINISH-001'],
-    ['Standard Machining', 'PART-*', '5', 'Final Inspection', 'inspection', 'CMM', '30', '', 'Full FAI per drawing'],
-    ['Standard Machining', 'PART-*', '6', 'Ship to Customer', 'shipping', 'Shipping', '15', '', 'Pack per SOP-100'],
+    // Pre-Production Phase
+    ['Standard Manufacturing', 'PART-*', '1', 'Quote Review & Approval', 'quote', 'Quoting', '30', '', 'Review quote and customer requirements'],
+    ['Standard Manufacturing', 'PART-*', '2', 'Engineering Review', 'engineering', 'Engineering', '60', '', 'Review drawings, tolerances, and material specs'],
+    ['Standard Manufacturing', 'PART-*', '3', 'Programming/CAM', 'engineering', 'Programming/CAM', '120', '', 'Create CNC programs and toolpaths'],
+    ['Standard Manufacturing', 'PART-*', '4', 'Materials Purchasing', 'purchasing', 'Purchasing', '30', '', 'Order raw materials and special tooling'],
+    ['Standard Manufacturing', 'PART-*', '5', 'Materials Receiving', 'receiving', 'Receiving', '15', '', 'Receive and verify material certifications'],
+    ['Standard Manufacturing', 'PART-*', '6', 'Incoming Inspection', 'inspection', 'Incoming Inspection', '30', '', 'Verify material dimensions and condition'],
+    // Material Prep Phase
+    ['Standard Manufacturing', 'PART-*', '7', 'Material Cutting/Prep', 'internal', 'Saw', '30', '', 'Cut material to rough size'],
+    ['Standard Manufacturing', 'PART-*', '8', 'Tool Setup & Prep', 'internal', 'Tool Crib', '45', '', 'Pull and verify tooling, fixtures, and gages'],
+    // Production Phase
+    ['Standard Manufacturing', 'PART-*', '9', 'First Article Setup', 'internal', 'CNC Mill', '90', '', 'Setup machine and run first article'],
+    ['Standard Manufacturing', 'PART-*', '10', 'First Article Inspection', 'inspection', 'CMM', '60', '', 'Full dimensional inspection per drawing'],
+    ['Standard Manufacturing', 'PART-*', '11', 'Production Run', 'internal', 'CNC Mill', '240', '', 'Complete production quantity'],
+    // Secondary Ops
+    ['Standard Manufacturing', 'PART-*', '12', 'Deburr/Finish', 'internal', 'Deburr', '30', '', 'Remove burrs and clean parts'],
+    // Outside Processing (optional)
+    ['Standard Manufacturing', 'PART-*', '13', 'Heat Treat', 'outside_processing', '', '480', 'ABC Heat Treat', 'HRC 58-62 per spec'],
+    // Final Phase
+    ['Standard Manufacturing', 'PART-*', '14', 'Final Inspection', 'inspection', 'Final Inspection', '30', '', 'Final QC check before shipping'],
+    ['Standard Manufacturing', 'PART-*', '15', 'Packaging', 'internal', 'Packaging', '15', '', 'Package per customer requirements'],
+    ['Standard Manufacturing', 'PART-*', '16', 'Ship to Customer', 'shipping', 'Shipping', '15', '', 'Generate shipping labels and ship'],
   ],
   validValues: {
-    'Type': ['internal', 'outside_processing', 'inspection', 'shipping'],
+    'Type': ['quote', 'engineering', 'purchasing', 'receiving', 'internal', 'outside_processing', 'inspection', 'shipping'],
   },
 };
 

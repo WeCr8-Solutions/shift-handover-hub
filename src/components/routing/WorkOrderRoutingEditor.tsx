@@ -41,7 +41,7 @@ interface RoutingStep {
   id?: string;
   step_number: number;
   operation_name: string;
-  operation_type: 'engineering' | 'internal' | 'inspection' | 'outside_processing' | 'shipping';
+  operation_type: 'quote' | 'engineering' | 'purchasing' | 'receiving' | 'internal' | 'inspection' | 'outside_processing' | 'shipping';
   station_id?: string;
   station_name?: string;
   work_center_type?: string;
@@ -61,28 +61,53 @@ interface WorkOrderRoutingEditorProps {
 }
 
 const OPERATION_TYPES = [
+  { value: 'quote', label: 'Quoting/Estimating', icon: Factory, color: 'bg-slate-500' },
   { value: 'engineering', label: 'Engineering/Programming', icon: Factory, color: 'bg-indigo-500' },
+  { value: 'purchasing', label: 'Purchasing/Procurement', icon: Factory, color: 'bg-cyan-500' },
+  { value: 'receiving', label: 'Receiving/Material Handling', icon: Factory, color: 'bg-teal-500' },
   { value: 'internal', label: 'Machine Process', icon: Factory, color: 'bg-blue-500' },
   { value: 'inspection', label: 'Quality Check', icon: ClipboardCheck, color: 'bg-purple-500' },
   { value: 'outside_processing', label: 'Outside Processing', icon: Truck, color: 'bg-orange-500' },
   { value: 'shipping', label: 'Shipping/Delivery', icon: PackageCheck, color: 'bg-green-500' },
 ];
 
-// Complete manufacturing flow with engineering, QC checkpoints, and all standard steps
+// Complete manufacturing lifecycle from quote to ship with all standard shop floor steps
 const DEFAULT_ROUTING_STEPS: RoutingStep[] = [
-  { step_number: 1, operation_name: 'Incoming Inspection', operation_type: 'inspection', enabled: true },
+  // Pre-Production Phase
+  { step_number: 1, operation_name: 'Quote Review & Approval', operation_type: 'quote', enabled: true },
   { step_number: 2, operation_name: 'Engineering Review', operation_type: 'engineering', enabled: true },
   { step_number: 3, operation_name: 'Programming/CAM', operation_type: 'engineering', enabled: true },
-  { step_number: 4, operation_name: 'First Article Setup', operation_type: 'internal', enabled: true },
-  { step_number: 5, operation_name: 'First Article Inspection', operation_type: 'inspection', enabled: true },
-  { step_number: 6, operation_name: 'Production Run', operation_type: 'internal', enabled: true },
-  { step_number: 7, operation_name: 'In-Process Inspection', operation_type: 'inspection', enabled: false },
-  { step_number: 8, operation_name: 'Secondary Operation', operation_type: 'internal', enabled: false },
-  { step_number: 9, operation_name: 'Deburr/Finish', operation_type: 'internal', enabled: true },
-  { step_number: 10, operation_name: 'Outside Processing', operation_type: 'outside_processing', enabled: false },
-  { step_number: 11, operation_name: 'Final Inspection', operation_type: 'inspection', enabled: true },
-  { step_number: 12, operation_name: 'Packaging', operation_type: 'internal', enabled: true },
-  { step_number: 13, operation_name: 'Ship to Customer', operation_type: 'shipping', enabled: true },
+  { step_number: 4, operation_name: 'Materials Purchasing', operation_type: 'purchasing', enabled: true },
+  { step_number: 5, operation_name: 'Materials Receiving', operation_type: 'receiving', enabled: true },
+  { step_number: 6, operation_name: 'Incoming Inspection', operation_type: 'inspection', enabled: true },
+  
+  // Material Prep Phase
+  { step_number: 7, operation_name: 'Material Cutting/Prep', operation_type: 'internal', enabled: true },
+  { step_number: 8, operation_name: 'Tool Setup & Prep', operation_type: 'internal', enabled: true },
+  { step_number: 9, operation_name: 'Measuring Tool Calibration', operation_type: 'internal', enabled: false },
+  
+  // Production Phase
+  { step_number: 10, operation_name: 'First Article Setup', operation_type: 'internal', enabled: true },
+  { step_number: 11, operation_name: 'First Article Inspection', operation_type: 'inspection', enabled: true },
+  { step_number: 12, operation_name: 'Production Run - Op 10', operation_type: 'internal', enabled: true },
+  { step_number: 13, operation_name: 'In-Process Inspection', operation_type: 'inspection', enabled: false },
+  { step_number: 14, operation_name: 'Production Run - Op 20', operation_type: 'internal', enabled: false },
+  { step_number: 15, operation_name: 'Production Run - Op 30', operation_type: 'internal', enabled: false },
+  
+  // Secondary Operations
+  { step_number: 16, operation_name: 'Deburr/Finish', operation_type: 'internal', enabled: true },
+  { step_number: 17, operation_name: 'Hardware Installation', operation_type: 'internal', enabled: false },
+  { step_number: 18, operation_name: 'Assembly', operation_type: 'internal', enabled: false },
+  
+  // Outside Processing
+  { step_number: 19, operation_name: 'Outside Processing - Heat Treat', operation_type: 'outside_processing', enabled: false },
+  { step_number: 20, operation_name: 'Outside Processing - Plating', operation_type: 'outside_processing', enabled: false },
+  { step_number: 21, operation_name: 'Outside Processing - Paint', operation_type: 'outside_processing', enabled: false },
+  
+  // Final Phase
+  { step_number: 22, operation_name: 'Final Inspection', operation_type: 'inspection', enabled: true },
+  { step_number: 23, operation_name: 'Packaging', operation_type: 'internal', enabled: true },
+  { step_number: 24, operation_name: 'Ship to Customer', operation_type: 'shipping', enabled: true },
 ];
 
 export function WorkOrderRoutingEditor({ 
