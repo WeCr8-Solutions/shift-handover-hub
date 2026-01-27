@@ -205,6 +205,30 @@ export type Database = {
           },
         ]
       }
+      email_rate_limits: {
+        Row: {
+          email_type: string
+          id: string
+          recipient: string
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          email_type: string
+          id?: string
+          recipient: string
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          email_type?: string
+          id?: string
+          recipient?: string
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       entitlements: {
         Row: {
           created_at: string | null
@@ -1590,6 +1614,14 @@ export type Database = {
       }
     }
     Functions: {
+      check_feature_access: {
+        Args: { _feature: string; _org_id: string }
+        Returns: boolean
+      }
+      check_limit_access: {
+        Args: { _increment?: number; _limit_key: string; _org_id: string }
+        Returns: boolean
+      }
       get_user_org_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
