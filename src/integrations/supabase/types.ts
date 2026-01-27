@@ -1598,8 +1598,16 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_in_same_org: {
+        Args: { _caller_id: string; _target_user_id: string }
+        Returns: boolean
+      }
       is_org_admin: {
         Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_org_assignable_role: {
+        Args: { _role: Database["public"]["Enums"]["app_role"] }
         Returns: boolean
       }
       is_org_member: {
