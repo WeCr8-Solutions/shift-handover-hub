@@ -1585,6 +1585,33 @@ export type Database = {
       }
     }
     Views: {
+      activity_logs_supervisor: {
+        Row: {
+          activity_type: Database["public"]["Enums"]["activity_type"] | null
+          created_at: string | null
+          description: string | null
+          id: string | null
+          user_display_name: string | null
+          user_id: string | null
+        }
+        Insert: {
+          activity_type?: Database["public"]["Enums"]["activity_type"] | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          user_display_name?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          activity_type?: Database["public"]["Enums"]["activity_type"] | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          user_display_name?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       profiles_public: {
         Row: {
           avatar_url: string | null

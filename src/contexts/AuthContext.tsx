@@ -159,6 +159,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       );
     }
     
+    // Clear sensitive localStorage data on logout to prevent data exposure
+    const sensitiveKeys = [
+      "handoff-form-draft",
+      "selectedTeamId",
+    ];
+    sensitiveKeys.forEach(key => localStorage.removeItem(key));
+    
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);

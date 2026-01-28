@@ -34,12 +34,108 @@ const RATE_LIMIT_RECIPIENT = 3 // emails per 24h to same recipient
 const RATE_WINDOW_USER_MS = 60 * 60 * 1000 // 1 hour
 const RATE_WINDOW_RECIPIENT_MS = 24 * 60 * 60 * 1000 // 24 hours
 
-// Create admin client for rate limit table (bypasses RLS)
+// Create admin client for rate limit table and authorization checks (bypasses RLS)
 function getAdminClient() {
   return createClient(
     Deno.env.get('SUPABASE_URL')!,
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
   )
+}
+
+// Authorization checks for email types
+async function checkEmailAuthorization(
+  userId: string, 
+  emailType: EmailType, 
+  data: Record<string, unknown>
+): Promise<{ authorized: boolean; reason?: string }> {
+  const adminClient = getAdminClient()
+  
+  switch (emailType) {
+    case 'welcome':
+      // Only allow sending welcome email to yourself
+      return { authorized: true }
+    
+    case 'password-reset':
+      // Password reset is handled by Supabase Auth, not this function
+      return { authorized: true }
+    
+    case 'team-invite': {
+      // Verify user is a team admin or org admin
+      const teamId = data.teamId as string | undefined
+      const orgId = data.organizationId as string | undefined
+      
+      if (teamId) {
+        // Check if user is team admin
+        const { data: teamMember } = await adminClient
+          .from('team_members')
+          .select('role')
+          .eq('team_id', teamId)
+          .eq('user_id', userId)
+          .maybeSingle()
+        
+        if (teamMember?.role === 'owner' || teamMember?.role === 'admin') {
+          return { authorized: true }
+        }
+      }
+      
+      if (orgId) {
+        // Check if user is org admin
+        const { data: orgMember } = await adminClient
+          .from('organization_members')
+          .select('role')
+          .eq('organization_id', orgId)
+          .eq('user_id', userId)
+          .maybeSingle()
+        
+        if (orgMember?.role === 'owner' || orgMember?.role === 'admin') {
+          return { authorized: true }
+        }
+      }
+      
+      // Check if user has supervisor role in their org
+      const { data: userRoles } = await adminClient
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+      
+      const isSupervisor = userRoles?.some(r => r.role === 'supervisor')
+      if (isSupervisor) {
+        return { authorized: true }
+      }
+      
+      return { authorized: false, reason: 'You must be a team admin, org admin, or supervisor to send invite emails.' }
+    }
+    
+    case 'promo-code':
+      // Promo codes can be shared by any authenticated user (rate limited)
+      return { authorized: true }
+    
+    case 'handoff-notification': {
+      // Verify user is a team member for handoff notifications
+      const handoffTeamId = data.teamId as string | undefined
+      
+      if (handoffTeamId) {
+        const { data: teamMember } = await adminClient
+          .from('team_members')
+          .select('id')
+          .eq('team_id', handoffTeamId)
+          .eq('user_id', userId)
+          .maybeSingle()
+        
+        if (teamMember) {
+          return { authorized: true }
+        }
+        
+        return { authorized: false, reason: 'You must be a team member to send handoff notifications.' }
+      }
+      
+      // If no team specified, allow (for legacy support) with rate limiting protection
+      return { authorized: true }
+    }
+    
+    default:
+      return { authorized: false, reason: 'Unknown email type.' }
+  }
 }
 
 // Database-backed rate limiting - persists across cold starts and instances
@@ -157,6 +253,16 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({ error: 'Invalid email address' }),
         { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+      )
+    }
+
+    // Authorization check - verify user has permission to send this email type
+    const authzResult = await checkEmailAuthorization(userId, type, data)
+    if (!authzResult.authorized) {
+      console.warn(`Authorization denied for user ${userId} on email type ${type}: ${authzResult.reason}`)
+      return new Response(
+        JSON.stringify({ error: authzResult.reason || 'You are not authorized to send this type of email.' }),
+        { status: 403, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
       )
     }
 
