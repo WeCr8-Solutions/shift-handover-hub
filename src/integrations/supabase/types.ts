@@ -50,6 +50,98 @@ export type Database = {
         }
         Relationships: []
       }
+      announcement_reads: {
+        Row: {
+          announcement_id: string
+          id: string
+          read_at: string | null
+          user_id: string
+        }
+        Insert: {
+          announcement_id: string
+          id?: string
+          read_at?: string | null
+          user_id: string
+        }
+        Update: {
+          announcement_id?: string
+          id?: string
+          read_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcement_reads_announcement_id_fkey"
+            columns: ["announcement_id"]
+            isOneToOne: false
+            referencedRelation: "announcements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      announcements: {
+        Row: {
+          announcement_type: string | null
+          content: string
+          created_at: string | null
+          created_by: string
+          expires_at: string | null
+          id: string
+          is_pinned: boolean | null
+          organization_id: string
+          priority: string | null
+          starts_at: string | null
+          team_id: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          announcement_type?: string | null
+          content: string
+          created_at?: string | null
+          created_by: string
+          expires_at?: string | null
+          id?: string
+          is_pinned?: boolean | null
+          organization_id: string
+          priority?: string | null
+          starts_at?: string | null
+          team_id?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          announcement_type?: string | null
+          content?: string
+          created_at?: string | null
+          created_by?: string
+          expires_at?: string | null
+          id?: string
+          is_pinned?: boolean | null
+          organization_id?: string
+          priority?: string | null
+          starts_at?: string | null
+          team_id?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcements_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "announcements_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       app_settings: {
         Row: {
           created_at: string
@@ -103,6 +195,53 @@ export type Database = {
             columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      certifications: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          organization_id: string
+          required_for_work_centers: string[] | null
+          requires_renewal: boolean | null
+          updated_at: string | null
+          validity_period_days: number | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          organization_id: string
+          required_for_work_centers?: string[] | null
+          requires_renewal?: boolean | null
+          updated_at?: string | null
+          validity_period_days?: number | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          organization_id?: string
+          required_for_work_centers?: string[] | null
+          requires_renewal?: boolean | null
+          updated_at?: string | null
+          validity_period_days?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certifications_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -170,6 +309,56 @@ export type Database = {
           },
         ]
       }
+      data_export_requests: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          error_message: string | null
+          export_type: string
+          file_expires_at: string | null
+          file_url: string | null
+          filters: Json | null
+          id: string
+          organization_id: string
+          requested_by: string
+          status: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          export_type: string
+          file_expires_at?: string | null
+          file_url?: string | null
+          filters?: Json | null
+          id?: string
+          organization_id: string
+          requested_by: string
+          status?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          export_type?: string
+          file_expires_at?: string | null
+          file_url?: string | null
+          filters?: Json | null
+          id?: string
+          organization_id?: string
+          requested_by?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "data_export_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       departments: {
         Row: {
           created_at: string
@@ -201,6 +390,108 @@ export type Database = {
             columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      downtime_events: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          downtime_type: string
+          duration_minutes: number | null
+          ended_at: string | null
+          equipment_id: string | null
+          id: string
+          organization_id: string
+          reason_code: string | null
+          reported_by: string | null
+          reported_by_name: string | null
+          resolution_notes: string | null
+          resolved_by: string | null
+          resolved_by_name: string | null
+          started_at: string
+          station_id: string | null
+          team_id: string | null
+          updated_at: string | null
+          work_order_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          downtime_type: string
+          duration_minutes?: number | null
+          ended_at?: string | null
+          equipment_id?: string | null
+          id?: string
+          organization_id: string
+          reason_code?: string | null
+          reported_by?: string | null
+          reported_by_name?: string | null
+          resolution_notes?: string | null
+          resolved_by?: string | null
+          resolved_by_name?: string | null
+          started_at: string
+          station_id?: string | null
+          team_id?: string | null
+          updated_at?: string | null
+          work_order_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          downtime_type?: string
+          duration_minutes?: number | null
+          ended_at?: string | null
+          equipment_id?: string | null
+          id?: string
+          organization_id?: string
+          reason_code?: string | null
+          reported_by?: string | null
+          reported_by_name?: string | null
+          resolution_notes?: string | null
+          resolved_by?: string | null
+          resolved_by_name?: string | null
+          started_at?: string
+          station_id?: string | null
+          team_id?: string | null
+          updated_at?: string | null
+          work_order_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "downtime_events_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "downtime_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "downtime_events_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "stations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "downtime_events_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "downtime_events_work_order_id_fkey"
+            columns: ["work_order_id"]
+            isOneToOne: false
+            referencedRelation: "queue_items"
             referencedColumns: ["id"]
           },
         ]
@@ -263,6 +554,97 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: true
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      equipment: {
+        Row: {
+          asset_tag: string
+          calibration_due: string | null
+          created_at: string | null
+          description: string | null
+          equipment_type: string
+          id: string
+          last_calibration: string | null
+          location: string | null
+          manufacturer: string | null
+          metadata: Json | null
+          model: string | null
+          name: string
+          organization_id: string
+          purchase_date: string | null
+          serial_number: string | null
+          station_id: string | null
+          status: string | null
+          team_id: string | null
+          updated_at: string | null
+          warranty_expires: string | null
+        }
+        Insert: {
+          asset_tag: string
+          calibration_due?: string | null
+          created_at?: string | null
+          description?: string | null
+          equipment_type: string
+          id?: string
+          last_calibration?: string | null
+          location?: string | null
+          manufacturer?: string | null
+          metadata?: Json | null
+          model?: string | null
+          name: string
+          organization_id: string
+          purchase_date?: string | null
+          serial_number?: string | null
+          station_id?: string | null
+          status?: string | null
+          team_id?: string | null
+          updated_at?: string | null
+          warranty_expires?: string | null
+        }
+        Update: {
+          asset_tag?: string
+          calibration_due?: string | null
+          created_at?: string | null
+          description?: string | null
+          equipment_type?: string
+          id?: string
+          last_calibration?: string | null
+          location?: string | null
+          manufacturer?: string | null
+          metadata?: Json | null
+          model?: string | null
+          name?: string
+          organization_id?: string
+          purchase_date?: string | null
+          serial_number?: string | null
+          station_id?: string | null
+          status?: string | null
+          team_id?: string | null
+          updated_at?: string | null
+          warranty_expires?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "equipment_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "stations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "equipment_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
             referencedColumns: ["id"]
           },
         ]
@@ -610,6 +992,91 @@ export type Database = {
           },
         ]
       }
+      maintenance_records: {
+        Row: {
+          completed_date: string | null
+          cost: number | null
+          created_at: string | null
+          description: string | null
+          equipment_id: string | null
+          id: string
+          maintenance_type: string
+          next_due_date: string | null
+          notes: string | null
+          organization_id: string
+          parts_used: Json | null
+          performed_by: string | null
+          performed_by_name: string | null
+          scheduled_date: string | null
+          station_id: string | null
+          status: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          completed_date?: string | null
+          cost?: number | null
+          created_at?: string | null
+          description?: string | null
+          equipment_id?: string | null
+          id?: string
+          maintenance_type: string
+          next_due_date?: string | null
+          notes?: string | null
+          organization_id: string
+          parts_used?: Json | null
+          performed_by?: string | null
+          performed_by_name?: string | null
+          scheduled_date?: string | null
+          station_id?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          completed_date?: string | null
+          cost?: number | null
+          created_at?: string | null
+          description?: string | null
+          equipment_id?: string | null
+          id?: string
+          maintenance_type?: string
+          next_due_date?: string | null
+          notes?: string | null
+          organization_id?: string
+          parts_used?: Json | null
+          performed_by?: string | null
+          performed_by_name?: string | null
+          scheduled_date?: string | null
+          station_id?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "maintenance_records_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "maintenance_records_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "maintenance_records_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "stations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_preferences: {
         Row: {
           created_at: string
@@ -765,6 +1232,74 @@ export type Database = {
             foreignKeyName: "organization_audit_events_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_branding: {
+        Row: {
+          accent_color: string | null
+          company_tagline: string | null
+          created_at: string | null
+          custom_css: string | null
+          email_footer_html: string | null
+          email_header_html: string | null
+          favicon_url: string | null
+          id: string
+          login_background_url: string | null
+          logo_dark_url: string | null
+          logo_light_url: string | null
+          organization_id: string
+          primary_color: string | null
+          secondary_color: string | null
+          support_email: string | null
+          support_phone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          accent_color?: string | null
+          company_tagline?: string | null
+          created_at?: string | null
+          custom_css?: string | null
+          email_footer_html?: string | null
+          email_header_html?: string | null
+          favicon_url?: string | null
+          id?: string
+          login_background_url?: string | null
+          logo_dark_url?: string | null
+          logo_light_url?: string | null
+          organization_id: string
+          primary_color?: string | null
+          secondary_color?: string | null
+          support_email?: string | null
+          support_phone?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          accent_color?: string | null
+          company_tagline?: string | null
+          created_at?: string | null
+          custom_css?: string | null
+          email_footer_html?: string | null
+          email_header_html?: string | null
+          favicon_url?: string | null
+          id?: string
+          login_background_url?: string | null
+          logo_dark_url?: string | null
+          logo_light_url?: string | null
+          organization_id?: string
+          primary_color?: string | null
+          secondary_color?: string | null
+          support_email?: string | null
+          support_phone?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_branding_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -1413,6 +1948,69 @@ export type Database = {
           },
         ]
       }
+      saved_views: {
+        Row: {
+          columns: Json | null
+          created_at: string | null
+          filters: Json
+          id: string
+          is_default: boolean | null
+          is_shared: boolean | null
+          name: string
+          organization_id: string
+          sort_by: Json | null
+          team_id: string | null
+          updated_at: string | null
+          user_id: string
+          view_type: string
+        }
+        Insert: {
+          columns?: Json | null
+          created_at?: string | null
+          filters?: Json
+          id?: string
+          is_default?: boolean | null
+          is_shared?: boolean | null
+          name: string
+          organization_id: string
+          sort_by?: Json | null
+          team_id?: string | null
+          updated_at?: string | null
+          user_id: string
+          view_type: string
+        }
+        Update: {
+          columns?: Json | null
+          created_at?: string | null
+          filters?: Json
+          id?: string
+          is_default?: boolean | null
+          is_shared?: boolean | null
+          name?: string
+          organization_id?: string
+          sort_by?: Json | null
+          team_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+          view_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_views_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_views_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shift_schedules: {
         Row: {
           color: string | null
@@ -1701,6 +2299,113 @@ export type Database = {
           },
         ]
       }
+      terms_acceptance: {
+        Row: {
+          accepted_at: string | null
+          id: string
+          ip_address: unknown
+          organization_id: string | null
+          terms_type: string
+          terms_version: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          id?: string
+          ip_address?: unknown
+          organization_id?: string | null
+          terms_type: string
+          terms_version: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          id?: string
+          ip_address?: unknown
+          organization_id?: string | null
+          terms_type?: string
+          terms_version?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "terms_acceptance_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_certifications: {
+        Row: {
+          certificate_number: string | null
+          certification_id: string
+          created_at: string | null
+          document_url: string | null
+          expires_date: string | null
+          id: string
+          issued_by: string | null
+          issued_by_name: string | null
+          issued_date: string
+          notes: string | null
+          organization_id: string
+          status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          certificate_number?: string | null
+          certification_id: string
+          created_at?: string | null
+          document_url?: string | null
+          expires_date?: string | null
+          id?: string
+          issued_by?: string | null
+          issued_by_name?: string | null
+          issued_date: string
+          notes?: string | null
+          organization_id: string
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          certificate_number?: string | null
+          certification_id?: string
+          created_at?: string | null
+          document_url?: string | null
+          expires_date?: string | null
+          id?: string
+          issued_by?: string | null
+          issued_by_name?: string | null
+          issued_date?: string
+          notes?: string | null
+          organization_id?: string
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_certifications_certification_id_fkey"
+            columns: ["certification_id"]
+            isOneToOne: false
+            referencedRelation: "certifications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_certifications_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_onboarding: {
         Row: {
           completed_at: string | null
@@ -1736,6 +2441,76 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_org_preferences: {
+        Row: {
+          created_at: string | null
+          dashboard_layout: Json | null
+          default_station_id: string | null
+          default_team_id: string | null
+          id: string
+          locale: string | null
+          notifications_muted: boolean | null
+          organization_id: string
+          sidebar_collapsed: boolean | null
+          theme_preference: string | null
+          timezone: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          dashboard_layout?: Json | null
+          default_station_id?: string | null
+          default_team_id?: string | null
+          id?: string
+          locale?: string | null
+          notifications_muted?: boolean | null
+          organization_id: string
+          sidebar_collapsed?: boolean | null
+          theme_preference?: string | null
+          timezone?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          dashboard_layout?: Json | null
+          default_station_id?: string | null
+          default_team_id?: string | null
+          id?: string
+          locale?: string | null
+          notifications_muted?: boolean | null
+          organization_id?: string
+          sidebar_collapsed?: boolean | null
+          theme_preference?: string | null
+          timezone?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_org_preferences_default_station_id_fkey"
+            columns: ["default_station_id"]
+            isOneToOne: false
+            referencedRelation: "stations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_org_preferences_default_team_id_fkey"
+            columns: ["default_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_org_preferences_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
