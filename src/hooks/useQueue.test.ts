@@ -5,6 +5,7 @@ import { QueueItem, QueueStatus, QueuePriority } from "./useQueue";
 function createMockQueueItem(overrides: Partial<QueueItem> = {}): QueueItem {
   return {
     id: "test-item-id",
+    organization_id: "test-org-id",
     team_id: "test-team-id",
     station_id: null,
     item_type: "team_task",

@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTeams } from "./useTeams";
 import { useActivityLog } from "./useActivityLog";
+import { useUserOrganization } from "./useUserOrganization";
 import { WorkCenterType, JobState, Shift } from "@/types/handoff";
 
 export interface Station {
@@ -87,10 +88,14 @@ export interface HandoffRecord {
   updated_at: string;
 }
 
-export function useStations(teamId?: string | null) {
+export function useStations(teamId?: string | null, organizationId?: string | null) {
   const { user } = useAuth();
+  const { organization } = useUserOrganization();
   const [stations, setStations] = useState<Station[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Use passed organizationId or fall back to user's org
+  const effectiveOrgId = organizationId || organization?.id;
 
   const fetchStations = useCallback(async () => {
     if (!user) {
@@ -109,6 +114,12 @@ export function useStations(teamId?: string | null) {
       `)
       .order("name");
 
+    // Filter by organization for proper multi-tenant isolation
+    if (effectiveOrgId) {
+      query = query.eq("organization_id", effectiveOrgId);
+    }
+
+    // Additional team filter if specified
     if (teamId) {
       query = query.eq("team_id", teamId);
     }
@@ -124,7 +135,7 @@ export function useStations(teamId?: string | null) {
       setStations(transformed);
     }
     setLoading(false);
-  }, [user, teamId]);
+  }, [user, teamId, effectiveOrgId]);
 
   useEffect(() => {
     fetchStations();
