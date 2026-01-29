@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTeams, useTeamMembers, Team } from "@/hooks/useTeams";
 import { useAuth } from "@/contexts/AuthContext";
 import { useStations } from "@/hooks/useStations";
@@ -24,9 +25,10 @@ import {
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Users, Plus, UserPlus, Trash2, Crown, Shield, User, Loader2, Wrench } from "lucide-react";
+import { Users, Plus, UserPlus, Trash2, Crown, Shield, User, Loader2, Wrench, QrCode } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { TeamStationManager } from "./TeamStationManager";
+import { InviteCodeGenerator } from "./InviteCodeGenerator";
 
 export function TeamManagement() {
   const { user } = useAuth();
@@ -323,6 +325,7 @@ function TeamMembersPanel({
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<"admin" | "member">("member");
   const [isInviting, setIsInviting] = useState(false);
+  const [showInviteCodeDialog, setShowInviteCodeDialog] = useState(false);
 
   const currentUserMember = members.find((m) => m.user_id === user?.id);
   const isAdmin = currentUserMember?.role === "owner" || currentUserMember?.role === "admin";
@@ -395,61 +398,81 @@ function TeamMembersPanel({
             <CardDescription>{members.length} member(s)</CardDescription>
           </div>
           {isAdmin && (
-            <Dialog open={showInviteDialog} onOpenChange={setShowInviteDialog}>
-              <DialogTrigger asChild>
-                <Button size="sm" className="gap-2">
-                  <UserPlus className="w-4 h-4" />
-                  Add Member
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Add Team Member</DialogTitle>
-                  <DialogDescription>
-                    Invite a user to join {team.name}. They must already have an account.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="invite-email">Email Address</Label>
-                    <Input
-                      id="invite-email"
-                      type="email"
-                      placeholder="operator@company.com"
-                      value={inviteEmail}
-                      onChange={(e) => setInviteEmail(e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="invite-role">Role</Label>
-                    <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as "admin" | "member")}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="member">Member</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setShowInviteDialog(false)}>
-                    Cancel
+            <div className="flex items-center gap-2">
+              <Dialog open={showInviteCodeDialog} onOpenChange={setShowInviteCodeDialog}>
+                <DialogTrigger asChild>
+                  <Button size="sm" variant="outline" className="gap-2">
+                    <QrCode className="w-4 h-4" />
+                    Invite Code
                   </Button>
-                  <Button onClick={handleInvite} disabled={isInviting}>
-                    {isInviting ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Adding...
-                      </>
-                    ) : (
-                      "Add Member"
-                    )}
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Generate Invite Code for {team.name}</DialogTitle>
+                    <DialogDescription>
+                      Create an invite code that automatically adds new members to this team
+                    </DialogDescription>
+                  </DialogHeader>
+                  <InviteCodeGenerator defaultTeamId={team.id} />
+                </DialogContent>
+              </Dialog>
+              
+              <Dialog open={showInviteDialog} onOpenChange={setShowInviteDialog}>
+                <DialogTrigger asChild>
+                  <Button size="sm" className="gap-2">
+                    <UserPlus className="w-4 h-4" />
+                    Add Member
                   </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Add Team Member</DialogTitle>
+                    <DialogDescription>
+                      Invite a user to join {team.name}. They must already have an account.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="invite-email">Email Address</Label>
+                      <Input
+                        id="invite-email"
+                        type="email"
+                        placeholder="operator@company.com"
+                        value={inviteEmail}
+                        onChange={(e) => setInviteEmail(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="invite-role">Role</Label>
+                      <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as "admin" | "member")}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="member">Member</SelectItem>
+                          <SelectItem value="admin">Admin</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setShowInviteDialog(false)}>
+                      Cancel
+                    </Button>
+                    <Button onClick={handleInvite} disabled={isInviting}>
+                      {isInviting ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Adding...
+                        </>
+                      ) : (
+                        "Add Member"
+                      )}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
           )}
         </div>
       </CardHeader>

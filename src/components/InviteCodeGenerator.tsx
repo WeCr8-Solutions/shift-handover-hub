@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { QRCodeSVG } from "qrcode.react";
+import { supabase } from "@/integrations/supabase/client";
 import { useOrganizationInvites, OrganizationInvite } from "@/hooks/useOrganizationInvites";
 import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { useTeams } from "@/hooks/useTeams";
@@ -32,6 +33,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import {
   QrCode,
@@ -44,9 +46,34 @@ import {
   Users,
   Clock,
   Share2,
+  History,
+  User,
 } from "lucide-react";
 
-export function InviteCodeGenerator() {
+interface InviteRedemption {
+  id: string;
+  invite_id: string;
+  user_id: string;
+  redeemed_at: string;
+  user?: {
+    display_name: string;
+    email: string;
+  };
+  invite?: {
+    invite_code: string;
+    org_role: string;
+    app_role: string | null;
+    team?: {
+      name: string;
+    };
+  };
+}
+
+interface InviteCodeGeneratorProps {
+  defaultTeamId?: string;
+}
+
+export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps = {}) {
   const { organization } = useUserOrganization();
   const { invites, loading, createInvite, deactivateInvite, deleteInvite } = useOrganizationInvites(
     organization?.id || null
@@ -54,17 +81,89 @@ export function InviteCodeGenerator() {
   const { teams } = useTeams();
   const { toast } = useToast();
 
+  const [activeTab, setActiveTab] = useState("invites");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showQRDialog, setShowQRDialog] = useState(false);
   const [selectedInvite, setSelectedInvite] = useState<OrganizationInvite | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
+  // Redemption history
+  const [redemptions, setRedemptions] = useState<InviteRedemption[]>([]);
+  const [loadingRedemptions, setLoadingRedemptions] = useState(false);
+
   // Form state
-  const [teamId, setTeamId] = useState<string>("none");
+  const [teamId, setTeamId] = useState<string>(defaultTeamId || "none");
   const [orgRole, setOrgRole] = useState<"admin" | "member">("member");
   const [appRole, setAppRole] = useState<string>("none");
   const [expiresInDays, setExpiresInDays] = useState<string>("7");
   const [maxUses, setMaxUses] = useState<string>("");
+
+  // Update teamId when defaultTeamId changes
+  useEffect(() => {
+    if (defaultTeamId) {
+      setTeamId(defaultTeamId);
+    }
+  }, [defaultTeamId]);
+
+  const fetchRedemptions = useCallback(async () => {
+    if (!organization) return;
+
+    setLoadingRedemptions(true);
+    const { data, error } = await supabase
+      .from("invite_redemptions")
+      .select(`
+        id,
+        invite_id,
+        user_id,
+        redeemed_at,
+        organization_invites!inner(
+          invite_code,
+          org_role,
+          app_role,
+          organization_id,
+          teams(name)
+        )
+      `)
+      .eq("organization_invites.organization_id", organization.id)
+      .order("redeemed_at", { ascending: false })
+      .limit(50);
+
+    if (!error && data) {
+      // Fetch user profiles separately
+      const userIds = [...new Set(data.map((r: any) => r.user_id))];
+      const { data: profiles } = await supabase
+        .from("profiles_public")
+        .select("user_id, display_name")
+        .in("user_id", userIds);
+
+      const profileMap = new Map(profiles?.map((p: any) => [p.user_id, p]) || []);
+
+      const formatted: InviteRedemption[] = data.map((r: any) => ({
+        id: r.id,
+        invite_id: r.invite_id,
+        user_id: r.user_id,
+        redeemed_at: r.redeemed_at,
+        user: profileMap.get(r.user_id) ? {
+          display_name: (profileMap.get(r.user_id) as any).display_name || "Unknown",
+          email: "", // Email not exposed in public view
+        } : { display_name: "Unknown User", email: "" },
+        invite: {
+          invite_code: r.organization_invites.invite_code,
+          org_role: r.organization_invites.org_role,
+          app_role: r.organization_invites.app_role,
+          team: r.organization_invites.teams ? { name: r.organization_invites.teams.name } : undefined,
+        },
+      }));
+      setRedemptions(formatted);
+    }
+    setLoadingRedemptions(false);
+  }, [organization]);
+
+  useEffect(() => {
+    if (activeTab === "history") {
+      fetchRedemptions();
+    }
+  }, [activeTab, fetchRedemptions]);
 
   const handleCreateInvite = async () => {
     setIsCreating(true);
@@ -93,8 +192,8 @@ export function InviteCodeGenerator() {
         setSelectedInvite(data as OrganizationInvite);
         setShowQRDialog(true);
       }
-      // Reset form
-      setTeamId("none");
+      // Reset form (but keep defaultTeamId if set)
+      setTeamId(defaultTeamId || "none");
       setOrgRole("member");
       setAppRole("none");
       setExpiresInDays("7");
@@ -225,6 +324,7 @@ export function InviteCodeGenerator() {
                         <SelectItem value="none">Default (Operator)</SelectItem>
                         <SelectItem value="supervisor">Supervisor</SelectItem>
                         <SelectItem value="operator">Operator</SelectItem>
+                        <SelectItem value="viewer">Viewer</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -274,138 +374,226 @@ export function InviteCodeGenerator() {
         </div>
       </CardHeader>
       <CardContent>
-        {loading ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="w-6 h-6 animate-spin text-primary" />
-          </div>
-        ) : invites.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <QrCode className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p>No invite codes yet. Create one to get started.</p>
-          </div>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Code</TableHead>
-                <TableHead>Team</TableHead>
-                <TableHead>Roles</TableHead>
-                <TableHead>Usage</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="w-24"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {invites.map((invite) => {
-                const isExpired = invite.expires_at && new Date(invite.expires_at) < new Date();
-                const isMaxedOut = invite.max_uses && invite.uses_count >= invite.max_uses;
-                const isValid = invite.is_active && !isExpired && !isMaxedOut;
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="mb-4">
+            <TabsTrigger value="invites" className="gap-2">
+              <QrCode className="w-4 h-4" />
+              Active Invites
+            </TabsTrigger>
+            <TabsTrigger value="history" className="gap-2">
+              <History className="w-4 h-4" />
+              Redemption History
+            </TabsTrigger>
+          </TabsList>
 
-                return (
-                  <TableRow key={invite.id}>
-                    <TableCell>
-                      <code className="bg-muted px-2 py-1 rounded font-mono text-sm">
-                        {invite.invite_code}
-                      </code>
-                    </TableCell>
-                    <TableCell>
-                      {invite.team?.name || <span className="text-muted-foreground">—</span>}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        <Badge variant="outline" className="text-xs">
-                          Org: {invite.org_role}
-                        </Badge>
-                        {invite.app_role && (
-                          <Badge variant="secondary" className="text-xs">
-                            {invite.app_role}
-                          </Badge>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1 text-sm">
-                        <Users className="w-3 h-3" />
-                        {invite.uses_count}
-                        {invite.max_uses && `/${invite.max_uses}`}
-                      </div>
-                      {invite.expires_at && (
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Clock className="w-3 h-3" />
-                          {new Date(invite.expires_at).toLocaleDateString()}
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {isValid ? (
-                        <Badge className="gap-1 bg-green-500/10 text-green-700 border-green-200">
-                          <CheckCircle className="w-3 h-3" />
-                          Active
-                        </Badge>
-                      ) : (
-                        <Badge variant="secondary" className="gap-1">
-                          <XCircle className="w-3 h-3" />
-                          {isExpired ? "Expired" : isMaxedOut ? "Maxed" : "Inactive"}
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => handleShowQR(invite)}
-                          title="Show QR Code"
-                        >
-                          <QrCode className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => handleCopyLink(invite.invite_code)}
-                          title="Copy Link"
-                        >
-                          <Share2 className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => handleCopyCode(invite.invite_code)}
-                          title="Copy Code"
-                        >
-                          <Copy className="w-4 h-4" />
-                        </Button>
-                        {invite.is_active && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-destructive"
-                            onClick={() => handleDeactivate(invite.id)}
-                            title="Deactivate"
-                          >
-                            <XCircle className="w-4 h-4" />
-                          </Button>
-                        )}
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-destructive"
-                          onClick={() => handleDelete(invite.id)}
-                          title="Delete"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+          <TabsContent value="invites">
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              </div>
+            ) : invites.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <QrCode className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p>No invite codes yet. Create one to get started.</p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Code</TableHead>
+                    <TableHead>Team</TableHead>
+                    <TableHead>Roles</TableHead>
+                    <TableHead>Usage</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="w-24"></TableHead>
                   </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        )}
+                </TableHeader>
+                <TableBody>
+                  {invites.map((invite) => {
+                    const isExpired = invite.expires_at && new Date(invite.expires_at) < new Date();
+                    const isMaxedOut = invite.max_uses && invite.uses_count >= invite.max_uses;
+                    const isValid = invite.is_active && !isExpired && !isMaxedOut;
+
+                    return (
+                      <TableRow key={invite.id}>
+                        <TableCell>
+                          <code className="bg-muted px-2 py-1 rounded font-mono text-sm">
+                            {invite.invite_code}
+                          </code>
+                        </TableCell>
+                        <TableCell>
+                          {invite.team?.name || <span className="text-muted-foreground">—</span>}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap gap-1">
+                            <Badge variant="outline" className="text-xs">
+                              Org: {invite.org_role}
+                            </Badge>
+                            {invite.app_role && (
+                              <Badge variant="secondary" className="text-xs">
+                                {invite.app_role}
+                              </Badge>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1 text-sm">
+                            <Users className="w-3 h-3" />
+                            {invite.uses_count}
+                            {invite.max_uses && `/${invite.max_uses}`}
+                          </div>
+                          {invite.expires_at && (
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <Clock className="w-3 h-3" />
+                              {new Date(invite.expires_at).toLocaleDateString()}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {isValid ? (
+                            <Badge className="gap-1 bg-green-500/10 text-green-700 border-green-200">
+                              <CheckCircle className="w-3 h-3" />
+                              Active
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary" className="gap-1">
+                              <XCircle className="w-3 h-3" />
+                              {isExpired ? "Expired" : isMaxedOut ? "Maxed" : "Inactive"}
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => handleShowQR(invite)}
+                              title="Show QR Code"
+                            >
+                              <QrCode className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => handleCopyLink(invite.invite_code)}
+                              title="Copy Link"
+                            >
+                              <Share2 className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => handleCopyCode(invite.invite_code)}
+                              title="Copy Code"
+                            >
+                              <Copy className="w-4 h-4" />
+                            </Button>
+                            {invite.is_active && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-destructive"
+                                onClick={() => handleDeactivate(invite.id)}
+                                title="Deactivate"
+                              >
+                                <XCircle className="w-4 h-4" />
+                              </Button>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive"
+                              onClick={() => handleDelete(invite.id)}
+                              title="Delete"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            )}
+          </TabsContent>
+
+          <TabsContent value="history">
+            {loadingRedemptions ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              </div>
+            ) : redemptions.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <History className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p>No redemptions yet.</p>
+                <p className="text-sm">When members join using invite codes, they'll appear here.</p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>User</TableHead>
+                    <TableHead>Invite Code</TableHead>
+                    <TableHead>Team</TableHead>
+                    <TableHead>Roles Assigned</TableHead>
+                    <TableHead>Redeemed At</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {redemptions.map((redemption) => (
+                    <TableRow key={redemption.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                            <User className="w-4 h-4 text-muted-foreground" />
+                          </div>
+                          <span className="font-medium">
+                            {redemption.user?.display_name || "Unknown User"}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <code className="bg-muted px-2 py-1 rounded font-mono text-sm">
+                          {redemption.invite?.invite_code}
+                        </code>
+                      </TableCell>
+                      <TableCell>
+                        {redemption.invite?.team?.name || (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          <Badge variant="outline" className="text-xs">
+                            Org: {redemption.invite?.org_role}
+                          </Badge>
+                          {redemption.invite?.app_role && (
+                            <Badge variant="secondary" className="text-xs">
+                              {redemption.invite.app_role}
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm text-muted-foreground">
+                          {new Date(redemption.redeemed_at).toLocaleDateString()}{" "}
+                          {new Date(redemption.redeemed_at).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </TabsContent>
+        </Tabs>
       </CardContent>
 
       {/* QR Code Dialog */}

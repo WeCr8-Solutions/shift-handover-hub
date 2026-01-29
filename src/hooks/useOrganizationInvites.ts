@@ -71,7 +71,7 @@ export function useOrganizationInvites(organizationId: string | null) {
   const createInvite = async (options: {
     teamId?: string;
     orgRole?: "admin" | "member";
-    appRole?: "supervisor" | "operator" | null;
+    appRole?: "supervisor" | "operator" | "viewer" | null;
     expiresInDays?: number;
     maxUses?: number | null;
   }) => {
