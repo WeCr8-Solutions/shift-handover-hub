@@ -125,34 +125,33 @@ export function RoutingTemplateManagement({ isAdmin }: RoutingTemplateManagement
   });
 
   // Default comprehensive manufacturing template - the standard shop floor workflow
+  // Uses industry-standard operation numbers (increments of 10)
   const getDefaultSteps = (): RoutingTemplateStep[] => [
-    // Pre-Production
-    { step_number: 1, operation_name: 'Quote Review & Approval', operation_type: 'quote', work_center_type: 'Quoting', estimated_duration: 30, instructions: 'Review quote and customer requirements' },
-    { step_number: 2, operation_name: 'Engineering Review', operation_type: 'engineering', work_center_type: 'Engineering', estimated_duration: 60, instructions: 'Review drawings, tolerances, and material specs' },
-    { step_number: 3, operation_name: 'Programming/CAM', operation_type: 'engineering', work_center_type: 'Programming/CAM', estimated_duration: 120, instructions: 'Create CNC programs and toolpaths' },
-    { step_number: 4, operation_name: 'Materials Purchasing', operation_type: 'purchasing', work_center_type: 'Purchasing', estimated_duration: 30, instructions: 'Order raw materials and special tooling' },
-    { step_number: 5, operation_name: 'Materials Receiving', operation_type: 'receiving', work_center_type: 'Receiving', estimated_duration: 15, instructions: 'Receive and verify material certifications' },
-    { step_number: 6, operation_name: 'Incoming Inspection', operation_type: 'inspection', work_center_type: 'Incoming Inspection', estimated_duration: 30, instructions: 'Verify material dimensions and condition' },
-    // Material Prep
-    { step_number: 7, operation_name: 'Material Cutting/Prep', operation_type: 'internal', work_center_type: 'Saw', estimated_duration: 30, instructions: 'Cut material to rough size' },
-    { step_number: 8, operation_name: 'Tool Setup & Prep', operation_type: 'internal', work_center_type: 'Tool Crib', estimated_duration: 45, instructions: 'Pull and verify tooling, fixtures, and gages' },
-    // Production
-    { step_number: 9, operation_name: 'First Article Setup', operation_type: 'internal', work_center_type: 'CNC Mill', estimated_duration: 90, instructions: 'Setup machine and run first article' },
-    { step_number: 10, operation_name: 'First Article Inspection', operation_type: 'inspection', work_center_type: 'CMM', estimated_duration: 60, instructions: 'Full dimensional inspection per drawing' },
-    { step_number: 11, operation_name: 'Production Run', operation_type: 'internal', work_center_type: 'CNC Mill', estimated_duration: 240, instructions: 'Complete production quantity' },
-    // Secondary Ops
-    { step_number: 12, operation_name: 'Deburr/Finish', operation_type: 'internal', work_center_type: 'Deburr', estimated_duration: 30, instructions: 'Remove burrs and clean parts' },
-    // Outside Processing (amber hue reminder - toggle as needed)
-    { step_number: 13, operation_name: 'OP - Heat Treat', operation_type: 'outside_processing', work_center_type: 'Heat Treat', estimated_duration: 480, instructions: 'Send to vendor for heat treatment' },
-    { step_number: 14, operation_name: 'OP - Plating/Coating', operation_type: 'outside_processing', work_center_type: 'Plating', estimated_duration: 480, instructions: 'Zinc, Cad, Chrome, or other plating' },
-    { step_number: 15, operation_name: 'OP - Anodize', operation_type: 'outside_processing', work_center_type: 'Anodize', estimated_duration: 480, instructions: 'Type II or Type III anodizing' },
-    { step_number: 16, operation_name: 'OP - Paint/Powder Coat', operation_type: 'outside_processing', work_center_type: 'Paint', estimated_duration: 480, instructions: 'Paint or powder coat finish' },
-    // Post-OP
-    { step_number: 17, operation_name: 'Post-OP Receiving Inspection', operation_type: 'inspection', work_center_type: 'Incoming Inspection', estimated_duration: 30, instructions: 'Inspect parts returned from outside processing' },
-    // Final
-    { step_number: 18, operation_name: 'Final Inspection', operation_type: 'inspection', work_center_type: 'Final Inspection', estimated_duration: 30, instructions: 'Final QC check before shipping' },
-    { step_number: 19, operation_name: 'Packaging', operation_type: 'internal', work_center_type: 'Packaging', estimated_duration: 15, instructions: 'Package per customer requirements' },
-    { step_number: 20, operation_name: 'Ship to Customer', operation_type: 'shipping', work_center_type: 'Shipping', estimated_duration: 15, instructions: 'Generate shipping labels and ship' },
+    // Pre-Production (10-60)
+    { step_number: 10, operation_name: '10 - Quote Review & Approval', operation_type: 'quote', work_center_type: 'Quoting', estimated_duration: 30, instructions: 'Review quote and customer requirements' },
+    { step_number: 20, operation_name: '20 - Engineering Review', operation_type: 'engineering', work_center_type: 'Engineering', estimated_duration: 60, instructions: 'Review drawings, tolerances, and material specs' },
+    { step_number: 30, operation_name: '30 - CNC Programming', operation_type: 'engineering', work_center_type: 'Programming/CAM', estimated_duration: 120, instructions: 'Create CNC programs and toolpaths' },
+    { step_number: 40, operation_name: '40 - Purchasing', operation_type: 'purchasing', work_center_type: 'Purchasing', estimated_duration: 30, instructions: 'Order raw materials and special tooling' },
+    { step_number: 50, operation_name: '50 - Receiving', operation_type: 'receiving', work_center_type: 'Receiving', estimated_duration: 15, instructions: 'Receive and verify material certifications' },
+    { step_number: 60, operation_name: '60 - Incoming Inspection', operation_type: 'inspection', work_center_type: 'Incoming Inspection', estimated_duration: 30, instructions: 'Verify material dimensions and condition' },
+    // Material Prep (70-80)
+    { step_number: 70, operation_name: '70 - Material Cutting', operation_type: 'internal', work_center_type: 'Saw', estimated_duration: 30, instructions: 'Cut material to rough size' },
+    { step_number: 80, operation_name: '80 - Tool Setup', operation_type: 'internal', work_center_type: 'Tool Crib', estimated_duration: 45, instructions: 'Pull and verify tooling, fixtures, and gages' },
+    // Production (90-120)
+    { step_number: 90, operation_name: '90 - First Article', operation_type: 'internal', work_center_type: 'CNC Mill', estimated_duration: 90, instructions: 'Setup machine and run first article' },
+    { step_number: 100, operation_name: '100 - First Article Inspection', operation_type: 'inspection', work_center_type: 'CMM', estimated_duration: 60, instructions: 'Full dimensional inspection per drawing' },
+    { step_number: 110, operation_name: '110 - Production Run', operation_type: 'internal', work_center_type: 'CNC Mill', estimated_duration: 240, instructions: 'Complete production quantity' },
+    { step_number: 120, operation_name: '120 - Deburr', operation_type: 'internal', work_center_type: 'Deburr', estimated_duration: 30, instructions: 'Remove burrs and clean parts' },
+    // Outside Processing (130-160) - amber hue reminder
+    { step_number: 130, operation_name: '130 - OP Heat Treat', operation_type: 'outside_processing', work_center_type: 'Heat Treat', estimated_duration: 480, instructions: 'Send to vendor for heat treatment' },
+    { step_number: 140, operation_name: '140 - OP Plating', operation_type: 'outside_processing', work_center_type: 'Plating', estimated_duration: 480, instructions: 'Zinc, Cad, Chrome, or other plating' },
+    { step_number: 150, operation_name: '150 - OP Anodize', operation_type: 'outside_processing', work_center_type: 'Anodize', estimated_duration: 480, instructions: 'Type II or Type III anodizing' },
+    { step_number: 160, operation_name: '160 - OP Paint', operation_type: 'outside_processing', work_center_type: 'Paint', estimated_duration: 480, instructions: 'Paint or powder coat finish' },
+    // Post-OP & Final (170-200)
+    { step_number: 170, operation_name: '170 - Post-OP Inspection', operation_type: 'inspection', work_center_type: 'Incoming Inspection', estimated_duration: 30, instructions: 'Inspect parts returned from outside processing' },
+    { step_number: 180, operation_name: '180 - Final Inspection', operation_type: 'inspection', work_center_type: 'Final Inspection', estimated_duration: 30, instructions: 'Final QC check before shipping' },
+    { step_number: 190, operation_name: '190 - Packaging', operation_type: 'internal', work_center_type: 'Packaging', estimated_duration: 15, instructions: 'Package per customer requirements' },
+    { step_number: 200, operation_name: '200 - Ship', operation_type: 'shipping', work_center_type: 'Shipping', estimated_duration: 15, instructions: 'Generate shipping labels and ship' },
   ];
 
   const [steps, setSteps] = useState<RoutingTemplateStep[]>(getDefaultSteps());
@@ -374,9 +373,13 @@ export function RoutingTemplateManagement({ isAdmin }: RoutingTemplateManagement
   };
 
   const addStep = () => {
+    // Calculate next operation number (increment of 10)
+    const maxOpNum = steps.length > 0 ? Math.max(...steps.map(s => s.step_number)) : 0;
+    const nextOpNum = Math.ceil((maxOpNum + 10) / 10) * 10;
+    
     setSteps([...steps, {
-      step_number: steps.length + 1,
-      operation_name: 'New Operation',
+      step_number: nextOpNum,
+      operation_name: `${nextOpNum} - New Operation`,
       operation_type: 'internal',
       work_center_type: null,
       estimated_duration: 30,
@@ -386,15 +389,17 @@ export function RoutingTemplateManagement({ isAdmin }: RoutingTemplateManagement
 
   const removeStep = (index: number) => {
     const newSteps = steps.filter((_, i) => i !== index);
-    setSteps(newSteps.map((s, i) => ({ ...s, step_number: i + 1 })));
+    // Keep existing operation numbers (don't renumber - manufacturing standard)
+    setSteps(newSteps);
   };
 
   const moveStep = (index: number, direction: 'up' | 'down') => {
     if ((direction === 'up' && index === 0) || (direction === 'down' && index === steps.length - 1)) return;
     const newSteps = [...steps];
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    // Swap positions but keep operation numbers intact (standard manufacturing practice)
     [newSteps[index], newSteps[targetIndex]] = [newSteps[targetIndex], newSteps[index]];
-    setSteps(newSteps.map((s, i) => ({ ...s, step_number: i + 1 })));
+    setSteps(newSteps);
   };
 
   const updateStep = (index: number, updates: Partial<RoutingTemplateStep>) => {
