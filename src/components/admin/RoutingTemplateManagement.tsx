@@ -433,32 +433,38 @@ export function RoutingTemplateManagement({ isAdmin }: RoutingTemplateManagement
     );
   }
 
-  const TemplateFormFields = () => (
+  // Render the form fields inline to avoid focus loss issues
+  const renderTemplateFormFields = () => (
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label>Template Name *</Label>
+          <Label htmlFor="template-name">Template Name *</Label>
           <Input
+            id="template-name"
             value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
             placeholder="e.g., Standard Machining"
+            autoComplete="off"
           />
         </div>
         <div className="space-y-2">
-          <Label>Part Number Pattern</Label>
+          <Label htmlFor="part-number-pattern">Part Number Pattern</Label>
           <Input
+            id="part-number-pattern"
             value={formData.part_number_pattern}
-            onChange={(e) => setFormData({ ...formData, part_number_pattern: e.target.value })}
+            onChange={(e) => setFormData(prev => ({ ...prev, part_number_pattern: e.target.value }))}
             placeholder="e.g., PART-* or *-ASSY"
+            autoComplete="off"
           />
           <p className="text-xs text-muted-foreground">Use * as wildcard to auto-match part numbers</p>
         </div>
       </div>
       <div className="space-y-2">
-        <Label>Description</Label>
+        <Label htmlFor="template-description">Description</Label>
         <Textarea
+          id="template-description"
           value={formData.description}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
           placeholder="Describe when to use this template..."
           rows={2}
         />
@@ -470,7 +476,7 @@ export function RoutingTemplateManagement({ isAdmin }: RoutingTemplateManagement
         </div>
         <Switch
           checked={formData.is_default}
-          onCheckedChange={(v) => setFormData({ ...formData, is_default: v })}
+          onCheckedChange={(v) => setFormData(prev => ({ ...prev, is_default: v }))}
         />
       </div>
 
@@ -514,7 +520,7 @@ export function RoutingTemplateManagement({ isAdmin }: RoutingTemplateManagement
               const isOutsideProcessing = step.operation_type === 'outside_processing';
               return (
                 <div 
-                  key={index} 
+                  key={`step-${index}-${step.step_number}`} 
                   className={`flex items-center gap-2 p-3 rounded-lg border bg-background ${isOutsideProcessing ? 'border-amber-400 bg-amber-500/10' : ''}`}
                 >
                   <div className="flex flex-col gap-0.5">
@@ -552,6 +558,7 @@ export function RoutingTemplateManagement({ isAdmin }: RoutingTemplateManagement
                       value={step.operation_name}
                       onChange={(e) => updateStep(index, { operation_name: e.target.value })}
                       placeholder="Operation name"
+                      autoComplete="off"
                     />
                     <Select
                       value={step.operation_type}
@@ -585,6 +592,7 @@ export function RoutingTemplateManagement({ isAdmin }: RoutingTemplateManagement
                       value={step.estimated_duration || ""}
                       onChange={(e) => updateStep(index, { estimated_duration: parseInt(e.target.value) || null })}
                       placeholder="Duration (min)"
+                      autoComplete="off"
                     />
                   </div>
                   
@@ -611,7 +619,7 @@ export function RoutingTemplateManagement({ isAdmin }: RoutingTemplateManagement
                 const opColor = getOpColor(step.operation_type);
                 const isOutsideProcessing = step.operation_type === 'outside_processing';
                 return (
-                  <div key={index} className="flex items-center">
+                  <div key={`flow-${index}-${step.step_number}`} className="flex items-center">
                     <div 
                       className={`relative group flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all cursor-pointer hover:scale-105 ${
                         isOutsideProcessing 
@@ -700,7 +708,7 @@ export function RoutingTemplateManagement({ isAdmin }: RoutingTemplateManagement
                       Define a reusable production routing for work orders
                     </DialogDescription>
                   </DialogHeader>
-                  <TemplateFormFields />
+                  {renderTemplateFormFields()}
                   <DialogFooter>
                     <Button variant="outline" onClick={() => { setShowCreateDialog(false); resetForm(); }}>
                       Cancel
@@ -835,7 +843,7 @@ export function RoutingTemplateManagement({ isAdmin }: RoutingTemplateManagement
               Update the template "{editingTemplate?.name}"
             </DialogDescription>
           </DialogHeader>
-          <TemplateFormFields />
+          {renderTemplateFormFields()}
           <DialogFooter>
             <Button variant="outline" onClick={resetForm}>Cancel</Button>
             <Button onClick={handleUpdate} disabled={isSubmitting}>
