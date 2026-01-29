@@ -12,6 +12,7 @@ import { WorkOrderManagement } from "@/components/admin/WorkOrderManagement";
 import { RoutingTemplateManagement } from "@/components/admin/RoutingTemplateManagement";
 import { PerformanceUpdatesReview } from "@/components/admin/PerformanceUpdatesReview";
 import { BulkUploadDialog } from "@/components/BulkUploadDialog";
+import { SeedTestDataButton } from "@/components/admin/SeedTestDataButton";
 import { TourTriggerButton } from "@/components/onboarding";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -68,6 +69,7 @@ export default function Admin() {
           </div>
           <div className="flex items-center gap-2">
             <TourTriggerButton />
+            <SeedTestDataButton />
             <Button variant="outline" onClick={() => setBulkUploadOpen(true)} data-tour="bulk-upload">
               <FileSpreadsheet className="w-4 h-4 mr-2" />
               Bulk Upload
