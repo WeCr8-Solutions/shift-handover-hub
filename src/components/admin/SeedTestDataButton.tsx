@@ -109,20 +109,25 @@ export function SeedTestDataButton() {
       }
 
       // 4. Create sample work orders across stations
+      // Standard manufacturing routing operation numbers (increments of 10)
+      // 10=Engineering, 20=Programming, 30=Purchasing, 40=Receiving, 50=Incoming Inspection
+      // 60=Material Cutting, 70=Tool Setup, 80=First Article, 90=Production Run, 100=Deburr
+      // 110=Outside Processing, 120=Final Inspection, 130=Packaging, 140=Ship
+
       const workOrderData = [
-        // Station 1 - multiple states
-        { title: "Engine Block Machining", work_order: "WO-2025-001", part_number: "EB-4500", status: "in_progress", priority: "high", stationIndex: 0 },
-        { title: "Cylinder Head Finishing", work_order: "WO-2025-002", part_number: "CH-3200", status: "queued", priority: "normal", stationIndex: 0 },
-        { title: "Crankshaft Balancing", work_order: "WO-2025-003", part_number: "CS-1800", status: "pending", priority: "urgent", stationIndex: 0 },
+        // Station 1 - multiple states with realistic operation numbers
+        { title: "Engine Block Machining", work_order: "WO-2025-001", part_number: "EB-4500", status: "in_progress", priority: "high", stationIndex: 0, operation_number: "90" },
+        { title: "Cylinder Head Finishing", work_order: "WO-2025-002", part_number: "CH-3200", status: "queued", priority: "normal", stationIndex: 0, operation_number: "70" },
+        { title: "Crankshaft Balancing", work_order: "WO-2025-003", part_number: "CS-1800", status: "pending", priority: "urgent", stationIndex: 0, operation_number: "60" },
         // Station 2 - multiple states (if exists)
-        { title: "Transmission Case Milling", work_order: "WO-2025-004", part_number: "TC-7700", status: "in_progress", priority: "critical", stationIndex: 1 },
-        { title: "Gear Housing Assembly", work_order: "WO-2025-005", part_number: "GH-5500", status: "queued", priority: "normal", stationIndex: 1 },
-        { title: "Drive Shaft Turning", work_order: "WO-2025-006", part_number: "DS-2200", status: "on_hold", priority: "low", stationIndex: 1 },
+        { title: "Transmission Case Milling", work_order: "WO-2025-004", part_number: "TC-7700", status: "in_progress", priority: "critical", stationIndex: 1, operation_number: "90" },
+        { title: "Gear Housing Assembly", work_order: "WO-2025-005", part_number: "GH-5500", status: "queued", priority: "normal", stationIndex: 1, operation_number: "80" },
+        { title: "Drive Shaft Turning", work_order: "WO-2025-006", part_number: "DS-2200", status: "on_hold", priority: "low", stationIndex: 1, operation_number: "110" },
         // Spread across both
-        { title: "Brake Rotor Surfacing", work_order: "WO-2025-007", part_number: "BR-9900", status: "completed", priority: "normal", stationIndex: 0 },
-        { title: "Valve Cover Drilling", work_order: "WO-2025-008", part_number: "VC-1100", status: "pending", priority: "high", stationIndex: 0 },
-        { title: "Oil Pan Machining", work_order: "WO-2025-009", part_number: "OP-4400", status: "queued", priority: "normal", stationIndex: 1 },
-        { title: "Flywheel Resurfacing", work_order: "WO-2025-010", part_number: "FW-6600", status: "pending", priority: "urgent", stationIndex: 0 },
+        { title: "Brake Rotor Surfacing", work_order: "WO-2025-007", part_number: "BR-9900", status: "completed", priority: "normal", stationIndex: 0, operation_number: "130" },
+        { title: "Valve Cover Drilling", work_order: "WO-2025-008", part_number: "VC-1100", status: "pending", priority: "high", stationIndex: 0, operation_number: "50" },
+        { title: "Oil Pan Machining", work_order: "WO-2025-009", part_number: "OP-4400", status: "queued", priority: "normal", stationIndex: 1, operation_number: "100" },
+        { title: "Flywheel Resurfacing", work_order: "WO-2025-010", part_number: "FW-6600", status: "pending", priority: "urgent", stationIndex: 0, operation_number: "120" },
       ];
 
       const insertedWorkOrders: { id: string; title: string }[] = [];
@@ -148,7 +153,7 @@ export function SeedTestDataButton() {
             quantity: Math.floor(Math.random() * 50) + 10,
             estimated_duration: Math.floor(Math.random() * 240) + 60,
             due_date: new Date(Date.now() + Math.random() * 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-            operation_number: `OP${(wo.stationIndex + 1) * 10}`,
+            operation_number: wo.operation_number,
           }])
           .select("id, title")
           .single();
@@ -160,12 +165,22 @@ export function SeedTestDataButton() {
 
       // 5. Create routing steps for each work order
       let routingStepsCreated = 0;
+      // Standard manufacturing routing sequence with operation numbers
       const routingOperations = [
-        { operation_name: "Setup & Fixturing", operation_type: "internal" },
-        { operation_name: "Rough Machining", operation_type: "internal" },
-        { operation_name: "Heat Treatment", operation_type: "outside_processing" },
-        { operation_name: "Finish Machining", operation_type: "internal" },
-        { operation_name: "Inspection", operation_type: "internal" },
+        { op_number: "10", operation_name: "Engineering Review", operation_type: "internal" },
+        { op_number: "20", operation_name: "CNC Programming", operation_type: "internal" },
+        { op_number: "30", operation_name: "Purchasing", operation_type: "internal" },
+        { op_number: "40", operation_name: "Receiving", operation_type: "internal" },
+        { op_number: "50", operation_name: "Incoming Inspection", operation_type: "internal" },
+        { op_number: "60", operation_name: "Material Cutting", operation_type: "internal" },
+        { op_number: "70", operation_name: "Tool Setup", operation_type: "internal" },
+        { op_number: "80", operation_name: "First Article", operation_type: "internal" },
+        { op_number: "90", operation_name: "Production Run", operation_type: "internal" },
+        { op_number: "100", operation_name: "Deburr", operation_type: "internal" },
+        { op_number: "110", operation_name: "Outside Processing", operation_type: "outside_processing" },
+        { op_number: "120", operation_name: "Final Inspection", operation_type: "internal" },
+        { op_number: "130", operation_name: "Packaging", operation_type: "internal" },
+        { op_number: "140", operation_name: "Ship", operation_type: "internal" },
       ];
 
       for (const wo of insertedWorkOrders) {
@@ -182,13 +197,13 @@ export function SeedTestDataButton() {
             .from("work_order_routing")
             .insert({
               queue_item_id: wo.id,
-              step_number: i + 1,
-              operation_name: op.operation_name,
+              step_number: parseInt(op.op_number) / 10, // 10->1, 20->2, etc.
+              operation_name: `${op.op_number} - ${op.operation_name}`,
               operation_type: op.operation_type,
               station_id: stationForStep.id,
               status: stepStatus,
               estimated_duration: Math.floor(Math.random() * 120) + 30,
-              notes: `${op.operation_name} for ${wo.title}`,
+              notes: `Op ${op.op_number}: ${op.operation_name} for ${wo.title}`,
               outside_vendor: op.operation_type === "outside_processing" ? "ABC Heat Treating Inc." : null,
               po_number: op.operation_type === "outside_processing" ? `PO-${Math.floor(Math.random() * 10000)}` : null,
               expected_return_date: op.operation_type === "outside_processing" 
