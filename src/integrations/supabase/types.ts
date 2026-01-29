@@ -3113,6 +3113,13 @@ export type Database = {
             referencedRelation: "organization_webhooks"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "webhook_deliveries_webhook_id_fkey"
+            columns: ["webhook_id"]
+            isOneToOne: false
+            referencedRelation: "organization_webhooks_safe"
+            referencedColumns: ["id"]
+          },
         ]
       }
       work_center_config: {
@@ -3280,6 +3287,56 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      organization_webhooks_safe: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          events: string[] | null
+          id: string | null
+          is_active: boolean | null
+          name: string | null
+          organization_id: string | null
+          retry_count: number | null
+          timeout_seconds: number | null
+          updated_at: string | null
+          url: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          events?: string[] | null
+          id?: string | null
+          is_active?: boolean | null
+          name?: string | null
+          organization_id?: string | null
+          retry_count?: number | null
+          timeout_seconds?: number | null
+          updated_at?: string | null
+          url?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          events?: string[] | null
+          id?: string | null
+          is_active?: boolean | null
+          name?: string | null
+          organization_id?: string | null
+          retry_count?: number | null
+          timeout_seconds?: number | null
+          updated_at?: string | null
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_webhooks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles_public: {
         Row: {
