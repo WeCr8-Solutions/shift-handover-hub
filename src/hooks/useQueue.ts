@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrentTeam } from "@/contexts/TeamContext";
+import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { Database } from "@/integrations/supabase/types";
 
 export type QueueItemType = Database["public"]["Enums"]["queue_item_type"];
@@ -10,6 +11,7 @@ export type QueuePriority = Database["public"]["Enums"]["queue_priority"];
 
 export interface QueueItem {
   id: string;
+  organization_id: string | null;
   team_id: string | null;
   station_id: string | null;
   item_type: QueueItemType;
@@ -96,9 +98,11 @@ export function useQueue(filters?: {
   item_type?: QueueItemType[];
   station_id?: string;
   assigned_to?: string;
+  organization_id?: string;
 }) {
   const { user, profile } = useAuth();
   const { currentTeam } = useCurrentTeam();
+  const { organization } = useUserOrganization();
   const [items, setItems] = useState<QueueItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -116,6 +120,14 @@ export function useQueue(filters?: {
       .order("priority", { ascending: false })
       .order("created_at", { ascending: false });
 
+    // Filter by organization for proper multi-tenant isolation
+    // Use explicit filter if provided, otherwise use user's organization
+    const orgId = filters?.organization_id || organization?.id;
+    if (orgId) {
+      query = query.eq("organization_id", orgId);
+    }
+
+    // Additional team filter if specified
     if (currentTeam) {
       query = query.eq("team_id", currentTeam.id);
     }
@@ -146,7 +158,7 @@ export function useQueue(filters?: {
     }
 
     setLoading(false);
-  }, [user, currentTeam, filters?.status, filters?.item_type, filters?.station_id, filters?.assigned_to]);
+  }, [user, currentTeam, organization?.id, filters?.status, filters?.item_type, filters?.station_id, filters?.assigned_to, filters?.organization_id]);
 
   // Initial fetch
   useEffect(() => {
@@ -181,17 +193,25 @@ export function useQueue(filters?: {
     async (input: CreateQueueItemInput) => {
       if (!user || !profile) return { error: "Not authenticated" };
 
-      // Get max position
-      const { data: maxPosData } = await supabase
+      // Get max position within the organization
+      let maxPosQuery = supabase
         .from("queue_items")
         .select("position")
-        .eq("team_id", currentTeam?.id || "")
         .order("position", { ascending: false })
         .limit(1);
+      
+      if (organization?.id) {
+        maxPosQuery = maxPosQuery.eq("organization_id", organization.id);
+      }
+      if (currentTeam?.id) {
+        maxPosQuery = maxPosQuery.eq("team_id", currentTeam.id);
+      }
 
+      const { data: maxPosData } = await maxPosQuery;
       const maxPosition = maxPosData?.[0]?.position || 0;
 
       const { error } = await supabase.from("queue_items").insert({
+        organization_id: organization?.id || null,
         team_id: currentTeam?.id || null,
         item_type: input.item_type,
         title: input.title,
@@ -218,7 +238,7 @@ export function useQueue(filters?: {
       await fetchItems();
       return { error: null };
     },
-    [user, profile, currentTeam, fetchItems]
+    [user, profile, currentTeam, organization, fetchItems]
   );
 
   const updateItem = useCallback(
