@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAccess } from "@/hooks/useAdminData";
@@ -9,8 +9,10 @@ import { TestResultsPanel } from "@/components/testing/TestResultsPanel";
 import { TestCoverageCard } from "@/components/testing/TestCoverageCard";
 import { TestHistoryList } from "@/components/testing/TestHistoryList";
 import { TestSuiteSelector } from "@/components/testing/TestSuiteSelector";
+import { ProcessTestRunner } from "@/components/testing/ProcessTestRunner";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, FlaskConical, Code } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Loader2, FlaskConical, Code, Factory } from "lucide-react";
 
 export default function Testing() {
   const navigate = useNavigate();
@@ -65,7 +67,7 @@ export default function Testing() {
             <div>
               <h1 className="text-2xl font-bold">Testing Dashboard</h1>
               <p className="text-sm text-muted-foreground">
-                Run and monitor tests for components, hooks, and edge functions
+                Run and monitor tests for components, hooks, edge functions, and manufacturing processes
               </p>
             </div>
           </div>
@@ -77,43 +79,60 @@ export default function Testing() {
           </div>
         </div>
 
-        {/* Test Runner Controls */}
-        <TestRunnerControls
-          isRunning={isRunning}
-          onRunTests={() => runTests(selectedSuite || undefined)}
-          onClearHistory={clearHistory}
-          hasHistory={testHistory.length > 0}
-        />
+        {/* Test Type Tabs */}
+        <Tabs defaultValue="unit" className="space-y-6">
+          <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsTrigger value="unit" className="gap-2">
+              <FlaskConical className="w-4 h-4" />
+              Unit Tests
+            </TabsTrigger>
+            <TabsTrigger value="process" className="gap-2">
+              <Factory className="w-4 h-4" />
+              Process Tests
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Suite Selector & Coverage */}
-          <div className="space-y-6">
-            <TestSuiteSelector
-              suites={availableSuites}
-              selectedSuite={selectedSuite}
-              onSelectSuite={setSelectedSuite}
-            />
-            
-            {currentRun?.coverage && (
-              <TestCoverageCard coverage={currentRun.coverage} />
-            )}
-          </div>
-
-          {/* Center Column - Test Results */}
-          <div className="lg:col-span-2 space-y-6">
-            <TestResultsPanel
-              run={currentRun}
+          {/* Unit Tests Tab */}
+          <TabsContent value="unit" className="space-y-6">
+            <TestRunnerControls
               isRunning={isRunning}
+              onRunTests={() => runTests(selectedSuite || undefined)}
+              onClearHistory={clearHistory}
+              hasHistory={testHistory.length > 0}
             />
-          </div>
-        </div>
 
-        {/* Test History */}
-        <TestHistoryList
-          history={testHistory}
-          onClearHistory={clearHistory}
-        />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="space-y-6">
+                <TestSuiteSelector
+                  suites={availableSuites}
+                  selectedSuite={selectedSuite}
+                  onSelectSuite={setSelectedSuite}
+                />
+                
+                {currentRun?.coverage && (
+                  <TestCoverageCard coverage={currentRun.coverage} />
+                )}
+              </div>
+
+              <div className="lg:col-span-2 space-y-6">
+                <TestResultsPanel
+                  run={currentRun}
+                  isRunning={isRunning}
+                />
+              </div>
+            </div>
+
+            <TestHistoryList
+              history={testHistory}
+              onClearHistory={clearHistory}
+            />
+          </TabsContent>
+
+          {/* Process Tests Tab */}
+          <TabsContent value="process">
+            <ProcessTestRunner />
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );
