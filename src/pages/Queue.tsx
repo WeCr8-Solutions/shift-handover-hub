@@ -14,11 +14,12 @@ import { QueueItemDetailDialog } from "@/components/queue/QueueItemDetailDialog"
 import { QueueStatsCards } from "@/components/queue/QueueStatsCards";
 import { WorkOrderRoutingEditor } from "@/components/routing/WorkOrderRoutingEditor";
 import { OutsideProcessingManager } from "@/components/routing/OutsideProcessingManager";
+import { WorkOrderHistory } from "@/components/admin/WorkOrderHistory";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, LayoutGrid, List, Plus, Calendar, Truck, GitBranch, Building2, Wrench, Eye } from "lucide-react";
+import { Loader2, LayoutGrid, List, Plus, Calendar, Truck, GitBranch, Building2, Wrench, Eye, History } from "lucide-react";
 
 export default function Queue() {
   const navigate = useNavigate();
@@ -30,7 +31,7 @@ export default function Queue() {
   // Check if viewing a specific station from URL
   const urlStationId = searchParams.get("station");
   
-  const [activeTab, setActiveTab] = useState<"queue" | "outside-processing">("queue");
+  const [activeTab, setActiveTab] = useState<"queue" | "outside-processing" | "history">("queue");
   const [view, setView] = useState<"kanban" | "list" | "calendar">("kanban");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
@@ -191,7 +192,7 @@ export default function Queue() {
         </div>
 
         {/* Tabs for Queue vs Outside Processing */}
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "queue" | "outside-processing")} data-tour="queue-tabs">
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "queue" | "outside-processing" | "history")} data-tour="queue-tabs">
           <TabsList>
             <TabsTrigger value="queue" className="flex items-center gap-2">
               <LayoutGrid className="w-4 h-4" />
@@ -201,6 +202,12 @@ export default function Queue() {
               <Truck className="w-4 h-4" />
               Outside Processing
             </TabsTrigger>
+            {hasAdminAccess && (
+              <TabsTrigger value="history" className="flex items-center gap-2">
+                <History className="w-4 h-4" />
+                History
+              </TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="queue" className="space-y-6 mt-6">
@@ -273,6 +280,12 @@ export default function Queue() {
           <TabsContent value="outside-processing" className="mt-6">
             <OutsideProcessingManager />
           </TabsContent>
+
+          {hasAdminAccess && (
+            <TabsContent value="history" className="mt-6">
+              <WorkOrderHistory isAdmin={true} />
+            </TabsContent>
+          )}
         </Tabs>
       </main>
 
