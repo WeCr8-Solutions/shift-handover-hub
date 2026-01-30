@@ -9,6 +9,7 @@ import { StationManagement } from "@/components/admin/StationManagement";
 import { TeamOversight } from "@/components/admin/TeamOversight";
 import { ActivityLogs } from "@/components/admin/ActivityLogs";
 import { WorkOrderManagement } from "@/components/admin/WorkOrderManagement";
+import { WorkOrderHistory } from "@/components/admin/WorkOrderHistory";
 import { RoutingTemplateManagement } from "@/components/admin/RoutingTemplateManagement";
 import { PerformanceUpdatesReview } from "@/components/admin/PerformanceUpdatesReview";
 import { BulkUploadDialog } from "@/components/BulkUploadDialog";
@@ -17,7 +18,7 @@ import { TourTriggerButton } from "@/components/onboarding";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Shield, LayoutDashboard, Users, Wrench, Building2, Activity, FileSpreadsheet, Package, Route, Lightbulb } from "lucide-react";
+import { Loader2, Shield, LayoutDashboard, Users, Wrench, Building2, Activity, FileSpreadsheet, Package, Route, Lightbulb, History } from "lucide-react";
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -97,6 +98,10 @@ export default function Admin() {
               <Package className="w-4 h-4" />
               Work Orders
             </TabsTrigger>
+            <TabsTrigger value="history" className="gap-2">
+              <History className="w-4 h-4" />
+              History
+            </TabsTrigger>
             <TabsTrigger value="routing" className="gap-2">
               <Route className="w-4 h-4" />
               Routing
@@ -133,6 +138,10 @@ export default function Admin() {
 
           <TabsContent value="work-orders">
             <WorkOrderManagement isAdmin={isAdmin} />
+          </TabsContent>
+
+          <TabsContent value="history">
+            <WorkOrderHistory isAdmin={isAdmin} />
           </TabsContent>
 
           <TabsContent value="routing">
