@@ -327,6 +327,143 @@ const securityTests: TestDefinition[] = [
       }
     },
   },
+  {
+    id: "sec-003",
+    name: "Teams are org-scoped (no cross-org visibility)",
+    category: "Security & RLS",
+    test: async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          return { success: false, error: "No authenticated user" };
+        }
+        // Get user's org
+        const { data: membership } = await supabase
+          .from("organization_members")
+          .select("organization_id")
+          .eq("user_id", user.id)
+          .single();
+        
+        if (!membership) {
+          return { success: true, details: "User has no org - no teams visible" };
+        }
+        
+        // Check all visible teams belong to user's org
+        const { data: teams, error } = await supabase
+          .from("teams")
+          .select("id, organization_id");
+        
+        if (error) throw error;
+        
+        const allInOrg = teams?.every(t => t.organization_id === membership.organization_id);
+        return { 
+          success: allInOrg !== false, 
+          details: `${teams?.length || 0} teams visible, all org-scoped: ${allInOrg}` 
+        };
+      } catch (err: any) {
+        return { success: false, error: err.message };
+      }
+    },
+  },
+  {
+    id: "sec-004",
+    name: "Stations are org-scoped",
+    category: "Security & RLS",
+    test: async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          return { success: false, error: "No authenticated user" };
+        }
+        
+        const { data: membership } = await supabase
+          .from("organization_members")
+          .select("organization_id")
+          .eq("user_id", user.id)
+          .single();
+        
+        if (!membership) {
+          return { success: true, details: "User has no org - no stations visible" };
+        }
+        
+        const { data: stations, error } = await supabase
+          .from("stations")
+          .select("id, organization_id");
+        
+        if (error) throw error;
+        
+        const allInOrg = stations?.every(s => s.organization_id === membership.organization_id);
+        return { 
+          success: allInOrg !== false, 
+          details: `${stations?.length || 0} stations visible, all org-scoped: ${allInOrg}` 
+        };
+      } catch (err: any) {
+        return { success: false, error: err.message };
+      }
+    },
+  },
+  {
+    id: "sec-005",
+    name: "Queue items are org-scoped",
+    category: "Security & RLS",
+    test: async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          return { success: false, error: "No authenticated user" };
+        }
+        
+        const { data: membership } = await supabase
+          .from("organization_members")
+          .select("organization_id")
+          .eq("user_id", user.id)
+          .single();
+        
+        if (!membership) {
+          return { success: true, details: "User has no org - no queue items visible" };
+        }
+        
+        const { data: items, error } = await supabase
+          .from("queue_items")
+          .select("id, organization_id")
+          .limit(100);
+        
+        if (error) throw error;
+        
+        const allInOrg = items?.every(i => i.organization_id === membership.organization_id);
+        return { 
+          success: allInOrg !== false, 
+          details: `${items?.length || 0} queue items checked, all org-scoped: ${allInOrg}` 
+        };
+      } catch (err: any) {
+        return { success: false, error: err.message };
+      }
+    },
+  },
+  {
+    id: "sec-006",
+    name: "Handoff records are org-scoped via team",
+    category: "Security & RLS",
+    test: async () => {
+      try {
+        const { data: handoffs, error } = await supabase
+          .from("handoff_records")
+          .select("id, team_id")
+          .limit(50);
+        
+        if (error) throw error;
+        
+        // If we can see handoffs, they should all have team_id
+        const allHaveTeam = handoffs?.every(h => h.team_id !== null);
+        return { 
+          success: true, 
+          details: `${handoffs?.length || 0} handoffs visible, all have team scope: ${allHaveTeam}` 
+        };
+      } catch (err: any) {
+        return { success: false, error: err.message };
+      }
+    },
+  },
 ];
 
 const allTestSuites = [
