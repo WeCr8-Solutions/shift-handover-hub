@@ -25,8 +25,22 @@ export function OnboardingProgress({ showRestart = true, compact = false }: Onbo
     isStepCompleted,
     startTour,
     resetOnboarding,
+    goToStep,
+    markWelcomeSeen,
     currentStep,
   } = useOnboardingContext();
+
+  const STEP_ROUTE_MAP: Record<string, string> = {
+    'welcome': '/setup',
+    'organization-setup': '/setup',
+    'shop-setup': '/setup',
+    'dashboard-overview': '/dashboard',
+    'station-cards': '/dashboard',
+    'handoff-submission': '/dashboard',
+    'performance-updates': '/dashboard',
+    'team-management': '/teams',
+    'admin-features': '/admin',
+  };
 
   if (isLoading) return null;
 
@@ -53,6 +67,14 @@ export function OnboardingProgress({ showRestart = true, compact = false }: Onbo
     await resetOnboarding();
     navigate('/setup');
     setTimeout(() => startTour(), 300);
+  };
+
+  const handleStepClick = async (stepId: string) => {
+    await markWelcomeSeen();
+    await goToStep(stepId as any);
+    
+    navigate(STEP_ROUTE_MAP[stepId] || '/dashboard');
+    setTimeout(() => startTour(stepId as any), 300);
   };
 
   if (compact) {
@@ -107,10 +129,11 @@ export function OnboardingProgress({ showRestart = true, compact = false }: Onbo
             const isCurrent = step.id === currentStep;
 
             return (
-              <div
+              <button
                 key={step.id}
-                className={`flex items-center gap-3 p-2 rounded-md transition-colors ${
-                  isCurrent ? 'bg-primary/5' : ''
+                onClick={() => handleStepClick(step.id)}
+                className={`w-full flex items-center gap-3 p-2 rounded-md transition-colors cursor-pointer hover:bg-accent text-left ${
+                  isCurrent ? 'bg-primary/5 hover:bg-primary/10' : ''
                 }`}
               >
                 {completed ? (
@@ -131,7 +154,7 @@ export function OnboardingProgress({ showRestart = true, compact = false }: Onbo
                 {isCurrent && !isComplete && (
                   <span className="inline-flex items-center rounded-md border border-border px-2 py-1 text-xs font-medium shrink-0">Current</span>
                 )}
-              </div>
+              </button>
             );
           })}
         </div>

@@ -178,6 +178,17 @@ export function useOnboarding() {
     setShowTour(true);
   }, [user]);
 
+  const goToStep = useCallback(async (stepId: OnboardingStep) => {
+    if (!user) return;
+    
+    setState(prev => ({ ...prev, currentStep: stepId }));
+    
+    await supabase
+      .from('user_onboarding')
+      .update({ current_step: stepId })
+      .eq('user_id', user.id);
+  }, [user]);
+
   const startTour = useCallback((step?: OnboardingStep) => {
     if (step) {
       setState(prev => ({ ...prev, currentStep: step }));
@@ -210,6 +221,7 @@ export function useOnboarding() {
     skipOnboarding,
     resetOnboarding,
     markWelcomeSeen,
+    goToStep,
     startTour,
     endTour,
     isStepCompleted,
