@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { ActivityType, ActivityLogRow } from "@/hooks/useActivityLog";
+import { ActivityType } from "@/hooks/useActivityLog";
+import { useAdminAccess } from "@/hooks/useAdminData";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,9 +20,24 @@ import {
   Settings,
   RefreshCw,
   Loader2,
-  Filter
+  Filter,
+  Shield,
+  ShieldCheck
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+
+// Type for activity log entries (works for both table and views)
+interface ActivityLogEntry {
+  id: string;
+  user_id: string;
+  activity_type: ActivityType;
+  description: string;
+  user_display_name: string | null;
+  user_email?: string | null;
+  created_at: string;
+  metadata?: Record<string, unknown> | null;
+  ip_address?: string | null;
+}
 
 const activityIcons: Record<ActivityType, React.ComponentType<{ className?: string }>> = {
   login: LogIn,
@@ -78,29 +94,55 @@ const activityLabels: Record<ActivityType, string> = {
 };
 
 export function ActivityLogs() {
-  const [logs, setLogs] = useState<ActivityLogRow[]>([]);
+  const [logs, setLogs] = useState<ActivityLogEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<ActivityType | "all">("all");
+  const { isAdmin } = useAdminAccess();
 
   const fetchLogs = async () => {
     setLoading(true);
     
-    let query = supabase
-      .from("activity_logs")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(100);
+    try {
+      let data: ActivityLogEntry[] = [];
+      let error: Error | null = null;
+      
+      if (isAdmin) {
+        // Platform admins use the full activity_logs table (includes IP addresses)
+        const result = await supabase
+          .from("activity_logs")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(100);
+        
+        if (filter !== "all" && result.data) {
+          data = result.data.filter(log => log.activity_type === filter) as ActivityLogEntry[];
+        } else {
+          data = (result.data || []) as ActivityLogEntry[];
+        }
+        error = result.error;
+      } else {
+        // Org admins use the activity_logs_org_admin view (excludes IP addresses for privacy)
+        const result = await supabase
+          .from("activity_logs_org_admin")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(100);
+        
+        if (filter !== "all" && result.data) {
+          data = result.data.filter(log => log.activity_type === filter) as ActivityLogEntry[];
+        } else {
+          data = (result.data || []) as ActivityLogEntry[];
+        }
+        error = result.error;
+      }
 
-    if (filter !== "all") {
-      query = query.eq("activity_type", filter);
-    }
-
-    const { data, error } = await query;
-
-    if (error) {
-      console.error("Error fetching activity logs:", error);
-    } else {
-      setLogs(data || []);
+      if (error) {
+        console.error("Error fetching activity logs:", error);
+      } else {
+        setLogs(data);
+      }
+    } catch (err) {
+      console.error("Error fetching activity logs:", err);
     }
     
     setLoading(false);
@@ -108,10 +150,12 @@ export function ActivityLogs() {
 
   useEffect(() => {
     fetchLogs();
-  }, [filter]);
+  }, [filter, isAdmin]);
 
-  // Subscribe to realtime updates
+  // Subscribe to realtime updates (only for main table, platform admins)
   useEffect(() => {
+    if (!isAdmin) return; // Views don't support realtime
+    
     const channel = supabase
       .channel("activity_logs_changes")
       .on(
@@ -122,7 +166,7 @@ export function ActivityLogs() {
           table: "activity_logs",
         },
         (payload) => {
-          const newLog = payload.new as ActivityLogRow;
+          const newLog = payload.new as ActivityLogEntry;
           if (filter === "all" || newLog.activity_type === filter) {
             setLogs((prev) => [newLog, ...prev.slice(0, 99)]);
           }
@@ -159,6 +203,17 @@ export function ActivityLogs() {
         <div className="flex items-center gap-2">
           <Activity className="w-5 h-5 text-primary" />
           <CardTitle className="text-lg">Activity Logs</CardTitle>
+          {isAdmin ? (
+            <Badge variant="outline" className="gap-1 text-xs bg-primary/10 text-primary border-primary/30">
+              <ShieldCheck className="w-3 h-3" />
+              Full Access
+            </Badge>
+          ) : (
+            <Badge variant="outline" className="gap-1 text-xs">
+              <Shield className="w-3 h-3" />
+              Org View
+            </Badge>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <Select value={filter} onValueChange={(v) => setFilter(v as ActivityType | "all")}>

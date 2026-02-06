@@ -3267,6 +3267,39 @@ export type Database = {
       }
     }
     Views: {
+      activity_logs_org_admin: {
+        Row: {
+          activity_type: Database["public"]["Enums"]["activity_type"] | null
+          created_at: string | null
+          description: string | null
+          id: string | null
+          metadata: Json | null
+          user_display_name: string | null
+          user_email: string | null
+          user_id: string | null
+        }
+        Insert: {
+          activity_type?: Database["public"]["Enums"]["activity_type"] | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          metadata?: Json | null
+          user_display_name?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          activity_type?: Database["public"]["Enums"]["activity_type"] | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          metadata?: Json | null
+          user_display_name?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       activity_logs_supervisor: {
         Row: {
           activity_type: Database["public"]["Enums"]["activity_type"] | null
