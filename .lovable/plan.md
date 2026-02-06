@@ -1,141 +1,100 @@
 
-# Fix Onboarding Flow: Missing Initial Setup Steps
+# Allow Step Selection in "Continue Your Tour" Modal
 
-## Problem Summary
-New users are being sent directly to the Dashboard and starting the tour at "Digital Expeditor Dashboard" step, completely missing the first three critical steps:
-1. Welcome to JobLine.ai
-2. Create Your Organization
-3. Set Up Your Shop
+## Overview
+When users see the "Continue Your Tour" modal with their onboarding progress, they should be able to click on any step to jump directly to it, rather than only being able to continue from their current position.
 
-## Root Cause Analysis
+## What Will Change
 
-The issue stems from multiple interconnected problems:
+### User Experience
+- Each step in the progress list becomes clickable
+- Clicking a step will:
+  1. Close the modal
+  2. Navigate to the appropriate page for that step
+  3. Start the tour at that step
+- Visual cues (cursor, hover states) indicate steps are clickable
+- Both completed and incomplete steps can be selected
 
-1. **Direct Dashboard Redirect**: After signup/login, `Auth.tsx` navigates directly to `/dashboard` instead of checking onboarding state
-2. **Non-Persisted New Signup Flag**: The `isNewSignup` state in `useOnboarding.ts` is only set client-side when creating a new record, but this flag is lost on page refresh or navigation
-3. **Race Condition**: By the time the onboarding context initializes, the user is already on `/dashboard` where the GuidedTour starts at the wrong step
-4. **Missing Welcome Step Completion**: The "welcome" step is never explicitly completed - it should be marked when the user clicks "Start Tour" in the WelcomeModal
+### Step-to-Route Mapping
+| Step | Route |
+|------|-------|
+| Welcome | /setup |
+| Create Your Organization | /setup |
+| Set Up Your Shop | /setup |
+| Digital Expeditor Dashboard | /dashboard |
+| Select & Deliver Work Orders | /dashboard |
+| Shift Handoffs | /dashboard |
+| Job Performance Updates | /dashboard |
+| Team Management | /teams |
+| Admin Features | /admin |
 
-## Solution Approach
+---
 
-### Phase 1: Enforce Proper Onboarding Flow
+## Technical Details
 
-**1. Add a database column to track first visit (schema change)**
-- Add `has_seen_welcome` column to `user_onboarding` table
-- This persists the new signup state across page refreshes
+### Files to Modify
 
-**2. Fix Auth.tsx navigation logic**
-- Check if onboarding is complete before navigating
-- New users should go to `/setup` instead of `/dashboard`
+**1. `src/hooks/useOnboarding.ts`**
+- Add a `goToStep` function that directly sets the current step without marking previous steps as complete
+- This allows jumping to any step for review/learning purposes
 
-**3. Update useOnboarding hook**
-- Query `has_seen_welcome` to determine if user should see welcome flow
-- Mark welcome as seen after first modal interaction
+**2. `src/components/onboarding/OnboardingProvider.tsx`**
+- Export the new `goToStep` function in the context
 
-**4. Fix step completion flow**
-- WelcomeModal should complete "welcome" step when user clicks Start Tour
-- Setup page should enforce organization → shop → dashboard sequence
+**3. `src/components/onboarding/WelcomeModal.tsx`**
+- Make each step item clickable with proper onClick handlers
+- Add a `handleStepClick` function that:
+  - Marks welcome as seen (if not already)
+  - Sets the selected step as current via `goToStep`
+  - Navigates to the correct route
+  - Starts the tour
+- Add hover styles and cursor pointer to indicate interactivity
 
-### Phase 2: Enforce Step Sequence
+**4. `src/components/onboarding/OnboardingProgress.tsx`**
+- Apply the same clickable step behavior for consistency
+- Users can also jump to steps from the Profile page progress view
 
-**5. Add step sequence validation**
-- Prevent skipping steps by checking prerequisites
-- Redirect users to the correct page based on their current onboarding step
+### Code Implementation
 
-**6. Fix GuidedTour step mapping**
-- Ensure `/setup` can complete both `organization-setup` and `shop-setup` steps
-- Don't auto-start dashboard tour if earlier steps are incomplete
-
-## Technical Implementation
-
-### Database Migration
-```sql
-ALTER TABLE user_onboarding 
-ADD COLUMN has_seen_welcome boolean DEFAULT false;
+The new `goToStep` function will:
+```typescript
+const goToStep = useCallback(async (stepId: OnboardingStep) => {
+  if (!user) return;
+  
+  setState(prev => ({ ...prev, currentStep: stepId }));
+  
+  await supabase
+    .from('user_onboarding')
+    .update({ current_step: stepId })
+    .eq('user_id', user.id);
+}, [user]);
 ```
 
-### Code Changes
-
-**File: `src/hooks/useOnboarding.ts`**
-- Add `hasSeen Welcome` to state
-- Fetch `has_seen_welcome` from database
-- Add function to mark welcome as seen
-- Derive `isNewSignup` from `!has_seen_welcome` instead of creation-time flag
-
-**File: `src/pages/Auth.tsx`**
-- After login/signup, redirect based on onboarding state:
-  - If onboarding not complete → `/setup`
-  - If onboarding complete → `/dashboard`
-
-**File: `src/components/onboarding/WelcomeModal.tsx`**
-- Show modal based on `!hasSeen Welcome` from database
-- When user clicks "Start Tour" or "Skip":
-  - Mark welcome as seen in database
-  - Complete the "welcome" step
-  - Navigate to `/setup` (not dashboard)
-
-**File: `src/pages/Setup.tsx`**
-- Explicitly complete "welcome" step on load if not completed
-- Only show organization setup if organization step not complete
-- Only complete "shop-setup" when all setup items are actually configured
-
-**File: `src/components/onboarding/GuidedTour.tsx`**
-- Check if prerequisite steps are complete before showing tour
-- For `/dashboard` tour, require `shop-setup` to be complete first
-
-**File: `src/pages/Index.tsx` (Dashboard)**
-- Add check for incomplete onboarding
-- Redirect to `/setup` if organization/shop steps incomplete
-
-### Flow After Fix
-
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│                    NEW USER SIGNUP FLOW                         │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  User Signs Up                                                  │
-│       ↓                                                         │
-│  Auth.tsx checks onboarding state                               │
-│       ↓                                                         │
-│  Onboarding incomplete → Navigate to /setup                     │
-│       ↓                                                         │
-│  WelcomeModal shows (has_seen_welcome = false)                  │
-│       ↓                                                         │
-│  User clicks "Start Tour" or "Skip"                             │
-│       ↓                                                         │
-│  Mark welcome as seen, complete "welcome" step                  │
-│       ↓                                                         │
-│  Show OrganizationSetup (if no org exists)                      │
-│       ↓                                                         │
-│  User creates/joins org → complete "organization-setup"         │
-│       ↓                                                         │
-│  Show Setup page with teams/stations/members                    │
-│       ↓                                                         │
-│  User completes setup → complete "shop-setup"                   │
-│       ↓                                                         │
-│  Navigate to /dashboard                                         │
-│       ↓                                                         │
-│  Dashboard tour runs → complete "dashboard-overview"            │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
+Step click handler in WelcomeModal:
+```typescript
+const handleStepClick = async (stepId: OnboardingStep) => {
+  setIsOpen(false);
+  await markWelcomeSeen();
+  
+  // Navigate based on step
+  const routeMap = {
+    'welcome': '/setup',
+    'organization-setup': '/setup',
+    'shop-setup': '/setup',
+    'dashboard-overview': '/dashboard',
+    'station-cards': '/dashboard',
+    'handoff-submission': '/dashboard',
+    'performance-updates': '/dashboard',
+    'team-management': '/teams',
+    'admin-features': '/admin',
+  };
+  
+  navigate(routeMap[stepId] || '/dashboard');
+  setTimeout(() => startTour(stepId), 300);
+};
 ```
 
-## Files to Modify
-
-1. **Database**: Add `has_seen_welcome` column to `user_onboarding`
-2. `src/hooks/useOnboarding.ts` - Persist welcome state, fix step logic
-3. `src/pages/Auth.tsx` - Route to `/setup` for incomplete onboarding
-4. `src/components/onboarding/WelcomeModal.tsx` - Use persisted state, complete welcome step
-5. `src/pages/Setup.tsx` - Enforce step sequence, complete welcome on load
-6. `src/components/onboarding/GuidedTour.tsx` - Check prerequisites before tour
-7. `src/pages/Index.tsx` - Redirect to setup if onboarding incomplete
-
-## Testing Checklist
-- New user signup → lands on Setup page with WelcomeModal
-- Clicking "Start Tour" → stays on Setup, organization setup shows
-- Creating org → organization-setup marked complete
-- Completing team/station/member setup → shop-setup marked complete
-- Navigating to dashboard → dashboard-overview tour starts
-- Refreshing page at any point → user returns to correct step
-- Existing users with complete onboarding → normal dashboard access
+### Visual Changes
+- Steps will have `cursor-pointer` and hover background color
+- A subtle right arrow or "Go" indicator on hover
+- Maintain the existing completed/current/incomplete visual states
