@@ -48,11 +48,24 @@ export function WelcomeModal() {
     hasSeenWelcome,
     completeStep,
     markWelcomeSeen,
+    goToStep,
     startTour, 
     skipOnboarding,
     getProgress,
     isStepCompleted,
   } = useOnboardingContext();
+
+  const STEP_ROUTE_MAP: Record<string, string> = {
+    'welcome': '/setup',
+    'organization-setup': '/setup',
+    'shop-setup': '/setup',
+    'dashboard-overview': '/dashboard',
+    'station-cards': '/dashboard',
+    'handoff-submission': '/dashboard',
+    'performance-updates': '/dashboard',
+    'team-management': '/teams',
+    'admin-features': '/admin',
+  };
   
   const [isOpen, setIsOpen] = useState(true);
 
@@ -92,6 +105,15 @@ export function WelcomeModal() {
     setIsOpen(false);
   };
 
+  const handleStepClick = async (stepId: string) => {
+    setIsOpen(false);
+    await markWelcomeSeen();
+    await goToStep(stepId as any);
+    
+    navigate(STEP_ROUTE_MAP[stepId] || '/dashboard');
+    setTimeout(() => startTour(stepId as any), 300);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-lg">
@@ -126,25 +148,26 @@ export function WelcomeModal() {
             const completed = isStepCompleted(step.id);
             
             return (
-              <div
+              <button
                 key={step.id}
-                className={`flex items-center gap-2 p-2 rounded-md text-sm ${
+                onClick={() => handleStepClick(step.id)}
+                className={`flex items-center gap-2 p-2 rounded-md text-sm text-left transition-colors cursor-pointer hover:bg-accent ${
                   isCurrentStep 
-                    ? 'bg-primary/10 text-primary' 
+                    ? 'bg-primary/10 text-primary hover:bg-primary/15' 
                     : completed 
                       ? 'text-muted-foreground'
                       : 'text-muted-foreground/50'
                 }`}
               >
                 {completed ? (
-                  <CheckCircle2 className="w-4 h-4 text-green-500" />
+                  <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
                 ) : (
-                  <div className={`w-4 h-4 rounded-full border-2 ${
+                  <div className={`w-4 h-4 rounded-full border-2 shrink-0 ${
                     isCurrentStep ? 'border-primary' : 'border-muted-foreground/30'
                   }`} />
                 )}
-                <span className={completed ? 'line-through' : ''}>{step.title}</span>
-              </div>
+                <span className={`flex-1 ${completed ? 'line-through' : ''}`}>{step.title}</span>
+              </button>
             );
           })}
         </div>
