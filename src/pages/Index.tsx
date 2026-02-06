@@ -12,6 +12,7 @@ import { CreateWorkOrderDialog } from "@/components/queue/CreateWorkOrderDialog"
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useStations, useHandoffRecords, Station, HandoffRecord } from "@/hooks/useStations";
+import { useOnboardingContext } from "@/components/onboarding/OnboardingProvider";
 import { mockStations, mockHandoffRecords } from "@/lib/mockData";
 import { WorkCenterType, StationInfo, ShiftHandoffRecord } from "@/types/handoff";
 import { Button } from "@/components/ui/button";
@@ -116,6 +117,7 @@ const Index = () => {
   const { currentTeam } = useCurrentTeam();
   const { stations: dbStations, loading: stationsLoading } = useStations(currentTeam?.id);
   const { records: dbRecords, loading: recordsLoading, createHandoffRecord } = useHandoffRecords(currentTeam?.id);
+  const { isComplete, isLoading: onboardingLoading, isStepCompleted, hasSeenWelcome } = useOnboardingContext();
   
   const [showNewHandoff, setShowNewHandoff] = useState(false);
   const [showPerformanceUpdate, setShowPerformanceUpdate] = useState(false);
@@ -123,6 +125,15 @@ const Index = () => {
   const [selectedTypes, setSelectedTypes] = useState<WorkCenterType[]>([]);
   const [selectedStationForAction, setSelectedStationForAction] = useState<string | undefined>();
 
+  // Redirect to setup if onboarding is incomplete and user is authenticated
+  useEffect(() => {
+    if (user && !authLoading && !onboardingLoading) {
+      // If user hasn't seen welcome or hasn't completed organization setup, redirect to setup
+      if (!hasSeenWelcome || (!isComplete && !isStepCompleted('shop-setup') && !isStepCompleted('organization-setup'))) {
+        navigate('/setup', { replace: true });
+      }
+    }
+  }, [user, authLoading, onboardingLoading, hasSeenWelcome, isComplete, isStepCompleted, navigate]);
   // Create a map of stationId to database id for linking
   const stationIdToDbId = useMemo(() => {
     const map: Record<string, string> = {};

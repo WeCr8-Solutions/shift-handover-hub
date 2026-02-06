@@ -51,14 +51,32 @@ export default function Auth() {
   const [resetSent, setResetSent] = useState(false);
 
   useEffect(() => {
-    if (user && !loading) {
+    const checkOnboardingAndRedirect = async () => {
+      if (!user || loading) return;
+      
       // If user just logged in with an invite code, show redemption
       if (inviteCode) {
         setShowInviteRedemption(true);
-      } else {
-        navigate("/dashboard");
+        return;
       }
-    }
+      
+      // Check if user has completed onboarding
+      const { data: onboarding } = await supabase
+        .from('user_onboarding')
+        .select('is_complete, has_seen_welcome')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      
+      // If onboarding is complete, go to dashboard
+      if (onboarding?.is_complete) {
+        navigate('/dashboard', { replace: true });
+      } else {
+        // New or incomplete onboarding - go to setup
+        navigate('/setup', { replace: true });
+      }
+    };
+
+    checkOnboardingAndRedirect();
   }, [user, loading, navigate, inviteCode]);
 
   const validateLogin = () => {

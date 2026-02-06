@@ -128,12 +128,23 @@ const ROUTE_TO_STEP: Record<string, OnboardingStep> = {
 
 export function GuidedTour() {
   const location = useLocation();
-  const { showTour, setShowTour, completeStep, currentStep, isComplete } = useOnboardingContext();
+  const { showTour, setShowTour, completeStep, currentStep, isComplete, isStepCompleted } = useOnboardingContext();
   const [steps, setSteps] = useState<Step[]>([]);
   const [run, setRun] = useState(false);
 
   useEffect(() => {
     const routeSteps = TOUR_STEPS[location.pathname];
+    
+    // Check prerequisites for dashboard tour - require shop-setup to be complete
+    if (location.pathname === '/dashboard') {
+      const hasCompletedShopSetup = isStepCompleted('shop-setup') || isStepCompleted('organization-setup');
+      if (!hasCompletedShopSetup && showTour) {
+        // Don't run dashboard tour if setup isn't complete
+        setRun(false);
+        return;
+      }
+    }
+    
     if (routeSteps && showTour && !isComplete) {
       setSteps(routeSteps);
       // Small delay to ensure DOM elements are rendered
@@ -142,7 +153,7 @@ export function GuidedTour() {
     } else {
       setRun(false);
     }
-  }, [location.pathname, showTour, isComplete]);
+  }, [location.pathname, showTour, isComplete, isStepCompleted]);
 
   const handleJoyrideCallback = (data: CallBackProps) => {
     const { status, action, type } = data;
