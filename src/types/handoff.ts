@@ -6,6 +6,7 @@ export type WorkCenterType =
   | "CNC Mill"
   | "CNC Lathe"
   | "Water Jet"
+  | "Band Saw"
   | "Press Brake"
   | "TIG Welding"
   | "MIG Welding"
@@ -16,7 +17,14 @@ export type WorkCenterType =
   | "Shipping"
   | "Incoming Inspection"
   | "Outgoing Inspection"
-  | "Tool Crib";
+  | "Final Inspection"
+  | "Tool Crib"
+  | "Quoting"
+  | "Engineering Review"
+  | "CAM Programming"
+  | "Purchasing"
+  | "Receiving"
+  | "Grinding";
 
 export type JobState =
   | "Part Running"
@@ -214,18 +222,21 @@ export interface StationInfo {
 
 // Work center type categories for filtering/grouping
 export const WORK_CENTER_CATEGORIES = {
-  "CNC Machining": ["CNC Mill", "CNC Lathe"],
-  "Cutting": ["Water Jet", "Punch Press"],
+  "CNC Machining": ["CNC Mill", "CNC Lathe", "Grinding"],
+  "Cutting": ["Water Jet", "Band Saw", "Punch Press"],
   "Forming": ["Press Brake"],
   "Welding": ["TIG Welding", "MIG Welding", "Electron Beam Welding"],
   "Finishing": ["Hardware Installation", "Deburr Station"],
-  "Logistics": ["Shipping", "Incoming Inspection", "Outgoing Inspection", "Tool Crib"],
+  "Quality": ["Incoming Inspection", "Outgoing Inspection", "Final Inspection"],
+  "Engineering": ["Quoting", "Engineering Review", "CAM Programming"],
+  "Logistics": ["Purchasing", "Receiving", "Shipping", "Tool Crib"],
 } as const;
 
 export const ALL_WORK_CENTER_TYPES: WorkCenterType[] = [
   "CNC Mill",
   "CNC Lathe",
   "Water Jet",
+  "Band Saw",
   "Press Brake",
   "TIG Welding",
   "MIG Welding",
@@ -236,5 +247,12 @@ export const ALL_WORK_CENTER_TYPES: WorkCenterType[] = [
   "Shipping",
   "Incoming Inspection",
   "Outgoing Inspection",
+  "Final Inspection",
   "Tool Crib",
+  "Quoting",
+  "Engineering Review",
+  "CAM Programming",
+  "Purchasing",
+  "Receiving",
+  "Grinding",
 ];
