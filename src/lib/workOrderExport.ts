@@ -2,6 +2,14 @@ import ExcelJS from "exceljs";
 import { WorkOrderWithLinkedData, WorkOrderLinkedData } from "@/hooks/useWorkOrderHistory";
 import { format } from "date-fns";
 
+// HTML escape function to prevent XSS attacks in generated reports
+function escapeHtml(str: string | number | null | undefined): string {
+  if (str == null) return "";
+  const div = document.createElement("div");
+  div.textContent = String(str);
+  return div.innerHTML;
+}
+
 // Excel Export
 export async function exportWorkOrdersToExcel(
   workOrders: WorkOrderWithLinkedData[],
@@ -182,11 +190,19 @@ export function generateWorkOrderReport(
   const formatDate = (date: string | null) => 
     date ? format(new Date(date), "MMM d, yyyy h:mm a") : "N/A";
 
+  // Escape all user-controlled data to prevent XSS
+  const safeWorkOrder = escapeHtml(workOrder.work_order);
+  const safeTitle = escapeHtml(workOrder.title);
+  const safePartNumber = escapeHtml(workOrder.part_number);
+  const safeStatus = escapeHtml(workOrder.status);
+  const safePriority = escapeHtml(workOrder.priority);
+  const safeStationName = escapeHtml(workOrder.station_name);
+
   let html = `
     <!DOCTYPE html>
     <html>
     <head>
-      <title>Work Order Report - ${workOrder.work_order || workOrder.title}</title>
+      <title>Work Order Report - ${safeWorkOrder || safeTitle}</title>
       <style>
         body { font-family: Arial, sans-serif; margin: 20px; color: #333; }
         h1 { color: #1a1a2e; border-bottom: 2px solid #3b82f6; padding-bottom: 10px; }
@@ -215,31 +231,31 @@ export function generateWorkOrderReport(
       <div class="header-info">
         <div class="info-box">
           <label>Work Order #</label>
-          <value>${workOrder.work_order || "N/A"}</value>
+          <value>${safeWorkOrder || "N/A"}</value>
         </div>
         <div class="info-box">
           <label>Part Number</label>
-          <value>${workOrder.part_number || "N/A"}</value>
+          <value>${safePartNumber || "N/A"}</value>
         </div>
         <div class="info-box">
           <label>Status</label>
-          <value><span class="status-badge status-${workOrder.status}">${workOrder.status.toUpperCase()}</span></value>
+          <value><span class="status-badge status-${escapeHtml(workOrder.status)}">${safeStatus.toUpperCase()}</span></value>
         </div>
         <div class="info-box">
           <label>Title</label>
-          <value>${workOrder.title}</value>
+          <value>${safeTitle}</value>
         </div>
         <div class="info-box">
           <label>Quantity</label>
-          <value>${workOrder.quantity || "N/A"}</value>
+          <value>${escapeHtml(workOrder.quantity) || "N/A"}</value>
         </div>
         <div class="info-box">
           <label>Priority</label>
-          <value>${workOrder.priority.toUpperCase()}</value>
+          <value>${safePriority.toUpperCase()}</value>
         </div>
         <div class="info-box">
           <label>Station</label>
-          <value>${workOrder.station_name || "N/A"}</value>
+          <value>${safeStationName || "N/A"}</value>
         </div>
         <div class="info-box">
           <label>Started At</label>
@@ -271,13 +287,13 @@ export function generateWorkOrderReport(
           <tbody>
             ${linkedData.routing.map(r => `
               <tr>
-                <td>${r.step_order}</td>
-                <td>${r.operation_number}</td>
-                <td>${r.work_center}</td>
-                <td>${r.station_name || "-"}</td>
-                <td><span class="status-badge status-${r.status}">${r.status}</span></td>
-                <td>${r.actual_duration_minutes ? r.actual_duration_minutes + " min" : "-"}</td>
-                <td>${r.operator_name || "-"}</td>
+                <td>${escapeHtml(r.step_order)}</td>
+                <td>${escapeHtml(r.operation_number)}</td>
+                <td>${escapeHtml(r.work_center)}</td>
+                <td>${escapeHtml(r.station_name) || "-"}</td>
+                <td><span class="status-badge status-${escapeHtml(r.status)}">${escapeHtml(r.status)}</span></td>
+                <td>${r.actual_duration_minutes ? escapeHtml(r.actual_duration_minutes) + " min" : "-"}</td>
+                <td>${escapeHtml(r.operator_name) || "-"}</td>
               </tr>
             `).join("")}
           </tbody>
@@ -305,13 +321,13 @@ export function generateWorkOrderReport(
           <tbody>
             ${linkedData.handoffs.map(h => `
               <tr>
-                <td>${h.date}</td>
-                <td>${h.shift}</td>
-                <td>${h.outgoing_operator_name}</td>
-                <td>${h.incoming_operator_name}</td>
-                <td>${h.primary_state}</td>
-                <td>${h.parts_completed_this_shift}</td>
-                <td>${h.handoff_summary}</td>
+                <td>${escapeHtml(h.date)}</td>
+                <td>${escapeHtml(h.shift)}</td>
+                <td>${escapeHtml(h.outgoing_operator_name)}</td>
+                <td>${escapeHtml(h.incoming_operator_name)}</td>
+                <td>${escapeHtml(h.primary_state)}</td>
+                <td>${escapeHtml(h.parts_completed_this_shift)}</td>
+                <td>${escapeHtml(h.handoff_summary)}</td>
               </tr>
             `).join("")}
           </tbody>
@@ -337,10 +353,10 @@ export function generateWorkOrderReport(
           <tbody>
             ${linkedData.performanceUpdates.map(p => `
               <tr>
-                <td>${p.title}</td>
-                <td>${p.update_type}</td>
-                <td><span class="status-badge status-${p.status}">${p.status}</span></td>
-                <td>${p.user_name}</td>
+                <td>${escapeHtml(p.title)}</td>
+                <td>${escapeHtml(p.update_type)}</td>
+                <td><span class="status-badge status-${escapeHtml(p.status)}">${escapeHtml(p.status)}</span></td>
+                <td>${escapeHtml(p.user_name)}</td>
                 <td>${formatDate(p.created_at)}</td>
               </tr>
             `).join("")}
@@ -367,11 +383,11 @@ export function generateWorkOrderReport(
           <tbody>
             ${linkedData.downtimeEvents.map(d => `
               <tr>
-                <td>${d.downtime_type}</td>
+                <td>${escapeHtml(d.downtime_type)}</td>
                 <td>${formatDate(d.started_at)}</td>
                 <td>${d.ended_at ? formatDate(d.ended_at) : "Ongoing"}</td>
-                <td>${d.duration_minutes ? d.duration_minutes + " min" : "-"}</td>
-                <td>${d.reason_code || "-"}</td>
+                <td>${d.duration_minutes ? escapeHtml(d.duration_minutes) + " min" : "-"}</td>
+                <td>${escapeHtml(d.reason_code) || "-"}</td>
               </tr>
             `).join("")}
           </tbody>
@@ -396,8 +412,8 @@ export function generateWorkOrderReport(
             ${linkedData.history.slice(0, 20).map(h => `
               <tr>
                 <td>${formatDate(h.created_at)}</td>
-                <td>${h.user_name}</td>
-                <td>${h.action}</td>
+                <td>${escapeHtml(h.user_name)}</td>
+                <td>${escapeHtml(h.action)}</td>
               </tr>
             `).join("")}
           </tbody>
