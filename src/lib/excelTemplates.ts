@@ -21,30 +21,77 @@ export const STATIONS_TEMPLATE = {
 
 export const USERS_TEMPLATE = {
   sheetName: 'Users',
-  headers: ['Email', 'Display Name', 'Role', 'Team Name (optional)', 'Department (optional)'],
+  headers: ['Email', 'Display Name', 'App Role', 'Org Role (optional)', 'Team Role (optional)', 'Team Name (optional)', 'Department (optional)'],
   sampleData: [
-    ['john.smith@company.com', 'John Smith', 'operator', 'Day Shift Team', 'Machining'],
-    ['jane.doe@company.com', 'Jane Doe', 'supervisor', 'Day Shift Team', 'Machining'],
-    ['mike.wilson@company.com', 'Mike Wilson', 'operator', 'Night Shift Team', 'Fabrication'],
-    ['sarah.johnson@company.com', 'Sarah Johnson', 'admin', '', ''],
-    ['tom.brown@company.com', 'Tom Brown', 'viewer', '', 'Quality'],
+    ['john.smith@company.com', 'John Smith', 'operator', 'member', 'member', 'Day Shift Team', 'Machining'],
+    ['jane.doe@company.com', 'Jane Doe', 'supervisor', 'admin', 'admin', 'Day Shift Team', 'Machining'],
+    ['mike.wilson@company.com', 'Mike Wilson', 'operator', 'member', 'member', 'Night Shift Team', 'Fabrication'],
+    ['sarah.johnson@company.com', 'Sarah Johnson', 'admin', 'owner', '', '', ''],
+    ['tom.brown@company.com', 'Tom Brown', 'viewer', 'member', '', '', 'Quality'],
   ],
   validValues: {
-    'Role': ['admin', 'supervisor', 'operator', 'viewer'],
+    'App Role': ['admin', 'supervisor', 'operator', 'viewer'],
+    'Org Role (optional)': ['owner', 'admin', 'member'],
+    'Team Role (optional)': ['owner', 'admin', 'member'],
   },
 };
 
 export const TEAMS_TEMPLATE = {
   sheetName: 'Teams',
-  headers: ['Team Name', 'Description', 'Departments (comma-separated)'],
+  headers: ['Team Name', 'Description', 'Shift Schedule (optional)'],
   sampleData: [
-    ['Day Shift Team', 'Primary day shift operations team, 6AM-2PM', 'Machining, Assembly'],
-    ['Night Shift Team', 'Night shift operations, 10PM-6AM', 'Machining, Fabrication'],
-    ['Swing Shift Team', 'Swing shift coverage, 2PM-10PM', 'Machining'],
-    ['Welding Team', 'Specialized welding and fabrication team', 'Fabrication'],
-    ['Quality Team', 'Quality assurance and inspection team', 'Quality, Shipping'],
+    ['Day Shift Team', 'Primary day shift operations team, 6AM-2PM', '6:00 AM - 2:00 PM'],
+    ['Night Shift Team', 'Night shift operations, 10PM-6AM', '10:00 PM - 6:00 AM'],
+    ['Swing Shift Team', 'Swing shift coverage, 2PM-10PM', '2:00 PM - 10:00 PM'],
+    ['Welding Team', 'Specialized welding and fabrication team', '7:00 AM - 3:30 PM'],
+    ['Quality Team', 'Quality assurance and inspection team', '7:00 AM - 3:30 PM'],
   ],
   validValues: {},
+};
+
+export const DEPARTMENTS_TEMPLATE = {
+  sheetName: 'Departments',
+  headers: ['Department Name', 'Team Name', 'Description (optional)'],
+  sampleData: [
+    ['Machining', 'Day Shift Team', 'CNC milling and lathe operations'],
+    ['Machining', 'Night Shift Team', 'CNC milling and lathe operations - night shift'],
+    ['Fabrication', 'Welding Team', 'Welding and sheet metal work'],
+    ['Quality', 'Quality Team', 'Inspection and QC operations'],
+    ['Shipping', 'Day Shift Team', 'Packaging and logistics'],
+    ['Assembly', 'Day Shift Team', 'Final assembly and hardware installation'],
+    ['Cutting', 'Day Shift Team', 'Saw and waterjet cutting operations'],
+  ],
+  validValues: {},
+};
+
+export const WORK_ORDERS_TEMPLATE = {
+  sheetName: 'Work Orders',
+  headers: [
+    'Work Order #', 
+    'Title', 
+    'Part Number (optional)', 
+    'Operation # (optional)', 
+    'Quantity (optional)', 
+    'Priority', 
+    'Status', 
+    'Station ID (optional)', 
+    'Team Name (optional)', 
+    'Due Date (YYYY-MM-DD)', 
+    'Est. Duration (min)', 
+    'Tags (comma-separated)', 
+    'Description (optional)'
+  ],
+  sampleData: [
+    ['WO-2024-001', 'Bracket Assembly', 'BRK-1234', '10', '50', 'normal', 'pending', 'CNC-001', 'Day Shift Team', '2024-03-15', '120', 'rush,aerospace', 'Machine brackets per drawing REV-B'],
+    ['WO-2024-002', 'Housing Machining', 'HSG-5678', '20', '25', 'high', 'queued', 'LATHE-001', 'Night Shift Team', '2024-03-12', '240', 'priority', 'Turn housing components'],
+    ['WO-2024-003', 'Cover Plate Inspection', 'CVR-9012', '30', '100', 'normal', 'pending', 'INSP-001', '', '2024-03-20', '60', '', 'Final inspection of cover plates'],
+    ['WO-2024-004', 'Shaft Grinding', 'SFT-3456', '40', '10', 'urgent', 'pending', '', 'Welding Team', '2024-03-10', '180', 'hot-job,customer-urgent', 'Precision grinding per spec'],
+    ['WO-2024-005', 'Prototype Frame', 'FRM-7890', '10', '2', 'critical', 'in_progress', 'WELD-001', 'Welding Team', '2024-03-08', '480', 'prototype,engineering', 'New product prototype frame'],
+  ],
+  validValues: {
+    'Priority': ['low', 'normal', 'high', 'urgent', 'critical'],
+    'Status': ['pending', 'queued', 'in_progress', 'on_hold'],
+  },
 };
 
 export const ROUTING_TEMPLATE = {
@@ -73,21 +120,96 @@ export const ROUTING_TEMPLATE = {
   },
 };
 
+export const INSTRUCTIONS_TEMPLATE = {
+  sheetName: 'Instructions',
+  headers: ['Sheet Name', 'Column', 'Required', 'Valid Values', 'Description'],
+  sampleData: [
+    ['General', '', '', '', 'Fill out each sheet with your organization data. Team Names must match exactly across sheets.'],
+    ['', '', '', '', ''],
+    ['Teams', 'Team Name', 'Yes', '', 'Unique name for the team (e.g., Day Shift Team)'],
+    ['Teams', 'Description', 'No', '', 'Brief description of the team\'s purpose'],
+    ['Teams', 'Shift Schedule', 'No', '', 'Operating hours (e.g., 6:00 AM - 2:00 PM)'],
+    ['', '', '', '', ''],
+    ['Departments', 'Department Name', 'Yes', '', 'Name of the department (e.g., Machining)'],
+    ['Departments', 'Team Name', 'Yes', '', 'Must match a Team Name from the Teams sheet'],
+    ['Departments', 'Description', 'No', '', 'Brief description of the department'],
+    ['', '', '', '', ''],
+    ['Stations', 'Station ID', 'Yes', '', 'Unique identifier (e.g., CNC-001)'],
+    ['Stations', 'Station Name', 'Yes', '', 'Descriptive name for the station'],
+    ['Stations', 'Work Center', 'Yes', '', 'Physical area grouping (e.g., CNC Bay 1)'],
+    ['Stations', 'Work Center Type', 'Yes', 'See Valid Values sheet', 'Type of work center'],
+    ['Stations', 'Team Name', 'No', '', 'Must match a Team Name if provided'],
+    ['Stations', 'Department', 'No', '', 'Department assignment'],
+    ['Stations', 'Active', 'No', 'yes, no', 'Whether station is currently in use'],
+    ['', '', '', '', ''],
+    ['Users', 'Email', 'Yes', '', 'Valid email address'],
+    ['Users', 'Display Name', 'Yes', '', 'User\'s display name'],
+    ['Users', 'App Role', 'Yes', 'admin, supervisor, operator, viewer', 'Application-level role'],
+    ['Users', 'Org Role', 'No', 'owner, admin, member', 'Organization-level role'],
+    ['Users', 'Team Role', 'No', 'owner, admin, member', 'Team-level role'],
+    ['Users', 'Team Name', 'No', '', 'Must match a Team Name if provided'],
+    ['Users', 'Department', 'No', '', 'Department assignment'],
+    ['', '', '', '', ''],
+    ['Work Orders', 'Work Order #', 'Yes', '', 'Unique work order identifier'],
+    ['Work Orders', 'Title', 'Yes', '', 'Brief title for the work order'],
+    ['Work Orders', 'Part Number', 'No', '', 'Associated part number'],
+    ['Work Orders', 'Operation #', 'No', '', 'Operation/step number'],
+    ['Work Orders', 'Quantity', 'No', '', 'Number of parts'],
+    ['Work Orders', 'Priority', 'No', 'low, normal, high, urgent, critical', 'Priority level'],
+    ['Work Orders', 'Status', 'No', 'pending, queued, in_progress, on_hold', 'Current status'],
+    ['Work Orders', 'Station ID', 'No', '', 'Must match a Station ID if provided'],
+    ['Work Orders', 'Team Name', 'No', '', 'Must match a Team Name if provided'],
+    ['Work Orders', 'Due Date', 'No', '', 'Format: YYYY-MM-DD'],
+    ['Work Orders', 'Est. Duration', 'No', '', 'Estimated minutes to complete'],
+    ['Work Orders', 'Tags', 'No', '', 'Comma-separated tags'],
+    ['Work Orders', 'Description', 'No', '', 'Detailed description'],
+    ['', '', '', '', ''],
+    ['Processing Order', '', '', '', 'Data is processed in this order to satisfy dependencies:'],
+    ['', '1. Teams', '', '', 'Teams are created first (no dependencies)'],
+    ['', '2. Departments', '', '', 'Departments depend on Teams'],
+    ['', '3. Stations', '', '', 'Stations depend on Teams and optionally Departments'],
+    ['', '4. Users', '', '', 'Users are queued for invitation (depend on Teams)'],
+    ['', '5. Work Orders', '', '', 'Work Orders depend on Teams and Stations'],
+  ],
+  validValues: {},
+};
+
+// Template type definition
+interface TemplateDefinition {
+  sheetName: string;
+  headers: string[];
+  sampleData: (string | number)[][];
+  validValues: Record<string, string[]>;
+}
+
 // Generate and download Excel template using ExcelJS
-export async function downloadTemplate(templateType: 'stations' | 'users' | 'teams' | 'routing' | 'all') {
+export async function downloadTemplate(templateType: 'stations' | 'users' | 'teams' | 'departments' | 'workorders' | 'routing' | 'all') {
   const workbook = new ExcelJS.Workbook();
   workbook.creator = 'JobLine.ai';
   workbook.created = new Date();
 
+  const templateMap: Record<string, TemplateDefinition> = {
+    stations: STATIONS_TEMPLATE as unknown as TemplateDefinition,
+    users: USERS_TEMPLATE,
+    teams: TEAMS_TEMPLATE,
+    departments: DEPARTMENTS_TEMPLATE,
+    workorders: WORK_ORDERS_TEMPLATE,
+    routing: ROUTING_TEMPLATE,
+  };
+
+  const allTemplates: TemplateDefinition[] = [
+    INSTRUCTIONS_TEMPLATE, 
+    TEAMS_TEMPLATE, 
+    DEPARTMENTS_TEMPLATE, 
+    STATIONS_TEMPLATE as unknown as TemplateDefinition, 
+    USERS_TEMPLATE, 
+    WORK_ORDERS_TEMPLATE, 
+    ROUTING_TEMPLATE
+  ];
+
   const templates = templateType === 'all' 
-    ? [STATIONS_TEMPLATE, USERS_TEMPLATE, TEAMS_TEMPLATE, ROUTING_TEMPLATE]
-    : templateType === 'stations' 
-      ? [STATIONS_TEMPLATE]
-      : templateType === 'users'
-        ? [USERS_TEMPLATE]
-        : templateType === 'teams'
-          ? [TEAMS_TEMPLATE]
-          : [ROUTING_TEMPLATE];
+    ? allTemplates
+    : [templateMap[templateType]];
 
   templates.forEach(template => {
     // Create worksheet with headers and sample data
@@ -116,11 +238,11 @@ export async function downloadTemplate(templateType: 'stations' | 'users' | 'tea
         header.length,
         ...template.sampleData.map(row => String(row[i] || '').length)
       );
-      worksheet.getColumn(i + 1).width = Math.min(maxLen + 2, 40);
+      worksheet.getColumn(i + 1).width = Math.min(maxLen + 2, 50);
     });
 
     // Add validation reference sheet for templates with valid values
-    if (Object.keys(template.validValues).length > 0) {
+    if (Object.keys(template.validValues).length > 0 && template.sheetName !== 'Instructions') {
       const validationSheet = workbook.addWorksheet(`${template.sheetName} - Valid Values`);
       validationSheet.addRow(['Column', 'Valid Values']);
       
@@ -131,15 +253,23 @@ export async function downloadTemplate(templateType: 'stations' | 'users' | 'tea
         validationSheet.addRow([column, (values as string[]).join(', ')]);
       });
       
-      validationSheet.getColumn(1).width = 25;
-      validationSheet.getColumn(2).width = 60;
+      validationSheet.getColumn(1).width = 30;
+      validationSheet.getColumn(2).width = 80;
     }
   });
 
   // Generate filename
-  const filename = templateType === 'all' 
-    ? 'JobLine_Setup_Template.xlsx'
-    : `JobLine_${templateType.charAt(0).toUpperCase() + templateType.slice(1)}_Template.xlsx`;
+  const filenameMap: Record<string, string> = {
+    all: 'JobLine_Setup_Template.xlsx',
+    stations: 'JobLine_Stations_Template.xlsx',
+    users: 'JobLine_Users_Template.xlsx',
+    teams: 'JobLine_Teams_Template.xlsx',
+    departments: 'JobLine_Departments_Template.xlsx',
+    workorders: 'JobLine_WorkOrders_Template.xlsx',
+    routing: 'JobLine_Routing_Template.xlsx',
+  };
+
+  const filename = filenameMap[templateType] || 'JobLine_Template.xlsx';
 
   // Write to buffer and download
   const buffer = await workbook.xlsx.writeBuffer();
@@ -169,13 +299,35 @@ export interface ParsedExcelData {
     email: string;
     display_name: string;
     role: string;
+    org_role?: string;
+    team_role?: string;
     team_name: string;
     department?: string;
   }>;
   teams: Array<{
     name: string;
     description: string;
-    departments?: string[];
+    shift_schedule?: string;
+  }>;
+  departments: Array<{
+    name: string;
+    team_name: string;
+    description?: string;
+  }>;
+  workOrders: Array<{
+    work_order: string;
+    title: string;
+    part_number?: string;
+    operation_number?: string;
+    quantity?: number;
+    priority: string;
+    status: string;
+    station_id?: string;
+    team_name?: string;
+    due_date?: string;
+    estimated_duration?: number;
+    tags?: string[];
+    description?: string;
   }>;
   routingTemplates: Array<{
     template_name: string;
@@ -200,10 +352,19 @@ export interface ValidationError {
   value: string;
 }
 
+export interface ValidationWarning {
+  sheet: string;
+  row: number;
+  column: string;
+  message: string;
+  value: string;
+  referencedValue?: string;
+}
+
 export interface ParseResult {
   data: ParsedExcelData;
   errors: ValidationError[];
-  warnings: string[];
+  warnings: ValidationWarning[];
 }
 
 export async function parseExcelFile(file: File): Promise<ParseResult> {
@@ -217,31 +378,49 @@ export async function parseExcelFile(file: File): Promise<ParseResult> {
   }
   
   const result: ParseResult = {
-    data: { stations: [], users: [], teams: [], routingTemplates: [] },
+    data: { stations: [], users: [], teams: [], departments: [], workOrders: [], routingTemplates: [] },
     errors: [],
     warnings: [],
   };
 
-  // Parse each sheet if it exists
-  const stationsSheet = workbook.getWorksheet('Stations');
-  if (stationsSheet) {
-    const parsed = parseStationsSheet(stationsSheet);
-    result.data.stations = parsed.data;
-    result.errors.push(...parsed.errors);
-  }
-
-  const usersSheet = workbook.getWorksheet('Users');
-  if (usersSheet) {
-    const parsed = parseUsersSheet(usersSheet);
-    result.data.users = parsed.data;
-    result.errors.push(...parsed.errors);
-  }
-
+  // Parse each sheet if it exists - ORDER MATTERS for cross-sheet validation
   const teamsSheet = workbook.getWorksheet('Teams');
   if (teamsSheet) {
     const parsed = parseTeamsSheet(teamsSheet);
     result.data.teams = parsed.data;
     result.errors.push(...parsed.errors);
+  }
+
+  const departmentsSheet = workbook.getWorksheet('Departments');
+  if (departmentsSheet) {
+    const parsed = parseDepartmentsSheet(departmentsSheet, result.data.teams);
+    result.data.departments = parsed.data;
+    result.errors.push(...parsed.errors);
+    result.warnings.push(...parsed.warnings);
+  }
+
+  const stationsSheet = workbook.getWorksheet('Stations');
+  if (stationsSheet) {
+    const parsed = parseStationsSheet(stationsSheet, result.data.teams);
+    result.data.stations = parsed.data;
+    result.errors.push(...parsed.errors);
+    result.warnings.push(...parsed.warnings);
+  }
+
+  const usersSheet = workbook.getWorksheet('Users');
+  if (usersSheet) {
+    const parsed = parseUsersSheet(usersSheet, result.data.teams);
+    result.data.users = parsed.data;
+    result.errors.push(...parsed.errors);
+    result.warnings.push(...parsed.warnings);
+  }
+
+  const workOrdersSheet = workbook.getWorksheet('Work Orders');
+  if (workOrdersSheet) {
+    const parsed = parseWorkOrdersSheet(workOrdersSheet, result.data.teams, result.data.stations);
+    result.data.workOrders = parsed.data;
+    result.errors.push(...parsed.errors);
+    result.warnings.push(...parsed.warnings);
   }
 
   const routingSheet = workbook.getWorksheet('Routing Templates');
@@ -252,11 +431,21 @@ export async function parseExcelFile(file: File): Promise<ParseResult> {
   }
 
   // Check if any data was found
-  if (result.data.stations.length === 0 && 
-      result.data.users.length === 0 && 
-      result.data.teams.length === 0 &&
-      result.data.routingTemplates.length === 0) {
-    result.warnings.push('No valid data found. Make sure your sheets are named "Stations", "Users", "Teams", or "Routing Templates".');
+  const hasData = result.data.stations.length > 0 || 
+      result.data.users.length > 0 || 
+      result.data.teams.length > 0 ||
+      result.data.departments.length > 0 ||
+      result.data.workOrders.length > 0 ||
+      result.data.routingTemplates.length > 0;
+
+  if (!hasData) {
+    result.warnings.push({
+      sheet: 'General',
+      row: 0,
+      column: '',
+      message: 'No valid data found. Make sure your sheets are named correctly: "Teams", "Departments", "Stations", "Users", "Work Orders", or "Routing Templates".',
+      value: '',
+    });
   }
 
   return result;
@@ -279,16 +468,109 @@ function getHeaderMap(sheet: ExcelJS.Worksheet): Map<string, number> {
   headerRow.eachCell((cell, colNumber) => {
     const value = typeof cell.value === 'string' ? cell.value.trim() : String(cell.value || '').trim();
     if (value) {
+      // Store both the full header and a simplified version for flexible matching
       headerMap.set(value, colNumber);
+      // Also store without (optional) suffix for easier matching
+      const simplified = value.replace(/\s*\(optional\)/gi, '').replace(/\s*\(.*\)/gi, '').trim();
+      if (simplified !== value) {
+        headerMap.set(simplified, colNumber);
+      }
     }
   });
   return headerMap;
 }
 
-function parseStationsSheet(sheet: ExcelJS.Worksheet) {
-  const data: ParsedExcelData['stations'] = [];
+function parseTeamsSheet(sheet: ExcelJS.Worksheet) {
+  const data: ParsedExcelData['teams'] = [];
   const errors: ValidationError[] = [];
   const headerMap = getHeaderMap(sheet);
+
+  sheet.eachRow((row, rowNumber) => {
+    if (rowNumber === 1) return;
+
+    const name = getCellValue(row, headerMap.get('Team Name') || 1);
+    const description = getCellValue(row, headerMap.get('Description') || 2);
+    const shiftSchedule = getCellValue(row, headerMap.get('Shift Schedule') || headerMap.get('Shift Schedule (optional)') || 3);
+
+    // Skip empty rows
+    if (!name) {
+      if (description || shiftSchedule) {
+        errors.push({ sheet: 'Teams', row: rowNumber, column: 'Team Name', message: 'Required field', value: name });
+      }
+      return;
+    }
+
+    data.push({ 
+      name, 
+      description, 
+      shift_schedule: shiftSchedule || undefined,
+    });
+  });
+
+  return { data, errors };
+}
+
+function parseDepartmentsSheet(
+  sheet: ExcelJS.Worksheet, 
+  existingTeams: ParsedExcelData['teams']
+) {
+  const data: ParsedExcelData['departments'] = [];
+  const errors: ValidationError[] = [];
+  const warnings: ValidationWarning[] = [];
+  const headerMap = getHeaderMap(sheet);
+  const teamNames = new Set(existingTeams.map(t => t.name.toLowerCase()));
+
+  sheet.eachRow((row, rowNumber) => {
+    if (rowNumber === 1) return;
+
+    const name = getCellValue(row, headerMap.get('Department Name') || 1);
+    const teamName = getCellValue(row, headerMap.get('Team Name') || 2);
+    const description = getCellValue(row, headerMap.get('Description') || headerMap.get('Description (optional)') || 3);
+
+    // Skip empty rows
+    if (!name && !teamName) return;
+
+    // Validate required fields
+    if (!name) {
+      errors.push({ sheet: 'Departments', row: rowNumber, column: 'Department Name', message: 'Required field', value: name });
+      return;
+    }
+    if (!teamName) {
+      errors.push({ sheet: 'Departments', row: rowNumber, column: 'Team Name', message: 'Required field', value: teamName });
+      return;
+    }
+
+    // Cross-sheet validation
+    if (teamNames.size > 0 && !teamNames.has(teamName.toLowerCase())) {
+      warnings.push({
+        sheet: 'Departments',
+        row: rowNumber,
+        column: 'Team Name',
+        message: `Team "${teamName}" not found in Teams sheet. Will attempt to match existing team.`,
+        value: teamName,
+        referencedValue: teamName,
+      });
+    }
+
+    data.push({ 
+      name, 
+      team_name: teamName, 
+      description: description || undefined,
+    });
+  });
+
+  return { data, errors, warnings };
+}
+
+function parseStationsSheet(
+  sheet: ExcelJS.Worksheet,
+  existingTeams: ParsedExcelData['teams']
+) {
+  const data: ParsedExcelData['stations'] = [];
+  const errors: ValidationError[] = [];
+  const warnings: ValidationWarning[] = [];
+  const headerMap = getHeaderMap(sheet);
+  const teamNames = new Set(existingTeams.map(t => t.name.toLowerCase()));
 
   sheet.eachRow((row, rowNumber) => {
     if (rowNumber === 1) return; // Skip header row
@@ -297,9 +579,9 @@ function parseStationsSheet(sheet: ExcelJS.Worksheet) {
     const name = getCellValue(row, headerMap.get('Station Name') || 2);
     const workCenter = getCellValue(row, headerMap.get('Work Center') || 3);
     const workCenterType = getCellValue(row, headerMap.get('Work Center Type') || 4);
-    const teamName = getCellValue(row, headerMap.get('Team Name (optional)') || 5);
-    const department = getCellValue(row, headerMap.get('Department (optional)') || 6);
-    const activeStr = getCellValue(row, headerMap.get('Active (yes/no)') || 7).toLowerCase() || 'yes';
+    const teamName = getCellValue(row, headerMap.get('Team Name') || headerMap.get('Team Name (optional)') || 5);
+    const department = getCellValue(row, headerMap.get('Department') || headerMap.get('Department (optional)') || 6);
+    const activeStr = getCellValue(row, headerMap.get('Active') || headerMap.get('Active (yes/no)') || 7).toLowerCase() || 'yes';
 
     // Skip empty rows
     if (!stationId && !name && !workCenter && !workCenterType) return;
@@ -326,6 +608,18 @@ function parseStationsSheet(sheet: ExcelJS.Worksheet) {
       });
     }
 
+    // Cross-sheet validation for team name
+    if (teamName && teamNames.size > 0 && !teamNames.has(teamName.toLowerCase())) {
+      warnings.push({
+        sheet: 'Stations',
+        row: rowNumber,
+        column: 'Team Name',
+        message: `Team "${teamName}" not found in Teams sheet. Will attempt to match existing team.`,
+        value: teamName,
+        referencedValue: teamName,
+      });
+    }
+
     if (stationId && name && workCenter && workCenterType && ALL_WORK_CENTER_TYPES.includes(workCenterType as typeof ALL_WORK_CENTER_TYPES[number])) {
       data.push({
         station_id: stationId,
@@ -339,23 +633,32 @@ function parseStationsSheet(sheet: ExcelJS.Worksheet) {
     }
   });
 
-  return { data, errors };
+  return { data, errors, warnings };
 }
 
-function parseUsersSheet(sheet: ExcelJS.Worksheet) {
+function parseUsersSheet(
+  sheet: ExcelJS.Worksheet,
+  existingTeams: ParsedExcelData['teams']
+) {
   const data: ParsedExcelData['users'] = [];
   const errors: ValidationError[] = [];
+  const warnings: ValidationWarning[] = [];
   const validRoles = ['admin', 'supervisor', 'operator', 'viewer'];
+  const validOrgRoles = ['owner', 'admin', 'member'];
+  const validTeamRoles = ['owner', 'admin', 'member'];
   const headerMap = getHeaderMap(sheet);
+  const teamNames = new Set(existingTeams.map(t => t.name.toLowerCase()));
 
   sheet.eachRow((row, rowNumber) => {
     if (rowNumber === 1) return;
 
     const email = getCellValue(row, headerMap.get('Email') || 1).toLowerCase();
     const displayName = getCellValue(row, headerMap.get('Display Name') || 2);
-    const role = getCellValue(row, headerMap.get('Role') || 3).toLowerCase() || 'operator';
-    const teamName = getCellValue(row, headerMap.get('Team Name (optional)') || 4);
-    const department = getCellValue(row, headerMap.get('Department (optional)') || 5);
+    const role = getCellValue(row, headerMap.get('App Role') || headerMap.get('Role') || 3).toLowerCase() || 'operator';
+    const orgRole = getCellValue(row, headerMap.get('Org Role') || headerMap.get('Org Role (optional)') || 4).toLowerCase();
+    const teamRole = getCellValue(row, headerMap.get('Team Role') || headerMap.get('Team Role (optional)') || 5).toLowerCase();
+    const teamName = getCellValue(row, headerMap.get('Team Name') || headerMap.get('Team Name (optional)') || 6);
+    const department = getCellValue(row, headerMap.get('Department') || headerMap.get('Department (optional)') || 7);
 
     // Skip empty rows
     if (!email && !displayName) return;
@@ -373,9 +676,39 @@ function parseUsersSheet(sheet: ExcelJS.Worksheet) {
       errors.push({ 
         sheet: 'Users', 
         row: rowNumber, 
-        column: 'Role', 
+        column: 'App Role', 
         message: `Invalid role. Must be one of: ${validRoles.join(', ')}`,
         value: role 
+      });
+    }
+    if (orgRole && !validOrgRoles.includes(orgRole)) {
+      errors.push({ 
+        sheet: 'Users', 
+        row: rowNumber, 
+        column: 'Org Role', 
+        message: `Invalid org role. Must be one of: ${validOrgRoles.join(', ')}`,
+        value: orgRole 
+      });
+    }
+    if (teamRole && !validTeamRoles.includes(teamRole)) {
+      errors.push({ 
+        sheet: 'Users', 
+        row: rowNumber, 
+        column: 'Team Role', 
+        message: `Invalid team role. Must be one of: ${validTeamRoles.join(', ')}`,
+        value: teamRole 
+      });
+    }
+
+    // Cross-sheet validation for team name
+    if (teamName && teamNames.size > 0 && !teamNames.has(teamName.toLowerCase())) {
+      warnings.push({
+        sheet: 'Users',
+        row: rowNumber,
+        column: 'Team Name',
+        message: `Team "${teamName}" not found in Teams sheet. Will attempt to match existing team.`,
+        value: teamName,
+        referencedValue: teamName,
       });
     }
 
@@ -384,40 +717,135 @@ function parseUsersSheet(sheet: ExcelJS.Worksheet) {
         email, 
         display_name: displayName, 
         role, 
+        org_role: orgRole || undefined,
+        team_role: teamRole || undefined,
         team_name: teamName,
         department: department || undefined,
       });
     }
   });
 
-  return { data, errors };
+  return { data, errors, warnings };
 }
 
-function parseTeamsSheet(sheet: ExcelJS.Worksheet) {
-  const data: ParsedExcelData['teams'] = [];
+function parseWorkOrdersSheet(
+  sheet: ExcelJS.Worksheet,
+  existingTeams: ParsedExcelData['teams'],
+  existingStations: ParsedExcelData['stations']
+) {
+  const data: ParsedExcelData['workOrders'] = [];
   const errors: ValidationError[] = [];
+  const warnings: ValidationWarning[] = [];
+  const validPriorities = ['low', 'normal', 'high', 'urgent', 'critical'];
+  const validStatuses = ['pending', 'queued', 'in_progress', 'on_hold'];
   const headerMap = getHeaderMap(sheet);
+  const teamNames = new Set(existingTeams.map(t => t.name.toLowerCase()));
+  const stationIds = new Set(existingStations.map(s => s.station_id.toLowerCase()));
 
   sheet.eachRow((row, rowNumber) => {
     if (rowNumber === 1) return;
 
-    const name = getCellValue(row, headerMap.get('Team Name') || 1);
-    const description = getCellValue(row, headerMap.get('Description') || 2);
-    const departmentsStr = getCellValue(row, headerMap.get('Departments (comma-separated)') || 3);
-    const departments = departmentsStr ? departmentsStr.split(',').map(d => d.trim()).filter(Boolean) : undefined;
+    const workOrder = getCellValue(row, headerMap.get('Work Order #') || 1);
+    const title = getCellValue(row, headerMap.get('Title') || 2);
+    const partNumber = getCellValue(row, headerMap.get('Part Number') || headerMap.get('Part Number (optional)') || 3);
+    const operationNumber = getCellValue(row, headerMap.get('Operation #') || headerMap.get('Operation # (optional)') || 4);
+    const quantityStr = getCellValue(row, headerMap.get('Quantity') || headerMap.get('Quantity (optional)') || 5);
+    const quantity = quantityStr ? parseInt(quantityStr) : undefined;
+    const priority = getCellValue(row, headerMap.get('Priority') || 6).toLowerCase() || 'normal';
+    const status = getCellValue(row, headerMap.get('Status') || 7).toLowerCase() || 'pending';
+    const stationId = getCellValue(row, headerMap.get('Station ID') || headerMap.get('Station ID (optional)') || 8);
+    const teamName = getCellValue(row, headerMap.get('Team Name') || headerMap.get('Team Name (optional)') || 9);
+    const dueDate = getCellValue(row, headerMap.get('Due Date') || headerMap.get('Due Date (YYYY-MM-DD)') || 10);
+    const durationStr = getCellValue(row, headerMap.get('Est. Duration') || headerMap.get('Est. Duration (min)') || 11);
+    const duration = durationStr ? parseInt(durationStr) : undefined;
+    const tagsStr = getCellValue(row, headerMap.get('Tags') || headerMap.get('Tags (comma-separated)') || 12);
+    const tags = tagsStr ? tagsStr.split(',').map(t => t.trim()).filter(Boolean) : undefined;
+    const description = getCellValue(row, headerMap.get('Description') || headerMap.get('Description (optional)') || 13);
 
     // Skip empty rows
-    if (!name) {
-      if (description || departmentsStr) {
-        errors.push({ sheet: 'Teams', row: rowNumber, column: 'Team Name', message: 'Required field', value: name });
-      }
-      return;
+    if (!workOrder && !title) return;
+
+    // Validate required fields
+    if (!workOrder) {
+      errors.push({ sheet: 'Work Orders', row: rowNumber, column: 'Work Order #', message: 'Required field', value: workOrder });
+    }
+    if (!title) {
+      errors.push({ sheet: 'Work Orders', row: rowNumber, column: 'Title', message: 'Required field', value: title });
     }
 
-    data.push({ name, description, departments });
+    // Validate enum values
+    if (!validPriorities.includes(priority)) {
+      errors.push({ 
+        sheet: 'Work Orders', 
+        row: rowNumber, 
+        column: 'Priority', 
+        message: `Invalid priority. Must be one of: ${validPriorities.join(', ')}`,
+        value: priority 
+      });
+    }
+    if (!validStatuses.includes(status)) {
+      errors.push({ 
+        sheet: 'Work Orders', 
+        row: rowNumber, 
+        column: 'Status', 
+        message: `Invalid status. Must be one of: ${validStatuses.join(', ')}`,
+        value: status 
+      });
+    }
+
+    // Cross-sheet validation
+    if (stationId && stationIds.size > 0 && !stationIds.has(stationId.toLowerCase())) {
+      warnings.push({
+        sheet: 'Work Orders',
+        row: rowNumber,
+        column: 'Station ID',
+        message: `Station "${stationId}" not found in Stations sheet. Will attempt to match existing station.`,
+        value: stationId,
+        referencedValue: stationId,
+      });
+    }
+    if (teamName && teamNames.size > 0 && !teamNames.has(teamName.toLowerCase())) {
+      warnings.push({
+        sheet: 'Work Orders',
+        row: rowNumber,
+        column: 'Team Name',
+        message: `Team "${teamName}" not found in Teams sheet. Will attempt to match existing team.`,
+        value: teamName,
+        referencedValue: teamName,
+      });
+    }
+
+    // Validate date format
+    if (dueDate && !/^\d{4}-\d{2}-\d{2}$/.test(dueDate)) {
+      warnings.push({
+        sheet: 'Work Orders',
+        row: rowNumber,
+        column: 'Due Date',
+        message: `Date "${dueDate}" is not in YYYY-MM-DD format. Will attempt to parse.`,
+        value: dueDate,
+      });
+    }
+
+    if (workOrder && title && validPriorities.includes(priority) && validStatuses.includes(status)) {
+      data.push({
+        work_order: workOrder,
+        title,
+        part_number: partNumber || undefined,
+        operation_number: operationNumber || undefined,
+        quantity,
+        priority,
+        status,
+        station_id: stationId || undefined,
+        team_name: teamName || undefined,
+        due_date: dueDate || undefined,
+        estimated_duration: duration,
+        tags,
+        description: description || undefined,
+      });
+    }
   });
 
-  return { data, errors };
+  return { data, errors, warnings };
 }
 
 function parseRoutingSheet(sheet: ExcelJS.Worksheet) {

@@ -16,7 +16,9 @@ import {
   Users,
   Building2,
   Wrench,
-  Loader2
+  Loader2,
+  ClipboardList,
+  Layers
 } from 'lucide-react';
 import { downloadTemplate } from '@/lib/excelTemplates';
 import { useBulkUpload } from '@/hooks/useBulkUpload';
@@ -95,9 +97,14 @@ export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadD
 
   const hasData = parseResult?.data && (
     parseResult.data.teams.length > 0 ||
+    parseResult.data.departments.length > 0 ||
     parseResult.data.stations.length > 0 ||
-    parseResult.data.users.length > 0
+    parseResult.data.users.length > 0 ||
+    parseResult.data.workOrders.length > 0
   );
+
+  // Count cross-sheet warnings
+  const crossSheetWarnings = parseResult?.warnings.filter(w => w.referencedValue) || [];
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -113,7 +120,7 @@ export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadD
             )}
           </DialogTitle>
           <DialogDescription>
-            Upload Excel files to quickly set up teams, stations, and users for your organization.
+            Upload Excel files to quickly set up teams, departments, stations, work orders, and users.
           </DialogDescription>
         </DialogHeader>
 
@@ -145,12 +152,16 @@ export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadD
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <p className="text-sm text-muted-foreground">
-                    Download our Excel templates with sample data to get started.
+                    Download our Excel templates with sample data and instructions to get started.
                   </p>
                   <div className="flex flex-wrap gap-2">
                     <Button variant="outline" size="sm" onClick={() => void downloadTemplate('all')}>
                       <Download className="w-4 h-4 mr-2" />
                       Complete Setup Template
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => void downloadTemplate('workorders')}>
+                      <ClipboardList className="w-4 h-4 mr-2" />
+                      Work Orders Only
                     </Button>
                     <Button variant="ghost" size="sm" onClick={() => void downloadTemplate('stations')}>
                       <Wrench className="w-4 h-4 mr-2" />
@@ -159,6 +170,10 @@ export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadD
                     <Button variant="ghost" size="sm" onClick={() => void downloadTemplate('teams')}>
                       <Building2 className="w-4 h-4 mr-2" />
                       Teams Only
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => void downloadTemplate('departments')}>
+                      <Layers className="w-4 h-4 mr-2" />
+                      Departments Only
                     </Button>
                     <Button variant="ghost" size="sm" onClick={() => void downloadTemplate('users')}>
                       <Users className="w-4 h-4 mr-2" />
@@ -200,6 +215,18 @@ export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadD
                       </Button>
                     </label>
                   </div>
+                </CardContent>
+              </Card>
+
+              {/* Processing Order Info */}
+              <Card className="bg-secondary/30">
+                <CardContent className="pt-4">
+                  <p className="text-xs text-muted-foreground">
+                    <strong>Processing Order:</strong> Teams → Departments → Stations → Users → Work Orders
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Team names must match exactly across all sheets for proper linking.
+                  </p>
                 </CardContent>
               </Card>
             </>
@@ -248,6 +275,32 @@ export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadD
                 </Card>
               )}
 
+              {/* Cross-Sheet Warnings */}
+              {crossSheetWarnings.length > 0 && (
+                <Card className="border-yellow-500/50">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-yellow-600 flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4" />
+                      Cross-Reference Warnings ({crossSheetWarnings.length})
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ScrollArea className="h-24">
+                      <ul className="text-xs space-y-1">
+                        {crossSheetWarnings.map((warning, i) => (
+                          <li key={i} className="text-yellow-600">
+                            {warning.sheet} Row {warning.row}: {warning.message}
+                          </li>
+                        ))}
+                      </ul>
+                    </ScrollArea>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      These references will be matched against existing data in your organization.
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Data Preview */}
               {hasData && (
                 <Card>
@@ -259,10 +312,13 @@ export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadD
                   </CardHeader>
                   <CardContent>
                     <Tabs defaultValue="summary" className="w-full">
-                      <TabsList className="mb-3">
+                      <TabsList className="mb-3 flex-wrap h-auto gap-1">
                         <TabsTrigger value="summary">Summary</TabsTrigger>
                         {parseResult.data.teams.length > 0 && (
                           <TabsTrigger value="teams">Teams ({parseResult.data.teams.length})</TabsTrigger>
+                        )}
+                        {parseResult.data.departments.length > 0 && (
+                          <TabsTrigger value="departments">Depts ({parseResult.data.departments.length})</TabsTrigger>
                         )}
                         {parseResult.data.stations.length > 0 && (
                           <TabsTrigger value="stations">Stations ({parseResult.data.stations.length})</TabsTrigger>
@@ -270,24 +326,37 @@ export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadD
                         {parseResult.data.users.length > 0 && (
                           <TabsTrigger value="users">Users ({parseResult.data.users.length})</TabsTrigger>
                         )}
+                        {parseResult.data.workOrders.length > 0 && (
+                          <TabsTrigger value="workorders">Work Orders ({parseResult.data.workOrders.length})</TabsTrigger>
+                        )}
                       </TabsList>
 
                       <TabsContent value="summary" className="space-y-2">
-                        <div className="grid grid-cols-3 gap-3">
+                        <div className="grid grid-cols-5 gap-2">
                           <div className="p-3 bg-secondary/50 rounded-lg text-center">
-                            <Building2 className="w-5 h-5 mx-auto mb-1 text-primary" />
+                            <Building2 className="w-4 h-4 mx-auto mb-1 text-primary" />
                             <p className="text-lg font-bold">{parseResult.data.teams.length}</p>
                             <p className="text-xs text-muted-foreground">Teams</p>
                           </div>
                           <div className="p-3 bg-secondary/50 rounded-lg text-center">
-                            <Wrench className="w-5 h-5 mx-auto mb-1 text-primary" />
+                            <Layers className="w-4 h-4 mx-auto mb-1 text-primary" />
+                            <p className="text-lg font-bold">{parseResult.data.departments.length}</p>
+                            <p className="text-xs text-muted-foreground">Departments</p>
+                          </div>
+                          <div className="p-3 bg-secondary/50 rounded-lg text-center">
+                            <Wrench className="w-4 h-4 mx-auto mb-1 text-primary" />
                             <p className="text-lg font-bold">{parseResult.data.stations.length}</p>
                             <p className="text-xs text-muted-foreground">Stations</p>
                           </div>
                           <div className="p-3 bg-secondary/50 rounded-lg text-center">
-                            <Users className="w-5 h-5 mx-auto mb-1 text-primary" />
+                            <Users className="w-4 h-4 mx-auto mb-1 text-primary" />
                             <p className="text-lg font-bold">{parseResult.data.users.length}</p>
                             <p className="text-xs text-muted-foreground">Users</p>
+                          </div>
+                          <div className="p-3 bg-secondary/50 rounded-lg text-center">
+                            <ClipboardList className="w-4 h-4 mx-auto mb-1 text-primary" />
+                            <p className="text-lg font-bold">{parseResult.data.workOrders.length}</p>
+                            <p className="text-xs text-muted-foreground">Work Orders</p>
                           </div>
                         </div>
                       </TabsContent>
@@ -301,6 +370,24 @@ export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadD
                                 {team.description && (
                                   <p className="text-xs text-muted-foreground">{team.description}</p>
                                 )}
+                                {team.shift_schedule && (
+                                  <p className="text-xs text-muted-foreground">Shift: {team.shift_schedule}</p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </ScrollArea>
+                      </TabsContent>
+
+                      <TabsContent value="departments">
+                        <ScrollArea className="h-40">
+                          <div className="space-y-2">
+                            {parseResult.data.departments.map((dept, i) => (
+                              <div key={i} className="p-2 bg-secondary/30 rounded text-sm flex items-center justify-between">
+                                <div>
+                                  <p className="font-medium">{dept.name}</p>
+                                  <p className="text-xs text-muted-foreground">Team: {dept.team_name}</p>
+                                </div>
                               </div>
                             ))}
                           </div>
@@ -316,6 +403,7 @@ export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadD
                                   <p className="font-medium">{station.name}</p>
                                   <p className="text-xs text-muted-foreground">
                                     {station.station_id} • {station.work_center_type}
+                                    {station.team_name && ` • ${station.team_name}`}
                                   </p>
                                 </div>
                                 <Badge variant={station.is_active ? "default" : "secondary"} className="text-xs">
@@ -334,11 +422,48 @@ export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadD
                               <div key={i} className="p-2 bg-secondary/30 rounded text-sm flex items-center justify-between">
                                 <div>
                                   <p className="font-medium">{user.display_name}</p>
-                                  <p className="text-xs text-muted-foreground">{user.email}</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {user.email}
+                                    {user.team_name && ` • ${user.team_name}`}
+                                  </p>
                                 </div>
-                                <Badge variant="outline" className="text-xs capitalize">
-                                  {user.role}
-                                </Badge>
+                                <div className="flex gap-1">
+                                  <Badge variant="outline" className="text-xs capitalize">
+                                    {user.role}
+                                  </Badge>
+                                  {user.org_role && (
+                                    <Badge variant="secondary" className="text-xs capitalize">
+                                      Org: {user.org_role}
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </ScrollArea>
+                      </TabsContent>
+
+                      <TabsContent value="workorders">
+                        <ScrollArea className="h-40">
+                          <div className="space-y-2">
+                            {parseResult.data.workOrders.map((wo, i) => (
+                              <div key={i} className="p-2 bg-secondary/30 rounded text-sm flex items-center justify-between">
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium truncate">{wo.work_order}: {wo.title}</p>
+                                  <p className="text-xs text-muted-foreground truncate">
+                                    {wo.part_number && `Part: ${wo.part_number} • `}
+                                    {wo.station_id && `Station: ${wo.station_id} • `}
+                                    {wo.due_date && `Due: ${wo.due_date}`}
+                                  </p>
+                                </div>
+                                <div className="flex gap-1 ml-2 shrink-0">
+                                  <Badge variant={wo.priority === 'critical' || wo.priority === 'urgent' ? 'destructive' : 'outline'} className="text-xs capitalize">
+                                    {wo.priority}
+                                  </Badge>
+                                  <Badge variant="secondary" className="text-xs capitalize">
+                                    {wo.status}
+                                  </Badge>
+                                </div>
                               </div>
                             ))}
                           </div>
@@ -361,18 +486,26 @@ export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadD
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-5 gap-2">
                   <div className="p-3 bg-green-500/10 rounded-lg text-center">
                     <p className="text-lg font-bold text-green-600">{uploadResult.teamsCreated}</p>
-                    <p className="text-xs text-muted-foreground">Teams Created</p>
+                    <p className="text-xs text-muted-foreground">Teams</p>
+                  </div>
+                  <div className="p-3 bg-green-500/10 rounded-lg text-center">
+                    <p className="text-lg font-bold text-green-600">{uploadResult.departmentsCreated}</p>
+                    <p className="text-xs text-muted-foreground">Departments</p>
                   </div>
                   <div className="p-3 bg-green-500/10 rounded-lg text-center">
                     <p className="text-lg font-bold text-green-600">{uploadResult.stationsCreated}</p>
-                    <p className="text-xs text-muted-foreground">Stations Created</p>
+                    <p className="text-xs text-muted-foreground">Stations</p>
                   </div>
                   <div className="p-3 bg-green-500/10 rounded-lg text-center">
                     <p className="text-lg font-bold text-green-600">{uploadResult.usersInvited}</p>
-                    <p className="text-xs text-muted-foreground">Users Queued</p>
+                    <p className="text-xs text-muted-foreground">Users</p>
+                  </div>
+                  <div className="p-3 bg-green-500/10 rounded-lg text-center">
+                    <p className="text-lg font-bold text-green-600">{uploadResult.workOrdersCreated}</p>
+                    <p className="text-xs text-muted-foreground">Work Orders</p>
                   </div>
                 </div>
 
@@ -413,31 +546,29 @@ export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadD
         </div>
 
         {/* Footer Actions */}
-        <div className="flex justify-between pt-4 border-t">
-          <Button variant="ghost" onClick={handleClose}>
-            {progress.stage === 'complete' ? 'Close' : 'Cancel'}
-          </Button>
-          
-          <div className="flex gap-2">
-            {parseResult && progress.stage !== 'complete' && progress.stage !== 'uploading' && (
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  resetState();
-                  setSelectedFile(null);
-                }}
-              >
-                Upload Different File
-              </Button>
-            )}
-            
-            {hasData && parseResult.errors.length === 0 && progress.stage !== 'complete' && progress.stage !== 'uploading' && (
-              <Button onClick={handleUpload}>
-                <Upload className="w-4 h-4 mr-2" />
-                Upload {parseResult.data.teams.length + parseResult.data.stations.length + parseResult.data.users.length} Items
-              </Button>
-            )}
-          </div>
+        <div className="flex justify-end gap-2 pt-4 border-t">
+          {progress.stage === 'complete' ? (
+            <Button onClick={handleClose}>Done</Button>
+          ) : (
+            <>
+              <Button variant="outline" onClick={handleClose}>Cancel</Button>
+              {hasData && parseResult?.errors.length === 0 && (
+                <Button onClick={handleUpload} disabled={progress.stage === 'uploading'}>
+                  {progress.stage === 'uploading' ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4 mr-2" />
+                      Upload Data
+                    </>
+                  )}
+                </Button>
+              )}
+            </>
+          )}
         </div>
       </DialogContent>
     </Dialog>
