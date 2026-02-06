@@ -17,7 +17,8 @@ export interface UploadResult {
   departmentsCreated: number;
   stationsCreated: number;
   workOrdersCreated: number;
-  usersInvited: number;
+  usersAddedToOrg: number;
+  inviteCodesCreated: number;
   errors: string[];
   warnings: string[];
 }
@@ -95,7 +96,8 @@ export function useBulkUpload() {
       departmentsCreated: 0,
       stationsCreated: 0,
       workOrdersCreated: 0,
-      usersInvited: 0,
+      usersAddedToOrg: 0,
+      inviteCodesCreated: 0,
       errors: [],
       warnings: [],
     };
@@ -241,28 +243,131 @@ export function useBulkUpload() {
       }
     }
 
-    // ========== STEP 4: Create user invitations ==========
-    setProgress({ stage: 'uploading', message: 'Preparing user invitations...', current: currentItem, total: totalItems });
+    // ========== STEP 4: Process users - add existing to org, create invite codes for new ==========
+    setProgress({ stage: 'uploading', message: 'Processing users...', current: currentItem, total: totalItems });
+
+    // Helper to generate invite codes
+    const generateInviteCode = (): string => {
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      let code = "";
+      for (let i = 0; i < 8; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return code;
+    };
 
     for (const userEntry of data.users) {
       currentItem++;
       setProgress({ stage: 'uploading', message: `Processing user: ${userEntry.email}`, current: currentItem, total: totalItems });
 
-      // Check if user already exists
+      // Check if user already exists in the system
       const { data: existingProfile } = await supabase
         .from('profiles')
-        .select('id')
+        .select('id, user_id')
         .eq('email', userEntry.email)
         .maybeSingle();
 
-      if (existingProfile) {
-        result.warnings.push(`User "${userEntry.email}" already exists, skipping.`);
-        continue;
-      }
+      if (existingProfile && existingProfile.user_id) {
+        // User exists - check if already an org member
+        const { data: existingMember } = await supabase
+          .from('organization_members')
+          .select('id')
+          .eq('organization_id', organization.id)
+          .eq('user_id', existingProfile.user_id)
+          .maybeSingle();
 
-      // For now, just count them - actual user creation would require auth.admin
-      result.usersInvited++;
-      result.warnings.push(`User "${userEntry.email}" queued for invitation. Note: Actual invitation requires email system setup.`);
+        if (existingMember) {
+          result.warnings.push(`User "${userEntry.email}" is already a member of this organization, skipping.`);
+          continue;
+        }
+
+        // Add to organization_members
+        const orgRole = userEntry.org_role || 'member';
+        const { error: orgMemberError } = await supabase
+          .from('organization_members')
+          .insert({
+            organization_id: organization.id,
+            user_id: existingProfile.user_id,
+            role: orgRole,
+          });
+
+        if (orgMemberError) {
+          result.errors.push(`Failed to add "${userEntry.email}" to organization: ${orgMemberError.message}`);
+          continue;
+        }
+
+        result.usersAddedToOrg++;
+
+        // Add to team_members if team specified
+        if (userEntry.team_name) {
+          const teamId = teamNameToId[userEntry.team_name.toLowerCase()];
+          if (teamId) {
+            const teamRole = (userEntry.team_role || 'member') as 'owner' | 'admin' | 'member';
+            const { error: teamMemberError } = await supabase
+              .from('team_members')
+              .insert([{
+                team_id: teamId,
+                user_id: existingProfile.user_id,
+                role: teamRole,
+              }]);
+
+            if (teamMemberError && !teamMemberError.message.includes('duplicate')) {
+              result.warnings.push(`Added "${userEntry.email}" to org but failed to add to team: ${teamMemberError.message}`);
+            }
+          }
+        }
+
+        // Assign app_role if specified (supervisor, operator, viewer)
+        if (userEntry.role && userEntry.role !== 'operator') {
+          const appRole = userEntry.role as 'admin' | 'supervisor' | 'operator' | 'viewer';
+          // Check if role already exists
+          const { data: existingRole } = await supabase
+            .from('user_roles')
+            .select('id')
+            .eq('user_id', existingProfile.user_id)
+            .eq('role', appRole)
+            .maybeSingle();
+
+          if (!existingRole) {
+            await supabase
+              .from('user_roles')
+              .insert({ user_id: existingProfile.user_id, role: appRole });
+          }
+        }
+      } else {
+        // User doesn't exist - create an invite code for them
+        const teamId = userEntry.team_name ? teamNameToId[userEntry.team_name.toLowerCase()] : null;
+        const inviteCode = generateInviteCode();
+        const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(); // 30 days
+
+        // Map app role for invite (only supervisor, operator, viewer are valid for invites)
+        const validAppRoles = ['supervisor', 'operator', 'viewer'];
+        const appRoleForInvite = userEntry.role && validAppRoles.includes(userEntry.role) 
+          ? userEntry.role as 'supervisor' | 'operator' | 'viewer'
+          : null;
+
+        const { error: inviteError } = await supabase
+          .from('organization_invites')
+          .insert({
+            organization_id: organization.id,
+            team_id: teamId,
+            invite_code: inviteCode,
+            created_by: user.id,
+            org_role: userEntry.org_role || 'member',
+            app_role: appRoleForInvite,
+            expires_at: expiresAt,
+            max_uses: 1, // Single use for individual invites
+            uses_count: 0,
+            is_active: true,
+          });
+
+        if (inviteError) {
+          result.errors.push(`Failed to create invite for "${userEntry.email}": ${inviteError.message}`);
+        } else {
+          result.inviteCodesCreated++;
+          result.warnings.push(`Invite code ${inviteCode} created for "${userEntry.email}" (${userEntry.display_name}). Share this code so they can join.`);
+        }
+      }
     }
 
     // ========== STEP 5: Create work orders ==========
@@ -359,14 +464,15 @@ export function useBulkUpload() {
     await supabase.from('activity_logs').insert({
       user_id: user.id,
       activity_type: 'station_created',
-      description: `Bulk upload: ${result.teamsCreated} teams, ${result.departmentsCreated} departments, ${result.stationsCreated} stations, ${result.workOrdersCreated} work orders`,
+      description: `Bulk upload: ${result.teamsCreated} teams, ${result.departmentsCreated} departments, ${result.stationsCreated} stations, ${result.workOrdersCreated} work orders, ${result.usersAddedToOrg} users added, ${result.inviteCodesCreated} invites created`,
       metadata: {
         organization_id: organization.id,
         teams_created: result.teamsCreated,
         departments_created: result.departmentsCreated,
         stations_created: result.stationsCreated,
         work_orders_created: result.workOrdersCreated,
-        users_invited: result.usersInvited,
+        users_added_to_org: result.usersAddedToOrg,
+        invite_codes_created: result.inviteCodesCreated,
       },
     });
 

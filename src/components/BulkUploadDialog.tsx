@@ -500,8 +500,12 @@ export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadD
                     <p className="text-xs text-muted-foreground">Stations</p>
                   </div>
                   <div className="p-3 bg-green-500/10 rounded-lg text-center">
-                    <p className="text-lg font-bold text-green-600">{uploadResult.usersInvited}</p>
-                    <p className="text-xs text-muted-foreground">Users</p>
+                    <p className="text-lg font-bold text-green-600">{uploadResult.usersAddedToOrg}</p>
+                    <p className="text-xs text-muted-foreground">Users Added</p>
+                  </div>
+                  <div className="p-3 bg-blue-500/10 rounded-lg text-center">
+                    <p className="text-lg font-bold text-blue-600">{uploadResult.inviteCodesCreated}</p>
+                    <p className="text-xs text-muted-foreground">Invite Codes</p>
                   </div>
                   <div className="p-3 bg-green-500/10 rounded-lg text-center">
                     <p className="text-lg font-bold text-green-600">{uploadResult.workOrdersCreated}</p>
