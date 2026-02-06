@@ -2897,6 +2897,7 @@ export type Database = {
           completed_steps: string[] | null
           created_at: string | null
           current_step: string | null
+          has_seen_welcome: boolean | null
           id: string
           is_complete: boolean | null
           started_at: string | null
@@ -2908,6 +2909,7 @@ export type Database = {
           completed_steps?: string[] | null
           created_at?: string | null
           current_step?: string | null
+          has_seen_welcome?: boolean | null
           id?: string
           is_complete?: boolean | null
           started_at?: string | null
@@ -2919,6 +2921,7 @@ export type Database = {
           completed_steps?: string[] | null
           created_at?: string | null
           current_step?: string | null
+          has_seen_welcome?: boolean | null
           id?: string
           is_complete?: boolean | null
           started_at?: string | null

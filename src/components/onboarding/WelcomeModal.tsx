@@ -45,7 +45,9 @@ export function WelcomeModal() {
     isComplete, 
     isLoading, 
     showTour,
-    isNewSignup,
+    hasSeenWelcome,
+    completeStep,
+    markWelcomeSeen,
     startTour, 
     skipOnboarding,
     getProgress,
@@ -54,38 +56,39 @@ export function WelcomeModal() {
   
   const [isOpen, setIsOpen] = useState(true);
 
-  // Only show for new signups who haven't completed onboarding
-  // Don't show if loading, complete, tour is active, or not a new signup
-  if (isLoading || isComplete || showTour || currentStep === 'complete' || !isNewSignup) {
+  // Only show for users who haven't seen the welcome modal yet
+  // Don't show if loading, complete, tour is active, or already seen welcome
+  if (isLoading || isComplete || showTour || currentStep === 'complete' || hasSeenWelcome) {
     return null;
   }
 
   const progress = getProgress();
   const currentStepData = ONBOARDING_STEPS.find(s => s.id === currentStep);
 
-  const handleStartTour = () => {
+  const handleStartTour = async () => {
     setIsOpen(false);
     
-    // Navigate to appropriate page based on current step
-    if (currentStep === 'welcome' || currentStep === 'organization-setup' || currentStep === 'shop-setup') {
-      navigate('/setup');
-    } else if (currentStep === 'dashboard-overview' || currentStep === 'station-cards') {
-      navigate('/dashboard');
-    } else if (currentStep === 'team-management') {
-      navigate('/teams');
-    } else if (currentStep === 'admin-features') {
-      navigate('/admin');
-    }
+    // Mark welcome as seen and complete the welcome step
+    await markWelcomeSeen();
+    await completeStep('welcome');
+    
+    // Always navigate to setup for new users to complete organization + shop setup
+    navigate('/setup');
     
     setTimeout(() => startTour(), 300);
   };
 
   const handleSkip = async () => {
+    // Mark welcome as seen even when skipping
+    await markWelcomeSeen();
     await skipOnboarding();
     setIsOpen(false);
+    navigate('/dashboard');
   };
 
-  const handleClose = () => {
+  const handleClose = async () => {
+    // Mark welcome as seen when closing
+    await markWelcomeSeen();
     setIsOpen(false);
   };
 

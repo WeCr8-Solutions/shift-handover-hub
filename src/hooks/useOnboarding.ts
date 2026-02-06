@@ -32,6 +32,7 @@ interface OnboardingState {
   currentStep: OnboardingStep;
   isComplete: boolean;
   isLoading: boolean;
+  hasSeenWelcome: boolean;
 }
 
 export function useOnboarding() {
@@ -41,10 +42,9 @@ export function useOnboarding() {
     currentStep: 'welcome',
     isComplete: false,
     isLoading: true,
+    hasSeenWelcome: true, // Default to true to prevent flash
   });
   const [showTour, setShowTour] = useState(false);
-  const [isNewSignup, setIsNewSignup] = useState(false);
-
   // Fetch onboarding state from database
   useEffect(() => {
     async function fetchOnboardingState() {
@@ -71,12 +71,13 @@ export function useOnboarding() {
           currentStep: (data.current_step as OnboardingStep) || 'welcome',
           isComplete: data.is_complete || false,
           isLoading: false,
+          hasSeenWelcome: data.has_seen_welcome || false,
         });
       } else {
-        // Create initial onboarding record
+        // Create initial onboarding record for new users
         const { error: insertError } = await supabase
           .from('user_onboarding')
-          .insert({ user_id: user.id });
+          .insert({ user_id: user.id, has_seen_welcome: false });
 
         if (insertError) {
           console.error('Error creating onboarding record:', insertError);
@@ -87,11 +88,8 @@ export function useOnboarding() {
           currentStep: 'welcome',
           isComplete: false,
           isLoading: false,
+          hasSeenWelcome: false, // New user has not seen welcome
         });
-        
-        // Mark as new signup and show tour only for brand new users
-        setIsNewSignup(true);
-        setShowTour(true);
       }
     }
 
@@ -144,6 +142,17 @@ export function useOnboarding() {
       .eq('user_id', user.id);
   }, [user]);
 
+  const markWelcomeSeen = useCallback(async () => {
+    if (!user) return;
+
+    setState(prev => ({ ...prev, hasSeenWelcome: true }));
+
+    await supabase
+      .from('user_onboarding')
+      .update({ has_seen_welcome: true })
+      .eq('user_id', user.id);
+  }, [user]);
+
   const resetOnboarding = useCallback(async () => {
     if (!user) return;
 
@@ -152,6 +161,7 @@ export function useOnboarding() {
       currentStep: 'welcome',
       isComplete: false,
       isLoading: false,
+      hasSeenWelcome: false,
     });
 
     await supabase
@@ -161,6 +171,7 @@ export function useOnboarding() {
         current_step: 'welcome',
         is_complete: false,
         completed_at: null,
+        has_seen_welcome: false,
       })
       .eq('user_id', user.id);
 
@@ -187,6 +198,9 @@ export function useOnboarding() {
     return Math.round((state.completedSteps.length / totalSteps) * 100);
   }, [state.completedSteps]);
 
+  // Derive isNewSignup from hasSeenWelcome - user is "new" if they haven't seen the welcome
+  const isNewSignup = !state.hasSeenWelcome && !state.isComplete;
+
   return {
     ...state,
     showTour,
@@ -195,6 +209,7 @@ export function useOnboarding() {
     completeStep,
     skipOnboarding,
     resetOnboarding,
+    markWelcomeSeen,
     startTour,
     endTour,
     isStepCompleted,

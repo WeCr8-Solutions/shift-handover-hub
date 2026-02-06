@@ -6,12 +6,14 @@ interface OnboardingContextType {
   currentStep: OnboardingStep;
   isComplete: boolean;
   isLoading: boolean;
+  hasSeenWelcome: boolean;
   showTour: boolean;
   isNewSignup: boolean;
   setShowTour: (show: boolean) => void;
   completeStep: (stepId: OnboardingStep) => Promise<void>;
   skipOnboarding: () => Promise<void>;
   resetOnboarding: () => Promise<void>;
+  markWelcomeSeen: () => Promise<void>;
   startTour: (step?: OnboardingStep) => void;
   endTour: () => void;
   isStepCompleted: (stepId: OnboardingStep) => boolean;
