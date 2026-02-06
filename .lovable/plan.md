@@ -1,243 +1,141 @@
 
-# RLS and Role-Based Organization-Scoped Access Control Plan
+# Fix Onboarding Flow: Missing Initial Setup Steps
 
-## Overview
-This plan addresses critical RLS policy gaps that prevent organization admins from managing supervisor/operator roles within their organizations, while ensuring platform-level roles (admin, developer) remain reserved for platform owners only.
+## Problem Summary
+New users are being sent directly to the Dashboard and starting the tour at "Digital Expeditor Dashboard" step, completely missing the first three critical steps:
+1. Welcome to JobLine.ai
+2. Create Your Organization
+3. Set Up Your Shop
 
-## Current State Analysis
+## Root Cause Analysis
 
-### What's Working Correctly
-- **Three-tier role hierarchy** is well-documented and understood
-- **useAdminAccess hook** correctly distinguishes between platform roles and org roles
-- **useOrganizationMembers hook** has proper client-side validation (lines 169-171, 196-199) that restricts org admins to assigning only `supervisor` and `operator` roles
-- **Header component** correctly gates access based on combined role checks
-- **Testing dashboard** is properly restricted to `developer` and `admin` roles
+The issue stems from multiple interconnected problems:
 
-### Critical RLS Policy Gaps
+1. **Direct Dashboard Redirect**: After signup/login, `Auth.tsx` navigates directly to `/dashboard` instead of checking onboarding state
+2. **Non-Persisted New Signup Flag**: The `isNewSignup` state in `useOnboarding.ts` is only set client-side when creating a new record, but this flag is lost on page refresh or navigation
+3. **Race Condition**: By the time the onboarding context initializes, the user is already on `/dashboard` where the GuidedTour starts at the wrong step
+4. **Missing Welcome Step Completion**: The "welcome" step is never explicitly completed - it should be marked when the user clicks "Start Tour" in the WelcomeModal
 
-#### Issue 1: Org Admins Cannot Insert User Roles
-Current `user_roles` INSERT policy:
+## Solution Approach
+
+### Phase 1: Enforce Proper Onboarding Flow
+
+**1. Add a database column to track first visit (schema change)**
+- Add `has_seen_welcome` column to `user_onboarding` table
+- This persists the new signup state across page refreshes
+
+**2. Fix Auth.tsx navigation logic**
+- Check if onboarding is complete before navigating
+- New users should go to `/setup` instead of `/dashboard`
+
+**3. Update useOnboarding hook**
+- Query `has_seen_welcome` to determine if user should see welcome flow
+- Mark welcome as seen after first modal interaction
+
+**4. Fix step completion flow**
+- WelcomeModal should complete "welcome" step when user clicks Start Tour
+- Setup page should enforce organization → shop → dashboard sequence
+
+### Phase 2: Enforce Step Sequence
+
+**5. Add step sequence validation**
+- Prevent skipping steps by checking prerequisites
+- Redirect users to the correct page based on their current onboarding step
+
+**6. Fix GuidedTour step mapping**
+- Ensure `/setup` can complete both `organization-setup` and `shop-setup` steps
+- Don't auto-start dashboard tour if earlier steps are incomplete
+
+## Technical Implementation
+
+### Database Migration
 ```sql
--- Only platform admins can insert
-WITH CHECK: has_role(auth.uid(), 'admin'::app_role)
+ALTER TABLE user_onboarding 
+ADD COLUMN has_seen_welcome boolean DEFAULT false;
 ```
 
-**Problem**: When org admins try to assign supervisor/operator roles via `useOrganizationMembers.assignAppRole()`, the RLS policy blocks the operation.
+### Code Changes
 
-#### Issue 2: Org Admins Cannot Delete User Roles  
-Current `user_roles` DELETE policy:
-```sql
--- Only platform admins can delete
-USING: has_role(auth.uid(), 'admin'::app_role)
-```
+**File: `src/hooks/useOnboarding.ts`**
+- Add `hasSeen Welcome` to state
+- Fetch `has_seen_welcome` from database
+- Add function to mark welcome as seen
+- Derive `isNewSignup` from `!has_seen_welcome` instead of creation-time flag
 
-**Problem**: Org admins cannot remove supervisor/operator roles from their org members.
+**File: `src/pages/Auth.tsx`**
+- After login/signup, redirect based on onboarding state:
+  - If onboarding not complete → `/setup`
+  - If onboarding complete → `/dashboard`
 
-#### Issue 3: Org Admins Cannot View Org Member Roles
-Current SELECT policies:
-- Platform admins can view all
-- Supervisors can view org member roles
-- Users can view own roles
+**File: `src/components/onboarding/WelcomeModal.tsx`**
+- Show modal based on `!hasSeen Welcome` from database
+- When user clicks "Start Tour" or "Skip":
+  - Mark welcome as seen in database
+  - Complete the "welcome" step
+  - Navigate to `/setup` (not dashboard)
 
-**Missing**: Org admins should also be able to view roles of their org members.
+**File: `src/pages/Setup.tsx`**
+- Explicitly complete "welcome" step on load if not completed
+- Only show organization setup if organization step not complete
+- Only complete "shop-setup" when all setup items are actually configured
 
----
+**File: `src/components/onboarding/GuidedTour.tsx`**
+- Check if prerequisite steps are complete before showing tour
+- For `/dashboard` tour, require `shop-setup` to be complete first
 
-## Implementation Plan
+**File: `src/pages/Index.tsx` (Dashboard)**
+- Add check for incomplete onboarding
+- Redirect to `/setup` if organization/shop steps incomplete
 
-### Step 1: Create Database Helper Functions
-
-Create a security definer function to verify that a role is organization-assignable:
-
-```sql
-CREATE OR REPLACE FUNCTION is_org_assignable_role(_role app_role)
-RETURNS boolean
-LANGUAGE sql
-IMMUTABLE
-AS $$
-  SELECT _role IN ('supervisor', 'operator', 'viewer')
-$$;
-```
-
-Create function to check if user is in same org as target user:
-
-```sql
-CREATE OR REPLACE FUNCTION is_in_same_org(_caller_id uuid, _target_user_id uuid)
-RETURNS boolean
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public
-AS $$
-  SELECT EXISTS (
-    SELECT 1
-    FROM organization_members om1
-    JOIN organization_members om2 ON om1.organization_id = om2.organization_id
-    WHERE om1.user_id = _caller_id 
-      AND om2.user_id = _target_user_id
-  )
-$$;
-```
-
-### Step 2: Update RLS Policies on user_roles Table
-
-#### Add SELECT Policy for Org Admins
-```sql
-CREATE POLICY "Org admins view org member roles"
-ON public.user_roles FOR SELECT
-TO authenticated
-USING (
-  EXISTS (
-    SELECT 1
-    FROM organization_members om1
-    JOIN organization_members om2 ON om1.organization_id = om2.organization_id
-    WHERE om1.user_id = auth.uid()
-      AND om1.role IN ('owner', 'admin')
-      AND om2.user_id = user_roles.user_id
-  )
-);
-```
-
-#### Add INSERT Policy for Org Admins (Restricted Roles Only)
-```sql
-CREATE POLICY "Org admins can assign org-scoped roles"
-ON public.user_roles FOR INSERT
-TO authenticated
-WITH CHECK (
-  -- Only allow supervisor, operator, viewer roles
-  role IN ('supervisor', 'operator', 'viewer')
-  -- AND caller must be org admin/owner
-  AND EXISTS (
-    SELECT 1
-    FROM organization_members om1
-    JOIN organization_members om2 ON om1.organization_id = om2.organization_id
-    WHERE om1.user_id = auth.uid()
-      AND om1.role IN ('owner', 'admin')
-      AND om2.user_id = user_roles.user_id
-  )
-);
-```
-
-#### Add DELETE Policy for Org Admins (Restricted Roles Only)
-```sql
-CREATE POLICY "Org admins can remove org-scoped roles"
-ON public.user_roles FOR DELETE
-TO authenticated
-USING (
-  -- Only allow removing supervisor, operator, viewer roles
-  role IN ('supervisor', 'operator', 'viewer')
-  -- AND caller must be org admin/owner
-  AND EXISTS (
-    SELECT 1
-    FROM organization_members om1
-    JOIN organization_members om2 ON om1.organization_id = om2.organization_id
-    WHERE om1.user_id = auth.uid()
-      AND om1.role IN ('owner', 'admin')
-      AND om2.user_id = user_roles.user_id
-  )
-);
-```
-
-### Step 3: Verify Platform Admin Isolation
-
-Ensure platform-level roles remain protected:
-
-| Role | Can Be Assigned By |
-|------|-------------------|
-| `admin` | Platform admin only (no change) |
-| `developer` | Platform admin only (no change) |
-| `supervisor` | Platform admin OR Org admin (same org) |
-| `operator` | Platform admin OR Org admin (same org) |
-| `viewer` | Platform admin OR Org admin (same org) |
-
-### Step 4: Update Client-Side Validation (Minor)
-
-The `useOrganizationMembers` hook already validates roles correctly at lines 169-171 and 196-199. No changes needed, but we'll add an explicit type guard.
-
-**Files to Update:**
-- `src/hooks/useOrganizationMembers.ts` - Add type constant for assignable roles
-
-```typescript
-const ORG_ASSIGNABLE_ROLES: AppRole[] = ['supervisor', 'operator', 'viewer'];
-```
-
----
-
-## Technical Details
-
-### Role Access Matrix After Changes
-
-| Actor | Can Assign/Remove | Scope |
-|-------|------------------|-------|
-| Platform Admin (`admin` role) | All roles | Global |
-| Org Owner/Admin | supervisor, operator, viewer | Own org members only |
-| Supervisor | None | - |
-| Operator | None | - |
-
-### Data Flow Diagram
+### Flow After Fix
 
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
-│                        USER ROLES TABLE                          │
+│                    NEW USER SIGNUP FLOW                         │
 ├─────────────────────────────────────────────────────────────────┤
-│                                                                  │
-│  Platform Admin (admin role)                                     │
-│  ├── INSERT: any role ✓                                         │
-│  ├── UPDATE: any role ✓                                         │
-│  ├── DELETE: any role ✓                                         │
-│  └── SELECT: all users ✓                                        │
-│                                                                  │
-│  Org Admin/Owner (organization_members.role = owner|admin)       │
-│  ├── INSERT: supervisor/operator/viewer only ✓                   │
-│  │           └── Target must be in same org                     │
-│  ├── UPDATE: N/A (not needed)                                   │
-│  ├── DELETE: supervisor/operator/viewer only ✓                  │
-│  │           └── Target must be in same org                     │
-│  └── SELECT: own org members only ✓                             │
-│                                                                  │
-│  SDK Developer (developer role)                                  │
-│  ├── INSERT: ✗ (no role changes)                                │
-│  ├── UPDATE: ✗                                                  │
-│  ├── DELETE: ✗                                                  │
-│  └── SELECT: own roles only ✓                                   │
-│                                                                  │
+│                                                                 │
+│  User Signs Up                                                  │
+│       ↓                                                         │
+│  Auth.tsx checks onboarding state                               │
+│       ↓                                                         │
+│  Onboarding incomplete → Navigate to /setup                     │
+│       ↓                                                         │
+│  WelcomeModal shows (has_seen_welcome = false)                  │
+│       ↓                                                         │
+│  User clicks "Start Tour" or "Skip"                             │
+│       ↓                                                         │
+│  Mark welcome as seen, complete "welcome" step                  │
+│       ↓                                                         │
+│  Show OrganizationSetup (if no org exists)                      │
+│       ↓                                                         │
+│  User creates/joins org → complete "organization-setup"         │
+│       ↓                                                         │
+│  Show Setup page with teams/stations/members                    │
+│       ↓                                                         │
+│  User completes setup → complete "shop-setup"                   │
+│       ↓                                                         │
+│  Navigate to /dashboard                                         │
+│       ↓                                                         │
+│  Dashboard tour runs → complete "dashboard-overview"            │
+│                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
----
-
 ## Files to Modify
 
-1. **Database Migration** (New)
-   - Create helper function `is_org_assignable_role`
-   - Create helper function `is_in_same_org`
-   - Add 3 new RLS policies on `user_roles` for org admin access
-
-2. **src/hooks/useOrganizationMembers.ts**
-   - Add `viewer` to the list of assignable roles (line 170, 197)
-   - Add type constant for org-assignable roles
-
----
-
-## Security Guarantees
-
-1. **Platform roles remain isolated**: `admin` and `developer` can ONLY be assigned by platform admins
-2. **Org-scoped enforcement**: Org admins can only modify roles for users within their organization
-3. **Role restriction**: Even within an org, admins cannot assign platform-reserved roles
-4. **No privilege escalation**: A user cannot grant themselves higher privileges than they have
-5. **SDK/Developer access protected**: Testing dashboard and billing features remain exclusive to `developer` role holders
-
----
+1. **Database**: Add `has_seen_welcome` column to `user_onboarding`
+2. `src/hooks/useOnboarding.ts` - Persist welcome state, fix step logic
+3. `src/pages/Auth.tsx` - Route to `/setup` for incomplete onboarding
+4. `src/components/onboarding/WelcomeModal.tsx` - Use persisted state, complete welcome step
+5. `src/pages/Setup.tsx` - Enforce step sequence, complete welcome on load
+6. `src/components/onboarding/GuidedTour.tsx` - Check prerequisites before tour
+7. `src/pages/Index.tsx` - Redirect to setup if onboarding incomplete
 
 ## Testing Checklist
-
-After implementation, verify:
-
-- [ ] Platform admin can assign any role to any user
-- [ ] Org admin can assign supervisor/operator/viewer to org members
-- [ ] Org admin CANNOT assign admin/developer roles (should fail)
-- [ ] Org admin CANNOT modify roles for users outside their org
-- [ ] Developer role users can access Testing dashboard
-- [ ] Developer role users CANNOT access admin role management
-- [ ] Operator users cannot access admin dashboard
-- [ ] All existing functionality continues to work
+- New user signup → lands on Setup page with WelcomeModal
+- Clicking "Start Tour" → stays on Setup, organization setup shows
+- Creating org → organization-setup marked complete
+- Completing team/station/member setup → shop-setup marked complete
+- Navigating to dashboard → dashboard-overview tour starts
+- Refreshing page at any point → user returns to correct step
+- Existing users with complete onboarding → normal dashboard access
