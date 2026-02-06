@@ -21,6 +21,18 @@ import {
   Layers
 } from 'lucide-react';
 import { downloadTemplate } from '@/lib/excelTemplates';
+
+// Static template URL for complete setup
+const STATIC_TEMPLATE_URL = '/templates/JobLine_Setup_Template.xlsx';
+
+const downloadStaticTemplate = () => {
+  const link = document.createElement('a');
+  link.href = STATIC_TEMPLATE_URL;
+  link.download = 'JobLine_Setup_Template.xlsx';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
 import { useBulkUpload } from '@/hooks/useBulkUpload';
 import { cn } from '@/lib/utils';
 
@@ -155,7 +167,7 @@ export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadD
                     Download our Excel templates with sample data and instructions to get started.
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    <Button variant="outline" size="sm" onClick={() => void downloadTemplate('all')}>
+                    <Button variant="outline" size="sm" onClick={downloadStaticTemplate}>
                       <Download className="w-4 h-4 mr-2" />
                       Complete Setup Template
                     </Button>
