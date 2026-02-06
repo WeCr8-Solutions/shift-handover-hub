@@ -48,6 +48,7 @@ import {
   Share2,
   History,
   User,
+  Mail,
 } from "lucide-react";
 
 interface InviteRedemption {
@@ -401,6 +402,7 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
                 <TableHeader>
                   <TableRow>
                     <TableHead>Code</TableHead>
+                    <TableHead>For Email</TableHead>
                     <TableHead>Team</TableHead>
                     <TableHead>Roles</TableHead>
                     <TableHead>Usage</TableHead>
@@ -420,6 +422,18 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
                           <code className="bg-muted px-2 py-1 rounded font-mono text-sm">
                             {invite.invite_code}
                           </code>
+                        </TableCell>
+                        <TableCell>
+                          {invite.invited_email ? (
+                            <div className="flex items-center gap-1 text-sm">
+                              <Mail className="w-3 h-3 text-muted-foreground" />
+                              <span className="truncate max-w-[150px]" title={invite.invited_email}>
+                                {invite.invited_email}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground text-xs">Anyone</span>
+                          )}
                         </TableCell>
                         <TableCell>
                           {invite.team?.name || <span className="text-muted-foreground">—</span>}
