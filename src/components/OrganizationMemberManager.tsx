@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useOrganizationMembers, OrganizationMember } from "@/hooks/useOrganizationMembers";
 import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { useAuth } from "@/contexts/AuthContext";
+import { useEmail } from "@/hooks/useEmail";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,6 +52,11 @@ import {
   Loader2,
   Trash2,
   Search,
+  Copy,
+  Mail,
+  Link,
+  CheckCircle,
+  AlertCircle,
 } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
 
@@ -75,33 +81,58 @@ const APP_ROLE_CONFIG: Record<string, { label: string; color: string; descriptio
   },
 };
 
+type DialogStep = "form" | "user-not-found" | "invite-created";
+
+interface InviteDetails {
+  code: string;
+  link: string;
+  email: string;
+}
+
 export function OrganizationMemberManager() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { organization, organizationRole } = useUserOrganization();
   const {
     members,
     loading,
     isOrgAdmin,
     addMember,
+    createPersonalInvite,
     updateMemberOrgRole,
     removeMember,
     assignAppRole,
     removeAppRole,
   } = useOrganizationMembers(organization?.id || null);
+  const { sendTeamInviteEmail } = useEmail();
   const { toast } = useToast();
 
   const [showInviteDialog, setShowInviteDialog] = useState(false);
+  const [dialogStep, setDialogStep] = useState<DialogStep>("form");
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteOrgRole, setInviteOrgRole] = useState<"admin" | "member">("member");
   const [isInviting, setIsInviting] = useState(false);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [updatingMember, setUpdatingMember] = useState<string | null>(null);
+  const [createdInvite, setCreatedInvite] = useState<InviteDetails | null>(null);
 
   const filteredMembers = members.filter(
     (m) =>
       m.profile?.display_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       m.profile?.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const resetDialog = () => {
+    setDialogStep("form");
+    setInviteEmail("");
+    setInviteOrgRole("member");
+    setCreatedInvite(null);
+  };
+
+  const handleCloseDialog = () => {
+    setShowInviteDialog(false);
+    resetDialog();
+  };
 
   const handleInvite = async () => {
     if (!inviteEmail.trim()) {
@@ -114,23 +145,108 @@ export function OrganizationMemberManager() {
     }
 
     setIsInviting(true);
-    const { error } = await addMember(inviteEmail, inviteOrgRole);
+    const result = await addMember(inviteEmail, inviteOrgRole);
     setIsInviting(false);
 
-    if (error) {
+    if (result.error) {
       toast({
         title: "Failed to add member",
-        description: error.message,
+        description: result.error.message,
         variant: "destructive",
       });
+    } else if (result.userNotFound) {
+      // User doesn't exist - show create invite prompt
+      setDialogStep("user-not-found");
     } else {
       toast({
         title: "Member added!",
         description: `${inviteEmail} has been added to the organization.`,
       });
-      setShowInviteDialog(false);
-      setInviteEmail("");
-      setInviteOrgRole("member");
+      handleCloseDialog();
+    }
+  };
+
+  const handleCreateInvite = async (sendEmail: boolean = false) => {
+    setIsInviting(true);
+    const result = await createPersonalInvite(inviteEmail, inviteOrgRole);
+    setIsInviting(false);
+
+    if (result.error) {
+      toast({
+        title: "Failed to create invite",
+        description: result.error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (result.inviteCreated) {
+      setCreatedInvite(result.inviteCreated);
+      setDialogStep("invite-created");
+
+      if (sendEmail) {
+        setIsSendingEmail(true);
+        const emailResult = await sendTeamInviteEmail(
+          inviteEmail,
+          profile?.display_name || "An admin",
+          organization?.name || "the organization",
+          result.inviteCreated.link,
+          inviteOrgRole
+        );
+        setIsSendingEmail(false);
+
+        if (emailResult.success) {
+          toast({
+            title: "Invite sent!",
+            description: `Invitation email sent to ${inviteEmail}.`,
+          });
+        } else {
+          toast({
+            title: "Invite created, email failed",
+            description: "The invite was created but email failed to send. You can share the link manually.",
+            variant: "destructive",
+          });
+        }
+      } else {
+        toast({
+          title: "Invite created!",
+          description: `Personal invite for ${inviteEmail} is ready.`,
+        });
+      }
+    }
+  };
+
+  const handleCopyCode = () => {
+    if (createdInvite) {
+      navigator.clipboard.writeText(createdInvite.code);
+      toast({ title: "Copied!", description: "Invite code copied to clipboard." });
+    }
+  };
+
+  const handleCopyLink = () => {
+    if (createdInvite) {
+      navigator.clipboard.writeText(createdInvite.link);
+      toast({ title: "Copied!", description: "Invite link copied to clipboard." });
+    }
+  };
+
+  const handleResendEmail = async () => {
+    if (!createdInvite) return;
+    
+    setIsSendingEmail(true);
+    const emailResult = await sendTeamInviteEmail(
+      createdInvite.email,
+      profile?.display_name || "An admin",
+      organization?.name || "the organization",
+      createdInvite.link,
+      inviteOrgRole
+    );
+    setIsSendingEmail(false);
+
+    if (emailResult.success) {
+      toast({ title: "Email sent!", description: `Invitation sent to ${createdInvite.email}.` });
+    } else {
+      toast({ title: "Failed to send", description: "Could not send email.", variant: "destructive" });
     }
   };
 
@@ -235,62 +351,167 @@ export function OrganizationMemberManager() {
               />
             </div>
             {isOrgAdmin && (
-              <Dialog open={showInviteDialog} onOpenChange={setShowInviteDialog}>
+              <Dialog open={showInviteDialog} onOpenChange={(open) => {
+                if (!open) handleCloseDialog();
+                else setShowInviteDialog(true);
+              }}>
                 <DialogTrigger asChild>
                   <Button className="gap-2">
                     <UserPlus className="w-4 h-4" />
                     Add Member
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Add Organization Member</DialogTitle>
-                    <DialogDescription>
-                      Add a user to {organization.name}. They must already have an account.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="invite-email">Email Address</Label>
-                      <Input
-                        id="invite-email"
-                        type="email"
-                        placeholder="user@example.com"
-                        value={inviteEmail}
-                        onChange={(e) => setInviteEmail(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="invite-role">Organization Role</Label>
-                      <Select
-                        value={inviteOrgRole}
-                        onValueChange={(v) => setInviteOrgRole(v as "admin" | "member")}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="member">Member</SelectItem>
-                          <SelectItem value="admin">Admin (can manage org members)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setShowInviteDialog(false)}>
-                      Cancel
-                    </Button>
-                    <Button onClick={handleInvite} disabled={isInviting}>
-                      {isInviting ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Adding...
-                        </>
-                      ) : (
-                        "Add Member"
-                      )}
-                    </Button>
-                  </DialogFooter>
+                <DialogContent className="sm:max-w-md">
+                  {dialogStep === "form" && (
+                    <>
+                      <DialogHeader>
+                        <DialogTitle>Add Organization Member</DialogTitle>
+                        <DialogDescription>
+                          Add a user to {organization.name}. If they don't have an account, you can create a personal invite.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="invite-email">Email Address</Label>
+                          <Input
+                            id="invite-email"
+                            type="email"
+                            placeholder="user@example.com"
+                            value={inviteEmail}
+                            onChange={(e) => setInviteEmail(e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="invite-role">Organization Role</Label>
+                          <Select
+                            value={inviteOrgRole}
+                            onValueChange={(v) => setInviteOrgRole(v as "admin" | "member")}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="member">Member</SelectItem>
+                              <SelectItem value="admin">Admin (can manage org members)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button variant="outline" onClick={handleCloseDialog}>
+                          Cancel
+                        </Button>
+                        <Button onClick={handleInvite} disabled={isInviting}>
+                          {isInviting ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Checking...
+                            </>
+                          ) : (
+                            "Add Member"
+                          )}
+                        </Button>
+                      </DialogFooter>
+                    </>
+                  )}
+
+                  {dialogStep === "user-not-found" && (
+                    <>
+                      <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                          <AlertCircle className="w-5 h-5 text-amber-500" />
+                          User Not Found
+                        </DialogTitle>
+                        <DialogDescription>
+                          No account exists for <strong>{inviteEmail}</strong>. Would you like to create a personal invite?
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-3 py-2">
+                        <p className="text-sm text-muted-foreground">The invite will:</p>
+                        <ul className="text-sm space-y-1 ml-4 list-disc text-muted-foreground">
+                          <li>Be reserved for this email address</li>
+                          <li>Expire in 7 days</li>
+                          <li>Grant them <strong className="text-foreground">{inviteOrgRole === "admin" ? "Admin" : "Member"}</strong> role when they sign up</li>
+                        </ul>
+                      </div>
+                      <DialogFooter className="flex-col gap-2 sm:flex-row">
+                        <Button variant="outline" onClick={() => setDialogStep("form")}>
+                          Back
+                        </Button>
+                        <Button 
+                          variant="secondary" 
+                          onClick={() => handleCreateInvite(false)} 
+                          disabled={isInviting}
+                          className="gap-2"
+                        >
+                          {isInviting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Link className="w-4 h-4" />}
+                          Create & Copy Link
+                        </Button>
+                        <Button 
+                          onClick={() => handleCreateInvite(true)} 
+                          disabled={isInviting}
+                          className="gap-2"
+                        >
+                          {isInviting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+                          Create & Send Email
+                        </Button>
+                      </DialogFooter>
+                    </>
+                  )}
+
+                  {dialogStep === "invite-created" && createdInvite && (
+                    <>
+                      <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                          <CheckCircle className="w-5 h-5 text-green-500" />
+                          Invite Created
+                        </DialogTitle>
+                        <DialogDescription>
+                          Personal invite for <strong>{createdInvite.email}</strong> is ready to share.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 py-2">
+                        <div className="space-y-2">
+                          <Label className="text-xs text-muted-foreground">Invite Code</Label>
+                          <div className="flex items-center gap-2">
+                            <code className="flex-1 bg-muted px-3 py-2 rounded font-mono text-sm">
+                              {createdInvite.code}
+                            </code>
+                            <Button variant="outline" size="icon" onClick={handleCopyCode}>
+                              <Copy className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-xs text-muted-foreground">Invite Link</Label>
+                          <div className="flex items-center gap-2">
+                            <Input 
+                              readOnly 
+                              value={createdInvite.link} 
+                              className="text-xs font-mono"
+                            />
+                            <Button variant="outline" size="icon" onClick={handleCopyLink}>
+                              <Copy className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                      <DialogFooter className="flex-col gap-2 sm:flex-row">
+                        <Button 
+                          variant="outline" 
+                          onClick={handleResendEmail}
+                          disabled={isSendingEmail}
+                          className="gap-2"
+                        >
+                          {isSendingEmail ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+                          Send Email
+                        </Button>
+                        <Button onClick={handleCloseDialog}>
+                          Done
+                        </Button>
+                      </DialogFooter>
+                    </>
+                  )}
                 </DialogContent>
               </Dialog>
             )}

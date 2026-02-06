@@ -18,6 +18,7 @@ export interface OrganizationInvite {
   uses_count: number;
   is_active: boolean;
   created_at: string;
+  invited_email: string | null;
   team?: {
     name: string;
   };
@@ -74,6 +75,7 @@ export function useOrganizationInvites(organizationId: string | null) {
     appRole?: "supervisor" | "operator" | "viewer" | null;
     expiresInDays?: number;
     maxUses?: number | null;
+    invitedEmail?: string;
   }) => {
     if (!organizationId || !user) {
       return { error: new Error("Not authenticated or no organization") };
@@ -95,6 +97,7 @@ export function useOrganizationInvites(organizationId: string | null) {
         app_role: options.appRole || null,
         expires_at: expiresAt,
         max_uses: options.maxUses || null,
+        invited_email: options.invitedEmail || null,
       })
       .select()
       .single();

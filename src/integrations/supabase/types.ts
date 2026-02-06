@@ -1717,6 +1717,7 @@ export type Database = {
           expires_at: string | null
           id: string
           invite_code: string
+          invited_email: string | null
           is_active: boolean
           max_uses: number | null
           org_role: string
@@ -1732,6 +1733,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           invite_code: string
+          invited_email?: string | null
           is_active?: boolean
           max_uses?: number | null
           org_role?: string
@@ -1747,6 +1749,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           invite_code?: string
+          invited_email?: string | null
           is_active?: boolean
           max_uses?: number | null
           org_role?: string

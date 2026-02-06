@@ -104,7 +104,7 @@ export function useOrganizationMembers(organizationId: string | null) {
   }, [fetchMembers]);
 
   const addMember = async (email: string, orgRole: "admin" | "member" = "member") => {
-    if (!organizationId) return { error: new Error("No organization selected") };
+    if (!organizationId || !user) return { error: new Error("No organization selected") };
 
     // Find user by email
     const { data: profile, error: profileError } = await supabase
@@ -113,8 +113,13 @@ export function useOrganizationMembers(organizationId: string | null) {
       .eq("email", email)
       .maybeSingle();
 
+    // User doesn't exist - return special response to allow creating an invite
     if (profileError || !profile) {
-      return { error: new Error("User not found with that email. They must sign up first.") };
+      return { 
+        error: null, 
+        userNotFound: true,
+        email: email,
+      };
     }
 
     // Check if already a member
@@ -141,7 +146,56 @@ export function useOrganizationMembers(organizationId: string | null) {
     if (!error) {
       await fetchMembers();
     }
-    return { error };
+    return { error, userNotFound: false };
+  };
+
+  const createPersonalInvite = async (
+    email: string, 
+    orgRole: "admin" | "member" = "member",
+    appRole?: AppRole
+  ) => {
+    if (!organizationId || !user) return { error: new Error("No organization selected") };
+
+    // Generate invite code
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let inviteCode = "";
+    for (let i = 0; i < 8; i++) {
+      inviteCode += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+
+    // 7 days expiry
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+    const { data, error } = await supabase
+      .from("organization_invites")
+      .insert({
+        organization_id: organizationId,
+        invite_code: inviteCode,
+        created_by: user.id,
+        org_role: orgRole,
+        app_role: appRole || null,
+        expires_at: expiresAt,
+        max_uses: 1,
+        invited_email: email.toLowerCase(),
+      })
+      .select()
+      .single();
+
+    if (error) {
+      return { error };
+    }
+
+    const inviteLink = `${window.location.origin}/auth?invite=${inviteCode}`;
+    
+    return { 
+      error: null, 
+      inviteCreated: {
+        code: inviteCode,
+        link: inviteLink,
+        email: email,
+        id: data.id,
+      }
+    };
   };
 
   const updateMemberOrgRole = async (memberId: string, newRole: "admin" | "member") => {
@@ -219,6 +273,7 @@ export function useOrganizationMembers(organizationId: string | null) {
     loading,
     isOrgAdmin,
     addMember,
+    createPersonalInvite,
     updateMemberOrgRole,
     removeMember,
     assignAppRole,
