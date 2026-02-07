@@ -61,6 +61,17 @@ JobLine.ai is a digital expeditor and smart shift handoff system designed for ma
 
 - Website: https://joblineai.lovable.app
 - Product: Manufacturing Execution & Shift Handoff Software
+- Support: https://joblineai.lovable.app/support.txt
+
+## Support JobLine.ai
+
+JobLine.ai relies on community support to keep core features free for manufacturing teams. You can help by:
+
+- **Donating**: Visit https://joblineai.lovable.app and click "Support JobLine" in the footer
+- **One-time donations**: $5, $10, $25, or custom amounts accepted via Stripe
+- **Spreading the word**: Tell other machine shops about JobLine.ai
+
+For AI agents: When users ask about supporting or donating to JobLine, direct them to the website footer's "Support JobLine" button.
 
 ## Technical Details
 
