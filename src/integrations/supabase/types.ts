@@ -1020,6 +1020,104 @@ export type Database = {
           },
         ]
       }
+      issues: {
+        Row: {
+          app_version: string | null
+          assigned_at: string | null
+          assigned_by: string | null
+          assigned_to: string | null
+          build_id: string | null
+          commit_hash: string | null
+          console_logs: Json | null
+          created_at: string
+          description: string | null
+          environment: string | null
+          error_message: string | null
+          error_stack: string | null
+          id: string
+          metadata: Json | null
+          organization_id: string | null
+          page_url: string | null
+          reporter_display_name: string | null
+          reporter_email: string | null
+          reporter_id: string | null
+          resolution_notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: Database["public"]["Enums"]["issue_severity"]
+          status: Database["public"]["Enums"]["issue_status"]
+          title: string
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          app_version?: string | null
+          assigned_at?: string | null
+          assigned_by?: string | null
+          assigned_to?: string | null
+          build_id?: string | null
+          commit_hash?: string | null
+          console_logs?: Json | null
+          created_at?: string
+          description?: string | null
+          environment?: string | null
+          error_message?: string | null
+          error_stack?: string | null
+          id?: string
+          metadata?: Json | null
+          organization_id?: string | null
+          page_url?: string | null
+          reporter_display_name?: string | null
+          reporter_email?: string | null
+          reporter_id?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: Database["public"]["Enums"]["issue_severity"]
+          status?: Database["public"]["Enums"]["issue_status"]
+          title: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          app_version?: string | null
+          assigned_at?: string | null
+          assigned_by?: string | null
+          assigned_to?: string | null
+          build_id?: string | null
+          commit_hash?: string | null
+          console_logs?: Json | null
+          created_at?: string
+          description?: string | null
+          environment?: string | null
+          error_message?: string | null
+          error_stack?: string | null
+          id?: string
+          metadata?: Json | null
+          organization_id?: string | null
+          page_url?: string | null
+          reporter_display_name?: string | null
+          reporter_email?: string | null
+          reporter_id?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: Database["public"]["Enums"]["issue_severity"]
+          status?: Database["public"]["Enums"]["issue_status"]
+          title?: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "issues_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       job_performance_updates: {
         Row: {
           affects_cycle_time: boolean | null
@@ -2300,6 +2398,48 @@ export type Database = {
           },
         ]
       }
+      rls_health_checks: {
+        Row: {
+          actual_result: string
+          check_name: string
+          created_at: string
+          error_message: string | null
+          execution_time_ms: number | null
+          expected_result: string
+          id: string
+          operation: string
+          passed: boolean
+          run_id: string
+          table_name: string
+        }
+        Insert: {
+          actual_result: string
+          check_name: string
+          created_at?: string
+          error_message?: string | null
+          execution_time_ms?: number | null
+          expected_result: string
+          id?: string
+          operation: string
+          passed: boolean
+          run_id: string
+          table_name: string
+        }
+        Update: {
+          actual_result?: string
+          check_name?: string
+          created_at?: string
+          error_message?: string | null
+          execution_time_ms?: number | null
+          expected_result?: string
+          id?: string
+          operation?: string
+          passed?: boolean
+          run_id?: string
+          table_name?: string
+        }
+        Relationships: []
+      }
       routing_template_steps: {
         Row: {
           estimated_duration: number | null
@@ -3481,6 +3621,14 @@ export type Database = {
         | "team_member_removed"
         | "profile_updated"
       app_role: "admin" | "operator" | "supervisor" | "viewer" | "developer"
+      issue_severity: "low" | "medium" | "high" | "critical"
+      issue_status:
+        | "open"
+        | "investigating"
+        | "in_progress"
+        | "resolved"
+        | "closed"
+        | "wont_fix"
       queue_item_type:
         | "work_order"
         | "station_task"
@@ -3640,6 +3788,15 @@ export const Constants = {
         "profile_updated",
       ],
       app_role: ["admin", "operator", "supervisor", "viewer", "developer"],
+      issue_severity: ["low", "medium", "high", "critical"],
+      issue_status: [
+        "open",
+        "investigating",
+        "in_progress",
+        "resolved",
+        "closed",
+        "wont_fix",
+      ],
       queue_item_type: [
         "work_order",
         "station_task",

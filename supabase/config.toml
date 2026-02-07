@@ -5,3 +5,9 @@ verify_jwt = false
 
 [functions.social-agent]
 verify_jwt = false
+
+[functions.report-issue]
+verify_jwt = false
+
+[functions.rls-health]
+verify_jwt = false
