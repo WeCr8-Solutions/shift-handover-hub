@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTeams, useTeamMembers, Team } from "@/hooks/useTeams";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { useStations } from "@/hooks/useStations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +33,7 @@ import { InviteCodeGenerator } from "./InviteCodeGenerator";
 
 export function TeamManagement() {
   const { user } = useAuth();
+  const { organization } = useUserOrganization();
   const { teams, loading, createTeam, deleteTeam } = useTeams();
   const { toast } = useToast();
   
@@ -54,8 +56,17 @@ export function TeamManagement() {
       return;
     }
 
+    if (!organization?.id) {
+      toast({
+        title: "No organization",
+        description: "You must belong to an organization to create teams.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsCreating(true);
-    const { data, error } = await createTeam(newTeamName, newTeamDescription);
+    const { data, error } = await createTeam(newTeamName, newTeamDescription, organization.id);
     setIsCreating(false);
 
     if (error) {
