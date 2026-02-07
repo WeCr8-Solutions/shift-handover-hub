@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { ShiftHandoffDemo } from "@/components/landing/ShiftHandoffDemo";
 import { SupportJoblineModal } from "@/components/SupportJoblineModal";
 import { trackEvent } from "@/lib/analytics";
+import demoVideo from "@/assets/jobline-demo-video.mp4";
 import { 
   ArrowRight, 
   Zap, 
@@ -1121,33 +1122,18 @@ export default function Landing() {
               <X className="w-4 h-4" />
             </button>
             
-            {/* Video placeholder - replace with actual video embed */}
-            <div className="w-full h-full bg-gradient-to-br from-secondary to-background flex flex-col items-center justify-center p-8">
-              <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mb-6 animate-pulse">
-                <Play className="w-10 h-10 text-primary ml-1" />
-              </div>
-              <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-2 text-center">
-                JobLine.ai Product Demo
-              </h3>
-              <p className="text-muted-foreground text-center text-sm sm:text-base max-w-md mb-6">
-                See how manufacturing teams are transforming their shift handoffs with real-time visibility and seamless communication.
-              </p>
-              <div className="flex flex-col sm:flex-row items-center gap-3">
-                <Badge variant="outline" className="text-xs">
-                  <Clock className="w-3 h-3 mr-1" />
-                  3 min watch
-                </Badge>
-                <Badge variant="outline" className="text-xs">
-                  <Factory className="w-3 h-3 mr-1" />
-                  Real use cases
-                </Badge>
-              </div>
-              
-              {/* Placeholder message */}
-              <p className="text-xs text-muted-foreground mt-8 text-center">
-                Video coming soon. Contact us for a live demo.
-              </p>
-            </div>
+            {/* Product Demo Video */}
+            <video 
+              src={demoVideo}
+              className="w-full h-full object-cover"
+              controls
+              autoPlay
+              playsInline
+              onPlay={() => trackEvent('demo_video_played', { source: 'modal' })}
+              onEnded={() => trackEvent('demo_video_completed', { source: 'modal' })}
+            >
+              Your browser does not support the video tag.
+            </video>
             
             {/* 
               To embed an actual video, replace the placeholder div above with:
