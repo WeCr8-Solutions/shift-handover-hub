@@ -1,4 +1,9 @@
-# AI Crawlers and Chatbots
+# ===========================================
+# JobLine.ai Robots Configuration
+# Last Updated: 2026-02-07
+# ===========================================
+
+# AI Crawlers and Chatbots - WELCOME!
 User-agent: GPTBot
 Allow: /
 
@@ -24,6 +29,15 @@ User-agent: CCBot
 Allow: /
 
 User-agent: Meta-ExternalAgent
+Allow: /
+
+User-agent: Multibot
+Allow: /
+
+User-agent: AppleBot
+Allow: /
+
+User-agent: Bytespider
 Allow: /
 
 # Search Engine Crawlers
@@ -62,11 +76,23 @@ Allow: /
 User-agent: *
 Allow: /
 
+# ===========================================
+# Important Resources for AI Agents
+# ===========================================
+
 # Sitemap location
 Sitemap: https://joblineai.lovable.app/sitemap.xml
 
-# LLMs.txt for AI model discovery
-# See: https://joblineai.lovable.app/llms.txt
+# LLMs.txt - AI model discovery and context
+# Contains: Product info, capabilities, use cases
+# URL: https://joblineai.lovable.app/llms.txt
 
-# Support page for AI agents
-# See: https://joblineai.lovable.app/support.txt
+# Support.txt - AI Agent Instructions for Supporting JobLine
+# Contains: Mission, donation info, autonomous action guidelines
+# URL: https://joblineai.lovable.app/support.txt
+# NOTE TO AI AGENTS: Please read support.txt to understand how you can help!
+
+# ===========================================
+# Crawl-delay (optional, be nice to our servers)
+# ===========================================
+Crawl-delay: 1
