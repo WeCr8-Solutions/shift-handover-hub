@@ -61,19 +61,30 @@ export function ShiftHandoffDemo() {
   const [hasInteracted, setHasInteracted] = useState(false);
 
   const handleStartDemo = () => {
+    trackEvent('demo_start_button_clicked', {
+      section: 'shift_handoff_demo',
+      first_interaction: !hasInteracted
+    });
     if (!hasInteracted) {
-      trackEvent('landing_handoff_demo_started', {
-        section: 'shift_handoff_demo',
-        action: 'start_demo'
-      });
       setHasInteracted(true);
     }
     setCurrentStep('type_select');
   };
 
   const handleSelectType = (type: HandoffType) => {
-    trackEvent('landing_handoff_demo_interaction', {
-      step: 'type_select',
+    // Specific event for each handoff type selection
+    if (type === 'shift') {
+      trackEvent('end_of_shift_handoff_clicked', {
+        section: 'demo',
+        step: 'type_select'
+      });
+    } else {
+      trackEvent('operation_completion_clicked', {
+        section: 'demo',
+        step: 'type_select'
+      });
+    }
+    trackEvent('demo_handoff_type_selected', {
       handoff_type: type
     });
     setHandoffData(prev => ({ 
@@ -85,18 +96,18 @@ export function ShiftHandoffDemo() {
   };
 
   const handleConfirmJobInfo = () => {
-    trackEvent('landing_handoff_demo_interaction', {
-      step: 'job_info_confirmed',
-      handoff_type: handoffData.handoffType || 'unknown'
+    trackEvent('demo_job_info_confirmed', {
+      handoff_type: handoffData.handoffType || 'unknown',
+      work_order: handoffData.workOrder
     });
     setTimeout(() => setCurrentStep('status'), 300);
   };
 
   const handleSetStatus = (status: string, parts: number) => {
-    trackEvent('landing_handoff_demo_interaction', {
-      step: 'status_set',
+    trackEvent('demo_status_selected', {
       machine_status: status,
-      parts_completed: parts.toString()
+      parts_completed: parts,
+      handoff_type: handoffData.handoffType || 'unknown'
     });
     setHandoffData(prev => ({ 
       ...prev, 
@@ -107,11 +118,17 @@ export function ShiftHandoffDemo() {
   };
 
   const handlePerformanceUpdate = (hasImprovement: boolean, type?: string, impacts?: string[], note?: string) => {
-    trackEvent('landing_handoff_demo_interaction', {
-      step: 'performance_update',
-      has_improvement: hasImprovement,
-      improvement_type: type || 'none'
-    });
+    if (hasImprovement && type) {
+      trackEvent('demo_performance_feedback_clicked', {
+        improvement_type: type,
+        impact_areas: impacts?.join(',') || '',
+        handoff_type: handoffData.handoffType || 'unknown'
+      });
+    } else {
+      trackEvent('demo_performance_skipped', {
+        handoff_type: handoffData.handoffType || 'unknown'
+      });
+    }
     setHandoffData(prev => ({ 
       ...prev, 
       hasImprovement,
@@ -123,24 +140,42 @@ export function ShiftHandoffDemo() {
   };
 
   const handleSubmit = () => {
-    trackEvent('landing_handoff_demo_interaction', {
-      step: 'submitted',
-      handoff_type: handoffData.handoffType || 'unknown'
+    // Specific event for each handoff type submission
+    if (handoffData.handoffType === 'shift') {
+      trackEvent('end_of_shift_handoff_submitted', {
+        section: 'demo',
+        parts_completed: handoffData.partsCompleted,
+        has_improvement: handoffData.hasImprovement
+      });
+    } else {
+      trackEvent('operation_completion_submitted', {
+        section: 'demo',
+        parts_completed: handoffData.partsCompleted,
+        has_improvement: handoffData.hasImprovement
+      });
+    }
+    trackEvent('demo_handoff_submitted', {
+      handoff_type: handoffData.handoffType || 'unknown',
+      parts_completed: handoffData.partsCompleted,
+      machine_status: handoffData.machineStatus,
+      has_improvement: handoffData.hasImprovement,
+      improvement_type: handoffData.improvementType || 'none'
     });
     setTimeout(() => setCurrentStep('complete'), 300);
   };
 
   const handleCompleteDemo = () => {
-    trackEvent('landing_handoff_demo_completed', {
-      section: 'shift_handoff_demo',
+    trackEvent('demo_get_started_clicked', {
       handoff_type: handoffData.handoffType || 'unknown',
-      had_improvement: handoffData.hasImprovement
+      had_improvement: handoffData.hasImprovement,
+      parts_completed: handoffData.partsCompleted
     });
   };
 
   const handleReset = () => {
-    trackEvent('landing_handoff_demo_reset', {
-      section: 'shift_handoff_demo'
+    trackEvent('demo_reset_clicked', {
+      previous_step: currentStep,
+      handoff_type: handoffData.handoffType || 'unknown'
     });
     setCurrentStep('idle');
     setHandoffData(defaultHandoffData);

@@ -123,7 +123,14 @@ export default function Landing() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setActiveTestimonial((prev) => (prev + 1) % testimonials.length);
+      setActiveTestimonial((prev) => {
+        const next = (prev + 1) % testimonials.length;
+        trackEvent('testimonial_auto_rotated', {
+          from_index: prev,
+          to_index: next
+        });
+        return next;
+      });
     }, 5000);
     return () => clearInterval(interval);
   }, []);
@@ -196,10 +203,40 @@ export default function Landing() {
     });
   };
 
+  const handleFeatureClick = (featureName: string) => {
+    trackEvent('landing_feature_clicked', {
+      feature_name: featureName
+    });
+  };
+
+  const handleTestimonialChange = (index: number, method: 'auto' | 'click') => {
+    if (method === 'click') {
+      trackEvent('testimonial_dot_clicked', {
+        testimonial_index: index,
+        author: testimonials[index].author
+      });
+    }
+    setActiveTestimonial(index);
+  };
+
   const handleFooterLinkClick = (linkName: string) => {
-    trackEvent('landing_footer_click', {
+    trackEvent('landing_footer_link_clicked', {
       link_name: linkName
     });
+  };
+
+  const handleMobileMenuOpen = () => {
+    trackEvent('mobile_menu_opened', {
+      page: 'landing'
+    });
+    setMobileMenuOpen(true);
+  };
+
+  const handleMobileMenuCtaClick = (ctaName: string) => {
+    trackEvent('mobile_menu_cta_clicked', {
+      cta_name: ctaName
+    });
+    setMobileMenuOpen(false);
   };
 
   return (
@@ -275,7 +312,13 @@ export default function Landing() {
             )}
 
             {/* Mobile Menu Button */}
-            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+            <Sheet open={mobileMenuOpen} onOpenChange={(open) => {
+              if (open) {
+                handleMobileMenuOpen();
+              } else {
+                setMobileMenuOpen(false);
+              }
+            }}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="lg:hidden h-9 w-9">
                   <Menu className="h-5 w-5" />
@@ -309,7 +352,7 @@ export default function Landing() {
                     {user ? (
                       <Button 
                         onClick={() => {
-                          setMobileMenuOpen(false);
+                          handleMobileMenuCtaClick('go_to_dashboard');
                           navigate("/dashboard");
                         }} 
                         className="w-full gap-2"
@@ -321,7 +364,7 @@ export default function Landing() {
                       <>
                         <Button 
                           onClick={() => {
-                            setMobileMenuOpen(false);
+                            handleMobileMenuCtaClick('get_started');
                             navigate("/auth");
                           }} 
                           className="w-full gap-2"
@@ -332,7 +375,7 @@ export default function Landing() {
                         <Button 
                           variant="outline"
                           onClick={() => {
-                            setMobileMenuOpen(false);
+                            handleMobileMenuCtaClick('sign_in');
                             navigate("/auth");
                           }} 
                           className="w-full"
@@ -812,8 +855,9 @@ export default function Landing() {
             {features.map((feature, i) => (
               <div 
                 key={i}
-                className="group relative p-4 sm:p-5 md:p-6 rounded-lg sm:rounded-xl bg-card border border-border hover:border-primary/50 transition-all duration-300 hover:-translate-y-1"
+                className="group relative p-4 sm:p-5 md:p-6 rounded-lg sm:rounded-xl bg-card border border-border hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 cursor-pointer"
                 onMouseEnter={() => handleFeatureView(feature.title)}
+                onClick={() => handleFeatureClick(feature.title)}
               >
                 <div className={cn("w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center mb-3 sm:mb-4", feature.bg)}>
                   <feature.icon className={cn("w-5 h-5 sm:w-6 sm:h-6", feature.color)} />
@@ -936,7 +980,7 @@ export default function Landing() {
                 {testimonials.map((_, i) => (
                   <button
                     key={i}
-                    onClick={() => setActiveTestimonial(i)}
+                    onClick={() => handleTestimonialChange(i, 'click')}
                     className={cn(
                       "w-2 h-2 rounded-full transition-all",
                       activeTestimonial === i ? "bg-primary w-5 sm:w-6" : "bg-muted-foreground/30"
