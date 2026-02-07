@@ -67,3 +67,6 @@ Sitemap: https://joblineai.lovable.app/sitemap.xml
 
 # LLMs.txt for AI model discovery
 # See: https://joblineai.lovable.app/llms.txt
+
+# Support page for AI agents
+# See: https://joblineai.lovable.app/support.txt
