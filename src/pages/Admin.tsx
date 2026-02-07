@@ -12,13 +12,15 @@ import { WorkOrderManagement } from "@/components/admin/WorkOrderManagement";
 import { WorkOrderHistory } from "@/components/admin/WorkOrderHistory";
 import { RoutingTemplateManagement } from "@/components/admin/RoutingTemplateManagement";
 import { PerformanceUpdatesReview } from "@/components/admin/PerformanceUpdatesReview";
+import { IssuesManagement } from "@/components/admin/IssuesManagement";
+import { RLSHealthCheck } from "@/components/admin/RLSHealthCheck";
 import { BulkUploadDialog } from "@/components/BulkUploadDialog";
 import { SeedTestDataButton } from "@/components/admin/SeedTestDataButton";
 import { TourTriggerButton } from "@/components/onboarding";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Shield, LayoutDashboard, Users, Wrench, Building2, Activity, FileSpreadsheet, Package, Route, Lightbulb, History } from "lucide-react";
+import { Loader2, Shield, LayoutDashboard, Users, Wrench, Building2, Activity, FileSpreadsheet, Package, Route, Lightbulb, History, Bug, ShieldCheck } from "lucide-react";
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -126,6 +128,14 @@ export default function Admin() {
               <Activity className="w-4 h-4" />
               Activity
             </TabsTrigger>
+            <TabsTrigger value="issues" className="gap-2">
+              <Bug className="w-4 h-4" />
+              Issues
+            </TabsTrigger>
+            <TabsTrigger value="rls-health" className="gap-2">
+              <ShieldCheck className="w-4 h-4" />
+              RLS Health
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
@@ -166,6 +176,14 @@ export default function Admin() {
 
           <TabsContent value="activity">
             <ActivityLogs />
+          </TabsContent>
+
+          <TabsContent value="issues">
+            <IssuesManagement />
+          </TabsContent>
+
+          <TabsContent value="rls-health">
+            <RLSHealthCheck />
           </TabsContent>
         </Tabs>
       </main>
