@@ -6,6 +6,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { ShiftHandoffDemo } from "@/components/landing/ShiftHandoffDemo";
+import { SupportJoblineModal } from "@/components/SupportJoblineModal";
 import { trackEvent } from "@/lib/analytics";
 import { 
   ArrowRight, 
@@ -26,6 +27,7 @@ import {
   ArrowUpRight,
   Menu,
   X,
+  Heart,
   Lightbulb,
   CheckCircle2,
   Camera,
@@ -1071,6 +1073,17 @@ export default function Landing() {
               <a href="#" onClick={() => handleFooterLinkClick('privacy')} className="hover:text-foreground transition-colors">Privacy</a>
               <a href="#" onClick={() => handleFooterLinkClick('terms')} className="hover:text-foreground transition-colors">Terms</a>
               <a href="#" onClick={() => handleFooterLinkClick('contact')} className="hover:text-foreground transition-colors">Contact</a>
+              <SupportJoblineModal 
+                trigger={
+                  <button 
+                    onClick={() => handleFooterLinkClick('support_jobline')}
+                    className="flex items-center gap-1.5 hover:text-foreground transition-colors"
+                  >
+                    <Heart className="w-3 h-3 text-red-500" />
+                    Support JobLine
+                  </button>
+                }
+              />
             </div>
             
             <div className="flex flex-col items-center gap-2 text-center">
