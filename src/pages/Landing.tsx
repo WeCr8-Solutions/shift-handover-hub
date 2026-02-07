@@ -233,6 +233,18 @@ export default function Landing() {
                 </a>
               )
             ))}
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                trackEvent('landing_cta_click', { cta_name: 'try_digital_handoff', location: 'nav_header' });
+                document.querySelector('#handoff-demo')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="gap-1.5 border-primary/50 text-primary hover:bg-primary/10"
+            >
+              <Zap className="w-3.5 h-3.5" />
+              Try Digital Handoff
+            </Button>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
@@ -382,11 +394,14 @@ export default function Landing() {
               <Button 
                 size="lg" 
                 variant="outline" 
-                onClick={handleDemoModalOpen}
-                className="gap-2 text-sm sm:text-base px-6 sm:px-8 h-10 sm:h-12 w-full sm:w-auto"
+                onClick={() => {
+                  handleCtaClick('try_digital_handoff', 'hero_section');
+                  document.querySelector('#handoff-demo')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="gap-2 text-sm sm:text-base px-6 sm:px-8 h-10 sm:h-12 w-full sm:w-auto border-primary/50 text-primary hover:bg-primary/10"
               >
-                <Play className="w-4 h-4 sm:w-5 sm:h-5" />
-                Watch Demo
+                <Zap className="w-4 h-4 sm:w-5 sm:h-5" />
+                Try Digital Handoff
               </Button>
             </div>
 
