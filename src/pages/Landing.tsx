@@ -6,6 +6,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { ShiftHandoffDemo } from "@/components/landing/ShiftHandoffDemo";
+import { trackEvent } from "@/lib/analytics";
 import { 
   ArrowRight, 
   Zap, 
@@ -127,7 +128,37 @@ export default function Landing() {
     return () => clearInterval(interval);
   }, []);
 
-  const handleNavClick = (href: string, isRoute?: boolean) => {
+  // Track scroll depth on landing page
+  useEffect(() => {
+    let maxScrollDepth = 0;
+    const sections = ['hero', 'features', 'how-it-works', 'testimonials', 'cta'];
+    
+    const handleScroll = () => {
+      const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const scrollPercent = Math.round((window.scrollY / scrollHeight) * 100);
+      
+      if (scrollPercent > maxScrollDepth) {
+        maxScrollDepth = scrollPercent;
+        
+        // Track milestone scroll depths
+        if ([25, 50, 75, 100].includes(maxScrollDepth)) {
+          trackEvent('landing_scroll_depth', { 
+            depth_percent: maxScrollDepth,
+            page: 'landing'
+          });
+        }
+      }
+    };
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const handleNavClick = (href: string, isRoute?: boolean, label?: string) => {
+    trackEvent('landing_nav_click', {
+      nav_item: label || href,
+      is_route: isRoute || false
+    });
     setMobileMenuOpen(false);
     if (isRoute) {
       navigate(href);
@@ -138,6 +169,37 @@ export default function Landing() {
       const element = document.querySelector(href);
       element?.scrollIntoView({ behavior: 'smooth' });
     }, 100);
+  };
+
+  const handleCtaClick = (ctaName: string, location: string) => {
+    trackEvent('landing_cta_click', {
+      cta_name: ctaName,
+      location: location
+    });
+  };
+
+  const handleDemoModalOpen = () => {
+    trackEvent('landing_demo_modal_opened', {
+      source: 'hero_section'
+    });
+    setDemoModalOpen(true);
+  };
+
+  const handleDemoModalClose = () => {
+    trackEvent('landing_demo_modal_closed', {});
+    setDemoModalOpen(false);
+  };
+
+  const handleFeatureView = (featureName: string) => {
+    trackEvent('landing_feature_hover', {
+      feature_name: featureName
+    });
+  };
+
+  const handleFooterLinkClick = (linkName: string) => {
+    trackEvent('landing_footer_click', {
+      link_name: linkName
+    });
   };
 
   return (
@@ -155,7 +217,7 @@ export default function Landing() {
               link.isRoute ? (
                 <button
                   key={link.href}
-                  onClick={() => navigate(link.href)}
+                  onClick={() => handleNavClick(link.href, link.isRoute, link.label)}
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {link.label}
@@ -164,6 +226,7 @@ export default function Landing() {
                 <a 
                   key={link.href}
                   href={link.href} 
+                  onClick={() => trackEvent('landing_nav_click', { nav_item: link.label, is_route: false })}
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {link.label}
@@ -174,16 +237,25 @@ export default function Landing() {
 
           <div className="flex items-center gap-2 sm:gap-3">
             {user ? (
-              <Button onClick={() => navigate("/dashboard")} size="sm" className="gap-1.5 sm:gap-2 text-xs sm:text-sm">
+              <Button onClick={() => {
+                handleCtaClick('go_to_dashboard', 'nav_header');
+                navigate("/dashboard");
+              }} size="sm" className="gap-1.5 sm:gap-2 text-xs sm:text-sm">
                 <span className="hidden xs:inline">Go to </span>Dashboard
                 <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </Button>
             ) : (
               <>
-                <Button variant="ghost" onClick={() => navigate("/auth")} size="sm" className="hidden sm:flex text-xs sm:text-sm">
+                <Button variant="ghost" onClick={() => {
+                  handleCtaClick('sign_in', 'nav_header');
+                  navigate("/auth");
+                }} size="sm" className="hidden sm:flex text-xs sm:text-sm">
                   Sign In
                 </Button>
-                <Button onClick={() => navigate("/auth")} size="sm" className="gap-1.5 sm:gap-2 text-xs sm:text-sm">
+                <Button onClick={() => {
+                  handleCtaClick('get_started', 'nav_header');
+                  navigate("/auth");
+                }} size="sm" className="gap-1.5 sm:gap-2 text-xs sm:text-sm">
                   <span className="hidden xs:inline">Get </span>Started
                   <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </Button>
@@ -300,14 +372,17 @@ export default function Landing() {
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-8 sm:mb-12">
-              <Button size="lg" onClick={() => navigate("/auth")} className="gap-2 text-sm sm:text-base px-6 sm:px-8 h-10 sm:h-12 w-full sm:w-auto">
+              <Button size="lg" onClick={() => {
+                handleCtaClick('start_free_trial', 'hero_section');
+                navigate("/auth");
+              }} className="gap-2 text-sm sm:text-base px-6 sm:px-8 h-10 sm:h-12 w-full sm:w-auto">
                 Start Free Trial
                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
               </Button>
               <Button 
                 size="lg" 
                 variant="outline" 
-                onClick={() => setDemoModalOpen(true)}
+                onClick={handleDemoModalOpen}
                 className="gap-2 text-sm sm:text-base px-6 sm:px-8 h-10 sm:h-12 w-full sm:w-auto"
               >
                 <Play className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -714,6 +789,7 @@ export default function Landing() {
               <div 
                 key={i}
                 className="group relative p-4 sm:p-5 md:p-6 rounded-lg sm:rounded-xl bg-card border border-border hover:border-primary/50 transition-all duration-300 hover:-translate-y-1"
+                onMouseEnter={() => handleFeatureView(feature.title)}
               >
                 <div className={cn("w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center mb-3 sm:mb-4", feature.bg)}>
                   <feature.icon className={cn("w-5 h-5 sm:w-6 sm:h-6", feature.color)} />
@@ -896,11 +972,16 @@ export default function Landing() {
                 Start your free trial today—no credit card required.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
-                <Button size="lg" onClick={() => navigate("/auth")} className="gap-2 text-sm sm:text-base px-6 sm:px-8 h-10 sm:h-12 w-full sm:w-auto">
+                <Button size="lg" onClick={() => {
+                  handleCtaClick('start_free_trial', 'bottom_cta_section');
+                  navigate("/auth");
+                }} className="gap-2 text-sm sm:text-base px-6 sm:px-8 h-10 sm:h-12 w-full sm:w-auto">
                   Start Free Trial
                   <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                 </Button>
-                <Button size="lg" variant="outline" className="gap-2 text-sm sm:text-base px-6 sm:px-8 h-10 sm:h-12 w-full sm:w-auto">
+                <Button size="lg" variant="outline" onClick={() => {
+                  handleCtaClick('schedule_demo', 'bottom_cta_section');
+                }} className="gap-2 text-sm sm:text-base px-6 sm:px-8 h-10 sm:h-12 w-full sm:w-auto">
                   Schedule Demo
                   <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5" />
                 </Button>
@@ -919,9 +1000,9 @@ export default function Landing() {
             </div>
             
             <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs sm:text-sm text-muted-foreground">
-              <a href="#" className="hover:text-foreground transition-colors">Privacy</a>
-              <a href="#" className="hover:text-foreground transition-colors">Terms</a>
-              <a href="#" className="hover:text-foreground transition-colors">Contact</a>
+              <a href="#" onClick={() => handleFooterLinkClick('privacy')} className="hover:text-foreground transition-colors">Privacy</a>
+              <a href="#" onClick={() => handleFooterLinkClick('terms')} className="hover:text-foreground transition-colors">Terms</a>
+              <a href="#" onClick={() => handleFooterLinkClick('contact')} className="hover:text-foreground transition-colors">Contact</a>
             </div>
             
             <div className="flex flex-col items-center gap-2 text-center">
@@ -945,12 +1026,15 @@ export default function Landing() {
       </footer>
 
       {/* Demo Video Modal */}
-      <Dialog open={demoModalOpen} onOpenChange={setDemoModalOpen}>
+      <Dialog open={demoModalOpen} onOpenChange={(open) => {
+        if (!open) handleDemoModalClose();
+        else setDemoModalOpen(true);
+      }}>
         <DialogContent className="sm:max-w-4xl p-0 bg-black border-border overflow-hidden">
           <div className="relative w-full aspect-video">
             {/* Close button overlay */}
             <button
-              onClick={() => setDemoModalOpen(false)}
+              onClick={handleDemoModalClose}
               className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center text-white transition-colors"
             >
               <X className="w-4 h-4" />
