@@ -164,7 +164,7 @@ export function ShiftHandoffDemo() {
   const steps = getSteps();
 
   return (
-    <section className="py-12 sm:py-16 md:py-20 bg-gradient-to-b from-background to-secondary/20">
+    <section id="handoff-demo" className="py-12 sm:py-16 md:py-20 bg-gradient-to-b from-background to-secondary/20 scroll-mt-20">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12">
           <Badge variant="outline" className="mb-3 sm:mb-4 text-xs sm:text-sm border-primary/30 bg-primary/5">
