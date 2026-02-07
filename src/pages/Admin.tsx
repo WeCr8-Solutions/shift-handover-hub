@@ -14,13 +14,14 @@ import { RoutingTemplateManagement } from "@/components/admin/RoutingTemplateMan
 import { PerformanceUpdatesReview } from "@/components/admin/PerformanceUpdatesReview";
 import { IssuesManagement } from "@/components/admin/IssuesManagement";
 import { RLSHealthCheck } from "@/components/admin/RLSHealthCheck";
+import { DevIssueQueue } from "@/components/admin/DevIssueQueue";
 import { BulkUploadDialog } from "@/components/BulkUploadDialog";
 import { SeedTestDataButton } from "@/components/admin/SeedTestDataButton";
 import { TourTriggerButton } from "@/components/onboarding";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Shield, LayoutDashboard, Users, Wrench, Building2, Activity, FileSpreadsheet, Package, Route, Lightbulb, History, Bug, ShieldCheck } from "lucide-react";
+import { Loader2, Shield, LayoutDashboard, Users, Wrench, Building2, Activity, FileSpreadsheet, Package, Route, Lightbulb, History, Bug, ShieldCheck, ListTodo } from "lucide-react";
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -132,6 +133,10 @@ export default function Admin() {
               <Bug className="w-4 h-4" />
               Issues
             </TabsTrigger>
+            <TabsTrigger value="dev-queue" className="gap-2">
+              <ListTodo className="w-4 h-4" />
+              Dev Queue
+            </TabsTrigger>
             <TabsTrigger value="rls-health" className="gap-2">
               <ShieldCheck className="w-4 h-4" />
               RLS Health
@@ -180,6 +185,10 @@ export default function Admin() {
 
           <TabsContent value="issues">
             <IssuesManagement />
+          </TabsContent>
+
+          <TabsContent value="dev-queue">
+            <DevIssueQueue />
           </TabsContent>
 
           <TabsContent value="rls-health">
