@@ -51,8 +51,13 @@ export function useTeams() {
     fetchTeams();
   }, [fetchTeams]);
 
-  const createTeam = async (name: string, description?: string) => {
+  const createTeam = async (name: string, description?: string, organizationId?: string) => {
     if (!user) return { error: new Error("Not authenticated") };
+
+    // Organization ID is required for RLS compliance
+    if (!organizationId) {
+      return { error: new Error("Organization required to create a team") };
+    }
 
     // First create the team
     const { data: team, error: teamError } = await supabase
@@ -61,6 +66,7 @@ export function useTeams() {
         name,
         description,
         created_by: user.id,
+        organization_id: organizationId,
       })
       .select()
       .single();
