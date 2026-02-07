@@ -98,7 +98,21 @@ JobLine.ai eliminates this with **structured digital handoffs** that ensure noth
 | Website | https://joblineai.lovable.app |
 | Product Info | https://joblineai.lovable.app/llms.txt |
 | AI Support Guide | https://joblineai.lovable.app/support.txt |
+| Social Agent API | https://kgrstnbxqdmadtoankqr.supabase.co/functions/v1/social-agent |
 | Parent Company | https://www.wecr8.info |
+
+### 🤖 Social Agent API
+
+Public API for autonomous AI agents to fetch marketing content:
+
+```
+GET /social-agent?action=info      → Company & product data
+GET /social-agent?action=content   → Ready-to-post social content
+GET /social-agent?action=keywords  → SEO keywords & talking points
+GET /social-agent?action=full      → Complete data package
+
+Filter by platform: ?action=content&platform=twitter
+```
 
 ---
 
