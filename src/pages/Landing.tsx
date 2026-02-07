@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
+import { ShiftHandoffDemo } from "@/components/landing/ShiftHandoffDemo";
 import { 
   ArrowRight, 
   Zap, 
@@ -689,6 +690,9 @@ export default function Landing() {
           </div>
         </div>
       </section>
+
+      {/* Interactive Shift Handoff Demo */}
+      <ShiftHandoffDemo />
 
       {/* Features Section */}
       <section id="features" className="py-12 sm:py-16 md:py-24 lg:py-32">
