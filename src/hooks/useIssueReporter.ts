@@ -149,26 +149,36 @@ export function useIssueReporter() {
       // Get the latest error if any
       const latestError = errorsRef.current[errorsRef.current.length - 1];
 
-      const payload = {
-        title: report.title,
-        description: report.description,
-        severity: report.severity || "medium",
-        error_message: latestError?.message,
-        error_stack: latestError?.stack,
-        console_logs: report.includeConsoleLogs !== false ? logsRef.current.slice(-50) : [],
-        page_url: report.includePage !== false ? window.location.href : undefined,
-        metadata: {
-          ...PRODUCTION_CONTEXT,
-          screen_width: window.innerWidth,
-          screen_height: window.innerHeight,
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-          language: navigator.language,
-          recent_errors_count: errorsRef.current.length,
-        },
+      // Build metadata for the database function
+      const metadata = {
+        ...PRODUCTION_CONTEXT,
+        screen_width: window.innerWidth,
+        screen_height: window.innerHeight,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        language: navigator.language,
+        user_agent: navigator.userAgent,
+        recent_errors_count: errorsRef.current.length,
       };
 
-      const { data, error } = await supabase.functions.invoke("report-issue", {
-        body: payload,
+      // Use direct database function call (much faster than Edge Function)
+      const consoleLogs = report.includeConsoleLogs !== false 
+        ? logsRef.current.slice(-50).map(log => ({
+            level: log.level,
+            message: log.message,
+            timestamp: log.timestamp,
+            stack: log.stack || null
+          }))
+        : [];
+
+      const { data: issueId, error } = await supabase.rpc("report_issue", {
+        _title: report.title,
+        _description: report.description || null,
+        _severity: report.severity || "medium",
+        _error_message: latestError?.message || null,
+        _error_stack: latestError?.stack || null,
+        _console_logs: consoleLogs,
+        _page_url: report.includePage !== false ? window.location.href : null,
+        _metadata: metadata,
       });
 
       if (error) {
@@ -180,7 +190,7 @@ export function useIssueReporter() {
         description: "Thank you! Our team has been notified.",
       });
 
-      return { success: true, issue_id: data.issue_id };
+      return { success: true, issue_id: issueId };
     } catch (error) {
       console.error("Failed to report issue:", error);
       toast({

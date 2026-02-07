@@ -562,6 +562,65 @@ export type Database = {
           },
         ]
       }
+      dev_issue_queue: {
+        Row: {
+          assigned_developer_id: string | null
+          assigned_developer_name: string | null
+          completed_at: string | null
+          created_at: string | null
+          estimated_effort: string | null
+          id: string
+          issue_id: string
+          notes: string | null
+          priority: number
+          queue_position: number
+          started_at: string | null
+          status: string
+          time_spent_minutes: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_developer_id?: string | null
+          assigned_developer_name?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          estimated_effort?: string | null
+          id?: string
+          issue_id: string
+          notes?: string | null
+          priority?: number
+          queue_position: number
+          started_at?: string | null
+          status?: string
+          time_spent_minutes?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_developer_id?: string | null
+          assigned_developer_name?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          estimated_effort?: string | null
+          id?: string
+          issue_id?: string
+          notes?: string | null
+          priority?: number
+          queue_position?: number
+          started_at?: string | null
+          status?: string
+          time_spent_minutes?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dev_issue_queue_issue_id_fkey"
+            columns: ["issue_id"]
+            isOneToOne: true
+            referencedRelation: "issues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       downtime_events: {
         Row: {
           created_at: string | null
@@ -3601,6 +3660,19 @@ export type Database = {
       is_team_member: {
         Args: { _team_id: string; _user_id: string }
         Returns: boolean
+      }
+      report_issue: {
+        Args: {
+          _console_logs?: Json
+          _description?: string
+          _error_message?: string
+          _error_stack?: string
+          _metadata?: Json
+          _page_url?: string
+          _severity?: Database["public"]["Enums"]["issue_severity"]
+          _title: string
+        }
+        Returns: string
       }
     }
     Enums: {
