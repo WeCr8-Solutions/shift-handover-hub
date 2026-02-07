@@ -403,6 +403,15 @@ export default function Landing() {
                 <Zap className="w-4 h-4 sm:w-5 sm:h-5" />
                 Try Digital Handoff
               </Button>
+              <Button 
+                size="lg" 
+                variant="ghost" 
+                onClick={handleDemoModalOpen}
+                className="gap-2 text-sm sm:text-base px-6 sm:px-8 h-10 sm:h-12 w-full sm:w-auto"
+              >
+                <Play className="w-4 h-4 sm:w-5 sm:h-5" />
+                Watch Demo
+              </Button>
             </div>
 
             {/* Stats */}
