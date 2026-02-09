@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -33,11 +33,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Loader2, MoreHorizontal, Search, Package, Route, Trash2, AlertCircle, Plus } from "lucide-react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Loader2, MoreHorizontal, Search, Package, Route, Trash2, AlertCircle, Plus, Building2, FolderOpen, Wrench } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { WorkOrderRoutingEditor } from "@/components/routing/WorkOrderRoutingEditor";
 import { CreateWorkOrderDialog } from "@/components/queue/CreateWorkOrderDialog";
 import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useAllOrganizations } from "@/hooks/useAdminData";
 import { format } from "date-fns";
 import { Database } from "@/integrations/supabase/types";
 
@@ -58,6 +65,19 @@ interface QueueItem {
   organization_id: string | null;
   station?: { name: string; station_id: string } | null;
   team?: { name: string } | null;
+  organization?: { name: string } | null;
+}
+
+interface OrganizationBucket {
+  id: string;
+  name: string;
+  workOrders: QueueItem[];
+  stats: {
+    total: number;
+    inProgress: number;
+    onHold: number;
+    overdue: number;
+  };
 }
 
 interface WorkOrderManagementProps {
@@ -81,19 +101,24 @@ const PRIORITY_COLORS: Record<string, string> = {
   critical: "bg-red-500 text-white",
 };
 
+type ViewMode = "grouped" | "flat";
+
 export function WorkOrderManagement({ isAdmin }: WorkOrderManagementProps) {
   const { toast } = useToast();
   const { organization } = useUserOrganization();
+  const { organizations } = useAllOrganizations();
   const [workOrders, setWorkOrders] = useState<QueueItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [routingEditorItem, setRoutingEditorItem] = useState<QueueItem | null>(null);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>("grouped");
+  const [selectedOrg, setSelectedOrg] = useState<string>("all");
 
   useEffect(() => {
     fetchWorkOrders();
-  }, [statusFilter, organization?.id]);
+  }, [statusFilter]);
 
   const fetchWorkOrders = async () => {
     setLoading(true);
@@ -103,16 +128,12 @@ export function WorkOrderManagement({ isAdmin }: WorkOrderManagementProps) {
       .select(`
         *,
         station:stations(name, station_id),
-        team:teams(name)
+        team:teams(name),
+        organization:organizations(name)
       `)
       .eq("item_type", "work_order")
       .order("created_at", { ascending: false })
-      .limit(100);
-
-    // Filter by organization for SaaS RLS
-    if (organization?.id) {
-      query = query.eq("organization_id", organization.id);
-    }
+      .limit(200);
 
     if (statusFilter !== "all") {
       query = query.eq("status", statusFilter as QueueStatus);
@@ -132,6 +153,62 @@ export function WorkOrderManagement({ isAdmin }: WorkOrderManagementProps) {
     }
     setLoading(false);
   };
+
+  // Group work orders by organization
+  const organizationBuckets: OrganizationBucket[] = useMemo(() => {
+    const buckets: Map<string, OrganizationBucket> = new Map();
+    
+    // Add "Unassigned" bucket
+    buckets.set("unassigned", {
+      id: "unassigned",
+      name: "Unassigned Work Orders",
+      workOrders: [],
+      stats: { total: 0, inProgress: 0, onHold: 0, overdue: 0 },
+    });
+
+    // Add organization buckets
+    organizations.forEach(org => {
+      buckets.set(org.id, {
+        id: org.id,
+        name: org.name,
+        workOrders: [],
+        stats: { total: 0, inProgress: 0, onHold: 0, overdue: 0 },
+      });
+    });
+
+    // Filter and group work orders
+    workOrders.forEach(wo => {
+      // Apply search filter
+      const searchMatch = 
+        wo.work_order?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        wo.part_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        wo.title?.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      if (!searchMatch) return;
+
+      const orgId = wo.organization_id || "unassigned";
+      let bucket = buckets.get(orgId);
+      
+      // If org doesn't exist in our list, add to unassigned
+      if (!bucket) {
+        bucket = buckets.get("unassigned")!;
+      }
+      
+      bucket.workOrders.push(wo);
+      bucket.stats.total++;
+      if (wo.status === "in_progress") bucket.stats.inProgress++;
+      if (wo.status === "on_hold") bucket.stats.onHold++;
+      if (wo.due_date && new Date(wo.due_date) < new Date() && wo.status !== "completed") {
+        bucket.stats.overdue++;
+      }
+    });
+
+    // Filter and sort
+    return Array.from(buckets.values())
+      .filter(b => b.stats.total > 0)
+      .filter(b => selectedOrg === "all" || b.id === selectedOrg)
+      .sort((a, b) => b.stats.total - a.stats.total);
+  }, [workOrders, organizations, searchQuery, selectedOrg]);
 
   const handleDeleteWorkOrder = async (wo: QueueItem) => {
     if (!isAdmin) return;
@@ -177,11 +254,124 @@ export function WorkOrderManagement({ isAdmin }: WorkOrderManagementProps) {
     wo.title?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const stats = {
+  const globalStats = {
     total: workOrders.length,
     inProgress: workOrders.filter(wo => wo.status === "in_progress").length,
     onHold: workOrders.filter(wo => wo.status === "on_hold").length,
     overdue: workOrders.filter(wo => wo.due_date && new Date(wo.due_date) < new Date() && wo.status !== "completed").length,
+  };
+
+  const renderWorkOrderRow = (wo: QueueItem, showOrg: boolean = false) => {
+    const isOverdue = wo.due_date && new Date(wo.due_date) < new Date() && wo.status !== "completed";
+    return (
+      <TableRow key={wo.id}>
+        <TableCell>
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Package className="w-4 h-4 text-primary" />
+            </div>
+            <div>
+              <p className="font-medium">{wo.work_order || wo.title}</p>
+              <p className="text-xs text-muted-foreground">
+                {wo.quantity && `Qty: ${wo.quantity}`}
+              </p>
+            </div>
+          </div>
+        </TableCell>
+        <TableCell>
+          <div>
+            <p className="text-sm">{wo.part_number || "-"}</p>
+            {wo.operation_number && (
+              <p className="text-xs text-muted-foreground">Op: {wo.operation_number}</p>
+            )}
+          </div>
+        </TableCell>
+        {showOrg && (
+          <TableCell>
+            {wo.organization ? (
+              <Badge variant="outline" className="gap-1">
+                <Building2 className="w-3 h-3" />
+                {wo.organization.name}
+              </Badge>
+            ) : (
+              <span className="text-muted-foreground">-</span>
+            )}
+          </TableCell>
+        )}
+        <TableCell>
+          {wo.station ? (
+            <Badge variant="outline">{wo.station.name}</Badge>
+          ) : (
+            <span className="text-muted-foreground">Unassigned</span>
+          )}
+        </TableCell>
+        <TableCell>
+          <Select
+            value={wo.status}
+            onValueChange={(v) => handleStatusChange(wo, v as QueueStatus)}
+          >
+            <SelectTrigger className="w-[130px] h-8">
+              <Badge className={STATUS_COLORS[wo.status] || ""}>
+                {wo.status.replace("_", " ")}
+              </Badge>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="queued">Queued</SelectItem>
+              <SelectItem value="in_progress">In Progress</SelectItem>
+              <SelectItem value="on_hold">On Hold</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
+              <SelectItem value="cancelled">Cancelled</SelectItem>
+            </SelectContent>
+          </Select>
+        </TableCell>
+        <TableCell>
+          <Badge className={PRIORITY_COLORS[wo.priority] || ""}>
+            {wo.priority}
+          </Badge>
+        </TableCell>
+        <TableCell>
+          {wo.due_date ? (
+            <div className={`flex items-center gap-1 ${isOverdue ? "text-destructive" : ""}`}>
+              {isOverdue && <AlertCircle className="w-3 h-3" />}
+              <span className="text-sm">
+                {format(new Date(wo.due_date), "MMM d, yyyy")}
+              </span>
+            </div>
+          ) : (
+            <span className="text-muted-foreground">-</span>
+          )}
+        </TableCell>
+        <TableCell>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem 
+                onClick={() => setRoutingEditorItem(wo)}
+                className="gap-2"
+              >
+                <Route className="w-4 h-4" />
+                Edit Routing
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              {isAdmin && (
+                <DropdownMenuItem
+                  onClick={() => handleDeleteWorkOrder(wo)}
+                  className="gap-2 text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </TableCell>
+      </TableRow>
+    );
   };
 
   if (loading) {
@@ -198,24 +388,54 @@ export function WorkOrderManagement({ isAdmin }: WorkOrderManagementProps) {
     <>
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Package className="w-5 h-5" />
-                Work Order Management
-              </CardTitle>
-              <CardDescription>
-                {stats.total} work orders • {stats.inProgress} in progress • {stats.onHold} on hold
-                {stats.overdue > 0 && (
-                  <span className="text-destructive ml-2">• {stats.overdue} overdue</span>
-                )}
-              </CardDescription>
-            </div>
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Package className="w-5 h-5" />
+                  Work Order Management
+                </CardTitle>
+                <CardDescription>
+                  {globalStats.total} work orders • {globalStats.inProgress} in progress • {globalStats.onHold} on hold
+                  {globalStats.overdue > 0 && (
+                    <span className="text-destructive ml-2">• {globalStats.overdue} overdue</span>
+                  )}
+                </CardDescription>
+              </div>
               <Button onClick={() => setCreateDialogOpen(true)}>
                 <Plus className="w-4 h-4 mr-2" />
                 Add Work Order
               </Button>
+            </div>
+            
+            {/* Filters Row */}
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="relative flex-1 min-w-[200px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search work orders..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+              
+              <Select value={selectedOrg} onValueChange={setSelectedOrg}>
+                <SelectTrigger className="w-[200px]">
+                  <Building2 className="w-4 h-4 mr-2" />
+                  <SelectValue placeholder="Filter by org" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Organizations</SelectItem>
+                  <SelectItem value="unassigned">Unassigned</SelectItem>
+                  {organizations.map((org) => (
+                    <SelectItem key={org.id} value={org.id}>
+                      {org.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-[140px]">
                   <SelectValue placeholder="All Statuses" />
@@ -230,140 +450,109 @@ export function WorkOrderManagement({ isAdmin }: WorkOrderManagementProps) {
                   <SelectItem value="cancelled">Cancelled</SelectItem>
                 </SelectContent>
               </Select>
-              <div className="relative w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search work orders..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
+              
+              <Select value={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="grouped">
+                    <span className="flex items-center gap-2">
+                      <FolderOpen className="w-4 h-4" />
+                      Grouped
+                    </span>
+                  </SelectItem>
+                  <SelectItem value="flat">Flat View</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          {filteredWorkOrders.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <Package className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>No work orders found</p>
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Work Order</TableHead>
-                  <TableHead>Part / Operation</TableHead>
-                  <TableHead>Station</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Priority</TableHead>
-                  <TableHead>Due Date</TableHead>
-                  <TableHead className="w-12"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredWorkOrders.map((wo) => {
-                  const isOverdue = wo.due_date && new Date(wo.due_date) < new Date() && wo.status !== "completed";
-                  return (
-                    <TableRow key={wo.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                            <Package className="w-4 h-4 text-primary" />
-                          </div>
-                          <div>
-                            <p className="font-medium">{wo.work_order || wo.title}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {wo.quantity && `Qty: ${wo.quantity}`}
-                            </p>
-                          </div>
+          {viewMode === "grouped" ? (
+            organizationBuckets.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Package className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p>No work orders found</p>
+              </div>
+            ) : (
+              <Accordion type="multiple" defaultValue={organizationBuckets.map(b => b.id)} className="space-y-3">
+                {organizationBuckets.map((orgBucket) => (
+                  <AccordionItem key={orgBucket.id} value={orgBucket.id} className="border rounded-lg overflow-hidden">
+                    <AccordionTrigger className="hover:no-underline px-4 py-3 bg-muted/30">
+                      <div className="flex items-center gap-3 flex-1">
+                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <Building2 className="w-5 h-5 text-primary" />
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <p className="text-sm">{wo.part_number || "-"}</p>
-                          {wo.operation_number && (
-                            <p className="text-xs text-muted-foreground">Op: {wo.operation_number}</p>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {wo.station ? (
-                          <Badge variant="outline">{wo.station.name}</Badge>
-                        ) : (
-                          <span className="text-muted-foreground">Unassigned</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Select
-                          value={wo.status}
-                          onValueChange={(v) => handleStatusChange(wo, v as QueueStatus)}
-                        >
-                          <SelectTrigger className="w-[130px] h-8">
-                            <Badge className={STATUS_COLORS[wo.status] || ""}>
-                              {wo.status.replace("_", " ")}
-                            </Badge>
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="pending">Pending</SelectItem>
-                            <SelectItem value="queued">Queued</SelectItem>
-                            <SelectItem value="in_progress">In Progress</SelectItem>
-                            <SelectItem value="on_hold">On Hold</SelectItem>
-                            <SelectItem value="completed">Completed</SelectItem>
-                            <SelectItem value="cancelled">Cancelled</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={PRIORITY_COLORS[wo.priority] || ""}>
-                          {wo.priority}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {wo.due_date ? (
-                          <div className={`flex items-center gap-1 ${isOverdue ? "text-destructive" : ""}`}>
-                            {isOverdue && <AlertCircle className="w-3 h-3" />}
-                            <span className="text-sm">
-                              {format(new Date(wo.due_date), "MMM d, yyyy")}
-                            </span>
-                          </div>
-                        ) : (
-                          <span className="text-muted-foreground">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem 
-                              onClick={() => setRoutingEditorItem(wo)}
-                              className="gap-2"
-                            >
-                              <Route className="w-4 h-4" />
-                              Edit Routing
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            {isAdmin && (
-                              <DropdownMenuItem
-                                onClick={() => handleDeleteWorkOrder(wo)}
-                                className="gap-2 text-destructive focus:text-destructive"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                                Delete
-                              </DropdownMenuItem>
+                        <div className="text-left">
+                          <p className="font-semibold">{orgBucket.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {orgBucket.stats.total} work order(s) • {orgBucket.stats.inProgress} in progress
+                            {orgBucket.stats.overdue > 0 && (
+                              <span className="text-destructive ml-1">• {orgBucket.stats.overdue} overdue</span>
                             )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 mr-4">
+                        <Badge variant="secondary">
+                          <Package className="w-3 h-3 mr-1" />
+                          {orgBucket.stats.total}
+                        </Badge>
+                        {orgBucket.stats.onHold > 0 && (
+                          <Badge variant="destructive">
+                            {orgBucket.stats.onHold} on hold
+                          </Badge>
+                        )}
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="px-0 pb-0">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Work Order</TableHead>
+                            <TableHead>Part / Operation</TableHead>
+                            <TableHead>Station</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Priority</TableHead>
+                            <TableHead>Due Date</TableHead>
+                            <TableHead className="w-12"></TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {orgBucket.workOrders.map((wo) => renderWorkOrderRow(wo, false))}
+                        </TableBody>
+                      </Table>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            )
+          ) : (
+            filteredWorkOrders.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Package className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p>No work orders found</p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Work Order</TableHead>
+                    <TableHead>Part / Operation</TableHead>
+                    <TableHead>Organization</TableHead>
+                    <TableHead>Station</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Priority</TableHead>
+                    <TableHead>Due Date</TableHead>
+                    <TableHead className="w-12"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredWorkOrders.map((wo) => renderWorkOrderRow(wo, true))}
+                </TableBody>
+              </Table>
+            )
           )}
         </CardContent>
       </Card>

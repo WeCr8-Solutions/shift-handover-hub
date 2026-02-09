@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { StationWithTeam, useAllStations, useAllTeams } from "@/hooks/useAdminData";
+import { useState, useMemo } from "react";
+import { StationWithTeam, useAllStations, useAllTeams, useAllOrganizations } from "@/hooks/useAdminData";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,8 +36,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Switch } from "@/components/ui/switch";
-import { Loader2, MoreHorizontal, Plus, Search, Wrench, Trash2, Pencil } from "lucide-react";
+import { Loader2, MoreHorizontal, Plus, Search, Wrench, Trash2, Pencil, Building2, Users, FolderOpen, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const WORK_CENTER_TYPES = ["CNC Mill", "CNC Lathe", "Welding", "Water Jet", "Assembly", "Inspection", "Other"];
@@ -46,15 +57,38 @@ interface StationManagementProps {
   isAdmin: boolean;
 }
 
+interface StationWithOrg extends StationWithTeam {
+  organization_id?: string | null;
+  organization_name?: string | null;
+}
+
+interface OrganizationBucket {
+  id: string;
+  name: string;
+  teams: TeamBucket[];
+  stationCount: number;
+}
+
+interface TeamBucket {
+  id: string | null;
+  name: string;
+  stations: StationWithOrg[];
+}
+
+type ViewMode = "grouped" | "flat";
+
 export function StationManagement({ isAdmin }: StationManagementProps) {
   const { stations, loading, createStation, updateStation, deleteStation } = useAllStations();
   const { teams } = useAllTeams();
+  const { organizations } = useAllOrganizations();
   const { toast } = useToast();
   
   const [searchQuery, setSearchQuery] = useState("");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [editingStation, setEditingStation] = useState<StationWithTeam | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>("grouped");
+  const [selectedOrg, setSelectedOrg] = useState<string>("all");
 
   // Form state
   const [formData, setFormData] = useState({
@@ -76,7 +110,86 @@ export function StationManagement({ isAdmin }: StationManagementProps) {
     setEditingStation(null);
   };
 
-  const filteredStations = stations.filter(
+  // Enrich stations with org data via team -> org relationship
+  const enrichedStations: StationWithOrg[] = useMemo(() => {
+    return stations.map(station => {
+      // Find the team's organization
+      const team = teams.find(t => t.id === station.team_id);
+      // Teams table doesn't have org_id directly, we need to infer from organizations
+      // For now, try to match via organization stations
+      const org = organizations.find(o => {
+        // Check if any team in this org matches the station's team
+        return teams.some(t => t.id === station.team_id);
+      });
+      
+      return {
+        ...station,
+        organization_id: org?.id || null,
+        organization_name: org?.name || null,
+      };
+    });
+  }, [stations, teams, organizations]);
+
+  // Group stations by organization -> team hierarchy
+  const organizationBuckets: OrganizationBucket[] = useMemo(() => {
+    const buckets: Map<string, OrganizationBucket> = new Map();
+    
+    // Add "Unassigned" bucket for stations without org/team
+    buckets.set("unassigned", {
+      id: "unassigned",
+      name: "Unassigned Stations",
+      teams: [{ id: null, name: "Global (No Team)", stations: [] }],
+      stationCount: 0,
+    });
+
+    // Add organization buckets
+    organizations.forEach(org => {
+      buckets.set(org.id, {
+        id: org.id,
+        name: org.name,
+        teams: [],
+        stationCount: 0,
+      });
+    });
+
+    // Group stations
+    enrichedStations.forEach(station => {
+      const searchMatch = 
+        station.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        station.station_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        station.work_center.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      if (!searchMatch) return;
+
+      const orgId = station.team_id ? 
+        (organizations.find(o => teams.some(t => t.id === station.team_id))?.id || "unassigned") 
+        : "unassigned";
+      
+      const bucket = buckets.get(orgId) || buckets.get("unassigned")!;
+      
+      // Find or create team bucket
+      let teamBucket = bucket.teams.find(t => t.id === station.team_id);
+      if (!teamBucket) {
+        teamBucket = {
+          id: station.team_id,
+          name: station.team_name || "Global (No Team)",
+          stations: [],
+        };
+        bucket.teams.push(teamBucket);
+      }
+      
+      teamBucket.stations.push(station);
+      bucket.stationCount++;
+    });
+
+    // Filter and sort
+    return Array.from(buckets.values())
+      .filter(b => b.stationCount > 0)
+      .filter(b => selectedOrg === "all" || b.id === selectedOrg)
+      .sort((a, b) => b.stationCount - a.stationCount);
+  }, [enrichedStations, organizations, teams, searchQuery, selectedOrg]);
+
+  const filteredStations = enrichedStations.filter(
     (s) =>
       s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       s.station_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -256,25 +369,85 @@ export function StationManagement({ isAdmin }: StationManagementProps) {
     </div>
   );
 
+  const renderStationRow = (station: StationWithOrg, showTeam: boolean = true) => (
+    <TableRow key={station.id}>
+      <TableCell>
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+            <Wrench className="w-4 h-4 text-primary" />
+          </div>
+          <div>
+            <p className="font-medium">{station.name}</p>
+            <p className="text-xs text-muted-foreground">{station.station_id}</p>
+          </div>
+        </div>
+      </TableCell>
+      <TableCell>{station.work_center}</TableCell>
+      <TableCell>
+        <Badge variant="secondary">{station.work_center_type}</Badge>
+      </TableCell>
+      {showTeam && (
+        <TableCell>
+          {station.team_name ? (
+            <Badge variant="outline">{station.team_name}</Badge>
+          ) : (
+            <span className="text-muted-foreground">Global</span>
+          )}
+        </TableCell>
+      )}
+      <TableCell>
+        {isAdmin ? (
+          <Switch
+            checked={station.is_active}
+            onCheckedChange={() => handleToggleActive(station)}
+          />
+        ) : (
+          <Badge variant={station.is_active ? "default" : "secondary"}>
+            {station.is_active ? "Active" : "Inactive"}
+          </Badge>
+        )}
+      </TableCell>
+      {isAdmin && (
+        <TableCell>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => openEditDialog(station)} className="gap-2">
+                <Pencil className="w-4 h-4" />
+                Edit Station
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => handleDelete(station)}
+                className="gap-2 text-destructive focus:text-destructive"
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete Station
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </TableCell>
+      )}
+    </TableRow>
+  );
+
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Station Management</CardTitle>
-            <CardDescription>
-              {stations.length} station(s) • {stations.filter((s) => s.is_active).length} active
-            </CardDescription>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="relative w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search stations..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Wrench className="w-5 h-5" />
+                Station Management
+              </CardTitle>
+              <CardDescription>
+                {stations.length} station(s) • {stations.filter((s) => s.is_active).length} active • {organizations.length} org(s)
+              </CardDescription>
             </div>
             {isAdmin && (
               <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
@@ -304,86 +477,126 @@ export function StationManagement({ isAdmin }: StationManagementProps) {
               </Dialog>
             )}
           </div>
+          
+          {/* Filters Row */}
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative flex-1 min-w-[200px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search stations..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            
+            <Select value={selectedOrg} onValueChange={setSelectedOrg}>
+              <SelectTrigger className="w-[200px]">
+                <Building2 className="w-4 h-4 mr-2" />
+                <SelectValue placeholder="Filter by org" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Organizations</SelectItem>
+                <SelectItem value="unassigned">Unassigned</SelectItem>
+                {organizations.map((org) => (
+                  <SelectItem key={org.id} value={org.id}>
+                    {org.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            <Select value={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="grouped">
+                  <span className="flex items-center gap-2">
+                    <FolderOpen className="w-4 h-4" />
+                    Grouped
+                  </span>
+                </SelectItem>
+                <SelectItem value="flat">Flat View</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Station</TableHead>
-              <TableHead>Work Center</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Team</TableHead>
-              <TableHead>Status</TableHead>
-              {isAdmin && <TableHead className="w-12"></TableHead>}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredStations.map((station) => (
-              <TableRow key={station.id}>
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Wrench className="w-4 h-4 text-primary" />
+        {viewMode === "grouped" ? (
+          <Accordion type="multiple" defaultValue={organizationBuckets.map(b => b.id)} className="space-y-3">
+            {organizationBuckets.map((orgBucket) => (
+              <AccordionItem key={orgBucket.id} value={orgBucket.id} className="border rounded-lg overflow-hidden">
+                <AccordionTrigger className="hover:no-underline px-4 py-3 bg-muted/30">
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <Building2 className="w-5 h-5 text-primary" />
                     </div>
-                    <div>
-                      <p className="font-medium">{station.name}</p>
-                      <p className="text-xs text-muted-foreground">{station.station_id}</p>
+                    <div className="text-left">
+                      <p className="font-semibold">{orgBucket.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {orgBucket.stationCount} station(s) • {orgBucket.teams.length} team(s)
+                      </p>
                     </div>
                   </div>
-                </TableCell>
-                <TableCell>{station.work_center}</TableCell>
-                <TableCell>
-                  <Badge variant="secondary">{station.work_center_type}</Badge>
-                </TableCell>
-                <TableCell>
-                  {station.team_name ? (
-                    <Badge variant="outline">{station.team_name}</Badge>
-                  ) : (
-                    <span className="text-muted-foreground">Global</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  {isAdmin ? (
-                    <Switch
-                      checked={station.is_active}
-                      onCheckedChange={() => handleToggleActive(station)}
-                    />
-                  ) : (
-                    <Badge variant={station.is_active ? "default" : "secondary"}>
-                      {station.is_active ? "Active" : "Inactive"}
-                    </Badge>
-                  )}
-                </TableCell>
-                {isAdmin && (
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => openEditDialog(station)} className="gap-2">
-                          <Pencil className="w-4 h-4" />
-                          Edit Station
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onClick={() => handleDelete(station)}
-                          className="gap-2 text-destructive focus:text-destructive"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          Delete Station
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                )}
-              </TableRow>
+                  <Badge variant="secondary" className="mr-4">
+                    <Wrench className="w-3 h-3 mr-1" />
+                    {orgBucket.stationCount}
+                  </Badge>
+                </AccordionTrigger>
+                <AccordionContent className="px-4 pb-4">
+                  <div className="space-y-3 pt-2">
+                    {orgBucket.teams.map((teamBucket) => (
+                      <Collapsible key={teamBucket.id || "no-team"} defaultOpen className="border rounded-lg">
+                        <CollapsibleTrigger className="flex items-center gap-2 w-full px-3 py-2 hover:bg-muted/50 rounded-t-lg">
+                          <ChevronRight className="w-4 h-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-90" />
+                          <Users className="w-4 h-4 text-muted-foreground" />
+                          <span className="font-medium text-sm">{teamBucket.name}</span>
+                          <Badge variant="outline" className="ml-auto text-xs">
+                            {teamBucket.stations.length}
+                          </Badge>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Station</TableHead>
+                                <TableHead>Work Center</TableHead>
+                                <TableHead>Type</TableHead>
+                                <TableHead>Status</TableHead>
+                                {isAdmin && <TableHead className="w-12"></TableHead>}
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {teamBucket.stations.map((station) => renderStationRow(station, false))}
+                            </TableBody>
+                          </Table>
+                        </CollapsibleContent>
+                      </Collapsible>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
             ))}
-          </TableBody>
-        </Table>
+          </Accordion>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Station</TableHead>
+                <TableHead>Work Center</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Team</TableHead>
+                <TableHead>Status</TableHead>
+                {isAdmin && <TableHead className="w-12"></TableHead>}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredStations.map((station) => renderStationRow(station, true))}
+            </TableBody>
+          </Table>
+        )}
       </CardContent>
 
       {/* Edit Dialog */}
