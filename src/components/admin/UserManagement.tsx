@@ -35,7 +35,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, MoreHorizontal, Search, Shield, UserCog, Eye, Users as UsersIcon, Building2, ChevronDown, Crown, User } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Loader2, MoreHorizontal, Search, Shield, UserCog, Eye, Users as UsersIcon, Building2, Crown, User, ShieldCheck, ShieldAlert, Lock, Unlock, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Database } from "@/integrations/supabase/types";
 
@@ -54,6 +60,156 @@ const ORG_ROLE_CONFIG: Record<string, { label: string; icon: React.ReactNode }> 
   admin: { label: "Admin", icon: <Shield className="w-3 h-3" /> },
   member: { label: "Member", icon: <User className="w-3 h-3" /> },
 };
+
+// RLS Access Level computation
+interface RLSAccessLevel {
+  level: "platform_admin" | "org_owner" | "org_admin" | "supervisor" | "operator" | "viewer" | "no_access";
+  label: string;
+  description: string;
+  capabilities: string[];
+  icon: React.ReactNode;
+  variant: "destructive" | "default" | "secondary" | "outline";
+}
+
+function computeRLSAccessLevel(user: UserWithRole): RLSAccessLevel {
+  const hasPlatformAdmin = user.roles.includes("admin");
+  const hasDeveloper = user.roles.includes("developer");
+  const hasSupervisor = user.roles.includes("supervisor");
+  const orgRole = user.organization?.role;
+
+  // Platform Admin - highest level
+  if (hasPlatformAdmin) {
+    return {
+      level: "platform_admin",
+      label: "Platform Admin",
+      description: "Full platform access via is_dev_or_admin(). Can bypass most RLS policies.",
+      capabilities: [
+        "Access all organizations' data",
+        "Manage all users and roles",
+        "View RLS Health checks",
+        "Access Dev Settings",
+        "Delete any organization",
+      ],
+      icon: <ShieldAlert className="w-3 h-3" />,
+      variant: "destructive",
+    };
+  }
+
+  // Developer - testing access
+  if (hasDeveloper) {
+    return {
+      level: "platform_admin",
+      label: "Developer",
+      description: "Platform developer with testing access via is_dev_or_admin().",
+      capabilities: [
+        "Access Dev Tools & RLS Health",
+        "View system-wide analytics",
+        "Debug user issues",
+        "Access activity logs",
+      ],
+      icon: <ShieldCheck className="w-3 h-3" />,
+      variant: "default",
+    };
+  }
+
+  // Org Owner - full org access
+  if (orgRole === "owner") {
+    return {
+      level: "org_owner",
+      label: "Org Owner",
+      description: "Full organization access via is_org_admin(). Can manage all org data.",
+      capabilities: [
+        "Full CRUD on org data",
+        "Manage org members & teams",
+        "Assign supervisor/operator roles",
+        "View org billing & subscription",
+        "Delete teams and stations",
+      ],
+      icon: <Crown className="w-3 h-3" />,
+      variant: "default",
+    };
+  }
+
+  // Org Admin - org management
+  if (orgRole === "admin") {
+    return {
+      level: "org_admin",
+      label: "Org Admin",
+      description: "Organization admin access via is_org_admin(). Can manage most org data.",
+      capabilities: [
+        "Manage org members",
+        "Create/edit teams & stations",
+        "Assign supervisor/operator roles",
+        "View org analytics",
+      ],
+      icon: <Shield className="w-3 h-3" />,
+      variant: "secondary",
+    };
+  }
+
+  // Supervisor - team/org level
+  if (hasSupervisor && user.organization) {
+    return {
+      level: "supervisor",
+      label: "Supervisor",
+      description: "Supervisor access via is_supervisor_in_org(). Can manage team data.",
+      capabilities: [
+        "View org-wide data (read)",
+        "Manage team members",
+        "Review handoffs & performance",
+        "Access activity logs",
+      ],
+      icon: <UserCog className="w-3 h-3" />,
+      variant: "secondary",
+    };
+  }
+
+  // Operator - basic access
+  if (user.organization && (orgRole === "member" || user.roles.includes("operator"))) {
+    return {
+      level: "operator",
+      label: "Operator",
+      description: "Basic org member access via is_org_member(). Limited to own data.",
+      capabilities: [
+        "View own profile & teams",
+        "Submit handoffs",
+        "View assigned stations",
+        "Report issues",
+      ],
+      icon: <Unlock className="w-3 h-3" />,
+      variant: "outline",
+    };
+  }
+
+  // Viewer - read only
+  if (user.roles.includes("viewer")) {
+    return {
+      level: "viewer",
+      label: "Viewer",
+      description: "Read-only access. Cannot modify any data.",
+      capabilities: [
+        "View assigned data only",
+        "No write permissions",
+      ],
+      icon: <Eye className="w-3 h-3" />,
+      variant: "outline",
+    };
+  }
+
+  // No access
+  return {
+    level: "no_access",
+    label: "No Org Access",
+    description: "User is not a member of any organization. Most RLS policies will deny access.",
+    capabilities: [
+      "Can view own profile",
+      "Cannot access org data",
+      "Needs org invite to access features",
+    ],
+    icon: <Lock className="w-3 h-3" />,
+    variant: "outline",
+  };
+}
 
 interface UserManagementProps {
   isAdmin: boolean;
@@ -115,6 +271,41 @@ export function UserManagement({ isAdmin }: UserManagementProps) {
     }
   };
 
+  const renderAccessLevelBadge = (user: UserWithRole) => {
+    const access = computeRLSAccessLevel(user);
+    
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Badge variant={access.variant} className="gap-1 cursor-help">
+              {access.icon}
+              {access.label}
+              <Info className="w-3 h-3 ml-1 opacity-50" />
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" className="max-w-xs p-3">
+            <div className="space-y-2">
+              <p className="font-medium text-sm">{access.label} Access</p>
+              <p className="text-xs text-muted-foreground">{access.description}</p>
+              <div className="border-t pt-2 mt-2">
+                <p className="text-xs font-medium mb-1">RLS Capabilities:</p>
+                <ul className="text-xs text-muted-foreground space-y-0.5">
+                  {access.capabilities.map((cap, i) => (
+                    <li key={i} className="flex items-start gap-1">
+                      <span className="text-primary">•</span>
+                      {cap}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  };
+
   const renderUserRow = (user: UserWithRole, showOrg: boolean = false) => (
     <TableRow key={user.id}>
       <TableCell>
@@ -141,16 +332,15 @@ export function UserManagement({ isAdmin }: UserManagementProps) {
                 <Building2 className="w-3 h-3" />
                 {user.organization.name}
               </Badge>
-              <Badge variant="secondary" className="gap-1 text-xs">
-                {ORG_ROLE_CONFIG[user.organization.role]?.icon}
-                {ORG_ROLE_CONFIG[user.organization.role]?.label || user.organization.role}
-              </Badge>
             </div>
           ) : (
             <span className="text-muted-foreground text-sm">—</span>
           )}
         </TableCell>
       )}
+      <TableCell>
+        {renderAccessLevelBadge(user)}
+      </TableCell>
       <TableCell>
         <div className="flex items-center gap-2">
           {user.organization && (
@@ -243,7 +433,7 @@ export function UserManagement({ isAdmin }: UserManagementProps) {
                 User Management
               </CardTitle>
               <CardDescription>
-                {users.length} users across {organizations.length} organization(s) • {isAdmin ? "Full access" : "View only"}
+                {users.length} users across {organizations.length} organization(s) • Hover on RLS Access for permission details
               </CardDescription>
             </div>
           </div>
@@ -325,12 +515,27 @@ export function UserManagement({ isAdmin }: UserManagementProps) {
                       </div>
                     </AccordionTrigger>
                     <AccordionContent>
-                      <div className="border rounded-lg mt-2">
+                      <div className="border rounded-lg mt-2 overflow-x-auto">
                         <Table>
                           <TableHeader>
                             <TableRow>
                               <TableHead>User</TableHead>
                               <TableHead>Email</TableHead>
+                              <TableHead>
+                                <div className="flex items-center gap-1">
+                                  RLS Access
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger>
+                                        <Info className="w-3 h-3 text-muted-foreground" />
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p className="text-xs">Computed access level based on platform roles + org membership</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                </div>
+                              </TableHead>
                               <TableHead>Org Role</TableHead>
                               <TableHead>Platform Roles</TableHead>
                               <TableHead>Joined</TableHead>
@@ -348,13 +553,28 @@ export function UserManagement({ isAdmin }: UserManagementProps) {
               })}
           </Accordion>
         ) : (
-          <div className="border rounded-lg">
+          <div className="border rounded-lg overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>User</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Organization</TableHead>
+                  <TableHead>
+                    <div className="flex items-center gap-1">
+                      RLS Access
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <Info className="w-3 h-3 text-muted-foreground" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="text-xs">Computed access level based on platform roles + org membership</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                  </TableHead>
                   <TableHead>Org Role</TableHead>
                   <TableHead>Platform Roles</TableHead>
                   <TableHead>Joined</TableHead>
