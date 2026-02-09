@@ -1,297 +1,212 @@
 
+# Complete User Journey RLS Audit & Admin/Developer Access Protection Plan
 
-# Fast Issue Reporting with Database Function & Dev Queue
+## Executive Summary
 
-## Overview
+This plan addresses two critical concerns:
+1. **User Journey RLS Verification** - Ensure new users can complete the full onboarding flow (signup → org creation → team setup → stations → work orders → handoffs)
+2. **Admin/Developer Access Isolation** - Ensure regular operators/org users cannot access admin/developer tools and sensitive data
 
-This plan converts issue reporting from Edge Function-based to a high-performance **database function** approach, and adds a **developer work queue** system for issue triage and resolution tracking.
+---
 
-## Current State
+## Current State Analysis
 
-| Component | Current Implementation |
-|-----------|----------------------|
-| Issue Submission | Edge Function `report-issue` (HTTP roundtrip ~200-500ms) |
-| Storage | `issues` table with RLS |
-| Notifications | Email via Resend + Webhook (in Edge Function) |
-| Dev Workflow | Manual triage in Admin → Issues tab |
+### What's Working Well
 
-## Proposed Changes
+The recent migration (`20260209090429`) fixed the "chicken-and-egg" RLS issue for onboarding:
+- **Organizations**: Users can create orgs with themselves as `created_by`
+- **Organization Members**: Users can add themselves as owner during org creation
+- **Teams**: Org admins/owners can create teams with proper org scope
+- **Team Members**: Users can join teams within their org
+- **Stations**: Org/team admins can create stations within their scope
 
-### 1. Database Function for Fast Issue Creation
+### Admin/Developer Protection (Already Implemented)
 
-Create a `SECURITY DEFINER` PostgreSQL function that:
-- Accepts issue data directly from the client
-- Auto-populates reporter info from `auth.uid()`
-- Creates the issue in a single database call (~10-50ms)
-- Triggers async notification via database event
+| Resource | Protection Level | Mechanism |
+|----------|------------------|-----------|
+| `dev_issue_queue` | Dev/Admin only | `is_dev_or_admin(auth.uid())` RLS |
+| `rls_health_checks` | Dev/Admin only | `has_role('admin'/'developer')` RLS |
+| `stripe_events` | Dev/Admin only | `has_role('admin'/'developer')` RLS |
+| `issues` (view all) | Dev/Admin only | `has_role('admin'/'developer')` for SELECT |
+| Testing page | Dev/Admin only | `hasTestingAccess` UI gate |
+| Admin page | Supervisor+ only | `hasAdminAccess` UI gate |
 
-```text
-report_issue(
-  _title TEXT,
-  _description TEXT,
-  _severity issue_severity,
-  _error_message TEXT,
-  _error_stack TEXT,
-  _console_logs JSONB,
-  _page_url TEXT,
-  _metadata JSONB
-) RETURNS UUID
+### UI Access Controls (Already Implemented)
+
+```
+Header.tsx:
+- /admin route: Visible only when hasAdminAccess === true
+- /testing route: Visible only when hasTestingAccess === true
+- Teams link: Visible only when hasOrgSupervisorAccess === true
 ```
 
-### 2. Developer Issue Queue Table
+---
 
-Create `dev_issue_queue` table to track developer assignments and progress:
+## Issues Identified
 
-```text
-dev_issue_queue
-├── id (UUID)
-├── issue_id (FK → issues)
-├── assigned_developer_id (FK → auth.users)
-├── priority (1-5, higher = more urgent)
-├── queue_position (INTEGER, for ordering)
-├── estimated_effort (TEXT: quick_fix, medium, complex)
-├── started_at (TIMESTAMPTZ)
-├── completed_at (TIMESTAMPTZ)
-├── time_spent_minutes (INTEGER)
-└── notes (TEXT)
+### Issue 1: Missing Entitlements Auto-Creation (CRITICAL)
+
+**Problem**: When organizations are created, no `entitlements` record is created. This causes:
+- `check_limit_access()` returns NULL → limit checks fail silently
+- New orgs may be blocked from creating stations/work orders
+
+**Evidence**: All 5 existing orgs have NULL entitlements:
+```
+Cr8 Coin       → entitlement_id: NULL
+Real Test Org  → entitlement_id: NULL
+Test Org       → entitlement_id: NULL
+Silly Goose Crew → entitlement_id: NULL
+WeCr8          → entitlement_id: NULL
 ```
 
-### 3. Async Notification Trigger
+**Fix Required**: Create a trigger to auto-generate entitlements with free tier defaults when an org is created.
 
-Use a database trigger on `issues` INSERT to:
-- Queue notification in `notification_queue` table
-- Edge Function or pg_cron can process the queue
-- Ensures notifications even if client disconnects
+### Issue 2: Entitlements INSERT Policy Missing
 
-### 4. Updated Frontend Hook
+**Problem**: The `entitlements` table only has a SELECT policy. If we add a trigger with SECURITY DEFINER, this is fine. But without that, service role is needed.
 
-Modify `useIssueReporter.ts` to call the database function directly:
+**Current policies on entitlements**:
+- SELECT: `is_org_member(auth.uid(), organization_id)` ✓
+- INSERT: None ⚠️
+- UPDATE: None ⚠️
 
-```text
-Before: supabase.functions.invoke("report-issue", { body: payload })
-After:  supabase.rpc("report_issue", { ... params })
+### Issue 3: User Roles Assignment Validation
+
+**Problem**: While RLS prevents org admins from assigning `admin`/`developer` roles at the database level, there's no UI validation message explaining why the action failed.
+
+**Current protection (WORKING)**:
+```sql
+-- Org admins can only assign: supervisor, operator, viewer
+role IN ('supervisor', 'operator', 'viewer')
+AND is_org_admin(auth.uid(), organization_id)
 ```
 
-## Architecture
+---
 
-```text
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│   User clicks   │────►│  report_issue() │────►│  issues table   │
-│   "Report Bug"  │     │   DB Function   │     │                 │
-└─────────────────┘     └────────┬────────┘     └────────┬────────┘
-                                 │                       │
-                                 │                       ▼
-                                 │              ┌─────────────────┐
-                                 │              │   DB Trigger    │
-                                 │              │ on INSERT issue │
-                                 │              └────────┬────────┘
-                                 │                       │
-                                 ▼                       ▼
-                        ┌─────────────────┐     ┌─────────────────┐
-                        │ dev_issue_queue │     │notification_queue│
-                        │  (auto-create)  │     │  (for email)    │
-                        └─────────────────┘     └─────────────────┘
-                                 │                       │
-                                 ▼                       ▼
-                        ┌─────────────────┐     ┌─────────────────┐
-                        │ Admin Dashboard │     │  Edge Function  │
-                        │  Dev Queue View │     │  sends emails   │
-                        └─────────────────┘     └─────────────────┘
+## Implementation Plan
+
+### Phase 1: Auto-Create Entitlements on Org Creation
+
+Create a database trigger that automatically creates an entitlements record when a new organization is created:
+
+```sql
+-- 1. Create trigger function
+CREATE OR REPLACE FUNCTION public.auto_create_org_entitlements()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  -- Create free tier entitlements for new org
+  INSERT INTO public.entitlements (
+    organization_id,
+    plan,
+    features,
+    limits
+  ) VALUES (
+    NEW.id,
+    'free',
+    '{"handoff_hub": true, "work_orders": true, "analytics": false, "api_access": false, "bulk_upload": false}'::jsonb,
+    '{"users": 5, "work_orders_per_month": 100, "stations": 3}'::jsonb
+  );
+  RETURN NEW;
+END;
+$$;
+
+-- 2. Create trigger
+CREATE TRIGGER trigger_auto_create_entitlements
+AFTER INSERT ON public.organizations
+FOR EACH ROW
+EXECUTE FUNCTION public.auto_create_org_entitlements();
+
+-- 3. Backfill existing orgs without entitlements
+INSERT INTO public.entitlements (organization_id, plan, features, limits)
+SELECT 
+  o.id,
+  'free',
+  '{"handoff_hub": true, "work_orders": true, "analytics": false, "api_access": false, "bulk_upload": false}'::jsonb,
+  '{"users": 5, "work_orders_per_month": 100, "stations": 3}'::jsonb
+FROM organizations o
+LEFT JOIN entitlements e ON o.id = e.organization_id
+WHERE e.id IS NULL;
 ```
 
-## Performance Comparison
+### Phase 2: Verify Complete User Journey RLS
 
-| Metric | Edge Function | DB Function |
-|--------|---------------|-------------|
-| Latency | ~200-500ms | ~10-50ms |
-| Cold starts | Possible | None |
-| Reliability | HTTP-dependent | Direct to DB |
-| Notification | Sync (blocks) | Async (trigger) |
+Run verification queries to confirm all journey steps work:
 
-## Files to Create/Modify
+| Step | Table | Operation | RLS Policy |
+|------|-------|-----------|------------|
+| 1. Signup | profiles | INSERT | Via `handle_new_user()` trigger |
+| 2. Get operator role | user_roles | INSERT | Via `handle_new_user()` trigger |
+| 3. Create org | organizations | INSERT | `auth.uid() = created_by` ✓ |
+| 4. Join as owner | organization_members | INSERT | `auth.uid() = user_id` ✓ |
+| 5. Create team | teams | INSERT | `is_org_admin OR is_org_member+created_by` ✓ |
+| 6. Join team | team_members | INSERT | `auth.uid() = user_id + org_member` ✓ |
+| 7. Create station | stations | INSERT | `is_org_admin OR team_admin` ✓ |
+| 8. Create work order | queue_items | INSERT | `is_org_member(organization_id)` ✓ |
+| 9. Submit handoff | handoff_records | INSERT | `is_org_member via team` ✓ |
 
-| File | Action | Description |
-|------|--------|-------------|
-| Migration file | Create | DB function `report_issue`, trigger, `dev_issue_queue` table |
-| `src/hooks/useIssueReporter.ts` | Modify | Switch to `supabase.rpc()` call |
-| `src/components/admin/DevIssueQueue.tsx` | Create | Queue management UI for developers |
-| `src/pages/Admin.tsx` | Modify | Add "Dev Queue" tab |
-| `supabase/functions/process-issue-notifications/` | Create | Process notification queue |
+### Phase 3: Admin/Developer Data Isolation Verification
+
+Already properly isolated via RLS:
+
+| Sensitive Table | Regular User Access | Dev/Admin Access |
+|-----------------|---------------------|------------------|
+| `dev_issue_queue` | BLOCKED | Full access |
+| `stripe_events` | BLOCKED | Full access |
+| `rls_health_checks` | BLOCKED | Full access |
+| `activity_logs` (all) | BLOCKED | Full access |
+| `user_roles` (admin/dev) | Cannot INSERT/DELETE | Full access |
+
+No changes needed - isolation is correctly implemented.
 
 ---
 
 ## Technical Details
 
-### Database Function: `report_issue`
+### Database Migration
 
-```sql
-CREATE OR REPLACE FUNCTION public.report_issue(
-  _title TEXT,
-  _description TEXT DEFAULT NULL,
-  _severity issue_severity DEFAULT 'medium',
-  _error_message TEXT DEFAULT NULL,
-  _error_stack TEXT DEFAULT NULL,
-  _console_logs JSONB DEFAULT '[]',
-  _page_url TEXT DEFAULT NULL,
-  _metadata JSONB DEFAULT '{}'
-)
-RETURNS UUID
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-DECLARE
-  _user_id UUID;
-  _profile RECORD;
-  _org_id UUID;
-  _issue_id UUID;
-BEGIN
-  -- Get authenticated user
-  _user_id := auth.uid();
-  IF _user_id IS NULL THEN
-    RAISE EXCEPTION 'Authentication required';
-  END IF;
+The migration will:
+1. Create `auto_create_org_entitlements()` function with SECURITY DEFINER
+2. Create `trigger_auto_create_entitlements` trigger on `organizations`
+3. Backfill missing entitlements for existing organizations
 
-  -- Get profile info
-  SELECT display_name, email INTO _profile
-  FROM profiles WHERE user_id = _user_id;
+### Files Affected
 
-  -- Get organization
-  SELECT organization_id INTO _org_id
-  FROM organization_members WHERE user_id = _user_id LIMIT 1;
+- `supabase/migrations/[new].sql` - New migration for entitlements trigger
 
-  -- Insert issue
-  INSERT INTO issues (
-    reporter_id, reporter_email, reporter_display_name,
-    title, description, severity,
-    error_message, error_stack, console_logs,
-    page_url, organization_id, metadata
-  ) VALUES (
-    _user_id, _profile.email, _profile.display_name,
-    _title, _description, _severity,
-    _error_message, _error_stack, _console_logs,
-    _page_url, _org_id, _metadata
-  )
-  RETURNING id INTO _issue_id;
+### Verification Steps
 
-  RETURN _issue_id;
-END;
-$$;
-```
-
-### Database Trigger for Queue + Notification
-
-```sql
-CREATE OR REPLACE FUNCTION queue_issue_for_devs()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-SECURITY DEFINER
-AS $$
-DECLARE
-  _priority INT;
-BEGIN
-  -- Calculate priority based on severity
-  _priority := CASE NEW.severity
-    WHEN 'critical' THEN 5
-    WHEN 'high' THEN 4
-    WHEN 'medium' THEN 3
-    WHEN 'low' THEN 2
-    ELSE 1
-  END;
-
-  -- Auto-add to dev queue
-  INSERT INTO dev_issue_queue (issue_id, priority, queue_position)
-  VALUES (NEW.id, _priority, 
-    COALESCE((SELECT MAX(queue_position) + 1 FROM dev_issue_queue), 1));
-
-  -- Queue email notification
-  INSERT INTO notification_queue (
-    notification_type, channel, recipient, subject, content, metadata, priority
-  )
-  SELECT 
-    'email', 'issue', p.email,
-    '[' || UPPER(NEW.severity::TEXT) || '] New Issue: ' || NEW.title,
-    'A new issue has been reported: ' || NEW.title,
-    jsonb_build_object('issue_id', NEW.id, 'severity', NEW.severity),
-    CASE NEW.severity WHEN 'critical' THEN 'urgent' ELSE 'normal' END
-  FROM user_roles ur
-  JOIN profiles p ON p.user_id = ur.user_id
-  WHERE ur.role IN ('admin', 'developer')
-  AND p.email IS NOT NULL;
-
-  RETURN NEW;
-END;
-$$;
-```
-
-### Dev Issue Queue Table
-
-```sql
-CREATE TABLE public.dev_issue_queue (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  issue_id UUID NOT NULL REFERENCES issues(id) ON DELETE CASCADE,
-  assigned_developer_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
-  priority INTEGER NOT NULL DEFAULT 3 CHECK (priority BETWEEN 1 AND 5),
-  queue_position INTEGER NOT NULL,
-  estimated_effort TEXT CHECK (estimated_effort IN ('quick_fix', 'medium', 'complex')),
-  started_at TIMESTAMPTZ,
-  completed_at TIMESTAMPTZ,
-  time_spent_minutes INTEGER,
-  notes TEXT,
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now(),
-  UNIQUE(issue_id)
-);
-
--- RLS: Only admins/developers can access
-CREATE POLICY "Devs can manage queue"
-ON dev_issue_queue FOR ALL
-USING (has_role(auth.uid(), 'admin') OR has_role(auth.uid(), 'developer'));
-```
-
-### Updated useIssueReporter Hook
-
-```typescript
-const reportIssue = useCallback(async (report: IssueReport) => {
-  // Direct RPC call - much faster than Edge Function
-  const { data, error } = await supabase.rpc("report_issue", {
-    _title: report.title,
-    _description: report.description,
-    _severity: report.severity || "medium",
-    _error_message: latestError?.message,
-    _error_stack: latestError?.stack,
-    _console_logs: report.includeConsoleLogs !== false ? logsRef.current.slice(-50) : [],
-    _page_url: report.includePage !== false ? window.location.href : null,
-    _metadata: { ...PRODUCTION_CONTEXT, ... }
-  });
-  
-  if (error) throw error;
-  return { success: true, issue_id: data };
-}, [user]);
-```
-
-### Dev Queue UI Component
-
-A new `DevIssueQueue.tsx` component showing:
-- Kanban or list view of queued issues
-- Drag-and-drop priority reordering
-- "Claim" button to assign to self
-- Time tracking (start/stop timer)
-- Effort estimation selector
-- Quick status updates
+After implementation:
+1. Create a fresh test user
+2. Complete full onboarding flow
+3. Verify entitlements are created
+4. Verify work order/station creation works
+5. Attempt to access /admin and /testing routes (should be blocked)
+6. Attempt to query dev_issue_queue (should return empty)
 
 ---
 
 ## Security Considerations
 
-1. **SECURITY DEFINER** function runs with elevated privileges but validates `auth.uid()`
-2. RLS on `dev_issue_queue` restricts access to admin/developer roles
-3. Notification queue uses existing RLS policies
-4. No sensitive data exposed - function only accepts user input, enriches server-side
+1. **SECURITY DEFINER** is used for the trigger function since the user doesn't have INSERT rights on entitlements during org creation
+2. **Org admins cannot escalate privileges** - RLS prevents assigning admin/developer roles
+3. **Sensitive billing data is isolated** - stripe_events only readable by dev/admin roles
+4. **UI and database are both protected** - Defense in depth with UI gates + RLS policies
 
-## Migration Safety
+---
 
-- Non-destructive: adds new function and table
-- Existing `report-issue` Edge Function remains functional (can be deprecated later)
-- Backward compatible - old clients will still work
+## Summary
 
+| Area | Status | Action Required |
+|------|--------|-----------------|
+| Org creation RLS | ✅ Fixed | None |
+| Team creation RLS | ✅ Fixed | None |
+| Station creation RLS | ✅ Fixed | None |
+| Work order creation | ⚠️ Works but fragile | Add entitlements trigger |
+| Entitlements auto-creation | ❌ Missing | Add trigger + backfill |
+| Admin/Dev UI isolation | ✅ Working | None |
+| Admin/Dev data isolation | ✅ Working | None |
+| User role escalation prevention | ✅ Working | None |
