@@ -92,68 +92,104 @@ export default function Admin() {
           <AdminStatsCards stats={stats} loading={statsLoading} />
         </div>
 
-        {/* Management Tabs */}
+        {/* Management Tabs - Organized by Bucket System */}
         <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList data-tour="admin-tabs" className="flex-wrap h-auto gap-1">
+          <TabsList data-tour="admin-tabs" className="flex-wrap h-auto gap-1 p-2">
+            {/* Overview */}
             <TabsTrigger value="overview" className="gap-2">
               <LayoutDashboard className="w-4 h-4" />
               Overview
             </TabsTrigger>
-            <TabsTrigger value="work-orders" className="gap-2">
-              <Package className="w-4 h-4" />
-              Work Orders
-            </TabsTrigger>
-            <TabsTrigger value="history" className="gap-2">
-              <History className="w-4 h-4" />
-              History
-            </TabsTrigger>
-            <TabsTrigger value="routing" className="gap-2">
-              <Route className="w-4 h-4" />
-              Routing
-            </TabsTrigger>
-            <TabsTrigger value="users" className="gap-2">
-              <Users className="w-4 h-4" />
-              Users
-            </TabsTrigger>
-            <TabsTrigger value="stations" className="gap-2">
-              <Wrench className="w-4 h-4" />
-              Stations
-            </TabsTrigger>
-            <TabsTrigger value="organizations" className="gap-2">
-              <Briefcase className="w-4 h-4" />
-              Organizations
-            </TabsTrigger>
-            <TabsTrigger value="performance" className="gap-2">
-              <Lightbulb className="w-4 h-4" />
-              Performance
-            </TabsTrigger>
-            <TabsTrigger value="activity" className="gap-2">
-              <Activity className="w-4 h-4" />
-              Activity
-            </TabsTrigger>
-            <TabsTrigger value="issues" className="gap-2">
-              <Bug className="w-4 h-4" />
-              Issues
-            </TabsTrigger>
-            {/* Developer-only tabs - restricted to platform admin/developer roles */}
+            
+            {/* Separator */}
+            <div className="w-px h-6 bg-border mx-1 hidden sm:block" />
+            
+            {/* ORG BUCKET: Organization & Team Structure */}
+            <div className="flex items-center gap-1 px-1 py-0.5 rounded bg-muted/50">
+              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider hidden lg:inline">Org</span>
+              <TabsTrigger value="organizations" className="gap-2">
+                <Briefcase className="w-4 h-4" />
+                <span className="hidden sm:inline">Organizations</span>
+                <span className="sm:hidden">Orgs</span>
+              </TabsTrigger>
+              <TabsTrigger value="users" className="gap-2">
+                <Users className="w-4 h-4" />
+                Users
+              </TabsTrigger>
+              <TabsTrigger value="stations" className="gap-2">
+                <Wrench className="w-4 h-4" />
+                Stations
+              </TabsTrigger>
+            </div>
+            
+            {/* Separator */}
+            <div className="w-px h-6 bg-border mx-1 hidden sm:block" />
+            
+            {/* PRODUCTION BUCKET: Work Orders & Routing */}
+            <div className="flex items-center gap-1 px-1 py-0.5 rounded bg-muted/50">
+              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider hidden lg:inline">Production</span>
+              <TabsTrigger value="work-orders" className="gap-2">
+                <Package className="w-4 h-4" />
+                <span className="hidden sm:inline">Work Orders</span>
+                <span className="sm:hidden">WO</span>
+              </TabsTrigger>
+              <TabsTrigger value="history" className="gap-2">
+                <History className="w-4 h-4" />
+                History
+              </TabsTrigger>
+              <TabsTrigger value="routing" className="gap-2">
+                <Route className="w-4 h-4" />
+                Routing
+              </TabsTrigger>
+              <TabsTrigger value="performance" className="gap-2">
+                <Lightbulb className="w-4 h-4" />
+                <span className="hidden sm:inline">Performance</span>
+                <span className="sm:hidden">Perf</span>
+              </TabsTrigger>
+            </div>
+            
+            {/* Separator */}
+            <div className="w-px h-6 bg-border mx-1 hidden sm:block" />
+            
+            {/* ACTIVITY BUCKET: Logs & Issues */}
+            <div className="flex items-center gap-1 px-1 py-0.5 rounded bg-muted/50">
+              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider hidden lg:inline">Activity</span>
+              <TabsTrigger value="activity" className="gap-2">
+                <Activity className="w-4 h-4" />
+                <span className="hidden sm:inline">Activity</span>
+                <span className="sm:hidden">Log</span>
+              </TabsTrigger>
+              <TabsTrigger value="issues" className="gap-2">
+                <Bug className="w-4 h-4" />
+                Issues
+              </TabsTrigger>
+            </div>
+            
+            {/* Developer-only tabs - DEV TOOLS BUCKET */}
             {hasTestingAccess && (
               <>
-                <TabsTrigger value="dev-queue" className="gap-2">
-                  <ListTodo className="w-4 h-4" />
-                  Dev Queue
-                </TabsTrigger>
-                <TabsTrigger value="dev-settings" className="gap-2">
-                  <Settings2 className="w-4 h-4" />
-                  Dev Settings
-                </TabsTrigger>
-                <TabsTrigger value="rls-health" className="gap-2">
-                  <ShieldCheck className="w-4 h-4" />
-                  RLS Health
-                </TabsTrigger>
-                <TabsTrigger value="user-journey" className="gap-2">
-                  <Map className="w-4 h-4" />
-                  User Journey
-                </TabsTrigger>
+                {/* Separator */}
+                <div className="w-px h-6 bg-border mx-1 hidden sm:block" />
+                
+                <div className="flex items-center gap-1 px-1 py-0.5 rounded bg-destructive/10 border border-destructive/20">
+                  <span className="text-[10px] text-destructive font-medium uppercase tracking-wider hidden lg:inline">Dev</span>
+                  <TabsTrigger value="dev-queue" className="gap-2">
+                    <ListTodo className="w-4 h-4" />
+                    <span className="hidden sm:inline">Queue</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="dev-settings" className="gap-2">
+                    <Settings2 className="w-4 h-4" />
+                    <span className="hidden sm:inline">Settings</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="rls-health" className="gap-2">
+                    <ShieldCheck className="w-4 h-4" />
+                    <span className="hidden sm:inline">RLS</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="user-journey" className="gap-2">
+                    <Map className="w-4 h-4" />
+                    <span className="hidden sm:inline">Journey</span>
+                  </TabsTrigger>
+                </div>
               </>
             )}
           </TabsList>
