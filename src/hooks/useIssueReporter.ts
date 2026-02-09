@@ -134,6 +134,15 @@ export function useIssueReporter() {
   }, []);
 
   const reportIssue = useCallback(async (report: IssueReport) => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to report an issue. If you're having trouble signing in, contact support@joblineai.com",
+        variant: "destructive",
+      });
+      return { success: false, error: "Not authenticated" };
+    }
+
     setIsReporting(true);
 
     try {
@@ -149,7 +158,6 @@ export function useIssueReporter() {
         language: navigator.language,
         user_agent: navigator.userAgent,
         recent_errors_count: errorsRef.current.length,
-        is_guest_report: !user,
       };
 
       // Prepare console logs
@@ -162,60 +170,33 @@ export function useIssueReporter() {
           }))
         : [];
 
-      // If user is authenticated, use the secure RPC function
-      if (user) {
-        const { data: issueId, error } = await supabase.rpc("report_issue", {
-          _title: report.title,
-          _description: report.description || null,
-          _severity: report.severity || "medium",
-          _error_message: latestError?.message || null,
-          _error_stack: latestError?.stack || null,
-          _console_logs: consoleLogs,
-          _page_url: report.includePage !== false ? window.location.href : null,
-          _metadata: metadata,
-        });
+      // Use direct database function call (much faster than Edge Function)
+      const { data: issueId, error } = await supabase.rpc("report_issue", {
+        _title: report.title,
+        _description: report.description || null,
+        _severity: report.severity || "medium",
+        _error_message: latestError?.message || null,
+        _error_stack: latestError?.stack || null,
+        _console_logs: consoleLogs,
+        _page_url: report.includePage !== false ? window.location.href : null,
+        _metadata: metadata,
+      });
 
-        if (error) {
-          throw error;
-        }
-
-        toast({
-          title: "Issue reported",
-          description: "Thank you! Our team has been notified.",
-        });
-
-        return { success: true, issue_id: issueId };
-      } else {
-        // Guest reporting - use edge function that doesn't require auth
-        const { data, error } = await supabase.functions.invoke("report-issue", {
-          body: {
-            title: report.title,
-            description: report.description || null,
-            severity: report.severity || "medium",
-            error_message: latestError?.message || null,
-            error_stack: latestError?.stack || null,
-            console_logs: consoleLogs,
-            page_url: report.includePage !== false ? window.location.href : null,
-            metadata: metadata,
-          },
-        });
-
-        if (error) {
-          throw error;
-        }
-
-        toast({
-          title: "Issue reported",
-          description: "Thank you! Our team has been notified. Please try signing in again.",
-        });
-
-        return { success: true, issue_id: data?.issue_id };
+      if (error) {
+        throw error;
       }
+
+      toast({
+        title: "Issue reported",
+        description: "Thank you! Our team has been notified.",
+      });
+
+      return { success: true, issue_id: issueId };
     } catch (error) {
       console.error("Failed to report issue:", error);
       toast({
         title: "Failed to report issue",
-        description: "Please try again later or contact support directly.",
+        description: "Please try again later or contact support@joblineai.com",
         variant: "destructive",
       });
       return { success: false, error };
