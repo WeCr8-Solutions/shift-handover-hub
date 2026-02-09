@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "@/hooks/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Shield, 
   CheckCircle, 
@@ -16,9 +17,12 @@ import {
   Clock,
   Database,
   Lock,
-  Unlock
+  Unlock,
+  GitBranch,
+  Activity
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { RoleHierarchyTree } from "./RoleHierarchyTree";
 
 interface RLSHealthResult {
   name: string;
@@ -158,11 +162,25 @@ export function RLSHealthCheck() {
 
   return (
     <div className="space-y-6">
-      {/* Header Card */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+      {/* Tabs for switching between Health Check and Role Hierarchy */}
+      <Tabs defaultValue="health-check" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="health-check" className="gap-2">
+            <Activity className="w-4 h-4" />
+            Health Check
+          </TabsTrigger>
+          <TabsTrigger value="role-hierarchy" className="gap-2">
+            <GitBranch className="w-4 h-4" />
+            Role Hierarchy
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="health-check" className="space-y-6">
+          {/* Header Card */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
               <Shield className="w-5 h-5 text-primary" />
               <div>
                 <CardTitle>RLS Health Check</CardTitle>
@@ -361,6 +379,12 @@ export function RLSHealthCheck() {
           )}
         </CardContent>
       </Card>
+        </TabsContent>
+
+        <TabsContent value="role-hierarchy">
+          <RoleHierarchyTree />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
