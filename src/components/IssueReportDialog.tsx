@@ -14,10 +14,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useIssueReporter } from "@/hooks/useIssueReporter";
 import { useAuth } from "@/contexts/AuthContext";
-import { Bug, AlertCircle, Terminal, Loader2, AlertTriangle, UserX } from "lucide-react";
+import { Bug, AlertCircle, Terminal, Loader2, LogIn, Mail } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface IssueReportDialogProps {
   open: boolean;
@@ -32,7 +33,7 @@ export function IssueReportDialog({ open, onOpenChange, prefillError }: IssueRep
   const [title, setTitle] = useState(prefillError?.message?.slice(0, 100) || "");
   const [description, setDescription] = useState("");
   const [severity, setSeverity] = useState<"low" | "medium" | "high" | "critical">(
-    prefillError || !user ? "high" : "medium"
+    prefillError ? "high" : "medium"
   );
   const [includeConsoleLogs, setIncludeConsoleLogs] = useState(true);
   const [includePage, setIncludePage] = useState(true);
@@ -58,7 +59,7 @@ export function IssueReportDialog({ open, onOpenChange, prefillError }: IssueRep
 
   const errorCount = runtimeErrors.length;
   const warningCount = consoleLogs.filter(l => l.level === "warn").length;
-  const isGuestReport = !user && !authLoading;
+  const isNotAuthenticated = !user && !authLoading;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -66,27 +67,46 @@ export function IssueReportDialog({ open, onOpenChange, prefillError }: IssueRep
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Bug className="w-5 h-5 text-primary" />
-            {isGuestReport ? "Report Access Issue" : "Report an Issue"}
+            Report an Issue
           </DialogTitle>
           <DialogDescription>
-            {isGuestReport 
-              ? "Having trouble logging in or accessing your data? Let us know and we'll help."
-              : "Help us improve by reporting bugs or issues you encounter."
-            }
+            Help us improve by reporting bugs or issues you encounter.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Guest report alert */}
-          {isGuestReport && (
-            <Alert variant="destructive" className="border-destructive/50 bg-destructive/10">
-              <UserX className="h-4 w-4" />
+        {/* Show login prompt for unauthenticated users */}
+        {isNotAuthenticated ? (
+          <div className="space-y-4 py-4">
+            <Alert>
+              <LogIn className="h-4 w-4" />
+              <AlertTitle>Sign in required</AlertTitle>
               <AlertDescription>
-                You're not currently logged in. Your report will be submitted as a guest and prioritized for review.
+                Please sign in to report an issue. This helps us track and respond to your feedback.
               </AlertDescription>
             </Alert>
-          )}
-
+            
+            <div className="flex flex-col gap-3">
+              <Button asChild>
+                <Link to="/auth" onClick={() => onOpenChange(false)}>
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Sign In
+                </Link>
+              </Button>
+              
+              <div className="text-center text-sm text-muted-foreground">
+                <p>Having trouble signing in?</p>
+                <a 
+                  href="mailto:support@joblineai.com?subject=Access Issue - Cannot Sign In" 
+                  className="text-primary hover:underline inline-flex items-center gap-1 mt-1"
+                >
+                  <Mail className="w-3 h-3" />
+                  Contact support@joblineai.com
+                </a>
+              </div>
+            </div>
+          </div>
+        ) : (
+        <form onSubmit={handleSubmit} className="space-y-4">
           {/* Runtime context badges */}
           <div className="flex flex-wrap gap-2 text-xs">
             <Badge variant="outline" className="font-mono">
@@ -95,12 +115,6 @@ export function IssueReportDialog({ open, onOpenChange, prefillError }: IssueRep
             <Badge variant="outline" className="font-mono">
               v{productionContext.app_version}
             </Badge>
-            {isGuestReport && (
-              <Badge variant="secondary" className="gap-1 bg-orange-500/10 text-orange-600">
-                <UserX className="w-3 h-3" />
-                Guest Report
-              </Badge>
-            )}
             {errorCount > 0 && (
               <Badge variant="destructive" className="gap-1">
                 <AlertCircle className="w-3 h-3" />
@@ -216,6 +230,7 @@ export function IssueReportDialog({ open, onOpenChange, prefillError }: IssueRep
             </Button>
           </DialogFooter>
         </form>
+        )}
       </DialogContent>
     </Dialog>
   );

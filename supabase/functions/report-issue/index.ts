@@ -31,46 +31,45 @@ const handler = async (req: Request): Promise<Response> => {
     // Create clients
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
     
-    const body: IssueReport = await req.json();
-    
-    // Try to get authenticated user (optional for guest reports)
-    let user = null;
-    let profile = null;
-    let orgMemberId = null;
-    
+    // Verify JWT and get user - REQUIRED for security
     const authHeader = req.headers.get("Authorization");
-    if (authHeader) {
-      const token = authHeader.replace("Bearer ", "");
-      const { data: authData, error: authError } = await supabaseAdmin.auth.getUser(token);
-      
-      if (!authError && authData.user) {
-        user = authData.user;
-        
-        // Get user profile for display name
-        const { data: profileData } = await supabaseAdmin
-          .from("profiles")
-          .select("display_name, email")
-          .eq("user_id", user.id)
-          .single();
-        profile = profileData;
-
-        // Get user's organization (if any)
-        const { data: orgMember } = await supabaseAdmin
-          .from("organization_members")
-          .select("organization_id")
-          .eq("user_id", user.id)
-          .limit(1)
-          .single();
-        orgMemberId = orgMember?.organization_id;
-      }
+    if (!authHeader) {
+      console.log("Unauthorized: No authorization header");
+      return new Response(
+        JSON.stringify({ error: "Authorization required. Please sign in to report issues." }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    // For guest reports, mark it clearly
-    const isGuestReport = !user;
-    const reporterEmail = user?.email || body.metadata?.guest_email || null;
-    const reporterName = profile?.display_name || user?.email?.split("@")[0] || "Guest User";
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+    
+    if (authError || !user) {
+      console.log("Unauthorized: Invalid token", authError);
+      return new Response(
+        JSON.stringify({ error: "Invalid token. Please sign in again." }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
-    console.log(`Processing ${isGuestReport ? 'guest' : 'authenticated'} issue report:`, body.title);
+    const body: IssueReport = await req.json();
+
+    console.log("Processing authenticated issue report from:", user.email, "Title:", body.title);
+
+    // Get user profile for display name
+    const { data: profile } = await supabaseAdmin
+      .from("profiles")
+      .select("display_name, email")
+      .eq("user_id", user.id)
+      .single();
+
+    // Get user's organization (if any)
+    const { data: orgMember } = await supabaseAdmin
+      .from("organization_members")
+      .select("organization_id")
+      .eq("user_id", user.id)
+      .limit(1)
+      .single();
 
     // Production context from environment
     const productionContext = {
@@ -80,28 +79,24 @@ const handler = async (req: Request): Promise<Response> => {
       commit_hash: body.metadata?.commit_hash || Deno.env.get("COMMIT_HASH") || "unknown",
     };
 
-    // Insert the issue (using service role bypasses RLS)
+    // Insert the issue
     const { data: issue, error: insertError } = await supabaseAdmin
       .from("issues")
       .insert({
-        reporter_id: user?.id || null,
-        reporter_email: reporterEmail,
-        reporter_display_name: reporterName,
-        title: isGuestReport ? `[ACCESS ISSUE] ${body.title}` : body.title,
+        reporter_id: user.id,
+        reporter_email: user.email,
+        reporter_display_name: profile?.display_name || user.email?.split("@")[0],
+        title: body.title,
         description: body.description,
-        severity: isGuestReport ? "high" : (body.severity || "medium"),
+        severity: body.severity || "medium",
         error_message: body.error_message,
         error_stack: body.error_stack,
         console_logs: body.console_logs || [],
         page_url: body.page_url,
         user_agent: req.headers.get("User-Agent"),
-        organization_id: orgMemberId,
+        organization_id: orgMember?.organization_id,
         ...productionContext,
-        metadata: {
-          ...(body.metadata || {}),
-          is_guest_report: isGuestReport,
-          reported_at: new Date().toISOString(),
-        },
+        metadata: body.metadata || {},
       })
       .select()
       .single();
