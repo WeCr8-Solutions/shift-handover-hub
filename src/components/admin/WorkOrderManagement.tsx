@@ -39,7 +39,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Loader2, MoreHorizontal, Search, Package, Route, Trash2, AlertCircle, Plus, Building2, FolderOpen, Wrench } from "lucide-react";
+import { Loader2, MoreHorizontal, Search, Package, Route, Trash2, AlertCircle, Plus, Building2, FolderOpen, Wrench, Crown, Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { WorkOrderRoutingEditor } from "@/components/routing/WorkOrderRoutingEditor";
 import { CreateWorkOrderDialog } from "@/components/queue/CreateWorkOrderDialog";
@@ -78,6 +78,10 @@ interface OrganizationBucket {
     onHold: number;
     overdue: number;
   };
+  ownerName?: string | null;
+  ownerEmail?: string | null;
+  subscriptionTier?: string | null;
+  subscriptionStatus?: string | null;
 }
 
 interface WorkOrderManagementProps {
@@ -164,6 +168,10 @@ export function WorkOrderManagement({ isAdmin }: WorkOrderManagementProps) {
       name: "Unassigned Work Orders",
       workOrders: [],
       stats: { total: 0, inProgress: 0, onHold: 0, overdue: 0 },
+      ownerName: null,
+      ownerEmail: null,
+      subscriptionTier: null,
+      subscriptionStatus: null,
     });
 
     // Add organization buckets
@@ -173,6 +181,10 @@ export function WorkOrderManagement({ isAdmin }: WorkOrderManagementProps) {
         name: org.name,
         workOrders: [],
         stats: { total: 0, inProgress: 0, onHold: 0, overdue: 0 },
+        ownerName: org.owner_name,
+        ownerEmail: org.owner_email,
+        subscriptionTier: org.subscription_tier,
+        subscriptionStatus: org.subscription_status,
       });
     });
 
@@ -506,23 +518,66 @@ export function WorkOrderManagement({ isAdmin }: WorkOrderManagementProps) {
                         )}
                       </div>
                     </AccordionTrigger>
-                    <AccordionContent className="px-0 pb-0">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Work Order</TableHead>
-                            <TableHead>Part / Operation</TableHead>
-                            <TableHead>Station</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Priority</TableHead>
-                            <TableHead>Due Date</TableHead>
-                            <TableHead className="w-12"></TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {orgBucket.workOrders.map((wo) => renderWorkOrderRow(wo, false))}
-                        </TableBody>
-                      </Table>
+                    <AccordionContent className="px-4 pb-4">
+                      {/* Organization Owner Card */}
+                      {orgBucket.id !== "unassigned" && orgBucket.ownerName && (
+                        <div className="mb-4 p-3 rounded-lg border-2 border-primary/20 bg-primary/5">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                                <Crown className="w-5 h-5 text-primary" />
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-semibold">{orgBucket.ownerName}</span>
+                                  <Badge variant="default" className="gap-1 text-xs">
+                                    <Crown className="w-3 h-3" />
+                                    Owner
+                                  </Badge>
+                                </div>
+                                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                  <Mail className="w-3 h-3" />
+                                  {orgBucket.ownerEmail}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {orgBucket.subscriptionTier && (
+                                <Badge variant="secondary" className="text-xs">
+                                  {orgBucket.subscriptionTier}
+                                </Badge>
+                              )}
+                              {orgBucket.subscriptionStatus && (
+                                <Badge 
+                                  variant={orgBucket.subscriptionStatus === "active" ? "outline" : "destructive"}
+                                  className="text-xs"
+                                >
+                                  {orgBucket.subscriptionStatus}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div className="border rounded-lg overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Work Order</TableHead>
+                              <TableHead>Part / Operation</TableHead>
+                              <TableHead>Station</TableHead>
+                              <TableHead>Status</TableHead>
+                              <TableHead>Priority</TableHead>
+                              <TableHead>Due Date</TableHead>
+                              <TableHead className="w-12"></TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {orgBucket.workOrders.map((wo) => renderWorkOrderRow(wo, false))}
+                          </TableBody>
+                        </Table>
+                      </div>
                     </AccordionContent>
                   </AccordionItem>
                 ))}

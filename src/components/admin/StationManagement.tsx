@@ -48,7 +48,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Switch } from "@/components/ui/switch";
-import { Loader2, MoreHorizontal, Plus, Search, Wrench, Trash2, Pencil, Building2, Users, FolderOpen, ChevronRight } from "lucide-react";
+import { Loader2, MoreHorizontal, Plus, Search, Wrench, Trash2, Pencil, Building2, Users, FolderOpen, ChevronRight, Crown, Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const WORK_CENTER_TYPES = ["CNC Mill", "CNC Lathe", "Welding", "Water Jet", "Assembly", "Inspection", "Other"];
@@ -67,6 +67,10 @@ interface OrganizationBucket {
   name: string;
   teams: TeamBucket[];
   stationCount: number;
+  ownerName?: string | null;
+  ownerEmail?: string | null;
+  subscriptionTier?: string | null;
+  subscriptionStatus?: string | null;
 }
 
 interface TeamBucket {
@@ -140,6 +144,10 @@ export function StationManagement({ isAdmin }: StationManagementProps) {
       name: "Unassigned Stations",
       teams: [{ id: null, name: "Global (No Team)", stations: [] }],
       stationCount: 0,
+      ownerName: null,
+      ownerEmail: null,
+      subscriptionTier: null,
+      subscriptionStatus: null,
     });
 
     // Add organization buckets
@@ -149,6 +157,10 @@ export function StationManagement({ isAdmin }: StationManagementProps) {
         name: org.name,
         teams: [],
         stationCount: 0,
+        ownerName: org.owner_name,
+        ownerEmail: org.owner_email,
+        subscriptionTier: org.subscription_tier,
+        subscriptionStatus: org.subscription_status,
       });
     });
 
@@ -546,7 +558,48 @@ export function StationManagement({ isAdmin }: StationManagementProps) {
                   </Badge>
                 </AccordionTrigger>
                 <AccordionContent className="px-4 pb-4">
-                  <div className="space-y-3 pt-2">
+                  {/* Organization Owner Card */}
+                  {orgBucket.id !== "unassigned" && orgBucket.ownerName && (
+                    <div className="mb-4 p-3 rounded-lg border-2 border-primary/20 bg-primary/5">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                            <Crown className="w-5 h-5 text-primary" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold">{orgBucket.ownerName}</span>
+                              <Badge variant="default" className="gap-1 text-xs">
+                                <Crown className="w-3 h-3" />
+                                Owner
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground flex items-center gap-1">
+                              <Mail className="w-3 h-3" />
+                              {orgBucket.ownerEmail}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {orgBucket.subscriptionTier && (
+                            <Badge variant="secondary" className="text-xs">
+                              {orgBucket.subscriptionTier}
+                            </Badge>
+                          )}
+                          {orgBucket.subscriptionStatus && (
+                            <Badge 
+                              variant={orgBucket.subscriptionStatus === "active" ? "outline" : "destructive"}
+                              className="text-xs"
+                            >
+                              {orgBucket.subscriptionStatus}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="space-y-3">
                     {orgBucket.teams.map((teamBucket) => (
                       <Collapsible key={teamBucket.id || "no-team"} defaultOpen className="border rounded-lg">
                         <CollapsibleTrigger className="flex items-center gap-2 w-full px-3 py-2 hover:bg-muted/50 rounded-t-lg">
