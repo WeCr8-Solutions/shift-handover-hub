@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -275,8 +275,8 @@ export function IssuesManagement() {
                 </TableRow>
               ) : (
                 filteredIssues.map((issue) => (
-                  <>
-                    <TableRow key={issue.id} className="cursor-pointer hover:bg-muted/50">
+                  <React.Fragment key={issue.id}>
+                    <TableRow className="cursor-pointer hover:bg-muted/50">
                       <TableCell onClick={() => toggleRow(issue.id)}>
                         {expandedRows.has(issue.id) ? (
                           <ChevronUp className="w-4 h-4" />
@@ -396,7 +396,7 @@ export function IssuesManagement() {
                         </TableCell>
                       </TableRow>
                     )}
-                  </>
+                  </React.Fragment>
                 ))
               )}
             </TableBody>
