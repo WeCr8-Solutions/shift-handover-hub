@@ -7,6 +7,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Progress } from "@/components/ui/progress";
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { 
   Shield, 
   CheckCircle, 
@@ -19,7 +27,16 @@ import {
   Lock,
   Unlock,
   GitBranch,
-  Activity
+  Activity,
+  MoreHorizontal,
+  Eye,
+  FileCode,
+  Wrench,
+  Copy,
+  ExternalLink,
+  Settings,
+  ShieldCheck,
+  ShieldX
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { RoleHierarchyTree } from "./RoleHierarchyTree";
@@ -137,11 +154,156 @@ export function RLSHealthCheck() {
     }
   };
 
+  // Handler functions for dropdown actions
+  const handleViewPolicy = (table: string, operation: string) => {
+    const sql = `SELECT polname, polcmd, polroles, polqual, polwithcheck 
+FROM pg_policies 
+WHERE tablename = '${table}';`;
+    
+    navigator.clipboard.writeText(sql);
+    toast({
+      title: "SQL Copied",
+      description: `Query to view ${table} RLS policies copied to clipboard`,
+    });
+  };
+
+  const handleCopyTestSQL = (result: RLSHealthResult) => {
+    const sql = `-- Test: ${result.name}
+-- Table: ${result.table}, Operation: ${result.operation.toUpperCase()}
+-- Expected: ${result.expected}, Actual: ${result.actual}
+
+SELECT * FROM ${result.table} LIMIT 1;`;
+    
+    navigator.clipboard.writeText(sql);
+    toast({
+      title: "Test SQL Copied",
+      description: "Test query copied to clipboard",
+    });
+  };
+
+  const handleAddDenyPolicy = (table: string, operation: string) => {
+    const policyName = `deny_anon_${operation}_${table}`;
+    const sql = `-- Add deny policy for anonymous users on ${table}
+CREATE POLICY "${policyName}"
+ON public.${table}
+FOR ${operation.toUpperCase()}
+TO anon
+USING (false);`;
+    
+    navigator.clipboard.writeText(sql);
+    toast({
+      title: "Deny Policy SQL Copied",
+      description: `Add this policy to restrict ${operation} on ${table}`,
+    });
+  };
+
+  const handleAddAllowPolicy = (table: string, operation: string) => {
+    const policyName = `allow_auth_${operation}_${table}`;
+    const sql = `-- Add allow policy for authenticated users on ${table}
+CREATE POLICY "${policyName}"
+ON public.${table}
+FOR ${operation.toUpperCase()}
+TO authenticated
+USING (auth.uid() = user_id);  -- Adjust condition as needed`;
+    
+    navigator.clipboard.writeText(sql);
+    toast({
+      title: "Allow Policy SQL Copied",
+      description: `Add this policy to allow ${operation} on ${table}`,
+    });
+  };
+
+  const handleGenerateFix = (result: RLSHealthResult) => {
+    let sql = `-- Fix for: ${result.name}\n`;
+    sql += `-- Table: ${result.table}, Operation: ${result.operation.toUpperCase()}\n`;
+    sql += `-- Expected: ${result.expected}, Actual: ${result.actual}\n\n`;
+    
+    if (result.expected === "deny" && result.actual === "allow") {
+      sql += `-- Option 1: Enable RLS if not already enabled
+ALTER TABLE public.${result.table} ENABLE ROW LEVEL SECURITY;
+
+-- Option 2: Add restrictive policy
+CREATE POLICY "deny_unauthorized_${result.operation}_${result.table}"
+ON public.${result.table}
+FOR ${result.operation.toUpperCase()}
+USING (false);`;
+    } else if (result.expected === "allow" && result.actual === "deny") {
+      sql += `-- Check if RLS is blocking authenticated access
+-- Add an allow policy for authenticated users
+CREATE POLICY "allow_auth_${result.operation}_${result.table}"
+ON public.${result.table}
+FOR ${result.operation.toUpperCase()}
+TO authenticated
+USING (
+  -- Adjust this condition based on your access rules
+  auth.uid() = user_id
+  OR public.has_role(auth.uid(), 'admin')
+);`;
+    }
+    
+    navigator.clipboard.writeText(sql);
+    toast({
+      title: "Fix SQL Generated",
+      description: "SQL fix copied to clipboard. Review before applying!",
+    });
+  };
+
+  const handleGenerateAllFixes = () => {
+    if (!currentRun) return;
+    
+    const failedTests = currentRun.results.filter(r => !r.passed);
+    let sql = `-- Generated RLS Fixes\n-- ${failedTests.length} failed tests\n\n`;
+    
+    failedTests.forEach((result, i) => {
+      sql += `-- Fix ${i + 1}: ${result.name}\n`;
+      if (result.expected === "deny" && result.actual === "allow") {
+        sql += `CREATE POLICY "deny_${result.operation}_${result.table}"
+ON public.${result.table}
+FOR ${result.operation.toUpperCase()}
+USING (false);\n\n`;
+      } else if (result.expected === "allow" && result.actual === "deny") {
+        sql += `CREATE POLICY "allow_${result.operation}_${result.table}"
+ON public.${result.table}
+FOR ${result.operation.toUpperCase()}
+TO authenticated
+USING (auth.uid() = user_id);\n\n`;
+      }
+    });
+    
+    navigator.clipboard.writeText(sql);
+    toast({
+      title: "All Fixes Generated",
+      description: `${failedTests.length} fix(es) copied to clipboard`,
+    });
+  };
+
+  const handleViewTableSchema = (table: string) => {
+    const sql = `-- View table schema
+SELECT column_name, data_type, is_nullable, column_default
+FROM information_schema.columns
+WHERE table_schema = 'public' AND table_name = '${table}'
+ORDER BY ordinal_position;`;
+    
+    navigator.clipboard.writeText(sql);
+    toast({
+      title: "Schema Query Copied",
+      description: `Query to view ${table} schema copied to clipboard`,
+    });
+  };
+
+  const handleOpenDocs = (table: string) => {
+    window.open("https://supabase.com/docs/guides/database/postgres/row-level-security", "_blank");
+    toast({
+      title: "Opening Documentation",
+      description: "Supabase RLS documentation opened in new tab",
+    });
+  };
+
   const getStatusIcon = (passed: boolean) => {
     return passed ? (
-      <CheckCircle className="w-4 h-4 text-green-500" />
+      <CheckCircle className="w-4 h-4 text-primary" />
     ) : (
-      <XCircle className="w-4 h-4 text-red-500" />
+      <XCircle className="w-4 h-4 text-destructive" />
     );
   };
 
@@ -212,12 +374,12 @@ export function RLSHealthCheck() {
                 <div className="text-3xl font-bold">{currentRun.summary.total}</div>
                 <div className="text-sm text-muted-foreground">Total Tests</div>
               </div>
-              <div className="p-4 rounded-lg bg-green-500/10">
-                <div className="text-3xl font-bold text-green-600">{currentRun.summary.passed}</div>
+              <div className="p-4 rounded-lg bg-primary/10">
+                <div className="text-3xl font-bold text-primary">{currentRun.summary.passed}</div>
                 <div className="text-sm text-muted-foreground">Passed</div>
               </div>
-              <div className="p-4 rounded-lg bg-red-500/10">
-                <div className="text-3xl font-bold text-red-600">{currentRun.summary.failed}</div>
+              <div className="p-4 rounded-lg bg-destructive/10">
+                <div className="text-3xl font-bold text-destructive">{currentRun.summary.failed}</div>
                 <div className="text-sm text-muted-foreground">Failed</div>
               </div>
               <div className="p-4 rounded-lg bg-primary/10">
@@ -236,9 +398,9 @@ export function RLSHealthCheck() {
                 <span>0%</span>
                 <span>
                   {currentRun.summary.pass_rate === 100 ? (
-                    <span className="text-green-600 font-medium">All tests passing ✓</span>
+                    <span className="text-primary font-medium">All tests passing ✓</span>
                   ) : (
-                    <span className="text-red-600 font-medium">
+                    <span className="text-destructive font-medium">
                       {currentRun.summary.failed} failing tests
                     </span>
                   )}
@@ -247,7 +409,7 @@ export function RLSHealthCheck() {
               </div>
             </div>
 
-            {/* Results Table */}
+             {/* Results Table */}
             <div className="border rounded-lg">
               <Table>
                 <TableHeader>
@@ -259,11 +421,12 @@ export function RLSHealthCheck() {
                     <TableHead>Expected</TableHead>
                     <TableHead>Actual</TableHead>
                     <TableHead className="text-right">Time</TableHead>
+                    <TableHead className="w-12">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {currentRun.results.map((result, i) => (
-                    <TableRow key={i} className={result.passed ? "" : "bg-red-500/5"}>
+                    <TableRow key={i} className={result.passed ? "" : "bg-destructive/5"}>
                       <TableCell>{getStatusIcon(result.passed)}</TableCell>
                       <TableCell className="font-medium">{result.name}</TableCell>
                       <TableCell>
@@ -292,6 +455,95 @@ export function RLSHealthCheck() {
                       <TableCell className="text-right text-muted-foreground">
                         {result.executionTime}ms
                       </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-56 bg-popover border shadow-lg z-50">
+                            <DropdownMenuLabel className="flex items-center gap-2">
+                              {result.passed ? (
+                                <ShieldCheck className="w-4 h-4 text-primary" />
+                              ) : (
+                                <ShieldX className="w-4 h-4 text-destructive" />
+                              )}
+                              {result.table} - {result.operation}
+                            </DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            
+                            {/* View Actions */}
+                            <DropdownMenuItem 
+                              className="gap-2 cursor-pointer"
+                              onClick={() => handleViewPolicy(result.table, result.operation)}
+                            >
+                              <Eye className="w-4 h-4" />
+                              View RLS Policy
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              className="gap-2 cursor-pointer"
+                              onClick={() => handleCopyTestSQL(result)}
+                            >
+                              <Copy className="w-4 h-4" />
+                              Copy Test SQL
+                            </DropdownMenuItem>
+                            
+                            <DropdownMenuSeparator />
+                            
+                            {/* Fix Actions - only show for failed tests */}
+                            {!result.passed && (
+                              <>
+                                <DropdownMenuLabel className="text-xs text-muted-foreground">
+                                  Quick Fixes
+                                </DropdownMenuLabel>
+                                {result.expected === "deny" && result.actual === "allow" && (
+                                  <DropdownMenuItem 
+                                    className="gap-2 cursor-pointer text-destructive"
+                                    onClick={() => handleAddDenyPolicy(result.table, result.operation)}
+                                  >
+                                    <Lock className="w-4 h-4" />
+                                    Add Deny Policy
+                                  </DropdownMenuItem>
+                                )}
+                                {result.expected === "allow" && result.actual === "deny" && (
+                                  <DropdownMenuItem 
+                                    className="gap-2 cursor-pointer"
+                                    onClick={() => handleAddAllowPolicy(result.table, result.operation)}
+                                  >
+                                    <Unlock className="w-4 h-4" />
+                                    Add Allow Policy
+                                  </DropdownMenuItem>
+                                )}
+                                <DropdownMenuItem 
+                                  className="gap-2 cursor-pointer"
+                                  onClick={() => handleGenerateFix(result)}
+                                >
+                                  <Wrench className="w-4 h-4" />
+                                  Generate Fix SQL
+                                </DropdownMenuItem>
+                              </>
+                            )}
+                            
+                            {/* Settings Actions */}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              className="gap-2 cursor-pointer"
+                              onClick={() => handleViewTableSchema(result.table)}
+                            >
+                              <FileCode className="w-4 h-4" />
+                              View Table Schema
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              className="gap-2 cursor-pointer"
+                              onClick={() => handleOpenDocs(result.table)}
+                            >
+                              <ExternalLink className="w-4 h-4" />
+                              RLS Documentation
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -300,16 +552,37 @@ export function RLSHealthCheck() {
 
             {/* Failed tests detail */}
             {currentRun.results.filter(r => !r.passed).length > 0 && (
-              <div className="mt-4 p-4 rounded-lg bg-red-500/10 border border-red-500/20">
-                <div className="flex items-center gap-2 text-red-600 font-medium mb-2">
-                  <AlertTriangle className="w-4 h-4" />
-                  Failed Tests Require Attention
+              <div className="mt-4 p-4 rounded-lg bg-destructive/10 border border-destructive/20">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2 text-destructive font-medium">
+                    <AlertTriangle className="w-4 h-4" />
+                    Failed Tests Require Attention
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="gap-2"
+                    onClick={handleGenerateAllFixes}
+                  >
+                    <Wrench className="w-4 h-4" />
+                    Generate All Fixes
+                  </Button>
                 </div>
                 <ul className="text-sm space-y-1">
                   {currentRun.results.filter(r => !r.passed).map((r, i) => (
-                    <li key={i} className="text-red-600">
-                      • <strong>{r.name}</strong>: Expected {r.expected}, got {r.actual}
-                      {r.error && <span className="text-xs ml-2">({r.error})</span>}
+                    <li key={i} className="text-destructive flex items-center justify-between">
+                      <span>
+                        • <strong>{r.name}</strong>: Expected {r.expected}, got {r.actual}
+                        {r.error && <span className="text-xs ml-2">({r.error})</span>}
+                      </span>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-6 px-2 text-xs"
+                        onClick={() => handleGenerateFix(r)}
+                      >
+                        Fix
+                      </Button>
                     </li>
                   ))}
                 </ul>
@@ -340,14 +613,14 @@ export function RLSHealthCheck() {
                 <div
                   key={run.run_id}
                   className={`flex items-center justify-between p-3 rounded-lg border ${
-                    run.failed === 0 ? "bg-green-500/5 border-green-500/20" : "bg-red-500/5 border-red-500/20"
+                    run.failed === 0 ? "bg-primary/5 border-primary/20" : "bg-destructive/5 border-destructive/20"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     {run.failed === 0 ? (
-                      <CheckCircle className="w-5 h-5 text-green-500" />
+                      <CheckCircle className="w-5 h-5 text-primary" />
                     ) : (
-                      <XCircle className="w-5 h-5 text-red-500" />
+                      <XCircle className="w-5 h-5 text-destructive" />
                     )}
                     <div>
                       <div className="font-mono text-xs text-muted-foreground">
@@ -360,11 +633,11 @@ export function RLSHealthCheck() {
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
-                    <Badge variant="secondary" className="bg-green-500/10 text-green-600">
+                    <Badge variant="secondary" className="bg-primary/10 text-primary">
                       {run.passed} passed
                     </Badge>
                     {run.failed > 0 && (
-                      <Badge variant="secondary" className="bg-red-500/10 text-red-600">
+                      <Badge variant="destructive">
                         {run.failed} failed
                       </Badge>
                     )}
