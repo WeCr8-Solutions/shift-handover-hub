@@ -48,19 +48,30 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Check if user is admin or developer
-    const { data: roles } = await supabaseAdmin
+    // Check if user is admin, developer, or org admin/owner
+    const { data: platformRoles } = await supabaseAdmin
       .from("user_roles")
       .select("role")
       .eq("user_id", user.id)
       .in("role", ["admin", "developer"]);
 
-    if (!roles || roles.length === 0) {
+    const { data: orgRoles } = await supabaseAdmin
+      .from("organization_members")
+      .select("role")
+      .eq("user_id", user.id)
+      .in("role", ["owner", "admin"]);
+
+    const hasPlatformAccess = platformRoles && platformRoles.length > 0;
+    const hasOrgAccess = orgRoles && orgRoles.length > 0;
+
+    if (!hasPlatformAccess && !hasOrgAccess) {
       return new Response(
-        JSON.stringify({ error: "Admin or developer access required" }),
+        JSON.stringify({ error: "Admin, developer, or organization admin access required" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    console.log(`RLS health check initiated by user ${user.id}, platform roles: ${JSON.stringify(platformRoles)}, org roles: ${JSON.stringify(orgRoles)}`);
 
     // Generate run ID
     const runId = crypto.randomUUID();
