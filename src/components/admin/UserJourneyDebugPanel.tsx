@@ -109,11 +109,11 @@ function computeRLSAccess(user: UserWithRole): RLSAccess {
   return { level: "no_access", label: "No Access", color: "outline" };
 }
 
-// Analyze access issues for a user
+// Analyze access issues for a user - comprehensive RLS and journey diagnostics
 function analyzeAccessIssues(user: UserWithRole, onboarding: UserOnboardingState | null): AccessIssue[] {
   const issues: AccessIssue[] = [];
 
-  // Check onboarding state
+  // ============ ONBOARDING STATE CHECKS ============
   if (!onboarding) {
     issues.push({
       severity: "error",
@@ -135,29 +135,60 @@ function analyzeAccessIssues(user: UserWithRole, onboarding: UserOnboardingState
       issues.push({
         severity: "error",
         message: "Stuck at org setup - no organization joined",
-        fix: "User needs to create or join an organization to proceed.",
+        fix: "User needs to create or join an organization to proceed. Check if RLS allows organization creation.",
         action: "send_invite",
       });
     }
 
     if (onboarding.current_step === "shop-setup" && user.organization) {
+      // Check if they can actually create teams/stations
+      const canCreateTeams = user.organization.role === "owner" || user.organization.role === "admin";
+      if (!canCreateTeams) {
+        issues.push({
+          severity: "error",
+          message: "Cannot create teams - org role is 'member'",
+          fix: "User's org role is 'member' but creating teams requires 'owner' or 'admin'. Upgrade their org role.",
+        });
+      } else {
+        issues.push({
+          severity: "info",
+          message: "User is in shop setup phase",
+          fix: "Guide user through team and station creation or advance their journey step.",
+          action: "reset_step",
+        });
+      }
+    }
+
+    // Detect journey step mismatch
+    if (onboarding.is_complete && !user.organization) {
       issues.push({
-        severity: "info",
-        message: "User is in shop setup phase",
-        fix: "Guide user through team and station creation or advance their journey step.",
+        severity: "error",
+        message: "Journey marked complete but no organization",
+        fix: "Inconsistent state: journey shows complete but user has no org. Reset journey to organization-setup.",
         action: "reset_step",
       });
     }
   }
 
-  // Check organization membership
+  // ============ RLS ACCESS CHECKS ============
+  
+  // Check organization membership (critical for most RLS policies)
   if (!user.organization) {
     issues.push({
       severity: "error",
       message: "No organization membership - most features blocked by RLS",
-      fix: "Send organization invite or help user create new organization.",
+      fix: "RLS functions is_org_member(), is_org_admin() will return FALSE. User cannot access org-scoped data. Send invite or help create organization.",
       action: "send_invite",
     });
+  } else {
+    // Check org role capabilities
+    if (user.organization.role === "member") {
+      issues.push({
+        severity: "info",
+        message: "Org role is 'member' - limited management access",
+        fix: "is_org_admin() returns FALSE. User can view but not manage org resources. Consider upgrading to 'admin' if needed.",
+      });
+    }
   }
 
   // Check role configuration
@@ -165,7 +196,7 @@ function analyzeAccessIssues(user: UserWithRole, onboarding: UserOnboardingState
     issues.push({
       severity: "error",
       message: "No platform roles assigned",
-      fix: "Assign at least 'operator' role for basic access.",
+      fix: "has_role() will return FALSE for all roles. The handle_new_user trigger should auto-assign 'operator'. Manually add 'operator' role.",
       action: "add_role",
     });
   }
@@ -175,7 +206,7 @@ function analyzeAccessIssues(user: UserWithRole, onboarding: UserOnboardingState
     issues.push({
       severity: "info",
       message: "Org owner without supervisor platform role",
-      fix: "Consider adding supervisor role for team management features.",
+      fix: "is_supervisor_in_org() requires supervisor platform role + org membership. Adding supervisor enables approval workflows.",
       action: "add_role",
     });
   }
@@ -185,8 +216,26 @@ function analyzeAccessIssues(user: UserWithRole, onboarding: UserOnboardingState
     issues.push({
       severity: "warning",
       message: "Operator role but no org - limited functionality",
-      fix: "Operators need organization membership to access work orders and stations.",
+      fix: "Operators need organization membership to access work orders and stations. RLS will block most queries.",
       action: "send_invite",
+    });
+  }
+
+  // ============ TEAM MEMBERSHIP CHECKS ============
+  if (user.organization && (!user.teams || user.teams.length === 0)) {
+    issues.push({
+      severity: "info",
+      message: "No team memberships",
+      fix: "User has org but no teams. is_team_member() will return FALSE. Some features require team membership.",
+    });
+  }
+
+  // Check for supervisor without teams
+  if (user.roles.includes("supervisor") && user.organization && (!user.teams || user.teams.length === 0)) {
+    issues.push({
+      severity: "warning",
+      message: "Supervisor role but no team memberships",
+      fix: "is_supervisor_for_team() requires team membership. Add user to teams for proper supervisor access.",
     });
   }
 
