@@ -59,12 +59,28 @@ export interface StationWithTeam {
 
 export interface SystemStats {
   totalUsers: number;
+  totalOrganizations: number;
   totalTeams: number;
   totalStations: number;
   totalHandoffs: number;
   activeStations: number;
   handoffsToday: number;
   handoffsThisWeek: number;
+}
+
+export interface OrganizationWithStats {
+  id: string;
+  name: string;
+  slug: string;
+  subscription_tier: string | null;
+  subscription_status: string | null;
+  created_at: string;
+  owner_id: string | null;
+  owner_name: string | null;
+  owner_email: string | null;
+  member_count: number;
+  team_count: number;
+  station_count: number;
 }
 
 export function useAdminAccess() {
@@ -469,6 +485,7 @@ export function useAllStations() {
 export function useSystemStats() {
   const [stats, setStats] = useState<SystemStats>({
     totalUsers: 0,
+    totalOrganizations: 0,
     totalTeams: 0,
     totalStations: 0,
     totalHandoffs: 0,
@@ -486,6 +503,7 @@ export function useSystemStats() {
 
     const [
       { count: userCount },
+      { count: orgCount },
       { count: teamCount },
       { count: stationCount },
       { count: handoffCount },
@@ -494,6 +512,7 @@ export function useSystemStats() {
       { count: weekCount },
     ] = await Promise.all([
       supabase.from("profiles").select("*", { count: "exact", head: true }),
+      supabase.from("organizations").select("*", { count: "exact", head: true }),
       supabase.from("teams").select("*", { count: "exact", head: true }),
       supabase.from("stations").select("*", { count: "exact", head: true }),
       supabase.from("handoff_records").select("*", { count: "exact", head: true }),
@@ -504,6 +523,7 @@ export function useSystemStats() {
 
     setStats({
       totalUsers: userCount || 0,
+      totalOrganizations: orgCount || 0,
       totalTeams: teamCount || 0,
       totalStations: stationCount || 0,
       totalHandoffs: handoffCount || 0,
@@ -520,4 +540,94 @@ export function useSystemStats() {
   }, [fetchStats]);
 
   return { stats, loading, fetchStats };
+}
+
+export function useAllOrganizations() {
+  const [organizations, setOrganizations] = useState<OrganizationWithStats[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { logActivity } = useActivityLog();
+
+  const fetchOrganizations = useCallback(async () => {
+    setLoading(true);
+
+    // Fetch all data in parallel
+    const [orgsResult, orgMembersResult, teamsResult, stationsResult, profilesResult] = await Promise.all([
+      supabase.from("organizations").select("*").order("created_at", { ascending: false }),
+      supabase.from("organization_members").select("*"),
+      supabase.from("teams").select("id, organization_id"),
+      supabase.from("stations").select("id, team_id"),
+      supabase.from("profiles").select("user_id, display_name, email"),
+    ]);
+
+    if (orgsResult.error) {
+      console.error("Error fetching organizations:", orgsResult.error);
+      setLoading(false);
+      return;
+    }
+
+    const orgs = orgsResult.data || [];
+    const orgMembers = orgMembersResult.data || [];
+    const teams = teamsResult.data || [];
+    const stations = stationsResult.data || [];
+    const profiles = profilesResult.data || [];
+
+    // Build organizations with stats
+    const orgsWithStats: OrganizationWithStats[] = orgs.map((org) => {
+      // Find owner
+      const ownerMembership = orgMembers.find((m) => m.organization_id === org.id && m.role === "owner");
+      const ownerProfile = ownerMembership 
+        ? profiles.find((p) => p.user_id === ownerMembership.user_id)
+        : null;
+
+      // Count members
+      const memberCount = orgMembers.filter((m) => m.organization_id === org.id).length;
+
+      // Count teams belonging to this org
+      const orgTeams = teams.filter((t) => t.organization_id === org.id);
+      const teamCount = orgTeams.length;
+
+      // Count stations belonging to teams in this org
+      const orgTeamIds = orgTeams.map((t) => t.id);
+      const stationCount = stations.filter((s) => s.team_id && orgTeamIds.includes(s.team_id)).length;
+
+      return {
+        id: org.id,
+        name: org.name,
+        slug: org.slug,
+        subscription_tier: org.subscription_tier,
+        subscription_status: org.subscription_status,
+        created_at: org.created_at,
+        owner_id: ownerMembership?.user_id || null,
+        owner_name: ownerProfile?.display_name || null,
+        owner_email: ownerProfile?.email || null,
+        member_count: memberCount,
+        team_count: teamCount,
+        station_count: stationCount,
+      };
+    });
+
+    setOrganizations(orgsWithStats);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetchOrganizations();
+  }, [fetchOrganizations]);
+
+  const deleteOrganization = async (orgId: string, orgName?: string) => {
+    const { error } = await supabase.from("organizations").delete().eq("id", orgId);
+    if (error) return { error };
+    
+    // Using team_deleted as closest activity type for organization deletion
+    await logActivity(
+      "team_deleted",
+      `Deleted organization: ${orgName || orgId}`,
+      { organization_id: orgId, organization_name: orgName, entity_type: "organization" }
+    );
+    
+    await fetchOrganizations();
+    return { error: null };
+  };
+
+  return { organizations, loading, fetchOrganizations, deleteOrganization };
 }

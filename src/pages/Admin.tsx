@@ -6,7 +6,7 @@ import { Header } from "@/components/Header";
 import { AdminStatsCards } from "@/components/admin/AdminStatsCards";
 import { UserManagement } from "@/components/admin/UserManagement";
 import { StationManagement } from "@/components/admin/StationManagement";
-import { TeamOversight } from "@/components/admin/TeamOversight";
+import { OrganizationOversight } from "@/components/admin/OrganizationOversight";
 import { ActivityLogs } from "@/components/admin/ActivityLogs";
 import { WorkOrderManagement } from "@/components/admin/WorkOrderManagement";
 import { WorkOrderHistory } from "@/components/admin/WorkOrderHistory";
@@ -22,7 +22,7 @@ import { TourTriggerButton } from "@/components/onboarding";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Shield, LayoutDashboard, Users, Wrench, Building2, Activity, FileSpreadsheet, Package, Route, Lightbulb, History, Bug, ShieldCheck, ListTodo, Settings2 } from "lucide-react";
+import { Loader2, Shield, LayoutDashboard, Users, Wrench, Briefcase, Activity, FileSpreadsheet, Package, Route, Lightbulb, History, Bug, ShieldCheck, ListTodo, Settings2 } from "lucide-react";
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -118,9 +118,9 @@ export default function Admin() {
               <Wrench className="w-4 h-4" />
               Stations
             </TabsTrigger>
-            <TabsTrigger value="teams" className="gap-2">
-              <Building2 className="w-4 h-4" />
-              Teams
+            <TabsTrigger value="organizations" className="gap-2">
+              <Briefcase className="w-4 h-4" />
+              Organizations
             </TabsTrigger>
             <TabsTrigger value="performance" className="gap-2">
               <Lightbulb className="w-4 h-4" />
@@ -154,11 +154,11 @@ export default function Admin() {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
+            <OrganizationOversight isAdmin={isAdmin} />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <UserManagement isAdmin={isAdmin} />
-              <TeamOversight isAdmin={isAdmin} />
+              <StationManagement isAdmin={isAdmin} />
             </div>
-            <StationManagement isAdmin={isAdmin} />
           </TabsContent>
 
           <TabsContent value="work-orders">
@@ -181,8 +181,8 @@ export default function Admin() {
             <StationManagement isAdmin={isAdmin} />
           </TabsContent>
 
-          <TabsContent value="teams">
-            <TeamOversight isAdmin={isAdmin} />
+          <TabsContent value="organizations">
+            <OrganizationOversight isAdmin={isAdmin} />
           </TabsContent>
 
           <TabsContent value="performance">
