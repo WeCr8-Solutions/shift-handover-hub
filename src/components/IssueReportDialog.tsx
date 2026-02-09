@@ -14,8 +14,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useIssueReporter } from "@/hooks/useIssueReporter";
-import { Bug, AlertCircle, Terminal, Loader2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Bug, AlertCircle, Terminal, Loader2, AlertTriangle, UserX } from "lucide-react";
 
 interface IssueReportDialogProps {
   open: boolean;
@@ -24,12 +26,13 @@ interface IssueReportDialogProps {
 }
 
 export function IssueReportDialog({ open, onOpenChange, prefillError }: IssueReportDialogProps) {
+  const { user, loading: authLoading } = useAuth();
   const { reportIssue, isReporting, consoleLogs, runtimeErrors, productionContext } = useIssueReporter();
   
   const [title, setTitle] = useState(prefillError?.message?.slice(0, 100) || "");
   const [description, setDescription] = useState("");
   const [severity, setSeverity] = useState<"low" | "medium" | "high" | "critical">(
-    prefillError ? "high" : "medium"
+    prefillError || !user ? "high" : "medium"
   );
   const [includeConsoleLogs, setIncludeConsoleLogs] = useState(true);
   const [includePage, setIncludePage] = useState(true);
@@ -55,6 +58,7 @@ export function IssueReportDialog({ open, onOpenChange, prefillError }: IssueRep
 
   const errorCount = runtimeErrors.length;
   const warningCount = consoleLogs.filter(l => l.level === "warn").length;
+  const isGuestReport = !user && !authLoading;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -62,14 +66,27 @@ export function IssueReportDialog({ open, onOpenChange, prefillError }: IssueRep
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Bug className="w-5 h-5 text-primary" />
-            Report an Issue
+            {isGuestReport ? "Report Access Issue" : "Report an Issue"}
           </DialogTitle>
           <DialogDescription>
-            Help us improve by reporting bugs or issues you encounter.
+            {isGuestReport 
+              ? "Having trouble logging in or accessing your data? Let us know and we'll help."
+              : "Help us improve by reporting bugs or issues you encounter."
+            }
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Guest report alert */}
+          {isGuestReport && (
+            <Alert variant="destructive" className="border-destructive/50 bg-destructive/10">
+              <UserX className="h-4 w-4" />
+              <AlertDescription>
+                You're not currently logged in. Your report will be submitted as a guest and prioritized for review.
+              </AlertDescription>
+            </Alert>
+          )}
+
           {/* Runtime context badges */}
           <div className="flex flex-wrap gap-2 text-xs">
             <Badge variant="outline" className="font-mono">
@@ -78,6 +95,12 @@ export function IssueReportDialog({ open, onOpenChange, prefillError }: IssueRep
             <Badge variant="outline" className="font-mono">
               v{productionContext.app_version}
             </Badge>
+            {isGuestReport && (
+              <Badge variant="secondary" className="gap-1 bg-orange-500/10 text-orange-600">
+                <UserX className="w-3 h-3" />
+                Guest Report
+              </Badge>
+            )}
             {errorCount > 0 && (
               <Badge variant="destructive" className="gap-1">
                 <AlertCircle className="w-3 h-3" />
