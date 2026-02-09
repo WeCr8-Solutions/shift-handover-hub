@@ -14,6 +14,25 @@ export interface UserWithRole {
   avatar_url: string | null;
   created_at: string;
   roles: AppRole[];
+  organization?: {
+    id: string;
+    name: string;
+    role: string;
+  } | null;
+  teams?: {
+    id: string;
+    name: string;
+    role: string;
+  }[];
+}
+
+export interface OrganizationWithUsers {
+  id: string;
+  name: string;
+  slug: string;
+  subscription_tier: string | null;
+  subscription_status: string | null;
+  users: UserWithRole[];
 }
 
 export interface TeamWithStats {
@@ -138,49 +157,107 @@ export function useAdminAccess() {
 
 export function useAllUsers() {
   const [users, setUsers] = useState<UserWithRole[]>([]);
+  const [organizations, setOrganizations] = useState<OrganizationWithUsers[]>([]);
   const [loading, setLoading] = useState(true);
   const { logActivity } = useActivityLog();
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
 
-    // Fetch all profiles
-    const { data: profiles, error: profilesError } = await supabase
-      .from("profiles")
-      .select("*")
-      .order("created_at", { ascending: false });
+    // Fetch all data in parallel
+    const [profilesResult, rolesResult, orgMembersResult, orgsResult, teamMembersResult, teamsResult] = await Promise.all([
+      supabase.from("profiles").select("*").order("created_at", { ascending: false }),
+      supabase.from("user_roles").select("*"),
+      supabase.from("organization_members").select("*"),
+      supabase.from("organizations").select("*"),
+      supabase.from("team_members").select("*"),
+      supabase.from("teams").select("id, name"),
+    ]);
 
-    if (profilesError) {
-      console.error("Error fetching profiles:", profilesError);
+    if (profilesResult.error) {
+      console.error("Error fetching profiles:", profilesResult.error);
       setLoading(false);
       return;
     }
 
-    // Fetch all user roles
-    const { data: allRoles, error: rolesError } = await supabase
-      .from("user_roles")
-      .select("*");
+    const profiles = profilesResult.data || [];
+    const allRoles = rolesResult.data || [];
+    const orgMembers = orgMembersResult.data || [];
+    const allOrgs = orgsResult.data || [];
+    const teamMembers = teamMembersResult.data || [];
+    const allTeams = teamsResult.data || [];
 
-    if (rolesError) {
-      console.error("Error fetching roles:", rolesError);
-      setLoading(false);
-      return;
-    }
+    // Build users with roles, org membership, and team membership
+    const usersWithRoles: UserWithRole[] = profiles.map((profile) => {
+      const userOrgMembership = orgMembers.find((om) => om.user_id === profile.user_id);
+      const userOrg = userOrgMembership 
+        ? allOrgs.find((o) => o.id === userOrgMembership.organization_id)
+        : null;
+      
+      const userTeamMemberships = teamMembers.filter((tm) => tm.user_id === profile.user_id);
+      const userTeams = userTeamMemberships.map((tm) => {
+        const team = allTeams.find((t) => t.id === tm.team_id);
+        return team ? { id: team.id, name: team.name, role: tm.role } : null;
+      }).filter(Boolean) as { id: string; name: string; role: string }[];
 
-    // Combine profiles with their roles
-    const usersWithRoles: UserWithRole[] = (profiles || []).map((profile) => ({
-      id: profile.id,
-      user_id: profile.user_id,
-      email: profile.email,
-      display_name: profile.display_name,
-      avatar_url: profile.avatar_url,
-      created_at: profile.created_at,
-      roles: (allRoles || [])
-        .filter((r) => r.user_id === profile.user_id)
-        .map((r) => r.role),
-    }));
+      return {
+        id: profile.id,
+        user_id: profile.user_id,
+        email: profile.email,
+        display_name: profile.display_name,
+        avatar_url: profile.avatar_url,
+        created_at: profile.created_at,
+        roles: allRoles.filter((r) => r.user_id === profile.user_id).map((r) => r.role),
+        organization: userOrg ? {
+          id: userOrg.id,
+          name: userOrg.name,
+          role: userOrgMembership?.role || 'member',
+        } : null,
+        teams: userTeams,
+      };
+    });
+
+    // Group users by organization
+    const orgMap = new Map<string, OrganizationWithUsers>();
+    
+    // Add "No Organization" bucket
+    orgMap.set("no-org", {
+      id: "no-org",
+      name: "No Organization",
+      slug: "no-org",
+      subscription_tier: null,
+      subscription_status: null,
+      users: [],
+    });
+
+    // Add all organizations
+    allOrgs.forEach((org) => {
+      orgMap.set(org.id, {
+        id: org.id,
+        name: org.name,
+        slug: org.slug,
+        subscription_tier: org.subscription_tier,
+        subscription_status: org.subscription_status,
+        users: [],
+      });
+    });
+
+    // Assign users to organizations
+    usersWithRoles.forEach((user) => {
+      const orgId = user.organization?.id || "no-org";
+      const org = orgMap.get(orgId);
+      if (org) {
+        org.users.push(user);
+      }
+    });
+
+    // Convert to array and sort by user count
+    const orgArray = Array.from(orgMap.values())
+      .filter((org) => org.users.length > 0)
+      .sort((a, b) => b.users.length - a.users.length);
 
     setUsers(usersWithRoles);
+    setOrganizations(orgArray);
     setLoading(false);
   }, []);
 
@@ -219,7 +296,7 @@ export function useAllUsers() {
     return { error: null };
   };
 
-  return { users, loading, fetchUsers, updateUserRole };
+  return { users, organizations, loading, fetchUsers, updateUserRole };
 }
 
 export function useAllTeams() {
