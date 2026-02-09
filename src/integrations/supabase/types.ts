@@ -3625,6 +3625,7 @@ export type Database = {
         Args: { _count?: number; _metric: string; _org_id: string }
         Returns: undefined
       }
+      is_dev_or_admin: { Args: { _user_id: string }; Returns: boolean }
       is_feature_enabled: {
         Args: { _feature_key: string; _org_id: string }
         Returns: boolean
