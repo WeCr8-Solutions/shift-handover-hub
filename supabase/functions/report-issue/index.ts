@@ -31,41 +31,46 @@ const handler = async (req: Request): Promise<Response> => {
     // Create clients
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
     
-    // Verify JWT and get user
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: "Authorization required" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
-    
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: "Invalid token" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
     const body: IssueReport = await req.json();
+    
+    // Try to get authenticated user (optional for guest reports)
+    let user = null;
+    let profile = null;
+    let orgMemberId = null;
+    
+    const authHeader = req.headers.get("Authorization");
+    if (authHeader) {
+      const token = authHeader.replace("Bearer ", "");
+      const { data: authData, error: authError } = await supabaseAdmin.auth.getUser(token);
+      
+      if (!authError && authData.user) {
+        user = authData.user;
+        
+        // Get user profile for display name
+        const { data: profileData } = await supabaseAdmin
+          .from("profiles")
+          .select("display_name, email")
+          .eq("user_id", user.id)
+          .single();
+        profile = profileData;
 
-    // Get user profile for display name
-    const { data: profile } = await supabaseAdmin
-      .from("profiles")
-      .select("display_name, email")
-      .eq("user_id", user.id)
-      .single();
+        // Get user's organization (if any)
+        const { data: orgMember } = await supabaseAdmin
+          .from("organization_members")
+          .select("organization_id")
+          .eq("user_id", user.id)
+          .limit(1)
+          .single();
+        orgMemberId = orgMember?.organization_id;
+      }
+    }
 
-    // Get user's organization (if any)
-    const { data: orgMember } = await supabaseAdmin
-      .from("organization_members")
-      .select("organization_id")
-      .eq("user_id", user.id)
-      .limit(1)
-      .single();
+    // For guest reports, mark it clearly
+    const isGuestReport = !user;
+    const reporterEmail = user?.email || body.metadata?.guest_email || null;
+    const reporterName = profile?.display_name || user?.email?.split("@")[0] || "Guest User";
+
+    console.log(`Processing ${isGuestReport ? 'guest' : 'authenticated'} issue report:`, body.title);
 
     // Production context from environment
     const productionContext = {
@@ -75,24 +80,28 @@ const handler = async (req: Request): Promise<Response> => {
       commit_hash: body.metadata?.commit_hash || Deno.env.get("COMMIT_HASH") || "unknown",
     };
 
-    // Insert the issue
+    // Insert the issue (using service role bypasses RLS)
     const { data: issue, error: insertError } = await supabaseAdmin
       .from("issues")
       .insert({
-        reporter_id: user.id,
-        reporter_email: user.email,
-        reporter_display_name: profile?.display_name || user.email?.split("@")[0],
-        title: body.title,
+        reporter_id: user?.id || null,
+        reporter_email: reporterEmail,
+        reporter_display_name: reporterName,
+        title: isGuestReport ? `[ACCESS ISSUE] ${body.title}` : body.title,
         description: body.description,
-        severity: body.severity || "medium",
+        severity: isGuestReport ? "high" : (body.severity || "medium"),
         error_message: body.error_message,
         error_stack: body.error_stack,
         console_logs: body.console_logs || [],
         page_url: body.page_url,
         user_agent: req.headers.get("User-Agent"),
-        organization_id: orgMember?.organization_id,
+        organization_id: orgMemberId,
         ...productionContext,
-        metadata: body.metadata || {},
+        metadata: {
+          ...(body.metadata || {}),
+          is_guest_report: isGuestReport,
+          reported_at: new Date().toISOString(),
+        },
       })
       .select()
       .single();

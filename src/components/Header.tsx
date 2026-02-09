@@ -137,21 +137,22 @@ export function Header() {
               </span>
             </div>
 
-            {/* Report Issue Button */}
-            {user && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    onClick={() => setIssueDialogOpen(true)}
-                  >
-                    <Bug className="w-5 h-5 text-muted-foreground" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Report an Issue</TooltipContent>
-              </Tooltip>
-            )}
+            {/* Report Issue Button - Always visible for authenticated users or when having issues */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => setIssueDialogOpen(true)}
+                  className={!user ? "animate-pulse" : ""}
+                >
+                  <Bug className={`w-5 h-5 ${user ? "text-muted-foreground" : "text-destructive"}`} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                {user ? "Report an Issue" : "Report Access Issue"}
+              </TooltipContent>
+            </Tooltip>
 
             {/* Notifications */}
             <button className="relative p-2 rounded-lg hover:bg-secondary transition-colors">
