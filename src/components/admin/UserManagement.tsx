@@ -481,16 +481,28 @@ export function UserManagement({ isAdmin }: UserManagementProps) {
       
       <CardContent>
         {viewMode === "grouped" ? (
-          <Accordion type="multiple" defaultValue={organizations.map(o => o.id)} className="space-y-2">
+          <Accordion type="multiple" defaultValue={organizations.map(o => o.id)} className="space-y-3">
             {organizations
               .filter(org => selectedOrg === "all" || org.id === selectedOrg || (selectedOrg === "no-org" && org.id === "no-org"))
               .map((org) => {
                 const orgUsers = filterUsers(org.users);
                 if (orgUsers.length === 0) return null;
                 
+                // Find the organization owner
+                const orgOwner = orgUsers.find(u => u.organization?.role === "owner");
+                const orgAdmins = orgUsers.filter(u => u.organization?.role === "admin");
+                const orgMembers = orgUsers.filter(u => u.organization?.role === "member" || !u.organization?.role);
+                
+                // Sort users: owner first, then admins, then members
+                const sortedUsers = [
+                  ...(orgOwner ? [orgOwner] : []),
+                  ...orgAdmins.filter(u => u.user_id !== orgOwner?.user_id),
+                  ...orgMembers.filter(u => u.user_id !== orgOwner?.user_id),
+                ];
+                
                 return (
-                  <AccordionItem key={org.id} value={org.id} className="border rounded-lg px-4">
-                    <AccordionTrigger className="hover:no-underline py-3">
+                  <AccordionItem key={org.id} value={org.id} className="border rounded-lg overflow-hidden">
+                    <AccordionTrigger className="hover:no-underline px-4 py-3 bg-muted/30">
                       <div className="flex items-center gap-3 flex-1">
                         <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                           <Building2 className="w-5 h-5 text-primary" />
@@ -499,8 +511,16 @@ export function UserManagement({ isAdmin }: UserManagementProps) {
                           <div className="flex items-center gap-2">
                             <span className="font-semibold">{org.name}</span>
                             {org.subscription_tier && (
-                              <Badge variant="secondary" className="text-xs">
+                              <Badge variant="default" className="text-xs gap-1">
                                 {org.subscription_tier}
+                              </Badge>
+                            )}
+                            {org.subscription_status && (
+                              <Badge 
+                                variant={org.subscription_status === "active" ? "secondary" : "destructive"} 
+                                className="text-xs"
+                              >
+                                {org.subscription_status}
                               </Badge>
                             )}
                           </div>
@@ -509,13 +529,68 @@ export function UserManagement({ isAdmin }: UserManagementProps) {
                             {org.id === "no-org" && " • Not assigned to any organization"}
                           </div>
                         </div>
-                        <Badge variant="outline" className="mr-4">
-                          {orgUsers.length} users
+                        <Badge variant="outline" className="mr-4 gap-1">
+                          <UsersIcon className="w-3 h-3" />
+                          {orgUsers.length}
                         </Badge>
                       </div>
                     </AccordionTrigger>
-                    <AccordionContent>
-                      <div className="border rounded-lg mt-2 overflow-x-auto">
+                    <AccordionContent className="px-4 pb-4">
+                      {/* Owner Card - Prominently displayed */}
+                      {orgOwner && org.id !== "no-org" && (
+                        <div className="mb-4 p-4 rounded-lg border-2 border-primary/20 bg-primary/5">
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+                                <Crown className="w-6 h-6 text-primary" />
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-semibold text-lg">{orgOwner.display_name}</span>
+                                  <Badge variant="default" className="gap-1">
+                                    <Crown className="w-3 h-3" />
+                                    Organization Owner
+                                  </Badge>
+                                </div>
+                                <p className="text-sm text-muted-foreground">{orgOwner.email}</p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  Primary account holder & billing contact
+                                </p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              {renderAccessLevelBadge(orgOwner)}
+                              <div className="mt-2 text-xs text-muted-foreground">
+                                Joined {new Date(orgOwner.created_at).toLocaleDateString()}
+                              </div>
+                            </div>
+                          </div>
+                          {/* Subscription Info */}
+                          {(org.subscription_tier || org.subscription_status) && (
+                            <div className="mt-3 pt-3 border-t border-primary/20 flex items-center gap-4 text-sm">
+                              <span className="text-muted-foreground">Subscription:</span>
+                              <Badge variant="secondary">{org.subscription_tier || "Free"}</Badge>
+                              {org.subscription_status && (
+                                <Badge 
+                                  variant={org.subscription_status === "active" ? "outline" : "destructive"}
+                                >
+                                  {org.subscription_status}
+                                </Badge>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      
+                      {/* Team Members Table */}
+                      <div className="border rounded-lg overflow-x-auto">
+                        <div className="px-3 py-2 bg-muted/50 border-b flex items-center gap-2">
+                          <UsersIcon className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-sm font-medium">Team Members</span>
+                          <span className="text-xs text-muted-foreground">
+                            ({orgAdmins.length} admin{orgAdmins.length !== 1 ? 's' : ''}, {orgMembers.length} member{orgMembers.length !== 1 ? 's' : ''})
+                          </span>
+                        </div>
                         <Table>
                           <TableHeader>
                             <TableRow>
@@ -543,7 +618,7 @@ export function UserManagement({ isAdmin }: UserManagementProps) {
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {orgUsers.map((user) => renderUserRow(user, false))}
+                            {sortedUsers.map((user) => renderUserRow(user, false))}
                           </TableBody>
                         </Table>
                       </div>
