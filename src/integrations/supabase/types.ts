@@ -3605,6 +3605,18 @@ export type Database = {
       }
     }
     Functions: {
+      can_insert_station: {
+        Args: { _actor: string; _org_id: string; _team_id: string }
+        Returns: boolean
+      }
+      can_insert_team: {
+        Args: { _actor: string; _created_by: string; _org_id: string }
+        Returns: boolean
+      }
+      can_insert_team_member: {
+        Args: { _actor: string; _target_user_id: string; _team_id: string }
+        Returns: boolean
+      }
       check_feature_access: {
         Args: { _feature: string; _org_id: string }
         Returns: boolean
