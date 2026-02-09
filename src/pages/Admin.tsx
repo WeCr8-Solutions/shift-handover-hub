@@ -16,13 +16,14 @@ import { IssuesManagement } from "@/components/admin/IssuesManagement";
 import { RLSHealthCheck } from "@/components/admin/RLSHealthCheck";
 import { DevIssueQueue } from "@/components/admin/DevIssueQueue";
 import { DevSettingsPanel } from "@/components/admin/DevSettingsPanel";
+import { UserJourneyDebugPanel } from "@/components/admin/UserJourneyDebugPanel";
 import { BulkUploadDialog } from "@/components/BulkUploadDialog";
 import { SeedTestDataButton } from "@/components/admin/SeedTestDataButton";
 import { TourTriggerButton } from "@/components/onboarding";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Shield, LayoutDashboard, Users, Wrench, Briefcase, Activity, FileSpreadsheet, Package, Route, Lightbulb, History, Bug, ShieldCheck, ListTodo, Settings2 } from "lucide-react";
+import { Loader2, Shield, LayoutDashboard, Users, Wrench, Briefcase, Activity, FileSpreadsheet, Package, Route, Lightbulb, History, Bug, ShieldCheck, ListTodo, Settings2, Map } from "lucide-react";
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -149,6 +150,10 @@ export default function Admin() {
                   <ShieldCheck className="w-4 h-4" />
                   RLS Health
                 </TabsTrigger>
+                <TabsTrigger value="user-journey" className="gap-2">
+                  <Map className="w-4 h-4" />
+                  User Journey
+                </TabsTrigger>
               </>
             )}
           </TabsList>
@@ -210,6 +215,10 @@ export default function Admin() {
 
               <TabsContent value="rls-health">
                 <RLSHealthCheck />
+              </TabsContent>
+
+              <TabsContent value="user-journey">
+                <UserJourneyDebugPanel />
               </TabsContent>
             </>
           )}
