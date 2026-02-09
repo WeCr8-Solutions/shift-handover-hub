@@ -15,18 +15,19 @@ import { PerformanceUpdatesReview } from "@/components/admin/PerformanceUpdatesR
 import { IssuesManagement } from "@/components/admin/IssuesManagement";
 import { RLSHealthCheck } from "@/components/admin/RLSHealthCheck";
 import { DevIssueQueue } from "@/components/admin/DevIssueQueue";
+import { DevSettingsPanel } from "@/components/admin/DevSettingsPanel";
 import { BulkUploadDialog } from "@/components/BulkUploadDialog";
 import { SeedTestDataButton } from "@/components/admin/SeedTestDataButton";
 import { TourTriggerButton } from "@/components/onboarding";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Shield, LayoutDashboard, Users, Wrench, Building2, Activity, FileSpreadsheet, Package, Route, Lightbulb, History, Bug, ShieldCheck, ListTodo } from "lucide-react";
+import { Loader2, Shield, LayoutDashboard, Users, Wrench, Building2, Activity, FileSpreadsheet, Package, Route, Lightbulb, History, Bug, ShieldCheck, ListTodo, Settings2 } from "lucide-react";
 
 export default function Admin() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-  const { isAdmin, isSupervisor, hasAdminAccess, loading: accessLoading } = useAdminAccess();
+  const { isAdmin, isDeveloper, isSupervisor, hasAdminAccess, hasTestingAccess, loading: accessLoading } = useAdminAccess();
   const { stats, loading: statsLoading } = useSystemStats();
   const [bulkUploadOpen, setBulkUploadOpen] = useState(false);
 
@@ -78,9 +79,9 @@ export default function Admin() {
               <FileSpreadsheet className="w-4 h-4 mr-2" />
               Bulk Upload
             </Button>
-            <Badge variant={isAdmin ? "default" : "secondary"} className="gap-1">
+            <Badge variant={isAdmin || isDeveloper ? "default" : "secondary"} className="gap-1">
               <Shield className="w-3 h-3" />
-              {isAdmin ? "Administrator" : "Supervisor"}
+              {isAdmin ? "Administrator" : isDeveloper ? "Developer" : "Supervisor"}
             </Badge>
           </div>
         </div>
@@ -133,14 +134,23 @@ export default function Admin() {
               <Bug className="w-4 h-4" />
               Issues
             </TabsTrigger>
-            <TabsTrigger value="dev-queue" className="gap-2">
-              <ListTodo className="w-4 h-4" />
-              Dev Queue
-            </TabsTrigger>
-            <TabsTrigger value="rls-health" className="gap-2">
-              <ShieldCheck className="w-4 h-4" />
-              RLS Health
-            </TabsTrigger>
+            {/* Developer-only tabs - restricted to platform admin/developer roles */}
+            {hasTestingAccess && (
+              <>
+                <TabsTrigger value="dev-queue" className="gap-2">
+                  <ListTodo className="w-4 h-4" />
+                  Dev Queue
+                </TabsTrigger>
+                <TabsTrigger value="dev-settings" className="gap-2">
+                  <Settings2 className="w-4 h-4" />
+                  Dev Settings
+                </TabsTrigger>
+                <TabsTrigger value="rls-health" className="gap-2">
+                  <ShieldCheck className="w-4 h-4" />
+                  RLS Health
+                </TabsTrigger>
+              </>
+            )}
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
@@ -187,13 +197,22 @@ export default function Admin() {
             <IssuesManagement />
           </TabsContent>
 
-          <TabsContent value="dev-queue">
-            <DevIssueQueue />
-          </TabsContent>
+          {/* Developer-only tab contents */}
+          {hasTestingAccess && (
+            <>
+              <TabsContent value="dev-queue">
+                <DevIssueQueue />
+              </TabsContent>
 
-          <TabsContent value="rls-health">
-            <RLSHealthCheck />
-          </TabsContent>
+              <TabsContent value="dev-settings">
+                <DevSettingsPanel />
+              </TabsContent>
+
+              <TabsContent value="rls-health">
+                <RLSHealthCheck />
+              </TabsContent>
+            </>
+          )}
         </Tabs>
       </main>
 
