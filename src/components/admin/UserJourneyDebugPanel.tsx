@@ -37,13 +37,28 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { 
   Loader2, Search, User, Building2, Shield, Crown, UserCog, 
   Eye, Lock, Unlock, CheckCircle2, Circle, AlertTriangle, 
   XCircle, RefreshCw, Map, ChevronRight, Info, ShieldAlert,
-  ShieldCheck, Briefcase, Play, Flag, Users
+  ShieldCheck, Briefcase, Play, Flag, Users, RotateCcw,
+  UserPlus, Wand2, Mail, Send, PlusCircle
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Database } from "@/integrations/supabase/types";
+
+type AppRole = Database["public"]["Enums"]["app_role"];
 
 // User journey state from database
 interface UserOnboardingState {
@@ -66,6 +81,7 @@ interface AccessIssue {
   severity: "error" | "warning" | "info";
   message: string;
   fix?: string;
+  action?: "create_onboarding" | "reset_step" | "add_role" | "mark_welcome" | "send_invite";
 }
 
 // RLS Access computation (same as UserManagement)
@@ -103,13 +119,15 @@ function analyzeAccessIssues(user: UserWithRole, onboarding: UserOnboardingState
       severity: "error",
       message: "No onboarding record found",
       fix: "User may have been created outside normal signup flow. Create onboarding record manually.",
+      action: "create_onboarding",
     });
   } else {
     if (!onboarding.has_seen_welcome && !onboarding.is_complete) {
       issues.push({
         severity: "warning",
         message: "User hasn't completed welcome modal",
-        fix: "User will see welcome modal on next login. Consider reaching out to guide them.",
+        fix: "Mark welcome as seen to allow user to proceed with journey.",
+        action: "mark_welcome",
       });
     }
 
@@ -118,15 +136,16 @@ function analyzeAccessIssues(user: UserWithRole, onboarding: UserOnboardingState
         severity: "error",
         message: "Stuck at org setup - no organization joined",
         fix: "User needs to create or join an organization to proceed.",
+        action: "send_invite",
       });
     }
 
     if (onboarding.current_step === "shop-setup" && user.organization) {
-      // Check if they have teams/stations
       issues.push({
         severity: "info",
         message: "User is in shop setup phase",
-        fix: "Guide user through team and station creation.",
+        fix: "Guide user through team and station creation or advance their journey step.",
+        action: "reset_step",
       });
     }
   }
@@ -137,6 +156,7 @@ function analyzeAccessIssues(user: UserWithRole, onboarding: UserOnboardingState
       severity: "error",
       message: "No organization membership - most features blocked by RLS",
       fix: "Send organization invite or help user create new organization.",
+      action: "send_invite",
     });
   }
 
@@ -146,6 +166,7 @@ function analyzeAccessIssues(user: UserWithRole, onboarding: UserOnboardingState
       severity: "error",
       message: "No platform roles assigned",
       fix: "Assign at least 'operator' role for basic access.",
+      action: "add_role",
     });
   }
 
@@ -155,6 +176,7 @@ function analyzeAccessIssues(user: UserWithRole, onboarding: UserOnboardingState
       severity: "info",
       message: "Org owner without supervisor platform role",
       fix: "Consider adding supervisor role for team management features.",
+      action: "add_role",
     });
   }
 
@@ -164,6 +186,7 @@ function analyzeAccessIssues(user: UserWithRole, onboarding: UserOnboardingState
       severity: "warning",
       message: "Operator role but no org - limited functionality",
       fix: "Operators need organization membership to access work orders and stations.",
+      action: "send_invite",
     });
   }
 
@@ -179,9 +202,10 @@ function getStepStatus(step: OnboardingStep, onboarding: UserOnboardingState | n
 }
 
 export function UserJourneyDebugPanel() {
-  const { users, loading: usersLoading } = useAllUsers();
+  const { users, loading: usersLoading, fetchUsers } = useAllUsers();
   const [onboardingData, setOnboardingData] = useState<Record<string, UserOnboardingState>>({});
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | "issues" | "incomplete" | "complete">("all");
   const [selectedUser, setSelectedUser] = useState<UserWithJourney | null>(null);
@@ -225,6 +249,16 @@ export function UserJourneyDebugPanel() {
     };
   });
 
+  // Update selected user when data changes
+  useEffect(() => {
+    if (selectedUser) {
+      const updated = usersWithJourney.find(u => u.id === selectedUser.id);
+      if (updated) {
+        setSelectedUser(updated);
+      }
+    }
+  }, [usersWithJourney, selectedUser?.id]);
+
   // Filter users
   const filteredUsers = usersWithJourney.filter((user) => {
     const matchesSearch = 
@@ -260,11 +294,208 @@ export function UserJourneyDebugPanel() {
       });
       setOnboardingData(map);
     }
+    await fetchUsers();
     setLoading(false);
+    toast({ title: "Data refreshed" });
   };
 
   const handleFilterChange = (value: string) => {
     setFilterStatus(value as "all" | "issues" | "incomplete" | "complete");
+  };
+
+  // === ACTION HANDLERS ===
+
+  // Create onboarding record for user
+  const handleCreateOnboarding = async (user: UserWithJourney) => {
+    setActionLoading(`create_onboarding_${user.user_id}`);
+    try {
+      const { error } = await supabase
+        .from("user_onboarding")
+        .insert({
+          user_id: user.user_id,
+          current_step: "welcome",
+          completed_steps: [],
+          is_complete: false,
+          has_seen_welcome: false,
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Onboarding record created",
+        description: `${user.display_name} can now start their journey from welcome step.`,
+      });
+      await refreshData();
+    } catch (err: any) {
+      toast({
+        title: "Failed to create onboarding",
+        description: err.message,
+        variant: "destructive",
+      });
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  // Mark welcome as seen
+  const handleMarkWelcomeSeen = async (user: UserWithJourney) => {
+    setActionLoading(`mark_welcome_${user.user_id}`);
+    try {
+      const { error } = await supabase
+        .from("user_onboarding")
+        .update({ has_seen_welcome: true })
+        .eq("user_id", user.user_id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Welcome marked as seen",
+        description: `${user.display_name} will now proceed to organization setup.`,
+      });
+      await refreshData();
+    } catch (err: any) {
+      toast({
+        title: "Failed to update",
+        description: err.message,
+        variant: "destructive",
+      });
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  // Reset onboarding to specific step
+  const handleResetToStep = async (user: UserWithJourney, step: OnboardingStep) => {
+    setActionLoading(`reset_step_${user.user_id}`);
+    try {
+      const stepIndex = ONBOARDING_STEPS.findIndex(s => s.id === step);
+      const completedSteps = ONBOARDING_STEPS.slice(0, stepIndex).map(s => s.id);
+
+      const { error } = await supabase
+        .from("user_onboarding")
+        .update({
+          current_step: step,
+          completed_steps: completedSteps,
+          is_complete: false,
+          completed_at: null,
+        })
+        .eq("user_id", user.user_id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Journey step reset",
+        description: `${user.display_name} is now at step: ${step}`,
+      });
+      await refreshData();
+    } catch (err: any) {
+      toast({
+        title: "Failed to reset step",
+        description: err.message,
+        variant: "destructive",
+      });
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  // Mark journey complete
+  const handleMarkJourneyComplete = async (user: UserWithJourney) => {
+    setActionLoading(`complete_journey_${user.user_id}`);
+    try {
+      const { error } = await supabase
+        .from("user_onboarding")
+        .update({
+          is_complete: true,
+          completed_at: new Date().toISOString(),
+          current_step: "complete",
+          completed_steps: ONBOARDING_STEPS.map(s => s.id),
+          has_seen_welcome: true,
+        })
+        .eq("user_id", user.user_id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Journey marked complete",
+        description: `${user.display_name} now has full access to all features.`,
+      });
+      await refreshData();
+    } catch (err: any) {
+      toast({
+        title: "Failed to complete journey",
+        description: err.message,
+        variant: "destructive",
+      });
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  // Add platform role
+  const handleAddRole = async (user: UserWithJourney, role: AppRole) => {
+    setActionLoading(`add_role_${user.user_id}_${role}`);
+    try {
+      const { error } = await supabase
+        .from("user_roles")
+        .insert({
+          user_id: user.user_id,
+          role: role,
+        });
+
+      if (error) {
+        if (error.code === "23505") {
+          toast({
+            title: "Role already assigned",
+            description: `${user.display_name} already has the ${role} role.`,
+          });
+          return;
+        }
+        throw error;
+      }
+
+      toast({
+        title: "Role added",
+        description: `${role} role assigned to ${user.display_name}.`,
+      });
+      await refreshData();
+    } catch (err: any) {
+      toast({
+        title: "Failed to add role",
+        description: err.message,
+        variant: "destructive",
+      });
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  // Remove platform role
+  const handleRemoveRole = async (user: UserWithJourney, role: AppRole) => {
+    setActionLoading(`remove_role_${user.user_id}_${role}`);
+    try {
+      const { error } = await supabase
+        .from("user_roles")
+        .delete()
+        .eq("user_id", user.user_id)
+        .eq("role", role);
+
+      if (error) throw error;
+
+      toast({
+        title: "Role removed",
+        description: `${role} role removed from ${user.display_name}.`,
+      });
+      await refreshData();
+    } catch (err: any) {
+      toast({
+        title: "Failed to remove role",
+        description: err.message,
+        variant: "destructive",
+      });
+    } finally {
+      setActionLoading(null);
+    }
   };
 
   if (usersLoading || loading) {
@@ -454,10 +685,154 @@ export function UserJourneyDebugPanel() {
                           {selectedUser.display_name.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <div>
+                      <div className="flex-1">
                         <h3 className="font-semibold">{selectedUser.display_name}</h3>
                         <p className="text-sm text-muted-foreground">{selectedUser.email}</p>
                       </div>
+                    </div>
+
+                    <Separator />
+
+                    {/* Quick Actions Panel */}
+                    <div className="space-y-3">
+                      <h4 className="font-medium flex items-center gap-2">
+                        <Wand2 className="w-4 h-4" />
+                        Quick Actions
+                      </h4>
+                      <div className="grid grid-cols-2 gap-2">
+                        {/* Create onboarding if missing */}
+                        {!selectedUser.onboarding && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleCreateOnboarding(selectedUser)}
+                            disabled={actionLoading?.startsWith("create_onboarding")}
+                            className="justify-start gap-2"
+                          >
+                            {actionLoading === `create_onboarding_${selectedUser.user_id}` ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <PlusCircle className="w-3 h-3" />
+                            )}
+                            Create Onboarding
+                          </Button>
+                        )}
+
+                        {/* Mark welcome seen */}
+                        {selectedUser.onboarding && !selectedUser.onboarding.has_seen_welcome && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleMarkWelcomeSeen(selectedUser)}
+                            disabled={actionLoading?.startsWith("mark_welcome")}
+                            className="justify-start gap-2"
+                          >
+                            {actionLoading === `mark_welcome_${selectedUser.user_id}` ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <Eye className="w-3 h-3" />
+                            )}
+                            Mark Welcome Seen
+                          </Button>
+                        )}
+
+                        {/* Mark journey complete */}
+                        {selectedUser.onboarding && !selectedUser.onboarding.is_complete && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                disabled={actionLoading?.startsWith("complete_journey")}
+                                className="justify-start gap-2"
+                              >
+                                {actionLoading === `complete_journey_${selectedUser.user_id}` ? (
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                ) : (
+                                  <CheckCircle2 className="w-3 h-3" />
+                                )}
+                                Complete Journey
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="bg-background">
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Complete User Journey?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This will mark all onboarding steps as complete for {selectedUser.display_name}. 
+                                  They will have full access to all features. This action should only be used 
+                                  when the user is truly ready to use the system.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleMarkJourneyComplete(selectedUser)}>
+                                  Complete Journey
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
+
+                        {/* Add operator role if missing */}
+                        {!selectedUser.roles.includes("operator") && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleAddRole(selectedUser, "operator")}
+                            disabled={actionLoading?.includes("add_role")}
+                            className="justify-start gap-2"
+                          >
+                            {actionLoading === `add_role_${selectedUser.user_id}_operator` ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <UserPlus className="w-3 h-3" />
+                            )}
+                            Add Operator Role
+                          </Button>
+                        )}
+
+                        {/* Add supervisor role */}
+                        {selectedUser.organization && !selectedUser.roles.includes("supervisor") && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleAddRole(selectedUser, "supervisor")}
+                            disabled={actionLoading?.includes("add_role")}
+                            className="justify-start gap-2"
+                          >
+                            {actionLoading === `add_role_${selectedUser.user_id}_supervisor` ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <UserCog className="w-3 h-3" />
+                            )}
+                            Add Supervisor Role
+                          </Button>
+                        )}
+                      </div>
+
+                      {/* Reset to specific step */}
+                      {selectedUser.onboarding && (
+                        <div className="space-y-2">
+                          <p className="text-sm text-muted-foreground">Reset journey to step:</p>
+                          <div className="flex flex-wrap gap-1">
+                            {ONBOARDING_STEPS.map((step) => (
+                              <Button
+                                key={step.id}
+                                size="sm"
+                                variant={selectedUser.onboarding?.current_step === step.id ? "default" : "outline"}
+                                onClick={() => handleResetToStep(selectedUser, step.id)}
+                                disabled={actionLoading?.startsWith("reset_step") || selectedUser.onboarding?.current_step === step.id}
+                                className="text-xs h-7 px-2"
+                              >
+                                {actionLoading === `reset_step_${selectedUser.user_id}` && selectedUser.onboarding?.current_step !== step.id ? (
+                                  <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                                ) : null}
+                                {step.id}
+                              </Button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     <Separator />
@@ -489,7 +864,7 @@ export function UserJourneyDebugPanel() {
                                 ) : (
                                   <Info className="w-4 h-4 text-muted-foreground mt-0.5" />
                                 )}
-                                <div>
+                                <div className="flex-1">
                                   <p className="font-medium">{issue.message}</p>
                                   {issue.fix && (
                                     <p className="text-muted-foreground mt-1">
@@ -601,12 +976,51 @@ export function UserJourneyDebugPanel() {
                           selectedUser.roles.map((role) => (
                             <div key={role} className="p-3 rounded-lg bg-muted/50">
                               <div className="flex items-center justify-between">
-                                <Badge variant={role === "admin" ? "destructive" : role === "developer" ? "default" : "secondary"}>
-                                  {role}
-                                </Badge>
-                                <span className="text-xs text-muted-foreground">
-                                  has_role('{role}'): ✅
-                                </span>
+                                <div className="flex items-center gap-2">
+                                  <Badge variant={role === "admin" ? "destructive" : role === "developer" ? "default" : "secondary"}>
+                                    {role}
+                                  </Badge>
+                                  <span className="text-xs text-muted-foreground">
+                                    has_role('{role}'): ✅
+                                  </span>
+                                </div>
+                                {/* Allow removing org-level roles only */}
+                                {(role === "supervisor" || role === "operator" || role === "viewer") && (
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-6 px-2 text-xs text-destructive hover:text-destructive"
+                                        disabled={actionLoading?.includes("remove_role")}
+                                      >
+                                        {actionLoading === `remove_role_${selectedUser.user_id}_${role}` ? (
+                                          <Loader2 className="w-3 h-3 animate-spin" />
+                                        ) : (
+                                          <XCircle className="w-3 h-3" />
+                                        )}
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent className="bg-background">
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>Remove Role?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          Remove the "{role}" role from {selectedUser.display_name}? 
+                                          This may affect their access to certain features.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction 
+                                          onClick={() => handleRemoveRole(selectedUser, role)}
+                                          className="bg-destructive hover:bg-destructive/90"
+                                        >
+                                          Remove Role
+                                        </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                )}
                               </div>
                               {role === "admin" && (
                                 <p className="text-xs text-muted-foreground mt-1">
@@ -633,6 +1047,27 @@ export function UserJourneyDebugPanel() {
                             </p>
                           </div>
                         )}
+                        
+                        {/* Add role buttons */}
+                        <div className="flex flex-wrap gap-1 pt-2">
+                          {(["operator", "supervisor", "viewer"] as const).filter(r => !selectedUser.roles.includes(r)).map((role) => (
+                            <Button
+                              key={role}
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleAddRole(selectedUser, role)}
+                              disabled={actionLoading?.includes("add_role")}
+                              className="h-7 text-xs gap-1"
+                            >
+                              {actionLoading === `add_role_${selectedUser.user_id}_${role}` ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                              ) : (
+                                <PlusCircle className="w-3 h-3" />
+                              )}
+                              Add {role}
+                            </Button>
+                          ))}
+                        </div>
                       </div>
                     </div>
 
