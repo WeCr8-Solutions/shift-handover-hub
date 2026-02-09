@@ -29,7 +29,7 @@ export default function Admin() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { isAdmin, isDeveloper, isSupervisor, hasAdminAccess, hasTestingAccess, loading: accessLoading } = useAdminAccess();
-  const { stats, loading: statsLoading } = useSystemStats();
+  const { stats, loading: statsLoading, lastUpdated: statsLastUpdated, fetchStats } = useSystemStats();
   const [bulkUploadOpen, setBulkUploadOpen] = useState(false);
 
   useEffect(() => {
@@ -89,7 +89,12 @@ export default function Admin() {
 
         {/* Stats Overview */}
         <div data-tour="admin-stats">
-          <AdminStatsCards stats={stats} loading={statsLoading} />
+          <AdminStatsCards 
+            stats={stats} 
+            loading={statsLoading} 
+            lastUpdated={statsLastUpdated}
+            onRefresh={fetchStats}
+          />
         </div>
 
         {/* Management Tabs - Organized by Bucket System */}

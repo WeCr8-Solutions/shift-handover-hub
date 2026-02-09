@@ -1,14 +1,19 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Building2, Wrench, FileText, Activity, Briefcase } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Users, Building2, Wrench, FileText, Activity, Briefcase, Radio, RefreshCw } from "lucide-react";
 import { SystemStats } from "@/hooks/useAdminData";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface AdminStatsCardsProps {
   stats: SystemStats;
   loading: boolean;
+  lastUpdated?: Date;
+  onRefresh?: () => void;
 }
 
-export function AdminStatsCards({ stats, loading }: AdminStatsCardsProps) {
+export function AdminStatsCards({ stats, loading, lastUpdated, onRefresh }: AdminStatsCardsProps) {
   const statCards = [
     {
       title: "Organizations",
@@ -48,7 +53,7 @@ export function AdminStatsCards({ stats, loading }: AdminStatsCardsProps) {
     },
   ];
 
-  if (loading) {
+  if (loading && !lastUpdated) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         {Array.from({ length: 6 }).map((_, i) => (
@@ -66,22 +71,65 @@ export function AdminStatsCards({ stats, loading }: AdminStatsCardsProps) {
     );
   }
 
+  const formatLastUpdated = (date?: Date) => {
+    if (!date) return "Never";
+    const now = new Date();
+    const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
+    if (diff < 10) return "Just now";
+    if (diff < 60) return `${diff}s ago`;
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    return date.toLocaleTimeString();
+  };
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-      {statCards.map((stat) => (
-        <Card key={stat.title}>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              {stat.title}
-            </CardTitle>
-            <stat.icon className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stat.value}</div>
-            <p className="text-xs text-muted-foreground">{stat.description}</p>
-          </CardContent>
-        </Card>
-      ))}
+    <div className="space-y-2">
+      {/* Live Status Bar */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="gap-1.5 bg-primary/10 text-primary border-primary/30">
+            <Radio className="w-3 h-3 animate-pulse" />
+            Live Data
+          </Badge>
+          <span className="text-xs text-muted-foreground">
+            Updated {formatLastUpdated(lastUpdated)}
+          </span>
+          {loading && (
+            <RefreshCw className="w-3 h-3 animate-spin text-muted-foreground" />
+          )}
+        </div>
+        {onRefresh && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="sm" onClick={onRefresh} disabled={loading}>
+                  <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Refresh now</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        {statCards.map((stat) => (
+          <Card key={stat.title}>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {stat.title}
+              </CardTitle>
+              <stat.icon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stat.value}</div>
+              <p className="text-xs text-muted-foreground">{stat.description}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }

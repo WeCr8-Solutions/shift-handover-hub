@@ -1,10 +1,15 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Database, Json } from "@/integrations/supabase/types";
 import { useActivityLog } from "@/hooks/useActivityLog";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
+
+// Auto-refresh interval for admin data (30 seconds)
+const ADMIN_REFRESH_INTERVAL = 30000;
+// Realtime debounce to avoid too frequent refreshes
+const REALTIME_DEBOUNCE_MS = 1000;
 
 export interface UserWithRole {
   id: string;
@@ -175,7 +180,9 @@ export function useAllUsers() {
   const [users, setUsers] = useState<UserWithRole[]>([]);
   const [organizations, setOrganizations] = useState<OrganizationWithUsers[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const { logActivity } = useActivityLog();
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -274,12 +281,67 @@ export function useAllUsers() {
 
     setUsers(usersWithRoles);
     setOrganizations(orgArray);
+    setLastUpdated(new Date());
     setLoading(false);
   }, []);
 
+  // Debounced refresh for realtime events
+  const debouncedRefresh = useCallback(() => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    debounceRef.current = setTimeout(() => {
+      fetchUsers();
+    }, REALTIME_DEBOUNCE_MS);
+  }, [fetchUsers]);
+
+  // Initial fetch
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
+
+  // Auto-refresh interval for admins to keep data live
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchUsers();
+    }, ADMIN_REFRESH_INTERVAL);
+
+    return () => clearInterval(interval);
+  }, [fetchUsers]);
+
+  // Realtime subscriptions for live updates
+  useEffect(() => {
+    const channel = supabase
+      .channel("admin-users-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "profiles" },
+        () => debouncedRefresh()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "user_roles" },
+        () => debouncedRefresh()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "organization_members" },
+        () => debouncedRefresh()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "organizations" },
+        () => debouncedRefresh()
+      )
+      .subscribe();
+
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+      supabase.removeChannel(channel);
+    };
+  }, [debouncedRefresh]);
 
   const updateUserRole = async (
     userId: string,
@@ -312,7 +374,7 @@ export function useAllUsers() {
     return { error: null };
   };
 
-  return { users, organizations, loading, fetchUsers, updateUserRole };
+  return { users, organizations, loading, lastUpdated, fetchUsers, updateUserRole };
 }
 
 export function useAllTeams() {
@@ -494,6 +556,8 @@ export function useSystemStats() {
     handoffsThisWeek: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const fetchStats = useCallback(async () => {
     setLoading(true);
@@ -532,20 +596,82 @@ export function useSystemStats() {
       handoffsThisWeek: weekCount || 0,
     });
 
+    setLastUpdated(new Date());
     setLoading(false);
   }, []);
 
+  // Debounced refresh for realtime events
+  const debouncedRefresh = useCallback(() => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    debounceRef.current = setTimeout(() => {
+      fetchStats();
+    }, REALTIME_DEBOUNCE_MS);
+  }, [fetchStats]);
+
+  // Initial fetch
   useEffect(() => {
     fetchStats();
   }, [fetchStats]);
 
-  return { stats, loading, fetchStats };
+  // Auto-refresh interval
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchStats();
+    }, ADMIN_REFRESH_INTERVAL);
+
+    return () => clearInterval(interval);
+  }, [fetchStats]);
+
+  // Realtime subscriptions for live stats
+  useEffect(() => {
+    const channel = supabase
+      .channel("admin-stats-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "profiles" },
+        () => debouncedRefresh()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "organizations" },
+        () => debouncedRefresh()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "teams" },
+        () => debouncedRefresh()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "stations" },
+        () => debouncedRefresh()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "handoff_records" },
+        () => debouncedRefresh()
+      )
+      .subscribe();
+
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+      supabase.removeChannel(channel);
+    };
+  }, [debouncedRefresh]);
+
+  return { stats, loading, lastUpdated, fetchStats };
 }
 
 export function useAllOrganizations() {
   const [organizations, setOrganizations] = useState<OrganizationWithStats[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const { logActivity } = useActivityLog();
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const fetchOrganizations = useCallback(async () => {
     setLoading(true);
@@ -607,12 +733,72 @@ export function useAllOrganizations() {
     });
 
     setOrganizations(orgsWithStats);
+    setLastUpdated(new Date());
     setLoading(false);
   }, []);
 
+  // Debounced refresh for realtime events
+  const debouncedRefresh = useCallback(() => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    debounceRef.current = setTimeout(() => {
+      fetchOrganizations();
+    }, REALTIME_DEBOUNCE_MS);
+  }, [fetchOrganizations]);
+
+  // Initial fetch
   useEffect(() => {
     fetchOrganizations();
   }, [fetchOrganizations]);
+
+  // Auto-refresh interval
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchOrganizations();
+    }, ADMIN_REFRESH_INTERVAL);
+
+    return () => clearInterval(interval);
+  }, [fetchOrganizations]);
+
+  // Realtime subscriptions for live organization updates
+  useEffect(() => {
+    const channel = supabase
+      .channel("admin-orgs-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "organizations" },
+        () => debouncedRefresh()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "organization_members" },
+        () => debouncedRefresh()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "profiles" },
+        () => debouncedRefresh()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "teams" },
+        () => debouncedRefresh()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "stations" },
+        () => debouncedRefresh()
+      )
+      .subscribe();
+
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+      supabase.removeChannel(channel);
+    };
+  }, [debouncedRefresh]);
 
   const deleteOrganization = async (orgId: string, orgName?: string) => {
     const { error } = await supabase.from("organizations").delete().eq("id", orgId);
@@ -629,5 +815,5 @@ export function useAllOrganizations() {
     return { error: null };
   };
 
-  return { organizations, loading, fetchOrganizations, deleteOrganization };
+  return { organizations, loading, lastUpdated, fetchOrganizations, deleteOrganization };
 }
