@@ -171,10 +171,17 @@ export function useStations(teamId?: string | null, organizationId?: string | nu
     work_center: string;
     work_center_type: WorkCenterType;
     team_id?: string | null;
+    organization_id?: string | null;
   }) => {
+    // Ensure organization_id is set, either explicitly or from user's org
+    const stationWithOrg = {
+      ...stationData,
+      organization_id: stationData.organization_id || effectiveOrgId || null,
+    };
+    
     const { data, error } = await supabase
       .from("stations")
-      .insert(stationData)
+      .insert(stationWithOrg)
       .select()
       .single();
 

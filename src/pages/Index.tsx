@@ -16,7 +16,7 @@ import { useOnboardingContext } from "@/components/onboarding/OnboardingProvider
 import { mockStations, mockHandoffRecords } from "@/lib/mockData";
 import { WorkCenterType, StationInfo, ShiftHandoffRecord } from "@/types/handoff";
 import { Button } from "@/components/ui/button";
-import { Plus, LayoutGrid, History, Loader2, Building2, Lightbulb, ListTodo, Package } from "lucide-react";
+import { Plus, LayoutGrid, History, Loader2, Building2, Lightbulb, ListTodo, Package, Settings, Users } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { TourTriggerButton } from "@/components/onboarding";
@@ -287,9 +287,31 @@ const Index = () => {
                     ))}
                   </div>
                   {filteredStations.length === 0 && (
-                    <div className="text-center py-12 text-muted-foreground">
-                      {user ? "No stations in this workspace. Create a team and add stations to get started." : "No stations match the selected filters."}
-                    </div>
+                    <Card className="border-dashed">
+                      <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                        {user ? (
+                          <>
+                            <Users className="w-12 h-12 text-muted-foreground mb-4" />
+                            <h3 className="font-semibold text-lg mb-2">No stations configured</h3>
+                            <p className="text-muted-foreground mb-4 max-w-md">
+                              Create a team and add work stations to start tracking handoffs and managing your shop floor.
+                            </p>
+                            <div className="flex gap-2">
+                              <Button variant="outline" onClick={() => navigate("/teams")}>
+                                <Users className="w-4 h-4 mr-2" />
+                                Manage Teams
+                              </Button>
+                              <Button onClick={() => navigate("/setup")}>
+                                <Settings className="w-4 h-4 mr-2" />
+                                Complete Setup
+                              </Button>
+                            </div>
+                          </>
+                        ) : (
+                          <p className="text-muted-foreground">No stations match the selected filters.</p>
+                        )}
+                      </CardContent>
+                    </Card>
                   )}
                 </div>
               </div>
@@ -314,9 +336,34 @@ const Index = () => {
                   ))}
                 </div>
                 {filteredHandoffs.length === 0 && (
-                  <div className="text-center py-12 text-muted-foreground">
-                    {user ? "No handoff records yet. Create your first handoff to get started." : "No handoff records match the selected filters."}
-                  </div>
+                  <Card className="border-dashed">
+                    <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                      {user ? (
+                        <>
+                          <History className="w-12 h-12 text-muted-foreground mb-4" />
+                          <h3 className="font-semibold text-lg mb-2">No handoff records yet</h3>
+                          <p className="text-muted-foreground mb-4 max-w-md">
+                            {stations.length > 0 
+                              ? "Create your first handoff record to start documenting shift transitions."
+                              : "Set up your work stations first, then you can create handoff records."}
+                          </p>
+                          {stations.length > 0 ? (
+                            <Button onClick={() => setShowNewHandoff(true)}>
+                              <Plus className="w-4 h-4 mr-2" />
+                              Create First Handoff
+                            </Button>
+                          ) : (
+                            <Button onClick={() => navigate("/teams")}>
+                              <Users className="w-4 h-4 mr-2" />
+                              Set Up Stations
+                            </Button>
+                          )}
+                        </>
+                      ) : (
+                        <p className="text-muted-foreground">No handoff records match the selected filters.</p>
+                      )}
+                    </CardContent>
+                  </Card>
                 )}
               </div>
             )}

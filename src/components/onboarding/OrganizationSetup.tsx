@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -7,9 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { validateInviteCode, redeemInviteCode } from '@/hooks/useOrganizationInvites';
+import { getSafeErrorMessage } from '@/lib/errorHandling';
 import { 
   Building2, 
   Plus, 
@@ -17,7 +16,9 @@ import {
   ArrowRight, 
   Loader2,
   CheckCircle2,
-  Factory
+  Factory,
+  XCircle,
+  Ticket
 } from 'lucide-react';
 
 interface OrganizationSetupProps {
@@ -37,6 +38,17 @@ export function OrganizationSetup({ onComplete, onSkip }: OrganizationSetupProps
   
   // Join organization form
   const [inviteCode, setInviteCode] = useState('');
+  const [isValidating, setIsValidating] = useState(false);
+  const [validatedInvite, setValidatedInvite] = useState<{
+    id: string;
+    organizationId: string;
+    organizationName: string;
+    teamId: string | null;
+    teamName: string | null;
+    orgRole: string;
+    appRole: string | null;
+  } | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   const handleCreateOrganization = async () => {
     if (!user || !orgName.trim()) return;
@@ -81,7 +93,7 @@ export function OrganizationSetup({ onComplete, onSkip }: OrganizationSetupProps
       console.error('Error creating organization:', error);
       toast({
         title: 'Error',
-        description: error.message || 'Failed to create organization',
+        description: getSafeErrorMessage(error),
         variant: 'destructive',
       });
     } finally {
@@ -89,22 +101,56 @@ export function OrganizationSetup({ onComplete, onSkip }: OrganizationSetupProps
     }
   };
 
+  const handleValidateCode = async () => {
+    if (!inviteCode.trim()) {
+      setValidationError('Please enter an invite code');
+      return;
+    }
+
+    setIsValidating(true);
+    setValidationError(null);
+    setValidatedInvite(null);
+
+    const result = await validateInviteCode(inviteCode);
+    setIsValidating(false);
+
+    if (result.valid && result.invite) {
+      setValidatedInvite(result.invite);
+    } else {
+      setValidationError('Invalid or expired invite code');
+    }
+  };
+
+  const formatInviteCode = (value: string) => {
+    return value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
+  };
+
   const handleJoinOrganization = async () => {
-    if (!user || !inviteCode.trim()) return;
+    if (!user || !validatedInvite) return;
 
     setIsLoading(true);
     try {
-      // TODO: Implement invite code lookup
-      // For now, show a message that this feature is coming
+      const result = await redeemInviteCode(inviteCode, user.id);
+      
+      if (result.error) {
+        toast({
+          title: 'Failed to join',
+          description: getSafeErrorMessage(result.error),
+          variant: 'destructive',
+        });
+        return;
+      }
+
       toast({
-        title: 'Coming Soon',
-        description: 'Organization invites will be available soon. For now, please create a new organization.',
+        title: 'Welcome!',
+        description: `You've joined ${validatedInvite.organizationName}`,
       });
+      onComplete();
     } catch (error: any) {
       console.error('Error joining organization:', error);
       toast({
         title: 'Error',
-        description: error.message || 'Failed to join organization',
+        description: getSafeErrorMessage(error),
         variant: 'destructive',
       });
     } finally {
@@ -258,7 +304,7 @@ export function OrganizationSetup({ onComplete, onSkip }: OrganizationSetupProps
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Users className="w-5 h-5" />
+              <Ticket className="w-5 h-5" />
               Join an Organization
             </CardTitle>
             <CardDescription>
@@ -268,19 +314,83 @@ export function OrganizationSetup({ onComplete, onSkip }: OrganizationSetupProps
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="invite-code">Invite Code *</Label>
-              <Input
-                id="invite-code"
-                placeholder="Enter invite code..."
-                value={inviteCode}
-                onChange={(e) => setInviteCode(e.target.value)}
-                disabled={isLoading}
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="invite-code"
+                  placeholder="ABCD1234"
+                  value={inviteCode}
+                  onChange={(e) => {
+                    setInviteCode(formatInviteCode(e.target.value));
+                    setValidatedInvite(null);
+                    setValidationError(null);
+                  }}
+                  className="font-mono tracking-widest text-center text-lg"
+                  maxLength={8}
+                  disabled={isLoading}
+                />
+                <Button
+                  onClick={handleValidateCode}
+                  disabled={isValidating || inviteCode.length < 4}
+                  variant="outline"
+                >
+                  {isValidating ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    'Verify'
+                  )}
+                </Button>
+              </div>
             </div>
+
+            {validationError && (
+              <div className="flex items-center gap-2 text-destructive text-sm">
+                <XCircle className="w-4 h-4" />
+                {validationError}
+              </div>
+            )}
+
+            {validatedInvite && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 text-green-600 text-sm">
+                  <CheckCircle2 className="w-4 h-4" />
+                  Valid invite code
+                </div>
+
+                <div className="bg-secondary/50 rounded-lg p-4 space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <Building2 className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium">{validatedInvite.organizationName}</p>
+                      <p className="text-sm text-muted-foreground">Organization</p>
+                    </div>
+                  </div>
+
+                  {validatedInvite.teamName && (
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center">
+                        <Users className="w-5 h-5 text-muted-foreground" />
+                      </div>
+                      <div>
+                        <p className="font-medium">{validatedInvite.teamName}</p>
+                        <p className="text-sm text-muted-foreground">Auto-join team</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             <div className="flex gap-3 pt-2">
               <Button 
                 variant="outline" 
-                onClick={() => setMode(null)}
+                onClick={() => {
+                  setMode(null);
+                  setValidatedInvite(null);
+                  setValidationError(null);
+                  setInviteCode('');
+                }}
                 disabled={isLoading}
               >
                 Back
@@ -288,7 +398,7 @@ export function OrganizationSetup({ onComplete, onSkip }: OrganizationSetupProps
               <Button 
                 className="flex-1"
                 onClick={handleJoinOrganization}
-                disabled={isLoading || !inviteCode.trim()}
+                disabled={isLoading || !validatedInvite}
               >
                 {isLoading ? (
                   <>
@@ -297,8 +407,8 @@ export function OrganizationSetup({ onComplete, onSkip }: OrganizationSetupProps
                   </>
                 ) : (
                   <>
-                    Join Organization
-                    <ArrowRight className="w-4 h-4 ml-2" />
+                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                    Join {validatedInvite?.organizationName || 'Organization'}
                   </>
                 )}
               </Button>

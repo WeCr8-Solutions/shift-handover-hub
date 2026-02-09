@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useStations, Station } from "@/hooks/useStations";
+import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { getSafeErrorMessage } from "@/lib/errorHandling";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -51,6 +53,7 @@ export function TeamStationManager({
   onComplete 
 }: TeamStationManagerProps) {
   const { stations, loading, createStation, refreshStations } = useStations(teamId);
+  const { organization } = useUserOrganization();
   const { toast } = useToast();
   
   const [showAddForm, setShowAddForm] = useState(false);
@@ -78,13 +81,14 @@ export function TeamStationManager({
       work_center: workCenter.trim(),
       work_center_type: workCenterType,
       team_id: teamId,
+      organization_id: organization?.id || null,
     });
     setIsCreating(false);
 
     if (error) {
       toast({
         title: "Failed to add station",
-        description: error.message,
+        description: getSafeErrorMessage(error),
         variant: "destructive",
       });
     } else {

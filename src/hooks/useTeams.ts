@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { getSafeErrorMessage } from "@/lib/errorHandling";
 
 export interface Team {
   id: string;
@@ -52,11 +53,11 @@ export function useTeams() {
   }, [fetchTeams]);
 
   const createTeam = async (name: string, description?: string, organizationId?: string) => {
-    if (!user) return { error: new Error("Not authenticated") };
+    if (!user) return { error: new Error("Not authenticated"), safeMessage: "Please sign in to continue." };
 
     // Organization ID is required for RLS compliance
     if (!organizationId) {
-      return { error: new Error("Organization required to create a team") };
+      return { error: new Error("Organization required to create a team"), safeMessage: "Please set up an organization first." };
     }
 
     // First create the team
@@ -71,7 +72,9 @@ export function useTeams() {
       .select()
       .single();
 
-    if (teamError) return { error: teamError };
+    if (teamError) {
+      return { error: teamError, safeMessage: getSafeErrorMessage(teamError) };
+    }
 
     // Then add the creator as owner
     const { error: memberError } = await supabase
@@ -82,10 +85,12 @@ export function useTeams() {
         role: "owner",
       });
 
-    if (memberError) return { error: memberError };
+    if (memberError) {
+      return { error: memberError, safeMessage: getSafeErrorMessage(memberError) };
+    }
 
     await fetchTeams();
-    return { data: team, error: null };
+    return { data: team, error: null, safeMessage: null };
   };
 
   const updateTeam = async (teamId: string, updates: { name?: string; description?: string }) => {
@@ -173,7 +178,10 @@ export function useTeamMembers(teamId: string | null) {
       .maybeSingle();
 
     if (profileError || !profiles) {
-      return { error: new Error("User not found with that email") };
+      return { 
+        error: new Error("User not found with that email"), 
+        safeMessage: "No user found with that email. They may need to sign up first, or you can generate an invite code for them." 
+      };
     }
 
     // Add them to the team
