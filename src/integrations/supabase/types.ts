@@ -2906,6 +2906,7 @@ export type Database = {
         Row: {
           id: string
           joined_at: string
+          organization_id: string | null
           role: Database["public"]["Enums"]["team_role"]
           team_id: string
           user_id: string
@@ -2913,6 +2914,7 @@ export type Database = {
         Insert: {
           id?: string
           joined_at?: string
+          organization_id?: string | null
           role?: Database["public"]["Enums"]["team_role"]
           team_id: string
           user_id: string
@@ -2920,6 +2922,7 @@ export type Database = {
         Update: {
           id?: string
           joined_at?: string
+          organization_id?: string | null
           role?: Database["public"]["Enums"]["team_role"]
           team_id?: string
           user_id?: string
