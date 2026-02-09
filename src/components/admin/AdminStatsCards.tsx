@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Building2, Wrench, FileText, Activity, Calendar } from "lucide-react";
+import { Users, Building2, Wrench, FileText, Activity, Briefcase } from "lucide-react";
 import { SystemStats } from "@/hooks/useAdminData";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -11,6 +11,12 @@ interface AdminStatsCardsProps {
 export function AdminStatsCards({ stats, loading }: AdminStatsCardsProps) {
   const statCards = [
     {
+      title: "Organizations",
+      value: stats.totalOrganizations,
+      icon: Briefcase,
+      description: "Enterprise buckets",
+    },
+    {
       title: "Total Users",
       value: stats.totalUsers,
       icon: Users,
@@ -20,7 +26,7 @@ export function AdminStatsCards({ stats, loading }: AdminStatsCardsProps) {
       title: "Teams",
       value: stats.totalTeams,
       icon: Building2,
-      description: "Active teams",
+      description: "Across all orgs",
     },
     {
       title: "Stations",
@@ -35,16 +41,10 @@ export function AdminStatsCards({ stats, loading }: AdminStatsCardsProps) {
       description: "All time records",
     },
     {
-      title: "Today's Handoffs",
+      title: "Today's Activity",
       value: stats.handoffsToday,
       icon: Activity,
-      description: "Submitted today",
-    },
-    {
-      title: "This Week",
-      value: stats.handoffsThisWeek,
-      icon: Calendar,
-      description: "Last 7 days",
+      description: "Handoffs submitted",
     },
   ];
 
