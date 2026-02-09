@@ -1,6 +1,6 @@
 # JobLine.ai Product Requirements Documents
 
-**Last Updated**: 2025-01-27
+**Last Updated**: 2026-02-09
 
 ---
 
@@ -16,6 +16,7 @@
 | 06 | [Subscription & Billing](./06-subscription-billing.md) | ✅ Active | Stripe integration and entitlements |
 | 07 | [Admin & Supervisor Operations](./07-admin-supervisor-operations.md) | ✅ Active | Management workflows for stations, WOs, routing |
 | 08 | [Operator Workflow](./08-operator-workflow.md) | ✅ Active | Daily operator tasks and job execution |
+| 09 | [Developer Tooling & Integration](./09-developer-tooling-integration.md) | ✅ Active | Issues, Dev Queue, RLS Health, User Journey |
 
 ---
 
