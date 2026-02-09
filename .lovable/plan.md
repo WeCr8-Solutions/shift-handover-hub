@@ -205,8 +205,19 @@ After implementation:
 | Org creation RLS | ✅ Fixed | None |
 | Team creation RLS | ✅ Fixed | None |
 | Station creation RLS | ✅ Fixed | None |
-| Work order creation | ⚠️ Works but fragile | Add entitlements trigger |
-| Entitlements auto-creation | ❌ Missing | Add trigger + backfill |
+| Work order creation | ✅ Fixed | None |
+| Entitlements auto-creation | ✅ Implemented | None - trigger + backfill complete |
 | Admin/Dev UI isolation | ✅ Working | None |
 | Admin/Dev data isolation | ✅ Working | None |
 | User role escalation prevention | ✅ Working | None |
+
+---
+
+## Implementation Complete (2026-02-09)
+
+Migration `20260209_auto_create_entitlements` deployed:
+- ✅ `auto_create_org_entitlements()` trigger function created
+- ✅ `trigger_auto_create_entitlements` attached to `organizations` table  
+- ✅ All existing orgs backfilled with free tier entitlements
+
+**Note**: The "Leaked Password Protection Disabled" warning is a pre-existing auth configuration setting, not related to this RLS work.
