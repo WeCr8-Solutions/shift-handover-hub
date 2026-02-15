@@ -601,7 +601,7 @@ export default function Landing() {
                       <span className="text-[10px] sm:text-xs font-medium text-muted-foreground">Output by Station</span>
                       <Badge variant="outline" className="text-[8px] px-1 py-0">Today</Badge>
                     </div>
-                    <div className="flex items-end gap-1.5 h-16 sm:h-20">
+                    <div className="flex items-end gap-1.5" style={{ height: '5rem' }}>
                       {[
                         { h: 75, label: "CNC-01" },
                         { h: 58, label: "CNC-02" },
@@ -612,9 +612,9 @@ export default function Landing() {
                         { h: 20, label: "MIL-02" },
                         { h: 70, label: "GRD-01" },
                       ].map((bar) => (
-                        <div key={bar.label} className="flex-1 flex flex-col items-center gap-0.5">
-                          <div className="w-full rounded-t-sm bg-primary/80 transition-all" style={{ height: `${bar.h}%` }} />
-                          <span className="text-[6px] sm:text-[7px] text-muted-foreground font-mono truncate w-full text-center">{bar.label}</span>
+                        <div key={bar.label} className="flex-1 flex flex-col justify-end items-center h-full">
+                          <div className="w-full rounded-t-sm bg-primary/80" style={{ height: `${bar.h}%` }} />
+                          <span className="text-[6px] sm:text-[7px] text-muted-foreground font-mono truncate w-full text-center mt-0.5">{bar.label}</span>
                         </div>
                       ))}
                     </div>
