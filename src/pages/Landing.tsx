@@ -926,6 +926,7 @@ export default function Landing() {
                 onClick={() => {
                   handleFeatureClick(feature.title);
                   navigate(feature.link);
+                  window.scrollTo(0, 0);
                 }}
               >
                 <div className={cn("w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center mb-3 sm:mb-4", feature.bg)}>
