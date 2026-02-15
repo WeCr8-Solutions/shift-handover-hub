@@ -570,32 +570,116 @@ export default function Landing() {
                     All Systems Operational
                   </Badge>
                 </div>
-                
-                {/* Station Cards Grid */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+
+                {/* KPI Stats Row */}
+                <div className="grid grid-cols-2 lg:grid-cols-5 gap-2">
                   {[
-                    { id: "CNC-01", status: "running", part: "PN-4521", progress: 78 },
-                    { id: "CNC-02", status: "running", part: "PN-8832", progress: 45 },
-                    { id: "LATHE-01", status: "setup", part: "PN-1127", progress: 0 },
-                    { id: "MILL-03", status: "running", part: "PN-9943", progress: 92 },
-                  ].map((station) => (
-                    <div key={station.id} className="bg-secondary/30 rounded-md sm:rounded-lg p-2 sm:p-3 border border-border/50">
-                      <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-                        <span className="text-[10px] sm:text-xs font-mono font-medium">{station.id}</span>
-                        <div className={cn(
-                          "w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full",
-                          station.status === "running" ? "bg-green-400" : "bg-amber-400"
-                        )} />
+                    { label: "Running", value: 9, total: 12, color: "bg-green-500", textColor: "text-green-400" },
+                    { label: "Down", value: 1, total: 12, color: "bg-red-500", textColor: "text-red-400" },
+                    { label: "In Setup", value: 1, total: 12, color: "bg-amber-500", textColor: "text-amber-400" },
+                    { label: "Waiting", value: 1, total: 12, color: "bg-blue-500", textColor: "text-blue-400" },
+                    { label: "Handoffs", value: 6, color: "bg-primary", textColor: "text-primary" },
+                  ].map((kpi) => (
+                    <div key={kpi.label} className="bg-secondary/30 rounded-md p-2 border border-border/50">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <div className={cn("w-2 h-2 rounded-full", kpi.color)} />
+                        <span className="text-[10px] text-muted-foreground">{kpi.label}</span>
                       </div>
-                      <div className="text-[10px] sm:text-xs text-muted-foreground mb-1.5 sm:mb-2">{station.part}</div>
-                      <div className="h-1 sm:h-1.5 bg-secondary rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-primary rounded-full transition-all"
-                          style={{ width: `${station.progress}%` }}
-                        />
-                      </div>
+                      <span className={cn("text-base sm:text-lg font-bold font-mono", kpi.textColor)}>
+                        {kpi.value}
+                        {kpi.total && <span className="text-[10px] text-muted-foreground font-normal">/{kpi.total}</span>}
+                      </span>
                     </div>
                   ))}
+                </div>
+
+                {/* Charts Row */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 sm:gap-3">
+                  {/* Bar Chart Mock */}
+                  <div className="bg-secondary/20 rounded-md sm:rounded-lg p-2.5 sm:p-3 border border-border/50">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[10px] sm:text-xs font-medium text-muted-foreground">Output by Station</span>
+                      <Badge variant="outline" className="text-[8px] px-1 py-0">Today</Badge>
+                    </div>
+                    <div className="flex items-end gap-1.5 h-16 sm:h-20">
+                      {[
+                        { h: 75, label: "CNC-01" },
+                        { h: 58, label: "CNC-02" },
+                        { h: 90, label: "CNC-03" },
+                        { h: 40, label: "LTH-01" },
+                        { h: 65, label: "LTH-02" },
+                        { h: 85, label: "MIL-01" },
+                        { h: 20, label: "MIL-02" },
+                        { h: 70, label: "GRD-01" },
+                      ].map((bar) => (
+                        <div key={bar.label} className="flex-1 flex flex-col items-center gap-0.5">
+                          <div className="w-full rounded-t-sm bg-primary/80 transition-all" style={{ height: `${bar.h}%` }} />
+                          <span className="text-[6px] sm:text-[7px] text-muted-foreground font-mono truncate w-full text-center">{bar.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Donut Chart Mock */}
+                  <div className="bg-secondary/20 rounded-md sm:rounded-lg p-2.5 sm:p-3 border border-border/50">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[10px] sm:text-xs font-medium text-muted-foreground">Shift Utilization</span>
+                      <span className="text-lg sm:text-xl font-bold text-primary font-mono">87%</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {/* SVG Donut */}
+                      <svg viewBox="0 0 36 36" className="w-14 h-14 sm:w-16 sm:h-16 flex-shrink-0">
+                        <circle cx="18" cy="18" r="15.5" fill="none" stroke="hsl(var(--secondary))" strokeWidth="3" />
+                        <circle cx="18" cy="18" r="15.5" fill="none" stroke="hsl(var(--primary))" strokeWidth="3" strokeDasharray="87 13" strokeDashoffset="25" strokeLinecap="round" />
+                      </svg>
+                      <div className="flex-1 space-y-1">
+                        {[
+                          { label: "Running", pct: "75%", color: "bg-green-500" },
+                          { label: "Setup", pct: "8%", color: "bg-amber-500" },
+                          { label: "Idle", pct: "13%", color: "bg-muted" },
+                          { label: "Down", pct: "4%", color: "bg-red-500" },
+                        ].map((s) => (
+                          <div key={s.label} className="flex items-center gap-1.5">
+                            <div className={cn("w-1.5 h-1.5 rounded-full", s.color)} />
+                            <span className="text-[9px] text-muted-foreground flex-1">{s.label}</span>
+                            <span className="text-[9px] font-mono font-medium">{s.pct}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Live Station List */}
+                <div className="bg-secondary/20 rounded-md sm:rounded-lg border border-border/50 overflow-hidden">
+                  <div className="px-2.5 py-1.5 border-b border-border/50 bg-secondary/30">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] sm:text-xs font-medium text-muted-foreground">Active Stations</span>
+                      <span className="text-[9px] text-muted-foreground">Updated 4s ago</span>
+                    </div>
+                  </div>
+                  <div className="divide-y divide-border/30">
+                    {[
+                      { id: "CNC-01", operator: "Mike R.", part: "PN-4521", wo: "WO-0847", progress: 78, status: "running" },
+                      { id: "CNC-02", operator: "Sarah C.", part: "PN-8832", wo: "WO-0851", progress: 45, status: "running" },
+                      { id: "LATHE-01", operator: "James W.", part: "PN-1127", wo: "WO-0849", progress: 12, status: "setup" },
+                      { id: "MILL-03", operator: "Lisa M.", part: "PN-9943", wo: "WO-0853", progress: 92, status: "running" },
+                    ].map((station) => (
+                      <div key={station.id} className="flex items-center gap-2 px-2.5 py-1.5">
+                        <div className={cn(
+                          "w-1.5 h-1.5 rounded-full flex-shrink-0",
+                          station.status === "running" ? "bg-green-400" : "bg-amber-400"
+                        )} />
+                        <span className="text-[10px] font-mono font-medium w-14 flex-shrink-0">{station.id}</span>
+                        <span className="text-[10px] text-muted-foreground w-14 truncate flex-shrink-0">{station.operator}</span>
+                        <span className="text-[10px] font-mono text-primary w-14 flex-shrink-0">{station.wo}</span>
+                        <div className="flex-1 h-1 bg-secondary rounded-full overflow-hidden">
+                          <div className={cn("h-full rounded-full", station.status === "running" ? "bg-green-500" : "bg-amber-500")} style={{ width: `${station.progress}%` }} />
+                        </div>
+                        <span className="text-[9px] font-mono text-muted-foreground w-8 text-right">{station.progress}%</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
