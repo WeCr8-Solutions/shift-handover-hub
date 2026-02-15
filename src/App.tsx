@@ -26,6 +26,12 @@ import WorkOrderTracking from "./pages/features/WorkOrderTracking";
 import ProductionScheduling from "./pages/features/ProductionScheduling";
 import MachineShopSoftware from "./pages/features/MachineShopSoftware";
 import ProductionControl from "./pages/features/ProductionControl";
+import DigitalExpeditor from "./pages/features/DigitalExpeditor";
+import ManufacturingOversight from "./pages/features/ManufacturingOversight";
+import QualityManagement from "./pages/features/QualityManagement";
+import CNCOperatorTools from "./pages/features/CNCOperatorTools";
+import TeamCollaboration from "./pages/features/TeamCollaboration";
+import DowntimeTracking from "./pages/features/DowntimeTracking";
 
 const queryClient = new QueryClient();
 
@@ -61,6 +67,12 @@ const App = () => (
                     <Route path="/features/production-scheduling" element={<ProductionScheduling />} />
                     <Route path="/features/machine-shop-software" element={<MachineShopSoftware />} />
                     <Route path="/features/production-control" element={<ProductionControl />} />
+                    <Route path="/features/digital-expeditor" element={<DigitalExpeditor />} />
+                    <Route path="/features/manufacturing-oversight" element={<ManufacturingOversight />} />
+                    <Route path="/features/quality-management" element={<QualityManagement />} />
+                    <Route path="/features/cnc-operator-tools" element={<CNCOperatorTools />} />
+                    <Route path="/features/team-collaboration" element={<TeamCollaboration />} />
+                    <Route path="/features/downtime-tracking" element={<DowntimeTracking />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
