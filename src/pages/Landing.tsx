@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { SEOHead } from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -244,6 +245,23 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-background overflow-hidden">
+      <SEOHead
+        title="Digital Expeditor & Smart Shift Handoff System"
+        description="Streamline CNC manufacturing operations with JobLine.ai. Track work orders, manage shift handoffs, coordinate routing, and improve production floor communication. Built for machine shops and fabrication teams."
+        keywords="manufacturing software, shift handoff, work order tracking, CNC machining, production management, machine shop software, manufacturing execution system, MES, digital expeditor, production scheduling, production control, shop floor management, shift change software"
+        canonical="/"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "WebApplication",
+          "name": "JobLine.ai",
+          "url": "https://joblineai.lovable.app",
+          "applicationCategory": "BusinessApplication",
+          "operatingSystem": "Web Browser",
+          "description": "Digital expeditor and smart shift handoff system for CNC manufacturing operations.",
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD", "description": "Free trial available" },
+          "audience": { "@type": "Audience", "audienceType": "Manufacturing Professionals" }
+        }}
+      />
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50">
         <div className="container mx-auto px-3 sm:px-4 lg:px-6 h-14 sm:h-16 flex items-center justify-between">
