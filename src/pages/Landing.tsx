@@ -52,6 +52,8 @@ const features = [
     description: "Seamless shift transitions with live status updates. Never miss critical information between shifts again.",
     color: "text-blue-400",
     bg: "bg-blue-500/10",
+    link: "/features/shift-handoff-software",
+    cta: "Explore Handoffs",
   },
   {
     icon: Gauge,
@@ -59,34 +61,71 @@ const features = [
     description: "Track every CNC, lathe, and work center in real-time. Instant visibility into machine status and job progress.",
     color: "text-emerald-400",
     bg: "bg-emerald-500/10",
+    link: "/features/production-control",
+    cta: "See Production Control",
   },
   {
     icon: FileText,
-    title: "Performance Updates",
-    description: "Operators submit improvements, setup changes, and adjustments with photo attachments. Continuous improvement built-in.",
+    title: "Work Order Tracking",
+    description: "Kanban boards, priority queues, and multi-step routing. Manage your production queue from anywhere.",
     color: "text-amber-400",
     bg: "bg-amber-500/10",
+    link: "/features/work-order-tracking",
+    cta: "Explore Work Orders",
   },
   {
     icon: Users,
-    title: "Team Management",
-    description: "Organize operators by teams, assign roles, and manage permissions. Built for multi-shift operations.",
+    title: "Team Collaboration",
+    description: "Organize operators by teams, assign roles, and onboard with QR codes. Built for multi-shift operations.",
     color: "text-purple-400",
     bg: "bg-purple-500/10",
+    link: "/features/team-collaboration",
+    cta: "See Team Features",
   },
   {
     icon: BarChart3,
-    title: "Analytics Dashboard",
-    description: "Track parts produced, scrap rates, cycle times, and handoff efficiency. Data-driven decision making.",
+    title: "Digital Expeditor",
+    description: "Replace clipboard expeditors with real-time digital oversight. See every job, machine, and operator instantly.",
     color: "text-pink-400",
     bg: "bg-pink-500/10",
+    link: "/features/digital-expeditor",
+    cta: "Learn About Expediting",
   },
   {
     icon: Bell,
-    title: "Smart Alerts",
-    description: "Get notified about machine issues, quality holds, and pending reviews. Stay ahead of problems.",
+    title: "Quality & Alerts",
+    description: "Track quality holds, scrap rates, and inspection results. Get notified about issues before they cascade.",
     color: "text-orange-400",
     bg: "bg-orange-500/10",
+    link: "/features/quality-management",
+    cta: "Explore Quality Tools",
+  },
+  {
+    icon: Wrench,
+    title: "Machine Shop Software",
+    description: "Purpose-built for CNC, lathe, mill, and grinder operations. Track equipment condition, parts, and performance.",
+    color: "text-cyan-400",
+    bg: "bg-cyan-500/10",
+    link: "/features/machine-shop-software",
+    cta: "See Machine Shop Tools",
+  },
+  {
+    icon: Factory,
+    title: "Manufacturing Oversight",
+    description: "Role-based dashboards for owners, managers, and supervisors. Complete visibility across your entire operation.",
+    color: "text-rose-400",
+    bg: "bg-rose-500/10",
+    link: "/features/manufacturing-oversight",
+    cta: "Explore Oversight",
+  },
+  {
+    icon: Globe,
+    title: "Downtime Tracking",
+    description: "Log downtime events, track reason codes, analyze trends, and reduce unplanned stoppages across your shop.",
+    color: "text-indigo-400",
+    bg: "bg-indigo-500/10",
+    link: "/features/downtime-tracking",
+    cta: "Track Downtime",
   },
 ];
 
@@ -576,7 +615,10 @@ export default function Landing() {
 
           <div className="grid lg:grid-cols-2 gap-6 md:gap-8 max-w-6xl mx-auto">
             {/* Queue Preview */}
-            <div className="bg-card border border-border rounded-xl overflow-hidden">
+            <div 
+              className="bg-card border border-border rounded-xl overflow-hidden cursor-pointer hover:border-primary/50 transition-all group"
+              onClick={() => { trackEvent('landing_preview_click', { preview: 'work_order_queue' }); navigate('/features/work-order-tracking'); }}
+            >
               <div className="px-4 py-3 border-b border-border bg-secondary/30">
                 <div className="flex items-center gap-2">
                   <FileText className="w-4 h-4 text-primary" />
@@ -618,7 +660,10 @@ export default function Landing() {
             </div>
 
             {/* Handoff Preview */}
-            <div className="bg-card border border-border rounded-xl overflow-hidden">
+            <div 
+              className="bg-card border border-border rounded-xl overflow-hidden cursor-pointer hover:border-primary/50 transition-all group"
+              onClick={() => { trackEvent('landing_preview_click', { preview: 'recent_handoffs' }); navigate('/features/shift-handoff-software'); }}
+            >
               <div className="px-4 py-3 border-b border-border bg-secondary/30">
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4 text-primary" />
@@ -878,15 +923,44 @@ export default function Landing() {
                 key={i}
                 className="group relative p-4 sm:p-5 md:p-6 rounded-lg sm:rounded-xl bg-card border border-border hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 cursor-pointer"
                 onMouseEnter={() => handleFeatureView(feature.title)}
-                onClick={() => handleFeatureClick(feature.title)}
+                onClick={() => {
+                  handleFeatureClick(feature.title);
+                  navigate(feature.link);
+                }}
               >
                 <div className={cn("w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center mb-3 sm:mb-4", feature.bg)}>
                   <feature.icon className={cn("w-5 h-5 sm:w-6 sm:h-6", feature.color)} />
                 </div>
                 <h3 className="text-base sm:text-lg md:text-xl font-semibold mb-1.5 sm:mb-2">{feature.title}</h3>
-                <p className="text-muted-foreground text-xs sm:text-sm leading-relaxed pr-6 sm:pr-8">{feature.description}</p>
-                <ChevronRight className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground/30 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                <p className="text-muted-foreground text-xs sm:text-sm leading-relaxed mb-3 sm:mb-4">{feature.description}</p>
+                <span className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-primary group-hover:gap-2.5 transition-all">
+                  {feature.cta}
+                  <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                </span>
               </div>
+            ))}
+          </div>
+
+          {/* Additional Feature Links */}
+          <div className="flex flex-wrap justify-center gap-3 mt-8 sm:mt-12 max-w-4xl mx-auto">
+            {[
+              { label: "Production Scheduling", link: "/features/production-scheduling" },
+              { label: "CNC Operator Tools", link: "/features/cnc-operator-tools" },
+              { label: "Continuous Improvement", link: "/features/quality-management" },
+            ].map((extra, i) => (
+              <Button
+                key={i}
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  trackEvent('landing_feature_link_click', { feature: extra.label });
+                  navigate(extra.link);
+                }}
+                className="gap-1.5 border-border/50 hover:border-primary/50 text-xs sm:text-sm"
+              >
+                {extra.label}
+                <ArrowUpRight className="w-3 h-3" />
+              </Button>
             ))}
           </div>
         </div>
@@ -1083,44 +1157,75 @@ export default function Landing() {
       {/* Footer */}
       <footer className="border-t border-border py-8 sm:py-10 md:py-12">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-center gap-4 sm:gap-6">
-            <div className="flex items-center gap-2">
-              <img src={joblineLogo} alt="JobLine.ai" className="h-6 sm:h-8 w-auto" />
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+            {/* Brand */}
+            <div>
+              <img src={joblineLogo} alt="JobLine.ai" className="h-6 sm:h-8 w-auto mb-3" />
+              <p className="text-xs text-muted-foreground">Digital expeditor & smart shift handoff system for manufacturing.</p>
             </div>
+
+            {/* Features */}
+            <div>
+              <h4 className="text-sm font-semibold mb-3">Features</h4>
+              <div className="flex flex-col gap-2 text-xs text-muted-foreground">
+                <button onClick={() => navigate('/features/shift-handoff-software')} className="text-left hover:text-foreground transition-colors">Shift Handoffs</button>
+                <button onClick={() => navigate('/features/work-order-tracking')} className="text-left hover:text-foreground transition-colors">Work Order Tracking</button>
+                <button onClick={() => navigate('/features/digital-expeditor')} className="text-left hover:text-foreground transition-colors">Digital Expeditor</button>
+                <button onClick={() => navigate('/features/production-control')} className="text-left hover:text-foreground transition-colors">Production Control</button>
+                <button onClick={() => navigate('/features/manufacturing-oversight')} className="text-left hover:text-foreground transition-colors">Manufacturing Oversight</button>
+              </div>
+            </div>
+
+            {/* More Features */}
+            <div>
+              <h4 className="text-sm font-semibold mb-3">Solutions</h4>
+              <div className="flex flex-col gap-2 text-xs text-muted-foreground">
+                <button onClick={() => navigate('/features/machine-shop-software')} className="text-left hover:text-foreground transition-colors">Machine Shop Software</button>
+                <button onClick={() => navigate('/features/quality-management')} className="text-left hover:text-foreground transition-colors">Quality Management</button>
+                <button onClick={() => navigate('/features/cnc-operator-tools')} className="text-left hover:text-foreground transition-colors">CNC Operator Tools</button>
+                <button onClick={() => navigate('/features/team-collaboration')} className="text-left hover:text-foreground transition-colors">Team Collaboration</button>
+                <button onClick={() => navigate('/features/downtime-tracking')} className="text-left hover:text-foreground transition-colors">Downtime Tracking</button>
+              </div>
+            </div>
+
+            {/* Company */}
+            <div>
+              <h4 className="text-sm font-semibold mb-3">Company</h4>
+              <div className="flex flex-col gap-2 text-xs text-muted-foreground">
+                <button onClick={() => navigate('/pricing')} className="text-left hover:text-foreground transition-colors">Pricing</button>
+                <a href="#" onClick={() => handleFooterLinkClick('privacy')} className="hover:text-foreground transition-colors">Privacy</a>
+                <a href="#" onClick={() => handleFooterLinkClick('terms')} className="hover:text-foreground transition-colors">Terms</a>
+                <a href="#" onClick={() => handleFooterLinkClick('contact')} className="hover:text-foreground transition-colors">Contact</a>
+                <SupportJoblineModal 
+                  trigger={
+                    <button 
+                      onClick={() => handleFooterLinkClick('support_jobline')}
+                      className="flex items-center gap-1.5 hover:text-foreground transition-colors text-left"
+                    >
+                      <Heart className="w-3 h-3 text-red-500" />
+                      Support JobLine
+                    </button>
+                  }
+                />
+              </div>
+            </div>
+          </div>
             
-            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs sm:text-sm text-muted-foreground">
-              <a href="#" onClick={() => handleFooterLinkClick('privacy')} className="hover:text-foreground transition-colors">Privacy</a>
-              <a href="#" onClick={() => handleFooterLinkClick('terms')} className="hover:text-foreground transition-colors">Terms</a>
-              <a href="#" onClick={() => handleFooterLinkClick('contact')} className="hover:text-foreground transition-colors">Contact</a>
-              <SupportJoblineModal 
-                trigger={
-                  <button 
-                    onClick={() => handleFooterLinkClick('support_jobline')}
-                    className="flex items-center gap-1.5 hover:text-foreground transition-colors"
-                  >
-                    <Heart className="w-3 h-3 text-red-500" />
-                    Support JobLine
-                  </button>
-                }
-              />
-            </div>
-            
-            <div className="flex flex-col items-center gap-2 text-center">
-              <p className="text-xs sm:text-sm text-muted-foreground">
-                © 2026 JobLine.ai. All rights reserved.
-              </p>
-              <p className="text-xs text-muted-foreground">
-                A product of{" "}
-                <a 
-                  href="https://www.wecr8.info" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-primary hover:text-primary/80 transition-colors font-medium"
-                >
-                  WeCr8 Solutions LLC
-                </a>
-              </p>
-            </div>
+          <div className="border-t border-border pt-6 flex flex-col items-center gap-2 text-center">
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              © 2026 JobLine.ai. All rights reserved.
+            </p>
+            <p className="text-xs text-muted-foreground">
+              A product of{" "}
+              <a 
+                href="https://www.wecr8.info" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-primary hover:text-primary/80 transition-colors font-medium"
+              >
+                WeCr8 Solutions LLC
+              </a>
+            </p>
           </div>
         </div>
       </footer>
