@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
@@ -65,6 +66,12 @@ export default function Pricing() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Pricing - Manufacturing Software Plans"
+        description="Simple, transparent pricing for manufacturing teams. Start with a 14-day free trial. Plans for individual operators, teams, and enterprise machine shops."
+        keywords="manufacturing software pricing, shift handoff software cost, machine shop software pricing, production management pricing"
+        canonical="/pricing"
+      />
       {/* Header */}
       <nav className="border-b border-border bg-background/80 backdrop-blur-xl sticky top-0 z-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">

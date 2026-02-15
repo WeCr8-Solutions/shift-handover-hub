@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { TeamProvider } from "@/contexts/TeamContext";
 import { OnboardingProvider, GuidedTour, WelcomeModal } from "@/components/onboarding";
@@ -20,44 +21,57 @@ import Pricing from "./pages/Pricing";
 import Settings from "./pages/Settings";
 import DonationSuccess from "./pages/DonationSuccess";
 import NotFound from "./pages/NotFound";
+import ShiftHandoffSoftware from "./pages/features/ShiftHandoffSoftware";
+import WorkOrderTracking from "./pages/features/WorkOrderTracking";
+import ProductionScheduling from "./pages/features/ProductionScheduling";
+import MachineShopSoftware from "./pages/features/MachineShopSoftware";
+import ProductionControl from "./pages/features/ProductionControl";
 
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TeamProvider>
-        <OnboardingProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <AnalyticsProvider>
-                <GuidedTour />
-                <WelcomeModal />
-                <Routes>
-                  <Route path="/" element={<Landing />} />
-                  <Route path="/dashboard" element={<Index />} />
-                  <Route path="/auth" element={<Auth />} />
-                  <Route path="/teams" element={<Teams />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/admin" element={<Admin />} />
-                  <Route path="/testing" element={<Testing />} />
-                  <Route path="/queue" element={<Queue />} />
-                  <Route path="/setup" element={<Setup />} />
-                  <Route path="/pricing" element={<Pricing />} />
-                  <Route path="/settings" element={<Settings />} />
-                  <Route path="/donation-success" element={<DonationSuccess />} />
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </AnalyticsProvider>
-            </BrowserRouter>
-          </TooltipProvider>
-        </OnboardingProvider>
-      </TeamProvider>
-    </AuthProvider>
-  </QueryClientProvider>
+  <HelmetProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <TeamProvider>
+          <OnboardingProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <AnalyticsProvider>
+                  <GuidedTour />
+                  <WelcomeModal />
+                  <Routes>
+                    <Route path="/" element={<Landing />} />
+                    <Route path="/dashboard" element={<Index />} />
+                    <Route path="/auth" element={<Auth />} />
+                    <Route path="/teams" element={<Teams />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/admin" element={<Admin />} />
+                    <Route path="/testing" element={<Testing />} />
+                    <Route path="/queue" element={<Queue />} />
+                    <Route path="/setup" element={<Setup />} />
+                    <Route path="/pricing" element={<Pricing />} />
+                    <Route path="/settings" element={<Settings />} />
+                    <Route path="/donation-success" element={<DonationSuccess />} />
+                    {/* SEO Feature Pages */}
+                    <Route path="/features/shift-handoff-software" element={<ShiftHandoffSoftware />} />
+                    <Route path="/features/work-order-tracking" element={<WorkOrderTracking />} />
+                    <Route path="/features/production-scheduling" element={<ProductionScheduling />} />
+                    <Route path="/features/machine-shop-software" element={<MachineShopSoftware />} />
+                    <Route path="/features/production-control" element={<ProductionControl />} />
+                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </AnalyticsProvider>
+              </BrowserRouter>
+            </TooltipProvider>
+          </OnboardingProvider>
+        </TeamProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  </HelmetProvider>
 );
 
 export default App;
