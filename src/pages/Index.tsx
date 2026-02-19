@@ -9,10 +9,12 @@ import { JobPerformanceUpdateForm } from "@/components/JobPerformanceUpdateForm"
 import { WorkCenterFilter } from "@/components/WorkCenterFilter";
 import { OperatorWorkflowPanel } from "@/components/OperatorWorkflowPanel";
 import { CreateWorkOrderDialog } from "@/components/queue/CreateWorkOrderDialog";
+import { SupervisorDashboard } from "@/components/dashboard/SupervisorDashboard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useStations, useHandoffRecords, Station, HandoffRecord } from "@/hooks/useStations";
 import { useOnboardingContext } from "@/components/onboarding/OnboardingProvider";
+import { useAdminAccess } from "@/hooks/useAdminData";
 import { mockStations, mockHandoffRecords } from "@/lib/mockData";
 import { WorkCenterType, StationInfo, ShiftHandoffRecord } from "@/types/handoff";
 import { Button } from "@/components/ui/button";
@@ -118,6 +120,10 @@ const Index = () => {
   const { stations: dbStations, loading: stationsLoading } = useStations(currentTeam?.id);
   const { records: dbRecords, loading: recordsLoading, createHandoffRecord } = useHandoffRecords(currentTeam?.id);
   const { isComplete, isLoading: onboardingLoading, isStepCompleted, hasSeenWelcome } = useOnboardingContext();
+  const { hasOrgSupervisorAccess, loading: roleLoading } = useAdminAccess();
+
+  // Supervisors, org admins, and platform admins get the production overview dashboard
+  const showSupervisorView = user && hasOrgSupervisorAccess;
   
   const [showNewHandoff, setShowNewHandoff] = useState(false);
   const [showPerformanceUpdate, setShowPerformanceUpdate] = useState(false);
@@ -169,6 +175,17 @@ const Index = () => {
       <Header />
 
       <main className="container py-6">
+        {/* Supervisor / Admin Production Overview */}
+        {showSupervisorView ? (
+          <>
+            <SupervisorDashboard
+              onNewHandoff={() => setShowNewHandoff(true)}
+              onPerformanceUpdate={() => setShowPerformanceUpdate(true)}
+              onCreateWorkOrder={() => setShowCreateWorkOrder(true)}
+            />
+          </>
+        ) : (
+        <>
         {/* Stats Overview */}
         <div className="mb-6" data-tour="shift-stats">
           <ShiftStats />
@@ -369,6 +386,8 @@ const Index = () => {
             )}
           </TabsContent>
         </Tabs>
+        </>
+        )}
       </main>
 
       {/* New Handoff Modal */}
