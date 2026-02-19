@@ -3620,6 +3620,14 @@ export type Database = {
         Args: { _actor: string; _target_user_id: string; _team_id: string }
         Returns: boolean
       }
+      can_manage_station_via_team: {
+        Args: { _team_id: string; _user_id: string }
+        Returns: boolean
+      }
+      can_view_station_via_team: {
+        Args: { _team_id: string; _user_id: string }
+        Returns: boolean
+      }
       check_feature_access: {
         Args: { _feature: string; _org_id: string }
         Returns: boolean
@@ -3653,12 +3661,20 @@ export type Database = {
         Args: { _org_id: string; _user_id: string }
         Returns: boolean
       }
+      is_org_admin_via_team: {
+        Args: { _team_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_org_assignable_role: {
         Args: { _role: Database["public"]["Enums"]["app_role"] }
         Returns: boolean
       }
       is_org_member: {
         Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_org_member_via_team: {
+        Args: { _team_id: string; _user_id: string }
         Returns: boolean
       }
       is_supervisor_for_team: {
@@ -3674,6 +3690,10 @@ export type Database = {
         Returns: boolean
       }
       is_team_member: {
+        Args: { _team_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_team_owner: {
         Args: { _team_id: string; _user_id: string }
         Returns: boolean
       }
