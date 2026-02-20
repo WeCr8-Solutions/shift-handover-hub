@@ -117,6 +117,31 @@ const DEFAULT_ROUTING_STEPS: RoutingStep[] = [
   { step_number: 29, operation_name: 'Packaging', operation_type: 'internal', enabled: true },
   { step_number: 30, operation_name: 'Ship to Customer', operation_type: 'shipping', enabled: true },
 ];
+// Auto-suggest a station for a routing step based on operation_type → work_center_type mapping
+function autoSuggestStation(step: RoutingStep, stations: Station[]): Station | undefined {
+  const typeMap: Record<string, string[]> = {
+    'internal': ['CNC Mill', 'CNC Lathe', 'Manual Mill', 'Manual Lathe', 'Grinding', 'EDM', 'Surface Grinder'],
+    'inspection': ['CMM', 'Inspection', 'Quality'],
+    'outside_processing': [], // No internal station for outside processing
+    'engineering': ['Engineering', 'Programming', 'CAM'],
+    'receiving': ['Receiving', 'Material Handling', 'Shipping'],
+    'shipping': ['Shipping', 'Packing'],
+    'purchasing': [],
+    'quote': [],
+  };
+
+  const matchTypes = typeMap[step.operation_type] || [];
+  if (matchTypes.length === 0) return undefined;
+
+  // Find a station whose work_center_type or work_center name matches
+  return stations.find(s =>
+    matchTypes.some(mt =>
+      s.work_center_type?.toLowerCase().includes(mt.toLowerCase()) ||
+      s.work_center?.toLowerCase().includes(mt.toLowerCase()) ||
+      s.name?.toLowerCase().includes(mt.toLowerCase())
+    )
+  );
+}
 
 export function WorkOrderRoutingEditor({ 
   queueItemId, 
@@ -156,7 +181,7 @@ export function WorkOrderRoutingEditor({
 
   useEffect(() => {
     fetchRouting();
-  }, [queueItemId]);
+  }, [queueItemId, stations]);
 
   const fetchRouting = async () => {
     setIsLoading(true);
@@ -196,9 +221,24 @@ export function WorkOrderRoutingEditor({
       }));
     } else {
       // Initialize with complete manufacturing flow template
-      // Users can toggle steps on/off before saving
-      setSteps(DEFAULT_ROUTING_STEPS.map(s => ({ ...s })));
+      // Auto-suggest stations from org by matching work_center_type to operation_type
+      const autoSuggestedSteps = DEFAULT_ROUTING_STEPS.map(s => {
+        const suggestedStation = autoSuggestStation(s, stations);
+        return {
+          ...s,
+          station_id: suggestedStation?.id,
+          station_name: suggestedStation?.name,
+          work_center_type: suggestedStation?.work_center_type,
+        };
+      });
+      setSteps(autoSuggestedSteps);
       setShowTemplateMode(true);
+      if (stations.length > 0) {
+        toast({
+          title: 'Smart Routing Applied',
+          description: 'Stations auto-suggested based on your organization setup. Toggle and adjust as needed.',
+        });
+      }
     }
     setIsLoading(false);
   };
