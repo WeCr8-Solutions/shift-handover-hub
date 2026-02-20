@@ -1,10 +1,11 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Play,
   Loader2,
@@ -21,6 +22,7 @@ import {
   Lock,
   Eye,
   KeyRound,
+  Target,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -626,6 +628,67 @@ const helperFunctionTests: TestDef[] = [
   },
 ];
 
+// ── Target User Analysis Tests ─────────────────────────
+// These tests use a targetUserId passed at runtime
+
+function createTargetUserTests(targetUserId: string): TestDef[] {
+  return [
+    {
+      id: "tu-001",
+      name: "Target user has platform role(s)",
+      test: async () => {
+        const { data, error } = await supabase.from("user_roles").select("role").eq("user_id", targetUserId);
+        if (error) return { success: false, error: error.message };
+        if (!data || data.length === 0) return { success: false, error: "No platform roles — handle_new_user may have failed" };
+        return { success: true, details: `Roles: ${data.map(r => r.role).join(", ")}` };
+      },
+    },
+    {
+      id: "tu-002",
+      name: "Target user has organization membership",
+      test: async () => {
+        const { data, error } = await supabase.from("organization_members").select("organization_id, role, organizations(name)").eq("user_id", targetUserId);
+        if (error) return { success: false, error: error.message };
+        if (!data || data.length === 0) return { success: false, warning: true, error: "No org membership" };
+        const orgs = data.map((m: any) => `${m.organizations?.name || "Unknown"} (${m.role})`);
+        return { success: true, details: `Orgs: ${orgs.join(", ")}` };
+      },
+    },
+    {
+      id: "tu-003",
+      name: "Target user has team membership(s)",
+      test: async () => {
+        const { data, error } = await supabase.from("team_members").select("team_id, role, teams(name)").eq("user_id", targetUserId);
+        if (error) return { success: false, error: error.message };
+        if (!data || data.length === 0) return { success: true, warning: true, details: "No team memberships" };
+        const teams = data.map((m: any) => `${m.teams?.name || "Unknown"} (${m.role})`);
+        return { success: true, details: `Teams: ${teams.join(", ")}` };
+      },
+    },
+    {
+      id: "tu-004",
+      name: "Target user's visible stations count",
+      test: async () => {
+        // Get target's org
+        const { data: orgMem } = await supabase.from("organization_members").select("organization_id").eq("user_id", targetUserId).maybeSingle();
+        if (!orgMem) return { success: true, warning: true, details: "No org — 0 stations expected" };
+        const { data: stations } = await supabase.from("stations").select("id").eq("organization_id", orgMem.organization_id);
+        return { success: true, details: `${stations?.length || 0} station(s) in target's org` };
+      },
+    },
+    {
+      id: "tu-005",
+      name: "Target user's visible queue items count",
+      test: async () => {
+        const { data: orgMem } = await supabase.from("organization_members").select("organization_id").eq("user_id", targetUserId).maybeSingle();
+        if (!orgMem) return { success: true, warning: true, details: "No org — 0 queue items expected" };
+        const { data: items } = await supabase.from("queue_items").select("id").eq("organization_id", orgMem.organization_id).limit(100);
+        return { success: true, details: `${items?.length || 0} queue item(s) in target's org` };
+      },
+    },
+  ];
+}
+
 // ── Suite Definitions ──────────────────────────────────
 
 const allSuites = [
@@ -675,6 +738,7 @@ function getCategoryIcon(icon: string) {
     case "users": return <Users className="w-4 h-4" />;
     case "lock": return <Lock className="w-4 h-4" />;
     case "key": return <KeyRound className="w-4 h-4" />;
+    case "target": return <Target className="w-4 h-4" />;
     default: return <Shield className="w-4 h-4" />;
   }
 }
@@ -765,15 +829,15 @@ function SuiteCard({ suite }: { suite: RoleScopeTestSuite }) {
 
 // ── User Context Card ──────────────────────────────────
 
-function UserContextCard({ userData }: { userData: RoleScopeTestRun["currentUser"] }) {
+function UserContextCard({ userData, isTarget }: { userData: RoleScopeTestRun["currentUser"]; isTarget?: boolean }) {
   if (!userData) return null;
 
   return (
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-sm flex items-center gap-2">
-          <UserCog className="w-4 h-4" />
-          Current User Context
+          {isTarget ? <Target className="w-4 h-4 text-primary" /> : <UserCog className="w-4 h-4" />}
+          {isTarget ? "Target User Context" : "Current User Context"}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -833,26 +897,48 @@ function UserContextCard({ userData }: { userData: RoleScopeTestRun["currentUser
 export function RoleScopeTestRunner() {
   const [isRunning, setIsRunning] = useState(false);
   const [currentRun, setCurrentRun] = useState<RoleScopeTestRun | null>(null);
+  const [targetUserId, setTargetUserId] = useState<string>("self");
+  const [availableUsers, setAvailableUsers] = useState<{ id: string; email: string; display_name: string }[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+
+  // Fetch available users for the target picker (admin/dev only)
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setLoadingUsers(true);
+      const { data } = await supabase
+        .from("profiles")
+        .select("user_id, email, display_name")
+        .order("display_name", { ascending: true })
+        .limit(200);
+      if (data) {
+        setAvailableUsers(data.map(p => ({ id: p.user_id, email: p.email, display_name: p.display_name })));
+      }
+      setLoadingUsers(false);
+    };
+    fetchUsers();
+  }, []);
 
   const runTests = useCallback(async () => {
     setIsRunning(true);
     const runId = `role-scope-${Date.now()}`;
     const startTime = new Date();
 
-    // Gather user context first
+    // Determine which user context to display
     const { data: { user } } = await supabase.auth.getUser();
+    const contextUserId = targetUserId === "self" ? user?.id : targetUserId;
     let userData: RoleScopeTestRun["currentUser"] = undefined;
 
-    if (user) {
-      const [rolesRes, orgRes, teamRes] = await Promise.all([
-        supabase.from("user_roles").select("role").eq("user_id", user.id),
-        supabase.from("organization_members").select("organization_id, role, organizations(name)").eq("user_id", user.id),
-        supabase.from("team_members").select("team_id, role, teams(name)").eq("user_id", user.id),
+    if (contextUserId) {
+      const [rolesRes, orgRes, teamRes, profileRes] = await Promise.all([
+        supabase.from("user_roles").select("role").eq("user_id", contextUserId),
+        supabase.from("organization_members").select("organization_id, role, organizations(name)").eq("user_id", contextUserId),
+        supabase.from("team_members").select("team_id, role, teams(name)").eq("user_id", contextUserId),
+        supabase.from("profiles").select("email").eq("user_id", contextUserId).maybeSingle(),
       ]);
 
       userData = {
-        id: user.id,
-        email: user.email || "unknown",
+        id: contextUserId,
+        email: profileRes.data?.email || user?.email || "unknown",
         platformRoles: rolesRes.data?.map(r => r.role) || [],
         orgMemberships: (orgRes.data || []).map((m: any) => ({
           orgId: m.organization_id,
@@ -882,7 +968,19 @@ export function RoleScopeTestRunner() {
 
     const completedSuites: RoleScopeTestSuite[] = [];
 
-    for (const suiteDef of allSuites) {
+    // Build suite list: standard suites + optional target user analysis
+    const suitesToRun = [...allSuites];
+    if (targetUserId !== "self") {
+      suitesToRun.push({
+        name: "Target User Analysis",
+        category: "target",
+        description: `Analyzing user ${availableUsers.find(u => u.id === targetUserId)?.display_name || targetUserId}`,
+        icon: "target",
+        tests: createTargetUserTests(targetUserId),
+      });
+    }
+
+    for (const suiteDef of suitesToRun) {
       const suiteStart = Date.now();
       const testResults: RoleScopeTestResult[] = [];
 
@@ -942,7 +1040,7 @@ export function RoleScopeTestRunner() {
       status: "completed",
     } : null);
     setIsRunning(false);
-  }, []);
+  }, [targetUserId, availableUsers]);
 
   const progress = currentRun && currentRun.totalTests > 0
     ? Math.round(((currentRun.passedTests + currentRun.failedTests + currentRun.warningTests) / currentRun.totalTests) * 100)
@@ -980,7 +1078,33 @@ export function RoleScopeTestRunner() {
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-3">
+          {/* Target User Picker */}
+          <div className="flex items-center gap-3 p-3 rounded-lg border bg-muted/30">
+            <Target className="w-4 h-4 text-muted-foreground shrink-0" />
+            <div className="flex-1">
+              <Select value={targetUserId} onValueChange={setTargetUserId} disabled={isRunning}>
+                <SelectTrigger className="w-full max-w-sm">
+                  <SelectValue placeholder="Select target user..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="self">Self (logged-in user)</SelectItem>
+                  {availableUsers.map(u => (
+                    <SelectItem key={u.id} value={u.id}>
+                      {u.display_name || u.email} — {u.email}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {targetUserId !== "self" && (
+              <Badge variant="outline" className="text-xs gap-1 shrink-0">
+                <Target className="w-3 h-3" />
+                Target Mode
+              </Badge>
+            )}
+          </div>
+          {/* Suite badges */}
           <div className="flex flex-wrap gap-2">
             {allSuites.map(s => (
               <Badge key={s.category} variant="outline" className="text-xs gap-1">
@@ -988,12 +1112,18 @@ export function RoleScopeTestRunner() {
                 {s.name}
               </Badge>
             ))}
+            {targetUserId !== "self" && (
+              <Badge variant="outline" className="text-xs gap-1 border-primary/30 bg-primary/5">
+                <Target className="w-3 h-3" />
+                Target User Analysis
+              </Badge>
+            )}
           </div>
         </CardContent>
       </Card>
 
       {/* User Context */}
-      {currentRun?.currentUser && <UserContextCard userData={currentRun.currentUser} />}
+      {currentRun?.currentUser && <UserContextCard userData={currentRun.currentUser} isTarget={targetUserId !== "self"} />}
 
       {/* Results */}
       {currentRun && (
