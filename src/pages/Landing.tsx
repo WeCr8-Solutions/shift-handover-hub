@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { SEOHead } from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,7 +11,8 @@ import { SupportJoblineModal } from "@/components/SupportJoblineModal";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
-import { trackEvent } from "@/lib/analytics";
+import { trackEvent, DemoEvents } from "@/lib/analytics";
+import { getUtmParams } from "@/lib/utm";
 import demoVideo from "@/assets/jobline-demo-video.mp4";
 import { 
   ArrowRight, 
@@ -172,6 +173,7 @@ const testimonials = [
 
 export default function Landing() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -242,9 +244,8 @@ export default function Landing() {
   };
 
   const handleDemoModalOpen = () => {
-    trackEvent('landing_demo_modal_opened', {
-      source: 'hero_section'
-    });
+    trackEvent('landing_demo_modal_opened', { source: 'hero_section' });
+    DemoEvents.demoModalOpen(location.pathname, getUtmParams() as Record<string, string>);
     setDemoModalOpen(true);
   };
 

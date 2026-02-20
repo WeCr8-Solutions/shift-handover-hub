@@ -22,6 +22,7 @@ const footerLinks = {
   ],
   Company: [
     { label: "Home", to: "/" },
+    { label: "Book a Demo", to: "/demo" },
     { label: "Pricing", to: "/pricing" },
     { label: "Sign Up Free", to: "/auth" },
   ],

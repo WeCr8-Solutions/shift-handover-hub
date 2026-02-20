@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { trackEvent } from "@/lib/analytics";
+import { getUtmParams } from "@/lib/utm";
 import { FileDown, CheckCircle2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -38,7 +39,7 @@ export function LeadCaptureBar({ sourcePage = "landing", className = "" }: LeadC
 
       if (error) throw error;
 
-      trackEvent("lead_captured", { source_page: sourcePage, lead_type: "template_download" });
+      trackEvent("lead_captured", { source_page: sourcePage, lead_type: "template_download", ...getUtmParams() });
       setSubmitted(true);
 
       // Trigger download

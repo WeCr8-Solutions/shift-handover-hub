@@ -20,6 +20,8 @@ import Setup from "./pages/Setup";
 import Pricing from "./pages/Pricing";
 import Settings from "./pages/Settings";
 import DonationSuccess from "./pages/DonationSuccess";
+import Demo from "./pages/Demo";
+import FounderRedirect from "./pages/FounderRedirect";
 import NotFound from "./pages/NotFound";
 import ShiftHandoffSoftware from "./pages/features/ShiftHandoffSoftware";
 import WorkOrderTracking from "./pages/features/WorkOrderTracking";
@@ -62,7 +64,8 @@ const App = () => (
                     <Route path="/pricing" element={<Pricing />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/donation-success" element={<DonationSuccess />} />
-                    {/* SEO Feature Pages */}
+                    <Route path="/demo" element={<Demo />} />
+                    <Route path="/zach" element={<FounderRedirect />} />
                     <Route path="/features/shift-handoff-software" element={<ShiftHandoffSoftware />} />
                     <Route path="/features/work-order-tracking" element={<WorkOrderTracking />} />
                     <Route path="/features/production-scheduling" element={<ProductionScheduling />} />

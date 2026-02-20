@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { trackEvent } from "@/lib/analytics";
+import { getUtmParams } from "@/lib/utm";
 import { FileDown, CheckCircle2, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -35,7 +36,7 @@ export function LeadCaptureModal() {
     const handleMouseLeave = (e: MouseEvent) => {
       if (e.clientY <= 0 && shouldShow()) {
         setOpen(true);
-        trackEvent("lead_modal_shown", { trigger: "exit_intent" });
+        trackEvent("lead_modal_shown", { trigger: "exit_intent", ...getUtmParams() });
       }
     };
 
@@ -47,7 +48,7 @@ export function LeadCaptureModal() {
       timer = setTimeout(() => {
         if (shouldShow()) {
           setOpen(true);
-          trackEvent("lead_modal_shown", { trigger: "timeout" });
+          trackEvent("lead_modal_shown", { trigger: "timeout", ...getUtmParams() });
         }
       }, 45000);
     } else {
@@ -83,7 +84,7 @@ export function LeadCaptureModal() {
       });
       if (error) throw error;
 
-      trackEvent("lead_captured", { source_page: "exit-intent-modal", lead_type: "template_download" });
+      trackEvent("lead_captured", { source_page: "exit-intent-modal", lead_type: "template_download", ...getUtmParams() });
       sessionStorage.setItem(LEAD_SUBMITTED_KEY, "1");
       setSubmitted(true);
 
