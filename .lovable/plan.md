@@ -1,87 +1,72 @@
 
 
-# AdSense Integration, ads.txt, Firecrawl Connection & Marketing Footer Standardization
+# Update Process Tests: Autofill, Auth Context, and Quote-to-Ship Workflow Validation
 
 ## Overview
-This plan covers four areas: (1) adding Google AdSense to the site, (2) creating the required `ads.txt` file, (3) connecting Firecrawl for web scraping capabilities, and (4) standardizing the footer across all 11 marketing/feature pages for better SEO internal linking and brand consistency.
+Add two new test suites to the Process Tests tab that validate the autofill/pre-population behaviors and the full quote-to-ship workflow. These tests will use the logged-in user's real org, teams, stations, and members to verify that the system correctly auto-populates data and enables fast job tracking.
 
 ---
 
-## 1. Google AdSense Integration
+## What Changes
 
-### index.html (head section)
-- Add the AdSense verification meta tag: `<meta name="google-adsense-account" content="ca-pub-3639153716376265">`
-- Add the AdSense script: `<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3639153716376265" crossorigin="anonymous"></script>`
+### 1. New Test Suite: "Autofill & User Context" (in `useProcessTests.ts`)
+Live tests that verify:
+- **User auth context is available** -- profile, display name, and email are populated
+- **Operator name auto-fills** from the logged-in user's profile into handoff forms
+- **Self-handoff defaults** -- incoming operator defaults to current user for solo shops
+- **Station selection triggers WO autofill** -- selecting a station with an active `in_progress` queue item returns work_order, part_number, and operation_number
+- **Fallback to current_station_status** -- if no active queue item, station status table is checked
+- **Team context is active** -- current user has at least one team membership with stations
+- **Organization context populates** -- org_id is available for scoping all queries
 
-These go in the `<head>` alongside the existing GTM and gtag scripts.
+### 2. New Test Suite: "Quote-to-Ship Routing" (in `useProcessTests.ts`)
+Live tests that validate the full job lifecycle:
+- **User has stations available** -- at least one station exists in the user's org for routing
+- **Routing steps can be created** -- validates that `work_order_routing` accepts inserts for the user's queue items
+- **Operation type maps to station work_center_type** -- tests the smart suggest logic (e.g., `internal` maps to CNC Mill/Lathe stations)
+- **Routing step advancement updates queue item** -- completing a step moves the job to the next station
+- **Station status updates on routing advance** -- `current_station_status` is upserted with "Waiting on Material"
+- **Full quote-to-ship sequence** -- validates operation types cover: quote, engineering, purchasing, receiving, internal, inspection, outside_processing, shipping
+- **Team members are visible for assignment** -- verifies team_members query returns assignable operators
+- **Queue items can be created with org/team scope** -- validates insert with proper org_id and team_id
 
-### public/ads.txt (new file)
-- Create `public/ads.txt` with content:
-  `google.com, pub-3639153716376265, DIRECT, f08c47fec0942fa0`
-- This is required by Google for AdSense domain verification.
-
----
-
-## 2. Firecrawl Connection
-- Connect the Firecrawl connector using the API key `fc-93c2a3c3e88b4ea29cd0b9f38d9e0f61` so it is available for scraping/search features in backend functions.
-
----
-
-## 3. Standardized Marketing Footer Component
-
-Currently the 11 feature pages have inconsistent footers -- some show only "Back to Home", others show a handful of cross-links. The Landing page has a full branded footer.
-
-### New shared component: `src/components/marketing/MarketingFooter.tsx`
-A reusable footer that will be used on all feature pages and the Pricing page. It includes:
-- **Feature cross-links**: Links to all 11 feature pages (organized in columns)
-- **Utility links**: Home, Pricing, Sign Up
-- **Copyright line**: "2026 JobLine.ai. All rights reserved."
-- **Attribution**: "A product of WeCr8 Solutions LLC" (matching Landing page)
-- Responsive grid layout for the link columns
-
-### Pages to update (replace their current footer)
-1. ShiftHandoffSoftware
-2. WorkOrderTracking
-3. ProductionScheduling
-4. MachineShopSoftware
-5. ProductionControl
-6. DigitalExpeditor
-7. ManufacturingOversight
-8. QualityManagement
-9. CNCOperatorTools
-10. TeamCollaboration
-11. DowntimeTracking
-12. Pricing
-
-Each page's inline `<footer>` block will be replaced with `<MarketingFooter />`.
-
----
-
-## 4. SEO Benefits
-- The standardized footer creates a strong internal link mesh across all 11 feature pages, boosting crawlability and page authority distribution.
-- AdSense integration enables monetization of organic traffic on marketing pages.
-- The `ads.txt` file satisfies Google's authorized seller verification.
+### 3. Update ProcessTestRunner UI (`ProcessTestRunner.tsx`)
+- Add two new category icons: `UserCog` for autofill tests, `Route` for quote-to-ship tests
+- The new suites appear alongside existing ones when "Run Process Tests" is clicked
 
 ---
 
 ## Technical Details
 
-### Files created
-| File | Purpose |
-|------|---------|
-| `public/ads.txt` | Google AdSense authorized seller file |
-| `src/components/marketing/MarketingFooter.tsx` | Shared footer for all marketing pages |
+### Files Modified
 
-### Files modified
 | File | Change |
 |------|--------|
-| `index.html` | Add AdSense meta tag + script in head |
-| 11 feature page files | Replace inline footer with `<MarketingFooter />` |
-| `src/pages/Pricing.tsx` | Replace inline footer with `<MarketingFooter />` |
+| `src/hooks/useProcessTests.ts` | Add ~16 new test definitions in two new suites appended to `allTestSuites` |
+| `src/components/testing/ProcessTestRunner.tsx` | Add icons for new `autofill` and `quote-to-ship` categories |
 
-### MarketingFooter link structure
-- **Column 1 - Operations**: Shift Handoffs, Work Orders, Production Scheduling, Production Control
-- **Column 2 - Shop Floor**: Machine Shop, CNC Operator Tools, Downtime Tracking, Digital Expeditor
-- **Column 3 - Management**: Manufacturing Oversight, Quality Management, Team Collaboration
-- **Column 4 - Company**: Home, Pricing, Sign Up Free
+### New Test Definitions (Summary)
+
+**Autofill & User Context Suite** (8 tests):
+1. `af-001`: Authenticated user profile exists with display_name
+2. `af-002`: User has operator name for form pre-fill
+3. `af-003`: Self-handoff default (incoming = outgoing operator)
+4. `af-004`: User belongs to at least one organization
+5. `af-005`: User has team membership with accessible stations
+6. `af-006`: Station with active WO returns autofill data (work_order, part_number)
+7. `af-007`: Fallback to current_station_status when no active WO
+8. `af-008`: Organization ID is available for scoping queries
+
+**Quote-to-Ship Routing Suite** (8 tests):
+1. `qs-001`: Valid operation types cover full quote-to-ship lifecycle
+2. `qs-002`: User's org has at least one station for routing assignment
+3. `qs-003`: Smart station suggestion maps operation_type to work_center_type
+4. `qs-004`: Routing steps maintain sequential operation numbers
+5. `qs-005`: Team members are queryable for work order assignment
+6. `qs-006`: Queue items are insertable with org + team scope
+7. `qs-007`: Routing step completion logic (status transitions)
+8. `qs-008`: Full lifecycle phases present: Quote through Ship
+
+### Test Implementation Pattern
+All tests follow the existing pattern: async functions that query the live database using the authenticated user's session, returning `{ success, details?, error? }`. No mock data -- these validate real system state.
 
