@@ -10,10 +10,11 @@ import { TestCoverageCard } from "@/components/testing/TestCoverageCard";
 import { TestHistoryList } from "@/components/testing/TestHistoryList";
 import { TestSuiteSelector } from "@/components/testing/TestSuiteSelector";
 import { ProcessTestRunner } from "@/components/testing/ProcessTestRunner";
+import { RoleScopeTestRunner } from "@/components/testing/RoleScopeTestRunner";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, FlaskConical, Code, Factory, Zap, CheckCircle2, XCircle, Clock, FileCode2 } from "lucide-react";
+import { Loader2, FlaskConical, Code, Factory, Zap, CheckCircle2, XCircle, Clock, FileCode2, ShieldCheck } from "lucide-react";
 
 export default function Testing() {
   const navigate = useNavigate();
@@ -149,7 +150,7 @@ export default function Testing() {
 
         {/* Test Type Tabs */}
         <Tabs defaultValue="unit" className="space-y-6">
-          <TabsList className="grid w-full max-w-lg grid-cols-3">
+          <TabsList className="grid w-full max-w-2xl grid-cols-4">
             <TabsTrigger value="unit" className="gap-2">
               <FlaskConical className="w-4 h-4" />
               Unit Tests
@@ -161,6 +162,10 @@ export default function Testing() {
             <TabsTrigger value="process" className="gap-2">
               <Factory className="w-4 h-4" />
               Process Tests
+            </TabsTrigger>
+            <TabsTrigger value="roles" className="gap-2">
+              <ShieldCheck className="w-4 h-4" />
+              Roles & Scope
             </TabsTrigger>
           </TabsList>
 
@@ -256,6 +261,11 @@ export default function Testing() {
           {/* Process Tests Tab */}
           <TabsContent value="process">
             <ProcessTestRunner />
+          </TabsContent>
+
+          {/* Role & Scope Tests Tab */}
+          <TabsContent value="roles">
+            <RoleScopeTestRunner />
           </TabsContent>
         </Tabs>
       </main>
