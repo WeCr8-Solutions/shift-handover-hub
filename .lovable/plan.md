@@ -1,84 +1,66 @@
 
 
-# AI Planning Assistant Marketing Page + Landing Integration
+# UTM Tracking & Attribution Infrastructure
 
-## What We're Building
+## Overview
 
-A dedicated marketing page for the AI Planning Assistant feature at `/features/ai-planning-assistant`, plus integration into the landing page's feature grid and footer. The page will showcase the assistant's capabilities with realistic mock screenshots of use cases, and funnel visitors toward sign-up.
+Add centralized UTM parameter capture, session persistence, and campaign-attributed event tracking to the existing GA4 analytics system. Also add a `/demo` page with embedded scheduler, a `/zach` founder redirect route, and wire `demo_modal_open` + `demo_form_submit` conversion events into the landing page and feature pages.
 
----
-
-## New Feature Page: `/features/ai-planning-assistant`
-
-### Page Structure (following existing marketing page pattern)
-
-1. **MarketingNav** (sticky header with logo + CTA)
-2. **Hero Section**
-   - Badge: "AI-Powered Production Intelligence"
-   - Headline: "Your AI Production Planner"
-   - Subhead: Explains how the assistant uses live queue and station data to answer scheduling, rerouting, and priority questions in real time
-   - CTA buttons: "Start Free Trial" + "See Pricing"
-
-3. **Interactive Chat Preview (Screenshot 1)**
-   - A realistic mock of the Planning Assistant chat panel, showing:
-     - User asks: "A machine is down. What work orders are affected?"
-     - AI responds with a formatted markdown answer listing affected WOs, suggested reroutes, and priority adjustments
-     - Usage badge showing "3/5 left today"
-   - Styled to look like the actual Sheet component with the Sparkles icon header
-
-4. **Use Case Cards (3 scenarios with mock screenshots)**
-   - **Machine Down Recovery**: Mock chat showing AI identifying affected work orders and suggesting reroutes to available stations
-   - **Due Date Feasibility**: Mock showing AI analyzing overdue items and recommending schedule adjustments
-   - **Queue Reprioritization**: Mock showing AI reordering the queue based on due dates and station availability
-   - Each card has an icon, title, description, and a realistic chat bubble preview
-
-5. **How It Works Steps**
-   - Step 1: Ask a question in plain English
-   - Step 2: AI analyzes your live production data (queue, stations, schedules)
-   - Step 3: Get actionable recommendations with specific WO and station references
-   - Step 4: Act on suggestions directly from your dashboard
-
-6. **Plan Comparison Card**
-   - Shows daily message limits by tier (Free: 5, Single: 25, Team: 100, Enterprise: Unlimited)
-   - Highlights the upgrade value proposition
-   - CTA: "Start Free Trial" button linking to /auth
-
-7. **Benefits List** (8 items in 2-column grid with check icons)
-
-8. **Lead Capture Bar** (existing component)
-
-9. **Bottom CTA Section** -- "Ready to plan smarter?" with sign-up button
-
-10. **AdPlacement** slots (mid-page + pre-footer)
-
-11. **MarketingFooter**
-
-12. **LeadCaptureModal** (exit-intent)
+No database changes required. No new dependencies needed.
 
 ---
 
-## Landing Page Integration
+## What Gets Built
 
-### Feature Grid Addition
-Add a new entry to the `features` array in Landing.tsx:
-- Icon: Sparkles
-- Title: "AI Planning Assistant"  
-- Description: "Ask questions about scheduling, rerouting, and priorities. AI analyzes your live production data and gives actionable answers."
-- Color: yellow/amber theme
-- Link: `/features/ai-planning-assistant`
-- CTA: "Meet Your AI Planner"
+### 1. UTM Capture & Persistence Utility -- `src/lib/utm.ts` (new)
 
-### Additional Feature Links
-Add "AI Planning Assistant" to the extra feature links row below the feature grid.
+A small utility module that:
+- Parses `utm_source`, `utm_medium`, `utm_campaign`, `utm_content` from `window.location.search`
+- Stores them in `sessionStorage` under a single key (`jobline_utm`)
+- On subsequent calls, returns stored values if no new UTM params are present in the URL
+- Exposes a `getUtmParams()` function that any tracking call can use
+- Strips UTM params from the visible URL using `history.replaceState` after capture (clean URLs)
 
-### Footer Integration
-Add "AI Planning" link under the "Management" category in MarketingFooter.
+### 2. AnalyticsProvider Enhancement -- `src/components/AnalyticsProvider.tsx`
 
----
+- On every route change, call the UTM capture utility
+- Attach UTM values to every `trackPageView` call automatically
+- No changes needed to individual pages -- UTM attribution is inherited globally
 
-## App Router Integration
+### 3. Updated `trackPageView` and `trackEvent` -- `src/lib/analytics.ts`
 
-Add the route `/features/ai-planning-assistant` to App.tsx, matching the existing feature page pattern.
+- `trackPageView` gains an optional `utmParams` argument; the AnalyticsProvider passes it automatically
+- Add two new pre-defined event helpers under a `DemoEvents` export:
+  - `demoModalOpen(pagePath, utmParams)` -- fires `demo_modal_open`
+  - `demoFormSubmit(pagePath, utmParams)` -- fires `demo_form_submit`
+
+### 4. Demo Page -- `src/pages/Demo.tsx` (new)
+
+- Route: `/demo`
+- Uses existing `MarketingNav` + `MarketingFooter` pattern
+- Hero section with headline "Book a Demo" and brief description
+- Embedded demo request form (name, email, company, phone, message) -- submits to `email_leads` table with `lead_type: 'demo_request'`
+- On successful submission fires `demo_form_submit` event with UTM params attached
+- SEO metadata via `SEOHead`
+- No modal -- form is directly on the page
+
+### 5. Founder Redirect -- `/zach` route
+
+- A lightweight component that on mount:
+  - Reads current URL params
+  - If no UTM params present, appends `utm_source=founder&utm_medium=organic&utm_campaign=zach_profile`
+  - Does a 302-style client redirect to `/` preserving all UTM params
+- Uses `Navigate` from react-router-dom with search params
+
+### 6. Landing Page Demo Modal Event Wiring
+
+- The existing `handleDemoModalOpen` function already fires `landing_demo_modal_opened`
+- Rename/add a parallel `demo_modal_open` event fire using the new `DemoEvents.demoModalOpen()` for GA4 conversion tracking consistency
+- The demo video modal currently exists; if a "Book Demo" CTA is added to nav or hero, it links to `/demo`
+
+### 7. Lead Capture Components -- UTM Attribution
+
+- Update `LeadCaptureBar` and `LeadCaptureModal` to attach UTM params from `getUtmParams()` to the `lead_captured` event so every lead is campaign-attributed
 
 ---
 
@@ -86,10 +68,47 @@ Add the route `/features/ai-planning-assistant` to App.tsx, matching the existin
 
 | File | Change |
 |------|--------|
-| `src/pages/features/AIPlanningAssistant.tsx` (new) | Full marketing page with mock chat screenshots, use cases, pricing comparison, and sign-up funnel |
-| `src/pages/Landing.tsx` | Add AI Planning Assistant to features array + extra links |
-| `src/components/marketing/MarketingFooter.tsx` | Add "AI Planning" link under Management |
-| `src/App.tsx` | Add route for `/features/ai-planning-assistant` |
+| `src/lib/utm.ts` (new) | UTM parse, persist, retrieve, and URL-clean utility |
+| `src/lib/analytics.ts` | Add `DemoEvents` export; update `trackPageView` to accept UTM; add UTM merge helper |
+| `src/components/AnalyticsProvider.tsx` | Import UTM utility; attach UTM to every page view; capture on route change |
+| `src/pages/Demo.tsx` (new) | Dedicated demo page with inline form, SEO head, conversion tracking |
+| `src/pages/FounderRedirect.tsx` (new) | `/zach` redirect component with default UTM tagging |
+| `src/App.tsx` | Add `/demo` and `/zach` routes |
+| `src/components/marketing/LeadCaptureBar.tsx` | Attach UTM params to `lead_captured` event |
+| `src/components/marketing/LeadCaptureModal.tsx` | Attach UTM params to `lead_captured` and `lead_modal_shown` events |
+| `src/pages/Landing.tsx` | Add "Book Demo" nav link to `/demo`; fire `demo_modal_open` via `DemoEvents` |
 
-### No backend or database changes required.
+---
+
+## Technical Details
+
+### UTM Utility API
+
+```text
+captureUtmParams()    -- parse URL, store in sessionStorage, clean URL
+getUtmParams()        -- return { utm_source, utm_medium, utm_campaign, utm_content } or {}
+```
+
+### Event Flow
+
+```text
+User lands on /?utm_source=linkedin&utm_medium=paid&utm_campaign=q1_launch
+  --> captureUtmParams() stores to sessionStorage, cleans URL to /
+  --> trackPageView("/", "Home", { utm_source: "linkedin", ... })
+
+User navigates to /demo
+  --> trackPageView("/demo", "Book Demo", { utm_source: "linkedin", ... })
+  --> User submits form
+  --> DemoEvents.demoFormSubmit("/demo", { utm_source: "linkedin", ... })
+
+User visits /zach (no UTM)
+  --> Redirect to /?utm_source=founder&utm_medium=organic&utm_campaign=zach_profile
+  --> Normal UTM capture flow from there
+```
+
+### Scalability
+
+- Any new route automatically gets UTM-attributed page views (zero code needed per page)
+- `getUtmParams()` is available to any component for ad-hoc event enrichment
+- No tracking code duplication -- everything flows through AnalyticsProvider
 
