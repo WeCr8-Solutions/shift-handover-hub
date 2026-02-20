@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { SEOHead } from "@/components/SEOHead";
-import { ArrowRight, ArrowLeft, Clock, FileText, Users, Shield, CheckCircle2, Zap } from "lucide-react";
+import { ArrowRight, Clock, FileText, Users, Shield, CheckCircle2, Zap } from "lucide-react";
+import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import joblineLogo from "@/assets/jobline-logo.png";
 
 const benefits = [
@@ -112,11 +113,7 @@ export default function ShiftHandoffSoftware() {
         </section>
       </main>
 
-      <footer className="border-t border-border py-8 text-center text-sm text-muted-foreground">
-        <Button variant="ghost" onClick={() => navigate("/")} className="gap-2">
-          <ArrowLeft className="w-4 h-4" /> Back to Home
-        </Button>
-      </footer>
+      <MarketingFooter />
     </div>
   );
 }
