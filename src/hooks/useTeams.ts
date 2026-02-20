@@ -83,6 +83,7 @@ export function useTeams() {
         team_id: team.id,
         user_id: user.id,
         role: "owner",
+        organization_id: organizationId,
       });
 
     if (memberError) {
@@ -184,6 +185,13 @@ export function useTeamMembers(teamId: string | null) {
       };
     }
 
+    // Get org_id from team
+    const { data: teamData } = await supabase
+      .from("teams")
+      .select("organization_id")
+      .eq("id", teamId)
+      .single();
+
     // Add them to the team
     const { error } = await supabase
       .from("team_members")
@@ -191,6 +199,7 @@ export function useTeamMembers(teamId: string | null) {
         team_id: teamId,
         user_id: profiles.user_id,
         role,
+        organization_id: teamData?.organization_id || "",
       });
 
     if (!error) {

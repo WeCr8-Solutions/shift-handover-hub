@@ -291,7 +291,7 @@ export function useHandoffRecords(teamId?: string | null) {
   ) => {
     const { data, error } = await supabase
       .from("handoff_records")
-      .insert(record)
+      .insert(record as any)
       .select()
       .single();
 

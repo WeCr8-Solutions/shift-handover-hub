@@ -222,6 +222,7 @@ export async function redeemInviteCode(code: string, userId: string) {
         team_id: invite.team_id,
         user_id: userId,
         role: "member",
+        organization_id: invite.organization_id,
       });
   }
 

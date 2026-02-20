@@ -196,6 +196,7 @@ export function SeedTestDataButton() {
           const { error: routingError } = await supabase
             .from("work_order_routing")
             .insert({
+              organization_id: organization.id,
               queue_item_id: wo.id,
               step_number: parseInt(op.op_number) / 10, // 10->1, 20->2, etc.
               operation_name: `${op.op_number} - ${op.operation_name}`,
