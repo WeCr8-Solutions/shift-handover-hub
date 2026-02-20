@@ -52,6 +52,7 @@ export function AnalyticsProvider({ children }: AnalyticsProviderProps) {
       '/setup': 'Setup - JobLine.ai',
       '/pricing': 'Pricing - JobLine.ai',
       '/settings': 'Settings - JobLine.ai',
+      '/demo': 'Book a Demo - JobLine.ai',
     };
     
     const title = pageTitles[location.pathname] || `${location.pathname} - JobLine.ai`;

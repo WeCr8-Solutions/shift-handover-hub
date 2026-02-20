@@ -73,6 +73,18 @@ export default function Demo() {
         title="Book a Demo | JobLine.ai"
         description="See JobLine.ai in action. Book a personalized demo to explore shift handoffs, work order tracking, and production management for your shop floor."
         canonical="/demo"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          "name": "Book a Demo - JobLine.ai",
+          "description": "Request a personalized demo of JobLine.ai's digital expeditor and shift handoff system.",
+          "url": "https://joblineai.lovable.app/demo",
+          "mainEntity": {
+            "@type": "ContactPoint",
+            "contactType": "sales",
+            "availableLanguage": "English"
+          }
+        }}
       />
       <MarketingNav showPricing />
 

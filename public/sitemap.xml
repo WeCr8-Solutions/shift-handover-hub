@@ -156,6 +156,28 @@
       <image:title>Downtime Tracking Software</image:title>
     </image:image>
   </url>
+  <url>
+    <loc>https://joblineai.lovable.app/features/ai-planning-assistant</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://joblineai.lovable.app/features/ai-planning-assistant" />
+    <lastmod>2026-02-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://joblineai.lovable.app/og-image.png</image:loc>
+      <image:title>AI Planning Assistant for Manufacturing</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://joblineai.lovable.app/demo</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://joblineai.lovable.app/demo" />
+    <lastmod>2026-02-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://joblineai.lovable.app/og-image.png</image:loc>
+      <image:title>Book a Demo - JobLine.ai</image:title>
+    </image:image>
+  </url>
 
   <!-- Utility Pages -->
   <url>
