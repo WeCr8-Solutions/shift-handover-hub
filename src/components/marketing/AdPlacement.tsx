@@ -4,6 +4,8 @@
  * Designed to blend with the page without being intrusive.
  */
 
+import { useEffect, useRef } from "react";
+
 interface AdPlacementProps {
   slot?: string;
   format?: "horizontal" | "rectangle" | "fluid";
@@ -17,6 +19,21 @@ export function AdPlacement({
   className = "",
   label = "Sponsored"
 }: AdPlacementProps) {
+  const adRef = useRef<HTMLModElement>(null);
+  const pushed = useRef(false);
+
+  useEffect(() => {
+    if (pushed.current) return;
+    try {
+      const adsbygoogle = (window as any).adsbygoogle || [];
+      adsbygoogle.push({});
+      pushed.current = true;
+    } catch (e) {
+      // Ad blocker or script not loaded — fail silently
+      console.debug("AdSense push failed:", e);
+    }
+  }, []);
+
   const formatClasses = {
     horizontal: "min-h-[90px] max-h-[120px]",
     rectangle: "min-h-[250px] max-h-[300px]",
@@ -32,8 +49,8 @@ export function AdPlacement({
         <div
           className={`w-full rounded-lg bg-muted/30 border border-border/50 flex items-center justify-center overflow-hidden ${formatClasses[format]}`}
         >
-          {/* Google AdSense auto ad unit — replace data-ad-slot with your actual slot ID */}
           <ins
+            ref={adRef}
             className="adsbygoogle block w-full h-full"
             style={{ display: "block" }}
             data-ad-client="ca-pub-3639153716376265"
