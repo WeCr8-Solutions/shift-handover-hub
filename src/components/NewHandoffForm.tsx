@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef, KeyboardEvent } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -279,17 +280,47 @@ export function NewHandoffForm({ onClose, onSubmit }: NewHandoffFormProps) {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleStationChange = (stationDbId: string) => {
+  const handleStationChange = async (stationDbId: string) => {
     const station = stations.find((s) => s.id === stationDbId);
     if (station) {
-      setFormData((prev) => ({
-        ...prev,
+      const updates: Partial<FormData> = {
         stationId: station.station_id,
         stationDbId: station.id,
         workCenterType: station.work_center_type,
         workCenter: station.work_center,
         machineId: station.station_id,
-      }));
+      };
+
+      // Auto-fill from active queue item at this station
+      const { data: activeItem } = await supabase
+        .from("queue_items")
+        .select("work_order, part_number, operation_number, quantity")
+        .eq("station_id", stationDbId)
+        .eq("status", "in_progress")
+        .limit(1)
+        .maybeSingle();
+
+      if (activeItem) {
+        if (activeItem.work_order) updates.workOrder = activeItem.work_order;
+        if (activeItem.part_number) updates.partNumber = activeItem.part_number;
+        if (activeItem.operation_number) updates.operationNumber = activeItem.operation_number;
+        if (activeItem.quantity) updates.partsCompleted = 0; // reset for new handoff
+        toast.info(`Auto-filled from active work order: ${activeItem.work_order || activeItem.part_number}`);
+      } else {
+        // Fall back to current_station_status
+        const { data: status } = await supabase
+          .from("current_station_status")
+          .select("current_job_work_order, current_job_part_number")
+          .eq("station_id", stationDbId)
+          .maybeSingle();
+
+        if (status) {
+          if (status.current_job_work_order) updates.workOrder = status.current_job_work_order;
+          if (status.current_job_part_number) updates.partNumber = status.current_job_part_number;
+        }
+      }
+
+      setFormData((prev) => ({ ...prev, ...updates }));
     }
   };
 

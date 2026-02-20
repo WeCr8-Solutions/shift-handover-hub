@@ -213,7 +213,18 @@ export function StationWorkOrderPicker({ stationId, stationName, className }: St
           .update({ status: "in_progress", started_at: new Date().toISOString() })
           .eq("id", nextStep.id);
 
-        toast.success(`Delivered to ${nextStep.stations?.name || "next station"}`);
+        // Update next station status to show incoming work
+        const nextStationName = (nextStep.stations as any)?.name;
+        await supabase
+          .from("current_station_status")
+          .upsert({
+            station_id: nextStep.station_id,
+            current_job_work_order: orderToDeliver.work_order || orderToDeliver.title,
+            current_job_part_number: orderToDeliver.part_number,
+            current_job_state: "Waiting on Material",
+          }, { onConflict: "station_id" });
+
+        toast.success(`Delivered to ${nextStationName || "next station"}`);
       } else {
         // No more steps - mark as complete
         await supabase
