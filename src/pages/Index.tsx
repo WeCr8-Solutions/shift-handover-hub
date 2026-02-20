@@ -9,12 +9,14 @@ import { JobPerformanceUpdateForm } from "@/components/JobPerformanceUpdateForm"
 import { WorkCenterFilter } from "@/components/WorkCenterFilter";
 import { OperatorWorkflowPanel } from "@/components/OperatorWorkflowPanel";
 import { CreateWorkOrderDialog } from "@/components/queue/CreateWorkOrderDialog";
+import { PlanningAssistantModal } from "@/components/queue/PlanningAssistantModal";
 import { SupervisorDashboard } from "@/components/dashboard/SupervisorDashboard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useStations, useHandoffRecords, Station, HandoffRecord } from "@/hooks/useStations";
 import { useOnboardingContext } from "@/components/onboarding/OnboardingProvider";
 import { useAdminAccess } from "@/hooks/useAdminData";
+import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { mockStations, mockHandoffRecords } from "@/lib/mockData";
 import { WorkCenterType, StationInfo, ShiftHandoffRecord } from "@/types/handoff";
 import { Button } from "@/components/ui/button";
@@ -121,6 +123,7 @@ const Index = () => {
   const { records: dbRecords, loading: recordsLoading, createHandoffRecord } = useHandoffRecords(currentTeam?.id);
   const { isComplete, isLoading: onboardingLoading, isStepCompleted, hasSeenWelcome } = useOnboardingContext();
   const { hasOrgSupervisorAccess, loading: roleLoading } = useAdminAccess();
+  const { organization } = useUserOrganization();
 
   // Supervisors, org admins, and platform admins get the production overview dashboard
   const showSupervisorView = user && hasOrgSupervisorAccess;
@@ -409,6 +412,11 @@ const Index = () => {
         onOpenChange={setShowCreateWorkOrder}
         preSelectedStationId={selectedStationForAction}
       />
+
+      {/* AI Planning Assistant - supervisors/admins only */}
+      {hasOrgSupervisorAccess && organization && (
+        <PlanningAssistantModal organizationId={organization.id} />
+      )}
     </div>
   );
 };
