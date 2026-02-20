@@ -125,7 +125,7 @@ const getInitialFormData = (operatorName: string): FormData => ({
   partRevision: "",
   operationNumber: "",
   outgoingOperator: operatorName,
-  incomingOperator: "",
+  incomingOperator: operatorName, // Default to self for solo operators
   jobState: "",
   jobStateReason: "",
   cncReadiness: Object.fromEntries(cncReadinessItems.map((item) => [item.key, "N/A" as TriState])),
@@ -706,8 +706,13 @@ export function NewHandoffForm({ onClose, onSubmit }: NewHandoffFormProps) {
                   <Input
                     value={formData.incomingOperator}
                     onChange={(e) => updateField("incomingOperator", e.target.value)}
-                    placeholder="Next shift operator"
+                    placeholder="Next shift operator (defaults to you for solo ops)"
                   />
+                  {formData.incomingOperator === formData.outgoingOperator && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      ✓ Self-handoff — you're covering the next shift too
+                    </p>
+                  )}
                 </div>
               </div>
 
