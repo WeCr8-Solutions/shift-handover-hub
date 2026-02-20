@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import { usePlanningAssistant, ChatMessage } from "@/hooks/usePlanningAssistant";
+import { useAiChatUsage } from "@/hooks/useAiChatUsage";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Sparkles,
   Send,
@@ -14,8 +16,10 @@ import {
   AlertTriangle,
   CalendarCheck,
   ArrowUpDown,
-  X,
+  Zap,
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface PlanningAssistantModalProps {
   organizationId: string | null;
@@ -43,8 +47,11 @@ export function PlanningAssistantModal({ organizationId }: PlanningAssistantModa
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const { messages, isLoading, sendMessage, clearChat } = usePlanningAssistant(organizationId);
+  const { data: usage } = useAiChatUsage(organizationId);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const limitReached = usage?.limitReached ?? false;
 
   // Auto-scroll on new messages
   useEffect(() => {
@@ -61,14 +68,26 @@ export function PlanningAssistantModal({ organizationId }: PlanningAssistantModa
   }, [open]);
 
   const handleSend = () => {
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || isLoading || limitReached) return;
     sendMessage(input);
     setInput("");
   };
 
   const handleQuickPrompt = (prompt: string) => {
-    if (isLoading) return;
+    if (isLoading || limitReached) return;
     sendMessage(prompt);
+  };
+
+  const handleUpgrade = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout");
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      }
+    } catch {
+      toast.error("Could not start checkout. Please try again.");
+    }
   };
 
   return (
@@ -91,7 +110,15 @@ export function PlanningAssistantModal({ organizationId }: PlanningAssistantModa
                 <Sparkles className="w-5 h-5 text-primary" />
                 Planning Assistant
               </SheetTitle>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1.5">
+                {usage && usage.dailyLimit > 0 && (
+                  <Badge
+                    variant={limitReached ? "destructive" : "secondary"}
+                    className="text-xs font-normal"
+                  >
+                    {usage.remaining}/{usage.dailyLimit} left
+                  </Badge>
+                )}
                 {messages.length > 0 && (
                   <Button variant="ghost" size="icon" onClick={clearChat} title="Clear chat">
                     <Trash2 className="w-4 h-4" />
@@ -120,6 +147,7 @@ export function PlanningAssistantModal({ organizationId }: PlanningAssistantModa
                         size="sm"
                         className="gap-1.5 text-xs"
                         onClick={() => handleQuickPrompt(qp.prompt)}
+                        disabled={limitReached}
                       >
                         <qp.icon className="w-3.5 h-3.5" />
                         {qp.label}
@@ -142,32 +170,53 @@ export function PlanningAssistantModal({ organizationId }: PlanningAssistantModa
             </div>
           </ScrollArea>
 
-          {/* Input */}
-          <div className="p-4 border-t">
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleSend();
-              }}
-              className="flex gap-2"
-            >
-              <Input
-                ref={inputRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask about scheduling, routing, priorities..."
-                disabled={isLoading}
-                className="flex-1"
-              />
-              <Button type="submit" size="icon" disabled={isLoading || !input.trim()}>
-                {isLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Send className="w-4 h-4" />
-                )}
-              </Button>
-            </form>
-          </div>
+          {/* Limit reached upgrade card OR input */}
+          {limitReached ? (
+            <div className="p-4 border-t">
+              <Card className="border-primary/20 bg-primary/5">
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <Zap className="w-4 h-4 text-primary" />
+                    Daily limit reached
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    You've used all {usage?.dailyLimit} AI messages for today.
+                    Upgrade your plan to get more daily messages and unlock advanced features.
+                  </p>
+                  <Button size="sm" onClick={handleUpgrade} className="w-full gap-1.5">
+                    <Zap className="w-3.5 h-3.5" />
+                    Upgrade Plan
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          ) : (
+            <div className="p-4 border-t">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSend();
+                }}
+                className="flex gap-2"
+              >
+                <Input
+                  ref={inputRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Ask about scheduling, routing, priorities..."
+                  disabled={isLoading}
+                  className="flex-1"
+                />
+                <Button type="submit" size="icon" disabled={isLoading || !input.trim()}>
+                  {isLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
+                </Button>
+              </form>
+            </div>
+          )}
         </SheetContent>
       </Sheet>
     </>
