@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { SEOHead } from "@/components/SEOHead";
 import { ArrowRight, CheckCircle2, Zap, Shield, AlertTriangle, FileText, TrendingUp } from "lucide-react";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
-import joblineLogo from "@/assets/jobline-logo.png";
+import { MarketingNav } from "@/components/marketing/MarketingNav";
+import { AdPlacement } from "@/components/marketing/AdPlacement";
 
 const benefits = [
   "First-article inspection documentation",
@@ -40,19 +41,7 @@ export default function QualityManagement() {
         jsonLd={jsonLd}
       />
 
-      <nav className="border-b border-border bg-background/80 backdrop-blur-xl sticky top-0 z-50">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <button onClick={() => navigate("/")} className="flex items-center gap-2">
-            <img src={joblineLogo} alt="JobLine.ai" className="h-8 w-auto" />
-          </button>
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={() => navigate("/pricing")}>Pricing</Button>
-            <Button onClick={() => navigate("/auth")} size="sm" className="gap-2">
-              Start Free Trial <ArrowRight className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-      </nav>
+      <MarketingNav />
 
       <main>
         <section className="py-16 sm:py-24">
@@ -95,7 +84,13 @@ export default function QualityManagement() {
                 </div>
               ))}
             </div>
+          </div>
+        </section>
 
+        <AdPlacement format="horizontal" className="py-4" />
+
+        <section className="py-12">
+          <div className="container mx-auto px-4 max-w-4xl">
             <h2 className="text-2xl font-bold mb-6">Quality Features Built for Manufacturing</h2>
             <ul className="grid sm:grid-cols-2 gap-4 mb-16">
               {benefits.map((b, i) => (
@@ -115,6 +110,8 @@ export default function QualityManagement() {
             </div>
           </div>
         </section>
+
+        <AdPlacement format="horizontal" className="py-6" />
       </main>
 
       <MarketingFooter />
