@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { SEOHead } from "@/components/SEOHead";
-import { ArrowRight, ArrowLeft, CheckCircle2, Zap, Target, TrendingUp, Eye, AlertTriangle, Clock, Route } from "lucide-react";
+import { ArrowRight, CheckCircle2, Zap, Target, Eye, AlertTriangle, Clock, Route } from "lucide-react";
+import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import joblineLogo from "@/assets/jobline-logo.png";
 
 const benefits = [
@@ -131,15 +132,7 @@ export default function DigitalExpeditor() {
         </section>
       </main>
 
-      <footer className="border-t border-border py-8 text-center text-sm text-muted-foreground">
-        <div className="container mx-auto px-4 flex flex-wrap justify-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/")}>Home</Button>
-          <Button variant="ghost" size="sm" onClick={() => navigate("/features/shift-handoff-software")}>Shift Handoffs</Button>
-          <Button variant="ghost" size="sm" onClick={() => navigate("/features/work-order-tracking")}>Work Orders</Button>
-          <Button variant="ghost" size="sm" onClick={() => navigate("/features/production-scheduling")}>Scheduling</Button>
-          <Button variant="ghost" size="sm" onClick={() => navigate("/pricing")}>Pricing</Button>
-        </div>
-      </footer>
+      <MarketingFooter />
     </div>
   );
 }

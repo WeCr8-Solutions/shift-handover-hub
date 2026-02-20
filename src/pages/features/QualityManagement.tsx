@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { SEOHead } from "@/components/SEOHead";
-import { ArrowRight, CheckCircle2, Zap, Shield, AlertTriangle, FileText, TrendingUp, Camera } from "lucide-react";
+import { ArrowRight, CheckCircle2, Zap, Shield, AlertTriangle, FileText, TrendingUp } from "lucide-react";
+import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import joblineLogo from "@/assets/jobline-logo.png";
 
 const benefits = [
@@ -116,14 +117,7 @@ export default function QualityManagement() {
         </section>
       </main>
 
-      <footer className="border-t border-border py-8 text-center text-sm text-muted-foreground">
-        <div className="container mx-auto px-4 flex flex-wrap justify-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/")}>Home</Button>
-          <Button variant="ghost" size="sm" onClick={() => navigate("/features/manufacturing-oversight")}>Oversight</Button>
-          <Button variant="ghost" size="sm" onClick={() => navigate("/features/production-control")}>Production Control</Button>
-          <Button variant="ghost" size="sm" onClick={() => navigate("/pricing")}>Pricing</Button>
-        </div>
-      </footer>
+      <MarketingFooter />
     </div>
   );
 }

@@ -10,11 +10,11 @@ import {
   Zap, 
   Users, 
   Building2, 
-  ArrowLeft, 
   Loader2,
   Crown,
   Settings,
 } from 'lucide-react';
+import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import joblineLogo from '@/assets/jobline-logo.png';
@@ -257,13 +257,7 @@ export default function Pricing() {
         </div>
       </section>
 
-      {/* Back to Home */}
-      <div className="pb-12 text-center">
-        <Button variant="ghost" onClick={() => navigate('/')} className="gap-2">
-          <ArrowLeft className="w-4 h-4" />
-          Back to Home
-        </Button>
-      </div>
+      <MarketingFooter />
     </div>
   );
 }
