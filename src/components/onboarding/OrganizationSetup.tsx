@@ -83,9 +83,45 @@ export function OrganizationSetup({ onComplete, onSkip }: OrganizationSetupProps
 
       if (memberError) throw memberError;
 
+      // Auto-create a default team so solo operators can start immediately
+      const { data: team, error: teamError } = await supabase
+        .from('teams')
+        .insert({
+          name: 'Shop Floor',
+          description: 'Default production team',
+          organization_id: org.id,
+          created_by: user.id,
+        })
+        .select('id')
+        .single();
+
+      if (!teamError && team) {
+        // Add user as team owner
+        await supabase
+          .from('team_members')
+          .insert({
+            team_id: team.id,
+            user_id: user.id,
+            role: 'owner',
+          });
+
+        // Auto-create a general work station
+        await supabase
+          .from('stations')
+          .insert({
+            name: 'Station 1',
+            station_id: 'STN-001',
+            work_center: 'General',
+            work_center_type: 'Manual Mill',
+            team_id: team.id,
+            organization_id: org.id,
+            is_active: true,
+          });
+      }
+
       toast({
         title: 'Organization Created',
-        description: `${orgName} is ready. Now let's set up your shop floor.`,
+        description: `${orgName} is ready with a default team and station. You're all set!`,
       });
 
       onComplete();
@@ -261,11 +297,11 @@ export function OrganizationSetup({ onComplete, onSkip }: OrganizationSetupProps
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-green-500" />
-                <span className="text-sm">Invite team members with role-based access</span>
+                <span className="text-sm">Auto-creates a default team, station &amp; membership</span>
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-green-500" />
-                <span className="text-sm">Manage multiple teams and departments</span>
+                <span className="text-sm">Works for a solo operator or a full crew</span>
               </div>
             </div>
 
