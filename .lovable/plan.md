@@ -1,95 +1,123 @@
 
 
-# Role Isolation: Separate Org-Scoped Admin from SDK/Developer Tools
+# Marketing Conversion and Monetization Gap Analysis + Fix Plan
 
-## Problem
+## Current Strengths (Already Working)
+- Google AdSense script loaded in head with correct pub ID
+- ads.txt properly configured
+- AdPlacement component on all 11 feature pages (2 slots each)
+- GA4 + GTM tracking with detailed event tracking
+- Comprehensive SEO: sitemap, robots.txt, llms.txt, JSON-LD schemas
+- Stripe-integrated pricing page
+- Landing page with multiple CTAs and interactive demo
+- MarketingFooter internal link mesh for SEO
+- Promo code sharing and donation systems
 
-Currently, **supervisors** and **org admins** land on the same Admin Dashboard page as **platform admins** and **SDK developers**. This exposes them to:
+## Critical Gaps Found
 
-- Issues Management (global issue queue -- SDK tool)
-- Changelog Manager (platform-level release notes -- SDK tool)
-- Activity Logs (global system logs -- SDK tool)
-- Seed Test Data button (developer utility)
-- Bulk Upload button (should be org-admin only, not supervisor)
-- Global system stats (cross-org counts)
+### 1. Ads Never Actually Load (Critical - Revenue Blocker)
+The AdPlacement component renders `<ins class="adsbygoogle">` tags but **never calls `(adsbygoogle = window.adsbygoogle || []).push({})`**. Without this JavaScript call, Google AdSense will not fill any ad slot. Zero ad revenue is being generated despite the infrastructure being in place.
 
-Operators and viewers cannot reach `/admin` at all (correct), but the boundary between "org admin/supervisor" and "platform admin/developer" is blurred once inside.
+**Fix:** Add a `useEffect` in AdPlacement that calls `adsbygoogle.push({})` after the `<ins>` element mounts.
 
-## Solution
+### 2. Landing Page Has Zero Ad Placements (Highest Traffic Page)
+The landing page -- your most visited page -- has no AdPlacement components. Feature pages each have two slots, but the page driving the most traffic has none.
 
-Restructure the Admin page to show **only org-scoped tabs** to supervisors/org-admins and reserve **global/SDK tabs** for platform admin and developer roles. No new pages needed -- just conditional tab visibility within the existing Admin page.
+**Fix:** Add two non-intrusive AdPlacement slots to the landing page: one between the features section and "How It Works", and one before the final CTA.
 
----
+### 3. No Email Capture or Lead Generation
+There is no newsletter signup, no "download free template" offer, and no way to capture leads from visitors who aren't ready to sign up yet. You already have an Excel template (`public/templates/JobLine_Setup_Template.xlsx`) that could serve as a lead magnet.
 
-## Changes
+**Fix:** Add a lightweight email capture banner on the landing page and feature pages -- something like "Download our free shop floor setup template" that collects an email before providing the download link.
 
-### 1. Admin Page Tab Visibility (src/pages/Admin.tsx)
+### 4. "Schedule Demo" Button Does Nothing
+In the bottom CTA section of the landing page, the "Schedule Demo" button only fires a tracking event but has no destination. This is a dead-end for high-intent visitors.
 
-Split tabs into three visibility tiers:
+**Fix:** Either link to a Calendly/booking page, or replace with a "View Pricing" button that navigates to `/pricing`.
 
-| Tier | Who sees it | Tabs |
-|------|-------------|------|
-| **Org-scoped** | Supervisors, Org Admins, Platform Admin, Developer | Overview, Organizations (own only), Users (own org), Stations (own org), Work Orders, History, Routing, Performance |
-| **SDK/Global** | Platform Admin and Developer only | Issues, Changelog, Activity Logs |
-| **Dev Tools** | Developer and Platform Admin only (already correct) | Dev Queue, Dev Settings, RLS Health, User Journey |
+### 5. No Conversion Tracking for Signup Funnel
+While you track CTA clicks, there's no GA4 conversion event fired when a user actually completes signup. This means you can't measure which marketing pages or CTAs actually drive signups.
 
-Concrete changes:
-- Wrap the "Activity" bucket (Activity, Issues, Changelog tabs) in `{(isAdmin or isDeveloper) && ...}` guard
-- Wrap `SeedTestDataButton` in `{hasTestingAccess && ...}` guard
-- Wrap `BulkUpload` in `{(isAdmin or isDeveloper or isOrgAdmin) && ...}` guard (supervisors should not seed/bulk-upload)
-- Update the page header subtitle: show "Organization Management" for supervisors, "System Management" for admin/dev
+**Fix:** Fire a `sign_up_completed` conversion event in the auth flow after successful registration, and configure it as a conversion in GA4.
 
-### 2. Scope AdminStatsCards for Non-Platform Users (src/components/admin/AdminStatsCards.tsx)
+### 6. Pricing Page Missing Ad Slot and MarketingNav
+The Pricing page has its own custom nav instead of using MarketingNav, and has no ad placements. It also lacks the standardized layout other marketing pages follow.
 
-Currently shows global counts (totalUsers across all orgs, totalOrgs, etc.). For org-scoped users (supervisors/org-admins), these stats should either:
-- Show org-scoped counts only, or
-- Be hidden entirely
+**Fix:** Update Pricing page to use MarketingNav for consistency, and add one subtle ad slot in the FAQ section area.
 
-Plan: Hide the full stats row for non-admin/developer users and show a simplified org-scoped summary instead.
+### 7. Missing Open Graph Images
+No page sets an `og:image`. When shared on LinkedIn, Twitter, Slack, or Discord, links show no preview image -- significantly reducing click-through rates from social shares.
 
-### 3. Org-Scoped Data in Overview Tab
-
-When a supervisor or org admin views the Overview tab, the data queries should be filtered to their org. The `isAdmin` prop passed to child components like `OrganizationOversight`, `UserManagement`, `StationManagement` already controls this -- verify they correctly scope data for non-platform-admin users.
-
-### 4. Update useAdminAccess Hook (src/hooks/useAdminData.ts)
-
-Add a new computed flag:
-```
-hasPlatformAccess: isAdmin || isDeveloper  // SDK-level tools
-```
-This is cleaner than checking `isAdmin || isDeveloper` throughout the UI.
-
-### 5. Header Badge Label (src/pages/Admin.tsx)
-
-Currently shows "Administrator" / "Developer" / "Supervisor". Add "Org Admin" distinction:
-- Platform Admin -> "Platform Admin"
-- Developer -> "SDK Developer"  
-- Org Owner -> "Org Owner"
-- Org Admin -> "Org Admin"
-- Supervisor -> "Supervisor"
+**Fix:** Create or reference a default OG image and set it in the SEOHead defaults and in `index.html` meta tags.
 
 ---
 
-## Files Modified
+## Implementation Plan
 
-| File | Change |
-|------|--------|
-| `src/hooks/useAdminData.ts` | Add `hasPlatformAccess` computed flag |
-| `src/pages/Admin.tsx` | Gate Activity/Issues/Changelog tabs behind `hasPlatformAccess`; gate SeedTestData behind `hasTestingAccess`; gate BulkUpload behind org-admin+; update badge labels |
-| `src/components/admin/AdminStatsCards.tsx` | Accept `hasPlatformAccess` prop; show simplified org stats for org-scoped users |
+### Step 1: Fix AdSense Initialization (AdPlacement.tsx)
+- Add `useEffect` with `adsbygoogle.push({})` call
+- Add error handling for ad blockers
+- Add analytics event for ad impression tracking
 
-## What Does NOT Change
+### Step 2: Add Ad Slots to Landing Page
+- Insert AdPlacement (horizontal) between features and "How It Works" sections
+- Insert AdPlacement (horizontal) between testimonials and final CTA
+- Keep them subtle and non-intrusive
 
-- `/testing` page -- already correctly gated by `hasTestingAccess`
-- Header navigation -- supervisors still see the Admin shield icon (they need their org dashboard)
-- Signup flow -- `handle_new_user` correctly assigns only `operator` role; org roles come from org membership
-- RLS policies -- already enforce org-scoped data isolation at the database level
-- Dev Tools bucket -- already gated by `hasTestingAccess`
+### Step 3: Build Email Capture Component
+- Create a `LeadCaptureBar` component with email input
+- Offer the existing Excel template as a free download incentive
+- Store captured emails in a new `email_leads` database table
+- Add the component to the landing page and feature pages
 
-## Security Notes
+### Step 4: Fix Dead "Schedule Demo" Button
+- Change to navigate to `/pricing` with appropriate tracking
 
-- This is a **UI-level enforcement** layered on top of existing **RLS-level enforcement**. Even if a supervisor somehow navigated to a global tab, the RLS policies on `issues`, `changelogs`, `dev_issue_queue`, and `activity_logs` already prevent them from seeing data they shouldn't.
-- The `changelogs` table RLS uses `is_dev_or_admin()` -- supervisors cannot read it.
-- The `issues` table RLS restricts non-admin/dev users to their own reported issues.
-- This change ensures the UI matches the database security boundaries.
+### Step 5: Add Signup Conversion Tracking
+- Fire `sign_up` GA4 event in AuthContext after successful registration
+- This enables measuring actual conversion rates from each marketing page
+
+### Step 6: Standardize Pricing Page
+- Replace custom nav with MarketingNav
+- Add one horizontal ad slot after the FAQ section
+
+### Step 7: Add Default OG Image
+- Set a default `og:image` in SEOHead component
+- Add `og:image` meta tag to `index.html`
+
+---
+
+## Technical Details
+
+### New Database Table: `email_leads`
+```text
+id (uuid, PK)
+email (text, not null)
+source_page (text) -- which page they signed up from
+lead_type (text) -- e.g. 'template_download', 'newsletter'
+created_at (timestamptz)
+```
+With RLS: insert allowed for anonymous/authenticated, select restricted to platform admins.
+
+### New Component: `LeadCaptureBar`
+- Minimal email input + CTA button
+- Stores lead in database
+- Shows success state after submission
+- Appears on landing and feature pages
+
+### AdPlacement Fix (Critical)
+```text
+useEffect that calls window.adsbygoogle.push({}) 
+after component mounts, with try/catch for ad blockers
+```
+
+### Files Modified
+- `src/components/marketing/AdPlacement.tsx` -- add push() call
+- `src/components/marketing/LeadCaptureBar.tsx` -- new component
+- `src/pages/Landing.tsx` -- add 2 ad slots + lead capture
+- `src/pages/Pricing.tsx` -- use MarketingNav, add ad slot
+- `src/components/SEOHead.tsx` -- add default OG image
+- `src/contexts/AuthContext.tsx` -- add signup conversion event
+- `index.html` -- add og:image meta tag
+- Database migration for `email_leads` table
 
