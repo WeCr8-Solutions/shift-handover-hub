@@ -129,12 +129,21 @@ export function useJobPerformanceUpdates(teamId?: string | null) {
       return { data: null, error: new Error("User not authenticated") };
     }
 
+    // Get org_id from user's org membership
+    const { data: orgMember } = await supabase
+      .from("organization_members")
+      .select("organization_id")
+      .eq("user_id", user.id)
+      .limit(1)
+      .maybeSingle();
+
     const { data, error } = await supabase
       .from("job_performance_updates")
       .insert({
         ...input,
         user_id: user.id,
         user_name: profile.display_name,
+        organization_id: orgMember?.organization_id || "",
       })
       .select()
       .single();

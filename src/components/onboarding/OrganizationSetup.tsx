@@ -103,6 +103,7 @@ export function OrganizationSetup({ onComplete, onSkip }: OrganizationSetupProps
             team_id: team.id,
             user_id: user.id,
             role: 'owner',
+            organization_id: org.id,
           });
 
         // Auto-create a general work station

@@ -493,6 +493,7 @@ export function useAllStations() {
     work_center: string;
     work_center_type: string;
     team_id: string | null;
+    organization_id: string;
   }) => {
     const { error } = await supabase.from("stations").insert(station);
     if (error) return { error };

@@ -307,6 +307,7 @@ export function WorkOrderRoutingEditor({
       // Sanitize values: empty strings → null for date/numeric columns
       const stepsToSave = enabledSteps.map((s, idx) => ({
         queue_item_id: queueItemId,
+        organization_id: organization!.id,
         step_number: idx + 1,
         operation_name: s.operation_name,
         operation_type: s.operation_type,

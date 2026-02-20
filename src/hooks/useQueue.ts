@@ -315,6 +315,7 @@ export function useQueue(filters?: {
             action: changes.join(", "),
             old_value: JSON.parse(JSON.stringify({ status: oldItem.status, priority: oldItem.priority, assigned_to: oldItem.assigned_to })),
             new_value: JSON.parse(JSON.stringify(input)),
+            organization_id: organization?.id || "",
           }]);
         }
       }
@@ -420,6 +421,7 @@ export function useQueue(filters?: {
         user_id: user.id,
         user_name: profile.display_name,
         content,
+        organization_id: organization?.id || "",
       });
 
       if (error) return { error: error.message };

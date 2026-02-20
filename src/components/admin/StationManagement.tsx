@@ -219,12 +219,15 @@ export function StationManagement({ isAdmin }: StationManagementProps) {
     }
 
     setIsSubmitting(true);
+    const teamOrg = teams.find(t => t.id === formData.team_id);
+    const orgId = organizations.find(o => teams.some(t => t.id === formData.team_id))?.id;
     const { error } = await createStation({
       station_id: formData.station_id,
       name: formData.name,
       work_center: formData.work_center,
       work_center_type: formData.work_center_type,
       team_id: formData.team_id || null,
+      organization_id: orgId || "",
     });
     setIsSubmitting(false);
 

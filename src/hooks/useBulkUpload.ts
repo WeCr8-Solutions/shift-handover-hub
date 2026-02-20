@@ -151,6 +151,7 @@ export function useBulkUpload() {
           team_id: newTeam.id,
           user_id: user.id,
           role: 'owner',
+          organization_id: organization.id,
         });
       }
     }
@@ -185,6 +186,7 @@ export function useBulkUpload() {
         name: dept.name,
         description: dept.description,
         team_id: teamId,
+        organization_id: organization.id,
       });
 
       if (error) {
@@ -309,6 +311,7 @@ export function useBulkUpload() {
                 team_id: teamId,
                 user_id: existingProfile.user_id,
                 role: teamRole,
+                organization_id: organization.id,
               }]);
 
             if (teamMemberError && !teamMemberError.message.includes('duplicate')) {

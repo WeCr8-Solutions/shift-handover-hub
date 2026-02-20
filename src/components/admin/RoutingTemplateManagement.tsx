@@ -235,6 +235,7 @@ export function RoutingTemplateManagement({ isAdmin }: RoutingTemplateManagement
         work_center_type: s.work_center_type,
         estimated_duration: s.estimated_duration,
         instructions: s.instructions,
+        organization_id: organization!.id,
       })));
 
     setIsSubmitting(false);
@@ -287,6 +288,7 @@ export function RoutingTemplateManagement({ isAdmin }: RoutingTemplateManagement
         work_center_type: s.work_center_type,
         estimated_duration: s.estimated_duration,
         instructions: s.instructions,
+        organization_id: organization!.id,
       })));
 
     setIsSubmitting(false);
@@ -347,6 +349,7 @@ export function RoutingTemplateManagement({ isAdmin }: RoutingTemplateManagement
           work_center_type: s.work_center_type,
           estimated_duration: s.estimated_duration,
           instructions: s.instructions,
+          organization_id: organization!.id,
         })));
     }
 
