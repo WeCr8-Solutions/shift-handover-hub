@@ -11,10 +11,12 @@ interface AdminStatsCardsProps {
   loading: boolean;
   lastUpdated?: Date;
   onRefresh?: () => void;
+  hasPlatformAccess?: boolean;
 }
 
-export function AdminStatsCards({ stats, loading, lastUpdated, onRefresh }: AdminStatsCardsProps) {
-  const statCards = [
+export function AdminStatsCards({ stats, loading, lastUpdated, onRefresh, hasPlatformAccess = false }: AdminStatsCardsProps) {
+  // Platform admins/developers see full global stats; org-scoped users see simplified view
+  const platformStatCards = [
     {
       title: "Organizations",
       value: stats.totalOrganizations,
@@ -52,6 +54,29 @@ export function AdminStatsCards({ stats, loading, lastUpdated, onRefresh }: Admi
       description: "Handoffs submitted",
     },
   ];
+
+  const orgScopedStatCards = [
+    {
+      title: "Stations",
+      value: `${stats.activeStations}/${stats.totalStations}`,
+      icon: Wrench,
+      description: "Active / Total",
+    },
+    {
+      title: "Teams",
+      value: stats.totalTeams,
+      icon: Building2,
+      description: "Your organization",
+    },
+    {
+      title: "Today's Activity",
+      value: stats.handoffsToday,
+      icon: Activity,
+      description: "Handoffs submitted",
+    },
+  ];
+
+  const statCards = hasPlatformAccess ? platformStatCards : orgScopedStatCards;
 
   if (loading && !lastUpdated) {
     return (
@@ -114,7 +139,7 @@ export function AdminStatsCards({ stats, loading, lastUpdated, onRefresh }: Admi
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      <div className={`grid grid-cols-1 md:grid-cols-2 ${hasPlatformAccess ? 'lg:grid-cols-3 xl:grid-cols-6' : 'lg:grid-cols-3'} gap-4`}>
         {statCards.map((stat) => (
           <Card key={stat.title}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">

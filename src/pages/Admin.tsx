@@ -29,7 +29,7 @@ import { Loader2, Shield, LayoutDashboard, Users, Wrench, Briefcase, Activity, F
 export default function Admin() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-  const { isAdmin, isDeveloper, isSupervisor, hasAdminAccess, hasTestingAccess, loading: accessLoading } = useAdminAccess();
+  const { isAdmin, isDeveloper, isSupervisor, isOrgAdmin, isOrgOwner, hasAdminAccess, hasTestingAccess, hasPlatformAccess, loading: accessLoading } = useAdminAccess();
   const { stats, loading: statsLoading, lastUpdated: statsLastUpdated, fetchStats } = useSystemStats();
   const [bulkUploadOpen, setBulkUploadOpen] = useState(false);
 
@@ -70,20 +70,22 @@ export default function Admin() {
             <div>
               <h1 className="text-2xl font-bold">Admin Dashboard</h1>
               <p className="text-sm text-muted-foreground">
-                System management and oversight
+                {hasPlatformAccess ? "System management and oversight" : "Organization management"}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <TourTriggerButton />
-            <SeedTestDataButton />
-            <Button variant="outline" onClick={() => setBulkUploadOpen(true)} data-tour="bulk-upload">
-              <FileSpreadsheet className="w-4 h-4 mr-2" />
-              Bulk Upload
-            </Button>
-            <Badge variant={isAdmin || isDeveloper ? "default" : "secondary"} className="gap-1">
+            {hasTestingAccess && <SeedTestDataButton />}
+            {(hasPlatformAccess || isOrgAdmin) && (
+              <Button variant="outline" onClick={() => setBulkUploadOpen(true)} data-tour="bulk-upload">
+                <FileSpreadsheet className="w-4 h-4 mr-2" />
+                Bulk Upload
+              </Button>
+            )}
+            <Badge variant={hasPlatformAccess ? "default" : "secondary"} className="gap-1">
               <Shield className="w-3 h-3" />
-              {isAdmin ? "Administrator" : isDeveloper ? "Developer" : "Supervisor"}
+              {isAdmin ? "Platform Admin" : isDeveloper ? "SDK Developer" : isOrgOwner ? "Org Owner" : isOrgAdmin ? "Org Admin" : "Supervisor"}
             </Badge>
           </div>
         </div>
@@ -95,6 +97,7 @@ export default function Admin() {
             loading={statsLoading} 
             lastUpdated={statsLastUpdated}
             onRefresh={fetchStats}
+            hasPlatformAccess={hasPlatformAccess}
           />
         </div>
 
@@ -154,26 +157,31 @@ export default function Admin() {
               </TabsTrigger>
             </div>
             
-            {/* Separator */}
-            <div className="w-px h-6 bg-border mx-1 hidden sm:block" />
             
-            {/* ACTIVITY BUCKET: Logs & Issues */}
-            <div className="flex items-center gap-1 px-1 py-0.5 rounded bg-muted/50">
-              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider hidden lg:inline">Activity</span>
-              <TabsTrigger value="activity" className="gap-2">
-                <Activity className="w-4 h-4" />
-                <span className="hidden sm:inline">Activity</span>
-                <span className="sm:hidden">Log</span>
-              </TabsTrigger>
-              <TabsTrigger value="issues" className="gap-2">
-                <Bug className="w-4 h-4" />
-                Issues
-              </TabsTrigger>
-              <TabsTrigger value="changelog" className="gap-2">
-                <BookOpen className="w-4 h-4" />
-                <span className="hidden sm:inline">Changelog</span>
-              </TabsTrigger>
-            </div>
+            {/* ACTIVITY BUCKET: Logs & Issues - Platform Admin/Developer only */}
+            {hasPlatformAccess && (
+              <>
+                {/* Separator */}
+                <div className="w-px h-6 bg-border mx-1 hidden sm:block" />
+                
+                <div className="flex items-center gap-1 px-1 py-0.5 rounded bg-muted/50">
+                  <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider hidden lg:inline">Activity</span>
+                  <TabsTrigger value="activity" className="gap-2">
+                    <Activity className="w-4 h-4" />
+                    <span className="hidden sm:inline">Activity</span>
+                    <span className="sm:hidden">Log</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="issues" className="gap-2">
+                    <Bug className="w-4 h-4" />
+                    Issues
+                  </TabsTrigger>
+                  <TabsTrigger value="changelog" className="gap-2">
+                    <BookOpen className="w-4 h-4" />
+                    <span className="hidden sm:inline">Changelog</span>
+                  </TabsTrigger>
+                </div>
+              </>
+            )}
             
             {/* Developer-only tabs - DEV TOOLS BUCKET */}
             {hasTestingAccess && (
@@ -240,17 +248,21 @@ export default function Admin() {
             <PerformanceUpdatesReview isAdmin={isAdmin} />
           </TabsContent>
 
-          <TabsContent value="activity">
-            <ActivityLogs />
-          </TabsContent>
+          {hasPlatformAccess && (
+            <>
+              <TabsContent value="activity">
+                <ActivityLogs />
+              </TabsContent>
 
-          <TabsContent value="issues">
-            <IssuesManagement />
-          </TabsContent>
+              <TabsContent value="issues">
+                <IssuesManagement />
+              </TabsContent>
 
-          <TabsContent value="changelog">
-            <ChangelogManager />
-          </TabsContent>
+              <TabsContent value="changelog">
+                <ChangelogManager />
+              </TabsContent>
+            </>
+          )}
 
           {/* Developer-only tab contents */}
           {hasTestingAccess && (
