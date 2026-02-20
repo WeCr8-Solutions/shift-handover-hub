@@ -15,9 +15,10 @@ import {
   Settings,
 } from 'lucide-react';
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
+import { MarketingNav } from "@/components/marketing/MarketingNav";
+import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import joblineLogo from '@/assets/jobline-logo.png';
 
 const tierIcons: Record<string, React.ReactNode> = {
   single: <Zap className="w-6 h-6" />,
@@ -72,42 +73,7 @@ export default function Pricing() {
         keywords="manufacturing software pricing, shift handoff software cost, machine shop software pricing, production management pricing"
         canonical="/pricing"
       />
-      {/* Header */}
-      <nav className="border-b border-border bg-background/80 backdrop-blur-xl sticky top-0 z-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <button onClick={() => navigate('/')} className="flex items-center gap-2">
-            <img src={joblineLogo} alt="JobLine.ai" className="h-8 w-auto" />
-          </button>
-          <div className="flex items-center gap-4">
-            {user ? (
-              <>
-                {subscribed && (
-                  <Button 
-                    variant="outline" 
-                    onClick={handleManageSubscription}
-                    disabled={loadingPortal}
-                    className="gap-2"
-                  >
-                    {loadingPortal ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Settings className="w-4 h-4" />
-                    )}
-                    Manage Subscription
-                  </Button>
-                )}
-                <Button onClick={() => navigate('/dashboard')}>
-                  Go to Dashboard
-                </Button>
-              </>
-            ) : (
-              <Button onClick={() => navigate('/auth')}>
-                Sign In
-              </Button>
-            )}
-          </div>
-        </div>
-      </nav>
+      <MarketingNav />
 
       {/* Hero */}
       <section className="py-16 sm:py-24">
@@ -253,6 +219,11 @@ export default function Pricing() {
                 </p>
               </div>
             </div>
+          </div>
+
+          {/* Ad Placement */}
+          <div className="mt-16">
+            <AdPlacement format="horizontal" />
           </div>
         </div>
       </section>

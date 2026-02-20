@@ -8,6 +8,8 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { ShiftHandoffDemo } from "@/components/landing/ShiftHandoffDemo";
 import { SupportJoblineModal } from "@/components/SupportJoblineModal";
+import { AdPlacement } from "@/components/marketing/AdPlacement";
+import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { trackEvent } from "@/lib/analytics";
 import demoVideo from "@/assets/jobline-demo-video.mp4";
 import { 
@@ -1051,6 +1053,12 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Ad Placement - between features and how-it-works */}
+      <AdPlacement format="horizontal" className="py-4" />
+
+      {/* Lead Capture */}
+      <LeadCaptureBar sourcePage="landing" className="py-6" />
+
       {/* How It Works */}
       <section id="how-it-works" className="py-12 sm:py-16 md:py-24 lg:py-32 bg-secondary/30">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -1202,6 +1210,9 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Ad Placement - before final CTA */}
+      <AdPlacement format="horizontal" className="py-4" />
+
       {/* CTA Section */}
       <section className="py-12 sm:py-16 md:py-24 lg:py-32">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -1228,9 +1239,10 @@ export default function Landing() {
                   <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                 </Button>
                 <Button size="lg" variant="outline" onClick={() => {
-                  handleCtaClick('schedule_demo', 'bottom_cta_section');
+                  handleCtaClick('view_pricing', 'bottom_cta_section');
+                  navigate("/pricing");
                 }} className="gap-2 text-sm sm:text-base px-6 sm:px-8 h-10 sm:h-12 w-full sm:w-auto">
-                  Schedule Demo
+                  View Pricing
                   <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5" />
                 </Button>
               </div>

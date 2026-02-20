@@ -124,7 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
     });
     
-    // Log signup event if successful
+    // Log signup event and fire GA4 conversion
     if (!error && data.user) {
       await logActivity(
         data.user.id,
@@ -133,6 +133,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email,
         displayName
       );
+
+      // Fire GA4 sign_up conversion event
+      if (typeof window !== "undefined" && (window as any).gtag) {
+        (window as any).gtag("event", "sign_up", {
+          method: "email",
+          user_id: data.user.id,
+        });
+      }
     }
     
     return { error: error as Error | null };
