@@ -1,94 +1,75 @@
 
 
-# Sitemap, Analytics & Global SEO Enhancement Plan
+# AI Planning Assistant Chat Modal
 
-## What's Missing Today
+## Overview
+Build a floating chat modal accessible to Supervisors and Org Admins that connects to an AI assistant specialized in production planning. The assistant has full context of the organization's queue, stations, routing, and work orders -- enabling it to help leaders make real-time decisions around schedule adjustments, machine downtime rerouting, priority reshuffling, and due-date feasibility.
 
-After reviewing every public-facing route, the `index.html` analytics tags, `sitemap.xml`, `robots.txt`, `ads.txt`, and `llms.txt`, here are the gaps:
-
-### Sitemap Gaps
-- The sitemap already lists all 11 feature pages, plus `/`, `/pricing`, `/auth`, and `/donation-success`
-- **No `lastmod` reflects today's date** -- all entries show `2026-02-15` even though pages were just updated
-- **Missing alternate language hints** (hreflang) for global reach
-- **Missing image sitemap entries** for the OG image (helps Google Image Search)
-- **No sitemap index** -- best practice is to use a sitemap index file when you have 15+ URLs
-
-### Analytics / Tag Gaps
-- **Google Search Console verification meta tag** is missing from `index.html` -- this is required to verify site ownership and submit sitemaps
-- **Bing Webmaster Tools verification** is missing -- easy win for Bing/DuckDuckGo traffic
-- **No `hreflang` tag** on any page for international targeting (even `en` as default helps)
-- **Missing `geo.region` and `geo.placename` meta** for local SEO (US manufacturing)
-- **No Pinterest verification tag** for rich pins on product/feature pages
-- **Facebook domain verification** meta tag missing (needed for Business Suite)
-
-### robots.txt Gaps
-- Currently solid, but missing a reference to the new `ads.txt` file for ad verification bots
-
----
-
-## Implementation Plan
-
-### Step 1: Update `sitemap.xml`
-- Update all `lastmod` dates to `2026-02-20`
-- Add `xhtml:link` with `hreflang="en"` for every URL (signals English as primary language to Google)
-- Add image sitemap namespace and entries for the OG image
-- Group URLs with XML comments for maintainability
-
-### Step 2: Update `index.html` with Additional Meta Tags
-- Add Google Search Console verification placeholder: `<meta name="google-site-verification" content="YOUR_CODE" />`
-- Add Bing Webmaster verification placeholder: `<meta name="msvalidate.01" content="YOUR_CODE" />`
-- Add Pinterest verification placeholder: `<meta name="p:domain_verify" content="YOUR_CODE" />`
-- Add Facebook domain verification placeholder: `<meta property="fb:app_id" content="YOUR_ID" />`
-- Add geographic targeting meta tags (`geo.region`, `geo.placename`, `geo.position`)
-- Add `hreflang` link tag for `en` (default language)
-- Add `Content-Language` meta tag
-
-### Step 3: Update `robots.txt`
-- Add reference to `ads.txt` in the comments for ad verification bots
-- Update the "Last Updated" date
-
-### Step 4: Update `SEOHead.tsx`
-- Add `hreflang` link tag generation for every page
-- Add geographic meta tags as defaults
-
-### Step 5: Update `ads.txt`
-- The current `ads.txt` is correct for AdSense, but we should add a comment header with metadata for ad verification crawlers
-
----
+## What It Does
+- Opens as a floating chat button on the Queue and Dashboard pages (visible only to supervisors/org admins)
+- Sends the organization's live queue data, station status, and routing info as context to the AI
+- Users can ask natural-language questions like:
+  - "Machine CNC-3 is down, what work orders are affected and where can I reroute them?"
+  - "Can we hit the due date for WO-4521 if we reprioritize?"
+  - "Show me all critical items due this week and suggest a plan"
+- AI responds with actionable markdown-formatted advice referencing specific work orders, stations, and routing steps
 
 ## Technical Details
 
-### Files Modified
+### 1. Backend Function: `ai-planning-assistant`
+Create a new edge function at `supabase/functions/ai-planning-assistant/index.ts` that:
+- Accepts conversation messages + organization context
+- Queries the database (using service role) for:
+  - Active queue items (with station names, assignments, due dates)
+  - Station list with active/inactive status
+  - Work order routing steps and their completion state
+- Builds a system prompt with this live data as context
+- Calls the Lovable AI gateway (using `LOVABLE_API_KEY`, model: `openai/gpt-5-mini`) for cost-efficient planning responses
+- Returns the AI response as a streamed or complete message
 
-1. **`public/sitemap.xml`** -- Full rewrite with:
-   - Updated `lastmod` dates
-   - Image sitemap namespace (`xmlns:image`)
-   - `xhtml:link hreflang` attributes on every URL
-   - Proper priority hierarchy (1.0 for home, 0.9 for features/pricing, 0.7 for auth, 0.3 for utility pages)
+### 2. New Database Table: `planning_chat_sessions`
+Store conversation history so users can resume planning sessions:
+- `id` (uuid, PK)
+- `organization_id` (uuid, FK to organizations)
+- `user_id` (uuid, references auth.users)
+- `title` (text, auto-generated from first message)
+- `messages` (jsonb array of `{role, content, timestamp}`)
+- `created_at`, `updated_at` (timestamptz)
 
-2. **`index.html`** -- Add verification and geo meta tags:
-   - Google Search Console, Bing, Pinterest, Facebook verification placeholders
-   - `geo.region: US`
-   - `geo.placename: United States`
-   - `content-language: en`
-   - `hreflang` link for English
+RLS policies:
+- Users can only read/write their own sessions within their organization
+- Supervisors and org admins only (enforced via `is_org_admin` or `is_supervisor_in_org` checks)
 
-3. **`public/robots.txt`** -- Minor update:
-   - Add `ads.txt` reference in comments
-   - Update timestamp
+### 3. Frontend Component: `PlanningAssistantModal`
+New file: `src/components/queue/PlanningAssistantModal.tsx`
+- Floating action button (bottom-right) with a "brain" or "sparkles" icon
+- Opens a slide-up dialog/drawer with:
+  - Chat message history (rendered with markdown support)
+  - Text input for user messages
+  - Loading indicator while AI responds
+  - Quick-prompt buttons for common scenarios: "Machine Down", "Reprioritize Queue", "Due Date Check"
+- Gated behind `hasOrgAdminAccess || hasOrgSupervisorAccess` from `useAdminAccess`
 
-4. **`src/components/SEOHead.tsx`** -- Add:
-   - Default `hreflang="en"` link tag
-   - Geographic meta tags
-   - `content-language` meta
+### 4. Custom Hook: `usePlanningAssistant`
+New file: `src/hooks/usePlanningAssistant.ts`
+- Manages chat state (messages, loading, session persistence)
+- Calls the edge function with full message history
+- Saves/loads sessions from `planning_chat_sessions` table
+- Provides `sendMessage`, `clearChat`, `loadSession` methods
 
-5. **`public/ads.txt`** -- Add comment header with publisher metadata
+### 5. Integration Points
+- Add the floating button to `src/pages/Queue.tsx` and `src/pages/Index.tsx` (dashboard)
+- Only render when user has supervisor or org admin access
+- Pass `organization_id` for data scoping
 
-### Verification Tags Note
-The verification meta tags for Google Search Console, Bing, Pinterest, and Facebook will be added as placeholders with `YOUR_CODE` values. You will need to:
-1. Sign up for each service (Google Search Console, Bing Webmaster Tools, etc.)
-2. Get the verification code from each dashboard
-3. Replace the placeholder values
+### Files to Create
+- `supabase/functions/ai-planning-assistant/index.ts` -- Edge function
+- `src/components/queue/PlanningAssistantModal.tsx` -- Chat UI modal
+- `src/hooks/usePlanningAssistant.ts` -- Chat state hook
+- Migration SQL for `planning_chat_sessions` table + RLS policies
 
-These are free services that significantly improve your discoverability.
+### Files to Modify
+- `src/pages/Queue.tsx` -- Add floating assistant button
+- `src/pages/Index.tsx` -- Add floating assistant button
+- `src/components/queue/index.ts` -- Export new component
 
