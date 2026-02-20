@@ -52,6 +52,14 @@ export function SEOHead({
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={ogImage} />
 
+      {/* Language & Geographic Targeting */}
+      <meta httpEquiv="content-language" content="en" />
+      <meta name="geo.region" content="US" />
+      <meta name="geo.placename" content="United States" />
+      {canonicalUrl && (
+        <link rel="alternate" hrefLang="en" href={canonicalUrl} />
+      )}
+
       {/* JSON-LD */}
       {jsonLd && (
         <script type="application/ld+json">
