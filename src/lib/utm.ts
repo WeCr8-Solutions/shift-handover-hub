@@ -4,7 +4,7 @@
  */
 
 const UTM_STORAGE_KEY = 'jobline_utm';
-const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content'] as const;
+const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'] as const;
 
 export type UtmParams = Partial<Record<(typeof UTM_KEYS)[number], string>>;
 

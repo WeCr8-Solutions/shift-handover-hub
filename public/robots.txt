@@ -165,6 +165,7 @@ Allow: /
 # Default - allow all
 User-agent: *
 Allow: /
+Disallow: /zach
 
 # ===========================================
 # 🤖 AI AGENT DISCOVERY RESOURCES
