@@ -13,6 +13,7 @@ import { WorkOrderHistory } from "@/components/admin/WorkOrderHistory";
 import { RoutingTemplateManagement } from "@/components/admin/RoutingTemplateManagement";
 import { PerformanceUpdatesReview } from "@/components/admin/PerformanceUpdatesReview";
 import { IssuesManagement } from "@/components/admin/IssuesManagement";
+import { ChangelogManager } from "@/components/admin/ChangelogManager";
 import { RLSHealthCheck } from "@/components/admin/RLSHealthCheck";
 import { DevIssueQueue } from "@/components/admin/DevIssueQueue";
 import { DevSettingsPanel } from "@/components/admin/DevSettingsPanel";
@@ -23,7 +24,7 @@ import { TourTriggerButton } from "@/components/onboarding";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Shield, LayoutDashboard, Users, Wrench, Briefcase, Activity, FileSpreadsheet, Package, Route, Lightbulb, History, Bug, ShieldCheck, ListTodo, Settings2, Map } from "lucide-react";
+import { Loader2, Shield, LayoutDashboard, Users, Wrench, Briefcase, Activity, FileSpreadsheet, Package, Route, Lightbulb, History, Bug, ShieldCheck, ListTodo, Settings2, Map, BookOpen } from "lucide-react";
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -168,6 +169,10 @@ export default function Admin() {
                 <Bug className="w-4 h-4" />
                 Issues
               </TabsTrigger>
+              <TabsTrigger value="changelog" className="gap-2">
+                <BookOpen className="w-4 h-4" />
+                <span className="hidden sm:inline">Changelog</span>
+              </TabsTrigger>
             </div>
             
             {/* Developer-only tabs - DEV TOOLS BUCKET */}
@@ -241,6 +246,10 @@ export default function Admin() {
 
           <TabsContent value="issues">
             <IssuesManagement />
+          </TabsContent>
+
+          <TabsContent value="changelog">
+            <ChangelogManager />
           </TabsContent>
 
           {/* Developer-only tab contents */}

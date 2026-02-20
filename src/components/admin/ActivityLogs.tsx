@@ -97,7 +97,8 @@ export function ActivityLogs() {
   const [logs, setLogs] = useState<ActivityLogEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<ActivityType | "all">("all");
-  const { isAdmin } = useAdminAccess();
+  const { isAdmin, isDeveloper } = useAdminAccess();
+  const hasFullAccess = isAdmin || isDeveloper;
 
   const fetchLogs = async () => {
     setLoading(true);
@@ -106,7 +107,7 @@ export function ActivityLogs() {
       let data: ActivityLogEntry[] = [];
       let error: Error | null = null;
       
-      if (isAdmin) {
+      if (hasFullAccess) {
         // Platform admins use the full activity_logs table (includes IP addresses)
         const result = await supabase
           .from("activity_logs")
@@ -150,11 +151,11 @@ export function ActivityLogs() {
 
   useEffect(() => {
     fetchLogs();
-  }, [filter, isAdmin]);
+  }, [filter, hasFullAccess]);
 
   // Subscribe to realtime updates (only for main table, platform admins)
   useEffect(() => {
-    if (!isAdmin) return; // Views don't support realtime
+    if (!hasFullAccess) return; // Views don't support realtime
     
     const channel = supabase
       .channel("activity_logs_changes")
@@ -203,7 +204,7 @@ export function ActivityLogs() {
         <div className="flex items-center gap-2">
           <Activity className="w-5 h-5 text-primary" />
           <CardTitle className="text-lg">Activity Logs</CardTitle>
-          {isAdmin ? (
+          {hasFullAccess ? (
             <Badge variant="outline" className="gap-1 text-xs bg-primary/10 text-primary border-primary/30">
               <ShieldCheck className="w-3 h-3" />
               Full Access

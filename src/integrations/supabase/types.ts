@@ -306,6 +306,48 @@ export type Database = {
           },
         ]
       }
+      changelogs: {
+        Row: {
+          author_id: string | null
+          author_name: string | null
+          change_type: string
+          created_at: string | null
+          description: string | null
+          id: string
+          is_published: boolean | null
+          published_at: string | null
+          title: string
+          updated_at: string | null
+          version: string | null
+        }
+        Insert: {
+          author_id?: string | null
+          author_name?: string | null
+          change_type?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_published?: boolean | null
+          published_at?: string | null
+          title: string
+          updated_at?: string | null
+          version?: string | null
+        }
+        Update: {
+          author_id?: string | null
+          author_name?: string | null
+          change_type?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_published?: boolean | null
+          published_at?: string | null
+          title?: string
+          updated_at?: string | null
+          version?: string | null
+        }
+        Relationships: []
+      }
       current_station_status: {
         Row: {
           condition_notes: string | null
