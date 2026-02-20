@@ -250,6 +250,135 @@ function getStepStatus(step: OnboardingStep, onboarding: UserOnboardingState | n
   return "pending";
 }
 
+// Quick Reset Card - top-level lookup by email or name
+function QuickResetCard({
+  users,
+  actionLoading,
+  onResetOnboarding,
+  onCreateOnboarding,
+}: {
+  users: UserWithJourney[];
+  actionLoading: string | null;
+  onResetOnboarding: (user: UserWithJourney) => Promise<void>;
+  onCreateOnboarding: (user: UserWithJourney) => Promise<void>;
+}) {
+  const [query, setQuery] = useState("");
+  const [matchedUser, setMatchedUser] = useState<UserWithJourney | null>(null);
+
+  const handleSearch = () => {
+    if (!query.trim()) {
+      setMatchedUser(null);
+      return;
+    }
+    const q = query.trim().toLowerCase();
+    const found = users.find(
+      (u) => u.email.toLowerCase() === q || u.display_name.toLowerCase() === q || u.user_id === q
+    );
+    setMatchedUser(found || null);
+  };
+
+  const journeyLabel = matchedUser?.onboarding
+    ? matchedUser.onboarding.is_complete
+      ? "Complete"
+      : `Step: ${matchedUser.onboarding.current_step}`
+    : "No record";
+
+  return (
+    <Card className="border-primary/30 bg-primary/5">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base flex items-center gap-2">
+          <RotateCcw className="w-4 h-4" />
+          Quick Onboarding Reset
+        </CardTitle>
+        <CardDescription>
+          Look up a user by email, name, or user ID and reset their onboarding to get them back on track.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Enter email, display name, or user ID..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              className="pl-9"
+            />
+          </div>
+          <Button variant="outline" onClick={handleSearch}>
+            <Search className="w-4 h-4 mr-2" />
+            Find
+          </Button>
+        </div>
+
+        {query.trim() && !matchedUser && (
+          <p className="text-sm text-muted-foreground mt-3">No user found matching "{query}"</p>
+        )}
+
+        {matchedUser && (
+          <div className="mt-3 p-3 rounded-lg border bg-background flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <Avatar className="h-9 w-9">
+                <AvatarFallback className="bg-primary/10 text-primary text-sm">
+                  {matchedUser.display_name.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <p className="font-medium truncate">{matchedUser.display_name}</p>
+                <p className="text-xs text-muted-foreground truncate">{matchedUser.email}</p>
+              </div>
+              <Badge variant="outline" className="text-xs shrink-0">{journeyLabel}</Badge>
+              {matchedUser.organization && (
+                <Badge variant="secondary" className="text-xs shrink-0 gap-1">
+                  <Building2 className="w-3 h-3" />
+                  {matchedUser.organization.name}
+                </Badge>
+              )}
+            </div>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  disabled={actionLoading?.startsWith("reset_full")}
+                  className="shrink-0 gap-1.5"
+                >
+                  {actionLoading === `reset_full_${matchedUser.user_id}` ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <RotateCcw className="w-3 h-3" />
+                  )}
+                  Reset Onboarding
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="bg-background">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Reset Onboarding for {matchedUser.display_name}?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will reset their entire onboarding journey back to the welcome screen.
+                    They will need to go through organization setup and shop configuration again
+                    on their next login. Their existing org membership and data will not be affected.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-destructive hover:bg-destructive/90"
+                    onClick={() => onResetOnboarding(matchedUser)}
+                  >
+                    Reset to Welcome
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export function UserJourneyDebugPanel() {
   const { users, loading: usersLoading, fetchUsers } = useAllUsers();
   const [onboardingData, setOnboardingData] = useState<Record<string, UserOnboardingState>>({});
@@ -353,6 +482,52 @@ export function UserJourneyDebugPanel() {
   };
 
   // === ACTION HANDLERS ===
+
+  // Full onboarding reset - back to welcome step
+  const handleResetFullOnboarding = async (user: UserWithJourney) => {
+    setActionLoading(`reset_full_${user.user_id}`);
+    try {
+      if (user.onboarding) {
+        const { error } = await supabase
+          .from("user_onboarding")
+          .update({
+            current_step: "welcome",
+            completed_steps: [],
+            is_complete: false,
+            completed_at: null,
+            has_seen_welcome: false,
+          })
+          .eq("user_id", user.user_id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("user_onboarding")
+          .insert({
+            user_id: user.user_id,
+            current_step: "welcome",
+            completed_steps: [],
+            is_complete: false,
+            has_seen_welcome: false,
+          });
+        if (error) throw error;
+      }
+
+      toast({
+        title: "Onboarding fully reset",
+        description: `${user.display_name} will restart from the welcome screen on next login.`,
+      });
+      await refreshData();
+    } catch (err: any) {
+      toast({
+        title: "Failed to reset onboarding",
+        description: err.message,
+        variant: "destructive",
+      });
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
 
   // Create onboarding record for user
   const handleCreateOnboarding = async (user: UserWithJourney) => {
@@ -559,6 +734,14 @@ export function UserJourneyDebugPanel() {
 
   return (
     <div className="space-y-4">
+      {/* Quick Reset Card */}
+      <QuickResetCard
+        users={usersWithJourney}
+        actionLoading={actionLoading}
+        onResetOnboarding={handleResetFullOnboarding}
+        onCreateOnboarding={handleCreateOnboarding}
+      />
+
       {/* Header Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="cursor-pointer hover:bg-muted/50" onClick={() => setFilterStatus("all")}>
