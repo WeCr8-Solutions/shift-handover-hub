@@ -160,13 +160,19 @@ export function useIssueReporter() {
         recent_errors_count: errorsRef.current.length,
       };
 
-      // Prepare console logs
+      // Prepare and sanitize console logs to prevent leaking secrets
+      const sanitizeLogMessage = (msg: string): string =>
+        msg
+          .replace(/bearer\s+[\w\-.]+/gi, 'bearer [REDACTED]')
+          .replace(/(api[_-]?key|token|secret|password|authorization)["']?\s*[:=]\s*["']?[\w\-.]+/gi, '$1=[REDACTED]')
+          .replace(/eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/g, '[JWT_REDACTED]');
+
       const consoleLogs = report.includeConsoleLogs !== false 
         ? logsRef.current.slice(-50).map(log => ({
             level: log.level,
-            message: log.message,
+            message: sanitizeLogMessage(log.message),
             timestamp: log.timestamp,
-            stack: log.stack || null
+            stack: log.stack ? sanitizeLogMessage(log.stack) : null
           }))
         : [];
 
