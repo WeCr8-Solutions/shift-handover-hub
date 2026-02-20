@@ -1,9 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { SEOHead } from "@/components/SEOHead";
-import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { ArrowRight, CheckCircle2, Zap, Activity, BarChart3, AlertTriangle, TrendingUp } from "lucide-react";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
-import joblineLogo from "@/assets/jobline-logo.png";
+import { MarketingNav } from "@/components/marketing/MarketingNav";
+import { AdPlacement } from "@/components/marketing/AdPlacement";
 
 const benefits = [
   "Real-time station status monitoring",
@@ -14,6 +15,13 @@ const benefits = [
   "Downtime tracking and reporting",
   "Operator performance insights",
   "Continuous improvement submissions",
+];
+
+const highlights = [
+  { icon: Activity, title: "Live Station Monitoring", desc: "See every machine's status, current job, and operator in real-time from any device." },
+  { icon: BarChart3, title: "Production Dashboards", desc: "Visual analytics for throughput, scrap rates, cycle times, and shift comparisons." },
+  { icon: AlertTriangle, title: "Quality Escalation", desc: "Automatic alerts when quality holds are triggered. Supervisors get notified instantly." },
+  { icon: TrendingUp, title: "Continuous Improvement", desc: "Operators submit improvement ideas directly from the floor. Track adoption and impact." },
 ];
 
 const jsonLd = {
@@ -40,20 +48,16 @@ export default function ProductionControl() {
         jsonLd={jsonLd}
       />
 
-      <nav className="border-b border-border bg-background/80 backdrop-blur-xl sticky top-0 z-50">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <button onClick={() => navigate("/")} className="flex items-center gap-2">
-            <img src={joblineLogo} alt="JobLine.ai" className="h-8 w-auto" />
-          </button>
-          <Button onClick={() => navigate("/auth")} size="sm" className="gap-2">
-            Start Free Trial <ArrowRight className="w-4 h-4" />
-          </Button>
-        </div>
-      </nav>
+      <MarketingNav />
 
       <main>
         <section className="py-16 sm:py-24">
           <div className="container mx-auto px-4 max-w-4xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm mb-6">
+              <Activity className="w-4 h-4" />
+              Real-Time Production Visibility
+            </div>
+
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
               Production Control for{" "}
               <span className="bg-gradient-to-r from-primary via-blue-400 to-primary bg-clip-text text-transparent">
@@ -68,8 +72,28 @@ export default function ProductionControl() {
               <Button size="lg" onClick={() => navigate("/auth")} className="gap-2">
                 Start Free Trial <ArrowRight className="w-5 h-5" />
               </Button>
+              <Button size="lg" variant="outline" onClick={() => navigate("/")} className="gap-2">
+                <Zap className="w-5 h-5" /> See It In Action
+              </Button>
             </div>
 
+            <h2 className="text-2xl font-bold mb-6">Take Control of Your Production Floor</h2>
+            <div className="grid sm:grid-cols-2 gap-6 mb-16">
+              {highlights.map((h, i) => (
+                <div key={i} className="p-6 rounded-xl bg-card border border-border">
+                  <h.icon className="w-8 h-8 text-primary mb-4" />
+                  <h3 className="font-semibold text-lg mb-2">{h.title}</h3>
+                  <p className="text-muted-foreground text-sm">{h.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <AdPlacement format="horizontal" className="py-4" />
+
+        <section className="py-12">
+          <div className="container mx-auto px-4 max-w-4xl">
             <h2 className="text-2xl font-bold mb-6">Complete Production Visibility</h2>
             <ul className="grid sm:grid-cols-2 gap-4 mb-16">
               {benefits.map((b, i) => (
@@ -89,6 +113,8 @@ export default function ProductionControl() {
             </div>
           </div>
         </section>
+
+        <AdPlacement format="horizontal" className="py-6" />
       </main>
 
       <MarketingFooter />

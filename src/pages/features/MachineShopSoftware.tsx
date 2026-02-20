@@ -1,9 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { SEOHead } from "@/components/SEOHead";
-import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { ArrowRight, CheckCircle2, Zap, Wrench, Monitor, BarChart3, Users } from "lucide-react";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
-import joblineLogo from "@/assets/jobline-logo.png";
+import { MarketingNav } from "@/components/marketing/MarketingNav";
+import { AdPlacement } from "@/components/marketing/AdPlacement";
 
 const benefits = [
   "Built specifically for CNC machine shops",
@@ -14,6 +15,13 @@ const benefits = [
   "Equipment condition monitoring",
   "Team management for multi-shift operations",
   "Works on tablets and phones on the floor",
+];
+
+const highlights = [
+  { icon: Wrench, title: "Work Center Specific", desc: "Handoff forms and station setups tailored for CNC lathes, mills, grinders, EDM, water jet, and more." },
+  { icon: Monitor, title: "Real-Time Station Status", desc: "See every machine's current job, operator, and condition at a glance from any device." },
+  { icon: BarChart3, title: "Production Analytics", desc: "Track parts completed, scrap rates, and cycle times across stations and shifts." },
+  { icon: Users, title: "Multi-Shift Coordination", desc: "Structured handoffs ensure nothing gets lost between first, second, and third shift." },
 ];
 
 const jsonLd = {
@@ -40,20 +48,16 @@ export default function MachineShopSoftware() {
         jsonLd={jsonLd}
       />
 
-      <nav className="border-b border-border bg-background/80 backdrop-blur-xl sticky top-0 z-50">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <button onClick={() => navigate("/")} className="flex items-center gap-2">
-            <img src={joblineLogo} alt="JobLine.ai" className="h-8 w-auto" />
-          </button>
-          <Button onClick={() => navigate("/auth")} size="sm" className="gap-2">
-            Start Free Trial <ArrowRight className="w-4 h-4" />
-          </Button>
-        </div>
-      </nav>
+      <MarketingNav />
 
       <main>
         <section className="py-16 sm:py-24">
           <div className="container mx-auto px-4 max-w-4xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm mb-6">
+              <Wrench className="w-4 h-4" />
+              Purpose-Built for Machine Shops
+            </div>
+
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
               Machine Shop Software for{" "}
               <span className="bg-gradient-to-r from-primary via-blue-400 to-primary bg-clip-text text-transparent">
@@ -68,9 +72,29 @@ export default function MachineShopSoftware() {
               <Button size="lg" onClick={() => navigate("/auth")} className="gap-2">
                 Start Free Trial <ArrowRight className="w-5 h-5" />
               </Button>
+              <Button size="lg" variant="outline" onClick={() => navigate("/")} className="gap-2">
+                <Zap className="w-5 h-5" /> Try Interactive Demo
+              </Button>
             </div>
 
-            <h2 className="text-2xl font-bold mb-6">Built for Machine Shops, Not Generic Businesses</h2>
+            <h2 className="text-2xl font-bold mb-6">Not Generic Software — Built for Your Shop</h2>
+            <div className="grid sm:grid-cols-2 gap-6 mb-16">
+              {highlights.map((h, i) => (
+                <div key={i} className="p-6 rounded-xl bg-card border border-border">
+                  <h.icon className="w-8 h-8 text-primary mb-4" />
+                  <h3 className="font-semibold text-lg mb-2">{h.title}</h3>
+                  <p className="text-muted-foreground text-sm">{h.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <AdPlacement format="horizontal" className="py-4" />
+
+        <section className="py-12">
+          <div className="container mx-auto px-4 max-w-4xl">
+            <h2 className="text-2xl font-bold mb-6">Everything Your Shop Needs</h2>
             <ul className="grid sm:grid-cols-2 gap-4 mb-16">
               {benefits.map((b, i) => (
                 <li key={i} className="flex items-start gap-3 p-4 rounded-lg bg-card border border-border">
@@ -89,6 +113,8 @@ export default function MachineShopSoftware() {
             </div>
           </div>
         </section>
+
+        <AdPlacement format="horizontal" className="py-6" />
       </main>
 
       <MarketingFooter />
