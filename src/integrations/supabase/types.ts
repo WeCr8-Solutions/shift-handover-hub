@@ -71,6 +71,41 @@ export type Database = {
           },
         ]
       }
+      ai_chat_usage: {
+        Row: {
+          created_at: string
+          id: string
+          message_count: number
+          organization_id: string
+          updated_at: string
+          usage_date: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message_count?: number
+          organization_id: string
+          updated_at?: string
+          usage_date?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message_count?: number
+          organization_id?: string
+          updated_at?: string
+          usage_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_chat_usage_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       announcement_reads: {
         Row: {
           announcement_id: string
@@ -3869,6 +3904,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_ai_chat_usage: { Args: { _org_id: string }; Returns: Json }
       increment_usage: {
         Args: { _count?: number; _metric: string; _org_id: string }
         Returns: undefined

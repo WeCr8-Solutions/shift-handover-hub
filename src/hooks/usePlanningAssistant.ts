@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 export interface ChatMessage {
   role: "user" | "assistant";
@@ -12,6 +13,7 @@ export function usePlanningAssistant(organizationId: string | null) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   const sendMessage = useCallback(
     async (input: string) => {
@@ -49,8 +51,19 @@ export function usePlanningAssistant(organizationId: string | null) {
 
         if (!resp.ok) {
           const errData = await resp.json().catch(() => ({}));
-          const errMsg =
-            errData.error || `Request failed (${resp.status})`;
+
+          // Handle limit_reached specifically
+          if (resp.status === 429 && errData.error === "limit_reached") {
+            toast.error("Daily AI message limit reached. Upgrade your plan for more messages.");
+            // Remove the optimistic user message
+            setMessages((prev) => prev.slice(0, -1));
+            // Refresh usage data
+            queryClient.invalidateQueries({ queryKey: ["ai-chat-usage"] });
+            setIsLoading(false);
+            return;
+          }
+
+          const errMsg = errData.error || `Request failed (${resp.status})`;
           toast.error(errMsg);
           setIsLoading(false);
           return;
@@ -139,6 +152,9 @@ export function usePlanningAssistant(organizationId: string | null) {
           }
         }
 
+        // Refresh usage count after successful message
+        queryClient.invalidateQueries({ queryKey: ["ai-chat-usage"] });
+
         // Save session
         const finalMessages = [
           ...allMessages,
@@ -178,7 +194,7 @@ export function usePlanningAssistant(organizationId: string | null) {
         setIsLoading(false);
       }
     },
-    [messages, organizationId, sessionId]
+    [messages, organizationId, sessionId, queryClient]
   );
 
   const clearChat = useCallback(() => {

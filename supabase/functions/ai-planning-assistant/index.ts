@@ -27,10 +27,31 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // Fetch live org data for context using service role
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceRoleKey);
+
+    // --- Usage limit check ---
+    const { data: usageData, error: usageError } = await supabase.rpc(
+      "increment_ai_chat_usage",
+      { _org_id: organization_id }
+    );
+
+    if (usageError) {
+      console.error("Usage check error:", usageError);
+      // Don't block on usage tracking errors — proceed
+    } else if (usageData?.limit_reached) {
+      return new Response(
+        JSON.stringify({
+          error: "limit_reached",
+          message: "Daily AI message limit reached. Upgrade your plan for more.",
+          count: usageData.count,
+          daily_limit: usageData.daily_limit,
+          plan: usageData.plan,
+        }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     // Fetch queue items, stations, and routing in parallel
     const [queueRes, stationsRes, routingRes] = await Promise.all([
