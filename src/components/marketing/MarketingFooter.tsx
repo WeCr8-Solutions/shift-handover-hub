@@ -18,6 +18,7 @@ const footerLinks = {
     { label: "Manufacturing Oversight", to: "/features/manufacturing-oversight" },
     { label: "Quality Management", to: "/features/quality-management" },
     { label: "Team Collaboration", to: "/features/team-collaboration" },
+    { label: "AI Planning", to: "/features/ai-planning-assistant" },
   ],
   Company: [
     { label: "Home", to: "/" },

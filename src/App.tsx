@@ -32,6 +32,7 @@ import QualityManagement from "./pages/features/QualityManagement";
 import CNCOperatorTools from "./pages/features/CNCOperatorTools";
 import TeamCollaboration from "./pages/features/TeamCollaboration";
 import DowntimeTracking from "./pages/features/DowntimeTracking";
+import AIPlanningAssistant from "./pages/features/AIPlanningAssistant";
 
 const queryClient = new QueryClient();
 
@@ -73,6 +74,7 @@ const App = () => (
                     <Route path="/features/cnc-operator-tools" element={<CNCOperatorTools />} />
                     <Route path="/features/team-collaboration" element={<TeamCollaboration />} />
                     <Route path="/features/downtime-tracking" element={<DowntimeTracking />} />
+                    <Route path="/features/ai-planning-assistant" element={<AIPlanningAssistant />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
