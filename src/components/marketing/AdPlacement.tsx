@@ -36,7 +36,7 @@ export function AdPlacement({
           <ins
             className="adsbygoogle block w-full h-full"
             style={{ display: "block" }}
-            data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+            data-ad-client="ca-pub-3639153716376265"
             data-ad-slot={slot || "auto"}
             data-ad-format={format === "horizontal" ? "horizontal" : format === "rectangle" ? "rectangle" : "fluid"}
             data-full-width-responsive="true"
