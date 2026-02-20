@@ -22,6 +22,8 @@ export type Database = {
           id: string
           ip_address: string | null
           metadata: Json | null
+          organization_id: string | null
+          team_id: string | null
           user_display_name: string | null
           user_email: string | null
           user_id: string
@@ -33,6 +35,8 @@ export type Database = {
           id?: string
           ip_address?: string | null
           metadata?: Json | null
+          organization_id?: string | null
+          team_id?: string | null
           user_display_name?: string | null
           user_email?: string | null
           user_id: string
@@ -44,11 +48,28 @@ export type Database = {
           id?: string
           ip_address?: string | null
           metadata?: Json | null
+          organization_id?: string | null
+          team_id?: string | null
           user_display_name?: string | null
           user_email?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "activity_logs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_logs_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       announcement_reads: {
         Row: {
@@ -575,6 +596,7 @@ export type Database = {
           description: string | null
           id: string
           name: string
+          organization_id: string | null
           team_id: string
           updated_at: string
         }
@@ -583,6 +605,7 @@ export type Database = {
           description?: string | null
           id?: string
           name: string
+          organization_id?: string | null
           team_id: string
           updated_at?: string
         }
@@ -591,10 +614,18 @@ export type Database = {
           description?: string | null
           id?: string
           name?: string
+          organization_id?: string | null
           team_id?: string
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "departments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "departments_team_id_fkey"
             columns: ["team_id"]
@@ -966,6 +997,7 @@ export type Database = {
           material_notes: string | null
           next_material_lot_ready: boolean
           operation_number: string
+          organization_id: string | null
           outgoing_operator_id: string | null
           outgoing_operator_name: string
           outgoing_time: string | null
@@ -1018,6 +1050,7 @@ export type Database = {
           material_notes?: string | null
           next_material_lot_ready?: boolean
           operation_number: string
+          organization_id?: string | null
           outgoing_operator_id?: string | null
           outgoing_operator_name: string
           outgoing_time?: string | null
@@ -1070,6 +1103,7 @@ export type Database = {
           material_notes?: string | null
           next_material_lot_ready?: boolean
           operation_number?: string
+          organization_id?: string | null
           outgoing_operator_id?: string | null
           outgoing_operator_name?: string
           outgoing_time?: string | null
@@ -1100,6 +1134,13 @@ export type Database = {
           work_order?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "handoff_records_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "handoff_records_station_id_fkey"
             columns: ["station_id"]
@@ -1258,6 +1299,7 @@ export type Database = {
           id: string
           image_urls: string[] | null
           operation_number: string | null
+          organization_id: string | null
           part_number: string | null
           priority: string
           proposed_solution: string | null
@@ -1294,6 +1336,7 @@ export type Database = {
           id?: string
           image_urls?: string[] | null
           operation_number?: string | null
+          organization_id?: string | null
           part_number?: string | null
           priority?: string
           proposed_solution?: string | null
@@ -1330,6 +1373,7 @@ export type Database = {
           id?: string
           image_urls?: string[] | null
           operation_number?: string | null
+          organization_id?: string | null
           part_number?: string | null
           priority?: string
           proposed_solution?: string | null
@@ -1365,6 +1409,13 @@ export type Database = {
             columns: ["assigned_team_id"]
             isOneToOne: false
             referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_performance_updates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -2378,6 +2429,7 @@ export type Database = {
           content: string
           created_at: string
           id: string
+          organization_id: string | null
           queue_item_id: string
           user_id: string
           user_name: string
@@ -2386,6 +2438,7 @@ export type Database = {
           content: string
           created_at?: string
           id?: string
+          organization_id?: string | null
           queue_item_id: string
           user_id: string
           user_name: string
@@ -2394,11 +2447,19 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
+          organization_id?: string | null
           queue_item_id?: string
           user_id?: string
           user_name?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "queue_item_comments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "queue_item_comments_queue_item_id_fkey"
             columns: ["queue_item_id"]
@@ -2415,6 +2476,7 @@ export type Database = {
           id: string
           new_value: Json | null
           old_value: Json | null
+          organization_id: string | null
           queue_item_id: string
           user_id: string
           user_name: string
@@ -2425,6 +2487,7 @@ export type Database = {
           id?: string
           new_value?: Json | null
           old_value?: Json | null
+          organization_id?: string | null
           queue_item_id: string
           user_id: string
           user_name: string
@@ -2435,11 +2498,19 @@ export type Database = {
           id?: string
           new_value?: Json | null
           old_value?: Json | null
+          organization_id?: string | null
           queue_item_id?: string
           user_id?: string
           user_name?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "queue_item_history_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "queue_item_history_queue_item_id_fkey"
             columns: ["queue_item_id"]
@@ -3507,6 +3578,7 @@ export type Database = {
           notes: string | null
           operation_name: string
           operation_type: string
+          organization_id: string | null
           outside_vendor: string | null
           po_number: string | null
           queue_item_id: string
@@ -3526,6 +3598,7 @@ export type Database = {
           notes?: string | null
           operation_name: string
           operation_type?: string
+          organization_id?: string | null
           outside_vendor?: string | null
           po_number?: string | null
           queue_item_id: string
@@ -3545,6 +3618,7 @@ export type Database = {
           notes?: string | null
           operation_name?: string
           operation_type?: string
+          organization_id?: string | null
           outside_vendor?: string | null
           po_number?: string | null
           queue_item_id?: string
@@ -3555,6 +3629,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "work_order_routing_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "work_order_routing_queue_item_id_fkey"
             columns: ["queue_item_id"]
