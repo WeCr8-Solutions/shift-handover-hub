@@ -1,137 +1,95 @@
 
 
-# Role & Scope Test Target User Picker, Issues/Changelog Global Access Fix
+# Role Isolation: Separate Org-Scoped Admin from SDK/Developer Tools
 
-## Overview
-Currently the Role & Scope tests only run against the logged-in user's own data. Admins and developers need to select any user or organization and run scope tests against that target to diagnose access issues. Additionally, the global issues system and activity logs need developer-level access fixes, and a changelog system should be added for SDK/admin teams.
+## Problem
 
----
+Currently, **supervisors** and **org admins** land on the same Admin Dashboard page as **platform admins** and **SDK developers**. This exposes them to:
 
-## Problem Summary
+- Issues Management (global issue queue -- SDK tool)
+- Changelog Manager (platform-level release notes -- SDK tool)
+- Activity Logs (global system logs -- SDK tool)
+- Seed Test Data button (developer utility)
+- Bulk Upload button (should be org-admin only, not supervisor)
+- Global system stats (cross-org counts)
 
-1. **Role & Scope Tests are self-only** -- An admin cannot pick "User X in Org Y" and see what that user's RLS results look like. All 24 tests only query `auth.uid()`.
-2. **Activity logs exclude developers** -- The RLS policy only has `has_role('admin')` for global SELECT. Developers cannot see activity logs at all.
-3. **No changelog/release notes system** -- Dev teams have no way to track and publish changes made to the platform.
+Operators and viewers cannot reach `/admin` at all (correct), but the boundary between "org admin/supervisor" and "platform admin/developer" is blurred once inside.
+
+## Solution
+
+Restructure the Admin page to show **only org-scoped tabs** to supervisors/org-admins and reserve **global/SDK tabs** for platform admin and developer roles. No new pages needed -- just conditional tab visibility within the existing Admin page.
 
 ---
 
 ## Changes
 
-### 1. Add Target User Picker to RoleScopeTestRunner
+### 1. Admin Page Tab Visibility (src/pages/Admin.tsx)
 
-Add a user/org selector at the top of the Roles & Scope tab that lets admin/developer users pick a target user to inspect. The test runner will then query that user's roles, org memberships, and team memberships and display them in the User Context Card.
+Split tabs into three visibility tiers:
 
-**Important**: RLS means the client SDK can only query data visible to the logged-in user. Since admins can already see all `user_roles`, `organization_members`, `team_members`, `profiles`, etc., the target picker will:
-- Fetch all users from `profiles` (admin-visible)
-- Let admin select a user
-- Query that user's `user_roles`, `organization_members`, `team_members`
-- Display the target user's context card with their full role/scope breakdown
-- Run a subset of tests that can evaluate the target user's data (read-only checks, not mutations)
+| Tier | Who sees it | Tabs |
+|------|-------------|------|
+| **Org-scoped** | Supervisors, Org Admins, Platform Admin, Developer | Overview, Organizations (own only), Users (own org), Stations (own org), Work Orders, History, Routing, Performance |
+| **SDK/Global** | Platform Admin and Developer only | Issues, Changelog, Activity Logs |
+| **Dev Tools** | Developer and Platform Admin only (already correct) | Dev Queue, Dev Settings, RLS Health, User Journey |
 
-**File**: `src/components/testing/RoleScopeTestRunner.tsx`
-- Add a `Select` dropdown at the top to pick a target user (populated from `profiles`)
-- Add an org filter dropdown to narrow users by organization
-- Pass `targetUserId` into test definitions that support it
-- Update `UserContextCard` to show the selected target user's roles
-- Add new "Target User Analysis" suite with tests like:
-  - Target has platform role(s)
-  - Target has org membership
-  - Target has team membership(s)
-  - Target's visible stations count
-  - Target's visible queue items count
+Concrete changes:
+- Wrap the "Activity" bucket (Activity, Issues, Changelog tabs) in `{(isAdmin or isDeveloper) && ...}` guard
+- Wrap `SeedTestDataButton` in `{hasTestingAccess && ...}` guard
+- Wrap `BulkUpload` in `{(isAdmin or isDeveloper or isOrgAdmin) && ...}` guard (supervisors should not seed/bulk-upload)
+- Update the page header subtitle: show "Organization Management" for supervisors, "System Management" for admin/dev
 
-### 2. Fix Activity Logs RLS for Developers
+### 2. Scope AdminStatsCards for Non-Platform Users (src/components/admin/AdminStatsCards.tsx)
 
-**Database migration**: Add a new SELECT policy on `activity_logs` for developers.
+Currently shows global counts (totalUsers across all orgs, totalOrgs, etc.). For org-scoped users (supervisors/org-admins), these stats should either:
+- Show org-scoped counts only, or
+- Be hidden entirely
 
-```sql
-CREATE POLICY "Developers can view all activity logs"
-ON public.activity_logs
-FOR SELECT
-TO authenticated
-USING (has_role(auth.uid(), 'developer'::app_role));
+Plan: Hide the full stats row for non-admin/developer users and show a simplified org-scoped summary instead.
+
+### 3. Org-Scoped Data in Overview Tab
+
+When a supervisor or org admin views the Overview tab, the data queries should be filtered to their org. The `isAdmin` prop passed to child components like `OrganizationOversight`, `UserManagement`, `StationManagement` already controls this -- verify they correctly scope data for non-platform-admin users.
+
+### 4. Update useAdminAccess Hook (src/hooks/useAdminData.ts)
+
+Add a new computed flag:
 ```
-
-**File**: `src/components/admin/ActivityLogs.tsx`
-- Update the `isAdmin` check to also include `isDeveloper` so developers see the full log view (currently they fall through to the org_admin view which may also fail).
-
-### 3. Add Changelog System
-
-Create a `changelogs` table for tracking platform changes visible to admin/dev teams.
-
-**Database migration**:
-```sql
-CREATE TABLE public.changelogs (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  title TEXT NOT NULL,
-  description TEXT,
-  version TEXT,
-  change_type TEXT NOT NULL DEFAULT 'improvement',
-  author_id UUID REFERENCES auth.users(id),
-  author_name TEXT,
-  is_published BOOLEAN DEFAULT false,
-  published_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now()
-);
-
-ALTER TABLE public.changelogs ENABLE ROW LEVEL SECURITY;
-
--- Only admin/dev can read
-CREATE POLICY "Dev and admin can read changelogs"
-ON public.changelogs FOR SELECT TO authenticated
-USING (is_dev_or_admin(auth.uid()));
-
--- Only admin/dev can insert
-CREATE POLICY "Dev and admin can insert changelogs"
-ON public.changelogs FOR INSERT TO authenticated
-WITH CHECK (is_dev_or_admin(auth.uid()));
-
--- Only admin/dev can update
-CREATE POLICY "Dev and admin can update changelogs"
-ON public.changelogs FOR UPDATE TO authenticated
-USING (is_dev_or_admin(auth.uid()));
-
--- Only admin can delete
-CREATE POLICY "Admin can delete changelogs"
-ON public.changelogs FOR DELETE TO authenticated
-USING (has_role(auth.uid(), 'admin'::app_role));
+hasPlatformAccess: isAdmin || isDeveloper  // SDK-level tools
 ```
+This is cleaner than checking `isAdmin || isDeveloper` throughout the UI.
 
-**New file**: `src/components/admin/ChangelogManager.tsx`
-- Card-based UI to create/edit/publish changelog entries
-- Fields: title, description, version tag, change type (feature, fix, improvement, breaking)
-- Publish toggle
-- List of recent entries with edit/delete
+### 5. Header Badge Label (src/pages/Admin.tsx)
 
-**File**: `src/pages/Admin.tsx`
-- Add a "Changelog" tab to the admin dashboard alongside Issues and Dev Queue
+Currently shows "Administrator" / "Developer" / "Supervisor". Add "Org Admin" distinction:
+- Platform Admin -> "Platform Admin"
+- Developer -> "SDK Developer"  
+- Org Owner -> "Org Owner"
+- Org Admin -> "Org Admin"
+- Supervisor -> "Supervisor"
 
 ---
 
-## Technical Details
+## Files Modified
 
-### Files Created
-| File | Purpose |
-|------|---------|
-| `src/components/admin/ChangelogManager.tsx` | Changelog CRUD UI for admin/dev teams |
-
-### Files Modified
 | File | Change |
 |------|--------|
-| `src/components/testing/RoleScopeTestRunner.tsx` | Add target user picker, target user analysis suite |
-| `src/components/admin/ActivityLogs.tsx` | Include `isDeveloper` in full-access check |
-| `src/pages/Admin.tsx` | Add Changelog tab |
+| `src/hooks/useAdminData.ts` | Add `hasPlatformAccess` computed flag |
+| `src/pages/Admin.tsx` | Gate Activity/Issues/Changelog tabs behind `hasPlatformAccess`; gate SeedTestData behind `hasTestingAccess`; gate BulkUpload behind org-admin+; update badge labels |
+| `src/components/admin/AdminStatsCards.tsx` | Accept `hasPlatformAccess` prop; show simplified org stats for org-scoped users |
 
-### Database Migrations
-| Change | Purpose |
-|--------|---------|
-| New SELECT policy on `activity_logs` for developers | Fix developer access to logs |
-| New `changelogs` table with RLS | Track platform changes |
+## What Does NOT Change
 
-### Security Notes
-- Target user picker is read-only analysis -- no mutations on behalf of target user
-- All target data queries go through existing RLS (admin already has SELECT on all relevant tables)
-- Changelog table restricted to admin/dev via `is_dev_or_admin()` helper
-- Activity logs developer policy uses same pattern as issues table
+- `/testing` page -- already correctly gated by `hasTestingAccess`
+- Header navigation -- supervisors still see the Admin shield icon (they need their org dashboard)
+- Signup flow -- `handle_new_user` correctly assigns only `operator` role; org roles come from org membership
+- RLS policies -- already enforce org-scoped data isolation at the database level
+- Dev Tools bucket -- already gated by `hasTestingAccess`
+
+## Security Notes
+
+- This is a **UI-level enforcement** layered on top of existing **RLS-level enforcement**. Even if a supervisor somehow navigated to a global tab, the RLS policies on `issues`, `changelogs`, `dev_issue_queue`, and `activity_logs` already prevent them from seeing data they shouldn't.
+- The `changelogs` table RLS uses `is_dev_or_admin()` -- supervisors cannot read it.
+- The `issues` table RLS restricts non-admin/dev users to their own reported issues.
+- This change ensures the UI matches the database security boundaries.
 
