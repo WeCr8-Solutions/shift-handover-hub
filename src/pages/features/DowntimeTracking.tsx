@@ -5,6 +5,8 @@ import { ArrowRight, CheckCircle2, Zap, AlertTriangle, BarChart3, Wrench, Activi
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
+import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
+import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 
 const benefits = [
   "Log downtime events with reason codes and descriptions",
@@ -100,6 +102,8 @@ export default function DowntimeTracking() {
               ))}
             </ul>
 
+            <LeadCaptureBar sourcePage="downtime-tracking" className="mb-16" />
+
             <div className="text-center p-8 rounded-2xl bg-primary/5 border border-primary/20">
               <h2 className="text-2xl font-bold mb-3">Start tracking downtime today</h2>
               <p className="text-muted-foreground mb-6">Free trial — no credit card required.</p>
@@ -114,6 +118,7 @@ export default function DowntimeTracking() {
       </main>
 
       <MarketingFooter />
+      <LeadCaptureModal />
     </div>
   );
 }

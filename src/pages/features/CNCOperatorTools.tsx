@@ -5,6 +5,8 @@ import { ArrowRight, CheckCircle2, Zap, Wrench, Smartphone, TrendingUp, FileText
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
+import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
+import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 
 const benefits = [
   "Mobile-friendly interface for shop floor tablets and phones",
@@ -109,6 +111,8 @@ export default function CNCOperatorTools() {
               ))}
             </ul>
 
+            <LeadCaptureBar sourcePage="cnc-operator-tools" className="mb-16" />
+
             <div className="text-center p-8 rounded-2xl bg-primary/5 border border-primary/20">
               <h2 className="text-2xl font-bold mb-3">Give your operators the tools they deserve</h2>
               <p className="text-muted-foreground mb-6">Free trial — works on any device with a browser.</p>
@@ -123,6 +127,7 @@ export default function CNCOperatorTools() {
       </main>
 
       <MarketingFooter />
+      <LeadCaptureModal />
     </div>
   );
 }

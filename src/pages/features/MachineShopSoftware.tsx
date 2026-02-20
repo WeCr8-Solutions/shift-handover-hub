@@ -5,6 +5,8 @@ import { ArrowRight, CheckCircle2, Zap, Wrench, Monitor, BarChart3, Users } from
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
+import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
+import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 
 const benefits = [
   "Built specifically for CNC machine shops",
@@ -104,6 +106,8 @@ export default function MachineShopSoftware() {
               ))}
             </ul>
 
+            <LeadCaptureBar sourcePage="machine-shop-software" className="mb-16" />
+
             <div className="text-center p-8 rounded-2xl bg-primary/5 border border-primary/20">
               <h2 className="text-2xl font-bold mb-3">Run your shop smarter</h2>
               <p className="text-muted-foreground mb-6">Free trial — set up in under 5 minutes.</p>
@@ -118,6 +122,7 @@ export default function MachineShopSoftware() {
       </main>
 
       <MarketingFooter />
+      <LeadCaptureModal />
     </div>
   );
 }

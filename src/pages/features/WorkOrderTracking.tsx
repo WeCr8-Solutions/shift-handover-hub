@@ -5,6 +5,8 @@ import { ArrowRight, CheckCircle2, Zap, ListChecks, Calendar, Route, Upload } fr
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
+import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
+import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 
 const benefits = [
   "Kanban board, list, and calendar views",
@@ -104,6 +106,8 @@ export default function WorkOrderTracking() {
               ))}
             </ul>
 
+            <LeadCaptureBar sourcePage="work-order-tracking" className="mb-16" />
+
             <div className="text-center p-8 rounded-2xl bg-primary/5 border border-primary/20">
               <h2 className="text-2xl font-bold mb-3">Stop managing work orders on paper</h2>
               <p className="text-muted-foreground mb-6">Digitize your production queue in under 5 minutes.</p>
@@ -118,6 +122,7 @@ export default function WorkOrderTracking() {
       </main>
 
       <MarketingFooter />
+      <LeadCaptureModal />
     </div>
   );
 }

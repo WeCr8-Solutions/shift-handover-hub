@@ -5,6 +5,8 @@ import { ArrowRight, CheckCircle2, Zap, Activity, BarChart3, AlertTriangle, Tren
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
+import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
+import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 
 const benefits = [
   "Real-time station status monitoring",
@@ -104,6 +106,8 @@ export default function ProductionControl() {
               ))}
             </ul>
 
+            <LeadCaptureBar sourcePage="production-control" className="mb-16" />
+
             <div className="text-center p-8 rounded-2xl bg-primary/5 border border-primary/20">
               <h2 className="text-2xl font-bold mb-3">Take control of your production floor</h2>
               <p className="text-muted-foreground mb-6">Free trial — no credit card required.</p>
@@ -118,6 +122,7 @@ export default function ProductionControl() {
       </main>
 
       <MarketingFooter />
+      <LeadCaptureModal />
     </div>
   );
 }

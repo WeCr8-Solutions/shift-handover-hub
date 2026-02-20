@@ -5,6 +5,8 @@ import { ArrowRight, CheckCircle2, Zap, Users, UserPlus, Shield, Bell } from "lu
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
+import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
+import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 
 const benefits = [
   "Organization and team hierarchy management",
@@ -101,6 +103,8 @@ export default function TeamCollaboration() {
               ))}
             </ul>
 
+            <LeadCaptureBar sourcePage="team-collaboration" className="mb-16" />
+
             <div className="text-center p-8 rounded-2xl bg-primary/5 border border-primary/20">
               <h2 className="text-2xl font-bold mb-3">Get your whole team on the same page</h2>
               <p className="text-muted-foreground mb-6">Free trial — invite your team in seconds with QR codes.</p>
@@ -115,6 +119,7 @@ export default function TeamCollaboration() {
       </main>
 
       <MarketingFooter />
+      <LeadCaptureModal />
     </div>
   );
 }

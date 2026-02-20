@@ -10,6 +10,7 @@ import { ShiftHandoffDemo } from "@/components/landing/ShiftHandoffDemo";
 import { SupportJoblineModal } from "@/components/SupportJoblineModal";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
+import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 import { trackEvent } from "@/lib/analytics";
 import demoVideo from "@/assets/jobline-demo-video.mp4";
 import { 
@@ -1377,6 +1378,7 @@ export default function Landing() {
           </div>
         </DialogContent>
       </Dialog>
+      <LeadCaptureModal />
     </div>
   );
 }

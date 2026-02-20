@@ -5,6 +5,8 @@ import { ArrowRight, CheckCircle2, Zap, Shield, AlertTriangle, FileText, Trendin
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
+import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
+import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 
 const benefits = [
   "First-article inspection documentation",
@@ -101,6 +103,8 @@ export default function QualityManagement() {
               ))}
             </ul>
 
+            <LeadCaptureBar sourcePage="quality-management" className="mb-16" />
+
             <div className="text-center p-8 rounded-2xl bg-primary/5 border border-primary/20">
               <h2 className="text-2xl font-bold mb-3">Build quality into every shift transition</h2>
               <p className="text-muted-foreground mb-6">Free trial — no credit card required.</p>
@@ -115,6 +119,7 @@ export default function QualityManagement() {
       </main>
 
       <MarketingFooter />
+      <LeadCaptureModal />
     </div>
   );
 }
