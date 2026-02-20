@@ -4,3 +4,4 @@ export * from "./TestCoverageCard";
 export * from "./TestSuiteSelector";
 export * from "./TestHistoryList";
 export * from "./ProcessTestRunner";
+export * from "./RoleScopeTestRunner";
