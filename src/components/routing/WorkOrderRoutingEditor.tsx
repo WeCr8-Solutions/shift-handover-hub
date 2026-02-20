@@ -304,17 +304,18 @@ export function WorkOrderRoutingEditor({
         .eq('queue_item_id', queueItemId);
 
       // Only save enabled steps, renumber them sequentially
+      // Sanitize values: empty strings → null for date/numeric columns
       const stepsToSave = enabledSteps.map((s, idx) => ({
         queue_item_id: queueItemId,
         step_number: idx + 1,
         operation_name: s.operation_name,
         operation_type: s.operation_type,
         station_id: s.station_id || null,
-        estimated_duration: s.estimated_duration,
-        notes: s.instructions,
-        outside_vendor: s.outside_vendor,
-        po_number: s.po_number,
-        expected_return_date: s.expected_return_date,
+        estimated_duration: s.estimated_duration && !isNaN(Number(s.estimated_duration)) ? Number(s.estimated_duration) : null,
+        notes: s.instructions || null,
+        outside_vendor: s.outside_vendor || null,
+        po_number: s.po_number || null,
+        expected_return_date: s.expected_return_date && s.expected_return_date.trim() !== '' ? s.expected_return_date : null,
       }));
 
       const { error } = await supabase
