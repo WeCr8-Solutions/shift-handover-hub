@@ -5,6 +5,8 @@ import { ArrowRight, CheckCircle2, Zap, Shield, Users, Eye, Factory } from "luci
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
+import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
+import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 
 const benefits = [
   "Centralized dashboard for all production activity",
@@ -123,6 +125,8 @@ export default function ManufacturingOversight() {
               ))}
             </ul>
 
+            <LeadCaptureBar sourcePage="manufacturing-oversight" className="mb-16" />
+
             <div className="text-center p-8 rounded-2xl bg-primary/5 border border-primary/20">
               <h2 className="text-2xl font-bold mb-3">See your entire operation in one place</h2>
               <p className="text-muted-foreground mb-6">Free trial — set up in under 5 minutes. No credit card required.</p>
@@ -137,6 +141,7 @@ export default function ManufacturingOversight() {
       </main>
 
       <MarketingFooter />
+      <LeadCaptureModal />
     </div>
   );
 }

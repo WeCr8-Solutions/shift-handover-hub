@@ -5,6 +5,8 @@ import { ArrowRight, Clock, FileText, Users, Shield, CheckCircle2, Zap } from "l
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
+import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
+import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 
 const benefits = [
   "Eliminate lost information between shifts",
@@ -105,6 +107,8 @@ export default function ShiftHandoffSoftware() {
               ))}
             </div>
 
+            <LeadCaptureBar sourcePage="shift-handoff-software" className="mb-16" />
+
             <div className="text-center p-8 rounded-2xl bg-primary/5 border border-primary/20">
               <h2 className="text-2xl font-bold mb-3">Ready to eliminate shift handoff chaos?</h2>
               <p className="text-muted-foreground mb-6">Start your free trial today. No credit card required.</p>
@@ -119,6 +123,7 @@ export default function ShiftHandoffSoftware() {
       </main>
 
       <MarketingFooter />
+      <LeadCaptureModal />
     </div>
   );
 }

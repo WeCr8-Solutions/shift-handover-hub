@@ -5,6 +5,8 @@ import { ArrowRight, CheckCircle2, Zap, Target, Eye, AlertTriangle, Clock, Route
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
+import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
+import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 
 const benefits = [
   "Real-time production visibility across all stations",
@@ -116,6 +118,8 @@ export default function DigitalExpeditor() {
               </p>
             </div>
 
+            <LeadCaptureBar sourcePage="digital-expeditor" className="mb-16" />
+
             <div className="text-center p-8 rounded-2xl bg-primary/5 border border-primary/20">
               <h2 className="text-2xl font-bold mb-3">Ready to digitize your expediting?</h2>
               <p className="text-muted-foreground mb-6">Free trial — no credit card required. Set up in under 5 minutes.</p>
@@ -130,6 +134,7 @@ export default function DigitalExpeditor() {
       </main>
 
       <MarketingFooter />
+      <LeadCaptureModal />
     </div>
   );
 }
