@@ -36,7 +36,8 @@ import {
   Lightbulb,
   CheckCircle2,
   Camera,
-  TrendingUp
+  TrendingUp,
+  Sparkles
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import joblineLogo from "@/assets/jobline-logo.png";
@@ -129,6 +130,15 @@ const features = [
     bg: "bg-indigo-500/10",
     link: "/features/downtime-tracking",
     cta: "Track Downtime",
+  },
+  {
+    icon: Sparkles,
+    title: "AI Planning Assistant",
+    description: "Ask questions about scheduling, rerouting, and priorities. AI analyzes your live production data and gives actionable answers.",
+    color: "text-amber-400",
+    bg: "bg-amber-500/10",
+    link: "/features/ai-planning-assistant",
+    cta: "Meet Your AI Planner",
   },
 ];
 
@@ -1035,6 +1045,7 @@ export default function Landing() {
               { label: "Production Scheduling", link: "/features/production-scheduling" },
               { label: "CNC Operator Tools", link: "/features/cnc-operator-tools" },
               { label: "Continuous Improvement", link: "/features/quality-management" },
+              { label: "AI Planning Assistant", link: "/features/ai-planning-assistant" },
             ].map((extra, i) => (
               <Button
                 key={i}
