@@ -13,12 +13,34 @@ import { useStations } from "@/hooks/useStations";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useToast } from "@/hooks/use-toast";
 import { useAdminAccess } from "@/hooks/useAdminData";
+import { supabase } from "@/integrations/supabase/client";
 import { format, formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { 
   Clock, User, Package, Send, History, MessageSquare, Trash2, Loader2,
-  Play, Pause, CheckCircle2, Wrench, FileText, AlertTriangle, ArrowRight, GitBranch
+  Play, Pause, CheckCircle2, Wrench, FileText, AlertTriangle, ArrowRight, GitBranch,
+  CircleDot, Circle, CheckCircle, Timer, Truck
 } from "lucide-react";
+
+interface RoutingStepRow {
+  id: string;
+  step_number: number;
+  operation_name: string;
+  operation_type: string;
+  status: string;
+  station_id: string | null;
+  estimated_duration: number | null;
+  started_at: string | null;
+  completed_at: string | null;
+  completed_by: string | null;
+  notes: string | null;
+  outside_vendor: string | null;
+  po_number: string | null;
+  expected_return_date: string | null;
+  completed_by_name?: string | null;
+  station_name?: string | null;
+  station_code?: string | null;
+}
 
 interface QueueItemDetailDialogProps {
   item: QueueItem | null;
@@ -88,6 +110,8 @@ export function QueueItemDetailDialog({
   const { hasAdminAccess } = useAdminAccess();
   const [comments, setComments] = useState<QueueItemComment[]>([]);
   const [history, setHistory] = useState<QueueItemHistory[]>([]);
+  const [routingSteps, setRoutingSteps] = useState<RoutingStepRow[]>([]);
+  const [routingLoading, setRoutingLoading] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -100,8 +124,55 @@ export function QueueItemDetailDialog({
     if (item && open) {
       loadComments();
       loadHistory();
+      loadRouting();
     }
   }, [item, open]);
+
+  const loadRouting = async () => {
+    if (!item) return;
+    setRoutingLoading(true);
+    try {
+      // Fetch routing steps with completed_by profile name and station info
+      const { data, error } = await supabase
+        .from('work_order_routing')
+        .select('*')
+        .eq('queue_item_id', item.id)
+        .order('step_number', { ascending: true });
+
+      if (error) throw error;
+
+      // Enrich with profile names and station info
+      if (data && data.length > 0) {
+        const completedByIds = [...new Set(data.filter(s => s.completed_by).map(s => s.completed_by!))];
+        const stationIds = [...new Set(data.filter(s => s.station_id).map(s => s.station_id!))];
+
+        const [profilesRes, stationsRes] = await Promise.all([
+          completedByIds.length > 0
+            ? supabase.from('profiles').select('user_id, display_name').in('user_id', completedByIds)
+            : Promise.resolve({ data: [] as any[] }),
+          stationIds.length > 0
+            ? supabase.from('stations').select('id, name, station_id').in('id', stationIds)
+            : Promise.resolve({ data: [] as any[] }),
+        ]);
+
+        const profileMap = new Map((profilesRes.data || []).map((p: any) => [p.user_id, p.display_name]));
+        const stationMap = new Map((stationsRes.data || []).map((s: any) => [s.id, { name: s.name, code: s.station_id }]));
+
+        setRoutingSteps(data.map(step => ({
+          ...step,
+          completed_by_name: step.completed_by ? profileMap.get(step.completed_by) || null : null,
+          station_name: step.station_id ? stationMap.get(step.station_id)?.name || null : null,
+          station_code: step.station_id ? stationMap.get(step.station_id)?.code || null : null,
+        })));
+      } else {
+        setRoutingSteps([]);
+      }
+    } catch {
+      setRoutingSteps([]);
+    } finally {
+      setRoutingLoading(false);
+    }
+  };
 
   const loadComments = async () => {
     if (!item) return;
@@ -351,11 +422,15 @@ export function QueueItemDetailDialog({
 
         <div className="flex-1 overflow-hidden">
           <Tabs defaultValue="details" className="h-full flex flex-col">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="details">Details</TabsTrigger>
+              <TabsTrigger value="routing" className="gap-1">
+                <GitBranch className="w-4 h-4" />
+                Routing
+              </TabsTrigger>
               <TabsTrigger value="comments" className="gap-1">
                 <MessageSquare className="w-4 h-4" />
-                Comments ({comments.length})
+                ({comments.length})
               </TabsTrigger>
               <TabsTrigger value="history" className="gap-1">
                 <History className="w-4 h-4" />
@@ -495,6 +570,141 @@ export function QueueItemDetailDialog({
                   Delete Item
                 </Button>
               </div>
+            </TabsContent>
+
+            {/* Routing Steps Tab */}
+            <TabsContent value="routing" className="flex-1 overflow-auto mt-4">
+              {routingLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                </div>
+              ) : routingSteps.length === 0 ? (
+                <div className="text-center py-12 space-y-3">
+                  <GitBranch className="w-10 h-10 mx-auto text-muted-foreground/40" />
+                  <p className="text-muted-foreground">No routing steps configured yet.</p>
+                  {onOpenRouting && hasAdminAccess && (
+                    <Button variant="outline" size="sm" onClick={() => onOpenRouting(item)} className="gap-2">
+                      <GitBranch className="w-4 h-4" />
+                      Set Up Routing
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <ScrollArea className="h-[400px] pr-4">
+                  <div className="space-y-1">
+                    {routingSteps.map((step, idx) => {
+                      const isComplete = step.status === 'completed';
+                      const isActive = step.status === 'in_progress';
+                      const isPending = step.status === 'pending';
+                      const isOutside = step.operation_type === 'outside_processing';
+
+                      return (
+                        <div key={step.id} className="relative">
+                          {/* Connector line */}
+                          {idx < routingSteps.length - 1 && (
+                            <div className={cn(
+                              "absolute left-[15px] top-[32px] bottom-0 w-0.5",
+                              isComplete ? "bg-green-400" : "bg-border"
+                            )} />
+                          )}
+                          <div className={cn(
+                            "flex items-start gap-3 p-3 rounded-lg transition-colors",
+                            isActive && "bg-primary/5 border border-primary/20",
+                            isOutside && !isActive && "bg-amber-500/5",
+                          )}>
+                            {/* Status icon */}
+                            <div className="mt-0.5">
+                              {isComplete ? (
+                                <CheckCircle className="w-5 h-5 text-green-500" />
+                              ) : isActive ? (
+                                <CircleDot className="w-5 h-5 text-primary animate-pulse" />
+                              ) : (
+                                <Circle className="w-5 h-5 text-muted-foreground/40" />
+                              )}
+                            </div>
+
+                            {/* Step info */}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className={cn(
+                                  "font-medium text-sm",
+                                  isPending && "text-muted-foreground"
+                                )}>
+                                  {step.step_number}. {step.operation_name}
+                                </span>
+                                {isOutside && (
+                                  <Badge variant="outline" className="text-[10px] bg-amber-500/10 text-amber-700 border-amber-500/30">
+                                    <Truck className="w-3 h-3 mr-1" />
+                                    Outside
+                                  </Badge>
+                                )}
+                                {isActive && (
+                                  <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/30">
+                                    In Progress
+                                  </Badge>
+                                )}
+                              </div>
+
+                              {/* Station assignment */}
+                              {step.station_name && (
+                                <p className="text-xs text-muted-foreground mt-0.5">
+                                  <Wrench className="w-3 h-3 inline mr-1" />
+                                  {step.station_code} - {step.station_name}
+                                </p>
+                              )}
+
+                              {/* Outside vendor info */}
+                              {isOutside && step.outside_vendor && (
+                                <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
+                                  Vendor: {step.outside_vendor}
+                                  {step.po_number && ` • PO: ${step.po_number}`}
+                                  {step.expected_return_date && ` • Return: ${format(new Date(step.expected_return_date), "MMM d, yyyy")}`}
+                                </p>
+                              )}
+
+                              {/* Completion info - who signed off */}
+                              {isComplete && (
+                                <div className="flex items-center gap-2 mt-1 text-xs text-green-700 dark:text-green-400">
+                                  <User className="w-3 h-3" />
+                                  <span>
+                                    {step.completed_by_name || "System"} signed off
+                                    {step.completed_at && ` • ${format(new Date(step.completed_at), "MMM d, h:mm a")}`}
+                                  </span>
+                                </div>
+                              )}
+
+                              {/* Duration */}
+                              {step.estimated_duration && (
+                                <p className="text-xs text-muted-foreground mt-0.5">
+                                  <Timer className="w-3 h-3 inline mr-1" />
+                                  Est. {step.estimated_duration} min
+                                </p>
+                              )}
+
+                              {/* Notes */}
+                              {step.notes && (
+                                <p className="text-xs text-muted-foreground mt-1 italic">
+                                  {step.notes}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Edit Routing button at bottom */}
+                  {onOpenRouting && hasAdminAccess && (
+                    <div className="mt-4 pt-4 border-t">
+                      <Button variant="outline" size="sm" onClick={() => onOpenRouting(item)} className="gap-2">
+                        <GitBranch className="w-4 h-4" />
+                        Edit Routing
+                      </Button>
+                    </div>
+                  )}
+                </ScrollArea>
+              )}
             </TabsContent>
 
             <TabsContent value="comments" className="flex-1 flex flex-col overflow-hidden mt-4">
