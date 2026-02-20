@@ -77,15 +77,13 @@ export default function Admin() {
           <div className="flex items-center gap-2">
             <TourTriggerButton />
             {hasTestingAccess && <SeedTestDataButton />}
-            {(hasPlatformAccess || isOrgAdmin) && (
-              <Button variant="outline" onClick={() => setBulkUploadOpen(true)} data-tour="bulk-upload">
-                <FileSpreadsheet className="w-4 h-4 mr-2" />
-                Bulk Upload
-              </Button>
-            )}
+            <Button variant="outline" onClick={() => setBulkUploadOpen(true)} data-tour="bulk-upload">
+              <FileSpreadsheet className="w-4 h-4 mr-2" />
+              Bulk Upload
+            </Button>
             <Badge variant={hasPlatformAccess ? "default" : "secondary"} className="gap-1">
               <Shield className="w-3 h-3" />
-              {isAdmin ? "Platform Admin" : isDeveloper ? "SDK Developer" : isOrgOwner ? "Org Owner" : isOrgAdmin ? "Org Admin" : "Supervisor"}
+              {isAdmin ? "Platform Admin" : isDeveloper ? "SDK Developer" : isOrgOwner ? "Org Owner" : isOrgAdmin ? "Org Admin" : isSupervisor ? "Supervisor" : "Operator"}
             </Badge>
           </div>
         </div>
