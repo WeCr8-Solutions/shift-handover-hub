@@ -19,17 +19,18 @@ declare global {
 // ============================================
 
 /**
- * Track a page view
+ * Track a page view (with optional UTM attribution)
  */
-export function trackPageView(path: string, title?: string) {
+export function trackPageView(path: string, title?: string, utmParams?: Record<string, string>) {
   if (typeof window !== 'undefined' && window.gtag) {
     window.gtag('config', GA_MEASUREMENT_ID, {
       page_path: path,
       page_title: title || document.title,
+      ...utmParams,
     });
     
     if (import.meta.env.DEV) {
-      console.log('[Analytics] Page View:', { path, title });
+      console.log('[Analytics] Page View:', { path, title, ...utmParams });
     }
   }
 }
@@ -170,6 +171,15 @@ export const FeatureEvents = {
   
   exportPerformed: (exportType: string) => 
     trackEvent('export_performed', { export_type: exportType }),
+};
+
+// Demo / Conversion Events
+export const DemoEvents = {
+  demoModalOpen: (pagePath: string, utmParams?: Record<string, string>) =>
+    trackEvent('demo_modal_open', { page_path: pagePath, ...utmParams }),
+
+  demoFormSubmit: (pagePath: string, utmParams?: Record<string, string>) =>
+    trackEvent('demo_form_submit', { page_path: pagePath, ...utmParams }),
 };
 
 // Error Tracking

@@ -10,6 +10,7 @@ import {
   trackTimeOnPage,
   enableDebugMode,
 } from '@/lib/analytics';
+import { captureUtmParams } from '@/lib/utm';
 
 interface AnalyticsProviderProps {
   children: ReactNode;
@@ -54,7 +55,8 @@ export function AnalyticsProvider({ children }: AnalyticsProviderProps) {
     };
     
     const title = pageTitles[location.pathname] || `${location.pathname} - JobLine.ai`;
-    trackPageView(location.pathname + location.search, title);
+    const utm = captureUtmParams();
+    trackPageView(location.pathname + location.search, title, utm as Record<string, string>);
   }, [location.pathname, location.search]);
 
   // Identify user when authenticated
