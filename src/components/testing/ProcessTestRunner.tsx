@@ -14,7 +14,9 @@ import {
   Database,
   Shield,
   GitBranch,
-  Workflow
+  Workflow,
+  UserCog,
+  Route
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useProcessTests, ProcessTestResult, ProcessTestSuite } from "@/hooks/useProcessTests";
@@ -31,6 +33,10 @@ function getCategoryIcon(category: string) {
       return <Factory className="w-4 h-4" />;
     case "security":
       return <Shield className="w-4 h-4" />;
+    case "autofill":
+      return <UserCog className="w-4 h-4" />;
+    case "quote-to-ship":
+      return <Route className="w-4 h-4" />;
     default:
       return <AlertCircle className="w-4 h-4" />;
   }

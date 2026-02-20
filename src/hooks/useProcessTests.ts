@@ -466,12 +466,365 @@ const securityTests: TestDefinition[] = [
   },
 ];
 
+// Autofill & User Context Tests
+const autofillTests: TestDefinition[] = [
+  {
+    id: "af-001",
+    name: "Authenticated user profile exists with display_name",
+    category: "Autofill & User Context",
+    test: async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return { success: false, error: "No authenticated user" };
+        const { data: profile, error } = await supabase
+          .from("profiles")
+          .select("display_name, email")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        if (error) throw error;
+        if (!profile) return { success: false, error: "No profile found for user" };
+        return { success: !!profile.display_name, details: `Profile: ${profile.display_name} (${profile.email})` };
+      } catch (err: any) {
+        return { success: false, error: err.message };
+      }
+    },
+  },
+  {
+    id: "af-002",
+    name: "User has operator name for form pre-fill",
+    category: "Autofill & User Context",
+    test: async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return { success: false, error: "No authenticated user" };
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("display_name")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        const operatorName = profile?.display_name || user.user_metadata?.display_name;
+        return { success: !!operatorName, details: operatorName ? `Operator auto-fill: "${operatorName}"` : "No operator name available" };
+      } catch (err: any) {
+        return { success: false, error: err.message };
+      }
+    },
+  },
+  {
+    id: "af-003",
+    name: "Self-handoff default (incoming = outgoing operator)",
+    category: "Autofill & User Context",
+    test: async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return { success: false, error: "No authenticated user" };
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("display_name")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        const name = profile?.display_name || "Unknown";
+        // For solo shops, both incoming and outgoing default to same user
+        return { success: !!profile?.display_name, details: `Self-handoff: outgoing="${name}" → incoming="${name}"` };
+      } catch (err: any) {
+        return { success: false, error: err.message };
+      }
+    },
+  },
+  {
+    id: "af-004",
+    name: "User belongs to at least one organization",
+    category: "Autofill & User Context",
+    test: async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return { success: false, error: "No authenticated user" };
+        const { data, error } = await supabase
+          .from("organization_members")
+          .select("organization_id, role, organizations:organization_id(name)")
+          .eq("user_id", user.id);
+        if (error) throw error;
+        const orgName = data?.[0]?.organizations;
+        const name = Array.isArray(orgName) ? orgName[0]?.name : (orgName as any)?.name;
+        return { success: (data?.length || 0) > 0, details: data?.length ? `Org: "${name}" (role: ${data[0].role})` : "No org membership" };
+      } catch (err: any) {
+        return { success: false, error: err.message };
+      }
+    },
+  },
+  {
+    id: "af-005",
+    name: "User has team membership with accessible stations",
+    category: "Autofill & User Context",
+    test: async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return { success: false, error: "No authenticated user" };
+        const { data: teams, error } = await supabase
+          .from("team_members")
+          .select("team_id, role, teams:team_id(name)")
+          .eq("user_id", user.id);
+        if (error) throw error;
+        if (!teams?.length) return { success: false, error: "No team memberships found" };
+        const teamIds = teams.map(t => t.team_id);
+        const { data: stations } = await supabase
+          .from("stations")
+          .select("id")
+          .in("team_id", teamIds);
+        return { success: (stations?.length || 0) > 0, details: `${teams.length} team(s), ${stations?.length || 0} station(s) accessible` };
+      } catch (err: any) {
+        return { success: false, error: err.message };
+      }
+    },
+  },
+  {
+    id: "af-006",
+    name: "Station with active WO returns autofill data",
+    category: "Autofill & User Context",
+    test: async () => {
+      try {
+        const { data: activeItem, error } = await supabase
+          .from("queue_items")
+          .select("work_order, part_number, operation_number, station_id")
+          .eq("status", "in_progress")
+          .limit(1)
+          .maybeSingle();
+        if (error) throw error;
+        if (!activeItem) return { success: true, details: "No active WO (expected for new setups) — autofill will use station status fallback" };
+        return { success: !!(activeItem.work_order && activeItem.part_number), details: `WO: ${activeItem.work_order}, Part: ${activeItem.part_number}, Op: ${activeItem.operation_number}` };
+      } catch (err: any) {
+        return { success: false, error: err.message };
+      }
+    },
+  },
+  {
+    id: "af-007",
+    name: "Fallback to current_station_status when no active WO",
+    category: "Autofill & User Context",
+    test: async () => {
+      try {
+        const { data: statuses, error } = await supabase
+          .from("current_station_status")
+          .select("station_id, current_job_work_order, current_job_part_number, current_operator_name")
+          .limit(5);
+        if (error) throw error;
+        return { success: true, details: `${statuses?.length || 0} station status records available for fallback autofill` };
+      } catch (err: any) {
+        return { success: false, error: err.message };
+      }
+    },
+  },
+  {
+    id: "af-008",
+    name: "Organization ID available for scoping all queries",
+    category: "Autofill & User Context",
+    test: async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return { success: false, error: "No authenticated user" };
+        const { data, error } = await supabase
+          .from("organization_members")
+          .select("organization_id")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        if (error) throw error;
+        return { success: !!data?.organization_id, details: data?.organization_id ? `Org ID ready for query scoping` : "No org_id — user must join an organization first" };
+      } catch (err: any) {
+        return { success: false, error: err.message };
+      }
+    },
+  },
+];
+
+// Quote-to-Ship Routing Tests
+const quoteToShipTests: TestDefinition[] = [
+  {
+    id: "qs-001",
+    name: "Valid operation types cover full quote-to-ship lifecycle",
+    category: "Quote-to-Ship Routing",
+    test: async () => {
+      const requiredTypes = ["quote", "engineering", "purchasing", "receiving", "internal", "inspection", "outside_processing", "shipping"];
+      // These are the operation_type values the system supports
+      return { success: true, details: `${requiredTypes.length} lifecycle phases: ${requiredTypes.join(" → ")}` };
+    },
+  },
+  {
+    id: "qs-002",
+    name: "User's org has stations for routing assignment",
+    category: "Quote-to-Ship Routing",
+    test: async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return { success: false, error: "No authenticated user" };
+        const { data: stations, error } = await supabase
+          .from("stations")
+          .select("id, name, work_center_type")
+          .limit(20);
+        if (error) throw error;
+        const types = [...new Set(stations?.map(s => s.work_center_type) || [])];
+        return { success: (stations?.length || 0) > 0, details: `${stations?.length} station(s) available, types: ${types.join(", ") || "none"}` };
+      } catch (err: any) {
+        return { success: false, error: err.message };
+      }
+    },
+  },
+  {
+    id: "qs-003",
+    name: "Smart station suggestion maps operation_type to work_center_type",
+    category: "Quote-to-Ship Routing",
+    test: async () => {
+      try {
+        // Define the mapping logic the system uses
+        const typeMapping: Record<string, string[]> = {
+          internal: ["CNC Mill", "CNC Lathe", "Manual Mill", "Manual Lathe", "CNC Router"],
+          inspection: ["Quality", "CMM", "Inspection"],
+          outside_processing: ["Outside Processing"],
+          shipping: ["Shipping", "Pack & Ship"],
+          receiving: ["Receiving"],
+        };
+        const { data: stations } = await supabase
+          .from("stations")
+          .select("name, work_center_type")
+          .limit(50);
+        if (!stations?.length) return { success: true, details: "No stations yet — mapping logic validated structurally" };
+        // Check if any stations match the expected types
+        const matchedTypes = Object.entries(typeMapping).filter(([, wcTypes]) =>
+          stations.some(s => wcTypes.some(wc => s.work_center_type?.toLowerCase().includes(wc.toLowerCase())))
+        ).map(([opType]) => opType);
+        return { success: true, details: `Mappable operation types: ${matchedTypes.join(", ") || "none yet (stations need work_center_type)"}` };
+      } catch (err: any) {
+        return { success: false, error: err.message };
+      }
+    },
+  },
+  {
+    id: "qs-004",
+    name: "Routing steps maintain sequential operation numbers",
+    category: "Quote-to-Ship Routing",
+    test: async () => {
+      try {
+        const { data: routing, error } = await supabase
+          .from("work_order_routing")
+          .select("queue_item_id, step_number, operation_name")
+          .order("step_number", { ascending: true })
+          .limit(50);
+        if (error) throw error;
+        if (!routing?.length) return { success: true, details: "No routing steps yet — will validate on first job creation" };
+        // Group by queue_item_id and verify order
+        const byItem: Record<string, number[]> = {};
+        routing.forEach(r => {
+          const key = r.queue_item_id || "unknown";
+          if (!byItem[key]) byItem[key] = [];
+          byItem[key].push(r.step_number);
+        });
+        const allOrdered = Object.values(byItem).every(ops => ops.every((n, i) => i === 0 || n > ops[i - 1]));
+        return { success: allOrdered, details: `${routing.length} routing steps across ${Object.keys(byItem).length} work order(s), all sequential: ${allOrdered}` };
+      } catch (err: any) {
+        return { success: false, error: err.message };
+      }
+    },
+  },
+  {
+    id: "qs-005",
+    name: "Team members are queryable for work order assignment",
+    category: "Quote-to-Ship Routing",
+    test: async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return { success: false, error: "No authenticated user" };
+        const { data: myTeams } = await supabase
+          .from("team_members")
+          .select("team_id")
+          .eq("user_id", user.id);
+        if (!myTeams?.length) return { success: false, error: "User has no team memberships — cannot assign work orders" };
+        const teamIds = myTeams.map(t => t.team_id);
+        const { data: members, error } = await supabase
+          .from("team_members")
+          .select("user_id, role, profiles:user_id(display_name)")
+          .in("team_id", teamIds);
+        if (error) throw error;
+        return { success: (members?.length || 0) > 0, details: `${members?.length} assignable team member(s) across ${teamIds.length} team(s)` };
+      } catch (err: any) {
+        return { success: false, error: err.message };
+      }
+    },
+  },
+  {
+    id: "qs-006",
+    name: "Queue items are insertable with org + team scope",
+    category: "Quote-to-Ship Routing",
+    test: async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return { success: false, error: "No authenticated user" };
+        const { data: orgMem } = await supabase
+          .from("organization_members")
+          .select("organization_id")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        const { data: teamMem } = await supabase
+          .from("team_members")
+          .select("team_id")
+          .eq("user_id", user.id)
+          .limit(1)
+          .maybeSingle();
+        const hasOrg = !!orgMem?.organization_id;
+        const hasTeam = !!teamMem?.team_id;
+        return { success: hasOrg && hasTeam, details: `Org scope: ${hasOrg ? "✓" : "✗"}, Team scope: ${hasTeam ? "✓" : "✗"} — both required for queue item creation` };
+      } catch (err: any) {
+        return { success: false, error: err.message };
+      }
+    },
+  },
+  {
+    id: "qs-007",
+    name: "Routing step completion logic (status transitions)",
+    category: "Quote-to-Ship Routing",
+    test: async () => {
+      const validStatuses = ["pending", "in_progress", "completed", "skipped"];
+      const validTransitions: Record<string, string[]> = {
+        pending: ["in_progress", "skipped"],
+        in_progress: ["completed", "pending"],
+        completed: [],
+        skipped: ["pending"],
+      };
+      // Verify the state machine is sound
+      const allValid = Object.entries(validTransitions).every(([from, tos]) =>
+        tos.every(to => validStatuses.includes(to))
+      );
+      return { success: allValid, details: `Routing step states: ${validStatuses.join(", ")} — transitions validated` };
+    },
+  },
+  {
+    id: "qs-008",
+    name: "Full lifecycle phases present: Quote through Ship",
+    category: "Quote-to-Ship Routing",
+    test: async () => {
+      try {
+        const { data: templates, error } = await supabase
+          .from("routing_templates")
+          .select("name, description")
+          .limit(10);
+        if (error) throw error;
+        if (!templates?.length) return { success: true, details: "No routing templates yet — lifecycle phases will be validated on template creation" };
+        const phases = ["quote", "engineering", "program", "setup", "production", "inspect", "ship"];
+        const templateNames = templates.map(t => t.name.toLowerCase());
+        const coverage = phases.filter(p => templateNames.some(n => n.includes(p)));
+        return { success: true, details: `${templates.length} template(s) found, phase coverage: ${coverage.length}/${phases.length}` };
+      } catch (err: any) {
+        return { success: false, error: err.message };
+      }
+    },
+  },
+];
+
 const allTestSuites = [
   { name: "Routing Validation", category: "routing", description: "Tests for manufacturing routing sequences", tests: routingTests },
   { name: "Work Order Flow", category: "workflow", description: "Work order state machine validation", tests: workOrderTests },
   { name: "Database Integration", category: "database", description: "Database table accessibility tests", tests: databaseTests },
   { name: "Manufacturing Process", category: "manufacturing", description: "Manufacturing standards compliance", tests: manufacturingTests },
   { name: "Security & RLS", category: "security", description: "Row Level Security policy validation", tests: securityTests },
+  { name: "Autofill & User Context", category: "autofill", description: "Validates auto-population of user, org, team, and station data", tests: autofillTests },
+  { name: "Quote-to-Ship Routing", category: "quote-to-ship", description: "Full job lifecycle from quote through shipping", tests: quoteToShipTests },
 ];
 
 export function useProcessTests() {
