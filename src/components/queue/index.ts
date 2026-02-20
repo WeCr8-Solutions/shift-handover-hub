@@ -5,3 +5,4 @@ export * from "./QueueListView";
 export * from "./QueueCalendarView";
 export * from "./CreateQueueItemDialog";
 export * from "./QueueItemDetailDialog";
+export * from "./PlanningAssistantModal";

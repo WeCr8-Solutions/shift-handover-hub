@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PlanningAssistantModal } from "@/components/queue/PlanningAssistantModal";
 import { Loader2, LayoutGrid, List, Plus, Calendar, Truck, GitBranch, Building2, Wrench, Eye, History } from "lucide-react";
 
 export default function Queue() {
@@ -328,6 +329,11 @@ export default function Queue() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* AI Planning Assistant - supervisors/admins only */}
+      {hasAdminAccess && organization && (
+        <PlanningAssistantModal organizationId={organization.id} />
+      )}
     </div>
   );
 }
