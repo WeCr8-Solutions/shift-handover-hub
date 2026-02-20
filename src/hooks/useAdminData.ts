@@ -157,6 +157,9 @@ export function useAdminAccess() {
   const hasOrgAdminAccess = isOrgAdmin || isAdmin; // Org owner/admin OR platform admin
   const hasOrgSupervisorAccess = isSupervisor || hasOrgAdminAccess; // Supervisor OR org admin OR platform admin
   
+  // SDK/Developer platform access (global tools, not org-scoped)
+  const hasPlatformAccess = isAdmin || isDeveloper;
+
   return { 
     // Platform roles
     isAdmin, 
@@ -168,6 +171,7 @@ export function useAdminAccess() {
     organizationId,
     // Combined access checks
     hasPlatformAdminAccess, // Only platform admins
+    hasPlatformAccess, // SDK-level tools (admin + developer)
     hasOrgAdminAccess, // Org admins + platform admins
     hasOrgSupervisorAccess, // Supervisors + org admins + platform admins
     hasAdminAccess: hasOrgSupervisorAccess, // Legacy: anyone with supervisor+ access
