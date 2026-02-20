@@ -1,72 +1,137 @@
 
 
-# Update Process Tests: Autofill, Auth Context, and Quote-to-Ship Workflow Validation
+# Role & Scope Test Target User Picker, Issues/Changelog Global Access Fix
 
 ## Overview
-Add two new test suites to the Process Tests tab that validate the autofill/pre-population behaviors and the full quote-to-ship workflow. These tests will use the logged-in user's real org, teams, stations, and members to verify that the system correctly auto-populates data and enables fast job tracking.
+Currently the Role & Scope tests only run against the logged-in user's own data. Admins and developers need to select any user or organization and run scope tests against that target to diagnose access issues. Additionally, the global issues system and activity logs need developer-level access fixes, and a changelog system should be added for SDK/admin teams.
 
 ---
 
-## What Changes
+## Problem Summary
 
-### 1. New Test Suite: "Autofill & User Context" (in `useProcessTests.ts`)
-Live tests that verify:
-- **User auth context is available** -- profile, display name, and email are populated
-- **Operator name auto-fills** from the logged-in user's profile into handoff forms
-- **Self-handoff defaults** -- incoming operator defaults to current user for solo shops
-- **Station selection triggers WO autofill** -- selecting a station with an active `in_progress` queue item returns work_order, part_number, and operation_number
-- **Fallback to current_station_status** -- if no active queue item, station status table is checked
-- **Team context is active** -- current user has at least one team membership with stations
-- **Organization context populates** -- org_id is available for scoping all queries
+1. **Role & Scope Tests are self-only** -- An admin cannot pick "User X in Org Y" and see what that user's RLS results look like. All 24 tests only query `auth.uid()`.
+2. **Activity logs exclude developers** -- The RLS policy only has `has_role('admin')` for global SELECT. Developers cannot see activity logs at all.
+3. **No changelog/release notes system** -- Dev teams have no way to track and publish changes made to the platform.
 
-### 2. New Test Suite: "Quote-to-Ship Routing" (in `useProcessTests.ts`)
-Live tests that validate the full job lifecycle:
-- **User has stations available** -- at least one station exists in the user's org for routing
-- **Routing steps can be created** -- validates that `work_order_routing` accepts inserts for the user's queue items
-- **Operation type maps to station work_center_type** -- tests the smart suggest logic (e.g., `internal` maps to CNC Mill/Lathe stations)
-- **Routing step advancement updates queue item** -- completing a step moves the job to the next station
-- **Station status updates on routing advance** -- `current_station_status` is upserted with "Waiting on Material"
-- **Full quote-to-ship sequence** -- validates operation types cover: quote, engineering, purchasing, receiving, internal, inspection, outside_processing, shipping
-- **Team members are visible for assignment** -- verifies team_members query returns assignable operators
-- **Queue items can be created with org/team scope** -- validates insert with proper org_id and team_id
+---
 
-### 3. Update ProcessTestRunner UI (`ProcessTestRunner.tsx`)
-- Add two new category icons: `UserCog` for autofill tests, `Route` for quote-to-ship tests
-- The new suites appear alongside existing ones when "Run Process Tests" is clicked
+## Changes
+
+### 1. Add Target User Picker to RoleScopeTestRunner
+
+Add a user/org selector at the top of the Roles & Scope tab that lets admin/developer users pick a target user to inspect. The test runner will then query that user's roles, org memberships, and team memberships and display them in the User Context Card.
+
+**Important**: RLS means the client SDK can only query data visible to the logged-in user. Since admins can already see all `user_roles`, `organization_members`, `team_members`, `profiles`, etc., the target picker will:
+- Fetch all users from `profiles` (admin-visible)
+- Let admin select a user
+- Query that user's `user_roles`, `organization_members`, `team_members`
+- Display the target user's context card with their full role/scope breakdown
+- Run a subset of tests that can evaluate the target user's data (read-only checks, not mutations)
+
+**File**: `src/components/testing/RoleScopeTestRunner.tsx`
+- Add a `Select` dropdown at the top to pick a target user (populated from `profiles`)
+- Add an org filter dropdown to narrow users by organization
+- Pass `targetUserId` into test definitions that support it
+- Update `UserContextCard` to show the selected target user's roles
+- Add new "Target User Analysis" suite with tests like:
+  - Target has platform role(s)
+  - Target has org membership
+  - Target has team membership(s)
+  - Target's visible stations count
+  - Target's visible queue items count
+
+### 2. Fix Activity Logs RLS for Developers
+
+**Database migration**: Add a new SELECT policy on `activity_logs` for developers.
+
+```sql
+CREATE POLICY "Developers can view all activity logs"
+ON public.activity_logs
+FOR SELECT
+TO authenticated
+USING (has_role(auth.uid(), 'developer'::app_role));
+```
+
+**File**: `src/components/admin/ActivityLogs.tsx`
+- Update the `isAdmin` check to also include `isDeveloper` so developers see the full log view (currently they fall through to the org_admin view which may also fail).
+
+### 3. Add Changelog System
+
+Create a `changelogs` table for tracking platform changes visible to admin/dev teams.
+
+**Database migration**:
+```sql
+CREATE TABLE public.changelogs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  description TEXT,
+  version TEXT,
+  change_type TEXT NOT NULL DEFAULT 'improvement',
+  author_id UUID REFERENCES auth.users(id),
+  author_name TEXT,
+  is_published BOOLEAN DEFAULT false,
+  published_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE public.changelogs ENABLE ROW LEVEL SECURITY;
+
+-- Only admin/dev can read
+CREATE POLICY "Dev and admin can read changelogs"
+ON public.changelogs FOR SELECT TO authenticated
+USING (is_dev_or_admin(auth.uid()));
+
+-- Only admin/dev can insert
+CREATE POLICY "Dev and admin can insert changelogs"
+ON public.changelogs FOR INSERT TO authenticated
+WITH CHECK (is_dev_or_admin(auth.uid()));
+
+-- Only admin/dev can update
+CREATE POLICY "Dev and admin can update changelogs"
+ON public.changelogs FOR UPDATE TO authenticated
+USING (is_dev_or_admin(auth.uid()));
+
+-- Only admin can delete
+CREATE POLICY "Admin can delete changelogs"
+ON public.changelogs FOR DELETE TO authenticated
+USING (has_role(auth.uid(), 'admin'::app_role));
+```
+
+**New file**: `src/components/admin/ChangelogManager.tsx`
+- Card-based UI to create/edit/publish changelog entries
+- Fields: title, description, version tag, change type (feature, fix, improvement, breaking)
+- Publish toggle
+- List of recent entries with edit/delete
+
+**File**: `src/pages/Admin.tsx`
+- Add a "Changelog" tab to the admin dashboard alongside Issues and Dev Queue
 
 ---
 
 ## Technical Details
 
-### Files Modified
+### Files Created
+| File | Purpose |
+|------|---------|
+| `src/components/admin/ChangelogManager.tsx` | Changelog CRUD UI for admin/dev teams |
 
+### Files Modified
 | File | Change |
 |------|--------|
-| `src/hooks/useProcessTests.ts` | Add ~16 new test definitions in two new suites appended to `allTestSuites` |
-| `src/components/testing/ProcessTestRunner.tsx` | Add icons for new `autofill` and `quote-to-ship` categories |
+| `src/components/testing/RoleScopeTestRunner.tsx` | Add target user picker, target user analysis suite |
+| `src/components/admin/ActivityLogs.tsx` | Include `isDeveloper` in full-access check |
+| `src/pages/Admin.tsx` | Add Changelog tab |
 
-### New Test Definitions (Summary)
+### Database Migrations
+| Change | Purpose |
+|--------|---------|
+| New SELECT policy on `activity_logs` for developers | Fix developer access to logs |
+| New `changelogs` table with RLS | Track platform changes |
 
-**Autofill & User Context Suite** (8 tests):
-1. `af-001`: Authenticated user profile exists with display_name
-2. `af-002`: User has operator name for form pre-fill
-3. `af-003`: Self-handoff default (incoming = outgoing operator)
-4. `af-004`: User belongs to at least one organization
-5. `af-005`: User has team membership with accessible stations
-6. `af-006`: Station with active WO returns autofill data (work_order, part_number)
-7. `af-007`: Fallback to current_station_status when no active WO
-8. `af-008`: Organization ID is available for scoping queries
-
-**Quote-to-Ship Routing Suite** (8 tests):
-1. `qs-001`: Valid operation types cover full quote-to-ship lifecycle
-2. `qs-002`: User's org has at least one station for routing assignment
-3. `qs-003`: Smart station suggestion maps operation_type to work_center_type
-4. `qs-004`: Routing steps maintain sequential operation numbers
-5. `qs-005`: Team members are queryable for work order assignment
-6. `qs-006`: Queue items are insertable with org + team scope
-7. `qs-007`: Routing step completion logic (status transitions)
-8. `qs-008`: Full lifecycle phases present: Quote through Ship
-
-### Test Implementation Pattern
-All tests follow the existing pattern: async functions that query the live database using the authenticated user's session, returning `{ success, details?, error? }`. No mock data -- these validate real system state.
+### Security Notes
+- Target user picker is read-only analysis -- no mutations on behalf of target user
+- All target data queries go through existing RLS (admin already has SELECT on all relevant tables)
+- Changelog table restricted to admin/dev via `is_dev_or_admin()` helper
+- Activity logs developer policy uses same pattern as issues table
 
