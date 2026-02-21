@@ -54,6 +54,35 @@ const handler = async (req: Request): Promise<Response> => {
 
     const body: IssueReport = await req.json();
 
+    // Validate and sanitize console logs to prevent DoS and data leakage
+    const sanitizeConsoleLogs = (logs: unknown[]): unknown[] => {
+      if (!Array.isArray(logs)) return [];
+      return logs.slice(0, 100).map((log) => {
+        if (typeof log === "object" && log !== null) {
+          const entry = log as Record<string, unknown>;
+          return {
+            level: typeof entry.level === "string" ? entry.level.slice(0, 10) : "log",
+            message: typeof entry.message === "string"
+              ? entry.message
+                  .slice(0, 500)
+                  .replace(/bearer\s+[\w\-.]+/gi, "bearer [REDACTED]")
+                  .replace(/(api[_-]?key|token|secret|password|authorization)["']?\s*[:=]\s*["']?[\w\-.]+/gi, "$1=[REDACTED]")
+                  .replace(/eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/g, "[JWT_REDACTED]")
+              : "",
+            timestamp: typeof entry.timestamp === "string" ? entry.timestamp.slice(0, 30) : new Date().toISOString(),
+          };
+        }
+        if (typeof log === "string") {
+          return log
+            .slice(0, 500)
+            .replace(/bearer\s+[\w\-.]+/gi, "bearer [REDACTED]")
+            .replace(/(api[_-]?key|token|secret|password|authorization)["']?\s*[:=]\s*["']?[\w\-.]+/gi, "$1=[REDACTED]")
+            .replace(/eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/g, "[JWT_REDACTED]");
+        }
+        return null;
+      }).filter(Boolean);
+    };
+
     console.log("Processing authenticated issue report from:", user.email, "Title:", body.title);
 
     // Get user profile for display name
@@ -91,7 +120,7 @@ const handler = async (req: Request): Promise<Response> => {
         severity: body.severity || "medium",
         error_message: body.error_message,
         error_stack: body.error_stack,
-        console_logs: body.console_logs || [],
+        console_logs: sanitizeConsoleLogs(body.console_logs || []),
         page_url: body.page_url,
         user_agent: req.headers.get("User-Agent"),
         organization_id: orgMember?.organization_id,
