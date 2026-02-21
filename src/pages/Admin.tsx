@@ -13,7 +13,7 @@ import { WorkOrderHistory } from "@/components/admin/WorkOrderHistory";
 import { RoutingTemplateManagement } from "@/components/admin/RoutingTemplateManagement";
 import { PerformanceUpdatesReview } from "@/components/admin/PerformanceUpdatesReview";
 import { IssuesManagement } from "@/components/admin/IssuesManagement";
-import { ChangelogManager } from "@/components/admin/ChangelogManager";
+import { SystemUpdatesManager } from "@/components/admin/SystemUpdatesManager";
 import { RLSHealthCheck } from "@/components/admin/RLSHealthCheck";
 import { DevIssueQueue } from "@/components/admin/DevIssueQueue";
 import { DevSettingsPanel } from "@/components/admin/DevSettingsPanel";
@@ -173,9 +173,9 @@ export default function Admin() {
                     <Bug className="w-4 h-4" />
                     Issues
                   </TabsTrigger>
-                  <TabsTrigger value="changelog" className="gap-2">
+                  <TabsTrigger value="system-updates" className="gap-2">
                     <BookOpen className="w-4 h-4" />
-                    <span className="hidden sm:inline">Changelog</span>
+                    <span className="hidden sm:inline">Updates</span>
                   </TabsTrigger>
                 </div>
               </>
@@ -256,8 +256,8 @@ export default function Admin() {
                 <IssuesManagement />
               </TabsContent>
 
-              <TabsContent value="changelog">
-                <ChangelogManager />
+              <TabsContent value="system-updates">
+                <SystemUpdatesManager />
               </TabsContent>
             </>
           )}

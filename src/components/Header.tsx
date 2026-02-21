@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Clock, Bell, Shield, ListTodo, Settings, Users, FlaskConical, Bug } from "lucide-react";
+import { Clock, Bell, Shield, ListTodo, Settings, Users, FlaskConical, Bug, Megaphone } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getCurrentShift } from "@/lib/mockData";
 import { StatusBadge } from "./StatusBadge";
@@ -8,6 +8,9 @@ import { TeamSelector } from "./TeamSelector";
 import { IssueReportDialog } from "./IssueReportDialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAccess } from "@/hooks/useAdminData";
+import { useGlobalUpdates } from "@/hooks/useGlobalUpdates";
+import { SystemStatusIndicator } from "@/components/updates/SystemStatusIndicator";
+import { UpdateAcknowledgeModal } from "@/components/updates/UpdateAcknowledgeModal";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import joblineLogo from "@/assets/jobline-logo.png";
@@ -20,6 +23,7 @@ export function Header() {
     hasOrgSupervisorAccess,
     hasTestingAccess 
   } = useAdminAccess();
+  const { unreadCount, systemStatus, unacknowledgedRequired, acknowledgeUpdate } = useGlobalUpdates();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [issueDialogOpen, setIssueDialogOpen] = useState(false);
   const shift = getCurrentShift();
@@ -117,6 +121,28 @@ export function Header() {
               </Tooltip>
             )}
 
+            {/* System Status */}
+            <SystemStatusIndicator status={systemStatus} />
+
+            {/* Updates Link */}
+            {user && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" asChild className="relative">
+                    <Link to="/updates">
+                      <Megaphone className="w-5 h-5" />
+                      {unreadCount > 0 && (
+                        <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-primary text-primary-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
+                          {unreadCount > 9 ? "9+" : unreadCount}
+                        </span>
+                      )}
+                    </Link>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>System Updates{unreadCount > 0 ? ` (${unreadCount} new)` : ""}</TooltipContent>
+              </Tooltip>
+            )}
+
             {/* Current Shift */}
             <div className="flex items-center gap-2">
               <StatusBadge status={shiftStatus}>
@@ -167,6 +193,9 @@ export function Header() {
 
       {/* Issue Report Dialog */}
       <IssueReportDialog open={issueDialogOpen} onOpenChange={setIssueDialogOpen} />
+
+      {/* Acknowledge Modal */}
+      <UpdateAcknowledgeModal updates={unacknowledgedRequired} onAcknowledge={acknowledgeUpdate} />
     </header>
   );
 }
