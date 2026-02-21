@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useEmail } from "@/hooks/useEmail";
 import { supabase } from "@/integrations/supabase/client";
 import { InviteCodeRedemption } from "@/components/InviteCodeRedemption";
+import { ConversionEvents } from "@/lib/analytics";
 
 const emailSchema = z.string().email("Please enter a valid email address");
 const passwordSchema = z.string()
@@ -137,6 +138,7 @@ export default function Auth() {
     setIsSubmitting(false);
     
     if (error) {
+      // login failed — no event
       toast({
         title: "Login failed",
         description: error.message === "Invalid login credentials" 
@@ -144,6 +146,8 @@ export default function Auth() {
           : error.message,
         variant: "destructive",
       });
+    } else {
+      ConversionEvents.login(window.location.pathname, 'email');
     }
   };
 
@@ -152,6 +156,7 @@ export default function Auth() {
     
     if (!validateSignup()) return;
     
+    ConversionEvents.signupStart(window.location.pathname, 'email');
     setIsSubmitting(true);
     const { error } = await signUp(signupEmail, signupPassword, displayName);
     setIsSubmitting(false);
@@ -168,6 +173,9 @@ export default function Auth() {
         variant: "destructive",
       });
     } else {
+      // Track successful signup
+      ConversionEvents.signupComplete(window.location.pathname, 'email');
+
       // Send welcome email
       sendWelcomeEmail(signupEmail, displayName);
       

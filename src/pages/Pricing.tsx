@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,7 @@ import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { ConversionEvents } from '@/lib/analytics';
 
 const tierIcons: Record<string, React.ReactNode> = {
   single: <Zap className="w-6 h-6" />,
@@ -32,6 +33,10 @@ export default function Pricing() {
   const { subscribed, tier: currentTier, isLoading, createCheckout, openCustomerPortal } = useSubscription();
   const [loadingTier, setLoadingTier] = useState<string | null>(null);
   const [loadingPortal, setLoadingPortal] = useState(false);
+
+  useEffect(() => {
+    ConversionEvents.pricingView(window.location.pathname);
+  }, []);
 
   const handleSubscribe = async (tierKey: string) => {
     if (!user) {
