@@ -1,136 +1,174 @@
 
 
-# Fix Live Deployment Blocker: NULL Organization ID
+# Global Update & System Notice Engine
 
-## Problem
+## Overview
 
-Publishing fails because the schema diff tries to add `organization_id NOT NULL` columns to 11 tables on Live that have existing rows but no such column yet. Postgres rejects this because rows would have no value.
+Replace the basic admin-only `changelogs` table with a comprehensive `global_updates` system that serves as a central release feed visible to all users, with full admin/developer control, a public `/updates` route, notification indicators, and user acknowledgement tracking.
 
-## Root Cause
+## Phase 1: Database -- New `global_updates` Table
 
-The publish system generates a single schema diff (not individual migrations). It sees the final state on Test (`organization_id UUID NOT NULL`) and tries to apply it in one step on Live -- which fails on tables with existing data.
+Create a new `global_updates` table (keeping `changelogs` for backward compatibility, can be deprecated later):
 
-## Affected Tables (with row counts on Live)
+| Column | Type | Notes |
+|---|---|---|
+| id | uuid PK | Auto-generated |
+| version_number | text | e.g. "v1.2.4" |
+| revision_number | integer | Auto-incrementing internal counter |
+| title | text NOT NULL | What changed |
+| summary | text | Short description |
+| full_description | text | Markdown-supported long form |
+| category | enum | feature, improvement, bug_fix, system_notice, security, maintenance |
+| status | enum | live, scheduled, investigating, resolved, deprecated |
+| impact_level | enum | low, medium, high, critical |
+| affected_modules | text[] | e.g. {"Shift Handoff", "Machine Tracking"} |
+| how_it_helps_users | text | User-facing benefit explanation |
+| issues_addressed | text[] | List of resolved issues |
+| created_by | uuid | References profiles |
+| created_at | timestamptz | Default now() |
+| updated_at | timestamptz | Default now() |
+| published_at | timestamptz | When made visible |
+| is_visible_to_users | boolean | Default false |
+| requires_acknowledgement | boolean | Default false |
 
-| Table | Rows | Needs NOT NULL | Backfill Source |
-|---|---|---|---|
-| work_order_routing | 15 | Yes | queue_items |
-| queue_item_comments | 1 | Yes | queue_items |
-| queue_item_history | 6 | Yes | queue_items |
-| current_station_status | 1 | No (nullable) | stations |
-| activity_logs | 517 | No (nullable) | organization_members |
-| handoff_records | 0 | Yes | (empty, safe) |
-| departments | 0 | Yes | (empty, safe) |
-| job_performance_updates | 0 | Yes | (empty, safe) |
-| routing_template_steps | 0 | Yes | (empty, safe) |
-| shift_assignments | 0 | Yes | (empty, safe) |
-| webhook_deliveries | 0 | Yes | (empty, safe) |
+Create a `global_update_acknowledgements` table for tracking:
 
-All rows with data have valid parent records -- no orphans. The backfill will succeed for every row.
+| Column | Type | Notes |
+|---|---|---|
+| id | uuid PK | Auto-generated |
+| update_id | uuid FK | References global_updates |
+| user_id | uuid | References auth.users |
+| acknowledged_at | timestamptz | Default now() |
+| UNIQUE | (update_id, user_id) | One ack per user per update |
 
-## Solution
+### Enums
 
-You need to run a single SQL script on **Live** via **Lovable Cloud > Run SQL** (with **Live** environment selected). This script:
+- `update_category`: feature, improvement, bug_fix, system_notice, security, maintenance
+- `update_status`: live, scheduled, investigating, resolved, deprecated
+- `impact_level`: low, medium, high, critical
 
-1. Adds `organization_id` as a nullable column on all 11 tables
-2. Backfills values from parent records
-3. Sets `NOT NULL` on the 10 core tables (activity_logs stays nullable by design)
-4. Also adds the `team_id` column to `activity_logs` (part of the same pending migration)
+### RLS Policies
 
-After running this script, the publish schema diff will see no changes needed for these columns and will succeed.
+- **SELECT on global_updates**: Authenticated users can read entries where `is_visible_to_users = true` OR user is admin/developer
+- **INSERT/UPDATE on global_updates**: Only admin/developer roles
+- **DELETE on global_updates**: Only admin role
+- **INSERT on acknowledgements**: Authenticated users can insert their own (user_id = auth.uid())
+- **SELECT on acknowledgements**: Users can read their own; admins can read all
 
-### SQL Script to Run on Live
+### Triggers
 
-```sql
--- ==========================================
--- PRE-PUBLISH BACKFILL: Run on LIVE only
--- ==========================================
+- Auto-increment `revision_number` on insert
+- Auto-set `updated_at` on update
 
--- 1. work_order_routing (15 rows)
-ALTER TABLE public.work_order_routing
-  ADD COLUMN IF NOT EXISTS organization_id uuid REFERENCES public.organizations(id);
-UPDATE public.work_order_routing wor
-  SET organization_id = qi.organization_id
-  FROM public.queue_items qi WHERE qi.id = wor.queue_item_id AND wor.organization_id IS NULL;
-ALTER TABLE public.work_order_routing ALTER COLUMN organization_id SET NOT NULL;
+## Phase 2: Admin Panel -- "System Updates" Tab
 
--- 2. handoff_records (0 rows)
-ALTER TABLE public.handoff_records
-  ADD COLUMN IF NOT EXISTS organization_id uuid REFERENCES public.organizations(id);
-ALTER TABLE public.handoff_records ALTER COLUMN organization_id SET NOT NULL;
+Replace the existing Changelog tab in the Admin Dashboard with a full **System Updates** manager.
 
--- 3. departments (0 rows)
-ALTER TABLE public.departments
-  ADD COLUMN IF NOT EXISTS organization_id uuid REFERENCES public.organizations(id);
-ALTER TABLE public.departments ALTER COLUMN organization_id SET NOT NULL;
+### Admin Form Fields
 
--- 4. job_performance_updates (0 rows)
-ALTER TABLE public.job_performance_updates
-  ADD COLUMN IF NOT EXISTS organization_id uuid REFERENCES public.organizations(id);
-ALTER TABLE public.job_performance_updates ALTER COLUMN organization_id SET NOT NULL;
+- Title, Summary, Full Description (with markdown preview)
+- Version Number (with auto-increment suggestion based on last version)
+- Category selector (6 options with icons)
+- Status selector (5 options)
+- Impact Level selector (4 options with color coding)
+- Affected Modules (multi-select tags)
+- "How It Helps Users" text field
+- "Issues Addressed" list input
+- Visibility toggle (is_visible_to_users)
+- Requires Acknowledgement toggle
+- Published At date picker (for scheduling)
 
--- 5. queue_item_comments (1 row)
-ALTER TABLE public.queue_item_comments
-  ADD COLUMN IF NOT EXISTS organization_id uuid REFERENCES public.organizations(id);
-UPDATE public.queue_item_comments qic
-  SET organization_id = qi.organization_id
-  FROM public.queue_items qi WHERE qi.id = qic.queue_item_id AND qic.organization_id IS NULL;
-ALTER TABLE public.queue_item_comments ALTER COLUMN organization_id SET NOT NULL;
+### Admin List View
 
--- 6. queue_item_history (6 rows)
-ALTER TABLE public.queue_item_history
-  ADD COLUMN IF NOT EXISTS organization_id uuid REFERENCES public.organizations(id);
-UPDATE public.queue_item_history qih
-  SET organization_id = qi.organization_id
-  FROM public.queue_items qi WHERE qi.id = qih.queue_item_id AND qih.organization_id IS NULL;
-ALTER TABLE public.queue_item_history ALTER COLUMN organization_id SET NOT NULL;
+- Filterable by category, status, impact level
+- Sortable by date, version
+- Status badges with color coding
+- Quick actions: edit, publish/unpublish, delete
 
--- 7. activity_logs (517 rows, stays NULLABLE)
-ALTER TABLE public.activity_logs
-  ADD COLUMN IF NOT EXISTS organization_id uuid REFERENCES public.organizations(id);
-ALTER TABLE public.activity_logs
-  ADD COLUMN IF NOT EXISTS team_id uuid REFERENCES public.teams(id);
-UPDATE public.activity_logs al
-  SET organization_id = om.organization_id
-  FROM public.organization_members om WHERE om.user_id = al.user_id AND al.organization_id IS NULL;
+### Analytics Section (within admin)
 
--- 8. current_station_status (1 row, stays NULLABLE on NOT NULL -- check Test)
-ALTER TABLE public.current_station_status
-  ADD COLUMN IF NOT EXISTS organization_id uuid REFERENCES public.organizations(id);
-UPDATE public.current_station_status css
-  SET organization_id = s.organization_id
-  FROM public.stations s WHERE s.id = css.station_id AND css.organization_id IS NULL;
+- View count per update (tracked via acknowledgements table)
+- Acknowledgement rate for required updates
+- Total published vs draft count
 
--- 9. routing_template_steps (0 rows)
-ALTER TABLE public.routing_template_steps
-  ADD COLUMN IF NOT EXISTS organization_id uuid REFERENCES public.organizations(id);
-ALTER TABLE public.routing_template_steps ALTER COLUMN organization_id SET NOT NULL;
+## Phase 3: Public `/updates` Route
 
--- 10. shift_assignments (0 rows)
-ALTER TABLE public.shift_assignments
-  ADD COLUMN IF NOT EXISTS organization_id uuid REFERENCES public.organizations(id);
-ALTER TABLE public.shift_assignments ALTER COLUMN organization_id SET NOT NULL;
+Create a new page at `/updates` accessible to all authenticated users.
 
--- 11. webhook_deliveries (0 rows)
-ALTER TABLE public.webhook_deliveries
-  ADD COLUMN IF NOT EXISTS organization_id uuid REFERENCES public.organizations(id);
-ALTER TABLE public.webhook_deliveries ALTER COLUMN organization_id SET NOT NULL;
+### Features
+
+- Reverse-chronological feed of published updates
+- Filter chips: Feature, Bug Fix, Maintenance, Security, System Notice, Improvement
+- Search by version number or title
+- Each update card displays:
+  - Version number + revision badge
+  - Release date (formatted)
+  - Category icon + label
+  - Status badge (color-coded)
+  - Impact level indicator (colored dot/bar)
+  - Title + summary
+  - Expandable "Full Details" with markdown rendering
+  - "How This Helps You" section
+  - "Issues Resolved" list
+  - Acknowledge button (if required)
+
+## Phase 4: Notification Indicator in Header
+
+- Add a notification dot on a new "Updates" icon in the Header
+- Query for updates where `is_visible_to_users = true` AND `published_at > last_acknowledged_date`
+- Show count badge of unread updates
+- If any update has `requires_acknowledgement = true` and user hasn't acknowledged: show a modal on dashboard load
+
+## Phase 5: System Status Indicator (Header Bar)
+
+- Small status chip in the header showing current system health
+- Auto-calculated from the latest `system_notice` entries:
+  - Green "Operational" -- no active system_notice with status investigating/scheduled
+  - Yellow "Degraded" -- active system_notice with impact medium
+  - Red "Outage" -- active system_notice with impact high/critical
+
+## Files to Create/Modify
+
+### New Files
+1. `src/pages/Updates.tsx` -- Public updates feed page
+2. `src/hooks/useGlobalUpdates.ts` -- Data fetching hook for updates
+3. `src/components/updates/UpdateCard.tsx` -- Individual update card component
+4. `src/components/updates/UpdateFilters.tsx` -- Filter/search controls
+5. `src/components/updates/SystemStatusIndicator.tsx` -- Header status chip
+6. `src/components/updates/UpdateAcknowledgeModal.tsx` -- Force-acknowledge modal
+7. `src/components/admin/SystemUpdatesManager.tsx` -- Full admin CRUD panel (replaces ChangelogManager usage)
+
+### Modified Files
+1. `src/App.tsx` -- Add `/updates` route
+2. `src/pages/Admin.tsx` -- Replace Changelog tab with System Updates tab
+3. `src/components/Header.tsx` -- Add updates notification indicator + system status chip
+
+## Technical Details
+
+### Migration SQL (summary)
+
+```text
+1. Create 3 enums: update_category, update_status, impact_level
+2. Create global_updates table with all columns, constraints, and indexes
+3. Create global_update_acknowledgements table with unique constraint
+4. Enable RLS on both tables
+5. Create 6 RLS policies (SELECT/INSERT/UPDATE/DELETE as described)
+6. Create revision auto-increment trigger
+7. Create updated_at trigger
+8. Enable realtime on global_updates for live push notifications
 ```
 
-## Steps
+### Version Auto-Suggestion Logic
 
-1. Open **Lovable Cloud > Run SQL**
-2. Select the **Live** environment
-3. Paste and run the SQL script above
-4. Publish again -- the deployment should now succeed
+Parse the latest `version_number` from the database, split by dots, and suggest:
+- Patch bump for bug_fix/improvement
+- Minor bump for feature
+- Major bump for breaking/security
 
-## What This Fixes
+### Acknowledgement Flow
 
-- All 11 tables will have `organization_id` columns matching Test schema
-- All existing data is backfilled from parent records
-- NOT NULL constraints match Test on the 10 core tables
-- The publish schema diff will have no column additions to make, so no NULL conflicts
+1. On dashboard load, query unacknowledged updates where `requires_acknowledgement = true`
+2. If any exist, show modal with update details and "I Understand" button
+3. On click, insert into `global_update_acknowledgements`
+4. Modal dismisses; notification badge updates
 
-## No Code Changes Needed
-
-This is purely a Live database preparation step. The Test environment and all application code are already correct.
