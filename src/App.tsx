@@ -38,6 +38,7 @@ import AIPlanningAssistant from "./pages/features/AIPlanningAssistant";
 import MachineTimeTracking from "./pages/features/MachineTimeTracking";
 import ShiftHandoff from "./pages/features/ShiftHandoff";
 import ManufacturingVisibility from "./pages/features/ManufacturingVisibility";
+import Updates from "./pages/Updates";
 
 const queryClient = new QueryClient();
 
@@ -68,6 +69,7 @@ const App = () => (
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/donation-success" element={<DonationSuccess />} />
                     <Route path="/demo" element={<Demo />} />
+                    <Route path="/updates" element={<Updates />} />
                     <Route path="/zach" element={<FounderRedirect />} />
                     <Route path="/features/shift-handoff-software" element={<ShiftHandoffSoftware />} />
                     <Route path="/features/work-order-tracking" element={<WorkOrderTracking />} />

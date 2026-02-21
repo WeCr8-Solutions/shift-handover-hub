@@ -1018,6 +1018,98 @@ export type Database = {
           },
         ]
       }
+      global_update_acknowledgements: {
+        Row: {
+          acknowledged_at: string
+          id: string
+          update_id: string
+          user_id: string
+        }
+        Insert: {
+          acknowledged_at?: string
+          id?: string
+          update_id: string
+          user_id: string
+        }
+        Update: {
+          acknowledged_at?: string
+          id?: string
+          update_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "global_update_acknowledgements_update_id_fkey"
+            columns: ["update_id"]
+            isOneToOne: false
+            referencedRelation: "global_updates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      global_updates: {
+        Row: {
+          affected_modules: string[] | null
+          category: Database["public"]["Enums"]["update_category"]
+          created_at: string
+          created_by: string | null
+          full_description: string | null
+          how_it_helps_users: string | null
+          id: string
+          impact_level: Database["public"]["Enums"]["impact_level"]
+          is_visible_to_users: boolean
+          issues_addressed: string[] | null
+          published_at: string | null
+          requires_acknowledgement: boolean
+          revision_number: number
+          status: Database["public"]["Enums"]["update_status"]
+          summary: string | null
+          title: string
+          updated_at: string
+          version_number: string | null
+        }
+        Insert: {
+          affected_modules?: string[] | null
+          category?: Database["public"]["Enums"]["update_category"]
+          created_at?: string
+          created_by?: string | null
+          full_description?: string | null
+          how_it_helps_users?: string | null
+          id?: string
+          impact_level?: Database["public"]["Enums"]["impact_level"]
+          is_visible_to_users?: boolean
+          issues_addressed?: string[] | null
+          published_at?: string | null
+          requires_acknowledgement?: boolean
+          revision_number?: number
+          status?: Database["public"]["Enums"]["update_status"]
+          summary?: string | null
+          title: string
+          updated_at?: string
+          version_number?: string | null
+        }
+        Update: {
+          affected_modules?: string[] | null
+          category?: Database["public"]["Enums"]["update_category"]
+          created_at?: string
+          created_by?: string | null
+          full_description?: string | null
+          how_it_helps_users?: string | null
+          id?: string
+          impact_level?: Database["public"]["Enums"]["impact_level"]
+          is_visible_to_users?: boolean
+          issues_addressed?: string[] | null
+          published_at?: string | null
+          requires_acknowledgement?: boolean
+          revision_number?: number
+          status?: Database["public"]["Enums"]["update_status"]
+          summary?: string | null
+          title?: string
+          updated_at?: string
+          version_number?: string | null
+        }
+        Relationships: []
+      }
       handoff_records: {
         Row: {
           clamps_bolts_torqued: string | null
@@ -3990,6 +4082,7 @@ export type Database = {
         | "team_member_removed"
         | "profile_updated"
       app_role: "admin" | "operator" | "supervisor" | "viewer" | "developer"
+      impact_level: "low" | "medium" | "high" | "critical"
       issue_severity: "low" | "medium" | "high" | "critical"
       issue_status:
         | "open"
@@ -4012,6 +4105,19 @@ export type Database = {
         | "completed"
         | "cancelled"
       team_role: "owner" | "admin" | "member"
+      update_category:
+        | "feature"
+        | "improvement"
+        | "bug_fix"
+        | "system_notice"
+        | "security"
+        | "maintenance"
+      update_status:
+        | "live"
+        | "scheduled"
+        | "investigating"
+        | "resolved"
+        | "deprecated"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -4157,6 +4263,7 @@ export const Constants = {
         "profile_updated",
       ],
       app_role: ["admin", "operator", "supervisor", "viewer", "developer"],
+      impact_level: ["low", "medium", "high", "critical"],
       issue_severity: ["low", "medium", "high", "critical"],
       issue_status: [
         "open",
@@ -4182,6 +4289,21 @@ export const Constants = {
         "cancelled",
       ],
       team_role: ["owner", "admin", "member"],
+      update_category: [
+        "feature",
+        "improvement",
+        "bug_fix",
+        "system_notice",
+        "security",
+        "maintenance",
+      ],
+      update_status: [
+        "live",
+        "scheduled",
+        "investigating",
+        "resolved",
+        "deprecated",
+      ],
     },
   },
 } as const
