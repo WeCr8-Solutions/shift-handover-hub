@@ -1,129 +1,136 @@
 
 
-# GA4 Analytics Overhaul + New Landing Pages
+# Fix Live Deployment Blocker: NULL Organization ID
 
-This plan addresses all 7 items from the analytics audit: removing fake/inflated events, implementing a clean event schema, standardizing UTMs, and adding 3 new funnel landing pages.
+## Problem
 
----
+Publishing fails because the schema diff tries to add `organization_id NOT NULL` columns to 11 tables on Live that have existing rows but no such column yet. Postgres rejects this because rows would have no value.
 
-## 1. Remove Auto-Rotation Event Spam (Critical)
+## Root Cause
 
-**File: `src/pages/Landing.tsx`**
+The publish system generates a single schema diff (not individual migrations). It sees the final state on Test (`organization_id UUID NOT NULL`) and tries to apply it in one step on Live -- which fails on tables with existing data.
 
-- Remove the `trackEvent('testimonial_auto_rotated', ...)` call inside the `setInterval` that auto-rotates testimonials every 5 seconds. The carousel still rotates visually -- we just stop firing a GA4 event for it.
-- Keep `testimonial_dot_clicked` (user-initiated click) as-is.
-- Remove `landing_feature_hover` -- hover events are noisy and not actionable. Keep `landing_feature_clicked`.
-- Remove `landing_demo_modal_closed` -- closing is not a meaningful conversion signal.
+## Affected Tables (with row counts on Live)
 
-**File: `src/lib/analytics.ts`**
+| Table | Rows | Needs NOT NULL | Backfill Source |
+|---|---|---|---|
+| work_order_routing | 15 | Yes | queue_items |
+| queue_item_comments | 1 | Yes | queue_items |
+| queue_item_history | 6 | Yes | queue_items |
+| current_station_status | 1 | No (nullable) | stations |
+| activity_logs | 517 | No (nullable) | organization_members |
+| handoff_records | 0 | Yes | (empty, safe) |
+| departments | 0 | Yes | (empty, safe) |
+| job_performance_updates | 0 | Yes | (empty, safe) |
+| routing_template_steps | 0 | Yes | (empty, safe) |
+| shift_assignments | 0 | Yes | (empty, safe) |
+| webhook_deliveries | 0 | Yes | (empty, safe) |
 
-- Remove the duplicate `useEngagementTracking` scroll tracking in `src/hooks/useAnalytics.ts` (it overlaps with the Landing page's own scroll tracker). The Landing page's version is better since it's page-specific.
+All rows with data have valid parent records -- no orphans. The backfill will succeed for every row.
 
----
+## Solution
 
-## 2. Implement Clean Event Schema
+You need to run a single SQL script on **Live** via **Lovable Cloud > Run SQL** (with **Live** environment selected). This script:
 
-**File: `src/lib/analytics.ts`** -- Add standardized event helpers:
+1. Adds `organization_id` as a nullable column on all 11 tables
+2. Backfills values from parent records
+3. Sets `NOT NULL` on the 10 core tables (activity_logs stays nullable by design)
+4. Also adds the `team_id` column to `activity_logs` (part of the same pending migration)
 
-| Event Name | Params | Where Fired |
-|---|---|---|
-| `cta_click` | `cta_id`, `cta_text`, `page_path`, `section` | All CTA buttons across landing + feature pages |
-| `demo_open` | `page_path`, `trigger` | Demo video modal open |
-| `signup_start` | `page_path`, `method` | Auth page -- when user submits signup form |
-| `signup_complete` | `page_path`, `method` | Auth page -- after successful signup |
-| `login` | `page_path`, `method` | Auth page -- after successful login |
-| `pricing_view` | `page_path` | Pricing page mount |
-| `lead_captured` | `page_path`, `lead_type` | Already exists in LeadCaptureBar |
-| `video_play` | `page_path`, `source` | Demo video onPlay |
-| `video_complete` | `page_path`, `source` | Demo video onEnded |
+After running this script, the publish schema diff will see no changes needed for these columns and will succeed.
 
-**File: `src/pages/Landing.tsx`** -- Consolidate all the scattered `landing_cta_click`, `landing_nav_click`, etc. into the standardized `cta_click` event with proper `cta_id` and `section` params. This replaces ~8 different ad-hoc event names with one consistent schema.
-
-**File: `src/pages/Auth.tsx`** -- Add:
-- `signup_start` event when signup form is submitted (before API call)
-- `signup_complete` event on successful signup
-- `login` event on successful login (currently only logged to activity table, not GA4)
-
-**File: `src/pages/Pricing.tsx`** -- Add `pricing_view` event on page mount.
-
----
-
-## 3. UTM Infrastructure (Already Mostly Done)
-
-The UTM capture system (`src/lib/utm.ts`) is already implemented and working. The `/zach` founder redirect is in place. No code changes needed -- this is an operational item:
-
-- A UTM Link Builder reference will be added as a comment block in `src/lib/utm.ts` documenting the standard format and common templates for LinkedIn posts, DMs, and ads.
-- All conversion events will include UTM params from `getUtmParams()`.
-
----
-
-## 4. GA4 Conversion Definitions
-
-This is a GA4 admin configuration task (not code). After deploying the clean event schema, the following events should be marked as Conversions in GA4 Admin > Events:
-- `signup_complete`
-- `lead_captured`
-- `demo_open`
-- `cta_click` (micro-conversion)
-
-This will be documented in a code comment for reference.
-
----
-
-## 5. Filter Bot/Spam Traffic
-
-**File: `src/lib/analytics.ts`** -- Add a lightweight bot/preview filter:
-- Check `navigator.webdriver` (headless browsers)
-- Skip GA4 tracking when running inside Lovable preview iframe (check `window.location.hostname` for preview domains)
-- This prevents build previews and automated testing from polluting GA4 data
-
----
-
-## 6. Add 3 New Funnel Landing Pages
-
-Create 3 new pages following the existing feature page template pattern (MarketingNav + SEOHead + Hero + Bullets + CTA + MarketingFooter):
-
-| Route | File | Target Keyword |
-|---|---|---|
-| `/machine-time-tracking` | `src/pages/features/MachineTimeTracking.tsx` | Machine time tracking software |
-| `/shift-handoff` | `src/pages/features/ShiftHandoff.tsx` | Shift handoff (short-tail) |
-| `/manufacturing-visibility` | `src/pages/features/ManufacturingVisibility.tsx` | Manufacturing floor visibility |
-
-Each page will have:
-- SEOHead with JSON-LD schema
-- Clear headline and 3 benefit bullets
-- Demo button (fires `demo_open`)
-- CTA button (fires `cta_click` with unique `cta_id`)
-- FAQ section (3-4 questions)
-- LeadCaptureBar + LeadCaptureModal
-- AdPlacement slots
-
-**File: `src/App.tsx`** -- Add routes for the 3 new pages.
-
----
-
-## 7. Deployment Blocker Fix
-
-The `work_order_routing` table on Live still needs the `organization_id` backfill before publishing. You must run this SQL in **Lovable Cloud > Run SQL** (Live environment) before publishing:
+### SQL Script to Run on Live
 
 ```sql
-ALTER TABLE work_order_routing ADD COLUMN IF NOT EXISTS organization_id UUID;
-UPDATE work_order_routing r SET organization_id = q.organization_id FROM queue_items q WHERE r.queue_item_id = q.id AND r.organization_id IS NULL;
-ALTER TABLE work_order_routing ALTER COLUMN organization_id SET NOT NULL;
+-- ==========================================
+-- PRE-PUBLISH BACKFILL: Run on LIVE only
+-- ==========================================
+
+-- 1. work_order_routing (15 rows)
+ALTER TABLE public.work_order_routing
+  ADD COLUMN IF NOT EXISTS organization_id uuid REFERENCES public.organizations(id);
+UPDATE public.work_order_routing wor
+  SET organization_id = qi.organization_id
+  FROM public.queue_items qi WHERE qi.id = wor.queue_item_id AND wor.organization_id IS NULL;
+ALTER TABLE public.work_order_routing ALTER COLUMN organization_id SET NOT NULL;
+
+-- 2. handoff_records (0 rows)
+ALTER TABLE public.handoff_records
+  ADD COLUMN IF NOT EXISTS organization_id uuid REFERENCES public.organizations(id);
+ALTER TABLE public.handoff_records ALTER COLUMN organization_id SET NOT NULL;
+
+-- 3. departments (0 rows)
+ALTER TABLE public.departments
+  ADD COLUMN IF NOT EXISTS organization_id uuid REFERENCES public.organizations(id);
+ALTER TABLE public.departments ALTER COLUMN organization_id SET NOT NULL;
+
+-- 4. job_performance_updates (0 rows)
+ALTER TABLE public.job_performance_updates
+  ADD COLUMN IF NOT EXISTS organization_id uuid REFERENCES public.organizations(id);
+ALTER TABLE public.job_performance_updates ALTER COLUMN organization_id SET NOT NULL;
+
+-- 5. queue_item_comments (1 row)
+ALTER TABLE public.queue_item_comments
+  ADD COLUMN IF NOT EXISTS organization_id uuid REFERENCES public.organizations(id);
+UPDATE public.queue_item_comments qic
+  SET organization_id = qi.organization_id
+  FROM public.queue_items qi WHERE qi.id = qic.queue_item_id AND qic.organization_id IS NULL;
+ALTER TABLE public.queue_item_comments ALTER COLUMN organization_id SET NOT NULL;
+
+-- 6. queue_item_history (6 rows)
+ALTER TABLE public.queue_item_history
+  ADD COLUMN IF NOT EXISTS organization_id uuid REFERENCES public.organizations(id);
+UPDATE public.queue_item_history qih
+  SET organization_id = qi.organization_id
+  FROM public.queue_items qi WHERE qi.id = qih.queue_item_id AND qih.organization_id IS NULL;
+ALTER TABLE public.queue_item_history ALTER COLUMN organization_id SET NOT NULL;
+
+-- 7. activity_logs (517 rows, stays NULLABLE)
+ALTER TABLE public.activity_logs
+  ADD COLUMN IF NOT EXISTS organization_id uuid REFERENCES public.organizations(id);
+ALTER TABLE public.activity_logs
+  ADD COLUMN IF NOT EXISTS team_id uuid REFERENCES public.teams(id);
+UPDATE public.activity_logs al
+  SET organization_id = om.organization_id
+  FROM public.organization_members om WHERE om.user_id = al.user_id AND al.organization_id IS NULL;
+
+-- 8. current_station_status (1 row, stays NULLABLE on NOT NULL -- check Test)
+ALTER TABLE public.current_station_status
+  ADD COLUMN IF NOT EXISTS organization_id uuid REFERENCES public.organizations(id);
+UPDATE public.current_station_status css
+  SET organization_id = s.organization_id
+  FROM public.stations s WHERE s.id = css.station_id AND css.organization_id IS NULL;
+
+-- 9. routing_template_steps (0 rows)
+ALTER TABLE public.routing_template_steps
+  ADD COLUMN IF NOT EXISTS organization_id uuid REFERENCES public.organizations(id);
+ALTER TABLE public.routing_template_steps ALTER COLUMN organization_id SET NOT NULL;
+
+-- 10. shift_assignments (0 rows)
+ALTER TABLE public.shift_assignments
+  ADD COLUMN IF NOT EXISTS organization_id uuid REFERENCES public.organizations(id);
+ALTER TABLE public.shift_assignments ALTER COLUMN organization_id SET NOT NULL;
+
+-- 11. webhook_deliveries (0 rows)
+ALTER TABLE public.webhook_deliveries
+  ADD COLUMN IF NOT EXISTS organization_id uuid REFERENCES public.organizations(id);
+ALTER TABLE public.webhook_deliveries ALTER COLUMN organization_id SET NOT NULL;
 ```
 
----
+## Steps
 
-## Technical Summary of File Changes
+1. Open **Lovable Cloud > Run SQL**
+2. Select the **Live** environment
+3. Paste and run the SQL script above
+4. Publish again -- the deployment should now succeed
 
-| File | Action |
-|---|---|
-| `src/lib/analytics.ts` | Add `ConversionEvents` helpers, bot filter, UTM doc block |
-| `src/pages/Landing.tsx` | Remove `testimonial_auto_rotated`, `feature_hover`, consolidate to `cta_click` schema |
-| `src/pages/Auth.tsx` | Add `signup_start`, `signup_complete`, `login` GA4 events |
-| `src/pages/Pricing.tsx` | Add `pricing_view` event |
-| `src/pages/features/MachineTimeTracking.tsx` | New page |
-| `src/pages/features/ShiftHandoff.tsx` | New page |
-| `src/pages/features/ManufacturingVisibility.tsx` | New page |
-| `src/App.tsx` | Add 3 new routes |
-| `src/lib/utm.ts` | Add UTM template documentation block |
+## What This Fixes
 
+- All 11 tables will have `organization_id` columns matching Test schema
+- All existing data is backfilled from parent records
+- NOT NULL constraints match Test on the 10 core tables
+- The publish schema diff will have no column additions to make, so no NULL conflicts
+
+## No Code Changes Needed
+
+This is purely a Live database preparation step. The Test environment and all application code are already correct.
