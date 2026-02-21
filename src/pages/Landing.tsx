@@ -11,7 +11,7 @@ import { SupportJoblineModal } from "@/components/SupportJoblineModal";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
-import { trackEvent, DemoEvents } from "@/lib/analytics";
+import { trackEvent, ConversionEvents } from "@/lib/analytics";
 import { getUtmParams } from "@/lib/utm";
 import demoVideo from "@/assets/jobline-demo-video.mp4";
 import { 
@@ -181,14 +181,7 @@ export default function Landing() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setActiveTestimonial((prev) => {
-        const next = (prev + 1) % testimonials.length;
-        trackEvent('testimonial_auto_rotated', {
-          from_index: prev,
-          to_index: next
-        });
-        return next;
-      });
+      setActiveTestimonial((prev) => (prev + 1) % testimonials.length);
     }, 5000);
     return () => clearInterval(interval);
   }, []);
@@ -220,10 +213,7 @@ export default function Landing() {
   }, []);
 
   const handleNavClick = (href: string, isRoute?: boolean, label?: string) => {
-    trackEvent('landing_nav_click', {
-      nav_item: label || href,
-      is_route: isRoute || false
-    });
+    ConversionEvents.ctaClick(`nav_${(label || href).toLowerCase().replace(/\s+/g, '_')}`, label || href, location.pathname, 'nav');
     setMobileMenuOpen(false);
     if (isRoute) {
       navigate(href);
@@ -236,34 +226,21 @@ export default function Landing() {
     }, 100);
   };
 
-  const handleCtaClick = (ctaName: string, location: string) => {
-    trackEvent('landing_cta_click', {
-      cta_name: ctaName,
-      location: location
-    });
+  const handleCtaClick = (ctaId: string, section: string, ctaText?: string) => {
+    ConversionEvents.ctaClick(ctaId, ctaText || ctaId, location.pathname, section);
   };
 
   const handleDemoModalOpen = () => {
-    trackEvent('landing_demo_modal_opened', { source: 'hero_section' });
-    DemoEvents.demoModalOpen(location.pathname, getUtmParams() as Record<string, string>);
+    ConversionEvents.demoOpen(location.pathname, 'hero');
     setDemoModalOpen(true);
   };
 
   const handleDemoModalClose = () => {
-    trackEvent('landing_demo_modal_closed', {});
     setDemoModalOpen(false);
   };
 
-  const handleFeatureView = (featureName: string) => {
-    trackEvent('landing_feature_hover', {
-      feature_name: featureName
-    });
-  };
-
   const handleFeatureClick = (featureName: string) => {
-    trackEvent('landing_feature_clicked', {
-      feature_name: featureName
-    });
+    ConversionEvents.ctaClick(`feature_${featureName.toLowerCase().replace(/\s+/g, '_')}`, featureName, location.pathname, 'features');
   };
 
   const handleTestimonialChange = (index: number, method: 'auto' | 'click') => {
@@ -276,23 +253,16 @@ export default function Landing() {
     setActiveTestimonial(index);
   };
 
-  const handleFooterLinkClick = (linkName: string) => {
-    trackEvent('landing_footer_link_clicked', {
-      link_name: linkName
-    });
+  const handleFooterLinkClick = (_linkName: string) => {
+    // Footer link clicks are low-value; no GA4 event needed
   };
 
   const handleMobileMenuOpen = () => {
-    trackEvent('mobile_menu_opened', {
-      page: 'landing'
-    });
     setMobileMenuOpen(true);
   };
 
   const handleMobileMenuCtaClick = (ctaName: string) => {
-    trackEvent('mobile_menu_cta_clicked', {
-      cta_name: ctaName
-    });
+    ConversionEvents.ctaClick(`mobile_${ctaName}`, ctaName, location.pathname, 'mobile_menu');
     setMobileMenuOpen(false);
   };
 
@@ -337,7 +307,7 @@ export default function Landing() {
                 <a 
                   key={link.href}
                   href={link.href} 
-                  onClick={() => trackEvent('landing_nav_click', { nav_item: link.label, is_route: false })}
+                  onClick={() => handleCtaClick(`nav_${link.label.toLowerCase().replace(/\s+/g, '_')}`, 'nav', link.label)}
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {link.label}
@@ -348,7 +318,7 @@ export default function Landing() {
               variant="outline" 
               size="sm"
               onClick={() => {
-                trackEvent('landing_cta_click', { cta_name: 'try_digital_handoff', location: 'nav_header' });
+                handleCtaClick('try_digital_handoff', 'nav_header', 'Try Digital Handoff');
                 document.querySelector('#handoff-demo')?.scrollIntoView({ behavior: 'smooth' });
               }}
               className="gap-1.5 border-primary/50 text-primary hover:bg-primary/10"
@@ -1020,7 +990,6 @@ export default function Landing() {
               <div 
                 key={i}
                 className="group relative p-4 sm:p-5 md:p-6 rounded-lg sm:rounded-xl bg-card border border-border hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 cursor-pointer"
-                onMouseEnter={() => handleFeatureView(feature.title)}
                 onClick={() => {
                   handleFeatureClick(feature.title);
                   navigate(feature.link);
@@ -1053,7 +1022,7 @@ export default function Landing() {
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  trackEvent('landing_feature_link_click', { feature: extra.label });
+                  ConversionEvents.ctaClick(`feature_link_${extra.label.toLowerCase().replace(/\s+/g, '_')}`, extra.label, location.pathname, 'features');
                   navigate(extra.link);
                 }}
                 className="gap-1.5 border-border/50 hover:border-primary/50 text-xs sm:text-sm"
@@ -1362,8 +1331,8 @@ export default function Landing() {
               controls
               autoPlay
               playsInline
-              onPlay={() => trackEvent('demo_video_played', { source: 'modal' })}
-              onEnded={() => trackEvent('demo_video_completed', { source: 'modal' })}
+              onPlay={() => ConversionEvents.videoPlay(location.pathname, 'modal')}
+              onEnded={() => ConversionEvents.videoComplete(location.pathname, 'modal')}
             >
               Your browser does not support the video tag.
             </video>

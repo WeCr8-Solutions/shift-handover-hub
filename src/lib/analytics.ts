@@ -1,6 +1,12 @@
 /**
  * Analytics & Tracking Utilities
  * Provides comprehensive tracking for page views, user actions, and performance metrics
+ *
+ * GA4 CONVERSION EVENTS (mark as Conversions in GA4 Admin > Events):
+ *   - signup_complete
+ *   - lead_captured
+ *   - demo_open
+ *   - cta_click (micro-conversion)
  */
 
 // Google Analytics Measurement ID
@@ -14,6 +20,19 @@ declare global {
   }
 }
 
+/**
+ * Check if tracking should be skipped (bots, preview environments, webdriver)
+ */
+function shouldSkipTracking(): boolean {
+  if (typeof window === 'undefined') return true;
+  // Skip headless browsers / automation
+  if (navigator.webdriver) return true;
+  // Skip Lovable preview environments
+  const host = window.location.hostname;
+  if (host.includes('preview--') || host.includes('lovableproject.com')) return true;
+  return false;
+}
+
 // ============================================
 // Core Analytics Functions
 // ============================================
@@ -22,16 +41,15 @@ declare global {
  * Track a page view (with optional UTM attribution)
  */
 export function trackPageView(path: string, title?: string, utmParams?: Record<string, string>) {
-  if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('config', GA_MEASUREMENT_ID, {
-      page_path: path,
-      page_title: title || document.title,
-      ...utmParams,
-    });
-    
-    if (import.meta.env.DEV) {
-      console.log('[Analytics] Page View:', { path, title, ...utmParams });
-    }
+  if (shouldSkipTracking() || !window.gtag) return;
+  window.gtag('config', GA_MEASUREMENT_ID, {
+    page_path: path,
+    page_title: title || document.title,
+    ...utmParams,
+  });
+  
+  if (import.meta.env.DEV) {
+    console.log('[Analytics] Page View:', { path, title, ...utmParams });
   }
 }
 
@@ -42,12 +60,11 @@ export function trackEvent(
   eventName: string,
   params?: Record<string, string | number | boolean>
 ) {
-  if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('event', eventName, params);
-    
-    if (import.meta.env.DEV) {
-      console.log('[Analytics] Event:', eventName, params);
-    }
+  if (shouldSkipTracking() || !window.gtag) return;
+  window.gtag('event', eventName, params);
+  
+  if (import.meta.env.DEV) {
+    console.log('[Analytics] Event:', eventName, params);
   }
 }
 
@@ -180,6 +197,42 @@ export const DemoEvents = {
 
   demoFormSubmit: (pagePath: string, utmParams?: Record<string, string>) =>
     trackEvent('demo_form_submit', { page_path: pagePath, ...utmParams }),
+};
+
+// ============================================
+// Standardized Conversion Events (GA4 Schema)
+// ============================================
+
+export const ConversionEvents = {
+  /** Track any CTA button click across the site */
+  ctaClick: (ctaId: string, ctaText: string, pagePath: string, section: string) =>
+    trackEvent('cta_click', { cta_id: ctaId, cta_text: ctaText, page_path: pagePath, section }),
+
+  /** Demo modal / video opened */
+  demoOpen: (pagePath: string, trigger: string) =>
+    trackEvent('demo_open', { page_path: pagePath, trigger }),
+
+  /** User submitted signup form (before API call) */
+  signupStart: (pagePath: string, method: string = 'email') =>
+    trackEvent('signup_start', { page_path: pagePath, method }),
+
+  /** User successfully created an account */
+  signupComplete: (pagePath: string, method: string = 'email') =>
+    trackEvent('signup_complete', { page_path: pagePath, method }),
+
+  /** User successfully logged in */
+  login: (pagePath: string, method: string = 'email') =>
+    trackEvent('login', { page_path: pagePath, method }),
+
+  /** Pricing page viewed */
+  pricingView: (pagePath: string) =>
+    trackEvent('pricing_view', { page_path: pagePath }),
+
+  /** Video play / complete */
+  videoPlay: (pagePath: string, source: string) =>
+    trackEvent('video_play', { page_path: pagePath, source }),
+  videoComplete: (pagePath: string, source: string) =>
+    trackEvent('video_complete', { page_path: pagePath, source }),
 };
 
 // Error Tracking

@@ -1,6 +1,25 @@
 /**
  * UTM Parameter Capture & Persistence
  * Parses UTM params from URL, stores in sessionStorage, and cleans the visible URL.
+ *
+ * ─── UTM LINK BUILDER REFERENCE ───
+ *
+ * Template: https://www.jobline.ai/?utm_source={source}&utm_medium={medium}&utm_campaign={campaign}&utm_content={content}
+ *
+ * LinkedIn personal post:
+ *   utm_source=linkedin&utm_medium=organic&utm_campaign=founder_post&utm_content=post_01
+ *
+ * LinkedIn company post:
+ *   utm_source=linkedin&utm_medium=organic&utm_campaign=wecr8_post&utm_content=post_01
+ *
+ * LinkedIn DM / outreach:
+ *   utm_source=linkedin&utm_medium=dm&utm_campaign=outreach&utm_content=message_01
+ *
+ * Paid ads (future):
+ *   utm_source=linkedin&utm_medium=paid&utm_campaign=jobline_leads&utm_content=ad_01
+ *
+ * Email campaign:
+ *   utm_source=email&utm_medium=newsletter&utm_campaign=launch_announce&utm_content=cta_hero
  */
 
 const UTM_STORAGE_KEY = 'jobline_utm';
