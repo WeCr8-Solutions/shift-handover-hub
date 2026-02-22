@@ -11,6 +11,7 @@ import { OperatorWorkflowPanel } from "@/components/OperatorWorkflowPanel";
 import { CreateWorkOrderDialog } from "@/components/queue/CreateWorkOrderDialog";
 import { PlanningAssistantModal } from "@/components/queue/PlanningAssistantModal";
 import { SupervisorDashboard } from "@/components/dashboard/SupervisorDashboard";
+import { OperatorDashboard } from "@/components/dashboard/OperatorDashboard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useStations, useHandoffRecords, Station, HandoffRecord } from "@/hooks/useStations";
@@ -24,7 +25,6 @@ import { Plus, LayoutGrid, History, Loader2, Building2, Lightbulb, ListTodo, Pac
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { TourTriggerButton } from "@/components/onboarding";
-
 // Convert database station to StationInfo for display
 function toStationInfo(station: Station): StationInfo {
   const status = station.current_status;
@@ -127,6 +127,8 @@ const Index = () => {
 
   // Supervisors, org admins, and platform admins get the production overview dashboard
   const showSupervisorView = user && hasOrgSupervisorAccess;
+  // Authenticated operators (non-supervisor) get the focused operator dashboard
+  const showOperatorView = user && !hasOrgSupervisorAccess && !roleLoading;
   
   const [showNewHandoff, setShowNewHandoff] = useState(false);
   const [showPerformanceUpdate, setShowPerformanceUpdate] = useState(false);
@@ -187,6 +189,8 @@ const Index = () => {
               onCreateWorkOrder={() => setShowCreateWorkOrder(true)}
             />
           </>
+        ) : showOperatorView ? (
+          <OperatorDashboard />
         ) : (
         <>
         {/* Stats Overview */}
