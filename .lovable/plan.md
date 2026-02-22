@@ -1,174 +1,134 @@
 
 
-# Global Update & System Notice Engine
+# Operator Station Dashboard
 
 ## Overview
 
-Replace the basic admin-only `changelogs` table with a comprehensive `global_updates` system that serves as a central release feed visible to all users, with full admin/developer control, a public `/updates` route, notification indicators, and user acknowledgement tracking.
+Build a dedicated operator-facing dashboard that replaces the current "all stations + supervisor actions" view for operator-role users. When an operator logs in, they will see only their assigned stations, the work orders queued at those stations, and the tools they need to complete work -- nothing more.
 
-## Phase 1: Database -- New `global_updates` Table
+## Current State
 
-Create a new `global_updates` table (keeping `changelogs` for backward compatibility, can be deprecated later):
+- The `Index.tsx` page branches on `hasOrgSupervisorAccess` to show either the `SupervisorDashboard` or a grid of ALL stations in the organization
+- Operators currently see every station, every action button (Add Work Order, Performance Update, New Handoff), and the full `WorkCenterFilter`
+- There is no concept of "station login" -- operators are not associated with specific stations for the day
 
-| Column | Type | Notes |
-|---|---|---|
-| id | uuid PK | Auto-generated |
-| version_number | text | e.g. "v1.2.4" |
-| revision_number | integer | Auto-incrementing internal counter |
-| title | text NOT NULL | What changed |
-| summary | text | Short description |
-| full_description | text | Markdown-supported long form |
-| category | enum | feature, improvement, bug_fix, system_notice, security, maintenance |
-| status | enum | live, scheduled, investigating, resolved, deprecated |
-| impact_level | enum | low, medium, high, critical |
-| affected_modules | text[] | e.g. {"Shift Handoff", "Machine Tracking"} |
-| how_it_helps_users | text | User-facing benefit explanation |
-| issues_addressed | text[] | List of resolved issues |
-| created_by | uuid | References profiles |
-| created_at | timestamptz | Default now() |
-| updated_at | timestamptz | Default now() |
-| published_at | timestamptz | When made visible |
-| is_visible_to_users | boolean | Default false |
-| requires_acknowledgement | boolean | Default false |
+## What Changes
 
-Create a `global_update_acknowledgements` table for tracking:
+### 1. Station Login / Check-In System
+
+Operators will "check in" to one or more stations at the start of their shift. This creates a session record so the system knows which stations they are responsible for.
+
+**New database table: `operator_station_sessions`**
 
 | Column | Type | Notes |
-|---|---|---|
+|--------|------|-------|
 | id | uuid PK | Auto-generated |
-| update_id | uuid FK | References global_updates |
-| user_id | uuid | References auth.users |
-| acknowledged_at | timestamptz | Default now() |
-| UNIQUE | (update_id, user_id) | One ack per user per update |
+| user_id | uuid NOT NULL | References auth.users, the operator |
+| station_id | uuid NOT NULL | References stations |
+| organization_id | uuid | Auto-populated from station |
+| checked_in_at | timestamptz | Default now() |
+| checked_out_at | timestamptz | NULL while active |
+| shift | text | Day / Swing / Night |
+| is_active | boolean | Default true |
 
-### Enums
+- RLS: Operators can INSERT/SELECT their own sessions; supervisors and org admins can see all sessions in their org
+- A unique partial index on `(user_id, station_id) WHERE is_active = true` prevents duplicate active check-ins
 
-- `update_category`: feature, improvement, bug_fix, system_notice, security, maintenance
-- `update_status`: live, scheduled, investigating, resolved, deprecated
-- `impact_level`: low, medium, high, critical
+### 2. Operator Dashboard Page
 
-### RLS Policies
+Create a new component `OperatorDashboard` shown in `Index.tsx` when the user is an operator (not supervisor/admin). This replaces the current all-stations grid.
 
-- **SELECT on global_updates**: Authenticated users can read entries where `is_visible_to_users = true` OR user is admin/developer
-- **INSERT/UPDATE on global_updates**: Only admin/developer roles
-- **DELETE on global_updates**: Only admin role
-- **INSERT on acknowledgements**: Authenticated users can insert their own (user_id = auth.uid())
-- **SELECT on acknowledgements**: Users can read their own; admins can read all
+**Flow:**
+1. On load, check for active `operator_station_sessions` for the current user
+2. If none exist, show a **Station Check-In Screen** with available stations from their team/org
+3. If sessions exist, show the **Operator Work View**
 
-### Triggers
+**Station Check-In Screen:**
+- List of available stations (filtered to user's team/org)
+- Multi-select checkboxes to pick one or more stations
+- Current shift auto-detected
+- "Start Shift" button to create session records
+- Visual card layout grouped by work center type
 
-- Auto-increment `revision_number` on insert
-- Auto-set `updated_at` on update
+**Operator Work View (main working screen):**
+- Top bar: Checked-in stations as tabs or horizontal chips
+- Per-station panel showing:
+  - Active work order (in_progress) with elapsed timer
+  - Queued work orders (pending/queued) in priority order
+  - Start / Complete / Deliver actions
+  - Create Handoff shortcut (pre-fills station)
+  - Performance Update shortcut
+- No access to: Add Work Order creation, Team Management, Admin panel, Work Center Filters for all stations
+- "End Shift" button to check out of all stations
 
-## Phase 2: Admin Panel -- "System Updates" Tab
+### 3. Header Simplification for Operators
 
-Replace the existing Changelog tab in the Admin Dashboard with a full **System Updates** manager.
+The Header already hides admin/testing links for non-privileged users. No changes needed -- the existing role-gating in `Header.tsx` already handles this correctly.
 
-### Admin Form Fields
+### 4. Updated Index.tsx Routing Logic
 
-- Title, Summary, Full Description (with markdown preview)
-- Version Number (with auto-increment suggestion based on last version)
-- Category selector (6 options with icons)
-- Status selector (5 options)
-- Impact Level selector (4 options with color coding)
-- Affected Modules (multi-select tags)
-- "How It Helps Users" text field
-- "Issues Addressed" list input
-- Visibility toggle (is_visible_to_users)
-- Requires Acknowledgement toggle
-- Published At date picker (for scheduling)
+```text
+if (hasOrgSupervisorAccess) -> SupervisorDashboard (existing)
+else if (user is operator)  -> OperatorDashboard (new)
+else if (!user)             -> public landing view (existing)
+```
 
-### Admin List View
+## Files to Create
 
-- Filterable by category, status, impact level
-- Sortable by date, version
-- Status badges with color coding
-- Quick actions: edit, publish/unpublish, delete
+1. **`src/components/dashboard/OperatorDashboard.tsx`** -- Main operator dashboard with check-in flow and station work panels
+2. **`src/components/dashboard/StationCheckIn.tsx`** -- Station selection and shift check-in UI
+3. **`src/components/dashboard/OperatorStationPanel.tsx`** -- Per-station work panel (active order, queue, actions)
+4. **`src/hooks/useOperatorSessions.ts`** -- Hook to manage station check-in/check-out sessions
 
-### Analytics Section (within admin)
+## Files to Modify
 
-- View count per update (tracked via acknowledgements table)
-- Acknowledgement rate for required updates
-- Total published vs draft count
-
-## Phase 3: Public `/updates` Route
-
-Create a new page at `/updates` accessible to all authenticated users.
-
-### Features
-
-- Reverse-chronological feed of published updates
-- Filter chips: Feature, Bug Fix, Maintenance, Security, System Notice, Improvement
-- Search by version number or title
-- Each update card displays:
-  - Version number + revision badge
-  - Release date (formatted)
-  - Category icon + label
-  - Status badge (color-coded)
-  - Impact level indicator (colored dot/bar)
-  - Title + summary
-  - Expandable "Full Details" with markdown rendering
-  - "How This Helps You" section
-  - "Issues Resolved" list
-  - Acknowledge button (if required)
-
-## Phase 4: Notification Indicator in Header
-
-- Add a notification dot on a new "Updates" icon in the Header
-- Query for updates where `is_visible_to_users = true` AND `published_at > last_acknowledged_date`
-- Show count badge of unread updates
-- If any update has `requires_acknowledgement = true` and user hasn't acknowledged: show a modal on dashboard load
-
-## Phase 5: System Status Indicator (Header Bar)
-
-- Small status chip in the header showing current system health
-- Auto-calculated from the latest `system_notice` entries:
-  - Green "Operational" -- no active system_notice with status investigating/scheduled
-  - Yellow "Degraded" -- active system_notice with impact medium
-  - Red "Outage" -- active system_notice with impact high/critical
-
-## Files to Create/Modify
-
-### New Files
-1. `src/pages/Updates.tsx` -- Public updates feed page
-2. `src/hooks/useGlobalUpdates.ts` -- Data fetching hook for updates
-3. `src/components/updates/UpdateCard.tsx` -- Individual update card component
-4. `src/components/updates/UpdateFilters.tsx` -- Filter/search controls
-5. `src/components/updates/SystemStatusIndicator.tsx` -- Header status chip
-6. `src/components/updates/UpdateAcknowledgeModal.tsx` -- Force-acknowledge modal
-7. `src/components/admin/SystemUpdatesManager.tsx` -- Full admin CRUD panel (replaces ChangelogManager usage)
-
-### Modified Files
-1. `src/App.tsx` -- Add `/updates` route
-2. `src/pages/Admin.tsx` -- Replace Changelog tab with System Updates tab
-3. `src/components/Header.tsx` -- Add updates notification indicator + system status chip
+1. **`src/pages/Index.tsx`** -- Add operator dashboard branch in the rendering logic
+2. **Database migration** -- Create `operator_station_sessions` table with RLS policies
 
 ## Technical Details
 
-### Migration SQL (summary)
+### Database Migration
 
 ```text
-1. Create 3 enums: update_category, update_status, impact_level
-2. Create global_updates table with all columns, constraints, and indexes
-3. Create global_update_acknowledgements table with unique constraint
-4. Enable RLS on both tables
-5. Create 6 RLS policies (SELECT/INSERT/UPDATE/DELETE as described)
-6. Create revision auto-increment trigger
-7. Create updated_at trigger
-8. Enable realtime on global_updates for live push notifications
+1. Create operator_station_sessions table
+2. Add auto-populate trigger for organization_id from station
+3. Enable RLS with policies:
+   - Operators: SELECT/INSERT/UPDATE own sessions
+   - Org admins/supervisors: SELECT all sessions in their org
+   - Platform admins: SELECT all
+4. Create unique partial index for active sessions
+5. Enable realtime for live session tracking
 ```
 
-### Version Auto-Suggestion Logic
+### useOperatorSessions Hook
 
-Parse the latest `version_number` from the database, split by dots, and suggest:
-- Patch bump for bug_fix/improvement
-- Minor bump for feature
-- Major bump for breaking/security
+- `activeSessions`: Current user's active station sessions
+- `checkIn(stationIds[], shift)`: Create session records for selected stations
+- `checkOut(sessionId?)`: End specific or all active sessions
+- `isCheckedIn`: Boolean shortcut
+- Real-time subscription for session changes
 
-### Acknowledgement Flow
+### OperatorStationPanel Component
 
-1. On dashboard load, query unacknowledged updates where `requires_acknowledgement = true`
-2. If any exist, show modal with update details and "I Understand" button
-3. On click, insert into `global_update_acknowledgements`
-4. Modal dismisses; notification badge updates
+Reuses logic from existing `StationWorkOrderPicker`:
+- Fetches `queue_items` filtered by `station_id`
+- Shows active work order with elapsed timer
+- Start/Complete/Deliver workflow
+- Integrates with existing `NewHandoffForm` and `JobPerformanceUpdateForm`
+
+### Station Check-In Screen
+
+- Queries stations from user's organization (same as existing `useStations` hook)
+- Groups by work center type with icons from `workCenterIcons`
+- Remembers last checked-in stations via the session table (shows previous selections)
+- Auto-detects current shift using existing `getCurrentShift()` from mockData
+
+### Key UX Principles
+
+- Operator sees ONLY their checked-in stations
+- No access to create work orders (that is a supervisor function)
+- Can start, pause, complete, and deliver work orders
+- Can create handoffs and performance updates (scoped to their station)
+- Clean, task-focused interface with no management overhead
+- "End Shift" clearly visible to close out the day
 
