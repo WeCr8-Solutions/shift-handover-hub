@@ -1840,6 +1840,57 @@ export type Database = {
           },
         ]
       }
+      operator_station_sessions: {
+        Row: {
+          checked_in_at: string
+          checked_out_at: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          organization_id: string | null
+          shift: string
+          station_id: string
+          user_id: string
+        }
+        Insert: {
+          checked_in_at?: string
+          checked_out_at?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          organization_id?: string | null
+          shift?: string
+          station_id: string
+          user_id: string
+        }
+        Update: {
+          checked_in_at?: string
+          checked_out_at?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          organization_id?: string | null
+          shift?: string
+          station_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operator_station_sessions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operator_station_sessions_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "stations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_api_keys: {
         Row: {
           created_at: string | null
