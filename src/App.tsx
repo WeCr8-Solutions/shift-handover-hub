@@ -39,6 +39,7 @@ import MachineTimeTracking from "./pages/features/MachineTimeTracking";
 import ShiftHandoff from "./pages/features/ShiftHandoff";
 import ManufacturingVisibility from "./pages/features/ManufacturingVisibility";
 import Updates from "./pages/Updates";
+import Start from "./pages/Start";
 
 const queryClient = new QueryClient();
 
@@ -70,6 +71,7 @@ const App = () => (
                     <Route path="/donation-success" element={<DonationSuccess />} />
                     <Route path="/demo" element={<Demo />} />
                     <Route path="/updates" element={<Updates />} />
+                    <Route path="/start" element={<Start />} />
                     <Route path="/zach" element={<FounderRedirect />} />
                     <Route path="/features/shift-handoff-software" element={<ShiftHandoffSoftware />} />
                     <Route path="/features/work-order-tracking" element={<WorkOrderTracking />} />
