@@ -22,7 +22,7 @@ import logo from "@/assets/jobline-logo.png";
 
 const emailSchema = z.string().trim().email("Please enter a valid email").max(255);
 
-const QR_URL = "https://joblineai.lovable.app/start";
+const QR_URL = "https://jobline.ai/start";
 
 const benefits = [
   {
