@@ -1,134 +1,55 @@
 
 
-# Operator Station Dashboard
+# `/start` — QR Code Landing Page for Physical Distribution
 
 ## Overview
 
-Build a dedicated operator-facing dashboard that replaces the current "all stations + supervisor actions" view for operator-role users. When an operator logs in, they will see only their assigned stations, the work orders queued at those stations, and the tools they need to complete work -- nothing more.
+Create a lightweight, mobile-first landing page at `/start` designed for QR code business cards, stickers, and bulletin board flyers. The page should load fast, look sharp on phones, and funnel visitors toward signing up or learning more — with built-in UTM attribution so you can track which physical placements drive engagement.
 
-## Current State
+## Page Design
 
-- The `Index.tsx` page branches on `hasOrgSupervisorAccess` to show either the `SupervisorDashboard` or a grid of ALL stations in the organization
-- Operators currently see every station, every action button (Add Work Order, Performance Update, New Handoff), and the full `WorkCenterFilter`
-- There is no concept of "station login" -- operators are not associated with specific stations for the day
+A single-screen, scroll-minimal page optimized for the "just scanned a QR code" experience:
 
-## What Changes
+1. **Hero Section** — Logo, bold tagline ("Your Shop Floor, Simplified"), one-liner value prop
+2. **3 Quick Benefits** — Icon + short text cards (Track Work Orders, Smart Shift Handoffs, Real-Time Visibility)
+3. **Primary CTA** — "Get Started Free" button leading to `/auth`
+4. **Secondary CTA** — "See How It Works" linking to `/` (full landing page)
+5. **Optional Email Capture** — Lightweight inline input for visitors not ready to sign up (reuses existing `email_leads` table with `source_page: "qr_start"`)
+6. **QR Code Display** — A visible QR code on the page itself pointing back to `/start` so people can share it from their phone screen (using the existing `qrcode.react` dependency)
 
-### 1. Station Login / Check-In System
+## UTM Strategy
 
-Operators will "check in" to one or more stations at the start of their shift. This creates a session record so the system knows which stations they are responsible for.
+- Default attribution when no UTM params present: `utm_source=qr_card&utm_medium=offline&utm_campaign=local_outreach`
+- The `/start` route acts as a redirect-capable entry point — if UTM params are in the URL, they pass through as-is via the existing `captureUtmParams()` system
+- Future flexibility: you can print different QR codes with different `utm_content` values per location (e.g., `utm_content=coffee_shop_01`, `utm_content=makerspace_02`)
 
-**New database table: `operator_station_sessions`**
+## SEO & Meta
 
-| Column | Type | Notes |
-|--------|------|-------|
-| id | uuid PK | Auto-generated |
-| user_id | uuid NOT NULL | References auth.users, the operator |
-| station_id | uuid NOT NULL | References stations |
-| organization_id | uuid | Auto-populated from station |
-| checked_in_at | timestamptz | Default now() |
-| checked_out_at | timestamptz | NULL while active |
-| shift | text | Day / Swing / Night |
-| is_active | boolean | Default true |
-
-- RLS: Operators can INSERT/SELECT their own sessions; supervisors and org admins can see all sessions in their org
-- A unique partial index on `(user_id, station_id) WHERE is_active = true` prevents duplicate active check-ins
-
-### 2. Operator Dashboard Page
-
-Create a new component `OperatorDashboard` shown in `Index.tsx` when the user is an operator (not supervisor/admin). This replaces the current all-stations grid.
-
-**Flow:**
-1. On load, check for active `operator_station_sessions` for the current user
-2. If none exist, show a **Station Check-In Screen** with available stations from their team/org
-3. If sessions exist, show the **Operator Work View**
-
-**Station Check-In Screen:**
-- List of available stations (filtered to user's team/org)
-- Multi-select checkboxes to pick one or more stations
-- Current shift auto-detected
-- "Start Shift" button to create session records
-- Visual card layout grouped by work center type
-
-**Operator Work View (main working screen):**
-- Top bar: Checked-in stations as tabs or horizontal chips
-- Per-station panel showing:
-  - Active work order (in_progress) with elapsed timer
-  - Queued work orders (pending/queued) in priority order
-  - Start / Complete / Deliver actions
-  - Create Handoff shortcut (pre-fills station)
-  - Performance Update shortcut
-- No access to: Add Work Order creation, Team Management, Admin panel, Work Center Filters for all stations
-- "End Shift" button to check out of all stations
-
-### 3. Header Simplification for Operators
-
-The Header already hides admin/testing links for non-privileged users. No changes needed -- the existing role-gating in `Header.tsx` already handles this correctly.
-
-### 4. Updated Index.tsx Routing Logic
-
-```text
-if (hasOrgSupervisorAccess) -> SupervisorDashboard (existing)
-else if (user is operator)  -> OperatorDashboard (new)
-else if (!user)             -> public landing view (existing)
-```
+- Custom `SEOHead` with title "Get Started with JobLine.ai" and a short description
+- `noindex: true` since this is a physical-distribution funnel page, not an organic search target
 
 ## Files to Create
 
-1. **`src/components/dashboard/OperatorDashboard.tsx`** -- Main operator dashboard with check-in flow and station work panels
-2. **`src/components/dashboard/StationCheckIn.tsx`** -- Station selection and shift check-in UI
-3. **`src/components/dashboard/OperatorStationPanel.tsx`** -- Per-station work panel (active order, queue, actions)
-4. **`src/hooks/useOperatorSessions.ts`** -- Hook to manage station check-in/check-out sessions
+1. **`src/pages/Start.tsx`** — The QR landing page component with hero, benefits, CTAs, email capture, and self-referencing QR code
 
 ## Files to Modify
 
-1. **`src/pages/Index.tsx`** -- Add operator dashboard branch in the rendering logic
-2. **Database migration** -- Create `operator_station_sessions` table with RLS policies
+1. **`src/App.tsx`** — Add `/start` route
+2. **`src/components/AnalyticsProvider.tsx`** — Add `/start` to the page titles map
 
 ## Technical Details
 
-### Database Migration
+### Start.tsx Structure
 
-```text
-1. Create operator_station_sessions table
-2. Add auto-populate trigger for organization_id from station
-3. Enable RLS with policies:
-   - Operators: SELECT/INSERT/UPDATE own sessions
-   - Org admins/supervisors: SELECT all sessions in their org
-   - Platform admins: SELECT all
-4. Create unique partial index for active sessions
-5. Enable realtime for live session tracking
-```
+- Uses existing `SEOHead`, `Button`, `Input`, `Card` components
+- Email capture reuses the `email_leads` table insert pattern from `LeadCaptureBar` (no new tables needed)
+- QR code rendered with existing `qrcode.react` package pointing to `https://joblineai.lovable.app/start`
+- UTM defaults applied on mount via a small effect similar to `FounderRedirect` pattern — if no UTM params detected, sets defaults in sessionStorage without redirecting (keeps the clean `/start` URL)
+- Analytics event: `trackEvent("qr_landing_view", { source_page: "start", ...getUtmParams() })`
+- Mobile-first layout: single column, large tap targets, minimal scrolling
 
-### useOperatorSessions Hook
+### No Database Changes Required
 
-- `activeSessions`: Current user's active station sessions
-- `checkIn(stationIds[], shift)`: Create session records for selected stations
-- `checkOut(sessionId?)`: End specific or all active sessions
-- `isCheckedIn`: Boolean shortcut
-- Real-time subscription for session changes
-
-### OperatorStationPanel Component
-
-Reuses logic from existing `StationWorkOrderPicker`:
-- Fetches `queue_items` filtered by `station_id`
-- Shows active work order with elapsed timer
-- Start/Complete/Deliver workflow
-- Integrates with existing `NewHandoffForm` and `JobPerformanceUpdateForm`
-
-### Station Check-In Screen
-
-- Queries stations from user's organization (same as existing `useStations` hook)
-- Groups by work center type with icons from `workCenterIcons`
-- Remembers last checked-in stations via the session table (shows previous selections)
-- Auto-detects current shift using existing `getCurrentShift()` from mockData
-
-### Key UX Principles
-
-- Operator sees ONLY their checked-in stations
-- No access to create work orders (that is a supervisor function)
-- Can start, pause, complete, and deliver work orders
-- Can create handoffs and performance updates (scoped to their station)
-- Clean, task-focused interface with no management overhead
-- "End Shift" clearly visible to close out the day
+- Reuses existing `email_leads` table for optional email capture
+- UTM attribution handled entirely client-side via existing `captureUtmParams()` system
 
