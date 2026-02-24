@@ -30,6 +30,9 @@ export interface QueueItem {
   scheduled_start: string | null;
   scheduled_end: string | null;
   estimated_duration: number | null;
+  setup_time_minutes: number | null;
+  first_article_minutes: number | null;
+  cycle_time_minutes: number | null;
   started_at: string | null;
   completed_at: string | null;
   tags: string[];
@@ -74,6 +77,9 @@ export interface CreateQueueItemInput {
   scheduled_start?: string;
   scheduled_end?: string;
   estimated_duration?: number;
+  setup_time_minutes?: number;
+  first_article_minutes?: number;
+  cycle_time_minutes?: number;
   tags?: string[];
 }
 
@@ -88,6 +94,9 @@ export interface UpdateQueueItemInput {
   scheduled_start?: string | null;
   scheduled_end?: string | null;
   estimated_duration?: number | null;
+  setup_time_minutes?: number | null;
+  first_article_minutes?: number | null;
+  cycle_time_minutes?: number | null;
   started_at?: string | null;
   completed_at?: string | null;
   tags?: string[];
@@ -229,6 +238,9 @@ export function useQueue(filters?: {
         scheduled_start: input.scheduled_start || null,
         scheduled_end: input.scheduled_end || null,
         estimated_duration: input.estimated_duration || null,
+        setup_time_minutes: input.setup_time_minutes || null,
+        first_article_minutes: input.first_article_minutes || null,
+        cycle_time_minutes: input.cycle_time_minutes || null,
         tags: input.tags || [],
         created_by: user.id,
       });

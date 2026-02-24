@@ -55,6 +55,9 @@ interface RoutingTemplateStep {
   operation_type: string;
   work_center_type: string | null;
   estimated_duration: number | null;
+  setup_time_minutes: number | null;
+  first_article_minutes: number | null;
+  cycle_time_minutes: number | null;
   instructions: string | null;
 }
 
@@ -128,30 +131,30 @@ export function RoutingTemplateManagement({ isAdmin }: RoutingTemplateManagement
   // Uses industry-standard operation numbers (increments of 10)
   const getDefaultSteps = (): RoutingTemplateStep[] => [
     // Pre-Production (10-60)
-    { step_number: 10, operation_name: '10 - Quote Review & Approval', operation_type: 'quote', work_center_type: 'Quoting', estimated_duration: 30, instructions: 'Review quote and customer requirements' },
-    { step_number: 20, operation_name: '20 - Engineering Review', operation_type: 'engineering', work_center_type: 'Engineering', estimated_duration: 60, instructions: 'Review drawings, tolerances, and material specs' },
-    { step_number: 30, operation_name: '30 - CNC Programming', operation_type: 'engineering', work_center_type: 'Programming/CAM', estimated_duration: 120, instructions: 'Create CNC programs and toolpaths' },
-    { step_number: 40, operation_name: '40 - Purchasing', operation_type: 'purchasing', work_center_type: 'Purchasing', estimated_duration: 30, instructions: 'Order raw materials and special tooling' },
-    { step_number: 50, operation_name: '50 - Receiving', operation_type: 'receiving', work_center_type: 'Receiving', estimated_duration: 15, instructions: 'Receive and verify material certifications' },
-    { step_number: 60, operation_name: '60 - Incoming Inspection', operation_type: 'inspection', work_center_type: 'Incoming Inspection', estimated_duration: 30, instructions: 'Verify material dimensions and condition' },
+    { step_number: 10, operation_name: '10 - Quote Review & Approval', operation_type: 'quote', work_center_type: 'Quoting', estimated_duration: 30, setup_time_minutes: null, first_article_minutes: null, cycle_time_minutes: null, instructions: 'Review quote and customer requirements' },
+    { step_number: 20, operation_name: '20 - Engineering Review', operation_type: 'engineering', work_center_type: 'Engineering', estimated_duration: 60, setup_time_minutes: null, first_article_minutes: null, cycle_time_minutes: null, instructions: 'Review drawings, tolerances, and material specs' },
+    { step_number: 30, operation_name: '30 - CNC Programming', operation_type: 'engineering', work_center_type: 'Programming/CAM', estimated_duration: 120, setup_time_minutes: null, first_article_minutes: null, cycle_time_minutes: null, instructions: 'Create CNC programs and toolpaths' },
+    { step_number: 40, operation_name: '40 - Purchasing', operation_type: 'purchasing', work_center_type: 'Purchasing', estimated_duration: 30, setup_time_minutes: null, first_article_minutes: null, cycle_time_minutes: null, instructions: 'Order raw materials and special tooling' },
+    { step_number: 50, operation_name: '50 - Receiving', operation_type: 'receiving', work_center_type: 'Receiving', estimated_duration: 15, setup_time_minutes: null, first_article_minutes: null, cycle_time_minutes: null, instructions: 'Receive and verify material certifications' },
+    { step_number: 60, operation_name: '60 - Incoming Inspection', operation_type: 'inspection', work_center_type: 'Incoming Inspection', estimated_duration: 30, setup_time_minutes: null, first_article_minutes: null, cycle_time_minutes: null, instructions: 'Verify material dimensions and condition' },
     // Material Prep (70-80)
-    { step_number: 70, operation_name: '70 - Material Cutting', operation_type: 'internal', work_center_type: 'Saw', estimated_duration: 30, instructions: 'Cut material to rough size' },
-    { step_number: 80, operation_name: '80 - Tool Setup', operation_type: 'internal', work_center_type: 'Tool Crib', estimated_duration: 45, instructions: 'Pull and verify tooling, fixtures, and gages' },
+    { step_number: 70, operation_name: '70 - Material Cutting', operation_type: 'internal', work_center_type: 'Saw', estimated_duration: 30, setup_time_minutes: 10, first_article_minutes: null, cycle_time_minutes: 2, instructions: 'Cut material to rough size' },
+    { step_number: 80, operation_name: '80 - Tool Setup', operation_type: 'internal', work_center_type: 'Tool Crib', estimated_duration: 45, setup_time_minutes: 45, first_article_minutes: null, cycle_time_minutes: null, instructions: 'Pull and verify tooling, fixtures, and gages' },
     // Production (90-120)
-    { step_number: 90, operation_name: '90 - First Article', operation_type: 'internal', work_center_type: 'CNC Mill', estimated_duration: 90, instructions: 'Setup machine and run first article' },
-    { step_number: 100, operation_name: '100 - First Article Inspection', operation_type: 'inspection', work_center_type: 'CMM', estimated_duration: 60, instructions: 'Full dimensional inspection per drawing' },
-    { step_number: 110, operation_name: '110 - Production Run', operation_type: 'internal', work_center_type: 'CNC Mill', estimated_duration: 240, instructions: 'Complete production quantity' },
-    { step_number: 120, operation_name: '120 - Deburr', operation_type: 'internal', work_center_type: 'Deburr', estimated_duration: 30, instructions: 'Remove burrs and clean parts' },
-    // Outside Processing (130-160) - amber hue reminder
-    { step_number: 130, operation_name: '130 - OP Heat Treat', operation_type: 'outside_processing', work_center_type: 'Heat Treat', estimated_duration: 480, instructions: 'Send to vendor for heat treatment' },
-    { step_number: 140, operation_name: '140 - OP Plating', operation_type: 'outside_processing', work_center_type: 'Plating', estimated_duration: 480, instructions: 'Zinc, Cad, Chrome, or other plating' },
-    { step_number: 150, operation_name: '150 - OP Anodize', operation_type: 'outside_processing', work_center_type: 'Anodize', estimated_duration: 480, instructions: 'Type II or Type III anodizing' },
-    { step_number: 160, operation_name: '160 - OP Paint', operation_type: 'outside_processing', work_center_type: 'Paint', estimated_duration: 480, instructions: 'Paint or powder coat finish' },
+    { step_number: 90, operation_name: '90 - First Article', operation_type: 'internal', work_center_type: 'CNC Mill', estimated_duration: 90, setup_time_minutes: 45, first_article_minutes: 30, cycle_time_minutes: 5, instructions: 'Setup machine and run first article' },
+    { step_number: 100, operation_name: '100 - First Article Inspection', operation_type: 'inspection', work_center_type: 'CMM', estimated_duration: 60, setup_time_minutes: null, first_article_minutes: null, cycle_time_minutes: null, instructions: 'Full dimensional inspection per drawing' },
+    { step_number: 110, operation_name: '110 - Production Run', operation_type: 'internal', work_center_type: 'CNC Mill', estimated_duration: 240, setup_time_minutes: 15, first_article_minutes: null, cycle_time_minutes: 5, instructions: 'Complete production quantity' },
+    { step_number: 120, operation_name: '120 - Deburr', operation_type: 'internal', work_center_type: 'Deburr', estimated_duration: 30, setup_time_minutes: null, first_article_minutes: null, cycle_time_minutes: 1, instructions: 'Remove burrs and clean parts' },
+    // Outside Processing (130-160)
+    { step_number: 130, operation_name: '130 - OP Heat Treat', operation_type: 'outside_processing', work_center_type: 'Heat Treat', estimated_duration: 480, setup_time_minutes: null, first_article_minutes: null, cycle_time_minutes: null, instructions: 'Send to vendor for heat treatment' },
+    { step_number: 140, operation_name: '140 - OP Plating', operation_type: 'outside_processing', work_center_type: 'Plating', estimated_duration: 480, setup_time_minutes: null, first_article_minutes: null, cycle_time_minutes: null, instructions: 'Zinc, Cad, Chrome, or other plating' },
+    { step_number: 150, operation_name: '150 - OP Anodize', operation_type: 'outside_processing', work_center_type: 'Anodize', estimated_duration: 480, setup_time_minutes: null, first_article_minutes: null, cycle_time_minutes: null, instructions: 'Type II or Type III anodizing' },
+    { step_number: 160, operation_name: '160 - OP Paint', operation_type: 'outside_processing', work_center_type: 'Paint', estimated_duration: 480, setup_time_minutes: null, first_article_minutes: null, cycle_time_minutes: null, instructions: 'Paint or powder coat finish' },
     // Post-OP & Final (170-200)
-    { step_number: 170, operation_name: '170 - Post-OP Inspection', operation_type: 'inspection', work_center_type: 'Incoming Inspection', estimated_duration: 30, instructions: 'Inspect parts returned from outside processing' },
-    { step_number: 180, operation_name: '180 - Final Inspection', operation_type: 'inspection', work_center_type: 'Final Inspection', estimated_duration: 30, instructions: 'Final QC check before shipping' },
-    { step_number: 190, operation_name: '190 - Packaging', operation_type: 'internal', work_center_type: 'Packaging', estimated_duration: 15, instructions: 'Package per customer requirements' },
-    { step_number: 200, operation_name: '200 - Ship', operation_type: 'shipping', work_center_type: 'Shipping', estimated_duration: 15, instructions: 'Generate shipping labels and ship' },
+    { step_number: 170, operation_name: '170 - Post-OP Inspection', operation_type: 'inspection', work_center_type: 'Incoming Inspection', estimated_duration: 30, setup_time_minutes: null, first_article_minutes: null, cycle_time_minutes: null, instructions: 'Inspect parts returned from outside processing' },
+    { step_number: 180, operation_name: '180 - Final Inspection', operation_type: 'inspection', work_center_type: 'Final Inspection', estimated_duration: 30, setup_time_minutes: null, first_article_minutes: null, cycle_time_minutes: null, instructions: 'Final QC check before shipping' },
+    { step_number: 190, operation_name: '190 - Packaging', operation_type: 'internal', work_center_type: 'Packaging', estimated_duration: 15, setup_time_minutes: null, first_article_minutes: null, cycle_time_minutes: null, instructions: 'Package per customer requirements' },
+    { step_number: 200, operation_name: '200 - Ship', operation_type: 'shipping', work_center_type: 'Shipping', estimated_duration: 15, setup_time_minutes: null, first_article_minutes: null, cycle_time_minutes: null, instructions: 'Generate shipping labels and ship' },
   ];
 
   const [steps, setSteps] = useState<RoutingTemplateStep[]>(getDefaultSteps());
@@ -234,6 +237,9 @@ export function RoutingTemplateManagement({ isAdmin }: RoutingTemplateManagement
         operation_type: s.operation_type,
         work_center_type: s.work_center_type,
         estimated_duration: s.estimated_duration,
+        setup_time_minutes: s.setup_time_minutes,
+        first_article_minutes: s.first_article_minutes,
+        cycle_time_minutes: s.cycle_time_minutes,
         instructions: s.instructions,
         organization_id: organization!.id,
       })));
@@ -287,6 +293,9 @@ export function RoutingTemplateManagement({ isAdmin }: RoutingTemplateManagement
         operation_type: s.operation_type,
         work_center_type: s.work_center_type,
         estimated_duration: s.estimated_duration,
+        setup_time_minutes: s.setup_time_minutes,
+        first_article_minutes: s.first_article_minutes,
+        cycle_time_minutes: s.cycle_time_minutes,
         instructions: s.instructions,
         organization_id: organization!.id,
       })));
@@ -348,6 +357,9 @@ export function RoutingTemplateManagement({ isAdmin }: RoutingTemplateManagement
           operation_type: s.operation_type,
           work_center_type: s.work_center_type,
           estimated_duration: s.estimated_duration,
+          setup_time_minutes: (s as any).setup_time_minutes || null,
+          first_article_minutes: (s as any).first_article_minutes || null,
+          cycle_time_minutes: (s as any).cycle_time_minutes || null,
           instructions: s.instructions,
           organization_id: organization!.id,
         })));
@@ -371,6 +383,9 @@ export function RoutingTemplateManagement({ isAdmin }: RoutingTemplateManagement
       operation_type: s.operation_type,
       work_center_type: s.work_center_type,
       estimated_duration: s.estimated_duration,
+      setup_time_minutes: (s as any).setup_time_minutes || null,
+      first_article_minutes: (s as any).first_article_minutes || null,
+      cycle_time_minutes: (s as any).cycle_time_minutes || null,
       instructions: s.instructions,
     })) || []);
   };
@@ -386,6 +401,9 @@ export function RoutingTemplateManagement({ isAdmin }: RoutingTemplateManagement
       operation_type: 'internal',
       work_center_type: null,
       estimated_duration: 30,
+      setup_time_minutes: null,
+      first_article_minutes: null,
+      cycle_time_minutes: null,
       instructions: null,
     }]);
   };
@@ -561,47 +579,65 @@ export function RoutingTemplateManagement({ isAdmin }: RoutingTemplateManagement
                     {step.step_number}
                   </Badge>
                   
-                  <div className="flex-1 grid grid-cols-4 gap-2">
-                    <Input
-                      value={step.operation_name}
-                      onChange={(e) => updateStep(index, { operation_name: e.target.value })}
-                      placeholder="Operation name"
-                      autoComplete="off"
-                    />
-                    <Select
-                      value={step.operation_type}
-                      onValueChange={(v) => updateStep(index, { operation_type: v })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {OPERATION_TYPES.map(t => (
-                          <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Select
-                      value={step.work_center_type || "none"}
-                      onValueChange={(v) => updateStep(index, { work_center_type: v === "none" ? null : v })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Work center" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">Not specified</SelectItem>
-                        {WORK_CENTER_TYPES.map(t => (
-                          <SelectItem key={t} value={t}>{t}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Input
-                      type="number"
-                      value={step.estimated_duration || ""}
-                      onChange={(e) => updateStep(index, { estimated_duration: parseInt(e.target.value) || null })}
-                      placeholder="Duration (min)"
-                      autoComplete="off"
-                    />
+                  <div className="flex-1 space-y-2">
+                    <div className="grid grid-cols-3 gap-2">
+                      <Input
+                        value={step.operation_name}
+                        onChange={(e) => updateStep(index, { operation_name: e.target.value })}
+                        placeholder="Operation name"
+                        autoComplete="off"
+                      />
+                      <Select
+                        value={step.operation_type}
+                        onValueChange={(v) => updateStep(index, { operation_type: v })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {OPERATION_TYPES.map(t => (
+                            <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Select
+                        value={step.work_center_type || "none"}
+                        onValueChange={(v) => updateStep(index, { work_center_type: v === "none" ? null : v })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Work center" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Not specified</SelectItem>
+                          {WORK_CENTER_TYPES.map(t => (
+                            <SelectItem key={t} value={t}>{t}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <Input
+                        type="number"
+                        value={step.setup_time_minutes ?? ""}
+                        onChange={(e) => updateStep(index, { setup_time_minutes: parseInt(e.target.value) || null })}
+                        placeholder="Setup (min)"
+                        autoComplete="off"
+                      />
+                      <Input
+                        type="number"
+                        value={step.first_article_minutes ?? ""}
+                        onChange={(e) => updateStep(index, { first_article_minutes: parseInt(e.target.value) || null })}
+                        placeholder="FAI (min)"
+                        autoComplete="off"
+                      />
+                      <Input
+                        type="number"
+                        value={step.cycle_time_minutes ?? ""}
+                        onChange={(e) => updateStep(index, { cycle_time_minutes: parseInt(e.target.value) || null })}
+                        placeholder="Cycle/Part (min)"
+                        autoComplete="off"
+                      />
+                    </div>
                   </div>
                   
                   <Button 
