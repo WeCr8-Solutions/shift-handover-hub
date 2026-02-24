@@ -314,13 +314,50 @@ export function CreateQueueItemDialog({ open, onOpenChange, onCreate, preselecte
             </div>
 
             <div className="space-y-2">
-              <Label>Estimated Duration (min)</Label>
-              <Input
-                type="number"
-                value={formData.estimated_duration || ""}
-                onChange={(e) => setFormData({ ...formData, estimated_duration: parseInt(e.target.value) || undefined })}
-                placeholder="60"
-              />
+              <Label>Machine Time Breakdown</Label>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Setup (min)</Label>
+                  <Input
+                    type="number"
+                    value={(formData as any).setup_time_minutes || ""}
+                    onChange={(e) => setFormData({ ...formData, setup_time_minutes: parseInt(e.target.value) || undefined } as any)}
+                    placeholder="e.g., 30"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">First Article (min)</Label>
+                  <Input
+                    type="number"
+                    value={(formData as any).first_article_minutes || ""}
+                    onChange={(e) => setFormData({ ...formData, first_article_minutes: parseInt(e.target.value) || undefined } as any)}
+                    placeholder="e.g., 15"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Cycle / Part (min)</Label>
+                  <Input
+                    type="number"
+                    value={(formData as any).cycle_time_minutes || ""}
+                    onChange={(e) => setFormData({ ...formData, cycle_time_minutes: parseInt(e.target.value) || undefined } as any)}
+                    placeholder="e.g., 5"
+                  />
+                </div>
+              </div>
+              {/* Total Estimate Preview */}
+              {((formData as any).setup_time_minutes || (formData as any).first_article_minutes || (formData as any).cycle_time_minutes) && (
+                <div className="text-xs text-muted-foreground bg-muted/50 rounded-md p-2">
+                  {(() => {
+                    const setup = (formData as any).setup_time_minutes || 0;
+                    const fai = (formData as any).first_article_minutes || 0;
+                    const cycle = (formData as any).cycle_time_minutes || 0;
+                    const qty = formData.quantity || 1;
+                    const total = setup + fai + (cycle * qty);
+                    const hours = (total / 60).toFixed(1);
+                    return <span><strong>Total Est:</strong> {setup} setup + {fai} FAI + ({cycle} × {qty} pcs) = <strong>{total} min</strong> (~{hours} hrs)</span>;
+                  })()}
+                </div>
+              )}
             </div>
           </div>
 

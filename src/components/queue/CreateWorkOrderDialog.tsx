@@ -57,7 +57,9 @@ export function CreateWorkOrderDialog({
     station_id: preSelectedStationId || "",
     priority: "normal" as QueuePriority,
     due_date: "",
-    estimated_duration: "",
+    setup_time_minutes: "",
+    first_article_minutes: "",
+    cycle_time_minutes: "",
   });
 
   // Fetch stations
@@ -127,7 +129,9 @@ export function CreateWorkOrderDialog({
         station_id: formData.station_id,
         priority: formData.priority,
         due_date: formData.due_date || undefined,
-        estimated_duration: formData.estimated_duration ? parseInt(formData.estimated_duration) : undefined,
+        setup_time_minutes: formData.setup_time_minutes ? parseInt(formData.setup_time_minutes) : undefined,
+        first_article_minutes: formData.first_article_minutes ? parseInt(formData.first_article_minutes) : undefined,
+        cycle_time_minutes: formData.cycle_time_minutes ? parseInt(formData.cycle_time_minutes) : undefined,
       });
 
       toast.success("Work order created successfully");
@@ -144,7 +148,9 @@ export function CreateWorkOrderDialog({
         station_id: preSelectedStationId || "",
         priority: "normal",
         due_date: "",
-        estimated_duration: "",
+        setup_time_minutes: "",
+        first_article_minutes: "",
+        cycle_time_minutes: "",
       });
     } catch (error) {
       toast.error("Failed to create work order");
@@ -275,33 +281,76 @@ export function CreateWorkOrderDialog({
             </div>
           </div>
 
-          {/* Due Date & Duration */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                Due Date
-              </Label>
-              <Input
-                type="date"
-                value={formData.due_date}
-                onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
-                min={format(new Date(), "yyyy-MM-dd")}
-              />
+          {/* Due Date */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              Due Date
+            </Label>
+            <Input
+              type="date"
+              value={formData.due_date}
+              onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
+              min={format(new Date(), "yyyy-MM-dd")}
+            />
+          </div>
+
+          {/* Machine Time Breakdown */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              Machine Time Breakdown
+            </Label>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Setup (min)</Label>
+                <Input
+                  type="number"
+                  value={formData.setup_time_minutes}
+                  onChange={(e) => setFormData({ ...formData, setup_time_minutes: e.target.value })}
+                  placeholder="e.g., 30"
+                  min="0"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">First Article (min)</Label>
+                <Input
+                  type="number"
+                  value={formData.first_article_minutes}
+                  onChange={(e) => setFormData({ ...formData, first_article_minutes: e.target.value })}
+                  placeholder="e.g., 15"
+                  min="0"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Cycle / Part (min)</Label>
+                <Input
+                  type="number"
+                  value={formData.cycle_time_minutes}
+                  onChange={(e) => setFormData({ ...formData, cycle_time_minutes: e.target.value })}
+                  placeholder="e.g., 5"
+                  min="0"
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <Clock className="w-4 h-4" />
-                Est. Duration (min)
-              </Label>
-              <Input
-                type="number"
-                value={formData.estimated_duration}
-                onChange={(e) => setFormData({ ...formData, estimated_duration: e.target.value })}
-                placeholder="e.g., 60"
-                min="1"
-              />
-            </div>
+            {/* Total Estimate Preview */}
+            {(formData.setup_time_minutes || formData.first_article_minutes || formData.cycle_time_minutes) && (
+              <div className="text-xs text-muted-foreground bg-muted/50 rounded-md p-2 mt-1">
+                {(() => {
+                  const setup = parseInt(formData.setup_time_minutes) || 0;
+                  const fai = parseInt(formData.first_article_minutes) || 0;
+                  const cycle = parseInt(formData.cycle_time_minutes) || 0;
+                  const qty = parseInt(formData.quantity) || 1;
+                  const total = setup + fai + (cycle * qty);
+                  const hours = (total / 60).toFixed(1);
+                  return (
+                    <span>
+                      <strong>Total Est:</strong> {setup} setup + {fai} FAI + ({cycle} × {qty} pcs) = <strong>{total} min</strong> (~{hours} hrs)
+                    </span>
+                  );
+                })()}
+              </div>
+            )}
           </div>
 
           {/* Description */}

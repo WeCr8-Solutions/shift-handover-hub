@@ -151,7 +151,9 @@ export function SeedTestDataButton() {
             organization_id: organization.id,
             assigned_to: assignedOperator || null,
             quantity: Math.floor(Math.random() * 50) + 10,
-            estimated_duration: Math.floor(Math.random() * 240) + 60,
+            setup_time_minutes: Math.floor(Math.random() * 45) + 15,
+            first_article_minutes: Math.floor(Math.random() * 30) + 10,
+            cycle_time_minutes: Math.floor(Math.random() * 10) + 2,
             due_date: new Date(Date.now() + Math.random() * 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
             operation_number: wo.operation_number,
           }])

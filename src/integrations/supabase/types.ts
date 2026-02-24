@@ -2715,9 +2715,11 @@ export type Database = {
           completed_at: string | null
           created_at: string
           created_by: string | null
+          cycle_time_minutes: number | null
           description: string | null
           due_date: string | null
           estimated_duration: number | null
+          first_article_minutes: number | null
           id: string
           item_type: Database["public"]["Enums"]["queue_item_type"]
           metadata: Json | null
@@ -2729,6 +2731,7 @@ export type Database = {
           quantity: number | null
           scheduled_end: string | null
           scheduled_start: string | null
+          setup_time_minutes: number | null
           started_at: string | null
           station_id: string | null
           status: Database["public"]["Enums"]["queue_status"]
@@ -2744,9 +2747,11 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           created_by?: string | null
+          cycle_time_minutes?: number | null
           description?: string | null
           due_date?: string | null
           estimated_duration?: number | null
+          first_article_minutes?: number | null
           id?: string
           item_type?: Database["public"]["Enums"]["queue_item_type"]
           metadata?: Json | null
@@ -2758,6 +2763,7 @@ export type Database = {
           quantity?: number | null
           scheduled_end?: string | null
           scheduled_start?: string | null
+          setup_time_minutes?: number | null
           started_at?: string | null
           station_id?: string | null
           status?: Database["public"]["Enums"]["queue_status"]
@@ -2773,9 +2779,11 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           created_by?: string | null
+          cycle_time_minutes?: number | null
           description?: string | null
           due_date?: string | null
           estimated_duration?: number | null
+          first_article_minutes?: number | null
           id?: string
           item_type?: Database["public"]["Enums"]["queue_item_type"]
           metadata?: Json | null
@@ -2787,6 +2795,7 @@ export type Database = {
           quantity?: number | null
           scheduled_end?: string | null
           scheduled_start?: string | null
+          setup_time_minutes?: number | null
           started_at?: string | null
           station_id?: string | null
           status?: Database["public"]["Enums"]["queue_status"]
@@ -2864,34 +2873,43 @@ export type Database = {
       }
       routing_template_steps: {
         Row: {
+          cycle_time_minutes: number | null
           estimated_duration: number | null
+          first_article_minutes: number | null
           id: string
           instructions: string | null
           operation_name: string
           operation_type: string
           organization_id: string
+          setup_time_minutes: number | null
           step_number: number
           template_id: string
           work_center_type: string | null
         }
         Insert: {
+          cycle_time_minutes?: number | null
           estimated_duration?: number | null
+          first_article_minutes?: number | null
           id?: string
           instructions?: string | null
           operation_name: string
           operation_type?: string
           organization_id: string
+          setup_time_minutes?: number | null
           step_number: number
           template_id: string
           work_center_type?: string | null
         }
         Update: {
+          cycle_time_minutes?: number | null
           estimated_duration?: number | null
+          first_article_minutes?: number | null
           id?: string
           instructions?: string | null
           operation_name?: string
           operation_type?: string
           organization_id?: string
+          setup_time_minutes?: number | null
           step_number?: number
           template_id?: string
           work_center_type?: string | null
@@ -3790,8 +3808,10 @@ export type Database = {
           completed_at: string | null
           completed_by: string | null
           created_at: string
+          cycle_time_minutes: number | null
           estimated_duration: number | null
           expected_return_date: string | null
+          first_article_minutes: number | null
           id: string
           notes: string | null
           operation_name: string
@@ -3800,6 +3820,7 @@ export type Database = {
           outside_vendor: string | null
           po_number: string | null
           queue_item_id: string
+          setup_time_minutes: number | null
           started_at: string | null
           station_id: string | null
           status: string
@@ -3810,8 +3831,10 @@ export type Database = {
           completed_at?: string | null
           completed_by?: string | null
           created_at?: string
+          cycle_time_minutes?: number | null
           estimated_duration?: number | null
           expected_return_date?: string | null
+          first_article_minutes?: number | null
           id?: string
           notes?: string | null
           operation_name: string
@@ -3820,6 +3843,7 @@ export type Database = {
           outside_vendor?: string | null
           po_number?: string | null
           queue_item_id: string
+          setup_time_minutes?: number | null
           started_at?: string | null
           station_id?: string | null
           status?: string
@@ -3830,8 +3854,10 @@ export type Database = {
           completed_at?: string | null
           completed_by?: string | null
           created_at?: string
+          cycle_time_minutes?: number | null
           estimated_duration?: number | null
           expected_return_date?: string | null
+          first_article_minutes?: number | null
           id?: string
           notes?: string | null
           operation_name?: string
@@ -3840,6 +3866,7 @@ export type Database = {
           outside_vendor?: string | null
           po_number?: string | null
           queue_item_id?: string
+          setup_time_minutes?: number | null
           started_at?: string | null
           station_id?: string | null
           status?: string
