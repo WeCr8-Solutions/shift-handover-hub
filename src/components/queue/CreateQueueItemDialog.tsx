@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CreateQueueItemInput, QueueItemType, QueuePriority } from "@/hooks/useQueue";
+import { computeEstimatedDuration } from "@/lib/machineTime";
 import { useStations, Station } from "@/hooks/useStations";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useToast } from "@/hooks/use-toast";
@@ -320,8 +321,8 @@ export function CreateQueueItemDialog({ open, onOpenChange, onCreate, preselecte
                   <Label className="text-xs text-muted-foreground">Setup (min)</Label>
                   <Input
                     type="number"
-                    value={(formData as any).setup_time_minutes || ""}
-                    onChange={(e) => setFormData({ ...formData, setup_time_minutes: parseInt(e.target.value) || undefined } as any)}
+                    value={formData.setup_time_minutes || ""}
+                    onChange={(e) => setFormData({ ...formData, setup_time_minutes: parseInt(e.target.value) || undefined })}
                     placeholder="e.g., 30"
                   />
                 </div>
@@ -329,8 +330,8 @@ export function CreateQueueItemDialog({ open, onOpenChange, onCreate, preselecte
                   <Label className="text-xs text-muted-foreground">First Article (min)</Label>
                   <Input
                     type="number"
-                    value={(formData as any).first_article_minutes || ""}
-                    onChange={(e) => setFormData({ ...formData, first_article_minutes: parseInt(e.target.value) || undefined } as any)}
+                    value={formData.first_article_minutes || ""}
+                    onChange={(e) => setFormData({ ...formData, first_article_minutes: parseInt(e.target.value) || undefined })}
                     placeholder="e.g., 15"
                   />
                 </div>
@@ -338,21 +339,21 @@ export function CreateQueueItemDialog({ open, onOpenChange, onCreate, preselecte
                   <Label className="text-xs text-muted-foreground">Cycle / Part (min)</Label>
                   <Input
                     type="number"
-                    value={(formData as any).cycle_time_minutes || ""}
-                    onChange={(e) => setFormData({ ...formData, cycle_time_minutes: parseInt(e.target.value) || undefined } as any)}
+                    value={formData.cycle_time_minutes || ""}
+                    onChange={(e) => setFormData({ ...formData, cycle_time_minutes: parseInt(e.target.value) || undefined })}
                     placeholder="e.g., 5"
                   />
                 </div>
               </div>
               {/* Total Estimate Preview */}
-              {((formData as any).setup_time_minutes || (formData as any).first_article_minutes || (formData as any).cycle_time_minutes) && (
+              {(formData.setup_time_minutes || formData.first_article_minutes || formData.cycle_time_minutes) && (
                 <div className="text-xs text-muted-foreground bg-muted/50 rounded-md p-2">
                   {(() => {
-                    const setup = (formData as any).setup_time_minutes || 0;
-                    const fai = (formData as any).first_article_minutes || 0;
-                    const cycle = (formData as any).cycle_time_minutes || 0;
+                    const setup = formData.setup_time_minutes || 0;
+                    const fai = formData.first_article_minutes || 0;
+                    const cycle = formData.cycle_time_minutes || 0;
                     const qty = formData.quantity || 1;
-                    const total = setup + fai + (cycle * qty);
+                    const total = computeEstimatedDuration(setup, fai, cycle, qty);
                     const hours = (total / 60).toFixed(1);
                     return <span><strong>Total Est:</strong> {setup} setup + {fai} FAI + ({cycle} × {qty} pcs) = <strong>{total} min</strong> (~{hours} hrs)</span>;
                   })()}

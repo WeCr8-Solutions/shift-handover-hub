@@ -33,6 +33,8 @@ export interface QueueItem {
   setup_time_minutes: number | null;
   first_article_minutes: number | null;
   cycle_time_minutes: number | null;
+  parts_completed: number;
+  current_phase: string;
   started_at: string | null;
   completed_at: string | null;
   tags: string[];
@@ -387,41 +389,19 @@ export function useQueue(filters?: {
     async (itemId: string, newPosition: number) => {
       if (!user) return { error: "Not authenticated" };
 
-      const item = items.find((i) => i.id === itemId);
-      if (!item) return { error: "Item not found" };
+      const { error } = await supabase.rpc("reorder_queue_item", {
+        _item_id: itemId,
+        _new_position: newPosition,
+        _org_id: organization?.id || null,
+        _team_id: currentTeam?.id || null,
+      });
 
-      const oldPosition = item.position;
-
-      // Update positions of affected items
-      if (newPosition < oldPosition) {
-        // Moving up - increment positions of items between new and old
-        for (const i of items) {
-          if (i.position >= newPosition && i.position < oldPosition && i.id !== itemId) {
-            await supabase
-              .from("queue_items")
-              .update({ position: i.position + 1 })
-              .eq("id", i.id);
-          }
-        }
-      } else {
-        // Moving down - decrement positions of items between old and new
-        for (const i of items) {
-          if (i.position > oldPosition && i.position <= newPosition && i.id !== itemId) {
-            await supabase
-              .from("queue_items")
-              .update({ position: i.position - 1 })
-              .eq("id", i.id);
-          }
-        }
-      }
-
-      // Update the moved item's position
-      await supabase.from("queue_items").update({ position: newPosition }).eq("id", itemId);
+      if (error) return { error: error.message };
 
       await fetchItems();
       return { error: null };
     },
-    [user, items, fetchItems]
+    [user, organization?.id, currentTeam?.id, fetchItems]
   );
 
   const addComment = useCallback(

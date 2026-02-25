@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { computeRemainingMinutes, formatMinutes, WorkPhase } from "@/lib/machineTime";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,6 +37,12 @@ interface AssignedWorkOrder {
   started_at: string | null;
   completed_at: string | null;
   estimated_duration: number | null;
+  setup_time_minutes: number | null;
+  first_article_minutes: number | null;
+  cycle_time_minutes: number | null;
+  quantity: number | null;
+  parts_completed: number;
+  current_phase: string;
   position: number;
 }
 
@@ -71,6 +78,12 @@ export function OperatorWorkflowPanel() {
           started_at,
           completed_at,
           estimated_duration,
+          setup_time_minutes,
+          first_article_minutes,
+          cycle_time_minutes,
+          quantity,
+          parts_completed,
+          current_phase,
           position,
           stations!queue_items_station_id_fkey(name, station_id)
         `)
@@ -118,14 +131,26 @@ export function OperatorWorkflowPanel() {
     return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
   };
 
-  const getEstimatedRemaining = (startedAt: string, estimatedDuration: number | null) => {
-    if (!estimatedDuration) return null;
-    const elapsed = Math.floor((currentTime - new Date(startedAt).getTime()) / 60000);
-    const remaining = estimatedDuration - elapsed;
+  const getEstimatedRemaining = (wo: AssignedWorkOrder) => {
+    // If we have granular time fields, use phase-aware computation
+    if (wo.setup_time_minutes || wo.first_article_minutes || wo.cycle_time_minutes) {
+      const remaining = computeRemainingMinutes({
+        setup_time_minutes: wo.setup_time_minutes ?? null,
+        first_article_minutes: wo.first_article_minutes ?? null,
+        cycle_time_minutes: wo.cycle_time_minutes ?? null,
+        quantity: wo.quantity ?? null,
+        current_phase: (wo.current_phase || 'setup') as WorkPhase,
+        parts_completed: wo.parts_completed ?? 0,
+      });
+      if (remaining <= 0) return "Complete";
+      return `${formatMinutes(remaining)} left`;
+    }
+    // Fallback: wall-clock based
+    if (!wo.estimated_duration || !wo.started_at) return null;
+    const elapsed = Math.floor((currentTime - new Date(wo.started_at).getTime()) / 60000);
+    const remaining = wo.estimated_duration - elapsed;
     if (remaining <= 0) return "Overdue";
-    const hours = Math.floor(remaining / 60);
-    const mins = remaining % 60;
-    return hours > 0 ? `${hours}h ${mins}m left` : `${mins}m left`;
+    return `${formatMinutes(remaining)} left`;
   };
 
   const getPriorityColor = (priority: string) => {
@@ -202,16 +227,16 @@ export function OperatorWorkflowPanel() {
                   </div>
                 )}
 
-                {activeWorkOrder.started_at && activeWorkOrder.estimated_duration && (
+                {activeWorkOrder.started_at && (activeWorkOrder.estimated_duration || activeWorkOrder.setup_time_minutes || activeWorkOrder.cycle_time_minutes) && (
                   <div className="flex items-center gap-1 text-xs">
                     <Clock className="w-3 h-3" />
                     <span className={cn(
                       "font-medium",
-                      getEstimatedRemaining(activeWorkOrder.started_at, activeWorkOrder.estimated_duration) === "Overdue" 
-                        ? "text-red-500" 
+                      getEstimatedRemaining(activeWorkOrder) === "Overdue" || getEstimatedRemaining(activeWorkOrder) === "Complete"
+                        ? "text-destructive" 
                         : "text-muted-foreground"
                     )}>
-                      {getEstimatedRemaining(activeWorkOrder.started_at, activeWorkOrder.estimated_duration)}
+                      {getEstimatedRemaining(activeWorkOrder)}
                     </span>
                   </div>
                 )}
