@@ -352,6 +352,9 @@ export interface ParsedExcelData {
     team_name?: string;
     due_date?: string;
     estimated_duration?: number;
+    setup_time_minutes?: number;
+    first_article_minutes?: number;
+    cycle_time_minutes?: number;
     tags?: string[];
     description?: string;
   }>;

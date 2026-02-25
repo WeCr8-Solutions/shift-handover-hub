@@ -357,9 +357,9 @@ export function RoutingTemplateManagement({ isAdmin }: RoutingTemplateManagement
           operation_type: s.operation_type,
           work_center_type: s.work_center_type,
           estimated_duration: s.estimated_duration,
-          setup_time_minutes: (s as any).setup_time_minutes || null,
-          first_article_minutes: (s as any).first_article_minutes || null,
-          cycle_time_minutes: (s as any).cycle_time_minutes || null,
+          setup_time_minutes: s.setup_time_minutes || null,
+          first_article_minutes: s.first_article_minutes || null,
+          cycle_time_minutes: s.cycle_time_minutes || null,
           instructions: s.instructions,
           organization_id: organization!.id,
         })));
@@ -383,9 +383,9 @@ export function RoutingTemplateManagement({ isAdmin }: RoutingTemplateManagement
       operation_type: s.operation_type,
       work_center_type: s.work_center_type,
       estimated_duration: s.estimated_duration,
-      setup_time_minutes: (s as any).setup_time_minutes || null,
-      first_article_minutes: (s as any).first_article_minutes || null,
-      cycle_time_minutes: (s as any).cycle_time_minutes || null,
+      setup_time_minutes: s.setup_time_minutes || null,
+      first_article_minutes: s.first_article_minutes || null,
+      cycle_time_minutes: s.cycle_time_minutes || null,
       instructions: s.instructions,
     })) || []);
   };

@@ -535,27 +535,27 @@ export function QueueItemDetailDialog({
                   </div>
                 )}
                 {/* Machine Time Breakdown */}
-                {((item as any).setup_time_minutes || (item as any).first_article_minutes || (item as any).cycle_time_minutes) ? (
+                {(item.setup_time_minutes || item.first_article_minutes || item.cycle_time_minutes) ? (
                   <div className="p-3 bg-muted/30 rounded-lg space-y-2">
                     <label className="text-sm font-medium block">Machine Time Breakdown</label>
                     <div className="grid grid-cols-3 gap-3 text-sm">
                       <div>
                         <span className="text-xs text-muted-foreground block">Setup</span>
-                        <span className="font-medium">{(item as any).setup_time_minutes || 0} min</span>
+                        <span className="font-medium">{item.setup_time_minutes || 0} min</span>
                       </div>
                       <div>
                         <span className="text-xs text-muted-foreground block">First Article</span>
-                        <span className="font-medium">{(item as any).first_article_minutes || 0} min</span>
+                        <span className="font-medium">{item.first_article_minutes || 0} min</span>
                       </div>
                       <div>
                         <span className="text-xs text-muted-foreground block">Cycle / Part</span>
-                        <span className="font-medium">{(item as any).cycle_time_minutes || 0} min/pc</span>
+                        <span className="font-medium">{item.cycle_time_minutes || 0} min/pc</span>
                       </div>
                     </div>
                     {item.estimated_duration && (
                       <div className="text-xs text-muted-foreground pt-1 border-t">
                         Total: <strong>{item.estimated_duration} min</strong> (~{(item.estimated_duration / 60).toFixed(1)} hrs)
-                        {item.quantity && (item as any).cycle_time_minutes ? ` — includes ${(item as any).cycle_time_minutes} min × ${item.quantity} pcs` : ''}
+                        {item.quantity && item.cycle_time_minutes ? ` — includes ${item.cycle_time_minutes} min × ${item.quantity} pcs` : ''}
                       </div>
                     )}
                   </div>

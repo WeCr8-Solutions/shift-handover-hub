@@ -30,6 +30,8 @@ function createMockQueueItem(overrides: Partial<QueueItem> = {}): QueueItem {
     setup_time_minutes: null,
     first_article_minutes: null,
     cycle_time_minutes: null,
+    parts_completed: 0,
+    current_phase: 'setup',
     started_at: null,
     completed_at: null,
     tags: [],

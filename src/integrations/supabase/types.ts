@@ -2715,6 +2715,7 @@ export type Database = {
           completed_at: string | null
           created_at: string
           created_by: string | null
+          current_phase: string | null
           cycle_time_minutes: number | null
           description: string | null
           due_date: string | null
@@ -2726,6 +2727,7 @@ export type Database = {
           operation_number: string | null
           organization_id: string
           part_number: string | null
+          parts_completed: number | null
           position: number
           priority: Database["public"]["Enums"]["queue_priority"]
           quantity: number | null
@@ -2747,6 +2749,7 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           created_by?: string | null
+          current_phase?: string | null
           cycle_time_minutes?: number | null
           description?: string | null
           due_date?: string | null
@@ -2758,6 +2761,7 @@ export type Database = {
           operation_number?: string | null
           organization_id: string
           part_number?: string | null
+          parts_completed?: number | null
           position?: number
           priority?: Database["public"]["Enums"]["queue_priority"]
           quantity?: number | null
@@ -2779,6 +2783,7 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           created_by?: string | null
+          current_phase?: string | null
           cycle_time_minutes?: number | null
           description?: string | null
           due_date?: string | null
@@ -2790,6 +2795,7 @@ export type Database = {
           operation_number?: string | null
           organization_id?: string
           part_number?: string | null
+          parts_completed?: number | null
           position?: number
           priority?: Database["public"]["Enums"]["queue_priority"]
           quantity?: number | null
@@ -4127,6 +4133,15 @@ export type Database = {
       is_team_owner: {
         Args: { _team_id: string; _user_id: string }
         Returns: boolean
+      }
+      reorder_queue_item: {
+        Args: {
+          _item_id: string
+          _new_position: number
+          _org_id?: string
+          _team_id?: string
+        }
+        Returns: undefined
       }
       report_issue: {
         Args: {
