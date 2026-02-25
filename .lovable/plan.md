@@ -1,103 +1,100 @@
 
 
-# Separate Machine Time Tracking: Setup, First Article, and Production Run Times
+# Engineering Review: Machine Time Tracking (Small Change Mode)
 
-## Problem
+---
 
-Currently, each work order and routing step has a single `estimated_duration` field (in minutes). This doesn't reflect real manufacturing, where machine time is composed of three distinct phases:
+## Section 1: Architecture
 
-1. **Setup Time** -- One-time cost to prepare the machine (fixturing, tooling, alignment)
-2. **First Article Time** -- Time to run and inspect the first piece (FAI / prove-out)
-3. **Cycle Time Per Part** -- Repeatable time per unit, multiplied by quantity for total production run time
+### Issue 1A: `remaining_minutes` formula not implemented anywhere
 
-**Total estimated machine time** = Setup + First Article + (Cycle Time x Quantity)
+Your message specified this formula:
 
-The old single `estimated_duration` field conflates all of these, making scheduling and capacity planning inaccurate.
-
-## Solution
-
-Replace the single `estimated_duration` with three granular time fields on both the `queue_items` and `work_order_routing` tables (and the `routing_template_steps` table for templates). Keep `estimated_duration` as a computed/display value so existing code doesn't break, but calculate it from the new fields.
-
-## Database Changes
-
-### Tables Modified
-
-**`queue_items`** -- Add 3 new columns:
-- `setup_time_minutes` (integer, nullable) -- Machine setup time
-- `first_article_minutes` (integer, nullable) -- First article / prove-out time
-- `cycle_time_minutes` (integer, nullable) -- Per-part production cycle time
-
-**`work_order_routing`** -- Add 3 new columns:
-- `setup_time_minutes` (integer, nullable)
-- `first_article_minutes` (integer, nullable)
-- `cycle_time_minutes` (integer, nullable)
-
-**`routing_template_steps`** -- Add 3 new columns:
-- `setup_time_minutes` (integer, nullable)
-- `first_article_minutes` (integer, nullable)
-- `cycle_time_minutes` (integer, nullable)
-
-The existing `estimated_duration` column is kept for backward compatibility but will be auto-computed via a trigger:
-
-```
-estimated_duration = COALESCE(setup_time_minutes, 0)
-                   + COALESCE(first_article_minutes, 0)
-                   + (COALESCE(cycle_time_minutes, 0) * COALESCE(quantity, 1))
+```text
+qty_remaining = max(qty_total - qty_completed, 0)
+remaining_minutes =
+  (setup_minutes_if_not_done ? setup_minutes : 0)
+  + (fai_minutes_if_not_done ? fai_minutes : 0)
+  + (cycle_minutes * qty_remaining)
 ```
 
-A `BEFORE INSERT OR UPDATE` trigger on `queue_items` will auto-calculate `estimated_duration` whenever the component fields change. For `work_order_routing` (which has no `quantity` column), the formula uses the parent queue item's quantity via a lookup.
+**Current state:** The DB trigger and all UI code only compute `total_minutes` (setup + FAI + cycle * qty_total). There is no concept of `qty_completed`, `setup_done`, or `fai_done` tracked anywhere. The `OperatorWorkflowPanel` (`getEstimatedRemaining`, line 121-129) computes remaining time purely by subtracting wall-clock elapsed from `estimated_duration` -- it has no awareness of parts completed or phase completion.
 
-## UI Changes
+**Options:**
 
-### 1. Create Work Order Dialog (`CreateWorkOrderDialog.tsx`)
-Replace the single "Est. Duration (min)" field with three labeled inputs:
-- **Setup Time (min)** -- placeholder "e.g., 30"
-- **First Article (min)** -- placeholder "e.g., 15"
-- **Cycle Time / Part (min)** -- placeholder "e.g., 5"
+- **1A (Recommended): Add `parts_completed` tracking + phase-aware remaining time computation.** Add a `parts_completed` integer column to `queue_items` (or use the existing `parts_complete` on `current_station_status`). Track whether setup and FAI phases are done via a `current_phase` enum column (`setup`, `first_article`, `production`, `complete`). Compute remaining time dynamically in a shared utility function. Effort: medium. Impact: high -- this is the core value of the split.
 
-Show a computed "Total Est." summary below when quantity is entered:
-> Total: 30 min setup + 15 min FAI + (5 min x 100 pcs) = 545 min (~9.1 hrs)
+- **1B: Keep wall-clock-based remaining.** Do nothing. The split fields become cosmetic labels only. Effort: zero. Impact: defeats the purpose of the feature.
 
-### 2. Create Queue Item Dialog (`CreateQueueItemDialog.tsx`)
-Same three-field replacement for the estimated duration input.
+- **1C: Client-side only.** Compute remaining time in the UI using `parts_complete` from `current_station_status` and assume setup/FAI are done once the phase transitions. No new DB columns. Effort: low-medium. Risk: data only exists in station status, not on the queue item itself. Less reliable.
 
-### 3. Work Order Detail Dialog (`QueueItemDetailDialog.tsx`)
-Display the three time components in the details section instead of the single "Estimated Duration" line:
-- Setup: X min | FAI: X min | Cycle: X min/pc
-- Total: computed value
+**Recommendation:** 1A. The entire reason for splitting times is to get accurate remaining-time estimates. Without phase tracking, you've added UI complexity with no scheduling benefit. This aligns with your preference for handling more edge cases over speed.
 
-In the Routing tab, show per-step time breakdowns with the same three fields.
+**Do you agree with 1A, or prefer a different direction?**
 
-### 4. Operator Station Panel (`OperatorStationPanel.tsx`)
-No structural changes needed -- it already uses `started_at` for elapsed timer. The improved `estimated_duration` (now auto-computed) will make the "overdue" detection in `OperatorWorkflowPanel` more accurate.
+---
 
-### 5. Routing Template Management (`RoutingTemplateManagement.tsx`)
-Add setup/FAI/cycle time fields to the template step editor alongside the existing `estimated_duration`.
+## Section 2: Code Quality
 
-### 6. Bulk Upload (`useBulkUpload.ts`)
-Update the Excel template and parser to accept the three new columns (setup_time, first_article_time, cycle_time_per_part) in addition to or replacing estimated_duration.
+### Issue 2A: 69 occurrences of `(item as any).setup_time_minutes` across 4 files
 
-### 7. Queue Hook (`useQueue.ts`)
-Update `QueueItem`, `CreateQueueItemInput`, and `UpdateQueueItemInput` types to include the three new fields. The `createItem` and `updateItem` functions pass them through.
+The `QueueItem` interface in `useQueue.ts` (lines 33-35) already declares `setup_time_minutes`, `first_article_minutes`, and `cycle_time_minutes`. Yet `QueueItemDetailDialog.tsx`, `CreateQueueItemDialog.tsx`, `RoutingTemplateManagement.tsx`, and `useBulkUpload.ts` all cast to `as any` to access these fields -- 69 times total.
 
-### 8. Seed Data (`SeedTestDataButton.tsx`)
-Update test data generation to populate the three new fields with realistic values.
+This is a DRY/type-safety violation. The types are correct; the components just aren't using them.
 
-## Files to Modify
+**Options:**
 
-1. **Database migration** -- Add columns + auto-compute trigger
-2. `src/hooks/useQueue.ts` -- Types and create/update logic
-3. `src/components/queue/CreateWorkOrderDialog.tsx` -- Three time inputs + total preview
-4. `src/components/queue/CreateQueueItemDialog.tsx` -- Three time inputs
-5. `src/components/queue/QueueItemDetailDialog.tsx` -- Display breakdown
-6. `src/components/OperatorWorkflowPanel.tsx` -- Use improved estimated_duration
-7. `src/components/admin/RoutingTemplateManagement.tsx` -- Template step fields
-8. `src/components/admin/SeedTestDataButton.tsx` -- Realistic seed data
-9. `src/hooks/useBulkUpload.ts` -- Excel column mapping
+- **2A (Recommended): Remove all `as any` casts.** The fields exist on the `QueueItem` type. The casts are unnecessary and actively hide type errors. For `CreateQueueItemDialog`, `CreateQueueItemInput` already has these fields (lines 80-82). The `formData` state just needs to be typed correctly. Effort: low (find-replace + minor type fixes). Risk: zero.
 
-## Technical Notes
+- **2B: Do nothing.** Leave the casts. Risk: type errors silently pass, future refactors will break without warning. Maintenance burden grows.
 
-- The `estimated_duration` column is preserved and auto-calculated, so all existing views (calendar, kanban, list, operator panels) that reference it continue working without changes.
-- RLS policies are unaffected -- no new tables or access patterns are introduced.
-- The trigger uses `COALESCE` with sensible defaults (0 for times, 1 for quantity) so partial data entry still produces a reasonable total.
+**Recommendation:** 2A. This is exactly the kind of thing you flagged as non-negotiable -- explicit over clever, DRY violations flagged aggressively. It's a 15-minute fix with zero risk.
+
+**Do you agree with 2A, or prefer to defer?**
+
+---
+
+## Section 3: Tests
+
+### Issue 3A: No tests for the time computation logic
+
+The test file `useQueue.test.ts` has zero tests for the new time fields. There are no tests for:
+- The total estimate formula (setup + FAI + cycle * qty)
+- Edge cases: zero quantity, null fields, partial fields
+- The "remaining time" logic in `OperatorWorkflowPanel`
+- The DB trigger behavior (estimated_duration auto-computation)
+
+The existing tests only cover type shapes, grouping, sorting, and overdue detection.
+
+**Options:**
+
+- **3A (Recommended): Add a `describe("Machine Time Calculations")` block** with unit tests for a pure `computeEstimatedDuration(setup, fai, cycle, qty)` utility function. Test edge cases: all nulls, zero qty, partial input, large values. Also test the total preview formula used in both create dialogs (currently duplicated inline). Effort: low (extract function + ~8 test cases). Impact: high -- catches regressions on the core formula.
+
+- **3B: Add integration tests.** Test via Supabase trigger by inserting rows and checking `estimated_duration`. Effort: higher, requires test DB connection. Benefit: tests the actual trigger. Risk: slower, flakier.
+
+- **3C: Do nothing.** Risk: formula bugs go undetected. Violates your "well-tested code is non-negotiable" preference.
+
+**Recommendation:** 3A. Extract the formula into a shared utility, test it thoroughly. The inline IIFE in both create dialogs (lines 339-357 of `CreateWorkOrderDialog.tsx` and lines 350-357 of `CreateQueueItemDialog.tsx`) is duplicated logic that should be a single tested function.
+
+**Do you agree with 3A, or want broader coverage?**
+
+---
+
+## Section 4: Performance
+
+### Issue 4A: `reorderItems` fires N sequential database updates (N+1 pattern)
+
+`useQueue.ts` lines 386-424: When reordering, the code loops through all items and fires individual `UPDATE` queries sequentially for every item whose position changed. For a queue with 50 items, dragging one item from position 1 to 50 fires 49 individual updates + 1 for the moved item + 1 `fetchItems` refetch = 51 round trips.
+
+**Options:**
+
+- **4A (Recommended): Use a single RPC call.** Create a Postgres function `reorder_queue_item(item_id, new_position)` that does all position updates in a single transaction. Effort: medium (new DB function + migration + update hook). Impact: 51 round trips become 1. Also eliminates race conditions from concurrent reorders.
+
+- **4B: Batch with `Promise.all`.** Run updates in parallel instead of sequentially. Effort: low. Impact: faster but still N round trips, still race-prone, still no transaction boundary.
+
+- **4C: Do nothing.** Acceptable if queues stay small (<20 items). Risk: degrades with scale, race conditions on concurrent reorders can corrupt positions.
+
+**Recommendation:** 4A. The sequential N+1 pattern is a textbook performance and correctness problem. A single RPC call is the clean solution. This aligns with "engineered enough" -- not over-engineered (it's one function), not under-engineered (eliminates a real race condition).
+
+**Do you agree with 4A, or is queue size small enough to defer?**
 
