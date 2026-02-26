@@ -13,7 +13,7 @@ import { useStations, HandoffRecord } from "@/hooks/useStations";
 import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { JobState, TriState, WorkCenterType, Shift } from "@/types/handoff";
 import { workCenterIcons, workCenterColors, getCategoryForType } from "@/lib/workCenterIcons";
-import { X, Check, Minus, Save, ChevronRight, ChevronLeft, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { X, Check, Minus, Save, ChevronRight, ChevronLeft, Loader2, AlertCircle, CheckCircle2, Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import {
@@ -635,7 +635,7 @@ export function NewHandoffForm({ onClose, onSubmit, initialStationId }: NewHando
                           {category}
                         </div>
                         {stationList.map((s) => {
-                          const Icon = workCenterIcons[s.work_center_type];
+                          const Icon = workCenterIcons[s.work_center_type] || Circle;
                           return (
                             <SelectItem key={s.id} value={s.id}>
                               <div className="flex items-center gap-2">
