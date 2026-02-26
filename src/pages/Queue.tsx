@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQueue, QueueStatus, QueueItemType } from "@/hooks/useQueue";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useNCR } from "@/hooks/useNCR";
 import { Header } from "@/components/Header";
 import { QueueKanbanBoard } from "@/components/queue/QueueKanbanBoard";
 import { QueueListView } from "@/components/queue/QueueListView";
@@ -15,12 +16,14 @@ import { QueueStatsCards } from "@/components/queue/QueueStatsCards";
 import { WorkOrderRoutingEditor } from "@/components/routing/WorkOrderRoutingEditor";
 import { OutsideProcessingManager } from "@/components/routing/OutsideProcessingManager";
 import { WorkOrderHistory } from "@/components/admin/WorkOrderHistory";
+import { NCRApprovalPanel } from "@/components/ncr/NCRApprovalPanel";
+import { QualityMetricsDashboard } from "@/components/ncr/QualityMetricsDashboard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PlanningAssistantModal } from "@/components/queue/PlanningAssistantModal";
-import { Loader2, LayoutGrid, List, Plus, Calendar, Truck, GitBranch, Building2, Wrench, Eye, History } from "lucide-react";
+import { Loader2, LayoutGrid, List, Plus, Calendar, Truck, GitBranch, Building2, Wrench, Eye, History, ShieldAlert } from "lucide-react";
 
 export default function Queue() {
   const navigate = useNavigate();
@@ -32,7 +35,7 @@ export default function Queue() {
   // Check if viewing a specific station from URL
   const urlStationId = searchParams.get("station");
   
-  const [activeTab, setActiveTab] = useState<"queue" | "outside-processing" | "history">("queue");
+  const [activeTab, setActiveTab] = useState<"queue" | "outside-processing" | "ncr" | "history">("queue");
   const [view, setView] = useState<"kanban" | "list" | "calendar">("kanban");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
@@ -83,6 +86,10 @@ export default function Queue() {
     getHistory,
   } = useQueue(filters);
 
+  // NCR data for the NCR tab and quality metrics
+  const { ncrs, approveNCR, rejectNCR } = useNCR();
+  const pendingNCRs = ncrs.filter(n => n.authorization_status === 'pending');
+
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/auth");
@@ -99,12 +106,22 @@ export default function Queue() {
 
   const selectedItem = selectedItemId ? items.find((i) => i.id === selectedItemId) : null;
 
+  // Compute quality metrics from items with qty tracking
+  const qualityItems = items.filter(i => i.qty_original != null && i.qty_original > 0 && !i.is_rework);
+  const totalOriginal = qualityItems.reduce((sum, i) => sum + (i.qty_original ?? 0), 0);
+  const totalScrap = qualityItems.reduce((sum, i) => sum + (i.qty_scrap ?? 0), 0);
+  const totalRework = qualityItems.reduce((sum, i) => sum + (i.qty_rework ?? 0), 0);
+  const totalCompleted = qualityItems.reduce((sum, i) => sum + (i.qty_completed ?? 0), 0);
+
   const stats = {
     total: items.length,
     pending: items.filter((i) => i.status === "pending" || i.status === "queued").length,
     inProgress: items.filter((i) => i.status === "in_progress").length,
     completed: items.filter((i) => i.status === "completed").length,
     overdue: items.filter((i) => i.due_date && new Date(i.due_date) < new Date() && i.status !== "completed").length,
+    fpy: totalOriginal > 0 ? ((totalCompleted - totalRework) / totalOriginal) * 100 : undefined,
+    scrapRate: totalOriginal > 0 ? (totalScrap / totalOriginal) * 100 : undefined,
+    reworkRate: totalOriginal > 0 ? (totalRework / totalOriginal) * 100 : undefined,
   };
 
   const handleOpenRouting = (item: { id: string; work_order?: string | null; part_number?: string | null }) => {
@@ -193,7 +210,7 @@ export default function Queue() {
         </div>
 
         {/* Tabs for Queue vs Outside Processing */}
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "queue" | "outside-processing" | "history")} data-tour="queue-tabs">
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "queue" | "outside-processing" | "ncr" | "history")} data-tour="queue-tabs">
           <TabsList>
             <TabsTrigger value="queue" className="flex items-center gap-2">
               <LayoutGrid className="w-4 h-4" />
@@ -203,6 +220,17 @@ export default function Queue() {
               <Truck className="w-4 h-4" />
               Outside Processing
             </TabsTrigger>
+            {hasAdminAccess && (
+              <TabsTrigger value="ncr" className="flex items-center gap-2">
+                <ShieldAlert className="w-4 h-4" />
+                NCR Queue
+                {pendingNCRs.length > 0 && (
+                  <Badge variant="destructive" className="ml-1 h-5 px-1.5 text-[10px]">
+                    {pendingNCRs.length}
+                  </Badge>
+                )}
+              </TabsTrigger>
+            )}
             {hasAdminAccess && (
               <TabsTrigger value="history" className="flex items-center gap-2">
                 <History className="w-4 h-4" />
@@ -281,6 +309,17 @@ export default function Queue() {
           <TabsContent value="outside-processing" className="mt-6">
             <OutsideProcessingManager />
           </TabsContent>
+
+          {hasAdminAccess && (
+            <TabsContent value="ncr" className="mt-6 space-y-6">
+              <NCRApprovalPanel
+                ncrs={pendingNCRs}
+                onApprove={approveNCR}
+                onReject={rejectNCR}
+              />
+              <QualityMetricsDashboard items={items} />
+            </TabsContent>
+          )}
 
           {hasAdminAccess && (
             <TabsContent value="history" className="mt-6">
