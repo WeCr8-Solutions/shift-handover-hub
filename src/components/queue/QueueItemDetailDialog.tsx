@@ -427,7 +427,7 @@ export function QueueItemDetailDialog({
 
         {/* Quick Action Buttons */}
         {isWorkOrder && !isCompleted && (
-          <div className="flex gap-2 p-3 bg-muted/30 rounded-lg border">
+          <div className="flex flex-wrap gap-2 p-3 bg-muted/30 rounded-lg border">
             {canStart && (
               <Button 
                 onClick={handleStartWork} 
@@ -523,7 +523,7 @@ export function QueueItemDetailDialog({
           />
         )}
 
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden min-h-0">
           <Tabs defaultValue="details" className="h-full flex flex-col">
             <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="details">Details</TabsTrigger>
@@ -603,7 +603,7 @@ export function QueueItemDetailDialog({
 
               {/* Work Order Details */}
               {item.work_order && (
-                <div className="grid grid-cols-4 gap-4 p-3 bg-muted/30 rounded-lg">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-3 bg-muted/30 rounded-lg">
                   <div>
                     <label className="text-xs font-medium text-muted-foreground block mb-1">Work Order</label>
                     <p className="font-medium">{item.work_order}</p>
@@ -645,7 +645,7 @@ export function QueueItemDetailDialog({
                 {(item.setup_time_minutes || item.first_article_minutes || item.cycle_time_minutes) ? (
                   <div className="p-3 bg-muted/30 rounded-lg space-y-2">
                     <label className="text-sm font-medium block">Machine Time Breakdown</label>
-                    <div className="grid grid-cols-3 gap-3 text-sm">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
                       <div>
                         <span className="text-xs text-muted-foreground block">Setup</span>
                         <span className="font-medium">{item.setup_time_minutes || 0} min</span>
@@ -855,7 +855,7 @@ export function QueueItemDetailDialog({
             </TabsContent>
 
             <TabsContent value="comments" className="flex-1 flex flex-col overflow-hidden mt-4">
-              <ScrollArea className="flex-1 pr-4">
+              <ScrollArea className="h-[300px] pr-4">
                 <div className="space-y-3">
                   {comments.map((comment) => (
                     <div key={comment.id} className="bg-muted/50 rounded-lg p-3">

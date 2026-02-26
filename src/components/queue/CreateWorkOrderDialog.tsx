@@ -157,7 +157,7 @@ export function CreateWorkOrderDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg" onOpenAutoFocus={(e) => e.preventDefault()}>
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-hidden" onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Package className="w-5 h-5 text-primary" />
@@ -165,7 +165,7 @@ export function CreateWorkOrderDialog({
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 overflow-y-auto max-h-[calc(90vh-8rem)] pr-1">
           {/* Work Order Number */}
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
@@ -297,7 +297,7 @@ export function CreateWorkOrderDialog({
               <Clock className="w-4 h-4" />
               Machine Time Breakdown
             </Label>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="space-y-1">
                 <Label className="text-xs text-muted-foreground">Setup (min)</Label>
                 <Input
