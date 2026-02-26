@@ -1,80 +1,78 @@
 
-Goal: restore correct org-scoped dashboard/queue visibility and make routing handoff/pass-down reliable for operators and supervisors (with supervisor override), while keeping role enforcement server-side via existing role tables (`user_roles`, `organization_members`, `team_members`).
 
-Implementation steps:
+# Audit & Fix: Org-Scoped Data Flow + Test Coverage
 
-1) Add atomic backend routing-pass function (single source of truth)
-- Create SQL function `public.pass_work_order_to_next_step(...)` (SECURITY DEFINER, `SET search_path = public`) to:
-  - validate actor permission (operator at current station OR supervisor/org admin override),
-  - complete current routing step,
-  - move queue item to next station (`queued`) or finish work order (`completed`) if final step,
-  - set next step status to `pending`,
-  - update `current_station_status` for both current and next station in the same transaction,
-  - write audit/history with override reason when used.
+## Issues Found
 
-2) Harden RLS for operator pass-down + supervisor override
-- Add helper SQL functions for policy checks (security definer):
-  - `can_operator_act_on_station(_user_id, _station_id)` via active `operator_station_sessions`,
-  - `can_supervisor_override_in_org(_user_id, _org_id)` via `organization_members` + platform role check.
-- Update policies so:
-  - operators can only update queue/routing rows for their active station scope,
-  - supervisors/org admins can update within org scope,
-  - no client-side role trust paths.
+### A. Missing `organization?.id` in hook calls (5 files)
 
-3) Fix handoff creation context binding (station/team/org alignment)
-- Update `NewHandoffForm` to accept context props (`stationId`, `queueItemId`, prefilled WO/part/op, optional forced team).
-- Auto-load station/team from selected station row; stop relying on `currentTeam` alone for `team_id`.
-- Ensure handoff insert always uses station-consistent team/org data and keeps dashboard status sync update.
+These components call `useStations` and/or `useHandoffRecords` with only `teamId`, relying on the hook's internal `useUserOrganization()` fallback. This creates a redundant second call to `useUserOrganization` per component and risks inconsistency if the fallback resolves at a different time than the component's own org context.
 
-4) Wire prefill and station context everywhere handoff opens
-- Pass real station context from:
-  - `OperatorDashboard`,
-  - `StationDetailView`,
-  - `Index` (station cards and supervisor actions),
-  - queue-detail “create handoff” path.
-- Remove unused state paths (`handoffStationId`/`selectedStationForAction` gaps) so handoff always opens scoped to intended station.
+| File | Current Call | Fix |
+|------|-------------|-----|
+| `SupervisorDashboard.tsx` | `useStations(currentTeam?.id)` | `useStations(currentTeam?.id, organization?.id)` |
+| `SupervisorDashboard.tsx` | `useHandoffRecords(currentTeam?.id)` | `useHandoffRecords(currentTeam?.id, organization?.id)` |
+| `Index.tsx` | `useStations(currentTeam?.id)` | `useStations(currentTeam?.id, organization?.id)` |
+| `Index.tsx` | `useHandoffRecords(currentTeam?.id)` | `useHandoffRecords(currentTeam?.id, organization?.id)` |
+| `NewHandoffForm.tsx` | `useStations(currentTeam?.id)` | Add `useUserOrganization` and pass `organization?.id` |
+| `QueueItemDetailDialog.tsx` | `useStations(currentTeam?.id)` | Same pattern |
+| `CreateQueueItemDialog.tsx` | `useStations(currentTeam?.id)` | Same pattern |
+| `OperatorDashboard.tsx` | `useHandoffRecords(currentTeam?.id)` | Same pattern |
+| `StationDetailView.tsx` | `useHandoffRecords(currentTeam?.id)` | Same pattern |
 
-5) Replace direct multi-step client updates with backend function calls
-- In `OperatorStationPanel` and `QueueItemDetailDialog`, replace manual step-by-step `update/upsert` chain with one backend RPC call.
-- Handle and surface permission-denied + validation errors cleanly.
-- Add explicit supervisor override action + reason field (visible only for supervisor/org-admin/platform-admin access).
+### B. Missing Tests
 
-6) Correct queue category rendering consistency
-- Ensure operator station panel shows distinct sections/counts for:
-  - pending,
-  - queued,
-  - in_progress,
-  - on_hold,
-  - completed (recent at minimum).
-- Align `QueueStatsCards` counts to avoid merging categories unexpectedly.
-- Keep station-centric operator focus and org-wide supervisor visibility.
+1. **SupervisorDashboard** — no test exists. Need test verifying:
+   - Org-scoped hook calls with `organization?.id`
+   - KPI computation from station states
+   - Passes `dbId` (not display `station_id`) to `onViewStation`
 
-7) Enforce station-centric operator queue view in `/queue`
-- For non-supervisor/admin users:
-  - auto-apply station filter from active operator session(s),
-  - prevent org-wide scope toggle,
-  - only allow viewing stations they are checked into.
-- Keep supervisor/admin org-wide view + optional station drill-down.
+2. **useQueue hook** — existing test only validates types/sorting, not org-scoped Supabase calls. Need test verifying:
+   - `organization_id` filter applied to query
+   - Station filter for operator scope
 
-8) Realtime and validation polish
-- Add org/station-scoped realtime filters where supported to reduce stale/noisy refresh behavior.
-- Expand `rls-health` checks to include:
-  - operator allowed pass-down at checked-in station,
-  - operator denied cross-station pass-down,
-  - supervisor override allowed in-org,
-  - denied cross-org.
+3. **OperatorDashboard** — no test. Need test verifying:
+   - Renders StationCheckIn when not checked in
+   - Passes station context to handoff form
 
-Technical details (security-critical):
-- Roles remain only in role tables (`user_roles`, `organization_members`, `team_members`) — no role storage in profile/users rows.
-- No localStorage/sessionStorage/admin hardcode authorization checks.
-- All privileged routing/handoff transitions validated server-side (RLS + SQL functions).
-- Keep all SECURITY DEFINER functions with `SET search_path = public`.
-- Use migration-based schema/policy changes only; no direct edits to generated backend client/types files.
+4. **Org-scope integration test** — existing test only validates structural contracts. Need to add:
+   - Verification that `useStations` uses `.eq("organization_id", ...)` (done in useStations.test.ts but shallow)
+   - Queue hook org filter contract
+   - Dashboard component hook call signatures
 
-Validation checklist after implementation:
-- Operator (checked into Station A) can pass WO from A → next station.
-- Same operator cannot pass WO from Station B (not checked in).
-- Supervisor can pass/override within org with audit reason.
-- Dashboard KPI and active station cards update immediately after pass/handoff.
-- Operator queue view stays station-scoped; supervisor remains org-scoped.
-- Cross-org visibility blocked for stations, queue items, routing, and handoffs.
+### C. Existing test gaps in current files
+
+- `useStations.test.ts` — doesn't verify `.eq()` is called with `"organization_id"` as first arg
+- `useOperatorSessions.test.ts` — doesn't test `checkIn` upserts `current_station_status`
+- `OperatorStationPanel.test.tsx` — doesn't test RPC call shape for `pass_work_order_to_next_step`
+
+## Implementation Plan
+
+### 1. Fix org-scoped hook calls (5 component files)
+Pass `organization?.id` explicitly to `useStations` and `useHandoffRecords` in all components listed above. Import `useUserOrganization` where not already imported.
+
+### 2. Create `SupervisorDashboard.test.tsx`
+- Mock `useStations`, `useHandoffRecords`, `useUserOrganization`, `useCurrentTeam`
+- Verify hooks called with org ID
+- Verify KPI counts match station states
+- Verify `onViewStation` receives `dbId`
+
+### 3. Expand `useStations.test.ts`
+- Add test that `.eq` is called with `"organization_id"` and the explicit org ID
+- Add test that org fallback from `useUserOrganization` is used when no explicit ID passed
+
+### 4. Expand `useOperatorSessions.test.ts`
+- Add test verifying `checkIn` calls `upsert` on `current_station_status`
+- Add test verifying `checkOut` clears operator from station status
+
+### 5. Expand `OperatorStationPanel.test.tsx`
+- Add test that `supabase.rpc` is called with correct params on delivery confirm
+- Add test that supervisor override checkbox appears when `hasOrgSupervisorAccess` is true
+
+### 6. Expand `org-scope-integration.test.ts`
+- Add queue item org filter contract test
+- Add supervisor dashboard hook signature contract
+- Add operator station-scoped queue contract
+
+### 7. Run all tests and verify pass
+
