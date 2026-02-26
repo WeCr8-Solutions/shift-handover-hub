@@ -10,9 +10,15 @@ import { JobPerformanceUpdateForm } from "@/components/JobPerformanceUpdateForm"
 import { useHandoffRecords } from "@/hooks/useStations";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { getCurrentShift } from "@/lib/mockData";
-import { LogOut, Loader2, Clock } from "lucide-react";
+import { LogOut, Loader2, Clock, ArrowLeft, Info } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
-export function OperatorDashboard() {
+interface OperatorDashboardProps {
+  isAdminView?: boolean;
+  onBackToOverview?: () => void;
+}
+
+export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDashboardProps = {}) {
   const { currentTeam } = useCurrentTeam();
   const { activeSessions, loading, isCheckedIn, checkIn, checkOut } =
     useOperatorSessions();
@@ -47,6 +53,20 @@ export function OperatorDashboard() {
 
   return (
     <div className="space-y-6">
+      {isAdminView && (
+        <Alert className="border-primary/30 bg-primary/5">
+          <Info className="w-4 h-4" />
+          <AlertDescription className="flex items-center justify-between">
+            <span>Viewing as Operator — you can check in to stations and complete tasks from here.</span>
+            {onBackToOverview && (
+              <Button variant="ghost" size="sm" onClick={onBackToOverview} className="gap-2 ml-4">
+                <ArrowLeft className="w-4 h-4" />
+                Back to Overview
+              </Button>
+            )}
+          </AlertDescription>
+        </Alert>
+      )}
       {/* Top bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3 flex-wrap">
