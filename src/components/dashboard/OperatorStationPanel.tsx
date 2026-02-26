@@ -25,6 +25,8 @@ import {
   CheckCircle2,
   FileText,
   Lightbulb,
+  ArrowRight,
+  ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -42,11 +44,21 @@ interface WorkOrder {
   started_at: string | null;
 }
 
+interface RoutingInfo {
+  isFinalStep: boolean;
+  nextStationName: string | null;
+  currentStepId: string | null;
+  nextStep: any | null;
+  totalSteps: number;
+  currentStepNumber: number;
+}
+
 interface OperatorStationPanelProps {
   stationId: string;
   stationName: string;
   onCreateHandoff: () => void;
   onPerformanceUpdate: () => void;
+  onViewWorkOrder?: (orderId: string) => void;
 }
 
 export function OperatorStationPanel({
@@ -54,6 +66,7 @@ export function OperatorStationPanel({
   stationName,
   onCreateHandoff,
   onPerformanceUpdate,
+  onViewWorkOrder,
 }: OperatorStationPanelProps) {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
@@ -61,6 +74,7 @@ export function OperatorStationPanel({
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [deliverOrder, setDeliverOrder] = useState<WorkOrder | null>(null);
+  const [routingInfo, setRoutingInfo] = useState<RoutingInfo | null>(null);
 
   const activeOrder = orders.find((o) => o.status === "in_progress") ?? null;
   const queuedOrders = orders.filter(
@@ -85,6 +99,41 @@ export function OperatorStationPanel({
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, [activeOrder?.started_at]);
+
+  // Fetch routing info for active order
+  useEffect(() => {
+    if (!activeOrder) {
+      setRoutingInfo(null);
+      return;
+    }
+    const fetchRouting = async () => {
+      const { data: steps } = await supabase
+        .from("work_order_routing")
+        .select("*, stations(name)")
+        .eq("queue_item_id", activeOrder.id)
+        .order("step_number", { ascending: true });
+
+      if (!steps || steps.length === 0) {
+        setRoutingInfo(null);
+        return;
+      }
+
+      const curIdx = steps.findIndex(
+        (s: any) => s.station_id === stationId && s.status !== "completed"
+      );
+      const nextStep = curIdx >= 0 ? steps[curIdx + 1] : null;
+
+      setRoutingInfo({
+        isFinalStep: !nextStep,
+        nextStationName: nextStep?.stations?.name || null,
+        currentStepId: curIdx >= 0 ? steps[curIdx].id : null,
+        nextStep,
+        totalSteps: steps.length,
+        currentStepNumber: curIdx >= 0 ? curIdx + 1 : 0,
+      });
+    };
+    fetchRouting();
+  }, [activeOrder?.id, stationId]);
 
   // Fetch orders
   const fetchOrders = async () => {
@@ -154,7 +203,7 @@ export function OperatorStationPanel({
     setProcessing(false);
   };
 
-  // Deliver / complete
+  // Complete operation / deliver
   const confirmDelivery = async () => {
     if (!deliverOrder || !user) return;
     setProcessing(true);
@@ -199,7 +248,13 @@ export function OperatorStationPanel({
           .eq("id", nextStep.id);
 
         toast.success(
-          `Delivered to ${(nextStep.stations as any)?.name || "next station"}`
+          `Operation complete — advanced to ${(nextStep.stations as any)?.name || "next station"}`,
+          {
+            action: {
+              label: "View Work Order",
+              onClick: () => handleNavigateToOrder(deliverOrder.id),
+            },
+          }
         );
       } else {
         await supabase
@@ -209,7 +264,12 @@ export function OperatorStationPanel({
             completed_at: new Date().toISOString(),
           })
           .eq("id", deliverOrder.id);
-        toast.success("Work order completed!");
+        toast.success("Work order completed! Final operation done.", {
+          action: {
+            label: "View Work Order",
+            onClick: () => handleNavigateToOrder(deliverOrder.id),
+          },
+        });
       }
 
       // Clear station status
@@ -226,10 +286,18 @@ export function OperatorStationPanel({
         })
         .eq("station_id", stationId);
     } catch {
-      toast.error("Delivery failed");
+      toast.error("Operation failed");
     }
     setProcessing(false);
     setDeliverOrder(null);
+  };
+
+  const handleNavigateToOrder = (orderId: string) => {
+    if (onViewWorkOrder) {
+      onViewWorkOrder(orderId);
+    } else {
+      navigate(`/queue?item=${orderId}`);
+    }
   };
 
   const priorityClass = (p: string) => {
@@ -269,11 +337,18 @@ export function OperatorStationPanel({
                 <Badge className="bg-green-600 text-white gap-1">
                   <Play className="w-3 h-3" /> IN PROGRESS
                 </Badge>
-                {elapsed && (
-                  <span className="text-xs font-mono text-muted-foreground flex items-center gap-1">
-                    <Clock className="w-3 h-3" /> {elapsed}
-                  </span>
-                )}
+                <div className="flex items-center gap-2">
+                  {routingInfo && routingInfo.totalSteps > 0 && (
+                    <span className="text-[10px] font-mono text-muted-foreground">
+                      Step {routingInfo.currentStepNumber}/{routingInfo.totalSteps}
+                    </span>
+                  )}
+                  {elapsed && (
+                    <span className="text-xs font-mono text-muted-foreground flex items-center gap-1">
+                      <Clock className="w-3 h-3" /> {elapsed}
+                    </span>
+                  )}
+                </div>
               </div>
               <h4 className="font-semibold">
                 {activeOrder.work_order || activeOrder.title}
@@ -290,14 +365,36 @@ export function OperatorStationPanel({
                   Qty: {activeOrder.quantity}
                 </p>
               )}
-              <div className="flex gap-2 pt-1">
+              <div className="flex gap-2 pt-1 flex-wrap">
+                {/* Routing-aware completion button */}
+                {routingInfo && !routingInfo.isFinalStep ? (
+                  <Button
+                    size="sm"
+                    className="flex-1 gap-1 bg-blue-600 hover:bg-blue-700"
+                    onClick={() => setDeliverOrder(activeOrder)}
+                    disabled={processing}
+                  >
+                    <ArrowRight className="w-3 h-3" /> Complete Op & Advance
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    className="flex-1 gap-1 bg-green-600 hover:bg-green-700"
+                    onClick={() => setDeliverOrder(activeOrder)}
+                    disabled={processing}
+                  >
+                    <CheckCircle2 className="w-3 h-3" /> 
+                    {routingInfo ? "Complete Work Order" : "Complete & Deliver"}
+                  </Button>
+                )}
+                {/* View Details */}
                 <Button
                   size="sm"
-                  className="flex-1 gap-1 bg-green-600 hover:bg-green-700"
-                  onClick={() => setDeliverOrder(activeOrder)}
-                  disabled={processing}
+                  variant="outline"
+                  className="gap-1"
+                  onClick={() => handleNavigateToOrder(activeOrder.id)}
                 >
-                  <Send className="w-3 h-3" /> Complete & Deliver
+                  <ExternalLink className="w-3 h-3" /> View Details
                 </Button>
               </div>
             </div>
@@ -392,27 +489,72 @@ export function OperatorStationPanel({
         </CardContent>
       </Card>
 
-      {/* Delivery confirm dialog */}
+      {/* Delivery confirm dialog — routing-aware */}
       <AlertDialog open={!!deliverOrder} onOpenChange={() => setDeliverOrder(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
-              <Send className="w-5 h-5 text-green-600" />
-              Complete & Deliver
+              {routingInfo && !routingInfo.isFinalStep ? (
+                <>
+                  <ArrowRight className="w-5 h-5 text-blue-600" />
+                  Complete Operation & Advance
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="w-5 h-5 text-green-600" />
+                  {routingInfo ? "Complete Work Order" : "Complete & Deliver"}
+                </>
+              )}
             </AlertDialogTitle>
-            <AlertDialogDescription className="space-y-2">
-              <p>
-                Complete{" "}
-                <strong>
-                  {deliverOrder?.work_order || deliverOrder?.title}
-                </strong>{" "}
-                and move it to the next station?
-              </p>
-              <ul className="text-sm list-disc ml-4 space-y-1">
-                <li>Marks your operation as complete</li>
-                <li>Moves the work order to the next routing step</li>
-                <li>Clears this station for the next job</li>
-              </ul>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2">
+                {routingInfo && !routingInfo.isFinalStep ? (
+                  <>
+                    <p>
+                      Complete your operation on{" "}
+                      <strong>
+                        {deliverOrder?.work_order || deliverOrder?.title}
+                      </strong>{" "}
+                      and advance it to{" "}
+                      <strong>{routingInfo.nextStationName || "the next station"}</strong>.
+                    </p>
+                    <ul className="text-sm list-disc ml-4 space-y-1">
+                      <li>Marks this operation (step {routingInfo.currentStepNumber} of {routingInfo.totalSteps}) as complete</li>
+                      <li>Moves the work order to the next routing step</li>
+                      <li>Clears this station for the next job</li>
+                    </ul>
+                  </>
+                ) : routingInfo ? (
+                  <>
+                    <p>
+                      Complete the <strong>final operation</strong> on{" "}
+                      <strong>
+                        {deliverOrder?.work_order || deliverOrder?.title}
+                      </strong>. This is the last routing step.
+                    </p>
+                    <ul className="text-sm list-disc ml-4 space-y-1">
+                      <li>Marks the final operation as complete</li>
+                      <li>Marks the entire work order as completed</li>
+                      <li>Clears this station for the next job</li>
+                    </ul>
+                  </>
+                ) : (
+                  <>
+                    <p>
+                      Complete{" "}
+                      <strong>
+                        {deliverOrder?.work_order || deliverOrder?.title}
+                      </strong>{" "}
+                      and move it to the next station?
+                    </p>
+                    <ul className="text-sm list-disc ml-4 space-y-1">
+                      <li>Marks your operation as complete</li>
+                      <li>Moves the work order to the next routing step</li>
+                      <li>Clears this station for the next job</li>
+                    </ul>
+                  </>
+                )}
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -420,10 +562,16 @@ export function OperatorStationPanel({
             <AlertDialogAction
               onClick={confirmDelivery}
               disabled={processing}
-              className="bg-green-600 hover:bg-green-700"
+              className={cn(
+                routingInfo && !routingInfo.isFinalStep
+                  ? "bg-blue-600 hover:bg-blue-700"
+                  : "bg-green-600 hover:bg-green-700"
+              )}
             >
               {processing ? (
                 <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              ) : routingInfo && !routingInfo.isFinalStep ? (
+                <ArrowRight className="w-4 h-4 mr-2" />
               ) : (
                 <CheckCircle2 className="w-4 h-4 mr-2" />
               )}

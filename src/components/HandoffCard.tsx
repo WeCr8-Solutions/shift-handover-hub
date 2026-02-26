@@ -8,9 +8,10 @@ import { cn } from "@/lib/utils";
 interface HandoffCardProps {
   record: ShiftHandoffRecord;
   onClick?: () => void;
+  onViewWorkOrder?: (workOrder: string) => void;
 }
 
-export function HandoffCard({ record, onClick }: HandoffCardProps) {
+export function HandoffCard({ record, onClick, onViewWorkOrder }: HandoffCardProps) {
   const createdDate = new Date(record.createdAt);
   const Icon = workCenterIcons[record.workCenterType];
   const iconColor = workCenterColors[record.workCenterType];
@@ -109,6 +110,17 @@ export function HandoffCard({ record, onClick }: HandoffCardProps) {
             {record.qualityStatus.reworkCount}
           </span>
         </div>
+        {onViewWorkOrder && (
+          <button
+            className="ml-auto text-primary hover:underline text-xs font-medium"
+            onClick={(e) => {
+              e.stopPropagation();
+              onViewWorkOrder(record.workOrder);
+            }}
+          >
+            View Work Order →
+          </button>
+        )}
       </div>
     </div>
   );

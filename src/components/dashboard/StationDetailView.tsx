@@ -5,6 +5,7 @@ import { NewHandoffForm } from "@/components/NewHandoffForm";
 import { JobPerformanceUpdateForm } from "@/components/JobPerformanceUpdateForm";
 import { useHandoffRecords } from "@/hooks/useStations";
 import { useCurrentTeam } from "@/contexts/TeamContext";
+import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Monitor } from "lucide-react";
 import { useState } from "react";
 
@@ -15,10 +16,15 @@ interface StationDetailViewProps {
 }
 
 export function StationDetailView({ stationId, stationName, onBack }: StationDetailViewProps) {
+  const navigate = useNavigate();
   const { currentTeam } = useCurrentTeam();
   const { createHandoffRecord } = useHandoffRecords(currentTeam?.id);
   const [showHandoff, setShowHandoff] = useState(false);
   const [showPerformance, setShowPerformance] = useState(false);
+
+  const handleViewWorkOrder = (orderId: string) => {
+    navigate(`/queue?item=${orderId}`);
+  };
 
   return (
     <div className="space-y-4">
@@ -40,6 +46,7 @@ export function StationDetailView({ stationId, stationName, onBack }: StationDet
         stationName={stationName}
         onCreateHandoff={() => setShowHandoff(true)}
         onPerformanceUpdate={() => setShowPerformance(true)}
+        onViewWorkOrder={handleViewWorkOrder}
       />
 
       {showHandoff && (
