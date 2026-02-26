@@ -251,21 +251,90 @@ export function QueueItemDetailDialog({
     }
   };
 
-  // Quick action: Complete
+  // Quick action: Complete — routing-aware
   const handleCompleteWork = async () => {
     if (!item) return;
     setActionLoading("complete");
-    const { error } = await onUpdate(item.id, { 
-      status: "completed",
-      completed_at: new Date().toISOString()
-    });
-    setActionLoading(null);
-    if (error) {
-      toast({ title: "Error", description: error, variant: "destructive" });
+
+    // Check if there are uncompleted routing steps after the current station
+    const hasUncompletedSteps = routingSteps.length > 0 &&
+      routingSteps.some(s => s.status !== "completed" && s.station_id !== item.station_id);
+
+    const currentStepIdx = routingSteps.findIndex(
+      s => s.station_id === item.station_id && s.status !== "completed"
+    );
+    const nextStep = currentStepIdx >= 0 ? routingSteps[currentStepIdx + 1] : null;
+
+    if (nextStep) {
+      // Mid-route: complete current step and advance
+      try {
+        if (currentStepIdx >= 0) {
+          const { data: { user } } = await supabase.auth.getUser();
+          await supabase
+            .from("work_order_routing")
+            .update({
+              status: "completed",
+              completed_at: new Date().toISOString(),
+              completed_by: user?.id,
+            })
+            .eq("id", routingSteps[currentStepIdx].id);
+        }
+
+        if (nextStep.station_id) {
+          await supabase
+            .from("queue_items")
+            .update({
+              status: "queued",
+              station_id: nextStep.station_id,
+              started_at: null,
+            })
+            .eq("id", item.id);
+
+          await supabase
+            .from("work_order_routing")
+            .update({ status: "in_progress", started_at: new Date().toISOString() })
+            .eq("id", nextStep.id);
+        }
+
+        // Clear current station status
+        if (item.station_id) {
+          await supabase
+            .from("current_station_status")
+            .update({
+              current_job_work_order: null,
+              current_job_part_number: null,
+              current_job_state: null,
+              current_operator_name: null,
+              current_operator_id: null,
+              parts_complete: null,
+              parts_required: null,
+            })
+            .eq("station_id", item.station_id);
+        }
+
+        toast({
+          title: "Operation Complete",
+          description: `Advanced to ${nextStep.station_name || "next station"}`,
+        });
+        loadHistory();
+        loadRouting();
+      } catch {
+        toast({ title: "Error", description: "Failed to advance work order", variant: "destructive" });
+      }
     } else {
-      toast({ title: "Completed!", description: "Work order marked as complete" });
-      loadHistory();
+      // Final step or no routing — complete the work order
+      const { error } = await onUpdate(item.id, {
+        status: "completed",
+        completed_at: new Date().toISOString(),
+      });
+      if (error) {
+        toast({ title: "Error", description: error, variant: "destructive" });
+      } else {
+        toast({ title: "Work Order Completed!", description: "All operations finished" });
+        loadHistory();
+      }
     }
+    setActionLoading(null);
   };
 
   // Navigate to create handoff for this work order
@@ -388,21 +457,29 @@ export function QueueItemDetailDialog({
                 Pause
               </Button>
             )}
-            {canComplete && (
-              <Button 
-                variant="default" 
-                onClick={handleCompleteWork} 
-                disabled={actionLoading === "complete"}
-                className="gap-2 bg-green-600 hover:bg-green-700"
-              >
-                {actionLoading === "complete" ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <CheckCircle2 className="w-4 h-4" />
-                )}
-                Complete
-              </Button>
-            )}
+            {canComplete && (() => {
+              const currentStepIdx = routingSteps.findIndex(
+                s => s.station_id === item.station_id && s.status !== "completed"
+              );
+              const hasNextStep = currentStepIdx >= 0 && routingSteps[currentStepIdx + 1];
+              return (
+                <Button 
+                  variant="default" 
+                  onClick={handleCompleteWork} 
+                  disabled={actionLoading === "complete"}
+                  className={cn("gap-2", hasNextStep ? "bg-blue-600 hover:bg-blue-700" : "bg-green-600 hover:bg-green-700")}
+                >
+                  {actionLoading === "complete" ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : hasNextStep ? (
+                    <ArrowRight className="w-4 h-4" />
+                  ) : (
+                    <CheckCircle2 className="w-4 h-4" />
+                  )}
+                  {hasNextStep ? "Complete Operation" : (routingSteps.length > 0 ? "Complete Work Order" : "Complete")}
+                </Button>
+              );
+            })()}
             <div className="flex-1" />
              {onOpenRouting && hasAdminAccess && (
               <Button 
