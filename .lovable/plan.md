@@ -1,59 +1,55 @@
-# Ensure Supervisors Can Save Routing Templates (Org-Scoped)
+
+
+# Fix Navigation Overflow for All Devices
 
 ## Problem
 
-There are two issues preventing supervisors from saving routing templates:
+The `Header.tsx` renders up to 12 items (logo, team selector, queue, teams, settings, admin, testing, system status, updates, shift badge, clock, bug report, bell, user menu) in a single `flex` row with `gap-4`. On tablets and mobile devices, these items overflow horizontally or overlap because there is no responsive breakpoint handling.
 
-### 1. Database RLS blocks supervisor writes on `routing_templates` and `routing_template_steps`
-
-Current policies:
-
-
-| Table                    | SELECT                              | INSERT/UPDATE/DELETE                    |
-| ------------------------ | ----------------------------------- | --------------------------------------- |
-| `routing_templates`      | `is_org_member` (any org member)    | `is_org_admin` only                     |
-| `routing_template_steps` | `is_org_member` (via template join) | `is_org_admin` only (via template join) |
-
-
-Supervisors can **create, update, or delete** routing templates in their org scope.l with or
-
-By contrast, `work_order_routing` (saving routing on actual work orders) already has supervisor-scoped INSERT and UPDATE policies -- so supervisors can save routing on individual work orders, but cannot create reusable templates and should be able to as a supervisor. 
-
-### 2. No UI-level gating issue (minor)
-
-The `RoutingTemplateManagement` component receives `isAdmin` but does not gate create/edit/delete buttons behind it -- it shows them to anyone who can see the component. The component is rendered on the Admin page which supervisors can access. So the UI already allows the action; it just fails silently at the DB level.
+The `MarketingNav.tsx` already handles this correctly with `hidden sm:inline-flex` on secondary items -- the app header does not.
 
 ## Solution
 
-### Database Migration
+Restructure `Header.tsx` into two tiers:
 
-Replace the `FOR ALL` policies on both `routing_templates` and `routing_template_steps` with policies that also allow supervisors within the same org:
+### Desktop (md and above)
+Keep the current single-row layout but with tighter spacing (`gap-2` instead of `gap-4`).
 
-`**routing_templates`:**
+### Mobile/Tablet (below md)
+1. **Always visible**: Logo, Clock, User Menu, and a hamburger menu button
+2. **Hamburger sheet/dropdown**: All navigation links (Queue, Teams, Settings, Admin, Testing, Updates) as a vertical list, plus Team Selector, Shift badge, System Status, and Report Issue button
+3. Use the existing `Sheet` component (from shadcn/ui, already installed) for the mobile menu drawer
 
-- Drop: `"Org admins can manage templates"` (FOR ALL, `is_org_admin` only)
-- Add: `"Org admins and supervisors can manage templates"` (FOR ALL) using `is_org_admin(auth.uid(), organization_id) OR is_supervisor_in_org(auth.uid(), organization_id)`
+### Specific changes
 
-`**routing_template_steps`:**
+**`src/components/Header.tsx`**:
+- Import `Menu` icon from lucide and `Sheet`/`SheetContent`/`SheetTrigger` from ui
+- Add `const isMobile = useIsMobile()` check
+- Wrap the nav icons section: on `md+`, render inline as today; below `md`, render inside a `Sheet` triggered by a hamburger button
+- Team Selector gets `hidden md:flex` on desktop, moves into Sheet on mobile
+- Shift badge and clock get `hidden md:flex`, shown in Sheet on mobile
+- Nav icon buttons (Queue, Teams, Settings, Admin, Testing, Updates, Bug, Bell) get `hidden md:flex`, listed vertically in Sheet with labels
 
-- Drop: `"Org admins can manage template steps"` (FOR ALL, `is_org_admin` via template join)
-- Add: `"Org admins and supervisors can manage template steps"` (FOR ALL) with the same pattern, joining through `routing_templates` to check org membership
+**`src/components/TeamSelector.tsx`**:
+- No changes needed -- it already has a fixed width that works in both contexts
 
-This is consistent with how other supervisor-scoped write policies work in this codebase (announcements, equipment, maintenance, shift assignments, NCR approval all use the `is_org_admin OR is_supervisor_in_org` pattern).
+**`src/components/marketing/MarketingNav.tsx`**:
+- Already handles overflow correctly with `hidden sm:inline-flex`. No changes needed.
 
-### No Frontend Changes Needed
+### Files to modify
 
-The `RoutingTemplateManagement` component already:
+1. `src/components/Header.tsx` -- Add mobile hamburger menu with Sheet, hide overflow items on small screens
 
-- Scopes all queries to `organization.id`
-- Sets `organization_id` on insert for both templates and steps
-- Passes `created_by: user?.id`
-- Shows create/edit/delete UI to anyone on the Admin page
+### Implementation detail
 
-The `WorkOrderRoutingEditor` already works for supervisors (the `work_order_routing` RLS allows supervisor writes).
+The mobile Sheet will contain:
+- Team Selector (full width)
+- Divider
+- Navigation links as labeled rows (icon + text): Queue, Teams, Settings, Admin, Testing, Updates
+- Divider  
+- Shift badge + Clock
+- Report Issue button
+- System Status indicator
 
-### Files Changed
+This keeps the header to a single compact row on mobile (logo + clock + hamburger + avatar) while providing full access to all navigation via the drawer.
 
-1. **New migration** -- Drop and recreate 2 RLS policies (one per table)
-
-No frontend file changes required.
