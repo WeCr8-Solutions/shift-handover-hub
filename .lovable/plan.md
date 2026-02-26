@@ -1,80 +1,108 @@
 
 
-# Allow Admins and Supervisors to Toggle Into Operator Dashboard View
+# Free Trial Enforcement and Billing Access Control
 
-## Problem
+## Current State
 
-Currently in `Index.tsx`, the dashboard routing is binary:
-- `hasOrgSupervisorAccess` = true → always shows `SupervisorDashboard`
-- Otherwise → shows `OperatorDashboard`
+- Organizations are created with `subscription_status: 'trial'` and `subscription_tier: 'free'` by default
+- **No trial end date** exists in the database -- there is no `trial_ends_at` column on `organizations`
+- No enforcement anywhere: trial users can use the system indefinitely without paying
+- Billing Settings tab is only visible to `isDeveloper` (platform developer role)
+- `BillingBanner` only shows to developers
+- Org admins/supervisors/operators cannot see billing info or be prompted to pay
 
-Org admins and supervisors cannot view individual station work panels, check in to stations, start/complete work orders, or see the operator perspective. They are locked into the high-level production overview with no way to drill down into the task-level view that operators use daily.
+## What Needs to Change
 
-## Approach
+### 1. Database: Add `trial_ends_at` column to `organizations`
 
-Add a **view toggle** to the `SupervisorDashboard` header that lets admins/supervisors switch between "Production Floor" (current overview) and "Station View" (the operator dashboard). Additionally, add a **"View Station"** click action on each row in the active stations table so supervisors can jump directly into a single station's `OperatorStationPanel`.
+Add a `trial_ends_at` timestamp column defaulting to `now() + interval '14 days'`. Update the `auto_create_org_entitlements` trigger (or add a new trigger) to automatically set this on org creation.
 
-This requires no database changes -- it is purely a UI/state change in the dashboard layer.
+### 2. Database: Add a `manage_free_subscriptions` check function
 
-## Changes
+Create a `can_manage_billing(uuid, uuid)` function that returns true only for:
+- Platform admins (`has_role(uid, 'admin')`)
+- Platform developers (`has_role(uid, 'developer')`)
+- Org owners (the person who created and owns the org)
 
-### 1. `src/pages/Index.tsx` -- Add view mode state and pass through
+This enforces the rule: only SDK admin/developers and the org owner can manage subscriptions. Regular org admins, supervisors, and operators cannot.
 
-- Add a `viewMode` state: `"supervisor" | "operator" | "station-detail"`
-- Add a `focusedStationId` state for single-station drill-in
-- When `showSupervisorView` is true, respect `viewMode`:
-  - `"supervisor"` → render `SupervisorDashboard` (current behavior)
-  - `"operator"` → render `OperatorDashboard` (the full operator flow with check-in)
-  - `"station-detail"` → render a single `OperatorStationPanel` for the focused station, with a "Back to Overview" button
-- Pass `onSwitchToOperatorView` and `onViewStation` callbacks to `SupervisorDashboard`
+### 3. Frontend: Trial expiration awareness in `useSubscription` or a new `useTrialStatus` hook
 
-### 2. `src/components/dashboard/SupervisorDashboard.tsx` -- Add toggle and station click
+Compute days remaining from `organization.trial_ends_at`. Expose `isTrialExpired`, `trialDaysRemaining`, and `isInTrial` flags.
 
-- Accept new props: `onSwitchToOperatorView`, `onViewStation(stationId, stationName)`
-- Add a toggle button in the header area (e.g., an icon button with `Monitor` icon labeled "Operator View") alongside the existing action buttons
-- Make each active station row clickable, calling `onViewStation` with the station's database ID and name
-- Add a cursor/hover style to station rows to indicate they are clickable
+### 4. Frontend: Show billing banner to org owners (not just developers)
 
-### 3. `src/components/dashboard/OperatorDashboard.tsx` -- Accept optional `isAdminView` prop
+Update `BillingBanner.tsx`:
+- Show trial-expiring and trial-expired banners to **org owners** (not just developers)
+- When trial is expired and no active subscription: show a blocking banner or redirect to pricing
+- Developers still see all billing banners (for platform oversight)
 
-- Accept an optional `isAdminView` boolean prop
-- When `isAdminView` is true, show a banner at the top: "Viewing as Operator" with a subtle info style
-- The admin can use the full operator flow (check in, start/complete work orders, handoffs) -- this is intentional so they can step in and help on the floor
-- No changes to the core check-in/check-out logic -- admins simply create their own operator sessions just like any operator would
+### 5. Frontend: Trial paywall gate component
 
-### 4. New component: `src/components/dashboard/StationDetailView.tsx`
+Create an `ExpiredTrialGate` component that wraps the main dashboard. When `isTrialExpired && !subscribed`:
+- Show a full-page overlay/modal: "Your 14-day free trial has ended. Subscribe to continue using JobLine."
+- Provide a "Choose a Plan" button linking to `/pricing`
+- Allow org owners to manage billing; other roles see "Contact your organization admin"
+- SDK admins/developers can bypass (they manage the platform)
 
-A lightweight wrapper that renders:
-- A "Back to Production Floor" button at the top
-- The `OperatorStationPanel` for the specified station (without requiring check-in)
-- This allows supervisors to **view** a station's queue, active work order, and elapsed time without needing to formally check in
-- Quick actions (Handoff, Performance Update, Full Queue) remain available
+### 6. Frontend: Billing tab visibility in Settings
 
-## UX Flow
+Currently billing tab is restricted to `isDeveloper` only. Expand to also show for `isOrgOwner` so org owners can manage their own subscription. Keep it hidden from supervisors/operators.
 
-```text
-Supervisor Dashboard (Production Floor)
-├── [Toggle: "Operator View"] → Full Operator Dashboard (check-in flow, multi-station tabs)
-│   └── [Back to Overview] → returns to Supervisor Dashboard
-│
-├── [Click station row: "Station-1"] → Station Detail View
-│   ├── Shows OperatorStationPanel (active WO, queue, actions)
-│   └── [Back to Production Floor] → returns to Supervisor Dashboard
-```
+### 7. Edge function: `create-checkout` -- add authorization check
 
-## What This Enables
+Verify that the caller is either:
+- The org owner
+- A platform admin/developer
 
-1. **Supervisors can monitor individual stations** -- see active work orders, queue depth, elapsed time
-2. **Admins can step in as operators** -- check in, start work orders, complete tasks when short-staffed
-3. **Single-station drill-down** -- click any station from the overview to see its detailed operator panel
-4. **Full flexibility** -- toggle freely between oversight view and hands-on view without leaving the dashboard
+Reject checkout creation for supervisors/operators (they shouldn't initiate billing changes).
 
-## Files Modified
+### 8. Stripe webhook: Handle `trial` → `expired` transition
+
+When `trial_ends_at` passes and no active subscription exists, the system should transition `subscription_status` from `'trial'` to `'expired'`. Options:
+- **Option A**: A scheduled database function (pg_cron) that runs daily, finds orgs past trial with no subscription, and sets status to `'expired'`
+- **Option B**: Check trial expiration at read-time in the frontend hook (no DB write needed, just compute `isTrialExpired` from `trial_ends_at < now()`)
+
+**Recommendation**: Option B for now (compute client-side from `trial_ends_at`), since pg_cron requires additional infrastructure. The status field remains `'trial'` but the UI enforces the gate. Optionally, the `check-subscription` edge function can also update the org status to `'expired'` when it detects the trial has lapsed.
+
+## Files to Create/Modify
 
 | File | Change |
 |------|--------|
-| `src/pages/Index.tsx` | Add `viewMode` state, conditional rendering for 3 modes |
-| `src/components/dashboard/SupervisorDashboard.tsx` | Add toggle button, clickable station rows, new callback props |
-| `src/components/dashboard/OperatorDashboard.tsx` | Add optional `isAdminView` prop with info banner |
-| `src/components/dashboard/StationDetailView.tsx` | New component -- back button + `OperatorStationPanel` wrapper |
+| **Migration** | Add `trial_ends_at` column to `organizations`, default `now() + interval '14 days'`, backfill existing orgs |
+| `src/hooks/useTrialStatus.ts` | New hook: compute trial state from org's `trial_ends_at` |
+| `src/components/ExpiredTrialGate.tsx` | New: paywall overlay when trial expired + no subscription |
+| `src/components/BillingBanner.tsx` | Show trial-ending banners to org owners, not just developers |
+| `src/pages/Settings.tsx` | Show Billing tab for org owners (not just developers) |
+| `src/pages/Index.tsx` | Wrap dashboard with `ExpiredTrialGate` |
+| `supabase/functions/create-checkout/index.ts` | Add org owner / platform admin authorization check |
+| `supabase/functions/check-subscription/index.ts` | Optionally update org status to `expired` when trial lapsed |
+| `src/hooks/useUserOrganization.ts` | Ensure `trial_ends_at` is fetched with organization data |
+
+## Access Control Summary
+
+```text
+Who can see billing info:
+  - Platform Admin ✓
+  - SDK Developer ✓  
+  - Org Owner ✓
+  - Org Admin ✗
+  - Supervisor ✗
+  - Operator ✗
+
+Who can initiate checkout / manage subscription:
+  - Platform Admin ✓
+  - SDK Developer ✓
+  - Org Owner ✓
+  - Everyone else ✗
+
+Who can grant free subscriptions:
+  - Platform Admin ✓
+  - SDK Developer ✓
+  - Everyone else ✗ (must pay via Stripe)
+
+Who is blocked by expired trial:
+  - All org members (unless org has active subscription)
+  - Platform Admin/Developer: bypass (platform oversight)
+```
 
