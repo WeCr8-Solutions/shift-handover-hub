@@ -2,24 +2,22 @@ import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { useCurrentTeam } from "@/contexts/TeamContext";
-import { useStations, useHandoffRecords, Station, HandoffRecord } from "@/hooks/useStations";
-import { useQueue } from "@/hooks/useQueue";
+import { useStations, useHandoffRecords } from "@/hooks/useStations";
+import { useUserOrganization } from "@/hooks/useUserOrganization";
 import {
   Factory,
   AlertTriangle,
   Clock,
   ArrowRight,
-  BarChart3,
   Loader2,
-  FileText,
   Lightbulb,
   Package,
   Plus,
   ListTodo,
   Eye,
   Monitor,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -39,11 +37,15 @@ export function SupervisorDashboard({
   onViewStation,
 }: SupervisorDashboardProps) {
   const navigate = useNavigate();
-  const { currentTeam } = useCurrentTeam();
+  const { currentTeam, setCurrentTeam, teams } = useCurrentTeam();
+  const { organization } = useUserOrganization();
   const { stations: dbStations, loading: stationsLoading } = useStations(currentTeam?.id);
   const { records: dbRecords, loading: recordsLoading } = useHandoffRecords(currentTeam?.id);
 
   const isLoading = stationsLoading || recordsLoading;
+
+  const orgName = organization?.name || "Organization";
+  const scopeLabel = currentTeam?.name || `${orgName} · All Teams`;
 
   // Compute KPIs from real station data
   const kpis = useMemo(() => {
@@ -67,7 +69,7 @@ export function SupervisorDashboard({
     return { running, down, setup, waiting, total, handoffs: dbRecords.length };
   }, [dbStations, dbRecords]);
 
-  // Attention items: down stations, overdue, etc.
+  // Attention items
   const attentionItems = useMemo(() => {
     const items: { label: string; detail: string; severity: "critical" | "warning" | "info" }[] = [];
     dbStations.forEach((s) => {
@@ -110,7 +112,9 @@ export function SupervisorDashboard({
 
         return {
           id: s.station_id,
+          dbId: s.id,
           name: s.name,
+          teamId: s.team_id,
           operator: status?.current_operator_name || "—",
           workOrder: status?.current_job_work_order || "—",
           partNumber: status?.current_job_part_number || "",
@@ -174,7 +178,7 @@ export function SupervisorDashboard({
           <div>
             <h2 className="font-semibold text-lg">Production Floor</h2>
             <p className="text-xs text-muted-foreground">
-              {currentTeam?.name || "All Teams"} • {kpis.total} Station{kpis.total !== 1 ? "s" : ""}
+              {scopeLabel} • {kpis.total} Station{kpis.total !== 1 ? "s" : ""}
             </p>
           </div>
         </div>
@@ -198,6 +202,61 @@ export function SupervisorDashboard({
           </Button>
         </div>
       </div>
+
+      {/* Team Filter Chips — only shown in org-wide view */}
+      {!currentTeam && teams.length > 1 && (
+        <div className="flex items-center gap-2 flex-wrap">
+          <Badge
+            variant="default"
+            className="cursor-pointer text-xs px-3 py-1"
+          >
+            <Factory className="w-3 h-3 mr-1" />
+            All Teams
+          </Badge>
+          {teams.map((team) => (
+            <Badge
+              key={team.id}
+              variant="outline"
+              className="cursor-pointer text-xs px-3 py-1 hover:bg-secondary transition-colors"
+              onClick={() => setCurrentTeam(team)}
+            >
+              <Users className="w-3 h-3 mr-1" />
+              {team.name}
+            </Badge>
+          ))}
+        </div>
+      )}
+
+      {/* Back to All Teams chip when filtering by team */}
+      {currentTeam && teams.length > 1 && (
+        <div className="flex items-center gap-2 flex-wrap">
+          <Badge
+            variant="outline"
+            className="cursor-pointer text-xs px-3 py-1 hover:bg-secondary transition-colors"
+            onClick={() => setCurrentTeam(null)}
+          >
+            <Factory className="w-3 h-3 mr-1" />
+            ← All Teams
+          </Badge>
+          <Badge variant="default" className="text-xs px-3 py-1">
+            <Users className="w-3 h-3 mr-1" />
+            {currentTeam.name}
+          </Badge>
+          {teams
+            .filter((t) => t.id !== currentTeam.id)
+            .map((team) => (
+              <Badge
+                key={team.id}
+                variant="outline"
+                className="cursor-pointer text-xs px-3 py-1 hover:bg-secondary transition-colors"
+                onClick={() => setCurrentTeam(team)}
+              >
+                <Users className="w-3 h-3 mr-1" />
+                {team.name}
+              </Badge>
+            ))}
+        </div>
+      )}
 
       {/* KPI Stats Row */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
