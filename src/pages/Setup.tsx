@@ -36,7 +36,7 @@ interface SetupStatus {
 export default function Setup() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-  const { completeStep, startTour, showTour, isComplete: onboardingComplete, currentStep } = useOnboardingContext();
+  const { completeStep, startTour, showTour, isComplete: onboardingComplete, currentStep, dismissSetupWizard } = useOnboardingContext();
   const [setupStatus, setSetupStatus] = useState<SetupStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [bulkUploadOpen, setBulkUploadOpen] = useState(false);
@@ -407,6 +407,24 @@ export default function Setup() {
               )}
             </CardContent>
           </Card>
+
+          {/* Don't show again */}
+          <div className="text-center">
+            <Button
+              variant="link"
+              size="sm"
+              className="text-muted-foreground"
+              onClick={async () => {
+                await dismissSetupWizard();
+                navigate('/dashboard');
+              }}
+            >
+              Don't show this wizard again
+            </Button>
+            <p className="text-xs text-muted-foreground mt-1">
+              You can always access Setup from Settings → Onboarding
+            </p>
+          </div>
         </div>
       </main>
 

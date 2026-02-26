@@ -124,7 +124,7 @@ const Index = () => {
   const { organization } = useUserOrganization();
   const { stations: dbStations, loading: stationsLoading } = useStations(currentTeam?.id, organization?.id);
   const { records: dbRecords, loading: recordsLoading, createHandoffRecord } = useHandoffRecords(currentTeam?.id, organization?.id);
-  const { isComplete, isLoading: onboardingLoading, isStepCompleted, hasSeenWelcome } = useOnboardingContext();
+  const { isComplete, isLoading: onboardingLoading, isStepCompleted, hasSeenWelcome, setupWizardDismissed } = useOnboardingContext();
   const { hasOrgSupervisorAccess, loading: roleLoading } = useAdminAccess();
 
   // Supervisors, org admins, and platform admins get the production overview dashboard
@@ -144,11 +144,12 @@ const Index = () => {
   useEffect(() => {
     if (user && !authLoading && !onboardingLoading) {
       // If user hasn't seen welcome or hasn't completed organization setup, redirect to setup
-      if (!hasSeenWelcome || (!isComplete && !isStepCompleted('shop-setup') && !isStepCompleted('organization-setup'))) {
+      // But respect "don't show again" preference
+      if (!setupWizardDismissed && (!hasSeenWelcome || (!isComplete && !isStepCompleted('shop-setup') && !isStepCompleted('organization-setup')))) {
         navigate('/setup', { replace: true });
       }
     }
-  }, [user, authLoading, onboardingLoading, hasSeenWelcome, isComplete, isStepCompleted, navigate]);
+  }, [user, authLoading, onboardingLoading, hasSeenWelcome, isComplete, isStepCompleted, navigate, setupWizardDismissed]);
   // Create a map of stationId to database id for linking
   const stationIdToDbId = useMemo(() => {
     const map: Record<string, string> = {};
