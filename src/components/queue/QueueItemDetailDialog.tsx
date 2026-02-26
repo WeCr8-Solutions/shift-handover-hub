@@ -13,13 +13,17 @@ import { useStations } from "@/hooks/useStations";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useToast } from "@/hooks/use-toast";
 import { useAdminAccess } from "@/hooks/useAdminData";
+import { useNCR } from "@/hooks/useNCR";
 import { supabase } from "@/integrations/supabase/client";
 import { format, formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
+import { QuantitySummaryCard } from "@/components/ncr/QuantitySummaryCard";
+import { CreateNCRDialog } from "@/components/ncr/CreateNCRDialog";
+import { NCRListView } from "@/components/ncr/NCRListView";
 import { 
   Clock, User, Package, Send, History, MessageSquare, Trash2, Loader2,
   Play, Pause, CheckCircle2, Wrench, FileText, AlertTriangle, ArrowRight, GitBranch,
-  CircleDot, Circle, CheckCircle, Timer, Truck
+  CircleDot, Circle, CheckCircle, Timer, Truck, ShieldAlert
 } from "lucide-react";
 
 interface RoutingStepRow {
@@ -108,6 +112,7 @@ export function QueueItemDetailDialog({
   const { currentTeam } = useCurrentTeam();
   const { stations } = useStations(currentTeam?.id);
   const { hasAdminAccess } = useAdminAccess();
+  const { ncrs, createNCR } = useNCR(item ? { queue_item_id: item.id } : undefined);
   const [comments, setComments] = useState<QueueItemComment[]>([]);
   const [history, setHistory] = useState<QueueItemHistory[]>([]);
   const [routingSteps, setRoutingSteps] = useState<RoutingStepRow[]>([]);
@@ -116,6 +121,7 @@ export function QueueItemDetailDialog({
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [ncrDialogOpen, setNcrDialogOpen] = useState(false);
 
   // Get station info if assigned
   const assignedStation = item?.station_id ? stations.find(s => s.id === item.station_id) : null;
@@ -398,7 +404,7 @@ export function QueueItemDetailDialog({
               </Button>
             )}
             <div className="flex-1" />
-            {onOpenRouting && hasAdminAccess && (
+             {onOpenRouting && hasAdminAccess && (
               <Button 
                 variant="outline" 
                 onClick={() => onOpenRouting(item)}
@@ -408,6 +414,14 @@ export function QueueItemDetailDialog({
                 Edit Routing
               </Button>
             )}
+            <Button 
+              variant="outline" 
+              onClick={() => setNcrDialogOpen(true)}
+              className="gap-2"
+            >
+              <ShieldAlert className="w-4 h-4" />
+              Report NCR
+            </Button>
             <Button 
               variant="outline" 
               onClick={handleCreateHandoff}
@@ -420,13 +434,29 @@ export function QueueItemDetailDialog({
           </div>
         )}
 
+        {/* Quantity Summary */}
+        {isWorkOrder && item.qty_original != null && item.qty_original > 0 && (
+          <QuantitySummaryCard
+            original={item.qty_original ?? 0}
+            completed={item.qty_completed ?? 0}
+            scrap={item.qty_scrap ?? 0}
+            rework={item.qty_rework ?? 0}
+            open={item.qty_open ?? 0}
+            locked={item.quantity_locked ?? false}
+          />
+        )}
+
         <div className="flex-1 overflow-hidden">
           <Tabs defaultValue="details" className="h-full flex flex-col">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="details">Details</TabsTrigger>
               <TabsTrigger value="routing" className="gap-1">
                 <GitBranch className="w-4 h-4" />
                 Routing
+              </TabsTrigger>
+              <TabsTrigger value="ncr" className="gap-1">
+                <ShieldAlert className="w-4 h-4" />
+                NCR ({ncrs.length})
               </TabsTrigger>
               <TabsTrigger value="comments" className="gap-1">
                 <MessageSquare className="w-4 h-4" />

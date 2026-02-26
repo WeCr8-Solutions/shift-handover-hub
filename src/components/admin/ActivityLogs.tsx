@@ -55,6 +55,12 @@ const activityIcons: Record<ActivityType, React.ComponentType<{ className?: stri
   team_member_added: UserPlus,
   team_member_removed: Trash2,
   profile_updated: Edit,
+  ncr_created: FileText,
+  ncr_approved: ShieldCheck,
+  ncr_rejected: Shield,
+  quantity_override: Edit,
+  rework_wo_created: Plus,
+  work_order_quantity_adjusted: Edit,
 };
 
 const activityColors: Record<ActivityType, string> = {
@@ -73,6 +79,12 @@ const activityColors: Record<ActivityType, string> = {
   team_member_added: "bg-teal-500/10 text-teal-500",
   team_member_removed: "bg-rose-500/10 text-rose-500",
   profile_updated: "bg-cyan-500/10 text-cyan-500",
+  ncr_created: "bg-amber-500/10 text-amber-500",
+  ncr_approved: "bg-green-500/10 text-green-500",
+  ncr_rejected: "bg-red-500/10 text-red-500",
+  quantity_override: "bg-purple-500/10 text-purple-500",
+  rework_wo_created: "bg-indigo-500/10 text-indigo-500",
+  work_order_quantity_adjusted: "bg-orange-500/10 text-orange-500",
 };
 
 const activityLabels: Record<ActivityType, string> = {
@@ -91,6 +103,12 @@ const activityLabels: Record<ActivityType, string> = {
   team_member_added: "Member Added",
   team_member_removed: "Member Removed",
   profile_updated: "Profile Updated",
+  ncr_created: "NCR Created",
+  ncr_approved: "NCR Approved",
+  ncr_rejected: "NCR Rejected",
+  quantity_override: "Quantity Override",
+  rework_wo_created: "Rework WO Created",
+  work_order_quantity_adjusted: "WO Qty Adjusted",
 };
 
 export function ActivityLogs() {
