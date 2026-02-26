@@ -4337,6 +4337,16 @@ export type Database = {
         Args: { _team_id: string; _user_id: string }
         Returns: boolean
       }
+      pass_work_order_to_next_step: {
+        Args: {
+          _actor_id: string
+          _current_station_id: string
+          _is_override?: boolean
+          _override_reason?: string
+          _queue_item_id: string
+        }
+        Returns: Json
+      }
       reject_ncr: {
         Args: { _ncr_id: string; _reason: string; _rejector_id: string }
         Returns: undefined

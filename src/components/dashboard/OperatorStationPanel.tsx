@@ -16,10 +16,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Package,
   Play,
-  Send,
   Clock,
   Loader2,
   CheckCircle2,
@@ -27,9 +28,11 @@ import {
   Lightbulb,
   ArrowRight,
   ExternalLink,
+  ShieldAlert,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useAdminAccess } from "@/hooks/useAdminData";
 
 interface WorkOrder {
   id: string;
@@ -70,11 +73,14 @@ export function OperatorStationPanel({
 }: OperatorStationPanelProps) {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
+  const { hasOrgSupervisorAccess } = useAdminAccess();
   const [orders, setOrders] = useState<WorkOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [deliverOrder, setDeliverOrder] = useState<WorkOrder | null>(null);
   const [routingInfo, setRoutingInfo] = useState<RoutingInfo | null>(null);
+  const [isOverride, setIsOverride] = useState(false);
+  const [overrideReason, setOverrideReason] = useState("");
 
   const activeOrder = orders.find((o) => o.status === "in_progress") ?? null;
   const queuedOrders = orders.filter(
@@ -203,69 +209,34 @@ export function OperatorStationPanel({
     setProcessing(false);
   };
 
-  // Complete operation / deliver
+  // Complete operation / deliver — uses atomic backend RPC
   const confirmDelivery = async () => {
     if (!deliverOrder || !user) return;
     setProcessing(true);
     try {
-      const { data: routingSteps } = await supabase
-        .from("work_order_routing")
-        .select("*, stations(name)")
-        .eq("queue_item_id", deliverOrder.id)
-        .order("step_number", { ascending: true });
+      const { data, error } = await supabase.rpc("pass_work_order_to_next_step", {
+        _queue_item_id: deliverOrder.id,
+        _current_station_id: stationId,
+        _actor_id: user.id,
+        _is_override: isOverride,
+        _override_reason: isOverride ? overrideReason : null,
+      });
 
-      const curIdx =
-        routingSteps?.findIndex(
-          (s: any) => s.station_id === stationId && s.status !== "completed"
-        ) ?? -1;
-
-      let nextStep: any = null;
-      if (curIdx >= 0 && routingSteps) {
-        await supabase
-          .from("work_order_routing")
-          .update({
-            status: "completed",
-            completed_at: new Date().toISOString(),
-            completed_by: user.id,
-          })
-          .eq("id", routingSteps[curIdx].id);
-        nextStep = routingSteps[curIdx + 1];
+      if (error) {
+        // Surface permission errors clearly
+        if (error.message?.includes("Permission denied")) {
+          toast.error(error.message);
+        } else {
+          toast.error(`Operation failed: ${error.message}`);
+        }
+        setProcessing(false);
+        return;
       }
 
-      if (nextStep?.station_id) {
-        await supabase
-          .from("queue_items")
-          .update({
-            status: "queued",
-            station_id: nextStep.station_id,
-            started_at: null,
-          })
-          .eq("id", deliverOrder.id);
-
-        await supabase
-          .from("work_order_routing")
-          .update({ status: "pending" })
-          .eq("id", nextStep.id);
-
-        // Update next station's dashboard status to show incoming work
-        await supabase
-          .from("current_station_status")
-          .upsert(
-            {
-              station_id: nextStep.station_id,
-              current_job_work_order: deliverOrder.work_order || deliverOrder.title,
-              current_job_part_number: deliverOrder.part_number,
-              current_job_state: "Waiting on Material",
-              current_operator_name: null,
-              current_operator_id: null,
-              parts_complete: 0,
-              parts_required: deliverOrder.quantity || 0,
-            },
-            { onConflict: "station_id" }
-          );
-
+      const result = data as any;
+      if (result?.action === "advanced") {
         toast.success(
-          `Operation complete — advanced to ${(nextStep.stations as any)?.name || "next station"}`,
+          `Operation complete — advanced to ${result.next_station_name || "next station"}`,
           {
             action: {
               label: "View Work Order",
@@ -274,13 +245,6 @@ export function OperatorStationPanel({
           }
         );
       } else {
-        await supabase
-          .from("queue_items")
-          .update({
-            status: "completed",
-            completed_at: new Date().toISOString(),
-          })
-          .eq("id", deliverOrder.id);
         toast.success("Work order completed! Final operation done.", {
           action: {
             label: "View Work Order",
@@ -288,25 +252,13 @@ export function OperatorStationPanel({
           },
         });
       }
-
-      // Clear station status
-      await supabase
-        .from("current_station_status")
-        .update({
-          current_job_work_order: null,
-          current_job_part_number: null,
-          current_job_state: null,
-          current_operator_name: null,
-          current_operator_id: null,
-          parts_complete: null,
-          parts_required: null,
-        })
-        .eq("station_id", stationId);
     } catch {
       toast.error("Operation failed");
     }
     setProcessing(false);
     setDeliverOrder(null);
+    setIsOverride(false);
+    setOverrideReason("");
   };
 
   const handleNavigateToOrder = (orderId: string) => {
@@ -349,9 +301,9 @@ export function OperatorStationPanel({
         <CardContent className="space-y-4">
           {/* Active order */}
           {activeOrder && (
-            <div className="rounded-lg p-4 bg-green-500/10 border border-green-500/30 space-y-2">
+            <div className="rounded-lg p-4 bg-primary/10 border border-primary/30 space-y-2">
               <div className="flex items-center justify-between">
-                <Badge className="bg-green-600 text-white gap-1">
+                <Badge className="bg-primary text-primary-foreground gap-1">
                   <Play className="w-3 h-3" /> IN PROGRESS
                 </Badge>
                 <div className="flex items-center gap-2">
@@ -387,7 +339,7 @@ export function OperatorStationPanel({
                 {routingInfo && !routingInfo.isFinalStep ? (
                   <Button
                     size="sm"
-                    className="flex-1 gap-1 bg-blue-600 hover:bg-blue-700"
+                    className="flex-1 gap-1 bg-primary hover:bg-primary/90"
                     onClick={() => setDeliverOrder(activeOrder)}
                     disabled={processing}
                   >
@@ -396,7 +348,7 @@ export function OperatorStationPanel({
                 ) : (
                   <Button
                     size="sm"
-                    className="flex-1 gap-1 bg-green-600 hover:bg-green-700"
+                    className="flex-1 gap-1 bg-primary hover:bg-primary/90"
                     onClick={() => setDeliverOrder(activeOrder)}
                     disabled={processing}
                   >
@@ -507,69 +459,68 @@ export function OperatorStationPanel({
       </Card>
 
       {/* Delivery confirm dialog — routing-aware */}
-      <AlertDialog open={!!deliverOrder} onOpenChange={() => setDeliverOrder(null)}>
+      <AlertDialog open={!!deliverOrder} onOpenChange={(open) => { if (!open) { setDeliverOrder(null); setIsOverride(false); setOverrideReason(""); } }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               {routingInfo && !routingInfo.isFinalStep ? (
                 <>
-                  <ArrowRight className="w-5 h-5 text-blue-600" />
+                  <ArrowRight className="w-5 h-5 text-primary" />
                   Complete Operation & Advance
                 </>
               ) : (
                 <>
-                  <CheckCircle2 className="w-5 h-5 text-green-600" />
+                  <CheckCircle2 className="w-5 h-5 text-primary" />
                   {routingInfo ? "Complete Work Order" : "Complete & Deliver"}
                 </>
               )}
             </AlertDialogTitle>
             <AlertDialogDescription asChild>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {routingInfo && !routingInfo.isFinalStep ? (
-                  <>
-                    <p>
-                      Complete your operation on{" "}
-                      <strong>
-                        {deliverOrder?.work_order || deliverOrder?.title}
-                      </strong>{" "}
-                      and advance it to{" "}
-                      <strong>{routingInfo.nextStationName || "the next station"}</strong>.
-                    </p>
-                    <ul className="text-sm list-disc ml-4 space-y-1">
-                      <li>Marks this operation (step {routingInfo.currentStepNumber} of {routingInfo.totalSteps}) as complete</li>
-                      <li>Moves the work order to the next routing step</li>
-                      <li>Clears this station for the next job</li>
-                    </ul>
-                  </>
+                  <p>
+                    Complete your operation on{" "}
+                    <strong>{deliverOrder?.work_order || deliverOrder?.title}</strong>{" "}
+                    and advance it to{" "}
+                    <strong>{routingInfo.nextStationName || "the next station"}</strong>.
+                  </p>
                 ) : routingInfo ? (
-                  <>
-                    <p>
-                      Complete the <strong>final operation</strong> on{" "}
-                      <strong>
-                        {deliverOrder?.work_order || deliverOrder?.title}
-                      </strong>. This is the last routing step.
-                    </p>
-                    <ul className="text-sm list-disc ml-4 space-y-1">
-                      <li>Marks the final operation as complete</li>
-                      <li>Marks the entire work order as completed</li>
-                      <li>Clears this station for the next job</li>
-                    </ul>
-                  </>
+                  <p>
+                    Complete the <strong>final operation</strong> on{" "}
+                    <strong>{deliverOrder?.work_order || deliverOrder?.title}</strong>.
+                  </p>
                 ) : (
-                  <>
-                    <p>
-                      Complete{" "}
-                      <strong>
-                        {deliverOrder?.work_order || deliverOrder?.title}
-                      </strong>{" "}
-                      and move it to the next station?
-                    </p>
-                    <ul className="text-sm list-disc ml-4 space-y-1">
-                      <li>Marks your operation as complete</li>
-                      <li>Moves the work order to the next routing step</li>
-                      <li>Clears this station for the next job</li>
-                    </ul>
-                  </>
+                  <p>
+                    Complete <strong>{deliverOrder?.work_order || deliverOrder?.title}</strong> and move it to the next station?
+                  </p>
+                )}
+
+                {/* Supervisor override section */}
+                {hasOrgSupervisorAccess && (
+                  <div className="border rounded-md p-3 space-y-2 bg-muted/30">
+                    <label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isOverride}
+                        onChange={(e) => setIsOverride(e.target.checked)}
+                        className="rounded"
+                      />
+                      <ShieldAlert className="w-4 h-4 text-destructive" />
+                      Supervisor Override
+                    </label>
+                    {isOverride && (
+                      <div className="space-y-1">
+                        <Label htmlFor="override-reason" className="text-xs">Override Reason (required)</Label>
+                        <Textarea
+                          id="override-reason"
+                          placeholder="Explain why this override is needed..."
+                          value={overrideReason}
+                          onChange={(e) => setOverrideReason(e.target.value)}
+                          className="text-sm min-h-[60px]"
+                        />
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             </AlertDialogDescription>
@@ -578,12 +529,8 @@ export function OperatorStationPanel({
             <AlertDialogCancel disabled={processing}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelivery}
-              disabled={processing}
-              className={cn(
-                routingInfo && !routingInfo.isFinalStep
-                  ? "bg-blue-600 hover:bg-blue-700"
-                  : "bg-green-600 hover:bg-green-700"
-              )}
+              disabled={processing || (isOverride && !overrideReason.trim())}
+              className="bg-primary hover:bg-primary/90"
             >
               {processing ? (
                 <Loader2 className="w-4 h-4 animate-spin mr-2" />
@@ -592,7 +539,7 @@ export function OperatorStationPanel({
               ) : (
                 <CheckCircle2 className="w-4 h-4 mr-2" />
               )}
-              Confirm
+              {isOverride ? "Override & Confirm" : "Confirm"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
