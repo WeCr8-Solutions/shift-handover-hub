@@ -111,9 +111,9 @@ export function OrganizationSetup({ onComplete, onSkip }: OrganizationSetupProps
           .from('stations')
           .insert({
             name: 'Station 1',
-            station_id: 'STN-001',
+            station_id: 'Station-1',
             work_center: 'General',
-            work_center_type: 'Manual Mill',
+            work_center_type: 'General',
             team_id: team.id,
             organization_id: org.id,
             is_active: true,
