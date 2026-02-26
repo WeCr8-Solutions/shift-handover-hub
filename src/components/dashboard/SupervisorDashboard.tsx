@@ -39,8 +39,8 @@ export function SupervisorDashboard({
   const navigate = useNavigate();
   const { currentTeam, setCurrentTeam, teams } = useCurrentTeam();
   const { organization } = useUserOrganization();
-  const { stations: dbStations, loading: stationsLoading } = useStations(currentTeam?.id);
-  const { records: dbRecords, loading: recordsLoading } = useHandoffRecords(currentTeam?.id);
+  const { stations: dbStations, loading: stationsLoading } = useStations(currentTeam?.id, organization?.id);
+  const { records: dbRecords, loading: recordsLoading } = useHandoffRecords(currentTeam?.id, organization?.id);
 
   const isLoading = stationsLoading || recordsLoading;
 

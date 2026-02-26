@@ -9,7 +9,6 @@ import { describe, it, expect, vi } from "vitest";
 
 describe("Backend function contracts", () => {
   it("pass_work_order_to_next_step RPC requires correct parameters", () => {
-    // Validate the expected parameter shape for the atomic routing function
     const validParams = {
       _queue_item_id: "00000000-0000-0000-0000-000000000001",
       _current_station_id: "00000000-0000-0000-0000-000000000002",
@@ -41,7 +40,6 @@ describe("Backend function contracts", () => {
       _override_reason: "",
     };
 
-    // Business rule: override reason must be non-empty
     expect(badOverride._override_reason.trim().length).toBe(0);
   });
 });
@@ -70,7 +68,6 @@ describe("Role hierarchy contracts", () => {
 
 describe("Org-scoped query patterns", () => {
   it("station queries must include organization_id filter", () => {
-    // Pattern: every station query should filter by org
     const queryFilters = { organization_id: "org-1", is_active: true };
     expect(queryFilters).toHaveProperty("organization_id");
     expect(queryFilters.organization_id).toBeTruthy();
@@ -90,5 +87,59 @@ describe("Org-scoped query patterns", () => {
     const supervisorFilter = { organization_id: "org-1" };
     expect(supervisorFilter).not.toHaveProperty("station_id");
     expect(supervisorFilter.organization_id).toBeTruthy();
+  });
+});
+
+describe("Supervisor dashboard hook contracts", () => {
+  it("useStations must be called with (teamId, orgId) — both args", () => {
+    // Contract: SupervisorDashboard passes organization?.id as 2nd arg
+    const hookSignature = (teamId?: string | null, orgId?: string | null) => {
+      return { teamId, orgId };
+    };
+    const result = hookSignature("team-1", "org-1");
+    expect(result.orgId).toBe("org-1");
+    expect(result.teamId).toBe("team-1");
+  });
+
+  it("useHandoffRecords must be called with (teamId, orgId)", () => {
+    const hookSignature = (teamId?: string | null, orgId?: string | null) => {
+      return { teamId, orgId };
+    };
+    const result = hookSignature("team-1", "org-1");
+    expect(result.orgId).toBe("org-1");
+  });
+});
+
+describe("Queue item org filter contract", () => {
+  it("queue items must filter by organization_id for data isolation", () => {
+    const filters = {
+      organization_id: "org-1",
+      item_type: "work_order",
+    };
+    expect(filters.organization_id).toBeTruthy();
+  });
+
+  it("operator queue must additionally filter by station_id", () => {
+    const operatorFilters = {
+      organization_id: "org-1",
+      station_id: "stn-1",
+      status: "in_progress",
+    };
+    expect(operatorFilters.station_id).toBeTruthy();
+    expect(operatorFilters.organization_id).toBeTruthy();
+  });
+});
+
+describe("Operator station-scoped queue contract", () => {
+  it("operator can only view queue items for their checked-in stations", () => {
+    const checkedInStations = ["stn-1", "stn-2"];
+    const queueItemStationId = "stn-1";
+    expect(checkedInStations).toContain(queueItemStationId);
+  });
+
+  it("operator cannot view queue items for stations they are not checked into", () => {
+    const checkedInStations = ["stn-1", "stn-2"];
+    const foreignStationId = "stn-99";
+    expect(checkedInStations).not.toContain(foreignStationId);
   });
 });

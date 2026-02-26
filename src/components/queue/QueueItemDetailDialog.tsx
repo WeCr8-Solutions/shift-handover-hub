@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { QueueItem, QueueItemComment, QueueItemHistory, QueueStatus, QueuePriority, UpdateQueueItemInput } from "@/hooks/useQueue";
 import { useStations } from "@/hooks/useStations";
 import { useCurrentTeam } from "@/contexts/TeamContext";
+import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { useToast } from "@/hooks/use-toast";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { useNCR } from "@/hooks/useNCR";
@@ -110,7 +111,8 @@ export function QueueItemDetailDialog({
   const navigate = useNavigate();
   const { toast } = useToast();
   const { currentTeam } = useCurrentTeam();
-  const { stations } = useStations(currentTeam?.id);
+  const { organization } = useUserOrganization();
+  const { stations } = useStations(currentTeam?.id, organization?.id);
   const { hasAdminAccess } = useAdminAccess();
   const { ncrs, createNCR } = useNCR(item ? { queue_item_id: item.id } : undefined);
   const [comments, setComments] = useState<QueueItemComment[]>([]);

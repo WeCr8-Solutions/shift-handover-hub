@@ -10,6 +10,7 @@ import { getCurrentShift } from "@/lib/mockData";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useStations, HandoffRecord } from "@/hooks/useStations";
+import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { JobState, TriState, WorkCenterType, Shift } from "@/types/handoff";
 import { workCenterIcons, workCenterColors, getCategoryForType } from "@/lib/workCenterIcons";
 import { X, Check, Minus, Save, ChevronRight, ChevronLeft, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
@@ -158,7 +159,8 @@ interface NewHandoffFormProps {
 export function NewHandoffForm({ onClose, onSubmit, initialStationId }: NewHandoffFormProps) {
   const { user, profile } = useAuth();
   const { currentTeam } = useCurrentTeam();
-  const { stations } = useStations(currentTeam?.id);
+  const { organization } = useUserOrganization();
+  const { stations } = useStations(currentTeam?.id, organization?.id);
   
   const formRef = useRef<HTMLDivElement>(null);
   const [step, setStep] = useState(1);

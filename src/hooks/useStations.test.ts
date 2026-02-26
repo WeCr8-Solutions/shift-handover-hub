@@ -1,13 +1,20 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
 
-// --- Supabase mock — no top-level variable references in factory ---
+// --- Supabase mock — track .eq() calls ---
+const eqCalls: [string, any][] = [];
+
 vi.mock("@/integrations/supabase/client", () => {
   const fn = vi.fn;
   const chainable = () => {
     const obj: any = {
       select: fn().mockImplementation(() => obj),
-      eq: fn().mockImplementation(() => obj),
+      eq: fn().mockImplementation((field: string, val: any) => {
+        eqCalls.push([field, val]);
+        return obj;
+      }),
+      order: fn().mockImplementation(() => obj),
+      limit: fn().mockImplementation(() => obj),
       then: fn((cb: any) =>
         cb({ count: 3, data: [{ parts_completed_this_shift: 10, issues_follow_ups: [] }] })
       ),
@@ -54,7 +61,10 @@ import { useShiftStats } from "./useStations";
 import { supabase } from "@/integrations/supabase/client";
 
 describe("useShiftStats — org-scoping", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    eqCalls.length = 0;
+  });
 
   it("calls supabase.from for stations and handoff_records", async () => {
     renderHook(() => useShiftStats("team-1", "org-explicit"));
@@ -65,8 +75,27 @@ describe("useShiftStats — org-scoping", () => {
     });
   });
 
+  it("passes organization_id to .eq() filter", async () => {
+    renderHook(() => useShiftStats("team-1", "org-explicit"));
+
+    await waitFor(() => {
+      const orgEqs = eqCalls.filter(([field]) => field === "organization_id");
+      expect(orgEqs.length).toBeGreaterThanOrEqual(2); // stations + handoffs
+      expect(orgEqs[0]).toEqual(["organization_id", "org-explicit"]);
+    });
+  });
+
+  it("uses fallback org from useUserOrganization when no explicit orgId", async () => {
+    renderHook(() => useShiftStats("team-1"));
+
+    await waitFor(() => {
+      const orgEqs = eqCalls.filter(([field]) => field === "organization_id");
+      // Should use "org-1" from useUserOrganization mock
+      expect(orgEqs.some(([, val]) => val === "org-1")).toBe(true);
+    });
+  });
+
   it("queries both tables when org is provided via hook fallback", async () => {
-    // No explicit orgId → uses org-1 from useUserOrganization
     renderHook(() => useShiftStats("team-1"));
 
     await waitFor(() => {
