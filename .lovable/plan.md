@@ -1,73 +1,49 @@
 
 
-# Overflow Audit and Fix Plan
+# Fix Work Order Queue Population and Dashboard Status Issues
 
-## Identified Issues
+## Root Causes Identified
 
-After reviewing all major modals, dialogs, and panels, here are the specific overflow problems:
+1. **Station ID mismatch**: `SupervisorDashboard` passes display code (e.g., "STN-001") instead of database UUID when clicking a station. The `OperatorStationPanel` then queries `queue_items WHERE station_id = 'STN-001'` which matches nothing.
+2. **Missing `on_hold` in operator panel fetch**: Items on hold are excluded from the operator panel's queue query.
+3. **Station status not updating on next station after handoff advance**: When a work order advances to the next station via routing, the new station's `current_station_status` is not updated with "Waiting on Material" state, so the dashboard shows no activity.
+4. **Queue/routing status inconsistency on advance**: Queue item set to "queued" but next routing step set to "in_progress" simultaneously.
 
-### Critical Overflow Issues
+## Fixes
 
-1. **`QueueItemDetailDialog.tsx`** — The quick action buttons row (line 430) uses `flex gap-2` with no wrapping, causing horizontal overflow on mobile when many buttons render (Start, Pause, Complete, Edit Routing, Report NCR, Create Handoff). The tab content areas (`details`, `ncr`) use `overflow-auto` but are not constrained by a fixed height, so the flex-col layout can push content below the viewport. The comments tab's `ScrollArea` has no explicit height, relying on `flex-1` inside a flex parent that itself has unconstrained height.
+### 1. `src/components/dashboard/SupervisorDashboard.tsx` -- Pass database UUID, not display code
 
-2. **`NewHandoffForm.tsx`** — The form body (line 591) has `overflow-y-auto` which is correct, but the grid layouts inside (e.g., `grid-cols-3` on line 660 for part/revision/operation, `grid-cols-2` on line 692) do not collapse on small screens, causing horizontal overflow within the scrollable area. The step progress bar (line 534) uses `flex` with no wrapping—on very narrow screens the step labels stack incorrectly.
+Line 348: Change `onViewStation?.(station.id, station.name)` to `onViewStation?.(station.dbId, station.name)`.
 
-3. **`CreateQueueItemDialog.tsx`** — Uses `overflow-y-auto` on `DialogContent` (line 114), but the `grid-cols-4` work order fields row (line 239) doesn't collapse on mobile, causing horizontal overflow. The machine time `grid-cols-3` inside a `grid-cols-2` parent (lines 288-362) compounds the issue on small screens.
+The `station.id` field is the display code (`station_id` column). The `station.dbId` field is the actual database `id` UUID that all foreign keys reference.
 
-4. **`CreateWorkOrderDialog.tsx`** — No `overflow-y-auto` on the dialog content (line 160). The form content can exceed `max-h-[90vh]` on mobile since there's no scroll container. The `grid-cols-3` machine time row (line 300) doesn't collapse.
+### 2. `src/components/dashboard/OperatorStationPanel.tsx` -- Include `on_hold` in fetch
 
-5. **`OperatorStationPanel.tsx`** — The active order action buttons (line 368) use `flex-wrap` which is good, but on small screens the "Complete Op & Advance" text combined with icon doesn't truncate. The queued orders list has no max-height, so many orders push the panel beyond viewport.
+Line 147: Change `.in("status", ["pending", "queued", "in_progress"])` to `.in("status", ["pending", "queued", "in_progress", "on_hold"])`.
 
-6. **`HandoffCard.tsx`** — The part info row (line 58) uses `flex gap-4` with no wrapping; long part numbers can overflow horizontally. The quality stats row (line 96) has the same issue.
+This ensures on-hold items remain visible in the operator panel.
 
-7. **`WorkOrderRoutingEditor.tsx`** — Opens inside a Dialog but likely has no scroll containment for long routing step lists.
+### 3. `src/components/dashboard/OperatorStationPanel.tsx` -- Update next station status on advance
 
-### Minor Issues
+After line 243 in `confirmDelivery`, add an upsert to `current_station_status` for the next station, setting `current_job_state: "Waiting on Material"` with the work order and part number pre-filled. This makes the dashboard immediately show the next station as "waiting".
 
-8. **`BulkUploadDialog.tsx`** — Uses `ScrollArea` properly.
-9. **`IssueReportDialog.tsx`** — Standard form, unlikely to overflow.
-10. **`CreateNCRDialog.tsx`** — Standard form, unlikely to overflow.
+### 4. `src/components/dashboard/OperatorStationPanel.tsx` -- Fix routing step status on advance
 
-## Fixes to Implement
+Line 247: Change next routing step status from `"in_progress"` to `"pending"` so it matches the queue item's `"queued"` status. The next station's operator starts it explicitly, which then sets both to `"in_progress"`.
 
-### 1. `QueueItemDetailDialog.tsx`
-- Wrap quick action buttons in `flex-wrap` (line 430)
-- Add `min-h-0` to the flex-1 tabs container (line 526) so overflow works in flex
-- Give comments tab `ScrollArea` an explicit `h-[300px]`
+### 5. `src/components/queue/QueueItemDetailDialog.tsx` -- Same routing step fix
 
-### 2. `NewHandoffForm.tsx`
-- Change `grid-cols-3` → responsive `grid-cols-1 sm:grid-cols-3` for part/revision/operation (line 660)
-- Change `grid-cols-2` → `grid-cols-1 sm:grid-cols-2` for operator fields (line 692) and condition fields (line 768)
-- Step progress bar: already has short labels for mobile, but add `flex-wrap` as safety
+Line 295: Same change as #4 — set next routing step to `"pending"` instead of `"in_progress"` and don't set `started_at` until the operator actually starts it.
 
-### 3. `CreateQueueItemDialog.tsx`
-- Change work order fields from `grid-cols-4` → `grid-cols-2 sm:grid-cols-4` (line 239)
-- Fix the machine time `grid-cols-3` inside the scheduling section to be responsive
+### 6. `src/components/queue/QueueItemDetailDialog.tsx` -- Update next station status on advance
 
-### 4. `CreateWorkOrderDialog.tsx`
-- Add `overflow-y-auto` and `max-h-[80vh]` to the form container
-- Change machine time `grid-cols-3` → `grid-cols-1 sm:grid-cols-3` (line 300)
+After line 297, add the same `current_station_status` upsert for the next station with "Waiting on Material" state.
 
-### 5. `OperatorStationPanel.tsx`
-- Add `max-h-[300px] overflow-y-auto` to the queued orders list container
-- Ensure button text truncates with `truncate` or shorter labels on small screens
+## Files
 
-### 6. `HandoffCard.tsx`
-- Add `flex-wrap` to the part info row (line 58) and quality stats row (line 96)
-- Add `min-w-0` and `truncate` on long text values
-
-### 7. Global `DialogContent`
-- The base `DialogContent` in `dialog.tsx` has no `overflow-hidden` — add it so children can properly manage their own overflow
-
-## Files to Modify
-
-| File | Fix |
-|------|-----|
-| `src/components/ui/dialog.tsx` | Add `overflow-hidden` to DialogContent |
-| `src/components/queue/QueueItemDetailDialog.tsx` | flex-wrap on buttons, min-h-0 on tabs, explicit ScrollArea heights |
-| `src/components/NewHandoffForm.tsx` | Responsive grid breakpoints for all multi-column layouts |
-| `src/components/queue/CreateQueueItemDialog.tsx` | Responsive grids, scroll containment |
-| `src/components/queue/CreateWorkOrderDialog.tsx` | Add overflow-y-auto, responsive grids |
-| `src/components/dashboard/OperatorStationPanel.tsx` | Max-height on queue list, truncation |
-| `src/components/HandoffCard.tsx` | flex-wrap and truncation on data rows |
+| File | Change |
+|------|--------|
+| `src/components/dashboard/SupervisorDashboard.tsx` | Pass `dbId` instead of display `id` to `onViewStation` |
+| `src/components/dashboard/OperatorStationPanel.tsx` | Add `on_hold` to fetch filter; update next station status on advance; fix routing step status |
+| `src/components/queue/QueueItemDetailDialog.tsx` | Update next station status on advance; fix routing step status |
 
