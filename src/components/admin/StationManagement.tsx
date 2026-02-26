@@ -342,7 +342,7 @@ export function StationManagement({ isAdmin }: StationManagementProps) {
           <Label htmlFor="work_center">Work Center *</Label>
           <Input
             id="work_center"
-            placeholder="e.g., CNC Mill Bay 1"
+            placeholder="Enter work center name"
             value={formData.work_center}
             onChange={(e) => setFormData({ ...formData, work_center: e.target.value })}
           />

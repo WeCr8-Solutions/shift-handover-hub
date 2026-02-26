@@ -230,7 +230,7 @@ export function CreateQueueItemDialog({ open, onOpenChange, onCreate, preselecte
             <Input
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              placeholder={formData.item_type === "work_order" ? "e.g., Setup and run Part #12345" : "Enter item title..."}
+              placeholder="Enter item title"
             />
           </div>
 
@@ -323,7 +323,7 @@ export function CreateQueueItemDialog({ open, onOpenChange, onCreate, preselecte
                     type="number"
                     value={formData.setup_time_minutes || ""}
                     onChange={(e) => setFormData({ ...formData, setup_time_minutes: parseInt(e.target.value) || undefined })}
-                    placeholder="e.g., 30"
+                    placeholder="Min"
                   />
                 </div>
                 <div className="space-y-1">
@@ -332,7 +332,7 @@ export function CreateQueueItemDialog({ open, onOpenChange, onCreate, preselecte
                     type="number"
                     value={formData.first_article_minutes || ""}
                     onChange={(e) => setFormData({ ...formData, first_article_minutes: parseInt(e.target.value) || undefined })}
-                    placeholder="e.g., 15"
+                    placeholder="Min"
                   />
                 </div>
                 <div className="space-y-1">
@@ -341,7 +341,7 @@ export function CreateQueueItemDialog({ open, onOpenChange, onCreate, preselecte
                     type="number"
                     value={formData.cycle_time_minutes || ""}
                     onChange={(e) => setFormData({ ...formData, cycle_time_minutes: parseInt(e.target.value) || undefined })}
-                    placeholder="e.g., 5"
+                    placeholder="Min"
                   />
                 </div>
               </div>

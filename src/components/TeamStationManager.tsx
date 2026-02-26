@@ -192,7 +192,7 @@ export function TeamStationManager({
                       <Label htmlFor="work-center">Department/Work Center *</Label>
                       <Input
                         id="work-center"
-                        placeholder="e.g., CNC Bay 1"
+                        placeholder="Enter work center name"
                         value={workCenter}
                         onChange={(e) => setWorkCenter(e.target.value)}
                       />

@@ -674,7 +674,7 @@ export function NewHandoffForm({ onClose, onSubmit }: NewHandoffFormProps) {
                   <Input
                     value={formData.partRevision}
                     onChange={(e) => updateField("partRevision", e.target.value)}
-                    placeholder="Rev A"
+                    placeholder="Enter revision"
                     className="font-mono"
                   />
                 </div>
@@ -683,7 +683,7 @@ export function NewHandoffForm({ onClose, onSubmit }: NewHandoffFormProps) {
                   <Input
                     value={formData.operationNumber}
                     onChange={(e) => updateField("operationNumber", e.target.value)}
-                    placeholder="OP-XX"
+                    placeholder="Enter operation"
                     className="font-mono"
                   />
                 </div>

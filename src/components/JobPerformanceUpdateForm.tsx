@@ -319,7 +319,7 @@ export function JobPerformanceUpdateForm({ onClose }: JobPerformanceUpdateFormPr
                   <Input
                     value={formData.operationNumber}
                     onChange={(e) => updateField("operationNumber", e.target.value)}
-                    placeholder="OP-XX"
+                    placeholder="Enter operation"
                     className="font-mono"
                   />
                 </div>

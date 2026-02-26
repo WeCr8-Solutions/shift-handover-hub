@@ -270,7 +270,7 @@ export default function Setup() {
                   )}
                 </div>
                 <CardDescription>
-                  Organize your workforce into teams (e.g., Day Shift, Night Shift, Welding Team).
+                  Organize your workforce into teams that match how your facility operates.
                 </CardDescription>
               </CardHeader>
               <CardContent>
