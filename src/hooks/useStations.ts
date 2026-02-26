@@ -225,11 +225,14 @@ export function useStations(teamId?: string | null, organizationId?: string | nu
   };
 }
 
-export function useHandoffRecords(teamId?: string | null) {
+export function useHandoffRecords(teamId?: string | null, organizationId?: string | null) {
   const { user } = useAuth();
   const { logActivity } = useActivityLog();
+  const { organization } = useUserOrganization();
   const [records, setRecords] = useState<HandoffRecord[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const effectiveOrgId = organizationId || organization?.id;
 
   const fetchRecords = useCallback(async () => {
     if (!user) {
@@ -246,6 +249,11 @@ export function useHandoffRecords(teamId?: string | null) {
       .order("created_at", { ascending: false })
       .limit(50);
 
+    // Filter by org for proper multi-tenant isolation
+    if (effectiveOrgId) {
+      query = query.eq("organization_id", effectiveOrgId);
+    }
+
     if (teamId) {
       query = query.eq("team_id", teamId);
     }
@@ -256,7 +264,7 @@ export function useHandoffRecords(teamId?: string | null) {
       setRecords(data as HandoffRecord[]);
     }
     setLoading(false);
-  }, [user, teamId]);
+  }, [user, teamId, effectiveOrgId]);
 
   useEffect(() => {
     fetchRecords();

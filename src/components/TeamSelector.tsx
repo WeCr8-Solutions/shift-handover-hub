@@ -1,5 +1,5 @@
 import { useCurrentTeam } from "@/contexts/TeamContext";
-import { useTeams, Team } from "@/hooks/useTeams";
+import { useUserOrganization } from "@/hooks/useUserOrganization";
 import {
   Select,
   SelectContent,
@@ -7,10 +7,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Users, Building2 } from "lucide-react";
+import { Users, Factory } from "lucide-react";
 
 export function TeamSelector() {
   const { currentTeam, setCurrentTeam, teams, loading } = useCurrentTeam();
+  const { organization } = useUserOrganization();
 
   if (loading) {
     return (
@@ -22,11 +23,15 @@ export function TeamSelector() {
     return null;
   }
 
+  const orgLabel = organization?.name
+    ? `${organization.name} · All Teams`
+    : "All Teams";
+
   return (
     <Select
-      value={currentTeam?.id || "personal"}
+      value={currentTeam?.id || "all-teams"}
       onValueChange={(value) => {
-        if (value === "personal") {
+        if (value === "all-teams") {
           setCurrentTeam(null);
         } else {
           const team = teams.find((t) => t.id === value);
@@ -39,16 +44,16 @@ export function TeamSelector() {
           {currentTeam ? (
             <Users className="w-4 h-4 text-primary" />
           ) : (
-            <Building2 className="w-4 h-4 text-muted-foreground" />
+            <Factory className="w-4 h-4 text-primary" />
           )}
           <SelectValue placeholder="Select workspace" />
         </div>
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="personal">
+        <SelectItem value="all-teams">
           <div className="flex items-center gap-2">
-            <Building2 className="w-4 h-4" />
-            Personal Workspace
+            <Factory className="w-4 h-4" />
+            {orgLabel}
           </div>
         </SelectItem>
         {teams.map((team) => (
