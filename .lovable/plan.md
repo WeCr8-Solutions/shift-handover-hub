@@ -1,51 +1,44 @@
 
 
-# Flexible Naming: Remove Prescriptive Placeholders and Labels
+# Remaining Prescriptive Placeholders Cleanup
 
-## Problem
+## Current State
 
-The platform currently uses prescriptive placeholder text and example formats that dictate how users should name their work orders, stations, and parts (e.g., "WO-2024-001", "PN-12345", "CNC-001", "Haas VF-2"). JobLine is a platform to assist tracking -- it should not impose naming conventions on users who already have their own systems.
+The previous round of changes updated the main `CreateWorkOrderDialog`, `NewHandoffForm`, `JobPerformanceUpdateForm`, `TeamManagement`, `OrganizationSetup`, and `RoutingTemplateManagement`. However, several prescriptive placeholders were missed across the codebase.
 
-Additionally, the station/machine field is currently **required** on the Create Work Order dialog, but per the existing memory note, station assignment should be optional to reduce onboarding friction.
+## Remaining Issues
 
-## Changes
+### 1. `src/components/queue/CreateQueueItemDialog.tsx` (3 issues)
+- **Line 233**: `"e.g., Setup and run Part #12345"` -- prescriptive title placeholder
+- **Line 326**: `"e.g., 30"` (setup time) -- should be `"Min"`
+- **Line 335**: `"e.g., 15"` (first article) -- should be `"Min"`
+- **Line 344**: `"e.g., 5"` (cycle time) -- should be `"Min"`
 
-### 1. `src/components/queue/CreateWorkOrderDialog.tsx`
-- **Placeholders**: Change from prescriptive examples to generic hints:
-  - Work Order #: `"e.g., WO-2024-001"` → `"Enter your work order number"`
-  - Part Number: `"e.g., PN-12345"` → `"Enter part number"`
-  - Operation #: `"e.g., 10"` → `"Enter operation"`
-  - Quantity: `"e.g., 100"` → `"Qty"`
-  - Setup/FAI/Cycle placeholders: `"e.g., 30"` etc. → `"Min"` or just `"0"`
-- **Label**: `"Assign to Machine"` → `"Assign to Station (Optional)"`
-- **Station no longer required**: Remove the `station_id` required validation (lines 114-117). Allow submission without a station.
-- **Select placeholder**: `"Select a machine..."` → `"Select a station..."`
+### 2. `src/components/NewHandoffForm.tsx` (2 issues)
+- **Line 677**: `"Rev A"` -- prescriptive revision placeholder, should be `"Enter revision"`
+- **Line 686**: `"OP-XX"` -- prescriptive operation placeholder, should be `"Enter operation"`
 
-### 2. `src/components/NewHandoffForm.tsx`
-- Work Order placeholder: `"WO-2024-XXXX"` → `"Enter work order number"`
-- Part Number placeholder: `"PN-XXXX-X"` → `"Enter part number"`
+### 3. `src/components/JobPerformanceUpdateForm.tsx` (1 issue)
+- **Line 322**: `"OP-XX"` -- prescriptive operation placeholder, should be `"Enter operation"`
 
-### 3. `src/components/JobPerformanceUpdateForm.tsx`
-- Work Order placeholder: `"WO-XXXX"` → `"Enter work order number"`
-- Part Number placeholder: `"PN-XXXX"` → `"Enter part number"`
+### 4. `src/components/TeamStationManager.tsx` (1 issue)
+- **Line 195**: `"e.g., CNC Bay 1"` -- work center placeholder, should be `"Enter work center name"`
 
-### 4. `src/components/TeamStationManager.tsx`
-- Station ID placeholder: `"e.g., CNC-001"` → `"Enter station ID"`
-- Station Name placeholder: `"e.g., Haas VF-2"` → `"Enter display name"`
-- Work Center placeholder: `"e.g., CNC Bay 1"` → `"Enter work center name"`
+### 5. `src/components/admin/StationManagement.tsx` (1 issue)
+- **Line 345**: `"e.g., CNC Mill Bay 1"` -- work center placeholder, should be `"Enter work center name"`
 
-### 5. `src/components/TeamManagement.tsx`
-- Team name placeholder: `"e.g., CNC Department"` → `"Enter team name"`
-- Team description: `"e.g., All CNC mill and lathe operators"` → `"Describe this team"`
+### 6. `src/pages/Setup.tsx` (1 issue)
+- **Line 273**: Description text `"Organize your workforce into teams (e.g., Day Shift, Night Shift, Welding Team)."` -- prescriptive team name examples. Change to `"Organize your workforce into teams that match how your facility operates."`
 
-### 6. `src/components/onboarding/OrganizationSetup.tsx`
-- Org name placeholder: `"e.g., Acme Manufacturing Co."` → `"Enter your organization name"`
+### 7. `src/components/onboarding/OrganizationSetup.tsx` (1 issue)
+- **Line 114**: Auto-created station uses hardcoded `station_id: 'STN-001'` and `work_center_type: 'Manual Mill'`. This seeds a prescriptive naming convention into new orgs. Consider changing to something more generic like `station_id: 'Station-1'` and `work_center_type` to a more generic default, or better yet, just `name: 'My First Station'`.
 
-### 7. `src/components/admin/RoutingTemplateManagement.tsx`
-- Template name: `"e.g., Standard Machining"` → `"Enter template name"`
-- Part pattern: `"e.g., PART-* or *-ASSY"` → `"Enter part number pattern"`
+### Not Changed (intentionally)
+- **`src/lib/mockData.ts`**: Uses `WO-`, `PN-`, `CNC-` etc. -- this is demo/sample data and is expected to use realistic examples. No change needed.
+- **`src/hooks/useQueue.test.ts`**: Test data uses `WO-001`, `PN-123` -- test fixtures are fine as-is.
+- **`src/components/NewHandoffForm.tsx` line 460**: Comment saying "e.g., when focused on navigation buttons" -- this is a code comment, not UI text. No change.
 
-## Scope
+## Implementation
 
-All changes are placeholder text and label updates, plus removing the station-required validation. No database or backend changes needed.
+All changes are placeholder text updates. No database, backend, or logic changes required.
 
