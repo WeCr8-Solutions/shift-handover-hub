@@ -121,11 +121,11 @@ const Index = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { currentTeam } = useCurrentTeam();
-  const { stations: dbStations, loading: stationsLoading } = useStations(currentTeam?.id);
-  const { records: dbRecords, loading: recordsLoading, createHandoffRecord } = useHandoffRecords(currentTeam?.id);
+  const { organization } = useUserOrganization();
+  const { stations: dbStations, loading: stationsLoading } = useStations(currentTeam?.id, organization?.id);
+  const { records: dbRecords, loading: recordsLoading, createHandoffRecord } = useHandoffRecords(currentTeam?.id, organization?.id);
   const { isComplete, isLoading: onboardingLoading, isStepCompleted, hasSeenWelcome } = useOnboardingContext();
   const { hasOrgSupervisorAccess, loading: roleLoading } = useAdminAccess();
-  const { organization } = useUserOrganization();
 
   // Supervisors, org admins, and platform admins get the production overview dashboard
   const showSupervisorView = user && hasOrgSupervisorAccess;

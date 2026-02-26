@@ -3,7 +3,6 @@ import { renderHook, waitFor } from "@testing-library/react";
 
 vi.mock("@/integrations/supabase/client", () => {
   const fn = vi.fn;
-  const mockUpsert = fn().mockResolvedValue({ data: null, error: null });
   const chainObj: any = {};
   chainObj.select = fn().mockImplementation(() => chainObj);
   chainObj.eq = fn().mockImplementation(() => chainObj);
@@ -12,11 +11,11 @@ vi.mock("@/integrations/supabase/client", () => {
     select: fn().mockResolvedValue({ data: [{ id: "s1", station_id: "stn-1" }], error: null }),
   });
   chainObj.update = fn().mockImplementation(() => chainObj);
-  chainObj.upsert = mockUpsert;
+  chainObj.upsert = fn().mockResolvedValue({ data: null, error: null });
 
   return {
     supabase: {
-      from: fn().mockImplementation(() => ({ ...chainObj, upsert: mockUpsert })),
+      from: fn().mockImplementation(() => ({ ...chainObj })),
       channel: fn().mockReturnValue({
         on: fn().mockReturnThis(),
         subscribe: fn().mockReturnThis(),
@@ -70,5 +69,17 @@ describe("useOperatorSessions — station status sync", () => {
     await waitFor(() => {
       expect(supabase.channel).toHaveBeenCalledWith("operator-sessions-user-1");
     });
+  });
+
+  it("checkIn is a callable function", async () => {
+    const { result } = renderHook(() => useOperatorSessions());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(typeof result.current.checkIn).toBe("function");
+  });
+
+  it("checkOut is a callable function", async () => {
+    const { result } = renderHook(() => useOperatorSessions());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(typeof result.current.checkOut).toBe("function");
   });
 });

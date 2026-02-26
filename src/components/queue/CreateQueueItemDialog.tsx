@@ -11,6 +11,7 @@ import { CreateQueueItemInput, QueueItemType, QueuePriority } from "@/hooks/useQ
 import { computeEstimatedDuration } from "@/lib/machineTime";
 import { useStations, Station } from "@/hooks/useStations";
 import { useCurrentTeam } from "@/contexts/TeamContext";
+import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -43,7 +44,8 @@ const priorityOptions: { value: QueuePriority; label: string; color: string }[] 
 export function CreateQueueItemDialog({ open, onOpenChange, onCreate, preselectedStationId }: CreateQueueItemDialogProps) {
   const { toast } = useToast();
   const { currentTeam } = useCurrentTeam();
-  const { stations, loading: stationsLoading } = useStations(currentTeam?.id);
+  const { organization } = useUserOrganization();
+  const { stations, loading: stationsLoading } = useStations(currentTeam?.id, organization?.id);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<CreateQueueItemInput>({
     item_type: "work_order",

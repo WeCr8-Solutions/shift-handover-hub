@@ -9,6 +9,7 @@ import { NewHandoffForm } from "@/components/NewHandoffForm";
 import { JobPerformanceUpdateForm } from "@/components/JobPerformanceUpdateForm";
 import { useHandoffRecords } from "@/hooks/useStations";
 import { useCurrentTeam } from "@/contexts/TeamContext";
+import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { getCurrentShift } from "@/lib/mockData";
 import { LogOut, Loader2, Clock, ArrowLeft, Info } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -20,9 +21,10 @@ interface OperatorDashboardProps {
 
 export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDashboardProps = {}) {
   const { currentTeam } = useCurrentTeam();
+  const { organization } = useUserOrganization();
   const { activeSessions, loading, isCheckedIn, checkIn, checkOut } =
     useOperatorSessions();
-  const { createHandoffRecord } = useHandoffRecords(currentTeam?.id);
+  const { createHandoffRecord } = useHandoffRecords(currentTeam?.id, organization?.id);
 
   const [showHandoff, setShowHandoff] = useState(false);
   const [showPerformance, setShowPerformance] = useState(false);
