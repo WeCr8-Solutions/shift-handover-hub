@@ -19,6 +19,7 @@ import {
   Plus,
   ListTodo,
   Eye,
+  Monitor,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -26,12 +27,16 @@ interface SupervisorDashboardProps {
   onNewHandoff: () => void;
   onPerformanceUpdate: () => void;
   onCreateWorkOrder: () => void;
+  onSwitchToOperatorView?: () => void;
+  onViewStation?: (stationId: string, stationName: string) => void;
 }
 
 export function SupervisorDashboard({
   onNewHandoff,
   onPerformanceUpdate,
   onCreateWorkOrder,
+  onSwitchToOperatorView,
+  onViewStation,
 }: SupervisorDashboardProps) {
   const navigate = useNavigate();
   const { currentTeam } = useCurrentTeam();
@@ -174,6 +179,11 @@ export function SupervisorDashboard({
           </div>
         </div>
         <div className="flex gap-2 flex-wrap">
+          {onSwitchToOperatorView && (
+            <Button variant="outline" onClick={onSwitchToOperatorView} size="sm" className="gap-2">
+              <Monitor className="w-4 h-4" /> Operator View
+            </Button>
+          )}
           <Button onClick={onCreateWorkOrder} className="gap-2 bg-primary" size="sm">
             <Package className="w-4 h-4" /> Add Work Order
           </Button>
@@ -270,7 +280,14 @@ export function SupervisorDashboard({
           ) : (
             <div className="divide-y divide-border/30">
               {activeStations.map((station) => (
-                <div key={station.id} className="flex items-center gap-3 px-4 py-2.5">
+                <div
+                  key={station.id}
+                  className={cn(
+                    "flex items-center gap-3 px-4 py-2.5",
+                    onViewStation && "cursor-pointer hover:bg-secondary/40 transition-colors"
+                  )}
+                  onClick={() => onViewStation?.(station.id, station.name)}
+                >
                   <div className={cn("w-2 h-2 rounded-full flex-shrink-0", statusColor(station.status))} />
                   <span className="text-xs font-mono font-medium w-20 flex-shrink-0">{station.id}</span>
                   <span className="text-xs text-muted-foreground w-20 truncate flex-shrink-0">{station.operator}</span>
