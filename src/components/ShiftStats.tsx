@@ -2,14 +2,16 @@ import { Activity, AlertTriangle, Wrench, Clock, Pause } from "lucide-react";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useStations, useHandoffRecords } from "@/hooks/useStations";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { mockStations, mockHandoffRecords } from "@/lib/mockData";
 import { useMemo } from "react";
 
 export function ShiftStats() {
   const { user } = useAuth();
   const { currentTeam } = useCurrentTeam();
-  const { stations: dbStations, loading: stationsLoading } = useStations(currentTeam?.id);
-  const { records: dbRecords, loading: recordsLoading } = useHandoffRecords(currentTeam?.id);
+  const { organization } = useUserOrganization();
+  const { stations: dbStations, loading: stationsLoading } = useStations(currentTeam?.id, organization?.id);
+  const { records: dbRecords, loading: recordsLoading } = useHandoffRecords(currentTeam?.id, organization?.id);
 
   // Use database data when logged in, mock data when not
   const stations = useMemo(() => {

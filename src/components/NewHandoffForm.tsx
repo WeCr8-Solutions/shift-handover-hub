@@ -424,6 +424,24 @@ export function NewHandoffForm({ onClose, onSubmit }: NewHandoffFormProps) {
     if (error) {
       toast.error("Failed to create handoff: " + error.message);
     } else {
+      // Sync station status so the supervisor dashboard reflects the handoff immediately
+      if (formData.stationDbId) {
+        await supabase
+          .from("current_station_status")
+          .upsert(
+            {
+              station_id: formData.stationDbId,
+              current_job_state: formData.jobState || null,
+              current_job_work_order: formData.workOrder || null,
+              current_job_part_number: formData.partNumber || null,
+              current_operator_name: formData.incomingOperator || null,
+              current_operator_id: null,
+              parts_complete: formData.partsCompleted || 0,
+            },
+            { onConflict: "station_id" }
+          );
+      }
+
       clearDraft();
       toast.success("Handoff record created successfully!");
       onClose();

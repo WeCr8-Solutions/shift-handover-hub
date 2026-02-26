@@ -328,8 +328,9 @@ export function useHandoffRecords(teamId?: string | null, organizationId?: strin
   };
 }
 
-export function useShiftStats(teamId?: string | null) {
+export function useShiftStats(teamId?: string | null, organizationId?: string | null) {
   const { user } = useAuth();
+  const { organization } = useUserOrganization();
   const [stats, setStats] = useState({
     activeStations: 0,
     completedHandoffs: 0,
@@ -337,6 +338,8 @@ export function useShiftStats(teamId?: string | null) {
     partsProduced: 0,
   });
   const [loading, setLoading] = useState(true);
+
+  const effectiveOrgId = organizationId || organization?.id;
 
   useEffect(() => {
     if (!user) {
@@ -347,34 +350,38 @@ export function useShiftStats(teamId?: string | null) {
     const fetchStats = async () => {
       setLoading(true);
 
-      // Get today's date for filtering
       const today = new Date().toISOString().split("T")[0];
 
-      // Fetch active stations
+      // Fetch active stations — org-scoped
       let stationsQuery = supabase
         .from("stations")
         .select("id", { count: "exact" })
         .eq("is_active", true);
 
+      if (effectiveOrgId) {
+        stationsQuery = stationsQuery.eq("organization_id", effectiveOrgId);
+      }
       if (teamId) {
         stationsQuery = stationsQuery.eq("team_id", teamId);
       }
 
       const { count: stationCount } = await stationsQuery;
 
-      // Fetch today's handoffs
+      // Fetch today's handoffs — org-scoped
       let handoffsQuery = supabase
         .from("handoff_records")
         .select("id, parts_completed_this_shift, issues_follow_ups", { count: "exact" })
         .eq("date", today);
 
+      if (effectiveOrgId) {
+        handoffsQuery = handoffsQuery.eq("organization_id", effectiveOrgId);
+      }
       if (teamId) {
         handoffsQuery = handoffsQuery.eq("team_id", teamId);
       }
 
       const { data: handoffs, count: handoffCount } = await handoffsQuery;
 
-      // Calculate parts and issues
       let totalParts = 0;
       let pendingIssues = 0;
 
@@ -398,7 +405,7 @@ export function useShiftStats(teamId?: string | null) {
     };
 
     fetchStats();
-  }, [user, teamId]);
+  }, [user, teamId, effectiveOrgId]);
 
   return { stats, loading };
 }
