@@ -37,11 +37,7 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { 
-      apiVersion: "2025-08-27.basil" 
-    });
-
-    // Get user's organization if orgId not provided
+    // Get user's organization
     let organizationId = orgId;
     let organizationName = "";
     let billingEmail = user.email;
@@ -49,7 +45,7 @@ serve(async (req) => {
     if (!organizationId) {
       const { data: orgMember } = await supabaseClient
         .from("organization_members")
-        .select("organization_id, organizations(id, name, stripe_customer_id, billing_email)")
+        .select("organization_id, role, organizations:organization_id (id, name, stripe_customer_id, billing_email)")
         .eq("user_id", user.id)
         .maybeSingle();
 
@@ -64,6 +60,27 @@ serve(async (req) => {
         logStep("Found user organization", { organizationId, organizationName });
       }
     }
+
+    // Authorization check: only org owners, platform admins, or developers can create checkouts
+    if (organizationId) {
+      const { data: canManage } = await supabaseClient.rpc("can_manage_billing", {
+        _user_id: user.id,
+        _org_id: organizationId,
+      });
+
+      if (!canManage) {
+        logStep("UNAUTHORIZED", { userId: user.id, orgId: organizationId });
+        return new Response(
+          JSON.stringify({ error: "Only organization owners, platform admins, or developers can manage billing." }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 403 }
+        );
+      }
+      logStep("Billing authorization verified");
+    }
+
+    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { 
+      apiVersion: "2025-08-27.basil" 
+    });
 
     // Check if organization already has a Stripe customer
     let customerId: string | undefined;
@@ -91,7 +108,6 @@ serve(async (req) => {
         customerId = customers.data[0].id;
         logStep("Existing customer found by email", { customerId });
         
-        // Store customer ID on org if we have one
         if (organizationId) {
           await supabaseClient
             .from("organizations")
@@ -106,12 +122,7 @@ serve(async (req) => {
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : billingEmail,
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
+      line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
       success_url: `${origin}/dashboard?subscription=success`,
       cancel_url: `${origin}/pricing?subscription=cancelled`,

@@ -2535,6 +2535,7 @@ export type Database = {
           stripe_customer_id: string | null
           subscription_status: string | null
           subscription_tier: string | null
+          trial_ends_at: string
           updated_at: string
         }
         Insert: {
@@ -2549,6 +2550,7 @@ export type Database = {
           stripe_customer_id?: string | null
           subscription_status?: string | null
           subscription_tier?: string | null
+          trial_ends_at?: string
           updated_at?: string
         }
         Update: {
@@ -2563,6 +2565,7 @@ export type Database = {
           stripe_customer_id?: string | null
           subscription_status?: string | null
           subscription_tier?: string | null
+          trial_ends_at?: string
           updated_at?: string
         }
         Relationships: []
@@ -4250,6 +4253,10 @@ export type Database = {
       }
       can_insert_team_member: {
         Args: { _actor: string; _target_user_id: string; _team_id: string }
+        Returns: boolean
+      }
+      can_manage_billing: {
+        Args: { _org_id: string; _user_id: string }
         Returns: boolean
       }
       can_manage_station_via_team: {
