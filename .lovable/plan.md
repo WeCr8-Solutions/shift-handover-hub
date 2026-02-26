@@ -1,44 +1,53 @@
 
 
-# Fix Org-Wide Overview for Supervisors and Org Owners
+# Fix Operation-Level Completion and Post-Handoff Navigation
 
 ## Problem
 
-When supervisors/org owners select "Personal Workspace" in the TeamSelector, it's misleading -- it should represent "All Teams (Org Overview)." The current flow forces users to pick a single team from the dropdown rather than seeing their entire manufacturing operation at a glance. The SupervisorDashboard already supports org-wide data when `currentTeam` is `null` (via `useStations` filtering by `organization_id`), but the UI labels and flow don't communicate this.
+The current "Complete & Deliver" button in the operator panel implies completing the entire work order, when in reality the operator is only completing their operation/step. The work order can only be fully completed at its final routing station. Additionally, after a handoff or receipt, there's no way to jump directly into the work order to address its needs.
 
 ## Changes
 
-### 1. `src/components/TeamSelector.tsx` -- Rename "Personal Workspace" to org-aware label
+### 1. `src/components/dashboard/OperatorStationPanel.tsx` -- Rename and clarify completion action
 
-- Replace `"Personal Workspace"` with the actual organization name + "All Teams" (e.g., "Acme Mfg · All Teams")
-- Use the org name from `useUserOrganization()` hook
-- Change the icon from `Building2` to a `Factory` icon for the org-wide option
-- Keep individual team options as-is
-- When `currentTeam` is `null`, it means "show everything in the org" -- this is already how `useStations` works (filters by `organization_id` when no `team_id` is passed)
+- Fetch routing steps when an active order is displayed to determine if this is the final station
+- Rename button:
+  - If next routing step exists: **"Complete Op & Advance"** with `ArrowRight` icon
+  - If this is the final step: **"Complete Work Order"** with `CheckCircle2` icon
+- Update the confirmation dialog description to reflect what's actually happening:
+  - Mid-route: "Complete your operation at this station and advance the work order to [Next Station Name]"
+  - Final step: "Complete this work order. This is the final operation."
+- After successful completion, show a toast with a **"View Work Order"** action button that navigates to `/queue?item={orderId}`
+- Add a new **"View Details"** button on the active order card so operators can open the work order detail anytime
 
-### 2. `src/components/dashboard/SupervisorDashboard.tsx` -- Show org context in header
+### 2. `src/components/queue/QueueItemDetailDialog.tsx` -- Make "Complete" button routing-aware
 
-- Update the subtitle text: when `currentTeam` is `null`, show `"{orgName} · All Teams"` instead of `"All Teams"`
-- Add a team filter badge row below the KPI stats that shows each team as a clickable chip, allowing quick team filtering without using the header dropdown
-- This gives supervisors inline context switching: "All Teams" overview with ability to tap into a specific team
+- The existing `handleCompleteWork` sets status to "completed" directly on the queue item, bypassing routing logic
+- When routing steps exist and uncompleted steps remain after the current station, change the button label to **"Complete Operation"** and run the same advance-routing logic used in `OperatorStationPanel.confirmDelivery`
+- Only show **"Complete Work Order"** when this is the final routing step or no routing exists
+- This prevents operators from accidentally marking the whole WO complete from the detail dialog
 
-### 3. `src/contexts/TeamContext.tsx` -- Default to `null` (org-wide) for supervisors
+### 3. `src/components/HandoffCard.tsx` -- Add "View Work Order" action
 
-- When auto-selecting on load, if user `hasOrgSupervisorAccess`, default to `null` (org-wide view) instead of the first team
-- This ensures supervisors land on the full org overview by default
-- Operators still auto-select their first team
+- Accept an optional `onViewWorkOrder` callback prop
+- Add a small button/link at the bottom of the card: "View Work Order" that triggers the callback with the handoff's `workOrder` identifier
+- This lets users jump from a received handoff directly into the work order detail
 
-### 4. `src/hooks/useStations.ts` -- Ensure handoff records also filter by org
+### 4. `src/components/dashboard/OperatorStationPanel.tsx` -- Post-handoff navigation
 
-- `useHandoffRecords` currently only filters by `teamId` -- when `teamId` is null, it returns ALL records (no org filter)
-- Add `organization_id` filtering to `useHandoffRecords` matching the pattern already used in `useStations`
+- After the `onCreateHandoff` callback completes, if the active order exists, show a prompt or auto-navigate to the work order queue with the item pre-selected
+- Add `onViewWorkOrder?: (orderId: string) => void` prop so parent components can handle navigation to the queue detail
+
+### 5. `src/components/dashboard/StationDetailView.tsx` -- Wire up work order navigation
+
+- Pass `onViewWorkOrder` through to `OperatorStationPanel` that navigates to `/queue?item={id}`
 
 ## Files
 
 | File | Change |
 |------|--------|
-| `src/components/TeamSelector.tsx` | Rename "Personal Workspace" to org name + "All Teams", add Factory icon |
-| `src/components/dashboard/SupervisorDashboard.tsx` | Show org name in header, add inline team filter chips |
-| `src/contexts/TeamContext.tsx` | Default supervisors to org-wide view (null team) |
-| `src/hooks/useStations.ts` | Add org_id filter to `useHandoffRecords` |
+| `src/components/dashboard/OperatorStationPanel.tsx` | Routing-aware button labels, post-completion navigation, View Details button |
+| `src/components/queue/QueueItemDetailDialog.tsx` | Make Complete button routing-aware, prevent premature WO completion |
+| `src/components/HandoffCard.tsx` | Add optional "View Work Order" click action |
+| `src/components/dashboard/StationDetailView.tsx` | Wire onViewWorkOrder navigation |
 
