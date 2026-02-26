@@ -39,6 +39,14 @@ function createMockQueueItem(overrides: Partial<QueueItem> = {}): QueueItem {
     created_by: "test-user-id",
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
+    qty_original: null,
+    qty_completed: null,
+    qty_scrap: null,
+    qty_rework: null,
+    qty_open: null,
+    quantity_locked: null,
+    parent_work_order_id: null,
+    is_rework: null,
     ...overrides,
   };
 }

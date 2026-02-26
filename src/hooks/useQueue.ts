@@ -42,6 +42,15 @@ export interface QueueItem {
   created_by: string | null;
   created_at: string;
   updated_at: string;
+  // NCR quantity tracking
+  qty_original: number | null;
+  qty_completed: number | null;
+  qty_scrap: number | null;
+  qty_rework: number | null;
+  qty_open: number | null;
+  quantity_locked: boolean | null;
+  parent_work_order_id: string | null;
+  is_rework: boolean | null;
 }
 
 export interface QueueItemComment {

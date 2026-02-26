@@ -1721,6 +1721,159 @@ export type Database = {
           },
         ]
       }
+      ncr_audit_log: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          ncr_id: string
+          new_values: Json | null
+          old_values: Json | null
+          organization_id: string
+          performed_by: string
+          performed_by_name: string
+          queue_item_id: string
+          reason: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          ncr_id: string
+          new_values?: Json | null
+          old_values?: Json | null
+          organization_id: string
+          performed_by: string
+          performed_by_name: string
+          queue_item_id: string
+          reason?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          ncr_id?: string
+          new_values?: Json | null
+          old_values?: Json | null
+          organization_id?: string
+          performed_by?: string
+          performed_by_name?: string
+          queue_item_id?: string
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ncr_audit_log_ncr_id_fkey"
+            columns: ["ncr_id"]
+            isOneToOne: false
+            referencedRelation: "ncr_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ncr_reports: {
+        Row: {
+          authorization_status: string
+          authorized_at: string | null
+          authorized_by: string | null
+          authorized_by_name: string | null
+          created_at: string
+          created_by: string
+          customer_approval: boolean | null
+          defect_type: string
+          description: string
+          disposition: string
+          id: string
+          metadata: Json | null
+          ncr_number: string
+          operation_number: string
+          organization_id: string
+          part_number: string | null
+          quality_signoff: boolean | null
+          quantity_affected: number
+          queue_item_id: string
+          rejection_reason: string | null
+          rework_wo_id: string | null
+          serial_or_lot: string
+          updated_at: string
+          work_order_number: string
+        }
+        Insert: {
+          authorization_status?: string
+          authorized_at?: string | null
+          authorized_by?: string | null
+          authorized_by_name?: string | null
+          created_at?: string
+          created_by: string
+          customer_approval?: boolean | null
+          defect_type: string
+          description: string
+          disposition: string
+          id?: string
+          metadata?: Json | null
+          ncr_number: string
+          operation_number: string
+          organization_id: string
+          part_number?: string | null
+          quality_signoff?: boolean | null
+          quantity_affected?: number
+          queue_item_id: string
+          rejection_reason?: string | null
+          rework_wo_id?: string | null
+          serial_or_lot: string
+          updated_at?: string
+          work_order_number: string
+        }
+        Update: {
+          authorization_status?: string
+          authorized_at?: string | null
+          authorized_by?: string | null
+          authorized_by_name?: string | null
+          created_at?: string
+          created_by?: string
+          customer_approval?: boolean | null
+          defect_type?: string
+          description?: string
+          disposition?: string
+          id?: string
+          metadata?: Json | null
+          ncr_number?: string
+          operation_number?: string
+          organization_id?: string
+          part_number?: string | null
+          quality_signoff?: boolean | null
+          quantity_affected?: number
+          queue_item_id?: string
+          rejection_reason?: string | null
+          rework_wo_id?: string | null
+          serial_or_lot?: string
+          updated_at?: string
+          work_order_number?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ncr_reports_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ncr_reports_queue_item_id_fkey"
+            columns: ["queue_item_id"]
+            isOneToOne: false
+            referencedRelation: "queue_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ncr_reports_rework_wo_id_fkey"
+            columns: ["rework_wo_id"]
+            isOneToOne: false
+            referencedRelation: "queue_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_preferences: {
         Row: {
           created_at: string
@@ -2722,15 +2875,23 @@ export type Database = {
           estimated_duration: number | null
           first_article_minutes: number | null
           id: string
+          is_rework: boolean | null
           item_type: Database["public"]["Enums"]["queue_item_type"]
           metadata: Json | null
           operation_number: string | null
           organization_id: string
+          parent_work_order_id: string | null
           part_number: string | null
           parts_completed: number | null
           position: number
           priority: Database["public"]["Enums"]["queue_priority"]
+          qty_completed: number | null
+          qty_open: number | null
+          qty_original: number | null
+          qty_rework: number | null
+          qty_scrap: number | null
           quantity: number | null
+          quantity_locked: boolean | null
           scheduled_end: string | null
           scheduled_start: string | null
           setup_time_minutes: number | null
@@ -2756,15 +2917,23 @@ export type Database = {
           estimated_duration?: number | null
           first_article_minutes?: number | null
           id?: string
+          is_rework?: boolean | null
           item_type?: Database["public"]["Enums"]["queue_item_type"]
           metadata?: Json | null
           operation_number?: string | null
           organization_id: string
+          parent_work_order_id?: string | null
           part_number?: string | null
           parts_completed?: number | null
           position?: number
           priority?: Database["public"]["Enums"]["queue_priority"]
+          qty_completed?: number | null
+          qty_open?: number | null
+          qty_original?: number | null
+          qty_rework?: number | null
+          qty_scrap?: number | null
           quantity?: number | null
+          quantity_locked?: boolean | null
           scheduled_end?: string | null
           scheduled_start?: string | null
           setup_time_minutes?: number | null
@@ -2790,15 +2959,23 @@ export type Database = {
           estimated_duration?: number | null
           first_article_minutes?: number | null
           id?: string
+          is_rework?: boolean | null
           item_type?: Database["public"]["Enums"]["queue_item_type"]
           metadata?: Json | null
           operation_number?: string | null
           organization_id?: string
+          parent_work_order_id?: string | null
           part_number?: string | null
           parts_completed?: number | null
           position?: number
           priority?: Database["public"]["Enums"]["queue_priority"]
+          qty_completed?: number | null
+          qty_open?: number | null
+          qty_original?: number | null
+          qty_rework?: number | null
+          qty_scrap?: number | null
           quantity?: number | null
+          quantity_locked?: boolean | null
           scheduled_end?: string | null
           scheduled_start?: string | null
           setup_time_minutes?: number | null
@@ -2817,6 +2994,13 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "queue_items_parent_work_order_id_fkey"
+            columns: ["parent_work_order_id"]
+            isOneToOne: false
+            referencedRelation: "queue_items"
             referencedColumns: ["id"]
           },
           {
@@ -4044,6 +4228,18 @@ export type Database = {
       }
     }
     Functions: {
+      apply_ncr_disposition: {
+        Args: { _approver_id: string; _ncr_id: string }
+        Returns: undefined
+      }
+      can_adjust_wo_quantity: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
+      can_approve_ncr: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
       can_insert_station: {
         Args: { _actor: string; _org_id: string; _team_id: string }
         Returns: boolean
@@ -4134,6 +4330,10 @@ export type Database = {
         Args: { _team_id: string; _user_id: string }
         Returns: boolean
       }
+      reject_ncr: {
+        Args: { _ncr_id: string; _reason: string; _rejector_id: string }
+        Returns: undefined
+      }
       reorder_queue_item: {
         Args: {
           _item_id: string
@@ -4174,6 +4374,12 @@ export type Database = {
         | "team_member_added"
         | "team_member_removed"
         | "profile_updated"
+        | "ncr_created"
+        | "ncr_approved"
+        | "ncr_rejected"
+        | "quantity_override"
+        | "rework_wo_created"
+        | "work_order_quantity_adjusted"
       app_role: "admin" | "operator" | "supervisor" | "viewer" | "developer"
       impact_level: "low" | "medium" | "high" | "critical"
       issue_severity: "low" | "medium" | "high" | "critical"
@@ -4354,6 +4560,12 @@ export const Constants = {
         "team_member_added",
         "team_member_removed",
         "profile_updated",
+        "ncr_created",
+        "ncr_approved",
+        "ncr_rejected",
+        "quantity_override",
+        "rework_wo_created",
+        "work_order_quantity_adjusted",
       ],
       app_role: ["admin", "operator", "supervisor", "viewer", "developer"],
       impact_level: ["low", "medium", "high", "critical"],
