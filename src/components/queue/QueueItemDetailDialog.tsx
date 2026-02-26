@@ -762,6 +762,21 @@ export function QueueItemDetailDialog({
               )}
             </TabsContent>
 
+            {/* NCR Tab */}
+            <TabsContent value="ncr" className="flex-1 overflow-auto mt-4">
+              <NCRListView ncrs={ncrs} />
+              {ncrs.length === 0 && (
+                <div className="text-center py-8 space-y-3">
+                  <ShieldAlert className="w-10 h-10 mx-auto text-muted-foreground/40" />
+                  <p className="text-muted-foreground">No NCRs reported for this work order.</p>
+                  <Button variant="outline" size="sm" onClick={() => setNcrDialogOpen(true)} className="gap-2">
+                    <ShieldAlert className="w-4 h-4" />
+                    Report NCR
+                  </Button>
+                </div>
+              )}
+            </TabsContent>
+
             <TabsContent value="comments" className="flex-1 flex flex-col overflow-hidden mt-4">
               <ScrollArea className="flex-1 pr-4">
                 <div className="space-y-3">
@@ -821,6 +836,19 @@ export function QueueItemDetailDialog({
             </TabsContent>
           </Tabs>
         </div>
+
+        {/* NCR Create Dialog */}
+        {item && (
+          <CreateNCRDialog
+            open={ncrDialogOpen}
+            onOpenChange={setNcrDialogOpen}
+            workOrderNumber={item.work_order || ''}
+            partNumber={item.part_number}
+            queueItemId={item.id}
+            qtyOpen={item.qty_open ?? item.quantity ?? 0}
+            onSubmit={createNCR}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );
