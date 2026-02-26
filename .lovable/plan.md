@@ -1,31 +1,51 @@
 
 
-# Make the Entire Hero Visible Without Scrolling
+# Flexible Naming: Remove Prescriptive Placeholders and Labels
 
 ## Problem
 
-The hero logo was scaled to extremely large sizes (`h-72` on mobile up to `h-[40rem]` / 640px on desktop). Combined with the heading, subtitle, three CTA buttons, and stats grid, the hero section far exceeds a single viewport height. Users must scroll just to see the call-to-action.
+The platform currently uses prescriptive placeholder text and example formats that dictate how users should name their work orders, stations, and parts (e.g., "WO-2024-001", "PN-12345", "CNC-001", "Haas VF-2"). JobLine is a platform to assist tracking -- it should not impose naming conventions on users who already have their own systems.
 
-## Approach
+Additionally, the station/machine field is currently **required** on the Create Work Order dialog, but per the existing memory note, station assignment should be optional to reduce onboarding friction.
 
-Use `dvh` (dynamic viewport height) to constrain the hero section to the screen, and scale the logo to fill available space without pushing content off-screen. The key is making the hero section itself `min-h-[100dvh]` with a flex column layout so elements distribute within the viewport.
+## Changes
 
-## Changes to `src/pages/Landing.tsx`
+### 1. `src/components/queue/CreateWorkOrderDialog.tsx`
+- **Placeholders**: Change from prescriptive examples to generic hints:
+  - Work Order #: `"e.g., WO-2024-001"` → `"Enter your work order number"`
+  - Part Number: `"e.g., PN-12345"` → `"Enter part number"`
+  - Operation #: `"e.g., 10"` → `"Enter operation"`
+  - Quantity: `"e.g., 100"` → `"Qty"`
+  - Setup/FAI/Cycle placeholders: `"e.g., 30"` etc. → `"Min"` or just `"0"`
+- **Label**: `"Assign to Machine"` → `"Assign to Station (Optional)"`
+- **Station no longer required**: Remove the `station_id` required validation (lines 114-117). Allow submission without a station.
+- **Select placeholder**: `"Select a machine..."` → `"Select a station..."`
 
-1. **Hero section container**: Change from fixed padding to `min-h-[100dvh] flex flex-col justify-center` so the entire section fits the viewport
-2. **Reduce top/bottom padding**: Use minimal padding (`pt-16 pb-8`) since the nav is fixed and takes ~56-64px
-3. **Scale logo back to reasonable sizes**: `h-20 sm:h-28 md:h-36 lg:h-44` -- still 3-4x larger than the nav logo but not viewport-breaking
-4. **Reduce spacing**: Tighten `mb-` values between logo, badge, heading, subtitle, buttons, and stats so everything breathes but fits
-5. **Keep all content**: Logo, badge, h1, subtitle, 3 buttons, and stats grid all remain visible
+### 2. `src/components/NewHandoffForm.tsx`
+- Work Order placeholder: `"WO-2024-XXXX"` → `"Enter work order number"`
+- Part Number placeholder: `"PN-XXXX-X"` → `"Enter part number"`
 
-### Size reference
-- Nav bar: ~64px
-- Logo at `h-44` (lg): 176px
-- Heading + subtitle: ~200px
-- Buttons row: ~48px
-- Stats grid: ~80px
-- Gaps/margins: ~120px
-- Total: ~688px -- fits in 768px+ viewport with room to spare
+### 3. `src/components/JobPerformanceUpdateForm.tsx`
+- Work Order placeholder: `"WO-XXXX"` → `"Enter work order number"`
+- Part Number placeholder: `"PN-XXXX"` → `"Enter part number"`
 
-On mobile (`h-20` = 80px logo), total is ~500px which fits comfortably in any phone viewport.
+### 4. `src/components/TeamStationManager.tsx`
+- Station ID placeholder: `"e.g., CNC-001"` → `"Enter station ID"`
+- Station Name placeholder: `"e.g., Haas VF-2"` → `"Enter display name"`
+- Work Center placeholder: `"e.g., CNC Bay 1"` → `"Enter work center name"`
+
+### 5. `src/components/TeamManagement.tsx`
+- Team name placeholder: `"e.g., CNC Department"` → `"Enter team name"`
+- Team description: `"e.g., All CNC mill and lathe operators"` → `"Describe this team"`
+
+### 6. `src/components/onboarding/OrganizationSetup.tsx`
+- Org name placeholder: `"e.g., Acme Manufacturing Co."` → `"Enter your organization name"`
+
+### 7. `src/components/admin/RoutingTemplateManagement.tsx`
+- Template name: `"e.g., Standard Machining"` → `"Enter template name"`
+- Part pattern: `"e.g., PART-* or *-ASSY"` → `"Enter part number pattern"`
+
+## Scope
+
+All changes are placeholder text and label updates, plus removing the station-required validation. No database or backend changes needed.
 
