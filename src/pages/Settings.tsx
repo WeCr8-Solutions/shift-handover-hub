@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Settings2, Factory, Bell, Clock, Wrench, Building2, CreditCard, Lock } from "lucide-react";
+import { Loader2, Settings2, Factory, Bell, Clock, Wrench, Building2, CreditCard, Lock, GraduationCap } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAppSettings } from "@/hooks/useAppSettings";
 import { useAdminAccess } from "@/hooks/useAdminData";
@@ -13,6 +13,7 @@ import { NotificationSettings } from "@/components/settings/NotificationSettings
 import { WorkCenterSettings } from "@/components/settings/WorkCenterSettings";
 import { OrganizationSettings } from "@/components/settings/OrganizationSettings";
 import { BillingSettings } from "@/components/settings/BillingSettings";
+import { OnboardingSettings } from "@/components/settings/OnboardingSettings";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function Settings() {
@@ -70,7 +71,7 @@ export default function Settings() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-7 h-auto gap-2 bg-transparent p-0">
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-8 h-auto gap-2 bg-transparent p-0">
             <TabsTrigger 
               value="general" 
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground border"
@@ -123,6 +124,13 @@ export default function Settings() {
               <Bell className="w-4 h-4 mr-2" />
               Notifications
             </TabsTrigger>
+            <TabsTrigger 
+              value="onboarding"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground border"
+            >
+              <GraduationCap className="w-4 h-4 mr-2" />
+              Onboarding
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="general">
@@ -156,6 +164,10 @@ export default function Settings() {
 
           <TabsContent value="notifications">
             <NotificationSettings />
+          </TabsContent>
+
+          <TabsContent value="onboarding">
+            <OnboardingSettings />
           </TabsContent>
         </Tabs>
       </main>
