@@ -289,7 +289,7 @@ export default function Landing() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50">
         <div className="container mx-auto px-3 sm:px-4 lg:px-6 h-14 sm:h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 flex-shrink-0">
-            <img src={joblineLogo} alt="JobLine.ai" className="h-8 sm:h-10 w-auto" />
+            <img src={joblineLogo} alt="JobLine.ai" className="h-10 sm:h-12 lg:h-14 w-auto" />
           </div>
           
           {/* Desktop Navigation */}
@@ -373,7 +373,7 @@ export default function Landing() {
                 <div className="flex flex-col h-full">
                   {/* Mobile Menu Header */}
                   <div className="flex items-center justify-between p-4 border-b border-border">
-                    <img src={joblineLogo} alt="JobLine.ai" className="h-8 w-auto" />
+                    <img src={joblineLogo} alt="JobLine.ai" className="h-10 w-auto" />
                   </div>
                   
                   {/* Mobile Menu Links */}
@@ -449,7 +449,7 @@ export default function Landing() {
           <div className="max-w-4xl mx-auto text-center">
             {/* Logo above hero text */}
             <div className="flex justify-center mb-6 sm:mb-8">
-              <img src={joblineLogo} alt="JobLine.ai" className="h-16 sm:h-24 md:h-32 lg:h-40 w-auto" />
+              <img src={joblineLogo} alt="JobLine.ai" className="h-24 sm:h-36 md:h-48 lg:h-56 w-auto" />
             </div>
             
             <Badge variant="outline" className="mb-4 sm:mb-6 px-3 sm:px-4 py-1 sm:py-1.5 text-xs sm:text-sm border-primary/30 bg-primary/5">
