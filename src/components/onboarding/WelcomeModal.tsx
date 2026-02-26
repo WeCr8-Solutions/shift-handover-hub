@@ -99,6 +99,12 @@ export function WelcomeModal() {
     navigate('/dashboard');
   };
 
+  const handleDontShowAgain = async () => {
+    await markWelcomeSeen();
+    await skipOnboarding();
+    setIsOpen(false);
+  };
+
   const handleClose = async () => {
     // Mark welcome as seen when closing
     await markWelcomeSeen();
@@ -199,9 +205,14 @@ export function WelcomeModal() {
           </Button>
         </div>
 
-        <p className="text-xs text-center text-muted-foreground pt-2">
-          You can restart the tour anytime from your profile settings
-        </p>
+        <div className="flex items-center justify-between pt-2">
+          <Button variant="link" size="sm" className="text-muted-foreground p-0 h-auto" onClick={handleDontShowAgain}>
+            Don't show again
+          </Button>
+          <p className="text-xs text-muted-foreground">
+            Access anytime from Settings → Onboarding
+          </p>
+        </div>
       </DialogContent>
     </Dialog>
   );

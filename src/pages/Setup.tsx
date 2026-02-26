@@ -300,9 +300,9 @@ export default function Setup() {
                     <Badge variant="secondary">{setupStatus.stationsCount} stations</Badge>
                   )}
                 </div>
-                <CardDescription>
-                  Add your CNC machines, welding stations, inspection areas, and other equipment.
-                </CardDescription>
+              <CardDescription>
+                Add the work stations and equipment your teams will operate.
+              </CardDescription>
               </CardHeader>
               <CardContent>
                 <Button 
