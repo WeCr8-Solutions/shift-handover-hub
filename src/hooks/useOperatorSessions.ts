@@ -25,7 +25,7 @@ export interface OperatorSession {
 }
 
 export function useOperatorSessions() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { organization } = useUserOrganization();
   const [activeSessions, setActiveSessions] = useState<OperatorSession[]>([]);
   const [loading, setLoading] = useState(true);
@@ -98,6 +98,21 @@ export function useOperatorSessions() {
       console.error("Check-in error:", error);
       toast.error("Failed to check in to stations");
     } else {
+      // Sync operator presence to station status for dashboard visibility
+      const operatorName = profile?.display_name || user.email || "Operator";
+      for (const sid of stationIds) {
+        await supabase
+          .from("current_station_status")
+          .upsert(
+            {
+              station_id: sid,
+              current_operator_name: operatorName,
+              current_operator_id: user.id,
+            },
+            { onConflict: "station_id" }
+          );
+      }
+
       toast.success(`Checked in to ${stationIds.length} station(s)`);
       await fetchSessions();
     }
@@ -107,6 +122,11 @@ export function useOperatorSessions() {
 
   const checkOut = async (sessionId?: string) => {
     if (!user) return;
+
+    // Capture station IDs before updating sessions so we can clear their status
+    const sessionsToEnd = sessionId
+      ? activeSessions.filter((s) => s.id === sessionId)
+      : activeSessions;
 
     const now = new Date().toISOString();
 
@@ -126,6 +146,20 @@ export function useOperatorSessions() {
       console.error("Check-out error:", error);
       toast.error("Failed to check out");
     } else {
+      // Clear operator from station status on checkout
+      for (const session of sessionsToEnd) {
+        await supabase
+          .from("current_station_status")
+          .upsert(
+            {
+              station_id: session.station_id,
+              current_operator_name: null,
+              current_operator_id: null,
+            },
+            { onConflict: "station_id" }
+          );
+      }
+
       toast.success(sessionId ? "Checked out from station" : "Shift ended — checked out from all stations");
       await fetchSessions();
     }
