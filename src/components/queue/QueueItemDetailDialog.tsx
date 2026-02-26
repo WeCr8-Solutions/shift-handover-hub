@@ -292,8 +292,25 @@ export function QueueItemDetailDialog({
 
           await supabase
             .from("work_order_routing")
-            .update({ status: "in_progress", started_at: new Date().toISOString() })
+            .update({ status: "pending" })
             .eq("id", nextStep.id);
+
+          // Update next station's dashboard status to show incoming work
+          await supabase
+            .from("current_station_status")
+            .upsert(
+              {
+                station_id: nextStep.station_id,
+                current_job_work_order: item.work_order || item.title,
+                current_job_part_number: item.part_number,
+                current_job_state: "Waiting on Material",
+                current_operator_name: null,
+                current_operator_id: null,
+                parts_complete: 0,
+                parts_required: item.quantity || 0,
+              },
+              { onConflict: "station_id" }
+            );
         }
 
         // Clear current station status
