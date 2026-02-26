@@ -437,7 +437,7 @@ export default function Landing() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-20 pb-12 sm:pt-28 sm:pb-16 md:pt-36 md:pb-24 lg:pt-40 lg:pb-32">
+      <section className="relative min-h-[100dvh] flex flex-col justify-center pt-16 pb-8">
         {/* Background Effects */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-1/4 left-1/4 w-48 sm:w-72 md:w-96 h-48 sm:h-72 md:h-96 bg-primary/20 rounded-full blur-[80px] sm:blur-[100px] md:blur-[128px] animate-pulse" />
@@ -448,16 +448,16 @@ export default function Landing() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="max-w-4xl mx-auto text-center">
             {/* Logo above hero text */}
-            <div className="flex justify-center mb-6 sm:mb-8">
-              <img src={joblineLogo} alt="JobLine.ai" className="h-72 sm:h-96 md:h-[30rem] lg:h-[40rem] w-auto" />
+            <div className="flex justify-center mb-4 sm:mb-5">
+              <img src={joblineLogo} alt="JobLine.ai" className="h-20 sm:h-28 md:h-36 lg:h-44 w-auto" />
             </div>
             
-            <Badge variant="outline" className="mb-4 sm:mb-6 px-3 sm:px-4 py-1 sm:py-1.5 text-xs sm:text-sm border-primary/30 bg-primary/5">
+            <Badge variant="outline" className="mb-3 sm:mb-4 px-3 sm:px-4 py-1 sm:py-1.5 text-xs sm:text-sm border-primary/30 bg-primary/5">
               <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1.5 sm:mr-2 text-primary" />
               Built for Manufacturing Teams
             </Badge>
             
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight mb-4 sm:mb-6 leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight mb-3 sm:mb-4 leading-tight">
               Shift Handoffs.
               <br />
               <span className="bg-gradient-to-r from-primary via-blue-400 to-primary bg-clip-text text-transparent">
@@ -465,12 +465,12 @@ export default function Landing() {
               </span>
             </h1>
             
-            <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-xl sm:max-w-2xl mx-auto mb-6 sm:mb-8 px-2">
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-xl sm:max-w-2xl mx-auto mb-4 sm:mb-6 px-2">
               The intelligent job tracking platform that makes shift transitions seamless. 
               Real-time visibility, zero information loss, better production outcomes.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-8 sm:mb-12">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-6 sm:mb-8">
               <Button size="lg" onClick={() => {
                 handleCtaClick('start_free_trial', 'hero_section');
                 navigate("/auth");
@@ -504,7 +504,7 @@ export default function Landing() {
             {/* Stats */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 md:gap-6 lg:gap-8 max-w-3xl mx-auto">
               {stats.map((stat, i) => (
-                <div key={i} className="text-center p-2 sm:p-4">
+                <div key={i} className="text-center p-2 sm:p-3">
                   <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-0.5 sm:mb-1">{stat.value}</div>
                   <div className="text-xs sm:text-sm text-muted-foreground">{stat.label}</div>
                 </div>
