@@ -7,6 +7,7 @@ interface OnboardingContextType {
   isComplete: boolean;
   isLoading: boolean;
   hasSeenWelcome: boolean;
+  setupWizardDismissed: boolean;
   showTour: boolean;
   isNewSignup: boolean;
   setShowTour: (show: boolean) => void;
@@ -14,6 +15,7 @@ interface OnboardingContextType {
   skipOnboarding: () => Promise<void>;
   resetOnboarding: () => Promise<void>;
   markWelcomeSeen: () => Promise<void>;
+  dismissSetupWizard: () => Promise<void>;
   goToStep: (stepId: OnboardingStep) => Promise<void>;
   startTour: (step?: OnboardingStep) => void;
   endTour: () => void;

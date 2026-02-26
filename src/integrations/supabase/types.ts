@@ -3699,6 +3699,7 @@ export type Database = {
           has_seen_welcome: boolean | null
           id: string
           is_complete: boolean | null
+          setup_wizard_dismissed: boolean
           started_at: string | null
           updated_at: string | null
           user_id: string
@@ -3711,6 +3712,7 @@ export type Database = {
           has_seen_welcome?: boolean | null
           id?: string
           is_complete?: boolean | null
+          setup_wizard_dismissed?: boolean
           started_at?: string | null
           updated_at?: string | null
           user_id: string
@@ -3723,6 +3725,7 @@ export type Database = {
           has_seen_welcome?: boolean | null
           id?: string
           is_complete?: boolean | null
+          setup_wizard_dismissed?: boolean
           started_at?: string | null
           updated_at?: string | null
           user_id?: string

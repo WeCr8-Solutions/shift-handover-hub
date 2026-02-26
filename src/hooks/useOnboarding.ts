@@ -33,6 +33,7 @@ interface OnboardingState {
   isComplete: boolean;
   isLoading: boolean;
   hasSeenWelcome: boolean;
+  setupWizardDismissed: boolean;
 }
 
 export function useOnboarding() {
@@ -43,6 +44,7 @@ export function useOnboarding() {
     isComplete: false,
     isLoading: true,
     hasSeenWelcome: true, // Default to true to prevent flash
+    setupWizardDismissed: false,
   });
   const [showTour, setShowTour] = useState(false);
   // Fetch onboarding state from database
@@ -72,6 +74,7 @@ export function useOnboarding() {
           isComplete: data.is_complete || false,
           isLoading: false,
           hasSeenWelcome: data.has_seen_welcome || false,
+          setupWizardDismissed: (data as any).setup_wizard_dismissed || false,
         });
       } else {
         // Create initial onboarding record for new users
@@ -89,6 +92,7 @@ export function useOnboarding() {
           isComplete: false,
           isLoading: false,
           hasSeenWelcome: false, // New user has not seen welcome
+          setupWizardDismissed: false,
         });
       }
     }
@@ -162,6 +166,7 @@ export function useOnboarding() {
       isComplete: false,
       isLoading: false,
       hasSeenWelcome: false,
+      setupWizardDismissed: false,
     });
 
     await supabase
@@ -172,10 +177,22 @@ export function useOnboarding() {
         is_complete: false,
         completed_at: null,
         has_seen_welcome: false,
-      })
+        setup_wizard_dismissed: false,
+      } as any)
       .eq('user_id', user.id);
 
     setShowTour(true);
+  }, [user]);
+
+  const dismissSetupWizard = useCallback(async () => {
+    if (!user) return;
+
+    setState(prev => ({ ...prev, setupWizardDismissed: true }));
+
+    await supabase
+      .from('user_onboarding')
+      .update({ setup_wizard_dismissed: true } as any)
+      .eq('user_id', user.id);
   }, [user]);
 
   const goToStep = useCallback(async (stepId: OnboardingStep) => {
@@ -221,6 +238,7 @@ export function useOnboarding() {
     skipOnboarding,
     resetOnboarding,
     markWelcomeSeen,
+    dismissSetupWizard,
     goToStep,
     startTour,
     endTour,
