@@ -634,7 +634,7 @@ export function NewHandoffForm({ onClose, onSubmit }: NewHandoffFormProps) {
                   <Input
                     value={formData.workOrder}
                     onChange={(e) => updateField("workOrder", e.target.value)}
-                    placeholder="WO-2024-XXXX"
+                    placeholder="Enter work order number"
                     className="font-mono"
                   />
                 </div>
@@ -665,7 +665,7 @@ export function NewHandoffForm({ onClose, onSubmit }: NewHandoffFormProps) {
                   <Input
                     value={formData.partNumber}
                     onChange={(e) => updateField("partNumber", e.target.value)}
-                    placeholder="PN-XXXX-X"
+                    placeholder="Enter part number"
                     className={cn("font-mono", !formData.partNumber && currentStepErrors.includes("Part Number is required") && "border-destructive")}
                   />
                 </div>

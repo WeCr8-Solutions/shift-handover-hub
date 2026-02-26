@@ -111,10 +111,6 @@ export function CreateWorkOrderDialog({
       return;
     }
     
-    if (!formData.station_id) {
-      toast.error("Please select a machine/station");
-      return;
-    }
 
     setLoading(true);
     try {
@@ -126,7 +122,7 @@ export function CreateWorkOrderDialog({
         part_number: formData.part_number || undefined,
         operation_number: formData.operation_number || undefined,
         quantity: formData.quantity ? parseInt(formData.quantity) : undefined,
-        station_id: formData.station_id,
+        station_id: formData.station_id || undefined,
         priority: formData.priority,
         due_date: formData.due_date || undefined,
         setup_time_minutes: formData.setup_time_minutes ? parseInt(formData.setup_time_minutes) : undefined,
@@ -179,7 +175,7 @@ export function CreateWorkOrderDialog({
             <Input
               value={formData.work_order}
               onChange={(e) => setFormData({ ...formData, work_order: e.target.value })}
-              placeholder="e.g., WO-2024-001"
+              placeholder="Enter your work order number"
               required
             />
           </div>
@@ -188,14 +184,14 @@ export function CreateWorkOrderDialog({
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
               <Wrench className="w-4 h-4" />
-              Assign to Machine <span className="text-red-500">*</span>
+              Assign to Station (Optional)
             </Label>
             <Select
               value={formData.station_id || "none"}
               onValueChange={(value) => setFormData({ ...formData, station_id: value === "none" ? "" : value })}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select a machine..." />
+                <SelectValue placeholder="Select a station..." />
               </SelectTrigger>
               <SelectContent className="max-h-64">
                 {stationsLoading ? (
@@ -236,7 +232,7 @@ export function CreateWorkOrderDialog({
               <Input
                 value={formData.part_number}
                 onChange={(e) => setFormData({ ...formData, part_number: e.target.value })}
-                placeholder="e.g., PN-12345"
+                placeholder="Enter part number"
               />
             </div>
             <div className="space-y-2">
@@ -244,7 +240,7 @@ export function CreateWorkOrderDialog({
               <Input
                 value={formData.operation_number}
                 onChange={(e) => setFormData({ ...formData, operation_number: e.target.value })}
-                placeholder="e.g., 10"
+                placeholder="Enter operation"
               />
             </div>
           </div>
@@ -257,7 +253,7 @@ export function CreateWorkOrderDialog({
                 type="number"
                 value={formData.quantity}
                 onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-                placeholder="e.g., 100"
+                placeholder="Qty"
                 min="1"
               />
             </div>
@@ -308,7 +304,7 @@ export function CreateWorkOrderDialog({
                   type="number"
                   value={formData.setup_time_minutes}
                   onChange={(e) => setFormData({ ...formData, setup_time_minutes: e.target.value })}
-                  placeholder="e.g., 30"
+                  placeholder="Min"
                   min="0"
                 />
               </div>
@@ -318,7 +314,7 @@ export function CreateWorkOrderDialog({
                   type="number"
                   value={formData.first_article_minutes}
                   onChange={(e) => setFormData({ ...formData, first_article_minutes: e.target.value })}
-                  placeholder="e.g., 15"
+                  placeholder="Min"
                   min="0"
                 />
               </div>
@@ -328,7 +324,7 @@ export function CreateWorkOrderDialog({
                   type="number"
                   value={formData.cycle_time_minutes}
                   onChange={(e) => setFormData({ ...formData, cycle_time_minutes: e.target.value })}
-                  placeholder="e.g., 5"
+                  placeholder="Min"
                   min="0"
                 />
               </div>

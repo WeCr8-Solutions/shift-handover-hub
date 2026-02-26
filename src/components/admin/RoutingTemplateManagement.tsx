@@ -469,7 +469,7 @@ export function RoutingTemplateManagement({ isAdmin }: RoutingTemplateManagement
             id="template-name"
             value={formData.name}
             onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-            placeholder="e.g., Standard Machining"
+            placeholder="Enter template name"
             autoComplete="off"
           />
         </div>
@@ -479,7 +479,7 @@ export function RoutingTemplateManagement({ isAdmin }: RoutingTemplateManagement
             id="part-number-pattern"
             value={formData.part_number_pattern}
             onChange={(e) => setFormData(prev => ({ ...prev, part_number_pattern: e.target.value }))}
-            placeholder="e.g., PART-* or *-ASSY"
+            placeholder="Enter part number pattern"
             autoComplete="off"
           />
           <p className="text-xs text-muted-foreground">Use * as wildcard to auto-match part numbers</p>

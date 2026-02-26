@@ -272,7 +272,7 @@ export function OrganizationSetup({ onComplete, onSkip }: OrganizationSetupProps
               <Label htmlFor="org-name">Organization Name *</Label>
               <Input
                 id="org-name"
-                placeholder="e.g., Acme Manufacturing Co."
+                placeholder="Enter your organization name"
                 value={orgName}
                 onChange={(e) => setOrgName(e.target.value)}
                 disabled={isLoading}

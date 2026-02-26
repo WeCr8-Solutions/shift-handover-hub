@@ -242,7 +242,7 @@ export function CreateQueueItemDialog({ open, onOpenChange, onCreate, preselecte
                 <Input
                   value={formData.work_order || ""}
                   onChange={(e) => setFormData({ ...formData, work_order: e.target.value })}
-                  placeholder="WO-12345"
+                  placeholder="Enter work order number"
                 />
               </div>
               <div className="space-y-2">
@@ -250,7 +250,7 @@ export function CreateQueueItemDialog({ open, onOpenChange, onCreate, preselecte
                 <Input
                   value={formData.part_number || ""}
                   onChange={(e) => setFormData({ ...formData, part_number: e.target.value })}
-                  placeholder="PN-001"
+                  placeholder="Enter part number"
                 />
               </div>
               <div className="space-y-2">
