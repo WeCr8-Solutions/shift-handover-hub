@@ -1,49 +1,67 @@
 
 
-# Fix Work Order Queue Population and Dashboard Status Issues
+# System-Wide Review: Org-Scoped Data Flow, Role Views, and Dashboard Status Sync
 
-## Root Causes Identified
+## Issues Found
 
-1. **Station ID mismatch**: `SupervisorDashboard` passes display code (e.g., "STN-001") instead of database UUID when clicking a station. The `OperatorStationPanel` then queries `queue_items WHERE station_id = 'STN-001'` which matches nothing.
-2. **Missing `on_hold` in operator panel fetch**: Items on hold are excluded from the operator panel's queue query.
-3. **Station status not updating on next station after handoff advance**: When a work order advances to the next station via routing, the new station's `current_station_status` is not updated with "Waiting on Material" state, so the dashboard shows no activity.
-4. **Queue/routing status inconsistency on advance**: Queue item set to "queued" but next routing step set to "in_progress" simultaneously.
+### 1. `useShiftStats` missing org-scoping (Critical)
+**File**: `src/hooks/useStations.ts` lines 331-404
 
-## Fixes
+The `useShiftStats` hook queries `stations` and `handoff_records` without any `organization_id` filter. It only optionally filters by `teamId`. This means the stats shown to unauthenticated-context supervisors could include cross-org data (RLS may block it, but the query is not explicit). All other hooks (`useStations`, `useHandoffRecords`, `useQueue`) properly filter by org — this one is the outlier.
 
-### 1. `src/components/dashboard/SupervisorDashboard.tsx` -- Pass database UUID, not display code
+**Fix**: Accept `organizationId` parameter and apply `.eq("organization_id", orgId)` to both station and handoff queries.
 
-Line 348: Change `onViewStation?.(station.id, station.name)` to `onViewStation?.(station.dbId, station.name)`.
+### 2. Handoff form does NOT update `current_station_status` after submission (Medium)
+**File**: `src/components/NewHandoffForm.tsx`
 
-The `station.id` field is the display code (`station_id` column). The `station.dbId` field is the actual database `id` UUID that all foreign keys reference.
+When a handoff is submitted, the `primary_state` (e.g., "Part Running", "Setup in Progress", "Waiting on Material") is written to `handoff_records` but is **not** synced back to `current_station_status`. This means the supervisor dashboard's KPIs (running/down/setup/waiting counts) and the station status indicators don't reflect the handoff's reported state. The dashboard only updates when an operator starts/completes a queue item.
 
-### 2. `src/components/dashboard/OperatorStationPanel.tsx` -- Include `on_hold` in fetch
+**Fix**: After successful handoff submission, upsert `current_station_status` with the handoff's `primary_state`, operator names, and part info. This is the missing link between the handoff system and the live dashboard.
 
-Line 147: Change `.in("status", ["pending", "queued", "in_progress"])` to `.in("status", ["pending", "queued", "in_progress", "on_hold"])`.
+### 3. Realtime channel for `current_station_status` not org-scoped (Minor)
+**File**: `src/hooks/useStations.ts` lines 148-161
 
-This ensures on-hold items remain visible in the operator panel.
+The realtime subscription for `current_station_status` listens to ALL changes on the table without a filter. For a multi-tenant SaaS, this means every org's station updates trigger a re-fetch for every connected user. While RLS prevents data leakage, it wastes bandwidth and causes unnecessary re-renders.
 
-### 3. `src/components/dashboard/OperatorStationPanel.tsx` -- Update next station status on advance
+**Fix**: Add an org-scoped filter on the realtime channel or at minimum filter by station IDs the user has access to.
 
-After line 243 in `confirmDelivery`, add an upsert to `current_station_status` for the next station, setting `current_job_state: "Waiting on Material"` with the work order and part number pre-filled. This makes the dashboard immediately show the next station as "waiting".
+### 4. Operator check-in doesn't set station status (Minor)
+**File**: `src/hooks/useOperatorSessions.ts`
 
-### 4. `src/components/dashboard/OperatorStationPanel.tsx` -- Fix routing step status on advance
+When an operator checks in, `operator_station_sessions` is created but `current_station_status` is not updated with the operator's name. The dashboard shows no operator until a work order is started. This creates a gap where a station appears idle even though an operator is checked in.
 
-Line 247: Change next routing step status from `"in_progress"` to `"pending"` so it matches the queue item's `"queued"` status. The next station's operator starts it explicitly, which then sets both to `"in_progress"`.
+**Fix**: After successful check-in, upsert `current_station_status` with `current_operator_name` and `current_operator_id` so the supervisor dashboard immediately shows an operator is present.
 
-### 5. `src/components/queue/QueueItemDetailDialog.tsx` -- Same routing step fix
+### 5. Operator check-out doesn't clear station status (Minor)
+**File**: `src/hooks/useOperatorSessions.ts`
 
-Line 295: Same change as #4 — set next routing step to `"pending"` instead of `"in_progress"` and don't set `started_at` until the operator actually starts it.
+When an operator ends their shift, `operator_station_sessions.is_active` is set to false, but `current_station_status` still shows the operator's name and any active job state. The dashboard becomes stale.
 
-### 6. `src/components/queue/QueueItemDetailDialog.tsx` -- Update next station status on advance
+**Fix**: On checkout, clear the operator name/id from `current_station_status` for all sessions being ended.
 
-After line 297, add the same `current_station_status` upsert for the next station with "Waiting on Material" state.
+## Implementation Plan
 
-## Files
+### File 1: `src/hooks/useStations.ts` — Fix `useShiftStats` org scoping
+- Add `organizationId` parameter to `useShiftStats`
+- Import and use `useUserOrganization` to get org context
+- Apply `.eq("organization_id", orgId)` to both station count and handoff queries
+- Filter realtime channel for `current_station_status` to avoid cross-org noise (add station_id filter if possible, or accept the current approach with a comment)
 
-| File | Change |
-|------|--------|
-| `src/components/dashboard/SupervisorDashboard.tsx` | Pass `dbId` instead of display `id` to `onViewStation` |
-| `src/components/dashboard/OperatorStationPanel.tsx` | Add `on_hold` to fetch filter; update next station status on advance; fix routing step status |
-| `src/components/queue/QueueItemDetailDialog.tsx` | Update next station status on advance; fix routing step status |
+### File 2: `src/components/NewHandoffForm.tsx` — Sync station status on handoff submit
+- After successful `onSubmit`, upsert `current_station_status` for the station with:
+  - `current_job_state` = the handoff's `primary_state`
+  - `current_operator_name` = incoming operator name
+  - `current_job_work_order` = work order from handoff
+  - `current_job_part_number` = part number from handoff
+- This ensures the dashboard KPIs immediately reflect the new shift state
+
+### File 3: `src/hooks/useOperatorSessions.ts` — Sync station status on check-in/check-out
+- **Check-in**: After inserting sessions, upsert `current_station_status` for each station with `current_operator_name` and `current_operator_id`
+- **Check-out**: Clear operator fields from `current_station_status` for all station sessions being ended
+
+### File 4: `src/pages/Index.tsx` — Pass org context to `useShiftStats` (if used)
+- Currently `useShiftStats` is not called from Index.tsx directly (it's used by `ShiftStats` component for unauthenticated view), but ensure any callers pass the org context
+
+### File 5: `src/components/ShiftStats.tsx` — Update to pass org context
+- Pass `organization?.id` to `useShiftStats` so stats are properly scoped
 
