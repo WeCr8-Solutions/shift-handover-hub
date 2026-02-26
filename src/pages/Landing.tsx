@@ -289,7 +289,7 @@ export default function Landing() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50">
         <div className="container mx-auto px-3 sm:px-4 lg:px-6 h-14 sm:h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 flex-shrink-0">
-            <img src={joblineLogo} alt="JobLine.ai" className="h-6 sm:h-8 w-auto" />
+            <img src={joblineLogo} alt="JobLine.ai" className="h-8 sm:h-10 w-auto" />
           </div>
           
           {/* Desktop Navigation */}
@@ -373,7 +373,7 @@ export default function Landing() {
                 <div className="flex flex-col h-full">
                   {/* Mobile Menu Header */}
                   <div className="flex items-center justify-between p-4 border-b border-border">
-                    <img src={joblineLogo} alt="JobLine.ai" className="h-6 w-auto" />
+                    <img src={joblineLogo} alt="JobLine.ai" className="h-8 w-auto" />
                   </div>
                   
                   {/* Mobile Menu Links */}
@@ -1239,7 +1239,7 @@ export default function Landing() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
             {/* Brand */}
             <div>
-              <img src={joblineLogo} alt="JobLine.ai" className="h-6 sm:h-8 w-auto mb-3" />
+              <img src={joblineLogo} alt="JobLine.ai" className="h-8 sm:h-10 w-auto mb-3" />
               <p className="text-xs text-muted-foreground">Digital expeditor & smart shift handoff system for manufacturing.</p>
             </div>
 

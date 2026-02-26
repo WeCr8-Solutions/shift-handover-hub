@@ -14,7 +14,7 @@ export function MarketingNav({ showPricing = true }: MarketingNavProps) {
     <nav className="border-b border-border bg-background/80 backdrop-blur-xl sticky top-0 z-50">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <button onClick={() => navigate("/")} className="flex items-center gap-2">
-          <img src={joblineLogo} alt="JobLine.ai" className="h-8 w-auto" />
+          <img src={joblineLogo} alt="JobLine.ai" className="h-8 sm:h-10 w-auto" />
         </button>
         <div className="flex items-center gap-3">
           {showPricing && (

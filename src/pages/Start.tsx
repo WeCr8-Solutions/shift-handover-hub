@@ -115,7 +115,7 @@ export default function Start() {
           <img
             src={logo}
             alt="JobLine.ai logo"
-            className="h-10 mx-auto"
+            className="h-12 sm:h-14 mx-auto"
             loading="eager"
           />
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
