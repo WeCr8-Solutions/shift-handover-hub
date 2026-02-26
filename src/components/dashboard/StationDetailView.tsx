@@ -53,6 +53,7 @@ export function StationDetailView({ stationId, stationName, onBack }: StationDet
         <NewHandoffForm
           onClose={() => setShowHandoff(false)}
           onSubmit={createHandoffRecord}
+          initialStationId={stationId}
         />
       )}
 

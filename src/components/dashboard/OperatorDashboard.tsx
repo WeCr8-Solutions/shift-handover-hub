@@ -135,6 +135,7 @@ export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDas
         <NewHandoffForm
           onClose={() => setShowHandoff(false)}
           onSubmit={createHandoffRecord}
+          initialStationId={handoffStationId}
         />
       )}
 

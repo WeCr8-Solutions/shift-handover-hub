@@ -151,9 +151,11 @@ const getInitialFormData = (operatorName: string): FormData => ({
 interface NewHandoffFormProps {
   onClose: () => void;
   onSubmit?: (record: Omit<HandoffRecord, "id" | "created_at" | "updated_at" | "record_version">) => Promise<{ data: any; error: any }>;
+  /** Pre-select a station by its database ID */
+  initialStationId?: string;
 }
 
-export function NewHandoffForm({ onClose, onSubmit }: NewHandoffFormProps) {
+export function NewHandoffForm({ onClose, onSubmit, initialStationId }: NewHandoffFormProps) {
   const { user, profile } = useAuth();
   const { currentTeam } = useCurrentTeam();
   const { stations } = useStations(currentTeam?.id);
@@ -275,6 +277,13 @@ export function NewHandoffForm({ onClose, onSubmit }: NewHandoffFormProps) {
     onClose();
   }, [clearDraft, onClose]);
 
+  // Auto-select station when initialStationId is provided
+  useEffect(() => {
+    if (initialStationId && stations.length > 0 && !formData.stationDbId) {
+      handleStationChange(initialStationId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialStationId, stations.length]);
 
   const updateField = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));

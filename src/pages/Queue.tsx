@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQueue, QueueStatus, QueueItemType } from "@/hooks/useQueue";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useOperatorSessions } from "@/hooks/useOperatorSessions";
 import { useNCR } from "@/hooks/useNCR";
 import { Header } from "@/components/Header";
 import { QueueKanbanBoard } from "@/components/queue/QueueKanbanBoard";
@@ -31,7 +32,7 @@ export default function Queue() {
   const { user, loading: authLoading } = useAuth();
   const { hasAdminAccess, loading: accessLoading } = useAdminAccess();
   const { organization } = useUserOrganization();
-  
+  const { activeSessions } = useOperatorSessions();
   // Check if viewing a specific station from URL
   const urlStationId = searchParams.get("station");
   
@@ -56,22 +57,23 @@ export default function Queue() {
     station_id: urlStationId || undefined,
   });
 
-  // Update scope based on role and URL
+  // Update scope based on role, URL, and active operator sessions
   useEffect(() => {
     if (!accessLoading) {
       if (urlStationId) {
-        // URL station takes precedence
         setViewScope("station");
         setFilters(prev => ({ ...prev, station_id: urlStationId }));
       } else if (!hasAdminAccess) {
-        // Operators default to station view (they need to select their station)
+        // Operators: auto-scope to their checked-in station
         setViewScope("station");
+        if (activeSessions.length > 0) {
+          setFilters(prev => ({ ...prev, station_id: activeSessions[0].station_id }));
+        }
       } else {
-        // Admins/supervisors see org-wide by default
         setViewScope("organization");
       }
     }
-  }, [accessLoading, hasAdminAccess, urlStationId]);
+  }, [accessLoading, hasAdminAccess, urlStationId, activeSessions]);
 
   const {
     items,
