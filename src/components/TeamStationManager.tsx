@@ -172,7 +172,7 @@ export function TeamStationManager({
                       <Label htmlFor="station-id">Station ID *</Label>
                       <Input
                         id="station-id"
-                        placeholder="e.g., CNC-001"
+                        placeholder="Enter station ID"
                         value={stationId}
                         onChange={(e) => setStationId(e.target.value)}
                       />
@@ -181,7 +181,7 @@ export function TeamStationManager({
                       <Label htmlFor="station-name">Display Name *</Label>
                       <Input
                         id="station-name"
-                        placeholder="e.g., Haas VF-2"
+                        placeholder="Enter display name"
                         value={stationName}
                         onChange={(e) => setStationName(e.target.value)}
                       />

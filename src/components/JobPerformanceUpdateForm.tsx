@@ -301,7 +301,7 @@ export function JobPerformanceUpdateForm({ onClose }: JobPerformanceUpdateFormPr
                   <Input
                     value={formData.workOrder}
                     onChange={(e) => updateField("workOrder", e.target.value)}
-                    placeholder="WO-XXXX"
+                    placeholder="Enter work order number"
                     className="font-mono"
                   />
                 </div>
@@ -310,7 +310,7 @@ export function JobPerformanceUpdateForm({ onClose }: JobPerformanceUpdateFormPr
                   <Input
                     value={formData.partNumber}
                     onChange={(e) => updateField("partNumber", e.target.value)}
-                    placeholder="PN-XXXX"
+                    placeholder="Enter part number"
                     className="font-mono"
                   />
                 </div>

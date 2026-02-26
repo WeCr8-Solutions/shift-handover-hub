@@ -151,7 +151,7 @@ export function TeamManagement() {
                 <Label htmlFor="team-name">Team Name</Label>
                 <Input
                   id="team-name"
-                  placeholder="e.g., CNC Department"
+                  placeholder="Enter team name"
                   value={newTeamName}
                   onChange={(e) => setNewTeamName(e.target.value)}
                 />
@@ -160,7 +160,7 @@ export function TeamManagement() {
                 <Label htmlFor="team-description">Description (optional)</Label>
                 <Input
                   id="team-description"
-                  placeholder="e.g., All CNC mill and lathe operators"
+                  placeholder="Describe this team"
                   value={newTeamDescription}
                   onChange={(e) => setNewTeamDescription(e.target.value)}
                 />

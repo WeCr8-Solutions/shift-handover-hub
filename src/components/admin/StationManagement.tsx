@@ -321,7 +321,7 @@ export function StationManagement({ isAdmin }: StationManagementProps) {
           <Label htmlFor="station_id">Station ID *</Label>
           <Input
             id="station_id"
-            placeholder="e.g., CNC-001"
+            placeholder="Enter station ID"
             value={formData.station_id}
             onChange={(e) => setFormData({ ...formData, station_id: e.target.value })}
             disabled={!!editingStation}
@@ -331,7 +331,7 @@ export function StationManagement({ isAdmin }: StationManagementProps) {
           <Label htmlFor="name">Name *</Label>
           <Input
             id="name"
-            placeholder="e.g., Haas VF-2"
+            placeholder="Enter display name"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           />
