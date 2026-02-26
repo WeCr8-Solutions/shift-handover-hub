@@ -408,7 +408,7 @@ export function OperatorStationPanel({
                 <h5 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
                   Up Next ({queuedOrders.length})
                 </h5>
-                <div className="space-y-2">
+                <div className="space-y-2 max-h-[300px] overflow-y-auto">
                   {queuedOrders.map((order, i) => (
                     <div
                       key={order.id}

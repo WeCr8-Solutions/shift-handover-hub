@@ -55,7 +55,7 @@ export function HandoffCard({ record, onClick, onViewWorkOrder }: HandoffCardPro
       </div>
 
       {/* Part Info */}
-      <div className="flex items-center gap-4 mb-3 text-xs">
+      <div className="flex items-center gap-4 mb-3 text-xs flex-wrap">
         <div>
           <span className="text-muted-foreground">Part: </span>
           <span className="font-mono text-foreground">{record.part.partNumber}</span>
@@ -93,7 +93,7 @@ export function HandoffCard({ record, onClick, onViewWorkOrder }: HandoffCardPro
       </div>
 
       {/* Quality Stats */}
-      <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border text-xs">
+      <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border text-xs flex-wrap">
         <div>
           <span className="text-muted-foreground">Completed: </span>
           <span className="font-mono text-status-ok">{record.qualityStatus.partsCompletedThisShift}</span>

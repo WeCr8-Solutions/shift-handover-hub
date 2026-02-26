@@ -628,7 +628,7 @@ export function NewHandoffForm({ onClose, onSubmit }: NewHandoffFormProps) {
                 </Select>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Work Order</Label>
                   <Input
@@ -657,7 +657,7 @@ export function NewHandoffForm({ onClose, onSubmit }: NewHandoffFormProps) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label className="flex items-center gap-1">
                     Part Number <span className="text-destructive">*</span>
@@ -689,7 +689,7 @@ export function NewHandoffForm({ onClose, onSubmit }: NewHandoffFormProps) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="flex items-center gap-1">
                     Outgoing Operator <span className="text-destructive">*</span>
@@ -765,7 +765,7 @@ export function NewHandoffForm({ onClose, onSubmit }: NewHandoffFormProps) {
               
               {/* CNC-specific conditions */}
               {isCNC && (
-                <div className="grid grid-cols-2 gap-4">
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Coolant Level</Label>
                     <Select value={formData.coolantLevel} onValueChange={(v) => updateField("coolantLevel", v)}>

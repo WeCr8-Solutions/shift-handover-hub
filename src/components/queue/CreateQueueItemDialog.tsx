@@ -236,7 +236,7 @@ export function CreateQueueItemDialog({ open, onOpenChange, onCreate, preselecte
 
           {/* Work Order Specific Fields */}
           {formData.item_type === "work_order" && (
-            <div className="grid grid-cols-4 gap-4 p-3 bg-muted/30 rounded-lg border">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-3 bg-muted/30 rounded-lg border">
               <div className="space-y-2">
                 <Label className="text-xs">Work Order #</Label>
                 <Input
@@ -285,7 +285,7 @@ export function CreateQueueItemDialog({ open, onOpenChange, onCreate, preselecte
           </div>
 
           {/* Scheduling Row */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Due Date</Label>
               <Popover>
@@ -316,7 +316,7 @@ export function CreateQueueItemDialog({ open, onOpenChange, onCreate, preselecte
 
             <div className="space-y-2">
               <Label>Machine Time Breakdown</Label>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">Setup (min)</Label>
                   <Input
