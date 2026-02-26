@@ -1,108 +1,44 @@
 
 
-# Free Trial Enforcement and Billing Access Control
+# Fix Org-Wide Overview for Supervisors and Org Owners
 
-## Current State
+## Problem
 
-- Organizations are created with `subscription_status: 'trial'` and `subscription_tier: 'free'` by default
-- **No trial end date** exists in the database -- there is no `trial_ends_at` column on `organizations`
-- No enforcement anywhere: trial users can use the system indefinitely without paying
-- Billing Settings tab is only visible to `isDeveloper` (platform developer role)
-- `BillingBanner` only shows to developers
-- Org admins/supervisors/operators cannot see billing info or be prompted to pay
+When supervisors/org owners select "Personal Workspace" in the TeamSelector, it's misleading -- it should represent "All Teams (Org Overview)." The current flow forces users to pick a single team from the dropdown rather than seeing their entire manufacturing operation at a glance. The SupervisorDashboard already supports org-wide data when `currentTeam` is `null` (via `useStations` filtering by `organization_id`), but the UI labels and flow don't communicate this.
 
-## What Needs to Change
+## Changes
 
-### 1. Database: Add `trial_ends_at` column to `organizations`
+### 1. `src/components/TeamSelector.tsx` -- Rename "Personal Workspace" to org-aware label
 
-Add a `trial_ends_at` timestamp column defaulting to `now() + interval '14 days'`. Update the `auto_create_org_entitlements` trigger (or add a new trigger) to automatically set this on org creation.
+- Replace `"Personal Workspace"` with the actual organization name + "All Teams" (e.g., "Acme Mfg · All Teams")
+- Use the org name from `useUserOrganization()` hook
+- Change the icon from `Building2` to a `Factory` icon for the org-wide option
+- Keep individual team options as-is
+- When `currentTeam` is `null`, it means "show everything in the org" -- this is already how `useStations` works (filters by `organization_id` when no `team_id` is passed)
 
-### 2. Database: Add a `manage_free_subscriptions` check function
+### 2. `src/components/dashboard/SupervisorDashboard.tsx` -- Show org context in header
 
-Create a `can_manage_billing(uuid, uuid)` function that returns true only for:
-- Platform admins (`has_role(uid, 'admin')`)
-- Platform developers (`has_role(uid, 'developer')`)
-- Org owners (the person who created and owns the org)
+- Update the subtitle text: when `currentTeam` is `null`, show `"{orgName} · All Teams"` instead of `"All Teams"`
+- Add a team filter badge row below the KPI stats that shows each team as a clickable chip, allowing quick team filtering without using the header dropdown
+- This gives supervisors inline context switching: "All Teams" overview with ability to tap into a specific team
 
-This enforces the rule: only SDK admin/developers and the org owner can manage subscriptions. Regular org admins, supervisors, and operators cannot.
+### 3. `src/contexts/TeamContext.tsx` -- Default to `null` (org-wide) for supervisors
 
-### 3. Frontend: Trial expiration awareness in `useSubscription` or a new `useTrialStatus` hook
+- When auto-selecting on load, if user `hasOrgSupervisorAccess`, default to `null` (org-wide view) instead of the first team
+- This ensures supervisors land on the full org overview by default
+- Operators still auto-select their first team
 
-Compute days remaining from `organization.trial_ends_at`. Expose `isTrialExpired`, `trialDaysRemaining`, and `isInTrial` flags.
+### 4. `src/hooks/useStations.ts` -- Ensure handoff records also filter by org
 
-### 4. Frontend: Show billing banner to org owners (not just developers)
+- `useHandoffRecords` currently only filters by `teamId` -- when `teamId` is null, it returns ALL records (no org filter)
+- Add `organization_id` filtering to `useHandoffRecords` matching the pattern already used in `useStations`
 
-Update `BillingBanner.tsx`:
-- Show trial-expiring and trial-expired banners to **org owners** (not just developers)
-- When trial is expired and no active subscription: show a blocking banner or redirect to pricing
-- Developers still see all billing banners (for platform oversight)
-
-### 5. Frontend: Trial paywall gate component
-
-Create an `ExpiredTrialGate` component that wraps the main dashboard. When `isTrialExpired && !subscribed`:
-- Show a full-page overlay/modal: "Your 14-day free trial has ended. Subscribe to continue using JobLine."
-- Provide a "Choose a Plan" button linking to `/pricing`
-- Allow org owners to manage billing; other roles see "Contact your organization admin"
-- SDK admins/developers can bypass (they manage the platform)
-
-### 6. Frontend: Billing tab visibility in Settings
-
-Currently billing tab is restricted to `isDeveloper` only. Expand to also show for `isOrgOwner` so org owners can manage their own subscription. Keep it hidden from supervisors/operators.
-
-### 7. Edge function: `create-checkout` -- add authorization check
-
-Verify that the caller is either:
-- The org owner
-- A platform admin/developer
-
-Reject checkout creation for supervisors/operators (they shouldn't initiate billing changes).
-
-### 8. Stripe webhook: Handle `trial` → `expired` transition
-
-When `trial_ends_at` passes and no active subscription exists, the system should transition `subscription_status` from `'trial'` to `'expired'`. Options:
-- **Option A**: A scheduled database function (pg_cron) that runs daily, finds orgs past trial with no subscription, and sets status to `'expired'`
-- **Option B**: Check trial expiration at read-time in the frontend hook (no DB write needed, just compute `isTrialExpired` from `trial_ends_at < now()`)
-
-**Recommendation**: Option B for now (compute client-side from `trial_ends_at`), since pg_cron requires additional infrastructure. The status field remains `'trial'` but the UI enforces the gate. Optionally, the `check-subscription` edge function can also update the org status to `'expired'` when it detects the trial has lapsed.
-
-## Files to Create/Modify
+## Files
 
 | File | Change |
 |------|--------|
-| **Migration** | Add `trial_ends_at` column to `organizations`, default `now() + interval '14 days'`, backfill existing orgs |
-| `src/hooks/useTrialStatus.ts` | New hook: compute trial state from org's `trial_ends_at` |
-| `src/components/ExpiredTrialGate.tsx` | New: paywall overlay when trial expired + no subscription |
-| `src/components/BillingBanner.tsx` | Show trial-ending banners to org owners, not just developers |
-| `src/pages/Settings.tsx` | Show Billing tab for org owners (not just developers) |
-| `src/pages/Index.tsx` | Wrap dashboard with `ExpiredTrialGate` |
-| `supabase/functions/create-checkout/index.ts` | Add org owner / platform admin authorization check |
-| `supabase/functions/check-subscription/index.ts` | Optionally update org status to `expired` when trial lapsed |
-| `src/hooks/useUserOrganization.ts` | Ensure `trial_ends_at` is fetched with organization data |
-
-## Access Control Summary
-
-```text
-Who can see billing info:
-  - Platform Admin ✓
-  - SDK Developer ✓  
-  - Org Owner ✓
-  - Org Admin ✗
-  - Supervisor ✗
-  - Operator ✗
-
-Who can initiate checkout / manage subscription:
-  - Platform Admin ✓
-  - SDK Developer ✓
-  - Org Owner ✓
-  - Everyone else ✗
-
-Who can grant free subscriptions:
-  - Platform Admin ✓
-  - SDK Developer ✓
-  - Everyone else ✗ (must pay via Stripe)
-
-Who is blocked by expired trial:
-  - All org members (unless org has active subscription)
-  - Platform Admin/Developer: bypass (platform oversight)
-```
+| `src/components/TeamSelector.tsx` | Rename "Personal Workspace" to org name + "All Teams", add Factory icon |
+| `src/components/dashboard/SupervisorDashboard.tsx` | Show org name in header, add inline team filter chips |
+| `src/contexts/TeamContext.tsx` | Default supervisors to org-wide view (null team) |
+| `src/hooks/useStations.ts` | Add org_id filter to `useHandoffRecords` |
 
