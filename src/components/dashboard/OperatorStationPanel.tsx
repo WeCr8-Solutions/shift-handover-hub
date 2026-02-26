@@ -144,7 +144,7 @@ export function OperatorStationPanel({
         "id, title, work_order, part_number, operation_number, status, priority, position, quantity, started_at"
       )
       .eq("station_id", stationId)
-      .in("status", ["pending", "queued", "in_progress"])
+      .in("status", ["pending", "queued", "in_progress", "on_hold"])
       .order("position", { ascending: true });
 
     if (!error && data) setOrders(data);
@@ -244,8 +244,25 @@ export function OperatorStationPanel({
 
         await supabase
           .from("work_order_routing")
-          .update({ status: "in_progress", started_at: new Date().toISOString() })
+          .update({ status: "pending" })
           .eq("id", nextStep.id);
+
+        // Update next station's dashboard status to show incoming work
+        await supabase
+          .from("current_station_status")
+          .upsert(
+            {
+              station_id: nextStep.station_id,
+              current_job_work_order: deliverOrder.work_order || deliverOrder.title,
+              current_job_part_number: deliverOrder.part_number,
+              current_job_state: "Waiting on Material",
+              current_operator_name: null,
+              current_operator_id: null,
+              parts_complete: 0,
+              parts_required: deliverOrder.quantity || 0,
+            },
+            { onConflict: "station_id" }
+          );
 
         toast.success(
           `Operation complete — advanced to ${(nextStep.stations as any)?.name || "next station"}`,

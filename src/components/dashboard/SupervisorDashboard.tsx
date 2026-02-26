@@ -345,7 +345,7 @@ export function SupervisorDashboard({
                     "flex items-center gap-3 px-4 py-2.5",
                     onViewStation && "cursor-pointer hover:bg-secondary/40 transition-colors"
                   )}
-                  onClick={() => onViewStation?.(station.id, station.name)}
+                  onClick={() => onViewStation?.(station.dbId, station.name)}
                 >
                   <div className={cn("w-2 h-2 rounded-full flex-shrink-0", statusColor(station.status))} />
                   <span className="text-xs font-mono font-medium w-20 flex-shrink-0">{station.id}</span>
