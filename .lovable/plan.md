@@ -1,55 +1,31 @@
 
 
-# Fix Navigation Overflow for All Devices
+# Make the Entire Hero Visible Without Scrolling
 
 ## Problem
 
-The `Header.tsx` renders up to 12 items (logo, team selector, queue, teams, settings, admin, testing, system status, updates, shift badge, clock, bug report, bell, user menu) in a single `flex` row with `gap-4`. On tablets and mobile devices, these items overflow horizontally or overlap because there is no responsive breakpoint handling.
+The hero logo was scaled to extremely large sizes (`h-72` on mobile up to `h-[40rem]` / 640px on desktop). Combined with the heading, subtitle, three CTA buttons, and stats grid, the hero section far exceeds a single viewport height. Users must scroll just to see the call-to-action.
 
-The `MarketingNav.tsx` already handles this correctly with `hidden sm:inline-flex` on secondary items -- the app header does not.
+## Approach
 
-## Solution
+Use `dvh` (dynamic viewport height) to constrain the hero section to the screen, and scale the logo to fill available space without pushing content off-screen. The key is making the hero section itself `min-h-[100dvh]` with a flex column layout so elements distribute within the viewport.
 
-Restructure `Header.tsx` into two tiers:
+## Changes to `src/pages/Landing.tsx`
 
-### Desktop (md and above)
-Keep the current single-row layout but with tighter spacing (`gap-2` instead of `gap-4`).
+1. **Hero section container**: Change from fixed padding to `min-h-[100dvh] flex flex-col justify-center` so the entire section fits the viewport
+2. **Reduce top/bottom padding**: Use minimal padding (`pt-16 pb-8`) since the nav is fixed and takes ~56-64px
+3. **Scale logo back to reasonable sizes**: `h-20 sm:h-28 md:h-36 lg:h-44` -- still 3-4x larger than the nav logo but not viewport-breaking
+4. **Reduce spacing**: Tighten `mb-` values between logo, badge, heading, subtitle, buttons, and stats so everything breathes but fits
+5. **Keep all content**: Logo, badge, h1, subtitle, 3 buttons, and stats grid all remain visible
 
-### Mobile/Tablet (below md)
-1. **Always visible**: Logo, Clock, User Menu, and a hamburger menu button
-2. **Hamburger sheet/dropdown**: All navigation links (Queue, Teams, Settings, Admin, Testing, Updates) as a vertical list, plus Team Selector, Shift badge, System Status, and Report Issue button
-3. Use the existing `Sheet` component (from shadcn/ui, already installed) for the mobile menu drawer
+### Size reference
+- Nav bar: ~64px
+- Logo at `h-44` (lg): 176px
+- Heading + subtitle: ~200px
+- Buttons row: ~48px
+- Stats grid: ~80px
+- Gaps/margins: ~120px
+- Total: ~688px -- fits in 768px+ viewport with room to spare
 
-### Specific changes
-
-**`src/components/Header.tsx`**:
-- Import `Menu` icon from lucide and `Sheet`/`SheetContent`/`SheetTrigger` from ui
-- Add `const isMobile = useIsMobile()` check
-- Wrap the nav icons section: on `md+`, render inline as today; below `md`, render inside a `Sheet` triggered by a hamburger button
-- Team Selector gets `hidden md:flex` on desktop, moves into Sheet on mobile
-- Shift badge and clock get `hidden md:flex`, shown in Sheet on mobile
-- Nav icon buttons (Queue, Teams, Settings, Admin, Testing, Updates, Bug, Bell) get `hidden md:flex`, listed vertically in Sheet with labels
-
-**`src/components/TeamSelector.tsx`**:
-- No changes needed -- it already has a fixed width that works in both contexts
-
-**`src/components/marketing/MarketingNav.tsx`**:
-- Already handles overflow correctly with `hidden sm:inline-flex`. No changes needed.
-
-### Files to modify
-
-1. `src/components/Header.tsx` -- Add mobile hamburger menu with Sheet, hide overflow items on small screens
-
-### Implementation detail
-
-The mobile Sheet will contain:
-- Team Selector (full width)
-- Divider
-- Navigation links as labeled rows (icon + text): Queue, Teams, Settings, Admin, Testing, Updates
-- Divider  
-- Shift badge + Clock
-- Report Issue button
-- System Status indicator
-
-This keeps the header to a single compact row on mobile (logo + clock + hamburger + avatar) while providing full access to all navigation via the drawer.
+On mobile (`h-20` = 80px logo), total is ~500px which fits comfortably in any phone viewport.
 
