@@ -29,7 +29,7 @@ Supervisors oversee production workflows, manage team assignments, review perfor
 | **Routing** |
 | Apply routing to WO | ✅ Write |
 | Modify active routing | ✅ Write |
-| Create templates | ❌ (Admin only) |
+| Create templates | ✅ Write |
 | **Performance Updates** |
 | Review submissions | ✅ Read/Write |
 | Approve/reject | ✅ Write |
