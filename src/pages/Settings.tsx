@@ -6,6 +6,7 @@ import { Loader2, Settings2, Factory, Bell, Clock, Wrench, Building2, CreditCard
 import { useAuth } from "@/contexts/AuthContext";
 import { useAppSettings } from "@/hooks/useAppSettings";
 import { useAdminAccess } from "@/hooks/useAdminData";
+import { useTrialStatus } from "@/hooks/useTrialStatus";
 import { GeneralSettings } from "@/components/settings/GeneralSettings";
 import { ManufacturingSettings } from "@/components/settings/ManufacturingSettings";
 import { ShiftSettings } from "@/components/settings/ShiftSettings";
@@ -21,7 +22,9 @@ export default function Settings() {
   const { user, loading: authLoading } = useAuth();
   const { loading: settingsLoading } = useAppSettings();
   const { isDeveloper, loading: accessLoading } = useAdminAccess();
+  const { canManageBilling } = useTrialStatus();
   const [activeTab, setActiveTab] = useState("general");
+  const showBillingTab = isDeveloper || canManageBilling;
 
   if (authLoading || settingsLoading || accessLoading) {
     return (
@@ -86,8 +89,8 @@ export default function Settings() {
               <Building2 className="w-4 h-4 mr-2" />
               Organization
             </TabsTrigger>
-            {/* Only show Billing tab for developers */}
-            {isDeveloper && (
+            {/* Show Billing tab for developers and org owners */}
+            {showBillingTab && (
               <TabsTrigger 
                 value="billing"
                 className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground border"
@@ -141,9 +144,9 @@ export default function Settings() {
             <OrganizationSettings isDeveloper={isDeveloper} />
           </TabsContent>
 
-          {/* Billing only accessible by developers */}
+          {/* Billing accessible by developers and org owners */}
           <TabsContent value="billing">
-            {isDeveloper ? (
+            {showBillingTab ? (
               <BillingSettings />
             ) : (
               <DeveloperOnlyPlaceholder feature="Billing and subscription" />

@@ -13,6 +13,7 @@ import { PlanningAssistantModal } from "@/components/queue/PlanningAssistantModa
 import { SupervisorDashboard } from "@/components/dashboard/SupervisorDashboard";
 import { OperatorDashboard } from "@/components/dashboard/OperatorDashboard";
 import { StationDetailView } from "@/components/dashboard/StationDetailView";
+import { ExpiredTrialGate } from "@/components/ExpiredTrialGate";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useStations, useHandoffRecords, Station, HandoffRecord } from "@/hooks/useStations";
@@ -183,36 +184,41 @@ const Index = () => {
       <Header />
 
       <main className="container py-6">
-        {/* Supervisor / Admin Production Overview */}
-        {showSupervisorView ? (
-          viewMode === "operator" ? (
-            <OperatorDashboard
-              isAdminView
-              onBackToOverview={() => setViewMode("supervisor")}
-            />
-          ) : viewMode === "station-detail" && focusedStation ? (
-            <StationDetailView
-              stationId={focusedStation.id}
-              stationName={focusedStation.name}
-              onBack={() => {
-                setViewMode("supervisor");
-                setFocusedStation(null);
-              }}
-            />
-          ) : (
-            <SupervisorDashboard
-              onNewHandoff={() => setShowNewHandoff(true)}
-              onPerformanceUpdate={() => setShowPerformanceUpdate(true)}
-              onCreateWorkOrder={() => setShowCreateWorkOrder(true)}
-              onSwitchToOperatorView={() => setViewMode("operator")}
-              onViewStation={(id, name) => {
-                setFocusedStation({ id, name });
-                setViewMode("station-detail");
-              }}
-            />
-          )
-        ) : showOperatorView ? (
-          <OperatorDashboard />
+        {/* Trial gate for authenticated users */}
+        {user ? (
+          <ExpiredTrialGate>
+            {/* Supervisor / Admin Production Overview */}
+            {showSupervisorView ? (
+              viewMode === "operator" ? (
+                <OperatorDashboard
+                  isAdminView
+                  onBackToOverview={() => setViewMode("supervisor")}
+                />
+              ) : viewMode === "station-detail" && focusedStation ? (
+                <StationDetailView
+                  stationId={focusedStation.id}
+                  stationName={focusedStation.name}
+                  onBack={() => {
+                    setViewMode("supervisor");
+                    setFocusedStation(null);
+                  }}
+                />
+              ) : (
+                <SupervisorDashboard
+                  onNewHandoff={() => setShowNewHandoff(true)}
+                  onPerformanceUpdate={() => setShowPerformanceUpdate(true)}
+                  onCreateWorkOrder={() => setShowCreateWorkOrder(true)}
+                  onSwitchToOperatorView={() => setViewMode("operator")}
+                  onViewStation={(id, name) => {
+                    setFocusedStation({ id, name });
+                    setViewMode("station-detail");
+                  }}
+                />
+              )
+            ) : showOperatorView ? (
+              <OperatorDashboard />
+            ) : null}
+          </ExpiredTrialGate>
         ) : (
         <>
         {/* Stats Overview */}
@@ -417,6 +423,7 @@ const Index = () => {
         </Tabs>
         </>
         )}
+
       </main>
 
       {/* New Handoff Modal */}

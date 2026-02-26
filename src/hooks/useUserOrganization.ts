@@ -10,6 +10,7 @@ interface Organization {
   logo_url: string | null;
   subscription_tier: string | null;
   subscription_status: string | null;
+  trial_ends_at: string | null;
 }
 
 interface OrganizationMembership {
@@ -70,7 +71,8 @@ export function useUserOrganization() {
             description,
             logo_url,
             subscription_tier,
-            subscription_status
+            subscription_status,
+            trial_ends_at
           )
         `)
         .eq("user_id", user.id)
