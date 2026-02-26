@@ -1,67 +1,80 @@
 
+Goal: restore correct org-scoped dashboard/queue visibility and make routing handoff/pass-down reliable for operators and supervisors (with supervisor override), while keeping role enforcement server-side via existing role tables (`user_roles`, `organization_members`, `team_members`).
 
-# System-Wide Review: Org-Scoped Data Flow, Role Views, and Dashboard Status Sync
+Implementation steps:
 
-## Issues Found
+1) Add atomic backend routing-pass function (single source of truth)
+- Create SQL function `public.pass_work_order_to_next_step(...)` (SECURITY DEFINER, `SET search_path = public`) to:
+  - validate actor permission (operator at current station OR supervisor/org admin override),
+  - complete current routing step,
+  - move queue item to next station (`queued`) or finish work order (`completed`) if final step,
+  - set next step status to `pending`,
+  - update `current_station_status` for both current and next station in the same transaction,
+  - write audit/history with override reason when used.
 
-### 1. `useShiftStats` missing org-scoping (Critical)
-**File**: `src/hooks/useStations.ts` lines 331-404
+2) Harden RLS for operator pass-down + supervisor override
+- Add helper SQL functions for policy checks (security definer):
+  - `can_operator_act_on_station(_user_id, _station_id)` via active `operator_station_sessions`,
+  - `can_supervisor_override_in_org(_user_id, _org_id)` via `organization_members` + platform role check.
+- Update policies so:
+  - operators can only update queue/routing rows for their active station scope,
+  - supervisors/org admins can update within org scope,
+  - no client-side role trust paths.
 
-The `useShiftStats` hook queries `stations` and `handoff_records` without any `organization_id` filter. It only optionally filters by `teamId`. This means the stats shown to unauthenticated-context supervisors could include cross-org data (RLS may block it, but the query is not explicit). All other hooks (`useStations`, `useHandoffRecords`, `useQueue`) properly filter by org — this one is the outlier.
+3) Fix handoff creation context binding (station/team/org alignment)
+- Update `NewHandoffForm` to accept context props (`stationId`, `queueItemId`, prefilled WO/part/op, optional forced team).
+- Auto-load station/team from selected station row; stop relying on `currentTeam` alone for `team_id`.
+- Ensure handoff insert always uses station-consistent team/org data and keeps dashboard status sync update.
 
-**Fix**: Accept `organizationId` parameter and apply `.eq("organization_id", orgId)` to both station and handoff queries.
+4) Wire prefill and station context everywhere handoff opens
+- Pass real station context from:
+  - `OperatorDashboard`,
+  - `StationDetailView`,
+  - `Index` (station cards and supervisor actions),
+  - queue-detail “create handoff” path.
+- Remove unused state paths (`handoffStationId`/`selectedStationForAction` gaps) so handoff always opens scoped to intended station.
 
-### 2. Handoff form does NOT update `current_station_status` after submission (Medium)
-**File**: `src/components/NewHandoffForm.tsx`
+5) Replace direct multi-step client updates with backend function calls
+- In `OperatorStationPanel` and `QueueItemDetailDialog`, replace manual step-by-step `update/upsert` chain with one backend RPC call.
+- Handle and surface permission-denied + validation errors cleanly.
+- Add explicit supervisor override action + reason field (visible only for supervisor/org-admin/platform-admin access).
 
-When a handoff is submitted, the `primary_state` (e.g., "Part Running", "Setup in Progress", "Waiting on Material") is written to `handoff_records` but is **not** synced back to `current_station_status`. This means the supervisor dashboard's KPIs (running/down/setup/waiting counts) and the station status indicators don't reflect the handoff's reported state. The dashboard only updates when an operator starts/completes a queue item.
+6) Correct queue category rendering consistency
+- Ensure operator station panel shows distinct sections/counts for:
+  - pending,
+  - queued,
+  - in_progress,
+  - on_hold,
+  - completed (recent at minimum).
+- Align `QueueStatsCards` counts to avoid merging categories unexpectedly.
+- Keep station-centric operator focus and org-wide supervisor visibility.
 
-**Fix**: After successful handoff submission, upsert `current_station_status` with the handoff's `primary_state`, operator names, and part info. This is the missing link between the handoff system and the live dashboard.
+7) Enforce station-centric operator queue view in `/queue`
+- For non-supervisor/admin users:
+  - auto-apply station filter from active operator session(s),
+  - prevent org-wide scope toggle,
+  - only allow viewing stations they are checked into.
+- Keep supervisor/admin org-wide view + optional station drill-down.
 
-### 3. Realtime channel for `current_station_status` not org-scoped (Minor)
-**File**: `src/hooks/useStations.ts` lines 148-161
+8) Realtime and validation polish
+- Add org/station-scoped realtime filters where supported to reduce stale/noisy refresh behavior.
+- Expand `rls-health` checks to include:
+  - operator allowed pass-down at checked-in station,
+  - operator denied cross-station pass-down,
+  - supervisor override allowed in-org,
+  - denied cross-org.
 
-The realtime subscription for `current_station_status` listens to ALL changes on the table without a filter. For a multi-tenant SaaS, this means every org's station updates trigger a re-fetch for every connected user. While RLS prevents data leakage, it wastes bandwidth and causes unnecessary re-renders.
+Technical details (security-critical):
+- Roles remain only in role tables (`user_roles`, `organization_members`, `team_members`) — no role storage in profile/users rows.
+- No localStorage/sessionStorage/admin hardcode authorization checks.
+- All privileged routing/handoff transitions validated server-side (RLS + SQL functions).
+- Keep all SECURITY DEFINER functions with `SET search_path = public`.
+- Use migration-based schema/policy changes only; no direct edits to generated backend client/types files.
 
-**Fix**: Add an org-scoped filter on the realtime channel or at minimum filter by station IDs the user has access to.
-
-### 4. Operator check-in doesn't set station status (Minor)
-**File**: `src/hooks/useOperatorSessions.ts`
-
-When an operator checks in, `operator_station_sessions` is created but `current_station_status` is not updated with the operator's name. The dashboard shows no operator until a work order is started. This creates a gap where a station appears idle even though an operator is checked in.
-
-**Fix**: After successful check-in, upsert `current_station_status` with `current_operator_name` and `current_operator_id` so the supervisor dashboard immediately shows an operator is present.
-
-### 5. Operator check-out doesn't clear station status (Minor)
-**File**: `src/hooks/useOperatorSessions.ts`
-
-When an operator ends their shift, `operator_station_sessions.is_active` is set to false, but `current_station_status` still shows the operator's name and any active job state. The dashboard becomes stale.
-
-**Fix**: On checkout, clear the operator name/id from `current_station_status` for all sessions being ended.
-
-## Implementation Plan
-
-### File 1: `src/hooks/useStations.ts` — Fix `useShiftStats` org scoping
-- Add `organizationId` parameter to `useShiftStats`
-- Import and use `useUserOrganization` to get org context
-- Apply `.eq("organization_id", orgId)` to both station count and handoff queries
-- Filter realtime channel for `current_station_status` to avoid cross-org noise (add station_id filter if possible, or accept the current approach with a comment)
-
-### File 2: `src/components/NewHandoffForm.tsx` — Sync station status on handoff submit
-- After successful `onSubmit`, upsert `current_station_status` for the station with:
-  - `current_job_state` = the handoff's `primary_state`
-  - `current_operator_name` = incoming operator name
-  - `current_job_work_order` = work order from handoff
-  - `current_job_part_number` = part number from handoff
-- This ensures the dashboard KPIs immediately reflect the new shift state
-
-### File 3: `src/hooks/useOperatorSessions.ts` — Sync station status on check-in/check-out
-- **Check-in**: After inserting sessions, upsert `current_station_status` for each station with `current_operator_name` and `current_operator_id`
-- **Check-out**: Clear operator fields from `current_station_status` for all station sessions being ended
-
-### File 4: `src/pages/Index.tsx` — Pass org context to `useShiftStats` (if used)
-- Currently `useShiftStats` is not called from Index.tsx directly (it's used by `ShiftStats` component for unauthenticated view), but ensure any callers pass the org context
-
-### File 5: `src/components/ShiftStats.tsx` — Update to pass org context
-- Pass `organization?.id` to `useShiftStats` so stats are properly scoped
-
+Validation checklist after implementation:
+- Operator (checked into Station A) can pass WO from A → next station.
+- Same operator cannot pass WO from Station B (not checked in).
+- Supervisor can pass/override within org with audit reason.
+- Dashboard KPI and active station cards update immediately after pass/handoff.
+- Operator queue view stays station-scoped; supervisor remains org-scoped.
+- Cross-org visibility blocked for stations, queue items, routing, and handoffs.
