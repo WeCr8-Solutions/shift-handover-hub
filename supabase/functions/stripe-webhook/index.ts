@@ -53,11 +53,36 @@ async function checkIdempotency(eventId: string): Promise<boolean> {
   return !!data;
 }
 
+function sanitizePayload(eventType: string, payload: unknown): Record<string, unknown> {
+  const obj = payload as Record<string, unknown>;
+  // Only keep non-sensitive fields for idempotency and debugging
+  const safe: Record<string, unknown> = {
+    id: obj.id,
+    object: obj.object,
+    status: obj.status,
+    created: obj.created,
+  };
+
+  // Add type-specific safe fields
+  if (eventType.startsWith("customer.subscription")) {
+    safe.cancel_at_period_end = obj.cancel_at_period_end;
+    safe.current_period_end = obj.current_period_end;
+  } else if (eventType.startsWith("checkout.session")) {
+    safe.payment_status = obj.payment_status;
+    safe.mode = obj.mode;
+  } else if (eventType.startsWith("invoice.")) {
+    safe.status = obj.status;
+    safe.amount_due = obj.amount_due;
+  }
+
+  return safe;
+}
+
 async function recordEvent(eventId: string, eventType: string, payload: unknown) {
   await supabaseAdmin.from("stripe_events").insert({
     id: eventId,
     event_type: eventType,
-    payload,
+    payload: sanitizePayload(eventType, payload),
   });
 }
 
