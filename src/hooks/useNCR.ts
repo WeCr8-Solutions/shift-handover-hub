@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { useActivityLog } from "@/hooks/useActivityLog";
 import { Json } from "@/integrations/supabase/types";
+import { uploadOrgScopedFile, getSignedUrls } from "@/lib/storageUtils";
 
 export interface NCRReport {
   id: string;
@@ -27,6 +28,7 @@ export interface NCRReport {
   customer_approval: boolean | null;
   rejection_reason: string | null;
   metadata: Record<string, unknown>;
+  image_urls: string[];
   created_by: string;
   created_at: string;
   updated_at: string;
@@ -56,6 +58,7 @@ export interface CreateNCRInput {
   disposition: string;
   description: string;
   quantity_affected: number;
+  image_urls?: string[];
 }
 
 export function useNCR(filters?: {
@@ -138,6 +141,7 @@ export function useNCR(filters?: {
         disposition: input.disposition,
         description: input.description,
         quantity_affected: input.quantity_affected,
+        image_urls: input.image_urls || [],
         created_by: user.id,
       });
 
@@ -205,6 +209,19 @@ export function useNCR(filters?: {
     [],
   );
 
+  const uploadNCRImage = useCallback(
+    async (file: File) => {
+      if (!user || !organization?.id) return { path: null, error: new Error("Not authenticated") };
+      return uploadOrgScopedFile("ncr-attachments", file, organization.id, user.id);
+    },
+    [user, organization?.id],
+  );
+
+  const getSignedNCRImageUrls = useCallback(
+    (filePaths: string[]) => getSignedUrls("ncr-attachments", filePaths),
+    [],
+  );
+
   return {
     ncrs,
     loading,
@@ -214,5 +231,7 @@ export function useNCR(filters?: {
     approveNCR,
     rejectNCR,
     fetchAuditLog,
+    uploadNCRImage,
+    getSignedNCRImageUrls,
   };
 }

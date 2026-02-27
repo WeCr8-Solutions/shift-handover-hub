@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { validateNcrQuantity } from "@/lib/ncrUtils";
-import { Loader2 } from "lucide-react";
+import { Loader2, ImagePlus, X } from "lucide-react";
 
 interface CreateNCRDialogProps {
   open: boolean;
@@ -21,6 +21,7 @@ interface CreateNCRDialogProps {
   queueItemId: string;
   qtyOpen: number;
   operationNumbers?: string[];
+  onUploadImage?: (file: File) => Promise<{ path: string | null; error: Error | null }>;
   onSubmit: (input: {
     queue_item_id: string;
     work_order_number: string;
@@ -31,6 +32,7 @@ interface CreateNCRDialogProps {
     disposition: string;
     description: string;
     quantity_affected: number;
+    image_urls?: string[];
   }) => Promise<{ error: string | null }>;
 }
 
@@ -42,10 +44,14 @@ export function CreateNCRDialog({
   queueItemId,
   qtyOpen,
   operationNumbers = [],
+  onUploadImage,
   onSubmit,
 }: CreateNCRDialogProps) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imagePaths, setImagePaths] = useState<string[]>([]);
+  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
   const [form, setForm] = useState({
     serial_or_lot: "",
     operation_number: "",
@@ -54,6 +60,37 @@ export function CreateNCRDialog({
     description: "",
     quantity_affected: 1,
   });
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files?.length || !onUploadImage) return;
+
+    setUploadingImage(true);
+    for (const file of Array.from(files)) {
+      if (file.size > 10 * 1024 * 1024) {
+        toast({ title: "File too large", description: "Max 10MB per image", variant: "destructive" });
+        continue;
+      }
+      const { path, error } = await onUploadImage(file);
+      if (error) {
+        toast({ title: "Upload failed", description: error.message, variant: "destructive" });
+      } else if (path) {
+        setImagePaths((prev) => [...prev, path]);
+        setImagePreviewUrls((prev) => [...prev, URL.createObjectURL(file)]);
+      }
+    }
+    setUploadingImage(false);
+    e.target.value = "";
+  };
+
+  const removeImage = (index: number) => {
+    setImagePaths((prev) => prev.filter((_, i) => i !== index));
+    setImagePreviewUrls((prev) => {
+      const url = prev[index];
+      if (url) URL.revokeObjectURL(url);
+      return prev.filter((_, i) => i !== index);
+    });
+  };
 
   const handleSubmit = async () => {
     if (!form.serial_or_lot || !form.operation_number || !form.defect_type || !form.disposition || !form.description) {
@@ -73,6 +110,7 @@ export function CreateNCRDialog({
       work_order_number: workOrderNumber,
       part_number: partNumber || undefined,
       ...form,
+      image_urls: imagePaths.length > 0 ? imagePaths : undefined,
     });
     setLoading(false);
 
@@ -81,6 +119,9 @@ export function CreateNCRDialog({
     } else {
       toast({ title: "NCR Created", description: "Non-conformance report submitted for approval" });
       setForm({ serial_or_lot: "", operation_number: "", defect_type: "", disposition: "", description: "", quantity_affected: 1 });
+      setImagePaths([]);
+      imagePreviewUrls.forEach((u) => URL.revokeObjectURL(u));
+      setImagePreviewUrls([]);
       onOpenChange(false);
     }
   };
@@ -169,11 +210,53 @@ export function CreateNCRDialog({
               rows={3}
             />
           </div>
+
+          {/* Defect Photo Upload */}
+          {onUploadImage && (
+            <div>
+              <Label>Defect Photos</Label>
+              <div className="mt-1 space-y-2">
+                {imagePreviewUrls.length > 0 && (
+                  <div className="flex gap-2 flex-wrap">
+                    {imagePreviewUrls.map((url, i) => (
+                      <div key={i} className="relative w-16 h-16 rounded border border-border overflow-hidden group">
+                        <img src={url} alt={`Defect ${i + 1}`} className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(i)}
+                          className="absolute top-0 right-0 bg-destructive text-destructive-foreground rounded-bl p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <label className="inline-flex items-center gap-2 px-3 py-1.5 text-xs border border-dashed border-border rounded cursor-pointer hover:bg-accent transition-colors">
+                  {uploadingImage ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <ImagePlus className="w-3.5 h-3.5" />
+                  )}
+                  {uploadingImage ? "Uploading…" : "Attach photos"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={handleImageUpload}
+                    disabled={uploadingImage}
+                  />
+                </label>
+                <p className="text-[10px] text-muted-foreground">Max 10MB per image. Photos help with traceability.</p>
+              </div>
+            </div>
+          )}
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={handleSubmit} disabled={loading}>
+          <Button onClick={handleSubmit} disabled={loading || uploadingImage}>
             {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
             Submit NCR
           </Button>

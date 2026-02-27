@@ -1122,6 +1122,7 @@ export type Database = {
           fixture_orientation_verified: string | null
           handoff_summary: string
           id: string
+          image_urls: string[] | null
           incoming_operator_id: string | null
           incoming_operator_name: string
           incoming_time: string | null
@@ -1175,6 +1176,7 @@ export type Database = {
           fixture_orientation_verified?: string | null
           handoff_summary: string
           id?: string
+          image_urls?: string[] | null
           incoming_operator_id?: string | null
           incoming_operator_name: string
           incoming_time?: string | null
@@ -1228,6 +1230,7 @@ export type Database = {
           fixture_orientation_verified?: string | null
           handoff_summary?: string
           id?: string
+          image_urls?: string[] | null
           incoming_operator_id?: string | null
           incoming_operator_name?: string
           incoming_time?: string | null
@@ -1784,6 +1787,7 @@ export type Database = {
           description: string
           disposition: string
           id: string
+          image_urls: string[] | null
           metadata: Json | null
           ncr_number: string
           operation_number: string
@@ -1810,6 +1814,7 @@ export type Database = {
           description: string
           disposition: string
           id?: string
+          image_urls?: string[] | null
           metadata?: Json | null
           ncr_number: string
           operation_number: string
@@ -1836,6 +1841,7 @@ export type Database = {
           description?: string
           disposition?: string
           id?: string
+          image_urls?: string[] | null
           metadata?: Json | null
           ncr_number?: string
           operation_number?: string

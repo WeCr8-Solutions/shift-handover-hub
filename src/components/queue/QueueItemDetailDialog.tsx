@@ -114,7 +114,7 @@ export function QueueItemDetailDialog({
   const { organization } = useUserOrganization();
   const { stations } = useStations(currentTeam?.id, organization?.id);
   const { hasAdminAccess } = useAdminAccess();
-  const { ncrs, createNCR } = useNCR(item ? { queue_item_id: item.id } : undefined);
+  const { ncrs, createNCR, uploadNCRImage } = useNCR(item ? { queue_item_id: item.id } : undefined);
   const [comments, setComments] = useState<QueueItemComment[]>([]);
   const [history, setHistory] = useState<QueueItemHistory[]>([]);
   const [routingSteps, setRoutingSteps] = useState<RoutingStepRow[]>([]);
@@ -942,6 +942,7 @@ export function QueueItemDetailDialog({
             partNumber={item.part_number}
             queueItemId={item.id}
             qtyOpen={item.qty_open ?? item.quantity ?? 0}
+            onUploadImage={uploadNCRImage}
             onSubmit={createNCR}
           />
         )}
