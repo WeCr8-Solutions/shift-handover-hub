@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { QueueStatus, QueueItemType } from "@/hooks/useQueue";
+import { useQuoteSystem } from "@/hooks/useQuoteSystem";
 import { X } from "lucide-react";
 
 interface QueueFiltersProps {
@@ -23,7 +24,8 @@ const statusOptions: { value: QueueStatus; label: string }[] = [
   { value: "cancelled", label: "Cancelled" },
 ];
 
-const typeOptions: { value: QueueItemType; label: string }[] = [
+const ALL_TYPE_OPTIONS: { value: QueueItemType; label: string }[] = [
+  { value: "quote", label: "Quote" },
   { value: "work_order", label: "Work Order" },
   { value: "station_task", label: "Station Task" },
   { value: "team_task", label: "Team Task" },
@@ -31,6 +33,10 @@ const typeOptions: { value: QueueItemType; label: string }[] = [
 ];
 
 export function QueueFilters({ filters, onFiltersChange }: QueueFiltersProps) {
+  const { isQuoteSystemEnabled } = useQuoteSystem();
+  const typeOptions = isQuoteSystemEnabled
+    ? ALL_TYPE_OPTIONS
+    : ALL_TYPE_OPTIONS.filter(o => o.value !== "quote");
   const activeFilters = [
     ...(filters.status || []).map((s) => ({ type: "status" as const, value: s })),
     ...(filters.item_type || []).map((t) => ({ type: "item_type" as const, value: t })),
