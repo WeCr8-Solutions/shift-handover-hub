@@ -185,27 +185,27 @@ export function MachineLibraryManagement() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card>
           <CardContent className="pt-4 flex items-center gap-3">
-            <Cpu className="w-8 h-8 text-primary" />
-            <div>
-              <p className="text-2xl font-bold">{library.length}</p>
+            <Cpu className="w-8 h-8 text-primary shrink-0" />
+            <div className="min-w-0">
+              <p className="text-2xl font-bold truncate">{library.length}</p>
               <p className="text-sm text-muted-foreground">Machine Profiles</p>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4 flex items-center gap-3">
-            <Package className="w-8 h-8 text-primary" />
-            <div>
-              <p className="text-2xl font-bold">{totalPurchases}</p>
+            <Package className="w-8 h-8 text-primary shrink-0" />
+            <div className="min-w-0">
+              <p className="text-2xl font-bold truncate">{totalPurchases}</p>
               <p className="text-sm text-muted-foreground">Total Purchases</p>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4 flex items-center gap-3">
-            <DollarSign className="w-8 h-8 text-primary" />
-            <div>
-              <p className="text-2xl font-bold">${revenue}</p>
+            <DollarSign className="w-8 h-8 text-primary shrink-0" />
+            <div className="min-w-0">
+              <p className="text-2xl font-bold truncate">${revenue}</p>
               <p className="text-sm text-muted-foreground">Estimated Revenue</p>
             </div>
           </CardContent>
@@ -215,26 +215,26 @@ export function MachineLibraryManagement() {
       {/* Toolbar */}
       <Card>
         <CardContent className="pt-4">
-          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-            <div className="relative flex-1 min-w-[200px]">
+          <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center flex-wrap">
+            <div className="relative flex-1 min-w-0 sm:min-w-[200px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input placeholder="Search manufacturer or model..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
             </div>
             <Select value={filterManufacturer} onValueChange={setFilterManufacturer}>
-              <SelectTrigger className="w-[180px]"><SelectValue placeholder="Manufacturer" /></SelectTrigger>
+              <SelectTrigger className="w-full sm:w-[180px]"><SelectValue placeholder="Manufacturer" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Manufacturers</SelectItem>
                 {uniqueManufacturers.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={filterType} onValueChange={setFilterType}>
-              <SelectTrigger className="w-[200px]"><SelectValue placeholder="Machine Type" /></SelectTrigger>
+              <SelectTrigger className="w-full sm:w-[200px]"><SelectValue placeholder="Machine Type" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>
                 {MACHINE_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
               </SelectContent>
             </Select>
-            <Button onClick={openAdd} className="gap-2"><Plus className="w-4 h-4" /> Add Machine</Button>
+            <Button onClick={openAdd} className="gap-2 w-full sm:w-auto"><Plus className="w-4 h-4" /> Add Machine</Button>
           </div>
         </CardContent>
       </Card>
@@ -245,77 +245,79 @@ export function MachineLibraryManagement() {
           {loading ? (
             <div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
           ) : (
-            <ScrollArea className="max-h-[600px]">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Manufacturer</TableHead>
-                    <TableHead>Model</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Platform</TableHead>
-                    <TableHead className="text-center">Travel (X/Y/Z)</TableHead>
-                    <TableHead className="text-center">Verified</TableHead>
-                    <TableHead className="text-center">Purchases</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filtered.length === 0 && (
-                    <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">No machines found</TableCell></TableRow>
-                  )}
-                  {filtered.map((m) => (
-                    <TableRow key={m.id}>
-                      <TableCell className="font-medium">{m.manufacturer}</TableCell>
-                      <TableCell>{m.model}</TableCell>
-                      <TableCell><Badge variant="outline" className="text-xs">{m.machine_type}</Badge></TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{m.platform_category}</TableCell>
-                      <TableCell className="text-center text-sm font-mono">
-                        {m.max_x_travel ?? "—"} / {m.max_y_travel ?? "—"} / {m.max_z_travel ?? "—"}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {m.is_verified ? <CheckCircle2 className="w-4 h-4 text-green-500 mx-auto" /> : <X className="w-4 h-4 text-muted-foreground mx-auto" />}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <Badge variant={purchaseCounts[m.id] ? "default" : "secondary"}>{purchaseCounts[m.id] || 0}</Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-1">
-                          <Button variant="ghost" size="icon" onClick={() => openEdit(m)}><Pencil className="w-4 h-4" /></Button>
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <span>
-                                  <Button variant="ghost" size="icon" disabled={!!purchaseCounts[m.id]} onClick={() => handleDelete(m)}>
-                                    <Trash2 className="w-4 h-4 text-destructive" />
-                                  </Button>
-                                </span>
-                              </TooltipTrigger>
-                              {purchaseCounts[m.id] && <TooltipContent>Cannot delete — {purchaseCounts[m.id]} active purchase(s)</TooltipContent>}
-                            </Tooltip>
-                          </TooltipProvider>
-                        </div>
-                      </TableCell>
+            <div className="overflow-x-auto">
+              <ScrollArea className="max-h-[600px]">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="min-w-[120px]">Manufacturer</TableHead>
+                      <TableHead className="min-w-[120px]">Model</TableHead>
+                      <TableHead className="min-w-[140px]">Type</TableHead>
+                      <TableHead className="min-w-[80px]">Platform</TableHead>
+                      <TableHead className="text-center whitespace-nowrap min-w-[130px]">Travel (X/Y/Z)</TableHead>
+                      <TableHead className="text-center min-w-[70px]">Verified</TableHead>
+                      <TableHead className="text-center min-w-[80px]">Purchases</TableHead>
+                      <TableHead className="text-right min-w-[90px]">Actions</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </ScrollArea>
+                  </TableHeader>
+                  <TableBody>
+                    {filtered.length === 0 && (
+                      <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">No machines found</TableCell></TableRow>
+                    )}
+                    {filtered.map((m) => (
+                      <TableRow key={m.id}>
+                        <TableCell className="font-medium whitespace-nowrap">{m.manufacturer}</TableCell>
+                        <TableCell className="whitespace-nowrap">{m.model}</TableCell>
+                        <TableCell><Badge variant="outline" className="text-xs whitespace-nowrap max-w-[160px] truncate">{m.machine_type}</Badge></TableCell>
+                        <TableCell className="text-sm text-muted-foreground whitespace-nowrap">{m.platform_category}</TableCell>
+                        <TableCell className="text-center text-sm font-mono whitespace-nowrap">
+                          {m.max_x_travel ?? "—"} / {m.max_y_travel ?? "—"} / {m.max_z_travel ?? "—"}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {m.is_verified ? <CheckCircle2 className="w-4 h-4 text-green-500 mx-auto" /> : <X className="w-4 h-4 text-muted-foreground mx-auto" />}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Badge variant={purchaseCounts[m.id] ? "default" : "secondary"}>{purchaseCounts[m.id] || 0}</Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-1">
+                            <Button variant="ghost" size="icon" onClick={() => openEdit(m)}><Pencil className="w-4 h-4" /></Button>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span>
+                                    <Button variant="ghost" size="icon" disabled={!!purchaseCounts[m.id]} onClick={() => handleDelete(m)}>
+                                      <Trash2 className="w-4 h-4 text-destructive" />
+                                    </Button>
+                                  </span>
+                                </TooltipTrigger>
+                                {purchaseCounts[m.id] && <TooltipContent>Cannot delete — {purchaseCounts[m.id]} active purchase(s)</TooltipContent>}
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </ScrollArea>
+            </div>
           )}
         </CardContent>
       </Card>
 
       {/* Add/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden flex flex-col w-[95vw] sm:w-auto">
           <DialogHeader>
-            <DialogTitle>{editingId ? "Edit Machine Profile" : "Add Machine Profile"}</DialogTitle>
+            <DialogTitle className="truncate">{editingId ? "Edit Machine Profile" : "Add Machine Profile"}</DialogTitle>
           </DialogHeader>
           <ScrollArea className="flex-1 pr-4">
             <div className="space-y-6 pb-4">
               {/* Identity */}
               <div>
                 <h4 className="font-semibold text-sm text-muted-foreground mb-3">Identity</h4>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <Label>Manufacturer *</Label>
                     <Select value={form.manufacturer} onValueChange={(v) => setForm((f) => ({ ...f, manufacturer: v }))}>
@@ -345,7 +347,7 @@ export function MachineLibraryManagement() {
               {/* Travel & Envelope */}
               <div>
                 <h4 className="font-semibold text-sm text-muted-foreground mb-3">Travel & Envelope (inches/lbs)</h4>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   <div><Label>X Travel</Label><Input type="number" value={form.max_x_travel ?? ""} onChange={(e) => setNum("max_x_travel", e.target.value)} /></div>
                   <div><Label>Y Travel</Label><Input type="number" value={form.max_y_travel ?? ""} onChange={(e) => setNum("max_y_travel", e.target.value)} /></div>
                   <div><Label>Z Travel</Label><Input type="number" value={form.max_z_travel ?? ""} onChange={(e) => setNum("max_z_travel", e.target.value)} /></div>
@@ -360,7 +362,7 @@ export function MachineLibraryManagement() {
               {/* Capabilities */}
               <div>
                 <h4 className="font-semibold text-sm text-muted-foreground mb-3">Capabilities</h4>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {(["five_axis_simultaneous", "fourth_axis", "live_tooling", "y_axis_turn", "sub_spindle", "probing", "through_spindle_coolant", "pallet_pool", "bar_feeder"] as const).map((key) => (
                     <div key={key} className="flex items-center gap-2">
                       <Checkbox checked={form[key] as boolean} onCheckedChange={() => toggleBool(key)} id={key} />
@@ -374,7 +376,7 @@ export function MachineLibraryManagement() {
               {/* Materials */}
               <div>
                 <h4 className="font-semibold text-sm text-muted-foreground mb-3">Material Capability</h4>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {COMMON_MATERIALS.map((mat) => (
                     <div key={mat} className="flex items-center gap-2">
                       <Checkbox checked={form.material_capability.includes(mat)} onCheckedChange={() => toggleMaterial(mat)} id={`mat-${mat}`} />
@@ -388,7 +390,7 @@ export function MachineLibraryManagement() {
               {/* Tolerances & Constraints */}
               <div>
                 <h4 className="font-semibold text-sm text-muted-foreground mb-3">Tolerances & Constraints</h4>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div><Label>Typical Tolerance (in)</Label><Input type="number" step="0.0001" value={form.typical_tolerance ?? ""} onChange={(e) => setNum("typical_tolerance", e.target.value)} /></div>
                   <div className="flex items-center gap-2 pt-6">
                     <Checkbox checked={form.is_verified} onCheckedChange={() => toggleBool("is_verified")} id="is_verified" />
