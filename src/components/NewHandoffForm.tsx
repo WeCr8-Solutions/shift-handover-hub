@@ -154,9 +154,16 @@ interface NewHandoffFormProps {
   onSubmit?: (record: Omit<HandoffRecord, "id" | "created_at" | "updated_at" | "record_version">) => Promise<{ data: any; error: any }>;
   /** Pre-select a station by its database ID */
   initialStationId?: string;
+  /** Pre-fill work order data from queue item */
+  prefillData?: {
+    work_order?: string;
+    part_number?: string;
+    operation_number?: string;
+    station_id?: string;
+  };
 }
 
-export function NewHandoffForm({ onClose, onSubmit, initialStationId }: NewHandoffFormProps) {
+export function NewHandoffForm({ onClose, onSubmit, initialStationId, prefillData }: NewHandoffFormProps) {
   const { user, profile } = useAuth();
   const { currentTeam } = useCurrentTeam();
   const { organization } = useUserOrganization();
@@ -286,6 +293,24 @@ export function NewHandoffForm({ onClose, onSubmit, initialStationId }: NewHando
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialStationId, stations.length]);
+
+  // Apply prefill data from queue item
+  useEffect(() => {
+    if (prefillData && stations.length > 0) {
+      const updates: Partial<FormData> = {};
+      if (prefillData.work_order) updates.workOrder = prefillData.work_order;
+      if (prefillData.part_number) updates.partNumber = prefillData.part_number;
+      if (prefillData.operation_number) updates.operationNumber = prefillData.operation_number;
+      if (prefillData.station_id && !initialStationId) {
+        // Station will be handled by initialStationId effect if both are set
+        handleStationChange(prefillData.station_id);
+      }
+      if (Object.keys(updates).length > 0) {
+        setFormData(prev => ({ ...prev, ...updates }));
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefillData, stations.length]);
 
   const updateField = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
