@@ -1,109 +1,142 @@
 
 
-## Plan: Finalize Routing Template Save Structure + Add Quote-to-WO Tour Steps
+## Plan: Cloud ERP Connector — MVP Read-Only Integration
 
-### Security Verification (No Changes Needed)
-- **routing_templates**: RLS enforces `is_org_member` for SELECT, `is_org_admin OR is_supervisor_in_org` for ALL mutations — verified correct
-- **routing_template_steps**: RLS joins through `routing_templates.organization_id` — verified correct
-- **work_order_routing**: RLS joins through `queue_items.organization_id` — verified correct
-- **Save Routing** (`handleSave`): Explicitly sets `organization_id: organization!.id` on every insert — verified
-- **Save as Template** (`handleSaveAsTemplate`): Explicitly sets `organization_id` on both template and steps — verified
-- **No cross-org leakage vectors found** — all queries filter by org membership at both RLS and application layers
+This is a large, multi-layer feature. The plan is structured into **3 phases** to ship incrementally.
 
-### Changes
+---
 
-#### 1. Add `data-tour` Attributes to Queue & Routing Components
-Add tour anchor attributes to key elements users need to discover:
+### Phase 1: Database Schema + Edge Function Infrastructure
 
-**`src/pages/Queue.tsx`**:
-- Add `data-tour="add-queue-item"` to the "Add Item" button
-- Add `data-tour="quote-type-selector"` wrapper around the type selector area (already exists on tabs/filters/views)
+**Migration: Create 5 new tables**
 
-**`src/components/queue/QueueKanbanBoard.tsx`**:
-- Add `data-tour="kanban-quote-card"` to quote-type cards (first one)
-- Add `data-tour="kanban-wo-card"` to work-order-type cards (first one)
+1. **`erp_connections`** — One per org, stores ERP vendor config
+   - `id`, `organization_id` (FK, NOT NULL, UNIQUE), `erp_vendor` (text), `instance_type` (text default 'cloud'), `api_base_url` (text), `oauth_token_endpoint` (text), `client_id_encrypted` (text), `client_secret_encrypted` (text), `scopes` (text), `tenant_identifier` (text), `sync_interval_minutes` (int default 10), `is_active` (bool default false), `last_tested_at` (timestamptz), `connection_status` (text default 'pending'), `created_by` (uuid), `created_at`, `updated_at`
+   - RLS: org admins/owners only (read + write), developers read all
 
-**`src/components/routing/WorkOrderRoutingEditor.tsx`**:
-- Add `data-tour="routing-template-selector"` to the org template dropdown
-- Add `data-tour="routing-save-template"` to the "Save as Template" button
-- Add `data-tour="routing-save"` to the "Save Routing" button
+2. **`erp_sync_logs`** — Audit trail per sync run
+   - `id`, `organization_id` (FK, NOT NULL), `erp_connection_id` (FK), `sync_type` (text: 'full'|'incremental'), `started_at`, `completed_at`, `status` (text: 'running'|'success'|'partial'|'failed'), `records_fetched` (int), `records_created` (int), `records_updated` (int), `errors_count` (int), `error_details` (jsonb), `duration_ms` (int), `triggered_by` (text: 'schedule'|'manual')
+   - RLS: org admins read their own org's logs
 
-**`src/components/queue/QueueItemDetailDialog.tsx`**:
-- Add `data-tour="quote-convert-bar"` to the quote-to-WO conversion action bar
-- Add `data-tour="routing-tab"` to the Routing tab trigger
+3. **`erp_sync_errors`** — Per-record error capture
+   - `id`, `organization_id` (FK, NOT NULL), `sync_log_id` (FK), `erp_record_type` (text: 'work_order'|'operation'|'work_center'), `erp_record_id` (text), `error_message` (text), `retry_count` (int default 0), `resolved` (bool default false), `created_at`
+   - RLS: org admins read
 
-#### 2. Add New Tour Steps to GuidedTour
-**`src/components/onboarding/GuidedTour.tsx`**:
+4. **`erp_work_center_mappings`** — Maps ERP work centers to JobLine stations
+   - `id`, `organization_id` (FK, NOT NULL), `erp_work_center_id` (text), `erp_work_center_name` (text), `jobline_station_id` (uuid FK to stations, nullable), `created_at`, `updated_at`
+   - UNIQUE(`organization_id`, `erp_work_center_id`)
+   - RLS: org admins read/write
 
-Add new tour steps to the `/queue` route covering the quote-to-work-order and routing flows:
+5. **`erp_status_mappings`** — Maps ERP statuses to JobLine statuses
+   - `id`, `organization_id` (FK, NOT NULL), `erp_status` (text), `jobline_status` (text — maps to queue_status enum values), `created_at`
+   - UNIQUE(`organization_id`, `erp_status`)
+   - RLS: org admins read/write
 
-```
-// After existing queue steps:
-{
-  target: '[data-tour="add-queue-item"]',
-  content: 'Create quotes for estimation or work orders for production. Quotes flow through approval before converting to tracked work orders.',
-  title: '📝 Quotes & Work Orders',
-},
-{
-  target: '[data-tour="kanban-quote-card"]',
-  content: 'Quotes appear with an amber border. Click to review, get estimates from engineering, then convert to a work order when approved.',
-  title: '💡 Quote Cards',
-},
-{
-  target: '[data-tour="kanban-wo-card"]',
-  content: 'Work orders have a blue border and track through your full production routing — from first operation to final ship.',
-  title: '🔧 Work Order Cards',
-},
-```
+**Triggers:**
+- `auto_populate_org_id` triggers on `erp_sync_logs`, `erp_sync_errors` (from `erp_connection_id`)
+- `update_updated_at_column` on `erp_connections`, `erp_work_center_mappings`
 
-Add a new route entry for when the routing editor is open (triggered contextually, not route-based — these steps show when the detail dialog is open):
+**Add columns to `queue_items`:**
+- `erp_job_id` (text, nullable) — external ERP reference
+- `erp_source` (text, nullable) — which ERP vendor synced this
+- `erp_last_synced_at` (timestamptz, nullable)
+- Add partial unique index: `UNIQUE(organization_id, erp_job_id)` WHERE `erp_job_id IS NOT NULL`
 
-Since routing editor opens inside the queue page's detail dialog, append routing-related steps to the `/queue` tour that target `data-tour` attributes inside the dialog:
+**Add columns to `work_order_routing`:**
+- `erp_operation_id` (text, nullable)
+- `erp_sequence_number` (int, nullable)
 
-```
-{
-  target: '[data-tour="routing-tab"]',
-  content: 'The Routing tab shows every production step — from quote review through shipping. Each step maps to a station in your shop.',
-  title: '🗺️ Production Routing',
-},
-{
-  target: '[data-tour="routing-template-selector"]',
-  content: 'Load a saved routing template from your organization library. Templates save time by pre-filling steps for common part types.',
-  title: '📋 Routing Templates',
-},
-{
-  target: '[data-tour="routing-save-template"]',
-  content: 'Customized a routing? Save it as a reusable template so your team can apply it to future work orders with one click.',
-  title: '💾 Save as Template',
-},
-```
+---
 
-#### 3. Add New Onboarding Step Definition
-**`src/hooks/useOnboarding.ts`**:
+### Phase 2: Edge Function — `erp-sync`
 
-Add a new optional step `'quote-to-workorder'` to the `OnboardingStep` type and `ONBOARDING_STEPS` array:
+**New edge function: `supabase/functions/erp-sync/index.ts`**
 
-```typescript
-{ id: 'quote-to-workorder', title: 'Quotes & Routing', description: 'Learn how quotes convert to work orders with production routing templates' },
-```
+- JWT-verified, org-admin authorization required
+- Accepts POST with `{ organization_id, sync_type: 'full' | 'incremental' }`
+- Flow:
+  1. Load `erp_connections` for the org
+  2. Authenticate to ERP via OAuth client_credentials flow
+  3. Fetch work orders (with `modified_since` for incremental)
+  4. Fetch operations/routing per work order
+  5. Fetch work center master list
+  6. Upsert into `queue_items` (matching on `erp_job_id`), `work_order_routing`, and `erp_work_center_mappings`
+  7. Apply `erp_status_mappings` to set `queue_status`
+  8. Apply `erp_work_center_mappings` to set `station_id`
+  9. Log everything to `erp_sync_logs` and `erp_sync_errors`
+- MVP: Generic REST adapter with configurable field mapping (stored in `erp_connections.metadata` jsonb)
+- Config in `supabase/config.toml`: `verify_jwt = false` (manual JWT check in code)
 
-Insert it after `'station-cards'` (step 5) and before `'handoff-submission'` (step 6).
+---
 
-**`src/components/onboarding/GuidedTour.tsx`**:
+### Phase 3: Settings UI + Admin Observability
 
-Update `ROUTE_TO_STEP` to map `/queue` to include this new step when the quote/routing tour steps are shown.
+**New settings tab: "ERP Connector" in Settings page**
 
-#### 4. Update OnboardingSettings Route Map
-**`src/components/settings/OnboardingSettings.tsx`**:
+1. **`src/components/settings/ERPConnectorSettings.tsx`** — New component
+   - Only visible to org admins/owners
+   - **Connection Setup Card:**
+     - ERP vendor selector (JobBOSS, Epicor, Plex, ProShop, E2, Other)
+     - API Base URL, OAuth Token Endpoint, Client ID, Client Secret (password input)
+     - Scopes (pre-filled "read-only"), Tenant ID
+     - "Test Connection" button (calls edge function with test mode)
+     - Connection status badge (Pending / Connected / Error)
+   - **Sync Configuration Card:**
+     - Sync interval dropdown (5, 10, 15, 30, 60 min)
+     - Enable/disable toggle
+     - "Run Sync Now" button
+     - Last sync timestamp + result summary
+   - **Work Center Mapping Card:**
+     - Table: ERP Work Center Name | JobLine Station (dropdown of org stations)
+     - Auto-populated after first sync with unmapped centers highlighted
+   - **Status Mapping Card:**
+     - Table: ERP Status | JobLine Status (dropdown: pending, queued, in_progress, on_hold, completed, cancelled)
+     - Pre-filled defaults for common patterns
+   - **Sync History Card:**
+     - Table of last 20 sync runs: timestamp, type, records fetched/created/updated, errors, duration
+     - Expandable error details per run
 
-Add `'quote-to-workorder': '/queue'` to the `STEP_ROUTE_MAP`.
+2. **Update `src/pages/Settings.tsx`:**
+   - Add "ERP" tab (with `Plug` icon) visible to org admins + developers
+   - Import and render `ERPConnectorSettings`
+
+3. **New hook: `src/hooks/useERPConnector.ts`**
+   - CRUD for `erp_connections` (scoped to user's org)
+   - Fetch sync logs, sync errors, work center mappings, status mappings
+   - Invoke `erp-sync` edge function
+   - Test connection method
+
+4. **Update `src/hooks/useQueue.ts` QueueItem interface:**
+   - Add `erp_job_id`, `erp_source`, `erp_last_synced_at` optional fields
+
+5. **Queue UI indicators:**
+   - In `QueueKanbanBoard.tsx` and `QueueListView.tsx`: show small ERP badge on cards synced from ERP
+   - In `QueueItemDetailDialog.tsx`: show "ERP Source" section with job ID and last sync time
+
+6. **Admin panel addition:**
+   - Add ERP overview card in `OrganizationOversight.tsx` showing connection status per org
+
+---
+
+### Security Considerations
+
+- Client secrets stored server-side only (in `erp_connections` table, never sent to frontend after initial save)
+- RLS ensures org isolation on all ERP tables
+- Edge function validates org membership before any ERP operation
+- Read-only scopes enforced at the ERP API level
+- Sync logs provide full audit trail
+- No write-backs to ERP in MVP
+
+### Files Created
+- `src/components/settings/ERPConnectorSettings.tsx`
+- `src/hooks/useERPConnector.ts`
+- `supabase/functions/erp-sync/index.ts`
 
 ### Files Modified
-1. `src/hooks/useOnboarding.ts` — Add `quote-to-workorder` step
-2. `src/components/onboarding/GuidedTour.tsx` — Add quote/routing tour steps to `/queue`
-3. `src/components/settings/OnboardingSettings.tsx` — Add route mapping
-4. `src/pages/Queue.tsx` — Add `data-tour` attributes
-5. `src/components/queue/QueueKanbanBoard.tsx` — Add `data-tour` attributes
-6. `src/components/queue/QueueItemDetailDialog.tsx` — Add `data-tour` attributes
-7. `src/components/routing/WorkOrderRoutingEditor.tsx` — Add `data-tour` attributes
+- `src/pages/Settings.tsx` (add ERP tab)
+- `src/hooks/useQueue.ts` (add ERP fields to interface)
+- `src/components/queue/QueueKanbanBoard.tsx` (ERP badge)
+- `src/components/queue/QueueItemDetailDialog.tsx` (ERP source section)
+- `src/components/admin/OrganizationOversight.tsx` (ERP status card)
+- 1 database migration (tables + columns + RLS + triggers)
 
