@@ -4,6 +4,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { ArrowRight, CheckCircle2, Zap, Target, Eye, AlertTriangle, Clock, Route } from "lucide-react";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
+import { MockStationDashboard, MockQueueBoard } from "@/components/marketing/MockAppPreviews";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
@@ -89,6 +90,11 @@ export default function DigitalExpeditor() {
                   <p className="text-muted-foreground text-sm">{uc.desc}</p>
                 </div>
               ))}
+            </div>
+
+            <div className="space-y-8">
+              <MockStationDashboard />
+              <MockQueueBoard />
             </div>
           </div>
         </section>

@@ -4,6 +4,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { ArrowRight, Clock, FileText, Users, Shield, CheckCircle2, Zap } from "lucide-react";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
+import { MockHandoffForm } from "@/components/marketing/MockAppPreviews";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
@@ -73,7 +74,9 @@ export default function ShiftHandoffSoftware() {
               </Button>
             </div>
 
-            <h2 className="text-2xl font-bold mb-6">Why Manufacturing Teams Choose JobLine.ai for Shift Handoffs</h2>
+            <MockHandoffForm />
+
+            <h2 className="text-2xl font-bold mb-6 mt-16">Why Manufacturing Teams Choose JobLine.ai for Shift Handoffs</h2>
             <ul className="grid sm:grid-cols-2 gap-4 mb-16">
               {benefits.map((b, i) => (
                 <li key={i} className="flex items-start gap-3 p-4 rounded-lg bg-card border border-border">

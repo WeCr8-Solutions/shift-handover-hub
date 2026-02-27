@@ -4,6 +4,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { ArrowRight, Clock, CheckCircle2, Zap } from "lucide-react";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
+import { MockHandoffForm } from "@/components/marketing/MockAppPreviews";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
@@ -75,7 +76,7 @@ export default function ShiftHandoff() {
               ))}
             </ul>
 
-            <div className="flex flex-wrap gap-4 mb-16">
+            <div className="flex flex-wrap gap-4 mb-12">
               <Button size="lg" onClick={() => {
                 ConversionEvents.ctaClick('start_free_trial', 'Start Free Trial', pagePath, 'hero');
                 navigate("/auth");
@@ -90,7 +91,9 @@ export default function ShiftHandoff() {
               </Button>
             </div>
 
-            <h2 className="text-2xl font-bold mb-6">Frequently Asked Questions</h2>
+            <MockHandoffForm />
+
+            <h2 className="text-2xl font-bold mb-6 mt-16">Frequently Asked Questions</h2>
             <div className="space-y-4 mb-16">
               {faqs.map((faq, i) => (
                 <div key={i} className="p-4 rounded-lg bg-secondary/30">
