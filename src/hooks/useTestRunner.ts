@@ -39,14 +39,32 @@ export interface TestRunSummary {
 
 // Real test files in the project - these map to actual test files
 const testFileRegistry: Record<string, { path: string; description: string }> = {
+  // UI Components
   "Button Component": { path: "src/components/ui/button.test.tsx", description: "UI button component tests" },
   "StatusBadge Component": { path: "src/components/StatusBadge.test.tsx", description: "Status badge styling tests" },
+  // Hooks
   "useEmail Hook": { path: "src/hooks/useEmail.test.ts", description: "Email sending hook tests" },
   "useQueue Hook": { path: "src/hooks/useQueue.test.ts", description: "Queue management tests" },
-  "Utils": { path: "src/lib/utils.test.ts", description: "Utility function tests" },
+  "useStations Hook": { path: "src/hooks/useStations.test.ts", description: "Station org-scoping tests" },
+  "useOperatorSessions Hook": { path: "src/hooks/useOperatorSessions.test.ts", description: "Station check-in/out & realtime sync" },
+  // Queue System
   "QueueFilters": { path: "src/components/queue/QueueFilters.test.tsx", description: "Queue filter component tests" },
   "QueueCalendarView": { path: "src/components/queue/QueueCalendarView.test.tsx", description: "Calendar view tests" },
   "QueueStatsCards": { path: "src/components/queue/QueueStatsCards.test.tsx", description: "Queue stats card tests" },
+  "QueueItemPreAdvance": { path: "src/components/queue/QueueItemPreAdvanceValidation.test.ts", description: "Pre-advance validation for routing steps" },
+  "QueueItemHandoff": { path: "src/components/queue/QueueItemDetailDialog.handoff.test.tsx", description: "Handoff integration from queue item detail" },
+  // Dashboard
+  "ShiftStats": { path: "src/components/ShiftStats.test.tsx", description: "Shift stats org-scoped rendering" },
+  "OperatorStationPanel": { path: "src/components/dashboard/OperatorStationPanel.test.tsx", description: "Operator station panel rendering" },
+  "SupervisorDashboard": { path: "src/components/dashboard/SupervisorDashboard.test.tsx", description: "Supervisor dashboard org-scoped tests" },
+  // Forms & Workflows
+  "NewHandoffForm": { path: "src/components/NewHandoffForm.test.ts", description: "Handoff form validation tests" },
+  // Utilities
+  "Utils": { path: "src/lib/utils.test.ts", description: "Utility function tests" },
+  "Machine Time": { path: "src/lib/machineTime.test.ts", description: "Machine time calculation tests" },
+  "NCR Utils": { path: "src/lib/ncrUtils.test.ts", description: "NCR number generation & utility tests" },
+  // Integration
+  "Org Scope Integration": { path: "src/test/org-scope-integration.test.ts", description: "Multi-tenant org isolation integration tests" },
   "Example": { path: "src/test/example.test.ts", description: "Example test file" },
 };
 
@@ -168,10 +186,21 @@ export function useTestRunner() {
           "StatusBadge Component": 12,
           "useEmail Hook": 4,
           "useQueue Hook": 9,
-          "Utils": 8,
+          "useStations Hook": 4,
+          "useOperatorSessions Hook": 5,
           "QueueFilters": 5,
           "QueueCalendarView": 7,
           "QueueStatsCards": 4,
+          "QueueItemPreAdvance": 3,
+          "QueueItemHandoff": 3,
+          "ShiftStats": 3,
+          "OperatorStationPanel": 4,
+          "SupervisorDashboard": 5,
+          "NewHandoffForm": 4,
+          "Utils": 8,
+          "Machine Time": 5,
+          "NCR Utils": 4,
+          "Org Scope Integration": 6,
           "Example": 1,
         };
         
@@ -312,22 +341,25 @@ function getTestName(suite: string, index: number): string {
       "handles empty queue",
       "calculates queue statistics",
     ],
-    "Utils": [
-      "cn merges class names correctly",
-      "cn handles conditional classes",
-      "cn handles tailwind merge",
-      "cn handles undefined values",
-      "cn handles empty strings",
-      "cn handles arrays",
-      "cn handles nested arrays",
-      "cn handles complex conditions",
+    "useStations Hook": [
+      "calls supabase.from for stations and handoff_records",
+      "passes organization_id to .eq() filter",
+      "uses fallback org from useUserOrganization",
+      "queries both tables when org is provided via hook fallback",
+    ],
+    "useOperatorSessions Hook": [
+      "exposes isCheckedIn as false when no active sessions",
+      "queries operator_station_sessions on mount",
+      "sets up realtime subscription for user sessions",
+      "checkIn is a callable function",
+      "checkOut is a callable function",
     ],
     "QueueFilters": [
       "renders filter dropdown triggers",
-      "handles status filter changes",
-      "handles priority filter changes",
-      "resets filters correctly",
-      "shows active filter count",
+      "shows clear all button when filters applied",
+      "hides clear all when no filters",
+      "calls onFiltersChange on clear all",
+      "displays active filter badges",
     ],
     "QueueCalendarView": [
       "renders calendar controls",
@@ -343,6 +375,71 @@ function getTestName(suite: string, index: number): string {
       "shows loading state",
       "handles zero values",
       "calculates percentages correctly",
+    ],
+    "QueueItemPreAdvance": [
+      "validates routing step exists before advance",
+      "blocks advance when qty check fails",
+      "allows advance when all conditions met",
+    ],
+    "QueueItemHandoff": [
+      "renders handoff section in detail dialog",
+      "links handoff to current queue item",
+      "validates handoff before WO advance",
+    ],
+    "ShiftStats": [
+      "renders Running and Down counts from org-scoped stations",
+      "renders Recent Handoffs count",
+      "passes organization.id to useStations and useHandoffRecords",
+    ],
+    "OperatorStationPanel": [
+      "renders station name and status",
+      "shows check-in button when not checked in",
+      "shows active WO details when checked in",
+      "handles empty station state",
+    ],
+    "SupervisorDashboard": [
+      "renders supervisor overview cards",
+      "shows all org stations",
+      "displays pending performance updates",
+      "shows active work orders count",
+      "org-scopes all data queries",
+    ],
+    "NewHandoffForm": [
+      "pre-fills operator name from profile",
+      "pre-fills WO/part from station context",
+      "validates required fields before submit",
+      "submits handoff record successfully",
+    ],
+    "Utils": [
+      "cn merges class names correctly",
+      "cn handles conditional classes",
+      "cn handles tailwind merge",
+      "cn handles undefined values",
+      "cn handles empty strings",
+      "cn handles arrays",
+      "cn handles nested arrays",
+      "cn handles complex conditions",
+    ],
+    "Machine Time": [
+      "calculates setup + cycle time correctly",
+      "handles zero quantity",
+      "includes first article time",
+      "formats duration for display",
+      "handles null inputs gracefully",
+    ],
+    "NCR Utils": [
+      "generates NCR number with correct format",
+      "calculates disposition impacts on qty",
+      "validates required NCR fields",
+      "formats NCR summary for display",
+    ],
+    "Org Scope Integration": [
+      "stations query includes org_id filter",
+      "queue items query includes org_id filter",
+      "handoffs query includes org_id filter",
+      "teams query includes org_id filter",
+      "profiles visible only within org",
+      "cross-org data is not accessible",
     ],
     "Example": [
       "should pass",
