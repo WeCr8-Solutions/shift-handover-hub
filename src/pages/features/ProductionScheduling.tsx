@@ -4,7 +4,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { ArrowRight, CheckCircle2, Zap, Calendar, ListOrdered, Route, Clock } from "lucide-react";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
-import { MockQueueBoard } from "@/components/marketing/MockAppPreviews";
+import { MockScheduleCalendar } from "@/components/marketing/MockScheduleCalendar";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
@@ -91,7 +91,7 @@ export default function ProductionScheduling() {
               ))}
             </div>
 
-            <MockQueueBoard />
+            <MockScheduleCalendar />
           </div>
         </section>
 

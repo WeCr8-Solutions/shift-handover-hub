@@ -4,7 +4,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { ArrowRight, Clock, BarChart3, Gauge, CheckCircle2, Zap } from "lucide-react";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
-import { MockDowntimeLog } from "@/components/marketing/MockAppPreviews";
+import { MockUtilizationChart } from "@/components/marketing/MockUtilizationChart";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
@@ -91,7 +91,7 @@ export default function MachineTimeTracking() {
               </Button>
             </div>
 
-            <MockDowntimeLog />
+            <MockUtilizationChart />
 
             {/* FAQ */}
             <h2 className="text-2xl font-bold mb-6">Frequently Asked Questions</h2>

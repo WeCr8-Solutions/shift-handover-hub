@@ -4,7 +4,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { ArrowRight, CheckCircle2, Zap, Wrench, Smartphone, TrendingUp, FileText, Clock } from "lucide-react";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
-import { MockHandoffForm } from "@/components/marketing/MockAppPreviews";
+import { MockOperatorView } from "@/components/marketing/MockOperatorView";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
@@ -96,7 +96,7 @@ export default function CNCOperatorTools() {
               ))}
             </div>
 
-            <MockHandoffForm />
+            <MockOperatorView />
           </div>
         </section>
 
