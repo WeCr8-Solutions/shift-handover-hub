@@ -1,77 +1,84 @@
 
 
-## Phase 6 Implementation + Seat/Invite Integration
+## Add Product Preview Mockups to Marketing Feature Pages
 
-### Problem: Seat Manager & Invite System Disconnect
-The invite code generator has no awareness of seat limits. An admin can generate unlimited invites even when seats are full. Redemption will fail at the RLS level (`check_limit_access`) with an opaque DB error instead of a clear message. The seat management UI and invite UI live in separate silos.
+### Current State
+All 15 feature pages are text-only (icons, benefits lists, CTAs). The AIPlanningAssistant page is the sole exception — it renders inline `MockChatWindow` components that show realistic AI chat interactions. No screenshot images exist in the project.
 
-### Plan
+### Approach
+Create reusable **mock UI preview components** that render inline representations of the software, matching the pattern already established by AIPlanningAssistant. These are React components styled to look like the actual app, not image files.
 
-#### 1. Add seat-awareness to InviteCodeGenerator
-- **`InviteCodeGenerator.tsx`**: Fetch current member count + seat limit from entitlements. Display a seat availability banner at the top (e.g., "3 of 10 seats used"). When seats are full, disable "Create Invite" button and show "Add more seats in Billing Settings" prompt. When seats are nearly full (≥80%), show a warning.
+### Component-to-Page Mapping
 
-#### 2. Add seat-awareness to invite redemption
-- **`useOrganizationInvites.ts` → `redeemInviteCode()`**: Before inserting into `organization_members`, query entitlements limits and current member count. If at capacity, return a clear error: "This organization has reached its seat limit. Please ask an admin to add more seats." This prevents the cryptic RLS error.
+| Mock Component | Pages That Use It | What It Shows |
+|---|---|---|
+| `MockHandoffForm` | ShiftHandoffSoftware, ShiftHandoff, CNCOperatorTools | A mini handoff form with operator name, machine status, parts count, quality notes — filled with sample data |
+| `MockStationDashboard` | MachineShopSoftware, ManufacturingOversight, ManufacturingVisibility, ProductionControl | A grid of 4 station cards showing CNC-01 (Running), LATHE-02 (Setup), MILL-03 (Idle), CNC-04 (Down) with operator, job, and status badges |
+| `MockQueueBoard` | WorkOrderTracking, ProductionScheduling, DigitalExpeditor | A mini Kanban board with 3 columns (Queued, In Progress, Complete) containing sample work order cards |
+| `MockDowntimeLog` | DowntimeTracking, MachineTimeTracking | A mini table showing downtime events with reason codes, durations, and resolution status |
+| `MockTeamPanel` | TeamCollaboration | A mini org/team hierarchy card with roles, QR invite badge, and seat count |
+| `MockQualityCard` | QualityManagement | A mini NCR card with severity, disposition, and corrective action fields |
 
-#### 3. Add seat-awareness to InviteCodeRedemption UI
-- **`InviteCodeRedemption.tsx`**: After validation succeeds, show remaining seats in the org preview card. If seats are full, show a clear message instead of the Join button.
+### Implementation
 
-#### 4. Phase 6: Sync debounce / cooldown
-- **`erp-sync` edge function**: Add cooldown check — query `erp_sync_logs` for the last successful sync. If < 5 minutes ago and not `test_connection`, return 429 with a message. This prevents manual sync spam.
+#### 1. Create `src/components/marketing/MockAppPreviews.tsx`
+A single file containing all 6 mock preview components. Each component:
+- Uses existing UI primitives (Card, Badge, etc.)
+- Has a dark "app window" chrome (title bar with dots)
+- Contains static sample data (no interactivity needed)
+- Is responsive and fits within the `max-w-4xl` marketing layout
 
-#### 5. Phase 6: OAuth token caching
-- **`erp-sync` edge function**: After fetching an OAuth token, store it in `erp_connections.connection_metadata` with a TTL timestamp. On next sync, check if cached token is still valid (TTL not expired) before requesting a new one.
+#### 2. Update each feature page
+Insert the appropriate mock component into the hero section (between the CTA buttons and the first content section) or between content sections. Each page gets one primary mock and optionally a secondary one.
 
-#### 6. Phase 6: Connection health monitoring
-- **`erp-sync` edge function**: After 3 consecutive sync failures, insert a notification into `notification_queue` alerting org admins of persistent ERP connection issues.
-
-#### 7. Phase 6: Retry failed sync records
-- **`ERPConnectorSettings.tsx`**: Add a "Retry Failed" button on sync error rows. When clicked, re-invoke `erp-sync` with a `retry_error_ids` parameter.
-- **`erp-sync` edge function**: Accept optional `retry_error_ids` array. When present, re-process only those specific records and mark errors as resolved on success.
-- **`useERPConnector.ts`**: Add `retryFailedRecords(errorIds)` function.
-
-#### 8. Phase 6: Secrets column-level security
-- **Database migration**: Create a view `erp_connections_safe` that excludes `client_secret_encrypted`. Update RLS so only the `erp-sync` edge function (service role) can read the actual secret column. Frontend queries use the safe view.
-
-#### 9. Update checklist documentation
-- Mark Phase 6 items as complete in `.lovable/prd/10-erp-connector-implementation.md`.
-
-### Files to Create/Edit
-
-| File | Action |
-|------|--------|
-| `src/components/InviteCodeGenerator.tsx` | Edit — seat availability banner, disable when full |
-| `src/components/InviteCodeRedemption.tsx` | Edit — show remaining seats, block join when full |
-| `src/hooks/useOrganizationInvites.ts` | Edit — pre-check seat limits in `redeemInviteCode()` |
-| `supabase/functions/erp-sync/index.ts` | Edit — add debounce, token caching, health monitoring, retry |
-| `src/components/settings/ERPConnectorSettings.tsx` | Edit — retry failed button |
-| `src/hooks/useERPConnector.ts` | Edit — add retryFailedRecords function |
-| Migration SQL | Create — `erp_connections_safe` view + RLS |
-| `.lovable/prd/10-erp-connector-implementation.md` | Edit — mark Phase 6 items done |
+Specific placements:
+- **ShiftHandoffSoftware**: `MockHandoffForm` after hero CTAs
+- **ShiftHandoff**: `MockHandoffForm` after hero CTAs
+- **WorkOrderTracking**: `MockQueueBoard` after highlights grid
+- **ProductionScheduling**: `MockQueueBoard` after highlights grid
+- **DigitalExpeditor**: `MockStationDashboard` + `MockQueueBoard` after use cases grid
+- **MachineShopSoftware**: `MockStationDashboard` after highlights grid
+- **ManufacturingOversight**: `MockStationDashboard` after personas grid
+- **ManufacturingVisibility**: `MockStationDashboard` after hero CTAs
+- **ProductionControl**: `MockStationDashboard` after highlights grid
+- **CNCOperatorTools**: `MockHandoffForm` after operator steps
+- **DowntimeTracking**: `MockDowntimeLog` after feature cards
+- **MachineTimeTracking**: `MockDowntimeLog` after hero CTAs
+- **TeamCollaboration**: `MockTeamPanel` after feature cards
+- **QualityManagement**: `MockQualityCard` after stats cards
 
 ### Technical Details
 
 ```text
-Invite + Seat flow:
-  Admin opens InviteCodeGenerator → fetch member count & limits.users
-  → Display "7/10 seats used" banner
-  → If 10/10: disable Create Invite, show "Add seats" link
-  
-  User redeems code → redeemInviteCode checks count vs limit
-  → If full: return "Seat limit reached" before INSERT attempt
-  → If ok: proceed → RLS double-checks via check_limit_access
-
-Sync debounce:
-  Manual sync request → query last sync timestamp
-  → If < 5min ago → 429 "Please wait X minutes"
-  
-Token cache:
-  Sync starts → check connection_metadata.cached_token + .token_expires_at
-  → If valid → skip OAuth request
-  → If expired → fetch new token → cache in metadata
-
-Health monitor:
-  Sync fails → count consecutive failures from erp_sync_logs
-  → If >= 3 → insert notification_queue alert
+MockAppPreviews.tsx structure:
+  AppWindowChrome — shared wrapper with title bar dots + title text
+  MockHandoffForm — operator field, status badges, parts counter, quality notes
+  MockStationDashboard — 2x2 grid of station cards with status indicators
+  MockQueueBoard — 3-column Kanban with 2 cards per column
+  MockDowntimeLog — 4-row table with reason codes and durations
+  MockTeamPanel — org hierarchy with roles and seat indicator
+  MockQualityCard — NCR form with severity/disposition badges
 ```
+
+Each mock uses `bg-card`, `border-border`, and the existing design tokens so it matches the dark theme of the marketing pages.
+
+### Files to Create/Edit
+
+| File | Action |
+|---|---|
+| `src/components/marketing/MockAppPreviews.tsx` | Create — all 6 mock components |
+| `src/pages/features/ShiftHandoffSoftware.tsx` | Edit — add MockHandoffForm |
+| `src/pages/features/ShiftHandoff.tsx` | Edit — add MockHandoffForm |
+| `src/pages/features/WorkOrderTracking.tsx` | Edit — add MockQueueBoard |
+| `src/pages/features/ProductionScheduling.tsx` | Edit — add MockQueueBoard |
+| `src/pages/features/DigitalExpeditor.tsx` | Edit — add MockStationDashboard |
+| `src/pages/features/MachineShopSoftware.tsx` | Edit — add MockStationDashboard |
+| `src/pages/features/ManufacturingOversight.tsx` | Edit — add MockStationDashboard |
+| `src/pages/features/ManufacturingVisibility.tsx` | Edit — add MockStationDashboard |
+| `src/pages/features/ProductionControl.tsx` | Edit — add MockStationDashboard |
+| `src/pages/features/CNCOperatorTools.tsx` | Edit — add MockHandoffForm |
+| `src/pages/features/DowntimeTracking.tsx` | Edit — add MockDowntimeLog |
+| `src/pages/features/MachineTimeTracking.tsx` | Edit — add MockDowntimeLog |
+| `src/pages/features/TeamCollaboration.tsx` | Edit — add MockTeamPanel |
+| `src/pages/features/QualityManagement.tsx` | Edit — add MockQualityCard |
 
