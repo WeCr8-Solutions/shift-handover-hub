@@ -131,7 +131,11 @@ export function useStations(teamId?: string | null, organizationId?: string | nu
       const transformed = data.map((station: any) => ({
         ...station,
         work_center_type: station.work_center_type as WorkCenterType,
-        current_status: station.current_status?.[0] || null,
+        // current_station_status has a 1:1 FK (isOneToOne) so PostgREST
+        // returns it as a single object, not an array.
+        current_status: Array.isArray(station.current_status)
+          ? station.current_status[0] || null
+          : station.current_status || null,
       }));
       setStations(transformed);
     }
