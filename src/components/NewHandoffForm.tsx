@@ -442,6 +442,7 @@ export function NewHandoffForm({ onClose, onSubmit, initialStationId }: NewHando
           .upsert(
             {
               station_id: formData.stationDbId,
+              organization_id: organization?.id || null,
               current_job_state: formData.jobState || null,
               current_job_work_order: formData.workOrder || null,
               current_job_part_number: formData.partNumber || null,
