@@ -9,7 +9,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { QueueItem, QueueStatus, QueuePriority } from "@/hooks/useQueue";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { MoreHorizontal, Trash2, Eye, Clock, AlertTriangle, GitBranch, Wrench } from "lucide-react";
+import { MoreHorizontal, Trash2, Eye, Clock, AlertTriangle, GitBranch, Wrench, Plug } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface QueueListViewProps {
@@ -186,6 +186,12 @@ export function QueueListView({ items, onItemClick, onStatusChange, onDelete }: 
                     <div className="flex items-center gap-2">
                       {item.title}
                       {isOverdue && <AlertTriangle className="w-4 h-4 text-red-500" />}
+                      {item.erp_source && (
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-purple-100 text-purple-700 border-purple-300 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-700">
+                          <Plug className="w-3 h-3 mr-0.5" />
+                          ERP
+                        </Badge>
+                      )}
                     </div>
                     {item.part_number && (
                       <div className="text-xs text-muted-foreground">P/N: {item.part_number}</div>

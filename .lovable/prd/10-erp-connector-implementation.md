@@ -77,7 +77,7 @@
 
 ---
 
-## Phase 3: Settings UI + Integration ✅ MOSTLY COMPLETE
+## Phase 3: Settings UI + Integration ✅ COMPLETE
 
 | Item | Status | Notes |
 |------|--------|-------|
@@ -92,8 +92,8 @@
 | `useQueue.ts` QueueItem interface | ✅ Done | erp_job_id, erp_source, erp_last_synced_at added |
 | QueueKanbanBoard: ERP badge | ✅ Done | Purple "ERP" badge on synced cards |
 | QueueItemDetailDialog: ERP section | ✅ Done | Shows source, job ID, last sync time |
-| **QueueListView: ERP badge** | ❌ Missing | Plan specifies badge in list view too |
-| **OrganizationOversight: ERP card** | ❌ Missing | Plan specifies ERP status overview per org |
+| **QueueListView: ERP badge** | ✅ Done | Purple "ERP" badge matching Kanban parity |
+| **OrganizationOversight: ERP card** | ✅ Done | Shows ERP vendor + connection status per org |
 
 ### Phase 3 Testing Needed
 
@@ -112,19 +112,16 @@
 
 ---
 
-## Implementation Gaps (TODO)
+## Implementation Gaps — RESOLVED
 
-### 1. QueueListView ERP Badge
-- **File**: `src/components/queue/QueueListView.tsx`
-- **Task**: Add purple ERP badge (same as KanbanBoard) for items with `erp_source`
-- **Priority**: Low — cosmetic parity with Kanban view
+All planned features are now implemented. Remaining work is test coverage only.
 
-### 2. OrganizationOversight ERP Card
-- **File**: `src/components/admin/OrganizationOversight.tsx`
-- **Task**: Add card showing ERP connection status per org (connected/pending/error/none)
-- **Priority**: Medium — admin visibility into which orgs have ERP connected
-
-### 3. Test Coverage
+### Test Coverage (TODO)
+- **No test files exist** for any ERP connector code
+- **Recommended tests**:
+  - `src/hooks/useERPConnector.test.ts` — Hook CRUD operations
+  - `supabase/functions/erp-sync/index.test.ts` — Edge function auth, sync flow
+  - `src/test/erp-rls.test.ts` — RLS policy verification for all 5 ERP tables
 - **No test files exist** for any ERP connector code
 - **Recommended tests**:
   - `src/hooks/useERPConnector.test.ts` — Hook CRUD operations
