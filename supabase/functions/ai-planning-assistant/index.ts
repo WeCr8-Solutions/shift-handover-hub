@@ -102,10 +102,10 @@ serve(async (req) => {
 
     // Fetch queue items, stations, routing, station status, routing templates, machine profiles,
     // active operator sessions, and operator certifications in parallel
-    const [queueRes, stationsRes, routingRes, stationStatusRes, routingTemplatesRes, machineProfilesRes, manualProfilesRes, activeSessionsRes, certificationsRes] = await Promise.all([
+    const [queueRes, stationsRes, routingRes, stationStatusRes, routingTemplatesRes, machineProfilesRes, manualProfilesRes, activeSessionsRes, certificationsRes, downtimeRes] = await Promise.all([
       supabase
         .from("queue_items")
-        .select("id, title, work_order, part_number, status, priority, due_date, assigned_to, station_id, item_type, quantity, qty_completed, qty_scrap, qty_rework, qty_open, quantity_locked, operation_number, created_at, estimated_duration, material_type, part_length_inches, part_width_inches, part_height_inches, part_weight_lbs, part_shape")
+        .select("id, title, work_order, part_number, status, priority, due_date, assigned_to, station_id, item_type, quantity, qty_completed, qty_scrap, qty_rework, qty_open, quantity_locked, operation_number, created_at, estimated_duration, material_type, part_length_inches, part_width_inches, part_height_inches, part_weight_lbs, part_shape, required_tolerance, surface_finish")
         .eq("organization_id", organization_id)
         .in("status", ["pending", "queued", "in_progress", "on_hold", "blocked"])
         .order("priority", { ascending: false })
@@ -117,7 +117,7 @@ serve(async (req) => {
         .limit(100),
       supabase
         .from("work_order_routing")
-        .select("id, queue_item_id, step_number, station_id, operation_name, operation_type, status, estimated_hours, actual_hours, estimated_duration, vendor_name, po_number")
+        .select("id, queue_item_id, step_number, station_id, operation_name, operation_type, status, estimated_duration, setup_time_minutes, cycle_time_minutes, first_article_minutes, vendor_name, po_number, expected_return_date")
         .eq("organization_id", organization_id)
         .in("status", ["pending", "in_progress"])
         .order("step_number", { ascending: true })
@@ -132,19 +132,16 @@ serve(async (req) => {
         .select("id, name, description")
         .eq("organization_id", organization_id)
         .limit(50),
-      // Fetch verified library profiles via assignments → purchases → library
       supabase
         .from("station_machine_assignments")
         .select("station_id, purchase_id, organization_machine_purchases!inner(machine_library_id, is_active, verified_machine_library!inner(manufacturer, model, machine_type, platform_category, max_x_travel, max_y_travel, max_z_travel, max_part_weight, max_part_envelope_length, max_part_envelope_width, max_part_envelope_height, five_axis_simultaneous, fourth_axis, live_tooling, y_axis_turn, sub_spindle, probing, through_spindle_coolant, pallet_pool, bar_feeder, material_capability, typical_tolerance, hard_constraints))")
         .eq("organization_id", organization_id)
         .limit(100),
-      // Fetch manual machine profiles
       supabase
         .from("station_manual_machine_profiles")
         .select("station_id, manufacturer, model, machine_type, platform_category, max_x_travel, max_y_travel, max_z_travel, max_part_weight, max_part_envelope_length, max_part_envelope_width, max_part_envelope_height, five_axis_simultaneous, fourth_axis, live_tooling, y_axis_turn, sub_spindle, probing, through_spindle_coolant, pallet_pool, bar_feeder, material_capability, typical_tolerance, hard_constraints")
         .eq("organization_id", organization_id)
         .limit(100),
-      // Active operator sessions — who is checked into which station right now
       supabase
         .from("operator_station_sessions")
         .select("user_id, station_id, checked_in_at, profiles!inner(display_name)")
@@ -152,12 +149,19 @@ serve(async (req) => {
         .eq("is_active", true)
         .is("checked_out_at", null)
         .limit(100),
-      // Operator certifications
       supabase
         .from("user_certifications")
         .select("user_id, certification_id, status, expires_at, certifications!inner(name, category, required_for_work_centers)")
         .eq("organization_id", organization_id)
         .limit(500),
+      // Active downtime events (not yet resolved)
+      supabase
+        .from("downtime_events")
+        .select("id, station_id, equipment_id, downtime_type, reason_code, description, started_at, reported_by_name")
+        .eq("organization_id", organization_id)
+        .is("ended_at", null)
+        .order("started_at", { ascending: false })
+        .limit(50),
     ]);
 
     const queueItems = queueRes.data || [];
@@ -169,6 +173,7 @@ serve(async (req) => {
     const manualProfiles = manualProfilesRes.data || [];
     const activeSessions = activeSessionsRes.data || [];
     const certifications = certificationsRes.data || [];
+    const activeDowntime = downtimeRes.data || [];
     // Build context
     const now = new Date().toISOString();
     const stationMap = Object.fromEntries(stations.map((s: any) => [s.id, s.name]));
@@ -189,7 +194,7 @@ serve(async (req) => {
       open: q.qty_open,
       locked: q.quantity_locked,
       // Part specs for machine-aware routing
-      ...(q.material_type || q.part_length_inches || q.part_shape ? {
+      ...(q.material_type || q.part_length_inches || q.part_shape || q.required_tolerance ? {
         part_specs: {
           material: q.material_type,
           length: q.part_length_inches,
@@ -197,6 +202,8 @@ serve(async (req) => {
           height: q.part_height_inches,
           weight: q.part_weight_lbs,
           shape: q.part_shape,
+          tolerance: q.required_tolerance,
+          surface_finish: q.surface_finish,
         }
       } : {}),
     }));
@@ -230,10 +237,13 @@ serve(async (req) => {
       op_type: r.operation_type,
       station: r.station_id ? stationMap[r.station_id] || r.station_id : "unassigned",
       status: r.status,
-      est_hrs: r.estimated_hours,
-      actual_hrs: r.actual_hours,
+      est_duration_min: r.estimated_duration,
+      setup_min: r.setup_time_minutes,
+      cycle_min: r.cycle_time_minutes,
+      first_article_min: r.first_article_minutes,
       vendor: r.vendor_name,
       po: r.po_number,
+      expected_return: r.expected_return_date,
     }));
 
     // Build machine profile summaries from verified library assignments
@@ -328,6 +338,17 @@ serve(async (req) => {
       certifications: certsByUser[s.user_id] || [],
     })).filter((o: any) => o.certifications.length > 0);
 
+    // Build downtime summary
+    const downtimeSummary = activeDowntime.map((d: any) => ({
+      station: d.station_id ? stationMap[d.station_id] || d.station_id : "unknown",
+      type: d.downtime_type,
+      reason: d.reason_code,
+      description: d.description,
+      started: d.started_at,
+      reported_by: d.reported_by_name,
+      duration_so_far: Math.round((Date.now() - new Date(d.started_at).getTime()) / 60000) + " min",
+    }));
+
     const callerRoleLabel = isSupervisorOrAbove
       ? `Supervisor/Admin (org role: ${orgRole}, platform roles: ${platformRoles.join(", ") || "operator"})`
       : `Operator (org role: ${orgRole})`;
@@ -365,6 +386,9 @@ ${JSON.stringify(routingTemplates.map((t: any) => ({ name: t.name, description: 
 
 ### Machine Identity Profiles (${machineContextSummary.length} context-active stations — ${verifiedContextSummary.length} verified, ${manualContextSummary.length} manual):
 ${machineContextSummary.length > 0 ? JSON.stringify(machineContextSummary, null, 2) : "No stations have manufacturer context activated. Routing validation will use generic station type tags only."}
+
+### Active Downtime Events (${downtimeSummary.length} stations currently down):
+${downtimeSummary.length > 0 ? JSON.stringify(downtimeSummary, null, 2) : "No active downtime events."}
 
 ## WORK ORDER REROUTING & APPROVAL RULES
 
@@ -405,15 +429,35 @@ When a station has a Machine Identity Profile, you MUST validate routing compati
 
 ## PART-AWARE CONTEXT VALIDATION
 
-Work orders may include part_specs with material, dimensions (length/width/height in inches), weight (lbs), and shape (prismatic, cylindrical, complex, flat, tubular).
+Work orders may include part_specs with material, dimensions (length/width/height in inches), weight (lbs), shape, tolerance, and surface_finish.
 
 When part_specs are present on a work order AND a station has a machine profile:
 1. **Envelope Fit** — Compare part length/width/height against machine max_x/y/z_travel AND max_part_envelope dimensions. Part must fit.
 2. **Weight Fit** — Part weight must be ≤ machine max_part_weight.
 3. **Material Match** — Part material_type must be in the station's material_capability list.
 4. **Shape-to-Machine Logic** — Cylindrical parts → prefer lathes/turn centers. Prismatic → prefer mills. Complex → prefer 5-axis capable machines.
+5. **Tolerance Match** — Compare part required_tolerance against machine typical_tolerance. If the part needs ±0.001" but the machine is only capable of ±0.005", REJECT and suggest a more precise machine.
+6. **Surface Finish Feasibility** — Finer finishes (8Ra, 16Ra) require grinding or lapping stations. Standard machining achieves 32-63Ra. Flag if the assigned machine cannot achieve the required finish.
 
-When part_specs are MISSING, note "No part specs available — routing confidence is reduced. Recommend adding material/dimension data to the work order for better AI routing."
+When part_specs are MISSING, note "No part specs available — routing confidence is reduced. Recommend adding material/dimension/tolerance data to the work order for better AI routing."
+
+## DOWNTIME AWARENESS
+
+When a station has an active downtime event:
+1. **NEVER route new work orders to a station with active downtime** — flag it as UNAVAILABLE.
+2. Identify all work orders currently assigned to or in-progress at the downed station.
+3. For each affected WO, suggest the best alternative station (considering capability, load, and operator certs).
+4. If downtime type is "planned_maintenance", note expected duration if available.
+5. If downtime type is "breakdown", escalate urgency — suggest immediate rerouting of in-progress work.
+6. Proactively alert when answering any routing question: "Note: [Station X] is currently DOWN ([reason]) since [time]."
+
+## SETUP & CYCLE TIME AWARENESS
+
+Routing steps now include setup_time_minutes, cycle_time_minutes, and first_article_minutes:
+1. **Total operation time** = setup_time_minutes + (cycle_time_minutes × quantity) + first_article_minutes (if applicable).
+2. When estimating station backlog, use these granular times instead of just estimated_duration when available.
+3. If a work order is being rerouted to a different machine, note that setup time may differ — similar machines in the same family will have similar setups.
+4. First article time is typically a one-time cost per setup — factor this into the total when the WO has not started yet.
 
 ## UNIT CONVERSION RULES (CRITICAL)
 

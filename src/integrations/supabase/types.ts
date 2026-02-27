@@ -2948,6 +2948,8 @@ export type Database = {
           part_shape: string | null
           part_weight_lbs: number | null
           part_width_inches: number | null
+          required_tolerance: string | null
+          surface_finish: string | null
           updated_at: string
         }
         Insert: {
@@ -2963,6 +2965,8 @@ export type Database = {
           part_shape?: string | null
           part_weight_lbs?: number | null
           part_width_inches?: number | null
+          required_tolerance?: string | null
+          surface_finish?: string | null
           updated_at?: string
         }
         Update: {
@@ -2978,6 +2982,8 @@ export type Database = {
           part_shape?: string | null
           part_weight_lbs?: number | null
           part_width_inches?: number | null
+          required_tolerance?: string | null
+          surface_finish?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -3325,12 +3331,14 @@ export type Database = {
           qty_scrap: number | null
           quantity: number | null
           quantity_locked: boolean | null
+          required_tolerance: string | null
           scheduled_end: string | null
           scheduled_start: string | null
           setup_time_minutes: number | null
           started_at: string | null
           station_id: string | null
           status: Database["public"]["Enums"]["queue_status"]
+          surface_finish: string | null
           tags: string[] | null
           team_id: string | null
           title: string
@@ -3377,12 +3385,14 @@ export type Database = {
           qty_scrap?: number | null
           quantity?: number | null
           quantity_locked?: boolean | null
+          required_tolerance?: string | null
           scheduled_end?: string | null
           scheduled_start?: string | null
           setup_time_minutes?: number | null
           started_at?: string | null
           station_id?: string | null
           status?: Database["public"]["Enums"]["queue_status"]
+          surface_finish?: string | null
           tags?: string[] | null
           team_id?: string | null
           title: string
@@ -3429,12 +3439,14 @@ export type Database = {
           qty_scrap?: number | null
           quantity?: number | null
           quantity_locked?: boolean | null
+          required_tolerance?: string | null
           scheduled_end?: string | null
           scheduled_start?: string | null
           setup_time_minutes?: number | null
           started_at?: string | null
           station_id?: string | null
           status?: Database["public"]["Enums"]["queue_status"]
+          surface_finish?: string | null
           tags?: string[] | null
           team_id?: string | null
           title?: string
