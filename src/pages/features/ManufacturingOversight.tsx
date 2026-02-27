@@ -4,7 +4,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { ArrowRight, CheckCircle2, Zap, Shield, Users, Eye, Factory } from "lucide-react";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
-import { MockStationDashboard } from "@/components/marketing/MockAppPreviews";
+import { MockOversightKPIs } from "@/components/marketing/MockOversightKPIs";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
@@ -110,7 +110,7 @@ export default function ManufacturingOversight() {
               ))}
             </div>
 
-            <MockStationDashboard />
+            <MockOversightKPIs />
           </div>
         </section>
 

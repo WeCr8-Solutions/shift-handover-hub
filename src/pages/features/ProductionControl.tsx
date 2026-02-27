@@ -4,7 +4,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { ArrowRight, CheckCircle2, Zap, Activity, BarChart3, AlertTriangle, TrendingUp } from "lucide-react";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
-import { MockStationDashboard } from "@/components/marketing/MockAppPreviews";
+import { MockProductionMetrics } from "@/components/marketing/MockProductionMetrics";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
@@ -91,7 +91,7 @@ export default function ProductionControl() {
               ))}
             </div>
 
-            <MockStationDashboard />
+            <MockProductionMetrics />
           </div>
         </section>
 
