@@ -1,73 +1,61 @@
-## Quote-to-Work-Order Full E2E Browser Test Plan
+
+
+## Plan: Connect Org Routing Templates to Work Order Routing Editor
 
 ### Current State
+- **RoutingTemplateManagement** (admin): Creates/edits/deletes reusable routing templates with steps, work center types, and time estimates. Currently 2 templates exist: "ISO9001 Standard Machining" (3 steps) and "Weldment Assembly" (3 steps).
+- **WorkOrderRoutingEditor**: When a WO has no routing, it shows the hardcoded 30-step `DEFAULT_ROUTING_STEPS` template. There is **no way to load a saved org template** into a work order.
+- Org has stations covering: Quoting, Purchasing, Engineering, CAM Programming, CNC Mill (×8), CNC Lathe (×3), Inspection, Manual Mill, plus others.
 
-- **13 work orders** in system across various statuses (pending, queued, in_progress, completed)
-- **5 work orders** have routing steps (3 steps each, some partially completed)
-- Full routing editor supports 30-step ISO9001 template (Quote → Engineering → Purchasing → Receiving → Internal → Outside Processing → Inspection → Shipping)
-- No work order currently has a full quote-to-ship routing applied — existing routings are 3-step abbreviated sequences
+### Gap
+The routing template system is disconnected from work order routing. A supervisor creating a work order routing cannot select from their saved org templates. Templates also don't map `work_center_type` → actual station IDs.
 
-### Test Flow
+### Implementation
 
-#### Phase 1: Create New Work Order from Queue Page
+#### 1. Add Template Selector to WorkOrderRoutingEditor
+At the top of the editor (when in template mode / no existing routing), add a dropdown:
+- "Start from scratch" (current 30-step default)
+- "Load from template: [ISO9001 Standard Machining]"
+- "Load from template: [Weldment Assembly]"
+- Any other org templates
 
-1. Navigate to `/queue`
-2. Screenshot the Kanban board showing current work orders
-3. Click "Add Item" → fill CreateQueueItemDialog:
-  - Title: `Precision Valve Body`
-  - WO#: `WO-2026-QTS-001`
-  - Part#: `VLV-001`
-  - Type:  quote →`work_order` 
-  - Qty: `15`, Priority: `high`, Due date: future
-4. Submit → screenshot success and new card on board
+When a saved template is selected:
+- Fetch its `routing_template_steps` from the database
+- Map each step's `work_center_type` → an actual station using the existing `autoSuggestStation` logic
+- Replace the current steps list with the template's steps
+- Show all steps as enabled (since saved templates only contain the steps the org wants)
 
-#### Phase 2: Apply Full Quote-to-Ship Routing Template
+#### 2. Update Template Step → Routing Step Mapping
+The saved template steps use `work_center_type` (e.g., "CNC Mill", "Incoming Inspection") while the routing editor uses `station_id` (actual UUID). The mapping:
+```text
+Template Step                  →  Routing Step
+─────────────────────────────────────────────
+operation_name                 →  operation_name
+operation_type                 →  operation_type  
+work_center_type: "CNC Mill"   →  station_id: autoSuggestStation() match
+setup_time_minutes             →  (preserved)
+first_article_minutes          →  (preserved)
+cycle_time_minutes             →  (preserved)
+instructions                   →  instructions
+```
 
-1. Click the new work order card to open QueueItemDetailDialog
-2. Screenshot the detail dialog (Overview, Routing, Qty tabs)
-3. Click "Edit Routing" to open WorkOrderRoutingEditor
-4. Screenshot the template mode with 30 default steps, toggle checkboxes
-5. Verify auto-suggested stations match org stations (CNC Mill, Inspection, etc.)
-6. Enable key lifecycle steps: Quote Review, Engineering, Purchasing, Receiving, Incoming Inspection, First Article Setup, Production Run Op 10, Deburr, Final Inspection, Ship
-7. Disable unnecessary steps (Assembly, Hardware, extra OPs)
-8. Save routing → screenshot saved routing in detail dialog Routing tab
+#### 3. Add "Save as Template" from WorkOrderRoutingEditor
+After a supervisor customizes routing for a specific WO, add a "Save as Template" button that:
+- Opens a small dialog asking for template name and optional part number pattern
+- Saves the current enabled steps as a new `routing_template` + `routing_template_steps`
+- This creates a feedback loop: customize once → reuse everywhere
 
-#### Phase 3: Walk the Routing (Quote → Engineering → Internal → Inspection → Ship)
+#### 4. Files to Modify
+- **`src/components/routing/WorkOrderRoutingEditor.tsx`**: Add template selector dropdown at top, "Save as Template" button, fetch org templates on mount
+- **`src/components/queue/QueueItemDetailDialog.tsx`** (minor): No changes needed — already opens WorkOrderRoutingEditor
 
-1. Verify Step 1 (Quote Review) shows as `pending` in Routing tab
-2. Use supervisor dashboard or detail dialog to advance through steps:
-  - Manually update step statuses via the detail dialog or `pass_work_order_to_next_step` RPC
-3. Screenshot after each step advance showing the routing timeline with completed/pending indicators
-4. Verify `queue_items.station_id` moves to the correct station at each advance
-5. Verify `current_station_status` updates for receiving stations
+#### 5. E2E Browser Test Plan
+1. Navigate to `/admin` → Routing Templates tab → verify existing 2 templates
+2. Create a new template "Valve Body Standard" with 6 steps: Quote → Engineering → CNC Mill Op 10 → CNC Mill Op 20 → Final Inspection → Ship
+3. Navigate to `/queue` → create a new work order
+4. Open detail → Edit Routing → verify template selector shows "Valve Body Standard"
+5. Select it → verify steps load with auto-suggested stations
+6. Save routing → verify steps persisted in `work_order_routing` table
+7. Customize routing → use "Save as Template" → verify new template appears in admin list
+8. Verify the full flow visually with screenshots at each step
 
-#### Phase 4: Verify Queue Views Reflect Routing State
-
-1. Switch to List view → screenshot showing WO-2026-QTS-001 status and assigned station
-2. Switch to Calendar view → screenshot due date placement
-3. Return to Kanban → verify card moved to correct status column after advances
-
-#### Phase 5: Verify Supervisor Dashboard Reflects New WO
-
-1. Navigate to `/dashboard`
-2. Screenshot Production Analytics charts — new WO should appear in output/status data
-3. Verify KPI cards updated with correct Running/Queued counts
-
-#### Phase 6: Outside Processing Step (if enabled in routing)
-
-1. Navigate to Queue → Outside Processing tab
-2. Screenshot to verify any OP steps appear with vendor tracking fields
-3. Verify PO#, vendor name, expected return date fields render
-
-### Fix-as-you-go Protocol
-
-- After each screenshot, compare UI state against database queries
-- If any data mismatch, console error, or rendering issue: stop, read logs, fix code, re-test
-- Log all findings via task notes
-- Address the duplicate key warning (`LATHE-001`, `WELD-001`) in SupervisorDashboard during testing
-
-### Expected Issues to Watch
-
-- Duplicate React key errors in SupervisorDashboard station list (already in console logs)
-- Template mode may not auto-suggest stations if station `work_center_type` names don't match the `autoSuggestStation` mapping
-- `pass_work_order_to_next_step` RPC requires active operator session — may need supervisor override for non-station steps (Quote, Engineering, Purchasing)
