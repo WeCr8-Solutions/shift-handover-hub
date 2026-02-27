@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { OrganizationWithStats, useAllOrganizations } from "@/hooks/useAdminData";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,7 +29,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Loader2, Search, Users, Building2, Wrench, Trash2, Briefcase, Crown, Mail } from "lucide-react";
+import { Loader2, Search, Users, Building2, Wrench, Trash2, Briefcase, Crown, Mail, Plug } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface OrganizationOversightProps {
@@ -42,6 +43,22 @@ export function OrganizationOversight({ isAdmin }: OrganizationOversightProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [orgToDelete, setOrgToDelete] = useState<OrganizationWithStats | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [erpStatuses, setErpStatuses] = useState<Map<string, { status: string; vendor: string }>>(new Map());
+
+  // Fetch ERP connection status per org
+  useEffect(() => {
+    const fetchErpStatuses = async () => {
+      const { data } = await supabase
+        .from("erp_connections")
+        .select("organization_id, connection_status, erp_vendor");
+      if (data) {
+        const map = new Map<string, { status: string; vendor: string }>();
+        data.forEach((c) => map.set(c.organization_id, { status: c.connection_status, vendor: c.erp_vendor }));
+        setErpStatuses(map);
+      }
+    };
+    if (organizations.length > 0) fetchErpStatuses();
+  }, [organizations]);
 
   const filteredOrgs = organizations.filter(
     (org) =>
@@ -249,7 +266,35 @@ export function OrganizationOversight({ isAdmin }: OrganizationOversightProps) {
                       </div>
                     </div>
 
-                    {/* Admin Actions */}
+                    {/* ERP Connection Status */}
+                    {(() => {
+                      const erp = erpStatuses.get(org.id);
+                      return (
+                        <div className="mb-4 p-3 rounded-lg border bg-muted/30">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Plug className="w-4 h-4 text-muted-foreground" />
+                              <span className="text-sm font-medium">ERP Connection</span>
+                            </div>
+                            {erp ? (
+                              <div className="flex items-center gap-2">
+                                <Badge variant="outline" className="text-xs">{erp.vendor}</Badge>
+                                <Badge
+                                  variant={erp.status === "connected" ? "secondary" : erp.status === "error" ? "destructive" : "outline"}
+                                  className="text-xs"
+                                >
+                                  {erp.status}
+                                </Badge>
+                              </div>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">Not configured</span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+
                     {isAdmin && (
                       <div className="flex items-center justify-end pt-3 border-t">
                         <Button
