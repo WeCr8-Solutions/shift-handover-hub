@@ -173,7 +173,11 @@ const Index = () => {
     if (user && !authLoading && !onboardingLoading) {
       // If user hasn't seen welcome or hasn't completed organization setup, redirect to setup
       // But respect "don't show again" preference
-      if (!setupWizardDismissed && (!hasSeenWelcome || (!isComplete && !isStepCompleted('shop-setup') && !isStepCompleted('organization-setup')))) {
+      // Only redirect to setup if the wizard hasn't been dismissed AND user hasn't
+      // completed key setup steps. hasSeenWelcome alone should NOT force a redirect
+      // if user already has org/shop setup done.
+      const hasCompletedSetup = isStepCompleted('shop-setup') || isStepCompleted('organization-setup') || isComplete;
+      if (!setupWizardDismissed && !hasSeenWelcome && !hasCompletedSetup) {
         navigate('/setup', { replace: true });
       }
     }

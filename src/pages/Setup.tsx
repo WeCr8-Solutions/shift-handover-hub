@@ -36,7 +36,7 @@ interface SetupStatus {
 export default function Setup() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-  const { completeStep, startTour, showTour, isComplete: onboardingComplete, currentStep, dismissSetupWizard } = useOnboardingContext();
+  const { completeStep, startTour, showTour, isComplete: onboardingComplete, currentStep, dismissSetupWizard, markWelcomeSeen } = useOnboardingContext();
   const [setupStatus, setSetupStatus] = useState<SetupStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [bulkUploadOpen, setBulkUploadOpen] = useState(false);
@@ -115,9 +115,11 @@ export default function Setup() {
     }
   };
 
-  const handleOrgSetupComplete = () => {
+  const handleOrgSetupComplete = async () => {
     setShowOrgSetup(false);
-    completeStep('organization-setup');
+    await completeStep('organization-setup');
+    // Mark welcome as seen so user won't be redirected back to setup
+    await markWelcomeSeen();
     refreshStatus();
   };
 
@@ -363,8 +365,9 @@ export default function Setup() {
                   <div className="flex gap-3 justify-center">
                     <Button 
                       variant="outline"
-                      onClick={() => {
-                        completeStep('shop-setup');
+                      onClick={async () => {
+                        await completeStep('shop-setup');
+                        await markWelcomeSeen();
                         navigate('/dashboard');
                       }}
                     >
@@ -372,8 +375,9 @@ export default function Setup() {
                     </Button>
                     <Button 
                       size="lg" 
-                      onClick={() => {
-                        completeStep('shop-setup');
+                      onClick={async () => {
+                        await completeStep('shop-setup');
+                        await markWelcomeSeen();
                         navigate('/dashboard');
                         setTimeout(() => startTour('dashboard-overview'), 500);
                       }}
@@ -395,8 +399,9 @@ export default function Setup() {
                   </p>
                   <Button 
                     variant="outline"
-                    onClick={() => {
-                      completeStep('shop-setup');
+                    onClick={async () => {
+                      await completeStep('shop-setup');
+                      await markWelcomeSeen();
                       navigate('/dashboard');
                     }}
                   >
