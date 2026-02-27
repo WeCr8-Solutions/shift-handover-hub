@@ -40,6 +40,7 @@ import ShiftHandoff from "./pages/features/ShiftHandoff";
 import ManufacturingVisibility from "./pages/features/ManufacturingVisibility";
 import Updates from "./pages/Updates";
 import Start from "./pages/Start";
+import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +61,7 @@ const App = () => (
                     <Route path="/" element={<Landing />} />
                     <Route path="/dashboard" element={<Index />} />
                     <Route path="/auth" element={<Auth />} />
+                    <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/teams" element={<Teams />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/admin" element={<Admin />} />
