@@ -47,7 +47,7 @@ serve(async (req) => {
     // --- Authorization: verify user belongs to requested org ---
     const { data: membership } = await supabase
       .from("organization_members")
-      .select("id")
+      .select("id, role")
       .eq("user_id", user.id)
       .eq("organization_id", organization_id)
       .single();
@@ -72,7 +72,6 @@ serve(async (req) => {
 
     if (usageError) {
       console.error("Usage check error:", usageError);
-      // Don't block on usage tracking errors — proceed
     } else if (usageData?.limit_reached) {
       return new Response(
         JSON.stringify({
@@ -86,11 +85,26 @@ serve(async (req) => {
       );
     }
 
-    // Fetch queue items, stations, and routing in parallel
-    const [queueRes, stationsRes, routingRes] = await Promise.all([
+    // --- Determine caller's role for context ---
+    const { data: userRoles } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id);
+
+    const platformRoles = (userRoles || []).map((r: any) => r.role);
+    const orgRole = (membership as any).role; // owner, admin, member
+    const isSupervisorOrAbove =
+      platformRoles.includes("admin") ||
+      platformRoles.includes("developer") ||
+      platformRoles.includes("supervisor") ||
+      orgRole === "owner" ||
+      orgRole === "admin";
+
+    // Fetch queue items, stations, routing, station status, and routing templates in parallel
+    const [queueRes, stationsRes, routingRes, stationStatusRes, routingTemplatesRes] = await Promise.all([
       supabase
         .from("queue_items")
-        .select("id, title, work_order, part_number, status, priority, due_date, assigned_to, station_id, item_type, created_at")
+        .select("id, title, work_order, part_number, status, priority, due_date, assigned_to, station_id, item_type, quantity, qty_completed, qty_scrap, qty_rework, qty_open, quantity_locked, operation_number, created_at")
         .eq("organization_id", organization_id)
         .in("status", ["pending", "queued", "in_progress", "on_hold", "blocked"])
         .order("priority", { ascending: false })
@@ -102,31 +116,51 @@ serve(async (req) => {
         .limit(100),
       supabase
         .from("work_order_routing")
-        .select("id, queue_item_id, step_number, station_id, operation_name, status, estimated_hours, actual_hours")
+        .select("id, queue_item_id, step_number, station_id, operation_name, operation_type, status, estimated_hours, actual_hours, estimated_duration, vendor_name, po_number")
         .eq("organization_id", organization_id)
+        .in("status", ["pending", "in_progress"])
+        .order("step_number", { ascending: true })
         .limit(500),
+      supabase
+        .from("current_station_status")
+        .select("station_id, current_job_work_order, current_job_part_number, current_job_state, current_operator_name, parts_complete, parts_required, condition_status")
+        .eq("organization_id", organization_id)
+        .limit(100),
+      supabase
+        .from("routing_templates")
+        .select("id, name, description")
+        .eq("organization_id", organization_id)
+        .limit(50),
     ]);
 
     const queueItems = queueRes.data || [];
     const stations = stationsRes.data || [];
     const routing = routingRes.data || [];
+    const stationStatus = stationStatusRes.data || [];
+    const routingTemplates = routingTemplatesRes.data || [];
 
-    // Build context summary
+    // Build context
     const now = new Date().toISOString();
-    const stationMap = Object.fromEntries(stations.map((s) => [s.id, s.name]));
+    const stationMap = Object.fromEntries(stations.map((s: any) => [s.id, s.name]));
+    const stationTypeMap = Object.fromEntries(stations.map((s: any) => [s.id, { name: s.name, type: s.work_center_type, work_center: s.work_center, active: s.is_active }]));
 
-    const queueSummary = queueItems.map((q) => ({
+    const queueSummary = queueItems.map((q: any) => ({
       id: q.id.slice(0, 8),
       title: q.title,
       wo: q.work_order,
       part: q.part_number,
+      op: q.operation_number,
       status: q.status,
       priority: q.priority,
       due: q.due_date,
       station: q.station_id ? stationMap[q.station_id] || q.station_id : "unassigned",
+      qty: q.quantity,
+      completed: q.qty_completed,
+      open: q.qty_open,
+      locked: q.quantity_locked,
     }));
 
-    const stationSummary = stations.map((s) => ({
+    const stationSummary = stations.map((s: any) => ({
       name: s.name,
       id_code: s.station_id,
       type: s.work_center_type,
@@ -134,13 +168,41 @@ serve(async (req) => {
       active: s.is_active,
     }));
 
+    const liveStationStatus = stationStatus.map((ss: any) => ({
+      station: stationMap[ss.station_id] || ss.station_id,
+      current_wo: ss.current_job_work_order,
+      current_part: ss.current_job_part_number,
+      state: ss.current_job_state,
+      operator: ss.current_operator_name,
+      progress: ss.parts_complete != null ? `${ss.parts_complete}/${ss.parts_required}` : null,
+      condition: ss.condition_status,
+    }));
+
     const overdueItems = queueItems.filter(
-      (q) => q.due_date && new Date(q.due_date) < new Date() && q.status !== "completed"
+      (q: any) => q.due_date && new Date(q.due_date) < new Date() && q.status !== "completed"
     );
+
+    const routingSummary = routing.slice(0, 80).map((r: any) => ({
+      wo_item: r.queue_item_id?.slice(0, 8),
+      step: r.step_number,
+      op: r.operation_name,
+      op_type: r.operation_type,
+      station: r.station_id ? stationMap[r.station_id] || r.station_id : "unassigned",
+      status: r.status,
+      est_hrs: r.estimated_hours,
+      actual_hrs: r.actual_hours,
+      vendor: r.vendor_name,
+      po: r.po_number,
+    }));
+
+    const callerRoleLabel = isSupervisorOrAbove
+      ? `Supervisor/Admin (org role: ${orgRole}, platform roles: ${platformRoles.join(", ") || "operator"})`
+      : `Operator (org role: ${orgRole})`;
 
     const systemPrompt = `You are a Production Planning Assistant for a manufacturing organization. You help supervisors and managers make real-time decisions about scheduling, routing, machine downtime, and priority management.
 
 CURRENT DATE/TIME: ${now}
+CALLER ROLE: ${callerRoleLabel}
 
 ## LIVE ORGANIZATION DATA
 
@@ -150,30 +212,55 @@ ${JSON.stringify(queueSummary, null, 2)}
 ### Stations (${stations.length} total):
 ${JSON.stringify(stationSummary, null, 2)}
 
-### Routing Steps (${routing.length} active):
-${JSON.stringify(
-      routing.slice(0, 50).map((r) => ({
-        wo_item: r.queue_item_id?.slice(0, 8),
-        step: r.step_number,
-        op: r.operation_name,
-        station: r.station_id ? stationMap[r.station_id] || r.station_id : "unassigned",
-        status: r.status,
-        est_hrs: r.estimated_hours,
-        actual_hrs: r.actual_hours,
-      })),
-      null,
-      2
-    )}
+### Live Station Status:
+${JSON.stringify(liveStationStatus, null, 2)}
 
-## INSTRUCTIONS
-- Reference specific work orders by their WO number, stations by name
-- When suggesting rerouting, reference actual available stations and their types
-- Flag overdue items proactively
-- Give concrete, actionable advice (not generic platitudes)
-- Use markdown formatting for readability (headers, lists, bold for emphasis)
-- When asked about machine downtime, identify affected WOs and suggest alternatives
-- For due date feasibility, calculate based on remaining routing steps and estimated hours
-- Keep responses focused and concise — supervisors are busy`;
+### Active Routing Steps (${routing.length}):
+${JSON.stringify(routingSummary, null, 2)}
+
+### Available Routing Templates (${routingTemplates.length}):
+${JSON.stringify(routingTemplates.map((t: any) => ({ name: t.name, description: t.description })), null, 2)}
+
+## WORK ORDER REROUTING & APPROVAL RULES
+
+You MUST follow these rules when advising on rerouting or advancing work orders:
+
+### Who Can Do What
+1. **Operators** can only advance/pass work orders at stations where they are actively checked in via an operator session.
+2. **Supervisors, Org Admins, and Org Owners** can override and advance any work order in their organization, but MUST provide a written override reason.
+3. **Rerouting** (changing which station a WO goes to next) requires editing the work order routing steps — only supervisors and above can modify routing.
+
+### Advancement Validation Rules
+Before a work order can advance to the next station or be completed, three checks are enforced:
+1. **Quantity Reconciliation** — total completed + scrap + rework must account for the original quantity.
+2. **Quality Sign-off** — advancement is blocked if station status is "Waiting on QA".
+3. **First Article Approval** — advancement is blocked if "First Article in Process".
+
+A supervisor can bypass these checks by providing an explicit override reason.
+
+### How Rerouting Works
+- Each work order has a sequence of routing steps (operation_type: quote, engineering, purchasing, receiving, internal, outside_processing, inspection, shipping).
+- To reroute: a supervisor modifies the routing steps to assign different stations or reorder operations.
+- The system uses an atomic database operation (\`pass_work_order_to_next_step\`) that completes the current step and moves the item to the next station.
+- When suggesting rerouting, ALWAYS specify which station the WO should move to and why (e.g., machine capability, availability, load balancing).
+
+### Quantity Lock Rules
+- When qty_completed >= qty_original, the work order auto-locks (quantity_locked = true).
+- Only org owners can increase qty_original after lock.
+- Do NOT advise operators to modify locked quantities — direct them to their supervisor.
+
+## RESPONSE INSTRUCTIONS
+- Reference specific work orders by their WO number and stations by name.
+- When suggesting rerouting, specify the exact station and operation type. Cross-reference station types with the routing step's operation_type (e.g., "internal" ops go to CNC/lathe/mill stations).
+- If the caller is an operator, remind them that rerouting requires supervisor approval and tell them which supervisor action is needed.
+- If the caller is a supervisor, provide the actionable steps: which WO, from which station, to which station, and what override reason to provide.
+- Flag overdue items proactively.
+- Give concrete, actionable advice — not generic platitudes.
+- Use markdown formatting for readability (headers, lists, bold for emphasis).
+- When asked about machine downtime, identify affected WOs and suggest specific alternative stations.
+- For due date feasibility, calculate based on remaining routing steps and estimated hours.
+- Keep responses focused and concise — production staff are busy.
+- NEVER suggest actions that violate the approval hierarchy. Always make approval requirements clear.`;
 
     const response = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
