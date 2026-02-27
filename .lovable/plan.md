@@ -1,36 +1,53 @@
 
 
-## Issues & Bugs System — Diagnosis & Fix Plan
+## Machine Library Admin Panel for SDK Admins & Developers
 
-### Critical Bug Found
+### What We're Building
 
-The `report_issue` database function sets `status = 'new'`, but the `issue_status` enum only contains: `open`, `investigating`, `in_progress`, `resolved`, `closed`, `wont_fix`. This causes **every user-submitted issue to silently fail** with a PostgreSQL type cast error. The existing test issue predates this bug.
+A full CRUD management panel for the 79 verified machine profiles in the `verified_machine_library` table. This panel lives in the Admin Dashboard's Dev Tools bucket and allows platform admins/developers to:
 
-### Secondary Issues
+- Browse all library entries with search/filter by manufacturer, machine type
+- View full specs for any entry (travel, envelope, capabilities, tolerances)
+- Edit verified numbers inline (dimensions, weights, tolerances, boolean capabilities)
+- Add new machine profiles to the library
+- Delete entries (with purchase protection — cannot delete if purchased)
+- See purchase stats (how many orgs purchased each profile)
+- Toggle verified status
+- View revenue metrics (total purchases at $0.99 each)
 
-1. **Notification queue never populated** — The `queue_issue_for_devs` trigger inserts into `notification_queue` for admin/developer users, but since the issue INSERT itself fails (due to the `'new'` status bug), the trigger never fires.
-2. **IssuesManagement UI missing `'new'` handling** — Even if we added `'new'` to the enum, the UI has no color/icon/filter for it.
+### Implementation
 
-### Fix Plan
+#### 1. New Component: `MachineLibraryManagement`
+**File**: `src/components/admin/MachineLibraryManagement.tsx`
 
-#### 1. Fix `report_issue` Function (Database Migration)
-Update the `report_issue` function to use `'open'` instead of `'new'` for the initial status. This is the simplest and most correct fix — `'open'` already exists in the enum and matches the UI's expectations. No enum change needed.
+Full-featured admin panel with:
+- **Stats bar**: Total machines, total purchases, revenue estimate
+- **Filterable table**: Manufacturer, model, type, platform, travel specs, capabilities, verified badge, purchase count
+- **Search**: By manufacturer or model name
+- **Filter dropdowns**: By manufacturer, machine type
+- **Add Machine dialog**: Form with all 27 fields grouped into sections (Identity, Travel/Envelope, Capabilities, Materials, Tolerances)
+- **Edit Machine dialog**: Same form, pre-populated with existing values
+- **Delete button**: Disabled if the machine has active purchases (shows tooltip explaining why)
+- **Purchase count column**: Shows how many orgs have purchased each profile
 
-```sql
--- In the INSERT: change 'new' → 'open'
-```
+The component queries `verified_machine_library` and `organization_machine_purchases` using the existing Supabase client with `as any` casts (matching existing patterns).
 
-#### 2. Verify End-to-End Pipeline
-After the migration, test the full flow:
-- `report_issue` RPC inserts into `issues` with `status = 'open'`
-- `trigger_queue_issue_for_devs` fires → inserts into `dev_issue_queue` with calculated priority
-- Same trigger inserts into `notification_queue` for all admin/developer users
-- `IssuesManagement` and `DevIssueQueue` admin panels show the new issue correctly
+#### 2. Add Tab to Admin Dashboard
+**File**: `src/pages/Admin.tsx`
 
-#### 3. Navigate to Admin Panel and Verify
-Use browser tools to confirm the Issues tab and Dev Queue tab display data correctly after submitting a test issue.
+Add a "Library" tab trigger inside the Dev Tools bucket (destructive/red border group) with a `Cpu` icon. Add corresponding `TabsContent` rendering `<MachineLibraryManagement />`. Only visible when `hasTestingAccess` is true (admin/developer only).
 
-### Files Changed
-- **1 database migration**: Fix `report_issue` function (`'new'` → `'open'`)
-- No frontend code changes needed — the UI already handles `'open'` status correctly
+#### 3. No Database Changes Needed
+- RLS already allows `is_dev_or_admin` for ALL operations on `verified_machine_library`
+- Table schema already has all needed columns
+- `update_updated_at_column` trigger already exists
+
+### Technical Details
+
+- Uses existing `MANUFACTURERS` and `MACHINE_TYPES` constants from `useStationMachineProfile.ts` for dropdowns
+- Material capability stored as `text[]` — UI uses multi-select checkboxes for common materials
+- `hard_constraints` stored as `jsonb[]` — editable as JSON
+- Purchase count derived from `organization_machine_purchases` grouped by `machine_library_id`
+- Revenue display: purchase count × $0.99
+- All mutations use service-authenticated Supabase calls (RLS enforces admin-only writes)
 
