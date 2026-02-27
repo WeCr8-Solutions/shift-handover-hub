@@ -100,11 +100,12 @@ serve(async (req) => {
       orgRole === "owner" ||
       orgRole === "admin";
 
-    // Fetch queue items, stations, routing, station status, and routing templates in parallel
-    const [queueRes, stationsRes, routingRes, stationStatusRes, routingTemplatesRes, machineProfilesRes, manualProfilesRes] = await Promise.all([
+    // Fetch queue items, stations, routing, station status, routing templates, machine profiles,
+    // active operator sessions, and operator certifications in parallel
+    const [queueRes, stationsRes, routingRes, stationStatusRes, routingTemplatesRes, machineProfilesRes, manualProfilesRes, activeSessionsRes, certificationsRes] = await Promise.all([
       supabase
         .from("queue_items")
-        .select("id, title, work_order, part_number, status, priority, due_date, assigned_to, station_id, item_type, quantity, qty_completed, qty_scrap, qty_rework, qty_open, quantity_locked, operation_number, created_at, material_type, part_length_inches, part_width_inches, part_height_inches, part_weight_lbs, part_shape")
+        .select("id, title, work_order, part_number, status, priority, due_date, assigned_to, station_id, item_type, quantity, qty_completed, qty_scrap, qty_rework, qty_open, quantity_locked, operation_number, created_at, estimated_duration, material_type, part_length_inches, part_width_inches, part_height_inches, part_weight_lbs, part_shape")
         .eq("organization_id", organization_id)
         .in("status", ["pending", "queued", "in_progress", "on_hold", "blocked"])
         .order("priority", { ascending: false })
@@ -143,6 +144,20 @@ serve(async (req) => {
         .select("station_id, manufacturer, model, machine_type, platform_category, max_x_travel, max_y_travel, max_z_travel, max_part_weight, max_part_envelope_length, max_part_envelope_width, max_part_envelope_height, five_axis_simultaneous, fourth_axis, live_tooling, y_axis_turn, sub_spindle, probing, through_spindle_coolant, pallet_pool, bar_feeder, material_capability, typical_tolerance, hard_constraints")
         .eq("organization_id", organization_id)
         .limit(100),
+      // Active operator sessions — who is checked into which station right now
+      supabase
+        .from("operator_station_sessions")
+        .select("user_id, station_id, checked_in_at, profiles!inner(display_name)")
+        .eq("organization_id", organization_id)
+        .eq("is_active", true)
+        .is("checked_out_at", null)
+        .limit(100),
+      // Operator certifications
+      supabase
+        .from("user_certifications")
+        .select("user_id, certification_id, status, expires_at, certifications!inner(name, category, required_for_work_centers)")
+        .eq("organization_id", organization_id)
+        .limit(500),
     ]);
 
     const queueItems = queueRes.data || [];
@@ -152,6 +167,8 @@ serve(async (req) => {
     const routingTemplates = routingTemplatesRes.data || [];
     const machineProfiles = machineProfilesRes.data || [];
     const manualProfiles = manualProfilesRes.data || [];
+    const activeSessions = activeSessionsRes.data || [];
+    const certifications = certificationsRes.data || [];
     // Build context
     const now = new Date().toISOString();
     const stationMap = Object.fromEntries(stations.map((s: any) => [s.id, s.name]));
@@ -265,6 +282,52 @@ serve(async (req) => {
 
     const machineContextSummary = [...verifiedContextSummary, ...manualContextSummary];
 
+    // --- Station Queue Load: items count + total estimated minutes per station ---
+    const stationLoad: Record<string, { items: number; est_minutes: number; in_progress: number }> = {};
+    for (const q of queueItems) {
+      if (!q.station_id) continue;
+      if (!stationLoad[q.station_id]) stationLoad[q.station_id] = { items: 0, est_minutes: 0, in_progress: 0 };
+      stationLoad[q.station_id].items++;
+      stationLoad[q.station_id].est_minutes += q.estimated_duration || 0;
+      if (q.status === "in_progress") stationLoad[q.station_id].in_progress++;
+    }
+
+    const stationLoadSummary = Object.entries(stationLoad).map(([sid, load]) => ({
+      station: stationMap[sid] || sid,
+      queued_items: load.items,
+      est_total_minutes: load.est_minutes,
+      est_total_hours: Math.round(load.est_minutes / 60 * 10) / 10,
+      actively_running: load.in_progress,
+    })).sort((a, b) => b.queued_items - a.queued_items);
+
+    // --- Active Operator Sessions: who is checked into which station ---
+    const operatorSessionsSummary = activeSessions.map((s: any) => ({
+      operator: (s.profiles as any)?.display_name || "Unknown",
+      station: stationMap[s.station_id] || s.station_id,
+      checked_in: s.checked_in_at,
+    }));
+
+    // --- Operator Certifications: build a map of user_id → certs ---
+    const certsByUser: Record<string, { name: string; category: string | null; status: string; expires_at: string | null; required_for: string[] | null }[]> = {};
+    for (const c of certifications) {
+      const cert = c.certifications as any;
+      if (!certsByUser[c.user_id]) certsByUser[c.user_id] = [];
+      certsByUser[c.user_id].push({
+        name: cert?.name,
+        category: cert?.category,
+        status: c.status,
+        expires_at: c.expires_at,
+        required_for: cert?.required_for_work_centers,
+      });
+    }
+
+    // Build operator-cert summary for active operators
+    const operatorCertSummary = activeSessions.map((s: any) => ({
+      operator: (s.profiles as any)?.display_name || "Unknown",
+      station: stationMap[s.station_id] || s.station_id,
+      certifications: certsByUser[s.user_id] || [],
+    })).filter((o: any) => o.certifications.length > 0);
+
     const callerRoleLabel = isSupervisorOrAbove
       ? `Supervisor/Admin (org role: ${orgRole}, platform roles: ${platformRoles.join(", ") || "operator"})`
       : `Operator (org role: ${orgRole})`;
@@ -284,6 +347,15 @@ ${JSON.stringify(stationSummary, null, 2)}
 
 ### Live Station Status:
 ${JSON.stringify(liveStationStatus, null, 2)}
+
+### Station Queue Load (backlog per station):
+${stationLoadSummary.length > 0 ? JSON.stringify(stationLoadSummary, null, 2) : "No station-specific queue data available."}
+
+### Active Operators on Stations:
+${operatorSessionsSummary.length > 0 ? JSON.stringify(operatorSessionsSummary, null, 2) : "No operators currently checked in."}
+
+### Operator Certifications (active operators):
+${operatorCertSummary.length > 0 ? JSON.stringify(operatorCertSummary, null, 2) : "No certification data available for active operators."}
 
 ### Active Routing Steps (${routing.length}):
 ${JSON.stringify(routingSummary, null, 2)}
@@ -343,11 +415,47 @@ When part_specs are present on a work order AND a station has a machine profile:
 
 When part_specs are MISSING, note "No part specs available — routing confidence is reduced. Recommend adding material/dimension data to the work order for better AI routing."
 
+## UNIT CONVERSION RULES (CRITICAL)
+
+Part specifications use **inches** for dimensions and **lbs** for weight.
+Machine profiles use **mm** for travel/envelope and **lbs** for weight.
+**You MUST convert units before comparing:** 1 inch = 25.4 mm.
+- To check envelope fit: convert part dimensions from inches to mm (multiply by 25.4), THEN compare against machine max travel/envelope in mm.
+- Example: Part is 12" long → 304.8mm. Machine max_x_travel is 762mm → Part fits.
+- ALWAYS show the conversion in your response so the user can verify.
+
+## STATION LOAD-AWARE ROUTING
+
+When suggesting a station for a work order, you MUST consider queue load:
+1. Check "Station Queue Load" data — prefer stations with fewer queued items and lower est_total_hours.
+2. If two stations are equally capable, ALWAYS recommend the one with less backlog.
+3. When a station has 0 queued items and no active job, flag it as "Available Now" — high priority recommendation.
+4. When a station has >8 est_total_hours of backlog, warn that lead time will be affected.
+5. Factor in due dates: if a WO is urgent/overdue, prioritize station availability over optimal machine match.
+
+## OPERATOR CERTIFICATION VALIDATION
+
+When routing or assigning work:
+1. Check if the active operator at a station has the required certifications for the work center type.
+2. If a certification has "required_for_work_centers" that matches the station's work_center, the operator MUST have that cert with status "active" and not expired.
+3. If an operator lacks a required certification, **flag this as a warning** and suggest either:
+   - Reassigning the WO to a station where a certified operator is checked in, OR
+   - Having a certified operator swap to the required station.
+4. Expired certifications (expires_at < current date) should be flagged as "EXPIRED — operator cannot perform this work."
+
+## MULTI-OPERATION SEQUENCE OPTIMIZATION
+
+When a work order has multiple routing steps:
+1. **Minimize re-fixturing** — If consecutive operations (e.g., Op 10 rough mill → Op 20 finish mill) can run on the same machine, prefer keeping them on the same station to avoid re-setup.
+2. **Setup time awareness** — If a WO has setup_time_minutes, factor this into the total time when evaluating station load. Multiple re-setups = more lost time.
+3. **Material flow** — Prefer routing sequences where stations are logically adjacent or in the same work center to reduce material handling time.
+4. **Outside processing gaps** — When a routing step is "outside_processing", the WO leaves the shop. Warn about lead time impact from vendor turnaround and suggest having the next internal operation station ready.
+
 When rerouting due to machine downtime or quality holds:
 1. Filter all stations with context_active profiles
 2. Eliminate stations failing any hard constraint (including part-vs-machine checks)
-3. Rank remaining by: same manufacturer family (preference), same platform, queue length
-4. Output: "Best Alternate: [Station] ([Manufacturer Model])" with reason and confidence score
+3. Rank remaining by: same manufacturer family (preference), same platform, **lowest queue backlog**, certified operator available
+4. Output: "Best Alternate: [Station] ([Manufacturer Model]) — [X items queued, ~Y hrs backlog]" with reason and confidence score
 
 For stations WITHOUT a machine profile (context_active=false), fall back to generic station type matching only and note reduced routing confidence.
 
@@ -359,13 +467,15 @@ For stations WITHOUT a machine profile (context_active=false), fall back to gene
 ## RESPONSE INSTRUCTIONS
 - Reference specific work orders by their WO number and stations by name.
 - When suggesting rerouting, specify the exact station and operation type. Cross-reference station types with the routing step's operation_type (e.g., "internal" ops go to CNC/lathe/mill stations).
+- Include station load data in routing suggestions (e.g., "Station X — 3 items queued, ~4.5 hrs backlog").
+- Flag operator certification issues proactively when relevant.
 - If the caller is an operator, remind them that rerouting requires supervisor approval and tell them which supervisor action is needed.
 - If the caller is a supervisor, provide the actionable steps: which WO, from which station, to which station, and what override reason to provide.
 - Flag overdue items proactively.
 - Give concrete, actionable advice — not generic platitudes.
 - Use markdown formatting for readability (headers, lists, bold for emphasis).
-- When asked about machine downtime, identify affected WOs and suggest specific alternative stations.
-- For due date feasibility, calculate based on remaining routing steps and estimated hours.
+- When asked about machine downtime, identify affected WOs and suggest specific alternative stations with their current load.
+- For due date feasibility, calculate based on remaining routing steps, estimated hours, AND station backlog.
 - Keep responses focused and concise — production staff are busy.
 - NEVER suggest actions that violate the approval hierarchy. Always make approval requirements clear.`;
 
