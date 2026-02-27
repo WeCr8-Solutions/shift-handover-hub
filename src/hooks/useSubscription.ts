@@ -154,13 +154,13 @@ export function useSubscription() {
     }
   }, [user]);
 
-  const createCheckout = useCallback(async (priceId: string) => {
+  const createCheckout = useCallback(async (priceId: string, quantity?: number) => {
     if (!user) {
       throw new Error('User must be authenticated to subscribe');
     }
 
     const { data, error } = await supabase.functions.invoke('create-checkout', {
-      body: { priceId },
+      body: { priceId, quantity },
     });
 
     if (error) throw error;
@@ -171,6 +171,23 @@ export function useSubscription() {
 
     return data;
   }, [user]);
+
+  const updateSeats = useCallback(async (quantity: number) => {
+    if (!user) {
+      throw new Error('User must be authenticated');
+    }
+
+    const { data, error } = await supabase.functions.invoke('update-seats', {
+      body: { quantity },
+    });
+
+    if (error) throw error;
+
+    // Refresh subscription state
+    await checkSubscription();
+
+    return data;
+  }, [user, checkSubscription]);
 
   const openCustomerPortal = useCallback(async () => {
     if (!user) {
@@ -206,5 +223,6 @@ export function useSubscription() {
     checkSubscription,
     createCheckout,
     openCustomerPortal,
+    updateSeats,
   };
 }

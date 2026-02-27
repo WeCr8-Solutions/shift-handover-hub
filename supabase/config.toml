@@ -15,3 +15,5 @@ project_id = "kgrstnbxqdmadtoankqr"
     verify_jwt = false
   [functions.erp-sync]
     verify_jwt = false
+  [functions.update-seats]
+    verify_jwt = false

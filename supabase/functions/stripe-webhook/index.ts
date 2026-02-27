@@ -93,10 +93,17 @@ async function recordEvent(eventId: string, eventType: string, payload: unknown)
   });
 }
 
-async function updateOrgEntitlements(orgId: string, plan: string, erpTier?: string) {
+async function updateOrgEntitlements(orgId: string, plan: string, erpTier?: string, seatQuantity?: number) {
   const entitlements = PLAN_ENTITLEMENTS[plan] || PLAN_ENTITLEMENTS.free;
   
   const features: Record<string, unknown> = { ...entitlements.features };
+  const limits: Record<string, number> = { ...entitlements.limits };
+
+  // For enterprise plans, sync seat quantity from Stripe subscription
+  if (plan === "enterprise" && seatQuantity && seatQuantity > 0) {
+    limits.users = seatQuantity;
+    logStep("Syncing enterprise seat count", { orgId, seatQuantity });
+  }
 
   // Preserve existing ERP tier if not explicitly provided
   if (erpTier) {
@@ -125,7 +132,7 @@ async function updateOrgEntitlements(orgId: string, plan: string, erpTier?: stri
       organization_id: orgId,
       plan,
       features,
-      limits: entitlements.limits,
+      limits,
     }, { onConflict: "organization_id" });
 
   if (error) {
@@ -219,10 +226,11 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     })
     .eq("id", orgId);
 
-  // Update entitlements
-  await updateOrgEntitlements(orgId, plan);
+  // Update entitlements (with seat quantity for enterprise)
+  const seatQuantity = subscription.items.data[0]?.quantity || 1;
+  await updateOrgEntitlements(orgId, plan, undefined, plan === "enterprise" ? seatQuantity : undefined);
 
-  logStep("Checkout session processed successfully", { orgId, plan });
+  logStep("Checkout session processed successfully", { orgId, plan, seatQuantity });
 }
 
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
@@ -277,10 +285,11 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     })
     .eq("id", subRecord.organization_id);
 
-  // Update entitlements
-  await updateOrgEntitlements(subRecord.organization_id, plan);
+  // Update entitlements (with seat quantity for enterprise)
+  const seatQuantity = subscription.items.data[0]?.quantity || 1;
+  await updateOrgEntitlements(subRecord.organization_id, plan, undefined, plan === "enterprise" ? seatQuantity : undefined);
 
-  logStep("Subscription updated successfully", { orgId: subRecord.organization_id, plan, status: subscription.status });
+  logStep("Subscription updated successfully", { orgId: subRecord.organization_id, plan, status: subscription.status, seatQuantity });
 }
 
 async function handleErpAddonSubscription(subscription: Stripe.Subscription, productId: string) {

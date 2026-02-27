@@ -1,19 +1,69 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Loader2, CreditCard, ExternalLink, Crown, Users, Package, BarChart3 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Loader2, CreditCard, ExternalLink, Crown, Users, Package, BarChart3, AlertTriangle, Plus } from "lucide-react";
 import { useSubscription, PRICING_TIERS } from "@/hooks/useSubscription";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { toast } from "sonner";
 
 export function BillingSettings() {
   const { organization } = useUserOrganization();
-  const { tier, subscriptionEnd, isLoading, openCustomerPortal, createCheckout } = useSubscription();
+  const { tier, subscriptionEnd, isLoading, openCustomerPortal, createCheckout, updateSeats } = useSubscription();
   const { plan, features, limits, loading: entitlementsLoading } = useEntitlements();
   const [isRedirecting, setIsRedirecting] = useState(false);
+
+  // Real usage counts
+  const [memberCount, setMemberCount] = useState(0);
+  const [workOrderCount, setWorkOrderCount] = useState(0);
+  const [stationCount, setStationCount] = useState(0);
+  const [usageLoading, setUsageLoading] = useState(true);
+
+  // Seat management
+  const [newSeatCount, setNewSeatCount] = useState<number>(10);
+  const [isUpdatingSeats, setIsUpdatingSeats] = useState(false);
+
+  useEffect(() => {
+    if (!organization?.id) {
+      setUsageLoading(false);
+      return;
+    }
+
+    const fetchUsage = async () => {
+      const [members, workOrders, stations] = await Promise.all([
+        supabase
+          .from("organization_members")
+          .select("id", { count: "exact", head: true })
+          .eq("organization_id", organization.id),
+        supabase
+          .from("queue_items")
+          .select("id", { count: "exact", head: true })
+          .eq("organization_id", organization.id)
+          .eq("item_type", "work_order")
+          .gte("created_at", new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()),
+        supabase
+          .from("stations")
+          .select("id", { count: "exact", head: true })
+          .eq("organization_id", organization.id),
+      ]);
+
+      setMemberCount(members.count ?? 0);
+      setWorkOrderCount(workOrders.count ?? 0);
+      setStationCount(stations.count ?? 0);
+      setUsageLoading(false);
+    };
+
+    fetchUsage();
+  }, [organization?.id]);
+
+  useEffect(() => {
+    setNewSeatCount(limits.users || 10);
+  }, [limits.users]);
 
   const handleManageBilling = async () => {
     setIsRedirecting(true);
@@ -35,6 +85,22 @@ export function BillingSettings() {
     setIsRedirecting(false);
   };
 
+  const handleUpdateSeats = async () => {
+    if (newSeatCount < 10) {
+      toast.error("Minimum seat count is 10");
+      return;
+    }
+    setIsUpdatingSeats(true);
+    try {
+      await updateSeats(newSeatCount);
+      toast.success(`Seats updated to ${newSeatCount}`);
+    } catch (error) {
+      console.error("Error updating seats:", error);
+      toast.error("Failed to update seats");
+    }
+    setIsUpdatingSeats(false);
+  };
+
   if (isLoading || entitlementsLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -45,6 +111,8 @@ export function BillingSettings() {
 
   const currentTier = tier ? PRICING_TIERS[tier] : null;
   const status = organization?.subscription_status || "free";
+  const isEnterprise = plan === "enterprise";
+  const seatUsagePercent = limits.users > 0 ? (memberCount / limits.users) * 100 : 0;
 
   return (
     <div className="space-y-6">
@@ -74,14 +142,12 @@ export function BillingSettings() {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Badge
-                variant={status === "active" ? "default" : status === "past_due" ? "destructive" : "secondary"}
-                className="capitalize"
-              >
-                {status}
-              </Badge>
-            </div>
+            <Badge
+              variant={status === "active" ? "default" : status === "past_due" ? "destructive" : "secondary"}
+              className="capitalize"
+            >
+              {status}
+            </Badge>
           </div>
 
           {subscriptionEnd && (
@@ -93,11 +159,7 @@ export function BillingSettings() {
           <div className="flex gap-3">
             {tier && (
               <Button variant="outline" onClick={handleManageBilling} disabled={isRedirecting}>
-                {isRedirecting ? (
-                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                ) : (
-                  <CreditCard className="w-4 h-4 mr-2" />
-                )}
+                {isRedirecting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CreditCard className="w-4 h-4 mr-2" />}
                 Manage Billing
               </Button>
             )}
@@ -110,6 +172,68 @@ export function BillingSettings() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Enterprise Seat Management */}
+      {isEnterprise && (
+        <Card className="border-primary/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="w-5 h-5" />
+              Seat Management
+            </CardTitle>
+            <CardDescription>
+              Manage your Enterprise team seats. Base plan includes 10 seats, additional seats are $7.99/mo each.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="p-4 rounded-lg border">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium">Active Members</span>
+                <span className="text-sm font-semibold">{memberCount} / {limits.users}</span>
+              </div>
+              <Progress value={Math.min(seatUsagePercent, 100)} className="h-2" />
+              {seatUsagePercent >= 80 && seatUsagePercent < 100 && (
+                <p className="text-xs text-amber-600 flex items-center gap-1 mt-2">
+                  <AlertTriangle className="w-3 h-3" />
+                  Approaching seat limit — consider adding more seats
+                </p>
+              )}
+              {seatUsagePercent >= 100 && (
+                <p className="text-xs text-destructive flex items-center gap-1 mt-2">
+                  <AlertTriangle className="w-3 h-3" />
+                  Seat limit reached — add more seats to invite new members
+                </p>
+              )}
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Total seats:</span>
+                <Input
+                  type="number"
+                  min={10}
+                  value={newSeatCount}
+                  onChange={(e) => setNewSeatCount(Math.max(10, parseInt(e.target.value) || 10))}
+                  className="w-24"
+                />
+              </div>
+              <Button
+                onClick={handleUpdateSeats}
+                disabled={isUpdatingSeats || newSeatCount === limits.users || newSeatCount < 10}
+                size="sm"
+              >
+                {isUpdatingSeats ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
+                Update Seats
+              </Button>
+              {newSeatCount > 10 && (
+                <span className="text-xs text-muted-foreground">
+                  +{newSeatCount - 10} additional × $7.99 = ${((newSeatCount - 10) * 7.99).toFixed(2)}/mo extra
+                </span>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Usage & Limits */}
       <Card>
@@ -134,8 +258,10 @@ export function BillingSettings() {
                   / {limits.users}
                 </span>
               </div>
-              <Progress value={0} className="h-2" />
-              <p className="text-xs text-muted-foreground mt-1">0 used</p>
+              <Progress value={limits.users > 0 ? (memberCount / limits.users) * 100 : 0} className="h-2" />
+              <p className="text-xs text-muted-foreground mt-1">
+                {usageLoading ? "Loading..." : `${memberCount} used`}
+              </p>
             </div>
 
             <div className="p-4 rounded-lg border">
@@ -145,8 +271,10 @@ export function BillingSettings() {
                   / {limits.work_orders_per_month}/mo
                 </span>
               </div>
-              <Progress value={0} className="h-2" />
-              <p className="text-xs text-muted-foreground mt-1">0 this month</p>
+              <Progress value={limits.work_orders_per_month > 0 ? (workOrderCount / limits.work_orders_per_month) * 100 : 0} className="h-2" />
+              <p className="text-xs text-muted-foreground mt-1">
+                {usageLoading ? "Loading..." : `${workOrderCount} this month`}
+              </p>
             </div>
 
             <div className="p-4 rounded-lg border">
@@ -156,8 +284,10 @@ export function BillingSettings() {
                   / {limits.stations}
                 </span>
               </div>
-              <Progress value={0} className="h-2" />
-              <p className="text-xs text-muted-foreground mt-1">0 configured</p>
+              <Progress value={limits.stations > 0 ? (stationCount / limits.stations) * 100 : 0} className="h-2" />
+              <p className="text-xs text-muted-foreground mt-1">
+                {usageLoading ? "Loading..." : `${stationCount} configured`}
+              </p>
             </div>
           </div>
         </CardContent>
@@ -176,11 +306,11 @@ export function BillingSettings() {
             {Object.entries(features).map(([feature, enabled]) => (
               <div
                 key={feature}
-                className={`p-3 rounded-lg border ${enabled ? "bg-green-500/10 border-green-500/30" : "bg-muted/50 border-muted"}`}
+                className={`p-3 rounded-lg border ${typeof enabled === "boolean" && enabled ? "bg-green-500/10 border-green-500/30" : "bg-muted/50 border-muted"}`}
               >
                 <div className="flex items-center gap-2">
-                  <div className={`w-2 h-2 rounded-full ${enabled ? "bg-green-500" : "bg-muted-foreground"}`} />
-                  <span className={`text-sm capitalize ${enabled ? "" : "text-muted-foreground"}`}>
+                  <div className={`w-2 h-2 rounded-full ${typeof enabled === "boolean" && enabled ? "bg-green-500" : "bg-muted-foreground"}`} />
+                  <span className={`text-sm capitalize ${typeof enabled === "boolean" && enabled ? "" : "text-muted-foreground"}`}>
                     {feature.replace(/_/g, " ")}
                   </span>
                 </div>
@@ -220,7 +350,7 @@ export function BillingSettings() {
                       onClick={() => handleUpgrade(tierInfo.priceId)}
                       disabled={isRedirecting}
                     >
-                      {key === "enterprise" ? "Contact Sales" : "Upgrade"}
+                      {key === "enterprise" ? "Upgrade to Enterprise" : "Upgrade"}
                     </Button>
                   </div>
                 ))}

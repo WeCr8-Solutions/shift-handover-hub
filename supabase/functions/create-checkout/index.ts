@@ -26,9 +26,9 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    const { priceId, orgId } = await req.json();
+    const { priceId, orgId, quantity } = await req.json();
     if (!priceId) throw new Error("Price ID is required");
-    logStep("Price ID received", { priceId, orgId });
+    logStep("Price ID received", { priceId, orgId, quantity });
 
     const authHeader = req.headers.get("Authorization")!;
     const token = authHeader.replace("Bearer ", "");
@@ -119,10 +119,18 @@ serve(async (req) => {
 
     const origin = req.headers.get("origin") || "https://jobline.ai";
     
+    // Enterprise price supports per-seat quantity (minimum 10)
+    const ENTERPRISE_PRICE_ID = "price_1SthDUCyekafHX78MIJEHfCG";
+    const lineQuantity = priceId === ENTERPRISE_PRICE_ID
+      ? Math.max(quantity || 10, 10)
+      : 1;
+
+    logStep("Line item quantity", { priceId, lineQuantity });
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : billingEmail,
-      line_items: [{ price: priceId, quantity: 1 }],
+      line_items: [{ price: priceId, quantity: lineQuantity }],
       mode: "subscription",
       success_url: `${origin}/dashboard?subscription=success`,
       cancel_url: `${origin}/pricing?subscription=cancelled`,
