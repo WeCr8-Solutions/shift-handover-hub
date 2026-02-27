@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,11 +8,12 @@ import { formatDisposition, formatAuthStatus } from "@/lib/ncrUtils";
 import { NCRReport } from "@/hooks/useNCR";
 import { format } from "date-fns";
 import {
-  AlertTriangle, CheckCircle2, XCircle, Loader2, Clock, FileText,
+  AlertTriangle, CheckCircle2, XCircle, Loader2, Clock, FileText, ImageIcon,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
+import { getSignedUrls } from "@/lib/storageUtils";
 
 interface NCRApprovalPanelProps {
   ncrs: NCRReport[];
@@ -52,6 +53,28 @@ export function NCRApprovalPanel({ ncrs, onApprove, onReject }: NCRApprovalPanel
       setRejectReason("");
     }
   };
+
+  function NCRImageThumbnails({ imagePaths }: { imagePaths: string[] }) {
+    const [urls, setUrls] = useState<string[]>([]);
+    useEffect(() => {
+      getSignedUrls("ncr-attachments", imagePaths).then(setUrls);
+    }, [imagePaths]);
+    if (!urls.length) return null;
+    return (
+      <div>
+        <span className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
+          <ImageIcon className="w-3 h-3" /> Defect Photos ({urls.length})
+        </span>
+        <div className="flex gap-2 flex-wrap">
+          {urls.map((url, i) => (
+            <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+              <img src={url} alt={`Defect ${i + 1}`} className="w-14 h-14 rounded border border-border object-cover hover:ring-2 ring-primary transition-all" />
+            </a>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   if (pendingNcrs.length === 0) {
     return (
@@ -112,6 +135,11 @@ export function NCRApprovalPanel({ ncrs, onApprove, onReject }: NCRApprovalPanel
                   <span className="text-xs text-muted-foreground block">Description</span>
                   <p className="text-sm">{ncr.description}</p>
                 </div>
+
+                {/* Attached Images */}
+                {ncr.image_urls && ncr.image_urls.length > 0 && (
+                  <NCRImageThumbnails imagePaths={ncr.image_urls} />
+                )}
 
                 {ncr.disposition === "scrap" && (
                   <div className="flex items-center gap-2 p-2 bg-red-500/10 rounded text-sm text-red-700 dark:text-red-400">

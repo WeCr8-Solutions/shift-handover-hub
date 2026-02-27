@@ -5,6 +5,7 @@ import { useTeams } from "./useTeams";
 import { useActivityLog } from "./useActivityLog";
 import { useUserOrganization } from "./useUserOrganization";
 import { WorkCenterType, JobState, Shift } from "@/types/handoff";
+import { uploadOrgScopedFile, getSignedUrls } from "@/lib/storageUtils";
 
 export interface Station {
   id: string;
@@ -320,10 +321,25 @@ export function useHandoffRecords(teamId?: string | null, organizationId?: strin
     return { data, error };
   };
 
+  const uploadHandoffImage = useCallback(
+    async (file: File, orgId: string) => {
+      if (!user) return { path: null, error: new Error("Not authenticated") };
+      return uploadOrgScopedFile("handoff-attachments", file, orgId, user.id);
+    },
+    [user],
+  );
+
+  const getSignedHandoffImageUrls = useCallback(
+    (filePaths: string[]) => getSignedUrls("handoff-attachments", filePaths),
+    [],
+  );
+
   return {
     records,
     loading,
     createHandoffRecord,
+    uploadHandoffImage,
+    getSignedHandoffImageUrls,
     refreshRecords: fetchRecords,
   };
 }

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useActivityLog } from "./useActivityLog";
+import { uploadOrgScopedFile, getSignedUrls } from "@/lib/storageUtils";
 
 export type UpdateType = "setup_change" | "adjustment" | "improvement" | "issue" | "other";
 export type Priority = "low" | "normal" | "high" | "critical";
@@ -169,47 +170,34 @@ export function useJobPerformanceUpdates(teamId?: string | null) {
       return { url: null, error: new Error("User not authenticated") };
     }
 
+    // Get org_id for org-scoped path
+    const { data: orgMember } = await supabase
+      .from("organization_members")
+      .select("organization_id")
+      .eq("user_id", user.id)
+      .limit(1)
+      .maybeSingle();
+
+    if (orgMember?.organization_id) {
+      // New org-scoped path
+      const { path, error } = await uploadOrgScopedFile(
+        "performance-updates", file, orgMember.organization_id, user.id
+      );
+      return { url: path, error };
+    }
+
+    // Legacy fallback (no org)
     const fileExt = file.name.split(".").pop();
     const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
-
     const { error: uploadError } = await supabase.storage
       .from("performance-updates")
       .upload(fileName, file);
-
-    if (uploadError) {
-      return { url: null, error: uploadError };
-    }
-
-    // Use signed URL for private bucket (expires in 24 hours)
-    const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-      .from("performance-updates")
-      .createSignedUrl(fileName, 60 * 60 * 24); // 24 hours
-
-    if (signedUrlError) {
-      return { url: null, error: signedUrlError };
-    }
-
-    // Store the file path (not URL) for later signed URL generation
+    if (uploadError) return { url: null, error: uploadError };
     return { url: fileName, error: null };
   };
 
-  // Helper to get signed URLs for viewing images
   const getSignedImageUrls = async (filePaths: string[]): Promise<string[]> => {
-    if (!filePaths.length) return [];
-    
-    const signedUrls = await Promise.all(
-      filePaths.map(async (path) => {
-        // If it's already a full URL (legacy), return as-is
-        if (path.startsWith('http')) return path;
-        
-        const { data } = await supabase.storage
-          .from("performance-updates")
-          .createSignedUrl(path, 60 * 60 * 24); // 24 hours
-        return data?.signedUrl || path;
-      })
-    );
-    
-    return signedUrls;
+    return getSignedUrls("performance-updates", filePaths);
   };
 
   const updateStatus = async (
