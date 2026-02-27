@@ -6,7 +6,7 @@ import { workCenterIcons, workCenterColors } from "@/lib/workCenterIcons";
 import { 
   AlertTriangle, Check, Plus, ListTodo, Lightbulb, Play, ChevronRight, 
   Clock, Package, Pause, Timer, AlertCircle, Truck, MapPin, ArrowRight,
-  CheckCircle2, Bell, Zap
+  CheckCircle2, Bell, Zap, Circle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -417,7 +417,7 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
   const hasIssues = hasConditionIssue(condition);
   const hasActiveAlarm = hasAlarm(condition);
   
-  const Icon = workCenterIcons[workCenterType];
+  const Icon = workCenterIcons[workCenterType] || Circle;
   const iconColor = workCenterColors[workCenterType];
 
   const progress = effectiveJob && effectiveJob.partsRequired > 0

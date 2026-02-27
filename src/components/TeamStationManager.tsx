@@ -29,7 +29,8 @@ import {
   Factory,
   FileSpreadsheet,
   ChevronRight,
-  CheckCircle2
+  CheckCircle2,
+  Circle
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { WorkCenterType, ALL_WORK_CENTER_TYPES } from "@/types/handoff";
@@ -265,7 +266,7 @@ export function TeamStationManager({
               ) : (
                 <div className="space-y-4">
                   {Object.entries(groupedStations).map(([type, typeStations]) => {
-                    const Icon = workCenterIcons[type as WorkCenterType];
+                    const Icon = workCenterIcons[type as WorkCenterType] || Circle;
                     const colorClass = workCenterColors[type as WorkCenterType];
                     return (
                       <div key={type} className="space-y-2">
