@@ -276,8 +276,7 @@ export function QueueItemDetailDialog({
       return;
     }
 
-    // 2. Quality sign-off check — critical dims must be verified
-    // We check the current station status for this
+    // 2 & 3. Quality sign-off and first article checks via station state
     if (item.station_id) {
       const { data: stationStatus } = await supabase
         .from("current_station_status")
@@ -295,16 +294,8 @@ export function QueueItemDetailDialog({
         setActionLoading(null);
         return;
       }
-    }
 
-    // 3. First article approval check — block if job state is First Article in Process
-    if (item.station_id) {
-      const { data: stationStatus } = await supabase
-        .from("current_station_status")
-        .select("current_job_state")
-        .eq("station_id", item.station_id)
-        .maybeSingle();
-
+      // Block if first article not yet approved
       if (stationStatus?.current_job_state === "First Article in Process") {
         toast({
           title: "First Article Pending",
