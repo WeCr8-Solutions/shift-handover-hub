@@ -55,6 +55,14 @@ export interface QueueItem {
   erp_job_id?: string | null;
   erp_source?: string | null;
   erp_last_synced_at?: string | null;
+  // Part spec fields
+  material_type?: string | null;
+  part_length_inches?: number | null;
+  part_width_inches?: number | null;
+  part_height_inches?: number | null;
+  part_weight_lbs?: number | null;
+  part_shape?: string | null;
+  part_catalog_id?: string | null;
 }
 
 export interface QueueItemComment {
@@ -96,6 +104,14 @@ export interface CreateQueueItemInput {
   first_article_minutes?: number;
   cycle_time_minutes?: number;
   tags?: string[];
+  // Part specs
+  material_type?: string;
+  part_length_inches?: number;
+  part_width_inches?: number;
+  part_height_inches?: number;
+  part_weight_lbs?: number;
+  part_shape?: string;
+  part_catalog_id?: string;
 }
 
 export interface UpdateQueueItemInput {
@@ -259,6 +275,13 @@ export function useQueue(filters?: {
         cycle_time_minutes: input.cycle_time_minutes || null,
         tags: input.tags || [],
         created_by: user.id,
+        material_type: input.material_type || null,
+        part_length_inches: input.part_length_inches || null,
+        part_width_inches: input.part_width_inches || null,
+        part_height_inches: input.part_height_inches || null,
+        part_weight_lbs: input.part_weight_lbs || null,
+        part_shape: input.part_shape || null,
+        part_catalog_id: input.part_catalog_id || null,
       });
 
       if (error) return { error: error.message };

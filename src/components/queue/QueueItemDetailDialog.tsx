@@ -837,7 +837,37 @@ export function QueueItemDetailDialog({
                 </div>
               )}
 
-              {/* Timing Info */}
+              {/* Part Specifications */}
+              {(item.material_type || item.part_shape || item.part_length_inches || item.part_weight_lbs) && (
+                <div className="p-3 bg-muted/30 rounded-lg space-y-2">
+                  <label className="text-sm font-medium block">Part Specifications</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
+                    {item.material_type && (
+                      <div>
+                        <span className="text-xs text-muted-foreground block">Material</span>
+                        <span className="font-medium">{item.material_type}</span>
+                      </div>
+                    )}
+                    {item.part_shape && (
+                      <div>
+                        <span className="text-xs text-muted-foreground block">Shape</span>
+                        <span className="font-medium capitalize">{item.part_shape}</span>
+                      </div>
+                    )}
+                    {item.part_weight_lbs && (
+                      <div>
+                        <span className="text-xs text-muted-foreground block">Weight</span>
+                        <span className="font-medium">{item.part_weight_lbs} lbs</span>
+                      </div>
+                    )}
+                  </div>
+                  {(item.part_length_inches || item.part_width_inches || item.part_height_inches) && (
+                    <div className="text-xs text-muted-foreground pt-1 border-t">
+                      Dimensions: <strong>{item.part_length_inches ?? "—"} × {item.part_width_inches ?? "—"} × {item.part_height_inches ?? "—"} in</strong>
+                    </div>
+                  )}
+                </div>
+              )}
               <div className="space-y-3">
                 {item.due_date && (
                   <div>
