@@ -60,6 +60,8 @@ function QueueCard({ item, onClick, isDragging, onDragStart, onDragEnd }: QueueC
       onClick={onClick}
       className={cn(
         "p-3 bg-card rounded-lg border shadow-sm cursor-pointer transition-all hover:shadow-md hover:border-primary/50",
+        item.item_type === "quote" && "border-l-4 border-l-amber-500",
+        item.item_type === "work_order" && "border-l-4 border-l-primary",
         isOverdue && "border-red-300 bg-red-50/50 dark:bg-red-900/10",
         isDragging && "opacity-50 scale-95"
       )}
@@ -71,15 +73,25 @@ function QueueCard({ item, onClick, isDragging, onDragStart, onDragEnd }: QueueC
             <Badge className={cn("text-xs", getPriorityColor(item.priority))}>
               {item.priority}
             </Badge>
-            <span className="text-xs text-muted-foreground">
-              {getTypeLabel(item.item_type)}
-            </span>
+            {item.item_type === "quote" ? (
+              <Badge variant="outline" className="text-xs border-amber-500/50 text-amber-600 dark:text-amber-400 bg-amber-500/10">
+                Quote
+              </Badge>
+            ) : item.item_type === "work_order" ? (
+              <Badge variant="outline" className="text-xs border-primary/50 text-primary bg-primary/10">
+                Work Order
+              </Badge>
+            ) : (
+              <span className="text-xs text-muted-foreground">
+                {getTypeLabel(item.item_type)}
+              </span>
+            )}
           </div>
           <h4 className="font-medium text-sm truncate">{item.title}</h4>
           {item.work_order && (
             <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
               <Package className="w-3 h-3" />
-              <span>WO: {item.work_order}</span>
+              <span>{item.item_type === "quote" ? "Quote #" : "WO #"}: {item.work_order}</span>
             </div>
           )}
           <div className="flex items-center justify-between mt-2">
