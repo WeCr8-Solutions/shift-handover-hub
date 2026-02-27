@@ -4,7 +4,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { ArrowRight, CheckCircle2, Zap, Wrench, Monitor, BarChart3, Users } from "lucide-react";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
-import { MockStationDashboard } from "@/components/marketing/MockAppPreviews";
+import { MockShopFloorView } from "@/components/marketing/MockShopFloorView";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
@@ -91,7 +91,7 @@ export default function MachineShopSoftware() {
               ))}
             </div>
 
-            <MockStationDashboard />
+            <MockShopFloorView />
           </div>
         </section>
 

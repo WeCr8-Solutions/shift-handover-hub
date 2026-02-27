@@ -4,7 +4,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { ArrowRight, Eye, CheckCircle2, Zap } from "lucide-react";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
-import { MockStationDashboard } from "@/components/marketing/MockAppPreviews";
+import { MockVisibilityDashboard } from "@/components/marketing/MockVisibilityDashboard";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
@@ -91,7 +91,7 @@ export default function ManufacturingVisibility() {
               </Button>
             </div>
 
-            <MockStationDashboard />
+            <MockVisibilityDashboard />
 
             <h2 className="text-2xl font-bold mb-6 mt-16">Frequently Asked Questions</h2>
             <div className="space-y-4 mb-16">
