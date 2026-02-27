@@ -1,61 +1,81 @@
 
 
-## AI Capabilities Audit — To-Do List
+## End-to-End Testing Audit & Gap Analysis
 
-### ✅ Completed Items
+### Current Test Coverage
 
-#### Phase 1 — Part Specs UI (All Done)
-1. ✅ Part Specs fields in CreateWorkOrderDialog — material, dimensions, weight, shape
-2. ✅ Part Specs display in QueueItemDetailDialog — shows material, shape, weight, dimensions
-3. ✅ Part Catalog CRUD UI (PartCatalogManager in Settings)
-4. ✅ Part Catalog auto-fill in CreateWorkOrderDialog
+**Unit Tests (useTestRunner - 20 suites, ~137 tests)**: Covers UI components, hooks, queue system, dashboard, forms, utilities, and org-scope integration. These are **simulated** — the test runner doesn't actually execute vitest; it generates mock pass results.
 
-#### Phase 2 — AI Context Enhancements (All Done)
-5. ✅ Station Queue Load — AI considers queued items and estimated hours per station
-6. ✅ Operator Certifications — AI checks active operator certs vs work center requirements
-7. ✅ Multi-Op Sequence Optimization — AI minimizes re-fixturing, considers setup time
-8. ✅ Unit Conversion Rules — Part inches → machine mm with shown math
-9. ✅ Active Downtime Awareness — AI queries active downtime_events, blocks routing to downed stations
-10. ✅ Tolerance & Surface Finish — Added to queue_items + part_catalog, AI validates against machine typical_tolerance
-11. ✅ Setup/Cycle/First Article Time — Routing steps now feed granular time data to AI for backlog calculations
+**Process Tests (useProcessTests - 7 suites, ~40 real tests)**: Live database tests for routing validation, work order flow, DB accessibility, manufacturing process, RLS/security, autofill/user context, and quote-to-ship routing. These actually query the database.
 
----
+**Role & Scope Tests (RoleScopeTestRunner - 5 suites, ~20+ real tests)**: Live tests for platform roles, org roles, team roles, scope isolation, and profile visibility.
 
-### What's Working Now
+### Missing Test Coverage for AI-Aware Context
 
-| Feature | Status |
+None of the following AI capabilities have any tests:
+
+| Feature | Test Coverage |
 |---|---|
-| AI Planning Assistant (streaming chat) | ✅ Working |
-| Usage limits (daily tier caps) | ✅ Working |
-| Machine Library (verified, $0.99) | ✅ Working |
-| Manual Machine Entry (free) | ✅ Working |
-| Part specs in work order creation | ✅ Working |
-| Part specs in work order detail view | ✅ Working |
-| Part catalog CRUD | ✅ Working |
-| Part catalog auto-fill | ✅ Working |
-| Tolerance & surface finish on parts | ✅ Working |
-| AI: machine envelope validation | ✅ Working |
-| AI: station load-aware routing | ✅ Working |
-| AI: operator certification checks | ✅ Working |
-| AI: downtime-aware routing | ✅ Working |
-| AI: setup/cycle time awareness | ✅ Working |
-| AI: tolerance/finish validation | ✅ Working |
+| Part Specs (material, dimensions, weight, shape) | **None** |
+| Tolerance & Surface Finish fields | **None** |
+| Part Catalog CRUD | **None** |
+| Part Catalog auto-fill in work orders | **None** |
+| Station machine profiles (manual entry) | **None** |
+| Station machine assignments (verified library) | **None** |
+| AI context: machine envelope validation | **None** |
+| AI context: station queue load | **None** |
+| AI context: operator certifications | **None** |
+| AI context: downtime awareness | **None** |
+| AI context: setup/cycle/first article time | **None** |
+| AI Planning Assistant edge function | **None** |
+| AI usage limits (daily caps) | **None** |
 
----
+### Implementation Plan
 
-### Future Enhancements (Backlog)
+#### 1. Add AI Context Process Tests to useProcessTests
+Add a new test suite `"AI Context & Part Specs"` with live database tests:
+- Part catalog table is accessible and org-scoped
+- Queue items with part specs (material_type, dimensions, weight, shape) are queryable
+- Tolerance and surface_finish fields exist and are queryable on queue_items
+- Station machine profiles table is accessible
+- Station machine assignments table is accessible
+- Downtime events table is accessible and filterable by `ended_at IS NULL`
+- Certifications table is accessible
+- Work order routing includes setup_time, cycle_time, first_article fields
+- AI chat usage tracking table is accessible
 
-#### Work-Holding Constraints
-Add vise/chuck capacity fields to machine profiles so the AI can validate whether a part can be physically held on a given machine.
+#### 2. Add AI Edge Function Test to useProcessTests
+Add tests under `"AI Planning Assistant"` suite:
+- AI planning assistant edge function responds to authenticated requests
+- AI planning assistant rejects unauthenticated requests
+- AI planning assistant rejects requests without organization_id
 
-#### Historical Performance Tracking
-Track actual vs estimated cycle times per station/part combo to improve future AI time estimates.
+#### 3. Add Part Specs Unit Tests
+Create `src/components/queue/PartSpecsSection.test.tsx`:
+- Renders material type dropdown with correct options
+- Renders shape dropdown with correct options
+- Renders tolerance and surface finish dropdowns
+- Part catalog search input renders
+- Auto-fill populates fields from catalog selection
 
-#### Material State Tracking
-Track pre/post heat-treat state on work orders so the AI knows if different tooling/speeds are needed.
+#### 4. Add Part Catalog Unit Tests
+Create `src/components/settings/PartCatalogManager.test.tsx`:
+- Renders create form
+- Validates required fields (part_number)
+- Displays catalog entries
 
-#### Tooling Inventory Integration
-Track available tooling per station so the AI can verify required cutters/inserts are available before routing.
+#### 5. Update useTestRunner Registry
+Add the new test files to `testFileRegistry` so they appear in the Testing Dashboard.
 
-#### AI Deep-Link Actions
-Add clickable action buttons in AI chat responses to navigate directly to the referenced work order or station.
+#### 6. Verify via Screenshots
+After implementation, navigate to `/testing` and run:
+- Process Tests tab → verify AI Context suite passes
+- Unit Tests tab → verify new Part Specs and Part Catalog suites appear
+- Roles & Scope tab → verify existing tests still pass
+
+### Technical Details
+- New process tests go in `src/hooks/useProcessTests.ts` as a new `aiContextTests` array added to `allTestSuites`
+- New unit test files follow existing patterns using vitest + testing-library
+- Edge function test calls `supabase.functions.invoke("ai-planning-assistant")` with/without auth
+- All new tests are real (not simulated) — they query actual database state
+
