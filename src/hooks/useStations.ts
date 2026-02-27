@@ -298,9 +298,15 @@ export function useHandoffRecords(teamId?: string | null, organizationId?: strin
   const createHandoffRecord = async (
     record: Omit<HandoffRecord, "id" | "created_at" | "updated_at" | "record_version">
   ) => {
+    // Ensure organization_id is always set (required NOT NULL column)
+    const recordWithOrg = {
+      ...record,
+      organization_id: effectiveOrgId,
+    };
+
     const { data, error } = await supabase
       .from("handoff_records")
-      .insert(record as any)
+      .insert(recordWithOrg as any)
       .select()
       .single();
 
