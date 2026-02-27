@@ -26,7 +26,7 @@ import { NCRListView } from "@/components/ncr/NCRListView";
 import { 
   Clock, User, Package, Send, History, MessageSquare, Trash2, Loader2,
   Play, Pause, CheckCircle2, Wrench, FileText, AlertTriangle, ArrowRight, GitBranch,
-  CircleDot, Circle, CheckCircle, Timer, Truck, ShieldAlert, ArrowRightLeft
+  CircleDot, Circle, CheckCircle, Timer, Truck, ShieldAlert, ArrowRightLeft, Plug
 } from "lucide-react";
 
 interface RoutingStepRow {
@@ -821,6 +821,19 @@ export function QueueItemDetailDialog({
                       <p className="font-medium">{item.quantity}</p>
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* ERP Source Info */}
+              {item.erp_source && (
+                <div className="flex items-center gap-3 p-3 bg-purple-50/50 dark:bg-purple-900/10 rounded-lg border border-purple-200/50 dark:border-purple-800/50">
+                  <Plug className="w-4 h-4 text-purple-500" />
+                  <div className="text-sm">
+                    <span className="font-medium">ERP Synced</span>
+                    <span className="text-muted-foreground ml-2">Source: {item.erp_source}</span>
+                    {item.erp_job_id && <span className="text-muted-foreground ml-2">· Job ID: <span className="font-mono">{item.erp_job_id}</span></span>}
+                    {item.erp_last_synced_at && <span className="text-muted-foreground ml-2">· Synced {formatDistanceToNow(new Date(item.erp_last_synced_at), { addSuffix: true })}</span>}
+                  </div>
                 </div>
               )}
 

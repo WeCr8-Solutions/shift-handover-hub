@@ -51,6 +51,10 @@ export interface QueueItem {
   quantity_locked: boolean | null;
   parent_work_order_id: string | null;
   is_rework: boolean | null;
+  // ERP sync fields
+  erp_job_id?: string | null;
+  erp_source?: string | null;
+  erp_last_synced_at?: string | null;
 }
 
 export interface QueueItemComment {

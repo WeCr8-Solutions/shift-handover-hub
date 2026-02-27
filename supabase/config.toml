@@ -13,3 +13,5 @@ project_id = "kgrstnbxqdmadtoankqr"
     verify_jwt = false
   [functions.social-agent]
     verify_jwt = false
+  [functions.erp-sync]
+    verify_jwt = false

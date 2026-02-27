@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { QueueItem, QueueStatus, QueuePriority } from "@/hooks/useQueue";
 import { cn } from "@/lib/utils";
-import { Clock, User, Package, AlertTriangle, GripVertical } from "lucide-react";
+import { Clock, User, Package, AlertTriangle, GripVertical, Plug } from "lucide-react";
 import { format } from "date-fns";
 
 interface QueueKanbanBoardProps {
@@ -86,6 +86,11 @@ function QueueCard({ item, onClick, isDragging, onDragStart, onDragEnd }: QueueC
               <span className="text-xs text-muted-foreground">
                 {getTypeLabel(item.item_type)}
               </span>
+            )}
+            {item.erp_source && (
+              <Badge variant="outline" className="text-xs border-purple-500/50 text-purple-600 dark:text-purple-400 bg-purple-500/10">
+                <Plug className="w-2.5 h-2.5 mr-0.5" />ERP
+              </Badge>
             )}
           </div>
           <h4 className="font-medium text-sm truncate">{item.title}</h4>
