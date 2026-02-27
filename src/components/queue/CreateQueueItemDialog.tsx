@@ -27,6 +27,7 @@ interface CreateQueueItemDialogProps {
 }
 
 const typeOptions: { value: QueueItemType; label: string; description: string }[] = [
+  { value: "quote", label: "Quote", description: "Quote for estimation and customer approval" },
   { value: "work_order", label: "Work Order", description: "Manufacturing work order queue item" },
   { value: "station_task", label: "Station Task", description: "Task assigned to a specific station" },
   { value: "team_task", label: "Team Task", description: "General task for team members" },
@@ -81,10 +82,15 @@ export function CreateQueueItemDialog({ open, onOpenChange, onCreate, preselecte
       return;
     }
 
-    // For work orders, require station assignment
+    // For work orders, require station assignment (quotes don't need one)
     if (formData.item_type === "work_order" && !formData.station_id) {
       toast({ title: "Error", description: "Please assign a machine/station for the work order", variant: "destructive" });
       return;
+    }
+
+    // Auto-set qty fields for quotes and work orders
+    if ((formData.item_type === "quote" || formData.item_type === "work_order") && formData.quantity) {
+      (formData as any).qty_original = formData.quantity;
     }
 
     setLoading(true);
@@ -97,7 +103,8 @@ export function CreateQueueItemDialog({ open, onOpenChange, onCreate, preselecte
     if (error) {
       toast({ title: "Error", description: error, variant: "destructive" });
     } else {
-      toast({ title: "Success", description: `${formData.item_type === "work_order" ? "Work order" : "Queue item"} created` });
+      const typeLabel = formData.item_type === "work_order" ? "Work order" : formData.item_type === "quote" ? "Quote" : "Queue item";
+      toast({ title: "Success", description: `${typeLabel} created` });
       onOpenChange(false);
       // Reset form
       setFormData({
@@ -117,10 +124,12 @@ export function CreateQueueItemDialog({ open, onOpenChange, onCreate, preselecte
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Factory className="w-5 h-5 text-primary" />
-            Create {formData.item_type === "work_order" ? "Work Order" : "Queue Item"}
+            Create {formData.item_type === "quote" ? "Quote" : formData.item_type === "work_order" ? "Work Order" : "Queue Item"}
           </DialogTitle>
           <DialogDescription>
-            Add a new item to the queue for live tracking and prioritization
+            {formData.item_type === "quote" 
+              ? "Create a quote for estimation routing and customer approval"
+              : "Add a new item to the queue for live tracking and prioritization"}
           </DialogDescription>
         </DialogHeader>
 
@@ -168,12 +177,13 @@ export function CreateQueueItemDialog({ open, onOpenChange, onCreate, preselecte
             </div>
           </div>
 
-          {/* Machine/Station Assignment - Required for Work Orders */}
-          {(formData.item_type === "work_order" || formData.item_type === "station_task") && (
+          {/* Machine/Station Assignment - Required for Work Orders, optional for Quotes */}
+          {(formData.item_type === "work_order" || formData.item_type === "station_task" || formData.item_type === "quote") && (
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <Wrench className="w-4 h-4" />
                 Assign to Machine/Station {formData.item_type === "work_order" && <span className="text-red-500">*</span>}
+                {formData.item_type === "quote" && <span className="text-xs text-muted-foreground">(optional)</span>}
               </Label>
               <Select
                 value={formData.station_id || "none"}
@@ -183,8 +193,8 @@ export function CreateQueueItemDialog({ open, onOpenChange, onCreate, preselecte
                   <SelectValue placeholder="Select a machine..." />
                 </SelectTrigger>
                 <SelectContent className="max-h-64">
-                  {formData.item_type !== "work_order" && (
-                    <SelectItem value="none">No station (team-wide)</SelectItem>
+                  {(formData.item_type !== "work_order") && (
+                    <SelectItem value="none">No station {formData.item_type === "quote" ? "(assign later)" : "(team-wide)"}</SelectItem>
                   )}
                   {stationsLoading ? (
                     <div className="flex items-center justify-center p-4">
@@ -236,15 +246,15 @@ export function CreateQueueItemDialog({ open, onOpenChange, onCreate, preselecte
             />
           </div>
 
-          {/* Work Order Specific Fields */}
-          {formData.item_type === "work_order" && (
+          {/* Quote / Work Order Specific Fields */}
+          {(formData.item_type === "work_order" || formData.item_type === "quote") && (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-3 bg-muted/30 rounded-lg border">
               <div className="space-y-2">
-                <Label className="text-xs">Work Order #</Label>
+                <Label className="text-xs">{formData.item_type === "quote" ? "Quote #" : "Work Order #"}</Label>
                 <Input
                   value={formData.work_order || ""}
                   onChange={(e) => setFormData({ ...formData, work_order: e.target.value })}
-                  placeholder="Enter work order number"
+                  placeholder={formData.item_type === "quote" ? "Enter quote number" : "Enter work order number"}
                 />
               </div>
               <div className="space-y-2">
@@ -370,7 +380,7 @@ export function CreateQueueItemDialog({ open, onOpenChange, onCreate, preselecte
             </Button>
             <Button type="submit" disabled={loading}>
               {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              Create {formData.item_type === "work_order" ? "Work Order" : "Item"}
+              Create {formData.item_type === "quote" ? "Quote" : formData.item_type === "work_order" ? "Work Order" : "Item"}
             </Button>
           </DialogFooter>
         </form>

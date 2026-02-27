@@ -4429,6 +4429,7 @@ export type Database = {
         | "station_task"
         | "team_task"
         | "support_ticket"
+        | "quote"
       queue_priority: "low" | "normal" | "high" | "urgent" | "critical"
       queue_status:
         | "pending"
@@ -4617,6 +4618,7 @@ export const Constants = {
         "station_task",
         "team_task",
         "support_ticket",
+        "quote",
       ],
       queue_priority: ["low", "normal", "high", "urgent", "critical"],
       queue_status: [
