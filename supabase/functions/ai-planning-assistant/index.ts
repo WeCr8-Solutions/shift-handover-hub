@@ -101,7 +101,7 @@ serve(async (req) => {
       orgRole === "admin";
 
     // Fetch queue items, stations, routing, station status, and routing templates in parallel
-    const [queueRes, stationsRes, routingRes, stationStatusRes, routingTemplatesRes, machineProfilesRes] = await Promise.all([
+    const [queueRes, stationsRes, routingRes, stationStatusRes, routingTemplatesRes, machineProfilesRes, manualProfilesRes] = await Promise.all([
       supabase
         .from("queue_items")
         .select("id, title, work_order, part_number, status, priority, due_date, assigned_to, station_id, item_type, quantity, qty_completed, qty_scrap, qty_rework, qty_open, quantity_locked, operation_number, created_at")
@@ -131,10 +131,16 @@ serve(async (req) => {
         .select("id, name, description")
         .eq("organization_id", organization_id)
         .limit(50),
-      // Fetch machine profiles via assignments → purchases → library
+      // Fetch verified library profiles via assignments → purchases → library
       supabase
         .from("station_machine_assignments")
         .select("station_id, purchase_id, organization_machine_purchases!inner(machine_library_id, is_active, verified_machine_library!inner(manufacturer, model, machine_type, platform_category, max_x_travel, max_y_travel, max_z_travel, max_part_weight, max_part_envelope_length, max_part_envelope_width, max_part_envelope_height, five_axis_simultaneous, fourth_axis, live_tooling, y_axis_turn, sub_spindle, probing, through_spindle_coolant, pallet_pool, bar_feeder, material_capability, typical_tolerance, hard_constraints))")
+        .eq("organization_id", organization_id)
+        .limit(100),
+      // Fetch manual machine profiles
+      supabase
+        .from("station_manual_machine_profiles")
+        .select("station_id, manufacturer, model, machine_type, platform_category, max_x_travel, max_y_travel, max_z_travel, max_part_weight, max_part_envelope_length, max_part_envelope_width, max_part_envelope_height, five_axis_simultaneous, fourth_axis, live_tooling, y_axis_turn, sub_spindle, probing, through_spindle_coolant, pallet_pool, bar_feeder, material_capability, typical_tolerance, hard_constraints")
         .eq("organization_id", organization_id)
         .limit(100),
     ]);
@@ -145,6 +151,7 @@ serve(async (req) => {
     const stationStatus = stationStatusRes.data || [];
     const routingTemplates = routingTemplatesRes.data || [];
     const machineProfiles = machineProfilesRes.data || [];
+    const manualProfiles = manualProfilesRes.data || [];
     // Build context
     const now = new Date().toISOString();
     const stationMap = Object.fromEntries(stations.map((s: any) => [s.id, s.name]));
@@ -201,39 +208,51 @@ serve(async (req) => {
       po: r.po_number,
     }));
 
-    // Build machine profile summaries from assignments → purchases → library
-    const machineContextSummary = machineProfiles.map((a: any) => {
+    // Build machine profile summaries from verified library assignments
+    const buildProfileSummary = (ml: any, stationId: string, source: string) => ({
+      station: stationMap[stationId] || stationId,
+      source,
+      manufacturer: ml.manufacturer,
+      model: ml.model,
+      machine_type: ml.machine_type,
+      platform: ml.platform_category,
+      envelope: {
+        x: ml.max_x_travel, y: ml.max_y_travel, z: ml.max_z_travel,
+        max_weight: ml.max_part_weight,
+        max_length: ml.max_part_envelope_length,
+        max_width: ml.max_part_envelope_width,
+        max_height: ml.max_part_envelope_height,
+      },
+      capabilities: {
+        five_axis: ml.five_axis_simultaneous,
+        fourth_axis: ml.fourth_axis,
+        live_tooling: ml.live_tooling,
+        y_axis: ml.y_axis_turn,
+        sub_spindle: ml.sub_spindle,
+        probing: ml.probing,
+        tsc: ml.through_spindle_coolant,
+        pallet_pool: ml.pallet_pool,
+        bar_feeder: ml.bar_feeder,
+      },
+      materials: ml.material_capability,
+      tolerance: ml.typical_tolerance,
+      constraints: ml.hard_constraints,
+    });
+
+    // Verified library profiles
+    const verifiedContextSummary = machineProfiles.map((a: any) => {
       const ml = a.organization_machine_purchases?.verified_machine_library;
       if (!ml) return null;
-      return {
-        station: stationMap[a.station_id] || a.station_id,
-        manufacturer: ml.manufacturer,
-        model: ml.model,
-        machine_type: ml.machine_type,
-        platform: ml.platform_category,
-        envelope: {
-          x: ml.max_x_travel, y: ml.max_y_travel, z: ml.max_z_travel,
-          max_weight: ml.max_part_weight,
-          max_length: ml.max_part_envelope_length,
-          max_width: ml.max_part_envelope_width,
-          max_height: ml.max_part_envelope_height,
-        },
-        capabilities: {
-          five_axis: ml.five_axis_simultaneous,
-          fourth_axis: ml.fourth_axis,
-          live_tooling: ml.live_tooling,
-          y_axis: ml.y_axis_turn,
-          sub_spindle: ml.sub_spindle,
-          probing: ml.probing,
-          tsc: ml.through_spindle_coolant,
-          pallet_pool: ml.pallet_pool,
-          bar_feeder: ml.bar_feeder,
-        },
-        materials: ml.material_capability,
-        tolerance: ml.typical_tolerance,
-        constraints: ml.hard_constraints,
-      };
+      return buildProfileSummary(ml, a.station_id, "verified_library");
     }).filter(Boolean);
+
+    // Manual profiles (only for stations without a verified profile)
+    const verifiedStationIds = new Set(machineProfiles.map((a: any) => a.station_id));
+    const manualContextSummary = manualProfiles
+      .filter((mp: any) => !verifiedStationIds.has(mp.station_id))
+      .map((mp: any) => buildProfileSummary(mp, mp.station_id, "manual_entry"));
+
+    const machineContextSummary = [...verifiedContextSummary, ...manualContextSummary];
 
     const callerRoleLabel = isSupervisorOrAbove
       ? `Supervisor/Admin (org role: ${orgRole}, platform roles: ${platformRoles.join(", ") || "operator"})`
@@ -261,7 +280,7 @@ ${JSON.stringify(routingSummary, null, 2)}
 ### Available Routing Templates (${routingTemplates.length}):
 ${JSON.stringify(routingTemplates.map((t: any) => ({ name: t.name, description: t.description })), null, 2)}
 
-### Machine Identity Profiles (${machineProfiles.length} context-active stations):
+### Machine Identity Profiles (${machineContextSummary.length} context-active stations — ${verifiedContextSummary.length} verified, ${manualContextSummary.length} manual):
 ${machineContextSummary.length > 0 ? JSON.stringify(machineContextSummary, null, 2) : "No stations have manufacturer context activated. Routing validation will use generic station type tags only."}
 
 ## WORK ORDER REROUTING & APPROVAL RULES

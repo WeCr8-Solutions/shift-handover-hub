@@ -3774,6 +3774,117 @@ export type Database = {
           },
         ]
       }
+      station_manual_machine_profiles: {
+        Row: {
+          bar_feeder: boolean
+          created_at: string
+          created_by: string
+          five_axis_simultaneous: boolean
+          fourth_axis: boolean
+          hard_constraints: Json[]
+          id: string
+          live_tooling: boolean
+          machine_type: string
+          manufacturer: string
+          material_capability: string[]
+          max_part_envelope_height: number | null
+          max_part_envelope_length: number | null
+          max_part_envelope_width: number | null
+          max_part_weight: number | null
+          max_x_travel: number | null
+          max_y_travel: number | null
+          max_z_travel: number | null
+          model: string
+          organization_id: string
+          pallet_pool: boolean
+          platform_category: string
+          probing: boolean
+          station_id: string
+          sub_spindle: boolean
+          through_spindle_coolant: boolean
+          typical_tolerance: number | null
+          updated_at: string
+          y_axis_turn: boolean
+        }
+        Insert: {
+          bar_feeder?: boolean
+          created_at?: string
+          created_by: string
+          five_axis_simultaneous?: boolean
+          fourth_axis?: boolean
+          hard_constraints?: Json[]
+          id?: string
+          live_tooling?: boolean
+          machine_type: string
+          manufacturer: string
+          material_capability?: string[]
+          max_part_envelope_height?: number | null
+          max_part_envelope_length?: number | null
+          max_part_envelope_width?: number | null
+          max_part_weight?: number | null
+          max_x_travel?: number | null
+          max_y_travel?: number | null
+          max_z_travel?: number | null
+          model: string
+          organization_id: string
+          pallet_pool?: boolean
+          platform_category: string
+          probing?: boolean
+          station_id: string
+          sub_spindle?: boolean
+          through_spindle_coolant?: boolean
+          typical_tolerance?: number | null
+          updated_at?: string
+          y_axis_turn?: boolean
+        }
+        Update: {
+          bar_feeder?: boolean
+          created_at?: string
+          created_by?: string
+          five_axis_simultaneous?: boolean
+          fourth_axis?: boolean
+          hard_constraints?: Json[]
+          id?: string
+          live_tooling?: boolean
+          machine_type?: string
+          manufacturer?: string
+          material_capability?: string[]
+          max_part_envelope_height?: number | null
+          max_part_envelope_length?: number | null
+          max_part_envelope_width?: number | null
+          max_part_weight?: number | null
+          max_x_travel?: number | null
+          max_y_travel?: number | null
+          max_z_travel?: number | null
+          model?: string
+          organization_id?: string
+          pallet_pool?: boolean
+          platform_category?: string
+          probing?: boolean
+          station_id?: string
+          sub_spindle?: boolean
+          through_spindle_coolant?: boolean
+          typical_tolerance?: number | null
+          updated_at?: string
+          y_axis_turn?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "station_manual_machine_profiles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "station_manual_machine_profiles_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: true
+            referencedRelation: "stations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stations: {
         Row: {
           created_at: string
