@@ -22,6 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Package, Wrench, Hash, Calendar, Clock, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { PartSpecsSection, PartSpecsData } from "./PartSpecsSection";
 
 interface Station {
   id: string;
@@ -60,6 +61,16 @@ export function CreateWorkOrderDialog({
     setup_time_minutes: "",
     first_article_minutes: "",
     cycle_time_minutes: "",
+  });
+
+  const [partSpecs, setPartSpecs] = useState<PartSpecsData>({
+    material_type: "",
+    part_length_inches: "",
+    part_width_inches: "",
+    part_height_inches: "",
+    part_weight_lbs: "",
+    part_shape: "",
+    part_catalog_id: "",
   });
 
   // Fetch stations
@@ -128,6 +139,13 @@ export function CreateWorkOrderDialog({
         setup_time_minutes: formData.setup_time_minutes ? parseInt(formData.setup_time_minutes) : undefined,
         first_article_minutes: formData.first_article_minutes ? parseInt(formData.first_article_minutes) : undefined,
         cycle_time_minutes: formData.cycle_time_minutes ? parseInt(formData.cycle_time_minutes) : undefined,
+        material_type: partSpecs.material_type || undefined,
+        part_length_inches: partSpecs.part_length_inches ? parseFloat(partSpecs.part_length_inches) : undefined,
+        part_width_inches: partSpecs.part_width_inches ? parseFloat(partSpecs.part_width_inches) : undefined,
+        part_height_inches: partSpecs.part_height_inches ? parseFloat(partSpecs.part_height_inches) : undefined,
+        part_weight_lbs: partSpecs.part_weight_lbs ? parseFloat(partSpecs.part_weight_lbs) : undefined,
+        part_shape: partSpecs.part_shape || undefined,
+        part_catalog_id: partSpecs.part_catalog_id || undefined,
       });
 
       toast.success("Work order created successfully");
@@ -147,6 +165,15 @@ export function CreateWorkOrderDialog({
         setup_time_minutes: "",
         first_article_minutes: "",
         cycle_time_minutes: "",
+      });
+      setPartSpecs({
+        material_type: "",
+        part_length_inches: "",
+        part_width_inches: "",
+        part_height_inches: "",
+        part_weight_lbs: "",
+        part_shape: "",
+        part_catalog_id: "",
       });
     } catch (error) {
       toast.error("Failed to create work order");
@@ -348,6 +375,9 @@ export function CreateWorkOrderDialog({
               </div>
             )}
           </div>
+
+          {/* Part Specifications */}
+          <PartSpecsSection data={partSpecs} onChange={setPartSpecs} />
 
           {/* Description */}
           <div className="space-y-2">
