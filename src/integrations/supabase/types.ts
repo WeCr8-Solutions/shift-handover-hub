@@ -2934,6 +2934,62 @@ export type Database = {
         }
         Relationships: []
       }
+      part_catalog: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          material_type: string | null
+          organization_id: string
+          part_height_inches: number | null
+          part_length_inches: number | null
+          part_number: string
+          part_shape: string | null
+          part_weight_lbs: number | null
+          part_width_inches: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          material_type?: string | null
+          organization_id: string
+          part_height_inches?: number | null
+          part_length_inches?: number | null
+          part_number: string
+          part_shape?: string | null
+          part_weight_lbs?: number | null
+          part_width_inches?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          material_type?: string | null
+          organization_id?: string
+          part_height_inches?: number | null
+          part_length_inches?: number | null
+          part_number?: string
+          part_shape?: string | null
+          part_weight_lbs?: number | null
+          part_width_inches?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "part_catalog_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       planning_chat_sessions: {
         Row: {
           created_at: string
@@ -3247,11 +3303,18 @@ export type Database = {
           id: string
           is_rework: boolean | null
           item_type: Database["public"]["Enums"]["queue_item_type"]
+          material_type: string | null
           metadata: Json | null
           operation_number: string | null
           organization_id: string
           parent_work_order_id: string | null
+          part_catalog_id: string | null
+          part_height_inches: number | null
+          part_length_inches: number | null
           part_number: string | null
+          part_shape: string | null
+          part_weight_lbs: number | null
+          part_width_inches: number | null
           parts_completed: number | null
           position: number
           priority: Database["public"]["Enums"]["queue_priority"]
@@ -3292,11 +3355,18 @@ export type Database = {
           id?: string
           is_rework?: boolean | null
           item_type?: Database["public"]["Enums"]["queue_item_type"]
+          material_type?: string | null
           metadata?: Json | null
           operation_number?: string | null
           organization_id: string
           parent_work_order_id?: string | null
+          part_catalog_id?: string | null
+          part_height_inches?: number | null
+          part_length_inches?: number | null
           part_number?: string | null
+          part_shape?: string | null
+          part_weight_lbs?: number | null
+          part_width_inches?: number | null
           parts_completed?: number | null
           position?: number
           priority?: Database["public"]["Enums"]["queue_priority"]
@@ -3337,11 +3407,18 @@ export type Database = {
           id?: string
           is_rework?: boolean | null
           item_type?: Database["public"]["Enums"]["queue_item_type"]
+          material_type?: string | null
           metadata?: Json | null
           operation_number?: string | null
           organization_id?: string
           parent_work_order_id?: string | null
+          part_catalog_id?: string | null
+          part_height_inches?: number | null
+          part_length_inches?: number | null
           part_number?: string | null
+          part_shape?: string | null
+          part_weight_lbs?: number | null
+          part_width_inches?: number | null
           parts_completed?: number | null
           position?: number
           priority?: Database["public"]["Enums"]["queue_priority"]
@@ -3377,6 +3454,13 @@ export type Database = {
             columns: ["parent_work_order_id"]
             isOneToOne: false
             referencedRelation: "queue_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "queue_items_part_catalog_id_fkey"
+            columns: ["part_catalog_id"]
+            isOneToOne: false
+            referencedRelation: "part_catalog"
             referencedColumns: ["id"]
           },
           {

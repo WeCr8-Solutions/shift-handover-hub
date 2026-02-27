@@ -104,7 +104,7 @@ serve(async (req) => {
     const [queueRes, stationsRes, routingRes, stationStatusRes, routingTemplatesRes, machineProfilesRes, manualProfilesRes] = await Promise.all([
       supabase
         .from("queue_items")
-        .select("id, title, work_order, part_number, status, priority, due_date, assigned_to, station_id, item_type, quantity, qty_completed, qty_scrap, qty_rework, qty_open, quantity_locked, operation_number, created_at")
+        .select("id, title, work_order, part_number, status, priority, due_date, assigned_to, station_id, item_type, quantity, qty_completed, qty_scrap, qty_rework, qty_open, quantity_locked, operation_number, created_at, material_type, part_length_inches, part_width_inches, part_height_inches, part_weight_lbs, part_shape")
         .eq("organization_id", organization_id)
         .in("status", ["pending", "queued", "in_progress", "on_hold", "blocked"])
         .order("priority", { ascending: false })
@@ -171,6 +171,17 @@ serve(async (req) => {
       completed: q.qty_completed,
       open: q.qty_open,
       locked: q.quantity_locked,
+      // Part specs for machine-aware routing
+      ...(q.material_type || q.part_length_inches || q.part_shape ? {
+        part_specs: {
+          material: q.material_type,
+          length: q.part_length_inches,
+          width: q.part_width_inches,
+          height: q.part_height_inches,
+          weight: q.part_weight_lbs,
+          shape: q.part_shape,
+        }
+      } : {}),
     }));
 
     const stationSummary = stations.map((s: any) => ({
@@ -320,9 +331,21 @@ When a station has a Machine Identity Profile, you MUST validate routing compati
 **If any HARD constraint fails:** Block the routing suggestion and suggest an alternative station that passes all checks.
 **If all pass:** Mark station as valid with HIGH confidence.
 
+## PART-AWARE CONTEXT VALIDATION
+
+Work orders may include part_specs with material, dimensions (length/width/height in inches), weight (lbs), and shape (prismatic, cylindrical, complex, flat, tubular).
+
+When part_specs are present on a work order AND a station has a machine profile:
+1. **Envelope Fit** — Compare part length/width/height against machine max_x/y/z_travel AND max_part_envelope dimensions. Part must fit.
+2. **Weight Fit** — Part weight must be ≤ machine max_part_weight.
+3. **Material Match** — Part material_type must be in the station's material_capability list.
+4. **Shape-to-Machine Logic** — Cylindrical parts → prefer lathes/turn centers. Prismatic → prefer mills. Complex → prefer 5-axis capable machines.
+
+When part_specs are MISSING, note "No part specs available — routing confidence is reduced. Recommend adding material/dimension data to the work order for better AI routing."
+
 When rerouting due to machine downtime or quality holds:
 1. Filter all stations with context_active profiles
-2. Eliminate stations failing any hard constraint
+2. Eliminate stations failing any hard constraint (including part-vs-machine checks)
 3. Rank remaining by: same manufacturer family (preference), same platform, queue length
 4. Output: "Best Alternate: [Station] ([Manufacturer Model])" with reason and confidence score
 
