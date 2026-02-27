@@ -60,6 +60,7 @@ export const PRICING_TIERS = {
       'Dedicated account manager',
       'SSO & advanced security',
       'API access',
+      'ERP Connector integration',
     ],
   },
 } as const;

@@ -32,6 +32,7 @@ const DEFAULT_ENTITLEMENTS: Entitlements = {
     analytics: false,
     api_access: false,
     bulk_upload: false,
+    erp_connector: false,
   },
   limits: {
     users: 1,
