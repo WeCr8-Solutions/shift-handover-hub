@@ -1,78 +1,90 @@
 
 
-# Audit & Fix: Org-Scoped Data Flow + Test Coverage
+# Storage Buckets Audit for Org-Scoped Operations
 
-## Issues Found
+## Current State
 
-### A. Missing `organization?.id` in hook calls (5 files)
+| Bucket | Exists | Used By | Has RLS | Org-Scoped |
+|--------|--------|---------|---------|------------|
+| `performance-updates` | Yes | Job Performance Updates (image attachments) | Yes — folder-based by user_id + team membership | Partially (via team membership, not direct org_id) |
+| `ncr-attachments` | **No** | NCR reports have no image/file support | N/A | N/A |
+| `handoff-attachments` | **No** | Handoff records have no image/file support | N/A | N/A |
 
-These components call `useStations` and/or `useHandoffRecords` with only `teamId`, relying on the hook's internal `useUserOrganization()` fallback. This creates a redundant second call to `useUserOrganization` per component and risks inconsistency if the fallback resolves at a different time than the component's own org context.
+## Gaps Found
 
-| File | Current Call | Fix |
-|------|-------------|-----|
-| `SupervisorDashboard.tsx` | `useStations(currentTeam?.id)` | `useStations(currentTeam?.id, organization?.id)` |
-| `SupervisorDashboard.tsx` | `useHandoffRecords(currentTeam?.id)` | `useHandoffRecords(currentTeam?.id, organization?.id)` |
-| `Index.tsx` | `useStations(currentTeam?.id)` | `useStations(currentTeam?.id, organization?.id)` |
-| `Index.tsx` | `useHandoffRecords(currentTeam?.id)` | `useHandoffRecords(currentTeam?.id, organization?.id)` |
-| `NewHandoffForm.tsx` | `useStations(currentTeam?.id)` | Add `useUserOrganization` and pass `organization?.id` |
-| `QueueItemDetailDialog.tsx` | `useStations(currentTeam?.id)` | Same pattern |
-| `CreateQueueItemDialog.tsx` | `useStations(currentTeam?.id)` | Same pattern |
-| `OperatorDashboard.tsx` | `useHandoffRecords(currentTeam?.id)` | Same pattern |
-| `StationDetailView.tsx` | `useHandoffRecords(currentTeam?.id)` | Same pattern |
+1. **NCR reports** — No `image_urls` column, no storage bucket. Aerospace-grade traceability requires photo evidence for defects (dimensional failures, surface finish issues, material defects).
 
-### B. Missing Tests
+2. **Handoff records** — No image attachment support. Marketing pages and PRD reference "photo attachments for machine conditions" and "setup sheets" but the feature doesn't exist in the database or UI.
 
-1. **SupervisorDashboard** — no test exists. Need test verifying:
-   - Org-scoped hook calls with `organization?.id`
-   - KPI computation from station states
-   - Passes `dbId` (not display `station_id`) to `onViewStation`
+3. **`performance-updates` bucket RLS** — The "team members can view" policy uses a complex self-referencing subquery on `storage.objects` that may not resolve correctly. The simpler folder-based policy works, but cross-team/supervisor visibility is fragile.
 
-2. **useQueue hook** — existing test only validates types/sorting, not org-scoped Supabase calls. Need test verifying:
-   - `organization_id` filter applied to query
-   - Station filter for operator scope
+## Plan
 
-3. **OperatorDashboard** — no test. Need test verifying:
-   - Renders StationCheckIn when not checked in
-   - Passes station context to handoff form
+### 1. Create two new storage buckets via migration
+- `ncr-attachments` — private, 10MB limit, for NCR defect photos
+- `handoff-attachments` — private, 10MB limit, for shift handoff condition photos
 
-4. **Org-scope integration test** — existing test only validates structural contracts. Need to add:
-   - Verification that `useStations` uses `.eq("organization_id", ...)` (done in useStations.test.ts but shallow)
-   - Queue hook org filter contract
-   - Dashboard component hook call signatures
+### 2. Add `image_urls TEXT[]` columns
+- `ncr_reports.image_urls` — nullable, default `'{}'`
+- `handoff_records.image_urls` — nullable, default `'{}'`
 
-### C. Existing test gaps in current files
+### 3. RLS policies for new buckets (org-scoped via folder path)
+All buckets use `{org_id}/{user_id}/filename` folder structure:
+- **INSERT**: Authenticated user must be org member, path must match `org_id/user_id`
+- **SELECT**: User must be member of the org_id in the folder path
+- **DELETE**: Only the uploading user (folder owner)
 
-- `useStations.test.ts` — doesn't verify `.eq()` is called with `"organization_id"` as first arg
-- `useOperatorSessions.test.ts` — doesn't test `checkIn` upserts `current_station_status`
-- `OperatorStationPanel.test.tsx` — doesn't test RPC call shape for `pass_work_order_to_next_step`
+### 4. Harden `performance-updates` bucket RLS
+Replace the fragile team-membership SELECT policy with org-scoped folder structure (`{org_id}/{user_id}/filename`) matching the new buckets, plus a migration to keep backward compatibility with existing `{user_id}/filename` paths.
 
-## Implementation Plan
+### 5. Add upload/view support in hooks
+- `useNCR` — add `uploadNCRImage` and `getSignedNCRImageUrls` methods
+- `useStations` (handoff records) — add `uploadHandoffImage` and `getSignedHandoffImageUrls`
 
-### 1. Fix org-scoped hook calls (5 component files)
-Pass `organization?.id` explicitly to `useStations` and `useHandoffRecords` in all components listed above. Import `useUserOrganization` where not already imported.
+### 6. Update UI components
+- `CreateNCRDialog` — add file upload input for defect photos
+- `NewHandoffForm` — add file upload input for machine condition photos
+- `NCRApprovalPanel` — display attached images with signed URLs
+- `HandoffCard` — display attached images
 
-### 2. Create `SupervisorDashboard.test.tsx`
-- Mock `useStations`, `useHandoffRecords`, `useUserOrganization`, `useCurrentTeam`
-- Verify hooks called with org ID
-- Verify KPI counts match station states
-- Verify `onViewStation` receives `dbId`
+### 7. Update `useJobPerformanceUpdates` upload path
+Migrate from `{user_id}/filename` to `{org_id}/{user_id}/filename` for new uploads while keeping signed URL generation backward-compatible with old paths.
 
-### 3. Expand `useStations.test.ts`
-- Add test that `.eq` is called with `"organization_id"` and the explicit org ID
-- Add test that org fallback from `useUserOrganization` is used when no explicit ID passed
+### Technical Details
 
-### 4. Expand `useOperatorSessions.test.ts`
-- Add test verifying `checkIn` calls `upsert` on `current_station_status`
-- Add test verifying `checkOut` clears operator from station status
+**Folder structure** for all three buckets:
+```text
+{bucket}/
+  {organization_id}/
+    {user_id}/
+      {timestamp}-{random}.{ext}
+```
 
-### 5. Expand `OperatorStationPanel.test.tsx`
-- Add test that `supabase.rpc` is called with correct params on delivery confirm
-- Add test that supervisor override checkbox appears when `hasOrgSupervisorAccess` is true
+**RLS pattern** (same for all three buckets):
+```sql
+-- INSERT: org member, correct folder
+CREATE POLICY "insert" ON storage.objects FOR INSERT
+WITH CHECK (
+  bucket_id = '{bucket}'
+  AND (storage.foldername(name))[1] IS NOT NULL
+  AND public.is_org_member(auth.uid(), (storage.foldername(name))[1]::uuid)
+  AND auth.uid()::text = (storage.foldername(name))[2]
+);
 
-### 6. Expand `org-scope-integration.test.ts`
-- Add queue item org filter contract test
-- Add supervisor dashboard hook signature contract
-- Add operator station-scoped queue contract
+-- SELECT: org member
+CREATE POLICY "select" ON storage.objects FOR SELECT
+USING (
+  bucket_id = '{bucket}'
+  AND public.is_org_member(auth.uid(), (storage.foldername(name))[1]::uuid)
+);
 
-### 7. Run all tests and verify pass
+-- DELETE: own files only
+CREATE POLICY "delete" ON storage.objects FOR DELETE
+USING (
+  bucket_id = '{bucket}'
+  AND auth.uid()::text = (storage.foldername(name))[2]
+);
+```
+
+**Migration for existing `performance-updates` data**: Old paths (`{user_id}/file`) continue to work via a fallback SELECT policy checking `is_org_member` through `organization_members` table. New uploads use the `{org_id}/{user_id}/file` structure.
 
