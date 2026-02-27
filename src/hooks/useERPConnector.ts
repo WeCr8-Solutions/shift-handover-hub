@@ -124,11 +124,23 @@ export function useERPConnector() {
     setStatusMappings((data || []) as ERPStatusMapping[]);
   }, [orgId]);
 
+  const fetchSyncErrors = useCallback(async () => {
+    if (!orgId) return;
+    const { data } = await supabase
+      .from("erp_sync_errors")
+      .select("*")
+      .eq("organization_id", orgId)
+      .eq("resolved", false)
+      .order("created_at", { ascending: false })
+      .limit(50);
+    setSyncErrors((data || []) as ERPSyncError[]);
+  }, [orgId]);
+
   const loadAll = useCallback(async () => {
     setLoading(true);
-    await Promise.all([fetchConnection(), fetchSyncLogs(), fetchWorkCenterMappings(), fetchStatusMappings()]);
+    await Promise.all([fetchConnection(), fetchSyncLogs(), fetchSyncErrors(), fetchWorkCenterMappings(), fetchStatusMappings()]);
     setLoading(false);
-  }, [fetchConnection, fetchSyncLogs, fetchWorkCenterMappings, fetchStatusMappings]);
+  }, [fetchConnection, fetchSyncLogs, fetchSyncErrors, fetchWorkCenterMappings, fetchStatusMappings]);
 
   useEffect(() => {
     if (orgId) loadAll();
@@ -144,6 +156,8 @@ export function useERPConnector() {
         .eq("id", connection.id);
       if (error) return { error: error.message };
     } else {
+      // Get current user for created_by
+      const { data: authData } = await supabase.auth.getUser();
       const { error } = await supabase.from("erp_connections").insert({
         organization_id: orgId,
         erp_vendor: data.erp_vendor || "other",
@@ -152,6 +166,7 @@ export function useERPConnector() {
         client_id_encrypted: data.client_id_encrypted,
         client_secret_encrypted: data.client_secret_encrypted,
         scopes: data.scopes,
+        created_by: authData?.user?.id || null,
         tenant_identifier: data.tenant_identifier,
         sync_interval_minutes: data.sync_interval_minutes || 10,
         is_active: data.is_active || false,

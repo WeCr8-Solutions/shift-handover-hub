@@ -96,10 +96,27 @@ async function recordEvent(eventId: string, eventType: string, payload: unknown)
 async function updateOrgEntitlements(orgId: string, plan: string, erpTier?: string) {
   const entitlements = PLAN_ENTITLEMENTS[plan] || PLAN_ENTITLEMENTS.free;
   
-  const features = { ...entitlements.features };
+  const features: Record<string, unknown> = { ...entitlements.features };
+
+  // Preserve existing ERP tier if not explicitly provided
   if (erpTier) {
     features.erp_connector = true;
-    (features as Record<string, unknown>).erp_tier = erpTier;
+    features.erp_tier = erpTier;
+  } else {
+    // Read existing entitlements to preserve ERP addon state
+    const { data: current } = await supabaseAdmin
+      .from("entitlements")
+      .select("features")
+      .eq("organization_id", orgId)
+      .maybeSingle();
+
+    if (current?.features) {
+      const existing = current.features as Record<string, unknown>;
+      if (existing.erp_tier) {
+        features.erp_connector = true;
+        features.erp_tier = existing.erp_tier;
+      }
+    }
   }
 
   const { error } = await supabaseAdmin
