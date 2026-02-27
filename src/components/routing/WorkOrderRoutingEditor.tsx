@@ -533,7 +533,7 @@ export function WorkOrderRoutingEditor({
           {/* Save as Template */}
           <Dialog open={saveTemplateOpen} onOpenChange={setSaveTemplateOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" size="sm" disabled={enabledSteps.length === 0}>
+              <Button variant="outline" size="sm" disabled={enabledSteps.length === 0} data-tour="routing-save-template">
                 <BookTemplate className="w-4 h-4 mr-2" />
                 Save as Template
               </Button>
@@ -583,7 +583,7 @@ export function WorkOrderRoutingEditor({
             </DialogContent>
           </Dialog>
 
-          <Button onClick={handleSave} disabled={isSaving}>
+          <Button onClick={handleSave} disabled={isSaving} data-tour="routing-save">
             {isSaving ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -601,7 +601,7 @@ export function WorkOrderRoutingEditor({
 
       {/* Org Template Selector — show when no existing routing saved */}
       {!hasExistingRouting && orgTemplates.length > 0 && (
-        <Card className="border-dashed">
+        <Card className="border-dashed" data-tour="routing-template-selector">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <FolderOpen className="w-5 h-5 text-muted-foreground shrink-0" />

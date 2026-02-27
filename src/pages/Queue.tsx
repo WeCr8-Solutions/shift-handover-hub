@@ -204,7 +204,7 @@ export default function Queue() {
                 </Button>
               </div>
             )}
-            <Button onClick={() => setCreateDialogOpen(true)}>
+            <Button onClick={() => setCreateDialogOpen(true)} data-tour="add-queue-item">
               <Plus className="w-4 h-4 mr-2" />
               Add Item
             </Button>

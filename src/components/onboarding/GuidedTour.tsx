@@ -57,6 +57,42 @@ const TOUR_STEPS: Record<string, Step[]> = {
       title: '👁️ View Options',
       placement: 'bottom',
     },
+    {
+      target: '[data-tour="add-queue-item"]',
+      content: 'Create quotes for estimation or work orders for production. Quotes flow through approval before converting to tracked work orders.',
+      title: '📝 Quotes & Work Orders',
+      placement: 'left',
+    },
+    {
+      target: '[data-tour="kanban-quote-card"]',
+      content: 'Quotes appear with an amber border. Click to review, get estimates from engineering, then convert to a work order when approved.',
+      title: '💡 Quote Cards',
+      placement: 'right',
+    },
+    {
+      target: '[data-tour="kanban-wo-card"]',
+      content: 'Work orders have a blue border and track through your full production routing — from first operation to final ship.',
+      title: '🔧 Work Order Cards',
+      placement: 'right',
+    },
+    {
+      target: '[data-tour="routing-tab"]',
+      content: 'The Routing tab shows every production step — from quote review through shipping. Each step maps to a station in your shop.',
+      title: '🗺️ Production Routing',
+      placement: 'bottom',
+    },
+    {
+      target: '[data-tour="routing-template-selector"]',
+      content: 'Load a saved routing template from your organization library. Templates save time by pre-filling steps for common part types.',
+      title: '📋 Routing Templates',
+      placement: 'bottom',
+    },
+    {
+      target: '[data-tour="routing-save-template"]',
+      content: 'Customized a routing? Save it as a reusable template so your team can apply it to future work orders with one click.',
+      title: '💾 Save as Template',
+      placement: 'left',
+    },
   ],
   '/teams': [
     {
@@ -121,7 +157,7 @@ const TOUR_STEPS: Record<string, Step[]> = {
 const ROUTE_TO_STEP: Record<string, OnboardingStep> = {
   '/setup': 'organization-setup',
   '/dashboard': 'dashboard-overview',
-  '/queue': 'station-cards',
+  '/queue': 'quote-to-workorder',
   '/teams': 'team-management',
   '/admin': 'admin-features',
 };

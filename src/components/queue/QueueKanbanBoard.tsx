@@ -58,6 +58,7 @@ function QueueCard({ item, onClick, isDragging, onDragStart, onDragEnd }: QueueC
       onDragStart={(e) => onDragStart(e, item)}
       onDragEnd={onDragEnd}
       onClick={onClick}
+      {...(item.item_type === "quote" ? { "data-tour": "kanban-quote-card" } : item.item_type === "work_order" ? { "data-tour": "kanban-wo-card" } : {})}
       className={cn(
         "p-3 bg-card rounded-lg border shadow-sm cursor-pointer transition-all hover:shadow-md hover:border-primary/50",
         item.item_type === "quote" && "border-l-4 border-l-amber-500",
