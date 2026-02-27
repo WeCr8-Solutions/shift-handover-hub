@@ -1,142 +1,69 @@
 
 
-## Plan: Cloud ERP Connector — MVP Read-Only Integration
+## Phase 5: Enterprise Seat Management & ERP Gate Enforcement
 
-This is a large, multi-layer feature. The plan is structured into **3 phases** to ship incrementally.
+### Current State
+- Enterprise plan: $49.99/mo base for 10 users, $7.99/additional user
+- ERP Connector add-on ($100-200/mo) is labeled "Enterprise only" in UI text but **not actually gated** — any plan can purchase it
+- Seat limits enforced via `check_limit_access` RLS on `organization_members` INSERT, but enterprise "additional users" at $7.99/seat has **no Stripe quantity integration** — the checkout always sends `quantity: 1`
+- `BillingSettings` shows user count progress bar but always shows "0 used" (hardcoded)
+- No mechanism to update Stripe subscription quantity when members are added/removed
 
----
+### Plan
 
-### Phase 1: Database Schema + Edge Function Infrastructure
+#### 1. Gate ERP Connector to Enterprise-only
+- **ERPConnectorSettings.tsx**: When org plan is not `enterprise`, show an upgrade prompt pointing to the Enterprise plan instead of the ERP tier selector. Only show the ERP add-on tier cards when `plan === 'enterprise'`
+- **erp-sync edge function**: Add a server-side check that the org's entitlements plan is `enterprise` before proceeding with sync; return 403 otherwise
 
-**Migration: Create 5 new tables**
+#### 2. Enterprise per-seat checkout with quantity support
+- **create-checkout edge function**: When `priceId` matches the Enterprise tier, accept a `quantity` parameter (default: 10). Pass `quantity` to `line_items` so Stripe bills per-seat ($49.99 base covers 10 seats; each additional seat is $7.99)
+- Create a **separate Stripe price** for the per-seat add-on ($7.99/mo recurring) — the Enterprise base price stays at $49.99 for the first 10 users, and additional seats use the per-seat price as a second line item
+- Alternative simpler approach: Use the existing Enterprise price with quantity = total seats, where the Stripe product is configured as per-unit pricing at $7.99/seat with the first 10 included in the $49.99 base (this matches the current `additionalUserPrice: 7.99` config)
 
-1. **`erp_connections`** — One per org, stores ERP vendor config
-   - `id`, `organization_id` (FK, NOT NULL, UNIQUE), `erp_vendor` (text), `instance_type` (text default 'cloud'), `api_base_url` (text), `oauth_token_endpoint` (text), `client_id_encrypted` (text), `client_secret_encrypted` (text), `scopes` (text), `tenant_identifier` (text), `sync_interval_minutes` (int default 10), `is_active` (bool default false), `last_tested_at` (timestamptz), `connection_status` (text default 'pending'), `created_by` (uuid), `created_at`, `updated_at`
-   - RLS: org admins/owners only (read + write), developers read all
+#### 3. Seat management UI in BillingSettings
+- Add a **"Manage Seats"** card (Enterprise only) showing:
+  - Current member count vs entitled seats
+  - "Add Seats" button that updates the Stripe subscription quantity via `customer-portal` or a new edge function
+  - Warning when approaching seat limit
+- Wire `BillingSettings` usage cards to show **real counts** from `organization_members`, `queue_items` (this month), and `stations`
 
-2. **`erp_sync_logs`** — Audit trail per sync run
-   - `id`, `organization_id` (FK, NOT NULL), `erp_connection_id` (FK), `sync_type` (text: 'full'|'incremental'), `started_at`, `completed_at`, `status` (text: 'running'|'success'|'partial'|'failed'), `records_fetched` (int), `records_created` (int), `records_updated` (int), `errors_count` (int), `error_details` (jsonb), `duration_ms` (int), `triggered_by` (text: 'schedule'|'manual')
-   - RLS: org admins read their own org's logs
+#### 4. Enforce seat limits dynamically
+- **stripe-webhook**: When Enterprise subscription quantity changes, update `entitlements.limits.users` to match the new quantity
+- **check_limit_access** RLS function already blocks INSERT on `organization_members` when limit exceeded — this just needs the limit value to stay in sync with Stripe
 
-3. **`erp_sync_errors`** — Per-record error capture
-   - `id`, `organization_id` (FK, NOT NULL), `sync_log_id` (FK), `erp_record_type` (text: 'work_order'|'operation'|'work_center'), `erp_record_id` (text), `error_message` (text), `retry_count` (int default 0), `resolved` (bool default false), `created_at`
-   - RLS: org admins read
+#### 5. Add seats edge function
+- Create `supabase/functions/update-seats/index.ts`:
+  - Auth + billing authorization check (`can_manage_billing`)
+  - Accepts `{ quantity: number }` (new total seat count, minimum 10)
+  - Calls `stripe.subscriptions.update()` with the new quantity and proration
+  - Updates `entitlements.limits.users` in DB
+  - Returns updated seat count
 
-4. **`erp_work_center_mappings`** — Maps ERP work centers to JobLine stations
-   - `id`, `organization_id` (FK, NOT NULL), `erp_work_center_id` (text), `erp_work_center_name` (text), `jobline_station_id` (uuid FK to stations, nullable), `created_at`, `updated_at`
-   - UNIQUE(`organization_id`, `erp_work_center_id`)
-   - RLS: org admins read/write
+#### 6. Update checklist documentation
+- Update `.lovable/prd/10-erp-connector-implementation.md` Phase 5 with seat management items marked as done
 
-5. **`erp_status_mappings`** — Maps ERP statuses to JobLine statuses
-   - `id`, `organization_id` (FK, NOT NULL), `erp_status` (text), `jobline_status` (text — maps to queue_status enum values), `created_at`
-   - UNIQUE(`organization_id`, `erp_status`)
-   - RLS: org admins read/write
+### Technical Details
 
-**Triggers:**
-- `auto_populate_org_id` triggers on `erp_sync_logs`, `erp_sync_errors` (from `erp_connection_id`)
-- `update_updated_at_column` on `erp_connections`, `erp_work_center_mappings`
+```text
+Enterprise billing flow:
+  User subscribes → Stripe checkout (quantity=10) → webhook sets limits.users=10
+  Org grows → Admin clicks "Add Seats" → update-seats function → Stripe quantity=15
+  → webhook fires subscription.updated → limits.users updated to 15
+  
+ERP gate enforcement:
+  erp-sync request → check entitlements.plan === 'enterprise' → proceed or 403
+  ERPConnectorSettings → check plan !== 'enterprise' → show upgrade card
+```
 
-**Add columns to `queue_items`:**
-- `erp_job_id` (text, nullable) — external ERP reference
-- `erp_source` (text, nullable) — which ERP vendor synced this
-- `erp_last_synced_at` (timestamptz, nullable)
-- Add partial unique index: `UNIQUE(organization_id, erp_job_id)` WHERE `erp_job_id IS NOT NULL`
-
-**Add columns to `work_order_routing`:**
-- `erp_operation_id` (text, nullable)
-- `erp_sequence_number` (int, nullable)
-
----
-
-### Phase 2: Edge Function — `erp-sync`
-
-**New edge function: `supabase/functions/erp-sync/index.ts`**
-
-- JWT-verified, org-admin authorization required
-- Accepts POST with `{ organization_id, sync_type: 'full' | 'incremental' }`
-- Flow:
-  1. Load `erp_connections` for the org
-  2. Authenticate to ERP via OAuth client_credentials flow
-  3. Fetch work orders (with `modified_since` for incremental)
-  4. Fetch operations/routing per work order
-  5. Fetch work center master list
-  6. Upsert into `queue_items` (matching on `erp_job_id`), `work_order_routing`, and `erp_work_center_mappings`
-  7. Apply `erp_status_mappings` to set `queue_status`
-  8. Apply `erp_work_center_mappings` to set `station_id`
-  9. Log everything to `erp_sync_logs` and `erp_sync_errors`
-- MVP: Generic REST adapter with configurable field mapping (stored in `erp_connections.metadata` jsonb)
-- Config in `supabase/config.toml`: `verify_jwt = false` (manual JWT check in code)
-
----
-
-### Phase 3: Settings UI + Admin Observability
-
-**New settings tab: "ERP Connector" in Settings page**
-
-1. **`src/components/settings/ERPConnectorSettings.tsx`** — New component
-   - Only visible to org admins/owners
-   - **Connection Setup Card:**
-     - ERP vendor selector (JobBOSS, Epicor, Plex, ProShop, E2, Other)
-     - API Base URL, OAuth Token Endpoint, Client ID, Client Secret (password input)
-     - Scopes (pre-filled "read-only"), Tenant ID
-     - "Test Connection" button (calls edge function with test mode)
-     - Connection status badge (Pending / Connected / Error)
-   - **Sync Configuration Card:**
-     - Sync interval dropdown (5, 10, 15, 30, 60 min)
-     - Enable/disable toggle
-     - "Run Sync Now" button
-     - Last sync timestamp + result summary
-   - **Work Center Mapping Card:**
-     - Table: ERP Work Center Name | JobLine Station (dropdown of org stations)
-     - Auto-populated after first sync with unmapped centers highlighted
-   - **Status Mapping Card:**
-     - Table: ERP Status | JobLine Status (dropdown: pending, queued, in_progress, on_hold, completed, cancelled)
-     - Pre-filled defaults for common patterns
-   - **Sync History Card:**
-     - Table of last 20 sync runs: timestamp, type, records fetched/created/updated, errors, duration
-     - Expandable error details per run
-
-2. **Update `src/pages/Settings.tsx`:**
-   - Add "ERP" tab (with `Plug` icon) visible to org admins + developers
-   - Import and render `ERPConnectorSettings`
-
-3. **New hook: `src/hooks/useERPConnector.ts`**
-   - CRUD for `erp_connections` (scoped to user's org)
-   - Fetch sync logs, sync errors, work center mappings, status mappings
-   - Invoke `erp-sync` edge function
-   - Test connection method
-
-4. **Update `src/hooks/useQueue.ts` QueueItem interface:**
-   - Add `erp_job_id`, `erp_source`, `erp_last_synced_at` optional fields
-
-5. **Queue UI indicators:**
-   - In `QueueKanbanBoard.tsx` and `QueueListView.tsx`: show small ERP badge on cards synced from ERP
-   - In `QueueItemDetailDialog.tsx`: show "ERP Source" section with job ID and last sync time
-
-6. **Admin panel addition:**
-   - Add ERP overview card in `OrganizationOversight.tsx` showing connection status per org
-
----
-
-### Security Considerations
-
-- Client secrets stored server-side only (in `erp_connections` table, never sent to frontend after initial save)
-- RLS ensures org isolation on all ERP tables
-- Edge function validates org membership before any ERP operation
-- Read-only scopes enforced at the ERP API level
-- Sync logs provide full audit trail
-- No write-backs to ERP in MVP
-
-### Files Created
-- `src/components/settings/ERPConnectorSettings.tsx`
-- `src/hooks/useERPConnector.ts`
-- `supabase/functions/erp-sync/index.ts`
-
-### Files Modified
-- `src/pages/Settings.tsx` (add ERP tab)
-- `src/hooks/useQueue.ts` (add ERP fields to interface)
-- `src/components/queue/QueueKanbanBoard.tsx` (ERP badge)
-- `src/components/queue/QueueItemDetailDialog.tsx` (ERP source section)
-- `src/components/admin/OrganizationOversight.tsx` (ERP status card)
-- 1 database migration (tables + columns + RLS + triggers)
+### Files to Create/Edit
+| File | Action |
+|------|--------|
+| `supabase/functions/update-seats/index.ts` | Create — seat quantity management |
+| `supabase/functions/erp-sync/index.ts` | Edit — add enterprise plan gate |
+| `supabase/functions/create-checkout/index.ts` | Edit — pass quantity for enterprise |
+| `supabase/functions/stripe-webhook/index.ts` | Edit — sync seat quantity to entitlements |
+| `src/components/settings/ERPConnectorSettings.tsx` | Edit — enterprise-only gate |
+| `src/components/settings/BillingSettings.tsx` | Edit — seat management UI + real usage counts |
+| `src/hooks/useSubscription.ts` | Edit — add seat management functions |
+| `.lovable/prd/10-erp-connector-implementation.md` | Edit — update Phase 5 checklist |
 
