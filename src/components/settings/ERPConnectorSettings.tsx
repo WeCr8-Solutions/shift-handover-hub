@@ -67,7 +67,7 @@ export function ERPConnectorSettings() {
   const { currentTeam } = useCurrentTeam();
   const { organization } = useUserOrganization();
   const { stations } = useStations(currentTeam?.id, organization?.id);
-  const { features } = useEntitlements();
+  const { features, plan } = useEntitlements();
   const { createCheckout } = useSubscription();
 
   // ERP usage metering state
@@ -75,6 +75,7 @@ export function ERPConnectorSettings() {
 
   const erpTier = (features as Record<string, unknown>)?.erp_tier as string | undefined;
   const hasErpAddon = erpTier && erpTier !== 'none' && erpTier !== undefined;
+  const isEnterprise = plan === 'enterprise';
 
   useEffect(() => {
     if (!organization?.id) return;
@@ -153,8 +154,30 @@ export function ERPConnectorSettings() {
 
   return (
     <div className="space-y-6">
-      {/* ERP Add-on Tier Selection & Usage */}
-      {!hasErpAddon ? (
+      {/* Enterprise plan gate */}
+      {!isEnterprise ? (
+        <Card className="border-dashed border-amber-500/30 bg-amber-500/5">
+          <CardHeader className="text-center pb-2">
+            <div className="mx-auto w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center mb-2">
+              <AlertTriangle className="w-6 h-6 text-amber-500" />
+            </div>
+            <CardTitle className="text-xl">Enterprise Plan Required</CardTitle>
+            <CardDescription>
+              The ERP Connector is exclusively available to Enterprise plan subscribers.
+              Upgrade your organization to Enterprise to unlock ERP integration.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-center">
+            <Button onClick={() => createCheckout("price_1SthDUCyekafHX78MIJEHfCG")} className="gap-2">
+              <CreditCard className="w-4 h-4" />
+              Upgrade to Enterprise — $49.99/mo
+            </Button>
+            <p className="text-xs text-muted-foreground mt-3">
+              Enterprise includes 10 users, API access, and eligibility for ERP Connector add-ons ($100–$200/mo).
+            </p>
+          </CardContent>
+        </Card>
+      ) : !hasErpAddon ? (
         <Card className="border-dashed border-primary/30 bg-primary/5">
           <CardHeader className="text-center pb-2">
             <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">

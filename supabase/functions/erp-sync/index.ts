@@ -107,6 +107,20 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Enterprise plan gate: ERP connector is Enterprise-only
+    const { data: entitlement } = await adminClient
+      .from("entitlements")
+      .select("plan")
+      .eq("organization_id", organization_id)
+      .maybeSingle();
+
+    if (!entitlement || entitlement.plan !== "enterprise") {
+      return new Response(
+        JSON.stringify({ error: "ERP Connector requires an Enterprise plan. Please upgrade to access this feature." }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Load ERP connection
     const { data: connection, error: connError } = await adminClient
       .from("erp_connections")
