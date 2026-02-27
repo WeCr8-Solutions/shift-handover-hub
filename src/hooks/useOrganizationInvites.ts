@@ -48,10 +48,7 @@ export function useOrganizationInvites(organizationId: string | null) {
     setLoading(true);
     const { data, error } = await supabase
       .from("organization_invites")
-      .select(`
-        *,
-        team:teams(name)
-      `)
+      .select(`*, team:teams(name)`)
       .eq("organization_id", organizationId)
       .order("created_at", { ascending: false });
 
@@ -162,6 +159,24 @@ export async function validateInviteCode(code: string) {
     return { valid: false, invite: null };
   }
 
+  // Fetch seat info for the org
+  let seatsUsed: number | undefined;
+  let seatLimit: number | undefined;
+
+  const { count } = await supabase
+    .from("organization_members")
+    .select("id", { count: "exact", head: true })
+    .eq("organization_id", data.organization_id);
+
+  const { data: entitlement } = await supabase
+    .from("entitlements")
+    .select("limits")
+    .eq("organization_id", data.organization_id)
+    .maybeSingle();
+
+  seatsUsed = count ?? 0;
+  seatLimit = (entitlement?.limits as any)?.users ?? undefined;
+
   return {
     valid: true,
     invite: {
@@ -172,6 +187,8 @@ export async function validateInviteCode(code: string) {
       teamName: (data.teams as any)?.name || null,
       orgRole: data.org_role,
       appRole: data.app_role,
+      seatsUsed,
+      seatLimit,
     },
   };
 }
@@ -187,6 +204,23 @@ export async function redeemInviteCode(code: string, userId: string) {
 
   if (validateError || !invite) {
     return { error: new Error("Invalid or expired invite code") };
+  }
+
+  // Pre-check seat limits before attempting INSERT (prevents cryptic RLS errors)
+  const { count: memberCount } = await supabase
+    .from("organization_members")
+    .select("id", { count: "exact", head: true })
+    .eq("organization_id", invite.organization_id);
+
+  const { data: entitlement } = await supabase
+    .from("entitlements")
+    .select("limits")
+    .eq("organization_id", invite.organization_id)
+    .maybeSingle();
+
+  const seatLimit = (entitlement?.limits as any)?.users;
+  if (seatLimit && (memberCount ?? 0) >= seatLimit) {
+    return { error: new Error("This organization has reached its seat limit. Please ask an admin to add more seats.") };
   }
 
   // Check if already a member
@@ -239,20 +273,14 @@ export async function redeemInviteCode(code: string, userId: string) {
     if (!existingRole) {
       await supabase
         .from("user_roles")
-        .insert([{
-          user_id: userId,
-          role: appRole,
-        }]);
+        .insert([{ user_id: userId, role: appRole }]);
     }
   }
 
   // Record redemption and increment uses_count
   await supabase
     .from("invite_redemptions")
-    .insert({
-      invite_id: invite.id,
-      user_id: userId,
-    });
+    .insert({ invite_id: invite.id, user_id: userId });
 
   await supabase
     .from("organization_invites")

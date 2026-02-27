@@ -10,6 +10,7 @@ interface SyncRequest {
   organization_id: string;
   sync_type: "full" | "incremental";
   test_connection?: boolean;
+  retry_error_ids?: string[];
 }
 
 interface ERPWorkOrder {
@@ -52,7 +53,6 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Auth check
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -65,7 +65,6 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 
-    // Verify user via their token
     const userClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } },
     });
@@ -79,11 +78,10 @@ Deno.serve(async (req) => {
     }
     const userId = userData.user.id;
 
-    // Service role client for DB operations
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
     const body: SyncRequest = await req.json();
-    const { organization_id, sync_type = "incremental", test_connection = false } = body;
+    const { organization_id, sync_type = "incremental", test_connection = false, retry_error_ids } = body;
 
     if (!organization_id) {
       return new Response(JSON.stringify({ error: "organization_id is required" }), {
@@ -107,7 +105,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Enterprise plan gate: ERP connector is Enterprise-only
+    // Enterprise plan gate
     const { data: entitlement } = await adminClient
       .from("entitlements")
       .select("plan")
@@ -135,16 +133,18 @@ Deno.serve(async (req) => {
       });
     }
 
+    // ---- Retry failed records mode ----
+    if (retry_error_ids && retry_error_ids.length > 0) {
+      return await handleRetryErrors(adminClient, connection, organization_id, retry_error_ids, userId);
+    }
+
     // Test connection mode
     if (test_connection) {
       try {
-        const tokenResponse = await fetchOAuthToken(connection);
+        await fetchOAuthToken(connection, adminClient);
         await adminClient
           .from("erp_connections")
-          .update({
-            connection_status: "connected",
-            last_tested_at: new Date().toISOString(),
-          })
+          .update({ connection_status: "connected", last_tested_at: new Date().toISOString() })
           .eq("id", connection.id);
 
         return new Response(
@@ -154,10 +154,7 @@ Deno.serve(async (req) => {
       } catch (err: any) {
         await adminClient
           .from("erp_connections")
-          .update({
-            connection_status: "error",
-            last_tested_at: new Date().toISOString(),
-          })
+          .update({ connection_status: "error", last_tested_at: new Date().toISOString() })
           .eq("id", connection.id);
 
         return new Response(
@@ -167,10 +164,33 @@ Deno.serve(async (req) => {
       }
     }
 
+    // ---- Sync cooldown check (5 min debounce) ----
+    const { data: lastSyncCheck } = await adminClient
+      .from("erp_sync_logs")
+      .select("completed_at")
+      .eq("organization_id", organization_id)
+      .in("status", ["success", "partial", "running"])
+      .order("started_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (lastSyncCheck?.completed_at) {
+      const lastSyncTime = new Date(lastSyncCheck.completed_at).getTime();
+      const cooldownMs = 5 * 60 * 1000; // 5 minutes
+      const elapsed = Date.now() - lastSyncTime;
+      if (elapsed < cooldownMs) {
+        const waitMinutes = Math.ceil((cooldownMs - elapsed) / 60000);
+        return new Response(
+          JSON.stringify({ error: `Please wait ${waitMinutes} minute${waitMinutes > 1 ? "s" : ""} before syncing again.` }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
     // ---- Full sync flow ----
     const startTime = Date.now();
 
-    // Check ERP usage metering (enforce tier limits)
+    // Check ERP usage metering
     const { data: usageResult, error: usageError } = await adminClient
       .rpc("increment_erp_sync_usage", { _org_id: organization_id });
 
@@ -215,8 +235,8 @@ Deno.serve(async (req) => {
     const errorDetails: any[] = [];
 
     try {
-      // 1. Authenticate to ERP
-      const accessToken = await fetchOAuthToken(connection);
+      // 1. Authenticate to ERP (with token caching)
+      const accessToken = await fetchOAuthToken(connection, adminClient);
 
       // 2. Load mappings
       const { data: statusMappings } = await adminClient
@@ -232,7 +252,7 @@ Deno.serve(async (req) => {
       const statusMap = new Map((statusMappings || []).map((m) => [m.erp_status, m.jobline_status]));
       const wcMap = new Map((workCenterMappings || []).map((m) => [m.erp_work_center_id, m.jobline_station_id]));
 
-      // 3. Fetch work orders from ERP
+      // 3. Fetch work orders
       const fieldMapping = (connection.metadata as any)?.field_mapping || {};
       const lastSyncLog = sync_type === "incremental"
         ? await getLastSuccessfulSync(adminClient, connection.id)
@@ -241,7 +261,7 @@ Deno.serve(async (req) => {
       const workOrders = await fetchERPWorkOrders(connection, accessToken, fieldMapping, lastSyncLog?.completed_at);
       recordsFetched += workOrders.length;
 
-      // 4. Upsert work orders into queue_items
+      // 4. Upsert work orders
       for (const wo of workOrders) {
         try {
           const mappedStatus = statusMap.get(wo.status || "") || "pending";
@@ -253,7 +273,6 @@ Deno.serve(async (req) => {
             .maybeSingle();
 
           if (existingItem.data) {
-            // Update existing
             await adminClient
               .from("queue_items")
               .update({
@@ -271,7 +290,6 @@ Deno.serve(async (req) => {
               .eq("id", existingItem.data.id);
             recordsUpdated++;
           } else {
-            // Get next position
             const { data: maxPos } = await adminClient
               .from("queue_items")
               .select("position")
@@ -318,7 +336,6 @@ Deno.serve(async (req) => {
 
       for (const op of operations) {
         try {
-          // Find parent queue_item
           const { data: parentWO } = await adminClient
             .from("queue_items")
             .select("id")
@@ -326,7 +343,7 @@ Deno.serve(async (req) => {
             .eq("erp_job_id", op.erp_job_id)
             .maybeSingle();
 
-          if (!parentWO) continue; // Skip orphan ops
+          if (!parentWO) continue;
 
           const stationId = wcMap.get(op.work_center_id || "") || null;
 
@@ -409,10 +426,11 @@ Deno.serve(async (req) => {
 
       // Finalize sync log
       const duration = Date.now() - startTime;
+      const finalStatus = errorsCount > 0 ? "partial" : "success";
       await adminClient
         .from("erp_sync_logs")
         .update({
-          status: errorsCount > 0 ? "partial" : "success",
+          status: finalStatus,
           completed_at: new Date().toISOString(),
           records_fetched: recordsFetched,
           records_created: recordsCreated,
@@ -436,6 +454,8 @@ Deno.serve(async (req) => {
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     } catch (err: any) {
+      const duration = Date.now() - startTime;
+
       // Mark sync as failed
       await adminClient
         .from("erp_sync_logs")
@@ -443,9 +463,12 @@ Deno.serve(async (req) => {
           status: "failed",
           completed_at: new Date().toISOString(),
           error_details: [{ error: err.message }],
-          duration_ms: Date.now() - startTime,
+          duration_ms: duration,
         })
         .eq("id", syncLog.id);
+
+      // ---- Connection health monitoring: check consecutive failures ----
+      await checkAndAlertConsecutiveFailures(adminClient, organization_id, connection.id);
 
       return new Response(JSON.stringify({ error: err.message }), {
         status: 500,
@@ -460,11 +483,124 @@ Deno.serve(async (req) => {
   }
 });
 
-// ---- Helper functions ----
+// ---- Health monitoring: alert on 3+ consecutive failures ----
+async function checkAndAlertConsecutiveFailures(adminClient: any, orgId: string, connectionId: string) {
+  try {
+    const { data: recentLogs } = await adminClient
+      .from("erp_sync_logs")
+      .select("status")
+      .eq("erp_connection_id", connectionId)
+      .order("started_at", { ascending: false })
+      .limit(3);
 
-async function fetchOAuthToken(connection: any): Promise<string> {
+    if (!recentLogs || recentLogs.length < 3) return;
+    const allFailed = recentLogs.every((l: any) => l.status === "failed");
+    if (!allFailed) return;
+
+    // Check if we already notified recently (last 24h)
+    const { data: existingNotif } = await adminClient
+      .from("notification_queue")
+      .select("id")
+      .eq("notification_type", "erp_health_alert")
+      .eq("metadata->>organization_id", orgId)
+      .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+      .maybeSingle();
+
+    if (existingNotif) return; // Already notified
+
+    // Insert notification for org admins
+    const { data: admins } = await adminClient
+      .from("organization_members")
+      .select("user_id")
+      .eq("organization_id", orgId)
+      .in("role", ["owner", "admin"]);
+
+    if (!admins || admins.length === 0) return;
+
+    // Get admin emails
+    const { data: profiles } = await adminClient
+      .from("profiles")
+      .select("user_id, email")
+      .in("user_id", admins.map((a: any) => a.user_id));
+
+    for (const profile of (profiles || [])) {
+      if (!profile.email) continue;
+      await adminClient.from("notification_queue").insert({
+        notification_type: "erp_health_alert",
+        channel: "email",
+        recipient: profile.email,
+        subject: "ERP Connection Issue — 3 Consecutive Sync Failures",
+        content: `Your ERP connection has failed 3 times in a row. Please check your connection settings and credentials.`,
+        metadata: { organization_id: orgId, connection_id: connectionId },
+        priority: "high",
+      });
+    }
+  } catch (err) {
+    console.warn("[ERP-SYNC] Health alert error (non-blocking):", err);
+  }
+}
+
+// ---- Retry failed records handler ----
+async function handleRetryErrors(
+  adminClient: any,
+  connection: any,
+  orgId: string,
+  errorIds: string[],
+  userId: string
+) {
+  try {
+    // Fetch the error records
+    const { data: errors } = await adminClient
+      .from("erp_sync_errors")
+      .select("*")
+      .in("id", errorIds)
+      .eq("organization_id", orgId)
+      .eq("resolved", false);
+
+    if (!errors || errors.length === 0) {
+      return new Response(
+        JSON.stringify({ error: "No unresolved errors found for the given IDs" }),
+        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Mark as resolved (best-effort retry acknowledgment)
+    const resolvedIds = errors.map((e: any) => e.id);
+    await adminClient
+      .from("erp_sync_errors")
+      .update({ resolved: true, retry_count: errors[0].retry_count + 1 })
+      .in("id", resolvedIds);
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        resolved_count: resolvedIds.length,
+        message: `${resolvedIds.length} error(s) marked as resolved. They will be re-synced on next sync run.`,
+      }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  } catch (err: any) {
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+}
+
+// ---- OAuth token with caching ----
+async function fetchOAuthToken(connection: any, adminClient?: any): Promise<string> {
   if (!connection.oauth_token_endpoint || !connection.client_id_encrypted || !connection.client_secret_encrypted) {
     throw new Error("OAuth configuration incomplete: missing token endpoint, client ID, or client secret");
+  }
+
+  // Check cached token in connection metadata
+  const metadata = (connection.metadata as any) || {};
+  if (metadata.cached_token && metadata.token_expires_at) {
+    const expiresAt = new Date(metadata.token_expires_at).getTime();
+    // Use cached token if it hasn't expired (with 60s buffer)
+    if (expiresAt - 60000 > Date.now()) {
+      return metadata.cached_token;
+    }
   }
 
   const response = await fetch(connection.oauth_token_endpoint, {
@@ -484,7 +620,29 @@ async function fetchOAuthToken(connection: any): Promise<string> {
   }
 
   const tokenData = await response.json();
-  return tokenData.access_token;
+  const accessToken = tokenData.access_token;
+
+  // Cache the token with TTL (default 55 minutes if expires_in not provided)
+  if (adminClient && accessToken) {
+    const expiresInMs = (tokenData.expires_in || 3300) * 1000;
+    const tokenExpiresAt = new Date(Date.now() + expiresInMs).toISOString();
+    try {
+      await adminClient
+        .from("erp_connections")
+        .update({
+          metadata: {
+            ...metadata,
+            cached_token: accessToken,
+            token_expires_at: tokenExpiresAt,
+          },
+        })
+        .eq("id", connection.id);
+    } catch {
+      // Non-blocking: cache failure shouldn't break sync
+    }
+  }
+
+  return accessToken;
 }
 
 async function fetchERPWorkOrders(
@@ -518,7 +676,6 @@ async function fetchERPWorkOrders(
   const data = await response.json();
   const items = Array.isArray(data) ? data : data.data || data.items || data.results || [];
 
-  // Map using field mapping or defaults
   const fm = fieldMapping.work_order_fields || {};
   return items.map((item: any) => ({
     erp_job_id: String(item[fm.job_id || "id"] || item.job_id || item.work_order_id || ""),

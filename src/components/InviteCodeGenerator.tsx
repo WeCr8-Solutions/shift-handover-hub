@@ -4,11 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useOrganizationInvites, OrganizationInvite } from "@/hooks/useOrganizationInvites";
 import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { useTeams } from "@/hooks/useTeams";
+import { useEntitlements } from "@/hooks/useEntitlements";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
 import {
   Dialog,
   DialogContent,
@@ -49,6 +52,8 @@ import {
   History,
   User,
   Mail,
+  AlertTriangle,
+  CreditCard,
 } from "lucide-react";
 
 interface InviteRedemption {
@@ -81,12 +86,31 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
   );
   const { teams } = useTeams();
   const { toast } = useToast();
+  const { limits, plan } = useEntitlements();
 
   const [activeTab, setActiveTab] = useState("invites");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showQRDialog, setShowQRDialog] = useState(false);
   const [selectedInvite, setSelectedInvite] = useState<OrganizationInvite | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+
+  // Seat tracking
+  const [memberCount, setMemberCount] = useState(0);
+  const seatLimit = limits?.users ?? 5;
+  const seatsUsedPercent = seatLimit > 0 ? (memberCount / seatLimit) * 100 : 0;
+  const seatsRemaining = Math.max(0, seatLimit - memberCount);
+  const isSeatsFull = memberCount >= seatLimit;
+  const isSeatsWarning = seatsUsedPercent >= 80 && !isSeatsFull;
+
+  // Fetch member count
+  useEffect(() => {
+    if (!organization?.id) return;
+    supabase
+      .from("organization_members")
+      .select("id", { count: "exact", head: true })
+      .eq("organization_id", organization.id)
+      .then(({ count }) => setMemberCount(count ?? 0));
+  }, [organization?.id]);
 
   // Redemption history
   const [redemptions, setRedemptions] = useState<InviteRedemption[]>([]);
@@ -130,7 +154,6 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
       .limit(50);
 
     if (!error && data) {
-      // Fetch user profiles separately
       const userIds = [...new Set(data.map((r: any) => r.user_id))];
       const { data: profiles } = await supabase
         .from("profiles_public")
@@ -146,7 +169,7 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
         redeemed_at: r.redeemed_at,
         user: profileMap.get(r.user_id) ? {
           display_name: (profileMap.get(r.user_id) as any).display_name || "Unknown",
-          email: "", // Email not exposed in public view
+          email: "",
         } : { display_name: "Unknown User", email: "" },
         invite: {
           invite_code: r.organization_invites.invite_code,
@@ -193,7 +216,6 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
         setSelectedInvite(data as OrganizationInvite);
         setShowQRDialog(true);
       }
-      // Reset form (but keep defaultTeamId if set)
       setTeamId(defaultTeamId || "none");
       setOrgRole("member");
       setAppRole("none");
@@ -204,19 +226,13 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
 
   const handleCopyCode = (code: string) => {
     navigator.clipboard.writeText(code);
-    toast({
-      title: "Copied!",
-      description: "Invite code copied to clipboard.",
-    });
+    toast({ title: "Copied!", description: "Invite code copied to clipboard." });
   };
 
   const handleCopyLink = (code: string) => {
     const link = `${window.location.origin}/auth?invite=${code}`;
     navigator.clipboard.writeText(link);
-    toast({
-      title: "Copied!",
-      description: "Invite link copied to clipboard.",
-    });
+    toast({ title: "Copied!", description: "Invite link copied to clipboard." });
   };
 
   const handleShowQR = (invite: OrganizationInvite) => {
@@ -227,11 +243,7 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
   const handleDeactivate = async (inviteId: string) => {
     const { error } = await deactivateInvite(inviteId);
     if (error) {
-      toast({
-        title: "Failed to deactivate",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast({ title: "Failed to deactivate", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Invite deactivated" });
     }
@@ -240,11 +252,7 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
   const handleDelete = async (inviteId: string) => {
     const { error } = await deleteInvite(inviteId);
     if (error) {
-      toast({
-        title: "Failed to delete",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast({ title: "Failed to delete", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Invite deleted" });
     }
@@ -271,7 +279,7 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
           </div>
           <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
             <DialogTrigger asChild>
-              <Button className="gap-2">
+              <Button className="gap-2" disabled={isSeatsFull}>
                 <Plus className="w-4 h-4" />
                 Create Invite
               </Button>
@@ -284,6 +292,20 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
+                {/* Seat info inside dialog */}
+                <div className="bg-muted/50 rounded-lg p-3 space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground flex items-center gap-1">
+                      <Users className="w-3.5 h-3.5" /> Seats
+                    </span>
+                    <span className="font-medium">{memberCount} / {seatLimit} used</span>
+                  </div>
+                  <Progress value={Math.min(seatsUsedPercent, 100)} className="h-1.5" />
+                  {seatsRemaining <= 3 && seatsRemaining > 0 && (
+                    <p className="text-xs text-amber-600">Only {seatsRemaining} seat{seatsRemaining !== 1 ? "s" : ""} remaining</p>
+                  )}
+                </div>
+
                 <div className="space-y-2">
                   <Label>Assign to Team (optional)</Label>
                   <Select value={teamId} onValueChange={setTeamId}>
@@ -305,22 +327,17 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
                   <div className="space-y-2">
                     <Label>Organization Role</Label>
                     <Select value={orgRole} onValueChange={(v) => setOrgRole(v as "admin" | "member")}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="member">Member</SelectItem>
                         <SelectItem value="admin">Admin</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-
                   <div className="space-y-2">
                     <Label>App Role (optional)</Label>
                     <Select value={appRole} onValueChange={setAppRole}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="none">Default (Operator)</SelectItem>
                         <SelectItem value="supervisor">Supervisor</SelectItem>
@@ -334,37 +351,19 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Expires In (days)</Label>
-                    <Input
-                      type="number"
-                      value={expiresInDays}
-                      onChange={(e) => setExpiresInDays(e.target.value)}
-                      placeholder="7"
-                      min="1"
-                    />
+                    <Input type="number" value={expiresInDays} onChange={(e) => setExpiresInDays(e.target.value)} placeholder="7" min="1" />
                   </div>
-
                   <div className="space-y-2">
                     <Label>Max Uses (optional)</Label>
-                    <Input
-                      type="number"
-                      value={maxUses}
-                      onChange={(e) => setMaxUses(e.target.value)}
-                      placeholder="Unlimited"
-                      min="1"
-                    />
+                    <Input type="number" value={maxUses} onChange={(e) => setMaxUses(e.target.value)} placeholder="Unlimited" min="1" />
                   </div>
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
-                  Cancel
-                </Button>
+                <Button variant="outline" onClick={() => setShowCreateDialog(false)}>Cancel</Button>
                 <Button onClick={handleCreateInvite} disabled={isCreating}>
                   {isCreating ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Creating...
-                    </>
+                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Creating...</>
                   ) : (
                     "Create Invite"
                   )}
@@ -375,6 +374,41 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
         </div>
       </CardHeader>
       <CardContent>
+        {/* Seat availability banner */}
+        <div className="mb-4 space-y-2">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground flex items-center gap-1.5">
+              <Users className="w-4 h-4" />
+              Seat Availability
+            </span>
+            <span className="font-medium">{memberCount} / {seatLimit} seats used</span>
+          </div>
+          <Progress value={Math.min(seatsUsedPercent, 100)} className="h-2" />
+          
+          {isSeatsFull && (
+            <Alert variant="destructive" className="py-2">
+              <AlertDescription className="flex items-center justify-between text-sm">
+                <span className="flex items-center gap-1.5">
+                  <AlertTriangle className="w-4 h-4" />
+                  All seats are filled. New invites are disabled.
+                </span>
+                <Button variant="outline" size="sm" className="gap-1 ml-2 shrink-0" onClick={() => window.location.hash = "#billing"}>
+                  <CreditCard className="w-3 h-3" />
+                  Add Seats
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+          {isSeatsWarning && (
+            <Alert className="py-2 border-amber-500/30 bg-amber-500/5">
+              <AlertDescription className="flex items-center gap-1.5 text-sm text-amber-700">
+                <AlertTriangle className="w-4 h-4" />
+                {seatsRemaining} seat{seatsRemaining !== 1 ? "s" : ""} remaining — consider adding more in Billing Settings.
+              </AlertDescription>
+            </Alert>
+          )}
+        </div>
+
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-4">
             <TabsTrigger value="invites" className="gap-2">
@@ -440,13 +474,9 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-wrap gap-1">
-                            <Badge variant="outline" className="text-xs">
-                              Org: {invite.org_role}
-                            </Badge>
+                            <Badge variant="outline" className="text-xs">Org: {invite.org_role}</Badge>
                             {invite.app_role && (
-                              <Badge variant="secondary" className="text-xs">
-                                {invite.app_role}
-                              </Badge>
+                              <Badge variant="secondary" className="text-xs">{invite.app_role}</Badge>
                             )}
                           </div>
                         </TableCell>
@@ -466,8 +496,7 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
                         <TableCell>
                           {isValid ? (
                             <Badge className="gap-1 bg-green-500/10 text-green-700 border-green-200">
-                              <CheckCircle className="w-3 h-3" />
-                              Active
+                              <CheckCircle className="w-3 h-3" />Active
                             </Badge>
                           ) : (
                             <Badge variant="secondary" className="gap-1">
@@ -478,51 +507,21 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => handleShowQR(invite)}
-                              title="Show QR Code"
-                            >
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleShowQR(invite)} title="Show QR Code">
                               <QrCode className="w-4 h-4" />
                             </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => handleCopyLink(invite.invite_code)}
-                              title="Copy Link"
-                            >
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleCopyLink(invite.invite_code)} title="Copy Link">
                               <Share2 className="w-4 h-4" />
                             </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => handleCopyCode(invite.invite_code)}
-                              title="Copy Code"
-                            >
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleCopyCode(invite.invite_code)} title="Copy Code">
                               <Copy className="w-4 h-4" />
                             </Button>
                             {invite.is_active && (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-destructive"
-                                onClick={() => handleDeactivate(invite.id)}
-                                title="Deactivate"
-                              >
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDeactivate(invite.id)} title="Deactivate">
                                 <XCircle className="w-4 h-4" />
                               </Button>
                             )}
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-destructive"
-                              onClick={() => handleDelete(invite.id)}
-                              title="Delete"
-                            >
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete(invite.id)} title="Delete">
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           </div>
@@ -582,23 +581,16 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
-                          <Badge variant="outline" className="text-xs">
-                            Org: {redemption.invite?.org_role}
-                          </Badge>
+                          <Badge variant="outline" className="text-xs">Org: {redemption.invite?.org_role}</Badge>
                           {redemption.invite?.app_role && (
-                            <Badge variant="secondary" className="text-xs">
-                              {redemption.invite.app_role}
-                            </Badge>
+                            <Badge variant="secondary" className="text-xs">{redemption.invite.app_role}</Badge>
                           )}
                         </div>
                       </TableCell>
                       <TableCell>
                         <span className="text-sm text-muted-foreground">
                           {new Date(redemption.redeemed_at).toLocaleDateString()}{" "}
-                          {new Date(redemption.redeemed_at).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
+                          {new Date(redemption.redeemed_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                         </span>
                       </TableCell>
                     </TableRow>
@@ -639,27 +631,16 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
                 </code>
               </div>
               {selectedInvite.team?.name && (
-                <Badge variant="secondary">
-                  Auto-joins: {selectedInvite.team.name}
-                </Badge>
+                <Badge variant="secondary">Auto-joins: {selectedInvite.team.name}</Badge>
               )}
             </div>
           )}
           <DialogFooter className="flex-col sm:flex-row gap-2">
-            <Button
-              variant="outline"
-              className="gap-2"
-              onClick={() => selectedInvite && handleCopyCode(selectedInvite.invite_code)}
-            >
-              <Copy className="w-4 h-4" />
-              Copy Code
+            <Button variant="outline" className="gap-2" onClick={() => selectedInvite && handleCopyCode(selectedInvite.invite_code)}>
+              <Copy className="w-4 h-4" />Copy Code
             </Button>
-            <Button
-              className="gap-2"
-              onClick={() => selectedInvite && handleCopyLink(selectedInvite.invite_code)}
-            >
-              <Share2 className="w-4 h-4" />
-              Copy Link
+            <Button className="gap-2" onClick={() => selectedInvite && handleCopyLink(selectedInvite.invite_code)}>
+              <Share2 className="w-4 h-4" />Copy Link
             </Button>
           </DialogFooter>
         </DialogContent>

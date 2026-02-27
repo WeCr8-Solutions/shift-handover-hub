@@ -85,12 +85,13 @@ export function useERPConnector() {
 
   const fetchConnection = useCallback(async () => {
     if (!orgId) return;
+    // Use the safe view that excludes secrets
     const { data } = await supabase
       .from("erp_connections")
-      .select("*")
+      .select("id, organization_id, erp_vendor, instance_type, api_base_url, oauth_token_endpoint, scopes, tenant_identifier, sync_interval_minutes, is_active, last_tested_at, connection_status, metadata, created_by, created_at, updated_at")
       .eq("organization_id", orgId)
       .maybeSingle();
-    setConnection(data as ERPConnection | null);
+    setConnection(data as unknown as ERPConnection | null);
   }, [orgId]);
 
   const fetchSyncLogs = useCallback(async () => {
@@ -156,7 +157,6 @@ export function useERPConnector() {
         .eq("id", connection.id);
       if (error) return { error: error.message };
     } else {
-      // Get current user for created_by
       const { data: authData } = await supabase.auth.getUser();
       const { error } = await supabase.from("erp_connections").insert({
         organization_id: orgId,
@@ -212,11 +212,28 @@ export function useERPConnector() {
         title: "Sync Complete",
         description: `Fetched ${data.records_fetched}, Created ${data.records_created}, Updated ${data.records_updated}${data.errors_count > 0 ? `, ${data.errors_count} errors` : ""}`,
       });
-      await Promise.all([fetchSyncLogs(), fetchWorkCenterMappings()]);
+      await Promise.all([fetchSyncLogs(), fetchWorkCenterMappings(), fetchSyncErrors()]);
     } catch (err: any) {
       toast({ title: "Sync Failed", description: err.message, variant: "destructive" });
     } finally {
       setSyncing(false);
+    }
+  };
+
+  const retryFailedRecords = async (errorIds: string[]) => {
+    if (!orgId || errorIds.length === 0) return;
+    try {
+      const { data, error } = await supabase.functions.invoke("erp-sync", {
+        body: { organization_id: orgId, sync_type: "incremental", retry_error_ids: errorIds },
+      });
+      if (error) throw error;
+      toast({
+        title: "Errors Resolved",
+        description: data.message || `${data.resolved_count} error(s) marked for re-sync.`,
+      });
+      await fetchSyncErrors();
+    } catch (err: any) {
+      toast({ title: "Retry Failed", description: err.message, variant: "destructive" });
     }
   };
 
@@ -264,6 +281,7 @@ export function useERPConnector() {
     saveConnection,
     testConnection,
     runSync,
+    retryFailedRecords,
     updateWorkCenterMapping,
     saveStatusMapping,
     deleteStatusMapping,
