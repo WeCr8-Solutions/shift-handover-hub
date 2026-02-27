@@ -17,6 +17,7 @@ import { BillingSettings } from "@/components/settings/BillingSettings";
 import { OnboardingSettings } from "@/components/settings/OnboardingSettings";
 import { ERPConnectorSettings } from "@/components/settings/ERPConnectorSettings";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { EntitlementGate } from "@/components/EntitlementGate";
 
 export default function Settings() {
   const navigate = useNavigate();
@@ -186,7 +187,9 @@ export default function Settings() {
 
           {showERPTab && (
             <TabsContent value="erp">
-              <ERPConnectorSettings />
+              <EntitlementGate feature="erp_connector" requiredPlan="enterprise">
+                <ERPConnectorSettings />
+              </EntitlementGate>
             </TabsContent>
           )}
         </Tabs>
