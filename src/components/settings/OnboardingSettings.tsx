@@ -28,6 +28,7 @@ export function OnboardingSettings() {
     'shop-setup': '/setup',
     'dashboard-overview': '/dashboard',
     'station-cards': '/dashboard',
+    'quote-to-workorder': '/queue',
     'handoff-submission': '/dashboard',
     'performance-updates': '/dashboard',
     'team-management': '/teams',

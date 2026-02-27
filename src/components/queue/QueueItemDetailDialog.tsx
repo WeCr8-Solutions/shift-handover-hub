@@ -628,7 +628,7 @@ export function QueueItemDetailDialog({
         {/* Quote Action Bar */}
         {isQuote && !isCompleted && (
           <div className="space-y-3">
-            <div className="flex flex-wrap gap-2 p-3 bg-amber-500/10 rounded-lg border border-amber-500/30">
+            <div className="flex flex-wrap gap-2 p-3 bg-amber-500/10 rounded-lg border border-amber-500/30" data-tour="quote-convert-bar">
               <Button
                 onClick={() => {
                   setConvertWONumber(item.work_order || "");
@@ -722,7 +722,7 @@ export function QueueItemDetailDialog({
           <Tabs defaultValue="details" className="h-full flex flex-col">
             <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="details">Details</TabsTrigger>
-              <TabsTrigger value="routing" className="gap-1">
+              <TabsTrigger value="routing" className="gap-1" data-tour="routing-tab">
                 <GitBranch className="w-4 h-4" />
                 Routing
               </TabsTrigger>

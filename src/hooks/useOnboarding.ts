@@ -8,6 +8,7 @@ export type OnboardingStep =
   | 'shop-setup'
   | 'dashboard-overview'
   | 'station-cards'
+  | 'quote-to-workorder'
   | 'handoff-submission'
   | 'performance-updates'
   | 'team-management'
@@ -20,6 +21,7 @@ export const ONBOARDING_STEPS: { id: OnboardingStep; title: string; description:
   { id: 'shop-setup', title: 'Set Up Your Shop', description: 'Configure teams, stations, routing templates, and users' },
   { id: 'dashboard-overview', title: 'Digital Expeditor Dashboard', description: 'Track work orders through your production line' },
   { id: 'station-cards', title: 'Select & Deliver Work Orders', description: 'Pick available jobs and confirm delivery to next station' },
+  { id: 'quote-to-workorder', title: 'Quotes & Routing', description: 'Learn how quotes convert to work orders with production routing templates' },
   { id: 'handoff-submission', title: 'Shift Handoffs', description: 'Document handoffs and continuous improvement notes' },
   { id: 'performance-updates', title: 'Job Performance Updates', description: 'Suggest process improvements and track implementation' },
   { id: 'team-management', title: 'Team Management', description: 'Organize operators, supervisors, and station assignments' },
