@@ -20,27 +20,40 @@ serve(async (req) => {
   );
 
   try {
-    const { profile_id } = await req.json();
-    if (!profile_id) throw new Error("profile_id required");
+    const { machine_library_id, organization_id } = await req.json();
+    if (!machine_library_id || !organization_id) throw new Error("machine_library_id and organization_id required");
 
     const authHeader = req.headers.get("Authorization")!;
     const token = authHeader.replace("Bearer ", "");
     const { data } = await supabase.auth.getUser(token);
     if (!data.user) throw new Error("Not authenticated");
 
+    // Check if already purchased
+    const { data: existing } = await supabase
+      .from("organization_machine_purchases")
+      .select("id, is_active")
+      .eq("organization_id", organization_id)
+      .eq("machine_library_id", machine_library_id)
+      .maybeSingle();
+
+    if (existing?.is_active) {
+      return new Response(
+        JSON.stringify({ activated: true, already_owned: true }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+      );
+    }
+
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
     });
 
-    // Search for completed checkout sessions with this profile_id
-    const sessions = await stripe.checkout.sessions.list({
-      limit: 10,
-    });
-
+    // Search for completed checkout sessions
+    const sessions = await stripe.checkout.sessions.list({ limit: 20 });
     const matchingSession = sessions.data.find(
       (s) =>
-        s.metadata?.profile_id === profile_id &&
-        s.metadata?.type === "station_context_activation" &&
+        s.metadata?.machine_library_id === machine_library_id &&
+        s.metadata?.organization_id === organization_id &&
+        s.metadata?.type === "machine_library_purchase" &&
         s.payment_status === "paid"
     );
 
@@ -51,18 +64,27 @@ serve(async (req) => {
       );
     }
 
-    // Activate the profile
+    // Create the purchase record
     const { error } = await supabase
-      .from("station_machine_profiles")
-      .update({
-        context_active: true,
+      .from("organization_machine_purchases")
+      .insert({
+        organization_id,
+        machine_library_id,
+        purchased_by: data.user.id,
         stripe_payment_id: matchingSession.payment_intent as string,
-        activated_at: new Date().toISOString(),
-        activated_by: data.user.id,
-      })
-      .eq("id", profile_id);
+        is_active: true,
+      });
 
-    if (error) throw error;
+    if (error) {
+      // Might be a duplicate - check if already exists
+      if (error.code === "23505") {
+        return new Response(
+          JSON.stringify({ activated: true, already_owned: true }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+        );
+      }
+      throw error;
+    }
 
     return new Response(
       JSON.stringify({ activated: true }),
