@@ -1,84 +1,64 @@
 
 
-## Add Product Preview Mockups to Marketing Feature Pages
+## AI Capabilities Audit — To-Do List
 
-### Current State
-All 15 feature pages are text-only (icons, benefits lists, CTAs). The AIPlanningAssistant page is the sole exception — it renders inline `MockChatWindow` components that show realistic AI chat interactions. No screenshot images exist in the project.
+After reviewing all AI-related features, edge functions, hooks, and UI components, here is the status and action items:
 
-### Approach
-Create reusable **mock UI preview components** that render inline representations of the software, matching the pattern already established by AIPlanningAssistant. These are React components styled to look like the actual app, not image files.
+---
 
-### Component-to-Page Mapping
+### What's Working
 
-| Mock Component | Pages That Use It | What It Shows |
-|---|---|---|
-| `MockHandoffForm` | ShiftHandoffSoftware, ShiftHandoff, CNCOperatorTools | A mini handoff form with operator name, machine status, parts count, quality notes — filled with sample data |
-| `MockStationDashboard` | MachineShopSoftware, ManufacturingOversight, ManufacturingVisibility, ProductionControl | A grid of 4 station cards showing CNC-01 (Running), LATHE-02 (Setup), MILL-03 (Idle), CNC-04 (Down) with operator, job, and status badges |
-| `MockQueueBoard` | WorkOrderTracking, ProductionScheduling, DigitalExpeditor | A mini Kanban board with 3 columns (Queued, In Progress, Complete) containing sample work order cards |
-| `MockDowntimeLog` | DowntimeTracking, MachineTimeTracking | A mini table showing downtime events with reason codes, durations, and resolution status |
-| `MockTeamPanel` | TeamCollaboration | A mini org/team hierarchy card with roles, QR invite badge, and seat count |
-| `MockQualityCard` | QualityManagement | A mini NCR card with severity, disposition, and corrective action fields |
+| Feature | Edge Function | Hook | UI | Status |
+|---|---|---|---|---|
+| AI Planning Assistant chat | `ai-planning-assistant` | `usePlanningAssistant` | `PlanningAssistantModal` (FAB on Dashboard + Queue) | **Working** |
+| Usage limits (daily tier caps) | `increment_ai_chat_usage` RPC | `useAiChatUsage` | Badge in modal + upgrade card | **Working** |
+| Machine Library (verified, $0.99) | `activate-station-context` / `verify-station-context-payment` | `useMachineLibrary` | `StationManufacturerAttach` | **Working** |
+| Manual Machine Entry (free) | N/A (direct DB) | `useStationMachineProfile` | `StationManualMachineEntry` | **Working** |
+| Machine Context Dialog (dual path) | N/A | N/A | `StationMachineContextDialog` | **Working** |
+| AI system prompt: machine-aware routing | Reads `station_machine_assignments` + `station_manual_machine_profiles` | — | — | **Working** |
+| AI system prompt: part-aware validation | Reads `queue_items` part spec fields | — | — | **Backend only — no UI to populate data** |
 
-### Implementation
+---
 
-#### 1. Create `src/components/marketing/MockAppPreviews.tsx`
-A single file containing all 6 mock preview components. Each component:
-- Uses existing UI primitives (Card, Badge, etc.)
-- Has a dark "app window" chrome (title bar with dots)
-- Contains static sample data (no interactivity needed)
-- Is responsive and fits within the `max-w-4xl` marketing layout
+### What's Missing (Action Items)
 
-#### 2. Update each feature page
-Insert the appropriate mock component into the hero section (between the CTA buttons and the first content section) or between content sections. Each page gets one primary mock and optionally a secondary one.
+#### 1. Add Part Specs UI to Work Order Creation
+**Problem**: `queue_items` has `material_type`, `part_length_inches`, `part_width_inches`, `part_height_inches`, `part_weight_lbs`, and `part_shape` columns, but `CreateWorkOrderDialog` does not expose any of these fields. Users cannot enter part data, so the AI's part-aware routing validation never fires.
 
-Specific placements:
-- **ShiftHandoffSoftware**: `MockHandoffForm` after hero CTAs
-- **ShiftHandoff**: `MockHandoffForm` after hero CTAs
-- **WorkOrderTracking**: `MockQueueBoard` after highlights grid
-- **ProductionScheduling**: `MockQueueBoard` after highlights grid
-- **DigitalExpeditor**: `MockStationDashboard` + `MockQueueBoard` after use cases grid
-- **MachineShopSoftware**: `MockStationDashboard` after highlights grid
-- **ManufacturingOversight**: `MockStationDashboard` after personas grid
-- **ManufacturingVisibility**: `MockStationDashboard` after hero CTAs
-- **ProductionControl**: `MockStationDashboard` after highlights grid
-- **CNCOperatorTools**: `MockHandoffForm` after operator steps
-- **DowntimeTracking**: `MockDowntimeLog` after feature cards
-- **MachineTimeTracking**: `MockDowntimeLog` after hero CTAs
-- **TeamCollaboration**: `MockTeamPanel` after feature cards
-- **QualityManagement**: `MockQualityCard` after stats cards
+**Fix**: Add a collapsible "Part Specifications" section to `CreateWorkOrderDialog` with fields for material type (dropdown), dimensions (L/W/H in inches), weight (lbs), and shape (dropdown: prismatic, cylindrical, complex, flat, tubular).
 
-### Technical Details
+#### 2. Add Part Specs UI to Work Order Detail/Edit
+**Problem**: `QueueItemDetailDialog` does not display or allow editing of part spec fields. Even if specs were entered at creation, users can't see or update them.
 
-```text
-MockAppPreviews.tsx structure:
-  AppWindowChrome — shared wrapper with title bar dots + title text
-  MockHandoffForm — operator field, status badges, parts counter, quality notes
-  MockStationDashboard — 2x2 grid of station cards with status indicators
-  MockQueueBoard — 3-column Kanban with 2 cards per column
-  MockDowntimeLog — 4-row table with reason codes and durations
-  MockTeamPanel — org hierarchy with roles and seat indicator
-  MockQualityCard — NCR form with severity/disposition badges
-```
+**Fix**: Add a "Part Specs" section in `QueueItemDetailDialog` that displays existing specs and allows editing (for supervisors/admins).
 
-Each mock uses `bg-card`, `border-border`, and the existing design tokens so it matches the dark theme of the marketing pages.
+#### 3. Build Part Catalog Management UI
+**Problem**: The `part_catalog` table exists in the database (with part_number, description, material_type, dimensions, shape, weight, org-scoped) but there is **zero UI** to manage it. No CRUD, no browser, no search.
 
-### Files to Create/Edit
+**Fix**: Create a `PartCatalogManager` component accessible from Settings or Queue page that lets org admins create, view, edit, and delete reusable part profiles. Include search/filter by part number and material.
 
-| File | Action |
-|---|---|
-| `src/components/marketing/MockAppPreviews.tsx` | Create — all 6 mock components |
-| `src/pages/features/ShiftHandoffSoftware.tsx` | Edit — add MockHandoffForm |
-| `src/pages/features/ShiftHandoff.tsx` | Edit — add MockHandoffForm |
-| `src/pages/features/WorkOrderTracking.tsx` | Edit — add MockQueueBoard |
-| `src/pages/features/ProductionScheduling.tsx` | Edit — add MockQueueBoard |
-| `src/pages/features/DigitalExpeditor.tsx` | Edit — add MockStationDashboard |
-| `src/pages/features/MachineShopSoftware.tsx` | Edit — add MockStationDashboard |
-| `src/pages/features/ManufacturingOversight.tsx` | Edit — add MockStationDashboard |
-| `src/pages/features/ManufacturingVisibility.tsx` | Edit — add MockStationDashboard |
-| `src/pages/features/ProductionControl.tsx` | Edit — add MockStationDashboard |
-| `src/pages/features/CNCOperatorTools.tsx` | Edit — add MockHandoffForm |
-| `src/pages/features/DowntimeTracking.tsx` | Edit — add MockDowntimeLog |
-| `src/pages/features/MachineTimeTracking.tsx` | Edit — add MockDowntimeLog |
-| `src/pages/features/TeamCollaboration.tsx` | Edit — add MockTeamPanel |
-| `src/pages/features/QualityManagement.tsx` | Edit — add MockQualityCard |
+#### 4. Add Part Catalog Lookup to Work Order Creation
+**Problem**: `queue_items.part_catalog_id` FK exists but the `CreateWorkOrderDialog` has no way to select from the part catalog. The "auto-fill from catalog" flow is entirely missing.
+
+**Fix**: Add an optional "Select from Part Catalog" picker in `CreateWorkOrderDialog` that, when a catalog entry is selected, auto-fills material_type, dimensions, weight, and shape fields.
+
+#### 5. AI Planning Assistant — Missing Part Spec Feedback in UI
+**Problem**: The AI system prompt says "Recommend adding material/dimension data to the work order for better AI routing" when part specs are missing, but there's no inline action from the chat to navigate the user to the work order to add specs.
+
+**Fix**: Low priority — this works via text advice already. Consider adding a deep-link or action button in the future.
+
+---
+
+### Implementation Order
+
+1. **Part Specs fields in CreateWorkOrderDialog** — unblocks data entry
+2. **Part Specs display/edit in QueueItemDetailDialog** — unblocks viewing/editing
+3. **Part Catalog CRUD UI** — enables reusable part profiles
+4. **Part Catalog picker in CreateWorkOrderDialog** — auto-fill from catalog
+
+### Technical Notes
+- Part shape values: `prismatic`, `cylindrical`, `complex`, `flat`, `tubular` (matches AI system prompt)
+- Material types should reuse the same list from `StationManualMachineEntry`: Aluminum, Steel, Stainless Steel, Titanium, Inconel, Copper, Brass, Plastics, Composites, Cast Iron, Tool Steel
+- Part catalog is org-scoped via `organization_id` + RLS policies already in place
+- No new database migrations needed — all tables and columns already exist
 
