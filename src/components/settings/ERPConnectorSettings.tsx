@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
-import { Loader2, Plug, RefreshCw, Zap, CheckCircle2, XCircle, Clock, AlertTriangle, Trash2, Plus, Sparkles, CreditCard } from "lucide-react";
+import { Loader2, Plug, RefreshCw, Zap, CheckCircle2, XCircle, Clock, AlertTriangle, Trash2, Plus, Sparkles, CreditCard, RotateCcw } from "lucide-react";
 import { useERPConnector } from "@/hooks/useERPConnector";
 import { useStations } from "@/hooks/useStations";
 import { useCurrentTeam } from "@/contexts/TeamContext";
@@ -59,9 +59,9 @@ function ConnectionStatusBadge({ status }: { status: string }) {
 
 export function ERPConnectorSettings() {
   const {
-    connection, syncLogs, workCenterMappings, statusMappings,
+    connection, syncLogs, syncErrors, workCenterMappings, statusMappings,
     loading, syncing, testing,
-    saveConnection, testConnection, runSync,
+    saveConnection, testConnection, runSync, retryFailedRecords,
     updateWorkCenterMapping, saveStatusMapping, deleteStatusMapping,
   } = useERPConnector();
   const { currentTeam } = useCurrentTeam();
@@ -70,8 +70,8 @@ export function ERPConnectorSettings() {
   const { features, plan } = useEntitlements();
   const { createCheckout } = useSubscription();
 
-  // ERP usage metering state
   const [erpUsage, setErpUsage] = useState<{ sync_count: number; sync_limit: number; erp_tier: string } | null>(null);
+  const [retrying, setRetrying] = useState(false);
 
   const erpTier = (features as Record<string, unknown>)?.erp_tier as string | undefined;
   const hasErpAddon = erpTier && erpTier !== 'none' && erpTier !== undefined;
@@ -120,7 +120,6 @@ export function ERPConnectorSettings() {
       setTenantId(connection.tenant_identifier || "");
       setSyncInterval(connection.sync_interval_minutes);
       setIsActive(connection.is_active);
-      // Don't populate secret on load
     }
   }, [connection]);
 
@@ -137,13 +136,20 @@ export function ERPConnectorSettings() {
       is_active: isActive,
     });
     if (result.error) return;
-    setClientSecret(""); // Clear secret after save
+    setClientSecret("");
   };
 
   const handleAddStatusMapping = async () => {
     if (!newErpStatus.trim()) return;
     await saveStatusMapping(newErpStatus.trim(), newJoblineStatus);
     setNewErpStatus("");
+  };
+
+  const handleRetryAll = async () => {
+    if (syncErrors.length === 0) return;
+    setRetrying(true);
+    await retryFailedRecords(syncErrors.map(e => e.id));
+    setRetrying(false);
   };
 
   if (loading) {
@@ -363,6 +369,73 @@ export function ERPConnectorSettings() {
                 </Button>
               </div>
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Sync Errors with Retry */}
+      {syncErrors.length > 0 && (
+        <Card className="border-destructive/30">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2 text-destructive">
+                  <XCircle className="w-5 h-5" />
+                  Unresolved Sync Errors ({syncErrors.length})
+                </CardTitle>
+                <CardDescription>These records failed to sync and need attention</CardDescription>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onClick={handleRetryAll}
+                disabled={retrying}
+              >
+                {retrying ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
+                Retry All
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Record ID</TableHead>
+                  <TableHead>Error</TableHead>
+                  <TableHead>Retries</TableHead>
+                  <TableHead className="w-20">Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {syncErrors.slice(0, 10).map(err => (
+                  <TableRow key={err.id}>
+                    <TableCell>
+                      <Badge variant="secondary" className="text-xs">{err.erp_record_type}</Badge>
+                    </TableCell>
+                    <TableCell className="font-mono text-xs">{err.erp_record_id || "—"}</TableCell>
+                    <TableCell className="text-sm text-destructive max-w-xs truncate" title={err.error_message}>
+                      {err.error_message}
+                    </TableCell>
+                    <TableCell className="text-sm">{err.retry_count}</TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => retryFailedRecords([err.id])}
+                        title="Retry this record"
+                      >
+                        <RotateCcw className="w-4 h-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            {syncErrors.length > 10 && (
+              <p className="text-xs text-muted-foreground mt-2">Showing 10 of {syncErrors.length} errors</p>
+            )}
           </CardContent>
         </Card>
       )}

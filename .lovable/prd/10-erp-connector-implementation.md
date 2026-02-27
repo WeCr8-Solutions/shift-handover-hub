@@ -32,7 +32,7 @@
 
 | Item | Status | Notes |
 |------|--------|-------|
-| File: `supabase/functions/erp-sync/index.ts` | ✅ Done | ~650 lines |
+| File: `supabase/functions/erp-sync/index.ts` | ✅ Done | ~750 lines |
 | CORS headers | ✅ Done | Standard Lovable CORS |
 | JWT auth check (getUser) | ✅ Done | Uses `getUser()` |
 | Org admin authorization | ✅ Done | Checks organization_members role in (owner, admin) |
@@ -66,7 +66,7 @@
 | — Sync History card | ✅ Done | Accordion with last 20 runs, error details |
 | — ERP Tier Selection | ✅ Done | 3-card layout for Starter/Pro/Unlimited (enterprise only) |
 | — Usage Progress Bar | ✅ Done | Shows sync count vs limit with 80% warning |
-| `useERPConnector.ts` hook | ✅ Done | CRUD connections, sync logs, errors, mappings, invoke sync |
+| `useERPConnector.ts` hook | ✅ Done | CRUD connections, mappings, errors, invoke sync, retry |
 
 ---
 
@@ -100,40 +100,59 @@
 | **BillingSettings: seat limit warnings** | ✅ Done | 80% and 100% warnings with visual indicators |
 | **Additional seat cost display** | ✅ Done | Shows +N seats × $7.99 = $X.XX/mo calculation |
 
-### Phase 5 Technical Flow
-
-```text
-Enterprise Checkout:
-  User subscribes → create-checkout (quantity=10) → Stripe session
-  → webhook: checkout.session.completed → updateOrgEntitlements(plan, seatQuantity=10)
-  → entitlements.limits.users = 10
-
-Seat Management:
-  Admin clicks "Update Seats" → update-seats edge function → Stripe subscription.update(quantity=15)
-  → webhook: subscription.updated → updateOrgEntitlements(plan, seatQuantity=15)
-  → entitlements.limits.users = 15
-
-ERP Gate:
-  erp-sync request → check entitlements.plan === 'enterprise' → 403 or proceed
-  ERPConnectorSettings → check plan !== 'enterprise' → show upgrade card
-```
-
 ---
 
-## Phase 6: Production Readiness & Forethought ⬜ PLANNED
+## Phase 6: Production Readiness & Seat/Invite Integration ✅ COMPLETE
 
 | Item | Status | Priority | Notes |
 |------|--------|----------|-------|
+| **Sync debounce / cooldown** | ✅ Done | P2 | 5-minute cooldown between manual syncs, returns 429 |
+| **OAuth token caching** | ✅ Done | P3 | Cached in erp_connections.metadata with TTL, 60s buffer |
+| **Connection health monitoring** | ✅ Done | P3 | After 3 consecutive failures, queues email alert to org admins |
+| **Retry failed records** | ✅ Done | P2 | UI retry buttons (single + all), marks errors resolved via edge function |
+| **Secrets column-level security** | ✅ Done | P2 | `erp_connections_safe` view (SECURITY INVOKER) excludes secrets; frontend uses view |
+| **Seat-aware InviteCodeGenerator** | ✅ Done | P1 | Shows seat availability banner, disables invite creation when full, 80% warning |
+| **Seat-aware InviteCodeRedemption** | ✅ Done | P1 | Shows remaining seats after validation, blocks join when full with clear message |
+| **Seat pre-check in redeemInviteCode()** | ✅ Done | P1 | Checks entitlements.limits.users vs member count before INSERT, prevents cryptic RLS errors |
 | **Automated scheduled sync** | ⬜ Planned | P1 | Needs client-side polling or external cron trigger |
-| **Sync debounce / rate limit** | ⬜ Planned | P2 | Prevent manual sync spam; add cooldown |
 | **ERP API response pagination** | ⬜ Planned | P2 | Cursor-based pagination for large datasets |
-| **OAuth token caching** | ⬜ Planned | P3 | Cache token with TTL in connection metadata |
-| **Connection health monitoring** | ⬜ Planned | P3 | Alert via notification_queue on persistent failures |
 | **Sync conflict resolution** | ⬜ Planned | P3 | Define merge strategy for local vs ERP edits |
 | **Webhook push support** | ⬜ Planned | P3 | Allow ERPs to push changes instead of polling |
 | **Field mapping UI editor** | ⬜ Planned | P3 | Visual editor for custom ERP APIs |
-| **Secrets column-level security** | ⬜ Planned | P2 | Prevent client_secret_encrypted from SELECT |
-| **Retry failed records** | ⬜ Planned | P2 | UI button to retry unresolved sync errors |
+
+### Phase 6 Technical Flow
+
+```text
+Invite + Seat flow:
+  Admin opens InviteCodeGenerator → fetch member count & limits.users
+  → Display "7/10 seats used" banner with progress bar
+  → If 10/10: disable Create Invite, show "Add seats" button → Billing Settings
+  
+  User redeems code → validateInviteCode returns seatsUsed + seatLimit
+  → InviteCodeRedemption shows remaining seats in org preview
+  → If full: shows alert instead of Join button
+  → redeemInviteCode() pre-checks seat limit before INSERT
+  → If full: returns "seat limit reached" error (not cryptic RLS)
+
+Sync debounce:
+  Manual sync request → query last sync completed_at
+  → If < 5min ago → 429 "Please wait X minutes"
+
+Token cache:
+  Sync starts → check connection.metadata.cached_token + .token_expires_at
+  → If valid (with 60s buffer) → skip OAuth request
+  → If expired → fetch new token → cache in metadata
+
+Health monitor:
+  Sync fails → count last 3 sync statuses
+  → If all "failed" → check notification_queue for recent alert
+  → If no recent alert → email org admins via notification_queue
+
+Retry failed records:
+  Admin clicks Retry → erp-sync with retry_error_ids[]
+  → Marks errors as resolved + increments retry_count
+  → Records re-synced on next sync run
+```
 
 ---
 
@@ -142,10 +161,10 @@ ERP Gate:
 ### Created
 | File | Purpose |
 |------|---------|
-| `supabase/functions/erp-sync/index.ts` | Edge function: OAuth, fetch, upsert, metering, enterprise gate |
+| `supabase/functions/erp-sync/index.ts` | Edge function: OAuth, fetch, upsert, metering, enterprise gate, debounce, caching, health alerts, retry |
 | `supabase/functions/update-seats/index.ts` | Edge function: Enterprise seat quantity management |
-| `src/hooks/useERPConnector.ts` | Hook: CRUD connections, mappings, errors, invoke sync |
-| `src/components/settings/ERPConnectorSettings.tsx` | UI: Enterprise gate + tier selection + usage progress |
+| `src/hooks/useERPConnector.ts` | Hook: CRUD connections, mappings, errors, invoke sync, retry failed records |
+| `src/components/settings/ERPConnectorSettings.tsx` | UI: Enterprise gate + tier selection + usage progress + sync error retry |
 
 ### Modified
 | File | Change |
@@ -153,5 +172,8 @@ ERP Gate:
 | `supabase/functions/create-checkout/index.ts` | Added quantity parameter for enterprise per-seat billing |
 | `supabase/functions/stripe-webhook/index.ts` | Seat quantity sync to entitlements.limits.users |
 | `src/hooks/useSubscription.ts` | Added updateSeats(), quantity param to createCheckout() |
+| `src/hooks/useOrganizationInvites.ts` | Seat pre-check in redeemInviteCode(), seat info in validateInviteCode() |
 | `src/components/settings/BillingSettings.tsx` | Real usage counts + enterprise seat management card |
+| `src/components/InviteCodeGenerator.tsx` | Seat availability banner, disable invite when full, 80% warning |
+| `src/components/InviteCodeRedemption.tsx` | Shows remaining seats, blocks join when seats full |
 | `supabase/config.toml` | Added update-seats function config |

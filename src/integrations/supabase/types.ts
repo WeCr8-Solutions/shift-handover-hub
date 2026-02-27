@@ -1230,6 +1230,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "erp_sync_logs_erp_connection_id_fkey"
+            columns: ["erp_connection_id"]
+            isOneToOne: false
+            referencedRelation: "erp_connections_safe"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "erp_sync_logs_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -4478,6 +4485,71 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      erp_connections_safe: {
+        Row: {
+          api_base_url: string | null
+          connection_status: string | null
+          created_at: string | null
+          created_by: string | null
+          erp_vendor: string | null
+          id: string | null
+          instance_type: string | null
+          is_active: boolean | null
+          last_tested_at: string | null
+          metadata: Json | null
+          oauth_token_endpoint: string | null
+          organization_id: string | null
+          scopes: string | null
+          sync_interval_minutes: number | null
+          tenant_identifier: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          api_base_url?: string | null
+          connection_status?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          erp_vendor?: string | null
+          id?: string | null
+          instance_type?: string | null
+          is_active?: boolean | null
+          last_tested_at?: string | null
+          metadata?: Json | null
+          oauth_token_endpoint?: string | null
+          organization_id?: string | null
+          scopes?: string | null
+          sync_interval_minutes?: number | null
+          tenant_identifier?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          api_base_url?: string | null
+          connection_status?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          erp_vendor?: string | null
+          id?: string | null
+          instance_type?: string | null
+          is_active?: boolean | null
+          last_tested_at?: string | null
+          metadata?: Json | null
+          oauth_token_endpoint?: string | null
+          organization_id?: string | null
+          scopes?: string | null
+          sync_interval_minutes?: number | null
+          tenant_identifier?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_connections_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       organization_webhooks_safe: {
         Row: {

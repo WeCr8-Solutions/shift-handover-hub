@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, CheckCircle, XCircle, Building2, Users, Ticket } from "lucide-react";
+import { Loader2, CheckCircle, XCircle, Building2, Users, Ticket, AlertTriangle } from "lucide-react";
 
 interface InviteCodeRedemptionProps {
   onSuccess?: (organizationId: string, teamId: string | null) => void;
@@ -29,6 +30,8 @@ export function InviteCodeRedemption({ onSuccess, initialCode = "" }: InviteCode
     teamName: string | null;
     orgRole: string;
     appRole: string | null;
+    seatsUsed?: number;
+    seatLimit?: number;
   } | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -78,6 +81,12 @@ export function InviteCodeRedemption({ onSuccess, initialCode = "" }: InviteCode
   const formatCode = (value: string) => {
     return value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8);
   };
+
+  const isSeatsFull = validatedInvite?.seatLimit != null && validatedInvite?.seatsUsed != null
+    && validatedInvite.seatsUsed >= validatedInvite.seatLimit;
+  const seatsRemaining = validatedInvite?.seatLimit != null && validatedInvite?.seatsUsed != null
+    ? Math.max(0, validatedInvite.seatLimit - validatedInvite.seatsUsed)
+    : null;
 
   return (
     <Card>
@@ -157,6 +166,17 @@ export function InviteCodeRedemption({ onSuccess, initialCode = "" }: InviteCode
                 </div>
               )}
 
+              {/* Seat availability info */}
+              {seatsRemaining !== null && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Users className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">
+                    {validatedInvite.seatsUsed} / {validatedInvite.seatLimit} seats used
+                    {!isSeatsFull && <span className="text-green-600 ml-1">({seatsRemaining} available)</span>}
+                  </span>
+                </div>
+              )}
+
               <div className="flex flex-wrap gap-2 pt-2">
                 <Badge variant="outline">
                   Org Role: {validatedInvite.orgRole}
@@ -169,23 +189,32 @@ export function InviteCodeRedemption({ onSuccess, initialCode = "" }: InviteCode
               </div>
             </div>
 
-            <Button
-              onClick={handleRedeem}
-              disabled={isRedeeming}
-              className="w-full"
-            >
-              {isRedeeming ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Joining...
-                </>
-              ) : (
-                <>
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Join {validatedInvite.organizationName}
-                </>
-              )}
-            </Button>
+            {isSeatsFull ? (
+              <Alert variant="destructive">
+                <AlertDescription className="flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 shrink-0" />
+                  This organization has reached its seat limit. Please ask an admin to add more seats before joining.
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <Button
+                onClick={handleRedeem}
+                disabled={isRedeeming}
+                className="w-full"
+              >
+                {isRedeeming ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Joining...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Join {validatedInvite.organizationName}
+                  </>
+                )}
+              </Button>
+            )}
           </div>
         )}
       </CardContent>
