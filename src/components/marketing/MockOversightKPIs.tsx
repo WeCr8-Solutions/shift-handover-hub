@@ -40,7 +40,7 @@ export function MockOversightKPIs() {
               <div className="text-[10px] text-muted-foreground mb-1">{k.label}</div>
               <div className="flex items-baseline gap-2">
                 <span className="text-xl font-bold text-foreground">{k.value}</span>
-                <span className={`text-[10px] font-medium ${k.up ? "text-green-400" : "text-green-400"}`}>
+                <span className={`text-[10px] font-medium ${k.label === "Scrap Rate" ? "text-green-400" : k.up ? "text-green-400" : "text-red-400"}`}>
                   {k.change}
                 </span>
               </div>

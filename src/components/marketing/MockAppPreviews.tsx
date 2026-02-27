@@ -26,12 +26,12 @@ export function MockHandoffForm() {
       <div className="space-y-4 text-sm">
         <div className="flex items-center justify-between">
           <span className="font-semibold text-base">CNC-01 · End-of-Shift Handoff</span>
-          <Badge variant="outline" className="text-xs">2nd → 3rd Shift</Badge>
+          <Badge variant="outline" className="text-xs">1st → 2nd Shift</Badge>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Outgoing Operator" value="Mike Torres" />
-          <Field label="Incoming Operator" value="Sarah Chen" />
+          <Field label="Outgoing Operator" value="D. Martinez" />
+          <Field label="Incoming Operator" value="Mike Torres" />
           <Field label="Work Order" value="WO-2024-1847" />
           <Field label="Part Number" value="BRKT-4510 Rev C" />
         </div>
@@ -244,8 +244,8 @@ export function MockQualityCard() {
         <div className="grid grid-cols-2 gap-3">
           <Field label="Work Order" value="WO-1847" />
           <Field label="Part Number" value="BRKT-4510 Rev C" />
-          <Field label="Station" value="CNC-04" />
-          <Field label="Reported By" value="R. Patel" />
+          <Field label="Station" value="CNC-01" />
+          <Field label="Reported By" value="M. Torres" />
         </div>
 
         <div className="rounded-lg bg-muted/40 p-3 border border-border">

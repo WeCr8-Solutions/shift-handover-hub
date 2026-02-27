@@ -18,7 +18,7 @@ function AppWindowChrome({ title, children }: { title: string; children: React.R
 
 const stations = [
   { id: "CNC-01", parts: 142, target: 200, scrap: 2, rework: 0, status: "Running" },
-  { id: "LATHE-02", parts: 45, target: 80, scrap: 1, rework: 3, status: "Setup" },
+  { id: "LATHE-02", parts: 0, target: 80, scrap: 0, rework: 0, status: "Setup" },
   { id: "MILL-03", parts: 0, target: 120, scrap: 0, rework: 0, status: "Idle" },
   { id: "CNC-04", parts: 67, target: 150, scrap: 4, rework: 1, status: "Down" },
 ];
@@ -73,11 +73,11 @@ export function MockProductionMetrics() {
         <div className="grid grid-cols-3 gap-3 pt-1">
           <div className="rounded-lg bg-muted/40 p-2 text-center border border-border">
             <span className="text-[10px] text-muted-foreground block">Total Parts</span>
-            <span className="font-bold text-foreground">254</span>
+            <span className="font-bold text-foreground">209</span>
           </div>
           <div className="rounded-lg bg-muted/40 p-2 text-center border border-border">
             <span className="text-[10px] text-muted-foreground block">Scrap Rate</span>
-            <span className="font-bold text-red-400">2.8%</span>
+            <span className="font-bold text-red-400">2.9%</span>
           </div>
           <div className="rounded-lg bg-muted/40 p-2 text-center border border-border">
             <span className="text-[10px] text-muted-foreground block">On Target</span>

@@ -25,7 +25,7 @@ const machines = [
 
 export function MockShopFloorView() {
   return (
-    <AppWindowChrome title="JobLine — Shop Floor · 8 Stations">
+    <AppWindowChrome title="JobLine — Shop Floor · 4 Stations">
       <div className="space-y-4 text-sm">
         {/* Header row */}
         <div className="flex items-center justify-between">
@@ -91,7 +91,7 @@ export function MockShopFloorView() {
         </div>
 
         <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1">
-          <span>8 stations · 6 operators on floor</span>
+          <span>4 stations · 3 operators on floor</span>
           <span className="flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
             Live

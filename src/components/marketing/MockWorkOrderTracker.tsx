@@ -17,7 +17,7 @@ function AppWindowChrome({ title, children }: { title: string; children: React.R
 }
 
 const routingSteps = [
-  { op: "Op 10", name: "Rough Turn", station: "LATHE-02", status: "complete", parts: "80/80" },
+  { op: "Op 10", name: "Rough Turn", station: "LATHE-02", status: "complete", parts: "200/200" },
   { op: "Op 20", name: "Finish Mill", station: "CNC-01", status: "in-progress", parts: "142/200" },
   { op: "Op 30", name: "Deburr", station: "BENCH-01", status: "pending", parts: "—" },
   { op: "Op 40", name: "Heat Treat", station: "OUTSIDE", status: "pending", parts: "—" },
