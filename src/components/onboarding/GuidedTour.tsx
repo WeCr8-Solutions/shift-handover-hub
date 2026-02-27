@@ -8,32 +8,32 @@ const TOUR_STEPS: Record<string, Step[]> = {
   '/dashboard': [
     {
       target: '[data-tour="shift-stats"]',
-      content: 'Your Digital Expeditor dashboard - see shift statistics, parts completed, and team performance at a glance.',
+      content: 'Your Digital Expeditor dashboard shows real-time shift statistics — parts completed, scrap rates, and team performance. Use this to spot bottlenecks early.',
       title: '📊 Shift Statistics',
       disableBeacon: true,
       placement: 'bottom',
     },
     {
       target: '[data-tour="work-center-filter"]',
-      content: 'Filter stations by work center type - CNC, Welding, Assembly, and more. Quickly find your assigned station.',
+      content: 'Filter stations by work center type — CNC, Welding, Assembly, Grinding, and more. Quickly zero in on your department or assigned area.',
       title: '🔍 Work Center Filters',
       placement: 'bottom',
     },
     {
       target: '[data-tour="station-grid"]',
-      content: 'Each card represents a workstation. Click on your station to select available work orders and track job progress through the production line.',
-      title: '🏭 Station Cards - Your Digital Expeditor',
+      content: 'Each card is a live workstation. Colors indicate status: green = running, yellow = idle, red = down. Click any card to select work orders, view handoff history, or start a new job.',
+      title: '🏭 Station Cards — Your Digital Expeditor',
       placement: 'top',
     },
     {
       target: '[data-tour="add-work-order"]',
-      content: 'Add new work orders with full routing - from incoming materials through each operation to final QC and shipping.',
+      content: 'Add new work orders with full production routing — from raw material receiving through each machining operation to final QC and shipping.',
       title: '📦 Add Work Orders',
       placement: 'left',
     },
     {
       target: '[data-tour="new-handoff"]',
-      content: 'Submit shift handoffs with Job Performance Updates - document what happened, suggest improvements, and ensure smooth transitions.',
+      content: 'End-of-shift handoffs capture machine condition, quality notes, tooling status, and improvement ideas. The next operator sees everything they need to hit the ground running.',
       title: '🔄 Shift Handoffs & Continuous Improvement',
       placement: 'left',
     },

@@ -15,19 +15,33 @@ export type OnboardingStep =
   | 'admin-features'
   | 'complete';
 
-export const ONBOARDING_STEPS: { id: OnboardingStep; title: string; description: string }[] = [
+export interface OnboardingStepDef {
+  id: OnboardingStep;
+  title: string;
+  description: string;
+  /** If true, step is optional "Manufacturing Pro" content */
+  optional?: boolean;
+}
+
+export const ONBOARDING_STEPS: OnboardingStepDef[] = [
   { id: 'welcome', title: 'Welcome to JobLine.ai', description: 'Your Digital Expeditor for manufacturing workflows' },
   { id: 'organization-setup', title: 'Create Your Organization', description: 'Set up your company workspace with secure data isolation' },
   { id: 'shop-setup', title: 'Set Up Your Shop', description: 'Configure teams, stations, routing templates, and users' },
-  { id: 'dashboard-overview', title: 'Digital Expeditor Dashboard', description: 'Track work orders through your production line' },
-  { id: 'station-cards', title: 'Select & Deliver Work Orders', description: 'Pick available jobs and confirm delivery to next station' },
-  { id: 'quote-to-workorder', title: 'Quotes & Routing', description: 'Learn how quotes convert to work orders with production routing templates' },
-  { id: 'handoff-submission', title: 'Shift Handoffs', description: 'Document handoffs and continuous improvement notes' },
-  { id: 'performance-updates', title: 'Job Performance Updates', description: 'Suggest process improvements and track implementation' },
-  { id: 'team-management', title: 'Team Management', description: 'Organize operators, supervisors, and station assignments' },
-  { id: 'admin-features', title: 'Admin Features', description: 'Full system oversight and bulk data management' },
+  { id: 'dashboard-overview', title: 'Digital Expeditor Dashboard', description: 'See shift statistics, active stations, and team performance at a glance' },
+  { id: 'station-cards', title: 'Select & Deliver Work Orders', description: 'Pick available jobs at your station and confirm delivery to the next operation' },
+  { id: 'handoff-submission', title: 'Shift Handoffs', description: 'Document end-of-shift handoffs with machine condition, quality notes, and continuous improvement ideas' },
+  // Optional "Manufacturing Pro" tours
+  { id: 'quote-to-workorder', title: 'Quotes & Routing', description: 'Learn how quotes convert to work orders with production routing templates', optional: true },
+  { id: 'performance-updates', title: 'Job Performance Updates', description: 'Suggest process improvements, track implementation status, and drive continuous improvement', optional: true },
+  { id: 'team-management', title: 'Team Management', description: 'Organize operators & supervisors, assign stations, and manage team permissions', optional: true },
+  { id: 'admin-features', title: 'Admin & Oversight', description: 'Full system oversight, bulk data management, activity logs, and RLS health checks', optional: true },
   { id: 'complete', title: 'All Set!', description: 'You\'re ready to use JobLine.ai Digital Expeditor' },
 ];
+
+/** Core steps that count toward mandatory onboarding completion */
+export const CORE_STEPS = ONBOARDING_STEPS.filter(s => !s.optional && s.id !== 'complete');
+/** Optional "Manufacturing Pro" tours */
+export const PRO_STEPS = ONBOARDING_STEPS.filter(s => s.optional);
 
 interface OnboardingState {
   completedSteps: string[];
@@ -45,11 +59,11 @@ export function useOnboarding() {
     currentStep: 'welcome',
     isComplete: false,
     isLoading: true,
-    hasSeenWelcome: true, // Default to true to prevent flash
+    hasSeenWelcome: true,
     setupWizardDismissed: false,
   });
   const [showTour, setShowTour] = useState(false);
-  // Fetch onboarding state from database
+
   useEffect(() => {
     async function fetchOnboardingState() {
       if (!user) {
@@ -79,7 +93,6 @@ export function useOnboarding() {
           setupWizardDismissed: (data as any).setup_wizard_dismissed || false,
         });
       } else {
-        // Create initial onboarding record for new users
         const { error: insertError } = await supabase
           .from('user_onboarding')
           .insert({ user_id: user.id, has_seen_welcome: false });
@@ -93,7 +106,7 @@ export function useOnboarding() {
           currentStep: 'welcome',
           isComplete: false,
           isLoading: false,
-          hasSeenWelcome: false, // New user has not seen welcome
+          hasSeenWelcome: false,
           setupWizardDismissed: false,
         });
       }
@@ -106,9 +119,12 @@ export function useOnboarding() {
     if (!user) return;
 
     const newCompletedSteps = [...new Set([...state.completedSteps, stepId])];
-    const currentIndex = ONBOARDING_STEPS.findIndex(s => s.id === stepId);
-    const nextStep = ONBOARDING_STEPS[currentIndex + 1]?.id || 'complete';
-    const isComplete = nextStep === 'complete';
+    
+    // Find the next incomplete core step, or mark complete
+    const coreStepIds = CORE_STEPS.map(s => s.id);
+    const nextCoreStep = coreStepIds.find(id => !newCompletedSteps.includes(id));
+    const nextStep: OnboardingStep = nextCoreStep || 'complete';
+    const isComplete = !nextCoreStep;
 
     setState(prev => ({
       ...prev,
@@ -224,11 +240,12 @@ export function useOnboarding() {
   }, [state.completedSteps]);
 
   const getProgress = useCallback(() => {
-    const totalSteps = ONBOARDING_STEPS.length - 1; // Exclude 'complete'
-    return Math.round((state.completedSteps.length / totalSteps) * 100);
+    // Progress is based on core (mandatory) steps only
+    const coreIds = CORE_STEPS.map(s => s.id);
+    const completedCore = state.completedSteps.filter(id => coreIds.includes(id as OnboardingStep));
+    return Math.round((completedCore.length / coreIds.length) * 100);
   }, [state.completedSteps]);
 
-  // Derive isNewSignup from hasSeenWelcome - user is "new" if they haven't seen the welcome
   const isNewSignup = !state.hasSeenWelcome && !state.isComplete;
 
   return {

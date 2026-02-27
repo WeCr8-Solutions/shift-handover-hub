@@ -1,5 +1,6 @@
 import React, { createContext, useContext, ReactNode } from 'react';
-import { useOnboarding, OnboardingStep, ONBOARDING_STEPS } from '@/hooks/useOnboarding';
+import { useOnboarding, OnboardingStep, ONBOARDING_STEPS, CORE_STEPS, PRO_STEPS } from '@/hooks/useOnboarding';
+import type { OnboardingStepDef } from '@/hooks/useOnboarding';
 
 interface OnboardingContextType {
   completedSteps: string[];
@@ -43,5 +44,5 @@ export function useOnboardingContext() {
   return context;
 }
 
-export { ONBOARDING_STEPS };
-export type { OnboardingStep };
+export { ONBOARDING_STEPS, CORE_STEPS, PRO_STEPS };
+export type { OnboardingStep, OnboardingStepDef };
