@@ -1018,6 +1018,271 @@ export type Database = {
           },
         ]
       }
+      erp_connections: {
+        Row: {
+          api_base_url: string | null
+          client_id_encrypted: string | null
+          client_secret_encrypted: string | null
+          connection_status: string
+          created_at: string
+          created_by: string | null
+          erp_vendor: string
+          id: string
+          instance_type: string
+          is_active: boolean
+          last_tested_at: string | null
+          metadata: Json | null
+          oauth_token_endpoint: string | null
+          organization_id: string
+          scopes: string | null
+          sync_interval_minutes: number
+          tenant_identifier: string | null
+          updated_at: string
+        }
+        Insert: {
+          api_base_url?: string | null
+          client_id_encrypted?: string | null
+          client_secret_encrypted?: string | null
+          connection_status?: string
+          created_at?: string
+          created_by?: string | null
+          erp_vendor: string
+          id?: string
+          instance_type?: string
+          is_active?: boolean
+          last_tested_at?: string | null
+          metadata?: Json | null
+          oauth_token_endpoint?: string | null
+          organization_id: string
+          scopes?: string | null
+          sync_interval_minutes?: number
+          tenant_identifier?: string | null
+          updated_at?: string
+        }
+        Update: {
+          api_base_url?: string | null
+          client_id_encrypted?: string | null
+          client_secret_encrypted?: string | null
+          connection_status?: string
+          created_at?: string
+          created_by?: string | null
+          erp_vendor?: string
+          id?: string
+          instance_type?: string
+          is_active?: boolean
+          last_tested_at?: string | null
+          metadata?: Json | null
+          oauth_token_endpoint?: string | null
+          organization_id?: string
+          scopes?: string | null
+          sync_interval_minutes?: number
+          tenant_identifier?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_connections_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_status_mappings: {
+        Row: {
+          created_at: string
+          erp_status: string
+          id: string
+          jobline_status: string
+          organization_id: string
+        }
+        Insert: {
+          created_at?: string
+          erp_status: string
+          id?: string
+          jobline_status: string
+          organization_id: string
+        }
+        Update: {
+          created_at?: string
+          erp_status?: string
+          id?: string
+          jobline_status?: string
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_status_mappings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_sync_errors: {
+        Row: {
+          created_at: string
+          erp_record_id: string | null
+          erp_record_type: string
+          error_message: string
+          id: string
+          organization_id: string
+          resolved: boolean
+          retry_count: number
+          sync_log_id: string
+        }
+        Insert: {
+          created_at?: string
+          erp_record_id?: string | null
+          erp_record_type: string
+          error_message: string
+          id?: string
+          organization_id: string
+          resolved?: boolean
+          retry_count?: number
+          sync_log_id: string
+        }
+        Update: {
+          created_at?: string
+          erp_record_id?: string | null
+          erp_record_type?: string
+          error_message?: string
+          id?: string
+          organization_id?: string
+          resolved?: boolean
+          retry_count?: number
+          sync_log_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_sync_errors_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_sync_errors_sync_log_id_fkey"
+            columns: ["sync_log_id"]
+            isOneToOne: false
+            referencedRelation: "erp_sync_logs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_sync_logs: {
+        Row: {
+          completed_at: string | null
+          duration_ms: number | null
+          erp_connection_id: string
+          error_details: Json | null
+          errors_count: number | null
+          id: string
+          organization_id: string
+          records_created: number | null
+          records_fetched: number | null
+          records_updated: number | null
+          started_at: string
+          status: string
+          sync_type: string
+          triggered_by: string
+        }
+        Insert: {
+          completed_at?: string | null
+          duration_ms?: number | null
+          erp_connection_id: string
+          error_details?: Json | null
+          errors_count?: number | null
+          id?: string
+          organization_id: string
+          records_created?: number | null
+          records_fetched?: number | null
+          records_updated?: number | null
+          started_at?: string
+          status?: string
+          sync_type?: string
+          triggered_by?: string
+        }
+        Update: {
+          completed_at?: string | null
+          duration_ms?: number | null
+          erp_connection_id?: string
+          error_details?: Json | null
+          errors_count?: number | null
+          id?: string
+          organization_id?: string
+          records_created?: number | null
+          records_fetched?: number | null
+          records_updated?: number | null
+          started_at?: string
+          status?: string
+          sync_type?: string
+          triggered_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_sync_logs_erp_connection_id_fkey"
+            columns: ["erp_connection_id"]
+            isOneToOne: false
+            referencedRelation: "erp_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_sync_logs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_work_center_mappings: {
+        Row: {
+          created_at: string
+          erp_work_center_id: string
+          erp_work_center_name: string | null
+          id: string
+          jobline_station_id: string | null
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          erp_work_center_id: string
+          erp_work_center_name?: string | null
+          id?: string
+          jobline_station_id?: string | null
+          organization_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          erp_work_center_id?: string
+          erp_work_center_name?: string | null
+          id?: string
+          jobline_station_id?: string | null
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_work_center_mappings_jobline_station_id_fkey"
+            columns: ["jobline_station_id"]
+            isOneToOne: false
+            referencedRelation: "stations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_work_center_mappings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       global_update_acknowledgements: {
         Row: {
           acknowledged_at: string
@@ -2881,6 +3146,9 @@ export type Database = {
           cycle_time_minutes: number | null
           description: string | null
           due_date: string | null
+          erp_job_id: string | null
+          erp_last_synced_at: string | null
+          erp_source: string | null
           estimated_duration: number | null
           first_article_minutes: number | null
           id: string
@@ -2923,6 +3191,9 @@ export type Database = {
           cycle_time_minutes?: number | null
           description?: string | null
           due_date?: string | null
+          erp_job_id?: string | null
+          erp_last_synced_at?: string | null
+          erp_source?: string | null
           estimated_duration?: number | null
           first_article_minutes?: number | null
           id?: string
@@ -2965,6 +3236,9 @@ export type Database = {
           cycle_time_minutes?: number | null
           description?: string | null
           due_date?: string | null
+          erp_job_id?: string | null
+          erp_last_synced_at?: string | null
+          erp_source?: string | null
           estimated_duration?: number | null
           first_article_minutes?: number | null
           id?: string
@@ -4011,6 +4285,8 @@ export type Database = {
           completed_by: string | null
           created_at: string
           cycle_time_minutes: number | null
+          erp_operation_id: string | null
+          erp_sequence_number: number | null
           estimated_duration: number | null
           expected_return_date: string | null
           first_article_minutes: number | null
@@ -4034,6 +4310,8 @@ export type Database = {
           completed_by?: string | null
           created_at?: string
           cycle_time_minutes?: number | null
+          erp_operation_id?: string | null
+          erp_sequence_number?: number | null
           estimated_duration?: number | null
           expected_return_date?: string | null
           first_article_minutes?: number | null
@@ -4057,6 +4335,8 @@ export type Database = {
           completed_by?: string | null
           created_at?: string
           cycle_time_minutes?: number | null
+          erp_operation_id?: string | null
+          erp_sequence_number?: number | null
           estimated_duration?: number | null
           expected_return_date?: string | null
           first_article_minutes?: number | null

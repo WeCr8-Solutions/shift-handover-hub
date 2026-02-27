@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Settings2, Factory, Bell, Clock, Wrench, Building2, CreditCard, Lock, GraduationCap } from "lucide-react";
+import { Loader2, Settings2, Factory, Bell, Clock, Wrench, Building2, CreditCard, Lock, GraduationCap, Plug } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAppSettings } from "@/hooks/useAppSettings";
 import { useAdminAccess } from "@/hooks/useAdminData";
@@ -15,6 +15,7 @@ import { WorkCenterSettings } from "@/components/settings/WorkCenterSettings";
 import { OrganizationSettings } from "@/components/settings/OrganizationSettings";
 import { BillingSettings } from "@/components/settings/BillingSettings";
 import { OnboardingSettings } from "@/components/settings/OnboardingSettings";
+import { ERPConnectorSettings } from "@/components/settings/ERPConnectorSettings";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function Settings() {
@@ -25,6 +26,7 @@ export default function Settings() {
   const { canManageBilling } = useTrialStatus();
   const [activeTab, setActiveTab] = useState("general");
   const showBillingTab = isDeveloper || canManageBilling;
+  const showERPTab = isDeveloper || canManageBilling;
 
   if (authLoading || settingsLoading || accessLoading) {
     return (
@@ -134,6 +136,15 @@ export default function Settings() {
               <GraduationCap className="w-4 h-4 mr-2" />
               Onboarding
             </TabsTrigger>
+            {showERPTab && (
+              <TabsTrigger 
+                value="erp"
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground border"
+              >
+                <Plug className="w-4 h-4 mr-2" />
+                ERP
+              </TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="general">
@@ -172,6 +183,12 @@ export default function Settings() {
           <TabsContent value="onboarding">
             <OnboardingSettings />
           </TabsContent>
+
+          {showERPTab && (
+            <TabsContent value="erp">
+              <ERPConnectorSettings />
+            </TabsContent>
+          )}
         </Tabs>
       </main>
     </div>
