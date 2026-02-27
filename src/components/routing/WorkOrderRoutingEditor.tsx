@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Plus, 
@@ -26,7 +26,10 @@ import {
   Edit2,
   ChevronUp,
   ChevronDown,
-  MapPin
+  MapPin,
+  FileDown,
+  BookTemplate,
+  FolderOpen
 } from 'lucide-react';
 
 interface Station {
@@ -143,6 +146,13 @@ function autoSuggestStation(step: RoutingStep, stations: Station[]): Station | u
   );
 }
 
+interface OrgTemplate {
+  id: string;
+  name: string;
+  description?: string;
+  part_number_pattern?: string;
+}
+
 export function WorkOrderRoutingEditor({ 
   queueItemId, 
   workOrderNumber, 
@@ -158,6 +168,17 @@ export function WorkOrderRoutingEditor({
   const [isSaving, setIsSaving] = useState(false);
   const [editingStep, setEditingStep] = useState<number | null>(null);
   const [showTemplateMode, setShowTemplateMode] = useState(false);
+  const [orgTemplates, setOrgTemplates] = useState<OrgTemplate[]>([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('scratch');
+  const [loadingTemplate, setLoadingTemplate] = useState(false);
+  const [hasExistingRouting, setHasExistingRouting] = useState(false);
+
+  // Save as Template dialog state
+  const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
+  const [newTemplateName, setNewTemplateName] = useState('');
+  const [newTemplateDesc, setNewTemplateDesc] = useState('');
+  const [newTemplatePattern, setNewTemplatePattern] = useState('');
+  const [savingTemplate, setSavingTemplate] = useState(false);
 
   // Fetch stations for the organization
   useEffect(() => {
@@ -177,6 +198,20 @@ export function WorkOrderRoutingEditor({
     };
     
     fetchStations();
+  }, [organization?.id]);
+
+  // Fetch org routing templates
+  useEffect(() => {
+    const fetchTemplates = async () => {
+      if (!organization?.id) return;
+      const { data } = await supabase
+        .from('routing_templates')
+        .select('id, name, description, part_number_pattern')
+        .eq('organization_id', organization.id)
+        .order('name');
+      if (data) setOrgTemplates(data);
+    };
+    fetchTemplates();
   }, [organization?.id]);
 
   useEffect(() => {
@@ -202,6 +237,7 @@ export function WorkOrderRoutingEditor({
     if (error) {
       console.error('Error fetching routing:', error);
     } else if (data && data.length > 0) {
+      setHasExistingRouting(true);
       setSteps(data.map(d => {
         const stationData = d.stations as any;
         return {
@@ -220,8 +256,8 @@ export function WorkOrderRoutingEditor({
         };
       }));
     } else {
+      setHasExistingRouting(false);
       // Initialize with complete manufacturing flow template
-      // Auto-suggest stations from org by matching work_center_type to operation_type
       const autoSuggestedSteps = DEFAULT_ROUTING_STEPS.map(s => {
         const suggestedStation = autoSuggestStation(s, stations);
         return {
@@ -241,6 +277,130 @@ export function WorkOrderRoutingEditor({
       }
     }
     setIsLoading(false);
+  };
+
+  // Load an org template's steps
+  const loadOrgTemplate = async (templateId: string) => {
+    if (templateId === 'scratch') {
+      const autoSuggestedSteps = DEFAULT_ROUTING_STEPS.map(s => {
+        const suggestedStation = autoSuggestStation(s, stations);
+        return {
+          ...s,
+          station_id: suggestedStation?.id,
+          station_name: suggestedStation?.name,
+          work_center_type: suggestedStation?.work_center_type,
+        };
+      });
+      setSteps(autoSuggestedSteps);
+      setShowTemplateMode(true);
+      setSelectedTemplateId('scratch');
+      return;
+    }
+
+    setLoadingTemplate(true);
+    const { data: templateSteps, error } = await supabase
+      .from('routing_template_steps')
+      .select('*')
+      .eq('template_id', templateId)
+      .order('step_number');
+
+    if (error || !templateSteps) {
+      toast({ title: 'Error', description: 'Failed to load template steps', variant: 'destructive' });
+      setLoadingTemplate(false);
+      return;
+    }
+
+    // Map template steps → routing steps with auto-suggested stations
+    const mapped: RoutingStep[] = templateSteps.map((ts, idx) => {
+      // Try to match work_center_type to a station
+      const matchedStation = stations.find(s =>
+        s.work_center_type?.toLowerCase() === ts.work_center_type?.toLowerCase() ||
+        s.work_center?.toLowerCase().includes(ts.work_center_type?.toLowerCase() || '') ||
+        s.name?.toLowerCase().includes(ts.work_center_type?.toLowerCase() || '')
+      );
+
+      return {
+        step_number: idx + 1,
+        operation_name: ts.operation_name || `Step ${idx + 1}`,
+        operation_type: (ts.operation_type || 'internal') as RoutingStep['operation_type'],
+        station_id: matchedStation?.id,
+        station_name: matchedStation?.name,
+        work_center_type: matchedStation?.work_center_type || ts.work_center_type,
+        estimated_duration: ts.setup_time_minutes
+          ? (ts.setup_time_minutes + (ts.cycle_time_minutes || 0) + (ts.first_article_minutes || 0))
+          : undefined,
+        instructions: ts.instructions || undefined,
+        enabled: true,
+      };
+    });
+
+    setSteps(mapped);
+    setShowTemplateMode(true);
+    setSelectedTemplateId(templateId);
+    setLoadingTemplate(false);
+
+    const template = orgTemplates.find(t => t.id === templateId);
+    toast({
+      title: 'Template Loaded',
+      description: `"${template?.name}" loaded with ${mapped.length} steps. Stations auto-mapped where possible.`,
+    });
+  };
+
+  // Save current routing as a new org template
+  const handleSaveAsTemplate = async () => {
+    if (!organization?.id || !user || !newTemplateName.trim()) return;
+    setSavingTemplate(true);
+
+    try {
+      // Create template
+      const { data: newTemplate, error: tplErr } = await supabase
+        .from('routing_templates')
+        .insert({
+          organization_id: organization.id,
+          name: newTemplateName.trim(),
+          description: newTemplateDesc.trim() || null,
+          part_number_pattern: newTemplatePattern.trim() || null,
+          created_by: user.id,
+        })
+        .select('id')
+        .single();
+
+      if (tplErr || !newTemplate) throw tplErr || new Error('Failed to create template');
+
+      // Save enabled steps as template steps
+      const stepsToSave = enabledSteps.map((s, idx) => ({
+        template_id: newTemplate.id,
+        organization_id: organization.id,
+        step_number: idx + 1,
+        operation_name: s.operation_name,
+        operation_type: s.operation_type,
+        work_center_type: s.work_center_type || s.station_name || null,
+        setup_time_minutes: s.estimated_duration || null,
+        instructions: s.instructions || null,
+      }));
+
+      const { error: stepsErr } = await supabase
+        .from('routing_template_steps')
+        .insert(stepsToSave);
+
+      if (stepsErr) throw stepsErr;
+
+      toast({
+        title: 'Template Saved',
+        description: `"${newTemplateName}" saved with ${stepsToSave.length} steps.`,
+      });
+
+      // Refresh templates list
+      setOrgTemplates(prev => [...prev, { id: newTemplate.id, name: newTemplateName.trim() }]);
+      setSaveTemplateOpen(false);
+      setNewTemplateName('');
+      setNewTemplateDesc('');
+      setNewTemplatePattern('');
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message || 'Failed to save template', variant: 'destructive' });
+    } finally {
+      setSavingTemplate(false);
+    }
   };
 
   // Filter to only enabled steps for saving
@@ -369,20 +529,108 @@ export function WorkOrderRoutingEditor({
             WO: {workOrderNumber} {partNumber && `• Part: ${partNumber}`}
           </p>
         </div>
-        <Button onClick={handleSave} disabled={isSaving}>
-          {isSaving ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            <>
-              <Save className="w-4 h-4 mr-2" />
-              Save Routing
-            </>
-          )}
-        </Button>
+        <div className="flex items-center gap-2">
+          {/* Save as Template */}
+          <Dialog open={saveTemplateOpen} onOpenChange={setSaveTemplateOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm" disabled={enabledSteps.length === 0}>
+                <BookTemplate className="w-4 h-4 mr-2" />
+                Save as Template
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Save Routing as Template</DialogTitle>
+                <DialogDescription>
+                  Save the current {enabledSteps.length} enabled steps as a reusable org template.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-3 py-2">
+                <div className="space-y-1">
+                  <Label>Template Name *</Label>
+                  <Input
+                    value={newTemplateName}
+                    onChange={(e) => setNewTemplateName(e.target.value)}
+                    placeholder="e.g. Valve Body Standard"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label>Description</Label>
+                  <Textarea
+                    value={newTemplateDesc}
+                    onChange={(e) => setNewTemplateDesc(e.target.value)}
+                    placeholder="Optional description..."
+                    rows={2}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label>Part Number Pattern</Label>
+                  <Input
+                    value={newTemplatePattern}
+                    onChange={(e) => setNewTemplatePattern(e.target.value)}
+                    placeholder="e.g. VLV-* (optional)"
+                  />
+                  <p className="text-xs text-muted-foreground">Auto-suggest this template when part numbers match</p>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setSaveTemplateOpen(false)}>Cancel</Button>
+                <Button onClick={handleSaveAsTemplate} disabled={!newTemplateName.trim() || savingTemplate}>
+                  {savingTemplate ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+                  Save Template
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <Button onClick={handleSave} disabled={isSaving}>
+            {isSaving ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4 mr-2" />
+                Save Routing
+              </>
+            )}
+          </Button>
+        </div>
       </div>
+
+      {/* Org Template Selector — show when no existing routing saved */}
+      {!hasExistingRouting && orgTemplates.length > 0 && (
+        <Card className="border-dashed">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <FolderOpen className="w-5 h-5 text-muted-foreground shrink-0" />
+              <div className="flex-1">
+                <Label className="text-sm font-medium">Load from Org Template</Label>
+                <Select
+                  value={selectedTemplateId}
+                  onValueChange={(v) => loadOrgTemplate(v)}
+                  disabled={loadingTemplate}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Start from scratch or select a template..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="scratch">Start from scratch (30-step default)</SelectItem>
+                    {orgTemplates.map(t => (
+                      <SelectItem key={t.id} value={t.id}>
+                        {t.name}
+                        {t.part_number_pattern && ` (${t.part_number_pattern})`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {loadingTemplate && <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Template Mode Header */}
       {showTemplateMode && (
