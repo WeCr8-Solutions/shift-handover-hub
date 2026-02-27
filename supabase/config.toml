@@ -17,3 +17,7 @@ project_id = "kgrstnbxqdmadtoankqr"
     verify_jwt = false
   [functions.update-seats]
     verify_jwt = false
+  [functions.activate-station-context]
+    verify_jwt = false
+  [functions.verify-station-context-payment]
+    verify_jwt = false

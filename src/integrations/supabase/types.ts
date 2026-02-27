@@ -3677,6 +3677,126 @@ export type Database = {
           },
         ]
       }
+      station_machine_profiles: {
+        Row: {
+          activated_at: string | null
+          activated_by: string | null
+          bar_feeder: boolean
+          context_active: boolean
+          created_at: string
+          five_axis_simultaneous: boolean
+          fourth_axis: boolean
+          hard_constraints: Json
+          id: string
+          live_tooling: boolean
+          machine_type: string
+          manufacturer: string
+          material_capability: string[]
+          max_part_envelope_height: number | null
+          max_part_envelope_length: number | null
+          max_part_envelope_width: number | null
+          max_part_weight: number | null
+          max_x_travel: number | null
+          max_y_travel: number | null
+          max_z_travel: number | null
+          model: string | null
+          organization_id: string
+          pallet_pool: boolean
+          platform_category: string
+          probing: boolean
+          station_id: string
+          stripe_payment_id: string | null
+          sub_spindle: boolean
+          through_spindle_coolant: boolean
+          typical_tolerance: number | null
+          updated_at: string
+          y_axis_turn: boolean
+        }
+        Insert: {
+          activated_at?: string | null
+          activated_by?: string | null
+          bar_feeder?: boolean
+          context_active?: boolean
+          created_at?: string
+          five_axis_simultaneous?: boolean
+          fourth_axis?: boolean
+          hard_constraints?: Json
+          id?: string
+          live_tooling?: boolean
+          machine_type: string
+          manufacturer: string
+          material_capability?: string[]
+          max_part_envelope_height?: number | null
+          max_part_envelope_length?: number | null
+          max_part_envelope_width?: number | null
+          max_part_weight?: number | null
+          max_x_travel?: number | null
+          max_y_travel?: number | null
+          max_z_travel?: number | null
+          model?: string | null
+          organization_id: string
+          pallet_pool?: boolean
+          platform_category: string
+          probing?: boolean
+          station_id: string
+          stripe_payment_id?: string | null
+          sub_spindle?: boolean
+          through_spindle_coolant?: boolean
+          typical_tolerance?: number | null
+          updated_at?: string
+          y_axis_turn?: boolean
+        }
+        Update: {
+          activated_at?: string | null
+          activated_by?: string | null
+          bar_feeder?: boolean
+          context_active?: boolean
+          created_at?: string
+          five_axis_simultaneous?: boolean
+          fourth_axis?: boolean
+          hard_constraints?: Json
+          id?: string
+          live_tooling?: boolean
+          machine_type?: string
+          manufacturer?: string
+          material_capability?: string[]
+          max_part_envelope_height?: number | null
+          max_part_envelope_length?: number | null
+          max_part_envelope_width?: number | null
+          max_part_weight?: number | null
+          max_x_travel?: number | null
+          max_y_travel?: number | null
+          max_z_travel?: number | null
+          model?: string | null
+          organization_id?: string
+          pallet_pool?: boolean
+          platform_category?: string
+          probing?: boolean
+          station_id?: string
+          stripe_payment_id?: string | null
+          sub_spindle?: boolean
+          through_spindle_coolant?: boolean
+          typical_tolerance?: number | null
+          updated_at?: string
+          y_axis_turn?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "station_machine_profiles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "station_machine_profiles_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: true
+            referencedRelation: "stations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stations: {
         Row: {
           created_at: string

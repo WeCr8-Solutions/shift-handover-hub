@@ -101,7 +101,7 @@ serve(async (req) => {
       orgRole === "admin";
 
     // Fetch queue items, stations, routing, station status, and routing templates in parallel
-    const [queueRes, stationsRes, routingRes, stationStatusRes, routingTemplatesRes] = await Promise.all([
+    const [queueRes, stationsRes, routingRes, stationStatusRes, routingTemplatesRes, machineProfilesRes] = await Promise.all([
       supabase
         .from("queue_items")
         .select("id, title, work_order, part_number, status, priority, due_date, assigned_to, station_id, item_type, quantity, qty_completed, qty_scrap, qty_rework, qty_open, quantity_locked, operation_number, created_at")
@@ -131,6 +131,12 @@ serve(async (req) => {
         .select("id, name, description")
         .eq("organization_id", organization_id)
         .limit(50),
+      supabase
+        .from("station_machine_profiles")
+        .select("station_id, manufacturer, model, machine_type, platform_category, max_x_travel, max_y_travel, max_z_travel, max_part_weight, max_part_envelope_length, max_part_envelope_width, max_part_envelope_height, five_axis_simultaneous, fourth_axis, live_tooling, y_axis_turn, sub_spindle, probing, through_spindle_coolant, pallet_pool, bar_feeder, material_capability, typical_tolerance, hard_constraints, context_active")
+        .eq("organization_id", organization_id)
+        .eq("context_active", true)
+        .limit(100),
     ]);
 
     const queueItems = queueRes.data || [];
@@ -138,7 +144,7 @@ serve(async (req) => {
     const routing = routingRes.data || [];
     const stationStatus = stationStatusRes.data || [];
     const routingTemplates = routingTemplatesRes.data || [];
-
+    const machineProfiles = machineProfilesRes.data || [];
     // Build context
     const now = new Date().toISOString();
     const stationMap = Object.fromEntries(stations.map((s: any) => [s.id, s.name]));
@@ -195,6 +201,39 @@ serve(async (req) => {
       po: r.po_number,
     }));
 
+    // Build machine profile summaries keyed by station
+    const machineProfileMap = Object.fromEntries(
+      machineProfiles.map((mp: any) => [mp.station_id, mp])
+    );
+    const machineContextSummary = machineProfiles.map((mp: any) => ({
+      station: stationMap[mp.station_id] || mp.station_id,
+      manufacturer: mp.manufacturer,
+      model: mp.model,
+      machine_type: mp.machine_type,
+      platform: mp.platform_category,
+      envelope: {
+        x: mp.max_x_travel, y: mp.max_y_travel, z: mp.max_z_travel,
+        max_weight: mp.max_part_weight,
+        max_length: mp.max_part_envelope_length,
+        max_width: mp.max_part_envelope_width,
+        max_height: mp.max_part_envelope_height,
+      },
+      capabilities: {
+        five_axis: mp.five_axis_simultaneous,
+        fourth_axis: mp.fourth_axis,
+        live_tooling: mp.live_tooling,
+        y_axis: mp.y_axis_turn,
+        sub_spindle: mp.sub_spindle,
+        probing: mp.probing,
+        tsc: mp.through_spindle_coolant,
+        pallet_pool: mp.pallet_pool,
+        bar_feeder: mp.bar_feeder,
+      },
+      materials: mp.material_capability,
+      tolerance: mp.typical_tolerance,
+      constraints: mp.hard_constraints,
+    }));
+
     const callerRoleLabel = isSupervisorOrAbove
       ? `Supervisor/Admin (org role: ${orgRole}, platform roles: ${platformRoles.join(", ") || "operator"})`
       : `Operator (org role: ${orgRole})`;
@@ -221,6 +260,9 @@ ${JSON.stringify(routingSummary, null, 2)}
 ### Available Routing Templates (${routingTemplates.length}):
 ${JSON.stringify(routingTemplates.map((t: any) => ({ name: t.name, description: t.description })), null, 2)}
 
+### Machine Identity Profiles (${machineProfiles.length} context-active stations):
+${machineContextSummary.length > 0 ? JSON.stringify(machineContextSummary, null, 2) : "No stations have manufacturer context activated. Routing validation will use generic station type tags only."}
+
 ## WORK ORDER REROUTING & APPROVAL RULES
 
 You MUST follow these rules when advising on rerouting or advancing work orders:
@@ -243,6 +285,28 @@ A supervisor can bypass these checks by providing an explicit override reason.
 - To reroute: a supervisor modifies the routing steps to assign different stations or reorder operations.
 - The system uses an atomic database operation (\`pass_work_order_to_next_step\`) that completes the current step and moves the item to the next station.
 - When suggesting rerouting, ALWAYS specify which station the WO should move to and why (e.g., machine capability, availability, load balancing).
+
+## MACHINE-AWARE ROUTING VALIDATION (for context-active stations)
+
+When a station has a Machine Identity Profile, you MUST validate routing compatibility using these checks:
+
+1. **Machine Type Compatibility** — Mill operations only to mill-type stations, turn ops only to turn centers.
+2. **Envelope Check** — Part dimensions must fit within the machine's max travel and part envelope.
+3. **Weight Check** — Part weight must be within the machine's max_part_weight.
+4. **Material Compatibility** — Part material must be in the station's material_capability list.
+5. **Tolerance Check** — Required tolerance must be achievable (≤ machine's typical_tolerance).
+6. **Special Feature Requirements** — If 5-axis simultaneous is needed, station must have five_axis=true. Same for live_tooling, probing, etc.
+
+**If any HARD constraint fails:** Block the routing suggestion and suggest an alternative station that passes all checks.
+**If all pass:** Mark station as valid with HIGH confidence.
+
+When rerouting due to machine downtime or quality holds:
+1. Filter all stations with context_active profiles
+2. Eliminate stations failing any hard constraint
+3. Rank remaining by: same manufacturer family (preference), same platform, queue length
+4. Output: "Best Alternate: [Station] ([Manufacturer Model])" with reason and confidence score
+
+For stations WITHOUT a machine profile (context_active=false), fall back to generic station type matching only and note reduced routing confidence.
 
 ### Quantity Lock Rules
 - When qty_completed >= qty_original, the work order auto-locks (quantity_locked = true).
