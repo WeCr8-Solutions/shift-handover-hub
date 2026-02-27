@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -24,7 +26,7 @@ import { NCRListView } from "@/components/ncr/NCRListView";
 import { 
   Clock, User, Package, Send, History, MessageSquare, Trash2, Loader2,
   Play, Pause, CheckCircle2, Wrench, FileText, AlertTriangle, ArrowRight, GitBranch,
-  CircleDot, Circle, CheckCircle, Timer, Truck, ShieldAlert
+  CircleDot, Circle, CheckCircle, Timer, Truck, ShieldAlert, ArrowRightLeft
 } from "lucide-react";
 
 interface RoutingStepRow {
@@ -124,7 +126,10 @@ export function QueueItemDetailDialog({
   const [deleting, setDeleting] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [ncrDialogOpen, setNcrDialogOpen] = useState(false);
-
+  const [convertDialogOpen, setConvertDialogOpen] = useState(false);
+  const [convertWONumber, setConvertWONumber] = useState("");
+  const [convertStationId, setConvertStationId] = useState<string | undefined>();
+  const [converting, setConverting] = useState(false);
   // Get station info if assigned
   const assignedStation = item?.station_id ? stations.find(s => s.id === item.station_id) : null;
 
@@ -449,9 +454,39 @@ export function QueueItemDetailDialog({
     }
   };
 
+  // Convert quote to work order
+  const handleConvertToWorkOrder = async () => {
+    if (!item) return;
+    if (!convertWONumber.trim()) {
+      toast({ title: "Error", description: "Please enter a work order number", variant: "destructive" });
+      return;
+    }
+    setConverting(true);
+    const { error } = await supabase
+      .from("queue_items")
+      .update({
+        item_type: "work_order" as any,
+        work_order: convertWONumber.trim(),
+        station_id: convertStationId || item.station_id || null,
+      })
+      .eq("id", item.id);
+
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Quote Converted", description: `Now tracking as Work Order: ${convertWONumber}` });
+      setConvertDialogOpen(false);
+      setConvertWONumber("");
+      setConvertStationId(undefined);
+      loadHistory();
+    }
+    setConverting(false);
+  };
+
   if (!item) return null;
 
   const isOverdue = item.due_date && new Date(item.due_date) < new Date() && item.status !== "completed";
+  const isQuote = item.item_type === "quote";
   const isWorkOrder = item.item_type === "work_order";
   const canStart = item.status === "pending" || item.status === "queued";
   const canPause = item.status === "in_progress";
@@ -468,6 +503,7 @@ export function QueueItemDetailDialog({
       <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
         <DialogHeader>
           <div className="flex items-center gap-2 flex-wrap">
+            {isQuote && <Badge className="bg-amber-500 text-white">Quote</Badge>}
             <Badge className={getPriorityColor(item.priority)}>{item.priority}</Badge>
             <Badge className={getStatusColor(item.status)}>{item.status.replace("_", " ")}</Badge>
             {isOverdue && <Badge variant="destructive">Overdue</Badge>}
@@ -479,6 +515,7 @@ export function QueueItemDetailDialog({
             )}
           </div>
           <DialogTitle className="flex items-center gap-2">
+            {isQuote && <FileText className="w-5 h-5 text-amber-500" />}
             {isWorkOrder && <Package className="w-5 h-5 text-primary" />}
             {item.title}
           </DialogTitle>
@@ -578,8 +615,89 @@ export function QueueItemDetailDialog({
           </div>
         )}
 
-        {/* Quantity Summary */}
-        {isWorkOrder && item.qty_original != null && item.qty_original > 0 && (
+        {/* Quote Action Bar */}
+        {isQuote && !isCompleted && (
+          <div className="space-y-3">
+            <div className="flex flex-wrap gap-2 p-3 bg-amber-500/10 rounded-lg border border-amber-500/30">
+              <Button
+                onClick={() => {
+                  setConvertWONumber(item.work_order || "");
+                  setConvertStationId(item.station_id || undefined);
+                  setConvertDialogOpen(true);
+                }}
+                className="gap-2 bg-primary hover:bg-primary/90"
+              >
+                <ArrowRightLeft className="w-4 h-4" />
+                Convert to Work Order
+              </Button>
+              {onOpenRouting && hasAdminAccess && (
+                <Button 
+                  variant="outline" 
+                  onClick={() => onOpenRouting(item)}
+                  className="gap-2"
+                >
+                  <GitBranch className="w-4 h-4" />
+                  Edit Routing
+                </Button>
+              )}
+              <div className="flex-1" />
+              <span className="text-xs text-muted-foreground self-center">
+                {item.work_order && `Quote: ${item.work_order}`}
+              </span>
+            </div>
+
+            {/* Convert to Work Order inline form */}
+            {convertDialogOpen && (
+              <div className="p-4 bg-muted/50 rounded-lg border space-y-3">
+                <h4 className="text-sm font-semibold flex items-center gap-2">
+                  <ArrowRightLeft className="w-4 h-4" />
+                  Convert Quote to Work Order
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs">Work Order Number</Label>
+                    <Input
+                      value={convertWONumber}
+                      onChange={(e) => setConvertWONumber(e.target.value)}
+                      placeholder="Enter work order number"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Assign Station (optional)</Label>
+                    <Select
+                      value={convertStationId || "none"}
+                      onValueChange={(v) => setConvertStationId(v === "none" ? undefined : v)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select station..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">No station (assign later)</SelectItem>
+                        {stations.map((s) => (
+                          <SelectItem key={s.id} value={s.id}>
+                            {s.station_id} - {s.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button onClick={handleConvertToWorkOrder} disabled={converting} className="gap-2">
+                    {converting && <Loader2 className="w-4 h-4 animate-spin" />}
+                    <CheckCircle2 className="w-4 h-4" />
+                    Confirm Conversion
+                  </Button>
+                  <Button variant="outline" onClick={() => setConvertDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {(isWorkOrder || isQuote) && item.qty_original != null && item.qty_original > 0 && (
           <QuantitySummaryCard
             original={item.qty_original ?? 0}
             completed={item.qty_completed ?? 0}

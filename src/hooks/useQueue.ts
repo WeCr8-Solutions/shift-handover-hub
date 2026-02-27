@@ -240,6 +240,7 @@ export function useQueue(filters?: {
         part_number: input.part_number || null,
         operation_number: input.operation_number || null,
         quantity: input.quantity || null,
+        qty_original: input.quantity || null,
         priority: input.priority || "normal",
         position: maxPosition + 1,
         station_id: input.station_id || null,
