@@ -15,7 +15,7 @@ import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, Loader2, Wrench, Factory } from "lucide-react";
+import { CalendarIcon, Loader2, Wrench, Factory, Circle } from "lucide-react";
 import { workCenterIcons, workCenterColors } from "@/lib/workCenterIcons";
 import { WorkCenterType, WORK_CENTER_CATEGORIES } from "@/types/handoff";
 
@@ -196,7 +196,7 @@ export function CreateQueueItemDialog({ open, onOpenChange, onCreate, preselecte
                     </div>
                   ) : (
                     Object.entries(stationsByCategory).map(([type, typeStations]) => {
-                      const Icon = workCenterIcons[type as WorkCenterType];
+                      const Icon = workCenterIcons[type as WorkCenterType] || Circle;
                       const colorClass = workCenterColors[type as WorkCenterType];
                       return (
                         <div key={type}>

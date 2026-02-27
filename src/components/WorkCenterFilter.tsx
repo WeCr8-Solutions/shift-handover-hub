@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { WORK_CENTER_CATEGORIES, WorkCenterType } from "@/types/handoff";
 import { workCenterIcons, workCenterColors } from "@/lib/workCenterIcons";
 import { cn } from "@/lib/utils";
-import { Filter, X } from "lucide-react";
+import { Filter, X, Circle } from "lucide-react";
 
 interface WorkCenterFilterProps {
   selectedTypes: WorkCenterType[];
@@ -82,7 +82,7 @@ export function WorkCenterFilter({ selectedTypes, onFilterChange }: WorkCenterFi
                 </button>
                 <div className="flex flex-wrap gap-2">
                   {typesArray.map((type) => {
-                    const Icon = workCenterIcons[type];
+                    const Icon = workCenterIcons[type] || Circle;
                     const isSelected = selectedTypes.includes(type);
                     
                     return (
@@ -112,7 +112,7 @@ export function WorkCenterFilter({ selectedTypes, onFilterChange }: WorkCenterFi
       {selectedTypes.length > 0 && !isExpanded && (
         <div className="flex flex-wrap gap-1.5">
           {selectedTypes.map((type) => {
-            const Icon = workCenterIcons[type];
+            const Icon = workCenterIcons[type] || Circle;
             return (
               <button
                 key={type}

@@ -23,7 +23,8 @@ import {
   ChevronRight,
   ChevronLeft,
   Send,
-  Trash2
+  Trash2,
+  Circle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -279,7 +280,7 @@ export function JobPerformanceUpdateForm({ onClose }: JobPerformanceUpdateFormPr
                   </SelectTrigger>
                   <SelectContent>
                     {stations.map((s) => {
-                      const Icon = workCenterIcons[s.work_center_type];
+                      const Icon = workCenterIcons[s.work_center_type] || Circle;
                       return (
                         <SelectItem key={s.id} value={s.id}>
                           <div className="flex items-center gap-2">

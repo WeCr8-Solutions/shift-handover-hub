@@ -1,7 +1,7 @@
 import { ShiftHandoffRecord } from "@/types/handoff";
 import { StatusBadge, getJobStateStatus, getJobStateShortName } from "./StatusBadge";
 import { workCenterIcons, workCenterColors } from "@/lib/workCenterIcons";
-import { Clock, User, FileText } from "lucide-react";
+import { Clock, User, FileText, Circle } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -13,7 +13,7 @@ interface HandoffCardProps {
 
 export function HandoffCard({ record, onClick, onViewWorkOrder }: HandoffCardProps) {
   const createdDate = new Date(record.createdAt);
-  const Icon = workCenterIcons[record.workCenterType];
+  const Icon = workCenterIcons[record.workCenterType] || Circle;
   const iconColor = workCenterColors[record.workCenterType];
 
   return (

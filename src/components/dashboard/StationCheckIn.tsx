@@ -9,7 +9,7 @@ import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { getCurrentShift } from "@/lib/mockData";
 import { workCenterIcons, workCenterColors, getCategoryForType } from "@/lib/workCenterIcons";
 import { WorkCenterType } from "@/types/handoff";
-import { LogIn, Clock, MapPin, Loader2 } from "lucide-react";
+import { LogIn, Clock, MapPin, Loader2, Circle } from "lucide-react";
 
 interface StationCheckInProps {
   onCheckIn: (stationIds: string[], shift: string) => Promise<any>;
@@ -101,7 +101,7 @@ export function StationCheckIn({ onCheckIn }: StationCheckInProps) {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {categoryStations.map((station) => {
               const isSelected = selectedStations.has(station.id);
-              const Icon = workCenterIcons[station.work_center_type as WorkCenterType];
+              const Icon = workCenterIcons[station.work_center_type as WorkCenterType] || Circle;
               const iconColor = workCenterColors[station.work_center_type as WorkCenterType];
 
               return (
