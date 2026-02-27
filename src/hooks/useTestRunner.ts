@@ -66,6 +66,9 @@ const testFileRegistry: Record<string, { path: string; description: string }> = 
   // Integration
   "Org Scope Integration": { path: "src/test/org-scope-integration.test.ts", description: "Multi-tenant org isolation integration tests" },
   "Example": { path: "src/test/example.test.ts", description: "Example test file" },
+  // AI Context & Part Specs
+  "PartSpecsSection": { path: "src/components/queue/PartSpecsSection.test.tsx", description: "Part specs dropdowns, tolerance, surface finish, catalog auto-fill" },
+  "PartCatalogManager": { path: "src/components/settings/PartCatalogManager.test.tsx", description: "Part catalog CRUD and display" },
 };
 
 // Parse vitest output to extract test results
@@ -202,6 +205,8 @@ export function useTestRunner() {
           "NCR Utils": 4,
           "Org Scope Integration": 6,
           "Example": 1,
+          "PartSpecsSection": 10,
+          "PartCatalogManager": 5,
         };
         
         const testCount = testCounts[suiteName] || 3;
@@ -443,6 +448,25 @@ function getTestName(suite: string, index: number): string {
     ],
     "Example": [
       "should pass",
+    ],
+    "PartSpecsSection": [
+      "renders Part Specifications trigger button",
+      "renders collapsible content when defaultOpen is true",
+      "renders tolerance and surface finish dropdowns when open",
+      "renders dimension inputs when open",
+      "renders auto-fill from catalog button when open",
+      "exports correct number of material types",
+      "exports correct number of part shapes",
+      "exports tolerance options",
+      "exports surface finish options",
+      "shows (filled) indicator when specs are present",
+    ],
+    "PartCatalogManager": [
+      "renders Part Catalog title",
+      "renders description text",
+      "renders Add Part button",
+      "renders search input",
+      "shows empty state when no entries",
     ],
   };
   
