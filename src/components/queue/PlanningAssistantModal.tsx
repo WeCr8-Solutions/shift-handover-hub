@@ -41,6 +41,11 @@ const quickPrompts = [
     icon: ArrowUpDown,
     prompt: "Help me reprioritize the queue based on due dates and current station availability.",
   },
+  {
+    label: "Reroute WO",
+    icon: Zap,
+    prompt: "I need to reroute a work order to a different station. Show me what's in progress and suggest the best rerouting options with approval steps.",
+  },
 ];
 
 export function PlanningAssistantModal({ organizationId }: PlanningAssistantModalProps) {
