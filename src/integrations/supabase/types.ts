@@ -4272,6 +4272,14 @@ export type Database = {
         Args: { _team_id: string; _user_id: string }
         Returns: boolean
       }
+      can_operator_act_on_station: {
+        Args: { _station_id: string; _user_id: string }
+        Returns: boolean
+      }
+      can_supervisor_override_in_org: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
       can_view_station_via_team: {
         Args: { _team_id: string; _user_id: string }
         Returns: boolean
