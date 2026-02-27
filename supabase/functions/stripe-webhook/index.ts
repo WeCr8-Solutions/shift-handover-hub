@@ -19,6 +19,13 @@ const PRODUCT_TIERS: Record<string, string> = {
   "prod_TrQ3Y4BKSsc591": "enterprise",
 };
 
+// ERP add-on product ID to tier mapping
+const ERP_PRODUCT_TIERS: Record<string, string> = {
+  "prod_U3eObrQgIK5XOW": "starter",
+  "prod_U3eOU03pp8fNG0": "pro",
+  "prod_U3eOQKkbY8NHrj": "unlimited",
+};
+
 // Entitlements per plan
 const PLAN_ENTITLEMENTS: Record<string, { features: Record<string, boolean>; limits: Record<string, number> }> = {
   free: {
@@ -86,21 +93,58 @@ async function recordEvent(eventId: string, eventType: string, payload: unknown)
   });
 }
 
-async function updateOrgEntitlements(orgId: string, plan: string) {
+async function updateOrgEntitlements(orgId: string, plan: string, erpTier?: string) {
   const entitlements = PLAN_ENTITLEMENTS[plan] || PLAN_ENTITLEMENTS.free;
   
+  const features = { ...entitlements.features };
+  if (erpTier) {
+    features.erp_connector = true;
+    (features as Record<string, unknown>).erp_tier = erpTier;
+  }
+
   const { error } = await supabaseAdmin
     .from("entitlements")
     .upsert({
       organization_id: orgId,
       plan,
-      features: entitlements.features,
+      features,
       limits: entitlements.limits,
     }, { onConflict: "organization_id" });
 
   if (error) {
     logStep("Error updating entitlements", error);
   }
+}
+
+async function updateErpTierOnly(orgId: string, erpTier: string | null) {
+  // Fetch current entitlements, then patch only erp fields
+  const { data: current } = await supabaseAdmin
+    .from("entitlements")
+    .select("features")
+    .eq("organization_id", orgId)
+    .maybeSingle();
+
+  if (!current) return;
+
+  const features = (current.features as Record<string, unknown>) || {};
+  if (erpTier) {
+    features.erp_connector = true;
+    features.erp_tier = erpTier;
+  } else {
+    features.erp_connector = false;
+    delete features.erp_tier;
+  }
+
+  await supabaseAdmin
+    .from("entitlements")
+    .update({ features })
+    .eq("organization_id", orgId);
+
+  logStep("Updated ERP tier in entitlements", { orgId, erpTier });
+}
+
+function isErpProduct(productId: string): boolean {
+  return productId in ERP_PRODUCT_TIERS;
 }
 
 async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
@@ -124,6 +168,15 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
   // Fetch full subscription details
   const subscription = await stripe.subscriptions.retrieve(subscriptionId);
   const productId = subscription.items.data[0]?.price.product as string;
+
+  // Check if this is an ERP add-on checkout
+  if (isErpProduct(productId)) {
+    const erpTier = ERP_PRODUCT_TIERS[productId];
+    await updateErpTierOnly(orgId, erpTier);
+    logStep("ERP add-on checkout completed", { orgId, erpTier });
+    return;
+  }
+
   const plan = PRODUCT_TIERS[productId] || "single";
 
   // Upsert subscription record
@@ -158,6 +211,14 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   logStep("Processing customer.subscription.updated", { subscriptionId: subscription.id });
 
+  const productId = subscription.items.data[0]?.price.product as string;
+
+  // Handle ERP add-on subscription separately
+  if (isErpProduct(productId)) {
+    await handleErpAddonSubscription(subscription, productId);
+    return;
+  }
+
   const { data: subRecord } = await supabaseAdmin
     .from("subscriptions")
     .select("organization_id")
@@ -169,7 +230,6 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     return;
   }
 
-  const productId = subscription.items.data[0]?.price.product as string;
   const plan = PRODUCT_TIERS[productId] || "single";
 
   // Update subscription record
@@ -206,8 +266,53 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   logStep("Subscription updated successfully", { orgId: subRecord.organization_id, plan, status: subscription.status });
 }
 
+async function handleErpAddonSubscription(subscription: Stripe.Subscription, productId: string) {
+  const erpTier = ERP_PRODUCT_TIERS[productId];
+  const orgId = subscription.metadata?.org_id;
+
+  if (!orgId) {
+    // Try to find org via customer ID
+    const customerId = subscription.customer as string;
+    const { data: org } = await supabaseAdmin
+      .from("organizations")
+      .select("id")
+      .eq("stripe_customer_id", customerId)
+      .maybeSingle();
+
+    if (!org) {
+      logStep("Cannot find org for ERP add-on subscription", { subscriptionId: subscription.id });
+      return;
+    }
+
+    if (subscription.status === "active") {
+      await updateErpTierOnly(org.id, erpTier);
+    } else if (subscription.status === "canceled") {
+      await updateErpTierOnly(org.id, null);
+    }
+
+    logStep("ERP add-on processed", { orgId: org.id, erpTier, status: subscription.status });
+    return;
+  }
+
+  if (subscription.status === "active") {
+    await updateErpTierOnly(orgId, erpTier);
+  } else if (subscription.status === "canceled") {
+    await updateErpTierOnly(orgId, null);
+  }
+
+  logStep("ERP add-on processed", { orgId, erpTier, status: subscription.status });
+}
+
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   logStep("Processing customer.subscription.deleted", { subscriptionId: subscription.id });
+
+  const productId = subscription.items.data[0]?.price.product as string;
+
+  // Handle ERP add-on cancellation
+  if (isErpProduct(productId)) {
+    await handleErpAddonSubscription(subscription, productId);
+    return;
+  }
 
   const { data: subRecord } = await supabaseAdmin
     .from("subscriptions")
