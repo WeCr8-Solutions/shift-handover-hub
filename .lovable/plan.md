@@ -1,71 +1,78 @@
 
 
-## End-to-End Handoff Testing Plan
+## Comprehensive Handoff & Dashboard E2E Testing Plan
 
-There are two distinct handoff flows to test:
+### Current State
+- **2 stations with status data**: Station 1 (Manual Mill, "Part Running", WO-100-100) and Station 2 - CNC Mill ("Waiting on Material", WO-100-100)
+- **1 existing handoff record** from previous test (Station 1, "Part Running")
+- **Routing**: 3 steps for WO-100-100 — Step 1 completed, Step 2 pending at Station 2, Step 3 pending
+- **No active operator sessions** — operator check-in needed
+- **Work orders across station types**: CNC Mill, CNC Lathe, TIG Welding, Inspection, Manual Mill
 
-1. **Routing Handoff** (Queue > Complete Op & Advance > next station)
-2. **Shift Handoff** (Operator Dashboard > New Handoff Form > submit)
+### Test Matrix
 
-Both need browser-based E2E testing with screenshots to verify auto-population, form rendering, and data flow.
+#### Test 1: Operator Check-In + Shift Handoff (CNC Mill)
+1. Navigate to `/dashboard`, verify StationCheckIn renders
+2. Screenshot the station selection grid
+3. Check in to **Station 2 - CNC Mill** (STN-002) on Day shift
+4. Screenshot the OperatorStationPanel with WO-100-100 queued
+5. Click "Handoff" → verify NewHandoffForm opens
+6. Screenshot Step 1: station auto-selected, CNC Mill work center type, WO# auto-filled
+7. Select job state "Waiting on Material", fill part number
+8. Screenshot Step 2: verify **CNC-specific readiness items** (Program Loaded, Tools Installed, etc.)
+9. Toggle several readiness items, advance to Step 3
+10. Screenshot Step 3: verify **CNC condition fields** (coolant, air pressure, chip condition)
+11. Fill handoff summary, screenshot Step 4 summary
+12. Submit, screenshot success toast
+13. Verify `handoff_records` insert and `current_station_status` update
 
-### Pre-requisites
-- User must be logged in to the preview
-- At least one station with an active/queued work order that has routing steps configured
+#### Test 2: Operator Check-In + Shift Handoff (TIG Welding)
+1. Check out from CNC Mill, check in to **TIG Station 1** (WELD-001)
+2. Screenshot OperatorStationPanel with WO-2024-005 in_progress
+3. Click "Handoff" → NewHandoffForm
+4. Screenshot Step 1: verify TIG Welding station auto-selected
+5. Set job state to "Part Running"
+6. Screenshot Step 2: verify **generic equipment readiness items** (not CNC items)
+7. Screenshot Step 3: verify **welding-specific condition fields** (gas level, wire level, tip condition)
+8. Submit handoff, verify correct welding_condition JSON in record
 
----
+#### Test 3: Routing Handoff (Complete Op & Advance)
+1. Check in to **Station 2 - CNC Mill**, start WO-100-100
+2. Screenshot OperatorStationPanel showing "Complete Op & Advance" button with routing Step 2/3
+3. Click "Complete Op & Advance", screenshot confirmation dialog
+4. Verify dialog says "advance to Station 1" (next station per routing)
+5. Confirm advance, screenshot success toast
+6. Verify work_order_routing step 2 → completed, step 3 → in_progress
+7. Verify queue_items station_id moved to Station 1
 
-### Test 1: Routing Handoff (Work Order Advance to Next Station)
+#### Test 4: Supervisor Dashboard Accuracy
+1. Navigate to `/dashboard` as supervisor/admin
+2. Screenshot the full SupervisorDashboard
+3. Verify KPI cards reflect real data (Running/Down/Setup/Waiting counts)
+4. Verify Active Stations table shows correct operators, work orders, progress bars
+5. Verify Attention Required panel shows "Waiting" stations
+6. Verify Recent Handoffs sidebar shows submitted records
+7. Verify Shift Utilization donut chart percentages match station states
 
-**Steps:**
-1. Navigate to `/queue`, find a work order with routing steps
-2. Screenshot the queue list showing the work order
-3. Click into the work order detail dialog
-4. Screenshot the dialog showing routing tab with steps
-5. Click "Complete Op & Advance" or the complete action
-6. Screenshot the confirmation dialog (verify routing-aware messaging: "advance to [next station]")
-7. Confirm the advance
-8. Screenshot the success toast and verify the work order moved to the next station
-9. Click "Create Handoff" from the queue detail dialog
-10. Verify `sessionStorage` prefill data is set and user is redirected to `/dashboard`
-11. Screenshot the auto-opened NewHandoffForm — verify work_order, part_number, operation_number, and station are pre-filled
+#### Test 5: Queue-to-Handoff Auto-Open Flow
+1. Navigate to `/queue`, open a work order detail dialog
+2. Click "Create Handoff"
+3. Verify redirect to `/dashboard` with NewHandoffForm auto-opened
+4. Screenshot all 4 pre-filled fields (WO#, Part#, Op#, Station)
+5. Walk through and submit
 
-### Test 2: Shift Handoff (End-of-Shift via Operator Dashboard)
+### Implementation Steps
+1. Use browser automation: `navigate_to_sandbox`, `observe`, `act`, `screenshot`
+2. Take screenshots at every checkpoint listed above
+3. After each screenshot, review for data accuracy
+4. Query database after each handoff submit to verify inserts
+5. If any UI shows wrong data or form fails, stop, diagnose the code, fix it, then re-test
+6. Log all findings in task notes for traceability
 
-**Steps:**
-1. Navigate to `/dashboard` (as operator)
-2. If not checked in, check in to a station
-3. Screenshot the OperatorStationPanel showing the active station
-4. Click "Handoff" button on the station panel
-5. Screenshot Step 1 (Job Info) — verify station auto-selects, operator name pre-fills
-6. Fill required fields (job state, part number) if not pre-filled
-7. Click Next, screenshot Step 2 (Readiness) — verify CNC vs generic items render correctly
-8. Click Next, screenshot Step 3 (Condition) — verify work-center-specific fields
-9. Fill handoff summary, screenshot Step 4 (Summary)
-10. Submit and screenshot success toast
-11. Verify station status updated in current_station_status table
-
-### Test 3: Queue-to-Handoff Auto-Open Flow
-
-**Steps:**
-1. Navigate to `/queue`, open a work order detail
-2. Click "Create Handoff" button in the detail dialog
-3. Verify redirect to `/dashboard`
-4. Screenshot the NewHandoffForm that auto-opens
-5. Verify all 4 fields are pre-filled from the queue item (WO#, Part, Op, Station)
-6. Walk through all 4 steps and submit
-
-### Implementation Approach
-
-- Use browser automation tools: `navigate_to_sandbox`, `observe`, `act`, `screenshot`
-- Take screenshots at each critical checkpoint
-- After each test, verify the result by checking network requests or re-querying the UI
-- If any step fails or shows incorrect data, stop, diagnose, and fix the code before continuing
-
-### Potential Issues to Watch For
-- NewHandoffForm may not auto-populate if `stations` array hasn't loaded yet (race condition)
-- `sessionStorage` prefill might not persist across navigation if the page re-renders
-- CNC-specific readiness items should only show for CNC Mill/Lathe work center types
-- Validation errors on Step 1 (station, job state, part number required) must block forward navigation
-- The `organization_id` NOT NULL constraint on handoff_records could cause insert failures if org context is missing
+### Potential Issues
+- Operator must check out before checking in to a different station (no concurrent sessions for same test)
+- WO-100-100 is currently `queued` at Station 2 — needs to be started before "Complete Op & Advance" shows
+- TIG Station already has WO-2024-005 `in_progress` — handoff should auto-fill from active queue item
+- Welding condition fields only render when `workCenterType` includes "Welding"
+- `organization_id` NOT NULL constraint on `handoff_records` requires org context
 
