@@ -65,6 +65,49 @@ export const PRICING_TIERS = {
   },
 } as const;
 
+// ERP Connector add-on tiers (Enterprise only)
+export const ERP_ADDON_TIERS = {
+  starter: {
+    name: 'ERP Starter',
+    price: 100,
+    priceId: 'price_1T5X5MCyekafHX78vbrkFIgd',
+    productId: 'prod_U3eObrQgIK5XOW',
+    syncLimit: 500,
+    features: [
+      'Up to 500 syncs/month',
+      'JobBOSS, Epicor, Plex connectors',
+      'Work order & routing sync',
+      'Status mapping',
+    ],
+  },
+  pro: {
+    name: 'ERP Pro',
+    price: 150,
+    priceId: 'price_1T5X5VCyekafHX78scWGJuEX',
+    productId: 'prod_U3eOU03pp8fNG0',
+    syncLimit: 2000,
+    features: [
+      'Up to 2,000 syncs/month',
+      'Everything in Starter',
+      'Priority sync intervals',
+      'Advanced work center mapping',
+    ],
+  },
+  unlimited: {
+    name: 'ERP Unlimited',
+    price: 200,
+    priceId: 'price_1T5X5WCyekafHX78FLLJtF9I',
+    productId: 'prod_U3eOQKkbY8NHrj',
+    syncLimit: -1,
+    features: [
+      'Unlimited syncs/month',
+      'Everything in Pro',
+      'Real-time sync',
+      'Dedicated ERP support',
+    ],
+  },
+} as const;
+
 export function useSubscription() {
   const { user } = useAuth();
   const [state, setState] = useState<SubscriptionState>({

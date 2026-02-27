@@ -8,7 +8,9 @@ interface Features {
   analytics: boolean;
   api_access: boolean;
   bulk_upload: boolean;
-  [key: string]: boolean;
+  erp_connector: boolean;
+  erp_tier?: string;
+  [key: string]: boolean | string | undefined;
 }
 
 interface Limits {
@@ -85,8 +87,9 @@ export function useEntitlements() {
   }, [fetchEntitlements]);
 
   const canAccess = useCallback(
-    (feature: keyof Features): boolean => {
-      return entitlements.features[feature] ?? false;
+    (feature: string): boolean => {
+      const val = entitlements.features[feature];
+      return typeof val === 'boolean' ? val : false;
     },
     [entitlements.features]
   );
