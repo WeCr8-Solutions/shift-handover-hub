@@ -4,6 +4,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { ArrowRight, Clock, BarChart3, Gauge, CheckCircle2, Zap } from "lucide-react";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
+import { MockDowntimeLog } from "@/components/marketing/MockAppPreviews";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
@@ -75,7 +76,7 @@ export default function MachineTimeTracking() {
               ))}
             </ul>
 
-            <div className="flex flex-wrap gap-4 mb-16">
+            <div className="flex flex-wrap gap-4 mb-12">
               <Button size="lg" onClick={() => {
                 ConversionEvents.ctaClick('start_free_trial', 'Start Free Trial', pagePath, 'hero');
                 navigate("/auth");
@@ -89,6 +90,8 @@ export default function MachineTimeTracking() {
                 <Zap className="w-5 h-5" /> Book a Demo
               </Button>
             </div>
+
+            <MockDowntimeLog />
 
             {/* FAQ */}
             <h2 className="text-2xl font-bold mb-6">Frequently Asked Questions</h2>

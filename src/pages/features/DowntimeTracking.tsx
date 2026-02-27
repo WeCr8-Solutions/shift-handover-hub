@@ -4,6 +4,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { ArrowRight, CheckCircle2, Zap, AlertTriangle, BarChart3, Wrench, Activity } from "lucide-react";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
+import { MockDowntimeLog } from "@/components/marketing/MockAppPreviews";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
@@ -85,6 +86,8 @@ export default function DowntimeTracking() {
                 </div>
               ))}
             </div>
+
+            <MockDowntimeLog />
           </div>
         </section>
 

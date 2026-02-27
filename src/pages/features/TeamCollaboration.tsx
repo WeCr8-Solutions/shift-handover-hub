@@ -4,6 +4,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { ArrowRight, CheckCircle2, Zap, Users, UserPlus, Shield, Bell } from "lucide-react";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
+import { MockTeamPanel } from "@/components/marketing/MockAppPreviews";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
@@ -86,6 +87,8 @@ export default function TeamCollaboration() {
                 </div>
               ))}
             </div>
+
+            <MockTeamPanel />
           </div>
         </section>
 
