@@ -1,69 +1,77 @@
 
 
-## Phase 5: Enterprise Seat Management & ERP Gate Enforcement
+## Phase 6 Implementation + Seat/Invite Integration
 
-### Current State
-- Enterprise plan: $49.99/mo base for 10 users, $7.99/additional user
-- ERP Connector add-on ($100-200/mo) is labeled "Enterprise only" in UI text but **not actually gated** — any plan can purchase it
-- Seat limits enforced via `check_limit_access` RLS on `organization_members` INSERT, but enterprise "additional users" at $7.99/seat has **no Stripe quantity integration** — the checkout always sends `quantity: 1`
-- `BillingSettings` shows user count progress bar but always shows "0 used" (hardcoded)
-- No mechanism to update Stripe subscription quantity when members are added/removed
+### Problem: Seat Manager & Invite System Disconnect
+The invite code generator has no awareness of seat limits. An admin can generate unlimited invites even when seats are full. Redemption will fail at the RLS level (`check_limit_access`) with an opaque DB error instead of a clear message. The seat management UI and invite UI live in separate silos.
 
 ### Plan
 
-#### 1. Gate ERP Connector to Enterprise-only
-- **ERPConnectorSettings.tsx**: When org plan is not `enterprise`, show an upgrade prompt pointing to the Enterprise plan instead of the ERP tier selector. Only show the ERP add-on tier cards when `plan === 'enterprise'`
-- **erp-sync edge function**: Add a server-side check that the org's entitlements plan is `enterprise` before proceeding with sync; return 403 otherwise
+#### 1. Add seat-awareness to InviteCodeGenerator
+- **`InviteCodeGenerator.tsx`**: Fetch current member count + seat limit from entitlements. Display a seat availability banner at the top (e.g., "3 of 10 seats used"). When seats are full, disable "Create Invite" button and show "Add more seats in Billing Settings" prompt. When seats are nearly full (≥80%), show a warning.
 
-#### 2. Enterprise per-seat checkout with quantity support
-- **create-checkout edge function**: When `priceId` matches the Enterprise tier, accept a `quantity` parameter (default: 10). Pass `quantity` to `line_items` so Stripe bills per-seat ($49.99 base covers 10 seats; each additional seat is $7.99)
-- Create a **separate Stripe price** for the per-seat add-on ($7.99/mo recurring) — the Enterprise base price stays at $49.99 for the first 10 users, and additional seats use the per-seat price as a second line item
-- Alternative simpler approach: Use the existing Enterprise price with quantity = total seats, where the Stripe product is configured as per-unit pricing at $7.99/seat with the first 10 included in the $49.99 base (this matches the current `additionalUserPrice: 7.99` config)
+#### 2. Add seat-awareness to invite redemption
+- **`useOrganizationInvites.ts` → `redeemInviteCode()`**: Before inserting into `organization_members`, query entitlements limits and current member count. If at capacity, return a clear error: "This organization has reached its seat limit. Please ask an admin to add more seats." This prevents the cryptic RLS error.
 
-#### 3. Seat management UI in BillingSettings
-- Add a **"Manage Seats"** card (Enterprise only) showing:
-  - Current member count vs entitled seats
-  - "Add Seats" button that updates the Stripe subscription quantity via `customer-portal` or a new edge function
-  - Warning when approaching seat limit
-- Wire `BillingSettings` usage cards to show **real counts** from `organization_members`, `queue_items` (this month), and `stations`
+#### 3. Add seat-awareness to InviteCodeRedemption UI
+- **`InviteCodeRedemption.tsx`**: After validation succeeds, show remaining seats in the org preview card. If seats are full, show a clear message instead of the Join button.
 
-#### 4. Enforce seat limits dynamically
-- **stripe-webhook**: When Enterprise subscription quantity changes, update `entitlements.limits.users` to match the new quantity
-- **check_limit_access** RLS function already blocks INSERT on `organization_members` when limit exceeded — this just needs the limit value to stay in sync with Stripe
+#### 4. Phase 6: Sync debounce / cooldown
+- **`erp-sync` edge function**: Add cooldown check — query `erp_sync_logs` for the last successful sync. If < 5 minutes ago and not `test_connection`, return 429 with a message. This prevents manual sync spam.
 
-#### 5. Add seats edge function
-- Create `supabase/functions/update-seats/index.ts`:
-  - Auth + billing authorization check (`can_manage_billing`)
-  - Accepts `{ quantity: number }` (new total seat count, minimum 10)
-  - Calls `stripe.subscriptions.update()` with the new quantity and proration
-  - Updates `entitlements.limits.users` in DB
-  - Returns updated seat count
+#### 5. Phase 6: OAuth token caching
+- **`erp-sync` edge function**: After fetching an OAuth token, store it in `erp_connections.connection_metadata` with a TTL timestamp. On next sync, check if cached token is still valid (TTL not expired) before requesting a new one.
 
-#### 6. Update checklist documentation
-- Update `.lovable/prd/10-erp-connector-implementation.md` Phase 5 with seat management items marked as done
+#### 6. Phase 6: Connection health monitoring
+- **`erp-sync` edge function**: After 3 consecutive sync failures, insert a notification into `notification_queue` alerting org admins of persistent ERP connection issues.
+
+#### 7. Phase 6: Retry failed sync records
+- **`ERPConnectorSettings.tsx`**: Add a "Retry Failed" button on sync error rows. When clicked, re-invoke `erp-sync` with a `retry_error_ids` parameter.
+- **`erp-sync` edge function**: Accept optional `retry_error_ids` array. When present, re-process only those specific records and mark errors as resolved on success.
+- **`useERPConnector.ts`**: Add `retryFailedRecords(errorIds)` function.
+
+#### 8. Phase 6: Secrets column-level security
+- **Database migration**: Create a view `erp_connections_safe` that excludes `client_secret_encrypted`. Update RLS so only the `erp-sync` edge function (service role) can read the actual secret column. Frontend queries use the safe view.
+
+#### 9. Update checklist documentation
+- Mark Phase 6 items as complete in `.lovable/prd/10-erp-connector-implementation.md`.
+
+### Files to Create/Edit
+
+| File | Action |
+|------|--------|
+| `src/components/InviteCodeGenerator.tsx` | Edit — seat availability banner, disable when full |
+| `src/components/InviteCodeRedemption.tsx` | Edit — show remaining seats, block join when full |
+| `src/hooks/useOrganizationInvites.ts` | Edit — pre-check seat limits in `redeemInviteCode()` |
+| `supabase/functions/erp-sync/index.ts` | Edit — add debounce, token caching, health monitoring, retry |
+| `src/components/settings/ERPConnectorSettings.tsx` | Edit — retry failed button |
+| `src/hooks/useERPConnector.ts` | Edit — add retryFailedRecords function |
+| Migration SQL | Create — `erp_connections_safe` view + RLS |
+| `.lovable/prd/10-erp-connector-implementation.md` | Edit — mark Phase 6 items done |
 
 ### Technical Details
 
 ```text
-Enterprise billing flow:
-  User subscribes → Stripe checkout (quantity=10) → webhook sets limits.users=10
-  Org grows → Admin clicks "Add Seats" → update-seats function → Stripe quantity=15
-  → webhook fires subscription.updated → limits.users updated to 15
+Invite + Seat flow:
+  Admin opens InviteCodeGenerator → fetch member count & limits.users
+  → Display "7/10 seats used" banner
+  → If 10/10: disable Create Invite, show "Add seats" link
   
-ERP gate enforcement:
-  erp-sync request → check entitlements.plan === 'enterprise' → proceed or 403
-  ERPConnectorSettings → check plan !== 'enterprise' → show upgrade card
-```
+  User redeems code → redeemInviteCode checks count vs limit
+  → If full: return "Seat limit reached" before INSERT attempt
+  → If ok: proceed → RLS double-checks via check_limit_access
 
-### Files to Create/Edit
-| File | Action |
-|------|--------|
-| `supabase/functions/update-seats/index.ts` | Create — seat quantity management |
-| `supabase/functions/erp-sync/index.ts` | Edit — add enterprise plan gate |
-| `supabase/functions/create-checkout/index.ts` | Edit — pass quantity for enterprise |
-| `supabase/functions/stripe-webhook/index.ts` | Edit — sync seat quantity to entitlements |
-| `src/components/settings/ERPConnectorSettings.tsx` | Edit — enterprise-only gate |
-| `src/components/settings/BillingSettings.tsx` | Edit — seat management UI + real usage counts |
-| `src/hooks/useSubscription.ts` | Edit — add seat management functions |
-| `.lovable/prd/10-erp-connector-implementation.md` | Edit — update Phase 5 checklist |
+Sync debounce:
+  Manual sync request → query last sync timestamp
+  → If < 5min ago → 429 "Please wait X minutes"
+  
+Token cache:
+  Sync starts → check connection_metadata.cached_token + .token_expires_at
+  → If valid → skip OAuth request
+  → If expired → fetch new token → cache in metadata
+
+Health monitor:
+  Sync fails → count consecutive failures from erp_sync_logs
+  → If >= 3 → insert notification_queue alert
+```
 
