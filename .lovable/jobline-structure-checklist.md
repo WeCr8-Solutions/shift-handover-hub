@@ -163,6 +163,11 @@ JobLine Platform
 ├── 💳 Billing & Subscription
 │   ├── Stripe integration (checkout, portal, webhooks)
 │   ├── Subscription tiers: free → single → team → enterprise
+│   ├── ERP Connector add-on tiers: starter ($100) → pro ($150) → unlimited ($200)
+│   │   ├── erp_usage_metering table (monthly sync counter)
+│   │   ├── increment_erp_sync_usage() DB function (tier limit enforcement)
+│   │   ├── Stripe webhook: ERP product detection + erp_tier management
+│   │   └── erp-sync edge function: 429 response at sync limit
 │   ├── Trial management (trial_ends_at)
 │   ├── Entitlement enforcement (feature + limit gates)
 │   └── Donation support
