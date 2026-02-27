@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { StationManufacturerAttach } from "@/components/station/StationManufacturerAttach";
+import { StationMachineContextDialog } from "@/components/station/StationMachineContextDialog";
 import { useNavigate } from "react-router-dom";
 import { StationInfo, JobState } from "@/types/handoff";
 import { StatusBadge, getJobStateStatus, getJobStateShortName } from "./StatusBadge";
@@ -132,6 +132,7 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
   const [currentTime, setCurrentTime] = useState(Date.now());
   const [deliveryFlash, setDeliveryFlash] = useState(false);
   const [showMachineContext, setShowMachineContext] = useState(false);
+  
   
   // State for queued items waiting to be started at this station
   const [queuedItems, setQueuedItems] = useState<{
@@ -948,7 +949,7 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
 
       {/* Machine Context Dialog */}
       {stationDbId && showMachineContext && (
-        <StationManufacturerAttach
+        <StationMachineContextDialog
           stationId={stationDbId}
           stationName={station.name || station.stationId}
           open={showMachineContext}
