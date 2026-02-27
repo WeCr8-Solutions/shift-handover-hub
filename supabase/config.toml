@@ -1,16 +1,15 @@
 project_id = "kgrstnbxqdmadtoankqr"
 
-[functions.create-donation]
-verify_jwt = false
-
-[functions.social-agent]
-verify_jwt = false
-
-[functions.report-issue]
-verify_jwt = false
-
-[functions.rls-health]
-verify_jwt = false
-
-[functions.ai-planning-assistant]
-verify_jwt = false
+[functions]
+  [functions.ai-planning-assistant]
+    verify_jwt = false
+  [functions.auth-email-hook]
+    verify_jwt = false
+  [functions.create-donation]
+    verify_jwt = false
+  [functions.report-issue]
+    verify_jwt = false
+  [functions.rls-health]
+    verify_jwt = false
+  [functions.social-agent]
+    verify_jwt = false
