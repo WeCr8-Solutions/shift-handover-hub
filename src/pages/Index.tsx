@@ -139,6 +139,34 @@ const Index = () => {
   const [selectedStationForAction, setSelectedStationForAction] = useState<string | undefined>();
   const [viewMode, setViewMode] = useState<"supervisor" | "operator" | "station-detail">("supervisor");
   const [focusedStation, setFocusedStation] = useState<{ id: string; name: string } | null>(null);
+  const [handoffPrefill, setHandoffPrefill] = useState<{
+    work_order?: string;
+    part_number?: string;
+    operation_number?: string;
+    station_id?: string;
+  } | null>(null);
+
+  // Auto-open handoff form when navigated from queue item detail
+  useEffect(() => {
+    const autoOpen = sessionStorage.getItem("auto_open_handoff");
+    if (autoOpen === "true") {
+      sessionStorage.removeItem("auto_open_handoff");
+      const prefillRaw = sessionStorage.getItem("handoff_prefill");
+      if (prefillRaw) {
+        try {
+          const prefill = JSON.parse(prefillRaw);
+          setHandoffPrefill(prefill);
+          if (prefill.station_id) {
+            setSelectedStationForAction(prefill.station_id);
+          }
+        } catch (e) {
+          console.error("Failed to parse handoff prefill:", e);
+        }
+        sessionStorage.removeItem("handoff_prefill");
+      }
+      setShowNewHandoff(true);
+    }
+  }, []);
 
   // Redirect to setup if onboarding is incomplete and user is authenticated
   useEffect(() => {
@@ -430,8 +458,13 @@ const Index = () => {
       {/* New Handoff Modal */}
       {showNewHandoff && (
         <NewHandoffForm 
-          onClose={() => setShowNewHandoff(false)} 
+          onClose={() => {
+            setShowNewHandoff(false);
+            setHandoffPrefill(null);
+          }}
           onSubmit={createHandoffRecord}
+          initialStationId={selectedStationForAction}
+          prefillData={handoffPrefill || undefined}
         />
       )}
 

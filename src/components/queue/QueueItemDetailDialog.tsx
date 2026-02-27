@@ -253,10 +253,68 @@ export function QueueItemDetailDialog({
     }
   };
 
-  // Quick action: Complete — routing-aware
+   // Quick action: Complete — routing-aware with pre-advance validation
   const handleCompleteWork = async () => {
     if (!item) return;
     setActionLoading("complete");
+
+    // === Pre-advance validation ===
+    const qtyCompleted = item.qty_completed ?? item.parts_completed ?? 0;
+    const qtyOriginal = item.qty_original ?? item.quantity ?? 0;
+    const qtyScrap = item.qty_scrap ?? 0;
+    const qtyRework = item.qty_rework ?? 0;
+
+    // 1. Parts completed vs required check
+    if (qtyOriginal > 0 && (qtyCompleted + qtyScrap + qtyRework) < qtyOriginal) {
+      const unaccounted = qtyOriginal - qtyCompleted - qtyScrap - qtyRework;
+      toast({
+        title: "Quantity Check Required",
+        description: `${unaccounted} parts unaccounted for. Completed: ${qtyCompleted}, Scrap: ${qtyScrap}, Rework: ${qtyRework} of ${qtyOriginal} total. Update quantities before advancing.`,
+        variant: "destructive",
+      });
+      setActionLoading(null);
+      return;
+    }
+
+    // 2. Quality sign-off check — critical dims must be verified
+    // We check the current station status for this
+    if (item.station_id) {
+      const { data: stationStatus } = await supabase
+        .from("current_station_status")
+        .select("current_job_state")
+        .eq("station_id", item.station_id)
+        .maybeSingle();
+
+      // Block if still waiting on QA
+      if (stationStatus?.current_job_state === "Waiting on QA") {
+        toast({
+          title: "Quality Sign-off Required",
+          description: "Station is still 'Waiting on QA'. QA must be resolved before advancing.",
+          variant: "destructive",
+        });
+        setActionLoading(null);
+        return;
+      }
+    }
+
+    // 3. First article approval check — block if job state is First Article in Process
+    if (item.station_id) {
+      const { data: stationStatus } = await supabase
+        .from("current_station_status")
+        .select("current_job_state")
+        .eq("station_id", item.station_id)
+        .maybeSingle();
+
+      if (stationStatus?.current_job_state === "First Article in Process") {
+        toast({
+          title: "First Article Pending",
+          description: "First article inspection must be completed and approved before advancing to next operation.",
+          variant: "destructive",
+        });
+        setActionLoading(null);
+        return;
+      }
+    }
 
     // Check if there are uncompleted routing steps after the current station
     const hasUncompletedSteps = routingSteps.length > 0 &&
@@ -356,7 +414,7 @@ export function QueueItemDetailDialog({
     setActionLoading(null);
   };
 
-  // Navigate to create handoff for this work order
+   // Navigate to create handoff for this work order
   const handleCreateHandoff = () => {
     // Store work order info in session for the handoff form to pick up
     if (item) {
@@ -366,11 +424,10 @@ export function QueueItemDetailDialog({
         operation_number: item.operation_number,
         station_id: item.station_id,
       }));
+      sessionStorage.setItem("auto_open_handoff", "true");
     }
     onOpenChange(false);
     navigate("/dashboard");
-    // Trigger handoff form open (would need to emit an event or use state)
-    toast({ title: "Ready", description: "Open New Handoff to complete the shift handoff" });
   };
 
   const handleAddComment = async () => {
