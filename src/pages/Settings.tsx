@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Settings2, Factory, Bell, Clock, Wrench, Building2, CreditCard, Lock, GraduationCap, Plug, Package } from "lucide-react";
+import { Loader2, Settings2, Factory, Bell, Clock, Wrench, Building2, CreditCard, Lock, GraduationCap, Plug, Package, Store } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAppSettings } from "@/hooks/useAppSettings";
 import { useAdminAccess } from "@/hooks/useAdminData";
@@ -19,6 +19,7 @@ import { ERPConnectorSettings } from "@/components/settings/ERPConnectorSettings
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EntitlementGate } from "@/components/EntitlementGate";
 import { PartCatalogManager } from "@/components/settings/PartCatalogManager";
+import { MachineProfileMarketplace } from "@/components/station/MachineProfileMarketplace";
 
 export default function Settings() {
   const navigate = useNavigate();
@@ -147,6 +148,13 @@ export default function Settings() {
                 ERP
               </TabsTrigger>
             )}
+            <TabsTrigger 
+              value="marketplace"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground border"
+            >
+              <Store className="w-4 h-4 mr-2" />
+              Marketplace
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="general">
@@ -196,6 +204,34 @@ export default function Settings() {
               </EntitlementGate>
             </TabsContent>
           )}
+
+          <TabsContent value="marketplace">
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Store className="w-5 h-5" />
+                    Marketplace
+                  </CardTitle>
+                  <CardDescription>
+                    Browse and purchase verified machine profiles, tooling packages, and other add-ons for your stations.
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Machine Profiles</CardTitle>
+                  <CardDescription>
+                    Verified manufacturer specifications for your CNC machines. Purchase profiles to unlock station-level context and capability matching.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <MachineProfileMarketplace stationId={null} stationName={null} />
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
         </Tabs>
       </main>
     </div>
