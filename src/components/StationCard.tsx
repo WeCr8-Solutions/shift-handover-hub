@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { StationManufacturerAttach } from "@/components/station/StationManufacturerAttach";
 import { useNavigate } from "react-router-dom";
 import { StationInfo, JobState } from "@/types/handoff";
 import { StatusBadge, getJobStateStatus, getJobStateShortName } from "./StatusBadge";
@@ -6,7 +7,7 @@ import { workCenterIcons, workCenterColors } from "@/lib/workCenterIcons";
 import { 
   AlertTriangle, Check, Plus, ListTodo, Lightbulb, Play, ChevronRight, 
   Clock, Package, Pause, Timer, AlertCircle, Truck, MapPin, ArrowRight,
-  CheckCircle2, Bell, Zap, Circle
+  CheckCircle2, Bell, Zap, Circle, Cpu
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -130,6 +131,7 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
   } | null>(null);
   const [currentTime, setCurrentTime] = useState(Date.now());
   const [deliveryFlash, setDeliveryFlash] = useState(false);
+  const [showMachineContext, setShowMachineContext] = useState(false);
   
   // State for queued items waiting to be started at this station
   const [queuedItems, setQueuedItems] = useState<{
@@ -845,6 +847,10 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
               <ListTodo className="w-4 h-4 mr-2" />
               View Queue
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setShowMachineContext(true)}>
+              <Cpu className="w-4 h-4 mr-2" />
+              Machine Context
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -939,6 +945,16 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
           </div>
         )}
       </div>
+
+      {/* Machine Context Dialog */}
+      {stationDbId && showMachineContext && (
+        <StationManufacturerAttach
+          stationId={stationDbId}
+          stationName={station.name || station.stationId}
+          open={showMachineContext}
+          onOpenChange={setShowMachineContext}
+        />
+      )}
     </div>
   );
 }
