@@ -1,61 +1,109 @@
 
 
-## Plan: Connect Org Routing Templates to Work Order Routing Editor
+## Plan: Finalize Routing Template Save Structure + Add Quote-to-WO Tour Steps
 
-### Current State
-- **RoutingTemplateManagement** (admin): Creates/edits/deletes reusable routing templates with steps, work center types, and time estimates. Currently 2 templates exist: "ISO9001 Standard Machining" (3 steps) and "Weldment Assembly" (3 steps).
-- **WorkOrderRoutingEditor**: When a WO has no routing, it shows the hardcoded 30-step `DEFAULT_ROUTING_STEPS` template. There is **no way to load a saved org template** into a work order.
-- Org has stations covering: Quoting, Purchasing, Engineering, CAM Programming, CNC Mill (×8), CNC Lathe (×3), Inspection, Manual Mill, plus others.
+### Security Verification (No Changes Needed)
+- **routing_templates**: RLS enforces `is_org_member` for SELECT, `is_org_admin OR is_supervisor_in_org` for ALL mutations — verified correct
+- **routing_template_steps**: RLS joins through `routing_templates.organization_id` — verified correct
+- **work_order_routing**: RLS joins through `queue_items.organization_id` — verified correct
+- **Save Routing** (`handleSave`): Explicitly sets `organization_id: organization!.id` on every insert — verified
+- **Save as Template** (`handleSaveAsTemplate`): Explicitly sets `organization_id` on both template and steps — verified
+- **No cross-org leakage vectors found** — all queries filter by org membership at both RLS and application layers
 
-### Gap
-The routing template system is disconnected from work order routing. A supervisor creating a work order routing cannot select from their saved org templates. Templates also don't map `work_center_type` → actual station IDs.
+### Changes
 
-### Implementation
+#### 1. Add `data-tour` Attributes to Queue & Routing Components
+Add tour anchor attributes to key elements users need to discover:
 
-#### 1. Add Template Selector to WorkOrderRoutingEditor
-At the top of the editor (when in template mode / no existing routing), add a dropdown:
-- "Start from scratch" (current 30-step default)
-- "Load from template: [ISO9001 Standard Machining]"
-- "Load from template: [Weldment Assembly]"
-- Any other org templates
+**`src/pages/Queue.tsx`**:
+- Add `data-tour="add-queue-item"` to the "Add Item" button
+- Add `data-tour="quote-type-selector"` wrapper around the type selector area (already exists on tabs/filters/views)
 
-When a saved template is selected:
-- Fetch its `routing_template_steps` from the database
-- Map each step's `work_center_type` → an actual station using the existing `autoSuggestStation` logic
-- Replace the current steps list with the template's steps
-- Show all steps as enabled (since saved templates only contain the steps the org wants)
+**`src/components/queue/QueueKanbanBoard.tsx`**:
+- Add `data-tour="kanban-quote-card"` to quote-type cards (first one)
+- Add `data-tour="kanban-wo-card"` to work-order-type cards (first one)
 
-#### 2. Update Template Step → Routing Step Mapping
-The saved template steps use `work_center_type` (e.g., "CNC Mill", "Incoming Inspection") while the routing editor uses `station_id` (actual UUID). The mapping:
-```text
-Template Step                  →  Routing Step
-─────────────────────────────────────────────
-operation_name                 →  operation_name
-operation_type                 →  operation_type  
-work_center_type: "CNC Mill"   →  station_id: autoSuggestStation() match
-setup_time_minutes             →  (preserved)
-first_article_minutes          →  (preserved)
-cycle_time_minutes             →  (preserved)
-instructions                   →  instructions
+**`src/components/routing/WorkOrderRoutingEditor.tsx`**:
+- Add `data-tour="routing-template-selector"` to the org template dropdown
+- Add `data-tour="routing-save-template"` to the "Save as Template" button
+- Add `data-tour="routing-save"` to the "Save Routing" button
+
+**`src/components/queue/QueueItemDetailDialog.tsx`**:
+- Add `data-tour="quote-convert-bar"` to the quote-to-WO conversion action bar
+- Add `data-tour="routing-tab"` to the Routing tab trigger
+
+#### 2. Add New Tour Steps to GuidedTour
+**`src/components/onboarding/GuidedTour.tsx`**:
+
+Add new tour steps to the `/queue` route covering the quote-to-work-order and routing flows:
+
+```
+// After existing queue steps:
+{
+  target: '[data-tour="add-queue-item"]',
+  content: 'Create quotes for estimation or work orders for production. Quotes flow through approval before converting to tracked work orders.',
+  title: '📝 Quotes & Work Orders',
+},
+{
+  target: '[data-tour="kanban-quote-card"]',
+  content: 'Quotes appear with an amber border. Click to review, get estimates from engineering, then convert to a work order when approved.',
+  title: '💡 Quote Cards',
+},
+{
+  target: '[data-tour="kanban-wo-card"]',
+  content: 'Work orders have a blue border and track through your full production routing — from first operation to final ship.',
+  title: '🔧 Work Order Cards',
+},
 ```
 
-#### 3. Add "Save as Template" from WorkOrderRoutingEditor
-After a supervisor customizes routing for a specific WO, add a "Save as Template" button that:
-- Opens a small dialog asking for template name and optional part number pattern
-- Saves the current enabled steps as a new `routing_template` + `routing_template_steps`
-- This creates a feedback loop: customize once → reuse everywhere
+Add a new route entry for when the routing editor is open (triggered contextually, not route-based — these steps show when the detail dialog is open):
 
-#### 4. Files to Modify
-- **`src/components/routing/WorkOrderRoutingEditor.tsx`**: Add template selector dropdown at top, "Save as Template" button, fetch org templates on mount
-- **`src/components/queue/QueueItemDetailDialog.tsx`** (minor): No changes needed — already opens WorkOrderRoutingEditor
+Since routing editor opens inside the queue page's detail dialog, append routing-related steps to the `/queue` tour that target `data-tour` attributes inside the dialog:
 
-#### 5. E2E Browser Test Plan
-1. Navigate to `/admin` → Routing Templates tab → verify existing 2 templates
-2. Create a new template "Valve Body Standard" with 6 steps: Quote → Engineering → CNC Mill Op 10 → CNC Mill Op 20 → Final Inspection → Ship
-3. Navigate to `/queue` → create a new work order
-4. Open detail → Edit Routing → verify template selector shows "Valve Body Standard"
-5. Select it → verify steps load with auto-suggested stations
-6. Save routing → verify steps persisted in `work_order_routing` table
-7. Customize routing → use "Save as Template" → verify new template appears in admin list
-8. Verify the full flow visually with screenshots at each step
+```
+{
+  target: '[data-tour="routing-tab"]',
+  content: 'The Routing tab shows every production step — from quote review through shipping. Each step maps to a station in your shop.',
+  title: '🗺️ Production Routing',
+},
+{
+  target: '[data-tour="routing-template-selector"]',
+  content: 'Load a saved routing template from your organization library. Templates save time by pre-filling steps for common part types.',
+  title: '📋 Routing Templates',
+},
+{
+  target: '[data-tour="routing-save-template"]',
+  content: 'Customized a routing? Save it as a reusable template so your team can apply it to future work orders with one click.',
+  title: '💾 Save as Template',
+},
+```
+
+#### 3. Add New Onboarding Step Definition
+**`src/hooks/useOnboarding.ts`**:
+
+Add a new optional step `'quote-to-workorder'` to the `OnboardingStep` type and `ONBOARDING_STEPS` array:
+
+```typescript
+{ id: 'quote-to-workorder', title: 'Quotes & Routing', description: 'Learn how quotes convert to work orders with production routing templates' },
+```
+
+Insert it after `'station-cards'` (step 5) and before `'handoff-submission'` (step 6).
+
+**`src/components/onboarding/GuidedTour.tsx`**:
+
+Update `ROUTE_TO_STEP` to map `/queue` to include this new step when the quote/routing tour steps are shown.
+
+#### 4. Update OnboardingSettings Route Map
+**`src/components/settings/OnboardingSettings.tsx`**:
+
+Add `'quote-to-workorder': '/queue'` to the `STEP_ROUTE_MAP`.
+
+### Files Modified
+1. `src/hooks/useOnboarding.ts` — Add `quote-to-workorder` step
+2. `src/components/onboarding/GuidedTour.tsx` — Add quote/routing tour steps to `/queue`
+3. `src/components/settings/OnboardingSettings.tsx` — Add route mapping
+4. `src/pages/Queue.tsx` — Add `data-tour` attributes
+5. `src/components/queue/QueueKanbanBoard.tsx` — Add `data-tour` attributes
+6. `src/components/queue/QueueItemDetailDialog.tsx` — Add `data-tour` attributes
+7. `src/components/routing/WorkOrderRoutingEditor.tsx` — Add `data-tour` attributes
 
