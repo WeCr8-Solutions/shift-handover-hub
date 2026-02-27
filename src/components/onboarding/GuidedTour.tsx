@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Joyride, { CallBackProps, STATUS, Step, ACTIONS, EVENTS } from 'react-joyride';
 import { useOnboardingContext, OnboardingStep } from './OnboardingProvider';
 import { useLocation } from 'react-router-dom';
+import { useQuoteSystem } from '@/hooks/useQuoteSystem';
 
 const TOUR_STEPS: Record<string, Step[]> = {
   '/dashboard': [
@@ -59,16 +60,25 @@ const TOUR_STEPS: Record<string, Step[]> = {
     },
     {
       target: '[data-tour="add-queue-item"]',
+      content: 'Create work orders for production tracking and prioritization.',
+      title: '📝 Work Orders',
+      placement: 'left',
+    },
+    {
+      target: '[data-tour="add-queue-item"]',
       content: 'Create quotes for estimation or work orders for production. Quotes flow through approval before converting to tracked work orders.',
       title: '📝 Quotes & Work Orders',
       placement: 'left',
-    },
+      // Tag for filtering when quote system is enabled
+      data: { requiresQuoteSystem: true },
+    } as Step & { data?: { requiresQuoteSystem?: boolean } },
     {
       target: '[data-tour="kanban-quote-card"]',
       content: 'Quotes appear with an amber border. Click to review, get estimates from engineering, then convert to a work order when approved.',
       title: '💡 Quote Cards',
       placement: 'right',
-    },
+      data: { requiresQuoteSystem: true },
+    } as Step & { data?: { requiresQuoteSystem?: boolean } },
     {
       target: '[data-tour="kanban-wo-card"]',
       content: 'Work orders have a blue border and track through your full production routing — from first operation to final ship.',
@@ -165,31 +175,39 @@ const ROUTE_TO_STEP: Record<string, OnboardingStep> = {
 export function GuidedTour() {
   const location = useLocation();
   const { showTour, setShowTour, completeStep, currentStep, isComplete, isStepCompleted } = useOnboardingContext();
+  const { isQuoteSystemEnabled } = useQuoteSystem();
   const [steps, setSteps] = useState<Step[]>([]);
   const [run, setRun] = useState(false);
 
   useEffect(() => {
-    const routeSteps = TOUR_STEPS[location.pathname];
+    let routeSteps = TOUR_STEPS[location.pathname];
+    
+    // Filter out quote-specific steps when quote system is disabled
+    if (routeSteps && !isQuoteSystemEnabled) {
+      routeSteps = routeSteps.filter((step: any) => !step.data?.requiresQuoteSystem);
+    }
+    // When quote system is enabled, remove the generic "Work Orders" step that overlaps
+    if (routeSteps && isQuoteSystemEnabled) {
+      routeSteps = routeSteps.filter((step: any) => step.title !== '📝 Work Orders');
+    }
     
     // Check prerequisites for dashboard tour - require shop-setup to be complete
     if (location.pathname === '/dashboard') {
       const hasCompletedShopSetup = isStepCompleted('shop-setup') || isStepCompleted('organization-setup');
       if (!hasCompletedShopSetup && showTour) {
-        // Don't run dashboard tour if setup isn't complete
         setRun(false);
         return;
       }
     }
     
-    if (routeSteps && showTour && !isComplete) {
+    if (routeSteps && routeSteps.length > 0 && showTour && !isComplete) {
       setSteps(routeSteps);
-      // Small delay to ensure DOM elements are rendered
       const timer = setTimeout(() => setRun(true), 500);
       return () => clearTimeout(timer);
     } else {
       setRun(false);
     }
-  }, [location.pathname, showTour, isComplete, isStepCompleted]);
+  }, [location.pathname, showTour, isComplete, isStepCompleted, isQuoteSystemEnabled]);
 
   const handleJoyrideCallback = (data: CallBackProps) => {
     const { status, action, type } = data;

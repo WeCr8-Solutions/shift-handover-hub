@@ -41,6 +41,9 @@ export function ManufacturingSettings() {
     partNumberFormat: "alphanumeric",
     autoGenerateWorkOrders: false,
     
+    // Quote system
+    enableQuoteSystem: false,
+    
     // Performance tracking
     enablePerformanceUpdates: true,
     requireEngineeringReview: false,
@@ -245,10 +248,23 @@ export function ManufacturingSettings() {
             Work Order Settings
           </CardTitle>
           <CardDescription>
-            Configure work order numbering and format
+            Configure work order numbering, format, and quoting workflow
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="flex items-center justify-between p-3 rounded-lg border border-primary/20 bg-primary/5">
+            <div>
+              <Label>Enable Quote System</Label>
+              <p className="text-sm text-muted-foreground">
+                Allow creating quotes that route through approval before converting to work orders
+              </p>
+            </div>
+            <Switch
+              checked={settings.enableQuoteSystem}
+              onCheckedChange={(v) => setSettings(p => ({ ...p, enableQuoteSystem: v }))}
+            />
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Work Order Prefix</Label>

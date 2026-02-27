@@ -12,6 +12,7 @@ import { computeEstimatedDuration } from "@/lib/machineTime";
 import { useStations, Station } from "@/hooks/useStations";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useQuoteSystem } from "@/hooks/useQuoteSystem";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -26,7 +27,7 @@ interface CreateQueueItemDialogProps {
   preselectedStationId?: string;
 }
 
-const typeOptions: { value: QueueItemType; label: string; description: string }[] = [
+const ALL_TYPE_OPTIONS: { value: QueueItemType; label: string; description: string }[] = [
   { value: "quote", label: "Quote", description: "Quote for estimation and customer approval" },
   { value: "work_order", label: "Work Order", description: "Manufacturing work order queue item" },
   { value: "station_task", label: "Station Task", description: "Task assigned to a specific station" },
@@ -46,7 +47,13 @@ export function CreateQueueItemDialog({ open, onOpenChange, onCreate, preselecte
   const { toast } = useToast();
   const { currentTeam } = useCurrentTeam();
   const { organization } = useUserOrganization();
+  const { isQuoteSystemEnabled } = useQuoteSystem();
   const { stations, loading: stationsLoading } = useStations(currentTeam?.id, organization?.id);
+
+  // Filter type options based on quote system setting
+  const typeOptions = isQuoteSystemEnabled
+    ? ALL_TYPE_OPTIONS
+    : ALL_TYPE_OPTIONS.filter(o => o.value !== "quote");
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<CreateQueueItemInput>({
     item_type: "work_order",
