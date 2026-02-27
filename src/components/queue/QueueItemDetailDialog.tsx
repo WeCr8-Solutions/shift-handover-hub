@@ -838,7 +838,7 @@ export function QueueItemDetailDialog({
               )}
 
               {/* Part Specifications */}
-              {(item.material_type || item.part_shape || item.part_length_inches || item.part_weight_lbs) && (
+              {(item.material_type || item.part_shape || item.part_length_inches || item.part_weight_lbs || (item as any).required_tolerance || (item as any).surface_finish) && (
                 <div className="p-3 bg-muted/30 rounded-lg space-y-2">
                   <label className="text-sm font-medium block">Part Specifications</label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
@@ -858,6 +858,18 @@ export function QueueItemDetailDialog({
                       <div>
                         <span className="text-xs text-muted-foreground block">Weight</span>
                         <span className="font-medium">{item.part_weight_lbs} lbs</span>
+                      </div>
+                    )}
+                    {(item as any).required_tolerance && (
+                      <div>
+                        <span className="text-xs text-muted-foreground block">Tolerance</span>
+                        <span className="font-medium">{(item as any).required_tolerance}</span>
+                      </div>
+                    )}
+                    {(item as any).surface_finish && (
+                      <div>
+                        <span className="text-xs text-muted-foreground block">Surface Finish</span>
+                        <span className="font-medium">{(item as any).surface_finish}</span>
                       </div>
                     )}
                   </div>

@@ -48,7 +48,30 @@ export interface PartSpecsData {
   part_weight_lbs: string;
   part_shape: string;
   part_catalog_id: string;
+  required_tolerance: string;
+  surface_finish: string;
 }
+
+export const TOLERANCE_OPTIONS = [
+  "±0.0005\"",
+  "±0.001\"",
+  "±0.002\"",
+  "±0.005\"",
+  "±0.010\"",
+  "±0.015\"",
+  "±0.030\"",
+  "±0.060\"",
+] as const;
+
+export const SURFACE_FINISH_OPTIONS = [
+  { value: "8Ra", label: "8 Ra (Mirror / Lapped)" },
+  { value: "16Ra", label: "16 Ra (Fine Ground)" },
+  { value: "32Ra", label: "32 Ra (Fine Machined)" },
+  { value: "63Ra", label: "63 Ra (Standard Machined)" },
+  { value: "125Ra", label: "125 Ra (Rough Machined)" },
+  { value: "250Ra", label: "250 Ra (As-Cast / Sawed)" },
+  { value: "as-machined", label: "As-Machined (No Spec)" },
+] as const;
 
 interface PartCatalogEntry {
   id: string;
@@ -60,6 +83,8 @@ interface PartCatalogEntry {
   part_height_inches: number | null;
   part_weight_lbs: number | null;
   part_shape: string | null;
+  required_tolerance: string | null;
+  surface_finish: string | null;
 }
 
 interface PartSpecsSectionProps {
@@ -114,6 +139,8 @@ export function PartSpecsSection({ data, onChange, defaultOpen = false }: PartSp
       part_height_inches: entry.part_height_inches?.toString() || "",
       part_weight_lbs: entry.part_weight_lbs?.toString() || "",
       part_shape: entry.part_shape || "",
+      required_tolerance: entry.required_tolerance || "",
+      surface_finish: entry.surface_finish || "",
     });
     setShowCatalog(false);
   };
@@ -237,11 +264,39 @@ export function PartSpecsSection({ data, onChange, defaultOpen = false }: PartSp
           </div>
         </div>
 
-        {/* Weight */}
-        <div className="w-1/3">
+        {/* Weight + Tolerance + Surface Finish */}
+        <div className="grid grid-cols-3 gap-3">
           <div className="space-y-1">
             <Label className="text-xs text-muted-foreground">Weight (lbs)</Label>
             <Input type="number" value={data.part_weight_lbs} onChange={(e) => update("part_weight_lbs", e.target.value)} placeholder="lbs" min="0" step="0.01" className="h-9" />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">Tolerance</Label>
+            <Select value={data.required_tolerance || "none"} onValueChange={(v) => update("required_tolerance", v === "none" ? "" : v)}>
+              <SelectTrigger className="h-9">
+                <SelectValue placeholder="Select..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Not specified</SelectItem>
+                {TOLERANCE_OPTIONS.map((t) => (
+                  <SelectItem key={t} value={t}>{t}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">Surface Finish</Label>
+            <Select value={data.surface_finish || "none"} onValueChange={(v) => update("surface_finish", v === "none" ? "" : v)}>
+              <SelectTrigger className="h-9">
+                <SelectValue placeholder="Select..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Not specified</SelectItem>
+                {SURFACE_FINISH_OPTIONS.map((sf) => (
+                  <SelectItem key={sf.value} value={sf.value}>{sf.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </CollapsibleContent>

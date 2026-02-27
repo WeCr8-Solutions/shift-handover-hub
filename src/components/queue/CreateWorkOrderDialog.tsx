@@ -71,6 +71,8 @@ export function CreateWorkOrderDialog({
     part_weight_lbs: "",
     part_shape: "",
     part_catalog_id: "",
+    required_tolerance: "",
+    surface_finish: "",
   });
 
   // Fetch stations
@@ -146,6 +148,8 @@ export function CreateWorkOrderDialog({
         part_weight_lbs: partSpecs.part_weight_lbs ? parseFloat(partSpecs.part_weight_lbs) : undefined,
         part_shape: partSpecs.part_shape || undefined,
         part_catalog_id: partSpecs.part_catalog_id || undefined,
+        required_tolerance: partSpecs.required_tolerance || undefined,
+        surface_finish: partSpecs.surface_finish || undefined,
       });
 
       toast.success("Work order created successfully");
@@ -174,6 +178,8 @@ export function CreateWorkOrderDialog({
         part_weight_lbs: "",
         part_shape: "",
         part_catalog_id: "",
+        required_tolerance: "",
+        surface_finish: "",
       });
     } catch (error) {
       toast.error("Failed to create work order");
