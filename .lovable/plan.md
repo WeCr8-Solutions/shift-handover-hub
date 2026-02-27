@@ -1,47 +1,71 @@
 
 
-## Email System Assessment & Plan
+## End-to-End Handoff Testing Plan
 
-### Current State
+There are two distinct handoff flows to test:
 
-1. **Auth emails (welcome, password reset)**: The app has a custom `send-email` edge function using Resend directly, but there's **no dedicated `/reset-password` page** -- the password reset `redirectTo` goes to `/auth?reset=true` which doesn't call `supabase.auth.updateUser({ password })`. Users get redirected but can't actually set a new password.
+1. **Routing Handoff** (Queue > Complete Op & Advance > next station)
+2. **Shift Handoff** (Operator Dashboard > New Handoff Form > submit)
 
-2. **Custom domain**: `www.jobline.ai` is configured as a custom domain, but **no email domain is set up** -- all auth emails currently go through default Lovable/Supabase emails.
+Both need browser-based E2E testing with screenshots to verify auto-population, form rendering, and data flow.
 
-3. **SaaS transactional emails** (team invites, handoff notifications, promo codes): Already implemented via the `send-email` edge function with Resend, rate limiting, and authorization checks. These are working.
+### Pre-requisites
+- User must be logged in to the preview
+- At least one station with an active/queued work order that has routing steps configured
 
-4. **Marketing emails**: Lovable's email system only supports auth emails. Marketing/newsletter emails require a third-party service integration (e.g., Resend, Mailchimp) outside of the managed auth email flow.
+---
 
-### Plan
+### Test 1: Routing Handoff (Work Order Advance to Next Station)
 
-#### 1. Set up custom email domain
-- Configure `jobline.ai` (or a subdomain like `notify.jobline.ai`) as the email sender domain so auth emails come from your brand instead of a generic address
-- This requires completing the email setup dialog and DNS verification
+**Steps:**
+1. Navigate to `/queue`, find a work order with routing steps
+2. Screenshot the queue list showing the work order
+3. Click into the work order detail dialog
+4. Screenshot the dialog showing routing tab with steps
+5. Click "Complete Op & Advance" or the complete action
+6. Screenshot the confirmation dialog (verify routing-aware messaging: "advance to [next station]")
+7. Confirm the advance
+8. Screenshot the success toast and verify the work order moved to the next station
+9. Click "Create Handoff" from the queue detail dialog
+10. Verify `sessionStorage` prefill data is set and user is redirected to `/dashboard`
+11. Screenshot the auto-opened NewHandoffForm — verify work_order, part_number, operation_number, and station are pre-filled
 
-#### 2. Scaffold branded auth email templates
-- Use Lovable's managed auth email system to create professional templates for: signup confirmation, password recovery, magic link, invite, email change, reauthentication
-- Brand them with JobLine's teal primary color (`hsl(185, 70%, 45%)`), Inter/JetBrains Mono fonts, and logo
-- Deploy the `auth-email-hook` edge function
+### Test 2: Shift Handoff (End-of-Shift via Operator Dashboard)
 
-#### 3. Fix password reset flow (critical bug)
-- Create a `/reset-password` route and page that:
-  - Detects `type=recovery` in the URL hash
-  - Shows a "set new password" form
-  - Calls `supabase.auth.updateUser({ password })` to complete the reset
-- Update the `redirectTo` in `Auth.tsx` from `/auth?reset=true` to `/reset-password`
-- Without this, password reset emails are non-functional -- users click the link but can never set a new password
+**Steps:**
+1. Navigate to `/dashboard` (as operator)
+2. If not checked in, check in to a station
+3. Screenshot the OperatorStationPanel showing the active station
+4. Click "Handoff" button on the station panel
+5. Screenshot Step 1 (Job Info) — verify station auto-selects, operator name pre-fills
+6. Fill required fields (job state, part number) if not pre-filled
+7. Click Next, screenshot Step 2 (Readiness) — verify CNC vs generic items render correctly
+8. Click Next, screenshot Step 3 (Condition) — verify work-center-specific fields
+9. Fill handoff summary, screenshot Step 4 (Summary)
+10. Submit and screenshot success toast
+11. Verify station status updated in current_station_status table
 
-#### 4. Marketing emails (limitation)
-- Lovable's managed email system is strictly for authentication emails
-- For marketing, newsletters, or promotional campaigns, you would need to integrate a dedicated email marketing service (e.g., Resend campaigns, Mailchimp, ConvertKit) directly in your application code
-- The existing `send-email` edge function with Resend already handles some transactional use cases (promo codes, team invites, handoff notifications) and can be extended for additional non-auth transactional needs
+### Test 3: Queue-to-Handoff Auto-Open Flow
 
-### First Step
-Before I can scaffold the branded auth templates, you need to configure the email sender domain. Let's start there:
+**Steps:**
+1. Navigate to `/queue`, open a work order detail
+2. Click "Create Handoff" button in the detail dialog
+3. Verify redirect to `/dashboard`
+4. Screenshot the NewHandoffForm that auto-opens
+5. Verify all 4 fields are pre-filled from the queue item (WO#, Part, Op, Station)
+6. Walk through all 4 steps and submit
 
-<lov-actions>
-<lov-open-email-setup>Set up email domain</lov-open-email-setup>
-</lov-actions>
+### Implementation Approach
 
-Once the domain is set, I'll scaffold the templates, fix the password reset flow, and deploy everything.
+- Use browser automation tools: `navigate_to_sandbox`, `observe`, `act`, `screenshot`
+- Take screenshots at each critical checkpoint
+- After each test, verify the result by checking network requests or re-querying the UI
+- If any step fails or shows incorrect data, stop, diagnose, and fix the code before continuing
+
+### Potential Issues to Watch For
+- NewHandoffForm may not auto-populate if `stations` array hasn't loaded yet (race condition)
+- `sessionStorage` prefill might not persist across navigation if the page re-renders
+- CNC-specific readiness items should only show for CNC Mill/Lathe work center types
+- Validation errors on Step 1 (station, job state, part number required) must block forward navigation
+- The `organization_id` NOT NULL constraint on handoff_records could cause insert failures if org context is missing
 
