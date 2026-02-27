@@ -131,11 +131,11 @@ serve(async (req) => {
         .select("id, name, description")
         .eq("organization_id", organization_id)
         .limit(50),
+      // Fetch machine profiles via assignments → purchases → library
       supabase
-        .from("station_machine_profiles")
-        .select("station_id, manufacturer, model, machine_type, platform_category, max_x_travel, max_y_travel, max_z_travel, max_part_weight, max_part_envelope_length, max_part_envelope_width, max_part_envelope_height, five_axis_simultaneous, fourth_axis, live_tooling, y_axis_turn, sub_spindle, probing, through_spindle_coolant, pallet_pool, bar_feeder, material_capability, typical_tolerance, hard_constraints, context_active")
+        .from("station_machine_assignments")
+        .select("station_id, purchase_id, organization_machine_purchases!inner(machine_library_id, is_active, verified_machine_library!inner(manufacturer, model, machine_type, platform_category, max_x_travel, max_y_travel, max_z_travel, max_part_weight, max_part_envelope_length, max_part_envelope_width, max_part_envelope_height, five_axis_simultaneous, fourth_axis, live_tooling, y_axis_turn, sub_spindle, probing, through_spindle_coolant, pallet_pool, bar_feeder, material_capability, typical_tolerance, hard_constraints))")
         .eq("organization_id", organization_id)
-        .eq("context_active", true)
         .limit(100),
     ]);
 
@@ -201,38 +201,39 @@ serve(async (req) => {
       po: r.po_number,
     }));
 
-    // Build machine profile summaries keyed by station
-    const machineProfileMap = Object.fromEntries(
-      machineProfiles.map((mp: any) => [mp.station_id, mp])
-    );
-    const machineContextSummary = machineProfiles.map((mp: any) => ({
-      station: stationMap[mp.station_id] || mp.station_id,
-      manufacturer: mp.manufacturer,
-      model: mp.model,
-      machine_type: mp.machine_type,
-      platform: mp.platform_category,
-      envelope: {
-        x: mp.max_x_travel, y: mp.max_y_travel, z: mp.max_z_travel,
-        max_weight: mp.max_part_weight,
-        max_length: mp.max_part_envelope_length,
-        max_width: mp.max_part_envelope_width,
-        max_height: mp.max_part_envelope_height,
-      },
-      capabilities: {
-        five_axis: mp.five_axis_simultaneous,
-        fourth_axis: mp.fourth_axis,
-        live_tooling: mp.live_tooling,
-        y_axis: mp.y_axis_turn,
-        sub_spindle: mp.sub_spindle,
-        probing: mp.probing,
-        tsc: mp.through_spindle_coolant,
-        pallet_pool: mp.pallet_pool,
-        bar_feeder: mp.bar_feeder,
-      },
-      materials: mp.material_capability,
-      tolerance: mp.typical_tolerance,
-      constraints: mp.hard_constraints,
-    }));
+    // Build machine profile summaries from assignments → purchases → library
+    const machineContextSummary = machineProfiles.map((a: any) => {
+      const ml = a.organization_machine_purchases?.verified_machine_library;
+      if (!ml) return null;
+      return {
+        station: stationMap[a.station_id] || a.station_id,
+        manufacturer: ml.manufacturer,
+        model: ml.model,
+        machine_type: ml.machine_type,
+        platform: ml.platform_category,
+        envelope: {
+          x: ml.max_x_travel, y: ml.max_y_travel, z: ml.max_z_travel,
+          max_weight: ml.max_part_weight,
+          max_length: ml.max_part_envelope_length,
+          max_width: ml.max_part_envelope_width,
+          max_height: ml.max_part_envelope_height,
+        },
+        capabilities: {
+          five_axis: ml.five_axis_simultaneous,
+          fourth_axis: ml.fourth_axis,
+          live_tooling: ml.live_tooling,
+          y_axis: ml.y_axis_turn,
+          sub_spindle: ml.sub_spindle,
+          probing: ml.probing,
+          tsc: ml.through_spindle_coolant,
+          pallet_pool: ml.pallet_pool,
+          bar_feeder: ml.bar_feeder,
+        },
+        materials: ml.material_capability,
+        tolerance: ml.typical_tolerance,
+        constraints: ml.hard_constraints,
+      };
+    }).filter(Boolean);
 
     const callerRoleLabel = isSupervisorOrAbove
       ? `Supervisor/Admin (org role: ${orgRole}, platform roles: ${platformRoles.join(", ") || "operator"})`

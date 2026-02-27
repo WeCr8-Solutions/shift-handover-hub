@@ -10,11 +10,6 @@ const corsHeaders = {
 
 const SMCA_PRICE_ID = "price_1T5YNyCyekafHX788ZWqCn1h";
 
-const logStep = (step: string, details?: unknown) => {
-  const detailsStr = details ? ` - ${JSON.stringify(details)}` : "";
-  console.log(`[ACTIVATE-STATION-CONTEXT] ${step}${detailsStr}`);
-};
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -27,11 +22,9 @@ serve(async (req) => {
   );
 
   try {
-    logStep("Function started");
-
-    const { station_id, profile_id } = await req.json();
-    if (!station_id || !profile_id) {
-      throw new Error("station_id and profile_id are required");
+    const { machine_library_id, organization_id } = await req.json();
+    if (!machine_library_id || !organization_id) {
+      throw new Error("machine_library_id and organization_id are required");
     }
 
     const authHeader = req.headers.get("Authorization")!;
@@ -39,43 +32,50 @@ serve(async (req) => {
     const { data } = await supabase.auth.getUser(token);
     const user = data.user;
     if (!user?.email) throw new Error("User not authenticated");
-    logStep("User authenticated", { userId: user.id });
 
-    // Verify the profile exists and belongs to the user's org
-    const { data: profile, error: profileErr } = await supabase
-      .from("station_machine_profiles")
-      .select("id, organization_id, context_active")
-      .eq("id", profile_id)
-      .single();
+    // Check if already purchased
+    const { data: existing } = await supabase
+      .from("organization_machine_purchases")
+      .select("id, is_active")
+      .eq("organization_id", organization_id)
+      .eq("machine_library_id", machine_library_id)
+      .maybeSingle();
 
-    if (profileErr || !profile) throw new Error("Machine profile not found");
-    if (profile.context_active) {
+    if (existing?.is_active) {
       return new Response(
-        JSON.stringify({ error: "This station context is already activated" }),
+        JSON.stringify({ error: "This machine profile is already purchased" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // Verify machine exists in library
+    const { data: machine, error: machineErr } = await supabase
+      .from("verified_machine_library")
+      .select("id, manufacturer, model")
+      .eq("id", machine_library_id)
+      .single();
+
+    if (machineErr || !machine) throw new Error("Machine not found in library");
 
     // Verify user is org member
     const { data: membership } = await supabase
       .from("organization_members")
       .select("role")
       .eq("user_id", user.id)
-      .eq("organization_id", profile.organization_id)
+      .eq("organization_id", organization_id)
       .single();
 
     if (!membership) throw new Error("Access denied: not an org member");
 
-    // Get or create Stripe customer
+    // Stripe checkout
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
     });
 
-    // Check org's stripe customer
     const { data: org } = await supabase
       .from("organizations")
       .select("stripe_customer_id, billing_email")
-      .eq("id", profile.organization_id)
+      .eq("id", organization_id)
       .single();
 
     let customerId: string | undefined;
@@ -87,10 +87,7 @@ serve(async (req) => {
       const customers = await stripe.customers.list({ email: billingEmail, limit: 1 });
       if (customers.data.length > 0) {
         customerId = customers.data[0].id;
-        await supabase
-          .from("organizations")
-          .update({ stripe_customer_id: customerId })
-          .eq("id", profile.organization_id);
+        await supabase.from("organizations").update({ stripe_customer_id: customerId }).eq("id", organization_id);
       }
     }
 
@@ -101,18 +98,16 @@ serve(async (req) => {
       customer_email: customerId ? undefined : billingEmail,
       line_items: [{ price: SMCA_PRICE_ID, quantity: 1 }],
       mode: "payment",
-      success_url: `${origin}/settings?tab=stations&smca=success&profile_id=${profile_id}`,
+      success_url: `${origin}/settings?tab=stations&smca=success&machine_id=${machine_library_id}`,
       cancel_url: `${origin}/settings?tab=stations&smca=cancelled`,
       metadata: {
-        type: "station_context_activation",
-        profile_id: profile_id,
-        station_id: station_id,
+        type: "machine_library_purchase",
+        machine_library_id,
+        organization_id,
         user_id: user.id,
-        org_id: profile.organization_id,
+        machine_name: `${machine.manufacturer} ${machine.model}`,
       },
     });
-
-    logStep("Checkout session created", { sessionId: session.id });
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -120,7 +115,6 @@ serve(async (req) => {
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep("ERROR", { message: errorMessage });
     return new Response(JSON.stringify({ error: errorMessage }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
