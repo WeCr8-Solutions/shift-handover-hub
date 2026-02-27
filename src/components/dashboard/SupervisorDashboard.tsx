@@ -20,6 +20,7 @@ import {
   Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ProductionAnalytics } from "./ProductionAnalytics";
 
 interface SupervisorDashboardProps {
   onNewHandoff: () => void;
@@ -444,6 +445,9 @@ export function SupervisorDashboard({
           </div>
         </div>
       </div>
+
+      {/* Production Analytics Charts */}
+      <ProductionAnalytics stations={dbStations} handoffs={dbRecords} />
     </div>
   );
 }
