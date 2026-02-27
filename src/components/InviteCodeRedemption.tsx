@@ -52,7 +52,7 @@ export function InviteCodeRedemption({ onSuccess, initialCode = "" }: InviteCode
     if (result.valid && result.invite) {
       setValidatedInvite(result.invite);
     } else {
-      setValidationError("Invalid or expired invite code");
+      setValidationError(result.reason || "Invalid or expired invite code");
     }
   };
 

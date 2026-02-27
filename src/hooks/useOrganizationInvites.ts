@@ -148,6 +148,9 @@ export async function validateInviteCode(code: string) {
       team_id,
       org_role,
       app_role,
+      expires_at,
+      max_uses,
+      uses_count,
       organizations:organization_id(name),
       teams:team_id(name)
     `)
@@ -156,7 +159,22 @@ export async function validateInviteCode(code: string) {
     .maybeSingle();
 
   if (error || !data) {
-    return { valid: false, invite: null };
+    return { valid: false, invite: null, reason: "Invalid or inactive invite code" };
+  }
+
+  // Check expiration
+  if (data.expires_at && new Date(data.expires_at) < new Date()) {
+    // Auto-deactivate expired invite so the seat is returned
+    await supabase
+      .from("organization_invites")
+      .update({ is_active: false })
+      .eq("id", data.id);
+    return { valid: false, invite: null, reason: "This invite code has expired. The seat has been returned to the organization." };
+  }
+
+  // Check max uses
+  if (data.max_uses && data.uses_count >= data.max_uses) {
+    return { valid: false, invite: null, reason: "This invite code has reached its maximum number of uses" };
   }
 
   // Fetch seat info for the org
@@ -204,6 +222,21 @@ export async function redeemInviteCode(code: string, userId: string) {
 
   if (validateError || !invite) {
     return { error: new Error("Invalid or expired invite code") };
+  }
+
+  // Check expiration before proceeding
+  if (invite.expires_at && new Date(invite.expires_at) < new Date()) {
+    // Auto-deactivate expired invite
+    await supabase
+      .from("organization_invites")
+      .update({ is_active: false })
+      .eq("id", invite.id);
+    return { error: new Error("This invite code has expired (15-day limit). The seat has been returned to the organization for another user.") };
+  }
+
+  // Check max uses
+  if (invite.max_uses && invite.uses_count >= invite.max_uses) {
+    return { error: new Error("This invite code has reached its maximum number of uses") };
   }
 
   // Pre-check seat limits before attempting INSERT (prevents cryptic RLS errors)

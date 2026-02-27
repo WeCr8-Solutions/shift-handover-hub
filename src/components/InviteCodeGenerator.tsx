@@ -120,7 +120,7 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
   const [teamId, setTeamId] = useState<string>(defaultTeamId || "none");
   const [orgRole, setOrgRole] = useState<"admin" | "member">("member");
   const [appRole, setAppRole] = useState<string>("none");
-  const [expiresInDays, setExpiresInDays] = useState<string>("7");
+  const [expiresInDays, setExpiresInDays] = useState<string>("15");
   const [maxUses, setMaxUses] = useState<string>("");
 
   // Update teamId when defaultTeamId changes
@@ -219,7 +219,7 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
       setTeamId(defaultTeamId || "none");
       setOrgRole("member");
       setAppRole("none");
-      setExpiresInDays("7");
+      setExpiresInDays("15");
       setMaxUses("");
     }
   };
@@ -351,7 +351,7 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Expires In (days)</Label>
-                    <Input type="number" value={expiresInDays} onChange={(e) => setExpiresInDays(e.target.value)} placeholder="7" min="1" />
+                    <Input type="number" value={expiresInDays} onChange={(e) => setExpiresInDays(e.target.value)} placeholder="15" min="1" max="90" />
                   </div>
                   <div className="space-y-2">
                     <Label>Max Uses (optional)</Label>
