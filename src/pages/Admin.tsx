@@ -24,7 +24,8 @@ import { TourTriggerButton } from "@/components/onboarding";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Shield, LayoutDashboard, Users, Wrench, Briefcase, Activity, FileSpreadsheet, Package, Route, Lightbulb, History, Bug, ShieldCheck, ListTodo, Settings2, Map, BookOpen } from "lucide-react";
+import { MachineLibraryManagement } from "@/components/admin/MachineLibraryManagement";
+import { Loader2, Shield, LayoutDashboard, Users, Wrench, Briefcase, Activity, FileSpreadsheet, Package, Route, Lightbulb, History, Bug, ShieldCheck, ListTodo, Settings2, Map, BookOpen, Cpu } from "lucide-react";
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -205,6 +206,10 @@ export default function Admin() {
                     <Map className="w-4 h-4" />
                     <span className="hidden sm:inline">Journey</span>
                   </TabsTrigger>
+                  <TabsTrigger value="machine-library" className="gap-2">
+                    <Cpu className="w-4 h-4" />
+                    <span className="hidden sm:inline">Library</span>
+                  </TabsTrigger>
                 </div>
               </>
             )}
@@ -279,6 +284,10 @@ export default function Admin() {
 
               <TabsContent value="user-journey">
                 <UserJourneyDebugPanel />
+              </TabsContent>
+
+              <TabsContent value="machine-library">
+                <MachineLibraryManagement />
               </TabsContent>
             </>
           )}
