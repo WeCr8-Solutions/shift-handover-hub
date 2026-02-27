@@ -368,7 +368,7 @@ export function QueueItemDetailDialog({
       }));
     }
     onOpenChange(false);
-    navigate("/");
+    navigate("/dashboard");
     // Trigger handoff form open (would need to emit an event or use state)
     toast({ title: "Ready", description: "Open New Handoff to complete the shift handoff" });
   };
