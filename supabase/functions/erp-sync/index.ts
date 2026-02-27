@@ -156,6 +156,24 @@ Deno.serve(async (req) => {
     // ---- Full sync flow ----
     const startTime = Date.now();
 
+    // Check ERP usage metering (enforce tier limits)
+    const { data: usageResult, error: usageError } = await adminClient
+      .rpc("increment_erp_sync_usage", { _org_id: organization_id });
+
+    if (usageError) {
+      console.warn("[ERP-SYNC] Usage metering error (non-blocking):", usageError.message);
+    } else if (usageResult?.limit_reached) {
+      return new Response(
+        JSON.stringify({
+          error: "ERP sync limit reached for your current plan. Upgrade to continue syncing.",
+          sync_count: usageResult.sync_count,
+          sync_limit: usageResult.sync_limit,
+          erp_tier: usageResult.erp_tier,
+        }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Create sync log
     const { data: syncLog, error: logError } = await adminClient
       .from("erp_sync_logs")
