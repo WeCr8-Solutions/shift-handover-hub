@@ -1238,6 +1238,44 @@ export type Database = {
           },
         ]
       }
+      erp_usage_metering: {
+        Row: {
+          created_at: string
+          id: string
+          last_sync_at: string | null
+          organization_id: string
+          period_start: string
+          sync_count: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_sync_at?: string | null
+          organization_id: string
+          period_start?: string
+          sync_count?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_sync_at?: string | null
+          organization_id?: string
+          period_start?: string
+          sync_count?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_usage_metering_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       erp_work_center_mappings: {
         Row: {
           created_at: string
@@ -4581,6 +4619,7 @@ export type Database = {
         Returns: boolean
       }
       increment_ai_chat_usage: { Args: { _org_id: string }; Returns: Json }
+      increment_erp_sync_usage: { Args: { _org_id: string }; Returns: Json }
       increment_usage: {
         Args: { _count?: number; _metric: string; _org_id: string }
         Returns: undefined

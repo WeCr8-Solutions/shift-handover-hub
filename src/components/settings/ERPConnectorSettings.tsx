@@ -9,11 +9,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, Plug, RefreshCw, Zap, CheckCircle2, XCircle, Clock, AlertTriangle, Trash2, Plus } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Loader2, Plug, RefreshCw, Zap, CheckCircle2, XCircle, Clock, AlertTriangle, Trash2, Plus, Sparkles, CreditCard } from "lucide-react";
 import { useERPConnector } from "@/hooks/useERPConnector";
 import { useStations } from "@/hooks/useStations";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useEntitlements } from "@/hooks/useEntitlements";
+import { useSubscription, ERP_ADDON_TIERS } from "@/hooks/useSubscription";
+import { supabase } from "@/integrations/supabase/client";
 import { format, formatDistanceToNow } from "date-fns";
 
 const ERP_VENDORS = [
@@ -63,6 +67,32 @@ export function ERPConnectorSettings() {
   const { currentTeam } = useCurrentTeam();
   const { organization } = useUserOrganization();
   const { stations } = useStations(currentTeam?.id, organization?.id);
+  const { features } = useEntitlements();
+  const { createCheckout } = useSubscription();
+
+  // ERP usage metering state
+  const [erpUsage, setErpUsage] = useState<{ sync_count: number; sync_limit: number; erp_tier: string } | null>(null);
+
+  const erpTier = (features as Record<string, unknown>)?.erp_tier as string | undefined;
+  const hasErpAddon = erpTier && erpTier !== 'none' && erpTier !== undefined;
+
+  useEffect(() => {
+    if (!organization?.id) return;
+    supabase
+      .from("erp_usage_metering")
+      .select("sync_count")
+      .eq("organization_id", organization.id)
+      .eq("period_start", new Date().toISOString().slice(0, 7) + "-01")
+      .maybeSingle()
+      .then(({ data }) => {
+        const tierConfig = erpTier ? ERP_ADDON_TIERS[erpTier as keyof typeof ERP_ADDON_TIERS] : null;
+        setErpUsage({
+          sync_count: data?.sync_count ?? 0,
+          sync_limit: tierConfig?.syncLimit ?? 0,
+          erp_tier: erpTier ?? 'none',
+        });
+      });
+  }, [organization?.id, erpTier]);
 
   // Connection form state
   const [vendor, setVendor] = useState("");
@@ -123,6 +153,90 @@ export function ERPConnectorSettings() {
 
   return (
     <div className="space-y-6">
+      {/* ERP Add-on Tier Selection & Usage */}
+      {!hasErpAddon ? (
+        <Card className="border-dashed border-primary/30 bg-primary/5">
+          <CardHeader className="text-center pb-2">
+            <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+              <Plug className="w-6 h-6 text-primary" />
+            </div>
+            <CardTitle className="text-xl">Choose Your ERP Connector Plan</CardTitle>
+            <CardDescription>Select a tier to enable ERP integration for your organization</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {(Object.entries(ERP_ADDON_TIERS) as [string, typeof ERP_ADDON_TIERS[keyof typeof ERP_ADDON_TIERS]][]).map(([key, tier]) => (
+                <Card key={key} className="relative border hover:border-primary/50 transition-colors">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg">{tier.name}</CardTitle>
+                    <div className="text-2xl font-bold text-primary">${tier.price}<span className="text-sm font-normal text-muted-foreground">/mo</span></div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <ul className="text-sm space-y-1.5">
+                      {tier.features.map((f, i) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                          <span>{f}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <Button className="w-full gap-2" onClick={() => createCheckout(tier.priceId)}>
+                      <CreditCard className="w-4 h-4" />
+                      Subscribe - ${tier.price}/mo
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground text-center mt-4">
+              ERP Connector is an add-on available exclusively for Enterprise plan subscribers. Billed separately from your base subscription.
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-primary" />
+                  ERP Connector — {ERP_ADDON_TIERS[erpTier as keyof typeof ERP_ADDON_TIERS]?.name ?? erpTier}
+                </CardTitle>
+                <CardDescription>
+                  ${ERP_ADDON_TIERS[erpTier as keyof typeof ERP_ADDON_TIERS]?.price ?? '?'}/mo add-on
+                </CardDescription>
+              </div>
+              <Badge variant="outline" className="border-primary text-primary">Active</Badge>
+            </div>
+          </CardHeader>
+          {erpUsage && erpUsage.sync_limit > 0 && (
+            <CardContent>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Syncs this month</span>
+                  <span className="font-medium">{erpUsage.sync_count} / {erpUsage.sync_limit}</span>
+                </div>
+                <Progress value={Math.min((erpUsage.sync_count / erpUsage.sync_limit) * 100, 100)} />
+                {erpUsage.sync_count >= erpUsage.sync_limit * 0.8 && (
+                  <p className="text-xs text-amber-600 flex items-center gap-1">
+                    <AlertTriangle className="w-3 h-3" />
+                    Approaching sync limit — consider upgrading your ERP tier
+                  </p>
+                )}
+              </div>
+            </CardContent>
+          )}
+          {erpUsage && erpUsage.sync_limit === -1 && (
+            <CardContent>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Syncs this month</span>
+                <span className="font-medium">{erpUsage.sync_count} (Unlimited)</span>
+              </div>
+            </CardContent>
+          )}
+        </Card>
+      )}
+
       {/* Connection Setup */}
       <Card>
         <CardHeader>
