@@ -60,7 +60,7 @@ const TOUR_STEPS: Record<string, Step[]> = {
     },
     {
       target: '[data-tour="add-queue-item"]',
-      content: 'Create work orders for production tracking and prioritization.',
+      content: 'Create work orders for production tracking and prioritization. Want quotes too? Enable the Quote System in Settings → Manufacturing.',
       title: '📝 Work Orders',
       placement: 'left',
     },
