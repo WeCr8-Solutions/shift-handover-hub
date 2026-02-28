@@ -3,25 +3,35 @@
   <head>
     <meta charset="UTF-8" />
     
-    <!-- Google Tag Manager -->
-    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer','GTM-MSSVTJPZ');</script>
-    <!-- End Google Tag Manager -->
-    
-    <!-- Google AdSense -->
+    <!-- Google AdSense (account verification only, script deferred below) -->
     <meta name="google-adsense-account" content="ca-pub-3639153716376265">
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3639153716376265" crossorigin="anonymous"></script>
-    
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FDFFDKQS0Q"></script>
+
+    <!-- Defer all third-party analytics/ad scripts until after first paint -->
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-FDFFDKQS0Q');
+      window.addEventListener('load', function() {
+        // Google Tag Manager
+        (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        })(window,document,'script','dataLayer','GTM-MSSVTJPZ');
+
+        // Google Analytics (gtag.js)
+        var gs=document.createElement('script');gs.async=true;
+        gs.src='https://www.googletagmanager.com/gtag/js?id=G-FDFFDKQS0Q';
+        document.head.appendChild(gs);
+        window.dataLayer=window.dataLayer||[];
+        function gtag(){dataLayer.push(arguments);}
+        window.gtag=gtag;
+        gtag('js',new Date());
+        gtag('config','G-FDFFDKQS0Q');
+
+        // Google AdSense
+        var as=document.createElement('script');as.async=true;
+        as.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3639153716376265';
+        as.crossOrigin='anonymous';
+        document.head.appendChild(as);
+      });
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
