@@ -27,7 +27,12 @@ serve(async (req) => {
       throw new Error("machine_library_id and organization_id are required");
     }
 
-    const authHeader = req.headers.get("Authorization")!;
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Not authenticated" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     const token = authHeader.replace("Bearer ", "");
     const { data } = await supabase.auth.getUser(token);
     const user = data.user;
