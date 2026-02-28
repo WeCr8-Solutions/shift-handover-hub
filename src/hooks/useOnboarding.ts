@@ -90,7 +90,7 @@ export function useOnboarding() {
           isComplete: data.is_complete || false,
           isLoading: false,
           hasSeenWelcome: data.has_seen_welcome || false,
-          setupWizardDismissed: (data as any).setup_wizard_dismissed || false,
+          setupWizardDismissed: data.setup_wizard_dismissed || false,
         });
       } else {
         const { error: insertError } = await supabase
@@ -196,7 +196,7 @@ export function useOnboarding() {
         completed_at: null,
         has_seen_welcome: false,
         setup_wizard_dismissed: false,
-      } as any)
+      })
       .eq('user_id', user.id);
 
     setShowTour(true);
@@ -209,7 +209,7 @@ export function useOnboarding() {
 
     await supabase
       .from('user_onboarding')
-      .update({ setup_wizard_dismissed: true } as any)
+      .update({ setup_wizard_dismissed: true })
       .eq('user_id', user.id);
   }, [user]);
 
