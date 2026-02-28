@@ -142,6 +142,7 @@ export function useAppSettings() {
 
   const updateSetting = async (key: string, value: Record<string, unknown>, type = "general") => {
     if (!user) return { error: "Not authenticated" };
+    if (!organization?.id) return { error: "No organization found. Please join or create an organization first." };
 
     const existingSetting = settings.find(s => s.setting_key === key);
     
@@ -159,7 +160,7 @@ export function useAppSettings() {
       const { error } = await supabase
         .from("app_settings")
         .insert({
-          organization_id: organization?.id || null,
+          organization_id: organization.id,
           setting_key: key,
           setting_value: value as Json,
           setting_type: type,
