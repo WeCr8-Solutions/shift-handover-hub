@@ -84,7 +84,7 @@ export function VisitorSurveyModal() {
     }
     setLoading(true);
     try {
-      const { error } = await supabase.from("visitor_surveys" as any).insert({
+      const { error } = await supabase.from("visitor_surveys").insert({
         heard_about_us: heardAbout === "Other" ? otherHeard || "Other" : heardAbout,
         looking_for: lookingFor.filter((v) => v !== "Other"),
         other_heard_about: heardAbout === "Other" ? otherHeard : null,

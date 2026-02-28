@@ -25,7 +25,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MachineLibraryManagement } from "@/components/admin/MachineLibraryManagement";
-import { Loader2, Shield, LayoutDashboard, Users, Wrench, Briefcase, Activity, FileSpreadsheet, Package, Route, Lightbulb, History, Bug, ShieldCheck, ListTodo, Settings2, Map, BookOpen, Cpu } from "lucide-react";
+import { VisitorSurveyAnalytics } from "@/components/admin/VisitorSurveyAnalytics";
+import { Loader2, Shield, LayoutDashboard, Users, Wrench, Briefcase, Activity, FileSpreadsheet, Package, Route, Lightbulb, History, Bug, ShieldCheck, ListTodo, Settings2, Map, BookOpen, Cpu, MessageSquare } from "lucide-react";
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -178,6 +179,10 @@ export default function Admin() {
                     <BookOpen className="w-4 h-4" />
                     <span className="hidden sm:inline">Updates</span>
                   </TabsTrigger>
+                  <TabsTrigger value="surveys" className="gap-2">
+                    <MessageSquare className="w-4 h-4" />
+                    <span className="hidden sm:inline">Surveys</span>
+                  </TabsTrigger>
                 </div>
               </>
             )}
@@ -263,6 +268,10 @@ export default function Admin() {
 
               <TabsContent value="system-updates">
                 <SystemUpdatesManager />
+              </TabsContent>
+
+              <TabsContent value="surveys">
+                <VisitorSurveyAnalytics />
               </TabsContent>
             </>
           )}
