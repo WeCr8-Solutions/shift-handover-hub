@@ -6,6 +6,7 @@ import {
   Heading,
   Hr,
   Html,
+  Img,
   Preview,
   Section,
   Text,
@@ -23,11 +24,20 @@ export const PasswordResetEmail = ({
   resetUrl, 
   expiryMinutes = 60 
 }: PasswordResetEmailProps) => (
-  <Html>
+  <Html lang="en" dir="ltr">
     <Head />
     <Preview>Reset your JobLine.ai password</Preview>
     <Body style={main}>
       <Container style={container}>
+        <Section style={logoSection}>
+          <Img
+            src="https://kgrstnbxqdmadtoankqr.supabase.co/storage/v1/object/public/email-assets/jobline-logo.png"
+            width="140"
+            height="auto"
+            alt="JobLine.ai"
+            style={logo}
+          />
+        </Section>
         <Heading style={h1}>Password Reset Request 🔐</Heading>
         
         <Text style={text}>
@@ -73,31 +83,32 @@ export const PasswordResetEmail = ({
 export default PasswordResetEmail
 
 const main = {
-  backgroundColor: '#f6f9fc',
-  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+  backgroundColor: '#ffffff',
+  fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
 }
 
 const container = {
-  backgroundColor: '#ffffff',
-  margin: '0 auto',
-  padding: '40px 20px',
-  borderRadius: '8px',
+  padding: '40px 25px',
   maxWidth: '560px',
+  margin: '0 auto',
 }
 
+const logoSection = { textAlign: 'center' as const, marginBottom: '24px' }
+const logo = { margin: '0 auto' }
+
 const h1 = {
-  color: '#1a1a1a',
-  fontSize: '28px',
-  fontWeight: '700',
-  margin: '0 0 24px',
+  fontSize: '24px',
+  fontWeight: '700' as const,
+  color: 'hsl(220, 20%, 10%)',
+  margin: '0 0 20px',
   textAlign: 'center' as const,
 }
 
 const text = {
-  color: '#4a4a4a',
-  fontSize: '16px',
-  lineHeight: '24px',
-  margin: '16px 0',
+  fontSize: '15px',
+  color: 'hsl(215, 15%, 55%)',
+  lineHeight: '1.6',
+  margin: '0 0 20px',
 }
 
 const buttonSection = {
@@ -106,14 +117,14 @@ const buttonSection = {
 }
 
 const button = {
-  backgroundColor: '#dc2626',
-  borderRadius: '6px',
-  color: '#ffffff',
-  display: 'inline-block',
-  fontSize: '16px',
-  fontWeight: '600',
-  padding: '12px 32px',
+  backgroundColor: 'hsl(185, 70%, 45%)',
+  color: 'hsl(220, 20%, 10%)',
+  fontSize: '15px',
+  fontWeight: '600' as const,
+  borderRadius: '8px',
+  padding: '12px 28px',
   textDecoration: 'none',
+  display: 'inline-block',
 }
 
 const warningText = {
@@ -129,15 +140,15 @@ const hr = {
 }
 
 const securityNote = {
+  fontSize: '13px',
   color: '#6b7280',
-  fontSize: '14px',
-  lineHeight: '20px',
+  lineHeight: '1.5',
   margin: '12px 0',
 }
 
 const footer = {
-  color: '#9ca3af',
   fontSize: '12px',
+  color: '#9ca3af',
   textAlign: 'center' as const,
   margin: '24px 0 0',
 }
