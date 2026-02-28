@@ -9,17 +9,17 @@ Before writing code, here is a structured audit of what exists and what needs to
 ```text
 Category                        Status    Notes
 ─────────────────────────────────────────────────────────────────
-1. Project Structure            ❌ New    /desktop folder does not exist
-2. Electron Main Process        ❌ New    BrowserWindow + security defaults
-3. Preload Bridge               ❌ New    Minimal safe API (version, links, paths)
-4. Config System                ❌ New    %APPDATA%/JobLineAI/config.json
-5. Packaging (electron-builder) ❌ New    NSIS installer, icons, shortcuts
+1. Project Structure            ✅ Done   /desktop folder created
+2. Electron Main Process        ✅ Done   BrowserWindow + security defaults
+3. Preload Bridge               ✅ Done   Minimal safe API (version, links, paths)
+4. Config System                ✅ Done   %APPDATA%/JobLineAI/config.json
+5. Packaging (electron-builder) ✅ Done   NSIS installer, icons, shortcuts
 6. Auth Compatibility           ✅ Ready  Email/password via Supabase works in BrowserWindow
                                 ⚠️ Note   OAuth (if added) needs system browser fallback
 7. CORS / Origins               ✅ Ready  Loading hosted URL = same origin, no CORS changes
 8. Session Persistence          ✅ Ready  Supabase uses localStorage, works in Electron
 9. Backend / Edge Functions      ✅ Ready  All remain hosted, no changes needed
-10. Documentation               ❌ New    Install guide, build guide, auth notes, release notes
+10. Documentation               ✅ Done   Install guide, build guide, auth notes, release notes
 11. Existing Web App             ✅ Ready  No changes to React app required for v1
 ```
 
@@ -102,4 +102,3 @@ Category                        Status    Notes
 | CORS issues with file:// protocol | v1 loads hosted URL, no file:// |
 | Large installer size (~150MB) | Expected for Electron; acceptable for desktop app |
 | Windows Defender SmartScreen warning | Code signing needed later; document for users |
-
