@@ -4589,6 +4589,36 @@ export type Database = {
         }
         Relationships: []
       }
+      visitor_surveys: {
+        Row: {
+          created_at: string
+          heard_about_us: string
+          id: string
+          looking_for: string[]
+          other_heard_about: string | null
+          other_looking_for: string | null
+          source_page: string | null
+        }
+        Insert: {
+          created_at?: string
+          heard_about_us: string
+          id?: string
+          looking_for?: string[]
+          other_heard_about?: string | null
+          other_looking_for?: string | null
+          source_page?: string | null
+        }
+        Update: {
+          created_at?: string
+          heard_about_us?: string
+          id?: string
+          looking_for?: string[]
+          other_heard_about?: string | null
+          other_looking_for?: string | null
+          source_page?: string | null
+        }
+        Relationships: []
+      }
       webhook_deliveries: {
         Row: {
           attempt_count: number | null

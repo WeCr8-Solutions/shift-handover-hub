@@ -26,6 +26,7 @@ export function LeadCaptureModal() {
     if (user) return false;
     if (sessionStorage.getItem(MODAL_DISMISSED_KEY)) return false;
     if (sessionStorage.getItem(LEAD_SUBMITTED_KEY)) return false;
+    if (sessionStorage.getItem("survey_modal_active")) return false;
     return true;
   }, [user]);
 
