@@ -11,7 +11,7 @@ interface SEOHeadProps {
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
 
-const BASE_URL = "https://joblineai.lovable.app";
+const BASE_URL = "https://jobline.ai";
 const DEFAULT_TITLE = "JobLine.ai - Digital Expeditor & Smart Shift Handoff System for Manufacturing";
 const DEFAULT_DESCRIPTION = "Streamline CNC manufacturing operations with JobLine.ai. Track work orders, manage shift handoffs, coordinate routing, and improve production floor communication. Built for machine shops and fabrication teams.";
 const DEFAULT_KEYWORDS = "manufacturing software, shift handoff, work order tracking, CNC machining, production management, machine shop software, manufacturing execution system, MES, digital expeditor, production scheduling, production control, shop floor management";
