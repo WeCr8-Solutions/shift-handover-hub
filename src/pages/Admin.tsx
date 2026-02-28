@@ -237,7 +237,7 @@ export default function Admin() {
           </TabsContent>
 
           <TabsContent value="routing">
-            <RoutingTemplateManagement isAdmin={isAdmin} />
+            <RoutingTemplateManagement isAdmin={isAdmin} canManageTemplates={isOrgOwner || isOrgAdmin || isSupervisor || isAdmin} />
           </TabsContent>
 
           <TabsContent value="users">

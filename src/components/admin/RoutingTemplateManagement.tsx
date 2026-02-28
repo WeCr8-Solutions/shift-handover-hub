@@ -106,9 +106,12 @@ const WORK_CENTER_TYPES = [
 
 interface RoutingTemplateManagementProps {
   isAdmin: boolean;
+  canManageTemplates?: boolean;
 }
 
-export function RoutingTemplateManagement({ isAdmin }: RoutingTemplateManagementProps) {
+export function RoutingTemplateManagement({ isAdmin, canManageTemplates }: RoutingTemplateManagementProps) {
+  // Allow org owners, org admins, supervisors, and platform admins to manage templates
+  const canManage = canManageTemplates ?? isAdmin;
   const { user } = useAuth();
   const { organization } = useUserOrganization();
   const { toast } = useToast();
@@ -737,7 +740,7 @@ export function RoutingTemplateManagement({ isAdmin }: RoutingTemplateManagement
                 className="pl-9"
               />
             </div>
-            {isAdmin && (
+            {canManage && (
               <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
                 <DialogTrigger asChild>
                   <Button className="gap-2">
@@ -783,7 +786,7 @@ export function RoutingTemplateManagement({ isAdmin }: RoutingTemplateManagement
                 <TableHead>Steps</TableHead>
                 <TableHead>Est. Total</TableHead>
                 <TableHead>Default</TableHead>
-                {isAdmin && <TableHead className="w-12"></TableHead>}
+                {canManage && <TableHead className="w-12"></TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -841,7 +844,7 @@ export function RoutingTemplateManagement({ isAdmin }: RoutingTemplateManagement
                         <span className="text-muted-foreground">-</span>
                       )}
                     </TableCell>
-                    {isAdmin && (
+                    {canManage && (
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
