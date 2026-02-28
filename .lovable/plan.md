@@ -1,49 +1,105 @@
 
 
-## Plan: Visitor Survey Modal (10-Second Trigger)
+## Electron Desktop Wrapper: Implementation Checklist & Plan
 
-### What We're Building
-A timed survey popup that appears after 10 seconds on the landing page for anonymous visitors. It asks two questions: (1) how they heard about JobLine, and (2) what they're looking to monitor/solve. Responses are stored in a new database table. The modal respects a "Don't show again" preference via localStorage so it doesn't reappear across sessions.
+### Pre-Implementation Category Checklist
 
-### Database
+Before writing code, here is a structured audit of what exists and what needs to be built, organized by category.
 
-**New table: `visitor_surveys`**
-- `id` (uuid, PK)
-- `heard_about_us` (text) — selected option for how they found us
-- `looking_for` (text[]) — multi-select of needs/goals
-- `other_heard_about` (text, nullable) — free-text if "Other" selected
-- `other_looking_for` (text, nullable) — free-text if "Other" selected
-- `source_page` (text) — page path where survey was shown
-- `created_at` (timestamptz)
-- RLS: allow anonymous inserts only (no select/update/delete for anon)
+```text
+Category                        Status    Notes
+─────────────────────────────────────────────────────────────────
+1. Project Structure            ❌ New    /desktop folder does not exist
+2. Electron Main Process        ❌ New    BrowserWindow + security defaults
+3. Preload Bridge               ❌ New    Minimal safe API (version, links, paths)
+4. Config System                ❌ New    %APPDATA%/JobLineAI/config.json
+5. Packaging (electron-builder) ❌ New    NSIS installer, icons, shortcuts
+6. Auth Compatibility           ✅ Ready  Email/password via Supabase works in BrowserWindow
+                                ⚠️ Note   OAuth (if added) needs system browser fallback
+7. CORS / Origins               ✅ Ready  Loading hosted URL = same origin, no CORS changes
+8. Session Persistence          ✅ Ready  Supabase uses localStorage, works in Electron
+9. Backend / Edge Functions      ✅ Ready  All remain hosted, no changes needed
+10. Documentation               ❌ New    Install guide, build guide, auth notes, release notes
+11. Existing Web App             ✅ Ready  No changes to React app required for v1
+```
 
-### New Component: `src/components/marketing/VisitorSurveyModal.tsx`
+### Key Design Decisions (Already Made Per Notion Doc)
 
-- Shows after 10 seconds on the landing page for unauthenticated visitors only
-- Skips if `localStorage` has `visitor_survey_completed` or `visitor_survey_dismissed` set
-- **Step 1 — "How did you hear about us?"**: Radio-style single select
-  - Options: Google Search, Social Media, Referral/Word of Mouth, Trade Show / Conference, YouTube, LinkedIn, Other (with text input)
-- **Step 2 — "What are you looking to track or monitor?"**: Checkbox multi-select
-  - Options: Shift Handoffs, Work Order Tracking, Machine Downtime, Production Scheduling, Quality / NCRs, Team Communication, Other (with text input)
-- Submit button inserts into `visitor_surveys` table
-- "Skip" / dismiss link sets `visitor_survey_dismissed` in localStorage
-- Track analytics events: `survey_shown`, `survey_completed`, `survey_dismissed`
-
-### Landing Page Integration
-
-- Import and render `<VisitorSurveyModal />` in `Landing.tsx` alongside the existing `<LeadCaptureModal />`
-- No visual or layout changes to the landing page itself
-
-### Conflict with LeadCaptureModal
-
-- The existing `LeadCaptureModal` fires on exit-intent (desktop) or after 45s (mobile)
-- The new survey fires at 10s — if survey is shown/completed, we'll set a sessionStorage flag so `LeadCaptureModal` delays or skips to avoid stacking popups
-- Minimal change to `LeadCaptureModal`: add a check for `sessionStorage.getItem("survey_modal_active")` in its `shouldShow` logic
+1. **Mode**: Hosted Web Wrap (`appUrl: https://app.jobline.ai`) -- no local bundling for v1
+2. **Security**: `contextIsolation: true`, `nodeIntegration: false`, `sandbox: true`
+3. **OAuth**: v1 uses system browser; email/password works natively
+4. **Backend**: Stays hosted -- no backend packaging
+5. **Updates**: Manual installer distribution for v1 (no auto-updater yet)
 
 ### Implementation Steps
 
-1. Create `visitor_surveys` table with RLS via migration
-2. Build `VisitorSurveyModal` component (two-step form, localStorage persistence, analytics tracking)
-3. Add it to `Landing.tsx`
-4. Add guard in `LeadCaptureModal` to avoid popup collision
+**Step 1: Create `/desktop` folder structure**
+- `/desktop/package.json` -- Electron + electron-builder deps
+- `/desktop/electron-builder.yml` -- NSIS config, appId, icons, shortcuts
+- `/desktop/tsconfig.json` -- TypeScript config for Electron main/preload
+- `/desktop/README.md` -- Quick start for developers
+
+**Step 2: Electron main process** (`/desktop/src/main/index.ts`)
+- Create `BrowserWindow` with security defaults
+- Load `appUrl` from config with fallback to env
+- Block unwanted popups; allowlist Supabase auth + docs domains
+- Handle deep links and window lifecycle (single instance lock)
+- Write logs to configured `logsPath`
+
+**Step 3: Preload bridge** (`/desktop/src/preload/index.ts`)
+- Expose via `contextBridge`:
+  - `window.jobline.getVersion()` -- app version
+  - `window.jobline.openExternal(url)` -- open in system browser
+  - `window.jobline.openPath(type)` -- open logs/config folder
+- No `fs` or `child_process` exposure to renderer
+
+**Step 4: Config system** (`/desktop/src/main/config.ts`)
+- Read/write `config.json` from `%APPDATA%/JobLineAI/`
+- Schema: `mode`, `appUrl`, `apiBaseUrl`, `supabaseUrl`, `supabaseAnonKey`, `updateChannel`, `logsPath`
+- Environment variable overrides take priority over config file
+
+**Step 5: Packaging configuration** (`/desktop/electron-builder.yml`)
+- Target: NSIS installer (`JobLineAI-Setup-x.y.z.exe`)
+- Optional: portable `.exe`
+- App ID: `com.joblineai.desktop`
+- Shortcuts: Desktop + Start Menu
+- Uninstall entry in Windows Programs
+- Log/config paths in AppData (not install dir)
+
+**Step 6: Icons & assets** (`/desktop/assets/icons/`)
+- Convert existing `jobline-logo.png` to `.ico` format (256x256 multi-res)
+- Include `icon.png` for Linux/macOS future use
+
+**Step 7: Documentation**
+- `/desktop/docs/Desktop_Windows_Install.md` -- End-user install guide
+- `/desktop/docs/Desktop_Build_Guide.md` -- Developer build instructions
+- `/desktop/docs/Supabase_Auth_in_Electron.md` -- Auth flow notes, OAuth troubleshooting
+- `/desktop/docs/RELEASE_NOTES_1.0.0.md` -- Initial release notes
+
+### What Does NOT Change (v1)
+
+- No modifications to the React web app (`/src`)
+- No changes to edge functions or database
+- No changes to Supabase config or RLS policies
+- No local backend bundling
+- No auto-update mechanism (manual installer only)
+
+### Acceptance Criteria
+
+1. `cd desktop && npm run build` produces `JobLineAI-Setup-1.0.0.exe`
+2. Installer runs on clean Windows machine
+3. App opens hosted web app inside Electron window
+4. Email/password login works (Supabase session persists)
+5. Logs written to `%APPDATA%/JobLineAI/logs/`
+6. `nodeIntegration: false`, `contextIsolation: true` verified
+7. External links open in system browser, not in-app
+
+### Risk Mitigations
+
+| Risk | Mitigation |
+|------|------------|
+| Supabase OAuth redirect fails in Electron | v1: email/password only; OAuth via system browser later |
+| CORS issues with file:// protocol | v1 loads hosted URL, no file:// |
+| Large installer size (~150MB) | Expected for Electron; acceptable for desktop app |
+| Windows Defender SmartScreen warning | Code signing needed later; document for users |
 
