@@ -200,14 +200,14 @@ export function GuidedTour() {
       }
     }
     
-    if (routeSteps && routeSteps.length > 0 && showTour && !isComplete) {
+    if (routeSteps && routeSteps.length > 0 && showTour) {
       setSteps(routeSteps);
       const timer = setTimeout(() => setRun(true), 500);
       return () => clearTimeout(timer);
     } else {
       setRun(false);
     }
-  }, [location.pathname, showTour, isComplete, isStepCompleted, isQuoteSystemEnabled]);
+  }, [location.pathname, showTour, isStepCompleted, isQuoteSystemEnabled]);
 
   const handleJoyrideCallback = (data: CallBackProps) => {
     const { status, action, type } = data;
@@ -230,7 +230,7 @@ export function GuidedTour() {
     }
   };
 
-  if (!steps.length || isComplete) return null;
+  if (!steps.length) return null;
 
   return (
     <Joyride
