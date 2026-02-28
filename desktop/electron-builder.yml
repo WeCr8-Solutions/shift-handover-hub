@@ -1,0 +1,35 @@
+appId: com.joblineai.desktop
+productName: JobLine AI
+copyright: Copyright © 2025-2026 JobLine AI
+
+directories:
+  output: release
+  buildResources: assets
+
+files:
+  - dist/**/*
+  - assets/**/*
+  - package.json
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: assets/icons/icon.png
+  artifactName: "JobLineAI-Setup-${version}.${ext}"
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: JobLine AI
+  uninstallDisplayName: JobLine AI
+  installerIcon: assets/icons/icon.png
+  uninstallerIcon: assets/icons/icon.png
+  menuCategory: JobLine AI
+  perMachine: false
+
+portable:
+  artifactName: "JobLineAI-Portable-${version}.${ext}"
