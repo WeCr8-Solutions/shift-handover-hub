@@ -231,7 +231,7 @@ export default function Start() {
             <QRCodeSVG value={QR_URL} size={120} level="M" />
           </div>
           <p className="text-[11px] text-muted-foreground">
-            joblineai.lovable.app/start
+            jobline.ai/start
           </p>
         </section>
 
