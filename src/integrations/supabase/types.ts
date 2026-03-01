@@ -477,6 +477,53 @@ export type Database = {
           },
         ]
       }
+      data_access_logs: {
+        Row: {
+          created_at: string
+          id: string
+          metadata: Json | null
+          operation: string
+          organization_id: string | null
+          record_id: string | null
+          table_name: string
+          user_display_name: string | null
+          user_email: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          operation: string
+          organization_id?: string | null
+          record_id?: string | null
+          table_name: string
+          user_display_name?: string | null
+          user_email?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          operation?: string
+          organization_id?: string | null
+          record_id?: string | null
+          table_name?: string
+          user_display_name?: string | null
+          user_email?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "data_access_logs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       data_export_requests: {
         Row: {
           completed_at: string | null
@@ -2894,7 +2941,9 @@ export type Database = {
           description: string | null
           id: string
           logo_url: string | null
+          mfa_required: boolean
           name: string
+          requires_us_person_declaration: boolean
           slug: string
           stripe_customer_id: string | null
           subscription_status: string | null
@@ -2909,7 +2958,9 @@ export type Database = {
           description?: string | null
           id?: string
           logo_url?: string | null
+          mfa_required?: boolean
           name: string
+          requires_us_person_declaration?: boolean
           slug: string
           stripe_customer_id?: string | null
           subscription_status?: string | null
@@ -2924,7 +2975,9 @@ export type Database = {
           description?: string | null
           id?: string
           logo_url?: string | null
+          mfa_required?: boolean
           name?: string
+          requires_us_person_declaration?: boolean
           slug?: string
           stripe_customer_id?: string | null
           subscription_status?: string | null
@@ -3042,6 +3095,9 @@ export type Database = {
           email: string
           id: string
           updated_at: string
+          us_person_declaration_text: string | null
+          us_person_declared: boolean
+          us_person_declared_at: string | null
           user_id: string
         }
         Insert: {
@@ -3051,6 +3107,9 @@ export type Database = {
           email: string
           id?: string
           updated_at?: string
+          us_person_declaration_text?: string | null
+          us_person_declared?: boolean
+          us_person_declared_at?: string | null
           user_id: string
         }
         Update: {
@@ -3060,6 +3119,9 @@ export type Database = {
           email?: string
           id?: string
           updated_at?: string
+          us_person_declaration_text?: string | null
+          us_person_declared?: boolean
+          us_person_declared_at?: string | null
           user_id?: string
         }
         Relationships: []
