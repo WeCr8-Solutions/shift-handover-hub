@@ -122,8 +122,8 @@ serve(async (req) => {
 
     // Enterprise product ID
     const ENTERPRISE_PRODUCT_ID = "prod_TrQ3Y4BKSsc591";
-    const enterpriseSub = subscriptions.data.find((sub) =>
-      sub.items.data.some((item) => item.price.product === ENTERPRISE_PRODUCT_ID)
+    const enterpriseSub = subscriptions.data.find((sub: any) =>
+      sub.items.data.some((item: any) => item.price.product === ENTERPRISE_PRODUCT_ID)
     );
 
     if (!enterpriseSub) {
@@ -133,8 +133,8 @@ serve(async (req) => {
       );
     }
 
-    const subItem = enterpriseSub.items.data.find(
-      (item) => item.price.product === ENTERPRISE_PRODUCT_ID
+    const subItem = (enterpriseSub as any).items.data.find(
+      (item: any) => item.price.product === ENTERPRISE_PRODUCT_ID
     )!;
 
     logStep("Updating subscription quantity", {

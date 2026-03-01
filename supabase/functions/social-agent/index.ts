@@ -19,7 +19,8 @@ interface MarketingData {
   social_content: SocialContent[];
   seo_keywords: string[];
   talking_points: string[];
-  donation_info: object;
+  donation_info?: object;
+  donation?: object;
 }
 
 Deno.serve(async (req) => {

@@ -38,12 +38,12 @@ export function useUSPersonDeclaration(): USPersonDeclarationStatus {
 
     try {
       const [orgResult, profileResult] = await Promise.all([
-        supabase
+        (supabase as any)
           .from("organizations")
           .select("requires_us_person_declaration")
           .eq("id", organization.id)
           .maybeSingle(),
-        supabase
+        (supabase as any)
           .from("profiles")
           .select("us_person_declared")
           .eq("user_id", user.id)
@@ -51,9 +51,9 @@ export function useUSPersonDeclaration(): USPersonDeclarationStatus {
       ]);
 
       setOrgRequiresDeclaration(
-        orgResult.data?.requires_us_person_declaration ?? false
+        (orgResult.data as any)?.requires_us_person_declaration ?? false
       );
-      setUserHasDeclared(profileResult.data?.us_person_declared ?? false);
+      setUserHasDeclared((profileResult.data as any)?.us_person_declared ?? false);
     } catch (err) {
       console.error("[useUSPersonDeclaration] Error checking status:", err);
     } finally {
@@ -69,7 +69,7 @@ export function useUSPersonDeclaration(): USPersonDeclarationStatus {
     if (!user) return { error: "Not authenticated" };
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("profiles")
         .update({
           us_person_declared: true,
@@ -81,9 +81,9 @@ export function useUSPersonDeclaration(): USPersonDeclarationStatus {
       if (error) return { error: error.message };
 
       // Log the declaration event
-      await supabase.from("activity_logs").insert({
+      await (supabase as any).from("activity_logs").insert({
         user_id: user.id,
-        activity_type: "us_person_declaration" as const,
+        activity_type: "us_person_declaration",
         description: "User completed US Person self-certification",
         organization_id: organization?.id ?? null,
         metadata: { declaration_text_hash: btoa(DECLARATION_TEXT).slice(0, 32) },

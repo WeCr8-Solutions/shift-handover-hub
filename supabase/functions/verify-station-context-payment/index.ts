@@ -55,7 +55,7 @@ serve(async (req) => {
     // Search for completed checkout sessions
     const sessions = await stripe.checkout.sessions.list({ limit: 20 });
     const matchingSession = sessions.data.find(
-      (s) =>
+      (s: any) =>
         s.metadata?.machine_library_id === machine_library_id &&
         s.metadata?.organization_id === organization_id &&
         s.metadata?.type === "machine_library_purchase" &&

@@ -46,12 +46,12 @@ export function OrganizationSettings({ isDeveloper = false }: OrganizationSettin
   // Load ITAR compliance settings (fields added by v1.2 migration)
   useEffect(() => {
     if (!organization) return;
-    supabase
+    (supabase as any)
       .from("organizations")
       .select("mfa_required, requires_us_person_declaration")
       .eq("id", organization.id)
       .maybeSingle()
-      .then(({ data }) => {
+      .then(({ data }: any) => {
         if (data) {
           setMfaRequired(data.mfa_required ?? false);
           setRequiresUsPerson(data.requires_us_person_declaration ?? false);
@@ -62,7 +62,7 @@ export function OrganizationSettings({ isDeveloper = false }: OrganizationSettin
   const handleSaveCompliance = async () => {
     if (!organization) return;
     setSavingCompliance(true);
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from("organizations")
       .update({
         mfa_required: mfaRequired,
