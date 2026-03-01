@@ -8,6 +8,7 @@ import { UserManagement } from "@/components/admin/UserManagement";
 import { StationManagement } from "@/components/admin/StationManagement";
 import { OrganizationOversight } from "@/components/admin/OrganizationOversight";
 import { ActivityLogs } from "@/components/admin/ActivityLogs";
+import { DataAccessLogs } from "@/components/admin/DataAccessLogs";
 import { WorkOrderManagement } from "@/components/admin/WorkOrderManagement";
 import { WorkOrderHistory } from "@/components/admin/WorkOrderHistory";
 import { RoutingTemplateManagement } from "@/components/admin/RoutingTemplateManagement";
@@ -166,11 +167,16 @@ export default function Admin() {
                 
                 <div className="flex items-center gap-1 px-1 py-0.5 rounded bg-muted/50">
                   <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider hidden lg:inline">Activity</span>
-                  <TabsTrigger value="activity" className="gap-2">
-                    <Activity className="w-4 h-4" />
-                    <span className="hidden sm:inline">Activity</span>
-                    <span className="sm:hidden">Log</span>
-                  </TabsTrigger>
+                    <TabsTrigger value="activity" className="gap-2">
+                      <Activity className="w-4 h-4" />
+                      <span className="hidden sm:inline">Activity</span>
+                      <span className="sm:hidden">Log</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="data-access" className="gap-2">
+                      <Shield className="w-4 h-4" />
+                      <span className="hidden sm:inline">Data Access</span>
+                      <span className="sm:hidden">Audit</span>
+                    </TabsTrigger>
                   <TabsTrigger value="issues" className="gap-2">
                     <Bug className="w-4 h-4" />
                     Issues
@@ -260,9 +266,13 @@ export default function Admin() {
             <>
               <TabsContent value="activity">
                 <ActivityLogs />
-              </TabsContent>
+                </TabsContent>
 
-              <TabsContent value="issues">
+                <TabsContent value="data-access">
+                  <DataAccessLogs />
+                </TabsContent>
+  
+                <TabsContent value="issues">
                 <IssuesManagement />
               </TabsContent>
 

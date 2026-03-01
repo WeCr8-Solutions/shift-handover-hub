@@ -8,6 +8,8 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { TeamProvider } from "@/contexts/TeamContext";
 import { OnboardingProvider, GuidedTour, WelcomeModal } from "@/components/onboarding";
 import { AnalyticsProvider } from "@/components/AnalyticsProvider";
+import { MFAEnrollmentGate } from "@/components/compliance/MFAEnrollmentGate";
+import { USPersonDeclarationGate } from "@/components/compliance/USPersonDeclarationGate";
 import Landing from "./pages/Landing";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -55,6 +57,9 @@ const App = () => (
               <Sonner />
               <BrowserRouter>
                 <AnalyticsProvider>
+                  {/* ITAR compliance gates — both are no-ops when not required by the org */}
+                  <MFAEnrollmentGate>
+                  <USPersonDeclarationGate>
                   <GuidedTour />
                   <WelcomeModal />
                   <Routes>
@@ -93,6 +98,8 @@ const App = () => (
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
+                  </USPersonDeclarationGate>
+                  </MFAEnrollmentGate>
                 </AnalyticsProvider>
               </BrowserRouter>
             </TooltipProvider>

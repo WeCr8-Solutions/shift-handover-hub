@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Save, Building2, Users, Crown, Mail } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Loader2, Save, Building2, Users, Crown, Mail, Shield, Flag } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,6 +28,11 @@ export function OrganizationSettings({ isDeveloper = false }: OrganizationSettin
     billing_email: "",
   });
 
+  // ITAR compliance toggles
+  const [mfaRequired, setMfaRequired] = useState(false);
+  const [requiresUsPerson, setRequiresUsPerson] = useState(false);
+  const [savingCompliance, setSavingCompliance] = useState(false);
+
   useEffect(() => {
     if (organization) {
       setFormData({
@@ -36,6 +42,42 @@ export function OrganizationSettings({ isDeveloper = false }: OrganizationSettin
       });
     }
   }, [organization]);
+
+  // Load ITAR compliance settings (fields added by v1.2 migration)
+  useEffect(() => {
+    if (!organization) return;
+    supabase
+      .from("organizations")
+      .select("mfa_required, requires_us_person_declaration")
+      .eq("id", organization.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) {
+          setMfaRequired(data.mfa_required ?? false);
+          setRequiresUsPerson(data.requires_us_person_declaration ?? false);
+        }
+      });
+  }, [organization]);
+
+  const handleSaveCompliance = async () => {
+    if (!organization) return;
+    setSavingCompliance(true);
+    const { error } = await supabase
+      .from("organizations")
+      .update({
+        mfa_required: mfaRequired,
+        requires_us_person_declaration: requiresUsPerson,
+        mfa_required_updated_at: new Date().toISOString(),
+        mfa_required_updated_by: user?.id ?? null,
+      })
+      .eq("id", organization.id);
+    setSavingCompliance(false);
+    if (error) {
+      toast({ title: "Failed to update compliance settings", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Compliance settings saved" });
+    }
+  };
 
   const handleSave = async () => {
     if (!organization || !user) return;
@@ -225,6 +267,76 @@ export function OrganizationSettings({ isDeveloper = false }: OrganizationSettin
             )}
           </Button>
         </div>
+      )}
+
+      {/* ITAR Compliance Settings — visible to org admins/owners only */}
+      {isAdmin && (
+        <Card className="border-amber-500/30">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-amber-600">
+              <Shield className="w-5 h-5" />
+              ITAR / Export Control Settings
+            </CardTitle>
+            <CardDescription>
+              Configure access controls required for ITAR-regulated deployments.
+              These settings apply to all members of this organization.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-1 flex-1">
+                <Label className="flex items-center gap-2">
+                  <Shield className="w-4 h-4" />
+                  Require Multi-Factor Authentication
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  When enabled, all members must enroll a TOTP authenticator app
+                  before accessing org data. Recommended for all ITAR deployments.
+                </p>
+              </div>
+              <Switch
+                checked={mfaRequired}
+                onCheckedChange={setMfaRequired}
+                aria-label="Require MFA"
+              />
+            </div>
+
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-1 flex-1">
+                <Label className="flex items-center gap-2">
+                  <Flag className="w-4 h-4" />
+                  Require US Person Declaration
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  When enabled, all members must self-certify as a US Person
+                  (22 C.F.R. § 120.15) before accessing org data. Required when
+                  this system is used with ITAR-controlled technical data.
+                </p>
+              </div>
+              <Switch
+                checked={requiresUsPerson}
+                onCheckedChange={setRequiresUsPerson}
+                aria-label="Require US Person declaration"
+              />
+            </div>
+
+            <div className="pt-2 border-t flex justify-end">
+              <Button
+                onClick={handleSaveCompliance}
+                disabled={savingCompliance}
+                variant="outline"
+                className="gap-2 border-amber-500/50 text-amber-600 hover:bg-amber-500/10"
+              >
+                {savingCompliance ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Save className="w-4 h-4" />
+                )}
+                Save Compliance Settings
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   );
