@@ -57,7 +57,7 @@ export function DataAccessLogs() {
 
   const fetchLogs = useCallback(async () => {
     setLoading(true);
-    let query = (supabase as any)
+    let query = supabase
       .from("data_access_logs")
       .select("*")
       .order("created_at", { ascending: false })

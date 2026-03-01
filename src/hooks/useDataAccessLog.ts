@@ -16,10 +16,6 @@ export interface DataAccessLogEntry {
 /**
  * Logs data access events to the data_access_logs table for ITAR audit trail.
  *
- * Only logs when VITE_DISABLE_ANALYTICS !== 'true' (i.e., logging is considered
- * part of operational mode). In cloud deployments this table provides an
- * audit trail; in self-hosted ITAR deployments it is the primary compliance record.
- *
  * Usage:
  *   const { logAccess } = useDataAccessLog();
  *   await logAccess({ tableName: 'queue_items', recordId: item.id, operation: 'READ' });
@@ -33,7 +29,7 @@ export function useDataAccessLog() {
       if (!user) return;
 
       try {
-        await (supabase as any).from("data_access_logs").insert({
+        await supabase.from("data_access_logs").insert({
           user_id: user.id,
           organization_id: organization?.id ?? null,
           table_name: entry.tableName,
