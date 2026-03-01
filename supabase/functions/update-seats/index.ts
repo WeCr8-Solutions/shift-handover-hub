@@ -35,8 +35,14 @@ serve(async (req) => {
       );
     }
 
-    // Auth
-    const authHeader = req.headers.get("Authorization")!;
+    // Auth — return clean 401 if header is missing (do not use non-null assertion)
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Missing Authorization header" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
     const token = authHeader.replace("Bearer ", "");
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
     if (userError || !userData?.user?.email) {

@@ -3,12 +3,25 @@
   <head>
     <meta charset="UTF-8" />
     
-    <!-- Google AdSense (account verification only, script deferred below) -->
+    <!-- Google AdSense account verification (meta tag only, no external request) -->
     <meta name="google-adsense-account" content="ca-pub-3639153716376265">
 
-    <!-- Defer all third-party analytics/ad scripts until after first paint -->
+    <!--
+      Third-party analytics / ad scripts are loaded conditionally at runtime by
+      AnalyticsProvider.tsx. They are suppressed entirely when
+      VITE_DISABLE_ANALYTICS=true (required for ITAR self-hosted deployments).
+      Do NOT add gtag / GTM / AdSense script tags back here — use the JS loader below.
+    -->
     <script>
+      // Guard: set __ANALYTICS_ENABLED__ from the Vite-injected meta tag so the
+      // inline loader can read it before the React bundle hydrates.
+      // VITE_DISABLE_ANALYTICS is replaced at build time by Vite.
+      // Value is 'true' to disable (ITAR deployments) or '' / undefined to enable.
+      window.__ANALYTICS_ENABLED__ = '%VITE_DISABLE_ANALYTICS%' !== 'true';
+
       window.addEventListener('load', function() {
+        if (!window.__ANALYTICS_ENABLED__) return; // ITAR / self-hosted: skip all telemetry
+
         // Google Tag Manager
         (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
         new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],

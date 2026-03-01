@@ -21,10 +21,17 @@ declare global {
 }
 
 /**
- * Check if tracking should be skipped (bots, preview environments, webdriver)
+ * Returns true when analytics should be suppressed.
+ * Covers: server-side rendering, headless/automation, Lovable preview
+ * environments, and explicitly disabled self-hosted / ITAR deployments.
+ *
+ * Set VITE_DISABLE_ANALYTICS=true in .env (or the build environment) to
+ * suppress all telemetry — required for ITAR self-hosted deployments.
  */
 function shouldSkipTracking(): boolean {
   if (typeof window === 'undefined') return true;
+  // Explicitly disabled via build-time env var (ITAR / self-hosted deployments)
+  if (import.meta.env.VITE_DISABLE_ANALYTICS === 'true') return true;
   // Skip headless browsers / automation
   if (navigator.webdriver) return true;
   // Skip Lovable preview environments
@@ -72,6 +79,7 @@ export function trackEvent(
  * Set user properties for analytics
  */
 export function setUserProperties(properties: Record<string, string | number | boolean>) {
+  if (shouldSkipTracking()) return;
   if (typeof window !== 'undefined' && window.gtag) {
     window.gtag('set', 'user_properties', properties);
     
@@ -85,6 +93,7 @@ export function setUserProperties(properties: Record<string, string | number | b
  * Identify a user (for cross-session tracking)
  */
 export function identifyUser(userId: string) {
+  if (shouldSkipTracking()) return;
   if (typeof window !== 'undefined' && window.gtag) {
     window.gtag('config', GA_MEASUREMENT_ID, {
       user_id: userId,
@@ -256,6 +265,7 @@ export const ErrorEvents = {
  * Track page load performance
  */
 export function trackPagePerformance() {
+  if (shouldSkipTracking()) return;
   if (typeof window !== 'undefined' && 'performance' in window) {
     // Wait for page to fully load
     window.addEventListener('load', () => {
@@ -281,6 +291,7 @@ export function trackPagePerformance() {
  * Track Core Web Vitals (LCP, FID, CLS)
  */
 export function trackWebVitals() {
+  if (shouldSkipTracking()) return;
   if (typeof window !== 'undefined' && 'PerformanceObserver' in window) {
     // Largest Contentful Paint (LCP)
     try {
@@ -337,6 +348,7 @@ export function trackWebVitals() {
  * Track time spent on page
  */
 export function trackTimeOnPage() {
+  if (shouldSkipTracking()) return;
   if (typeof window !== 'undefined') {
     const startTime = Date.now();
     

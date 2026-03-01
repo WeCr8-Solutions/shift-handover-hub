@@ -16,9 +16,15 @@ interface AnalyticsProviderProps {
   children: ReactNode;
 }
 
+// Analytics is disabled when VITE_DISABLE_ANALYTICS=true (ITAR / self-hosted deployments).
+const ANALYTICS_ENABLED = import.meta.env.VITE_DISABLE_ANALYTICS !== 'true';
+
 /**
  * Analytics Provider Component
- * Wraps the app to provide automatic page tracking and performance monitoring
+ * Wraps the app to provide automatic page tracking and performance monitoring.
+ *
+ * Set VITE_DISABLE_ANALYTICS=true to suppress all tracking — required for
+ * ITAR self-hosted deployments where external telemetry is not permitted.
  */
 export function AnalyticsProvider({ children }: AnalyticsProviderProps) {
   const location = useLocation();
@@ -26,20 +32,22 @@ export function AnalyticsProvider({ children }: AnalyticsProviderProps) {
 
   // Enable debug mode in development
   useEffect(() => {
-    if (import.meta.env.DEV) {
+    if (import.meta.env.DEV && ANALYTICS_ENABLED) {
       enableDebugMode();
     }
   }, []);
 
-  // Initialize performance tracking once
+  // Initialize performance tracking once (no-op when analytics disabled)
   useEffect(() => {
+    if (!ANALYTICS_ENABLED) return;
     trackPagePerformance();
     trackWebVitals();
     trackTimeOnPage();
   }, []);
 
-  // Track page views on route change
+  // Track page views on route change (no-op when analytics disabled)
   useEffect(() => {
+    if (!ANALYTICS_ENABLED) return;
     const pageTitles: Record<string, string> = {
       '/': 'Home - JobLine.ai',
       '/dashboard': 'Dashboard - JobLine.ai',
@@ -61,8 +69,9 @@ export function AnalyticsProvider({ children }: AnalyticsProviderProps) {
     trackPageView(location.pathname + location.search, title, utm as Record<string, string>);
   }, [location.pathname, location.search]);
 
-  // Identify user when authenticated
+  // Identify user when authenticated (no-op when analytics disabled)
   useEffect(() => {
+    if (!ANALYTICS_ENABLED) return;
     if (user?.id) {
       identifyUser(user.id);
       
