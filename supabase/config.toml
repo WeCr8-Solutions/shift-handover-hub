@@ -1,23 +1,71 @@
 project_id = "kgrstnbxqdmadtoankqr"
 
+# ---------------------------------------------------------------------------
+# Edge Function JWT verification settings
+#
+# All functions use verify_jwt = false. This is intentional in every case:
+#
+#   verify_jwt = true  → Supabase rejects requests without a valid user JWT
+#                        BEFORE the function runs.
+#   verify_jwt = false → The function handles its own auth. Required when:
+#                        (a) The function is intentionally public, or
+#                        (b) The function uses a non-JWT auth scheme (e.g.
+#                            webhook HMAC, service-role key, or Stripe sig).
+#
+# Do NOT change any of these to true without reviewing the function's own
+# internal auth implementation — some will break (auth-email-hook, social-agent).
+# ---------------------------------------------------------------------------
+
 [functions]
+  # Auth: Manual — checks Authorization Bearer JWT + org membership.
+  # verify_jwt=false allows the function to return a descriptive 401 JSON body.
   [functions.ai-planning-assistant]
     verify_jwt = false
+
+  # Auth: Lovable webhook HMAC signature (not a user JWT).
+  # This is a Supabase auth hook invoked by the Supabase auth system itself.
+  # Setting verify_jwt=true would break it — Supabase sends a webhook payload,
+  # not a user Bearer token.
   [functions.auth-email-hook]
     verify_jwt = false
+
+  # Auth: None — intentionally public. Stripe payment confirmation only.
   [functions.create-donation]
     verify_jwt = false
+
+  # Auth: Manual — validates user JWT before creating issue reports.
   [functions.report-issue]
     verify_jwt = false
+
+  # Auth: Manual — validates user JWT + checks admin/developer/org-owner role.
+  # Uses service-role key internally to query user_roles. Cannot use
+  # verify_jwt=true because it also serves as a diagnostic tool for admins
+  # and needs to return structured error responses.
   [functions.rls-health]
     verify_jwt = false
+
+  # Auth: None — fully public endpoint serving static marketing/SEO content.
+  # No user context required. verify_jwt=true would break all unauthenticated callers.
   [functions.social-agent]
     verify_jwt = false
+
+  # Auth: Manual — validates user JWT via forwarded Authorization header.
+  # Uses both a user-scoped client (auth check) and admin client (DB writes).
   [functions.erp-sync]
     verify_jwt = false
+
+  # Auth: Manual — validates user JWT + org membership.
+  # Note: uses non-null assertion on auth header (minor bug — throws 500 instead
+  # of clean 401 if header missing). Tracked for fix in v1.2.
   [functions.update-seats]
     verify_jwt = false
+
+  # Auth: Manual — validates user JWT + Stripe purchase verification.
+  # Calls Stripe API; must handle its own 401/403 responses.
   [functions.activate-station-context]
     verify_jwt = false
+
+  # Auth: Manual — validates user JWT + cross-references Stripe checkout session.
+  # Calls Stripe API; must handle its own auth responses.
   [functions.verify-station-context-payment]
     verify_jwt = false
