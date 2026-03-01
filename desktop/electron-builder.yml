@@ -16,7 +16,7 @@ win:
     - target: nsis
       arch:
         - x64
-  icon: assets/icons/icon.png
+  icon: assets/icons/icon.ico
   artifactName: "JobLineAI-Setup-${version}.${ext}"
 
 nsis:
@@ -26,8 +26,8 @@ nsis:
   createStartMenuShortcut: true
   shortcutName: JobLine AI
   uninstallDisplayName: JobLine AI
-  installerIcon: assets/icons/icon.png
-  uninstallerIcon: assets/icons/icon.png
+  installerIcon: assets/icons/icon.ico
+  uninstallerIcon: assets/icons/icon.ico
   menuCategory: JobLine AI
   perMachine: false
 

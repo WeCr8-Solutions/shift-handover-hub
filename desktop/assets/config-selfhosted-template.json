@@ -1,0 +1,16 @@
+{
+  "_comment": "JobLine AI — Self-Hosted / ITAR Deployment Config Template",
+  "_instructions": [
+    "1. Copy this file to %APPDATA%\\JobLine AI\\config.json (Windows) or ~/Library/Application Support/JobLine AI/config.json (macOS)",
+    "2. Replace all YOUR_* placeholders with your actual values",
+    "3. Ensure your self-hosted Supabase instance is running in a US-controlled region",
+    "4. Ensure your self-hosted web app is accessible at appUrl from all end-user machines",
+    "5. Delete the _comment and _instructions keys before deploying"
+  ],
+  "mode": "cloud",
+  "appUrl": "https://YOUR_SELF_HOSTED_APP_URL",
+  "apiBaseUrl": "https://YOUR_SELF_HOSTED_APP_URL",
+  "supabaseUrl": "https://YOUR_PROJECT_REF.supabase.co",
+  "supabaseAnonKey": "YOUR_SUPABASE_ANON_KEY",
+  "updateChannel": "stable"
+}

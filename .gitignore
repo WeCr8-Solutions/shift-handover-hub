@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Desktop Electron build artifacts (distributed via GitHub Releases, not source control)
+desktop/release/
+desktop/dist/
+desktop/node_modules/
+desktop/package-lock.json
