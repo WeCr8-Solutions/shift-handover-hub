@@ -19,6 +19,7 @@ import {
 import { toast } from "sonner";
 import { z } from "zod";
 import logo from "@/assets/jobline-logo.png";
+import { SocialShareModal } from "@/components/SocialShareModal";
 
 const emailSchema = z.string().trim().email("Please enter a valid email").max(255);
 
@@ -47,6 +48,7 @@ export default function Start() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   // Apply default UTM params if none present
   useEffect(() => {
@@ -215,18 +217,29 @@ export default function Start() {
         </section>
 
         {/* QR Code */}
-        <section className="w-full max-w-md mt-10 flex flex-col items-center space-y-2">
-          <div className="flex items-center gap-1.5 text-muted-foreground">
+        <section className="w-full max-w-md mt-10 flex flex-col items-center space-y-3">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => setShareOpen(true)}
+          >
             <Share2 className="w-4 h-4" />
-            <p className="text-xs font-medium">Share this page</p>
-          </div>
-          <div className="bg-white p-3 rounded-xl shadow-sm">
+            Share this page
+          </Button>
+          <div className="bg-card p-3 rounded-xl shadow-sm border border-border">
             <QRCodeSVG value={QR_URL} size={120} level="M" />
           </div>
           <p className="text-[11px] text-muted-foreground">
             joblineai.lovable.app/start
           </p>
         </section>
+
+        <SocialShareModal
+          open={shareOpen}
+          onOpenChange={setShareOpen}
+          url={QR_URL}
+        />
 
         <footer className="mt-10 text-center">
           <p className="text-xs text-muted-foreground">
