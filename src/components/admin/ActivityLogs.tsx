@@ -39,7 +39,7 @@ interface ActivityLogEntry {
   ip_address?: string | null;
 }
 
-const activityIcons: Record<ActivityType, React.ComponentType<{ className?: string }>> = {
+const activityIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   login: LogIn,
   logout: LogOut,
   signup: UserPlus,
@@ -64,7 +64,7 @@ const activityIcons: Record<ActivityType, React.ComponentType<{ className?: stri
   us_person_declaration: ShieldCheck,
 };
 
-const activityColors: Record<ActivityType, string> = {
+const activityColors: Record<string, string> = {
   login: "bg-green-500/10 text-green-500",
   logout: "bg-gray-500/10 text-gray-500",
   signup: "bg-blue-500/10 text-blue-500",
@@ -89,7 +89,7 @@ const activityColors: Record<ActivityType, string> = {
   us_person_declaration: "bg-amber-500/10 text-amber-600",
 };
 
-const activityLabels: Record<ActivityType, string> = {
+const activityLabels: Record<string, string> = {
   login: "Login",
   logout: "Logout",
   signup: "Sign Up",

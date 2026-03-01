@@ -33,7 +33,7 @@ export function useDataAccessLog() {
       if (!user) return;
 
       try {
-        await supabase.from("data_access_logs").insert({
+        await (supabase as any).from("data_access_logs").insert({
           user_id: user.id,
           organization_id: organization?.id ?? null,
           table_name: entry.tableName,

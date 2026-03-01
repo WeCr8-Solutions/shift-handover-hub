@@ -33,13 +33,13 @@ export function useMFAEnforcement(): MFAStatus {
 
     try {
       // 1. Check if org requires MFA
-      const { data: orgData } = await supabase
+      const { data: orgData } = await (supabase as any)
         .from("organizations")
         .select("mfa_required")
         .eq("id", organization.id)
         .maybeSingle();
 
-      const requiresMFA = orgData?.mfa_required ?? false;
+      const requiresMFA = (orgData as any)?.mfa_required ?? false;
       setOrgRequiresMFA(requiresMFA);
 
       if (!requiresMFA) {

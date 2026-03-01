@@ -251,7 +251,7 @@ const handler = async (req: Request): Promise<Response> => {
     for (const test of tests) {
       const startTime = Date.now();
       try {
-        const result = await test.testFn(authClient);
+        const result = await test.testFn(authClient as any);
         const executionTime = Date.now() - startTime;
         
         results.push({

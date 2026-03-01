@@ -368,11 +368,11 @@ Deno.serve(async (req) => {
             cycle_time_minutes: op.cycle_time_minutes,
           };
 
-          if (existingRoute?.data) {
+          if (existingRoute) {
             await adminClient
               .from("work_order_routing")
               .update(routeData)
-              .eq("id", existingRoute.data.id);
+              .eq("id", existingRoute.id);
             recordsUpdated++;
           } else {
             await adminClient.from("work_order_routing").insert(routeData);
