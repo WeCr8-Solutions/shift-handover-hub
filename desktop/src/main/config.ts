@@ -54,11 +54,19 @@ export function loadConfig(): AppConfig {
     ...fileConfig,
   };
 
-  // Environment variable overrides
-  if (process.env.JOBLINE_APP_URL) config.appUrl = process.env.JOBLINE_APP_URL;
-  if (process.env.JOBLINE_API_BASE_URL) config.apiBaseUrl = process.env.JOBLINE_API_BASE_URL;
-  if (process.env.JOBLINE_LOGS_PATH) config.logsPath = process.env.JOBLINE_LOGS_PATH;
-  if (process.env.JOBLINE_MODE === "embedded") config.mode = "embedded";
+  // Environment variable overrides (lower precedence than config.json; useful for
+  // enterprise/ITAR deployments where admins set machine-wide env vars)
+  if (process.env.JOBLINE_APP_URL)        config.appUrl        = process.env.JOBLINE_APP_URL;
+  if (process.env.JOBLINE_API_BASE_URL)   config.apiBaseUrl    = process.env.JOBLINE_API_BASE_URL;
+  if (process.env.JOBLINE_LOGS_PATH)      config.logsPath      = process.env.JOBLINE_LOGS_PATH;
+  if (process.env.JOBLINE_SUPABASE_URL)   config.supabaseUrl   = process.env.JOBLINE_SUPABASE_URL;
+  if (process.env.JOBLINE_SUPABASE_ANON_KEY) config.supabaseAnonKey = process.env.JOBLINE_SUPABASE_ANON_KEY;
+  if (process.env.JOBLINE_MODE === "embedded" || process.env.JOBLINE_MODE === "cloud") {
+    config.mode = process.env.JOBLINE_MODE;
+  }
+  if (process.env.JOBLINE_UPDATE_CHANNEL === "beta" || process.env.JOBLINE_UPDATE_CHANNEL === "stable") {
+    config.updateChannel = process.env.JOBLINE_UPDATE_CHANNEL;
+  }
 
   // Ensure logs directory exists
   ensureDir(config.logsPath);
