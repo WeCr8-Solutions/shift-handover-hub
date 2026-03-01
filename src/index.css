@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Font loading:
+   - Cloud (default): loaded from Google Fonts CDN below.
+   - Self-hosted ITAR (VITE_DISABLE_ANALYTICS=true): comment out the @import
+     and ensure src/styles/fonts-local.css is imported instead (see vite.config.ts).
+     Font files must be placed in src/assets/fonts/ — see README there.
+*/
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
 @layer base {

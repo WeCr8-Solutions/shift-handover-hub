@@ -2894,7 +2894,11 @@ export type Database = {
           description: string | null
           id: string
           logo_url: string | null
+          mfa_required: boolean
+          mfa_required_updated_at: string | null
+          mfa_required_updated_by: string | null
           name: string
+          requires_us_person_declaration: boolean
           slug: string
           stripe_customer_id: string | null
           subscription_status: string | null
@@ -2909,7 +2913,11 @@ export type Database = {
           description?: string | null
           id?: string
           logo_url?: string | null
+          mfa_required?: boolean
+          mfa_required_updated_at?: string | null
+          mfa_required_updated_by?: string | null
           name: string
+          requires_us_person_declaration?: boolean
           slug: string
           stripe_customer_id?: string | null
           subscription_status?: string | null
@@ -2924,7 +2932,11 @@ export type Database = {
           description?: string | null
           id?: string
           logo_url?: string | null
+          mfa_required?: boolean
+          mfa_required_updated_at?: string | null
+          mfa_required_updated_by?: string | null
           name?: string
+          requires_us_person_declaration?: boolean
           slug?: string
           stripe_customer_id?: string | null
           subscription_status?: string | null
@@ -3042,6 +3054,10 @@ export type Database = {
           email: string
           id: string
           updated_at: string
+          us_person_declaration_ip: string | null
+          us_person_declaration_text: string | null
+          us_person_declared: boolean
+          us_person_declared_at: string | null
           user_id: string
         }
         Insert: {
@@ -3051,6 +3067,10 @@ export type Database = {
           email: string
           id?: string
           updated_at?: string
+          us_person_declaration_ip?: string | null
+          us_person_declaration_text?: string | null
+          us_person_declared?: boolean
+          us_person_declared_at?: string | null
           user_id: string
         }
         Update: {
@@ -3060,6 +3080,52 @@ export type Database = {
           email?: string
           id?: string
           updated_at?: string
+          us_person_declaration_ip?: string | null
+          us_person_declaration_text?: string | null
+          us_person_declared?: boolean
+          us_person_declared_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      data_access_logs: {
+        Row: {
+          created_at: string
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          operation: string
+          organization_id: string | null
+          record_id: string | null
+          table_name: string
+          user_display_name: string | null
+          user_email: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          operation: string
+          organization_id?: string | null
+          record_id?: string | null
+          table_name: string
+          user_display_name?: string | null
+          user_email?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          operation?: string
+          organization_id?: string | null
+          record_id?: string | null
+          table_name?: string
+          user_display_name?: string | null
+          user_email?: string | null
           user_id?: string
         }
         Relationships: []
@@ -5229,6 +5295,7 @@ export type Database = {
         | "quantity_override"
         | "rework_wo_created"
         | "work_order_quantity_adjusted"
+        | "us_person_declaration"
       app_role: "admin" | "operator" | "supervisor" | "viewer" | "developer"
       impact_level: "low" | "medium" | "high" | "critical"
       issue_severity: "low" | "medium" | "high" | "critical"

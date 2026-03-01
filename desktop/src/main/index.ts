@@ -1,7 +1,8 @@
 import { app, BrowserWindow, shell, ipcMain } from "electron";
 import * as path from "path";
-import { loadConfig, getConfigDir } from "./config";
+import { loadConfig, getConfigDir, AppConfig } from "./config";
 import { initLogger, getLogsPath } from "./logger";
+import { isUnconfiguredForSelfHosted, showSetupWizard } from "./setupWizard";
 
 // ---------------------------------------------------------------------------
 // Single instance lock
@@ -14,7 +15,7 @@ if (!gotLock) {
 // ---------------------------------------------------------------------------
 // Config & logging
 // ---------------------------------------------------------------------------
-let config = loadConfig();
+let config: AppConfig = loadConfig();
 initLogger(config.logsPath);
 
 console.log("JobLine AI Desktop starting…");
@@ -136,7 +137,15 @@ ipcMain.handle("jobline:openPath", (_event, pathType: string) => {
 // ---------------------------------------------------------------------------
 // App lifecycle
 // ---------------------------------------------------------------------------
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  // First-launch setup wizard: shown once when no self-hosted URL is configured.
+  // After wizard completes (or is skipped), the config may be updated in-place.
+  if (isUnconfiguredForSelfHosted(config) && !(config as AppConfig & { _setupComplete?: boolean })._setupComplete) {
+    await showSetupWizard(config, (updatedConfig) => {
+      config = updatedConfig;
+    });
+  }
+
   createWindow();
 
   app.on("activate", () => {
