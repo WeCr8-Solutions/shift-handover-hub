@@ -146,10 +146,15 @@ export function useStations(teamId?: string | null, organizationId?: string | nu
     fetchStations();
   }, [fetchStations]);
 
-  // Real-time subscription for station status updates
+  // Real-time subscription for station status updates + polling fallback
   useEffect(() => {
     if (!user) return;
 
+    let pollInterval = 5000;
+    let isActive = true;
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    // Primary: realtime subscription
     const channel = supabase
       .channel("station-status-changes")
       .on(
@@ -161,11 +166,23 @@ export function useStations(teamId?: string | null, organizationId?: string | nu
         },
         () => {
           fetchStations();
+          pollInterval = 5000; // reset on realtime success
         }
       )
       .subscribe();
 
+    // Fallback: polling to catch missed realtime events
+    const poll = () => {
+      if (!isActive) return;
+      fetchStations();
+      pollInterval = Math.min(pollInterval * 1.5, 30000);
+      timeoutId = setTimeout(poll, pollInterval);
+    };
+    timeoutId = setTimeout(poll, pollInterval);
+
     return () => {
+      isActive = false;
+      clearTimeout(timeoutId);
       supabase.removeChannel(channel);
     };
   }, [user, fetchStations]);
@@ -275,9 +292,13 @@ export function useHandoffRecords(teamId?: string | null, organizationId?: strin
     fetchRecords();
   }, [fetchRecords]);
 
-  // Real-time subscription for new handoff records
+  // Real-time subscription + polling fallback for handoff records
   useEffect(() => {
     if (!user) return;
+
+    let pollInterval = 10000;
+    let isActive = true;
+    let timeoutId: ReturnType<typeof setTimeout>;
 
     const channel = supabase
       .channel("handoff-records-changes")
@@ -290,14 +311,25 @@ export function useHandoffRecords(teamId?: string | null, organizationId?: strin
         },
         (payload) => {
           setRecords((prev) => [payload.new as HandoffRecord, ...prev]);
+          pollInterval = 10000;
         }
       )
       .subscribe();
 
+    const poll = () => {
+      if (!isActive) return;
+      fetchRecords();
+      pollInterval = Math.min(pollInterval * 1.5, 60000);
+      timeoutId = setTimeout(poll, pollInterval);
+    };
+    timeoutId = setTimeout(poll, pollInterval);
+
     return () => {
+      isActive = false;
+      clearTimeout(timeoutId);
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user, fetchRecords]);
 
   const createHandoffRecord = async (
     record: Omit<HandoffRecord, "id" | "created_at" | "updated_at" | "record_version">
