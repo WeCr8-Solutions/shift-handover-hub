@@ -1,0 +1,297 @@
+%% Entity Relationship Diagram — JobLine.ai (Core Tables)
+%% Type: erDiagram
+%% Shows 80 tables grouped by domain with FK relationships
+
+erDiagram
+    %% === TENANCY CORE ===
+    organizations {
+        uuid id PK
+        string name
+        string slug UK
+        string subscription_tier
+        string subscription_status
+        string stripe_customer_id
+        bool mfa_required
+        bool requires_us_person_declaration
+        uuid created_by
+    }
+
+    organization_members {
+        uuid id PK
+        uuid organization_id FK
+        uuid user_id FK
+        string role
+    }
+
+    teams {
+        uuid id PK
+        string name
+        uuid organization_id FK
+        uuid created_by FK
+    }
+
+    team_members {
+        uuid id PK
+        uuid team_id FK
+        uuid user_id FK
+        enum role
+    }
+
+    departments {
+        uuid id PK
+        string name
+        uuid team_id FK
+        uuid organization_id FK
+    }
+
+    %% === IDENTITY ===
+    profiles {
+        uuid user_id PK
+        string email
+        string display_name
+        bool us_person_declared
+    }
+
+    user_roles {
+        uuid id PK
+        uuid user_id FK
+        enum role
+    }
+
+    user_onboarding {
+        uuid id PK
+        uuid user_id FK
+        string current_step
+        bool is_complete
+    }
+
+    user_certifications {
+        uuid id PK
+        uuid user_id FK
+        uuid certification_id FK
+    }
+
+    %% === PRODUCTION ===
+    stations {
+        uuid id PK
+        string name
+        uuid organization_id FK
+        uuid team_id FK
+        uuid department_id FK
+        string work_center_type
+    }
+
+    queue_items {
+        uuid id PK
+        string title
+        string work_order
+        string part_number
+        string status
+        int quantity
+        int qty_original
+        int qty_completed
+        int qty_scrap
+        int qty_rework
+        uuid organization_id FK
+        uuid team_id FK
+        uuid station_id FK
+        uuid parent_work_order_id FK
+        bool is_rework
+    }
+
+    work_order_routing {
+        uuid id PK
+        uuid queue_item_id FK
+        uuid station_id FK
+        int step_number
+        string status
+        uuid organization_id FK
+    }
+
+    handoff_records {
+        uuid id PK
+        uuid station_id FK
+        uuid team_id FK
+        uuid organization_id FK
+        string handoff_summary
+        string date
+    }
+
+    current_station_status {
+        uuid id PK
+        uuid station_id FK
+        uuid organization_id FK
+        string current_job_work_order
+        string current_job_state
+    }
+
+    operator_station_sessions {
+        uuid id PK
+        uuid user_id FK
+        uuid station_id FK
+        uuid organization_id FK
+        bool is_active
+    }
+
+    delivery_requests {
+        uuid id PK
+        uuid queue_item_id FK
+        uuid from_station_id FK
+        uuid to_station_id FK
+        uuid organization_id FK
+        string status
+    }
+
+    %% === QUALITY ===
+    ncr_reports {
+        uuid id PK
+        string ncr_number
+        uuid queue_item_id FK
+        uuid organization_id FK
+        string disposition
+        string authorization_status
+        int quantity_affected
+        uuid rework_wo_id FK
+    }
+
+    ncr_audit_log {
+        uuid id PK
+        uuid ncr_id FK
+        uuid queue_item_id FK
+        uuid organization_id FK
+        string action
+    }
+
+    quality_checkpoints {
+        uuid id PK
+        uuid organization_id FK
+    }
+
+    quality_inspections {
+        uuid id PK
+        uuid organization_id FK
+    }
+
+    part_catalog {
+        uuid id PK
+        uuid organization_id FK
+        string part_number
+    }
+
+    %% === ASSETS ===
+    equipment {
+        uuid id PK
+        string name
+        uuid station_id FK
+        uuid organization_id FK
+        uuid team_id FK
+        string status
+    }
+
+    downtime_events {
+        uuid id PK
+        uuid station_id FK
+        uuid equipment_id FK
+        uuid organization_id FK
+        uuid work_order_id FK
+        string downtime_type
+    }
+
+    %% === BILLING ===
+    entitlements {
+        uuid id PK
+        uuid organization_id FK
+        string plan
+        jsonb features
+        jsonb limits
+    }
+
+    subscriptions {
+        uuid id PK
+        uuid organization_id FK
+        string stripe_subscription_id
+        string status
+    }
+
+    %% === ERP ===
+    erp_connections {
+        uuid id PK
+        uuid organization_id FK
+        string erp_vendor
+        string connection_status
+    }
+
+    erp_sync_logs {
+        uuid id PK
+        uuid erp_connection_id FK
+        uuid organization_id FK
+        string status
+    }
+
+    erp_sync_errors {
+        uuid id PK
+        uuid sync_log_id FK
+        uuid organization_id FK
+    }
+
+    %% === AUDIT ===
+    activity_logs {
+        uuid id PK
+        uuid user_id FK
+        uuid organization_id FK
+        enum activity_type
+    }
+
+    data_access_logs {
+        uuid id PK
+        uuid user_id FK
+        uuid organization_id FK
+        string table_name
+        string operation
+    }
+
+    issues {
+        uuid id PK
+        uuid reporter_id FK
+        uuid organization_id FK
+        string severity
+        string status
+    }
+
+    %% === RELATIONSHIPS ===
+    organizations ||--o{ organization_members : has
+    organizations ||--o{ teams : contains
+    organizations ||--o{ stations : owns
+    organizations ||--o{ queue_items : tracks
+    organizations ||--o{ entitlements : has
+    organizations ||--o{ erp_connections : configures
+    organizations ||--o{ activity_logs : audits
+    organizations ||--o{ data_access_logs : audits
+    organizations ||--o{ ncr_reports : manages
+    organizations ||--o{ equipment : owns
+    organizations ||--o{ downtime_events : records
+
+    teams ||--o{ team_members : has
+    teams ||--o{ departments : contains
+    teams ||--o{ stations : assigned
+    teams ||--o{ handoff_records : produces
+
+    stations ||--o| current_station_status : has
+    stations ||--o{ operator_station_sessions : hosts
+    stations ||--o{ work_order_routing : receives
+    stations ||--o{ equipment : houses
+    stations ||--o{ handoff_records : at
+
+    queue_items ||--o{ work_order_routing : routed_through
+    queue_items ||--o{ ncr_reports : flagged_by
+    queue_items ||--o{ delivery_requests : moved_via
+    queue_items ||--o{ downtime_events : affected_by
+    queue_items ||--o{ queue_items : parent_child
+
+    ncr_reports ||--o{ ncr_audit_log : tracked_by
+
+    erp_connections ||--o{ erp_sync_logs : produces
+    erp_sync_logs ||--o{ erp_sync_errors : has
+
+    organization_members }o--|| organizations : belongs_to
+    team_members }o--|| teams : belongs_to

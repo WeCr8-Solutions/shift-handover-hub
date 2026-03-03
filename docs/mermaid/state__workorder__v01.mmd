@@ -1,0 +1,69 @@
+%% State Machine: Work Order (queue_items.status)
+%% Type: stateDiagram-v2
+%% Shows allowed transitions and who can trigger them
+
+stateDiagram-v2
+    [*] --> pending : Created by supervisor/admin
+
+    pending --> queued : Assigned to station
+    Note right of pending : Default state on creation
+
+    queued --> in_progress : Operator checks in and starts
+    Note right of queued : Waiting at station
+
+    in_progress --> on_hold : Operator/Supervisor pauses
+    in_progress --> completed : All routing steps done
+    in_progress --> queued : pass_work_order_to_next_step()
+
+    on_hold --> in_progress : Operator/Supervisor resumes
+    on_hold --> cancelled : Supervisor cancels
+
+    queued --> cancelled : Supervisor cancels
+    pending --> cancelled : Supervisor cancels
+
+    completed --> [*]
+    cancelled --> [*]
+
+    %% Rework loop
+    completed --> pending : NCR disposition=rework creates child WO
+
+    state pending {
+        direction LR
+        [*] --> AwaitingAssignment
+        AwaitingAssignment --> StationSelected : Assign station
+    }
+
+    state in_progress {
+        direction LR
+        [*] --> Running
+        Running --> AwaitingMaterial : Material needed
+        AwaitingMaterial --> Running : Material delivered
+        Running --> QualityHold : NCR raised
+        QualityHold --> Running : NCR resolved
+    }
+
+    %% Transition rules
+    note left of pending
+        WHO: Supervisor, Org Admin
+        WHAT: Create WO with form
+    end note
+
+    note left of queued
+        WHO: Supervisor (assign station)
+        TRIGGER: station_id set + routing created
+    end note
+
+    note left of in_progress
+        WHO: Operator (check-in)
+        GUARD: operator_station_sessions.is_active
+    end note
+
+    note left of completed
+        WHO: System (pass_work_order_to_next_step)
+        GUARD: All routing steps completed
+    end note
+
+    note right of cancelled
+        WHO: Supervisor, Org Admin
+        GUARD: can_supervisor_override_in_org()
+    end note

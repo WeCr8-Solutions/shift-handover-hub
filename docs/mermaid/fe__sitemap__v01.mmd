@@ -1,0 +1,84 @@
+%% Frontend Sitemap — JobLine.ai
+%% Type: flowchart TD
+%% Shows all routes, auth gates, role gates, and navigation edges
+
+flowchart TD
+    subgraph Public["Public Pages (No Auth)"]
+        LAND["/  Landing"]
+        AUTH["/auth  Login/Signup"]
+        RESET["/reset-password"]
+        PRICING["/pricing"]
+        DEMO["/demo"]
+        START["/start"]
+        ZACH["/zach  Redirect"]
+        DON_OK["/donation-success"]
+    end
+
+    subgraph Features["Feature Marketing Pages (No Auth)"]
+        F_SH["/features/shift-handoff-software"]
+        F_WO["/features/work-order-tracking"]
+        F_PS["/features/production-scheduling"]
+        F_MS["/features/machine-shop-software"]
+        F_PC["/features/production-control"]
+        F_DE["/features/digital-expeditor"]
+        F_MO["/features/manufacturing-oversight"]
+        F_QM["/features/quality-management"]
+        F_CNC["/features/cnc-operator-tools"]
+        F_TC["/features/team-collaboration"]
+        F_DT["/features/downtime-tracking"]
+        F_AI["/features/ai-planning-assistant"]
+        F_MT["/machine-time-tracking"]
+        F_SHO["/shift-handoff"]
+        F_MV["/manufacturing-visibility"]
+    end
+
+    subgraph Authed["Authenticated Pages"]
+        DASH["/dashboard"]
+        TEAMS["/teams"]
+        PROFILE["/profile"]
+        QUEUE["/queue"]
+        SETUP["/setup"]
+        SETTINGS["/settings"]
+        UPDATES["/updates"]
+    end
+
+    subgraph Gated["Role-Gated Pages"]
+        ADMIN["/admin<br/>admin only"]
+        TESTING["/testing<br/>admin + developer"]
+    end
+
+    NOTFOUND["/* NotFound"]
+
+    %% Navigation edges
+    LAND -->|"CTA signup"| AUTH
+    LAND -->|"CTA login"| AUTH
+    LAND -->|"Pricing link"| PRICING
+    LAND -->|"Demo link"| DEMO
+    LAND -->|"Feature links"| Features
+
+    AUTH -->|"Success"| DASH
+    AUTH -->|"New user"| SETUP
+    RESET -->|"Success"| AUTH
+
+    %% Auth gate
+    DASH -.->|"No auth redirect"| AUTH
+    TEAMS -.->|"No auth redirect"| AUTH
+    QUEUE -.->|"No auth redirect"| AUTH
+    SETTINGS -.->|"No auth redirect"| AUTH
+
+    %% App navigation (header)
+    DASH <-->|"Header nav"| QUEUE
+    DASH <-->|"Header nav"| TEAMS
+    DASH -->|"Header nav"| SETTINGS
+    DASH -->|"Header nav"| PROFILE
+    DASH -->|"Header nav"| UPDATES
+
+    %% Role gates
+    DASH -->|"admin role check"| ADMIN
+    DASH -->|"dev/admin role check"| TESTING
+
+    %% Safe exits
+    ADMIN -->|"Back"| DASH
+    TESTING -->|"Back"| DASH
+    NOTFOUND -->|"Home link"| LAND
+    SETTINGS -->|"Back"| DASH

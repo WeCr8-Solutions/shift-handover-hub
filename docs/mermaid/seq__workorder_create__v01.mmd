@@ -1,0 +1,42 @@
+%% Sequence: Work Order Create — End to End
+%% Type: sequenceDiagram
+
+sequenceDiagram
+    actor SUP as Supervisor
+    participant UI as Queue Page
+    participant Hook as useQueue
+    participant SB as Supabase Client
+    participant DB as PostgreSQL
+    participant TRG as DB Triggers
+    participant RT as Realtime
+
+    SUP->>UI: Click Create Work Order
+    UI->>UI: Open CreateWorkOrderDialog
+    SUP->>UI: Fill form (title, part, qty, station, priority)
+    SUP->>UI: Submit
+
+    UI->>Hook: createItem(formData)
+    Hook->>SB: supabase.from(queue_items).insert()
+
+    SB->>DB: INSERT INTO queue_items
+    Note over DB: RLS: is_org_member(auth.uid(), org_id)
+
+    DB->>TRG: compute_estimated_duration_queue_item()
+    TRG->>DB: Set estimated_duration
+
+    DB->>TRG: enforce_qty_integrity()
+    TRG->>DB: Set qty_open, qty_completed defaults
+
+    DB-->>SB: Return new row
+    SB-->>Hook: { data, error }
+
+    alt Success
+        Hook->>Hook: fetchItems() to refresh
+        Hook-->>UI: Update items list
+        UI-->>SUP: Show success toast
+        DB->>RT: postgres_changes INSERT
+        RT->>UI: Realtime update to other clients
+    else Error
+        Hook-->>UI: Show error toast
+        UI-->>SUP: Display error message
+    end

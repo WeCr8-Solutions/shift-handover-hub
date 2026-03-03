@@ -1,0 +1,128 @@
+%% Service Architecture — JobLine.ai Frontend
+%% Type: classDiagram
+%% Shows hooks, contexts, and data flow boundaries
+
+classDiagram
+    class AuthContext {
+        +user: User
+        +profile: Profile
+        +roles: AppRole[]
+        +signIn()
+        +signUp()
+        +signOut()
+    }
+
+    class TeamContext {
+        +selectedTeam: Team
+        +teams: Team[]
+        +setSelectedTeam()
+    }
+
+    class OnboardingProvider {
+        +currentStep: string
+        +isComplete: boolean
+        +completeStep()
+    }
+
+    class useQueue {
+        +items: QueueItem[]
+        +loading: boolean
+        +fetchItems()
+        +createItem()
+        +updateItem()
+        +deleteItem()
+        +reorderItem()
+    }
+
+    class useStations {
+        +stations: Station[]
+        +loading: boolean
+        +fetchStations()
+        +createStation()
+        +updateStation()
+    }
+
+    class useHandoffRecords {
+        +records: HandoffRecord[]
+        +createHandoffRecord()
+        +fetchRecords()
+    }
+
+    class useNCR {
+        +ncrs: NCRReport[]
+        +createNCR()
+        +approveNCR()
+        +rejectNCR()
+    }
+
+    class useTeams {
+        +teams: Team[]
+        +createTeam()
+        +updateTeam()
+        +deleteTeam()
+    }
+
+    class useSubscription {
+        +subscription: Subscription
+        +entitlements: Entitlements
+        +isTrialing: boolean
+    }
+
+    class useERPConnector {
+        +connection: ERPConnection
+        +syncLogs: SyncLog[]
+        +triggerSync()
+        +testConnection()
+    }
+
+    class useActivityLog {
+        +logActivity()
+    }
+
+    class useDataAccessLog {
+        +logAccess()
+        +logBulkAccess()
+    }
+
+    class useRoleArchitecture {
+        +permissionMatrix
+        +roleHierarchy
+    }
+
+    class useEntitlements {
+        +checkFeature()
+        +checkLimit()
+    }
+
+    class useMFAEnforcement {
+        +requiresMFA: boolean
+        +isMFAEnrolled: boolean
+    }
+
+    class useUSPersonDeclaration {
+        +requiresDeclaration: boolean
+        +hasDeclared: boolean
+        +submitDeclaration()
+    }
+
+    %% Data flow relationships
+    AuthContext <|-- useQueue : uses auth
+    AuthContext <|-- useStations : uses auth
+    AuthContext <|-- useHandoffRecords : uses auth
+    AuthContext <|-- useNCR : uses auth
+    AuthContext <|-- useDataAccessLog : uses auth
+
+    TeamContext <|-- useQueue : scopes by team
+    TeamContext <|-- useStations : scopes by team
+    TeamContext <|-- useHandoffRecords : scopes by team
+
+    useQueue --> useActivityLog : logs mutations
+    useStations --> useActivityLog : logs mutations
+    useNCR --> useActivityLog : logs mutations
+
+    useSubscription --> useEntitlements : provides plan
+    useEntitlements --> useQueue : gates features
+    useEntitlements --> useERPConnector : gates ERP
+
+    useMFAEnforcement --> AuthContext : checks org settings
+    useUSPersonDeclaration --> AuthContext : checks org settings
