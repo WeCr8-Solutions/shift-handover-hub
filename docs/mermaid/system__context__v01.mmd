@@ -1,0 +1,48 @@
+%% System Context Diagram — JobLine.ai
+%% Type: flowchart LR (C4-like system context)
+
+flowchart LR
+    subgraph Personas
+        OP[Operator]
+        SUP[Supervisor]
+        OA[Org Admin/Owner]
+        PA[Platform Admin]
+        DEV[Developer]
+        VW[Viewer]
+    end
+
+    subgraph JobLine["JobLine.ai Platform"]
+        direction TB
+        FE[React SPA<br/>Vite + Tailwind]
+        EF[Edge Functions<br/>Deno Runtime]
+        DB[(PostgreSQL<br/>80 tables + RLS)]
+        RT[Realtime<br/>WebSocket]
+        STOR[File Storage<br/>4 buckets]
+    end
+
+    subgraph External["External Systems"]
+        STRIPE[Stripe<br/>Billing + Webhooks]
+        RESEND[Resend<br/>Transactional Email]
+        ERP[ERP Systems<br/>Configurable REST]
+        AI[Lovable AI<br/>Planning Assistant]
+    end
+
+    OP --> FE
+    SUP --> FE
+    OA --> FE
+    PA --> FE
+    DEV --> FE
+    VW --> FE
+
+    FE <--> DB
+    FE <--> RT
+    FE --> EF
+    FE --> STOR
+
+    EF --> STRIPE
+    EF --> RESEND
+    EF --> ERP
+    EF --> AI
+    EF --> DB
+
+    STRIPE -- webhook --> EF

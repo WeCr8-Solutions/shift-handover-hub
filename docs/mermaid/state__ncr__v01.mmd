@@ -1,0 +1,55 @@
+%% State Machine: NCR Report (ncr_reports)
+%% Type: stateDiagram-v2
+
+stateDiagram-v2
+    [*] --> draft : Operator creates NCR
+
+    draft --> pending_review : Submit for review
+    Note right of draft : Operator fills details,<br/>quantity affected, disposition recommendation
+
+    pending_review --> approved : Supervisor approves
+    pending_review --> rejected : Supervisor rejects
+
+    approved --> [*] : Disposition applied
+
+    rejected --> draft : Operator revises
+    rejected --> [*] : NCR closed
+
+    %% Disposition effects (on approval)
+    state approved {
+        direction TB
+        [*] --> ApplyDisposition
+        ApplyDisposition --> Scrap : disposition = scrap
+        ApplyDisposition --> Rework : disposition = rework
+        ApplyDisposition --> UseAsIs : disposition = use_as_is
+
+        Scrap --> UpdateQtyScrap : qty_scrap += quantity_affected
+        Rework --> CreateChildWO : New rework WO created
+        Rework --> UpdateQtyRework : qty_rework += quantity_affected
+        UseAsIs --> UpdateQtyCompleted : qty_completed += quantity_affected
+    }
+
+    note left of draft
+        WHO: Any org member
+        TABLE: ncr_reports
+        GUARD: is_org_member()
+    end note
+
+    note right of pending_review
+        authorization_status = pending
+        Awaiting supervisor/admin action
+    end note
+
+    note left of approved
+        WHO: Supervisor or Org Admin
+        FUNC: apply_ncr_disposition()
+        GUARD: can_approve_ncr()
+        AUDIT: ncr_audit_log entry
+    end note
+
+    note right of rejected
+        WHO: Supervisor or Org Admin
+        FUNC: reject_ncr()
+        GUARD: can_approve_ncr()
+        Must provide rejection reason
+    end note

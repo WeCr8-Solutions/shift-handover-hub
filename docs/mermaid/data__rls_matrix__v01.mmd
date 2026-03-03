@@ -1,0 +1,85 @@
+%% RLS Permission Matrix — JobLine.ai
+%% Type: flowchart TD
+%% Shows role -> table -> allowed operations
+%% Based on actual pg_policies query
+
+flowchart TD
+    subgraph PlatformRoles["Platform Roles (user_roles)"]
+        R_ADMIN[admin]
+        R_DEV[developer]
+        R_SUP[supervisor]
+        R_OP[operator]
+        R_VW[viewer]
+    end
+
+    subgraph OrgRoles["Org Roles (organization_members)"]
+        R_ORG_OWNER[org owner]
+        R_ORG_ADMIN[org admin]
+        R_ORG_MEMBER[org member]
+    end
+
+    subgraph TeamRoles["Team Roles (team_members)"]
+        R_TEAM_ADMIN[team admin]
+        R_TEAM_MEMBER[team member]
+    end
+
+    subgraph CoreTables["Core Production Tables"]
+        T_QI[queue_items<br/>CRUD by org member<br/>Position by supervisor]
+        T_ST[stations<br/>View by org member<br/>Manage by team admin]
+        T_HR[handoff_records<br/>Insert by org member<br/>View by org member]
+        T_CSS[current_station_status<br/>View by org member<br/>Update by org member]
+        T_WOR[work_order_routing<br/>View by org member<br/>Manage by supervisor]
+        T_OSS[operator_station_sessions<br/>Own sessions<br/>View by org member]
+    end
+
+    subgraph QualityTables["Quality Tables"]
+        T_NCR[ncr_reports<br/>Create by org member<br/>Approve by supervisor/admin]
+        T_QC[quality_checkpoints<br/>Manage by supervisor]
+        T_QI2[quality_inspections<br/>Create by org member]
+    end
+
+    subgraph AdminTables["Admin/Audit Tables"]
+        T_AL[activity_logs<br/>View own or admin/dev<br/>Insert own]
+        T_DAL[data_access_logs<br/>Insert own<br/>Read by org admin]
+        T_ISS[issues<br/>Insert own<br/>View by dev/admin]
+        T_CL[changelogs<br/>CRUD by dev/admin]
+    end
+
+    subgraph BillingTables["Billing Tables"]
+        T_ENT[entitlements<br/>View by org member<br/>No direct write]
+        T_SUB[subscriptions<br/>View by org admin<br/>Write via webhook]
+    end
+
+    %% Admin access
+    R_ADMIN -->|"ALL tables SELECT"| CoreTables
+    R_ADMIN -->|"ALL tables SELECT"| QualityTables
+    R_ADMIN -->|"ALL tables CRUD"| AdminTables
+
+    %% Developer access
+    R_DEV -->|"SELECT"| T_AL
+    R_DEV -->|"CRUD"| T_CL
+    R_DEV -->|"SELECT"| T_ISS
+
+    %% Supervisor
+    R_SUP -->|"via org membership"| T_QI
+    R_SUP -->|"approve/reject"| T_NCR
+    R_SUP -->|"override routing"| T_WOR
+    R_SUP -->|"view all in org"| T_CSS
+
+    %% Org member (operator default)
+    R_ORG_MEMBER -->|"CRUD own org"| T_QI
+    R_ORG_MEMBER -->|"INSERT/SELECT"| T_HR
+    R_ORG_MEMBER -->|"VIEW"| T_ST
+    R_ORG_MEMBER -->|"INSERT own"| T_AL
+    R_ORG_MEMBER -->|"INSERT own"| T_DAL
+    R_ORG_MEMBER -->|"VIEW"| T_ENT
+
+    %% Org admin
+    R_ORG_ADMIN -->|"MANAGE"| T_ST
+    R_ORG_ADMIN -->|"VIEW"| T_DAL
+    R_ORG_ADMIN -->|"MANAGE"| T_ENT
+    R_ORG_ADMIN -->|"VIEW"| T_SUB
+
+    %% Team admin
+    R_TEAM_ADMIN -->|"MANAGE stations"| T_ST
+    R_TEAM_ADMIN -->|"MANAGE departments"| CoreTables

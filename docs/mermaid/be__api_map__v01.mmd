@@ -1,0 +1,95 @@
+%% API Surface Map — JobLine.ai Edge Functions
+%% Type: flowchart LR
+%% Shows FE callers -> edge function -> domain -> tables touched
+
+flowchart LR
+    subgraph Frontend["Frontend Callers"]
+        PG_DASH[Dashboard]
+        PG_QUEUE[Queue Page]
+        PG_SETTINGS[Settings]
+        PG_ADMIN[Admin Panel]
+        PG_BILLING[Billing/Pricing]
+        PG_STATION[Station Context]
+        PG_AI[AI Planning]
+        PG_ISSUE[Issue Reporter]
+    end
+
+    subgraph EdgeFunctions["Edge Functions (Deno)"]
+        FN_CHECKOUT[create-checkout]
+        FN_PORTAL[customer-portal]
+        FN_CHECK_SUB[check-subscription]
+        FN_WEBHOOK[stripe-webhook]
+        FN_SEATS[update-seats]
+        FN_EMAIL[send-email]
+        FN_AUTH_HOOK[auth-email-hook]
+        FN_ERP[erp-sync]
+        FN_AI_PLAN[ai-planning-assistant]
+        FN_ISSUE[report-issue]
+        FN_RLS[rls-health]
+        FN_SOCIAL[social-agent]
+        FN_DONATION[create-donation]
+        FN_ACTIVATE[activate-station-context]
+        FN_VERIFY[verify-station-context-payment]
+    end
+
+    subgraph ExternalAPIs["External APIs"]
+        STRIPE_API[Stripe API]
+        RESEND_API[Resend API]
+        ERP_API[ERP REST API]
+        LOVABLE_AI[Lovable AI]
+    end
+
+    subgraph Database["Database Tables"]
+        T_ORGS[(organizations)]
+        T_SUBS[(subscriptions)]
+        T_ENT[(entitlements)]
+        T_STRIPE[(stripe_events)]
+        T_ERP_CONN[(erp_connections)]
+        T_ERP_LOG[(erp_sync_logs)]
+        T_ISSUES[(issues)]
+        T_RLS[(rls_health_checks)]
+        T_PLAN[(planning_chat_sessions)]
+        T_QUEUE[(queue_items)]
+        T_EMAIL[(email_rate_limits)]
+        T_STATIONS[(stations)]
+        T_PURCHASES[(org_machine_purchases)]
+    end
+
+    %% Billing flow
+    PG_BILLING --> FN_CHECKOUT --> STRIPE_API
+    PG_BILLING --> FN_PORTAL --> STRIPE_API
+    PG_SETTINGS --> FN_CHECK_SUB --> T_SUBS
+    STRIPE_API -- webhook --> FN_WEBHOOK --> T_STRIPE
+    FN_WEBHOOK --> T_SUBS
+    FN_WEBHOOK --> T_ORGS
+    FN_WEBHOOK --> T_ENT
+    PG_SETTINGS --> FN_SEATS --> T_SUBS
+
+    %% Email
+    FN_EMAIL --> RESEND_API
+    FN_EMAIL --> T_EMAIL
+    FN_AUTH_HOOK --> RESEND_API
+
+    %% ERP
+    PG_SETTINGS --> FN_ERP --> ERP_API
+    FN_ERP --> T_ERP_CONN
+    FN_ERP --> T_ERP_LOG
+    FN_ERP --> T_QUEUE
+
+    %% AI
+    PG_AI --> FN_AI_PLAN --> LOVABLE_AI
+    FN_AI_PLAN --> T_PLAN
+
+    %% Issues
+    PG_ISSUE --> FN_ISSUE --> T_ISSUES
+
+    %% Admin
+    PG_ADMIN --> FN_RLS --> T_RLS
+    PG_ADMIN --> FN_SOCIAL --> LOVABLE_AI
+
+    %% Station context
+    PG_STATION --> FN_ACTIVATE --> T_STATIONS
+    PG_STATION --> FN_VERIFY --> T_PURCHASES
+
+    %% Donations
+    PG_BILLING --> FN_DONATION --> STRIPE_API

@@ -1,0 +1,62 @@
+%% Sequence: Dashboard Load
+%% Type: sequenceDiagram
+
+sequenceDiagram
+    actor USER as User
+    participant APP as App.tsx
+    participant AUTH as AuthContext
+    participant SB as Supabase Client
+    participant DB as PostgreSQL
+    participant TEAM as TeamContext
+    participant DASH as Index (Dashboard)
+    participant HOOKS as Data Hooks
+
+    USER->>APP: Navigate to /dashboard
+
+    APP->>AUTH: Check session
+    AUTH->>SB: supabase.auth.getSession()
+    SB-->>AUTH: Session + User
+
+    alt No Session
+        AUTH-->>APP: Redirect to /auth
+    else Has Session
+        AUTH->>SB: Fetch profile + roles
+        SB->>DB: SELECT from profiles WHERE user_id
+        DB-->>SB: Profile data
+        SB->>DB: SELECT from user_roles WHERE user_id
+        DB-->>SB: Roles array
+        SB-->>AUTH: { profile, roles }
+
+        AUTH->>TEAM: Initialize team context
+        TEAM->>SB: Fetch org membership
+        SB->>DB: SELECT from organization_members
+        DB-->>SB: Org + teams
+        SB-->>TEAM: Set selectedTeam
+
+        TEAM-->>DASH: Render dashboard
+
+        par Parallel data fetching
+            DASH->>HOOKS: useStations(teamId)
+            HOOKS->>SB: SELECT from stations WHERE org_id
+            SB->>DB: Query with RLS
+            DB-->>SB: Stations
+            SB-->>HOOKS: Station data
+
+            DASH->>HOOKS: useQueue(teamId)
+            HOOKS->>SB: SELECT from queue_items WHERE org_id
+            SB->>DB: Query with RLS
+            DB-->>SB: Queue items
+            SB-->>HOOKS: Queue data
+
+            DASH->>HOOKS: useHandoffRecords(teamId)
+            HOOKS->>SB: SELECT from handoff_records
+            SB->>DB: Query with RLS
+            DB-->>SB: Handoffs
+            SB-->>HOOKS: Handoff data
+        end
+
+        HOOKS-->>DASH: Render with data
+        DASH-->>USER: Dashboard visible
+
+        Note over HOOKS,SB: Realtime subscriptions + polling fallback activated
+    end

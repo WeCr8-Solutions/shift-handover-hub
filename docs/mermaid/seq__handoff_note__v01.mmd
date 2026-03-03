@@ -1,0 +1,61 @@
+%% Sequence: Shift Handoff Note Create/Read/Ack
+%% Type: sequenceDiagram
+
+sequenceDiagram
+    actor OP_OUT as Outgoing Operator
+    actor OP_IN as Incoming Operator
+    participant UI as Dashboard
+    participant FORM as NewHandoffForm
+    participant HOOK as useHandoffRecords
+    participant SB as Supabase Client
+    participant DB as PostgreSQL
+    participant RT as Realtime
+    participant STATUS as current_station_status
+
+    %% Create handoff
+    OP_OUT->>UI: Click New Handoff
+    UI->>FORM: Open form for station
+    OP_OUT->>FORM: Fill handoff details
+    Note over FORM: Summary, machine condition,<br/>parts complete, issues, images
+
+    OP_OUT->>FORM: Submit
+    FORM->>HOOK: createHandoffRecord(data)
+    HOOK->>SB: supabase.from(handoff_records).insert()
+
+    SB->>DB: INSERT with org_id trigger
+    Note over DB: RLS: is_org_member check
+    DB->>DB: auto_populate_org_id_for_handoff()
+
+    DB-->>SB: New handoff record
+    SB-->>HOOK: Success
+
+    %% Update station status
+    HOOK->>SB: supabase.from(current_station_status).upsert()
+    SB->>DB: UPSERT station status
+    DB-->>SB: Updated
+
+    HOOK-->>UI: Show success toast
+    UI-->>OP_OUT: Handoff submitted
+
+    %% Realtime to incoming
+    DB->>RT: postgres_changes INSERT
+    RT->>UI: New handoff notification
+
+    %% Read handoff
+    OP_IN->>UI: View station / dashboard
+    UI->>HOOK: fetchRecords(stationId)
+    HOOK->>SB: SELECT from handoff_records
+    SB->>DB: Query with RLS
+    DB-->>SB: Handoff history
+    SB-->>HOOK: Records
+    HOOK-->>UI: Display HandoffCard list
+
+    OP_IN->>UI: Review latest handoff
+    UI-->>OP_IN: Show summary, condition, issues
+
+    %% Acknowledge (implicit via station check-in)
+    OP_IN->>UI: Check into station
+    UI->>SB: INSERT operator_station_sessions
+    SB->>DB: New session (is_active=true)
+    DB-->>SB: Session created
+    UI-->>OP_IN: Checked in, handoff acknowledged
