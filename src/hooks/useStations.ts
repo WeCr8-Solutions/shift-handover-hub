@@ -154,9 +154,10 @@ export function useStations(teamId?: string | null, organizationId?: string | nu
     let isActive = true;
     let timeoutId: ReturnType<typeof setTimeout>;
 
-    // Primary: realtime subscription
+    // Primary: realtime subscription — use unique channel name per org to avoid cross-tenant leakage
+    const channelName = `station-status-${effectiveOrgId || 'global'}-${user.id}`;
     const channel = supabase
-      .channel("station-status-changes")
+      .channel(channelName)
       .on(
         "postgres_changes",
         {
@@ -169,7 +170,24 @@ export function useStations(teamId?: string | null, organizationId?: string | nu
           pollInterval = 5000; // reset on realtime success
         }
       )
-      .subscribe();
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "stations",
+        },
+        () => {
+          fetchStations();
+          pollInterval = 5000;
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          // On error, fall back to more aggressive polling
+          pollInterval = 3000;
+        }
+      });
 
     // Fallback: polling to catch missed realtime events
     const poll = () => {
@@ -185,7 +203,7 @@ export function useStations(teamId?: string | null, organizationId?: string | nu
       clearTimeout(timeoutId);
       supabase.removeChannel(channel);
     };
-  }, [user, fetchStations]);
+  }, [user, fetchStations, effectiveOrgId]);
 
   const createStation = async (stationData: {
     station_id: string;
@@ -300,8 +318,9 @@ export function useHandoffRecords(teamId?: string | null, organizationId?: strin
     let isActive = true;
     let timeoutId: ReturnType<typeof setTimeout>;
 
+    const channelName = `handoff-records-${effectiveOrgId || 'global'}-${user.id}`;
     const channel = supabase
-      .channel("handoff-records-changes")
+      .channel(channelName)
       .on(
         "postgres_changes",
         {
@@ -309,12 +328,17 @@ export function useHandoffRecords(teamId?: string | null, organizationId?: strin
           schema: "public",
           table: "handoff_records",
         },
-        (payload) => {
-          setRecords((prev) => [payload.new as HandoffRecord, ...prev]);
+        () => {
+          // Full refetch to ensure org-scoped filtering
+          fetchRecords();
           pollInterval = 10000;
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          pollInterval = 5000;
+        }
+      });
 
     const poll = () => {
       if (!isActive) return;
@@ -329,7 +353,7 @@ export function useHandoffRecords(teamId?: string | null, organizationId?: strin
       clearTimeout(timeoutId);
       supabase.removeChannel(channel);
     };
-  }, [user, fetchRecords]);
+  }, [user, fetchRecords, effectiveOrgId]);
 
   const createHandoffRecord = async (
     record: Omit<HandoffRecord, "id" | "created_at" | "updated_at" | "record_version">

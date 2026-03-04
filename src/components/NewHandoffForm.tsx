@@ -35,6 +35,14 @@ import {
 
 const STORAGE_KEY = "handoff-form-draft";
 
+export type HandoffType = "shift_end" | "station" | "operation";
+
+const HANDOFF_TYPE_OPTIONS: { value: HandoffType; label: string; description: string }[] = [
+  { value: "shift_end", label: "End of Shift", description: "Handing off to the next shift operator" },
+  { value: "station", label: "Leaving Station", description: "Leaving this station (break, reassignment, etc.)" },
+  { value: "operation", label: "Operation Complete", description: "Completed your operation — passing the job forward" },
+];
+
 const jobStates: JobState[] = [
   "Part Running",
   "Processing",
@@ -82,6 +90,7 @@ function isCNCType(type: WorkCenterType): boolean {
 }
 
 interface FormData {
+  handoffType: HandoffType;
   stationId: string;
   stationDbId: string;
   workCenterType: WorkCenterType | "";
@@ -116,6 +125,7 @@ interface FormData {
 }
 
 const getInitialFormData = (operatorName: string): FormData => ({
+  handoffType: "shift_end",
   stationId: "",
   stationDbId: "",
   workCenterType: "",
@@ -126,7 +136,7 @@ const getInitialFormData = (operatorName: string): FormData => ({
   partRevision: "",
   operationNumber: "",
   outgoingOperator: operatorName,
-  incomingOperator: operatorName, // Default to self for solo operators
+  incomingOperator: "",
   jobState: "",
   jobStateReason: "",
   cncReadiness: Object.fromEntries(cncReadinessItems.map((item) => [item.key, "N/A" as TriState])),
@@ -330,30 +340,35 @@ export function NewHandoffForm({ onClose, onSubmit, initialStationId, prefillDat
       // Auto-fill from active queue item at this station
       const { data: activeItem } = await supabase
         .from("queue_items")
-        .select("work_order, part_number, operation_number, quantity")
+        .select("work_order, part_number, operation_number, quantity, qty_completed, parts_completed")
         .eq("station_id", stationDbId)
         .eq("status", "in_progress")
         .limit(1)
+        .maybeSingle();
+
+      // Also fetch current_station_status for operator/state info
+      const { data: stationStatus } = await supabase
+        .from("current_station_status")
+        .select("*")
+        .eq("station_id", stationDbId)
         .maybeSingle();
 
       if (activeItem) {
         if (activeItem.work_order) updates.workOrder = activeItem.work_order;
         if (activeItem.part_number) updates.partNumber = activeItem.part_number;
         if (activeItem.operation_number) updates.operationNumber = activeItem.operation_number;
-        if (activeItem.quantity) updates.partsCompleted = 0; // reset for new handoff
+        // Pre-fill parts completed from the work order's tracked count
+        updates.partsCompleted = activeItem.qty_completed || activeItem.parts_completed || 0;
         toast.info(`Auto-filled from active work order: ${activeItem.work_order || activeItem.part_number}`);
-      } else {
-        // Fall back to current_station_status
-        const { data: status } = await supabase
-          .from("current_station_status")
-          .select("current_job_work_order, current_job_part_number")
-          .eq("station_id", stationDbId)
-          .maybeSingle();
+      } else if (stationStatus) {
+        if (stationStatus.current_job_work_order) updates.workOrder = stationStatus.current_job_work_order;
+        if (stationStatus.current_job_part_number) updates.partNumber = stationStatus.current_job_part_number;
+        if (stationStatus.parts_complete) updates.partsCompleted = stationStatus.parts_complete;
+      }
 
-        if (status) {
-          if (status.current_job_work_order) updates.workOrder = status.current_job_work_order;
-          if (status.current_job_part_number) updates.partNumber = status.current_job_part_number;
-        }
+      // Auto-fill job state from station status
+      if (stationStatus?.current_job_state) {
+        updates.jobState = stationStatus.current_job_state as JobState;
       }
 
       setFormData((prev) => ({ ...prev, ...updates }));
@@ -460,27 +475,41 @@ export function NewHandoffForm({ onClose, onSubmit, initialStationId, prefillDat
     if (error) {
       toast.error("Failed to create handoff: " + error.message);
     } else {
-      // Sync station status so the supervisor dashboard reflects the handoff immediately
+      // Sync station status based on handoff type
       if (formData.stationDbId) {
+        const statusUpdate: Record<string, any> = {
+          station_id: formData.stationDbId,
+          organization_id: organization?.id || null,
+          current_job_state: formData.jobState || null,
+          current_job_work_order: formData.workOrder || null,
+          current_job_part_number: formData.partNumber || null,
+          parts_complete: formData.partsCompleted || 0,
+        };
+
+        if (formData.handoffType === "station") {
+          // Leaving station — clear operator, keep job info
+          statusUpdate.current_operator_name = null;
+          statusUpdate.current_operator_id = null;
+        } else if (formData.handoffType === "operation") {
+          // Operation complete — mark ready for pickup, clear operator
+          statusUpdate.current_job_state = "Ready for Pickup";
+          statusUpdate.current_operator_name = null;
+          statusUpdate.current_operator_id = null;
+        } else {
+          // Shift end — transfer to incoming operator
+          statusUpdate.current_operator_name = formData.incomingOperator || null;
+          statusUpdate.current_operator_id = null; // incoming's user_id isn't known yet
+        }
+
         await supabase
           .from("current_station_status")
-          .upsert(
-            {
-              station_id: formData.stationDbId,
-              organization_id: organization?.id || null,
-              current_job_state: formData.jobState || null,
-              current_job_work_order: formData.workOrder || null,
-              current_job_part_number: formData.partNumber || null,
-              current_operator_name: formData.incomingOperator || null,
-              current_operator_id: null,
-              parts_complete: formData.partsCompleted || 0,
-            },
-            { onConflict: "station_id" }
-          );
+          .upsert(statusUpdate, { onConflict: "station_id" });
       }
 
       clearDraft();
-      toast.success("Handoff record created successfully!");
+      const typeLabel = formData.handoffType === "shift_end" ? "Shift handoff" :
+                         formData.handoffType === "station" ? "Station handoff" : "Operation handoff";
+      toast.success(`${typeLabel} submitted successfully!`);
       onClose();
     }
   };
@@ -567,7 +596,11 @@ export function NewHandoffForm({ onClose, onSubmit, initialStationId, prefillDat
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
           <div>
-            <h2 className="text-lg font-semibold text-foreground">New Shift Handoff</h2>
+            <h2 className="text-lg font-semibold text-foreground">
+              {formData.handoffType === "shift_end" ? "End of Shift Handoff" : 
+               formData.handoffType === "station" ? "Station Handoff" : 
+               formData.handoffType === "operation" ? "Operation Handoff" : "New Shift Handoff"}
+            </h2>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span>{getCurrentShift()} Shift • {new Date().toLocaleDateString()}</span>
               {formData.workCenterType && (
@@ -646,6 +679,29 @@ export function NewHandoffForm({ onClose, onSubmit, initialStationId, prefillDat
         <div className="flex-1 overflow-y-auto p-4">
           {step === 1 && (
             <div className="space-y-4">
+              {/* Handoff Type Selector */}
+              <div className="space-y-2">
+                <Label>Handoff Type</Label>
+                <div className="grid grid-cols-3 gap-2">
+                  {HANDOFF_TYPE_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => updateField("handoffType", opt.value)}
+                      className={cn(
+                        "p-3 rounded-lg border text-left transition-all text-sm",
+                        formData.handoffType === opt.value
+                          ? "border-primary bg-primary/10 ring-1 ring-primary"
+                          : "border-border hover:bg-secondary"
+                      )}
+                    >
+                      <div className="font-medium text-foreground">{opt.label}</div>
+                      <div className="text-[10px] text-muted-foreground mt-0.5">{opt.description}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label className="flex items-center gap-1">
                   Station / Work Center <span className="text-destructive">*</span>
@@ -757,13 +813,25 @@ export function NewHandoffForm({ onClose, onSubmit, initialStationId, prefillDat
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Incoming Operator</Label>
+                  <Label>
+                    {formData.handoffType === "shift_end" ? "Incoming Operator (Next Shift)" :
+                     formData.handoffType === "operation" ? "Next Station Operator" : "Incoming Operator"}
+                  </Label>
                   <Input
                     value={formData.incomingOperator}
                     onChange={(e) => updateField("incomingOperator", e.target.value)}
-                    placeholder="Next shift operator (defaults to you for solo ops)"
+                    placeholder={
+                      formData.handoffType === "shift_end" ? "Name of the next shift operator" :
+                      formData.handoffType === "operation" ? "Next station operator (if known)" :
+                      "Name of the relieving operator"
+                    }
                   />
-                  {formData.incomingOperator === formData.outgoingOperator && (
+                  {formData.handoffType === "station" && !formData.incomingOperator && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Leave blank if no one is taking over the station
+                    </p>
+                  )}
+                  {formData.incomingOperator && formData.incomingOperator === formData.outgoingOperator && (
                     <p className="text-xs text-muted-foreground mt-1">
                       ✓ Self-handoff — you're covering the next shift too
                     </p>

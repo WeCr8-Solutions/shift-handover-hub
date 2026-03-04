@@ -71,9 +71,27 @@ export function useOperatorSessions() {
       }, () => {
         fetchSessions();
       })
-      .subscribe();
+      .subscribe((status) => {
+        // On channel error, do an immediate refetch
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          fetchSessions();
+        }
+      });
 
-    return () => { supabase.removeChannel(channel); };
+    // Polling fallback for session reliability
+    let pollTimeout: ReturnType<typeof setTimeout>;
+    let pollInterval = 10000;
+    const poll = () => {
+      fetchSessions();
+      pollInterval = Math.min(pollInterval * 1.5, 30000);
+      pollTimeout = setTimeout(poll, pollInterval);
+    };
+    pollTimeout = setTimeout(poll, pollInterval);
+
+    return () => {
+      clearTimeout(pollTimeout);
+      supabase.removeChannel(channel);
+    };
   }, [user, fetchSessions]);
 
   const checkIn = async (stationIds: string[], shift: string) => {
