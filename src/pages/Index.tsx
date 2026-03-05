@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+
 import { Header } from "@/components/Header";
 import { StationCard } from "@/components/StationCard";
 import { HandoffCard } from "@/components/HandoffCard";
@@ -14,19 +15,34 @@ import { SupervisorDashboard } from "@/components/dashboard/SupervisorDashboard"
 import { OperatorDashboard } from "@/components/dashboard/OperatorDashboard";
 import { StationDetailView } from "@/components/dashboard/StationDetailView";
 import { ExpiredTrialGate } from "@/components/ExpiredTrialGate";
+
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrentTeam } from "@/contexts/TeamContext";
-import { useStations, useHandoffRecords, Station, HandoffRecord } from "@/hooks/useStations";
+import { useStations, useHandoffRecords, type Station, type HandoffRecord } from "@/hooks/useStations";
 import { useOnboardingContext } from "@/components/onboarding/OnboardingProvider";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { useUserOrganization } from "@/hooks/useUserOrganization";
+
 import { mockStations, mockHandoffRecords } from "@/lib/mockData";
-import { WorkCenterType, StationInfo, ShiftHandoffRecord } from "@/types/handoff";
+import { type WorkCenterType, type StationInfo, type ShiftHandoffRecord } from "@/types/handoff";
+
 import { Button } from "@/components/ui/button";
-import { Plus, LayoutGrid, History, Loader2, Building2, Lightbulb, ListTodo, Package, Settings, Users } from "lucide-react";
+import {
+  Plus,
+  LayoutGrid,
+  History,
+  Loader2,
+  Building2,
+  Lightbulb,
+  ListTodo,
+  Package,
+  Settings,
+  Users,
+} from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { TourTriggerButton } from "@/components/onboarding";
+
 // Convert database station to StationInfo for display
 function toStationInfo(station: Station): StationInfo {
   const status = station.current_status;
@@ -36,15 +52,20 @@ function toStationInfo(station: Station): StationInfo {
     workCenter: station.work_center,
     workCenterType: station.work_center_type,
     isActive: station.is_active,
-    currentJob: status?.current_job_work_order ? {
-      workOrder: status.current_job_work_order,
-      partNumber: status.current_job_part_number || "",
-      state: status.current_job_state as any,
-      operator: status.current_operator_name || "",
-      partsComplete: status.parts_complete || 0,
-      partsRequired: status.parts_required || 0,
-    } : undefined,
-    condition: { status: (status?.condition_status as "OK" | "Issue") || "OK", notes: status?.condition_notes || undefined },
+    currentJob: status?.current_job_work_order
+      ? {
+          workOrder: status.current_job_work_order,
+          partNumber: status.current_job_part_number || "",
+          state: status.current_job_state as StationInfo["currentJob"]["state"],
+          operator: status.current_operator_name || "",
+          partsComplete: status.parts_complete || 0,
+          partsRequired: status.parts_required || 0,
+        }
+      : undefined,
+    condition: {
+      status: (status?.condition_status as "OK" | "Issue") ?? "OK",
+      notes: status?.condition_notes || undefined,
+    },
   };
 }
 
@@ -72,27 +93,29 @@ function toHandoffRecord(record: HandoffRecord): ShiftHandoffRecord {
     jobState: {
       primaryState: record.primary_state,
       reason: record.state_reason || undefined,
-      delayCode: (record.delay_code as any) || "None",
+      delayCode: (record.delay_code as ShiftHandoffRecord["jobState"]["delayCode"]) ?? "None",
     },
-    machineReadiness: record.machine_readiness as any,
-    equipmentReadiness: record.equipment_readiness as any,
-    machineCondition: record.machine_condition as any,
-    weldingCondition: record.welding_condition as any,
-    waterJetCondition: record.water_jet_condition as any,
+    machineReadiness: record.machine_readiness as ShiftHandoffRecord["machineReadiness"],
+    equipmentReadiness: record.equipment_readiness as ShiftHandoffRecord["equipmentReadiness"],
+    machineCondition: record.machine_condition as ShiftHandoffRecord["machineCondition"],
+    weldingCondition: record.welding_condition as ShiftHandoffRecord["weldingCondition"],
+    waterJetCondition: record.water_jet_condition as ShiftHandoffRecord["waterJetCondition"],
     qualityStatus: {
       lastGoodPartTimestamp: record.last_good_part_timestamp || "",
       partsCompletedThisShift: record.parts_completed_this_shift,
       scrapCount: record.scrap_count,
       reworkCount: record.rework_count,
       criticalDimsVerified: record.critical_dims_verified,
-      qaNotified: record.qa_notified as any,
+      qaNotified: record.qa_notified as ShiftHandoffRecord["qualityStatus"]["qaNotified"],
       qualityNotes: record.quality_notes || undefined,
     },
     setupProcess: {
-      fixtureInstalled: record.fixture_installed as any,
-      clampsBoltsTorqued: record.clamps_bolts_torqued as any,
-      fixtureOrientationVerified: record.fixture_orientation_verified as any,
-      specialInstructionsFollowed: record.special_instructions_followed as any,
+      fixtureInstalled: record.fixture_installed as ShiftHandoffRecord["setupProcess"]["fixtureInstalled"],
+      clampsBoltsTorqued: record.clamps_bolts_torqued as ShiftHandoffRecord["setupProcess"]["clampsBoltsTorqued"],
+      fixtureOrientationVerified:
+        record.fixture_orientation_verified as ShiftHandoffRecord["setupProcess"]["fixtureOrientationVerified"],
+      specialInstructionsFollowed:
+        record.special_instructions_followed as ShiftHandoffRecord["setupProcess"]["specialInstructionsFollowed"],
       processNotesForNextShift: record.process_notes_for_next_shift || undefined,
     },
     materialsStatus: {
@@ -119,26 +142,40 @@ function toHandoffRecord(record: HandoffRecord): ShiftHandoffRecord {
 
 const Index = () => {
   const navigate = useNavigate();
+
   const { user, loading: authLoading } = useAuth();
   const { currentTeam } = useCurrentTeam();
   const { organization } = useUserOrganization();
   const { stations: dbStations, loading: stationsLoading } = useStations(currentTeam?.id, organization?.id);
-  const { records: dbRecords, loading: recordsLoading, createHandoffRecord } = useHandoffRecords(currentTeam?.id, organization?.id);
-  const { isComplete, isLoading: onboardingLoading, isStepCompleted, hasSeenWelcome, setupWizardDismissed } = useOnboardingContext();
+  const {
+    records: dbRecords,
+    loading: recordsLoading,
+    createHandoffRecord,
+  } = useHandoffRecords(currentTeam?.id, organization?.id);
+  const {
+    isComplete,
+    isLoading: onboardingLoading,
+    isStepCompleted,
+    hasSeenWelcome,
+    setupWizardDismissed,
+  } = useOnboardingContext();
   const { hasOrgSupervisorAccess, loading: roleLoading } = useAdminAccess();
 
   // Supervisors, org admins, and platform admins get the production overview dashboard
-  const showSupervisorView = user && hasOrgSupervisorAccess;
+  const showSupervisorView = !!user && hasOrgSupervisorAccess;
   // Authenticated operators (non-supervisor) get the focused operator dashboard
-  const showOperatorView = user && !hasOrgSupervisorAccess && !roleLoading;
-  
+  const showOperatorView = !!user && !hasOrgSupervisorAccess && !roleLoading;
+
   const [showNewHandoff, setShowNewHandoff] = useState(false);
   const [showPerformanceUpdate, setShowPerformanceUpdate] = useState(false);
   const [showCreateWorkOrder, setShowCreateWorkOrder] = useState(false);
   const [selectedTypes, setSelectedTypes] = useState<WorkCenterType[]>([]);
   const [selectedStationForAction, setSelectedStationForAction] = useState<string | undefined>();
   const [viewMode, setViewMode] = useState<"supervisor" | "operator" | "station-detail">("supervisor");
-  const [focusedStation, setFocusedStation] = useState<{ id: string; name: string } | null>(null);
+  const [focusedStation, setFocusedStation] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
   const [handoffPrefill, setHandoffPrefill] = useState<{
     work_order?: string;
     part_number?: string;
@@ -154,15 +191,21 @@ const Index = () => {
       const prefillRaw = sessionStorage.getItem("handoff_prefill");
       if (prefillRaw) {
         try {
-          const prefill = JSON.parse(prefillRaw);
+          const prefill = JSON.parse(prefillRaw) as {
+            work_order?: string;
+            part_number?: string;
+            operation_number?: string;
+            station_id?: string;
+          };
           setHandoffPrefill(prefill);
           if (prefill.station_id) {
             setSelectedStationForAction(prefill.station_id);
           }
         } catch (e) {
           console.error("Failed to parse handoff prefill:", e);
+        } finally {
+          sessionStorage.removeItem("handoff_prefill");
         }
-        sessionStorage.removeItem("handoff_prefill");
       }
       setShowNewHandoff(true);
     }
@@ -171,21 +214,29 @@ const Index = () => {
   // Redirect to setup if onboarding is incomplete and user is authenticated
   useEffect(() => {
     if (user && !authLoading && !onboardingLoading) {
-      // If user hasn't seen welcome or hasn't completed organization setup, redirect to setup
-      // But respect "don't show again" preference
-      // Only redirect to setup if the wizard hasn't been dismissed AND user hasn't
-      // completed key setup steps. hasSeenWelcome alone should NOT force a redirect
-      // if user already has org/shop setup done.
-      const hasCompletedSetup = isStepCompleted('shop-setup') || isStepCompleted('organization-setup') || isComplete;
+      const hasCompletedSetup = isStepCompleted("shop-setup") || isStepCompleted("organization-setup") || isComplete;
+
       if (!setupWizardDismissed && !hasSeenWelcome && !hasCompletedSetup) {
-        navigate('/setup', { replace: true });
+        navigate("/setup", { replace: true });
       }
     }
-  }, [user, authLoading, onboardingLoading, hasSeenWelcome, isComplete, isStepCompleted, navigate, setupWizardDismissed]);
+  }, [
+    user,
+    authLoading,
+    onboardingLoading,
+    hasSeenWelcome,
+    isComplete,
+    isStepCompleted,
+    navigate,
+    setupWizardDismissed,
+  ]);
+
   // Create a map of stationId to database id for linking
   const stationIdToDbId = useMemo(() => {
     const map: Record<string, string> = {};
-    dbStations.forEach(s => { map[s.station_id] = s.id; });
+    dbStations.forEach((s) => {
+      map[s.station_id] = s.id;
+    });
     return map;
   }, [dbStations]);
 
@@ -224,10 +275,7 @@ const Index = () => {
             {/* Supervisor / Admin Production Overview */}
             {showSupervisorView ? (
               viewMode === "operator" ? (
-                <OperatorDashboard
-                  isAdminView
-                  onBackToOverview={() => setViewMode("supervisor")}
-                />
+                <OperatorDashboard isAdminView onBackToOverview={() => setViewMode("supervisor")} />
               ) : viewMode === "station-detail" && focusedStation ? (
                 <StationDetailView
                   stationId={focusedStation.id}
@@ -254,215 +302,221 @@ const Index = () => {
             ) : null}
           </ExpiredTrialGate>
         ) : (
-        <>
-        {/* Stats Overview */}
-        <div className="mb-6" data-tour="shift-stats">
-          <ShiftStats />
-        </div>
+          <>
+            {/* Stats Overview */}
+            <div className="mb-6" data-tour="shift-stats">
+              <ShiftStats />
+            </div>
 
-        {/* Login prompt for unauthenticated users */}
-        {!authLoading && !user && (
-          <Card className="mb-6 border-primary/30 bg-primary/5">
-            <CardContent className="flex items-center justify-between p-4">
-              <div className="flex items-center gap-3">
-                <Building2 className="w-5 h-5 text-primary" />
-                <div>
-                  <p className="font-medium">Sign in to track your handoffs</p>
-                  <p className="text-sm text-muted-foreground">Create teams, add operators, and share data in real-time</p>
-                </div>
-              </div>
-              <Button onClick={() => navigate("/auth")}>Sign In</Button>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Main Content */}
-        <Tabs defaultValue="stations" className="space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <TabsList className="bg-secondary">
-              <TabsTrigger value="stations" className="gap-2">
-                <LayoutGrid className="w-4 h-4" />
-                Stations
-              </TabsTrigger>
-              <TabsTrigger value="handoffs" className="gap-2">
-                <History className="w-4 h-4" />
-                Handoffs
-              </TabsTrigger>
-            </TabsList>
-
-            {user && (
-              <div className="flex gap-2 flex-wrap">
-                <TourTriggerButton />
-                <Button 
-                  onClick={() => setShowCreateWorkOrder(true)} 
-                  className="gap-2 bg-primary"
-                  data-tour="add-work-order"
-                >
-                  <Package className="w-4 h-4" />
-                  Add Work Order
-                </Button>
-                <Button variant="outline" onClick={() => navigate("/queue")} className="gap-2">
-                  <ListTodo className="w-4 h-4" />
-                  Queue
-                </Button>
-                <Button variant="outline" onClick={() => setShowPerformanceUpdate(true)} className="gap-2">
-                  <Lightbulb className="w-4 h-4" />
-                  Performance Update
-                </Button>
-                <Button variant="outline" onClick={() => setShowNewHandoff(true)} className="gap-2" data-tour="new-handoff">
-                  <Plus className="w-4 h-4" />
-                  New Handoff
-                </Button>
-              </div>
+            {/* Login prompt for unauthenticated users */}
+            {!authLoading && !user && (
+              <Card className="mb-6 border-primary/30 bg-primary/5">
+                <CardContent className="flex items-center justify-between p-4">
+                  <div className="flex items-center gap-3">
+                    <Building2 className="w-5 h-5 text-primary" />
+                    <div>
+                      <p className="font-medium">Sign in to track your handoffs</p>
+                      <p className="text-sm text-muted-foreground">
+                        Create teams, add operators, and share data in real-time
+                      </p>
+                    </div>
+                  </div>
+                  <Button onClick={() => navigate("/auth")}>Sign In</Button>
+                </CardContent>
+              </Card>
             )}
-          </div>
 
-          {/* Filter */}
-          <div data-tour="work-center-filter">
-          <WorkCenterFilter
-            selectedTypes={selectedTypes} 
-            onFilterChange={setSelectedTypes} 
-          />
-          </div>
+            {/* Main Content */}
+            <Tabs defaultValue="stations" className="space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <TabsList className="bg-secondary">
+                  <TabsTrigger value="stations" className="gap-2">
+                    <LayoutGrid className="w-4 h-4" />
+                    Stations
+                  </TabsTrigger>
+                  <TabsTrigger value="handoffs" className="gap-2">
+                    <History className="w-4 h-4" />
+                    Handoffs
+                  </TabsTrigger>
+                </TabsList>
 
-          <TabsContent value="stations" className="mt-0" data-tour="station-grid">
-            {isLoading && !hasData && user ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="w-6 h-6 animate-spin text-primary" />
-              </div>
-            ) : (
-              <div className="flex gap-6">
-                {/* Operator Workflow Panel - Left Sidebar */}
                 {user && (
-                  <div className="hidden lg:block w-80 flex-shrink-0">
-                    <div className="sticky top-4">
-                      <OperatorWorkflowPanel />
+                  <div className="flex gap-2 flex-wrap">
+                    <TourTriggerButton />
+                    <Button
+                      onClick={() => setShowCreateWorkOrder(true)}
+                      className="gap-2 bg-primary"
+                      data-tour="add-work-order"
+                    >
+                      <Package className="w-4 h-4" />
+                      Add Work Order
+                    </Button>
+                    <Button variant="outline" onClick={() => navigate("/queue")} className="gap-2">
+                      <ListTodo className="w-4 h-4" />
+                      Queue
+                    </Button>
+                    <Button variant="outline" onClick={() => setShowPerformanceUpdate(true)} className="gap-2">
+                      <Lightbulb className="w-4 h-4" />
+                      Performance Update
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowNewHandoff(true)}
+                      className="gap-2"
+                      data-tour="new-handoff"
+                    >
+                      <Plus className="w-4 h-4" />
+                      New Handoff
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              {/* Filter */}
+              <div data-tour="work-center-filter">
+                <WorkCenterFilter selectedTypes={selectedTypes} onFilterChange={setSelectedTypes} />
+              </div>
+
+              <TabsContent value="stations" className="mt-0" data-tour="station-grid">
+                {isLoading && !hasData && user ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  </div>
+                ) : (
+                  <div className="flex gap-6">
+                    {/* Operator Workflow Panel - Left Sidebar */}
+                    {user && (
+                      <div className="hidden lg:block w-80 flex-shrink-0">
+                        <div className="sticky top-4">
+                          <OperatorWorkflowPanel />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Station Grid */}
+                    <div className="flex-1">
+                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                        {filteredStations.map((station) => {
+                          const dbId = stationIdToDbId[station.stationId];
+                          return (
+                            <StationCard
+                              key={station.stationId}
+                              station={station}
+                              stationDbId={dbId}
+                              onNewHandoff={() => {
+                                setSelectedStationForAction(dbId);
+                                setShowNewHandoff(true);
+                              }}
+                              onPerformanceUpdate={() => {
+                                setSelectedStationForAction(dbId);
+                                setShowPerformanceUpdate(true);
+                              }}
+                              onViewQueue={() => {
+                                if (dbId) {
+                                  navigate(`/queue?station=${dbId}`);
+                                } else {
+                                  navigate("/queue");
+                                }
+                              }}
+                              onAddWorkOrder={() => {
+                                setSelectedStationForAction(dbId);
+                                setShowCreateWorkOrder(true);
+                              }}
+                            />
+                          );
+                        })}
+                      </div>
+                      {filteredStations.length === 0 && (
+                        <Card className="border-dashed">
+                          <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                            {user ? (
+                              <>
+                                <Users className="w-12 h-12 text-muted-foreground mb-4" />
+                                <h3 className="font-semibold text-lg mb-2">No stations configured</h3>
+                                <p className="text-muted-foreground mb-4 max-w-md">
+                                  Create a team and add work stations to start tracking handoffs and managing your shop
+                                  floor.
+                                </p>
+                                <div className="flex gap-2">
+                                  <Button variant="outline" onClick={() => navigate("/teams")}>
+                                    <Users className="w-4 h-4 mr-2" />
+                                    Manage Teams
+                                  </Button>
+                                  <Button onClick={() => navigate("/setup")}>
+                                    <Settings className="w-4 h-4 mr-2" />
+                                    Complete Setup
+                                  </Button>
+                                </div>
+                              </>
+                            ) : (
+                              <p className="text-muted-foreground">No stations match the selected filters.</p>
+                            )}
+                          </CardContent>
+                        </Card>
+                      )}
                     </div>
                   </div>
                 )}
-                
-                {/* Station Grid */}
-                <div className="flex-1">
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {filteredStations.map((station) => (
-                      <StationCard 
-                        key={station.stationId} 
-                        station={station}
-                        stationDbId={stationIdToDbId[station.stationId]}
-                        onNewHandoff={() => {
-                          setSelectedStationForAction(stationIdToDbId[station.stationId]);
-                          setShowNewHandoff(true);
-                        }}
-                        onPerformanceUpdate={() => {
-                          setSelectedStationForAction(stationIdToDbId[station.stationId]);
-                          setShowPerformanceUpdate(true);
-                        }}
-                        onViewQueue={() => {
-                          const dbId = stationIdToDbId[station.stationId];
-                          if (dbId) {
-                            navigate(`/queue?station=${dbId}`);
-                          } else {
-                            navigate('/queue');
-                          }
-                        }}
-                        onAddWorkOrder={() => {
-                          setSelectedStationForAction(stationIdToDbId[station.stationId]);
-                          setShowCreateWorkOrder(true);
-                        }}
-                      />
-                    ))}
+              </TabsContent>
+
+              <TabsContent value="handoffs" className="mt-0">
+                {isLoading && user ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
                   </div>
-                  {filteredStations.length === 0 && (
-                    <Card className="border-dashed">
-                      <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                        {user ? (
-                          <>
-                            <Users className="w-12 h-12 text-muted-foreground mb-4" />
-                            <h3 className="font-semibold text-lg mb-2">No stations configured</h3>
-                            <p className="text-muted-foreground mb-4 max-w-md">
-                              Create a team and add work stations to start tracking handoffs and managing your shop floor.
-                            </p>
-                            <div className="flex gap-2">
-                              <Button variant="outline" onClick={() => navigate("/teams")}>
-                                <Users className="w-4 h-4 mr-2" />
-                                Manage Teams
-                              </Button>
-                              <Button onClick={() => navigate("/setup")}>
-                                <Settings className="w-4 h-4 mr-2" />
-                                Complete Setup
-                              </Button>
-                            </div>
-                          </>
-                        ) : (
-                          <p className="text-muted-foreground">No stations match the selected filters.</p>
-                        )}
-                      </CardContent>
-                    </Card>
-                  )}
-                </div>
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="handoffs" className="mt-0">
-            {isLoading && user ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="w-6 h-6 animate-spin text-primary" />
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                    Recent Handoff Records
-                  </h2>
-                </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  {filteredHandoffs.map((record) => (
-                    <HandoffCard key={record.recordId} record={record} />
-                  ))}
-                </div>
-                {filteredHandoffs.length === 0 && (
-                  <Card className="border-dashed">
-                    <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                      {user ? (
-                        <>
-                          <History className="w-12 h-12 text-muted-foreground mb-4" />
-                          <h3 className="font-semibold text-lg mb-2">No handoff records yet</h3>
-                          <p className="text-muted-foreground mb-4 max-w-md">
-                            {stations.length > 0 
-                              ? "Create your first handoff record to start documenting shift transitions."
-                              : "Set up your work stations first, then you can create handoff records."}
-                          </p>
-                          {stations.length > 0 ? (
-                            <Button onClick={() => setShowNewHandoff(true)}>
-                              <Plus className="w-4 h-4 mr-2" />
-                              Create First Handoff
-                            </Button>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                        Recent Handoff Records
+                      </h2>
+                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      {filteredHandoffs.map((record) => (
+                        <HandoffCard key={record.recordId} record={record} />
+                      ))}
+                    </div>
+                    {filteredHandoffs.length === 0 && (
+                      <Card className="border-dashed">
+                        <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                          {user ? (
+                            <>
+                              <History className="w-12 h-12 text-muted-foreground mb-4" />
+                              <h3 className="font-semibold text-lg mb-2">No handoff records yet</h3>
+                              <p className="text-muted-foreground mb-4 max-w-md">
+                                {stations.length > 0
+                                  ? "Create your first handoff record to start documenting shift transitions."
+                                  : "Set up your work stations first, then you can create handoff records."}
+                              </p>
+                              {stations.length > 0 ? (
+                                <Button onClick={() => setShowNewHandoff(true)}>
+                                  <Plus className="w-4 h-4 mr-2" />
+                                  Create First Handoff
+                                </Button>
+                              ) : (
+                                <Button onClick={() => navigate("/teams")}>
+                                  <Users className="w-4 h-4 mr-2" />
+                                  Set Up Stations
+                                </Button>
+                              )}
+                            </>
                           ) : (
-                            <Button onClick={() => navigate("/teams")}>
-                              <Users className="w-4 h-4 mr-2" />
-                              Set Up Stations
-                            </Button>
+                            <p className="text-muted-foreground">No handoff records match the selected filters.</p>
                           )}
-                        </>
-                      ) : (
-                        <p className="text-muted-foreground">No handoff records match the selected filters.</p>
-                      )}
-                    </CardContent>
-                  </Card>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
                 )}
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
-        </>
+              </TabsContent>
+            </Tabs>
+          </>
         )}
-
       </main>
 
       {/* New Handoff Modal */}
       {showNewHandoff && (
-        <NewHandoffForm 
+        <NewHandoffForm
           onClose={() => {
             setShowNewHandoff(false);
             setHandoffPrefill(null);
@@ -474,9 +528,7 @@ const Index = () => {
       )}
 
       {/* Performance Update Modal */}
-      {showPerformanceUpdate && (
-        <JobPerformanceUpdateForm onClose={() => setShowPerformanceUpdate(false)} />
-      )}
+      {showPerformanceUpdate && <JobPerformanceUpdateForm onClose={() => setShowPerformanceUpdate(false)} />}
 
       {/* Create Work Order Dialog */}
       <CreateWorkOrderDialog
@@ -486,9 +538,7 @@ const Index = () => {
       />
 
       {/* AI Planning Assistant - supervisors/admins only */}
-      {hasOrgSupervisorAccess && organization && (
-        <PlanningAssistantModal organizationId={organization.id} />
-      )}
+      {hasOrgSupervisorAccess && organization && <PlanningAssistantModal organizationId={organization.id} />}
     </div>
   );
 };
