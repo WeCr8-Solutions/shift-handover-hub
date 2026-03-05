@@ -11,6 +11,17 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { MoreHorizontal, Trash2, Eye, Clock, AlertTriangle, GitBranch, Wrench, Plug } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+
+// Valid state transitions matching the DB trigger
+const VALID_TRANSITIONS: Record<QueueStatus, QueueStatus[]> = {
+  pending: ["queued", "cancelled"],
+  queued: ["in_progress", "cancelled", "pending"],
+  in_progress: ["on_hold", "completed", "queued", "cancelled"],
+  on_hold: ["in_progress", "cancelled"],
+  completed: ["pending"],
+  cancelled: [],
+};
 
 interface QueueListViewProps {
   items: QueueItem[];
@@ -263,19 +274,35 @@ export function QueueListView({ items, onItemClick, onStatusChange, onDelete }: 
                   <TableCell>
                     <Select
                       value={item.status}
-                      onValueChange={(value) => onStatusChange(item.id, value as QueueStatus)}
+                      onValueChange={async (value) => {
+                        const result = await onStatusChange(item.id, value as QueueStatus);
+                        if (result.error) {
+                          toast.error(result.error);
+                        }
+                      }}
                     >
                       <SelectTrigger className="w-[130px] h-8">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {statusOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            <Badge className={cn("mr-2", getStatusColor(option.value))}>
-                              {option.label}
-                            </Badge>
-                          </SelectItem>
-                        ))}
+                        {/* Current status always shown */}
+                        <SelectItem key={item.status} value={item.status}>
+                          <Badge className={cn("mr-2", getStatusColor(item.status))}>
+                            {statusOptions.find(o => o.value === item.status)?.label || item.status}
+                          </Badge>
+                        </SelectItem>
+                        {/* Only valid transitions */}
+                        {(VALID_TRANSITIONS[item.status] || []).map((targetStatus) => {
+                          const option = statusOptions.find(o => o.value === targetStatus);
+                          if (!option) return null;
+                          return (
+                            <SelectItem key={option.value} value={option.value}>
+                              <Badge className={cn("mr-2", getStatusColor(option.value))}>
+                                {option.label}
+                              </Badge>
+                            </SelectItem>
+                          );
+                        })}
                       </SelectContent>
                     </Select>
                   </TableCell>

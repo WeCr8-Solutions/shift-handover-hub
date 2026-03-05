@@ -276,7 +276,7 @@ export default function Queue() {
             </div>
 
             {/* Main Content */}
-            {loading ? (
+            {loading && items.length === 0 ? (
               <div className="flex items-center justify-center h-64">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
               </div>
