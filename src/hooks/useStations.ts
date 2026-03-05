@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTeams } from "./useTeams";
@@ -98,6 +98,8 @@ export function useStations(teamId?: string | null, organizationId?: string | nu
   // Use passed organizationId or fall back to user's org
   const effectiveOrgId = organizationId || organization?.id;
 
+  const hasFetchedOnce = useRef(false);
+
   const fetchStations = useCallback(async () => {
     if (!user) {
       setStations([]);
@@ -105,7 +107,10 @@ export function useStations(teamId?: string | null, organizationId?: string | nu
       return;
     }
 
-    setLoading(true);
+    // Only show full loading spinner on first fetch to prevent flash
+    if (!hasFetchedOnce.current) {
+      setLoading(true);
+    }
     
     let query = supabase
       .from("stations")
@@ -139,6 +144,7 @@ export function useStations(teamId?: string | null, organizationId?: string | nu
       }));
       setStations(transformed);
     }
+    hasFetchedOnce.current = true;
     setLoading(false);
   }, [user, teamId, effectiveOrgId]);
 
@@ -274,6 +280,8 @@ export function useHandoffRecords(teamId?: string | null, organizationId?: strin
 
   const effectiveOrgId = organizationId || organization?.id;
 
+  const hasFetchedOnce = useRef(false);
+
   const fetchRecords = useCallback(async () => {
     if (!user) {
       setRecords([]);
@@ -281,7 +289,9 @@ export function useHandoffRecords(teamId?: string | null, organizationId?: strin
       return;
     }
 
-    setLoading(true);
+    if (!hasFetchedOnce.current) {
+      setLoading(true);
+    }
 
     let query = supabase
       .from("handoff_records")
@@ -303,6 +313,7 @@ export function useHandoffRecords(teamId?: string | null, organizationId?: strin
     if (!error && data) {
       setRecords(data as HandoffRecord[]);
     }
+    hasFetchedOnce.current = true;
     setLoading(false);
   }, [user, teamId, effectiveOrgId]);
 

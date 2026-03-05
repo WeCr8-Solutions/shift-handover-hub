@@ -150,7 +150,8 @@ export function SupervisorDashboard({
     };
   }, [dbStations, kpis]);
 
-  if (isLoading) {
+  // Only show full-page spinner on very first load (no data yet)
+  if (isLoading && dbStations.length === 0 && dbRecords.length === 0) {
     return (
       <div className="flex items-center justify-center py-24">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
