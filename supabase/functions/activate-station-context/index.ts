@@ -2,54 +2,117 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
-const corsHeaders = {
+const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
 const SMCA_PRICE_ID = "price_1T5YNyCyekafHX788ZWqCn1h";
 
-serve(async (req) => {
+serve(async (req: Request): Promise<Response> => {
+  // CORS preflight
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response("ok", { headers: corsHeaders });
   }
 
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-    { auth: { persistSession: false } }
-  );
+  // Explicit method guard (without changing your semantics)
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    console.error("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
+    return new Response(JSON.stringify({ error: "Server configuration error" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  const supabase = createClient(supabaseUrl, serviceRoleKey, {
+    auth: { persistSession: false },
+  });
 
   try {
-    const { machine_library_id, organization_id } = await req.json();
+    // Safer JSON parsing
+    let body: any;
+    try {
+      body = await req.json();
+    } catch {
+      return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { machine_library_id, organization_id } = body ?? {};
     if (!machine_library_id || !organization_id) {
-      throw new Error("machine_library_id and organization_id are required");
+      return new Response(
+        JSON.stringify({
+          error: "machine_library_id and organization_id are required",
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
 
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
+    if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Not authenticated" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const token = authHeader.replace("Bearer ", "");
-    const { data } = await supabase.auth.getUser(token);
+
+    const token = authHeader.replace("Bearer ", "").trim();
+    const { data, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !data?.user) {
+      console.error("Auth error:", authError);
+      return new Response(JSON.stringify({ error: "User not authenticated" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const user = data.user;
-    if (!user?.email) throw new Error("User not authenticated");
+    if (!user.email) {
+      return new Response(JSON.stringify({ error: "User email is required" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // Check if already purchased
-    const { data: existing } = await supabase
+    const { data: existing, error: existingError } = await supabase
       .from("organization_machine_purchases")
       .select("id, is_active")
       .eq("organization_id", organization_id)
       .eq("machine_library_id", machine_library_id)
       .maybeSingle();
 
+    if (existingError) {
+      console.error("Error checking existing purchase:", existingError);
+    }
+
     if (existing?.is_active) {
       return new Response(
-        JSON.stringify({ error: "This machine profile is already purchased" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({
+          error: "This machine profile is already purchased",
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -60,28 +123,56 @@ serve(async (req) => {
       .eq("id", machine_library_id)
       .single();
 
-    if (machineErr || !machine) throw new Error("Machine not found in library");
+    if (machineErr || !machine) {
+      console.error("Machine lookup error:", machineErr);
+      return new Response(JSON.stringify({ error: "Machine not found in library" }), {
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // Verify user is org member
-    const { data: membership } = await supabase
+    const { data: membership, error: membershipError } = await supabase
       .from("organization_members")
       .select("role")
       .eq("user_id", user.id)
       .eq("organization_id", organization_id)
       .single();
 
-    if (!membership) throw new Error("Access denied: not an org member");
+    if (membershipError) {
+      console.error("Membership error:", membershipError);
+    }
+
+    if (!membership) {
+      return new Response(JSON.stringify({ error: "Access denied: not an org member" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY") || "";
+    if (!stripeSecretKey) {
+      console.error("STRIPE_SECRET_KEY is not configured");
+      return new Response(JSON.stringify({ error: "Payment configuration error" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // Stripe checkout
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+    const stripe = new Stripe(stripeSecretKey, {
       apiVersion: "2025-08-27.basil",
     });
 
-    const { data: org } = await supabase
+    const { data: org, error: orgError } = await supabase
       .from("organizations")
       .select("stripe_customer_id, billing_email")
       .eq("id", organization_id)
       .single();
+
+    if (orgError) {
+      console.error("Org lookup error:", orgError);
+    }
 
     let customerId: string | undefined;
     const billingEmail = org?.billing_email || user.email;
@@ -89,10 +180,22 @@ serve(async (req) => {
     if (org?.stripe_customer_id) {
       customerId = org.stripe_customer_id;
     } else {
-      const customers = await stripe.customers.list({ email: billingEmail, limit: 1 });
+      const customers = await stripe.customers.list({
+        email: billingEmail,
+        limit: 1,
+      });
+
       if (customers.data.length > 0) {
         customerId = customers.data[0].id;
-        await supabase.from("organizations").update({ stripe_customer_id: customerId }).eq("id", organization_id);
+
+        const { error: updateError } = await supabase
+          .from("organizations")
+          .update({ stripe_customer_id: customerId })
+          .eq("id", organization_id);
+
+        if (updateError) {
+          console.error("Failed to update stripe_customer_id:", updateError);
+        }
       }
     }
 
@@ -115,14 +218,16 @@ serve(async (req) => {
     });
 
     return new Response(JSON.stringify({ url: session.url }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("activate-station-context error:", error);
+
     return new Response(JSON.stringify({ error: errorMessage }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
