@@ -6,6 +6,7 @@ import { QueueItem, QueueStatus, QueuePriority } from "@/hooks/useQueue";
 import { cn } from "@/lib/utils";
 import { Clock, User, Package, AlertTriangle, GripVertical, Plug } from "lucide-react";
 import { format } from "date-fns";
+import { toast } from "sonner";
 
 interface QueueKanbanBoardProps {
   itemsByStatus: Record<QueueStatus, QueueItem[]>;
@@ -14,12 +15,23 @@ interface QueueKanbanBoardProps {
   onReorder: (itemId: string, newPosition: number) => Promise<{ error: string | null }>;
 }
 
+// Valid state transitions matching the DB trigger
+const VALID_TRANSITIONS: Record<QueueStatus, QueueStatus[]> = {
+  pending: ["queued", "cancelled"],
+  queued: ["in_progress", "cancelled", "pending"],
+  in_progress: ["on_hold", "completed", "queued", "cancelled"],
+  on_hold: ["in_progress", "cancelled"],
+  completed: ["pending"], // rework only
+  cancelled: [], // terminal
+};
+
 const statusColumns: { status: QueueStatus; title: string; color: string }[] = [
   { status: "pending", title: "Pending", color: "bg-gray-100 dark:bg-gray-800" },
   { status: "queued", title: "Queued", color: "bg-yellow-50 dark:bg-yellow-900/20" },
   { status: "in_progress", title: "In Progress", color: "bg-blue-50 dark:bg-blue-900/20" },
   { status: "on_hold", title: "On Hold", color: "bg-orange-50 dark:bg-orange-900/20" },
   { status: "completed", title: "Completed", color: "bg-green-50 dark:bg-green-900/20" },
+  { status: "cancelled", title: "Cancelled", color: "bg-red-50 dark:bg-red-900/20" },
 ];
 
 function getPriorityColor(priority: QueuePriority): string {
@@ -161,11 +173,26 @@ export function QueueKanbanBoard({
     
     if (!draggedItem) return;
 
+    // Validate transition before attempting
+    if (draggedItem.status !== targetStatus) {
+      const validTargets = VALID_TRANSITIONS[draggedItem.status] || [];
+      if (!validTargets.includes(targetStatus)) {
+        toast.error(`Cannot move from "${draggedItem.status.replace("_", " ")}" to "${targetStatus.replace("_", " ")}". Valid targets: ${validTargets.map(s => s.replace("_", " ")).join(", ") || "none"}`);
+        handleDragEnd();
+        return;
+      }
+    }
+
     const columnItems = itemsByStatus[targetStatus] || [];
     
     // If dropping in a different column, change status first
     if (draggedItem.status !== targetStatus) {
-      await onStatusChange(draggedItem.id, targetStatus);
+      const result = await onStatusChange(draggedItem.id, targetStatus);
+      if (result.error) {
+        toast.error(result.error);
+        handleDragEnd();
+        return;
+      }
     }
     
     // Calculate new position based on drop index
@@ -173,13 +200,10 @@ export function QueueKanbanBoard({
     if (columnItems.length === 0) {
       newPosition = 1;
     } else if (dropIndex === 0) {
-      // Dropping at the top
       newPosition = (columnItems[0]?.position || 1) - 1;
     } else if (dropIndex >= columnItems.length) {
-      // Dropping at the bottom
       newPosition = (columnItems[columnItems.length - 1]?.position || 0) + 1;
     } else {
-      // Dropping between items
       const prevItem = columnItems[dropIndex - 1];
       const nextItem = columnItems[dropIndex];
       newPosition = ((prevItem?.position || 0) + (nextItem?.position || 0)) / 2;
@@ -194,7 +218,7 @@ export function QueueKanbanBoard({
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
       {statusColumns.map((column) => {
         const columnItems = (itemsByStatus[column.status] || []).sort((a, b) => a.position - b.position);
         const isDropTarget = dragOverColumn === column.status;

@@ -70,6 +70,16 @@ const statusOptions: { value: QueueStatus; label: string }[] = [
   { value: "cancelled", label: "Cancelled" },
 ];
 
+// Valid state transitions matching the DB trigger
+const VALID_TRANSITIONS: Record<QueueStatus, QueueStatus[]> = {
+  pending: ["queued", "cancelled"],
+  queued: ["in_progress", "cancelled", "pending"],
+  in_progress: ["on_hold", "completed", "queued", "cancelled"],
+  on_hold: ["in_progress", "cancelled"],
+  completed: ["pending"],
+  cancelled: [],
+};
+
 const priorityOptions: { value: QueuePriority; label: string }[] = [
   { value: "low", label: "Low" },
   { value: "normal", label: "Normal" },
@@ -212,7 +222,11 @@ export function QueueItemDetailDialog({
     
     const { error } = await onUpdate(item.id, updates);
     if (error) {
-      toast({ title: "Error", description: error, variant: "destructive" });
+      // Parse DB trigger rejection messages for user-friendly display
+      const friendlyError = error.includes("Invalid transition") || error.includes("Cannot transition")
+        ? error
+        : `Status change failed: ${error}`;
+      toast({ title: "Transition Blocked", description: friendlyError, variant: "destructive" });
     } else {
       loadHistory();
     }
@@ -228,17 +242,28 @@ export function QueueItemDetailDialog({
     }
   };
 
-  // Quick action: Start Work
+  // Quick action: Start Work — respects state machine (pending → queued → in_progress)
   const handleStartWork = async () => {
     if (!item) return;
     setActionLoading("start");
+    
+    // If pending, must transition through queued first
+    if (item.status === "pending") {
+      const { error: queueError } = await onUpdate(item.id, { status: "queued" });
+      if (queueError) {
+        toast({ title: "Transition Blocked", description: queueError, variant: "destructive" });
+        setActionLoading(null);
+        return;
+      }
+    }
+    
     const { error } = await onUpdate(item.id, { 
       status: "in_progress",
       started_at: new Date().toISOString()
     });
     setActionLoading(null);
     if (error) {
-      toast({ title: "Error", description: error, variant: "destructive" });
+      toast({ title: "Transition Blocked", description: error, variant: "destructive" });
     } else {
       toast({ title: "Work Started", description: "Timer is now tracking this work order" });
       loadHistory();
@@ -761,11 +786,20 @@ export function QueueItemDetailDialog({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {statusOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
+                      {/* Current status */}
+                      <SelectItem key={item.status} value={item.status}>
+                        {statusOptions.find(o => o.value === item.status)?.label || item.status}
+                      </SelectItem>
+                      {/* Valid transitions only */}
+                      {(VALID_TRANSITIONS[item.status] || []).map((targetStatus) => {
+                        const option = statusOptions.find(o => o.value === targetStatus);
+                        if (!option) return null;
+                        return (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        );
+                      })}
                     </SelectContent>
                   </Select>
                 </div>
