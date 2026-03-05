@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserOrganization } from "./useUserOrganization";
@@ -29,6 +29,7 @@ export function useOperatorSessions() {
   const { organization } = useUserOrganization();
   const [activeSessions, setActiveSessions] = useState<OperatorSession[]>([]);
   const [loading, setLoading] = useState(true);
+  const hasFetchedOnce = useRef(false);
 
   const fetchSessions = useCallback(async () => {
     if (!user) {
@@ -50,6 +51,7 @@ export function useOperatorSessions() {
     if (!error && data) {
       setActiveSessions(data as unknown as OperatorSession[]);
     }
+    hasFetchedOnce.current = true;
     setLoading(false);
   }, [user]);
 

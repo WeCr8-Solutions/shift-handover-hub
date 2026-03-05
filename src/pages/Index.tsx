@@ -211,6 +211,7 @@ const Index = () => {
   }, [selectedTypes, handoffRecords]);
 
   const isLoading = stationsLoading || recordsLoading;
+  const hasData = stations.length > 0 || handoffRecords.length > 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -325,7 +326,7 @@ const Index = () => {
           </div>
 
           <TabsContent value="stations" className="mt-0" data-tour="station-grid">
-            {isLoading && user ? (
+            {isLoading && !hasData && user ? (
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="w-6 h-6 animate-spin text-primary" />
               </div>

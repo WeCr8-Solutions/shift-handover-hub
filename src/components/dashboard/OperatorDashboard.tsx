@@ -37,7 +37,8 @@ export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDas
     setEndingShift(false);
   };
 
-  if (loading) {
+  // Only show full-page spinner on initial load (no sessions fetched yet)
+  if (loading && activeSessions.length === 0 && !isCheckedIn) {
     return (
       <div className="flex items-center justify-center py-20">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />

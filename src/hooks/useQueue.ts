@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrentTeam } from "@/contexts/TeamContext";
@@ -150,11 +150,15 @@ export function useQueue(filters?: {
   const [items, setItems] = useState<QueueItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const hasFetchedOnce = useRef(false);
 
   const fetchItems = useCallback(async () => {
     if (!user) return;
     
-    setLoading(true);
+    // Only show full loading on initial fetch to prevent UI flash
+    if (!hasFetchedOnce.current) {
+      setLoading(true);
+    }
     setError(null);
 
     let query = supabase
@@ -201,6 +205,7 @@ export function useQueue(filters?: {
       setItems((data as QueueItem[]) || []);
     }
 
+    hasFetchedOnce.current = true;
     setLoading(false);
   }, [user, currentTeam, organization?.id, filters?.status, filters?.item_type, filters?.station_id, filters?.assigned_to, filters?.organization_id]);
 
@@ -217,8 +222,10 @@ export function useQueue(filters?: {
     let isActive = true;
     let timeoutId: ReturnType<typeof setTimeout>;
 
+    const orgId = organization?.id || 'global';
+    const channelName = `queue-changes-${orgId}-${user.id}`;
     const channel = supabase
-      .channel("queue-changes")
+      .channel(channelName)
       .on(
         "postgres_changes",
         {
@@ -231,7 +238,11 @@ export function useQueue(filters?: {
           pollInterval = 5000;
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          pollInterval = 3000;
+        }
+      });
 
     // Fallback polling for missed realtime events
     const poll = () => {
