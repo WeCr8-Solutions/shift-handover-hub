@@ -16,13 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,10 +25,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Plus, 
-  Loader2, 
-  Wrench, 
+import {
+  Plus,
+  Loader2,
+  Wrench,
   Factory,
   FileSpreadsheet,
   ChevronRight,
@@ -59,18 +53,12 @@ interface TeamStationManagerProps {
   onComplete?: () => void;
 }
 
-export function TeamStationManager({ 
-  teamId, 
-  teamName, 
-  open, 
-  onOpenChange,
-  onComplete 
-}: TeamStationManagerProps) {
+export function TeamStationManager({ teamId, teamName, open, onOpenChange, onComplete }: TeamStationManagerProps) {
   const { stations, loading, createStation, refreshStations } = useStations(teamId);
   const { teams } = useTeams();
   const { organization } = useUserOrganization();
   const { toast } = useToast();
-  
+
   const [showAddForm, setShowAddForm] = useState(false);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [stationId, setStationId] = useState("");
@@ -78,14 +66,14 @@ export function TeamStationManager({
   const [workCenter, setWorkCenter] = useState("");
   const [workCenterType, setWorkCenterType] = useState<WorkCenterType>("CNC Mill");
   const [isCreating, setIsCreating] = useState(false);
-  
+
   // Edit state
   const [editingStation, setEditingStation] = useState<Station | null>(null);
   const [editName, setEditName] = useState("");
   const [editWorkCenter, setEditWorkCenter] = useState("");
   const [editWorkCenterType, setEditWorkCenterType] = useState<WorkCenterType>("CNC Mill");
   const [isSaving, setIsSaving] = useState(false);
-  
+
   // Reassign state
   const [reassigningStation, setReassigningStation] = useState<Station | null>(null);
   const [reassignTeamId, setReassignTeamId] = useState("");
@@ -166,10 +154,7 @@ export function TeamStationManager({
   };
 
   const handleDeleteStation = async (station: Station) => {
-    const { error } = await supabase
-      .from("stations")
-      .delete()
-      .eq("id", station.id);
+    const { error } = await supabase.from("stations").delete().eq("id", station.id);
 
     if (error) {
       toast({ title: "Failed to delete station", description: getSafeErrorMessage(error), variant: "destructive" });
@@ -198,17 +183,20 @@ export function TeamStationManager({
   };
 
   // Filter out current team for reassignment options
-  const otherTeams = teams.filter(t => t.id !== teamId);
+  const otherTeams = teams.filter((t) => t.id !== teamId);
 
   // Group stations by work center type
-  const groupedStations = stations.reduce((acc, station) => {
-    const type = station.work_center_type;
-    if (!acc[type]) {
-      acc[type] = [];
-    }
-    acc[type].push(station);
-    return acc;
-  }, {} as Record<WorkCenterType, Station[]>);
+  const groupedStations = stations.reduce(
+    (acc, station) => {
+      const type = station.work_center_type;
+      if (!acc[type]) {
+        acc[type] = [];
+      }
+      acc[type].push(station);
+      return acc;
+    },
+    {} as Record<WorkCenterType, Station[]>,
+  );
 
   return (
     <>
@@ -289,10 +277,7 @@ export function TeamStationManager({
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="work-center-type">Station Type *</Label>
-                      <Select 
-                        value={workCenterType} 
-                        onValueChange={(v) => setWorkCenterType(v as WorkCenterType)}
-                      >
+                      <Select value={workCenterType} onValueChange={(v) => setWorkCenterType(v as WorkCenterType)}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -331,9 +316,7 @@ export function TeamStationManager({
             {/* Stations List */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-medium">
-                  Stations in {teamName}
-                </h3>
+                <h3 className="text-sm font-medium">Stations in {teamName}</h3>
                 <Badge variant="secondary">
                   {stations.length} station{stations.length !== 1 ? "s" : ""}
                 </Badge>
@@ -368,10 +351,7 @@ export function TeamStationManager({
                         </div>
                         <div className="grid grid-cols-2 gap-2">
                           {typeStations.map((station) => (
-                            <div
-                              key={station.id}
-                              className="flex items-center gap-2 p-2 rounded-lg bg-secondary/50"
-                            >
+                            <div key={station.id} className="flex items-center gap-2 p-2 rounded-lg bg-secondary/50">
                               <CheckCircle2 className="w-4 h-4 text-green-500" />
                               <div className="min-w-0 flex-1">
                                 <p className="text-sm font-medium truncate">{station.station_id}</p>
@@ -389,10 +369,12 @@ export function TeamStationManager({
                                     Edit
                                   </DropdownMenuItem>
                                   {otherTeams.length > 0 && (
-                                    <DropdownMenuItem onClick={() => {
-                                      setReassigningStation(station);
-                                      setReassignTeamId("");
-                                    }}>
+                                    <DropdownMenuItem
+                                      onClick={() => {
+                                        setReassigningStation(station);
+                                        setReassignTeamId("");
+                                      }}
+                                    >
                                       <ArrowRightLeft className="w-4 h-4 mr-2" />
                                       Reassign Team
                                     </DropdownMenuItem>
@@ -449,19 +431,32 @@ export function TeamStationManager({
             <div className="space-y-2">
               <Label>Station Type</Label>
               <Select value={editWorkCenterType} onValueChange={(v) => setEditWorkCenterType(v as WorkCenterType)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   {ALL_WORK_CENTER_TYPES.map((type) => (
-                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                    <SelectItem key={type} value={type}>
+                      {type}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditingStation(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setEditingStation(null)}>
+              Cancel
+            </Button>
             <Button onClick={handleSaveEdit} disabled={isSaving}>
-              {isSaving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : "Save Changes"}
+              {isSaving ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save Changes"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -480,19 +475,32 @@ export function TeamStationManager({
             <div className="space-y-2">
               <Label>Target Team</Label>
               <Select value={reassignTeamId} onValueChange={setReassignTeamId}>
-                <SelectTrigger><SelectValue placeholder="Select a team" /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a team" />
+                </SelectTrigger>
                 <SelectContent>
                   {otherTeams.map((team) => (
-                    <SelectItem key={team.id} value={team.id}>{team.name}</SelectItem>
+                    <SelectItem key={team.id} value={team.id}>
+                      {team.name}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setReassigningStation(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setReassigningStation(null)}>
+              Cancel
+            </Button>
             <Button onClick={handleReassignStation} disabled={isSaving || !reassignTeamId}>
-              {isSaving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Moving...</> : "Reassign"}
+              {isSaving ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Moving...
+                </>
+              ) : (
+                "Reassign"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
