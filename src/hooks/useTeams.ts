@@ -144,7 +144,7 @@ export function useTeamMembers(teamId: string | null) {
       .from("team_members")
       .select(`
         *,
-        profile:profiles!team_members_user_id_fkey(display_name, email, avatar_url)
+        profile:profiles!team_members_user_id_profiles_fkey(display_name, email, avatar_url)
       `)
       .eq("team_id", teamId)
       .order("joined_at", { ascending: true });

@@ -530,6 +530,7 @@ export function OrganizationMemberManager() {
                 <TableHead>Member</TableHead>
                 <TableHead>Org Role</TableHead>
                 <TableHead>App Roles</TableHead>
+                <TableHead>Teams</TableHead>
                 <TableHead>Joined</TableHead>
                 {isOrgAdmin && <TableHead className="w-12"></TableHead>}
               </TableRow>
@@ -584,6 +585,20 @@ export function OrganizationMemberManager() {
                         })}
                         {(!member.app_roles || member.app_roles.length === 0) && (
                           <span className="text-sm text-muted-foreground">No roles</span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {member.team_memberships && member.team_memberships.length > 0 ? (
+                          member.team_memberships.map((tm, idx) => (
+                            <Badge key={idx} variant="outline" className="text-xs">
+                              {tm.team_name}
+                              <span className="ml-1 text-muted-foreground">({tm.team_role})</span>
+                            </Badge>
+                          ))
+                        ) : (
+                          <span className="text-sm text-muted-foreground">No team</span>
                         )}
                       </div>
                     </TableCell>

@@ -20,6 +20,7 @@ export interface OrganizationMember {
     avatar_url: string | null;
   };
   app_roles?: AppRole[];
+  team_memberships?: { team_name: string; team_role: string }[];
 }
 
 export function useOrganizationMembers(organizationId: string | null) {
@@ -47,21 +48,10 @@ export function useOrganizationMembers(organizationId: string | null) {
 
     setIsOrgAdmin(membership?.role === "owner" || membership?.role === "admin");
 
-    // Fetch all org members with their profiles
+    // Fetch all org members (no embedded join — organization_members has no FK to profiles)
     const { data: orgMembers, error } = await supabase
       .from("organization_members")
-      .select(`
-        id,
-        user_id,
-        organization_id,
-        role,
-        joined_at,
-        profiles:user_id (
-          display_name,
-          email,
-          avatar_url
-        )
-      `)
+      .select("id, user_id, organization_id, role, joined_at")
       .eq("organization_id", organizationId)
       .order("joined_at", { ascending: true });
 
@@ -71,29 +61,65 @@ export function useOrganizationMembers(organizationId: string | null) {
       return;
     }
 
-    // Fetch app roles for all members
     const userIds = orgMembers?.map((m: any) => m.user_id) || [];
-    const { data: userRoles } = await supabase
-      .from("user_roles")
-      .select("user_id, role")
-      .in("user_id", userIds);
+
+    // Fetch profiles separately
+    const { data: profiles } = userIds.length > 0
+      ? await supabase
+          .from("profiles")
+          .select("user_id, display_name, email, avatar_url")
+          .in("user_id", userIds)
+      : { data: [] };
+
+    const profileMap = new Map(
+      (profiles || []).map((p: any) => [p.user_id, p])
+    );
+
+    // Fetch app roles for all members
+    const { data: userRoles } = userIds.length > 0
+      ? await supabase
+          .from("user_roles")
+          .select("user_id, role")
+          .in("user_id", userIds)
+      : { data: [] };
+
+    // Fetch team memberships for all members
+    const { data: teamMemberships } = userIds.length > 0
+      ? await supabase
+          .from("team_members")
+          .select("user_id, team_id, role, teams:team_id(id, name)")
+          .in("user_id", userIds)
+      : { data: [] };
+
+    const teamMap = new Map<string, { team_name: string; team_role: string }[]>();
+    (teamMemberships || []).forEach((tm: any) => {
+      const team = Array.isArray(tm.teams) ? tm.teams[0] : tm.teams;
+      if (!team) return;
+      const existing = teamMap.get(tm.user_id) || [];
+      existing.push({ team_name: team.name, team_role: tm.role });
+      teamMap.set(tm.user_id, existing);
+    });
 
     // Combine data
-    const membersWithRoles: OrganizationMember[] = (orgMembers || []).map((m: any) => ({
-      id: m.id,
-      user_id: m.user_id,
-      organization_id: m.organization_id,
-      role: m.role,
-      joined_at: m.joined_at,
-      profile: m.profiles ? {
-        display_name: m.profiles.display_name,
-        email: m.profiles.email,
-        avatar_url: m.profiles.avatar_url,
-      } : undefined,
-      app_roles: userRoles
-        ?.filter((r) => r.user_id === m.user_id)
-        .map((r) => r.role as AppRole) || [],
-    }));
+    const membersWithRoles: OrganizationMember[] = (orgMembers || []).map((m: any) => {
+      const prof = profileMap.get(m.user_id);
+      return {
+        id: m.id,
+        user_id: m.user_id,
+        organization_id: m.organization_id,
+        role: m.role,
+        joined_at: m.joined_at,
+        profile: prof ? {
+          display_name: prof.display_name,
+          email: prof.email,
+          avatar_url: prof.avatar_url,
+        } : undefined,
+        app_roles: userRoles
+          ?.filter((r) => r.user_id === m.user_id)
+          .map((r) => r.role as AppRole) || [],
+        team_memberships: teamMap.get(m.user_id) || [],
+      };
+    });
 
     setMembers(membersWithRoles);
     setLoading(false);
