@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQueue, QueueStatus, QueueItemType } from "@/hooks/useQueue";
@@ -24,7 +24,23 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PlanningAssistantModal } from "@/components/queue/PlanningAssistantModal";
-import { Loader2, LayoutGrid, List, Plus, Calendar, Truck, GitBranch, Building2, Wrench, Eye, History, ShieldAlert } from "lucide-react";
+import {
+  Loader2,
+  LayoutGrid,
+  List,
+  Plus,
+  Calendar,
+  Truck,
+  GitBranch,
+  Building2,
+  Wrench,
+  History,
+  ShieldAlert,
+} from "lucide-react";
+
+type QueueTab = "queue" | "outside-processing" | "ncr" | "history";
+type QueueView = "kanban" | "list" | "calendar";
+type ViewScope = "organization" | "station";
 
 export default function Queue() {
   const navigate = useNavigate();
@@ -32,42 +48,43 @@ export default function Queue() {
   const { user, loading: authLoading } = useAuth();
   const { hasAdminAccess, loading: accessLoading } = useAdminAccess();
   const { organization } = useUserOrganization();
-  const { activeSessions } = useOperatorSessions();
-  // Check if viewing a specific station from URL
+  const { activeSessions = [] } = useOperatorSessions();
+
   const urlStationId = searchParams.get("station");
-  
-  const [activeTab, setActiveTab] = useState<"queue" | "outside-processing" | "ncr" | "history">("queue");
-  const [view, setView] = useState<"kanban" | "list" | "calendar">("kanban");
+
+  const [activeTab, setActiveTab] = useState<QueueTab>("queue");
+  const [view, setView] = useState<QueueView>("kanban");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
-  const [routingEditorItem, setRoutingEditorItem] = useState<{ id: string; work_order: string; part_number?: string } | null>(null);
-  
-  // Scope control: org-wide for admins, station-specific for operators
-  const [viewScope, setViewScope] = useState<"organization" | "station">(
-    urlStationId ? "station" : "organization"
-  );
-  
+  const [routingEditorItem, setRoutingEditorItem] = useState<{
+    id: string;
+    work_order: string;
+    part_number?: string;
+  } | null>(null);
+
+  const [viewScope, setViewScope] = useState<ViewScope>(urlStationId ? "station" : "organization");
+
   const [filters, setFilters] = useState<{
     status?: QueueStatus[];
     item_type?: QueueItemType[];
     station_id?: string;
     assigned_to?: string;
   }>({
-    // Pre-populate station filter from URL if present
     station_id: urlStationId || undefined,
   });
 
-  // Update scope based on role, URL, and active operator sessions
   useEffect(() => {
     if (!accessLoading) {
       if (urlStationId) {
         setViewScope("station");
-        setFilters(prev => ({ ...prev, station_id: urlStationId }));
+        setFilters((prev) => ({ ...prev, station_id: urlStationId }));
       } else if (!hasAdminAccess) {
-        // Operators: auto-scope to their checked-in station
         setViewScope("station");
         if (activeSessions.length > 0) {
-          setFilters(prev => ({ ...prev, station_id: activeSessions[0].station_id }));
+          setFilters((prev) => ({
+            ...prev,
+            station_id: activeSessions[0]?.station_id || undefined,
+          }));
         }
       } else {
         setViewScope("organization");
@@ -76,7 +93,7 @@ export default function Queue() {
   }, [accessLoading, hasAdminAccess, urlStationId, activeSessions]);
 
   const {
-    items,
+    items = [],
     itemsByStatus,
     loading,
     createItem,
@@ -88,28 +105,31 @@ export default function Queue() {
     getHistory,
   } = useQueue(filters);
 
-  // NCR data for the NCR tab and quality metrics
-  const { ncrs, approveNCR, rejectNCR } = useNCR();
-  const pendingNCRs = ncrs.filter(n => n.authorization_status === 'pending');
+  const { ncrs = [], approveNCR, rejectNCR } = useNCR();
+  const pendingNCRs = ncrs.filter((n) => n.authorization_status === "pending");
 
   useEffect(() => {
     if (!authLoading && !user) {
-      navigate("/auth");
+      navigate("/auth", { replace: true });
     }
   }, [authLoading, user, navigate]);
 
   if (authLoading || accessLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
-  const selectedItem = selectedItemId ? items.find((i) => i.id === selectedItemId) : null;
+  if (!user) {
+    return null;
+  }
 
-  // Compute quality metrics from items with qty tracking
-  const qualityItems = items.filter(i => i.qty_original != null && i.qty_original > 0 && !i.is_rework);
+  const selectedItem = selectedItemId ? items.find((i) => i.id === selectedItemId) || null : null;
+
+  const qualityItems = items.filter((i) => i.qty_original != null && i.qty_original > 0 && !i.is_rework);
+
   const totalOriginal = qualityItems.reduce((sum, i) => sum + (i.qty_original ?? 0), 0);
   const totalScrap = qualityItems.reduce((sum, i) => sum + (i.qty_scrap ?? 0), 0);
   const totalRework = qualityItems.reduce((sum, i) => sum + (i.qty_rework ?? 0), 0);
@@ -129,68 +149,69 @@ export default function Queue() {
   const handleOpenRouting = (item: { id: string; work_order?: string | null; part_number?: string | null }) => {
     setRoutingEditorItem({
       id: item.id,
-      work_order: item.work_order || 'N/A',
+      work_order: item.work_order || "N/A",
       part_number: item.part_number || undefined,
     });
   };
 
-  const handleScopeChange = (scope: "organization" | "station") => {
+  const handleScopeChange = (scope: ViewScope) => {
     setViewScope(scope);
     if (scope === "organization") {
-      // Clear station filter for org-wide view
-      setFilters(prev => ({ ...prev, station_id: undefined }));
+      setFilters((prev) => ({ ...prev, station_id: undefined }));
     }
   };
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="container mx-auto px-4 py-6 space-y-6">
-        {/* Page Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+
+      <main className="container mx-auto space-y-6 px-4 py-6">
+        <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <div className="flex items-center gap-3">
             <div>
-              <h1 className="text-2xl font-bold flex items-center gap-2">
+              <h1 className="flex items-center gap-2 text-2xl font-bold">
                 Queue Management
-                {/* Scope Indicator */}
-                <Badge 
-                  variant="outline" 
-                  className={viewScope === "organization" ? "bg-primary/10 text-primary border-primary/30" : "bg-amber-500/10 text-amber-700 border-amber-500/30"}
+                <Badge
+                  variant="outline"
+                  className={
+                    viewScope === "organization"
+                      ? "border-primary/30 bg-primary/10 text-primary"
+                      : "border-amber-500/30 bg-amber-500/10 text-amber-700"
+                  }
                 >
                   {viewScope === "organization" ? (
                     <>
-                      <Building2 className="w-3 h-3 mr-1" />
+                      <Building2 className="mr-1 h-3 w-3" />
                       Organization
                     </>
                   ) : (
                     <>
-                      <Wrench className="w-3 h-3 mr-1" />
+                      <Wrench className="mr-1 h-3 w-3" />
                       Station
                     </>
                   )}
                 </Badge>
               </h1>
               <p className="text-sm text-muted-foreground">
-                {viewScope === "organization" 
+                {viewScope === "organization"
                   ? `All work orders across ${organization?.name || "organization"}`
-                  : filters.station_id 
+                  : filters.station_id
                     ? "Viewing station-specific queue"
-                    : "Select a station to view its queue"
-                }
+                    : "Select a station to view its queue"}
               </p>
             </div>
           </div>
+
           <div className="flex items-center gap-2">
-            {/* Scope Toggle for Admins */}
             {hasAdminAccess && (
-              <div className="flex items-center border rounded-lg p-1 mr-2">
+              <div className="mr-2 flex items-center rounded-lg border p-1">
                 <Button
                   variant={viewScope === "organization" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => handleScopeChange("organization")}
                   className="gap-1"
                 >
-                  <Building2 className="w-4 h-4" />
+                  <Building2 className="h-4 w-4" />
                   <span className="hidden sm:inline">Org</span>
                 </Button>
                 <Button
@@ -199,32 +220,34 @@ export default function Queue() {
                   onClick={() => handleScopeChange("station")}
                   className="gap-1"
                 >
-                  <Wrench className="w-4 h-4" />
+                  <Wrench className="h-4 w-4" />
                   <span className="hidden sm:inline">Station</span>
                 </Button>
               </div>
             )}
+
             <Button onClick={() => setCreateDialogOpen(true)} data-tour="add-queue-item">
-              <Plus className="w-4 h-4 mr-2" />
+              <Plus className="mr-2 h-4 w-4" />
               Add Item
             </Button>
           </div>
         </div>
 
-        {/* Tabs for Queue vs Outside Processing */}
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "queue" | "outside-processing" | "ncr" | "history")} data-tour="queue-tabs">
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as QueueTab)} data-tour="queue-tabs">
           <TabsList>
             <TabsTrigger value="queue" className="flex items-center gap-2">
-              <LayoutGrid className="w-4 h-4" />
+              <LayoutGrid className="h-4 w-4" />
               Work Queue
             </TabsTrigger>
+
             <TabsTrigger value="outside-processing" className="flex items-center gap-2">
-              <Truck className="w-4 h-4" />
+              <Truck className="h-4 w-4" />
               Outside Processing
             </TabsTrigger>
+
             {hasAdminAccess && (
               <TabsTrigger value="ncr" className="flex items-center gap-2">
-                <ShieldAlert className="w-4 h-4" />
+                <ShieldAlert className="h-4 w-4" />
                 NCR Queue
                 {pendingNCRs.length > 0 && (
                   <Badge variant="destructive" className="ml-1 h-5 px-1.5 text-[10px]">
@@ -233,52 +256,43 @@ export default function Queue() {
                 )}
               </TabsTrigger>
             )}
+
             {hasAdminAccess && (
               <TabsTrigger value="history" className="flex items-center gap-2">
-                <History className="w-4 h-4" />
+                <History className="h-4 w-4" />
                 History
               </TabsTrigger>
             )}
           </TabsList>
 
-          <TabsContent value="queue" className="space-y-6 mt-6">
-            {/* Stats */}
+          <TabsContent value="queue" className="mt-6 space-y-6">
             <QueueStatsCards stats={stats} />
 
-            {/* View Toggle and Filters */}
             <div className="flex items-center justify-between gap-4">
               <div data-tour="queue-filters">
                 <QueueFilters filters={filters} onFiltersChange={setFilters} />
               </div>
-              <div className="flex items-center border rounded-lg p-1" data-tour="queue-views">
-                <Button
-                  variant={view === "kanban" ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setView("kanban")}
-                >
-                  <LayoutGrid className="w-4 h-4" />
+
+              <div className="flex items-center rounded-lg border p-1" data-tour="queue-views">
+                <Button variant={view === "kanban" ? "default" : "ghost"} size="sm" onClick={() => setView("kanban")}>
+                  <LayoutGrid className="h-4 w-4" />
                 </Button>
-                <Button
-                  variant={view === "list" ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setView("list")}
-                >
-                  <List className="w-4 h-4" />
+                <Button variant={view === "list" ? "default" : "ghost"} size="sm" onClick={() => setView("list")}>
+                  <List className="h-4 w-4" />
                 </Button>
                 <Button
                   variant={view === "calendar" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setView("calendar")}
                 >
-                  <Calendar className="w-4 h-4" />
+                  <Calendar className="h-4 w-4" />
                 </Button>
               </div>
             </div>
 
-            {/* Main Content */}
             {loading && items.length === 0 ? (
-              <div className="flex items-center justify-center h-64">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              <div className="flex h-64 items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : (
               <>
@@ -290,6 +304,7 @@ export default function Queue() {
                     onReorder={reorderItems}
                   />
                 )}
+
                 {view === "list" && (
                   <QueueListView
                     items={items}
@@ -298,12 +313,8 @@ export default function Queue() {
                     onDelete={deleteItem}
                   />
                 )}
-                {view === "calendar" && (
-                  <QueueCalendarView
-                    items={items}
-                    onItemClick={setSelectedItemId}
-                  />
-                )}
+
+                {view === "calendar" && <QueueCalendarView items={items} onItemClick={setSelectedItemId} />}
               </>
             )}
           </TabsContent>
@@ -314,11 +325,7 @@ export default function Queue() {
 
           {hasAdminAccess && (
             <TabsContent value="ncr" className="mt-6 space-y-6">
-              <NCRApprovalPanel
-                ncrs={pendingNCRs}
-                onApprove={approveNCR}
-                onReject={rejectNCR}
-              />
+              <NCRApprovalPanel ncrs={pendingNCRs} onApprove={approveNCR} onReject={rejectNCR} />
               <QualityMetricsDashboard items={items} />
             </TabsContent>
           )}
@@ -331,18 +338,14 @@ export default function Queue() {
         </Tabs>
       </main>
 
-      {/* Create Dialog */}
-      <CreateQueueItemDialog
-        open={createDialogOpen}
-        onOpenChange={setCreateDialogOpen}
-        onCreate={createItem}
-      />
+      <CreateQueueItemDialog open={createDialogOpen} onOpenChange={setCreateDialogOpen} onCreate={createItem} />
 
-      {/* Detail Dialog */}
       <QueueItemDetailDialog
         item={selectedItem}
         open={!!selectedItem}
-        onOpenChange={(open) => !open && setSelectedItemId(null)}
+        onOpenChange={(open) => {
+          if (!open) setSelectedItemId(null);
+        }}
         onUpdate={updateItem}
         onDelete={deleteItem}
         onAddComment={addComment}
@@ -351,15 +354,20 @@ export default function Queue() {
         onOpenRouting={handleOpenRouting}
       />
 
-      {/* Routing Editor Dialog */}
-      <Dialog open={!!routingEditorItem} onOpenChange={(open) => !open && setRoutingEditorItem(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <Dialog
+        open={!!routingEditorItem}
+        onOpenChange={(open) => {
+          if (!open) setRoutingEditorItem(null);
+        }}
+      >
+        <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <GitBranch className="w-5 h-5" />
+              <GitBranch className="h-5 w-5" />
               Production Routing
             </DialogTitle>
           </DialogHeader>
+
           {routingEditorItem && (
             <WorkOrderRoutingEditor
               queueItemId={routingEditorItem.id}
@@ -371,10 +379,7 @@ export default function Queue() {
         </DialogContent>
       </Dialog>
 
-      {/* AI Planning Assistant - supervisors/admins only */}
-      {hasAdminAccess && organization && (
-        <PlanningAssistantModal organizationId={organization.id} />
-      )}
+      {hasAdminAccess && organization && <PlanningAssistantModal organizationId={organization.id} />}
     </div>
   );
 }
