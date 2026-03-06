@@ -70,7 +70,7 @@ function renderPanel(props?: Partial<React.ComponentProps<typeof OperatorStation
           onPerformanceUpdate={vi.fn()}
           {...props}
         />
-      </BrowserRouter>
+      </BrowserRouter>,
     ),
   };
 }
@@ -121,7 +121,7 @@ describe("OperatorStationPanel", () => {
   it("calls onCreateHandoff when handoff button is clicked", async () => {
     const onCreateHandoff = vi.fn();
     const { user } = renderPanel({ onCreateHandoff });
-    
+
     // Find and click the handoff button if present
     const handoffButton = screen.queryByRole("button", { name: /handoff/i });
     if (handoffButton) {
@@ -133,7 +133,7 @@ describe("OperatorStationPanel", () => {
   it("calls onPerformanceUpdate when performance button is clicked", async () => {
     const onPerformanceUpdate = vi.fn();
     const { user } = renderPanel({ onPerformanceUpdate });
-    
+
     // Find and click the performance button if present
     const perfButton = screen.queryByRole("button", { name: /performance/i });
     if (perfButton) {
@@ -145,7 +145,7 @@ describe("OperatorStationPanel", () => {
   it("calls onViewWorkOrder when work order link is clicked", async () => {
     const onViewWorkOrder = vi.fn();
     const { user } = renderPanel({ onViewWorkOrder });
-    
+
     // Find and click work order link if present
     const woLink = screen.queryByRole("button", { name: /view.*order/i });
     if (woLink) {
@@ -156,16 +156,20 @@ describe("OperatorStationPanel", () => {
 
   it("shows error toast when rpc call fails", async () => {
     const { supabase } = await import("@/integrations/supabase/client");
-    vi.mocked(supabase.rpc).mockResolvedValueOnce({ 
-      data: null, 
-      error: { message: "Database error" } 
+    vi.mocked(supabase.rpc).mockResolvedValueOnce({
+      data: null,
+      error: { message: "Database error" },
     });
-    
+
     renderPanel();
-    
+
     // The actual error handling depends on component implementation
     // This test ensures the mock is set up correctly for error cases
-    const result = await supabase.rpc("pass_work_order_to_next_step", {});
+    const result = await supabase.rpc("pass_work_order_to_next_step", {
+      _queue_item_id: "qi-1",
+      _current_station_id: "stn-1",
+      _actor_id: "user-1",
+    });
     expect(result.error).toEqual({ message: "Database error" });
   });
 
