@@ -80,7 +80,7 @@ export function StationMachineContextDialog({ stationId, stationName, open, onOp
       setManualProfile(null);
     } else {
       dbg("fetchManualProfile: result", data);
-      setManualProfile(data as ManualProfile | null);
+      setManualProfile(data as unknown as ManualProfile | null);
     }
 
     setLoadingManual(false);
