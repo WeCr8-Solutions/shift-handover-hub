@@ -30,7 +30,7 @@ interface OperatorDashboardProps {
   onBackToOverview?: () => void;
 }
 
-export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDashboardProps = {}) {
+export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDashboardProps) {
   const { currentTeam } = useCurrentTeam();
   const { organization } = useUserOrganization();
   const { activeSessions, loading, isCheckedIn, checkIn, checkOut } = useOperatorSessions();
