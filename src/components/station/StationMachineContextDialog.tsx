@@ -2,13 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { useStationMachineAssignment } from "@/hooks/useStationMachineProfile";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -24,13 +18,26 @@ interface Props {
   onOpenChange: (open: boolean) => void;
 }
 
+interface ManualProfile {
+  id: string;
+  station_id: string;
+  manufacturer: string;
+  model: string;
+  machine_type: string;
+  platform_category: string;
+  // keep loose: other fields exist but are not needed here
+  [key: string]: unknown;
+}
+
 export function StationMachineContextDialog({ stationId, stationName, open, onOpenChange }: Props) {
   const { organization } = useUserOrganization();
-  const orgId = organization?.id || null;
+  const orgId = organization?.id ?? null;
+
   const { assignment, loading: assignLoading, unassignMachine } = useStationMachineAssignment(stationId, orgId);
+
   const { toast } = useToast();
 
-  const [manualProfile, setManualProfile] = useState<any>(null);
+  const [manualProfile, setManualProfile] = useState<ManualProfile | null>(null);
   const [loadingManual, setLoadingManual] = useState(true);
   const [showLibrary, setShowLibrary] = useState(false);
   const [showManualEntry, setShowManualEntry] = useState(false);
@@ -38,22 +45,37 @@ export function StationMachineContextDialog({ stationId, stationName, open, onOp
   const fetchManualProfile = async () => {
     if (!stationId) return;
     setLoadingManual(true);
-    const { data } = await supabase
+
+    const { data, error } = await supabase
       .from("station_manual_machine_profiles" as any)
       .select("*")
       .eq("station_id", stationId)
       .maybeSingle();
-    setManualProfile(data);
+
+    if (error) {
+      // optional toast; for now just clear the profile
+      setManualProfile(null);
+    } else {
+      setManualProfile(data as ManualProfile | null);
+    }
+
     setLoadingManual(false);
   };
 
   useEffect(() => {
-    if (open) fetchManualProfile();
+    if (open) {
+      fetchManualProfile();
+    }
   }, [open, stationId]);
 
   const handleRemoveManual = async () => {
     if (!manualProfile) return;
-    await supabase.from("station_manual_machine_profiles" as any).delete().eq("id", manualProfile.id);
+
+    await supabase
+      .from("station_manual_machine_profiles" as any)
+      .delete()
+      .eq("id", manualProfile.id);
+
     setManualProfile(null);
     toast({ title: "Manual profile removed" });
   };
@@ -63,7 +85,10 @@ export function StationMachineContextDialog({ stationId, stationName, open, onOp
     toast({ title: "Library profile unassigned" });
   };
 
-  const hasAnyProfile = !!assignment?.machine || !!manualProfile;
+  const hasLibraryProfile = Boolean(assignment?.machine);
+  const hasManualProfile = Boolean(manualProfile) && !hasLibraryProfile;
+  const hasAnyProfile = hasLibraryProfile || hasManualProfile;
+
   const loading = assignLoading || loadingManual;
 
   return (
@@ -86,61 +111,72 @@ export function StationMachineContextDialog({ stationId, stationName, open, onOp
             </div>
           ) : hasAnyProfile ? (
             <div className="space-y-3">
-              {/* Show active profile */}
-              {assignment?.machine && (
+              {hasLibraryProfile && assignment?.machine && (
                 <Card className="border-green-500/30 bg-green-500/5">
                   <CardContent className="pt-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
                         <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" />
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <p className="text-sm font-medium text-green-700">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="text-sm font-medium text-green-700 truncate">
                               {assignment.machine.manufacturer} {assignment.machine.model}
                             </p>
-                            <Badge variant="secondary" className="text-[10px]">
-                              <ShieldCheck className="w-3 h-3 mr-0.5" /> Verified
+                            <Badge variant="secondary" className="text-[10px] flex items-center gap-1">
+                              <ShieldCheck className="w-3 h-3" />
+                              Verified
                             </Badge>
                           </div>
                           <p className="text-xs text-muted-foreground">
                             {assignment.machine.machine_type} · {assignment.machine.platform_category}
                           </p>
                           <p className="text-[10px] text-muted-foreground mt-1">
-                            Purchased from Machine Library · Reusable across stations
+                            Purchased from Machine Library · Reusable across stations.
                           </p>
                         </div>
                       </div>
-                      <Button variant="ghost" size="sm" onClick={handleUnassignLibrary} className="text-muted-foreground">
-                        <Unlink className="w-4 h-4 mr-1" /> Remove
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleUnassignLibrary}
+                        className="text-muted-foreground shrink-0"
+                      >
+                        <Unlink className="w-4 h-4 mr-1" />
+                        Remove
                       </Button>
                     </div>
                   </CardContent>
                 </Card>
               )}
 
-              {manualProfile && !assignment?.machine && (
+              {hasManualProfile && manualProfile && (
                 <Card className="border-blue-500/30 bg-blue-500/5">
                   <CardContent className="pt-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
                         <Wrench className="w-5 h-5 text-blue-600 shrink-0" />
-                        <div>
-                          <p className="text-sm font-medium text-blue-700">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-blue-700 truncate">
                             {manualProfile.manufacturer} {manualProfile.model}
                           </p>
                           <p className="text-xs text-muted-foreground">
                             {manualProfile.machine_type} · {manualProfile.platform_category}
                           </p>
                           <p className="text-[10px] text-muted-foreground mt-1">
-                            Manually entered · This station only
+                            Manually entered · This station only.
                           </p>
                         </div>
                       </div>
-                      <div className="flex gap-1">
+                      <div className="flex gap-1 shrink-0">
                         <Button variant="ghost" size="sm" onClick={() => setShowManualEntry(true)}>
                           Edit
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={handleRemoveManual} className="text-muted-foreground">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleRemoveManual}
+                          className="text-muted-foreground"
+                        >
                           <Unlink className="w-4 h-4" />
                         </Button>
                       </div>
@@ -158,7 +194,10 @@ export function StationMachineContextDialog({ stationId, stationName, open, onOp
               {/* Option 1: Manual Entry (Free) */}
               <Card
                 className="cursor-pointer hover:border-primary/50 transition-colors"
-                onClick={() => { onOpenChange(false); setShowManualEntry(true); }}
+                onClick={() => {
+                  onOpenChange(false);
+                  setShowManualEntry(true);
+                }}
               >
                 <CardContent className="pt-4">
                   <div className="flex items-start gap-3">
@@ -168,11 +207,13 @@ export function StationMachineContextDialog({ stationId, stationName, open, onOp
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <h4 className="text-sm font-semibold">Enter Manually</h4>
-                        <Badge variant="secondary" className="text-[10px]">Free</Badge>
+                        <Badge variant="secondary" className="text-[10px]">
+                          Free
+                        </Badge>
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Fill in your machine's specs yourself. Data is tied to this station only.
-                        Same fields as verified profiles — full AI routing support.
+                        Fill in your machine&apos;s specs yourself. Data is tied to this station only. Same fields as
+                        verified profiles — full AI routing support.
                       </p>
                     </div>
                   </div>
@@ -182,7 +223,10 @@ export function StationMachineContextDialog({ stationId, stationName, open, onOp
               {/* Option 2: Purchase from Library ($0.99) */}
               <Card
                 className="cursor-pointer hover:border-primary/50 transition-colors"
-                onClick={() => { onOpenChange(false); setShowLibrary(true); }}
+                onClick={() => {
+                  onOpenChange(false);
+                  setShowLibrary(true);
+                }}
               >
                 <CardContent className="pt-4">
                   <div className="flex items-start gap-3">
@@ -192,11 +236,11 @@ export function StationMachineContextDialog({ stationId, stationName, open, onOp
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <h4 className="text-sm font-semibold">Machine Library</h4>
-                        <Badge variant="default" className="text-[10px] bg-green-600">$0.99/model</Badge>
+                        <Badge className="text-[10px] bg-green-600">$0.99/model</Badge>
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Browse 80+ verified machine profiles with pre-filled specs.
-                        Purchase once, reuse across unlimited stations. Includes verified badge.
+                        Browse verified machine profiles with pre-filled specs. Purchase once, reuse across unlimited
+                        stations. Includes verified badge.
                       </p>
                     </div>
                   </div>
@@ -214,6 +258,7 @@ export function StationMachineContextDialog({ stationId, stationName, open, onOp
         open={showLibrary}
         onOpenChange={setShowLibrary}
       />
+
       <StationManualMachineEntry
         stationId={stationId}
         stationName={stationName}
