@@ -22,23 +22,39 @@ interface OperatorDashboardProps {
 export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDashboardProps = {}) {
   const { currentTeam } = useCurrentTeam();
   const { organization } = useUserOrganization();
-  const { activeSessions, loading, isCheckedIn, checkIn, checkOut } =
-    useOperatorSessions();
+  const { activeSessions, loading, isCheckedIn, checkIn, checkOut } = useOperatorSessions();
   const { createHandoffRecord } = useHandoffRecords(currentTeam?.id, organization?.id);
 
   const [showHandoff, setShowHandoff] = useState(false);
   const [showPerformance, setShowPerformance] = useState(false);
-  const [handoffStationId, setHandoffStationId] = useState<string | undefined>();
+  const [handoffStationId, setHandoffStationId] = useState<string>();
   const [endingShift, setEndingShift] = useState(false);
 
   const handleEndShift = async () => {
+    if (endingShift) return;
     setEndingShift(true);
     await checkOut();
     setEndingShift(false);
   };
 
+  const handleOpenHandoff = (stationId: string) => {
+    setHandoffStationId(stationId);
+    setShowHandoff(true);
+  };
+
+  const handleCloseHandoff = () => {
+    setShowHandoff(false);
+    setHandoffStationId(undefined);
+  };
+
+  const handleOpenPerformance = () => setShowPerformance(true);
+  const handleClosePerformance = () => setShowPerformance(false);
+
+  const activeStationCount = activeSessions.length;
+  const hasSingleStation = activeStationCount === 1;
+
   // Only show full-page spinner on initial load (no sessions fetched yet)
-  if (loading && activeSessions.length === 0 && !isCheckedIn) {
+  if (loading && activeStationCount === 0 && !isCheckedIn) {
     return (
       <div className="flex items-center justify-center py-20">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -51,25 +67,23 @@ export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDas
     return <StationCheckIn onCheckIn={checkIn} />;
   }
 
-  // Checked in — show work panels
-  const singleStation = activeSessions.length === 1;
-
   return (
     <div className="space-y-6">
       {isAdminView && (
         <Alert className="border-primary/30 bg-primary/5">
           <Info className="w-4 h-4" />
-          <AlertDescription className="flex items-center justify-between">
-            <span>Viewing as Operator — you can check in to stations and complete tasks from here.</span>
+          <AlertDescription className="flex items-center justify-between gap-3">
+            <span>Viewing as operator — you can check in to stations and complete tasks from here.</span>
             {onBackToOverview && (
-              <Button variant="ghost" size="sm" onClick={onBackToOverview} className="gap-2 ml-4">
+              <Button variant="ghost" size="sm" onClick={onBackToOverview} className="gap-2 shrink-0">
                 <ArrowLeft className="w-4 h-4" />
-                Back to Overview
+                Back to overview
               </Button>
             )}
           </AlertDescription>
         </Alert>
       )}
+
       {/* Top bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3 flex-wrap">
@@ -78,55 +92,41 @@ export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDas
             {getCurrentShift()} Shift
           </Badge>
           <span className="text-sm text-muted-foreground">
-            {activeSessions.length} station{activeSessions.length !== 1 ? "s" : ""}
+            {activeStationCount} station
+            {activeStationCount !== 1 ? "s" : ""}
+            {" active"}
           </span>
         </div>
-        <Button
-          variant="destructive"
-          size="sm"
-          className="gap-2"
-          onClick={handleEndShift}
-          disabled={endingShift}
-        >
-          {endingShift ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <LogOut className="w-4 h-4" />
-          )}
-          End Shift
+        <Button variant="destructive" size="sm" className="gap-2" onClick={handleEndShift} disabled={endingShift}>
+          {endingShift ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
+          {endingShift ? "Ending shift…" : "End shift"}
         </Button>
       </div>
 
       {/* Station panels */}
-      {singleStation ? (
+      {hasSingleStation ? (
         <OperatorStationPanel
           stationId={activeSessions[0].station_id}
           stationName={activeSessions[0].station?.name || "Station"}
-          onCreateHandoff={() => {
-            setHandoffStationId(activeSessions[0].station_id);
-            setShowHandoff(true);
-          }}
-          onPerformanceUpdate={() => setShowPerformance(true)}
+          onCreateHandoff={() => handleOpenHandoff(activeSessions[0].station_id)}
+          onPerformanceUpdate={handleOpenPerformance}
         />
       ) : (
         <Tabs defaultValue={activeSessions[0].station_id} className="space-y-4">
           <TabsList className="bg-secondary flex-wrap h-auto gap-1 p-1">
-            {activeSessions.map((s) => (
-              <TabsTrigger key={s.station_id} value={s.station_id} className="text-xs">
-                {s.station?.name || s.station_id}
+            {activeSessions.map((session) => (
+              <TabsTrigger key={session.station_id} value={session.station_id} className="text-xs">
+                {session.station?.name || session.station_id}
               </TabsTrigger>
             ))}
           </TabsList>
-          {activeSessions.map((s) => (
-            <TabsContent key={s.station_id} value={s.station_id}>
+          {activeSessions.map((session) => (
+            <TabsContent key={session.station_id} value={session.station_id}>
               <OperatorStationPanel
-                stationId={s.station_id}
-                stationName={s.station?.name || "Station"}
-                onCreateHandoff={() => {
-                  setHandoffStationId(s.station_id);
-                  setShowHandoff(true);
-                }}
-                onPerformanceUpdate={() => setShowPerformance(true)}
+                stationId={session.station_id}
+                stationName={session.station?.name || "Station"}
+                onCreateHandoff={() => handleOpenHandoff(session.station_id)}
+                onPerformanceUpdate={handleOpenPerformance}
               />
             </TabsContent>
           ))}
@@ -136,16 +136,14 @@ export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDas
       {/* Handoff modal */}
       {showHandoff && (
         <NewHandoffForm
-          onClose={() => setShowHandoff(false)}
+          onClose={handleCloseHandoff}
           onSubmit={createHandoffRecord}
           initialStationId={handoffStationId}
         />
       )}
 
       {/* Performance update modal */}
-      {showPerformance && (
-        <JobPerformanceUpdateForm onClose={() => setShowPerformance(false)} />
-      )}
+      {showPerformance && <JobPerformanceUpdateForm onClose={handleClosePerformance} />}
     </div>
   );
 }
