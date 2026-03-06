@@ -65,7 +65,7 @@ function renderCheckIn(onCheckIn = vi.fn().mockResolvedValue(undefined)) {
     ...render(
       <BrowserRouter>
         <StationCheckIn onCheckIn={onCheckIn} />
-      </BrowserRouter>
+      </BrowserRouter>,
     ),
   };
 }
@@ -81,7 +81,7 @@ describe("StationCheckIn", () => {
     render(
       <BrowserRouter>
         <StationCheckIn onCheckIn={vi.fn()} />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
     expect(screen.getByRole("status")).toBeInTheDocument();
   });
@@ -101,13 +101,13 @@ describe("StationCheckIn", () => {
 
   it("allows selecting and deselecting stations", async () => {
     const { user } = renderCheckIn();
-    
+
     const station1 = screen.getByText("CNC Lathe 01").closest("[role='checkbox']");
     expect(station1).toHaveAttribute("aria-checked", "false");
-    
+
     await user.click(station1!);
     expect(station1).toHaveAttribute("aria-checked", "true");
-    
+
     await user.click(station1!);
     expect(station1).toHaveAttribute("aria-checked", "false");
   });
@@ -120,10 +120,10 @@ describe("StationCheckIn", () => {
 
   it("enables start button when stations are selected", async () => {
     const { user } = renderCheckIn();
-    
+
     const station1 = screen.getByText("CNC Lathe 01").closest("[role='checkbox']");
     await user.click(station1!);
-    
+
     const startButton = screen.getByRole("button", { name: /start shift/i });
     expect(startButton).not.toBeDisabled();
   });
@@ -131,34 +131,31 @@ describe("StationCheckIn", () => {
   it("calls onCheckIn with selected stations and shift", async () => {
     const onCheckIn = vi.fn().mockResolvedValue(undefined);
     const { user } = renderCheckIn(onCheckIn);
-    
+
     const station1 = screen.getByText("CNC Lathe 01").closest("[role='checkbox']");
     const station2 = screen.getByText("CNC Mill 02").closest("[role='checkbox']");
-    
+
     await user.click(station1!);
     await user.click(station2!);
-    
+
     const startButton = screen.getByRole("button", { name: /start shift/i });
     await user.click(startButton);
-    
+
     await waitFor(() => {
-      expect(onCheckIn).toHaveBeenCalledWith(
-        expect.arrayContaining(["stn-1", "stn-2"]),
-        "Day"
-      );
+      expect(onCheckIn).toHaveBeenCalledWith(expect.arrayContaining(["stn-1", "stn-2"]), "Day");
     });
   });
 
   it("shows success toast on successful check-in", async () => {
     const onCheckIn = vi.fn().mockResolvedValue(undefined);
     const { user } = renderCheckIn(onCheckIn);
-    
+
     const station1 = screen.getByText("CNC Lathe 01").closest("[role='checkbox']");
     await user.click(station1!);
-    
+
     const startButton = screen.getByRole("button", { name: /start shift/i });
     await user.click(startButton);
-    
+
     await waitFor(() => {
       expect(toast.success).toHaveBeenCalledWith("Checked in to 1 station");
     });
@@ -167,13 +164,13 @@ describe("StationCheckIn", () => {
   it("shows error toast and message on failed check-in", async () => {
     const onCheckIn = vi.fn().mockRejectedValue(new Error("Network error"));
     const { user } = renderCheckIn(onCheckIn);
-    
+
     const station1 = screen.getByText("CNC Lathe 01").closest("[role='checkbox']");
     await user.click(station1!);
-    
+
     const startButton = screen.getByRole("button", { name: /start shift/i });
     await user.click(startButton);
-    
+
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith("Network error");
     });
@@ -181,75 +178,75 @@ describe("StationCheckIn", () => {
 
   it("supports keyboard navigation on station cards", async () => {
     const { user } = renderCheckIn();
-    
-    const station1 = screen.getByText("CNC Lathe 01").closest("[role='checkbox']");
-    station1!.focus();
-    
+
+    const station1 = screen.getByText("CNC Lathe 01").closest("[role='checkbox']") as HTMLElement;
+    station1.focus();
+
     await user.keyboard("{Enter}");
     expect(station1).toHaveAttribute("aria-checked", "true");
-    
+
     await user.keyboard(" ");
     expect(station1).toHaveAttribute("aria-checked", "false");
   });
 
   it("filters stations by search query", async () => {
     const { user } = renderCheckIn();
-    
+
     const searchInput = screen.getByPlaceholderText("Search stations...");
     await user.type(searchInput, "Mill");
-    
+
     expect(screen.queryByText("CNC Lathe 01")).not.toBeInTheDocument();
     expect(screen.getByText("CNC Mill 02")).toBeInTheDocument();
   });
 
   it("shows no results message when search has no matches", async () => {
     const { user } = renderCheckIn();
-    
+
     const searchInput = screen.getByPlaceholderText("Search stations...");
     await user.type(searchInput, "nonexistent");
-    
+
     expect(screen.getByText(/no matching stations/i)).toBeInTheDocument();
   });
 
   it("select all button selects all filtered stations", async () => {
     const { user } = renderCheckIn();
-    
+
     const selectAllButton = screen.getByRole("button", { name: /select all/i });
     await user.click(selectAllButton);
-    
+
     const station1 = screen.getByText("CNC Lathe 01").closest("[role='checkbox']");
     const station2 = screen.getByText("CNC Mill 02").closest("[role='checkbox']");
-    
+
     expect(station1).toHaveAttribute("aria-checked", "true");
     expect(station2).toHaveAttribute("aria-checked", "true");
   });
 
   it("clear all button deselects all stations", async () => {
     const { user } = renderCheckIn();
-    
+
     // Select all first
     const selectAllButton = screen.getByRole("button", { name: /select all/i });
     await user.click(selectAllButton);
-    
+
     // Now it should show "Clear All"
     const clearAllButton = screen.getByRole("button", { name: /clear all/i });
     await user.click(clearAllButton);
-    
+
     const station1 = screen.getByText("CNC Lathe 01").closest("[role='checkbox']");
     const station2 = screen.getByText("CNC Mill 02").closest("[role='checkbox']");
-    
+
     expect(station1).toHaveAttribute("aria-checked", "false");
     expect(station2).toHaveAttribute("aria-checked", "false");
   });
 
   it("updates button text with selection count", async () => {
     const { user } = renderCheckIn();
-    
+
     expect(screen.getByRole("button", { name: /start shift \(0 stations\)/i })).toBeInTheDocument();
-    
+
     const station1 = screen.getByText("CNC Lathe 01").closest("[role='checkbox']");
     await user.click(station1!);
-    
+
     expect(screen.getByRole("button", { name: /start shift \(1 station\)/i })).toBeInTheDocument();
   });
 });
