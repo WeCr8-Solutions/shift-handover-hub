@@ -16,64 +16,101 @@ interface OrganizationSettingsProps {
   isDeveloper?: boolean;
 }
 
+type OrganizationFormData = {
+  name: string;
+  description: string;
+  billing_email: string;
+};
+
 export function OrganizationSettings({ isDeveloper = false }: OrganizationSettingsProps) {
   const { toast } = useToast();
   const { user } = useAuth();
-  const { organization, organizationRole, teams, loading, refresh } = useUserOrganization();
-  const [isSaving, setIsSaving] = useState(false);
+  const { organization, organizationRole, teams = [], loading, refresh } = useUserOrganization();
 
-  const [formData, setFormData] = useState({
+  const [isSaving, setIsSaving] = useState(false);
+  const [savingCompliance, setSavingCompliance] = useState(false);
+
+  const [formData, setFormData] = useState<OrganizationFormData>({
     name: "",
     description: "",
     billing_email: "",
   });
 
-  // ITAR compliance toggles
   const [mfaRequired, setMfaRequired] = useState(false);
   const [requiresUsPerson, setRequiresUsPerson] = useState(false);
-  const [savingCompliance, setSavingCompliance] = useState(false);
 
-  useEffect(() => {
-    if (organization) {
-      setFormData({
-        name: organization.name,
-        description: organization.description || "",
-        billing_email: "",
-      });
-    }
-  }, [organization]);
-
-  // Load ITAR compliance settings (fields added by v1.2 migration)
   useEffect(() => {
     if (!organization) return;
-    supabase
-      .from("organizations")
-      .select("mfa_required, requires_us_person_declaration")
-      .eq("id", organization.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (data) {
-          setMfaRequired(data.mfa_required ?? false);
-          setRequiresUsPerson(data.requires_us_person_declaration ?? false);
-        }
-      });
+
+    setFormData({
+      name: organization.name ?? "",
+      description: organization.description ?? "",
+      billing_email: "",
+    });
   }, [organization]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadComplianceSettings = async () => {
+      if (!organization) return;
+
+      const { data, error } = await supabase
+        .from("organizations")
+        .select("mfa_required, requires_us_person_declaration")
+        .eq("id", organization.id)
+        .maybeSingle();
+
+      if (!isMounted) return;
+
+      if (error) {
+        toast({
+          title: "Failed to load compliance settings",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (data) {
+        setMfaRequired(data.mfa_required ?? false);
+        setRequiresUsPerson(data.requires_us_person_declaration ?? false);
+      }
+    };
+
+    void loadComplianceSettings();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [organization, toast]);
 
   const handleSaveCompliance = async () => {
     if (!organization) return;
+
     setSavingCompliance(true);
-    const { error } = await supabase
-      .from("organizations")
-      .update({
-        mfa_required: mfaRequired,
-        requires_us_person_declaration: requiresUsPerson,
-      })
-      .eq("id", organization.id);
-    setSavingCompliance(false);
-    if (error) {
-      toast({ title: "Failed to update compliance settings", description: error.message, variant: "destructive" });
-    } else {
+
+    try {
+      const { error } = await supabase
+        .from("organizations")
+        .update({
+          mfa_required: mfaRequired,
+          requires_us_person_declaration: requiresUsPerson,
+        })
+        .eq("id", organization.id);
+
+      if (error) {
+        toast({
+          title: "Failed to update compliance settings",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
       toast({ title: "Compliance settings saved" });
+    } finally {
+      setSavingCompliance(false);
     }
   };
 
@@ -81,22 +118,33 @@ export function OrganizationSettings({ isDeveloper = false }: OrganizationSettin
     if (!organization || !user) return;
 
     setIsSaving(true);
-    const { error } = await supabase
-      .from("organizations")
-      .update({
-        name: formData.name,
-        description: formData.description || null,
-        billing_email: formData.billing_email || null,
-      })
-      .eq("id", organization.id);
 
-    setIsSaving(false);
+    try {
+      const { error } = await supabase
+        .from("organizations")
+        .update({
+          name: formData.name.trim(),
+          description: formData.description.trim() || null,
+          billing_email: formData.billing_email.trim() || null,
+        })
+        .eq("id", organization.id);
 
-    if (error) {
-      toast({ title: "Failed to update organization", description: error.message, variant: "destructive" });
-    } else {
-      await refresh();
+      if (error) {
+        toast({
+          title: "Failed to update organization",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (typeof refresh === "function") {
+        await refresh();
+      }
+
       toast({ title: "Organization updated" });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -105,7 +153,7 @@ export function OrganizationSettings({ isDeveloper = false }: OrganizationSettin
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-6 h-6 animate-spin" />
+        <Loader2 className="h-6 w-6 animate-spin" />
       </div>
     );
   }
@@ -114,14 +162,12 @@ export function OrganizationSettings({ isDeveloper = false }: OrganizationSettin
     return (
       <Card>
         <CardContent className="py-12 text-center">
-          <Building2 className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-          <h3 className="font-medium mb-2">No Organization</h3>
-          <p className="text-sm text-muted-foreground mb-4">
+          <Building2 className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+          <h3 className="mb-2 font-medium">No Organization</h3>
+          <p className="mb-4 text-sm text-muted-foreground">
             You're not part of an organization yet. Create one during onboarding or ask to be invited.
           </p>
-          <Button onClick={() => window.location.href = "/setup"}>
-            Go to Setup
-          </Button>
+          <Button onClick={() => window.location.assign("/setup")}>Go to Setup</Button>
         </CardContent>
       </Card>
     );
@@ -132,23 +178,25 @@ export function OrganizationSettings({ isDeveloper = false }: OrganizationSettin
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Building2 className="w-5 h-5" />
+            <Building2 className="h-5 w-5" />
             Organization Details
           </CardTitle>
           <CardDescription>
             {isAdmin ? "Manage your organization's information" : "View your organization's information"}
           </CardDescription>
         </CardHeader>
+
         <CardContent className="space-y-4">
-          <div className="flex items-center gap-4 p-4 rounded-lg bg-secondary/30 border">
-            <div className="p-3 rounded-lg bg-primary/10">
-              <Building2 className="w-8 h-8 text-primary" />
+          <div className="flex items-center gap-4 rounded-lg border bg-secondary/30 p-4">
+            <div className="rounded-lg bg-primary/10 p-3">
+              <Building2 className="h-8 w-8 text-primary" />
             </div>
+
             <div className="flex-1">
-              <h3 className="font-semibold text-lg">{organization.name}</h3>
+              <h3 className="text-lg font-semibold">{organization.name}</h3>
               <p className="text-sm text-muted-foreground">Slug: {organization.slug}</p>
             </div>
-            {/* Only show subscription badges to developers */}
+
             {isDeveloper && (
               <div className="flex items-center gap-2">
                 <Badge variant="secondary" className="capitalize">
@@ -167,7 +215,7 @@ export function OrganizationSettings({ isDeveloper = false }: OrganizationSettin
                 <Label>Organization Name</Label>
                 <Input
                   value={formData.name}
-                  onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))}
+                  onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
                   placeholder="Your Organization"
                 />
               </div>
@@ -176,7 +224,12 @@ export function OrganizationSettings({ isDeveloper = false }: OrganizationSettin
                 <Label>Description</Label>
                 <Textarea
                   value={formData.description}
-                  onChange={(e) => setFormData(p => ({ ...p, description: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((p) => ({
+                      ...p,
+                      description: e.target.value,
+                    }))
+                  }
                   placeholder="Brief description of your organization"
                   rows={3}
                 />
@@ -184,13 +237,18 @@ export function OrganizationSettings({ isDeveloper = false }: OrganizationSettin
 
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
-                  <Mail className="w-4 h-4" />
+                  <Mail className="h-4 w-4" />
                   Billing Email
                 </Label>
                 <Input
                   type="email"
                   value={formData.billing_email}
-                  onChange={(e) => setFormData(p => ({ ...p, billing_email: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((p) => ({
+                      ...p,
+                      billing_email: e.target.value,
+                    }))
+                  }
                   placeholder="billing@company.com"
                 />
               </div>
@@ -202,45 +260,45 @@ export function OrganizationSettings({ isDeveloper = false }: OrganizationSettin
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Users className="w-5 h-5" />
+            <Users className="h-5 w-5" />
             Your Role & Teams
           </CardTitle>
-          <CardDescription>
-            Your membership and access within the organization
-          </CardDescription>
+          <CardDescription>Your membership and access within the organization</CardDescription>
         </CardHeader>
+
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between p-4 rounded-lg border">
+          <div className="flex items-center justify-between rounded-lg border p-4">
             <div className="flex items-center gap-3">
-              <Crown className="w-5 h-5 text-amber-500" />
+              <Crown className="h-5 w-5 text-amber-500" />
               <div>
                 <p className="font-medium">Organization Role</p>
                 <p className="text-sm text-muted-foreground">Your role in {organization.name}</p>
               </div>
             </div>
-            <Badge className="capitalize">{organizationRole}</Badge>
+            <Badge className="capitalize">{organizationRole ?? "member"}</Badge>
           </div>
 
           <div className="space-y-2">
             <Label>Teams ({teams.length})</Label>
+
             {teams.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-4 text-center">
-                You're not a member of any teams yet
-              </p>
+              <p className="py-4 text-center text-sm text-muted-foreground">You're not a member of any teams yet</p>
             ) : (
               <div className="space-y-2">
-                {teams.map(membership => (
-                  <div key={membership.id} className="flex items-center justify-between p-3 rounded-lg border">
+                {teams.map((membership: any) => (
+                  <div key={membership.id} className="flex items-center justify-between rounded-lg border p-3">
                     <div className="flex items-center gap-3">
-                      <Users className="w-4 h-4 text-blue-500" />
+                      <Users className="h-4 w-4 text-blue-500" />
                       <div>
-                        <p className="text-sm font-medium">{membership.team.name}</p>
-                        {membership.team.description && (
+                        <p className="text-sm font-medium">{membership.team?.name ?? "Unnamed Team"}</p>
+                        {membership.team?.description && (
                           <p className="text-xs text-muted-foreground">{membership.team.description}</p>
                         )}
                       </div>
                     </div>
-                    <Badge variant="outline" className="capitalize">{membership.role}</Badge>
+                    <Badge variant="outline" className="capitalize">
+                      {membership.role}
+                    </Badge>
                   </div>
                 ))}
               </div>
@@ -254,12 +312,12 @@ export function OrganizationSettings({ isDeveloper = false }: OrganizationSettin
           <Button onClick={handleSave} disabled={isSaving} className="gap-2">
             {isSaving ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
                 Saving...
               </>
             ) : (
               <>
-                <Save className="w-4 h-4" />
+                <Save className="h-4 w-4" />
                 Save Organization Settings
               </>
             )}
@@ -267,48 +325,43 @@ export function OrganizationSettings({ isDeveloper = false }: OrganizationSettin
         </div>
       )}
 
-      {/* ITAR Compliance Settings — visible to org admins/owners only */}
       {isAdmin && (
         <Card className="border-amber-500/30">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-amber-600">
-              <Shield className="w-5 h-5" />
+              <Shield className="h-5 w-5" />
               ITAR / Export Control Settings
             </CardTitle>
             <CardDescription>
-              Configure access controls required for ITAR-regulated deployments.
-              These settings apply to all members of this organization.
+              Configure access controls required for ITAR-regulated deployments. These settings apply to all members of
+              this organization.
             </CardDescription>
           </CardHeader>
+
           <CardContent className="space-y-5">
             <div className="flex items-start justify-between gap-4">
-              <div className="space-y-1 flex-1">
+              <div className="flex-1 space-y-1">
                 <Label className="flex items-center gap-2">
-                  <Shield className="w-4 h-4" />
+                  <Shield className="h-4 w-4" />
                   Require Multi-Factor Authentication
                 </Label>
                 <p className="text-sm text-muted-foreground">
-                  When enabled, all members must enroll a TOTP authenticator app
-                  before accessing org data. Recommended for all ITAR deployments.
+                  When enabled, all members must enroll a TOTP authenticator app before accessing org data. Recommended
+                  for all ITAR deployments.
                 </p>
               </div>
-              <Switch
-                checked={mfaRequired}
-                onCheckedChange={setMfaRequired}
-                aria-label="Require MFA"
-              />
+              <Switch checked={mfaRequired} onCheckedChange={setMfaRequired} aria-label="Require MFA" />
             </div>
 
             <div className="flex items-start justify-between gap-4">
-              <div className="space-y-1 flex-1">
+              <div className="flex-1 space-y-1">
                 <Label className="flex items-center gap-2">
-                  <Flag className="w-4 h-4" />
+                  <Flag className="h-4 w-4" />
                   Require US Person Declaration
                 </Label>
                 <p className="text-sm text-muted-foreground">
-                  When enabled, all members must self-certify as a US Person
-                  (22 C.F.R. § 120.15) before accessing org data. Required when
-                  this system is used with ITAR-controlled technical data.
+                  When enabled, all members must self-certify as a US Person (22 C.F.R. § 120.15) before accessing org
+                  data. Required when this system is used with ITAR-controlled technical data.
                 </p>
               </div>
               <Switch
@@ -318,18 +371,14 @@ export function OrganizationSettings({ isDeveloper = false }: OrganizationSettin
               />
             </div>
 
-            <div className="pt-2 border-t flex justify-end">
+            <div className="flex justify-end border-t pt-2">
               <Button
                 onClick={handleSaveCompliance}
                 disabled={savingCompliance}
                 variant="outline"
                 className="gap-2 border-amber-500/50 text-amber-600 hover:bg-amber-500/10"
               >
-                {savingCompliance ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Save className="w-4 h-4" />
-                )}
+                {savingCompliance ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                 Save Compliance Settings
               </Button>
             </div>
