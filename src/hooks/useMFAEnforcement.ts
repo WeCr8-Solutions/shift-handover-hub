@@ -21,55 +21,66 @@ export interface MFAStatus {
 export function useMFAEnforcement(): MFAStatus {
   const { user } = useAuth();
   const { organization } = useUserOrganization();
+
   const [orgRequiresMFA, setOrgRequiresMFA] = useState(false);
   const [userHasMFAEnrolled, setUserHasMFAEnrolled] = useState(false);
   const [mfaCheckComplete, setMfaCheckComplete] = useState(false);
 
   const checkMFA = useCallback(async () => {
     if (!user || !organization) {
+      setOrgRequiresMFA(false);
+      setUserHasMFAEnrolled(false);
       setMfaCheckComplete(true);
       return;
     }
 
+    setMfaCheckComplete(false);
+
     try {
-      // 1. Check if org requires MFA
-      const { data: orgData } = await supabase
+      const { data: orgData, error: orgError } = await supabase
         .from("organizations")
         .select("mfa_required")
         .eq("id", organization.id)
         .maybeSingle();
 
+      if (orgError) {
+        throw orgError;
+      }
+
       const requiresMFA = orgData?.mfa_required ?? false;
       setOrgRequiresMFA(requiresMFA);
 
       if (!requiresMFA) {
-        setUserHasMFAEnrolled(true); // irrelevant when not required
-        setMfaCheckComplete(true);
+        setUserHasMFAEnrolled(true);
         return;
       }
 
-      // 2. Check user's MFA enrollment via Supabase Auth
-      const { data: factors } = await supabase.auth.mfa.listFactors();
-      const hasVerifiedFactor = factors?.totp?.some(
-        (f) => f.status === "verified"
-      ) ?? false;
+      const { data, error: factorsError } = await supabase.auth.mfa.listFactors();
+
+      if (factorsError) {
+        throw factorsError;
+      }
+
+      const hasVerifiedFactor = data?.totp?.some((f) => f.status === "verified") ?? false;
 
       setUserHasMFAEnrolled(hasVerifiedFactor);
     } catch (err) {
       console.error("[useMFAEnforcement] Error checking MFA status:", err);
+      setOrgRequiresMFA(false);
+      setUserHasMFAEnrolled(false);
     } finally {
       setMfaCheckComplete(true);
     }
   }, [user, organization]);
 
   useEffect(() => {
-    checkMFA();
+    void checkMFA();
   }, [checkMFA]);
 
   return {
     orgRequiresMFA,
     userHasMFAEnrolled,
     mfaCheckComplete,
-    mfaBlockingAccess: orgRequiresMFA && !userHasMFAEnrolled,
+    mfaBlockingAccess: mfaCheckComplete && orgRequiresMFA && !userHasMFAEnrolled,
   };
 }
