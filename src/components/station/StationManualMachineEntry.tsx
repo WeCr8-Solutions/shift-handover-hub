@@ -18,13 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Wrench, Save } from "lucide-react";
 
@@ -73,8 +67,7 @@ interface ManualMachineProfile {
   live_tooling?: boolean;
   y_axis_turn?: boolean;
   sub_spindle?: boolean;
-  probing?: boolean
-
+  probing?: boolean;
   through_spindle_coolant?: boolean;
   pallet_pool?: boolean;
   bar_feeder?: boolean;
@@ -160,9 +153,7 @@ export function StationManualMachineEntry({
   const [tolerance, setTolerance] = useState("");
 
   const toggleMaterial = (mat: string) => {
-    setSelectedMaterials((prev) =>
-      prev.includes(mat) ? prev.filter((m) => m !== mat) : [...prev, mat]
-    );
+    setSelectedMaterials((prev) => (prev.includes(mat) ? prev.filter((m) => m !== mat) : [...prev, mat]));
   };
 
   const parseNumber = (value: string): number | null => {
@@ -225,8 +216,7 @@ export function StationManualMachineEntry({
           .from("station_manual_machine_profiles" as any)
           .update(payload)
           .eq("id", existingProfile.id)
-      : supabase.from("station_manual_machine_profiles" as any).insert(payload)
-    );
+      : supabase.from("station_manual_machine_profiles" as any).insert(payload));
 
     setSaving(false);
     if (error) {
@@ -254,8 +244,7 @@ export function StationManualMachineEntry({
             Manual Machine Entry — {stationName}
           </DialogTitle>
           <DialogDescription>
-            Enter your machine's specs manually. This data enables AI routing
-            validation for this station.
+            Enter your machine's specs manually. This data enables AI routing validation for this station.
           </DialogDescription>
         </DialogHeader>
 
@@ -263,9 +252,7 @@ export function StationManualMachineEntry({
           <div className="space-y-6 pb-4">
             {/* Machine Identity */}
             <section className="space-y-3">
-              <h4 className="text-sm font-semibold text-foreground">
-                Machine Identity
-              </h4>
+              <h4 className="text-sm font-semibold text-foreground">Machine Identity</h4>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label className="text-xs">Manufacturer *</Label>
@@ -292,11 +279,7 @@ export function StationManualMachineEntry({
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs">Model *</Label>
-                  <Input
-                    placeholder="e.g. VF-2, DMU 50"
-                    value={model}
-                    onChange={(e) => setModel(e.target.value)}
-                  />
+                  <Input placeholder="e.g. VF-2, DMU 50" value={model} onChange={(e) => setModel(e.target.value)} />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs">Machine Type *</Label>
@@ -315,10 +298,7 @@ export function StationManualMachineEntry({
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs">Platform Category *</Label>
-                  <Select
-                    value={platformCategory}
-                    onValueChange={setPlatformCategory}
-                  >
+                  <Select value={platformCategory} onValueChange={setPlatformCategory}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select..." />
                     </SelectTrigger>
@@ -336,36 +316,19 @@ export function StationManualMachineEntry({
 
             {/* Envelope */}
             <section className="space-y-3">
-              <h4 className="text-sm font-semibold text-foreground">
-                Manufacturing Envelope
-              </h4>
+              <h4 className="text-sm font-semibold text-foreground">Manufacturing Envelope</h4>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                 <div className="space-y-1.5">
                   <Label className="text-xs">Max X Travel (mm)</Label>
-                  <Input
-                    type="number"
-                    value={maxX}
-                    onChange={(e) => setMaxX(e.target.value)}
-                    placeholder="e.g. 762"
-                  />
+                  <Input type="number" value={maxX} onChange={(e) => setMaxX(e.target.value)} placeholder="e.g. 762" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs">Max Y Travel (mm)</Label>
-                  <Input
-                    type="number"
-                    value={maxY}
-                    onChange={(e) => setMaxY(e.target.value)}
-                    placeholder="e.g. 508"
-                  />
+                  <Input type="number" value={maxY} onChange={(e) => setMaxY(e.target.value)} placeholder="e.g. 508" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs">Max Z Travel (mm)</Label>
-                  <Input
-                    type="number"
-                    value={maxZ}
-                    onChange={(e) => setMaxZ(e.target.value)}
-                    placeholder="e.g. 508"
-                  />
+                  <Input type="number" value={maxZ} onChange={(e) => setMaxZ(e.target.value)} placeholder="e.g. 508" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs">Max Part Weight (lbs)</Label>
@@ -378,27 +341,15 @@ export function StationManualMachineEntry({
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs">Max Part Length (mm)</Label>
-                  <Input
-                    type="number"
-                    value={maxLength}
-                    onChange={(e) => setMaxLength(e.target.value)}
-                  />
+                  <Input type="number" value={maxLength} onChange={(e) => setMaxLength(e.target.value)} />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs">Max Part Width (mm)</Label>
-                  <Input
-                    type="number"
-                    value={maxWidth}
-                    onChange={(e) => setMaxWidth(e.target.value)}
-                  />
+                  <Input type="number" value={maxWidth} onChange={(e) => setMaxWidth(e.target.value)} />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs">Max Part Height (mm)</Label>
-                  <Input
-                    type="number"
-                    value={maxHeight}
-                    onChange={(e) => setMaxHeight(e.target.value)}
-                  />
+                  <Input type="number" value={maxHeight} onChange={(e) => setMaxHeight(e.target.value)} />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs">Typical Tolerance (in)</Label>
@@ -415,13 +366,56 @@ export function StationManualMachineEntry({
 
             {/* Capability Flags */}
             <section className="space-y-3">
-              <h4 className="text-sm font-semibold text-foreground">
-                Capabilities
-              </h4>
+              <h4 className="text-sm font-semibold text-foreground">Capabilities</h4>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-y-3 gap-x-4">
                 {[
                   { label: "5-Axis Simultaneous", value: fiveAxis, set: setFiveAxis },
                   { label: "4th Axis", value: fourthAxis, set: setFourthAxis },
                   { label: "Live Tooling", value: liveTooling, set: setLiveTooling },
                   { label: "Y-Axis Turn", value: yAxisTurn, set: setYAxisTurn },
-                  { label: "Sub Spindle", value: subSpindle, set: setSubSpindle
+                  { label: "Sub Spindle", value: subSpindle, set: setSubSpindle },
+                  { label: "Probing", value: probingFlag, set: setProbingFlag },
+                  { label: "Through-Spindle Coolant", value: tsc, set: setTsc },
+                  { label: "Pallet Pool", value: palletPool, set: setPalletPool },
+                  { label: "Bar Feeder", value: barFeeder, set: setBarFeeder },
+                ].map(({ label, value, set }) => (
+                  <div key={label} className="flex items-center justify-between gap-2">
+                    <Label className="text-xs cursor-pointer">{label}</Label>
+                    <Switch checked={value} onCheckedChange={set} />
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Material Capability */}
+            <section className="space-y-3">
+              <h4 className="text-sm font-semibold text-foreground">Material Capability</h4>
+              <div className="flex flex-wrap gap-2">
+                {MATERIALS.map((mat) => (
+                  <Badge
+                    key={mat}
+                    variant={selectedMaterials.includes(mat) ? "default" : "outline"}
+                    className="cursor-pointer select-none"
+                    onClick={() => toggleMaterial(mat)}
+                  >
+                    {mat}
+                  </Badge>
+                ))}
+              </div>
+            </section>
+          </div>
+        </ScrollArea>
+
+        <DialogFooter className="pt-2 border-t">
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
+            Cancel
+          </Button>
+          <Button onClick={handleSave} disabled={saving}>
+            {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+            {existingProfile ? "Update Profile" : "Save Profile"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
