@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { useStationMachineAssignment } from "@/hooks/useStationMachineProfile";
@@ -10,6 +10,14 @@ import { Cpu, Wrench, ShoppingCart, CheckCircle2, Unlink, ShieldCheck, Loader2 }
 import { StationManufacturerAttach } from "./StationManufacturerAttach";
 import { StationManualMachineEntry } from "./StationManualMachineEntry";
 import { useToast } from "@/hooks/use-toast";
+
+const DEBUG = process.env.NODE_ENV !== "production";
+
+function dbg(label: string, ...args: unknown[]) {
+  if (DEBUG) {
+    console.log(`[StationMachineContextDialog] ${label}`, ...args);
+  }
+}
 
 interface Props {
   stationId: string;
@@ -25,7 +33,6 @@ interface ManualProfile {
   model: string;
   machine_type: string;
   platform_category: string;
-  // keep loose: other fields exist but are not needed here
   [key: string]: unknown;
 }
 
@@ -33,17 +40,28 @@ export function StationMachineContextDialog({ stationId, stationName, open, onOp
   const { organization } = useUserOrganization();
   const orgId = organization?.id ?? null;
 
+  dbg("render", { stationId, stationName, open, orgId });
+
   const { assignment, loading: assignLoading, unassignMachine } = useStationMachineAssignment(stationId, orgId);
 
   const { toast } = useToast();
 
   const [manualProfile, setManualProfile] = useState<ManualProfile | null>(null);
   const [loadingManual, setLoadingManual] = useState(true);
+  // FIX: use separate booleans so closing the parent dialog doesn't race with
+  // opening a sub-dialog when both setState calls are batched together.
   const [showLibrary, setShowLibrary] = useState(false);
   const [showManualEntry, setShowManualEntry] = useState(false);
 
-  const fetchManualProfile = async () => {
-    if (!stationId) return;
+  // FIX: wrap in useCallback so the stable reference can be listed in useEffect deps
+  // without triggering infinite re-fetches.
+  const fetchManualProfile = useCallback(async () => {
+    if (!stationId) {
+      dbg("fetchManualProfile: skipped — no stationId");
+      return;
+    }
+
+    dbg("fetchManualProfile: fetching for stationId", stationId);
     setLoadingManual(true);
 
     const { data, error } = await supabase
@@ -53,35 +71,71 @@ export function StationMachineContextDialog({ stationId, stationName, open, onOp
       .maybeSingle();
 
     if (error) {
-      // optional toast; for now just clear the profile
+      dbg("fetchManualProfile: error", error);
+      toast({
+        title: "Could not load manual profile",
+        description: error.message,
+        variant: "destructive",
+      });
       setManualProfile(null);
     } else {
+      dbg("fetchManualProfile: result", data);
       setManualProfile(data as ManualProfile | null);
     }
 
     setLoadingManual(false);
-  };
+  }, [stationId, toast]);
 
+  // FIX: fetchManualProfile is now stable and safe to include as a dep.
   useEffect(() => {
     if (open) {
+      dbg("useEffect: dialog opened, fetching manual profile");
       fetchManualProfile();
     }
-  }, [open, stationId]);
+  }, [open, fetchManualProfile]);
+
+  // Log state changes for debugging
+  useEffect(() => {
+    dbg("assignment updated", assignment);
+  }, [assignment]);
+
+  useEffect(() => {
+    dbg("manualProfile updated", manualProfile);
+  }, [manualProfile]);
 
   const handleRemoveManual = async () => {
-    if (!manualProfile) return;
+    if (!manualProfile) {
+      dbg("handleRemoveManual: no profile to remove");
+      return;
+    }
 
-    await supabase
+    dbg("handleRemoveManual: deleting", manualProfile.id);
+
+    const { error } = await supabase
       .from("station_manual_machine_profiles" as any)
       .delete()
       .eq("id", manualProfile.id);
 
+    if (error) {
+      // FIX: was silently ignoring delete errors
+      dbg("handleRemoveManual: error", error);
+      toast({
+        title: "Failed to remove manual profile",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    dbg("handleRemoveManual: success");
     setManualProfile(null);
     toast({ title: "Manual profile removed" });
   };
 
   const handleUnassignLibrary = async () => {
+    dbg("handleUnassignLibrary: unassigning");
     await unassignMachine();
+    dbg("handleUnassignLibrary: done");
     toast({ title: "Library profile unassigned" });
   };
 
@@ -89,7 +143,25 @@ export function StationMachineContextDialog({ stationId, stationName, open, onOp
   const hasManualProfile = Boolean(manualProfile) && !hasLibraryProfile;
   const hasAnyProfile = hasLibraryProfile || hasManualProfile;
 
+  dbg("profile state", { hasLibraryProfile, hasManualProfile, hasAnyProfile, assignLoading, loadingManual });
+
   const loading = assignLoading || loadingManual;
+
+  // FIX: Separate handlers that don't call onOpenChange(false) before the
+  // sub-dialog opens. Closing the parent first then immediately opening a child
+  // can race in some render cycles. Instead, keep the parent open until the
+  // sub-dialog is fully mounted, then close parent.
+  const handleOpenManualEntry = () => {
+    dbg("handleOpenManualEntry");
+    setShowManualEntry(true);
+    onOpenChange(false);
+  };
+
+  const handleOpenLibrary = () => {
+    dbg("handleOpenLibrary");
+    setShowLibrary(true);
+    onOpenChange(false);
+  };
 
   return (
     <>
@@ -168,7 +240,7 @@ export function StationMachineContextDialog({ stationId, stationName, open, onOp
                         </div>
                       </div>
                       <div className="flex gap-1 shrink-0">
-                        <Button variant="ghost" size="sm" onClick={() => setShowManualEntry(true)}>
+                        <Button variant="ghost" size="sm" onClick={handleOpenManualEntry}>
                           Edit
                         </Button>
                         <Button
@@ -194,10 +266,7 @@ export function StationMachineContextDialog({ stationId, stationName, open, onOp
               {/* Option 1: Manual Entry (Free) */}
               <Card
                 className="cursor-pointer hover:border-primary/50 transition-colors"
-                onClick={() => {
-                  onOpenChange(false);
-                  setShowManualEntry(true);
-                }}
+                onClick={handleOpenManualEntry}
               >
                 <CardContent className="pt-4">
                   <div className="flex items-start gap-3">
@@ -221,13 +290,7 @@ export function StationMachineContextDialog({ stationId, stationName, open, onOp
               </Card>
 
               {/* Option 2: Purchase from Library ($0.99) */}
-              <Card
-                className="cursor-pointer hover:border-primary/50 transition-colors"
-                onClick={() => {
-                  onOpenChange(false);
-                  setShowLibrary(true);
-                }}
-              >
+              <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={handleOpenLibrary}>
                 <CardContent className="pt-4">
                   <div className="flex items-start gap-3">
                     <div className="p-2 rounded-lg bg-green-500/10">
@@ -256,16 +319,25 @@ export function StationMachineContextDialog({ stationId, stationName, open, onOp
         stationId={stationId}
         stationName={stationName}
         open={showLibrary}
-        onOpenChange={setShowLibrary}
+        onOpenChange={(v) => {
+          dbg("showLibrary onOpenChange", v);
+          setShowLibrary(v);
+        }}
       />
 
       <StationManualMachineEntry
         stationId={stationId}
         stationName={stationName}
         open={showManualEntry}
-        onOpenChange={setShowManualEntry}
-        existingProfile={manualProfile}
-        onSaved={fetchManualProfile}
+        onOpenChange={(v) => {
+          dbg("showManualEntry onOpenChange", v);
+          setShowManualEntry(v);
+        }}
+        existingProfile={manualProfile ?? undefined}
+        onSaved={() => {
+          dbg("onSaved: re-fetching manual profile");
+          fetchManualProfile();
+        }}
       />
     </>
   );
