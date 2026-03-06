@@ -10,7 +10,21 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
-import { Loader2, Plug, RefreshCw, Zap, CheckCircle2, XCircle, Clock, AlertTriangle, Trash2, Plus, Sparkles, CreditCard, RotateCcw } from "lucide-react";
+import {
+  Loader2,
+  Plug,
+  RefreshCw,
+  Zap,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  AlertTriangle,
+  Trash2,
+  Plus,
+  Sparkles,
+  CreditCard,
+  RotateCcw,
+} from "lucide-react";
 import { useERPConnector } from "@/hooks/useERPConnector";
 import { useStations } from "@/hooks/useStations";
 import { useCurrentTeam } from "@/contexts/TeamContext";
@@ -49,53 +63,102 @@ const SYNC_INTERVALS = [
 function ConnectionStatusBadge({ status }: { status: string }) {
   switch (status) {
     case "connected":
-      return <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"><CheckCircle2 className="w-3 h-3 mr-1" />Connected</Badge>;
+      return (
+        <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+          <CheckCircle2 className="mr-1 h-3 w-3" />
+          Connected
+        </Badge>
+      );
     case "error":
-      return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />Error</Badge>;
+      return (
+        <Badge variant="destructive">
+          <XCircle className="mr-1 h-3 w-3" />
+          Error
+        </Badge>
+      );
     default:
-      return <Badge variant="secondary"><Clock className="w-3 h-3 mr-1" />Pending</Badge>;
+      return (
+        <Badge variant="secondary">
+          <Clock className="mr-1 h-3 w-3" />
+          Pending
+        </Badge>
+      );
   }
 }
 
 export function ERPConnectorSettings() {
   const {
-    connection, syncLogs, syncErrors, workCenterMappings, statusMappings,
-    loading, syncing, testing,
-    saveConnection, testConnection, runSync, retryFailedRecords,
-    updateWorkCenterMapping, saveStatusMapping, deleteStatusMapping,
+    connection,
+    syncLogs = [],
+    syncErrors = [],
+    workCenterMappings = [],
+    statusMappings = [],
+    loading,
+    syncing,
+    testing,
+    saveConnection,
+    testConnection,
+    runSync,
+    retryFailedRecords,
+    updateWorkCenterMapping,
+    saveStatusMapping,
+    deleteStatusMapping,
   } = useERPConnector();
+
   const { currentTeam } = useCurrentTeam();
   const { organization } = useUserOrganization();
-  const { stations } = useStations(currentTeam?.id, organization?.id);
+  const { stations = [] } = useStations(currentTeam?.id, organization?.id);
   const { features, plan } = useEntitlements();
   const { createCheckout } = useSubscription();
 
-  const [erpUsage, setErpUsage] = useState<{ sync_count: number; sync_limit: number; erp_tier: string } | null>(null);
+  const [erpUsage, setErpUsage] = useState<{
+    sync_count: number;
+    sync_limit: number;
+    erp_tier: string;
+  } | null>(null);
   const [retrying, setRetrying] = useState(false);
 
-  const erpTier = (features as Record<string, unknown>)?.erp_tier as string | undefined;
-  const hasErpAddon = erpTier && erpTier !== 'none' && erpTier !== undefined;
-  const isEnterprise = plan === 'enterprise';
+  const erpTier = (features as Record<string, unknown>)?.erp_tier as keyof typeof ERP_ADDON_TIERS | "none" | undefined;
+
+  const hasErpAddon = !!erpTier && erpTier !== "none";
+  const isEnterprise = plan === "enterprise";
 
   useEffect(() => {
-    if (!organization?.id) return;
-    supabase
-      .from("erp_usage_metering")
-      .select("sync_count")
-      .eq("organization_id", organization.id)
-      .eq("period_start", new Date().toISOString().slice(0, 7) + "-01")
-      .maybeSingle()
-      .then(({ data }) => {
-        const tierConfig = erpTier ? ERP_ADDON_TIERS[erpTier as keyof typeof ERP_ADDON_TIERS] : null;
-        setErpUsage({
-          sync_count: data?.sync_count ?? 0,
-          sync_limit: tierConfig?.syncLimit ?? 0,
-          erp_tier: erpTier ?? 'none',
-        });
+    let mounted = true;
+
+    const loadUsage = async () => {
+      if (!organization?.id) {
+        if (mounted) setErpUsage(null);
+        return;
+      }
+
+      const periodStart = `${new Date().toISOString().slice(0, 7)}-01`;
+
+      const { data } = await supabase
+        .from("erp_usage_metering")
+        .select("sync_count")
+        .eq("organization_id", organization.id)
+        .eq("period_start", periodStart)
+        .maybeSingle();
+
+      if (!mounted) return;
+
+      const tierConfig = erpTier && erpTier !== "none" ? ERP_ADDON_TIERS[erpTier] : null;
+
+      setErpUsage({
+        sync_count: data?.sync_count ?? 0,
+        sync_limit: tierConfig?.syncLimit ?? 0,
+        erp_tier: erpTier ?? "none",
       });
+    };
+
+    void loadUsage();
+
+    return () => {
+      mounted = false;
+    };
   }, [organization?.id, erpTier]);
 
-  // Connection form state
   const [vendor, setVendor] = useState("");
   const [apiBaseUrl, setApiBaseUrl] = useState("");
   const [oauthEndpoint, setOauthEndpoint] = useState("");
@@ -106,21 +169,20 @@ export function ERPConnectorSettings() {
   const [syncInterval, setSyncInterval] = useState(10);
   const [isActive, setIsActive] = useState(false);
 
-  // Status mapping form
   const [newErpStatus, setNewErpStatus] = useState("");
   const [newJoblineStatus, setNewJoblineStatus] = useState("pending");
 
   useEffect(() => {
-    if (connection) {
-      setVendor(connection.erp_vendor);
-      setApiBaseUrl(connection.api_base_url || "");
-      setOauthEndpoint(connection.oauth_token_endpoint || "");
-      setClientId(connection.client_id_encrypted || "");
-      setScopes(connection.scopes || "read-only");
-      setTenantId(connection.tenant_identifier || "");
-      setSyncInterval(connection.sync_interval_minutes);
-      setIsActive(connection.is_active);
-    }
+    if (!connection) return;
+
+    setVendor(connection.erp_vendor ?? "");
+    setApiBaseUrl(connection.api_base_url ?? "");
+    setOauthEndpoint(connection.oauth_token_endpoint ?? "");
+    setClientId(connection.client_id_encrypted ?? "");
+    setScopes(connection.scopes ?? "read-only");
+    setTenantId(connection.tenant_identifier ?? "");
+    setSyncInterval(connection.sync_interval_minutes ?? 10);
+    setIsActive(connection.is_active ?? false);
   }, [connection]);
 
   const handleSaveConnection = async () => {
@@ -135,6 +197,7 @@ export function ERPConnectorSettings() {
       sync_interval_minutes: syncInterval,
       is_active: isActive,
     });
+
     if (result.error) return;
     setClientSecret("");
   };
@@ -148,77 +211,93 @@ export function ERPConnectorSettings() {
   const handleRetryAll = async () => {
     if (syncErrors.length === 0) return;
     setRetrying(true);
-    await retryFailedRecords(syncErrors.map(e => e.id));
-    setRetrying(false);
+    try {
+      await retryFailedRecords(syncErrors.map((e) => e.id));
+    } finally {
+      setRetrying(false);
+    }
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center p-12"><Loader2 className="w-6 h-6 animate-spin" /></div>;
+    return (
+      <div className="flex items-center justify-center p-12">
+        <Loader2 className="h-6 w-6 animate-spin" />
+      </div>
+    );
   }
 
   const lastSync = syncLogs[0];
+  const tierConfig = erpTier && erpTier !== "none" ? ERP_ADDON_TIERS[erpTier] : null;
 
   return (
     <div className="space-y-6">
-      {/* Enterprise plan gate */}
       {!isEnterprise ? (
         <Card className="border-dashed border-amber-500/30 bg-amber-500/5">
-          <CardHeader className="text-center pb-2">
-            <div className="mx-auto w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center mb-2">
-              <AlertTriangle className="w-6 h-6 text-amber-500" />
+          <CardHeader className="pb-2 text-center">
+            <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/10">
+              <AlertTriangle className="h-6 w-6 text-amber-500" />
             </div>
             <CardTitle className="text-xl">Enterprise Plan Required</CardTitle>
             <CardDescription>
-              The ERP Connector is exclusively available to Enterprise plan subscribers.
-              Upgrade your organization to Enterprise to unlock ERP integration.
+              The ERP Connector is exclusively available to Enterprise plan subscribers. Upgrade your organization to
+              Enterprise to unlock ERP integration.
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center">
             <Button onClick={() => createCheckout("price_1SthDUCyekafHX78MIJEHfCG")} className="gap-2">
-              <CreditCard className="w-4 h-4" />
+              <CreditCard className="h-4 w-4" />
               Upgrade to Enterprise — $49.99/mo
             </Button>
-            <p className="text-xs text-muted-foreground mt-3">
+            <p className="mt-3 text-xs text-muted-foreground">
               Enterprise includes 10 users, API access, and eligibility for ERP Connector add-ons ($100–$200/mo).
             </p>
           </CardContent>
         </Card>
       ) : !hasErpAddon ? (
         <Card className="border-dashed border-primary/30 bg-primary/5">
-          <CardHeader className="text-center pb-2">
-            <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <Plug className="w-6 h-6 text-primary" />
+          <CardHeader className="pb-2 text-center">
+            <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+              <Plug className="h-6 w-6 text-primary" />
             </div>
             <CardTitle className="text-xl">Choose Your ERP Connector Plan</CardTitle>
             <CardDescription>Select a tier to enable ERP integration for your organization</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {(Object.entries(ERP_ADDON_TIERS) as [string, typeof ERP_ADDON_TIERS[keyof typeof ERP_ADDON_TIERS]][]).map(([key, tier]) => (
-                <Card key={key} className="relative border hover:border-primary/50 transition-colors">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              {(
+                Object.entries(ERP_ADDON_TIERS) as [
+                  keyof typeof ERP_ADDON_TIERS,
+                  (typeof ERP_ADDON_TIERS)[keyof typeof ERP_ADDON_TIERS],
+                ][]
+              ).map(([key, tier]) => (
+                <Card key={key} className="relative border transition-colors hover:border-primary/50">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-lg">{tier.name}</CardTitle>
-                    <div className="text-2xl font-bold text-primary">${tier.price}<span className="text-sm font-normal text-muted-foreground">/mo</span></div>
+                    <div className="text-2xl font-bold text-primary">
+                      ${tier.price}
+                      <span className="text-sm font-normal text-muted-foreground">/mo</span>
+                    </div>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <ul className="text-sm space-y-1.5">
+                    <ul className="space-y-1.5 text-sm">
                       {tier.features.map((f, i) => (
                         <li key={i} className="flex items-start gap-2">
-                          <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                           <span>{f}</span>
                         </li>
                       ))}
                     </ul>
                     <Button className="w-full gap-2" onClick={() => createCheckout(tier.priceId)}>
-                      <CreditCard className="w-4 h-4" />
+                      <CreditCard className="h-4 w-4" />
                       Subscribe - ${tier.price}/mo
                     </Button>
                   </CardContent>
                 </Card>
               ))}
             </div>
-            <p className="text-xs text-muted-foreground text-center mt-4">
-              ERP Connector is an add-on available exclusively for Enterprise plan subscribers. Billed separately from your base subscription.
+            <p className="mt-4 text-center text-xs text-muted-foreground">
+              ERP Connector is an add-on available exclusively for Enterprise plan subscribers. Billed separately from
+              your base subscription.
             </p>
           </CardContent>
         </Card>
@@ -228,33 +307,37 @@ export function ERPConnectorSettings() {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-primary" />
-                  ERP Connector — {ERP_ADDON_TIERS[erpTier as keyof typeof ERP_ADDON_TIERS]?.name ?? erpTier}
+                  <Sparkles className="h-5 w-5 text-primary" />
+                  ERP Connector — {tierConfig?.name ?? erpTier}
                 </CardTitle>
-                <CardDescription>
-                  ${ERP_ADDON_TIERS[erpTier as keyof typeof ERP_ADDON_TIERS]?.price ?? '?'}/mo add-on
-                </CardDescription>
+                <CardDescription>${tierConfig?.price ?? "?"}/mo add-on</CardDescription>
               </div>
-              <Badge variant="outline" className="border-primary text-primary">Active</Badge>
+              <Badge variant="outline" className="border-primary text-primary">
+                Active
+              </Badge>
             </div>
           </CardHeader>
+
           {erpUsage && erpUsage.sync_limit > 0 && (
             <CardContent>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Syncs this month</span>
-                  <span className="font-medium">{erpUsage.sync_count} / {erpUsage.sync_limit}</span>
+                  <span className="font-medium">
+                    {erpUsage.sync_count} / {erpUsage.sync_limit}
+                  </span>
                 </div>
                 <Progress value={Math.min((erpUsage.sync_count / erpUsage.sync_limit) * 100, 100)} />
                 {erpUsage.sync_count >= erpUsage.sync_limit * 0.8 && (
-                  <p className="text-xs text-amber-600 flex items-center gap-1">
-                    <AlertTriangle className="w-3 h-3" />
+                  <p className="flex items-center gap-1 text-xs text-amber-600">
+                    <AlertTriangle className="h-3 w-3" />
                     Approaching sync limit — consider upgrading your ERP tier
                   </p>
                 )}
               </div>
             </CardContent>
           )}
+
           {erpUsage && erpUsage.sync_limit === -1 && (
             <CardContent>
               <div className="flex justify-between text-sm">
@@ -266,79 +349,144 @@ export function ERPConnectorSettings() {
         </Card>
       )}
 
-      {/* Connection Setup */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="flex items-center gap-2"><Plug className="w-5 h-5" />ERP Connection</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Plug className="h-5 w-5" />
+                ERP Connection
+              </CardTitle>
               <CardDescription>Connect your cloud ERP system for read-only work order sync</CardDescription>
             </div>
             {connection && <ConnectionStatusBadge status={connection.connection_status} />}
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label>ERP Vendor</Label>
               <Select value={vendor} onValueChange={setVendor}>
-                <SelectTrigger><SelectValue placeholder="Select ERP vendor" /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select ERP vendor" />
+                </SelectTrigger>
                 <SelectContent>
-                  {ERP_VENDORS.map(v => <SelectItem key={v.value} value={v.value}>{v.label}</SelectItem>)}
+                  {ERP_VENDORS.map((v) => (
+                    <SelectItem key={v.value} value={v.value}>
+                      {v.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
+
             <div className="space-y-2">
               <Label>API Base URL</Label>
-              <Input value={apiBaseUrl} onChange={e => setApiBaseUrl(e.target.value)} placeholder="https://your-erp.example.com" />
+              <Input
+                value={apiBaseUrl}
+                onChange={(e) => setApiBaseUrl(e.target.value)}
+                placeholder="https://your-erp.example.com"
+              />
             </div>
+
             <div className="space-y-2">
               <Label>OAuth Token Endpoint</Label>
-              <Input value={oauthEndpoint} onChange={e => setOauthEndpoint(e.target.value)} placeholder="https://auth.erp.com/oauth/token" />
+              <Input
+                value={oauthEndpoint}
+                onChange={(e) => setOauthEndpoint(e.target.value)}
+                placeholder="https://auth.erp.com/oauth/token"
+              />
             </div>
+
             <div className="space-y-2">
               <Label>Tenant / Org ID</Label>
-              <Input value={tenantId} onChange={e => setTenantId(e.target.value)} placeholder="Optional tenant identifier" />
+              <Input
+                value={tenantId}
+                onChange={(e) => setTenantId(e.target.value)}
+                placeholder="Optional tenant identifier"
+              />
             </div>
+
             <div className="space-y-2">
               <Label>Client ID</Label>
-              <Input value={clientId} onChange={e => setClientId(e.target.value)} placeholder="OAuth client ID" />
+              <Input value={clientId} onChange={(e) => setClientId(e.target.value)} placeholder="OAuth client ID" />
             </div>
+
             <div className="space-y-2">
               <Label>Client Secret</Label>
-              <Input type="password" value={clientSecret} onChange={e => setClientSecret(e.target.value)} placeholder={connection ? "••••••• (unchanged)" : "OAuth client secret"} />
+              <Input
+                type="password"
+                value={clientSecret}
+                onChange={(e) => setClientSecret(e.target.value)}
+                placeholder={connection ? "••••••• (unchanged)" : "OAuth client secret"}
+              />
             </div>
+
             <div className="space-y-2">
               <Label>Scopes</Label>
-              <Input value={scopes} onChange={e => setScopes(e.target.value)} placeholder="read-only" />
+              <Input value={scopes} onChange={(e) => setScopes(e.target.value)} placeholder="read-only" />
             </div>
           </div>
 
           <div className="flex items-center gap-4 pt-2">
-            <Button onClick={handleSaveConnection} disabled={!vendor}>Save Connection</Button>
+            <Button onClick={handleSaveConnection} disabled={!vendor}>
+              Save Connection
+            </Button>
             <Button variant="outline" onClick={testConnection} disabled={testing || !connection}>
-              {testing ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Testing...</> : <><Zap className="w-4 h-4 mr-2" />Test Connection</>}
+              {testing ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Testing...
+                </>
+              ) : (
+                <>
+                  <Zap className="mr-2 h-4 w-4" />
+                  Test Connection
+                </>
+              )}
             </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Sync Configuration */}
       {connection && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><RefreshCw className="w-5 h-5" />Sync Configuration</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <RefreshCw className="h-5 w-5" />
+              Sync Configuration
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Switch checked={isActive} onCheckedChange={async (v) => { setIsActive(v); await saveConnection({ is_active: v }); }} />
+                <Switch
+                  checked={isActive}
+                  onCheckedChange={async (v) => {
+                    setIsActive(v);
+                    await saveConnection({ is_active: v });
+                  }}
+                />
                 <Label>Enable automatic sync</Label>
               </div>
-              <Select value={String(syncInterval)} onValueChange={async (v) => { setSyncInterval(Number(v)); await saveConnection({ sync_interval_minutes: Number(v) }); }}>
-                <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
+
+              <Select
+                value={String(syncInterval)}
+                onValueChange={async (v) => {
+                  const next = Number(v);
+                  setSyncInterval(next);
+                  await saveConnection({ sync_interval_minutes: next });
+                }}
+              >
+                <SelectTrigger className="w-48">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
-                  {SYNC_INTERVALS.map(i => <SelectItem key={i.value} value={String(i.value)}>{i.label}</SelectItem>)}
+                  {SYNC_INTERVALS.map((i) => (
+                    <SelectItem key={i.value} value={String(i.value)}>
+                      {i.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -349,8 +497,20 @@ export function ERPConnectorSettings() {
               <div>
                 {lastSync ? (
                   <p className="text-sm text-muted-foreground">
-                    Last sync: {formatDistanceToNow(new Date(lastSync.started_at), { addSuffix: true })} —{" "}
-                    <span className={lastSync.status === "success" ? "text-green-600" : lastSync.status === "failed" ? "text-red-600" : "text-yellow-600"}>
+                    Last sync:{" "}
+                    {formatDistanceToNow(new Date(lastSync.started_at), {
+                      addSuffix: true,
+                    })}{" "}
+                    —{" "}
+                    <span
+                      className={
+                        lastSync.status === "success"
+                          ? "text-green-600"
+                          : lastSync.status === "failed"
+                            ? "text-red-600"
+                            : "text-yellow-600"
+                      }
+                    >
                       {lastSync.status}
                     </span>
                     {lastSync.records_fetched != null && ` (${lastSync.records_fetched} records)`}
@@ -359,9 +519,10 @@ export function ERPConnectorSettings() {
                   <p className="text-sm text-muted-foreground">No sync history yet</p>
                 )}
               </div>
+
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={() => runSync("incremental")} disabled={syncing}>
-                  {syncing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-2" />}
+                  {syncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
                   Incremental Sync
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => runSync("full")} disabled={syncing}>
@@ -373,26 +534,19 @@ export function ERPConnectorSettings() {
         </Card>
       )}
 
-      {/* Sync Errors with Retry */}
       {syncErrors.length > 0 && (
         <Card className="border-destructive/30">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="flex items-center gap-2 text-destructive">
-                  <XCircle className="w-5 h-5" />
+                  <XCircle className="h-5 w-5" />
                   Unresolved Sync Errors ({syncErrors.length})
                 </CardTitle>
                 <CardDescription>These records failed to sync and need attention</CardDescription>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-2"
-                onClick={handleRetryAll}
-                disabled={retrying}
-              >
-                {retrying ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
+              <Button variant="outline" size="sm" className="gap-2" onClick={handleRetryAll} disabled={retrying}>
+                {retrying ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}
                 Retry All
               </Button>
             </div>
@@ -409,13 +563,15 @@ export function ERPConnectorSettings() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {syncErrors.slice(0, 10).map(err => (
+                {syncErrors.slice(0, 10).map((err) => (
                   <TableRow key={err.id}>
                     <TableCell>
-                      <Badge variant="secondary" className="text-xs">{err.erp_record_type}</Badge>
+                      <Badge variant="secondary" className="text-xs">
+                        {err.erp_record_type}
+                      </Badge>
                     </TableCell>
                     <TableCell className="font-mono text-xs">{err.erp_record_id || "—"}</TableCell>
-                    <TableCell className="text-sm text-destructive max-w-xs truncate" title={err.error_message}>
+                    <TableCell className="max-w-xs truncate text-sm text-destructive" title={err.error_message}>
                       {err.error_message}
                     </TableCell>
                     <TableCell className="text-sm">{err.retry_count}</TableCell>
@@ -426,21 +582,21 @@ export function ERPConnectorSettings() {
                         onClick={() => retryFailedRecords([err.id])}
                         title="Retry this record"
                       >
-                        <RotateCcw className="w-4 h-4" />
+                        <RotateCcw className="h-4 w-4" />
                       </Button>
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
+
             {syncErrors.length > 10 && (
-              <p className="text-xs text-muted-foreground mt-2">Showing 10 of {syncErrors.length} errors</p>
+              <p className="mt-2 text-xs text-muted-foreground">Showing 10 of {syncErrors.length} errors</p>
             )}
           </CardContent>
         </Card>
       )}
 
-      {/* Work Center Mapping */}
       {workCenterMappings.length > 0 && (
         <Card>
           <CardHeader>
@@ -457,22 +613,31 @@ export function ERPConnectorSettings() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {workCenterMappings.map(wc => (
-                  <TableRow key={wc.id} className={!wc.jobline_station_id ? "bg-yellow-50/50 dark:bg-yellow-900/10" : ""}>
+                {workCenterMappings.map((wc) => (
+                  <TableRow
+                    key={wc.id}
+                    className={!wc.jobline_station_id ? "bg-yellow-50/50 dark:bg-yellow-900/10" : ""}
+                  >
                     <TableCell className="font-medium">
                       {wc.erp_work_center_name || "—"}
-                      {!wc.jobline_station_id && <AlertTriangle className="w-3 h-3 text-yellow-500 inline ml-1" />}
+                      {!wc.jobline_station_id && <AlertTriangle className="ml-1 inline h-3 w-3 text-yellow-500" />}
                     </TableCell>
-                    <TableCell className="text-muted-foreground text-xs font-mono">{wc.erp_work_center_id}</TableCell>
+                    <TableCell className="font-mono text-xs text-muted-foreground">{wc.erp_work_center_id}</TableCell>
                     <TableCell>
                       <Select
                         value={wc.jobline_station_id || "none"}
                         onValueChange={(v) => updateWorkCenterMapping(wc.id, v === "none" ? null : v)}
                       >
-                        <SelectTrigger className="w-48"><SelectValue placeholder="Select station" /></SelectTrigger>
+                        <SelectTrigger className="w-48">
+                          <SelectValue placeholder="Select station" />
+                        </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="none">— Unmapped —</SelectItem>
-                          {stations.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                          {stations.map((s) => (
+                            <SelectItem key={s.id} value={s.id}>
+                              {s.name}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </TableCell>
@@ -484,7 +649,6 @@ export function ERPConnectorSettings() {
         </Card>
       )}
 
-      {/* Status Mapping */}
       <Card>
         <CardHeader>
           <CardTitle>Status Mapping</CardTitle>
@@ -501,20 +665,26 @@ export function ERPConnectorSettings() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {statusMappings.map(sm => (
+                {statusMappings.map((sm) => (
                   <TableRow key={sm.id}>
                     <TableCell className="font-mono text-sm">{sm.erp_status}</TableCell>
                     <TableCell>
                       <Select value={sm.jobline_status} onValueChange={(v) => saveStatusMapping(sm.erp_status, v)}>
-                        <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="w-40">
+                          <SelectValue />
+                        </SelectTrigger>
                         <SelectContent>
-                          {JOBLINE_STATUSES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                          {JOBLINE_STATUSES.map((s) => (
+                            <SelectItem key={s.value} value={s.value}>
+                              {s.label}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </TableCell>
                     <TableCell>
                       <Button variant="ghost" size="icon" onClick={() => deleteStatusMapping(sm.id)}>
-                        <Trash2 className="w-4 h-4 text-muted-foreground" />
+                        <Trash2 className="h-4 w-4 text-muted-foreground" />
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -524,21 +694,31 @@ export function ERPConnectorSettings() {
           )}
 
           <div className="flex items-center gap-2">
-            <Input value={newErpStatus} onChange={e => setNewErpStatus(e.target.value)} placeholder="ERP status value" className="flex-1" />
+            <Input
+              value={newErpStatus}
+              onChange={(e) => setNewErpStatus(e.target.value)}
+              placeholder="ERP status value"
+              className="flex-1"
+            />
             <Select value={newJoblineStatus} onValueChange={setNewJoblineStatus}>
-              <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
-                {JOBLINE_STATUSES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                {JOBLINE_STATUSES.map((s) => (
+                  <SelectItem key={s.value} value={s.value}>
+                    {s.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <Button variant="outline" size="icon" onClick={handleAddStatusMapping} disabled={!newErpStatus.trim()}>
-              <Plus className="w-4 h-4" />
+              <Plus className="h-4 w-4" />
             </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Sync History */}
       {syncLogs.length > 0 && (
         <Card>
           <CardHeader>
@@ -547,25 +727,35 @@ export function ERPConnectorSettings() {
           </CardHeader>
           <CardContent>
             <Accordion type="single" collapsible>
-              {syncLogs.map(log => (
+              {syncLogs.map((log) => (
                 <AccordionItem key={log.id} value={log.id}>
                   <AccordionTrigger className="hover:no-underline">
-                    <div className="flex items-center gap-3 text-sm w-full pr-4">
-                      <Badge variant={log.status === "success" ? "default" : log.status === "failed" ? "destructive" : "secondary"} className="text-xs">
+                    <div className="flex w-full items-center gap-3 pr-4 text-sm">
+                      <Badge
+                        variant={
+                          log.status === "success" ? "default" : log.status === "failed" ? "destructive" : "secondary"
+                        }
+                        className="text-xs"
+                      >
                         {log.status}
                       </Badge>
                       <span className="text-muted-foreground">{format(new Date(log.started_at), "MMM d, HH:mm")}</span>
                       <span className="text-xs text-muted-foreground">{log.sync_type}</span>
                       <span className="ml-auto text-xs text-muted-foreground">
-                        {log.records_fetched ?? 0} fetched · {log.records_created ?? 0} new · {log.records_updated ?? 0} updated
-                        {(log.errors_count ?? 0) > 0 && <span className="text-red-500 ml-1">· {log.errors_count} errors</span>}
-                        {log.duration_ms != null && <span className="ml-1">· {(log.duration_ms / 1000).toFixed(1)}s</span>}
+                        {log.records_fetched ?? 0} fetched · {log.records_created ?? 0} new · {log.records_updated ?? 0}{" "}
+                        updated
+                        {(log.errors_count ?? 0) > 0 && (
+                          <span className="ml-1 text-red-500">· {log.errors_count} errors</span>
+                        )}
+                        {log.duration_ms != null && (
+                          <span className="ml-1">· {(log.duration_ms / 1000).toFixed(1)}s</span>
+                        )}
                       </span>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent>
                     {log.error_details ? (
-                      <pre className="text-xs bg-muted p-3 rounded overflow-x-auto max-h-40">
+                      <pre className="max-h-40 overflow-x-auto rounded bg-muted p-3 text-xs">
                         {JSON.stringify(log.error_details, null, 2)}
                       </pre>
                     ) : (
