@@ -13,6 +13,17 @@ import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { getCurrentShift } from "@/lib/mockData";
 import { LogOut, Loader2, Clock, ArrowLeft, Info } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
 interface OperatorDashboardProps {
   isAdminView?: boolean;
@@ -27,36 +38,31 @@ export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDas
 
   const [showHandoff, setShowHandoff] = useState(false);
   const [showPerformance, setShowPerformance] = useState(false);
-  const [handoffStationId, setHandoffStationId] = useState<string>();
+  const [handoffStationId, setHandoffStationId] = useState<string | undefined>();
   const [endingShift, setEndingShift] = useState(false);
+  const [showEndShiftConfirm, setShowEndShiftConfirm] = useState(false);
 
-  const handleEndShift = async () => {
-    if (endingShift) return;
+  const handleEndShiftClick = () => {
+    setShowEndShiftConfirm(true);
+  };
+
+  const handleEndShiftConfirm = async () => {
+    setShowEndShiftConfirm(false);
     setEndingShift(true);
-    await checkOut();
-    setEndingShift(false);
+    try {
+      await checkOut();
+      toast.success("Shift ended successfully");
+    } catch (error) {
+      console.error("Checkout error:", error);
+      toast.error("Failed to end shift. Please try again.");
+    } finally {
+      setEndingShift(false);
+    }
   };
 
-  const handleOpenHandoff = (stationId: string) => {
-    setHandoffStationId(stationId);
-    setShowHandoff(true);
-  };
-
-  const handleCloseHandoff = () => {
-    setShowHandoff(false);
-    setHandoffStationId(undefined);
-  };
-
-  const handleOpenPerformance = () => setShowPerformance(true);
-  const handleClosePerformance = () => setShowPerformance(false);
-
-  const activeStationCount = activeSessions.length;
-  const hasSingleStation = activeStationCount === 1;
-
-  // Only show full-page spinner on initial load (no sessions fetched yet)
-  if (loading && activeStationCount === 0 && !isCheckedIn) {
+  if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
+      <div className="flex items-center justify-center py-20" role="status" aria-label="Loading">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
@@ -67,17 +73,30 @@ export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDas
     return <StationCheckIn onCheckIn={checkIn} />;
   }
 
+  // Defensive check: checked in but sessions not loaded yet
+  if (activeSessions.length === 0) {
+    return (
+      <div className="flex items-center justify-center py-20" role="status" aria-label="Loading stations">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <span className="ml-3 text-muted-foreground">Loading your stations...</span>
+      </div>
+    );
+  }
+
+  // Checked in — show work panels
+  const singleStation = activeSessions.length === 1;
+
   return (
     <div className="space-y-6">
       {isAdminView && (
         <Alert className="border-primary/30 bg-primary/5">
           <Info className="w-4 h-4" />
-          <AlertDescription className="flex items-center justify-between gap-3">
-            <span>Viewing as operator — you can check in to stations and complete tasks from here.</span>
+          <AlertDescription className="flex items-center justify-between">
+            <span>Viewing as Operator — you can check in to stations and complete tasks from here.</span>
             {onBackToOverview && (
-              <Button variant="ghost" size="sm" onClick={onBackToOverview} className="gap-2 shrink-0">
+              <Button variant="ghost" size="sm" onClick={onBackToOverview} className="gap-2 ml-4">
                 <ArrowLeft className="w-4 h-4" />
-                Back to overview
+                Back to Overview
               </Button>
             )}
           </AlertDescription>
@@ -92,41 +111,52 @@ export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDas
             {getCurrentShift()} Shift
           </Badge>
           <span className="text-sm text-muted-foreground">
-            {activeStationCount} station
-            {activeStationCount !== 1 ? "s" : ""}
-            {" active"}
+            {activeSessions.length} station{activeSessions.length !== 1 ? "s" : ""}
           </span>
         </div>
-        <Button variant="destructive" size="sm" className="gap-2" onClick={handleEndShift} disabled={endingShift}>
+        <Button
+          variant="destructive"
+          size="sm"
+          className="gap-2"
+          onClick={handleEndShiftClick}
+          disabled={endingShift}
+          aria-label={endingShift ? "Ending shift..." : "End shift"}
+        >
           {endingShift ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
-          {endingShift ? "Ending shift…" : "End shift"}
+          End Shift
         </Button>
       </div>
 
       {/* Station panels */}
-      {hasSingleStation ? (
+      {singleStation ? (
         <OperatorStationPanel
           stationId={activeSessions[0].station_id}
           stationName={activeSessions[0].station?.name || "Station"}
-          onCreateHandoff={() => handleOpenHandoff(activeSessions[0].station_id)}
-          onPerformanceUpdate={handleOpenPerformance}
+          onCreateHandoff={() => {
+            setHandoffStationId(activeSessions[0].station_id);
+            setShowHandoff(true);
+          }}
+          onPerformanceUpdate={() => setShowPerformance(true)}
         />
       ) : (
         <Tabs defaultValue={activeSessions[0].station_id} className="space-y-4">
           <TabsList className="bg-secondary flex-wrap h-auto gap-1 p-1">
-            {activeSessions.map((session) => (
-              <TabsTrigger key={session.station_id} value={session.station_id} className="text-xs">
-                {session.station?.name || session.station_id}
+            {activeSessions.map((s) => (
+              <TabsTrigger key={s.station_id} value={s.station_id} className="text-xs">
+                {s.station?.name || s.station_id}
               </TabsTrigger>
             ))}
           </TabsList>
-          {activeSessions.map((session) => (
-            <TabsContent key={session.station_id} value={session.station_id}>
+          {activeSessions.map((s) => (
+            <TabsContent key={s.station_id} value={s.station_id}>
               <OperatorStationPanel
-                stationId={session.station_id}
-                stationName={session.station?.name || "Station"}
-                onCreateHandoff={() => handleOpenHandoff(session.station_id)}
-                onPerformanceUpdate={handleOpenPerformance}
+                stationId={s.station_id}
+                stationName={s.station?.name || "Station"}
+                onCreateHandoff={() => {
+                  setHandoffStationId(s.station_id);
+                  setShowHandoff(true);
+                }}
+                onPerformanceUpdate={() => setShowPerformance(true)}
               />
             </TabsContent>
           ))}
@@ -136,14 +166,36 @@ export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDas
       {/* Handoff modal */}
       {showHandoff && (
         <NewHandoffForm
-          onClose={handleCloseHandoff}
+          onClose={() => setShowHandoff(false)}
           onSubmit={createHandoffRecord}
           initialStationId={handoffStationId}
         />
       )}
 
       {/* Performance update modal */}
-      {showPerformance && <JobPerformanceUpdateForm onClose={handleClosePerformance} />}
+      {showPerformance && <JobPerformanceUpdateForm onClose={() => setShowPerformance(false)} />}
+
+      {/* End Shift Confirmation Dialog */}
+      <AlertDialog open={showEndShiftConfirm} onOpenChange={setShowEndShiftConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>End your shift?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will check you out of {activeSessions.length} station{activeSessions.length !== 1 ? "s" : ""}. Make
+              sure you've completed any necessary handoff notes before ending your shift.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleEndShiftConfirm}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              End Shift
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
