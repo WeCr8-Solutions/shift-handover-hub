@@ -16,38 +16,34 @@ export interface MachineLibraryEntry {
   machine_type: string;
   platform_category: string;
 
-  // Linear axis travel (machine coordinate system, mm)
-  axis_x_travel_mm: number | null;
-  axis_y_travel_mm: number | null;
-  axis_z_travel_mm: number | null;
+  // Machine linear travels (mm)
+  max_x_travel: number | null;
+  max_y_travel: number | null;
+  max_z_travel: number | null;
 
-  // Workpiece capacity
-  max_part_weight_kg: number | null;
-  max_part_envelope_length_mm: number | null;
-  max_part_envelope_width_mm: number | null;
-  max_part_envelope_height_mm: number | null;
+  // Part / work envelope (mm, kg)
+  max_part_weight: number | null; // kilograms
+  max_part_envelope_length: number | null; // mm
+  max_part_envelope_width: number | null; // mm
+  max_part_envelope_height: number | null; // mm
 
-  // Axis / spindle configuration
-  has_5_axis_simultaneous: boolean;
-  has_4th_axis: boolean;
-  has_live_tooling: boolean;
-  has_y_axis_turn: boolean;
-  has_sub_spindle: boolean;
+  // Configuration / options
+  five_axis_simultaneous: boolean;
+  fourth_axis: boolean;
+  live_tooling: boolean;
+  y_axis_turn: boolean;
+  sub_spindle: boolean;
+  probing: boolean;
+  through_spindle_coolant: boolean;
+  pallet_pool: boolean;
+  bar_feeder: boolean;
 
-  // Options / automation
-  has_probing: boolean;
-  has_through_spindle_coolant: boolean;
-  has_pallet_pool: boolean;
-  has_bar_feeder: boolean;
-
-  // Capability descriptors
   material_capability: string[];
-  /** Typical achievable tolerance in micrometers (µm) */
-  typical_tolerance_um: number | null;
 
-  /** Hard manufacturing constraints expressed as JSON rules */
-  hard_constraints: Record<string, unknown>[];
+  // Typical achievable tolerance in micrometers (µm)
+  typical_tolerance: number | null;
 
+  hard_constraints: any[];
   is_verified: boolean;
 }
 
