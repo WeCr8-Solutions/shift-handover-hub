@@ -47,11 +47,19 @@ interface WorkOrder {
   started_at: string | null;
 }
 
+interface RoutingStep {
+  id: string;
+  station_id: string;
+  status: string;
+  step_number: number;
+  stations?: { name: string } | null;
+}
+
 interface RoutingInfo {
   isFinalStep: boolean;
   nextStationName: string | null;
   currentStepId: string | null;
-  nextStep: any | null;
+  nextStep: RoutingStep | null;
   totalSteps: number;
   currentStepNumber: number;
 }
@@ -83,9 +91,7 @@ export function OperatorStationPanel({
   const [overrideReason, setOverrideReason] = useState("");
 
   const activeOrder = orders.find((o) => o.status === "in_progress") ?? null;
-  const queuedOrders = orders.filter(
-    (o) => o.status === "pending" || o.status === "queued"
-  );
+  const queuedOrders = orders.filter((o) => o.status === "pending" || o.status === "queued");
 
   // Elapsed timer
   const [elapsed, setElapsed] = useState("");
@@ -124,16 +130,14 @@ export function OperatorStationPanel({
         return;
       }
 
-      const curIdx = steps.findIndex(
-        (s: any) => s.station_id === stationId && s.status !== "completed"
-      );
+      const curIdx = steps.findIndex((s) => s.station_id === stationId && s.status !== "completed");
       const nextStep = curIdx >= 0 ? steps[curIdx + 1] : null;
 
       setRoutingInfo({
         isFinalStep: !nextStep,
         nextStationName: nextStep?.stations?.name || null,
         currentStepId: curIdx >= 0 ? steps[curIdx].id : null,
-        nextStep,
+        nextStep: nextStep || null,
         totalSteps: steps.length,
         currentStepNumber: curIdx >= 0 ? curIdx + 1 : 0,
       });
@@ -146,9 +150,7 @@ export function OperatorStationPanel({
     if (!stationId || !user) return;
     const { data, error } = await supabase
       .from("queue_items")
-      .select(
-        "id, title, work_order, part_number, operation_number, status, priority, position, quantity, started_at"
-      )
+      .select("id, title, work_order, part_number, operation_number, status, priority, position, quantity, started_at")
       .eq("station_id", stationId)
       .in("status", ["pending", "queued", "in_progress", "on_hold"])
       .order("position", { ascending: true });
@@ -161,14 +163,20 @@ export function OperatorStationPanel({
     fetchOrders();
     const ch = supabase
       .channel(`op-panel-${stationId}`)
-      .on("postgres_changes", {
-        event: "*",
-        schema: "public",
-        table: "queue_items",
-        filter: `station_id=eq.${stationId}`,
-      }, () => fetchOrders())
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "queue_items",
+          filter: `station_id=eq.${stationId}`,
+        },
+        () => fetchOrders(),
+      )
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    return () => {
+      supabase.removeChannel(ch);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stationId, user]);
 
@@ -186,21 +194,19 @@ export function OperatorStationPanel({
         })
         .eq("id", order.id);
 
-      await supabase
-        .from("current_station_status")
-        .upsert(
-          {
-            station_id: stationId,
-            current_job_work_order: order.work_order || order.title,
-            current_job_part_number: order.part_number,
-            current_job_state: "Part Running",
-            current_operator_name: profile.display_name,
-            current_operator_id: user.id,
-            parts_complete: 0,
-            parts_required: order.quantity || 0,
-          },
-          { onConflict: "station_id" }
-        );
+      await supabase.from("current_station_status").upsert(
+        {
+          station_id: stationId,
+          current_job_work_order: order.work_order || order.title,
+          current_job_part_number: order.part_number,
+          current_job_state: "Part Running",
+          current_operator_name: profile.display_name,
+          current_operator_id: user.id,
+          parts_complete: 0,
+          parts_required: order.quantity || 0,
+        },
+        { onConflict: "station_id" },
+      );
 
       toast.success(`Started: ${order.work_order || order.title}`);
     } catch {
@@ -233,17 +239,14 @@ export function OperatorStationPanel({
         return;
       }
 
-      const result = data as any;
+      const result = data as { action?: string; next_station_name?: string };
       if (result?.action === "advanced") {
-        toast.success(
-          `Operation complete — advanced to ${result.next_station_name || "next station"}`,
-          {
-            action: {
-              label: "View Work Order",
-              onClick: () => handleNavigateToOrder(deliverOrder.id),
-            },
-          }
-        );
+        toast.success(`Operation complete — advanced to ${result.next_station_name || "next station"}`, {
+          action: {
+            label: "View Work Order",
+            onClick: () => handleNavigateToOrder(deliverOrder.id),
+          },
+        });
       } else {
         toast.success("Work order completed! Final operation done.", {
           action: {
@@ -266,6 +269,14 @@ export function OperatorStationPanel({
       onViewWorkOrder(orderId);
     } else {
       navigate(`/queue?item=${orderId}`);
+    }
+  };
+
+  const handleCloseDeliveryDialog = (open: boolean) => {
+    if (!open) {
+      setDeliverOrder(null);
+      setIsOverride(false);
+      setOverrideReason("");
     }
   };
 
@@ -319,21 +330,14 @@ export function OperatorStationPanel({
                   )}
                 </div>
               </div>
-              <h4 className="font-semibold">
-                {activeOrder.work_order || activeOrder.title}
-              </h4>
+              <h4 className="font-semibold">{activeOrder.work_order || activeOrder.title}</h4>
               {activeOrder.part_number && (
                 <p className="text-sm text-muted-foreground">
                   Part: {activeOrder.part_number}
-                  {activeOrder.operation_number &&
-                    ` • Op ${activeOrder.operation_number}`}
+                  {activeOrder.operation_number && ` • Op ${activeOrder.operation_number}`}
                 </p>
               )}
-              {activeOrder.quantity && (
-                <p className="text-sm text-muted-foreground">
-                  Qty: {activeOrder.quantity}
-                </p>
-              )}
+              {activeOrder.quantity && <p className="text-sm text-muted-foreground">Qty: {activeOrder.quantity}</p>}
               <div className="flex gap-2 pt-1 flex-wrap">
                 {/* Routing-aware completion button */}
                 {routingInfo && !routingInfo.isFinalStep ? (
@@ -352,7 +356,7 @@ export function OperatorStationPanel({
                     onClick={() => setDeliverOrder(activeOrder)}
                     disabled={processing}
                   >
-                    <CheckCircle2 className="w-3 h-3" /> 
+                    <CheckCircle2 className="w-3 h-3" />
                     {routingInfo ? "Complete Work Order" : "Complete & Deliver"}
                   </Button>
                 )}
@@ -387,21 +391,15 @@ export function OperatorStationPanel({
                         {i + 1}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <span className="text-sm font-medium truncate block">
-                          {order.work_order || order.title}
-                        </span>
+                        <span className="text-sm font-medium truncate block">{order.work_order || order.title}</span>
                         {order.part_number && (
                           <span className="text-[10px] text-muted-foreground">
                             {order.part_number}
-                            {order.operation_number &&
-                              ` • Op ${order.operation_number}`}
+                            {order.operation_number && ` • Op ${order.operation_number}`}
                           </span>
                         )}
                       </div>
-                      <Badge
-                        variant="outline"
-                        className={cn("text-[9px] px-1.5", priorityClass(order.priority))}
-                      >
+                      <Badge variant="outline" className={cn("text-[9px] px-1.5", priorityClass(order.priority))}>
                         {order.priority}
                       </Badge>
                       <Button
@@ -430,20 +428,10 @@ export function OperatorStationPanel({
           {/* Quick actions */}
           <Separator />
           <div className="flex gap-2 flex-wrap">
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1 text-xs"
-              onClick={onCreateHandoff}
-            >
+            <Button variant="outline" size="sm" className="gap-1 text-xs" onClick={onCreateHandoff}>
               <FileText className="w-3 h-3" /> Handoff
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1 text-xs"
-              onClick={onPerformanceUpdate}
-            >
+            <Button variant="outline" size="sm" className="gap-1 text-xs" onClick={onPerformanceUpdate}>
               <Lightbulb className="w-3 h-3" /> Performance Update
             </Button>
             <Button
@@ -459,7 +447,7 @@ export function OperatorStationPanel({
       </Card>
 
       {/* Delivery confirm dialog — routing-aware */}
-      <AlertDialog open={!!deliverOrder} onOpenChange={(open) => { if (!open) { setDeliverOrder(null); setIsOverride(false); setOverrideReason(""); } }}>
+      <AlertDialog open={!!deliverOrder} onOpenChange={handleCloseDeliveryDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
@@ -479,10 +467,8 @@ export function OperatorStationPanel({
               <div className="space-y-3">
                 {routingInfo && !routingInfo.isFinalStep ? (
                   <p>
-                    Complete your operation on{" "}
-                    <strong>{deliverOrder?.work_order || deliverOrder?.title}</strong>{" "}
-                    and advance it to{" "}
-                    <strong>{routingInfo.nextStationName || "the next station"}</strong>.
+                    Complete your operation on <strong>{deliverOrder?.work_order || deliverOrder?.title}</strong> and
+                    advance it to <strong>{routingInfo.nextStationName || "the next station"}</strong>.
                   </p>
                 ) : routingInfo ? (
                   <p>
@@ -491,7 +477,8 @@ export function OperatorStationPanel({
                   </p>
                 ) : (
                   <p>
-                    Complete <strong>{deliverOrder?.work_order || deliverOrder?.title}</strong> and move it to the next station?
+                    Complete <strong>{deliverOrder?.work_order || deliverOrder?.title}</strong> and move it to the next
+                    station?
                   </p>
                 )}
 
@@ -510,7 +497,9 @@ export function OperatorStationPanel({
                     </label>
                     {isOverride && (
                       <div className="space-y-1">
-                        <Label htmlFor="override-reason" className="text-xs">Override Reason (required)</Label>
+                        <Label htmlFor="override-reason" className="text-xs">
+                          Override Reason (required)
+                        </Label>
                         <Textarea
                           id="override-reason"
                           placeholder="Explain why this override is needed..."
