@@ -3,31 +3,51 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
+/**
+ * Library definition of a physical machine tool.
+ * Travel / envelope dimensions are in millimeters.
+ * Part weight is in kilograms.
+ * Typical tolerance is in micrometers (µm).
+ */
 export interface MachineLibraryEntry {
   id: string;
   manufacturer: string;
   model: string;
   machine_type: string;
   platform_category: string;
-  max_x_travel: number | null;
-  max_y_travel: number | null;
-  max_z_travel: number | null;
-  max_part_weight: number | null;
-  max_part_envelope_length: number | null;
-  max_part_envelope_width: number | null;
-  max_part_envelope_height: number | null;
-  five_axis_simultaneous: boolean;
-  fourth_axis: boolean;
-  live_tooling: boolean;
-  y_axis_turn: boolean;
-  sub_spindle: boolean;
-  probing: boolean;
-  through_spindle_coolant: boolean;
-  pallet_pool: boolean;
-  bar_feeder: boolean;
+
+  // Linear axis travel (machine coordinate system, mm)
+  axis_x_travel_mm: number | null;
+  axis_y_travel_mm: number | null;
+  axis_z_travel_mm: number | null;
+
+  // Workpiece capacity
+  max_part_weight_kg: number | null;
+  max_part_envelope_length_mm: number | null;
+  max_part_envelope_width_mm: number | null;
+  max_part_envelope_height_mm: number | null;
+
+  // Axis / spindle configuration
+  has_5_axis_simultaneous: boolean;
+  has_4th_axis: boolean;
+  has_live_tooling: boolean;
+  has_y_axis_turn: boolean;
+  has_sub_spindle: boolean;
+
+  // Options / automation
+  has_probing: boolean;
+  has_through_spindle_coolant: boolean;
+  has_pallet_pool: boolean;
+  has_bar_feeder: boolean;
+
+  // Capability descriptors
   material_capability: string[];
-  typical_tolerance: number | null;
-  hard_constraints: any[];
+  /** Typical achievable tolerance in micrometers (µm) */
+  typical_tolerance_um: number | null;
+
+  /** Hard manufacturing constraints expressed as JSON rules */
+  hard_constraints: Record<string, unknown>[];
+
   is_verified: boolean;
 }
 
@@ -59,63 +79,104 @@ export function useMachineLibrary(organizationId: string | null) {
 
   const fetchLibrary = useCallback(async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from("verified_machine_library" as any)
+
+    const { data, error } = await supabase
+      .from<MachineLibraryEntry>("verified_machine_library" as any)
       .select("*")
       .order("manufacturer", { ascending: true })
       .order("model", { ascending: true });
-    setLibrary((data as any[]) || []);
+
+    if (error) {
+      // optional: toast here if you want
+      setLibrary([]);
+    } else {
+      setLibrary(data || []);
+    }
+
     setLoading(false);
   }, []);
 
   const fetchPurchases = useCallback(async () => {
-    if (!organizationId) { setPurchases([]); return; }
-    const { data } = await supabase
-      .from("organization_machine_purchases" as any)
+    if (!organizationId) {
+      setPurchases([]);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from<MachinePurchase>("organization_machine_purchases" as any)
       .select("*")
       .eq("organization_id", organizationId);
-    setPurchases((data as any[]) || []);
+
+    if (error) {
+      setPurchases([]);
+    } else {
+      setPurchases(data || []);
+    }
   }, [organizationId]);
 
-  useEffect(() => { fetchLibrary(); }, [fetchLibrary]);
-  useEffect(() => { fetchPurchases(); }, [fetchPurchases]);
+  useEffect(() => {
+    fetchLibrary();
+  }, [fetchLibrary]);
+
+  useEffect(() => {
+    fetchPurchases();
+  }, [fetchPurchases]);
 
   const isPurchased = (libraryId: string) =>
-    purchases.some((p) => p.machine_library_id === libraryId && p.is_active);
+    purchases.some((purchase) => purchase.machine_library_id === libraryId && purchase.is_active);
 
   const purchaseMachine = async (libraryId: string) => {
     if (!user || !organizationId) return;
+
     try {
       const { data, error } = await supabase.functions.invoke("activate-station-context", {
         body: { machine_library_id: libraryId, organization_id: organizationId },
       });
+
       if (error) throw error;
+
       if (data?.url) {
         window.open(data.url, "_blank");
       }
     } catch (e: any) {
-      toast({ title: "Payment Error", description: e.message || "Failed to initiate payment", variant: "destructive" });
+      toast({
+        title: "Payment error",
+        description: e?.message ?? "Failed to initiate payment",
+        variant: "destructive",
+      });
     }
   };
 
   const verifyPurchase = async (libraryId: string) => {
     if (!organizationId) return false;
+
     try {
       const { data, error } = await supabase.functions.invoke("verify-station-context-payment", {
         body: { machine_library_id: libraryId, organization_id: organizationId },
       });
+
       if (error) throw error;
+
       if (data?.activated) {
         await fetchPurchases();
         return true;
       }
+
       return false;
     } catch {
       return false;
     }
   };
 
-  return { library, purchases, loading, isPurchased, purchaseMachine, verifyPurchase, refreshPurchases: fetchPurchases };
+  return {
+    library,
+    purchases,
+    loading,
+    isPurchased,
+    purchaseMachine,
+    verifyPurchase,
+    refreshPurchases: fetchPurchases,
+  };
 }
 
 export function useStationMachineAssignment(stationId: string | null, organizationId: string | null) {
@@ -125,73 +186,133 @@ export function useStationMachineAssignment(stationId: string | null, organizati
   const [loading, setLoading] = useState(true);
 
   const fetchAssignment = useCallback(async () => {
-    if (!stationId) { setAssignment(null); setLoading(false); return; }
+    if (!stationId) {
+      setAssignment(null);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
-    const { data } = await supabase
-      .from("station_machine_assignments" as any)
+
+    const { data, error } = await supabase
+      .from<StationAssignment>("station_machine_assignments" as any)
       .select("*")
       .eq("station_id", stationId)
       .maybeSingle();
 
-    if (data) {
-      // Fetch the library entry via the purchase
-      const { data: purchase } = await supabase
-        .from("organization_machine_purchases" as any)
-        .select("machine_library_id")
-        .eq("id", (data as any).purchase_id)
+    if (error || !data) {
+      setAssignment(null);
+      setLoading(false);
+      return;
+    }
+
+    const { data: purchase } = await supabase
+      .from<Pick<MachinePurchase, "machine_library_id">>("organization_machine_purchases" as any)
+      .select("machine_library_id")
+      .eq("id", data.purchase_id)
+      .single();
+
+    if (purchase) {
+      const { data: machine } = await supabase
+        .from<MachineLibraryEntry>("verified_machine_library" as any)
+        .select("*")
+        .eq("id", purchase.machine_library_id)
         .single();
 
-      if (purchase) {
-        const { data: machine } = await supabase
-          .from("verified_machine_library" as any)
-          .select("*")
-          .eq("id", (purchase as any).machine_library_id)
-          .single();
-
-        setAssignment({ ...(data as any), machine: machine as any });
-      } else {
-        setAssignment(data as any);
-      }
+      setAssignment({ ...data, machine: machine ?? undefined });
     } else {
-      setAssignment(null);
+      setAssignment(data);
     }
+
     setLoading(false);
   }, [stationId]);
 
-  useEffect(() => { fetchAssignment(); }, [fetchAssignment]);
+  useEffect(() => {
+    fetchAssignment();
+  }, [fetchAssignment]);
 
   const assignMachine = async (purchaseId: string) => {
-    if (!stationId || !user || !organizationId) return { error: new Error("Missing data") };
-    // Upsert - remove existing assignment first
-    await supabase.from("station_machine_assignments" as any).delete().eq("station_id", stationId);
+    if (!stationId || !user || !organizationId) {
+      return { error: new Error("Missing station, user, or organization") };
+    }
+
+    await supabase
+      .from("station_machine_assignments" as any)
+      .delete()
+      .eq("station_id", stationId);
+
     const { error } = await supabase.from("station_machine_assignments" as any).insert({
       station_id: stationId,
       purchase_id: purchaseId,
       organization_id: organizationId,
       assigned_by: user.id,
-    } as any);
-    if (!error) await fetchAssignment();
+    } as StationAssignment);
+
+    if (!error) {
+      await fetchAssignment();
+    }
+
+    if (error) {
+      toast({
+        title: "Assignment error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+
     return { error };
   };
 
   const unassignMachine = async () => {
     if (!stationId) return;
-    await supabase.from("station_machine_assignments" as any).delete().eq("station_id", stationId);
+
+    await supabase
+      .from("station_machine_assignments" as any)
+      .delete()
+      .eq("station_id", stationId);
+
     setAssignment(null);
   };
 
-  return { assignment, loading, assignMachine, unassignMachine, refreshAssignment: fetchAssignment };
+  return {
+    assignment,
+    loading,
+    assignMachine,
+    unassignMachine,
+    refreshAssignment: fetchAssignment,
+  };
 }
 
 // Keep these exports for backward compatibility
 export const MANUFACTURERS = [
-  "DMG MORI", "HAAS", "Mazak", "Okuma", "Doosan",
-  "Hermle", "Makino", "Hurco", "Toyoda", "Matsuura",
-  "Kitamura", "Brother", "Nakamura-Tome",
-  "Star", "Citizen", "Tsugami", "Hardinge",
-  "Flow", "OMAX", "Trumpf", "Amada",
-  "Sodick", "Mitsubishi", "GF Machining",
-  "Hexagon", "Zeiss", "Okamoto", "Studer",
+  "DMG MORI",
+  "HAAS",
+  "Mazak",
+  "Okuma",
+  "Doosan",
+  "Hermle",
+  "Makino",
+  "Hurco",
+  "Toyoda",
+  "Matsuura",
+  "Kitamura",
+  "Brother",
+  "Nakamura-Tome",
+  "Star",
+  "Citizen",
+  "Tsugami",
+  "Hardinge",
+  "Flow",
+  "OMAX",
+  "Trumpf",
+  "Amada",
+  "Sodick",
+  "Mitsubishi",
+  "GF Machining",
+  "Hexagon",
+  "Zeiss",
+  "Okamoto",
+  "Studer",
   "Other",
 ] as const;
 
