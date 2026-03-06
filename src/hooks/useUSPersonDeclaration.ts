@@ -26,43 +26,46 @@ export interface USPersonDeclarationStatus {
 export function useUSPersonDeclaration(): USPersonDeclarationStatus {
   const { user } = useAuth();
   const { organization } = useUserOrganization();
+
   const [orgRequiresDeclaration, setOrgRequiresDeclaration] = useState(false);
   const [userHasDeclared, setUserHasDeclared] = useState(false);
   const [checkComplete, setCheckComplete] = useState(false);
 
   const checkStatus = useCallback(async () => {
     if (!user || !organization) {
+      setOrgRequiresDeclaration(false);
+      setUserHasDeclared(false);
       setCheckComplete(true);
       return;
     }
 
+    setCheckComplete(false);
+
     try {
       const [orgResult, profileResult] = await Promise.all([
-        supabase
-          .from("organizations")
-          .select("requires_us_person_declaration")
-          .eq("id", organization.id)
-          .maybeSingle(),
-        supabase
-          .from("profiles")
-          .select("us_person_declared")
-          .eq("user_id", user.id)
-          .maybeSingle(),
+        supabase.from("organizations").select("requires_us_person_declaration").eq("id", organization.id).maybeSingle(),
+        supabase.from("profiles").select("us_person_declared").eq("user_id", user.id).maybeSingle(),
       ]);
 
-      setOrgRequiresDeclaration(
-        orgResult.data?.requires_us_person_declaration ?? false
-      );
-      setUserHasDeclared(profileResult.data?.us_person_declared ?? false);
+      if (orgResult.error) throw orgResult.error;
+      if (profileResult.error) throw profileResult.error;
+
+      const requiresDeclaration = orgResult.data?.requires_us_person_declaration ?? false;
+      const hasDeclared = profileResult.data?.us_person_declared ?? false;
+
+      setOrgRequiresDeclaration(requiresDeclaration);
+      setUserHasDeclared(hasDeclared);
     } catch (err) {
       console.error("[useUSPersonDeclaration] Error checking status:", err);
+      setOrgRequiresDeclaration(false);
+      setUserHasDeclared(false);
     } finally {
       setCheckComplete(true);
     }
   }, [user, organization]);
 
   useEffect(() => {
-    checkStatus();
+    void checkStatus();
   }, [checkStatus]);
 
   const submitDeclaration = useCallback(async (): Promise<{ error: string | null }> => {
@@ -80,14 +83,19 @@ export function useUSPersonDeclaration(): USPersonDeclarationStatus {
 
       if (error) return { error: error.message };
 
-      // Log the declaration event
-      await supabase.from("activity_logs").insert({
+      const { error: logError } = await supabase.from("activity_logs").insert({
         user_id: user.id,
         activity_type: "us_person_declaration" as any,
         description: "User completed US Person self-certification",
         organization_id: organization?.id ?? null,
-        metadata: { declaration_text_hash: btoa(DECLARATION_TEXT).slice(0, 32) },
+        metadata: {
+          declaration_text_hash: btoa(DECLARATION_TEXT).slice(0, 32),
+        },
       });
+
+      if (logError) {
+        console.error("[useUSPersonDeclaration] Failed to log declaration:", logError);
+      }
 
       setUserHasDeclared(true);
       return { error: null };
@@ -101,7 +109,7 @@ export function useUSPersonDeclaration(): USPersonDeclarationStatus {
     orgRequiresDeclaration,
     userHasDeclared,
     checkComplete,
-    declarationBlockingAccess: orgRequiresDeclaration && !userHasDeclared,
+    declarationBlockingAccess: checkComplete && orgRequiresDeclaration && !userHasDeclared,
     submitDeclaration,
   };
 }
