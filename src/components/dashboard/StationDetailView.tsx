@@ -135,8 +135,9 @@ export function StationDetailView({ stationId, stationName, onBack }: StationDet
         <NewHandoffForm
           onClose={handleCloseHandoff}
           onSubmit={async (data) => {
-            await createHandoffRecord(data);
+            const result = await createHandoffRecord(data);
             setHasUnsavedChanges(false);
+            return result;
           }}
           initialStationId={stationId}
         />
