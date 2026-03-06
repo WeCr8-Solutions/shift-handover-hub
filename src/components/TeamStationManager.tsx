@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useStations, Station } from "@/hooks/useStations";
+import { useTeams } from "@/hooks/useTeams";
 import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { getSafeErrorMessage } from "@/lib/errorHandling";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,6 +23,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { 
   Plus, 
@@ -30,7 +39,11 @@ import {
   FileSpreadsheet,
   ChevronRight,
   CheckCircle2,
-  Circle
+  Circle,
+  MoreVertical,
+  Pencil,
+  Trash2,
+  ArrowRightLeft,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { WorkCenterType, ALL_WORK_CENTER_TYPES } from "@/types/handoff";
@@ -54,6 +67,7 @@ export function TeamStationManager({
   onComplete 
 }: TeamStationManagerProps) {
   const { stations, loading, createStation, refreshStations } = useStations(teamId);
+  const { teams } = useTeams();
   const { organization } = useUserOrganization();
   const { toast } = useToast();
   
@@ -64,6 +78,17 @@ export function TeamStationManager({
   const [workCenter, setWorkCenter] = useState("");
   const [workCenterType, setWorkCenterType] = useState<WorkCenterType>("CNC Mill");
   const [isCreating, setIsCreating] = useState(false);
+  
+  // Edit state
+  const [editingStation, setEditingStation] = useState<Station | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editWorkCenter, setEditWorkCenter] = useState("");
+  const [editWorkCenterType, setEditWorkCenterType] = useState<WorkCenterType>("CNC Mill");
+  const [isSaving, setIsSaving] = useState(false);
+  
+  // Reassign state
+  const [reassigningStation, setReassigningStation] = useState<Station | null>(null);
+  const [reassignTeamId, setReassignTeamId] = useState("");
 
   const handleAddStation = async () => {
     if (!stationId.trim() || !stationName.trim() || !workCenter.trim()) {
@@ -110,6 +135,70 @@ export function TeamStationManager({
     onOpenChange(false);
     onComplete?.();
   };
+
+  const handleEditStation = (station: Station) => {
+    setEditingStation(station);
+    setEditName(station.name);
+    setEditWorkCenter(station.work_center);
+    setEditWorkCenterType(station.work_center_type);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingStation) return;
+    setIsSaving(true);
+    const { error } = await supabase
+      .from("stations")
+      .update({
+        name: editName,
+        work_center: editWorkCenter,
+        work_center_type: editWorkCenterType,
+      })
+      .eq("id", editingStation.id);
+    setIsSaving(false);
+
+    if (error) {
+      toast({ title: "Failed to update station", description: getSafeErrorMessage(error), variant: "destructive" });
+    } else {
+      toast({ title: "Station updated", description: `${editName} has been updated.` });
+      setEditingStation(null);
+      refreshStations();
+    }
+  };
+
+  const handleDeleteStation = async (station: Station) => {
+    const { error } = await supabase
+      .from("stations")
+      .delete()
+      .eq("id", station.id);
+
+    if (error) {
+      toast({ title: "Failed to delete station", description: getSafeErrorMessage(error), variant: "destructive" });
+    } else {
+      toast({ title: "Station deleted", description: `${station.name} has been removed.` });
+      refreshStations();
+    }
+  };
+
+  const handleReassignStation = async () => {
+    if (!reassigningStation || !reassignTeamId) return;
+    setIsSaving(true);
+    const { error } = await supabase
+      .from("stations")
+      .update({ team_id: reassignTeamId })
+      .eq("id", reassigningStation.id);
+    setIsSaving(false);
+
+    if (error) {
+      toast({ title: "Failed to reassign", description: getSafeErrorMessage(error), variant: "destructive" });
+    } else {
+      toast({ title: "Station reassigned", description: `${reassigningStation.name} moved to new team.` });
+      setReassigningStation(null);
+      refreshStations();
+    }
+  };
+
+  // Filter out current team for reassignment options
+  const otherTeams = teams.filter(t => t.id !== teamId);
 
   // Group stations by work center type
   const groupedStations = stations.reduce((acc, station) => {
@@ -288,6 +377,36 @@ export function TeamStationManager({
                                 <p className="text-sm font-medium truncate">{station.station_id}</p>
                                 <p className="text-xs text-muted-foreground truncate">{station.name}</p>
                               </div>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0">
+                                    <MoreVertical className="w-3.5 h-3.5" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => handleEditStation(station)}>
+                                    <Pencil className="w-4 h-4 mr-2" />
+                                    Edit
+                                  </DropdownMenuItem>
+                                  {otherTeams.length > 0 && (
+                                    <DropdownMenuItem onClick={() => {
+                                      setReassigningStation(station);
+                                      setReassignTeamId("");
+                                    }}>
+                                      <ArrowRightLeft className="w-4 h-4 mr-2" />
+                                      Reassign Team
+                                    </DropdownMenuItem>
+                                  )}
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    className="text-destructive focus:text-destructive"
+                                    onClick={() => handleDeleteStation(station)}
+                                  >
+                                    <Trash2 className="w-4 h-4 mr-2" />
+                                    Delete
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </div>
                           ))}
                         </div>
@@ -306,6 +425,74 @@ export function TeamStationManager({
             <Button onClick={handleComplete} className="gap-2">
               Continue
               <ChevronRight className="w-4 h-4" />
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Station Dialog */}
+      <Dialog open={!!editingStation} onOpenChange={(open) => !open && setEditingStation(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Station</DialogTitle>
+            <DialogDescription>Update station details for {editingStation?.station_id}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Display Name</Label>
+              <Input value={editName} onChange={(e) => setEditName(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Department/Work Center</Label>
+              <Input value={editWorkCenter} onChange={(e) => setEditWorkCenter(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Station Type</Label>
+              <Select value={editWorkCenterType} onValueChange={(v) => setEditWorkCenterType(v as WorkCenterType)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {ALL_WORK_CENTER_TYPES.map((type) => (
+                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingStation(null)}>Cancel</Button>
+            <Button onClick={handleSaveEdit} disabled={isSaving}>
+              {isSaving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reassign Station Dialog */}
+      <Dialog open={!!reassigningStation} onOpenChange={(open) => !open && setReassigningStation(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reassign Station</DialogTitle>
+            <DialogDescription>
+              Move {reassigningStation?.name} ({reassigningStation?.station_id}) to a different team.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Target Team</Label>
+              <Select value={reassignTeamId} onValueChange={setReassignTeamId}>
+                <SelectTrigger><SelectValue placeholder="Select a team" /></SelectTrigger>
+                <SelectContent>
+                  {otherTeams.map((team) => (
+                    <SelectItem key={team.id} value={team.id}>{team.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReassigningStation(null)}>Cancel</Button>
+            <Button onClick={handleReassignStation} disabled={isSaving || !reassignTeamId}>
+              {isSaving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Moving...</> : "Reassign"}
             </Button>
           </DialogFooter>
         </DialogContent>
