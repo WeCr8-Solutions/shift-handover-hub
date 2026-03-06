@@ -1,15 +1,29 @@
-import { useNavigate } from 'react-router-dom';
-import { useOnboardingContext, ONBOARDING_STEPS } from './OnboardingProvider';
-import { Progress } from '@/components/ui/progress';
-import { Button } from '@/components/ui/button';
-import { CheckCircle2, Circle, Play, RotateCcw } from 'lucide-react';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { useNavigate } from "react-router-dom";
+import { useOnboardingContext, ONBOARDING_STEPS } from "./OnboardingProvider";
+import type { OnboardingStep } from "./OnboardingProvider";
+import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { CheckCircle2, Circle, Play, RotateCcw } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
+// ── Module-level constants ───────────────────────────────────────────────────
+
+const STEP_ROUTE_MAP: Record<string, string> = {
+  welcome: "/setup",
+  "organization-setup": "/setup",
+  "shop-setup": "/setup",
+  "dashboard-overview": "/dashboard",
+  "station-cards": "/dashboard",
+  "handoff-submission": "/dashboard",
+  "performance-updates": "/dashboard",
+  "team-management": "/teams",
+  "admin-features": "/admin",
+};
+
+// Steps displayed in the list (exclude synthetic 'complete' sentinel)
+const VISIBLE_STEPS = ONBOARDING_STEPS.filter((s) => s.id !== "complete");
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 interface OnboardingProgressProps {
   showRestart?: boolean;
@@ -18,10 +32,10 @@ interface OnboardingProgressProps {
 
 export function OnboardingProgress({ showRestart = true, compact = false }: OnboardingProgressProps) {
   const navigate = useNavigate();
-  const { 
-    isComplete, 
-    isLoading, 
-    getProgress, 
+  const {
+    isComplete,
+    isLoading,
+    getProgress,
     isStepCompleted,
     startTour,
     resetOnboarding,
@@ -30,53 +44,31 @@ export function OnboardingProgress({ showRestart = true, compact = false }: Onbo
     currentStep,
   } = useOnboardingContext();
 
-  const STEP_ROUTE_MAP: Record<string, string> = {
-    'welcome': '/setup',
-    'organization-setup': '/setup',
-    'shop-setup': '/setup',
-    'dashboard-overview': '/dashboard',
-    'station-cards': '/dashboard',
-    'handoff-submission': '/dashboard',
-    'performance-updates': '/dashboard',
-    'team-management': '/teams',
-    'admin-features': '/admin',
-  };
-
   if (isLoading) return null;
 
   const progress = getProgress();
-  const stepsToShow = ONBOARDING_STEPS.filter(s => s.id !== 'complete');
 
+  // Navigate to the correct page for the current step, then kick off the tour
   const handleStartTour = () => {
-    // Navigate to appropriate page based on current step
-    if (currentStep === 'welcome' || currentStep === 'shop-setup') {
-      navigate('/setup');
-    } else if (currentStep === 'dashboard-overview' || currentStep === 'station-cards') {
-      navigate('/dashboard');
-    } else if (currentStep === 'team-management') {
-      navigate('/teams');
-    } else if (currentStep === 'admin-features') {
-      navigate('/admin');
-    } else {
-      navigate('/dashboard');
-    }
+    const route = STEP_ROUTE_MAP[currentStep] ?? "/dashboard";
+    navigate(route);
     setTimeout(() => startTour(), 300);
   };
 
   const handleRestart = async () => {
     await resetOnboarding();
-    navigate('/setup');
+    navigate("/setup");
     setTimeout(() => startTour(), 300);
   };
 
   const handleStepClick = async (stepId: string) => {
     await markWelcomeSeen();
-    await goToStep(stepId as any);
-    
-    navigate(STEP_ROUTE_MAP[stepId] || '/dashboard');
-    setTimeout(() => startTour(stepId as any), 300);
+    await goToStep(stepId as OnboardingStep);
+    navigate(STEP_ROUTE_MAP[stepId] ?? "/dashboard");
+    setTimeout(() => startTour(stepId as OnboardingStep), 300);
   };
 
+  // ── Compact variant ────────────────────────────────────────────────────────
   if (compact) {
     return (
       <div className="flex items-center gap-3">
@@ -92,28 +84,28 @@ export function OnboardingProgress({ showRestart = true, compact = false }: Onbo
     );
   }
 
+  // ── Full card variant ──────────────────────────────────────────────────────
   return (
     <Card>
       <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4">
           <div>
             <CardTitle className="text-lg">Onboarding Progress</CardTitle>
             <CardDescription>
-              {isComplete 
-                ? 'You\'ve completed the onboarding tour!' 
-                : 'Complete the tour to learn all features'}
+              {isComplete ? "You've completed the onboarding tour!" : "Complete the tour to learn all features"}
             </CardDescription>
           </div>
           {isComplete && (
-            <span className="inline-flex items-center rounded-md bg-green-500/10 px-2 py-1 text-xs font-medium text-green-600">
+            <span className="inline-flex items-center rounded-md bg-green-500/10 px-2 py-1 text-xs font-medium text-green-600 shrink-0">
               <CheckCircle2 className="w-3 h-3 mr-1" />
               Complete
             </span>
           )}
         </div>
       </CardHeader>
+
       <CardContent className="space-y-4">
-        {/* Progress Bar */}
+        {/* Progress bar */}
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Progress</span>
@@ -122,9 +114,9 @@ export function OnboardingProgress({ showRestart = true, compact = false }: Onbo
           <Progress value={progress} className="h-2" />
         </div>
 
-        {/* Steps List */}
-        <div className="space-y-2">
-          {stepsToShow.map((step) => {
+        {/* Steps list */}
+        <div className="space-y-1">
+          {VISIBLE_STEPS.map((step) => {
             const completed = isStepCompleted(step.id);
             const isCurrent = step.id === currentStep;
 
@@ -132,27 +124,23 @@ export function OnboardingProgress({ showRestart = true, compact = false }: Onbo
               <button
                 key={step.id}
                 onClick={() => handleStepClick(step.id)}
-                className={`w-full flex items-center gap-3 p-2 rounded-md transition-colors cursor-pointer hover:bg-accent text-left ${
-                  isCurrent ? 'bg-primary/5 hover:bg-primary/10' : ''
+                className={`w-full flex items-center gap-3 p-2 rounded-md transition-colors text-left hover:bg-accent ${
+                  isCurrent ? "bg-primary/5 hover:bg-primary/10" : ""
                 }`}
               >
                 {completed ? (
                   <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
                 ) : (
-                  <Circle className={`w-5 h-5 shrink-0 ${
-                    isCurrent ? 'text-primary' : 'text-muted-foreground/40'
-                  }`} />
+                  <Circle className={`w-5 h-5 shrink-0 ${isCurrent ? "text-primary" : "text-muted-foreground/40"}`} />
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-medium ${completed ? 'text-muted-foreground' : ''}`}>
-                    {step.title}
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {step.description}
-                  </p>
+                  <p className={`text-sm font-medium ${completed ? "text-muted-foreground" : ""}`}>{step.title}</p>
+                  <p className="text-xs text-muted-foreground truncate">{step.description}</p>
                 </div>
                 {isCurrent && !isComplete && (
-                  <span className="inline-flex items-center rounded-md border border-border px-2 py-1 text-xs font-medium shrink-0">Current</span>
+                  <span className="inline-flex items-center rounded-md border border-border px-2 py-1 text-xs font-medium shrink-0">
+                    Current
+                  </span>
                 )}
               </button>
             );
@@ -164,7 +152,7 @@ export function OnboardingProgress({ showRestart = true, compact = false }: Onbo
           {!isComplete && (
             <Button className="flex-1" onClick={handleStartTour}>
               <Play className="w-4 h-4 mr-2" />
-              {currentStep === 'welcome' ? 'Start Tour' : 'Continue Tour'}
+              {currentStep === "welcome" ? "Start Tour" : "Continue Tour"}
             </Button>
           )}
           {showRestart && (
