@@ -16,14 +16,46 @@ import {
   Area,
   Legend,
 } from "recharts";
-import {
-  BarChart3,
-  PieChart as PieChartIcon,
-  TrendingUp,
-  Filter,
-  Activity,
-} from "lucide-react";
+import { BarChart3, PieChart as PieChartIcon, TrendingUp, Filter, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+// Inline status configuration (can be extracted to @/lib/stationStatus.ts)
+const JOB_STATES = {
+  PART_RUNNING: "Part Running",
+  PROCESSING: "Processing",
+  SETUP_IN_PROGRESS: "Setup in Progress",
+  FIRST_ARTICLE: "First Article in Process",
+  MACHINE_DOWN: "Machine Down / Issue",
+  ON_HOLD: "On Hold",
+} as const;
+
+type StatusLabel = "running" | "setup" | "down" | "waiting" | "idle";
+
+const STATUS_COLORS: Record<StatusLabel, string> = {
+  running: "hsl(142, 71%, 45%)",
+  setup: "hsl(38, 92%, 50%)",
+  waiting: "hsl(217, 91%, 60%)",
+  down: "hsl(0, 84%, 60%)",
+  idle: "hsl(215, 14%, 34%)",
+};
+
+const STATUS_CONFIG: Record<StatusLabel, { displayName: string }> = {
+  running: { displayName: "Running" },
+  setup: { displayName: "Setup" },
+  waiting: { displayName: "Waiting" },
+  down: { displayName: "Down" },
+  idle: { displayName: "Idle" },
+};
+
+function getStatusFromJobState(jobState: string | null | undefined): StatusLabel {
+  if (!jobState) return "idle";
+  const state = jobState.trim();
+  if (state === JOB_STATES.PART_RUNNING || state === JOB_STATES.PROCESSING) return "running";
+  if (state === JOB_STATES.SETUP_IN_PROGRESS || state === JOB_STATES.FIRST_ARTICLE) return "setup";
+  if (state === JOB_STATES.MACHINE_DOWN) return "down";
+  if (state.includes("Waiting") || state === JOB_STATES.ON_HOLD) return "waiting";
+  return "idle";
+}
 
 interface StationData {
   id: string;
@@ -65,13 +97,9 @@ interface ProductionAnalyticsProps {
 type ShiftFilter = "all" | "Day" | "Swing" | "Night";
 type ChartView = "output" | "status" | "trend";
 
-const STATUS_COLORS = {
-  running: "hsl(142, 71%, 45%)",
-  setup: "hsl(38, 92%, 50%)",
-  waiting: "hsl(217, 91%, 60%)",
-  down: "hsl(0, 84%, 60%)",
-  idle: "hsl(215, 14%, 34%)",
-};
+// Check for reduced motion preference
+const prefersReducedMotion =
+  typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
 export function ProductionAnalytics({ stations, handoffs }: ProductionAnalyticsProps) {
   const [shiftFilter, setShiftFilter] = useState<ShiftFilter>("all");
@@ -86,12 +114,12 @@ export function ProductionAnalytics({ stations, handoffs }: ProductionAnalyticsP
   // Station output data (parts per station)
   const stationOutputData = useMemo(() => {
     const map = new Map<string, { name: string; parts: number; scrap: number; rework: number }>();
-    
+
     // From current station status
     stations.forEach((s) => {
       if (!s.is_active) return;
       const existing = map.get(s.station_id) || { name: s.name, parts: 0, scrap: 0, rework: 0 };
-      existing.parts += s.current_status?.parts_complete || 0;
+      existing.parts += s.current_status?.parts_complete ?? 0;
       map.set(s.station_id, existing);
     });
 
@@ -99,9 +127,9 @@ export function ProductionAnalytics({ stations, handoffs }: ProductionAnalyticsP
     filteredHandoffs.forEach((h) => {
       const stationName = h.machine_id;
       const existing = map.get(stationName) || { name: stationName, parts: 0, scrap: 0, rework: 0 };
-      existing.parts += h.parts_completed_this_shift || 0;
-      existing.scrap += h.scrap_count || 0;
-      existing.rework += h.rework_count || 0;
+      existing.parts += h.parts_completed_this_shift ?? 0;
+      existing.scrap += h.scrap_count ?? 0;
+      existing.rework += h.rework_count ?? 0;
       map.set(stationName, existing);
     });
 
@@ -111,45 +139,49 @@ export function ProductionAnalytics({ stations, handoffs }: ProductionAnalyticsP
       .slice(0, 10);
   }, [stations, filteredHandoffs]);
 
-  // Status distribution for pie chart
+  // Status distribution for pie chart using shared config
   const statusDistribution = useMemo(() => {
     const counts = { running: 0, setup: 0, waiting: 0, down: 0, idle: 0 };
+
     stations.forEach((s) => {
       if (!s.is_active) return;
-      const state = s.current_status?.current_job_state || "";
-      if (state === "Part Running" || state === "Processing") counts.running++;
-      else if (state === "Setup in Progress" || state === "First Article in Process") counts.setup++;
-      else if (state === "Machine Down / Issue") counts.down++;
-      else if (state.includes("Waiting") || state === "On Hold") counts.waiting++;
-      else counts.idle++;
+      const status = getStatusFromJobState(s.current_status?.current_job_state);
+      counts[status]++;
     });
+
     return [
-      { name: "Running", value: counts.running, color: STATUS_COLORS.running },
-      { name: "Setup", value: counts.setup, color: STATUS_COLORS.setup },
-      { name: "Waiting", value: counts.waiting, color: STATUS_COLORS.waiting },
-      { name: "Down", value: counts.down, color: STATUS_COLORS.down },
-      { name: "Idle", value: counts.idle, color: STATUS_COLORS.idle },
+      { name: STATUS_CONFIG.running.displayName, value: counts.running, color: STATUS_COLORS.running },
+      { name: STATUS_CONFIG.setup.displayName, value: counts.setup, color: STATUS_COLORS.setup },
+      { name: STATUS_CONFIG.waiting.displayName, value: counts.waiting, color: STATUS_COLORS.waiting },
+      { name: STATUS_CONFIG.down.displayName, value: counts.down, color: STATUS_COLORS.down },
+      { name: STATUS_CONFIG.idle.displayName, value: counts.idle, color: STATUS_COLORS.idle },
     ].filter((d) => d.value > 0);
   }, [stations]);
 
-  // Handoff trend data (grouped by hour)
+  // Handoff trend data (grouped by hour, filtered to today only)
   const trendData = useMemo(() => {
     const hours = new Map<string, { hour: string; handoffs: number; parts: number; scrap: number }>();
-    
+
     // Create 24h slots
     for (let i = 0; i < 24; i++) {
       const label = `${i.toString().padStart(2, "0")}:00`;
       hours.set(label, { hour: label, handoffs: 0, parts: 0, scrap: 0 });
     }
 
+    const today = new Date();
+    const todayString = today.toDateString();
+
     filteredHandoffs.forEach((h) => {
       const date = new Date(h.created_at);
+      // Only include today's handoffs
+      if (date.toDateString() !== todayString) return;
+
       const hourLabel = `${date.getHours().toString().padStart(2, "0")}:00`;
       const slot = hours.get(hourLabel);
       if (slot) {
         slot.handoffs++;
-        slot.parts += h.parts_completed_this_shift || 0;
-        slot.scrap += h.scrap_count || 0;
+        slot.parts += h.parts_completed_this_shift ?? 0;
+        slot.scrap += h.scrap_count ?? 0;
       }
     });
 
@@ -158,7 +190,16 @@ export function ProductionAnalytics({ stations, handoffs }: ProductionAnalyticsP
 
   const totalParts = stationOutputData.reduce((sum, d) => sum + d.parts, 0);
   const totalScrap = stationOutputData.reduce((sum, d) => sum + d.scrap, 0);
+
+  // Safe yield calculation
   const yieldRate = totalParts > 0 ? Math.round(((totalParts - totalScrap) / totalParts) * 100) : 100;
+
+  // Safe percentage calculation for status distribution
+  const activeStationCount = stations.filter((s) => s.is_active).length;
+  const getStatusPercentage = (value: number) => {
+    if (activeStationCount === 0) return 0;
+    return Math.round((value / activeStationCount) * 100);
+  };
 
   return (
     <div className="space-y-4">
@@ -167,12 +208,18 @@ export function ProductionAnalytics({ stations, handoffs }: ProductionAnalyticsP
         <div className="flex items-center gap-2">
           <BarChart3 className="w-5 h-5 text-primary" />
           <h3 className="font-semibold text-base">Production Analytics</h3>
-          <Badge variant="outline" className="text-[10px]">Live</Badge>
+          <Badge variant="outline" className="text-[10px]">
+            Live
+          </Badge>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           {/* Shift Filter */}
-          <div className="flex items-center gap-1 bg-secondary/50 rounded-lg p-0.5">
-            <Filter className="w-3 h-3 text-muted-foreground ml-2" />
+          <div
+            className="flex items-center gap-1 bg-secondary/50 rounded-lg p-0.5"
+            role="group"
+            aria-label="Shift filter"
+          >
+            <Filter className="w-3 h-3 text-muted-foreground ml-2" aria-hidden="true" />
             {(["all", "Day", "Swing", "Night"] as ShiftFilter[]).map((shift) => (
               <button
                 key={shift}
@@ -181,20 +228,25 @@ export function ProductionAnalytics({ stations, handoffs }: ProductionAnalyticsP
                   "px-2.5 py-1 rounded-md text-xs font-medium transition-colors",
                   shiftFilter === shift
                     ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
+                aria-pressed={shiftFilter === shift}
               >
                 {shift === "all" ? "All Shifts" : shift}
               </button>
             ))}
           </div>
           {/* Chart View Toggle */}
-          <div className="flex items-center gap-0.5 bg-secondary/50 rounded-lg p-0.5">
-            {([
+          <div
+            className="flex items-center gap-0.5 bg-secondary/50 rounded-lg p-0.5"
+            role="group"
+            aria-label="Chart view"
+          >
+            {[
               { key: "output" as ChartView, icon: BarChart3, label: "Output" },
               { key: "status" as ChartView, icon: PieChartIcon, label: "Status" },
               { key: "trend" as ChartView, icon: TrendingUp, label: "Trend" },
-            ]).map(({ key, icon: Icon, label }) => (
+            ].map(({ key, icon: Icon, label }) => (
               <button
                 key={key}
                 onClick={() => setChartView(key)}
@@ -202,10 +254,11 @@ export function ProductionAnalytics({ stations, handoffs }: ProductionAnalyticsP
                   "flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors",
                   chartView === key
                     ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
+                aria-pressed={chartView === key}
               >
-                <Icon className="w-3 h-3" />
+                <Icon className="w-3 h-3" aria-hidden="true" />
                 {label}
               </button>
             ))}
@@ -214,25 +267,25 @@ export function ProductionAnalytics({ stations, handoffs }: ProductionAnalyticsP
       </div>
 
       {/* Summary Stat Chips */}
-      <div className="flex gap-3 flex-wrap">
+      <div className="flex gap-3 flex-wrap" role="group" aria-label="Production summary">
         <div className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-1.5">
-          <Activity className="w-3.5 h-3.5 text-green-400" />
+          <Activity className="w-3.5 h-3.5 text-green-400" aria-hidden="true" />
           <span className="text-xs text-muted-foreground">Total Parts</span>
           <span className="text-sm font-bold font-mono text-green-400">{totalParts}</span>
         </div>
         <div className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-1.5">
-          <TrendingUp className="w-3.5 h-3.5 text-primary" />
+          <TrendingUp className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
           <span className="text-xs text-muted-foreground">Yield</span>
           <span className="text-sm font-bold font-mono text-primary">{yieldRate}%</span>
         </div>
         <div className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-1.5">
-          <BarChart3 className="w-3.5 h-3.5 text-amber-400" />
+          <BarChart3 className="w-3.5 h-3.5 text-amber-400" aria-hidden="true" />
           <span className="text-xs text-muted-foreground">Handoffs</span>
           <span className="text-sm font-bold font-mono text-amber-400">{filteredHandoffs.length}</span>
         </div>
         {totalScrap > 0 && (
           <div className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-1.5">
-            <span className="w-2 h-2 rounded-full bg-red-400" />
+            <span className="w-2 h-2 rounded-full bg-red-400" aria-hidden="true" />
             <span className="text-xs text-muted-foreground">Scrap</span>
             <span className="text-sm font-bold font-mono text-red-400">{totalScrap}</span>
           </div>
@@ -250,7 +303,12 @@ export function ProductionAnalytics({ stations, handoffs }: ProductionAnalyticsP
               </div>
             ) : (
               <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={stationOutputData} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+                <BarChart
+                  data={stationOutputData}
+                  margin={{ top: 5, right: 10, left: -10, bottom: 5 }}
+                  role="img"
+                  aria-label={`Bar chart showing parts completed. Top station: ${stationOutputData[0]?.name} with ${stationOutputData[0]?.parts} parts.`}
+                >
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                   <XAxis
                     dataKey="name"
@@ -275,9 +333,27 @@ export function ProductionAnalytics({ stations, handoffs }: ProductionAnalyticsP
                     }}
                     labelStyle={{ color: "hsl(var(--foreground))" }}
                   />
-                  <Bar dataKey="parts" name="Good Parts" fill={STATUS_COLORS.running} radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="scrap" name="Scrap" fill={STATUS_COLORS.down} radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="rework" name="Rework" fill={STATUS_COLORS.setup} radius={[4, 4, 0, 0]} />
+                  <Bar
+                    dataKey="parts"
+                    name="Good Parts"
+                    fill={STATUS_COLORS.running}
+                    radius={[4, 4, 0, 0]}
+                    isAnimationActive={!prefersReducedMotion}
+                  />
+                  <Bar
+                    dataKey="scrap"
+                    name="Scrap"
+                    fill={STATUS_COLORS.down}
+                    radius={[4, 4, 0, 0]}
+                    isAnimationActive={!prefersReducedMotion}
+                  />
+                  <Bar
+                    dataKey="rework"
+                    name="Rework"
+                    fill={STATUS_COLORS.setup}
+                    radius={[4, 4, 0, 0]}
+                    isAnimationActive={!prefersReducedMotion}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -294,7 +370,7 @@ export function ProductionAnalytics({ stations, handoffs }: ProductionAnalyticsP
             ) : (
               <div className="flex items-center gap-8">
                 <ResponsiveContainer width="50%" height={250}>
-                  <PieChart>
+                  <PieChart role="img" aria-label="Pie chart showing station status distribution">
                     <Pie
                       data={statusDistribution}
                       cx="50%"
@@ -304,7 +380,7 @@ export function ProductionAnalytics({ stations, handoffs }: ProductionAnalyticsP
                       paddingAngle={3}
                       dataKey="value"
                       animationBegin={0}
-                      animationDuration={800}
+                      animationDuration={prefersReducedMotion ? 0 : 800}
                     >
                       {statusDistribution.map((entry, i) => (
                         <Cell key={i} fill={entry.color} stroke="none" />
@@ -323,11 +399,11 @@ export function ProductionAnalytics({ stations, handoffs }: ProductionAnalyticsP
                 <div className="flex-1 space-y-3">
                   {statusDistribution.map((d) => (
                     <div key={d.name} className="flex items-center gap-3">
-                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: d.color }} />
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: d.color }} aria-hidden="true" />
                       <span className="text-sm flex-1">{d.name}</span>
                       <span className="text-sm font-bold font-mono">{d.value}</span>
                       <span className="text-xs text-muted-foreground w-10 text-right">
-                        {Math.round((d.value / stations.filter(s => s.is_active).length) * 100)}%
+                        {getStatusPercentage(d.value)}%
                       </span>
                     </div>
                   ))}
@@ -339,9 +415,14 @@ export function ProductionAnalytics({ stations, handoffs }: ProductionAnalyticsP
 
         {chartView === "trend" && (
           <div>
-            <p className="text-xs text-muted-foreground mb-3">Handoff activity & parts output (24h)</p>
+            <p className="text-xs text-muted-foreground mb-3">Handoff activity & parts output (today)</p>
             <ResponsiveContainer width="100%" height={280}>
-              <AreaChart data={trendData} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+              <AreaChart
+                data={trendData}
+                margin={{ top: 5, right: 10, left: -10, bottom: 5 }}
+                role="img"
+                aria-label="Area chart showing handoff activity and parts output throughout the day"
+              >
                 <defs>
                   <linearGradient id="gradParts" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor={STATUS_COLORS.running} stopOpacity={0.3} />
@@ -381,6 +462,7 @@ export function ProductionAnalytics({ stations, handoffs }: ProductionAnalyticsP
                   stroke={STATUS_COLORS.running}
                   fill="url(#gradParts)"
                   strokeWidth={2}
+                  isAnimationActive={!prefersReducedMotion}
                 />
                 <Area
                   type="monotone"
@@ -389,6 +471,7 @@ export function ProductionAnalytics({ stations, handoffs }: ProductionAnalyticsP
                   stroke="hsl(var(--primary))"
                   fill="url(#gradHandoffs)"
                   strokeWidth={2}
+                  isAnimationActive={!prefersReducedMotion}
                 />
               </AreaChart>
             </ResponsiveContainer>
