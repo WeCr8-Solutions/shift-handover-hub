@@ -1,46 +1,75 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Save, Globe, Palette, Clock } from "lucide-react";
+import { Loader2, Save, Globe, Palette } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAppSettings } from "@/hooks/useAppSettings";
+
+type GeneralPreferences = {
+  timezone: string;
+  dateFormat: string;
+  timeFormat: string;
+  language: string;
+  darkModeDefault: boolean;
+  autoRefreshInterval: number;
+  showCompletedItems: boolean;
+  defaultView: string;
+};
+
+const DEFAULT_SETTINGS: GeneralPreferences = {
+  timezone: "America/New_York",
+  dateFormat: "MM/DD/YYYY",
+  timeFormat: "12h",
+  language: "en",
+  darkModeDefault: false,
+  autoRefreshInterval: 30,
+  showCompletedItems: true,
+  defaultView: "stations",
+};
 
 export function GeneralSettings() {
   const { toast } = useToast();
   const { getSetting, updateSetting, loading } = useAppSettings();
   const [isSaving, setIsSaving] = useState(false);
+  const [settings, setSettings] = useState<GeneralPreferences>(DEFAULT_SETTINGS);
 
-  const [settings, setSettings] = useState({
-    timezone: "America/New_York",
-    dateFormat: "MM/DD/YYYY",
-    timeFormat: "12h",
-    language: "en",
-    darkModeDefault: false,
-    autoRefreshInterval: 30,
-    showCompletedItems: true,
-    defaultView: "stations",
-  });
+  const generalSettings = useMemo(() => {
+    return getSetting("general_preferences");
+  }, [getSetting]);
 
   useEffect(() => {
-    const generalSettings = getSetting("general_preferences");
-    if (generalSettings) {
-      setSettings(prev => ({ ...prev, ...generalSettings }));
+    if (generalSettings && typeof generalSettings === "object") {
+      setSettings((prev) => ({
+        ...prev,
+        ...generalSettings,
+      }));
     }
-  }, [getSetting]);
+  }, [generalSettings]);
 
   const handleSave = async () => {
     setIsSaving(true);
-    const { error } = await updateSetting("general_preferences", settings, "general");
-    setIsSaving(false);
 
-    if (error) {
-      toast({ title: "Failed to save settings", description: error, variant: "destructive" });
-    } else {
-      toast({ title: "Settings saved", description: "Your preferences have been updated." });
+    try {
+      const { error } = await updateSetting("general_preferences", settings, "general");
+
+      if (error) {
+        toast({
+          title: "Failed to save settings",
+          description: error,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Settings saved",
+          description: "Your preferences have been updated.",
+        });
+      }
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -60,18 +89,13 @@ export function GeneralSettings() {
             <Globe className="w-5 h-5" />
             Regional Settings
           </CardTitle>
-          <CardDescription>
-            Configure timezone, date, and time formats
-          </CardDescription>
+          <CardDescription>Configure timezone, date, and time formats</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label>Timezone</Label>
-              <Select 
-                value={settings.timezone} 
-                onValueChange={(v) => setSettings(p => ({ ...p, timezone: v }))}
-              >
+              <Select value={settings.timezone} onValueChange={(v) => setSettings((p) => ({ ...p, timezone: v }))}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -88,10 +112,7 @@ export function GeneralSettings() {
 
             <div className="space-y-2">
               <Label>Date Format</Label>
-              <Select 
-                value={settings.dateFormat} 
-                onValueChange={(v) => setSettings(p => ({ ...p, dateFormat: v }))}
-              >
+              <Select value={settings.dateFormat} onValueChange={(v) => setSettings((p) => ({ ...p, dateFormat: v }))}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -105,10 +126,7 @@ export function GeneralSettings() {
 
             <div className="space-y-2">
               <Label>Time Format</Label>
-              <Select 
-                value={settings.timeFormat} 
-                onValueChange={(v) => setSettings(p => ({ ...p, timeFormat: v }))}
-              >
+              <Select value={settings.timeFormat} onValueChange={(v) => setSettings((p) => ({ ...p, timeFormat: v }))}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -121,10 +139,7 @@ export function GeneralSettings() {
 
             <div className="space-y-2">
               <Label>Language</Label>
-              <Select 
-                value={settings.language} 
-                onValueChange={(v) => setSettings(p => ({ ...p, language: v }))}
-              >
+              <Select value={settings.language} onValueChange={(v) => setSettings((p) => ({ ...p, language: v }))}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -146,9 +161,7 @@ export function GeneralSettings() {
             <Palette className="w-5 h-5" />
             Display Preferences
           </CardTitle>
-          <CardDescription>
-            Configure how the application looks and behaves
-          </CardDescription>
+          <CardDescription>Configure how the application looks and behaves</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
@@ -158,7 +171,7 @@ export function GeneralSettings() {
             </div>
             <Switch
               checked={settings.darkModeDefault}
-              onCheckedChange={(v) => setSettings(p => ({ ...p, darkModeDefault: v }))}
+              onCheckedChange={(v) => setSettings((p) => ({ ...p, darkModeDefault: v }))}
             />
           </div>
 
@@ -169,16 +182,16 @@ export function GeneralSettings() {
             </div>
             <Switch
               checked={settings.showCompletedItems}
-              onCheckedChange={(v) => setSettings(p => ({ ...p, showCompletedItems: v }))}
+              onCheckedChange={(v) => setSettings((p) => ({ ...p, showCompletedItems: v }))}
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label>Default View</Label>
-              <Select 
-                value={settings.defaultView} 
-                onValueChange={(v) => setSettings(p => ({ ...p, defaultView: v }))}
+              <Select
+                value={settings.defaultView}
+                onValueChange={(v) => setSettings((p) => ({ ...p, defaultView: v }))}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -198,7 +211,15 @@ export function GeneralSettings() {
                 min={10}
                 max={300}
                 value={settings.autoRefreshInterval}
-                onChange={(e) => setSettings(p => ({ ...p, autoRefreshInterval: parseInt(e.target.value) || 30 }))}
+                onChange={(e) => {
+                  const raw = Number(e.target.value);
+                  const safeValue = Number.isFinite(raw) ? Math.min(300, Math.max(10, raw)) : 30;
+
+                  setSettings((p) => ({
+                    ...p,
+                    autoRefreshInterval: safeValue,
+                  }));
+                }}
               />
             </div>
           </div>
