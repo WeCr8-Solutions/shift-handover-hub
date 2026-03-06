@@ -9,25 +9,40 @@ export interface MachineLibraryEntry {
   model: string;
   machine_type: string;
   platform_category: string;
+
+  // Machine linear travels (mm)
   max_x_travel: number | null;
   max_y_travel: number | null;
   max_z_travel: number | null;
-  max_part_weight: number | null;
-  max_part_envelope_length: number | null;
-  max_part_envelope_width: number | null;
-  max_part_envelope_height: number | null;
+
+  // Part / work envelope (mm, kg)
+  max_part_weight: number | null; // kilograms
+  max_part_envelope_length: number | null; // mm
+  max_part_envelope_width: number | null; // mm
+  max_part_envelope_height: number | null; // mm
+
+  // Axis / spindle configuration
   five_axis_simultaneous: boolean;
   fourth_axis: boolean;
   live_tooling: boolean;
   y_axis_turn: boolean;
   sub_spindle: boolean;
+
+  // Options / automation
   probing: boolean;
   through_spindle_coolant: boolean;
   pallet_pool: boolean;
   bar_feeder: boolean;
+
+  // Capability descriptors
   material_capability: string[];
+
+  // Typical achievable tolerance in micrometers (µm)
   typical_tolerance: number | null;
+
+  // Hard manufacturing constraints expressed as JSON rules
   hard_constraints: any[];
+
   is_verified: boolean;
 }
 
@@ -59,12 +74,18 @@ export function useMachineLibrary(organizationId: string | null) {
 
   const fetchLibrary = useCallback(async () => {
     setLoading(true);
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("verified_machine_library" as any)
       .select("*")
       .order("manufacturer", { ascending: true })
       .order("model", { ascending: true });
-    setLibrary((data as any[]) || []);
+
+    if (error || !data) {
+      setLibrary([]);
+    } else {
+      setLibrary(data as MachineLibraryEntry[]);
+    }
+
     setLoading(false);
   }, []);
 
@@ -73,16 +94,23 @@ export function useMachineLibrary(organizationId: string | null) {
       setPurchases([]);
       return;
     }
-    const { data } = await supabase
+
+    const { data, error } = await supabase
       .from("organization_machine_purchases" as any)
       .select("*")
       .eq("organization_id", organizationId);
-    setPurchases((data as any[]) || []);
+
+    if (error || !data) {
+      setPurchases([]);
+    } else {
+      setPurchases(data as MachinePurchase[]);
+    }
   }, [organizationId]);
 
   useEffect(() => {
     fetchLibrary();
   }, [fetchLibrary]);
+
   useEffect(() => {
     fetchPurchases();
   }, [fetchPurchases]);
@@ -91,30 +119,41 @@ export function useMachineLibrary(organizationId: string | null) {
 
   const purchaseMachine = async (libraryId: string) => {
     if (!user || !organizationId) return;
+
     try {
       const { data, error } = await supabase.functions.invoke("activate-station-context", {
         body: { machine_library_id: libraryId, organization_id: organizationId },
       });
+
       if (error) throw error;
+
       if (data?.url) {
         window.open(data.url, "_blank");
       }
     } catch (e: any) {
-      toast({ title: "Payment Error", description: e.message || "Failed to initiate payment", variant: "destructive" });
+      toast({
+        title: "Payment Error",
+        description: e?.message || "Failed to initiate payment",
+        variant: "destructive",
+      });
     }
   };
 
   const verifyPurchase = async (libraryId: string) => {
     if (!organizationId) return false;
+
     try {
       const { data, error } = await supabase.functions.invoke("verify-station-context-payment", {
         body: { machine_library_id: libraryId, organization_id: organizationId },
       });
+
       if (error) throw error;
+
       if (data?.activated) {
         await fetchPurchases();
         return true;
       }
+
       return false;
     } catch {
       return false;
@@ -144,35 +183,43 @@ export function useStationMachineAssignment(stationId: string | null, organizati
       setLoading(false);
       return;
     }
+
     setLoading(true);
-    const { data } = await supabase
+
+    const { data, error } = await supabase
       .from("station_machine_assignments" as any)
       .select("*")
       .eq("station_id", stationId)
       .maybeSingle();
 
-    if (data) {
-      // Fetch the library entry via the purchase
-      const { data: purchase } = await supabase
-        .from("organization_machine_purchases" as any)
-        .select("machine_library_id")
-        .eq("id", (data as any).purchase_id)
+    if (error || !data) {
+      setAssignment(null);
+      setLoading(false);
+      return;
+    }
+
+    // Fetch the library entry via the purchase
+    const { data: purchase } = await supabase
+      .from("organization_machine_purchases" as any)
+      .select("machine_library_id")
+      .eq("id", (data as any).purchase_id)
+      .single();
+
+    if (purchase) {
+      const { data: machine } = await supabase
+        .from("verified_machine_library" as any)
+        .select("*")
+        .eq("id", (purchase as any).machine_library_id)
         .single();
 
-      if (purchase) {
-        const { data: machine } = await supabase
-          .from("verified_machine_library" as any)
-          .select("*")
-          .eq("id", (purchase as any).machine_library_id)
-          .single();
-
-        setAssignment({ ...(data as any), machine: machine as any });
-      } else {
-        setAssignment(data as any);
-      }
+      setAssignment({
+        ...(data as StationAssignment),
+        machine: machine as MachineLibraryEntry,
+      });
     } else {
-      setAssignment(null);
+      setAssignment(data as StationAssignment);
     }
+
     setLoading(false);
   }, [stationId]);
 
@@ -181,32 +228,54 @@ export function useStationMachineAssignment(stationId: string | null, organizati
   }, [fetchAssignment]);
 
   const assignMachine = async (purchaseId: string) => {
-    if (!stationId || !user || !organizationId) return { error: new Error("Missing data") };
+    if (!stationId || !user || !organizationId) {
+      return { error: new Error("Missing data") };
+    }
+
     // Upsert - remove existing assignment first
     await supabase
       .from("station_machine_assignments" as any)
       .delete()
       .eq("station_id", stationId);
+
     const { error } = await supabase.from("station_machine_assignments" as any).insert({
       station_id: stationId,
       purchase_id: purchaseId,
       organization_id: organizationId,
       assigned_by: user.id,
     } as any);
-    if (!error) await fetchAssignment();
+
+    if (!error) {
+      await fetchAssignment();
+    } else {
+      toast({
+        title: "Assignment Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+
     return { error };
   };
 
   const unassignMachine = async () => {
     if (!stationId) return;
+
     await supabase
       .from("station_machine_assignments" as any)
       .delete()
       .eq("station_id", stationId);
+
     setAssignment(null);
   };
 
-  return { assignment, loading, assignMachine, unassignMachine, refreshAssignment: fetchAssignment };
+  return {
+    assignment,
+    loading,
+    assignMachine,
+    unassignMachine,
+    refreshAssignment: fetchAssignment,
+  };
 }
 
 // Keep these exports for backward compatibility
