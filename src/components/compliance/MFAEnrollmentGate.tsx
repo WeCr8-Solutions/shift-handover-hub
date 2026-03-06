@@ -1,5 +1,5 @@
-import { useState, ReactNode, useEffect } from "react";
-import { Shield, Smartphone, CheckCircle, Copy } from "lucide-react";
+import { useState, type ReactNode, useEffect } from "react";
+import { Shield, Smartphone, CheckCircle, Copy, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,7 +33,9 @@ export function MFAEnrollmentGate({ children }: MFAEnrollmentGateProps) {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    if (!mfaBlockingAccess) setStep("done");
+    if (!mfaBlockingAccess) {
+      setStep("done");
+    }
   }, [mfaBlockingAccess]);
 
   if (!mfaCheckComplete) return null;
@@ -42,9 +44,14 @@ export function MFAEnrollmentGate({ children }: MFAEnrollmentGateProps) {
   const handleStartEnrollment = async () => {
     setLoading(true);
     setError(null);
+
     try {
-      const { data, error } = await supabase.auth.mfa.enroll({ factorType: "totp" });
+      const { data, error } = await supabase.auth.mfa.enroll({
+        factorType: "totp",
+      });
+
       if (error) throw error;
+
       setFactorId(data.id);
       setQrCode(data.totp.qr_code);
       setSecret(data.totp.secret);
@@ -61,8 +68,15 @@ export function MFAEnrollmentGate({ children }: MFAEnrollmentGateProps) {
       setError("Enter the 6-digit code from your authenticator app.");
       return;
     }
+
+    if (!factorId) {
+      setError("Enrollment session is missing. Please restart MFA enrollment.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
+
     try {
       const challengeResult = await supabase.auth.mfa.challenge({ factorId });
       if (challengeResult.error) throw challengeResult.error;
@@ -75,7 +89,6 @@ export function MFAEnrollmentGate({ children }: MFAEnrollmentGateProps) {
       if (verifyResult.error) throw verifyResult.error;
 
       setStep("done");
-      // Reload to pick up new MFA session assurance level
       window.location.reload();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Invalid code. Please try again.");
@@ -84,17 +97,23 @@ export function MFAEnrollmentGate({ children }: MFAEnrollmentGateProps) {
     }
   };
 
-  const copySecret = () => {
-    navigator.clipboard.writeText(secret);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const copySecret = async () => {
+    if (!secret) return;
+
+    try {
+      await navigator.clipboard.writeText(secret);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setError("Failed to copy secret key.");
+    }
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-md space-y-4">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 rounded-full bg-blue-500/10">
+        <div className="mb-2 flex items-center gap-3">
+          <div className="rounded-full bg-blue-500/10 p-2">
             <Shield className="h-6 w-6 text-blue-500" />
           </div>
           <div>
@@ -108,21 +127,30 @@ export function MFAEnrollmentGate({ children }: MFAEnrollmentGateProps) {
         {step === "intro" && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-base">
                 <Smartphone className="h-4 w-4" />
                 Set Up Authenticator App
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm text-muted-foreground">
               <p>
-                You need to enroll a TOTP authenticator app before you can access
-                this organization's data. This is a one-time setup.
+                You need to enroll a TOTP authenticator app before you can access this organization's data. This is a
+                one-time setup.
               </p>
-              <p>Compatible apps: <strong>Google Authenticator</strong>, Authy, 1Password, Bitwarden.</p>
+              <p>
+                Compatible apps: <strong>Google Authenticator</strong>, Authy, 1Password, Bitwarden.
+              </p>
             </CardContent>
             <CardFooter>
               <Button onClick={handleStartEnrollment} disabled={loading} className="w-full">
-                {loading ? "Setting up…" : "Start MFA Enrollment"}
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Setting up...
+                  </>
+                ) : (
+                  "Start MFA Enrollment"
+                )}
               </Button>
             </CardFooter>
           </Card>
@@ -135,18 +163,15 @@ export function MFAEnrollmentGate({ children }: MFAEnrollmentGateProps) {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Open your authenticator app and scan this QR code, or enter the
-                secret key manually.
+                Open your authenticator app and scan this QR code, or enter the secret key manually.
               </p>
+
               {qrCode && (
                 <div className="flex justify-center">
-                  <img
-                    src={qrCode}
-                    alt="MFA QR Code"
-                    className="w-48 h-48 rounded border"
-                  />
+                  <img src={qrCode} alt="MFA QR Code" className="h-48 w-48 rounded border" />
                 </div>
               )}
+
               <div className="space-y-1">
                 <Label className="text-xs text-muted-foreground">Manual entry key</Label>
                 <div className="flex gap-2">
@@ -156,8 +181,15 @@ export function MFAEnrollmentGate({ children }: MFAEnrollmentGateProps) {
                   </Button>
                 </div>
               </div>
+
+              {error && (
+                <Alert variant="destructive">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
               <Button onClick={() => setStep("verify")} className="w-full">
-                I've scanned the code — Next
+                I&apos;ve scanned the code — Next
               </Button>
             </CardContent>
           </Card>
@@ -172,18 +204,24 @@ export function MFAEnrollmentGate({ children }: MFAEnrollmentGateProps) {
               <p className="text-sm text-muted-foreground">
                 Enter the 6-digit code from your authenticator app to complete enrollment.
               </p>
+
               <div className="space-y-1">
                 <Label>6-digit code</Label>
                 <Input
                   value={verifyCode}
                   onChange={(e) => setVerifyCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                   placeholder="000000"
-                  className="text-center text-2xl tracking-widest font-mono"
+                  className="text-center font-mono text-2xl tracking-widest"
                   maxLength={6}
                   autoFocus
-                  onKeyDown={(e) => e.key === "Enter" && handleVerify()}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      void handleVerify();
+                    }
+                  }}
                 />
               </div>
+
               {error && (
                 <Alert variant="destructive">
                   <AlertDescription>{error}</AlertDescription>
@@ -194,12 +232,15 @@ export function MFAEnrollmentGate({ children }: MFAEnrollmentGateProps) {
               <Button variant="outline" onClick={() => setStep("enroll")} disabled={loading}>
                 Back
               </Button>
-              <Button
-                onClick={handleVerify}
-                disabled={loading || verifyCode.length !== 6}
-                className="flex-1"
-              >
-                {loading ? "Verifying…" : "Verify & Complete Enrollment"}
+              <Button onClick={handleVerify} disabled={loading || verifyCode.length !== 6} className="flex-1">
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Verifying...
+                  </>
+                ) : (
+                  "Verify & Complete Enrollment"
+                )}
               </Button>
             </CardFooter>
           </Card>
