@@ -73,7 +73,8 @@ interface ManualMachineProfile {
   live_tooling?: boolean;
   y_axis_turn?: boolean;
   sub_spindle?: boolean;
-  probing?: boolean;
+  probing?: boolean
+
   through_spindle_coolant?: boolean;
   pallet_pool?: boolean;
   bar_feeder?: boolean;
