@@ -17,13 +17,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Users, Plus, UserPlus, Trash2, Crown, Shield, User, Loader2, Wrench, QrCode } from "lucide-react";
@@ -36,7 +30,7 @@ export function TeamManagement() {
   const { organization } = useUserOrganization();
   const { teams, loading, createTeam, deleteTeam } = useTeams();
   const { toast } = useToast();
-  
+
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showInviteDialog, setShowInviteDialog] = useState(false);
@@ -81,13 +75,13 @@ export function TeamManagement() {
         description: `${newTeamName} has been created successfully.`,
       });
       setShowCreateDialog(false);
-      
+
       // Store the created team and prompt for station setup
       if (data) {
         setNewlyCreatedTeam(data);
         setShowStationManager(true);
       }
-      
+
       setNewTeamName("");
       setNewTeamDescription("");
     }
@@ -127,11 +121,9 @@ export function TeamManagement() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold">Teams</h2>
-          <p className="text-sm text-muted-foreground">
-            Manage your teams and collaborate with operators
-          </p>
+          <p className="text-sm text-muted-foreground">Manage your teams and collaborate with operators</p>
         </div>
-        
+
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
           <DialogTrigger asChild>
             <Button className="gap-2">
@@ -142,9 +134,7 @@ export function TeamManagement() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Create a New Team</DialogTitle>
-              <DialogDescription>
-                Teams allow you to share handoff data with other operators.
-              </DialogDescription>
+              <DialogDescription>Teams allow you to share handoff data with other operators.</DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
@@ -260,9 +250,7 @@ function TeamCard({ team, isSelected, isOwner, onSelect, onDelete, onAddStations
 
   return (
     <Card
-      className={`cursor-pointer transition-colors hover:border-primary/50 ${
-        isSelected ? "border-primary" : ""
-      }`}
+      className={`cursor-pointer transition-colors hover:border-primary/50 ${isSelected ? "border-primary" : ""}`}
       onClick={onSelect}
     >
       <CardHeader className="pb-2">
@@ -275,7 +263,9 @@ function TeamCard({ team, isSelected, isOwner, onSelect, onDelete, onAddStations
               <CardTitle className="text-base">{team.name}</CardTitle>
               <div className="flex items-center gap-1.5 mt-0.5">
                 {isOwner && (
-                  <Badge variant="secondary" className="text-xs">Owner</Badge>
+                  <Badge variant="secondary" className="text-xs">
+                    Owner
+                  </Badge>
                 )}
                 <Badge variant="outline" className="text-xs gap-1">
                   <Wrench className="w-3 h-3" />
@@ -300,9 +290,7 @@ function TeamCard({ team, isSelected, isOwner, onSelect, onDelete, onAddStations
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
-        <CardDescription className="line-clamp-2">
-          {team.description || "No description"}
-        </CardDescription>
+        <CardDescription className="line-clamp-2">{team.description || "No description"}</CardDescription>
         <Button
           variant="outline"
           size="sm"
@@ -332,7 +320,7 @@ function TeamMembersPanel({
   const { user } = useAuth();
   const { members, loading, addMember, updateMemberRole, removeMember } = useTeamMembers(team.id);
   const { toast } = useToast();
-  
+
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<"admin" | "member">("member");
   const [isInviting, setIsInviting] = useState(false);
@@ -427,7 +415,7 @@ function TeamMembersPanel({
                   <InviteCodeGenerator defaultTeamId={team.id} />
                 </DialogContent>
               </Dialog>
-              
+
               <Dialog open={showInviteDialog} onOpenChange={setShowInviteDialog}>
                 <DialogTrigger asChild>
                   <Button size="sm" className="gap-2">
@@ -495,10 +483,7 @@ function TeamMembersPanel({
         ) : (
           <div className="space-y-3">
             {members.map((member) => (
-              <div
-                key={member.id}
-                className="flex items-center justify-between p-3 rounded-lg bg-secondary/50"
-              >
+              <div key={member.id} className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-9 w-9">
                     <AvatarFallback className="bg-primary/10 text-primary text-sm">
@@ -510,12 +495,10 @@ function TeamMembersPanel({
                       {member.profile?.display_name || "Unknown User"}
                       {getRoleIcon(member.role)}
                     </p>
-                    <p className="text-xs text-muted-foreground">
-                      {member.profile?.email || "No email"}
-                    </p>
+                    <p className="text-xs text-muted-foreground">{member.profile?.email || "No email"}</p>
                   </div>
                 </div>
-                
+
                 {isAdmin && member.role !== "owner" && member.user_id !== user?.id && (
                   <div className="flex items-center gap-2">
                     <Select
