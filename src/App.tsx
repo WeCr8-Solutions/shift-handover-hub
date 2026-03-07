@@ -42,6 +42,10 @@ import ShiftHandoff from "./pages/features/ShiftHandoff";
 import ManufacturingVisibility from "./pages/features/ManufacturingVisibility";
 import Updates from "./pages/Updates";
 import Start from "./pages/Start";
+import ResourcesIndex from "./pages/resources/ResourcesIndex";
+import ManufacturingGuides from "./pages/resources/ManufacturingGuides";
+import GCodeReference from "./pages/resources/GCodeReference";
+import IndustryGlossary from "./pages/resources/IndustryGlossary";
 import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
@@ -95,6 +99,10 @@ const App = () => (
                     <Route path="/machine-time-tracking" element={<MachineTimeTracking />} />
                     <Route path="/shift-handoff" element={<ShiftHandoff />} />
                     <Route path="/manufacturing-visibility" element={<ManufacturingVisibility />} />
+                    <Route path="/resources" element={<ResourcesIndex />} />
+                    <Route path="/resources/guides" element={<ManufacturingGuides />} />
+                    <Route path="/resources/gcode" element={<GCodeReference />} />
+                    <Route path="/resources/glossary" element={<IndustryGlossary />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
