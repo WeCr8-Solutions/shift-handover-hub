@@ -262,7 +262,40 @@ export function SupervisorDashboard({
         </div>
       </div>
 
-      {/* KPI Cards */}
+      {/* Team Filter Chips */}
+      {teams.length > 1 && (
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs text-muted-foreground mr-1">Scope:</span>
+          <button
+            onClick={() => setCurrentTeam(null)}
+            className={cn(
+              "px-3 py-1 rounded-full text-xs font-medium border transition-colors",
+              !currentTeam
+                ? "bg-primary text-primary-foreground border-primary"
+                : "bg-secondary/50 text-muted-foreground border-border hover:border-primary/50"
+            )}
+          >
+            <Factory className="w-3 h-3 inline mr-1" />
+            All Teams
+          </button>
+          {teams.map((team) => (
+            <button
+              key={team.id}
+              onClick={() => setCurrentTeam(team)}
+              className={cn(
+                "px-3 py-1 rounded-full text-xs font-medium border transition-colors",
+                currentTeam?.id === team.id
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-secondary/50 text-muted-foreground border-border hover:border-primary/50"
+              )}
+            >
+              <Users className="w-3 h-3 inline mr-1" />
+              {team.name}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
           {
