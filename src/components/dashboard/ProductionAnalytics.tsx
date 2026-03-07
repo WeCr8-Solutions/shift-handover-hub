@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,7 +16,7 @@ import {
   Area,
   Legend,
 } from "recharts";
-import { BarChart3, PieChart as PieChartIcon, TrendingUp, Filter, Activity } from "lucide-react";
+import { BarChart3, PieChart as PieChartIcon, TrendingUp, Filter, Activity, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Inline status configuration (can be extracted to @/lib/stationStatus.ts)
@@ -92,18 +92,51 @@ interface HandoffRecord {
 interface ProductionAnalyticsProps {
   stations: StationData[];
   handoffs: HandoffRecord[];
+  refreshIntervalMs?: number; // Org-configurable: 300000 = 5min
 }
 
 type ShiftFilter = "all" | "Day" | "Swing" | "Night";
 type ChartView = "output" | "status" | "trend";
 
-// Check for reduced motion preference
-const prefersReducedMotion =
-  typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-
-export function ProductionAnalytics({ stations, handoffs }: ProductionAnalyticsProps) {
+export function ProductionAnalytics({
+  stations,
+  handoffs,
+  refreshIntervalMs = 300000, // Default 5 minutes
+}: ProductionAnalyticsProps) {
   const [shiftFilter, setShiftFilter] = useState<ShiftFilter>("all");
   const [chartView, setChartView] = useState<ChartView>("output");
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Auto-refresh logic (org-controlled interval)
+  useEffect(() => {
+    if (refreshIntervalMs <= 0) return;
+
+    const interval = setInterval(() => {
+      setRefreshKey((prev) => prev + 1);
+    }, refreshIntervalMs);
+
+    return () => clearInterval(interval);
+  }, [refreshIntervalMs]);
+
+  // Manual refresh
+  const refreshData = useCallback(async () => {
+    setIsRefreshing(true);
+    setRefreshKey((prev) => prev + 1);
+    // Reset spinner after 1s (or use promise if parent fetch returns)
+    setTimeout(() => setIsRefreshing(false), 1000);
+  }, []);
+
+  // Reduced motion (SSR-safe now via effect)
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setPrefersReducedMotion(mq.matches);
+    const handleChange = () => setPrefersReducedMotion(mq.matches);
+    mq.addEventListener("change", handleChange);
+    return () => mq.removeEventListener("change", handleChange);
+  }, []);
 
   // Filter handoffs by shift
   const filteredHandoffs = useMemo(() => {
@@ -211,6 +244,17 @@ export function ProductionAnalytics({ stations, handoffs }: ProductionAnalyticsP
           <Badge variant="outline" className="text-[10px]">
             Live
           </Badge>
+          {/* Refresh Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={refreshData}
+            disabled={isRefreshing}
+            className="h-7 px-2"
+            title="Refresh data"
+          >
+            <RefreshCw className={cn("w-3 h-3", isRefreshing && "animate-spin")} />
+          </Button>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           {/* Shift Filter */}
