@@ -1,28 +1,18 @@
-import { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useQueue, QueuePriority } from "@/hooks/useQueue";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Package, Wrench, Hash, Calendar, Clock, AlertTriangle } from "lucide-react";
+import { Loader2, Package, Wrench, Hash, Calendar, Clock, AlertTriangle, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { PartSpecsSection, PartSpecsData } from "./PartSpecsSection";
+import { cn } from "@/lib/utils";
 
 interface Station {
   id: string;
@@ -35,34 +25,41 @@ interface CreateWorkOrderDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   preSelectedStationId?: string;
+  onSuccess?: () => void; // New: optional callback
 }
 
-export function CreateWorkOrderDialog({ 
-  open, 
+export function CreateWorkOrderDialog({
+  open,
   onOpenChange,
-  preSelectedStationId 
+  preSelectedStationId,
+  onSuccess,
 }: CreateWorkOrderDialogProps) {
   const { currentTeam } = useCurrentTeam();
   const { createItem } = useQueue();
   const [loading, setLoading] = useState(false);
-  const [stations, setStations] = useState<Station[]>([]);
   const [stationsLoading, setStationsLoading] = useState(true);
+  const [stations, setStations] = useState<Station[]>([]);
 
-  const [formData, setFormData] = useState({
-    work_order: "",
-    part_number: "",
-    operation_number: "",
-    title: "",
-    description: "",
-    quantity: "",
-    station_id: preSelectedStationId || "",
-    priority: "normal" as QueuePriority,
-    due_date: "",
-    setup_time_minutes: "",
-    first_article_minutes: "",
-    cycle_time_minutes: "",
-  });
+  // Reset form when dialog opens/closes
+  const defaultFormData = useMemo(
+    () => ({
+      work_order: "",
+      part_number: "",
+      operation_number: "",
+      title: "",
+      description: "",
+      quantity: "",
+      station_id: preSelectedStationId || "",
+      priority: "normal" as QueuePriority,
+      due_date: "",
+      setup_time_minutes: "",
+      first_article_minutes: "",
+      cycle_time_minutes: "",
+    }),
+    [preSelectedStationId],
+  );
 
+  const [formData, setFormData] = useState(defaultFormData);
   const [partSpecs, setPartSpecs] = useState<PartSpecsData>({
     material_type: "",
     part_length_inches: "",
@@ -75,101 +72,10 @@ export function CreateWorkOrderDialog({
     surface_finish: "",
   });
 
-  // Fetch stations
+  // Reset form on open
   useEffect(() => {
-    const fetchStations = async () => {
-      setStationsLoading(true);
-      let query = supabase
-        .from("stations")
-        .select("id, name, station_id, work_center_type")
-        .eq("is_active", true)
-        .order("work_center_type")
-        .order("station_id");
-
-      if (currentTeam?.id) {
-        query = query.eq("team_id", currentTeam.id);
-      }
-
-      const { data } = await query;
-      setStations(data || []);
-      setStationsLoading(false);
-    };
-
     if (open) {
-      fetchStations();
-    }
-  }, [open, currentTeam?.id]);
-
-  // Set pre-selected station
-  useEffect(() => {
-    if (preSelectedStationId) {
-      setFormData(prev => ({ ...prev, station_id: preSelectedStationId }));
-    }
-  }, [preSelectedStationId]);
-
-  // Group stations by work center type
-  const stationsByType = stations.reduce((acc, station) => {
-    if (!acc[station.work_center_type]) {
-      acc[station.work_center_type] = [];
-    }
-    acc[station.work_center_type].push(station);
-    return acc;
-  }, {} as Record<string, Station[]>);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.work_order.trim()) {
-      toast.error("Work order number is required");
-      return;
-    }
-    
-
-    setLoading(true);
-    try {
-      await createItem({
-        item_type: "work_order",
-        title: formData.title || `WO: ${formData.work_order}`,
-        description: formData.description || undefined,
-        work_order: formData.work_order,
-        part_number: formData.part_number || undefined,
-        operation_number: formData.operation_number || undefined,
-        quantity: formData.quantity ? parseInt(formData.quantity) : undefined,
-        station_id: formData.station_id || undefined,
-        priority: formData.priority,
-        due_date: formData.due_date || undefined,
-        setup_time_minutes: formData.setup_time_minutes ? parseInt(formData.setup_time_minutes) : undefined,
-        first_article_minutes: formData.first_article_minutes ? parseInt(formData.first_article_minutes) : undefined,
-        cycle_time_minutes: formData.cycle_time_minutes ? parseInt(formData.cycle_time_minutes) : undefined,
-        material_type: partSpecs.material_type || undefined,
-        part_length_inches: partSpecs.part_length_inches ? parseFloat(partSpecs.part_length_inches) : undefined,
-        part_width_inches: partSpecs.part_width_inches ? parseFloat(partSpecs.part_width_inches) : undefined,
-        part_height_inches: partSpecs.part_height_inches ? parseFloat(partSpecs.part_height_inches) : undefined,
-        part_weight_lbs: partSpecs.part_weight_lbs ? parseFloat(partSpecs.part_weight_lbs) : undefined,
-        part_shape: partSpecs.part_shape || undefined,
-        part_catalog_id: partSpecs.part_catalog_id || undefined,
-        required_tolerance: partSpecs.required_tolerance || undefined,
-        surface_finish: partSpecs.surface_finish || undefined,
-      });
-
-      toast.success("Work order created successfully");
-      onOpenChange(false);
-      
-      // Reset form
-      setFormData({
-        work_order: "",
-        part_number: "",
-        operation_number: "",
-        title: "",
-        description: "",
-        quantity: "",
-        station_id: preSelectedStationId || "",
-        priority: "normal",
-        due_date: "",
-        setup_time_minutes: "",
-        first_article_minutes: "",
-        cycle_time_minutes: "",
-      });
+      setFormData(defaultFormData);
       setPartSpecs({
         material_type: "",
         part_length_inches: "",
@@ -181,12 +87,128 @@ export function CreateWorkOrderDialog({
         required_tolerance: "",
         surface_finish: "",
       });
-    } catch (error) {
-      toast.error("Failed to create work order");
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [open, defaultFormData]);
+
+  // Fetch stations (optimized)
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchStations = async () => {
+      if (!open) return;
+
+      setStationsLoading(true);
+      try {
+        let query = supabase
+          .from("stations")
+          .select("id, name, station_id, work_center_type")
+          .eq("is_active", true)
+          .order("work_center_type")
+          .order("station_id");
+
+        if (currentTeam?.id) {
+          query = query.eq("team_id", currentTeam.id);
+        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+
+        if (!cancelled) {
+          setStations(data || []);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          toast.error("Failed to load stations");
+        }
+      } finally {
+        if (!cancelled) {
+          setStationsLoading(false);
+        }
+      }
+    };
+
+    fetchStations();
+    return () => {
+      cancelled = true;
+    };
+  }, [open, currentTeam?.id]);
+
+  // Group stations by work center type (memoized)
+  const stationsByType = useMemo(() => {
+    return stations.reduce(
+      (acc, station) => {
+        if (!acc[station.work_center_type]) {
+          acc[station.work_center_type] = [];
+        }
+        acc[station.work_center_type].push(station);
+        return acc;
+      },
+      {} as Record<string, Station[]>,
+    );
+  }, [stations]);
+
+  // Validation
+  const isValid = formData.work_order.trim() !== "";
+  const totalEstMinutes = useMemo(() => {
+    const setup = parseInt(formData.setup_time_minutes) || 0;
+    const fai = parseInt(formData.first_article_minutes) || 0;
+    const cycle = parseInt(formData.cycle_time_minutes) || 0;
+    const qty = parseInt(formData.quantity) || 0;
+    return setup + fai + cycle * qty;
+  }, [formData]);
+
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+
+      if (!isValid) {
+        toast.error("Work order number is required");
+        return;
+      }
+
+      setLoading(true);
+      try {
+        await createItem({
+          item_type: "work_order",
+          title: formData.title || `WO: ${formData.work_order}`,
+          description: formData.description || undefined,
+          work_order: formData.work_order,
+          part_number: formData.part_number || undefined,
+          operation_number: formData.operation_number || undefined,
+          quantity: formData.quantity ? parseInt(formData.quantity) : undefined,
+          station_id: formData.station_id || undefined,
+          priority: formData.priority,
+          due_date: formData.due_date || undefined,
+          setup_time_minutes: formData.setup_time_minutes ? parseInt(formData.setup_time_minutes) : undefined,
+          first_article_minutes: formData.first_article_minutes ? parseInt(formData.first_article_minutes) : undefined,
+          cycle_time_minutes: formData.cycle_time_minutes ? parseInt(formData.cycle_time_minutes) : undefined,
+          material_type: partSpecs.material_type || undefined,
+          part_length_inches: partSpecs.part_length_inches ? parseFloat(partSpecs.part_length_inches) : undefined,
+          part_width_inches: partSpecs.part_width_inches ? parseFloat(partSpecs.part_width_inches) : undefined,
+          part_height_inches: partSpecs.part_height_inches ? parseFloat(partSpecs.part_height_inches) : undefined,
+          part_weight_lbs: partSpecs.part_weight_lbs ? parseFloat(partSpecs.part_weight_lbs) : undefined,
+          part_shape: partSpecs.part_shape || undefined,
+          part_catalog_id: partSpecs.part_catalog_id || undefined,
+          required_tolerance: partSpecs.required_tolerance || undefined,
+          surface_finish: partSpecs.surface_finish || undefined,
+        });
+
+        toast.success("Work order created successfully!");
+        onOpenChange(false);
+        onSuccess?.(); // New: optional success callback
+      } catch (error) {
+        console.error("Create work order error:", error);
+        toast.error("Failed to create work order");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [formData, partSpecs, createItem, isValid, onOpenChange, onSuccess],
+  );
+
+  const updateFormField = useCallback((field: keyof typeof formData, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  }, []);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -203,12 +225,13 @@ export function CreateWorkOrderDialog({
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
               <Hash className="w-4 h-4" />
-              Work Order # <span className="text-red-500">*</span>
+              Work Order # <span className="text-destructive">*</span>
             </Label>
             <Input
               value={formData.work_order}
-              onChange={(e) => setFormData({ ...formData, work_order: e.target.value })}
+              onChange={(e) => updateFormField("work_order", e.target.value)}
               placeholder="Enter your work order number"
+              className={!isValid ? "ring-2 ring-destructive/20" : ""}
               required
             />
           </div>
@@ -217,11 +240,11 @@ export function CreateWorkOrderDialog({
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
               <Wrench className="w-4 h-4" />
-              Assign to Station (Optional)
+              Assign to Station
             </Label>
             <Select
               value={formData.station_id || "none"}
-              onValueChange={(value) => setFormData({ ...formData, station_id: value === "none" ? "" : value })}
+              onValueChange={(value) => updateFormField("station_id", value === "none" ? "" : value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select a station..." />
@@ -229,25 +252,28 @@ export function CreateWorkOrderDialog({
               <SelectContent className="max-h-64">
                 {stationsLoading ? (
                   <div className="flex items-center justify-center py-4">
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    Loading stations...
                   </div>
                 ) : stations.length === 0 ? (
                   <div className="p-3 text-sm text-muted-foreground text-center">
                     <AlertTriangle className="w-4 h-4 mx-auto mb-1" />
-                    No stations available
+                    No active stations found
                   </div>
                 ) : (
                   Object.entries(stationsByType).map(([type, typeStations]) => (
-                    <div key={type}>
-                      <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground bg-muted/50 sticky top-0">
+                    <div key={type} className="py-1">
+                      <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground bg-muted/50 border-b sticky top-0 z-10">
                         {type}
                       </div>
                       {typeStations.map((station) => (
-                        <SelectItem key={station.id} value={station.id}>
+                        <SelectItem key={station.id} value={station.id} className="px-3">
                           <div className="flex items-center gap-2">
-                            <span className="font-mono text-xs">{station.station_id}</span>
-                            <span className="text-muted-foreground">-</span>
-                            <span>{station.name}</span>
+                            <span className="font-mono text-sm bg-muted px-1.5 py-0.5 rounded-sm">
+                              {station.station_id}
+                            </span>
+                            <span className="text-muted-foreground text-xs">•</span>
+                            <span className="truncate">{station.name}</span>
                           </div>
                         </SelectItem>
                       ))}
@@ -264,16 +290,16 @@ export function CreateWorkOrderDialog({
               <Label>Part Number</Label>
               <Input
                 value={formData.part_number}
-                onChange={(e) => setFormData({ ...formData, part_number: e.target.value })}
-                placeholder="Enter part number"
+                onChange={(e) => updateFormField("part_number", e.target.value)}
+                placeholder="e.g. PN-12345"
               />
             </div>
             <div className="space-y-2">
               <Label>Operation #</Label>
               <Input
                 value={formData.operation_number}
-                onChange={(e) => setFormData({ ...formData, operation_number: e.target.value })}
-                placeholder="Enter operation"
+                onChange={(e) => updateFormField("operation_number", e.target.value)}
+                placeholder="e.g. OP-10"
               />
             </div>
           </div>
@@ -285,8 +311,8 @@ export function CreateWorkOrderDialog({
               <Input
                 type="number"
                 value={formData.quantity}
-                onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-                placeholder="Qty"
+                onChange={(e) => updateFormField("quantity", e.target.value)}
+                placeholder="100"
                 min="1"
               />
             </div>
@@ -294,17 +320,17 @@ export function CreateWorkOrderDialog({
               <Label>Priority</Label>
               <Select
                 value={formData.priority}
-                onValueChange={(value) => setFormData({ ...formData, priority: value as QueuePriority })}
+                onValueChange={(value) => updateFormField("priority", value as QueuePriority)}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="normal">Normal</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
-                  <SelectItem value="urgent">Urgent</SelectItem>
-                  <SelectItem value="critical">Critical</SelectItem>
+                  <SelectItem value="low">🟢 Low</SelectItem>
+                  <SelectItem value="normal">🟡 Normal</SelectItem>
+                  <SelectItem value="high">🟠 High</SelectItem>
+                  <SelectItem value="urgent">🔴 Urgent</SelectItem>
+                  <SelectItem value="critical">🚨 Critical</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -319,65 +345,63 @@ export function CreateWorkOrderDialog({
             <Input
               type="date"
               value={formData.due_date}
-              onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
+              onChange={(e) => updateFormField("due_date", e.target.value)}
               min={format(new Date(), "yyyy-MM-dd")}
+              className="text-sm"
             />
           </div>
 
           {/* Machine Time Breakdown */}
-          <div className="space-y-2">
+          <div className="space-y-3">
             <Label className="flex items-center gap-2">
               <Clock className="w-4 h-4" />
               Machine Time Breakdown
             </Label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Setup (min)</Label>
+                <Label className="text-xs text-muted-foreground">Setup</Label>
                 <Input
                   type="number"
                   value={formData.setup_time_minutes}
-                  onChange={(e) => setFormData({ ...formData, setup_time_minutes: e.target.value })}
-                  placeholder="Min"
+                  onChange={(e) => updateFormField("setup_time_minutes", e.target.value)}
+                  placeholder="30"
                   min="0"
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">First Article (min)</Label>
+                <Label className="text-xs text-muted-foreground">First Article</Label>
                 <Input
                   type="number"
                   value={formData.first_article_minutes}
-                  onChange={(e) => setFormData({ ...formData, first_article_minutes: e.target.value })}
-                  placeholder="Min"
+                  onChange={(e) => updateFormField("first_article_minutes", e.target.value)}
+                  placeholder="15"
                   min="0"
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Cycle / Part (min)</Label>
+                <Label className="text-xs text-muted-foreground">Cycle Time</Label>
                 <Input
                   type="number"
                   value={formData.cycle_time_minutes}
-                  onChange={(e) => setFormData({ ...formData, cycle_time_minutes: e.target.value })}
-                  placeholder="Min"
+                  onChange={(e) => updateFormField("cycle_time_minutes", e.target.value)}
+                  placeholder="2"
                   min="0"
+                  step="0.1"
                 />
               </div>
             </div>
-            {/* Total Estimate Preview */}
-            {(formData.setup_time_minutes || formData.first_article_minutes || formData.cycle_time_minutes) && (
-              <div className="text-xs text-muted-foreground bg-muted/50 rounded-md p-2 mt-1">
-                {(() => {
-                  const setup = parseInt(formData.setup_time_minutes) || 0;
-                  const fai = parseInt(formData.first_article_minutes) || 0;
-                  const cycle = parseInt(formData.cycle_time_minutes) || 0;
-                  const qty = parseInt(formData.quantity) || 1;
-                  const total = setup + fai + (cycle * qty);
-                  const hours = (total / 60).toFixed(1);
-                  return (
-                    <span>
-                      <strong>Total Est:</strong> {setup} setup + {fai} FAI + ({cycle} × {qty} pcs) = <strong>{total} min</strong> (~{hours} hrs)
-                    </span>
-                  );
-                })()}
+            {/* Enhanced Total Estimate */}
+            {totalEstMinutes > 0 && (
+              <div className="p-3 bg-gradient-to-r from-primary/5 to-secondary/50 border rounded-lg">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-medium">Total Estimated Time:</span>
+                  <div className="text-right space-y-0.5">
+                    <div className="text-lg font-bold text-primary">{Math.round(totalEstMinutes)} min</div>
+                    <div className="text-xs text-muted-foreground">
+                      {Math.round(totalEstMinutes / 60)}h {totalEstMinutes % 60}m
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -385,30 +409,47 @@ export function CreateWorkOrderDialog({
           {/* Part Specifications */}
           <PartSpecsSection data={partSpecs} onChange={setPartSpecs} />
 
-          {/* Description */}
-          <div className="space-y-2">
-            <Label>Notes / Description</Label>
-            <Textarea
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Optional notes about this work order..."
-              rows={2}
-            />
+          {/* Title & Description */}
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <Label>Title (Optional)</Label>
+              <Input
+                value={formData.title}
+                onChange={(e) => updateFormField("title", e.target.value)}
+                placeholder="Short description (auto-generated if blank)"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Notes</Label>
+              <Textarea
+                value={formData.description}
+                onChange={(e) => updateFormField("description", e.target.value)}
+                placeholder="Additional instructions, special requirements..."
+                rows={3}
+              />
+            </div>
           </div>
 
-          {/* Submit */}
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          {/* Actions */}
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
               Cancel
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button
+              type="submit"
+              disabled={loading || !isValid}
+              className={cn("gap-2", !isValid && "opacity-50 cursor-not-allowed")}
+            >
               {loading ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin" />
                   Creating...
                 </>
               ) : (
-                "Create Work Order"
+                <>
+                  <CheckCircle className="w-4 h-4" />
+                  Create Work Order
+                </>
               )}
             </Button>
           </div>
