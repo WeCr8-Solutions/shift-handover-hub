@@ -51,6 +51,8 @@ import GCodeReference from "./pages/resources/GCodeReference";
 import IndustryGlossary from "./pages/resources/IndustryGlossary";
 import ResetPassword from "./pages/ResetPassword";
 import Blog from "./pages/Blog";
+import Help from "./pages/Help";
+import HelpArticle from "./pages/HelpArticle";
 
 const queryClient = new QueryClient();
 
