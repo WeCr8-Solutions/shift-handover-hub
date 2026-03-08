@@ -15,7 +15,7 @@ describe("MachineSpecGrid", () => {
       />
     );
     expect(screen.getByText("762")).toBeInTheDocument();
-    expect(screen.getByText("508")).toBeInTheDocument();
+    expect(screen.getAllByText("508")).toHaveLength(2);
     expect(screen.getByText("1360")).toBeInTheDocument();
     expect(screen.getByText(/Travel & Envelope/i)).toBeInTheDocument();
   });
