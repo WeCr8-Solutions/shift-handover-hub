@@ -128,18 +128,33 @@ async function fetchHandoffData(userId: string, teamId?: string | null, orgId?: 
     .from("handoff_records")
     .select("*")
     .order("created_at", { ascending: false })
-    .limit(50);
+    .limit(100);
 
   if (orgId) {
     query = query.eq("organization_id", orgId);
   }
+
+  // When a team is selected, include handoffs that either match the team directly
+  // OR have null team_id but belong to a station in that team (legacy records)
   if (teamId) {
-    query = query.eq("team_id", teamId);
+    query = query.or(`team_id.eq.${teamId},and(team_id.is.null,station_id.in.(select id from stations where team_id='${teamId}'))`);
   }
 
   const { data, error } = await query;
 
-  if (error) throw error;
+  if (error) {
+    // Fallback: if the complex filter fails, try simpler org-only query
+    if (orgId) {
+      const fallback = await supabase
+        .from("handoff_records")
+        .select("*")
+        .eq("organization_id", orgId)
+        .order("created_at", { ascending: false })
+        .limit(100);
+      return (fallback.data || []) as HandoffRecord[];
+    }
+    throw error;
+  }
 
   return (data || []) as HandoffRecord[];
 }
