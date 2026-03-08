@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Loader2, CreditCard, ExternalLink, Crown, Users, Package, BarChart3, AlertTriangle, Plus } from "lucide-react";
 import { useSubscription, PRICING_TIERS } from "@/hooks/useSubscription";
 import { useEntitlements } from "@/hooks/useEntitlements";
-import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { toast } from "sonner";
