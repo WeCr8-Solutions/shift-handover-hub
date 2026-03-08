@@ -121,7 +121,7 @@ export function QueueCalendarView({ items, onItemClick }: QueueCalendarViewProps
   return (
     <div className="space-y-4">
       {/* Header Controls */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={navigatePrevious}>
             <ChevronLeft className="w-4 h-4" />
@@ -132,7 +132,7 @@ export function QueueCalendarView({ items, onItemClick }: QueueCalendarViewProps
           <Button variant="outline" size="sm" onClick={navigateNext}>
             <ChevronRight className="w-4 h-4" />
           </Button>
-          <h2 className="text-lg font-semibold ml-2">
+          <h2 className="text-base sm:text-lg font-semibold ml-2">
             {viewMode === "week"
               ? `${format(weekStart, "MMM d")} - ${format(weekEnd, "MMM d, yyyy")}`
               : format(currentDate, "MMMM yyyy")}
@@ -160,71 +160,73 @@ export function QueueCalendarView({ items, onItemClick }: QueueCalendarViewProps
         {/* Calendar */}
         <div className="lg:col-span-3">
           {viewMode === "week" ? (
-            // Week View
-            <div className="grid grid-cols-7 gap-2">
-              {weekDays.map((day) => {
-                const dayItems = getItemsForDate(day);
-                const isToday = isSameDay(day, new Date());
-                const isSelected = selectedDate && isSameDay(day, selectedDate);
+            // Week View — scrollable horizontal on mobile, full grid on desktop
+            <div className="overflow-x-auto -mx-2 px-2 pb-2">
+              <div className="grid grid-cols-7 gap-2 min-w-[700px]">
+                {weekDays.map((day) => {
+                  const dayItems = getItemsForDate(day);
+                  const isToday = isSameDay(day, new Date());
+                  const isSelected = selectedDate && isSameDay(day, selectedDate);
 
-                return (
-                  <Card
-                    key={day.toISOString()}
-                    className={cn(
-                      "min-h-[300px] cursor-pointer transition-colors",
-                      isToday && "border-primary",
-                      isSelected && "ring-2 ring-primary"
-                    )}
-                    onClick={() => setSelectedDate(day)}
-                  >
-                    <CardHeader className="py-2 px-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground">
-                          {format(day, "EEE")}
-                        </span>
-                        <span
-                          className={cn(
-                            "text-sm font-medium",
-                            isToday && "bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center"
-                          )}
-                        >
-                          {format(day, "d")}
-                        </span>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="p-2">
-                      <ScrollArea className="h-[220px]">
-                        <div className="space-y-1">
-                          {dayItems.map((item) => (
-                            <QueueItemCard
-                              key={item.id}
-                              item={item}
-                              onClick={() => onItemClick(item.id)}
-                            />
-                          ))}
-                          {dayItems.length === 0 && (
-                            <p className="text-xs text-muted-foreground text-center py-4">
-                              No items
-                            </p>
-                          )}
+                  return (
+                    <Card
+                      key={day.toISOString()}
+                      className={cn(
+                        "min-h-[200px] lg:min-h-[300px] cursor-pointer transition-colors",
+                        isToday && "border-primary",
+                        isSelected && "ring-2 ring-primary"
+                      )}
+                      onClick={() => setSelectedDate(day)}
+                    >
+                      <CardHeader className="py-2 px-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground">
+                            {format(day, "EEE")}
+                          </span>
+                          <span
+                            className={cn(
+                              "text-sm font-medium",
+                              isToday && "bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center"
+                            )}
+                          >
+                            {format(day, "d")}
+                          </span>
                         </div>
-                      </ScrollArea>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+                      </CardHeader>
+                      <CardContent className="p-2">
+                        <ScrollArea className="h-[140px] lg:h-[220px]">
+                          <div className="space-y-1">
+                            {dayItems.map((item) => (
+                              <QueueItemCard
+                                key={item.id}
+                                item={item}
+                                onClick={() => onItemClick(item.id)}
+                              />
+                            ))}
+                            {dayItems.length === 0 && (
+                              <p className="text-xs text-muted-foreground text-center py-4">
+                                No items
+                              </p>
+                            )}
+                          </div>
+                        </ScrollArea>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
             </div>
           ) : (
-            // Month View
+            // Month View — full-width calendar
             <Card>
-              <CardContent className="p-4">
+              <CardContent className="p-2 sm:p-4">
                 <Calendar
                   mode="single"
                   selected={selectedDate}
                   onSelect={setSelectedDate}
                   month={currentDate}
                   onMonthChange={setCurrentDate}
-                  className="pointer-events-auto w-full"
+                  className="pointer-events-auto w-full [&_table]:w-full [&_th]:w-auto [&_td]:w-auto [&_td]:p-1 [&_th]:p-1 [&_.rdp-cell]:text-center [&_.rdp-head_cell]:text-center [&_.rdp-day]:h-10 [&_.rdp-day]:w-10 sm:[&_.rdp-day]:h-12 sm:[&_.rdp-day]:w-12"
                   modifiers={{
                     hasItems: (date) => getItemsForDate(date).length > 0,
                   }}
@@ -247,10 +249,10 @@ export function QueueCalendarView({ items, onItemClick }: QueueCalendarViewProps
                                   key={i}
                                   className={cn(
                                     "w-1.5 h-1.5 rounded-full",
-                                    item.priority === "critical" ? "bg-red-500" :
+                                    item.priority === "critical" ? "bg-destructive" :
                                     item.priority === "urgent" ? "bg-orange-500" :
                                     item.priority === "high" ? "bg-yellow-500" :
-                                    "bg-blue-500"
+                                    "bg-primary"
                                   )}
                                 />
                               ))}
