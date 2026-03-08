@@ -3,7 +3,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTeams } from "./useTeams";
 import { useActivityLog } from "./useActivityLog";
-import { useUserOrganization } from "./useUserOrganization";
 import { WorkCenterType, JobState, Shift } from "@/types/handoff";
 import { uploadOrgScopedFile, getSignedUrls } from "@/lib/storageUtils";
 
