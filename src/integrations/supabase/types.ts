@@ -827,6 +827,80 @@ export type Database = {
           },
         ]
       }
+      dimension_readings: {
+        Row: {
+          dimension_id: string
+          id: string
+          instrument_used: string | null
+          is_pass: boolean
+          measured_value: number
+          notes: string | null
+          organization_id: string | null
+          queue_item_id: string
+          recorded_at: string
+          recorded_by: string | null
+          recorded_by_name: string | null
+          routing_step_id: string
+        }
+        Insert: {
+          dimension_id: string
+          id?: string
+          instrument_used?: string | null
+          is_pass?: boolean
+          measured_value: number
+          notes?: string | null
+          organization_id?: string | null
+          queue_item_id: string
+          recorded_at?: string
+          recorded_by?: string | null
+          recorded_by_name?: string | null
+          routing_step_id: string
+        }
+        Update: {
+          dimension_id?: string
+          id?: string
+          instrument_used?: string | null
+          is_pass?: boolean
+          measured_value?: number
+          notes?: string | null
+          organization_id?: string | null
+          queue_item_id?: string
+          recorded_at?: string
+          recorded_by?: string | null
+          recorded_by_name?: string | null
+          routing_step_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dimension_readings_dimension_id_fkey"
+            columns: ["dimension_id"]
+            isOneToOne: false
+            referencedRelation: "routing_step_dimensions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dimension_readings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dimension_readings_queue_item_id_fkey"
+            columns: ["queue_item_id"]
+            isOneToOne: false
+            referencedRelation: "queue_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dimension_readings_routing_step_id_fkey"
+            columns: ["routing_step_id"]
+            isOneToOne: false
+            referencedRelation: "work_order_routing"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       downtime_events: {
         Row: {
           created_at: string | null
@@ -3636,6 +3710,72 @@ export type Database = {
         }
         Relationships: []
       }
+      routing_step_dimensions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          dimension_name: string
+          id: string
+          is_critical: boolean
+          lower_tolerance: number
+          nominal_value: number
+          notes: string | null
+          organization_id: string | null
+          routing_step_id: string
+          sort_order: number
+          unit: string
+          updated_at: string
+          upper_tolerance: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          dimension_name: string
+          id?: string
+          is_critical?: boolean
+          lower_tolerance: number
+          nominal_value: number
+          notes?: string | null
+          organization_id?: string | null
+          routing_step_id: string
+          sort_order?: number
+          unit?: string
+          updated_at?: string
+          upper_tolerance: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          dimension_name?: string
+          id?: string
+          is_critical?: boolean
+          lower_tolerance?: number
+          nominal_value?: number
+          notes?: string | null
+          organization_id?: string | null
+          routing_step_id?: string
+          sort_order?: number
+          unit?: string
+          updated_at?: string
+          upper_tolerance?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "routing_step_dimensions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "routing_step_dimensions_routing_step_id_fkey"
+            columns: ["routing_step_id"]
+            isOneToOne: false
+            referencedRelation: "work_order_routing"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       routing_template_steps: {
         Row: {
           cycle_time_minutes: number | null
@@ -5015,6 +5155,7 @@ export type Database = {
           completed_by: string | null
           created_at: string
           cycle_time_minutes: number | null
+          dimensions_required: boolean
           erp_operation_id: string | null
           erp_sequence_number: number | null
           estimated_duration: number | null
@@ -5040,6 +5181,7 @@ export type Database = {
           completed_by?: string | null
           created_at?: string
           cycle_time_minutes?: number | null
+          dimensions_required?: boolean
           erp_operation_id?: string | null
           erp_sequence_number?: number | null
           estimated_duration?: number | null
@@ -5065,6 +5207,7 @@ export type Database = {
           completed_by?: string | null
           created_at?: string
           cycle_time_minutes?: number | null
+          dimensions_required?: boolean
           erp_operation_id?: string | null
           erp_sequence_number?: number | null
           estimated_duration?: number | null
