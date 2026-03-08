@@ -19,6 +19,9 @@
 | 09 | [Developer Tooling & Integration](./09-developer-tooling-integration.md) | ✅ Active | Issues, Dev Queue, RLS Health, User Journey |
 | 10 | [ERP Connector Implementation](./10-erp-connector-implementation.md) | ✅ Active | ERP sync, status mapping, usage metering |
 | 11 | [Component Creation & Edit Standards](./11-component-standards.md) | ✅ Active | Import rules, styling, testing, gating checklist |
+| 12 | [Ad Placement Strategy](./12-ad-placement-strategy.md) | ✅ Active | Monetization via ad placements |
+| 13 | [Help Center](./13-help-center.md) | ✅ Active | In-app help articles and search |
+| 14 | [Shop Floor Display](./14-shop-floor-display.md) | 🚧 Draft | TV/tablet display boards for shop floors |
 
 ---
 
