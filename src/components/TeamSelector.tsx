@@ -1,6 +1,6 @@
 import React from "react";
 import { useCurrentTeam } from "@/contexts/TeamContext";
-import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 import {
   Select,
   SelectContent,
