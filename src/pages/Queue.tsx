@@ -124,7 +124,12 @@ export default function Queue() {
   const { ncrs = [], approveNCR, rejectNCR } = useNCR();
   const pendingNCRs = ncrs.filter((n) => n.authorization_status === "pending");
 
-  // Org-configured background refresh for queue data
+  // Smart alerts for queue view
+  const { alerts: smartAlerts, loading: smartAlertsLoading } = useSmartAlerts({
+    stationId: filters.station_id,
+    refreshToken: lastRefreshedAt,
+  });
+
   const refreshIntervalMs = useOrgRefreshInterval();
   const { isRefreshing, lastRefreshedAt, refresh: handleManualRefresh } =
     useBackgroundRefresh({
