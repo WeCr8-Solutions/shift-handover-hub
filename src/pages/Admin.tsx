@@ -174,6 +174,10 @@ export default function Admin() {
                 <span className="hidden sm:inline">Machines</span>
                 <span className="sm:hidden">CNC</span>
               </TabsTrigger>
+              <TabsTrigger value="smart-alerts" className="gap-2">
+                <BellRing className="w-4 h-4" />
+                <span className="hidden sm:inline">Alerts</span>
+              </TabsTrigger>
             </div>
             
             
