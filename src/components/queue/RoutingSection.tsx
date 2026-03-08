@@ -203,114 +203,124 @@ export function RoutingSection({ steps, onChange, stations }: RoutingSectionProp
           <button
             type="button"
             onClick={() => setExpanded(!expanded)}
-            className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors w-full"
+            className="flex items-center justify-between gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors w-full px-3 py-2 rounded-md border bg-muted/30 hover:bg-muted/50"
           >
-            {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            {steps.length} routing step{steps.length !== 1 ? "s" : ""}
+            <span className="flex items-center gap-1.5">
+              <Route className="w-4 h-4" />
+              {steps.length} routing step{steps.length !== 1 ? "s" : ""}
+            </span>
+            <span className="flex items-center gap-1 text-xs">
+              {expanded ? "Collapse" : "Expand to view/edit"}
+              {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </span>
           </button>
 
           {expanded && (
-            <div className="space-y-3 border rounded-lg p-3 bg-muted/30">
-              {steps.map((step, index) => (
-                <div key={index} className="space-y-2 p-3 border rounded-md bg-background">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
-                      <GripVertical className="w-3.5 h-3.5" />
-                      Step {step.step_number}
-                    </span>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeStep(index)}
-                      className="h-6 w-6 p-0 text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="space-y-1">
-                      <Label className="text-xs">Operation Name</Label>
-                      <Input
-                        value={step.operation_name}
-                        onChange={(e) => updateStep(index, "operation_name", e.target.value)}
-                        placeholder="e.g. CNC Milling"
-                        className="h-8 text-sm"
-                      />
+            <div className="border rounded-lg bg-muted/30 overflow-hidden">
+              <div className="max-h-[50vh] overflow-y-auto p-3 space-y-3">
+                {steps.map((step, index) => (
+                  <div key={index} className="space-y-2 p-3 border rounded-md bg-background">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+                        <GripVertical className="w-3.5 h-3.5" />
+                        Step {step.step_number}
+                      </span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeStep(index)}
+                        className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
                     </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <Label className="text-xs">Operation Name</Label>
+                        <Input
+                          value={step.operation_name}
+                          onChange={(e) => updateStep(index, "operation_name", e.target.value)}
+                          placeholder="e.g. CNC Milling"
+                          className="h-8 text-sm"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Type</Label>
+                        <Select
+                          value={step.operation_type}
+                          onValueChange={(v) => updateStep(index, "operation_type", v)}
+                        >
+                          <SelectTrigger className="h-8 text-sm">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {OPERATION_TYPES.map((op) => (
+                              <SelectItem key={op.value} value={op.value}>{op.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
                     <div className="space-y-1">
-                      <Label className="text-xs">Type</Label>
+                      <Label className="text-xs">Station</Label>
                       <Select
-                        value={step.operation_type}
-                        onValueChange={(v) => updateStep(index, "operation_type", v)}
+                        value={step.station_id || "none"}
+                        onValueChange={(v) => updateStep(index, "station_id", v === "none" ? undefined : v)}
                       >
                         <SelectTrigger className="h-8 text-sm">
-                          <SelectValue />
+                          <SelectValue placeholder="Select station..." />
                         </SelectTrigger>
-                        <SelectContent>
-                          {OPERATION_TYPES.map((op) => (
-                            <SelectItem key={op.value} value={op.value}>{op.label}</SelectItem>
+                        <SelectContent className="max-h-48">
+                          <SelectItem value="none">— Unassigned —</SelectItem>
+                          {Object.entries(stationsByType).map(([type, typeStations]) => (
+                            <div key={type}>
+                              <div className="px-3 py-1 text-xs font-semibold text-muted-foreground bg-muted/50">{type}</div>
+                              {typeStations.map((s) => (
+                                <SelectItem key={s.id} value={s.id}>
+                                  <span className="font-mono text-xs">{s.station_id}</span> — {s.name}
+                                </SelectItem>
+                              ))}
+                            </div>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
-                  </div>
 
-                  <div className="space-y-1">
-                    <Label className="text-xs">Station</Label>
-                    <Select
-                      value={step.station_id || "none"}
-                      onValueChange={(v) => updateStep(index, "station_id", v === "none" ? undefined : v)}
-                    >
-                      <SelectTrigger className="h-8 text-sm">
-                        <SelectValue placeholder="Select station..." />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-48">
-                        <SelectItem value="none">— Unassigned —</SelectItem>
-                        {Object.entries(stationsByType).map(([type, typeStations]) => (
-                          <div key={type}>
-                            <div className="px-3 py-1 text-xs font-semibold text-muted-foreground bg-muted/50">{type}</div>
-                            {typeStations.map((s) => (
-                              <SelectItem key={s.id} value={s.id}>
-                                <span className="font-mono text-xs">{s.station_id}</span> — {s.name}
-                              </SelectItem>
-                            ))}
-                          </div>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {step.operation_type === "outside_processing" && (
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="space-y-1">
-                        <Label className="text-xs">Vendor</Label>
-                        <Input
-                          value={step.outside_vendor || ""}
-                          onChange={(e) => updateStep(index, "outside_vendor", e.target.value)}
-                          placeholder="Vendor name"
-                          className="h-8 text-sm"
-                        />
+                    {step.operation_type === "outside_processing" && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <Label className="text-xs">Vendor</Label>
+                          <Input
+                            value={step.outside_vendor || ""}
+                            onChange={(e) => updateStep(index, "outside_vendor", e.target.value)}
+                            placeholder="Vendor name"
+                            className="h-8 text-sm"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">PO #</Label>
+                          <Input
+                            value={step.po_number || ""}
+                            onChange={(e) => updateStep(index, "po_number", e.target.value)}
+                            placeholder="PO-12345"
+                            className="h-8 text-sm"
+                          />
+                        </div>
                       </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs">PO #</Label>
-                        <Input
-                          value={step.po_number || ""}
-                          onChange={(e) => updateStep(index, "po_number", e.target.value)}
-                          placeholder="PO-12345"
-                          className="h-8 text-sm"
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
+                    )}
+                  </div>
+                ))}
+              </div>
 
-              <Button type="button" variant="outline" size="sm" onClick={addStep} className="w-full gap-1.5">
-                <Plus className="w-3.5 h-3.5" />
-                Add Step
-              </Button>
+              <div className="p-3 border-t bg-background/50">
+                <Button type="button" variant="outline" size="sm" onClick={addStep} className="w-full gap-1.5">
+                  <Plus className="w-3.5 h-3.5" />
+                  Add Step
+                </Button>
+              </div>
             </div>
           )}
         </div>
