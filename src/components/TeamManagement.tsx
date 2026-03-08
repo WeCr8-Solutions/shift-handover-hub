@@ -6,6 +6,7 @@ import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { useStations } from "@/hooks/useStations";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,6 +34,8 @@ export function TeamManagement() {
   const { isOrgAdmin, isAdmin } = useAdminAccess();
   const { teams, loading, createTeam, updateTeam, deleteTeam } = useTeams();
   const { toast } = useToast();
+  const [stationRefreshKey, setStationRefreshKey] = useState(0);
+  const triggerStationRefresh = () => setStationRefreshKey((k) => k + 1);
 
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -142,8 +145,13 @@ export function TeamManagement() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-32" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-40 rounded-lg" />
+          ))}
+        </div>
       </div>
     );
   }
@@ -227,7 +235,7 @@ export function TeamManagement() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {teams.map((team) => (
               <TeamCard
-                key={team.id}
+                key={`${team.id}-${stationRefreshKey}`}
                 team={team}
                 isSelected={selectedTeam?.id === team.id}
                 canManage={team.created_by === user?.id || isOrgAdmin || isAdmin}
@@ -259,9 +267,11 @@ export function TeamManagement() {
           teamName={newlyCreatedTeam.name}
           open={showStationManager}
           onOpenChange={setShowStationManager}
+          onStationChange={triggerStationRefresh}
           onComplete={() => {
             setShowStationManager(false);
             setNewlyCreatedTeam(null);
+            triggerStationRefresh();
           }}
         />
       )}

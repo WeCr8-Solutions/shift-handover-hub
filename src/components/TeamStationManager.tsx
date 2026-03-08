@@ -52,9 +52,10 @@ interface TeamStationManagerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onComplete?: () => void;
+  onStationChange?: () => void;
 }
 
-export function TeamStationManager({ teamId, teamName, open, onOpenChange, onComplete }: TeamStationManagerProps) {
+export function TeamStationManager({ teamId, teamName, open, onOpenChange, onComplete, onStationChange }: TeamStationManagerProps) {
   const { stations, loading, createStation, refreshStations } = useStations(teamId);
   const { teams } = useTeams();
   const { organization } = useUserOrganization();
@@ -151,6 +152,7 @@ export function TeamStationManager({ teamId, teamName, open, onOpenChange, onCom
       toast({ title: "Station updated", description: `${editName} has been updated.` });
       setEditingStation(null);
       refreshStations();
+      onStationChange?.();
     }
   };
 
@@ -162,6 +164,7 @@ export function TeamStationManager({ teamId, teamName, open, onOpenChange, onCom
     } else {
       toast({ title: "Station deleted", description: `${station.name} has been removed.` });
       refreshStations();
+      onStationChange?.();
     }
   };
 
@@ -180,6 +183,7 @@ export function TeamStationManager({ teamId, teamName, open, onOpenChange, onCom
       toast({ title: "Station reassigned", description: `${reassigningStation.name} moved to new team.` });
       setReassigningStation(null);
       refreshStations();
+      onStationChange?.();
     }
   };
 
