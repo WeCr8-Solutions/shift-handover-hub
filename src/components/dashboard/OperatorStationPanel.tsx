@@ -21,6 +21,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
 import {
   Package,
   Play,
@@ -33,11 +34,16 @@ import {
   ExternalLink,
   ShieldAlert,
   AlertTriangle,
+  CalendarDays,
+  GitBranch,
+  Layers,
+  Wrench,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { OperatorStationKanban } from "@/components/operator/OperatorStationKanban";
+import { format, isPast, formatDistanceToNow } from "date-fns";
 
 interface WorkOrder {
   id: string;
@@ -50,6 +56,23 @@ interface WorkOrder {
   position: number;
   quantity: number | null;
   started_at: string | null;
+  due_date: string | null;
+  description: string | null;
+  qty_original: number | null;
+  qty_completed: number | null;
+  qty_scrap: number | null;
+  qty_rework: number | null;
+  qty_open: number | null;
+  quantity_locked: boolean | null;
+  estimated_duration: number | null;
+  setup_time_minutes: number | null;
+  first_article_minutes: number | null;
+  cycle_time_minutes: number | null;
+  material_type: string | null;
+  part_weight_lbs: number | null;
+  tags: string[] | null;
+  is_rework: boolean | null;
+  assigned_to: string | null;
 }
 
 interface RoutingStep {
@@ -165,7 +188,7 @@ export function OperatorStationPanel({
     if (!stationId || !user) return;
     const { data, error } = await supabase
       .from("queue_items")
-      .select("id, title, work_order, part_number, operation_number, status, priority, position, quantity, started_at")
+      .select("id, title, work_order, part_number, operation_number, status, priority, position, quantity, started_at, due_date, description, qty_original, qty_completed, qty_scrap, qty_rework, qty_open, quantity_locked, estimated_duration, setup_time_minutes, first_article_minutes, cycle_time_minutes, material_type, part_weight_lbs, tags, is_rework, assigned_to")
       .eq("station_id", stationId)
       .in("status", ["pending", "queued", "in_progress", "on_hold"])
       .order("position", { ascending: true });
@@ -411,16 +434,26 @@ export function OperatorStationPanel({
         <CardContent className="space-y-4">
           {/* Active order */}
           {activeOrder && (
-            <div className="rounded-lg p-4 bg-primary/10 border border-primary/30 space-y-2">
+            <div className="rounded-lg p-4 bg-primary/10 border border-primary/30 space-y-3">
+              {/* Header row */}
               <div className="flex items-center justify-between">
-                <Badge className="bg-primary text-primary-foreground gap-1">
-                  <Play className="w-3 h-3" /> IN PROGRESS
-                </Badge>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Badge className="bg-primary text-primary-foreground gap-1">
+                    <Play className="w-3 h-3" /> IN PROGRESS
+                  </Badge>
+                  <Badge className={priorityClass(activeOrder.priority)}>{activeOrder.priority}</Badge>
+                  {activeOrder.is_rework && (
+                    <Badge variant="outline" className="text-amber-600 border-amber-500/50 gap-1">
+                      <Wrench className="w-3 h-3" /> Rework
+                    </Badge>
+                  )}
+                </div>
                 <div className="flex items-center gap-2">
                   {routingInfo && routingInfo.totalSteps > 0 && (
-                    <span className="text-[10px] font-mono text-muted-foreground">
+                    <Badge variant="outline" className="gap-1 text-xs">
+                      <GitBranch className="w-3 h-3" />
                       Step {routingInfo.currentStepNumber}/{routingInfo.totalSteps}
-                    </span>
+                    </Badge>
                   )}
                   {elapsed && (
                     <span className="text-xs font-mono text-muted-foreground flex items-center gap-1">
@@ -429,16 +462,126 @@ export function OperatorStationPanel({
                   )}
                 </div>
               </div>
-              <h4 className="font-semibold">{activeOrder.work_order || activeOrder.title}</h4>
-              {activeOrder.part_number && (
-                <p className="text-sm text-muted-foreground">
-                  Part: {activeOrder.part_number}
-                  {activeOrder.operation_number && ` • Op ${activeOrder.operation_number}`}
-                </p>
+
+              {/* Title & core info */}
+              <h4 className="font-semibold text-base">{activeOrder.work_order || activeOrder.title}</h4>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
+                {activeOrder.part_number && (
+                  <div>
+                    <span className="text-xs text-muted-foreground block">Part #</span>
+                    <span className="font-medium">{activeOrder.part_number}</span>
+                  </div>
+                )}
+                {activeOrder.operation_number && (
+                  <div>
+                    <span className="text-xs text-muted-foreground block">Operation</span>
+                    <span className="font-medium">{activeOrder.operation_number}</span>
+                  </div>
+                )}
+                {activeOrder.material_type && (
+                  <div>
+                    <span className="text-xs text-muted-foreground block">Material</span>
+                    <span className="font-medium">{activeOrder.material_type}</span>
+                  </div>
+                )}
+                {activeOrder.part_weight_lbs && (
+                  <div>
+                    <span className="text-xs text-muted-foreground block">Weight</span>
+                    <span className="font-medium">{activeOrder.part_weight_lbs} lbs</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Due date */}
+              {activeOrder.due_date && (
+                <div className={cn(
+                  "flex items-center gap-1.5 text-xs rounded px-2 py-1 w-fit",
+                  isPast(new Date(activeOrder.due_date))
+                    ? "bg-destructive/10 text-destructive font-medium"
+                    : "bg-muted text-muted-foreground"
+                )}>
+                  <CalendarDays className="w-3 h-3" />
+                  Due: {format(new Date(activeOrder.due_date), "MMM d, yyyy")}
+                  {isPast(new Date(activeOrder.due_date)) && " — OVERDUE"}
+                </div>
               )}
-              {activeOrder.quantity && <p className="text-sm text-muted-foreground">Qty: {activeOrder.quantity}</p>}
+
+              {/* Quantity breakdown */}
+              {(activeOrder.qty_original ?? activeOrder.quantity ?? 0) > 0 && (() => {
+                const orig = activeOrder.qty_original ?? activeOrder.quantity ?? 0;
+                const completed = activeOrder.qty_completed ?? 0;
+                const scrap = activeOrder.qty_scrap ?? 0;
+                const rework = activeOrder.qty_rework ?? 0;
+                const open = activeOrder.qty_open ?? (orig - completed - scrap - rework);
+                const pct = orig > 0 ? Math.round((completed / orig) * 100) : 0;
+                return (
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground flex items-center gap-1">
+                        <Layers className="w-3 h-3" /> Quantity Progress
+                      </span>
+                      <span className="font-medium">{completed}/{orig} ({pct}%)</span>
+                    </div>
+                    <Progress value={pct} className="h-2" />
+                    <div className="grid grid-cols-4 gap-1 text-[11px] text-center">
+                      <div className="rounded bg-green-500/10 text-green-700 dark:text-green-400 py-0.5">
+                        ✓ {completed}
+                      </div>
+                      <div className="rounded bg-destructive/10 text-destructive py-0.5">
+                        ✗ {scrap}
+                      </div>
+                      <div className="rounded bg-amber-500/10 text-amber-700 dark:text-amber-400 py-0.5">
+                        ↺ {rework}
+                      </div>
+                      <div className="rounded bg-primary/10 text-primary py-0.5">
+                        ○ {Math.max(open, 0)}
+                      </div>
+                    </div>
+                    {activeOrder.quantity_locked && (
+                      <span className="text-[10px] text-amber-600 dark:text-amber-400">🔒 Quantity locked</span>
+                    )}
+                  </div>
+                );
+              })()}
+
+              {/* Machine time */}
+              {(activeOrder.setup_time_minutes || activeOrder.cycle_time_minutes) && (
+                <div className="flex flex-wrap gap-3 text-[11px] text-muted-foreground">
+                  {activeOrder.setup_time_minutes && <span>Setup: {activeOrder.setup_time_minutes}m</span>}
+                  {activeOrder.first_article_minutes && <span>FA: {activeOrder.first_article_minutes}m</span>}
+                  {activeOrder.cycle_time_minutes && <span>Cycle: {activeOrder.cycle_time_minutes}m/pc</span>}
+                  {activeOrder.estimated_duration && <span className="font-medium">Total: {activeOrder.estimated_duration}m</span>}
+                </div>
+              )}
+
+              {/* Routing progress indicator */}
+              {routingInfo && routingInfo.totalSteps > 0 && (
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <GitBranch className="w-3 h-3" />
+                  {routingInfo.isFinalStep
+                    ? "Final operation — work order will complete"
+                    : `Next: ${routingInfo.nextStationName || "next station"}`}
+                </div>
+              )}
+
+              {/* Tags */}
+              {activeOrder.tags && activeOrder.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {activeOrder.tags.map((tag) => (
+                    <span key={tag} className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-primary/10 text-primary border border-primary/20">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* Description preview */}
+              {activeOrder.description && (
+                <p className="text-xs text-muted-foreground line-clamp-2 italic">{activeOrder.description}</p>
+              )}
+
+              {/* Quick actions */}
               <div className="flex gap-2 pt-1 flex-wrap">
-                {/* Routing-aware completion button */}
                 {routingInfo && !routingInfo.isFinalStep ? (
                   <Button
                     size="sm"
@@ -459,14 +602,21 @@ export function OperatorStationPanel({
                     {routingInfo ? "Complete Work Order" : "Complete & Deliver"}
                   </Button>
                 )}
-                {/* View Details */}
                 <Button
                   size="sm"
                   variant="outline"
                   className="gap-1"
                   onClick={() => handleNavigateToOrder(activeOrder.id)}
                 >
-                  <ExternalLink className="w-3 h-3" /> View Details
+                  <ExternalLink className="w-3 h-3" /> Full Details
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1"
+                  onClick={onCreateHandoff}
+                >
+                  <FileText className="w-3 h-3" /> Handoff
                 </Button>
               </div>
             </div>
