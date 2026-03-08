@@ -10,7 +10,7 @@ import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Monitor } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Skeleton } from "@/components/ui/skeleton";
+import { MachineStatusGrid } from "@/components/machine/MachineStatusGrid";
 import {
   AlertDialog,
   AlertDialogAction,
