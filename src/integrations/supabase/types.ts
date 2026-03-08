@@ -827,6 +827,79 @@ export type Database = {
           },
         ]
       }
+      dimension_check_requests: {
+        Row: {
+          created_at: string
+          id: string
+          organization_id: string | null
+          queue_item_id: string
+          reason: string
+          requested_by: string | null
+          requested_by_name: string | null
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reviewed_by_name: string | null
+          routing_step_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          organization_id?: string | null
+          queue_item_id: string
+          reason: string
+          requested_by?: string | null
+          requested_by_name?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewed_by_name?: string | null
+          routing_step_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          organization_id?: string | null
+          queue_item_id?: string
+          reason?: string
+          requested_by?: string | null
+          requested_by_name?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewed_by_name?: string | null
+          routing_step_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dimension_check_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dimension_check_requests_queue_item_id_fkey"
+            columns: ["queue_item_id"]
+            isOneToOne: false
+            referencedRelation: "queue_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dimension_check_requests_routing_step_id_fkey"
+            columns: ["routing_step_id"]
+            isOneToOne: false
+            referencedRelation: "work_order_routing"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dimension_readings: {
         Row: {
           dimension_id: string
