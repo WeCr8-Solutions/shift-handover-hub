@@ -5,7 +5,7 @@ import { ArrowRight, CheckCircle2, Zap, Calendar, ListOrdered, Route, Clock } fr
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MockScheduleCalendar } from "@/components/marketing/MockScheduleCalendar";
-
+import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 
