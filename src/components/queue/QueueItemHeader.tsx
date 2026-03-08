@@ -4,7 +4,7 @@ import { QueueItem, QueuePriority, QueueStatus } from "@/hooks/useQueue";
 import { Station } from "@/hooks/useStations";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
-import { Clock, FileText, Package } from "lucide-react";
+import { Clock, FileText, Package, User } from "lucide-react";
 
 export function getPriorityColor(priority: QueuePriority): string {
   switch (priority) {
