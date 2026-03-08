@@ -36,6 +36,8 @@ export interface QuickActionTarget {
   stationId?: string;
   /** Work order number for display */
   workOrder?: string;
+  /** Active queue item ID (for stations with an active work order) */
+  activeItemId?: string;
 }
 
 interface StationQuickActionsProps {
@@ -66,10 +68,13 @@ export function StationQuickActions({
   const handleViewDetail = () => {
     if (onViewDetail) {
       onViewDetail(target);
-    } else if (target.type === "station") {
-      navigate(`/queue?station=${target.id}`);
-    } else {
+    } else if (target.type === "work_order") {
       navigate(`/queue?item=${target.id}`);
+    } else if (target.activeItemId) {
+      // Station with an active work order — open the item detail directly
+      navigate(`/queue?item=${target.activeItemId}`);
+    } else {
+      navigate(`/queue?station=${target.id}`);
     }
   };
 

@@ -245,6 +245,7 @@ export function StationAlertTile({ station, onViewStation, onQuickAction }: Stat
     type: "station",
     status: station.status,
     workOrder: station.workOrder !== "—" ? station.workOrder : undefined,
+    activeItemId: alertData?.activeItem?.id,
   };
 
   return (
