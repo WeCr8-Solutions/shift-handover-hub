@@ -572,7 +572,7 @@ export function StationManualMachineEntry({
               <Textarea placeholder="Any additional details about this station..." value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
             </section>
           </div>
-        </ScrollArea>
+        </div>
 
         <DialogFooter className="pt-2 border-t">
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>Cancel</Button>
