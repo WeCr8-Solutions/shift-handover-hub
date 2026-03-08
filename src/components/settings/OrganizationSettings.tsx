@@ -45,7 +45,7 @@ export function OrganizationSettings({ isDeveloper = false }: OrganizationSettin
     setFormData({
       name: organization.name ?? "",
       description: organization.description ?? "",
-      billing_email: "",
+      billing_email: (organization as any).billing_email ?? "",
     });
   }, [organization]);
 
