@@ -866,7 +866,7 @@ export function OperatorStationPanel({
                   <RequestDimensionCheckButton
                     routingStepId={routingInfo.currentStepId}
                     queueItemId={deliverOrder.id}
-                    operationName={routingInfo?.currentStepName || "this operation"}
+                    operationName={routingInfo?.allSteps?.find(s => s.step_number === routingInfo?.currentStepNumber)?.operation_name || "this operation"}
                     onSubmit={operatorDimRequests.submitRequest}
                   />
                 )}
