@@ -26,6 +26,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MachineLibraryManagement } from "@/components/admin/MachineLibraryManagement";
+import { MachineMonitorPanel } from "@/components/admin/MachineMonitorPanel";
 import { VisitorSurveyAnalytics } from "@/components/admin/VisitorSurveyAnalytics";
 import { Shield, LayoutDashboard, Users, Wrench, Briefcase, Activity, FileSpreadsheet, Package, Route, Lightbulb, History, Bug, ShieldCheck, ListTodo, Settings2, Map, BookOpen, Cpu, MessageSquare } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -167,6 +168,11 @@ export default function Admin() {
                 <span className="hidden sm:inline">Performance</span>
                 <span className="sm:hidden">Perf</span>
               </TabsTrigger>
+              <TabsTrigger value="machine-monitor" className="gap-2">
+                <Cpu className="w-4 h-4" />
+                <span className="hidden sm:inline">Machines</span>
+                <span className="sm:hidden">CNC</span>
+              </TabsTrigger>
             </div>
             
             
@@ -271,6 +277,10 @@ export default function Admin() {
 
           <TabsContent value="performance">
             <PerformanceUpdatesReview isAdmin={isAdmin} />
+          </TabsContent>
+
+          <TabsContent value="machine-monitor">
+            <MachineMonitorPanel isAdmin={isAdmin} />
           </TabsContent>
 
           {hasPlatformAccess && (
