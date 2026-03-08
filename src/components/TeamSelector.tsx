@@ -30,7 +30,7 @@ export const TeamSelector = React.forwardRef<HTMLDivElement, React.HTMLAttribute
     : "All Teams";
 
   return (
-    <Select
+    <div ref={ref} {...props}>
       value={currentTeam?.id || "all-teams"}
       onValueChange={(value) => {
         if (value === "all-teams") {
