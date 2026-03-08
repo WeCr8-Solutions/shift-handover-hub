@@ -220,7 +220,7 @@ interface UserManagementProps {
 
 type ViewMode = "grouped" | "flat";
 
-export function UserManagement({ isAdmin }: UserManagementProps) {
+export function UserManagement({ isAdmin, isSupervisorOrAbove = false }: UserManagementProps) {
   const { user: currentUser } = useAuth();
   const { startActAs } = useActAs();
   const { users, organizations, loading, updateUserRole } = useAllUsers();
