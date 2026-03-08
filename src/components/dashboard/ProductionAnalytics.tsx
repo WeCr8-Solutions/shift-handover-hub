@@ -548,41 +548,43 @@ export function ProductionAnalytics({
                 No teams configured.
               </div>
             ) : (
-              <ResponsiveContainer width="100%" height={280}>
-                <BarChart
-                  data={teamData}
-                  margin={{ top: 5, right: 10, left: -10, bottom: 5 }}
-                  role="img"
-                  aria-label="Stacked bar chart showing station status by team"
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-                  <XAxis
-                    dataKey="team"
-                    tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-                    axisLine={{ stroke: "hsl(var(--border))" }}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "8px",
-                      fontSize: "12px",
-                    }}
-                  />
-                  <Legend iconType="circle" wrapperStyle={{ fontSize: "11px" }} />
-                  <Bar dataKey="running" name="Running" stackId="a" fill={STATUS_COLORS.running} isAnimationActive={!prefersReducedMotion} />
-                  <Bar dataKey="setup" name="Setup" stackId="a" fill={STATUS_COLORS.setup} isAnimationActive={!prefersReducedMotion} />
-                  <Bar dataKey="waiting" name="Waiting" stackId="a" fill={STATUS_COLORS.waiting} isAnimationActive={!prefersReducedMotion} />
-                  <Bar dataKey="down" name="Down" stackId="a" fill={STATUS_COLORS.down} isAnimationActive={!prefersReducedMotion} />
-                  <Bar dataKey="idle" name="Idle" stackId="a" fill={STATUS_COLORS.idle} radius={[4, 4, 0, 0]} isAnimationActive={!prefersReducedMotion} />
-                </BarChart>
-              </ResponsiveContainer>
+              <div className="min-w-[500px]">
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart
+                    data={teamData}
+                    margin={{ top: 5, right: 10, left: -10, bottom: 5 }}
+                    role="img"
+                    aria-label="Stacked bar chart showing station status by team"
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                    <XAxis
+                      dataKey="team"
+                      tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                      axisLine={{ stroke: "hsl(var(--border))" }}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px",
+                        fontSize: "12px",
+                      }}
+                    />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: "11px" }} />
+                    <Bar dataKey="running" name="Running" stackId="a" fill={STATUS_COLORS.running} isAnimationActive={!prefersReducedMotion} />
+                    <Bar dataKey="setup" name="Setup" stackId="a" fill={STATUS_COLORS.setup} isAnimationActive={!prefersReducedMotion} />
+                    <Bar dataKey="waiting" name="Waiting" stackId="a" fill={STATUS_COLORS.waiting} isAnimationActive={!prefersReducedMotion} />
+                    <Bar dataKey="down" name="Down" stackId="a" fill={STATUS_COLORS.down} isAnimationActive={!prefersReducedMotion} />
+                    <Bar dataKey="idle" name="Idle" stackId="a" fill={STATUS_COLORS.idle} radius={[4, 4, 0, 0]} isAnimationActive={!prefersReducedMotion} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             )}
           </div>
         )}
