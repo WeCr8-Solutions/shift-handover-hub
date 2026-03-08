@@ -470,7 +470,7 @@ export function TeamStationManager({
 
       {/* Edit Station Dialog */}
       <Dialog open={!!editingStation} onOpenChange={(open) => !open && setEditingStation(null)}>
-        <DialogContent>
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Edit Station</DialogTitle>
             <DialogDescription>Update station details for {editingStation?.station_id}</DialogDescription>
@@ -499,6 +499,15 @@ export function TeamStationManager({
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Machine Profile Section */}
+            {editingStation && (
+              <EditStationMachineInfo
+                stationId={editingStation.id}
+                stationName={editingStation.name}
+                organizationId={organization?.id ?? null}
+              />
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditingStation(null)}>
