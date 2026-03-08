@@ -183,7 +183,7 @@ export function CreateWorkOrderDialog({
 
       setLoading(true);
       try {
-        await createItem({
+        const result = await createItem({
           item_type: "work_order",
           title: formData.title || `WO: ${formData.work_order}`,
           description: formData.description || undefined,
@@ -208,6 +208,12 @@ export function CreateWorkOrderDialog({
           surface_finish: partSpecs.surface_finish || undefined,
           routing_steps: hasRouting ? routingSteps : undefined,
         });
+
+        if (result?.error) {
+          console.error("Create work order error:", result.error);
+          toast.error(result.error);
+          return;
+        }
 
         toast.success("Work order created successfully!");
         onOpenChange(false);
