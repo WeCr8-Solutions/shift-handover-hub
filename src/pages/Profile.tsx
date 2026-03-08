@@ -142,7 +142,10 @@ export default function Profile() {
               <Input
                 id="display-name"
                 value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
+                onChange={(e) => {
+                  setDisplayName(e.target.value);
+                  setIsDirty(e.target.value.trim() !== (profile?.display_name || ""));
+                }}
                 placeholder="Your name"
               />
               <p className="text-xs text-muted-foreground">
