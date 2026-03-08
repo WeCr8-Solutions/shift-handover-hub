@@ -520,8 +520,61 @@ export function StationAlertTile({ station, onViewStation }: StationAlertTilePro
                   </div>
                 )}
 
-                {/* No alerts */}
-                {totalAlerts === 0 && !alertData.activeItem && station.status !== "down" && (
+                {/* Idle Station Alert */}
+                {station.status === "idle" && (
+                  <div className={cn(
+                    "p-2.5 rounded-lg border",
+                    alertData.queueCount > 0
+                      ? "bg-amber-500/10 border-amber-500/30"
+                      : "bg-muted/50 border-border",
+                  )}>
+                    <div className="flex items-center gap-2">
+                      <Clock className={cn(
+                        "w-4 h-4",
+                        alertData.queueCount > 0 ? "text-amber-500" : "text-muted-foreground",
+                      )} />
+                      <div className="flex-1">
+                        <span className={cn(
+                          "text-xs font-medium",
+                          alertData.queueCount > 0 ? "text-amber-700" : "text-muted-foreground",
+                        )}>
+                          Station Idle
+                          {station.operator === "—" && " — No Operator"}
+                        </span>
+                        {alertData.queueCount > 0 && (
+                          <p className="text-[10px] text-amber-600 mt-0.5">
+                            {alertData.queueCount} {alertData.queueCount === 1 ? "order" : "orders"} waiting in queue
+                          </p>
+                        )}
+                        {alertData.queueCount === 0 && station.operator === "—" && (
+                          <p className="text-[10px] text-muted-foreground mt-0.5">
+                            No operator checked in · No work orders assigned
+                          </p>
+                        )}
+                        {alertData.queueCount === 0 && station.operator !== "—" && (
+                          <p className="text-[10px] text-muted-foreground mt-0.5">
+                            Operator present · No active work orders
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Waiting Station Alert */}
+                {station.status === "waiting" && !alertData.activeItem && (
+                  <div className="p-2.5 rounded-lg bg-blue-500/10 border border-blue-500/30">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-blue-500" />
+                      <span className="text-xs font-medium text-blue-700">
+                        Station Waiting
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* No alerts — only for running/setup with nothing extra */}
+                {totalAlerts === 0 && !alertData.activeItem && station.status !== "down" && station.status !== "idle" && station.status !== "waiting" && (
                   <div className="text-xs text-muted-foreground text-center py-1">
                     No active alerts
                   </div>

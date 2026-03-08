@@ -133,6 +133,7 @@ export function SupervisorDashboard({
 
     dbStations.forEach((s) => {
       const state = s.current_status?.current_job_state;
+      const status = getStatusFromJobState(state);
 
       if (state === JOB_STATES.MACHINE_DOWN) {
         items.push({
@@ -148,6 +149,16 @@ export function SupervisorDashboard({
           label: `${s.name} is waiting`,
           detail: state || "",
           severity: "warning",
+          stationId: s.id,
+          stationName: s.name,
+        });
+      }
+      if (status === "idle" && s.is_active) {
+        const operatorName = s.current_status?.current_operator_name;
+        items.push({
+          label: `${s.name} is idle`,
+          detail: operatorName ? `Operator: ${operatorName} · No active job` : "No operator · No active job",
+          severity: "info",
           stationId: s.id,
           stationName: s.name,
         });
@@ -460,11 +471,11 @@ export function SupervisorDashboard({
 
       {/* Attention Required */}
       {attentionItems.length > 0 && (
-        <div className="bg-red-500/5 border border-red-500/20 rounded-lg p-4">
+        <div className="bg-card border border-border rounded-lg p-4">
           <div className="flex items-center gap-2 mb-3">
             <AlertTriangle className="w-4 h-4 text-red-400" />
             <span className="font-semibold text-sm">Attention Required</span>
-            <Badge variant="outline" className="text-[10px] border-red-500/50 text-red-400 ml-auto">
+            <Badge variant="outline" className="text-[10px] border-border ml-auto">
               {attentionItems.length} item{attentionItems.length !== 1 ? "s" : ""}
             </Badge>
           </div>
@@ -476,7 +487,9 @@ export function SupervisorDashboard({
                   "flex items-center gap-3 p-2 rounded-md border cursor-pointer transition-colors",
                   item.severity === "critical"
                     ? "bg-red-500/10 border-red-500/30 hover:bg-red-500/20"
-                    : "bg-amber-500/10 border-amber-500/30 hover:bg-amber-500/20",
+                    : item.severity === "warning"
+                    ? "bg-amber-500/10 border-amber-500/30 hover:bg-amber-500/20"
+                    : "bg-muted/50 border-border hover:bg-muted",
                 )}
                 onClick={() => handleAttentionItemClick(item)}
                 role="button"
@@ -492,7 +505,9 @@ export function SupervisorDashboard({
                 <div
                   className={cn(
                     "w-2 h-2 rounded-full flex-shrink-0",
-                    item.severity === "critical" ? "bg-red-500" : "bg-amber-500",
+                    item.severity === "critical" ? "bg-red-500"
+                      : item.severity === "warning" ? "bg-amber-500"
+                      : "bg-muted-foreground/50",
                   )}
                 />
                 <div className="flex-1 min-w-0">
