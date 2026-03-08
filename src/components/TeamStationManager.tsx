@@ -183,6 +183,7 @@ export function TeamStationManager({ teamId, teamName, open, onOpenChange, onCom
       toast({ title: "Station reassigned", description: `${reassigningStation.name} moved to new team.` });
       setReassigningStation(null);
       refreshStations();
+      onStationChange?.();
     }
   };
 
