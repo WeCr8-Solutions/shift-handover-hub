@@ -170,6 +170,8 @@ export function QueueItemDetailDialog({
           assignedStation={assignedStation}
           isOverdue={isOverdue}
           elapsedTime={elapsedTime}
+          assignedUserName={assignedUserName}
+          createdByName={createdByName}
         />
 
         <QueueItemActions
