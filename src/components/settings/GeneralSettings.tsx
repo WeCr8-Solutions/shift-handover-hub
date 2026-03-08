@@ -205,22 +205,31 @@ export function GeneralSettings() {
             </div>
 
             <div className="space-y-2">
-              <Label>Auto-Refresh Interval (seconds)</Label>
-              <Input
-                type="number"
-                min={10}
-                max={300}
-                value={settings.autoRefreshInterval}
-                onChange={(e) => {
-                  const raw = Number(e.target.value);
-                  const safeValue = Number.isFinite(raw) ? Math.min(300, Math.max(10, raw)) : 30;
+              <Label>Dashboard Auto-Refresh Interval (seconds)</Label>
+              <p className="text-xs text-muted-foreground">
+                Controls how often dashboards silently refresh data in the background. Lower values mean more up-to-date data but increased network usage. Applies to all users in this organization.
+              </p>
+              <div className="flex items-center gap-3">
+                <Input
+                  type="number"
+                  min={10}
+                  max={600}
+                  value={settings.autoRefreshInterval}
+                  onChange={(e) => {
+                    const raw = Number(e.target.value);
+                    const safeValue = Number.isFinite(raw) ? Math.min(600, Math.max(10, raw)) : 300;
 
-                  setSettings((p) => ({
-                    ...p,
-                    autoRefreshInterval: safeValue,
-                  }));
-                }}
-              />
+                    setSettings((p) => ({
+                      ...p,
+                      autoRefreshInterval: safeValue,
+                    }));
+                  }}
+                  className="w-28"
+                />
+                <span className="text-sm text-muted-foreground">
+                  ({Math.floor(settings.autoRefreshInterval / 60)}m {settings.autoRefreshInterval % 60}s)
+                </span>
+              </div>
             </div>
           </div>
         </CardContent>
