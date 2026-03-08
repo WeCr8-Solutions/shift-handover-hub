@@ -122,6 +122,7 @@ export function OperatorStationPanel({
   const [routingInfo, setRoutingInfo] = useState<RoutingInfo | null>(null);
   const [isOverride, setIsOverride] = useState(false);
   const [overrideReason, setOverrideReason] = useState("");
+  const stepDimensions = useDimensions();
 
   // Completion form state
   const [completionData, setCompletionData] = useState<{
