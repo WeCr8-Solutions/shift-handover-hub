@@ -316,7 +316,7 @@ export function QueueCalendarView({ items, onItemClick }: QueueCalendarViewProps
                   onMonthChange={setCurrentDate}
                   className="pointer-events-auto w-full [&_table]:w-full [&_th]:w-auto [&_td]:w-auto [&_td]:p-1 [&_th]:p-1 [&_.rdp-cell]:text-center [&_.rdp-head_cell]:text-center [&_.rdp-day]:h-10 [&_.rdp-day]:w-10 sm:[&_.rdp-day]:h-12 sm:[&_.rdp-day]:w-12"
                   modifiers={{
-                    hasItems: (date) => getItemsForDate(date).length > 0,
+                    hasItems: (date) => getEntriesForDate(date).length > 0,
                   }}
                   modifiersStyles={{
                     hasItems: {
