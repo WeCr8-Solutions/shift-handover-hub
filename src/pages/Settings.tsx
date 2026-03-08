@@ -7,6 +7,7 @@ import {
   Settings2,
   Factory,
   Bell,
+  BellRing,
   Clock,
   Wrench,
   Building2,
