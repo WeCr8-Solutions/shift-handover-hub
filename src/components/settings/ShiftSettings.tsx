@@ -6,9 +6,19 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Loader2, Plus, Clock, Trash2, Edit, Sun, Moon, Sunrise } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useAppSettings, ShiftSchedule } from "@/hooks/useAppSettings";
+import { useShiftSchedules, ShiftSchedule } from "@/hooks/useShiftSchedules";
 import { cn } from "@/lib/utils";
 
 const DAYS = [
@@ -45,11 +55,12 @@ const DEFAULT_FORM: ShiftFormData = {
 
 export function ShiftSettings() {
   const { toast } = useToast();
-  const { shifts = [], createShift, updateShift, deleteShift, loading } = useAppSettings();
+  const { shifts = [], createShift, updateShift, deleteShift, loading } = useShiftSchedules();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingShift, setEditingShift] = useState<ShiftSchedule | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState<ShiftFormData>(DEFAULT_FORM);
+  const [deleteTarget, setDeleteTarget] = useState<ShiftSchedule | null>(null);
 
   const resetForm = () => {
     setFormData(DEFAULT_FORM);
@@ -105,26 +116,16 @@ export function ShiftSettings() {
       if (editingShift) {
         const { error } = await updateShift(editingShift.id, payload);
         if (error) {
-          toast({
-            title: "Failed to update shift",
-            description: error,
-            variant: "destructive",
-          });
+          toast({ title: "Failed to update shift", description: error, variant: "destructive" });
           return;
         }
-
         toast({ title: "Shift updated" });
       } else {
         const { error } = await createShift(payload as Omit<ShiftSchedule, "id">);
         if (error) {
-          toast({
-            title: "Failed to create shift",
-            description: error,
-            variant: "destructive",
-          });
+          toast({ title: "Failed to create shift", description: error, variant: "destructive" });
           return;
         }
-
         toast({ title: "Shift created" });
       }
 
@@ -135,18 +136,15 @@ export function ShiftSettings() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    const { error } = await deleteShift(id);
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    const { error } = await deleteShift(deleteTarget.id);
+    setDeleteTarget(null);
 
     if (error) {
-      toast({
-        title: "Failed to delete shift",
-        description: error,
-        variant: "destructive",
-      });
+      toast({ title: "Failed to delete shift", description: error, variant: "destructive" });
       return;
     }
-
     toast({ title: "Shift deleted" });
   };
 
@@ -161,7 +159,6 @@ export function ShiftSettings() {
 
   const getShiftIcon = (startTime: string) => {
     const hour = Number.parseInt(startTime.split(":")[0] ?? "0", 10);
-
     if (hour >= 5 && hour < 12) return Sun;
     if (hour >= 12 && hour < 18) return Sunrise;
     return Moon;
@@ -212,26 +209,15 @@ export function ShiftSettings() {
                     <Label>Shift Name</Label>
                     <Input
                       value={formData.shift_name}
-                      onChange={(e) =>
-                        setFormData((p) => ({
-                          ...p,
-                          shift_name: e.target.value,
-                        }))
-                      }
+                      onChange={(e) => setFormData((p) => ({ ...p, shift_name: e.target.value }))}
                       placeholder="Day Shift"
                     />
                   </div>
-
                   <div className="space-y-2">
                     <Label>Shift Code</Label>
                     <Input
                       value={formData.shift_code}
-                      onChange={(e) =>
-                        setFormData((p) => ({
-                          ...p,
-                          shift_code: e.target.value.toUpperCase(),
-                        }))
-                      }
+                      onChange={(e) => setFormData((p) => ({ ...p, shift_code: e.target.value.toUpperCase() }))}
                       placeholder="DAY"
                       maxLength={5}
                     />
@@ -241,30 +227,11 @@ export function ShiftSettings() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Start Time</Label>
-                    <Input
-                      type="time"
-                      value={formData.start_time}
-                      onChange={(e) =>
-                        setFormData((p) => ({
-                          ...p,
-                          start_time: e.target.value,
-                        }))
-                      }
-                    />
+                    <Input type="time" value={formData.start_time} onChange={(e) => setFormData((p) => ({ ...p, start_time: e.target.value }))} />
                   </div>
-
                   <div className="space-y-2">
                     <Label>End Time</Label>
-                    <Input
-                      type="time"
-                      value={formData.end_time}
-                      onChange={(e) =>
-                        setFormData((p) => ({
-                          ...p,
-                          end_time: e.target.value,
-                        }))
-                      }
-                    />
+                    <Input type="time" value={formData.end_time} onChange={(e) => setFormData((p) => ({ ...p, end_time: e.target.value }))} />
                   </div>
                 </div>
 
@@ -307,10 +274,7 @@ export function ShiftSettings() {
 
                 <div className="flex items-center justify-between">
                   <Label>Active</Label>
-                  <Switch
-                    checked={formData.is_active}
-                    onCheckedChange={(v) => setFormData((p) => ({ ...p, is_active: v }))}
-                  />
+                  <Switch checked={formData.is_active} onCheckedChange={(v) => setFormData((p) => ({ ...p, is_active: v }))} />
                 </div>
 
                 <Button onClick={handleSave} disabled={isSaving} className="w-full">
@@ -385,8 +349,7 @@ export function ShiftSettings() {
                         <Button variant="ghost" size="icon" onClick={() => handleOpenEdit(shift)}>
                           <Edit className="h-4 w-4" />
                         </Button>
-
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(shift.id)}>
+                        <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(shift)}>
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>
@@ -398,6 +361,24 @@ export function ShiftSettings() {
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Shift Schedule</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <strong>{deleteTarget?.shift_name}</strong> ({deleteTarget?.shift_code})? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

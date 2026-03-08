@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -6,9 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { Loader2, Save, Globe, Palette } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useAppSettings } from "@/hooks/useAppSettings";
+import { useGeneralSettings } from "@/hooks/useGeneralSettings";
 
 type GeneralPreferences = {
   timezone: string;
@@ -34,22 +35,26 @@ const DEFAULT_SETTINGS: GeneralPreferences = {
 
 export function GeneralSettings() {
   const { toast } = useToast();
-  const { getSetting, updateSetting, loading } = useAppSettings();
+  const { getSetting, updateSetting, loading, settings: rawSettings } = useGeneralSettings();
   const [isSaving, setIsSaving] = useState(false);
   const [settings, setSettings] = useState<GeneralPreferences>(DEFAULT_SETTINGS);
+  const [initialSettings, setInitialSettings] = useState<GeneralPreferences>(DEFAULT_SETTINGS);
 
-  const generalSettings = useMemo(() => {
-    return getSetting("general_preferences");
+  // Derive saved value from settings array (stable dependency)
+  const loadSettings = useCallback(() => {
+    const generalSettings = getSetting("general_preferences");
+    if (generalSettings && typeof generalSettings === "object") {
+      const merged = { ...DEFAULT_SETTINGS, ...generalSettings } as GeneralPreferences;
+      setSettings(merged);
+      setInitialSettings(merged);
+    }
   }, [getSetting]);
 
   useEffect(() => {
-    if (generalSettings && typeof generalSettings === "object") {
-      setSettings((prev) => ({
-        ...prev,
-        ...generalSettings,
-      }));
-    }
-  }, [generalSettings]);
+    loadSettings();
+  }, [loadSettings]);
+
+  const isDirty = JSON.stringify(settings) !== JSON.stringify(initialSettings);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -64,6 +69,7 @@ export function GeneralSettings() {
           variant: "destructive",
         });
       } else {
+        setInitialSettings(settings);
         toast({
           title: "Settings saved",
           description: "Your preferences have been updated.",
@@ -210,7 +216,7 @@ export function GeneralSettings() {
             <div className="space-y-2">
               <Label>Dashboard Auto-Refresh Interval (seconds)</Label>
               <p className="text-xs text-muted-foreground">
-                Controls how often dashboards silently refresh data in the background. Lower values mean more up-to-date data but increased network usage. Applies to all users in this organization.
+                Controls how often dashboards silently refresh data in the background.
               </p>
               <div className="flex items-center gap-3">
                 <Input
@@ -221,11 +227,7 @@ export function GeneralSettings() {
                   onChange={(e) => {
                     const raw = Number(e.target.value);
                     const safeValue = Number.isFinite(raw) ? Math.min(600, Math.max(10, raw)) : 300;
-
-                    setSettings((p) => ({
-                      ...p,
-                      autoRefreshInterval: safeValue,
-                    }));
+                    setSettings((p) => ({ ...p, autoRefreshInterval: safeValue }));
                   }}
                   className="w-28"
                 />
@@ -238,8 +240,13 @@ export function GeneralSettings() {
         </CardContent>
       </Card>
 
-      <div className="flex justify-end">
-        <Button onClick={handleSave} disabled={isSaving} className="gap-2">
+      <div className="flex items-center justify-end gap-3">
+        {isDirty && (
+          <Badge variant="outline" className="text-amber-600 border-amber-500/30">
+            Unsaved changes
+          </Badge>
+        )}
+        <Button onClick={handleSave} disabled={isSaving || !isDirty} className="gap-2">
           {isSaving ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -248,7 +255,7 @@ export function GeneralSettings() {
           ) : (
             <>
               <Save className="w-4 h-4" />
-              Save Settings
+              {isDirty ? "Save Settings" : "Saved"}
             </>
           )}
         </Button>
