@@ -34,7 +34,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { EntitlementGate } from "@/components/EntitlementGate";
 import { PartCatalogManager } from "@/components/settings/PartCatalogManager";
 import { MachineProfileMarketplace } from "@/components/station/MachineProfileMarketplace";
-
+import { SmartAlertSettings } from "@/components/alerts/SmartAlertSettings";
+import { useSmartAlerts } from "@/hooks/useSmartAlerts";
 function DeveloperOnlyPlaceholder({ feature }: { feature: string }) {
   return (
     <Card className="border-dashed border-muted-foreground/30">
