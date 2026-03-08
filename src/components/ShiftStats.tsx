@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { mockStations, mockHandoffRecords } from "@/lib/mockData";
 import { useMemo } from "react";
+import { getStatusFromJobState } from "@/components/dashboard/stationStatus";
 
 export function ShiftStats() {
   const { user } = useAuth();
