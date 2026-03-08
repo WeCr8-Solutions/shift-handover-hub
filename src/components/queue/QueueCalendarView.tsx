@@ -261,14 +261,24 @@ export function QueueCalendarView({ items, onItemClick }: QueueCalendarViewProps
                           <span className="text-xs text-muted-foreground">
                             {format(day, "EEE")}
                           </span>
-                          <span
-                            className={cn(
-                              "text-sm font-medium",
-                              isToday && "bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center"
+                          <div className="flex items-center gap-1">
+                            {dayLoad > 0 && (
+                              <span className={cn(
+                                "text-[9px] font-medium px-1 rounded",
+                                dayLoad > 480 ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"
+                              )}>
+                                {Math.round(dayLoad / 60)}h
+                              </span>
                             )}
-                          >
-                            {format(day, "d")}
-                          </span>
+                            <span
+                              className={cn(
+                                "text-sm font-medium",
+                                isToday && "bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center"
+                              )}
+                            >
+                              {format(day, "d")}
+                            </span>
+                          </div>
                         </div>
                       </CardHeader>
                       <CardContent className="p-2">
