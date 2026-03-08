@@ -83,6 +83,7 @@ export function QueueItemDetailDialog({
       loadComments();
       loadHistory();
       loadRouting();
+      loadUserNames();
     }
   }, [item, open]);
 
