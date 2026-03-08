@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Loader2, Save, Building2, Users, Crown, Mail, Shield, Flag } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -25,7 +25,7 @@ type OrganizationFormData = {
 export function OrganizationSettings({ isDeveloper = false }: OrganizationSettingsProps) {
   const { toast } = useToast();
   const { user } = useAuth();
-  const { organization, organizationRole, teams = [], loading, refresh } = useUserOrganization();
+  const { organization, organizationRole, teams, loading, refresh } = useOrgContext();
 
   const [isSaving, setIsSaving] = useState(false);
   const [savingCompliance, setSavingCompliance] = useState(false);

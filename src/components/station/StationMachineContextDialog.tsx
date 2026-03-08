@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { useStationMachineAssignment } from "@/hooks/useStationMachineProfile";
 import { useDNCConnector } from "@/hooks/useDNCConnector";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -39,7 +39,7 @@ interface ManualProfile {
 }
 
 export function StationMachineContextDialog({ stationId, stationName, open, onOpenChange }: Props) {
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const orgId = organization?.id ?? null;
 
   dbg("render", { stationId, stationName, open, orgId });

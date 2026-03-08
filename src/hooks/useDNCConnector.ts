@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useUserOrganization } from "./useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { toast } from "sonner";
 
 export type DNCProtocol = "ftp" | "serial" | "ethernet" | "websocket" | "usb";
@@ -31,7 +31,7 @@ export interface DNCSession {
 
 export function useDNCConnector(stationId?: string) {
   const { user } = useAuth();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const [status, setStatus] = useState<DNCConnectionStatus>("disconnected");
   const [session, setSession] = useState<DNCSession | null>(null);
   const [connecting, setConnecting] = useState(false);

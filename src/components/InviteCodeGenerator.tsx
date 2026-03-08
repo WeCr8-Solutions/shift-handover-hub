@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrganizationInvites, OrganizationInvite } from "@/hooks/useOrganizationInvites";
-import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { useTeams } from "@/hooks/useTeams";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -81,7 +81,7 @@ interface InviteCodeGeneratorProps {
 }
 
 export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps = {}) {
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const { invites, loading, createInvite, deactivateInvite, deleteInvite } = useOrganizationInvites(
     organization?.id || null
   );

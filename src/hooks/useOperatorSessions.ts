@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useUserOrganization } from "./useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { toast } from "sonner";
 
 export interface OperatorSession {
@@ -26,7 +26,7 @@ export interface OperatorSession {
 
 export function useOperatorSessions() {
   const { user, profile } = useAuth();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const [activeSessions, setActiveSessions] = useState<OperatorSession[]>([]);
   const [loading, setLoading] = useState(true);
   const hasFetchedOnce = useRef(false);

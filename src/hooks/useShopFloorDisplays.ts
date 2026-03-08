@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useUserOrganization } from "./useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { useAuth } from "@/contexts/AuthContext";
 
 export interface ShopFloorDisplay {
@@ -25,7 +25,7 @@ export interface ShopFloorDisplay {
 
 export function useShopFloorDisplays() {
   const { user } = useAuth();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const [displays, setDisplays] = useState<ShopFloorDisplay[]>([]);
   const [loading, setLoading] = useState(true);
 

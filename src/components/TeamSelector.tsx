@@ -1,6 +1,6 @@
 import React from "react";
 import { useCurrentTeam } from "@/contexts/TeamContext";
-import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 import {
   Select,
   SelectContent,
@@ -13,7 +13,7 @@ import { Users, Factory } from "lucide-react";
 export const TeamSelector = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   function TeamSelector(props, ref) {
     const { currentTeam, setCurrentTeam, teams, loading } = useCurrentTeam();
-    const { organization } = useUserOrganization();
+    const { organization } = useOrgContext();
 
     if (loading) {
       return (

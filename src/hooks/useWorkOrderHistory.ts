@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { QueueItem } from "@/hooks/useQueue";
 
 export interface WorkOrderLinkedData {
@@ -103,7 +103,7 @@ export interface WorkOrderHistoryFilters {
 
 export function useWorkOrderHistory(filters?: WorkOrderHistoryFilters) {
   const { user } = useAuth();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const [workOrders, setWorkOrders] = useState<WorkOrderWithLinkedData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

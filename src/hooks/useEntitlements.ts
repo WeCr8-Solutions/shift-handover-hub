@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useUserOrganization } from "./useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 
 interface Features {
   handoff_hub: boolean;
@@ -44,7 +44,7 @@ const DEFAULT_ENTITLEMENTS: Entitlements = {
 };
 
 export function useEntitlements() {
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const [entitlements, setEntitlements] = useState<Entitlements>(DEFAULT_ENTITLEMENTS);
   const [loading, setLoading] = useState(true);
 

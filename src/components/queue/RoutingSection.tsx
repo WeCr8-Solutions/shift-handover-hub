@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
-import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { RoutingStepInput } from "@/hooks/useQueue";
 import { Route, Plus, Trash2, FileText, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
@@ -67,7 +67,7 @@ interface RoutingSectionProps {
 }
 
 export function RoutingSection({ steps, onChange, stations }: RoutingSectionProps) {
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const [templates, setTemplates] = useState<RoutingTemplate[]>([]);
   const [templatesLoading, setTemplatesLoading] = useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");

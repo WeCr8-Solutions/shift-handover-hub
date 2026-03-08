@@ -13,7 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { QueueItem, QueueItemComment, QueueItemHistory, QueueStatus, QueuePriority, UpdateQueueItemInput, RoutingStepInput } from "@/hooks/useQueue";
 import { useStations } from "@/hooks/useStations";
 import { useCurrentTeam } from "@/contexts/TeamContext";
-import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { useToast } from "@/hooks/use-toast";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { useNCR } from "@/hooks/useNCR";
@@ -125,7 +125,7 @@ export function QueueItemDetailDialog({
   const navigate = useNavigate();
   const { toast } = useToast();
   const { currentTeam } = useCurrentTeam();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const { stations } = useStations(currentTeam?.id, organization?.id);
   const { hasAdminAccess } = useAdminAccess();
   const { ncrs, createNCR, uploadNCRImage } = useNCR(item ? { queue_item_id: item.id } : undefined);

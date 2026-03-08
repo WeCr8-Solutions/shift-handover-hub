@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { useUserOrganization } from '@/hooks/useUserOrganization';
+import { useOrgContext } from '@/contexts/OrgContext';
 import { ParsedExcelData, parseExcelFile, ParseResult } from '@/lib/excelTemplates';
 import { useToast } from '@/hooks/use-toast';
 
@@ -25,7 +25,7 @@ export interface UploadResult {
 
 export function useBulkUpload() {
   const { user } = useAuth();
-  const { organization, organizationRole } = useUserOrganization();
+  const { organization, organizationRole } = useOrgContext();
   const { toast } = useToast();
   const [progress, setProgress] = useState<UploadProgress>({
     stage: 'idle',

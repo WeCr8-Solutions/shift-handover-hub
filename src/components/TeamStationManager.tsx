@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useStations, Station } from "@/hooks/useStations";
 import { useTeams } from "@/hooks/useTeams";
-import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { getSafeErrorMessage } from "@/lib/errorHandling";
 import { supabase } from "@/integrations/supabase/client";
 import { useStationMachineAssignment } from "@/hooks/useStationMachineProfile";
@@ -376,7 +376,7 @@ export function TeamStationManager({
 }: TeamStationManagerProps) {
   const { stations, loading, createStation, refreshStations } = useStations(teamId);
   const { teams } = useTeams();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const { toast } = useToast();
 
   const [showAddForm, setShowAddForm] = useState(false);

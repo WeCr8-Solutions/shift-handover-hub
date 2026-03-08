@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useUserOrganization } from "./useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import {
   computeLoadBalancerScores,
@@ -18,7 +18,7 @@ import {
  * Fetches live station data and computes scored recommendations for a given part.
  */
 export function useLoadBalancer() {
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const { currentTeam } = useCurrentTeam();
   const [result, setResult] = useState<LoadBalancerResult | null>(null);
   const [loading, setLoading] = useState(false);

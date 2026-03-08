@@ -4,7 +4,7 @@ import {
   useStationMachineAssignment,
   MachineLibraryEntry,
 } from "@/hooks/useStationMachineProfile";
-import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -44,7 +44,7 @@ interface Props {
 
 export function MachineProfileMarketplace({ stationId, stationName, open, onOpenChange }: Props) {
   const inline = open === undefined;
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const orgId = organization?.id || null;
   const { library, purchases, loading: libLoading, isPurchased, purchaseMachine, verifyPurchase, refreshPurchases } =
     useMachineLibrary(orgId);

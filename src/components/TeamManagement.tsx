@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTeams, useTeamMembers, Team } from "@/hooks/useTeams";
 import { useAuth } from "@/contexts/AuthContext";
-import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { useStations, Station } from "@/hooks/useStations";
 import { Button } from "@/components/ui/button";
@@ -30,7 +30,7 @@ import { SafeDeleteDialog } from "./ui/safe-delete-dialog";
 
 export function TeamManagement() {
   const { user } = useAuth();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const { isOrgAdmin, isAdmin } = useAdminAccess();
   const { teams, loading, createTeam, updateTeam, deleteTeam } = useTeams();
   const { stations: allStations, refreshStations } = useStations(undefined, organization?.id);

@@ -14,7 +14,7 @@ import {
 import { Database, Loader2, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 
 interface SeedResult {
   operators: number;
@@ -26,7 +26,7 @@ export function SeedTestDataButton() {
   const [isSeeding, setIsSeeding] = useState(false);
   const [result, setResult] = useState<SeedResult | null>(null);
   const { toast } = useToast();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
 
   const seedTestData = async () => {
     if (!organization?.id) {

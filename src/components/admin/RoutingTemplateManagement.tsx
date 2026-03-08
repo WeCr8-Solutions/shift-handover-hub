@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -114,7 +114,7 @@ export function RoutingTemplateManagement({ isAdmin, canManageTemplates }: Routi
   // Allow org owners, org admins, supervisors, and platform admins to manage templates
   const canManage = canManageTemplates ?? isAdmin;
   const { user } = useAuth();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const { toast } = useToast();
   
   const [templates, setTemplates] = useState<RoutingTemplate[]>([]);
