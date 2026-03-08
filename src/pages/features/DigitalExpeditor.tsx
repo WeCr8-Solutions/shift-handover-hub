@@ -5,7 +5,7 @@ import { ArrowRight, CheckCircle2, Zap, Target, Eye, AlertTriangle, Clock, Route
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MockExpeditorDashboard } from "@/components/marketing/MockExpeditorDashboard";
-
+import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 
