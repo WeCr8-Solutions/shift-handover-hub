@@ -58,6 +58,7 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <TeamProvider>
+          <ActAsProvider>
           <OnboardingProvider>
             <TooltipProvider>
               <Toaster />
@@ -67,6 +68,7 @@ const App = () => (
                   {/* ITAR compliance gates — both are no-ops when not required by the org */}
                   <MFAEnrollmentGate>
                   <USPersonDeclarationGate>
+                  <ActAsBanner />
                   <GuidedTour />
                   <WelcomeModal />
                   <Routes>
