@@ -93,7 +93,7 @@ export default function ManufacturingGuides() {
             </p>
           </div>
 
-          
+          <AdPlacement format="horizontal" className="mb-8" />
 
           <div className="grid md:grid-cols-2 gap-6">
             {guides.map((guide) => {
