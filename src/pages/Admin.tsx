@@ -179,6 +179,10 @@ export default function Admin() {
                 <BellRing className="w-4 h-4" />
                 <span className="hidden sm:inline">Alerts</span>
               </TabsTrigger>
+              <TabsTrigger value="displays" className="gap-2">
+                <Tv className="w-4 h-4" />
+                <span className="hidden sm:inline">Displays</span>
+              </TabsTrigger>
             </div>
             
             
