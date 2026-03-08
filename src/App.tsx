@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { TeamProvider } from "@/contexts/TeamContext";
+import { OrgProvider } from "@/contexts/OrgContext";
 import { ActAsProvider } from "@/contexts/ActAsContext";
 import { OnboardingProvider, GuidedTour, WelcomeModal } from "@/components/onboarding";
 import { AnalyticsProvider } from "@/components/AnalyticsProvider";
