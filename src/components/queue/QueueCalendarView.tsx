@@ -190,8 +190,10 @@ export function QueueCalendarView({ items, onItemClick }: QueueCalendarViewProps
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
 
-  // Items without due dates
-  const unscheduledItems = items.filter((item) => !item.due_date && item.status !== "completed");
+  // Items without any dates at all
+  const unscheduledItems = items.filter((item) =>
+    !item.due_date && !item.scheduled_start && !item.scheduled_end && item.status !== "completed"
+  );
 
   return (
     <div className="space-y-4">
