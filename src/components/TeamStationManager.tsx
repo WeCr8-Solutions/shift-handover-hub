@@ -40,6 +40,7 @@ import {
   Pencil,
   Trash2,
   ArrowRightLeft,
+  Cpu,
 } from "lucide-react";
 import { StationMachineContextDialog } from "@/components/station/StationMachineContextDialog";
 import { useToast } from "@/hooks/use-toast";
