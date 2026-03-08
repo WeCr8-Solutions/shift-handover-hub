@@ -181,6 +181,15 @@ export function OperatorStationPanel({
         nextStep: nextStep || null,
         totalSteps: steps.length,
         currentStepNumber: curIdx >= 0 ? curIdx + 1 : 0,
+        allSteps: steps.map((s: any) => ({
+          id: s.id,
+          station_id: s.station_id,
+          status: s.status,
+          step_number: s.step_number,
+          operation_name: s.operation_name || `Step ${s.step_number}`,
+          operation_type: s.operation_type || 'internal',
+          stations: s.stations,
+        })),
       });
     };
     fetchRouting();
