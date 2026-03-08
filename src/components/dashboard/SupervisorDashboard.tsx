@@ -8,23 +8,19 @@ import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { useBackgroundRefresh } from "@/hooks/useBackgroundRefresh";
 import { useOrgRefreshInterval } from "@/hooks/useOrgRefreshInterval";
 import { RefreshIndicator } from "./RefreshIndicator";
+import { SmartAlertPanel } from "@/components/alerts/SmartAlertPanel";
+import { useSmartAlerts } from "@/hooks/useSmartAlerts";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Factory,
   AlertTriangle,
   Clock,
   ArrowRight,
-  Lightbulb,
   Package,
   Plus,
-  ListTodo,
   Eye,
   Monitor,
   Users,
-  Pause,
-  Timer,
-  Zap,
-  GitBranch,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -88,126 +84,10 @@ export function SupervisorDashboard({
   // Status filter: click a KPI card to filter station list + analytics
   const [statusFilter, setStatusFilter] = useState<StatusLabel | "all">("all");
 
-  // Work Order alerts for dashboard sidebar
-  const [woAlerts, setWoAlerts] = useState<{
-    overdue: { id: string; title: string; work_order: string | null; due_date: string; priority: string }[];
-    onHold: { id: string; title: string; work_order: string | null; priority: string }[];
-    stale: { id: string; title: string; work_order: string | null; updated_at: string; status: string; days_stale: number }[];
-    overTime: { id: string; title: string; work_order: string | null; started_at: string; estimated_duration: number; pct_over: number }[];
-    bottleneckStations: { station_name: string; station_id: string; wo_count: number }[];
-    highPriorityWaiting: { id: string; title: string; work_order: string | null; priority: string }[];
-    unassigned: number;
-  }>({ overdue: [], onHold: [], stale: [], overTime: [], bottleneckStations: [], highPriorityWaiting: [], unassigned: 0 });
-
-  useEffect(() => {
-    if (!organization?.id) return;
-    const fetchWOAlerts = async () => {
-      const now = new Date();
-      const twoDaysAgo = new Date(now.getTime() - 2 * 86400000).toISOString();
-
-      const [overdueRes, holdRes, unassignedRes, staleRes, highPriorityRes, inProgressRes, bottleneckRes] = await Promise.all([
-        supabase
-          .from("queue_items")
-          .select("id, title, work_order, due_date, priority")
-          .eq("organization_id", organization.id)
-          .not("status", "in", '("completed","cancelled")')
-          .not("due_date", "is", null)
-          .lt("due_date", now.toISOString())
-          .order("due_date", { ascending: true })
-          .limit(5),
-        supabase
-          .from("queue_items")
-          .select("id, title, work_order, priority")
-          .eq("organization_id", organization.id)
-          .eq("status", "on_hold")
-          .order("created_at", { ascending: false })
-          .limit(5),
-        supabase
-          .from("queue_items")
-          .select("id", { count: "exact", head: true })
-          .eq("organization_id", organization.id)
-          .is("station_id", null)
-          .not("status", "in", '("completed","cancelled")'),
-        // Stale: not updated in 2+ days
-        supabase
-          .from("queue_items")
-          .select("id, title, work_order, updated_at, status")
-          .eq("organization_id", organization.id)
-          .not("status", "in", '("completed","cancelled")')
-          .lt("updated_at", twoDaysAgo)
-          .order("updated_at", { ascending: true })
-          .limit(5),
-        // High priority waiting in queued
-        supabase
-          .from("queue_items")
-          .select("id, title, work_order, priority")
-          .eq("organization_id", organization.id)
-          .eq("status", "queued")
-          .in("priority", ["critical", "urgent"])
-          .order("created_at", { ascending: true })
-          .limit(5),
-        // Over estimated time: in_progress with started_at and estimated_duration
-        supabase
-          .from("queue_items")
-          .select("id, title, work_order, started_at, estimated_duration")
-          .eq("organization_id", organization.id)
-          .eq("status", "in_progress")
-          .not("started_at", "is", null)
-          .not("estimated_duration", "is", null)
-          .limit(20),
-        // Bottleneck: stations with multiple queued/in_progress WOs
-        supabase
-          .from("queue_items")
-          .select("station_id, stations:station_id ( name )")
-          .eq("organization_id", organization.id)
-          .in("status", ["queued", "in_progress"])
-          .not("station_id", "is", null),
-      ]);
-
-      // Process over-time WOs
-      const overTimeItems = (inProgressRes.data || [])
-        .map((wo: any) => {
-          if (!wo.started_at || !wo.estimated_duration) return null;
-          const elapsedMs = now.getTime() - new Date(wo.started_at).getTime();
-          const estimatedMs = wo.estimated_duration * 60000;
-          if (elapsedMs <= estimatedMs) return null;
-          return { ...wo, pct_over: Math.round((elapsedMs / estimatedMs) * 100) - 100 };
-        })
-        .filter(Boolean)
-        .sort((a: any, b: any) => b.pct_over - a.pct_over)
-        .slice(0, 5);
-
-      // Process stale items with days count
-      const staleItems = (staleRes.data || []).map((wo: any) => ({
-        ...wo,
-        days_stale: Math.floor((now.getTime() - new Date(wo.updated_at).getTime()) / 86400000),
-      }));
-
-      // Process bottleneck stations
-      const stationCounts: Record<string, { name: string; id: string; count: number }> = {};
-      (bottleneckRes.data || []).forEach((wo: any) => {
-        const sid = wo.station_id;
-        const sName = wo.stations?.name || "Unknown";
-        if (!stationCounts[sid]) stationCounts[sid] = { name: sName, id: sid, count: 0 };
-        stationCounts[sid].count++;
-      });
-      const bottleneckStations = Object.values(stationCounts)
-        .filter((s) => s.count >= 3)
-        .sort((a, b) => b.count - a.count)
-        .map((s) => ({ station_name: s.name, station_id: s.id, wo_count: s.count }));
-
-      setWoAlerts({
-        overdue: (overdueRes.data || []) as any,
-        onHold: (holdRes.data || []) as any,
-        stale: staleItems as any,
-        overTime: overTimeItems as any,
-        bottleneckStations,
-        highPriorityWaiting: (highPriorityRes.data || []) as any,
-        unassigned: unassignedRes.count || 0,
-      });
-    };
-    fetchWOAlerts();
-  }, [organization?.id, lastRefreshedAt]);
+  // Smart alerts — shared hook replaces inline WO alert queries
+  const { alerts: smartAlerts, loading: smartAlertsLoading } = useSmartAlerts({
+    refreshToken: lastRefreshedAt,
+  });
 
   const orgName = organization?.name || "Organization";
   const scopeLabel = currentTeam?.name || `${orgName} · All Teams`;
@@ -722,147 +602,12 @@ export function SupervisorDashboard({
             </div>
           </div>
 
-          {/* Work Order Alerts */}
-          {(woAlerts.overdue.length > 0 || woAlerts.onHold.length > 0 || woAlerts.stale.length > 0 || woAlerts.overTime.length > 0 || woAlerts.highPriorityWaiting.length > 0 || woAlerts.bottleneckStations.length > 0 || woAlerts.unassigned > 0) && (
-            <div className="bg-card border border-border rounded-lg overflow-hidden">
-              <div className="px-4 py-3 border-b border-border bg-secondary/30">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Package className="w-4 h-4 text-primary" />
-                    <span className="font-medium text-sm">Work Order Alerts</span>
-                  </div>
-                  <Badge variant="outline" className="text-[9px]">
-                    {woAlerts.overdue.length + woAlerts.onHold.length + woAlerts.stale.length + woAlerts.overTime.length + woAlerts.highPriorityWaiting.length + woAlerts.bottleneckStations.length + (woAlerts.unassigned > 0 ? 1 : 0)} alert{woAlerts.overdue.length + woAlerts.onHold.length + woAlerts.stale.length + woAlerts.overTime.length + woAlerts.highPriorityWaiting.length + woAlerts.bottleneckStations.length + (woAlerts.unassigned > 0 ? 1 : 0) !== 1 ? "s" : ""}
-                  </Badge>
-                </div>
-              </div>
-              <div className="p-3 space-y-2 max-h-[400px] overflow-y-auto">
-                {/* High Priority Waiting */}
-                {woAlerts.highPriorityWaiting.map((wo) => (
-                  <button
-                    key={`hp-${wo.id}`}
-                    className="w-full p-2 rounded-md bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 transition-colors text-left"
-                    onClick={() => navigate(`/queue?item=${wo.id}`)}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Zap className="w-3 h-3 text-red-500 flex-shrink-0 animate-pulse" />
-                      <span className="text-xs font-medium truncate">{wo.work_order || wo.title}</span>
-                      <Badge variant="outline" className="text-[9px] px-1 py-0 ml-auto border-red-500/50 text-red-500">
-                        {wo.priority === "critical" ? "CRITICAL" : "URGENT"} WAITING
-                      </Badge>
-                    </div>
-                  </button>
-                ))}
-
-                {/* Overdue */}
-                {woAlerts.overdue.map((wo) => (
-                  <button
-                    key={`od-${wo.id}`}
-                    className="w-full p-2 rounded-md bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 transition-colors text-left"
-                    onClick={() => navigate(`/queue?item=${wo.id}`)}
-                  >
-                    <div className="flex items-center gap-2">
-                      <AlertTriangle className="w-3 h-3 text-red-500 flex-shrink-0" />
-                      <span className="text-xs font-medium truncate">{wo.work_order || wo.title}</span>
-                      <Badge variant="outline" className="text-[9px] px-1 py-0 ml-auto border-red-500/50 text-red-500">
-                        OVERDUE
-                      </Badge>
-                    </div>
-                  </button>
-                ))}
-
-                {/* Over Estimated Time */}
-                {woAlerts.overTime.map((wo: any) => (
-                  <button
-                    key={`ot-${wo.id}`}
-                    className="w-full p-2 rounded-md bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 transition-colors text-left"
-                    onClick={() => navigate(`/queue?item=${wo.id}`)}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Timer className="w-3 h-3 text-amber-500 flex-shrink-0" />
-                      <span className="text-xs font-medium truncate">{wo.work_order || wo.title}</span>
-                      <Badge variant="outline" className="text-[9px] px-1 py-0 ml-auto border-amber-500/50 text-amber-600">
-                        +{wo.pct_over}% OVER
-                      </Badge>
-                    </div>
-                  </button>
-                ))}
-
-                {/* On Hold */}
-                {woAlerts.onHold.map((wo) => (
-                  <button
-                    key={`oh-${wo.id}`}
-                    className="w-full p-2 rounded-md bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 transition-colors text-left"
-                    onClick={() => navigate(`/queue?item=${wo.id}`)}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Pause className="w-3 h-3 text-amber-500 flex-shrink-0" />
-                      <span className="text-xs font-medium truncate">{wo.work_order || wo.title}</span>
-                      <Badge variant="outline" className="text-[9px] px-1 py-0 ml-auto border-amber-500/50 text-amber-500">
-                        ON HOLD
-                      </Badge>
-                    </div>
-                  </button>
-                ))}
-
-                {/* Stale WOs */}
-                {woAlerts.stale.map((wo: any) => (
-                  <button
-                    key={`st-${wo.id}`}
-                    className={cn(
-                      "w-full p-2 rounded-md border hover:opacity-80 transition-colors text-left",
-                      wo.days_stale >= 5 ? "bg-red-500/10 border-red-500/30" : "bg-orange-500/10 border-orange-500/30",
-                    )}
-                    onClick={() => navigate(`/queue?item=${wo.id}`)}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Clock className={cn("w-3 h-3 flex-shrink-0", wo.days_stale >= 5 ? "text-red-500" : "text-orange-500")} />
-                      <span className="text-xs font-medium truncate">{wo.work_order || wo.title}</span>
-                      <Badge variant="outline" className={cn(
-                        "text-[9px] px-1 py-0 ml-auto",
-                        wo.days_stale >= 5 ? "border-red-500/50 text-red-500" : "border-orange-500/50 text-orange-500",
-                      )}>
-                        {wo.days_stale}d STALE
-                      </Badge>
-                    </div>
-                  </button>
-                ))}
-
-                {/* Bottleneck Stations */}
-                {woAlerts.bottleneckStations.map((s) => (
-                  <button
-                    key={`bn-${s.station_id}`}
-                    className="w-full p-2 rounded-md bg-orange-500/10 border border-orange-500/30 hover:bg-orange-500/20 transition-colors text-left"
-                    onClick={() => navigate(`/queue?station=${s.station_id}`)}
-                  >
-                    <div className="flex items-center gap-2">
-                      <GitBranch className="w-3 h-3 text-orange-500 flex-shrink-0" />
-                      <span className="text-xs font-medium truncate">{s.station_name}</span>
-                      <Badge variant="outline" className="text-[9px] px-1 py-0 ml-auto border-orange-500/50 text-orange-600">
-                        {s.wo_count} WOs QUEUED
-                      </Badge>
-                    </div>
-                  </button>
-                ))}
-
-                {/* Unassigned */}
-                {woAlerts.unassigned > 0 && (
-                  <button
-                    className="w-full p-2 rounded-md bg-muted/50 border border-border hover:bg-muted transition-colors text-left"
-                    onClick={() => navigate("/queue")}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Package className="w-3 h-3 text-muted-foreground flex-shrink-0" />
-                      <span className="text-xs text-muted-foreground">
-                        {woAlerts.unassigned} unassigned work order{woAlerts.unassigned !== 1 ? "s" : ""}
-                      </span>
-                      <ArrowRight className="w-3 h-3 text-muted-foreground ml-auto" />
-                    </div>
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
+          {/* Smart Alerts Panel */}
+          <SmartAlertPanel
+            alerts={smartAlerts}
+            loading={smartAlertsLoading}
+            variant="sidebar"
+          />
           {/* Recent Handoffs */}
           <div className="bg-card border border-border rounded-lg overflow-hidden">
             <div className="px-4 py-3 border-b border-border bg-secondary/30">

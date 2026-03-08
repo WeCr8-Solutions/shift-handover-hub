@@ -7,6 +7,7 @@ import {
   Settings2,
   Factory,
   Bell,
+  BellRing,
   Clock,
   Wrench,
   Building2,
@@ -33,7 +34,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { EntitlementGate } from "@/components/EntitlementGate";
 import { PartCatalogManager } from "@/components/settings/PartCatalogManager";
 import { MachineProfileMarketplace } from "@/components/station/MachineProfileMarketplace";
-
+import { SmartAlertSettings } from "@/components/alerts/SmartAlertSettings";
+import { useSmartAlerts } from "@/hooks/useSmartAlerts";
 function DeveloperOnlyPlaceholder({ feature }: { feature: string }) {
   return (
     <Card className="border-dashed border-muted-foreground/30">
@@ -57,6 +59,7 @@ export default function Settings() {
   const { loading: settingsLoading } = useAppSettings();
   const { isDeveloper, loading: accessLoading } = useAdminAccess();
   const { canManageBilling } = useTrialStatus();
+  const { thresholds, saveThresholds } = useSmartAlerts();
   const [activeTab, setActiveTab] = useState("general");
 
   const showBillingTab = isDeveloper || canManageBilling;
@@ -94,7 +97,7 @@ export default function Settings() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 lg:grid-cols-8">
+          <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 lg:grid-cols-9">
             <TabsTrigger
               value="general"
               className="border data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
@@ -154,6 +157,14 @@ export default function Settings() {
             </TabsTrigger>
 
             <TabsTrigger
+              value="alerts"
+              className="border data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            >
+              <BellRing className="mr-2 h-4 w-4" />
+              Alerts
+            </TabsTrigger>
+
+            <TabsTrigger
               value="onboarding"
               className="border data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
@@ -209,6 +220,10 @@ export default function Settings() {
 
           <TabsContent value="notifications">
             <NotificationSettings />
+          </TabsContent>
+
+          <TabsContent value="alerts">
+            <SmartAlertSettings thresholds={thresholds} onSave={saveThresholds} />
           </TabsContent>
 
           <TabsContent value="onboarding">

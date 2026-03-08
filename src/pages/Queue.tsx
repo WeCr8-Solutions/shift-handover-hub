@@ -8,6 +8,7 @@ import { useOperatorSessions } from "@/hooks/useOperatorSessions";
 import { useNCR } from "@/hooks/useNCR";
 import { useStations } from "@/hooks/useStations";
 import { useBackgroundRefresh } from "@/hooks/useBackgroundRefresh";
+import { useSmartAlerts } from "@/hooks/useSmartAlerts";
 import { useOrgRefreshInterval } from "@/hooks/useOrgRefreshInterval";
 import { RefreshIndicator } from "@/components/dashboard/RefreshIndicator";
 import { Header } from "@/components/Header";
@@ -21,6 +22,7 @@ import { QueueStatsCards } from "@/components/queue/QueueStatsCards";
 import { WorkOrderRoutingEditor } from "@/components/routing/WorkOrderRoutingEditor";
 import { OutsideProcessingManager } from "@/components/routing/OutsideProcessingManager";
 import { WorkOrderHistory } from "@/components/admin/WorkOrderHistory";
+import { SmartAlertPanel } from "@/components/alerts/SmartAlertPanel";
 import { NCRApprovalPanel } from "@/components/ncr/NCRApprovalPanel";
 import { QualityMetricsDashboard } from "@/components/ncr/QualityMetricsDashboard";
 import { Button } from "@/components/ui/button";
@@ -131,6 +133,12 @@ export default function Queue() {
       intervalMs: refreshIntervalMs,
       enabled: !!user,
     });
+
+  // Smart alerts for queue view
+  const { alerts: smartAlerts, loading: smartAlertsLoading } = useSmartAlerts({
+    stationId: filters.station_id,
+    refreshToken: lastRefreshedAt,
+  });
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -307,6 +315,15 @@ export default function Queue() {
 
           <TabsContent value="queue" className="mt-6 space-y-6">
             <QueueStatsCards stats={stats} />
+
+            {smartAlerts.length > 0 && (
+              <SmartAlertPanel
+                alerts={smartAlerts}
+                loading={smartAlertsLoading}
+                variant="full"
+                maxVisible={5}
+              />
+            )}
 
             <div className="flex items-center justify-between gap-4">
               <div data-tour="queue-filters">
