@@ -49,10 +49,7 @@ interface StationQuickActionsProps {
   className?: string;
 }
 
-export const StationQuickActions = React.forwardRef<
-  HTMLDivElement,
-  StationQuickActionsProps
->(({
+export function StationQuickActions({
   target,
   children,
   onViewDetail,
@@ -62,7 +59,7 @@ export const StationQuickActions = React.forwardRef<
   onRequestDelivery,
   onReportIssue,
   className,
-}, ref) => {
+}: StationQuickActionsProps) {
   const navigate = useNavigate();
 
   const handleViewDetail = () => {
