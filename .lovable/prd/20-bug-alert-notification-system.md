@@ -388,15 +388,19 @@ CREATE TABLE public.issue_attachments (
 | File | Purpose | Status |
 |------|---------|--------|
 | `src/hooks/useIssueReporter.ts` | Client-side log capture & RPC call | ✅ Working |
-| `src/hooks/useIssueDetail.ts` | Lazy detail fetch for single issue | ✅ NEW |
+| `src/hooks/useIssueDetail.ts` | Lazy detail fetch for single issue | ✅ Working |
+| `src/hooks/useMyIssues.ts` | Reporter's own issue history | ✅ NEW |
 | `src/components/IssueReportDialog.tsx` | User-facing report form | ✅ Working |
 | `src/components/admin/DevIssueQueue.tsx` | Dev triage queue | ✅ UPGRADED |
-| `src/components/admin/ConsoleLogViewer.tsx` | Filterable log viewer | ✅ NEW |
-| `src/components/admin/ErrorStackTrace.tsx` | Stack trace display | ✅ NEW |
-| `src/components/admin/EnvironmentContext.tsx` | Parsed metadata display | ✅ NEW |
-| `supabase/functions/report-issue/index.ts` | Edge function (orphaned) | ⚠️ Not called by client |
-| DB trigger: `queue_issue_for_devs()` | Auto-queue + notification insert | ⚠️ Notifications not processed |
-| DB table: `notification_queue` | Email/push notification backlog | ❌ No processor |
+| `src/components/admin/ConsoleLogViewer.tsx` | Filterable log viewer | ✅ Working |
+| `src/components/admin/ErrorStackTrace.tsx` | Stack trace display | ✅ Working |
+| `src/components/admin/EnvironmentContext.tsx` | Parsed metadata display | ✅ Working |
+| `src/components/admin/NotificationQueueStatus.tsx` | Queue status + manual trigger | ✅ NEW |
+| `src/components/settings/MyIssuesPanel.tsx` | Reporter issue history view | ✅ NEW |
+| `supabase/functions/process-notifications/index.ts` | Queue processor with Resend | ✅ NEW |
+| `supabase/functions/report-issue/index.ts` | Edge function (orphaned fallback) | ⚠️ Not called by client |
+| DB trigger: `queue_issue_for_devs()` | Auto-queue + notification insert | ✅ Working |
+| DB table: `notification_queue` | Email/push notification backlog | ✅ Processor deployed |
 
 ---
 
