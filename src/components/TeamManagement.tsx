@@ -33,9 +33,51 @@ export function TeamManagement() {
   const { organization } = useUserOrganization();
   const { isOrgAdmin, isAdmin } = useAdminAccess();
   const { teams, loading, createTeam, updateTeam, deleteTeam } = useTeams();
+  const { stations: allStations, refreshStations } = useStations(undefined, organization?.id);
   const { toast } = useToast();
-  const [stationRefreshKey, setStationRefreshKey] = useState(0);
-  const triggerStationRefresh = () => setStationRefreshKey((k) => k + 1);
+  const [optimisticStations, setOptimisticStations] = useState<Station[]>([]);
+  const [isUsingOptimisticStations, setIsUsingOptimisticStations] = useState(false);
+
+  useEffect(() => {
+    if (!isUsingOptimisticStations) {
+      setOptimisticStations(allStations);
+    }
+  }, [allStations, isUsingOptimisticStations]);
+
+  const stationsForDisplay = isUsingOptimisticStations ? optimisticStations : allStations;
+
+  const stationCountByTeam = useMemo(
+    () =>
+      stationsForDisplay.reduce<Record<string, number>>((acc, station) => {
+        if (!station.team_id) return acc;
+        acc[station.team_id] = (acc[station.team_id] || 0) + 1;
+        return acc;
+      }, {}),
+    [stationsForDisplay],
+  );
+
+  const applyOptimisticReassignment = (stationId: string, toTeamId: string) => {
+    setIsUsingOptimisticStations(true);
+    setOptimisticStations((prev) => {
+      const base = prev.length ? prev : allStations;
+      return base.map((station) =>
+        station.id === stationId ? { ...station, team_id: toTeamId } : station,
+      );
+    });
+  };
+
+  const rollbackOptimisticReassignment = (stationId: string, fromTeamId: string | null) => {
+    setOptimisticStations((prev) =>
+      prev.map((station) =>
+        station.id === stationId ? { ...station, team_id: fromTeamId } : station,
+      ),
+    );
+  };
+
+  const finalizeOptimisticReassignment = async () => {
+    await refreshStations();
+    setIsUsingOptimisticStations(false);
+  };
 
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
