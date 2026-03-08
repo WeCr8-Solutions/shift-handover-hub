@@ -104,6 +104,7 @@ interface SmartAlertCardProps {
   alert: SmartAlert;
   onClick?: (alert: SmartAlert) => void;
   compact?: boolean;
+  onQuickAction?: (action: string, target: QuickActionTarget) => void;
 }
 
 export function SmartAlertCard({ alert, onClick, compact = false }: SmartAlertCardProps) {
