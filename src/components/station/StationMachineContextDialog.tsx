@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Cpu, Wrench, ShoppingCart, CheckCircle2, Unlink, ShieldCheck, Loader2, Radio, Wifi, WifiOff } from "lucide-react";
-import { StationManufacturerAttach } from "./StationManufacturerAttach";
+import { MachineProfileMarketplace } from "./MachineProfileMarketplace";
 import { StationManualMachineEntry } from "./StationManualMachineEntry";
 import { useToast } from "@/hooks/use-toast";
 
@@ -396,7 +396,7 @@ export function StationMachineContextDialog({ stationId, stationName, open, onOp
       </Dialog>
 
       {/* Sub-dialogs */}
-      <StationManufacturerAttach
+      <MachineProfileMarketplace
         stationId={stationId}
         stationName={stationName}
         open={showLibrary}
