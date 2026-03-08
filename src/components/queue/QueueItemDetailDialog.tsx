@@ -21,6 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format, formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { QuantitySummaryCard } from "@/components/ncr/QuantitySummaryCard";
+import { Skeleton } from "@/components/ui/skeleton";
 import { CreateNCRDialog } from "@/components/ncr/CreateNCRDialog";
 import { NCRListView } from "@/components/ncr/NCRListView";
 import { 
