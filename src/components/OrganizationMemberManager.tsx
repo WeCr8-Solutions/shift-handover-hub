@@ -3,6 +3,7 @@ import { useOrganizationMembers, OrganizationMember } from "@/hooks/useOrganizat
 import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEmail } from "@/hooks/useEmail";
+import { useEntitlements } from "@/hooks/useEntitlements";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -125,6 +126,10 @@ export function OrganizationMemberManager() {
     removeAppRole,
   } = useOrganizationMembers(organization?.id || null);
   const { sendTeamInviteEmail } = useEmail();
+  const { limits, loading: entitlementsLoading } = useEntitlements();
+  const seatLimit = limits?.users ?? 1;
+  const seatsUsed = members.length;
+  const seatsAvailable = Math.max(0, seatLimit - seatsUsed);
   const { toast } = useToast();
 
   // ── Invite dialog state ──────────────────────────────────────────────────
@@ -316,6 +321,9 @@ export function OrganizationMemberManager() {
                 Organization Members
                 <Badge variant="secondary" className="ml-1 font-mono">
                   {members.length}
+                </Badge>
+                <Badge variant={seatsAvailable > 0 ? "outline" : "destructive"} className="ml-1 font-mono text-xs">
+                  {seatsUsed}/{seatLimit} seats
                 </Badge>
               </CardTitle>
               <CardDescription>
@@ -548,6 +556,7 @@ export function OrganizationMemberManager() {
                   <TableHead>Org Role</TableHead>
                   <TableHead>App Roles</TableHead>
                   <TableHead>Teams</TableHead>
+                  <TableHead>Seat</TableHead>
                   <TableHead>Joined</TableHead>
                   {isOrgAdmin && <TableHead className="w-12" />}
                 </TableRow>
@@ -621,6 +630,13 @@ export function OrganizationMemberManager() {
                             <span className="text-xs text-muted-foreground">—</span>
                           )}
                         </div>
+                      </TableCell>
+                      {/* Seat */}
+                      <TableCell>
+                        <Badge variant="outline" className="gap-1 text-xs bg-primary/10 text-primary border-primary/20">
+                          <CheckCircle className="w-3 h-3" />
+                          Assigned
+                        </Badge>
                       </TableCell>
 
                       {/* Joined */}
@@ -696,6 +712,50 @@ export function OrganizationMemberManager() {
                     </TableRow>
                   );
                 })}
+                {/* Unassigned seat rows */}
+                {seatsAvailable > 0 && Array.from({ length: Math.min(seatsAvailable, 3) }).map((_, i) => (
+                  <TableRow key={`empty-seat-${i}`} className="opacity-50">
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-9 w-9 shrink-0">
+                          <AvatarFallback className="bg-muted text-muted-foreground text-xs">?</AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="text-sm text-muted-foreground italic">Open seat</p>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell><span className="text-xs text-muted-foreground">—</span></TableCell>
+                    <TableCell><span className="text-xs text-muted-foreground">—</span></TableCell>
+                    <TableCell><span className="text-xs text-muted-foreground">—</span></TableCell>
+                    <TableCell>
+                      {isOrgAdmin ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-1 text-xs h-7"
+                          onClick={() => setShowInviteDialog(true)}
+                        >
+                          <UserPlus className="w-3 h-3" />
+                          Invite
+                        </Button>
+                      ) : (
+                        <Badge variant="outline" className="gap-1 text-xs text-muted-foreground">
+                          Unassigned
+                        </Badge>
+                      )}
+                    </TableCell>
+                    <TableCell><span className="text-xs text-muted-foreground">—</span></TableCell>
+                    {isOrgAdmin && <TableCell />}
+                  </TableRow>
+                ))}
+                {seatsAvailable > 3 && (
+                  <TableRow className="opacity-50">
+                    <TableCell colSpan={isOrgAdmin ? 7 : 6} className="text-center text-xs text-muted-foreground">
+                      +{seatsAvailable - 3} more open seat{seatsAvailable - 3 > 1 ? "s" : ""} available
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           )}
