@@ -33,6 +33,9 @@ interface StationData {
   name: string;
   is_active: boolean;
   team_id: string | null;
+  work_center?: string;
+  work_center_type?: string;
+  team?: { id: string; name: string } | null;
   current_status?: {
     current_job_state: string | null;
     current_operator_name: string | null;
