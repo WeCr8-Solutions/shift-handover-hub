@@ -42,6 +42,9 @@ import {
   Trash2,
   ArrowRightLeft,
   Cpu,
+  Wifi,
+  WifiOff,
+  Radio,
 } from "lucide-react";
 import { StationMachineContextDialog } from "@/components/station/StationMachineContextDialog";
 import { useToast } from "@/hooks/use-toast";
