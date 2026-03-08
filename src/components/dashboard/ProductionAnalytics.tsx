@@ -1,5 +1,6 @@
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
+import { RefreshIndicator } from "./RefreshIndicator";
 import { Button } from "@/components/ui/button";
 import {
   BarChart,
@@ -16,7 +17,7 @@ import {
   Area,
   Legend,
 } from "recharts";
-import { BarChart3, PieChart as PieChartIcon, TrendingUp, Filter, Activity, RefreshCw, Users, Wrench } from "lucide-react";
+import { BarChart3, PieChart as PieChartIcon, TrendingUp, Filter, Activity, Users, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Use shared status configuration
@@ -65,7 +66,10 @@ interface HandoffRecord {
 interface ProductionAnalyticsProps {
   stations: StationData[];
   handoffs: HandoffRecord[];
-  refreshIntervalMs?: number; // Org-configurable: 300000 = 5min
+  /** Optional: parent-controlled refresh state */
+  isRefreshing?: boolean;
+  lastRefreshedAt?: Date | null;
+  onRefresh?: () => void;
 }
 
 type ShiftFilter = "all" | "Day" | "Swing" | "Night";
@@ -74,31 +78,12 @@ type ChartView = "output" | "status" | "team" | "workcenter" | "trend";
 export function ProductionAnalytics({
   stations,
   handoffs,
-  refreshIntervalMs = 300000, // Default 5 minutes
+  isRefreshing = false,
+  lastRefreshedAt = null,
+  onRefresh,
 }: ProductionAnalyticsProps) {
   const [shiftFilter, setShiftFilter] = useState<ShiftFilter>("all");
   const [chartView, setChartView] = useState<ChartView>("output");
-  const [refreshKey, setRefreshKey] = useState(0);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  // Auto-refresh logic (org-controlled interval)
-  useEffect(() => {
-    if (refreshIntervalMs <= 0) return;
-
-    const interval = setInterval(() => {
-      setRefreshKey((prev) => prev + 1);
-    }, refreshIntervalMs);
-
-    return () => clearInterval(interval);
-  }, [refreshIntervalMs]);
-
-  // Manual refresh
-  const refreshData = useCallback(async () => {
-    setIsRefreshing(true);
-    setRefreshKey((prev) => prev + 1);
-    // Reset spinner after 1s (or use promise if parent fetch returns)
-    setTimeout(() => setIsRefreshing(false), 1000);
-  }, []);
 
   // Reduced motion (SSR-safe now via effect)
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
@@ -260,17 +245,14 @@ export function ProductionAnalytics({
           <Badge variant="outline" className="text-[10px]">
             Live
           </Badge>
-          {/* Refresh Button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={refreshData}
-            disabled={isRefreshing}
-            className="h-7 px-2"
-            title="Refresh data"
-          >
-            <RefreshCw className={cn("w-3 h-3", isRefreshing && "animate-spin")} />
-          </Button>
+          {onRefresh && (
+            <RefreshIndicator
+              isRefreshing={isRefreshing}
+              lastRefreshedAt={lastRefreshedAt}
+              onRefresh={onRefresh}
+              className="h-7 w-7"
+            />
+          )}
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           {/* Shift Filter */}

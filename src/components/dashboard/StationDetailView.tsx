@@ -8,7 +8,8 @@ import { useHandoffRecords } from "@/hooks/useStations";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Monitor, Loader2 } from "lucide-react";
+import { ArrowLeft, Monitor } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -94,10 +95,15 @@ export function StationDetailView({ stationId, stationName, onBack }: StationDet
           </Badge>
         </div>
 
-        {/* Loading state */}
-        <div className="flex items-center justify-center py-20" role="status" aria-label="Loading station details">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          <span className="ml-3 text-muted-foreground">Loading station details...</span>
+        {/* Skeleton loading state */}
+        <div className="space-y-4">
+          <Skeleton className="h-10 w-full rounded-lg" />
+          <div className="grid grid-cols-2 gap-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-24 rounded-lg" />
+            ))}
+          </div>
+          <Skeleton className="h-48 w-full rounded-lg" />
         </div>
       </div>
     );

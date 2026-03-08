@@ -11,6 +11,7 @@ import { getCurrentShift } from "@/lib/mockData";
 import { workCenterIcons, workCenterColors, getCategoryForType } from "@/lib/workCenterIcons";
 import { WorkCenterType } from "@/types/handoff";
 import { LogIn, Clock, MapPin, Loader2, Circle, Search, X, CheckSquare, Square } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 
@@ -98,8 +99,12 @@ export function StationCheckIn({ onCheckIn }: StationCheckInProps) {
 
   if (stationsLoading) {
     return (
-      <div className="flex items-center justify-center py-20" role="status" aria-label="Loading stations">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="space-y-4 py-6" role="status" aria-label="Loading stations">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-20 rounded-lg" />
+          ))}
+        </div>
       </div>
     );
   }

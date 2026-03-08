@@ -592,7 +592,13 @@ export function SupervisorDashboard({
       </div>
 
       {/* Production Analytics Charts */}
-      <ProductionAnalytics stations={dbStations} handoffs={dbRecords} />
+      <ProductionAnalytics
+        stations={dbStations}
+        handoffs={dbRecords}
+        isRefreshing={isRefreshing}
+        lastRefreshedAt={lastRefreshedAt}
+        onRefresh={handleManualRefresh}
+      />
     </div>
   );
 }
