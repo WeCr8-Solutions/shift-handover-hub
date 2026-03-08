@@ -32,9 +32,11 @@ interface QueueItemHeaderProps {
   assignedStation: Station | null;
   isOverdue: boolean;
   elapsedTime: string | null;
+  assignedUserName?: string | null;
+  createdByName?: string | null;
 }
 
-export function QueueItemHeader({ item, assignedStation, isOverdue, elapsedTime }: QueueItemHeaderProps) {
+export function QueueItemHeader({ item, assignedStation, isOverdue, elapsedTime, assignedUserName, createdByName }: QueueItemHeaderProps) {
   const isQuote = item.item_type === "quote";
   const isWorkOrder = item.item_type === "work_order";
 
