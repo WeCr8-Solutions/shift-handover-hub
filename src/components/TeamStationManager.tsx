@@ -164,6 +164,7 @@ export function TeamStationManager({ teamId, teamName, open, onOpenChange, onCom
     } else {
       toast({ title: "Station deleted", description: `${station.name} has been removed.` });
       refreshStations();
+      onStationChange?.();
     }
   };
 
