@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
+import { useIssueDetail } from "@/hooks/useIssueDetail";
 import {
   Card,
   CardContent,
@@ -53,6 +54,9 @@ import {
   Loader2,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { ConsoleLogViewer } from "./ConsoleLogViewer";
+import { ErrorStackTrace } from "./ErrorStackTrace";
+import { EnvironmentContext } from "./EnvironmentContext";
 
 interface DevQueueItem {
   id: string;
@@ -122,6 +126,11 @@ export function DevIssueQueue() {
   const [updating, setUpdating] = useState<string | null>(null);
   const [filter, setFilter] = useState<string>("active");
   const [notes, setNotes] = useState("");
+
+  // Lazy-fetch full diagnostic data only when detail dialog is open
+  const { issue: issueDetail, loading: detailLoading } = useIssueDetail(
+    detailOpen && selectedItem ? selectedItem.issue_id : null
+  );
 
   const fetchQueue = async () => {
     try {
@@ -613,7 +622,7 @@ export function DevIssueQueue() {
 
       {/* Detail Dialog */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Badge className={`${priorityColors[selectedItem?.priority || 3]} text-white`}>
@@ -624,54 +633,78 @@ export function DevIssueQueue() {
             <DialogDescription>
               Reported {selectedItem && formatDistanceToNow(new Date(selectedItem.created_at), { addSuffix: true })}
               {selectedItem?.issue.reporter_display_name && ` by ${selectedItem.issue.reporter_display_name}`}
+              {selectedItem?.issue.reporter_email && ` (${selectedItem.issue.reporter_email})`}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
-            {selectedItem?.issue.description && (
-              <div>
-                <h4 className="text-sm font-medium mb-1">Description</h4>
-                <p className="text-sm text-muted-foreground">{selectedItem.issue.description}</p>
-              </div>
-            )}
-
-            {selectedItem?.issue.error_message && (
-              <div>
-                <h4 className="text-sm font-medium mb-1 flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 text-red-500" />
-                  Error
-                </h4>
-                <pre className="text-xs bg-muted p-3 rounded-lg overflow-x-auto">
-                  {selectedItem.issue.error_message}
-                </pre>
-              </div>
-            )}
-
-            {selectedItem?.issue.page_url && (
-              <div>
-                <h4 className="text-sm font-medium mb-1">Page URL</h4>
-                <a 
-                  href={selectedItem.issue.page_url} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-sm text-primary hover:underline flex items-center gap-1"
-                >
-                  {selectedItem.issue.page_url}
-                  <ExternalLink className="w-3 h-3" />
-                </a>
-              </div>
-            )}
-
-            <div>
-              <h4 className="text-sm font-medium mb-1">Developer Notes</h4>
-              <Textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Add notes about this issue, steps to reproduce, root cause, fix details..."
-                rows={4}
-              />
+          {detailLoading ? (
+            <div className="space-y-3 py-4">
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-20 w-full" />
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-32 w-full" />
             </div>
-          </div>
+          ) : (
+            <div className="space-y-3">
+              {/* Description */}
+              {(issueDetail?.description || selectedItem?.issue.description) && (
+                <div>
+                  <h4 className="text-sm font-medium mb-1">Description</h4>
+                  <p className="text-sm text-muted-foreground">
+                    {issueDetail?.description || selectedItem?.issue.description}
+                  </p>
+                </div>
+              )}
+
+              {/* Page URL */}
+              {(issueDetail?.page_url || selectedItem?.issue.page_url) && (
+                <div>
+                  <h4 className="text-sm font-medium mb-1">Page URL</h4>
+                  <a 
+                    href={issueDetail?.page_url || selectedItem?.issue.page_url || "#"} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-sm text-primary hover:underline flex items-center gap-1"
+                  >
+                    {issueDetail?.page_url || selectedItem?.issue.page_url}
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              )}
+
+              {/* Error Stack Trace — NEW */}
+              <ErrorStackTrace
+                errorMessage={issueDetail?.error_message || selectedItem?.issue.error_message || null}
+                errorStack={issueDetail?.error_stack || null}
+              />
+
+              {/* Console Log Viewer — NEW */}
+              {issueDetail?.console_logs && issueDetail.console_logs.length > 0 && (
+                <ConsoleLogViewer logs={issueDetail.console_logs} />
+              )}
+
+              {/* Environment Context — NEW */}
+              <EnvironmentContext
+                metadata={issueDetail?.metadata || null}
+                userAgent={issueDetail?.user_agent || null}
+                environment={issueDetail?.environment || null}
+                appVersion={issueDetail?.app_version || null}
+                buildId={issueDetail?.build_id || null}
+                commitHash={issueDetail?.commit_hash || null}
+              />
+
+              {/* Developer Notes */}
+              <div>
+                <h4 className="text-sm font-medium mb-1">Developer Notes</h4>
+                <Textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Add notes about this issue, steps to reproduce, root cause, fix details..."
+                  rows={4}
+                />
+              </div>
+            </div>
+          )}
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setDetailOpen(false)}>

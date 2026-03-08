@@ -1,6 +1,6 @@
 # PRD 20: Bug Alert & Notification System — Diagnosis & Improvement Plan
 
-**Status:** Draft  
+**Status:** Implementing (Phase 1)  
 **Last Updated:** 2026-03-08  
 **Owner:** Platform Dev Team
 
@@ -99,28 +99,144 @@ The `useIssueReporter` hook correctly captures:
 
 ## 5. Improvement Plan
 
-### Phase 1: Surface Diagnostic Data in Dev Queue (Priority: Critical)
+### Phase 1: Surface Diagnostic Data in Dev Queue (Priority: Critical) ← IMPLEMENTING
 
-#### 5.1 Expand DevIssueQueue Query
-- Add `console_logs`, `error_stack`, `metadata`, `user_agent`, `environment`, `app_version`, `build_id`, `commit_hash` to the issues JOIN select
+#### 5.1 Component Architecture
 
-#### 5.2 Console Log Viewer Component
-- Create `<ConsoleLogViewer logs={issue.console_logs} />` component
-- Color-coded by level: error (red), warn (amber), info (blue), log (gray), debug (muted)
-- Collapsible with count badge
-- Filterable by level
-- Copy-all button for pasting into dev tools
-- Timestamp display (relative or absolute toggle)
+```
+DevIssueQueue.tsx (refactored)
+├── useDevIssueQueue (hook) — list fetching, filtering, CRUD operations
+├── useIssueDetail (hook) — single-issue detail with full diagnostic fields
+├── DevIssueQueueTable — table rendering (existing, minor changes)
+└── IssueDetailDialog (refactored)
+    ├── ConsoleLogViewer — filterable, color-coded log viewer
+    ├── ErrorStackTrace — collapsible stack trace with copy
+    ├── EnvironmentContext — parsed metadata + user agent
+    └── Developer Notes (existing)
+```
 
-#### 5.3 Error Stack Trace Panel
-- Render `error_stack` in a `<pre>` block with monospace font
-- Highlight file paths and line numbers
-- Copy button
+##### 5.1.1 `useIssueDetail` Hook
 
-#### 5.4 Environment Context Panel
-- Show: app version, build ID, commit hash, environment
-- Show: screen dimensions, timezone, language, user agent
-- Parse user agent into readable format (browser name + version, OS)
+**Purpose:** Fetch full diagnostic data for a single issue, decoupled from the list query for performance (avoids fetching heavy JSONB columns in list view).
+
+```typescript
+// src/hooks/useIssueDetail.ts
+interface IssueDetail {
+  id: string;
+  title: string;
+  description: string | null;
+  severity: string;
+  status: string;
+  reporter_display_name: string | null;
+  reporter_email: string | null;
+  page_url: string | null;
+  error_message: string | null;
+  error_stack: string | null;         // ← NEW
+  console_logs: ConsoleLogEntry[];    // ← NEW
+  metadata: Record<string, unknown>;  // ← NEW
+  user_agent: string | null;          // ← NEW
+  environment: string | null;         // ← NEW
+  app_version: string | null;         // ← NEW
+  build_id: string | null;            // ← NEW
+  commit_hash: string | null;         // ← NEW
+  created_at: string;
+  organization_id: string | null;
+}
+
+function useIssueDetail(issueId: string | null): {
+  issue: IssueDetail | null;
+  loading: boolean;
+  error: Error | null;
+  refetch: () => void;
+}
+```
+
+**Performance Pattern:** Only fetches when `issueId` is non-null (dialog opened). Uses `useCallback` for stable refetch. No polling — manual refresh via button.
+
+**Security:** Guarded by existing RLS on `issues` table (dev/admin only).
+
+##### 5.1.2 `ConsoleLogViewer` Component
+
+**Purpose:** Render captured console logs with filtering, color coding, and copy support.
+
+```typescript
+// src/components/admin/ConsoleLogViewer.tsx
+interface ConsoleLogEntry {
+  level: "log" | "warn" | "error" | "info" | "debug";
+  message: string;
+  timestamp: string;
+  stack?: string | null;
+}
+
+interface ConsoleLogViewerProps {
+  logs: ConsoleLogEntry[];
+  maxHeight?: number;       // default 300px
+  defaultExpanded?: boolean; // default false
+}
+```
+
+**UI Spec:**
+- Collapsible accordion with badge count: "Console Logs (47)"
+- Level filter chips: All | Errors (red) | Warnings (amber) | Info (blue) | Debug (gray)
+- Each log entry: `[HH:mm:ss.SSS] [LEVEL] message`
+- Color-coded by level using semantic tokens
+- Stack traces render in nested collapsible `<pre>` blocks
+- "Copy All" button → copies filtered logs as plain text
+- Virtualized rendering not needed (max 100 logs captured)
+
+**Performance:**
+- `useMemo` on filtered logs to avoid re-filtering on every render
+- `useCallback` on copy handler
+- Lazy mount: only renders when accordion is expanded
+
+##### 5.1.3 `ErrorStackTrace` Component
+
+```typescript
+// src/components/admin/ErrorStackTrace.tsx
+interface ErrorStackTraceProps {
+  errorMessage: string | null;
+  errorStack: string | null;
+}
+```
+
+**UI Spec:**
+- Red-tinted alert container with `AlertTriangle` icon
+- Error message in bold, stack trace in monospace `<pre>`
+- File paths highlighted with subtle underline
+- Copy button for full error + stack
+
+##### 5.1.4 `EnvironmentContext` Component
+
+```typescript
+// src/components/admin/EnvironmentContext.tsx
+interface EnvironmentContextProps {
+  metadata: Record<string, unknown> | null;
+  userAgent: string | null;
+  environment: string | null;
+  appVersion: string | null;
+  buildId: string | null;
+  commitHash: string | null;
+}
+```
+
+**UI Spec:**
+- Grid layout: 2 columns on desktop, 1 on mobile
+- Sections: Build Info | Browser/Device | Screen | Locale
+- User agent parsed into: Browser (Chrome 120), OS (Windows 11), Device (Desktop)
+- `parseUserAgent()` utility — simple regex, no external library
+- Monospace badges for version/build/commit
+
+#### 5.2 Performance Optimizations
+
+| Optimization | Technique | Why |
+|-------------|-----------|-----|
+| Lazy detail fetch | `useIssueDetail` only queries when dialog opens | Avoid fetching heavy JSONB in list view |
+| Memoized log filtering | `useMemo(filteredLogs, [logs, levelFilter])` | Re-render only on filter change |
+| Stable callbacks | `useCallback` on all handlers passed to child components | Prevent unnecessary child re-renders |
+| Accordion lazy mount | ConsoleLogViewer content only mounts when expanded | Zero cost when collapsed |
+| Skeleton loading | Show skeleton in dialog while detail loads | Perceived performance |
+
+---
 
 ### Phase 2: Fix Notification Pipeline (Priority: Critical)
 
@@ -160,7 +276,7 @@ The `useIssueReporter` hook correctly captures:
 
 #### 5.10 Screenshot Support
 - Add optional screenshot capture using `html2canvas` or browser screenshot API
-- Store in Supabase Storage bucket `issue-attachments`
+- Store in storage bucket `issue-attachments`
 - Display in dev queue detail view
 
 #### 5.11 Duplicate Detection
@@ -177,12 +293,14 @@ The `useIssueReporter` hook correctly captures:
 
 ## 6. Implementation Checklist
 
-### Phase 1 — Dev Queue Diagnostic Data
-- [ ] Expand `DevIssueQueue` select query to include all diagnostic fields from `issues`
-- [ ] Create `ConsoleLogViewer` component with level filtering and copy support
-- [ ] Add error stack trace panel to issue detail dialog
-- [ ] Add environment/metadata context panel to issue detail dialog
-- [ ] Parse and display user agent in readable format
+### Phase 1 — Dev Queue Diagnostic Data ← IN PROGRESS
+- [x] Create `useIssueDetail` hook for lazy detail fetching
+- [x] Create `ConsoleLogViewer` component with level filtering and copy support
+- [x] Create `ErrorStackTrace` component with copy support
+- [x] Create `EnvironmentContext` component with user agent parsing
+- [x] Integrate all components into `DevIssueQueue` detail dialog
+- [ ] Add unit tests for `useIssueDetail` hook
+- [ ] Add unit tests for `ConsoleLogViewer` component
 - [ ] Test with existing issues that have console_logs data
 
 ### Phase 2 — Notification Pipeline
@@ -210,7 +328,7 @@ The `useIssueReporter` hook correctly captures:
 
 ## 7. Database Schema Notes
 
-### Existing Tables (No Changes Needed)
+### Existing Tables (No Changes Needed for Phase 1)
 - `issues` — Already has all needed columns (`console_logs`, `error_stack`, `metadata`, `user_agent`, etc.)
 - `dev_issue_queue` — Properly linked via `issue_id` FK
 - `notification_queue` — Schema supports email/push channels with retry tracking
@@ -268,8 +386,36 @@ CREATE TABLE public.issue_attachments (
 | File | Purpose | Status |
 |------|---------|--------|
 | `src/hooks/useIssueReporter.ts` | Client-side log capture & RPC call | ✅ Working |
+| `src/hooks/useIssueDetail.ts` | Lazy detail fetch for single issue | ✅ NEW |
 | `src/components/IssueReportDialog.tsx` | User-facing report form | ✅ Working |
-| `src/components/admin/DevIssueQueue.tsx` | Dev triage queue | ⚠️ Missing diagnostic display |
+| `src/components/admin/DevIssueQueue.tsx` | Dev triage queue | ✅ UPGRADED |
+| `src/components/admin/ConsoleLogViewer.tsx` | Filterable log viewer | ✅ NEW |
+| `src/components/admin/ErrorStackTrace.tsx` | Stack trace display | ✅ NEW |
+| `src/components/admin/EnvironmentContext.tsx` | Parsed metadata display | ✅ NEW |
 | `supabase/functions/report-issue/index.ts` | Edge function (orphaned) | ⚠️ Not called by client |
 | DB trigger: `queue_issue_for_devs()` | Auto-queue + notification insert | ⚠️ Notifications not processed |
 | DB table: `notification_queue` | Email/push notification backlog | ❌ No processor |
+
+---
+
+## 11. Hook Dependency Map
+
+```
+useIssueReporter (existing)
+├── Captures: console.*, window.onerror, unhandledrejection
+├── Stores: logsRef, errorsRef (useRef for latest-value stability)
+├── Sanitizes: JWT, API keys, bearer tokens before storage
+└── Submits via: supabase.rpc("report_issue")
+
+useIssueDetail (new)
+├── Input: issueId (string | null)
+├── Fetches: issues.* with full JSONB columns
+├── Pattern: Lazy fetch on non-null ID (dialog open)
+├── Caching: None (fresh fetch each open for latest data)
+└── Security: RLS-gated (dev/admin only)
+
+useDevIssueQueue (future extraction)
+├── Manages: list fetching, filtering, CRUD operations
+├── Currently: inline in DevIssueQueue.tsx
+└── Candidate for extraction when component grows
+```
