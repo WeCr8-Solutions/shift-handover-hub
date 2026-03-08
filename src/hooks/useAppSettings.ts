@@ -62,7 +62,7 @@ export interface WorkCenterConfig {
 
 export function useAppSettings() {
   const { user } = useAuth();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const [settings, setSettings] = useState<AppSetting[]>([]);
   const [shifts, setShifts] = useState<ShiftSchedule[]>([]);
   const [notifications, setNotifications] = useState<NotificationPreferences | null>(null);
