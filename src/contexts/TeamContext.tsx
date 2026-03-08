@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { useAuth } from "./AuthContext";
 import { useTeams, Team } from "@/hooks/useTeams";
-import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useOrgContext } from "./OrgContext";
 
 interface TeamContextType {
   currentTeam: Team | null;
@@ -15,7 +15,7 @@ const TeamContext = createContext<TeamContextType | undefined>(undefined);
 export function TeamProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const { teams, loading } = useTeams();
-  const { organizationRole, userRoles } = useUserOrganization();
+  const { organizationRole, userRoles } = useOrgContext();
   const [currentTeam, setCurrentTeam] = useState<Team | null>(null);
   const [initialized, setInitialized] = useState(false);
 
@@ -32,22 +32,19 @@ export function TeamProvider({ children }: { children: ReactNode }) {
       const savedTeamId = localStorage.getItem("selectedTeamId");
 
       if (savedTeamId === "__all_teams__") {
-        // User previously selected org-wide view
         setCurrentTeam(null);
       } else if (savedTeamId) {
         const savedTeam = teams.find((t) => t.id === savedTeamId);
         if (savedTeam) {
           setCurrentTeam(savedTeam);
         } else if (hasSupervisorAccess) {
-          setCurrentTeam(null); // org-wide default for supervisors
+          setCurrentTeam(null);
         } else {
           setCurrentTeam(teams[0]);
         }
       } else if (hasSupervisorAccess) {
-        // Supervisors/admins default to org-wide overview
         setCurrentTeam(null);
       } else {
-        // Operators default to first team
         setCurrentTeam(teams[0]);
       }
       setInitialized(true);

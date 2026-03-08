@@ -267,11 +267,10 @@ export function useStations(teamId?: string | null, organizationId?: string | nu
 export function useHandoffRecords(teamId?: string | null, organizationId?: string | null) {
   const { user } = useAuth();
   const { logActivity } = useActivityLog();
-  const { organization } = useUserOrganization();
   const [records, setRecords] = useState<HandoffRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const effectiveOrgId = organizationId || organization?.id;
+  const effectiveOrgId = organizationId;
 
   const hasFetchedOnce = useRef(false);
 
