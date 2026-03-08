@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from "react";
+import { useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { SmartAlertPanel } from "@/components/alerts/SmartAlertPanel";
@@ -10,12 +10,7 @@ import {
   ChevronUp,
   ArrowRight,
 } from "lucide-react";
-
-interface SmartAlert {
-  id: string;
-  targetType: string;
-  [key: string]: unknown;
-}
+import type { SmartAlert } from "@/hooks/useSmartAlerts";
 
 interface AttentionItem {
   label: string;

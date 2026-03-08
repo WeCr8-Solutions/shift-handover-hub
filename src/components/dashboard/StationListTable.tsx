@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Eye } from "lucide-react";
 import { StationAlertTile } from "./StationAlertTile";
+import type { StatusLabel } from "./stationStatus";
 
 interface ActiveStation {
   id: string;
@@ -15,7 +16,7 @@ interface ActiveStation {
   workOrder: string;
   partNumber: string;
   progress: number;
-  status: string;
+  status: StatusLabel;
 }
 
 interface StationListTableProps {
