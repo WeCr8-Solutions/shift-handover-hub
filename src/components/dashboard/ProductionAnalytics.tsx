@@ -16,7 +16,7 @@ import {
   Area,
   Legend,
 } from "recharts";
-import { BarChart3, PieChart as PieChartIcon, TrendingUp, Filter, Activity, RefreshCw } from "lucide-react";
+import { BarChart3, PieChart as PieChartIcon, TrendingUp, Filter, Activity, RefreshCw, Users, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Use shared status configuration
