@@ -41,6 +41,7 @@ import {
   Trash2,
   ArrowRightLeft,
 } from "lucide-react";
+import { StationMachineContextDialog } from "@/components/station/StationMachineContextDialog";
 import { useToast } from "@/hooks/use-toast";
 import { WorkCenterType, ALL_WORK_CENTER_TYPES } from "@/types/handoff";
 import { workCenterIcons, workCenterColors } from "@/lib/workCenterIcons";
