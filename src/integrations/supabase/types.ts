@@ -4016,6 +4016,82 @@ export type Database = {
           },
         ]
       }
+      setup_sheets: {
+        Row: {
+          created_at: string
+          description: string | null
+          external_link: string | null
+          file_name: string | null
+          file_url: string | null
+          id: string
+          organization_id: string
+          queue_item_id: string
+          revision: string | null
+          routing_step_id: string
+          sheet_type: string
+          title: string
+          updated_at: string
+          uploaded_by: string | null
+          uploaded_by_name: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          external_link?: string | null
+          file_name?: string | null
+          file_url?: string | null
+          id?: string
+          organization_id: string
+          queue_item_id: string
+          revision?: string | null
+          routing_step_id: string
+          sheet_type?: string
+          title: string
+          updated_at?: string
+          uploaded_by?: string | null
+          uploaded_by_name?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          external_link?: string | null
+          file_name?: string | null
+          file_url?: string | null
+          id?: string
+          organization_id?: string
+          queue_item_id?: string
+          revision?: string | null
+          routing_step_id?: string
+          sheet_type?: string
+          title?: string
+          updated_at?: string
+          uploaded_by?: string | null
+          uploaded_by_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "setup_sheets_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "setup_sheets_queue_item_id_fkey"
+            columns: ["queue_item_id"]
+            isOneToOne: false
+            referencedRelation: "queue_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "setup_sheets_routing_step_id_fkey"
+            columns: ["routing_step_id"]
+            isOneToOne: false
+            referencedRelation: "work_order_routing"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shift_assignments: {
         Row: {
           created_at: string | null
