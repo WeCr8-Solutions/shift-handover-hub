@@ -91,6 +91,16 @@ export function OperatorStationPanel({
   const [isOverride, setIsOverride] = useState(false);
   const [overrideReason, setOverrideReason] = useState("");
 
+  // Completion form state
+  const [completionData, setCompletionData] = useState<{
+    qtyCompleted: number;
+    qtyScrap: number;
+    qtyRework: number;
+    qtyOriginal: number;
+    loaded: boolean;
+  }>({ qtyCompleted: 0, qtyScrap: 0, qtyRework: 0, qtyOriginal: 0, loaded: false });
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+
   const activeOrder = orders.find((o) => o.status === "in_progress") ?? null;
   const queuedOrders = orders.filter((o) => o.status === "pending" || o.status === "queued");
 
