@@ -380,7 +380,12 @@ export function ProductionAnalytics({
                             <p className="text-muted-foreground">Team: {data.teamName}</p>
                           )}
                           {data?.workCenter && data.workCenter !== "—" && (
-                            <p className="text-muted-foreground mb-1">Work Center: {data.workCenter}</p>
+                            <p className="text-muted-foreground">Work Center: {data.workCenter}</p>
+                          )}
+                          {data?.status && (
+                            <p className="mb-1" style={{ color: STATUS_COLORS[data.status as StatusLabel] }}>
+                              Status: {STATUS_CONFIG[data.status as StatusLabel]?.displayName}
+                            </p>
                           )}
                           {payload.map((p: any, i: number) => (
                             <p key={i} style={{ color: p.color }}>
