@@ -28,7 +28,8 @@ import { Button } from "@/components/ui/button";
 import { MachineLibraryManagement } from "@/components/admin/MachineLibraryManagement";
 import { MachineMonitorPanel } from "@/components/admin/MachineMonitorPanel";
 import { VisitorSurveyAnalytics } from "@/components/admin/VisitorSurveyAnalytics";
-import { Shield, LayoutDashboard, Users, Wrench, Briefcase, Activity, FileSpreadsheet, Package, Route, Lightbulb, History, Bug, ShieldCheck, ListTodo, Settings2, Map, BookOpen, Cpu, MessageSquare } from "lucide-react";
+import { SmartAlertAdmin } from "@/components/admin/SmartAlertAdmin";
+import { Shield, LayoutDashboard, Users, Wrench, Briefcase, Activity, FileSpreadsheet, Package, Route, Lightbulb, History, Bug, ShieldCheck, ListTodo, Settings2, Map, BookOpen, Cpu, MessageSquare, BellRing } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Admin() {
@@ -173,6 +174,10 @@ export default function Admin() {
                 <span className="hidden sm:inline">Machines</span>
                 <span className="sm:hidden">CNC</span>
               </TabsTrigger>
+              <TabsTrigger value="smart-alerts" className="gap-2">
+                <BellRing className="w-4 h-4" />
+                <span className="hidden sm:inline">Alerts</span>
+              </TabsTrigger>
             </div>
             
             
@@ -281,6 +286,10 @@ export default function Admin() {
 
           <TabsContent value="machine-monitor">
             <MachineMonitorPanel isAdmin={isAdmin} />
+          </TabsContent>
+
+          <TabsContent value="smart-alerts">
+            <SmartAlertAdmin />
           </TabsContent>
 
           {hasPlatformAccess && (
