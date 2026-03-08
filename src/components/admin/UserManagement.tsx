@@ -214,6 +214,8 @@ function computeRLSAccessLevel(user: UserWithRole): RLSAccessLevel {
 
 interface UserManagementProps {
   isAdmin: boolean;
+  /** Whether the viewer has supervisor-level access (org admin, supervisor, etc.) */
+  isSupervisorOrAbove?: boolean;
 }
 
 type ViewMode = "grouped" | "flat";
