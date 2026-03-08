@@ -2,11 +2,13 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { useStationMachineAssignment } from "@/hooks/useStationMachineProfile";
+import { useDNCConnector } from "@/hooks/useDNCConnector";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Cpu, Wrench, ShoppingCart, CheckCircle2, Unlink, ShieldCheck, Loader2 } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Cpu, Wrench, ShoppingCart, CheckCircle2, Unlink, ShieldCheck, Loader2, Radio, Wifi, WifiOff } from "lucide-react";
 import { StationManufacturerAttach } from "./StationManufacturerAttach";
 import { StationManualMachineEntry } from "./StationManualMachineEntry";
 import { useToast } from "@/hooks/use-toast";
@@ -43,13 +45,13 @@ export function StationMachineContextDialog({ stationId, stationName, open, onOp
   dbg("render", { stationId, stationName, open, orgId });
 
   const { assignment, loading: assignLoading, unassignMachine } = useStationMachineAssignment(stationId, orgId);
+  const { status: dncStatus, connecting: dncConnecting, getStationDNCConfig, initializeConnection, disconnect: dncDisconnect } = useDNCConnector(stationId);
 
   const { toast } = useToast();
 
   const [manualProfile, setManualProfile] = useState<ManualProfile | null>(null);
   const [loadingManual, setLoadingManual] = useState(true);
-  // FIX: use separate booleans so closing the parent dialog doesn't race with
-  // opening a sub-dialog when both setState calls are batched together.
+  const [dncConfig, setDncConfig] = useState<Record<string, unknown> | null>(null);
   const [showLibrary, setShowLibrary] = useState(false);
   const [showManualEntry, setShowManualEntry] = useState(false);
 
@@ -89,10 +91,11 @@ export function StationMachineContextDialog({ stationId, stationName, open, onOp
   // FIX: fetchManualProfile is now stable and safe to include as a dep.
   useEffect(() => {
     if (open) {
-      dbg("useEffect: dialog opened, fetching manual profile");
+      dbg("useEffect: dialog opened, fetching manual profile + DNC config");
       fetchManualProfile();
+      getStationDNCConfig(stationId).then(cfg => setDncConfig(cfg));
     }
-  }, [open, fetchManualProfile]);
+  }, [open, fetchManualProfile, getStationDNCConfig, stationId]);
 
   // Log state changes for debugging
   useEffect(() => {
@@ -311,6 +314,84 @@ export function StationMachineContextDialog({ stationId, stationName, open, onOp
               </Card>
             </div>
           )}
+
+          {/* DNC / G-Code Connection Section */}
+          <Separator className="my-2" />
+          <div className="space-y-2">
+            <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
+              <Radio className="w-3 h-3" />
+              DNC &amp; G-Code Connection
+            </h4>
+            {dncConfig ? (
+              <Card className="border-primary/30 bg-primary/5">
+                <CardContent className="pt-3 pb-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Wifi className="w-4 h-4 text-primary shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium">
+                          {String(dncConfig.protocol || "DNC").toUpperCase()} Connected
+                        </p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {dncConfig.host ? `${dncConfig.host}:${dncConfig.port}` : "Local connection configured"}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex gap-1 shrink-0">
+                      <Badge variant="outline" className="text-[10px] border-primary/50 text-primary">
+                        Active
+                      </Badge>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-muted-foreground h-7 px-2"
+                        onClick={() => {
+                          dncDisconnect(stationId);
+                          setDncConfig(null);
+                        }}
+                      >
+                        <WifiOff className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card
+                className="cursor-pointer hover:border-primary/50 transition-colors"
+                onClick={async () => {
+                  const session = await initializeConnection({
+                    protocol: "ftp",
+                    stationId,
+                  });
+                  if (session) {
+                    getStationDNCConfig(stationId).then(cfg => setDncConfig(cfg));
+                  }
+                }}
+              >
+                <CardContent className="pt-3 pb-3">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <Radio className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-sm font-semibold">Connect DNC / G-Code</h4>
+                        <Badge variant="secondary" className="text-[10px]">
+                          Beta
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Enable FTP, serial, or WebSocket transmission for live G-code
+                        streaming from VS Code extension or DNC system.
+                      </p>
+                    </div>
+                    {dncConnecting && <Loader2 className="w-4 h-4 animate-spin text-primary shrink-0" />}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
 
