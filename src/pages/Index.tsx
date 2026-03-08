@@ -27,11 +27,11 @@ import { mockStations, mockHandoffRecords } from "@/lib/mockData";
 import { type WorkCenterType, type StationInfo, type ShiftHandoffRecord } from "@/types/handoff";
 
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Plus,
   LayoutGrid,
   History,
-  Loader2,
   Building2,
   Lightbulb,
   ListTodo,
