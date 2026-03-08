@@ -375,6 +375,7 @@ export function TeamManagement() {
 
 interface TeamCardProps {
   team: Team;
+  stationCount: number;
   isSelected: boolean;
   canManage: boolean;
   onSelect: () => void;
@@ -383,10 +384,7 @@ interface TeamCardProps {
   onAddStations: () => void;
 }
 
-function TeamCard({ team, isSelected, canManage, onSelect, onEdit, onDelete, onAddStations }: TeamCardProps) {
-  const { stations } = useStations(team.id);
-  const stationCount = stations.length;
-
+function TeamCard({ team, stationCount, isSelected, canManage, onSelect, onEdit, onDelete, onAddStations }: TeamCardProps) {
   return (
     <Card
       className={`cursor-pointer transition-colors hover:border-primary/50 ${isSelected ? "border-primary" : ""}`}
