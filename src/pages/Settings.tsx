@@ -157,6 +157,14 @@ export default function Settings() {
             </TabsTrigger>
 
             <TabsTrigger
+              value="alerts"
+              className="border data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            >
+              <BellRing className="mr-2 h-4 w-4" />
+              Alerts
+            </TabsTrigger>
+
+            <TabsTrigger
               value="onboarding"
               className="border data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
