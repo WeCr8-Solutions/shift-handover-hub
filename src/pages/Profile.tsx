@@ -42,6 +42,7 @@ export default function Profile() {
   useEffect(() => {
     if (profile) {
       setDisplayName(profile.display_name);
+      setIsDirty(false);
     }
   }, [profile]);
 
