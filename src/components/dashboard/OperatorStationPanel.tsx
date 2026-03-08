@@ -43,6 +43,8 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { OperatorStationKanban } from "@/components/operator/OperatorStationKanban";
+import { useDimensions } from "@/hooks/useDimensions";
+import { DimensionCheckForm } from "@/components/dimensions/DimensionCheckForm";
 import { format, isPast, formatDistanceToNow } from "date-fns";
 
 interface WorkOrder {
@@ -120,6 +122,7 @@ export function OperatorStationPanel({
   const [routingInfo, setRoutingInfo] = useState<RoutingInfo | null>(null);
   const [isOverride, setIsOverride] = useState(false);
   const [overrideReason, setOverrideReason] = useState("");
+  const stepDimensions = useDimensions();
 
   // Completion form state
   const [completionData, setCompletionData] = useState<{
@@ -360,7 +363,7 @@ export function OperatorStationPanel({
     }
   };
 
-  // Load qty data when delivery dialog opens
+  // Load qty data and dimension requirements when delivery dialog opens
   useEffect(() => {
     if (!deliverOrder) {
       setCompletionData({ qtyCompleted: 0, qtyScrap: 0, qtyRework: 0, qtyOriginal: 0, loaded: false });
@@ -386,9 +389,14 @@ export function OperatorStationPanel({
       }
     };
     loadQty();
-  }, [deliverOrder]);
 
-  // Validate completion form
+    // Load dimension requirements for current routing step
+    if (routingInfo?.currentStepId) {
+      stepDimensions.loadAll(routingInfo.currentStepId, deliverOrder.id);
+    }
+  }, [deliverOrder, routingInfo?.currentStepId]);
+
+  // Validate completion form (includes dimension check)
   useEffect(() => {
     const errors: string[] = [];
     if (!completionData.loaded) return;
@@ -400,8 +408,14 @@ export function OperatorStationPanel({
       errors.push(`${unaccounted} part(s) unaccounted. Total must equal ${qtyOriginal}.`);
     }
 
+    if (stepDimensions.hasPendingDimensions()) {
+      errors.push("Dimension checks incomplete — all required measurements must be recorded.");
+    } else if (stepDimensions.requirements.length > 0 && !stepDimensions.allDimensionsPassing()) {
+      errors.push("One or more dimensions are out of tolerance — review or request supervisor override.");
+    }
+
     setValidationErrors(errors);
-  }, [completionData]);
+  }, [completionData, stepDimensions.requirements, stepDimensions.readings]);
 
   const handleCloseDeliveryDialog = (open: boolean) => {
     if (!open) {
@@ -830,6 +844,18 @@ export function OperatorStationPanel({
                       )}
                     </div>
                   </div>
+                )}
+
+                {/* Dimension checks — required before advancing */}
+                {stepDimensions.requirements.length > 0 && deliverOrder && routingInfo?.currentStepId && (
+                  <DimensionCheckForm
+                    requirements={stepDimensions.requirements}
+                    readings={stepDimensions.readings}
+                    queueItemId={deliverOrder.id}
+                    routingStepId={routingInfo.currentStepId}
+                    onRecordReading={stepDimensions.recordReading}
+                    loading={stepDimensions.loading}
+                  />
                 )}
 
                 {/* Validation errors */}
