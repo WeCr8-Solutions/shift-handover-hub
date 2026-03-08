@@ -6,6 +6,7 @@ import { useAdminAccess } from "@/hooks/useAdminData";
 import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { useOperatorSessions } from "@/hooks/useOperatorSessions";
 import { useNCR } from "@/hooks/useNCR";
+import { useStations } from "@/hooks/useStations";
 import { Header } from "@/components/Header";
 import { QueueKanbanBoard } from "@/components/queue/QueueKanbanBoard";
 import { QueueListView } from "@/components/queue/QueueListView";
@@ -49,6 +50,7 @@ export default function Queue() {
   const { hasAdminAccess, loading: accessLoading } = useAdminAccess();
   const { organization } = useUserOrganization();
   const { activeSessions = [] } = useOperatorSessions();
+  const { stations = [] } = useStations();
 
   const urlStationId = searchParams.get("station");
 
@@ -270,7 +272,12 @@ export default function Queue() {
 
             <div className="flex items-center justify-between gap-4">
               <div data-tour="queue-filters">
-                <QueueFilters filters={filters} onFiltersChange={setFilters} />
+                <QueueFilters
+                  filters={filters}
+                  onFiltersChange={setFilters}
+                  showStationFilter={viewScope === "station"}
+                  stations={stations.map(s => ({ id: s.id, name: s.name, station_id: s.station_id }))}
+                />
               </div>
 
               <div className="flex items-center rounded-lg border p-1" data-tour="queue-views">

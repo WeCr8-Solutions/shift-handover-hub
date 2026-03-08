@@ -3,7 +3,13 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { QueueStatus, QueueItemType } from "@/hooks/useQueue";
 import { useQuoteSystem } from "@/hooks/useQuoteSystem";
-import { X } from "lucide-react";
+import { X, Wrench } from "lucide-react";
+
+interface StationOption {
+  id: string;
+  name: string;
+  station_id: string;
+}
 
 interface QueueFiltersProps {
   filters: {
@@ -13,6 +19,8 @@ interface QueueFiltersProps {
     assigned_to?: string;
   };
   onFiltersChange: (filters: QueueFiltersProps["filters"]) => void;
+  showStationFilter?: boolean;
+  stations?: StationOption[];
 }
 
 const statusOptions: { value: QueueStatus; label: string }[] = [
@@ -32,7 +40,7 @@ const ALL_TYPE_OPTIONS: { value: QueueItemType; label: string }[] = [
   { value: "support_ticket", label: "Support Ticket" },
 ];
 
-export function QueueFilters({ filters, onFiltersChange }: QueueFiltersProps) {
+export function QueueFilters({ filters, onFiltersChange, showStationFilter, stations = [] }: QueueFiltersProps) {
   const { isQuoteSystemEnabled } = useQuoteSystem();
   const typeOptions = isQuoteSystemEnabled
     ? ALL_TYPE_OPTIONS
@@ -109,6 +117,32 @@ export function QueueFilters({ filters, onFiltersChange }: QueueFiltersProps) {
           ))}
         </SelectContent>
       </Select>
+
+      {showStationFilter && stations.length > 0 && (
+        <Select
+          value={filters.station_id || ""}
+          onValueChange={(value) => {
+            onFiltersChange({
+              ...filters,
+              station_id: value || undefined,
+            });
+          }}
+        >
+          <SelectTrigger className="w-[200px]">
+            <div className="flex items-center gap-2">
+              <Wrench className="h-3.5 w-3.5 text-muted-foreground" />
+              <SelectValue placeholder="Select station..." />
+            </div>
+          </SelectTrigger>
+          <SelectContent>
+            {stations.map((station) => (
+              <SelectItem key={station.id} value={station.id}>
+                {station.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
 
       {activeFilters.length > 0 && (
         <>
