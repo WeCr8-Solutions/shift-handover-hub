@@ -133,6 +133,7 @@ export function SupervisorDashboard({
 
     dbStations.forEach((s) => {
       const state = s.current_status?.current_job_state;
+      const status = getStatusFromJobState(state);
 
       if (state === JOB_STATES.MACHINE_DOWN) {
         items.push({
@@ -148,6 +149,16 @@ export function SupervisorDashboard({
           label: `${s.name} is waiting`,
           detail: state || "",
           severity: "warning",
+          stationId: s.id,
+          stationName: s.name,
+        });
+      }
+      if (status === "idle" && s.is_active) {
+        const operatorName = s.current_status?.current_operator_name;
+        items.push({
+          label: `${s.name} is idle`,
+          detail: operatorName ? `Operator: ${operatorName} · No active job` : "No operator · No active job",
+          severity: "info",
           stationId: s.id,
           stationName: s.name,
         });
