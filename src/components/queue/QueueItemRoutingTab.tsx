@@ -342,6 +342,26 @@ export function QueueItemRoutingTab({
                               onCancel={() => setAddingDimForStep(null)}
                             />
                           )}
+
+                          {/* Setup Sheets section */}
+                          <div className="pt-2 mt-2 border-t">
+                            <div className="flex items-center gap-1 mb-1">
+                              <FileText className="w-3 h-3 text-primary" />
+                              <span className="text-xs font-medium">Setup Sheets & Instructions</span>
+                            </div>
+                            <SetupSheetsPanel
+                              routingStepId={step.id}
+                              queueItemId={item.id}
+                              organizationId={organization?.id || ""}
+                              sheets={setupSheets.sheets}
+                              loading={setupSheets.loading}
+                              canEdit={hasDimensionAccess || hasOrgSupervisorAccess}
+                              onAdd={setupSheets.addSheet}
+                              onDelete={setupSheets.deleteSheet}
+                              onUploadFile={setupSheets.uploadFile}
+                              onGetSignedUrl={setupSheets.getSignedUrl}
+                            />
+                          </div>
                         </>
                       )}
                     </div>
