@@ -1,8 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { LazyTabContent } from "../LazyTabContent";
-
-// We need to wrap with a Tabs provider for TabsContent to work
 import { Tabs } from "@/components/ui/tabs";
 
 function renderWithTabs(activeTab: string, contentValue: string, children: React.ReactNode) {
@@ -26,28 +24,28 @@ describe("LazyTabContent", () => {
     expect(screen.queryByText("Billing Content")).not.toBeInTheDocument();
   });
 
-  it("keeps children mounted after tab was previously active", () => {
-    const { rerender } = render(
+  it("keeps children in DOM after tab was previously active", () => {
+    const { container, rerender } = render(
       <Tabs value="billing">
         <LazyTabContent value="billing" activeTab="billing">
-          <span>Billing Content</span>
+          <span data-testid="billing-content">Billing Content</span>
         </LazyTabContent>
       </Tabs>
     );
 
-    expect(screen.getByText("Billing Content")).toBeInTheDocument();
+    expect(screen.getByTestId("billing-content")).toBeInTheDocument();
 
-    // Switch away
+    // Switch away — Radix hides inactive tabs with hidden attribute
     rerender(
       <Tabs value="general">
         <LazyTabContent value="billing" activeTab="general">
-          <span>Billing Content</span>
+          <span data-testid="billing-content">Billing Content</span>
         </LazyTabContent>
       </Tabs>
     );
 
-    // Content should still be in DOM (hidden by TabsContent), but mounted
-    // TabsContent hides inactive tabs, but the children are still rendered
-    expect(screen.getByText("Billing Content")).toBeInTheDocument();
+    // Children should still be in the DOM (just hidden by Radix), not unmounted
+    const el = container.querySelector("[data-testid='billing-content']");
+    expect(el).toBeTruthy();
   });
 });
