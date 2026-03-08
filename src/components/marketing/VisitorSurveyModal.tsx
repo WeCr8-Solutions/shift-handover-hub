@@ -200,4 +200,4 @@ export const VisitorSurveyModal = forwardRef<HTMLDivElement>(function VisitorSur
       </DialogContent>
     </Dialog>
   );
-}
+});
