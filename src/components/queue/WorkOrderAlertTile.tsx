@@ -51,6 +51,12 @@ interface WOAlertData {
   elapsedDisplay: string | null;
   remainingDisplay: string | null;
   durationProgress: number | null;
+  // Smart alerts
+  staleDays: number | null; // days sitting without status change
+  overEstimatedPct: number | null; // how much over estimated duration (e.g. 150 = 50% over)
+  isHighPriorityWaiting: boolean; // critical/urgent stuck in queued
+  hasNoOperator: boolean; // in_progress but no assigned_to
+  queuedAtStationCount: number | null; // how many WOs queued at same station (bottleneck)
 }
 
 interface WorkOrderAlertTileProps {
