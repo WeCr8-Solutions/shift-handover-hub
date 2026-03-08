@@ -84,7 +84,6 @@ export function ProductionAnalytics({
 }: ProductionAnalyticsProps) {
   const [shiftFilter, setShiftFilter] = useState<ShiftFilter>("all");
   const [chartView, setChartView] = useState<ChartView>("output");
-  }, []);
 
   // Reduced motion (SSR-safe now via effect)
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
