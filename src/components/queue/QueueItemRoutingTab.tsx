@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -8,13 +8,16 @@ import { Station } from "@/hooks/useStations";
 import { useOrgContext } from "@/contexts/OrgContext";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { useToast } from "@/hooks/use-toast";
+import { useDimensions } from "@/hooks/useDimensions";
 import { supabase } from "@/integrations/supabase/client";
 import { RoutingSection } from "@/components/queue/RoutingSection";
+import { DimensionCheckForm } from "@/components/dimensions/DimensionCheckForm";
+import { AddDimensionForm } from "@/components/dimensions/AddDimensionForm";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import {
   GitBranch, Circle, CircleDot, CheckCircle, Timer, Truck,
-  Wrench, User, Loader2, Save,
+  Wrench, User, Loader2, Save, Ruler, Plus, ChevronDown, ChevronUp,
 } from "lucide-react";
 
 interface RoutingStepRow {
