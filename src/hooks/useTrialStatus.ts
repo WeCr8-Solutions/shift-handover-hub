@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { differenceInDays, isPast } from "date-fns";
