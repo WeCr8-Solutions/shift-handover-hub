@@ -114,7 +114,7 @@ export default function ManufacturingOversight() {
           </div>
         </section>
 
-        <AdPlacement format="horizontal" className="py-4" />
+        
 
         <section className="py-12">
           <div className="container mx-auto px-4 max-w-4xl">
