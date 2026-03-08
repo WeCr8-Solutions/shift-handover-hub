@@ -104,42 +104,7 @@ export default function Setup() {
     fetchSetupStatus();
   }, [user, currentStep]);
 
-  const refreshStatus = async () => {
-    setLoading(true);
-    if (user) {
-      const orgResult = await supabase
-        .from('organization_members')
-        .select('organization:organizations(id, name)')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      const orgId = orgResult.data?.organization?.id;
-
-      const [teamsResult, stationsResult, membersResult] = await Promise.all([
-        orgId
-          ? supabase.from('teams').select('id', { count: 'exact', head: true }).eq('organization_id', orgId)
-          : Promise.resolve({ count: 0 }),
-        orgId
-          ? supabase.from('stations').select('id', { count: 'exact', head: true }).eq('organization_id', orgId)
-          : Promise.resolve({ count: 0 }),
-        orgId
-          ? supabase.from('team_members').select('id', { count: 'exact', head: true }).eq('organization_id', orgId)
-          : Promise.resolve({ count: 0 }),
-      ]);
-
-      setSetupStatus({
-        hasOrganization: !!orgResult.data?.organization,
-        organizationName: orgResult.data?.organization?.name || null,
-        hasTeams: (teamsResult.count || 0) > 0,
-        hasStations: (stationsResult.count || 0) > 0,
-        hasTeamMembers: (membersResult.count || 0) > 0,
-        teamsCount: teamsResult.count || 0,
-        stationsCount: stationsResult.count || 0,
-        membersCount: membersResult.count || 0,
-      });
-      setLoading(false);
-    }
-  };
+  const refreshStatus = () => fetchSetupStatus(true);
 
   const handleOrgSetupComplete = async () => {
     setShowOrgSetup(false);
