@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { Clock, User, Package, AlertTriangle, GripVertical, Plug } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { StationQuickActions, type QuickActionTarget } from "@/components/dashboard/StationQuickActions";
 
 interface QueueKanbanBoardProps {
   itemsByStatus: Record<QueueStatus, QueueItem[]>;
