@@ -33,7 +33,7 @@ interface StationDetailViewProps {
 export function StationDetailView({ stationId, stationName, onBack }: StationDetailViewProps) {
   const navigate = useNavigate();
   const { currentTeam } = useCurrentTeam();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const { createHandoffRecord, loading: handoffLoading } = useHandoffRecords(currentTeam?.id, organization?.id);
 
   const [showHandoff, setShowHandoff] = useState(false);

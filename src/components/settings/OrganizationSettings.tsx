@@ -25,7 +25,7 @@ type OrganizationFormData = {
 export function OrganizationSettings({ isDeveloper = false }: OrganizationSettingsProps) {
   const { toast } = useToast();
   const { user } = useAuth();
-  const { organization, organizationRole, teams = [], loading, refresh } = useUserOrganization();
+  const { organization, organizationRole, teams, loading, refresh } = useOrgContext();
 
   const [isSaving, setIsSaving] = useState(false);
   const [savingCompliance, setSavingCompliance] = useState(false);

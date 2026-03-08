@@ -39,7 +39,7 @@ interface ManualProfile {
 }
 
 export function StationMachineContextDialog({ stationId, stationName, open, onOpenChange }: Props) {
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const orgId = organization?.id ?? null;
 
   dbg("render", { stationId, stationName, open, orgId });

@@ -44,7 +44,7 @@ interface Props {
 
 export function MachineProfileMarketplace({ stationId, stationName, open, onOpenChange }: Props) {
   const inline = open === undefined;
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const orgId = organization?.id || null;
   const { library, purchases, loading: libLoading, isPurchased, purchaseMachine, verifyPurchase, refreshPurchases } =
     useMachineLibrary(orgId);

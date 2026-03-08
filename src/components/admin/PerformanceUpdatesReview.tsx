@@ -99,7 +99,7 @@ const priorityColors: Record<string, string> = {
 
 export function PerformanceUpdatesReview({ isAdmin }: PerformanceUpdatesReviewProps) {
   const { user, profile } = useAuth();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const { toast } = useToast();
   
   const [updates, setUpdates] = useState<PerformanceUpdate[]>([]);

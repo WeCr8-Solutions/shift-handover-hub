@@ -106,7 +106,7 @@ export function ERPConnectorSettings() {
   } = useERPConnector();
 
   const { currentTeam } = useCurrentTeam();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const { stations = [] } = useStations(currentTeam?.id, organization?.id);
   const { features, plan } = useEntitlements();
   const { createCheckout } = useSubscription();

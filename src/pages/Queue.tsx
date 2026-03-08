@@ -53,7 +53,7 @@ export default function Queue() {
   const [searchParams] = useSearchParams();
   const { user, loading: authLoading } = useAuth();
   const { hasAdminAccess, loading: accessLoading } = useAdminAccess();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const { activeSessions = [] } = useOperatorSessions();
   const { stations = [] } = useStations();
 

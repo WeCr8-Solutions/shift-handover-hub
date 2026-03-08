@@ -20,7 +20,7 @@ interface StationCheckInProps {
 }
 
 export function StationCheckIn({ onCheckIn }: StationCheckInProps) {
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const { stations, loading: stationsLoading } = useStations(null, organization?.id);
   const [selectedStations, setSelectedStations] = useState<Set<string>>(new Set());
   const [shift, setShift] = useState<string>(getCurrentShift());

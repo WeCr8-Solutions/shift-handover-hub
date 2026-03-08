@@ -67,7 +67,7 @@ interface RoutingSectionProps {
 }
 
 export function RoutingSection({ steps, onChange, stations }: RoutingSectionProps) {
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const [templates, setTemplates] = useState<RoutingTemplate[]>([]);
   const [templatesLoading, setTemplatesLoading] = useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");

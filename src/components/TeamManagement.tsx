@@ -30,7 +30,7 @@ import { SafeDeleteDialog } from "./ui/safe-delete-dialog";
 
 export function TeamManagement() {
   const { user } = useAuth();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const { isOrgAdmin, isAdmin } = useAdminAccess();
   const { teams, loading, createTeam, updateTeam, deleteTeam } = useTeams();
   const { stations: allStations, refreshStations } = useStations(undefined, organization?.id);

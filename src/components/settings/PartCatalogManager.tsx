@@ -51,7 +51,7 @@ const emptyForm: FormData = {
 };
 
 export function PartCatalogManager() {
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const [entries, setEntries] = useState<PartCatalogEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");

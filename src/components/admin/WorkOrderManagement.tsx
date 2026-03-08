@@ -110,7 +110,7 @@ type ViewMode = "grouped" | "flat";
 
 export function WorkOrderManagement({ isAdmin }: WorkOrderManagementProps) {
   const { toast } = useToast();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const { organizations } = useAllOrganizations();
   const [workOrders, setWorkOrders] = useState<QueueItem[]>([]);
   const [loading, setLoading] = useState(true);

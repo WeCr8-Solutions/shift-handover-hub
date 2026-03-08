@@ -114,7 +114,7 @@ export function RoutingTemplateManagement({ isAdmin, canManageTemplates }: Routi
   // Allow org owners, org admins, supervisors, and platform admins to manage templates
   const canManage = canManageTemplates ?? isAdmin;
   const { user } = useAuth();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const { toast } = useToast();
   
   const [templates, setTemplates] = useState<RoutingTemplate[]>([]);

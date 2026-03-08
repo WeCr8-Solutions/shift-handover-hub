@@ -117,7 +117,7 @@ interface OrganizationMemberManagerProps {
 
 export function OrganizationMemberManager({ onNavigateToInvites }: OrganizationMemberManagerProps) {
   const { user, profile } = useAuth();
-  const { organization, organizationRole } = useUserOrganization();
+  const { organization, organizationRole } = useOrgContext();
   const {
     members,
     loading,

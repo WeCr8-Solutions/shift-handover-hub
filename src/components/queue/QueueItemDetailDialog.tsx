@@ -125,7 +125,7 @@ export function QueueItemDetailDialog({
   const navigate = useNavigate();
   const { toast } = useToast();
   const { currentTeam } = useCurrentTeam();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const { stations } = useStations(currentTeam?.id, organization?.id);
   const { hasAdminAccess } = useAdminAccess();
   const { ncrs, createNCR, uploadNCRImage } = useNCR(item ? { queue_item_id: item.id } : undefined);

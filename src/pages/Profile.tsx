@@ -26,7 +26,7 @@ export default function Profile() {
     teams, 
     primaryRole, 
     loading: orgLoading 
-  } = useUserOrganization();
+  } = useOrgContext();
   const { isDeveloper, loading: accessLoading } = useAdminAccess();
   
   const [displayName, setDisplayName] = useState("");
