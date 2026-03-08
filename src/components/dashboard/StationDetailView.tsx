@@ -138,6 +138,13 @@ export function StationDetailView({ stationId, stationName, onBack }: StationDet
         onViewWorkOrder={handleViewWorkOrder}
       />
 
+      {/* Equipment / Machine Status Cards */}
+      <MachineStatusGrid
+        organizationId={organization?.id || null}
+        stationId={stationId}
+        compact
+      />
+
       {showHandoff && (
         <NewHandoffForm
           onClose={handleCloseHandoff}
