@@ -10,6 +10,7 @@ import { ActAsProvider } from "@/contexts/ActAsContext";
 import { OnboardingProvider, GuidedTour, WelcomeModal } from "@/components/onboarding";
 import { AnalyticsProvider } from "@/components/AnalyticsProvider";
 import { ActAsBanner } from "@/components/admin/ActAsBanner";
+import { JobLineProvider } from "@/components/providers/JobLineProvider";
 import { MFAEnrollmentGate } from "@/components/compliance/MFAEnrollmentGate";
 import { USPersonDeclarationGate } from "@/components/compliance/USPersonDeclarationGate";
 import Landing from "./pages/Landing";
