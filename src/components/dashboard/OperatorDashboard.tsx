@@ -37,9 +37,21 @@ interface OperatorDashboardProps {
 export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDashboardProps) {
   const { currentTeam } = useCurrentTeam();
   const { organization } = useUserOrganization();
-  const { activeSessions, loading, isCheckedIn, checkIn, checkOut } = useOperatorSessions();
-  const { createHandoffRecord } = useHandoffRecords(currentTeam?.id, organization?.id);
+  const { activeSessions, loading, isCheckedIn, checkIn, checkOut, refresh: refreshSessions } = useOperatorSessions();
+  const { createHandoffRecord, refreshRecords } = useHandoffRecords(currentTeam?.id, organization?.id);
 
+  // Org-configured background refresh
+  const refreshIntervalMs = useOrgRefreshInterval();
+  const { isRefreshing, lastRefreshedAt, refresh: handleManualRefresh } =
+    useBackgroundRefresh({
+      key: `operator-${organization?.id}-${currentTeam?.id}`,
+      fetchers: [
+        () => refreshSessions?.() as unknown as Promise<unknown>,
+        () => refreshRecords?.() as unknown as Promise<unknown>,
+      ],
+      intervalMs: refreshIntervalMs,
+      enabled: !!(organization?.id) && isCheckedIn,
+    });
   const [showHandoff, setShowHandoff] = useState(false);
   const [showPerformance, setShowPerformance] = useState(false);
   const [handoffStationId, setHandoffStationId] = useState<string | undefined>();
