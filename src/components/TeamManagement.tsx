@@ -122,12 +122,10 @@ export function TeamManagement() {
 
   const handleRequestDelete = (team: Team) => {
     setDeletingTeam(team);
-    setDeleteConfirmName("");
   };
 
   const handleConfirmDelete = async () => {
-    if (!deletingTeam || deleteConfirmName !== deletingTeam.name) return;
-
+    if (!deletingTeam) return;
     const { error } = await deleteTeam(deletingTeam.id);
     if (error) {
       toast({ title: "Failed to delete team", description: error.message, variant: "destructive" });
