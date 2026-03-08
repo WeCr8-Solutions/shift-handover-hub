@@ -1,37 +1,41 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAccess, useSystemStats } from "@/hooks/useAdminData";
 import { Header } from "@/components/Header";
 import { AdminStatsCards } from "@/components/admin/AdminStatsCards";
-import { UserManagement } from "@/components/admin/UserManagement";
-import { StationManagement } from "@/components/admin/StationManagement";
-import { OrganizationOversight } from "@/components/admin/OrganizationOversight";
-import { ActivityLogs } from "@/components/admin/ActivityLogs";
-import { DataAccessLogs } from "@/components/admin/DataAccessLogs";
-import { WorkOrderManagement } from "@/components/admin/WorkOrderManagement";
-import { WorkOrderHistory } from "@/components/admin/WorkOrderHistory";
-import { RoutingTemplateManagement } from "@/components/admin/RoutingTemplateManagement";
-import { PerformanceUpdatesReview } from "@/components/admin/PerformanceUpdatesReview";
-import { IssuesManagement } from "@/components/admin/IssuesManagement";
-import { SystemUpdatesManager } from "@/components/admin/SystemUpdatesManager";
-import { RLSHealthCheck } from "@/components/admin/RLSHealthCheck";
-import { DevIssueQueue } from "@/components/admin/DevIssueQueue";
-import { DevSettingsPanel } from "@/components/admin/DevSettingsPanel";
-import { UserJourneyDebugPanel } from "@/components/admin/UserJourneyDebugPanel";
-import { BulkUploadDialog } from "@/components/BulkUploadDialog";
-import { SeedTestDataButton } from "@/components/admin/SeedTestDataButton";
 import { TourTriggerButton } from "@/components/onboarding";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MachineLibraryManagement } from "@/components/admin/MachineLibraryManagement";
-import { MachineMonitorPanel } from "@/components/admin/MachineMonitorPanel";
-import { VisitorSurveyAnalytics } from "@/components/admin/VisitorSurveyAnalytics";
-import { SmartAlertAdmin } from "@/components/admin/SmartAlertAdmin";
-import { ShopFloorDisplayManagement } from "@/components/admin/ShopFloorDisplayManagement";
 import { Shield, LayoutDashboard, Users, Wrench, Briefcase, Activity, FileSpreadsheet, Package, Route, Lightbulb, History, Bug, ShieldCheck, ListTodo, Settings2, Map, BookOpen, Cpu, MessageSquare, BellRing, Tv } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+
+// Lazy-load heavy admin panels (Phase 6 — code splitting)
+const UserManagement = lazy(() => import("@/components/admin/UserManagement").then(m => ({ default: m.UserManagement })));
+const StationManagement = lazy(() => import("@/components/admin/StationManagement").then(m => ({ default: m.StationManagement })));
+const OrganizationOversight = lazy(() => import("@/components/admin/OrganizationOversight").then(m => ({ default: m.OrganizationOversight })));
+const ActivityLogs = lazy(() => import("@/components/admin/ActivityLogs").then(m => ({ default: m.ActivityLogs })));
+const DataAccessLogs = lazy(() => import("@/components/admin/DataAccessLogs").then(m => ({ default: m.DataAccessLogs })));
+const WorkOrderManagement = lazy(() => import("@/components/admin/WorkOrderManagement").then(m => ({ default: m.WorkOrderManagement })));
+const WorkOrderHistory = lazy(() => import("@/components/admin/WorkOrderHistory").then(m => ({ default: m.WorkOrderHistory })));
+const RoutingTemplateManagement = lazy(() => import("@/components/admin/RoutingTemplateManagement").then(m => ({ default: m.RoutingTemplateManagement })));
+const PerformanceUpdatesReview = lazy(() => import("@/components/admin/PerformanceUpdatesReview").then(m => ({ default: m.PerformanceUpdatesReview })));
+const IssuesManagement = lazy(() => import("@/components/admin/IssuesManagement").then(m => ({ default: m.IssuesManagement })));
+const SystemUpdatesManager = lazy(() => import("@/components/admin/SystemUpdatesManager").then(m => ({ default: m.SystemUpdatesManager })));
+const RLSHealthCheck = lazy(() => import("@/components/admin/RLSHealthCheck").then(m => ({ default: m.RLSHealthCheck })));
+const DevIssueQueue = lazy(() => import("@/components/admin/DevIssueQueue").then(m => ({ default: m.DevIssueQueue })));
+const DevSettingsPanel = lazy(() => import("@/components/admin/DevSettingsPanel").then(m => ({ default: m.DevSettingsPanel })));
+const UserJourneyDebugPanel = lazy(() => import("@/components/admin/UserJourneyDebugPanel").then(m => ({ default: m.UserJourneyDebugPanel })));
+const BulkUploadDialog = lazy(() => import("@/components/BulkUploadDialog").then(m => ({ default: m.BulkUploadDialog })));
+const SeedTestDataButton = lazy(() => import("@/components/admin/SeedTestDataButton").then(m => ({ default: m.SeedTestDataButton })));
+const MachineLibraryManagement = lazy(() => import("@/components/admin/MachineLibraryManagement").then(m => ({ default: m.MachineLibraryManagement })));
+const MachineMonitorPanel = lazy(() => import("@/components/admin/MachineMonitorPanel").then(m => ({ default: m.MachineMonitorPanel })));
+const VisitorSurveyAnalytics = lazy(() => import("@/components/admin/VisitorSurveyAnalytics").then(m => ({ default: m.VisitorSurveyAnalytics })));
+const SmartAlertAdmin = lazy(() => import("@/components/admin/SmartAlertAdmin").then(m => ({ default: m.SmartAlertAdmin })));
+const ShopFloorDisplayManagement = lazy(() => import("@/components/admin/ShopFloorDisplayManagement").then(m => ({ default: m.ShopFloorDisplayManagement })));
+
+const AdminTabFallback = () => <div className="p-6"><Skeleton className="h-64 w-full rounded-lg" /></div>;
 
 export default function Admin() {
   const navigate = useNavigate();
