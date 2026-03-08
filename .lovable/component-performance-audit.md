@@ -46,23 +46,29 @@ All 6 phases of the performance improvement plan are now **complete**. This docu
 
 ## 2. Queue Components
 
-### useQueue Hook (591 lines)
-- **Status:** ⚠️ Large hook
+### useQueue Hook (605 lines)
+- **Status:** ⚠️ Large hook — candidate for React Query migration
 - **Optimizations applied:**
   - Debounced realtime handler (500ms)
   - `document.hidden` guard
   - Optimistic updates on `updateItem` with rollback
 - **Recommendations:**
+  - Migrate to React Query (`useQuery` + `useMutation`)
   - Extract `syncStationStatus` to shared utility
-  - Consider migrating to React Query for `items` state
+  - **Phase:** 5 (see `component-performance-phases.md`)
+
+### QueueItemDetailDialog (1,311 lines)
+- **Status:** 🔴 CRITICAL — largest component in project
+- **Violations:** Imports `useUserOrganization` directly (PRD 11 §5 violation)
+- **Recommendations:**
+  - Split into 6 sub-components (header, status controls, comments/history/routing/NCR tabs)
+  - Lazy-load routing and NCR tab contents
+  - Replace `useUserOrganization` → `useOrgContext`
+  - **Phase:** 1 (OrgContext fix) + 3 (extraction)
 
 ### QueueKanbanBoard
 - **Status:** ✅ Acceptable
-- **Recommendations:** Virtualize columns if >50 items
-
-### QueueItemDetailDialog
-- **Status:** ⚠️ Complex — many sub-sections
-- **Recommendations:** Lazy-load routing and NCR sub-panels
+- **Recommendations:** Virtualize columns if >50 items (Phase 6)
 
 ---
 
