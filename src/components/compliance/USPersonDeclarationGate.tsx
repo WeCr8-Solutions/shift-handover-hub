@@ -26,9 +26,11 @@ export function USPersonDeclarationGate({ children }: USPersonDeclarationGatePro
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
 
-  if (!checkComplete) return null;
-  if (!declarationBlockingAccess) return <>{children}</>;
-  if (submitted) return <>{children}</>;
+  // Default to showing children — only block when we have positive confirmation
+  // that the org requires declaration AND the user hasn't completed it.
+  // This prevents blank-screen flashes for unauthenticated visitors, users
+  // without an org, and users whose orgs don't use ITAR.
+  if (!checkComplete || !declarationBlockingAccess || submitted) return <>{children}</>;
 
   const handleSubmit = async () => {
     if (!acknowledged || submitting) return;
