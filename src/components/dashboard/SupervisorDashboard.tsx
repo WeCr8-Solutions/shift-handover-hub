@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useState, useEffect } from "react";
+import { useMemo, useCallback, useState, useEffect, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { ProductionAnalytics } from "./ProductionAnalytics";
+const ProductionAnalytics = lazy(() => import("./ProductionAnalytics").then(m => ({ default: m.ProductionAnalytics })));
 import {
   STATUS_CONFIG,
   JOB_STATES,
@@ -712,14 +712,16 @@ export function SupervisorDashboard({
         </div>
       </div>
 
-      {/* Production Analytics Charts */}
-      <ProductionAnalytics
-        stations={filteredStationsForAnalytics}
-        handoffs={dbRecords}
-        isRefreshing={isRefreshing}
-        lastRefreshedAt={lastRefreshedAt}
-        onRefresh={handleManualRefresh}
-      />
+      {/* Production Analytics Charts — lazy loaded */}
+      <Suspense fallback={<div className="bg-card border border-border rounded-lg p-8 text-center text-muted-foreground text-sm">Loading analytics…</div>}>
+        <ProductionAnalytics
+          stations={filteredStationsForAnalytics}
+          handoffs={dbRecords}
+          isRefreshing={isRefreshing}
+          lastRefreshedAt={lastRefreshedAt}
+          onRefresh={handleManualRefresh}
+        />
+      </Suspense>
     </div>
   );
 }

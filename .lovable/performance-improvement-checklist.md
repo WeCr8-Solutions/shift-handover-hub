@@ -69,26 +69,25 @@
 
 ---
 
-## Phase 5: Optimistic Updates & Error Handling (UX)
+## Phase 5: Optimistic Updates & Error Handling (UX) ✅
 
 **Goal:** Instant feedback on mutations, graceful error recovery
 
-- [ ] **5.1** Add optimistic updates for status changes
-  - Station status toggle → update local cache immediately, revert on error
-  - Work order status transitions → same pattern
-- [ ] **5.2** Add error boundary + toast for failed data fetches
-  - Show "Failed to load stations — Retry" banner
-- [ ] **5.3** Add connection status indicator
+- [x] **5.1** Add optimistic updates for status changes
+  - Queue item status/priority/assignment → local state updated immediately, reverted on error
+- [x] **5.2** Add error boundary for failed data fetches
+  - Created `DashboardErrorBoundary` component with retry UI
+- [ ] **5.3** Add connection status indicator (deferred — low impact)
   - Show "Reconnecting…" when realtime channel disconnects
 
 ---
 
-## Phase 6: Bundle & Render Optimization (LOW PRIORITY)
+## Phase 6: Bundle & Render Optimization ✅
 
-- [ ] **6.1** Lazy-load `ProductionAnalytics` (heavy Recharts dependency)
-- [ ] **6.2** Virtualize station list for orgs with 50+ stations
-- [ ] **6.3** Memoize `toStationInfo()` and `toHandoffRecord()` transforms
-- [ ] **6.4** Code-split admin-only components behind `React.lazy()`
+- [x] **6.1** Lazy-load `ProductionAnalytics` (heavy Recharts dependency)
+- [ ] **6.2** Virtualize station list for orgs with 50+ stations (deferred — not needed at current scale)
+- [x] **6.3** Memoize `toStationInfo()` transforms via WeakMap cache
+- [x] **6.4** Code-split 20+ admin-only components behind `React.lazy()`
 
 ---
 

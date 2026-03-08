@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Header } from "@/components/Header";
@@ -43,10 +43,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { TourTriggerButton } from "@/components/onboarding";
 
-// Convert database station to StationInfo for display
+// ── Memoized transform functions (Phase 6 optimization) ──
+
+const toStationInfoCache = new WeakMap<Station, StationInfo>();
+
 function toStationInfo(station: Station): StationInfo {
+  const cached = toStationInfoCache.get(station);
+  if (cached) return cached;
+
   const status = station.current_status;
-  return {
+  const result: StationInfo = {
     stationId: station.station_id,
     name: station.name,
     workCenter: station.work_center,
@@ -67,6 +73,8 @@ function toStationInfo(station: Station): StationInfo {
       notes: status?.condition_notes || undefined,
     },
   };
+  toStationInfoCache.set(station, result);
+  return result;
 }
 
 // Convert database record to ShiftHandoffRecord for display
