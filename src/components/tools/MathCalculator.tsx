@@ -70,8 +70,10 @@ function parseExpr(tokens: Token[], pos: { i: number }): number {
 
 function parseTerm(tokens: Token[], pos: { i: number }): number {
   let left = parseExponent(tokens, pos);
-  while (pos.i < tokens.length && tokens[pos.i].type === "op" && ("*/%".includes((tokens[pos.i] as { type: "op"; value: string }).value))) {
-    const op = (tokens[pos.i] as { type: "op"; value: string }).value;
+  while (pos.i < tokens.length) {
+    const t = tokens[pos.i];
+    if (t.type !== "op" || !"*/%".includes(t.value)) break;
+    const op = t.value;
     pos.i++;
     const right = parseExponent(tokens, pos);
     if (op === "*") left *= right;
