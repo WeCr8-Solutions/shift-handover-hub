@@ -14,7 +14,8 @@ import { RoleScopeTestRunner } from "@/components/testing/RoleScopeTestRunner";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, FlaskConical, Code, Factory, Zap, CheckCircle2, XCircle, Clock, FileCode2, ShieldCheck } from "lucide-react";
+import { FlaskConical, Code, Factory, Zap, CheckCircle2, XCircle, Clock, FileCode2, ShieldCheck } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Testing() {
   const navigate = useNavigate();
