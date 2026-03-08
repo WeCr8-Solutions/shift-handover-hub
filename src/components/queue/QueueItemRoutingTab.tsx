@@ -313,10 +313,11 @@ export function QueueItemRoutingTab({
                               const result = await dimRequests.reviewRequest(reqId, status, notes);
                               if (!result.error) {
                                 await dimRequests.fetchRequests(step.id);
+                                await dimensions.fetchRequirements(step.id);
                               }
                               return result;
                             }}
-                            onAddDimension={(stepId) => setAddingDimForStep(stepId)}
+                            onAddDimensionDirect={dimensions.addRequirement}
                           />
 
                           {/* Supervisor: add dimension button */}
