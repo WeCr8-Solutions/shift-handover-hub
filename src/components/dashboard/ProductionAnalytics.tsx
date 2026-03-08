@@ -19,43 +19,13 @@ import {
 import { BarChart3, PieChart as PieChartIcon, TrendingUp, Filter, Activity, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// Inline status configuration (can be extracted to @/lib/stationStatus.ts)
-const JOB_STATES = {
-  PART_RUNNING: "Part Running",
-  PROCESSING: "Processing",
-  SETUP_IN_PROGRESS: "Setup in Progress",
-  FIRST_ARTICLE: "First Article in Process",
-  MACHINE_DOWN: "Machine Down / Issue",
-  ON_HOLD: "On Hold",
-} as const;
-
-type StatusLabel = "running" | "setup" | "down" | "waiting" | "idle";
-
-const STATUS_COLORS: Record<StatusLabel, string> = {
-  running: "hsl(142, 71%, 45%)",
-  setup: "hsl(38, 92%, 50%)",
-  waiting: "hsl(217, 91%, 60%)",
-  down: "hsl(0, 84%, 60%)",
-  idle: "hsl(215, 14%, 34%)",
-};
-
-const STATUS_CONFIG: Record<StatusLabel, { displayName: string }> = {
-  running: { displayName: "Running" },
-  setup: { displayName: "Setup" },
-  waiting: { displayName: "Waiting" },
-  down: { displayName: "Down" },
-  idle: { displayName: "Idle" },
-};
-
-function getStatusFromJobState(jobState: string | null | undefined): StatusLabel {
-  if (!jobState) return "idle";
-  const state = jobState.trim();
-  if (state === JOB_STATES.PART_RUNNING || state === JOB_STATES.PROCESSING) return "running";
-  if (state === JOB_STATES.SETUP_IN_PROGRESS || state === JOB_STATES.FIRST_ARTICLE) return "setup";
-  if (state === JOB_STATES.MACHINE_DOWN) return "down";
-  if (state.includes("Waiting") || state === JOB_STATES.ON_HOLD) return "waiting";
-  return "idle";
-}
+// Use shared status configuration
+import {
+  STATUS_CONFIG,
+  STATUS_COLORS,
+  getStatusFromJobState,
+  type StatusLabel,
+} from "./stationStatus";
 
 interface StationData {
   id: string;

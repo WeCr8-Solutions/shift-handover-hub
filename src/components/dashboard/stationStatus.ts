@@ -84,18 +84,36 @@ export function getStatusFromJobState(jobState: string | null | undefined): Stat
   if (!jobState) return "idle";
   
   const state = jobState.trim();
+  const lower = state.toLowerCase();
   
+  // Running states
   if (state === JOB_STATES.PART_RUNNING || state === JOB_STATES.PROCESSING) {
     return "running";
   }
-  if (state === JOB_STATES.SETUP_IN_PROGRESS || state === JOB_STATES.FIRST_ARTICLE) {
+  // Setup states (match both "Setup in Progress" and bare "Setup")
+  if (
+    state === JOB_STATES.SETUP_IN_PROGRESS ||
+    state === JOB_STATES.FIRST_ARTICLE ||
+    lower === "setup"
+  ) {
     return "setup";
   }
-  if (state === JOB_STATES.MACHINE_DOWN) {
+  // Down states
+  if (state === JOB_STATES.MACHINE_DOWN || lower === "down") {
     return "down";
   }
-  if (state.includes("Waiting") || state === JOB_STATES.ON_HOLD) {
+  // Waiting states (includes "Waiting on Material", "Ready for Pickup", etc.)
+  if (
+    state.includes("Waiting") ||
+    state === JOB_STATES.ON_HOLD ||
+    lower.includes("ready for") ||
+    lower === "pending"
+  ) {
     return "waiting";
+  }
+  // Explicit idle
+  if (lower === "idle" || lower === "offline" || lower === "inactive") {
+    return "idle";
   }
   
   return "idle";

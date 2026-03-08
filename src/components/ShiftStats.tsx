@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { mockStations, mockHandoffRecords } from "@/lib/mockData";
 import { useMemo } from "react";
+import { getStatusFromJobState } from "@/components/dashboard/stationStatus";
 
 export function ShiftStats() {
   const { user } = useAuth();
@@ -30,19 +31,22 @@ export function ShiftStats() {
   }, [user, dbRecords]);
 
   const runningStations = stations.filter(
-    (s: any) => s.currentJob?.state === "Part Running" || s.currentJob?.state === "Processing"
+    (s: any) => {
+      const status = getStatusFromJobState(s.currentJob?.state);
+      return status === "running";
+    }
   ).length;
   
   const downStations = stations.filter(
-    (s: any) => s.currentJob?.state === "Machine Down / Issue"
+    (s: any) => getStatusFromJobState(s.currentJob?.state) === "down"
   ).length;
   
   const setupStations = stations.filter(
-    (s: any) => s.currentJob?.state === "Setup in Progress" || s.currentJob?.state === "First Article in Process"
+    (s: any) => getStatusFromJobState(s.currentJob?.state) === "setup"
   ).length;
 
   const waitingStations = stations.filter(
-    (s: any) => s.currentJob?.state?.includes("Waiting") || s.currentJob?.state === "On Hold"
+    (s: any) => getStatusFromJobState(s.currentJob?.state) === "waiting"
   ).length;
 
   const pendingHandoffs = handoffRecords.length;
