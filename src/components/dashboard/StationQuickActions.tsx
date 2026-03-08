@@ -1,4 +1,4 @@
-import React from "react";
+import { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ContextMenu,
@@ -39,7 +39,7 @@ export interface QuickActionTarget {
 
 interface StationQuickActionsProps {
   target: QuickActionTarget;
-  children: React.ReactNode;
+  children: ReactNode;
   onViewDetail?: (target: QuickActionTarget) => void;
   onNavigateToQueue?: (target: QuickActionTarget) => void;
   onCreateHandoff?: (target: QuickActionTarget) => void;
@@ -49,10 +49,7 @@ interface StationQuickActionsProps {
   className?: string;
 }
 
-export const StationQuickActions = React.forwardRef<
-  HTMLDivElement,
-  StationQuickActionsProps
->(({
+export function StationQuickActions({
   target,
   children,
   onViewDetail,
@@ -62,7 +59,7 @@ export const StationQuickActions = React.forwardRef<
   onRequestDelivery,
   onReportIssue,
   className,
-}, ref) => {
+}: StationQuickActionsProps) {
   const navigate = useNavigate();
 
   const handleViewDetail = () => {
@@ -93,11 +90,7 @@ export const StationQuickActions = React.forwardRef<
   return (
     <ContextMenu>
       <ContextMenuTrigger className={className} asChild>
-        {typeof children === "object" && React.isValidElement(children) ? (
-          React.cloneElement(children as React.ReactElement<{ ref?: React.Ref<HTMLDivElement> }>, { ref })
-        ) : (
-          <div ref={ref}>{children}</div>
-        )}
+        <div>{children}</div>
       </ContextMenuTrigger>
       <ContextMenuContent className="w-56">
         <ContextMenuLabel className="flex items-center gap-2 text-xs">
@@ -183,6 +176,4 @@ export const StationQuickActions = React.forwardRef<
       </ContextMenuContent>
     </ContextMenu>
   );
-});
-
-StationQuickActions.displayName = "StationQuickActions";
+}
