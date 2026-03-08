@@ -20,7 +20,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Users, Plus, UserPlus, Trash2, Crown, Shield, User, Loader2, Wrench, QrCode } from "lucide-react";
+import { Users, Plus, UserPlus, Trash2, Crown, Shield, User, Loader2, Wrench, QrCode, Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { TeamStationManager } from "./TeamStationManager";
 import { InviteCodeGenerator } from "./InviteCodeGenerator";
