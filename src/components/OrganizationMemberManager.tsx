@@ -631,6 +631,13 @@ export function OrganizationMemberManager() {
                           )}
                         </div>
                       </TableCell>
+                      {/* Seat */}
+                      <TableCell>
+                        <Badge variant="outline" className="gap-1 text-xs bg-primary/10 text-primary border-primary/20">
+                          <CheckCircle className="w-3 h-3" />
+                          Assigned
+                        </Badge>
+                      </TableCell>
 
                       {/* Joined */}
                       <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
