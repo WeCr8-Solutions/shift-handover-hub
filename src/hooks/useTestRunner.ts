@@ -473,6 +473,23 @@ function getTestName(suite: string, index: number): string {
       "renders search input",
       "shows empty state when no entries",
     ],
+    "useShopFloorDisplays Hook": [
+      "fetches displays on mount and sets loading false",
+      "returns loading state initially",
+      "createDisplay returns no error when authenticated",
+      "deleteDisplay returns no error",
+      "regenerateToken returns no error",
+      "toggleActive returns no error",
+      "exposes refresh function",
+    ],
+    "ShopFloorDisplay Page": [
+      "shows error when no token provided",
+      "shows loading state while validating token",
+      "shows error for invalid token response",
+      "shows error on RPC failure",
+      "renders supervisor display when token valid",
+      "renders operator display when token valid",
+    ],
   };
   
   return testNames[suite]?.[index] || `Test case ${index + 1}`;
