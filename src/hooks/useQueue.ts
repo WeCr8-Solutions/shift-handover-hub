@@ -87,6 +87,20 @@ export interface QueueItemHistory {
   created_at: string;
 }
 
+export interface RoutingStepInput {
+  step_number: number;
+  operation_name: string;
+  operation_type: string;
+  station_id?: string;
+  setup_time_minutes?: number;
+  first_article_minutes?: number;
+  cycle_time_minutes?: number;
+  notes?: string;
+  outside_vendor?: string;
+  po_number?: string;
+  expected_return_date?: string;
+}
+
 export interface CreateQueueItemInput {
   item_type: QueueItemType;
   title: string;
@@ -116,6 +130,8 @@ export interface CreateQueueItemInput {
   part_catalog_id?: string;
   required_tolerance?: string;
   surface_finish?: string;
+  // Routing
+  routing_steps?: RoutingStepInput[];
 }
 
 export interface UpdateQueueItemInput {
