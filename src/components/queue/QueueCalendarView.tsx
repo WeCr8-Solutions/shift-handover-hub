@@ -330,22 +330,21 @@ export function QueueCalendarView({ items, onItemClick }: QueueCalendarViewProps
                       return (
                         <div className="relative w-full h-full flex flex-col items-center">
                           <span>{date.getDate()}</span>
-                          {dayItems.length > 0 && (
+                          {dayEntries.length > 0 && (
                             <div className="flex gap-0.5 mt-0.5">
-                              {dayItems.slice(0, 3).map((item, i) => (
+                              {dayEntries.slice(0, 3).map((entry, i) => (
                                 <div
                                   key={i}
                                   className={cn(
                                     "w-1.5 h-1.5 rounded-full",
-                                    item.priority === "critical" ? "bg-destructive" :
-                                    item.priority === "urgent" ? "bg-orange-500" :
-                                    item.priority === "high" ? "bg-yellow-500" :
+                                    entry.dateType === "due" ? "bg-destructive" :
+                                    entry.dateType === "est_complete" ? "bg-amber-500" :
                                     "bg-primary"
                                   )}
                                 />
                               ))}
-                              {dayItems.length > 3 && (
-                                <span className="text-[8px] text-muted-foreground">+{dayItems.length - 3}</span>
+                              {dayEntries.length > 3 && (
+                                <span className="text-[8px] text-muted-foreground">+{dayEntries.length - 3}</span>
                               )}
                             </div>
                           )}
