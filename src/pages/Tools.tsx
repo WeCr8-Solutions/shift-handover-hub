@@ -1,13 +1,15 @@
 import { useState, useMemo, Suspense } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { SEOHead } from "@/components/SEOHead";
 import { Header } from "@/components/Header";
 import { TOOL_REGISTRY, TOOL_CATEGORIES } from "@/components/tools";
-import { Search, Wrench, Loader2 } from "lucide-react";
+import { Search, Wrench, Loader2, ArrowLeft } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const categoryColors: Record<string, string> = {
