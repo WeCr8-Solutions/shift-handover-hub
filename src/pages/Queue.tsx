@@ -50,6 +50,7 @@ export default function Queue() {
   const { hasAdminAccess, loading: accessLoading } = useAdminAccess();
   const { organization } = useUserOrganization();
   const { activeSessions = [] } = useOperatorSessions();
+  const { stations = [] } = useStations();
 
   const urlStationId = searchParams.get("station");
 
