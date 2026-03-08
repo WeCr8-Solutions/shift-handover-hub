@@ -57,7 +57,7 @@ export function SupervisorDashboard({
 }: SupervisorDashboardProps) {
   const navigate = useNavigate();
   const { currentTeam, setCurrentTeam, teams } = useCurrentTeam();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const {
     stations: dbStations,
     loading: stationsLoading,

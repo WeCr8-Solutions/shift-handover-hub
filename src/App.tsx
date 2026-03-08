@@ -133,6 +133,7 @@ const App = () => (
           </OnboardingProvider>
           </ActAsProvider>
         </TeamProvider>
+        </OrgProvider>
       </AuthProvider>
     </QueryClientProvider>
   </HelmetProvider>

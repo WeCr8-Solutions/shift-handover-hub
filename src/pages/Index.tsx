@@ -145,7 +145,7 @@ const Index = () => {
 
   const { user, loading: authLoading } = useAuth();
   const { currentTeam } = useCurrentTeam();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const { stations: dbStations, loading: stationsLoading } = useStations(currentTeam?.id, organization?.id);
   const {
     records: dbRecords,
