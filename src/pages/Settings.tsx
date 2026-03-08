@@ -232,6 +232,10 @@ export default function Settings() {
               </Card>
             </div>
           </LazyTabContent>
+
+          <LazyTabContent value="my-issues" activeTab={activeTab}>
+            <MyIssuesPanel />
+          </LazyTabContent>
         </Tabs>
       </main>
     </div>
