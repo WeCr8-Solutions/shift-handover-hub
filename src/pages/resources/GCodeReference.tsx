@@ -63,7 +63,7 @@ export default function GCodeReference() {
             </p>
           </div>
 
-          <AdPlacement format="horizontal" className="mb-8" />
+          
 
           {categories.map((category) => (
             <div key={category} className="mb-8">
