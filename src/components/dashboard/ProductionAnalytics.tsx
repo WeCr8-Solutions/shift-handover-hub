@@ -653,65 +653,67 @@ export function ProductionAnalytics({
                 No handoff data in this period. Submit handoffs to see trend metrics.
               </div>
             ) : (
-              <ResponsiveContainer width="100%" height={280}>
-                <AreaChart
-                  data={trendData.data}
-                  margin={{ top: 5, right: 10, left: -10, bottom: 5 }}
-                  role="img"
-                  aria-label={`Area chart showing handoff activity and parts output ${trendData.mode === "hourly" ? "throughout today" : "over the last 7 days"}`}
-                >
-                  <defs>
-                    <linearGradient id="gradParts" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={STATUS_COLORS.running} stopOpacity={0.3} />
-                      <stop offset="95%" stopColor={STATUS_COLORS.running} stopOpacity={0} />
-                    </linearGradient>
-                    <linearGradient id="gradHandoffs" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-                  <XAxis
-                    dataKey="label"
-                    tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
-                    axisLine={{ stroke: "hsl(var(--border))" }}
-                    tickLine={false}
-                    interval={trendData.mode === "hourly" ? 2 : 0}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "8px",
-                      fontSize: "12px",
-                    }}
-                  />
-                  <Legend iconType="circle" wrapperStyle={{ fontSize: "11px" }} />
-                  <Area
-                    type="monotone"
-                    dataKey="parts"
-                    name="Parts"
-                    stroke={STATUS_COLORS.running}
-                    fill="url(#gradParts)"
-                    strokeWidth={2}
-                    isAnimationActive={!prefersReducedMotion}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="handoffs"
-                    name="Handoffs"
-                    stroke="hsl(var(--primary))"
-                    fill="url(#gradHandoffs)"
-                    strokeWidth={2}
-                    isAnimationActive={!prefersReducedMotion}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+              <div className="min-w-[500px]">
+                <ResponsiveContainer width="100%" height={280}>
+                  <AreaChart
+                    data={trendData.data}
+                    margin={{ top: 5, right: 10, left: -10, bottom: 5 }}
+                    role="img"
+                    aria-label={`Area chart showing handoff activity and parts output ${trendData.mode === "hourly" ? "throughout today" : "over the last 7 days"}`}
+                  >
+                    <defs>
+                      <linearGradient id="gradParts" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={STATUS_COLORS.running} stopOpacity={0.3} />
+                        <stop offset="95%" stopColor={STATUS_COLORS.running} stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="gradHandoffs" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                    <XAxis
+                      dataKey="label"
+                      tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
+                      axisLine={{ stroke: "hsl(var(--border))" }}
+                      tickLine={false}
+                      interval={trendData.mode === "hourly" ? 2 : 0}
+                    />
+                    <YAxis
+                      tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px",
+                        fontSize: "12px",
+                      }}
+                    />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: "11px" }} />
+                    <Area
+                      type="monotone"
+                      dataKey="parts"
+                      name="Parts"
+                      stroke={STATUS_COLORS.running}
+                      fill="url(#gradParts)"
+                      strokeWidth={2}
+                      isAnimationActive={!prefersReducedMotion}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="handoffs"
+                      name="Handoffs"
+                      stroke="hsl(var(--primary))"
+                      fill="url(#gradHandoffs)"
+                      strokeWidth={2}
+                      isAnimationActive={!prefersReducedMotion}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
             )}
           </div>
         )}
