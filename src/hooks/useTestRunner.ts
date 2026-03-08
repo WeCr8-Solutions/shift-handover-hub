@@ -72,6 +72,23 @@ const testFileRegistry: Record<string, { path: string; description: string }> = 
   // Shop Floor Display
   "useShopFloorDisplays Hook": { path: "src/hooks/useShopFloorDisplays.test.ts", description: "Shop floor display CRUD, token regen, toggle" },
   "ShopFloorDisplay Page": { path: "src/pages/ShopFloorDisplay.test.tsx", description: "Display page token validation & mode rendering" },
+  // ERP & Connectors
+  "useERPConnector Hook": { path: "src/hooks/useERPConnector.test.ts", description: "ERP connection, sync, status mapping, tenant isolation" },
+  "JobLine Client Connector": { path: "src/connectors/jobline/client.test.ts", description: "JobLine relay client connection & messaging" },
+  "JobLine StatusBridge": { path: "src/connectors/jobline/statusBridge.test.ts", description: "Machine status snapshot bridging & offline fallback" },
+  "JobLine AlarmBridge": { path: "src/connectors/jobline/alarmBridge.test.ts", description: "Machine alarm event bridging" },
+  // Dashboard (additional)
+  "DashboardRefresh": { path: "src/components/dashboard/DashboardRefresh.test.tsx", description: "Background refresh lifecycle & visibility-aware polling" },
+  "ProductionAnalytics": { path: "src/components/dashboard/ProductionAnalytics.test.tsx", description: "Production analytics chart rendering" },
+  "StationCheckIn": { path: "src/components/dashboard/StationCheckIn.test.tsx", description: "Station check-in flow & session management" },
+  // Queue (additional)
+  "QueueStateMachine": { path: "src/components/queue/QueueStateMachine.test.ts", description: "Status transition validation, kanban drag-drop rules" },
+  // Team Management
+  "TeamManagement": { path: "src/components/TeamManagement.test.tsx", description: "Team CRUD and member management UI" },
+  // Store
+  "MachineStatusStore": { path: "src/store/machineStatusStore.test.ts", description: "Zustand machine status store operations" },
+  // Types
+  "Machine Types": { path: "src/types/machine.test.ts", description: "Machine type definitions & guard functions" },
 };
 
 // Parse vitest output to extract test results
