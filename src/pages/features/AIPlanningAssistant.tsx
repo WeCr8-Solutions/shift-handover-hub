@@ -321,7 +321,7 @@ export default function AIPlanningAssistant() {
         </div>
       </section>
 
-      <AdPlacement format="horizontal" className="py-6" />
+      
 
       {/* ── How It Works ─────────────────────────────────────── */}
       <section className="py-16 md:py-24">
