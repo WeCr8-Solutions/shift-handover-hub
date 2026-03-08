@@ -2,8 +2,9 @@ import { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTrialStatus } from "@/hooks/useTrialStatus";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, CreditCard, Loader2 } from "lucide-react";
+import { AlertTriangle, CreditCard } from "lucide-react";
 
 interface ExpiredTrialGateProps {
   children: ReactNode;
