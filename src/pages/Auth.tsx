@@ -197,10 +197,16 @@ export default function Auth() {
 
       // Send welcome email
       sendWelcomeEmail(signupEmail, displayName);
+
+      // Clear signup form so user can switch to login tab
+      setSignupEmail("");
+      setSignupPassword("");
+      setSignupConfirmPassword("");
+      setDisplayName("");
       
       toast({
         title: "Account created!",
-        description: "Please check your email to verify your account before signing in.",
+        description: "Please check your email to verify your account, then sign in using the Login tab.",
       });
     }
   };

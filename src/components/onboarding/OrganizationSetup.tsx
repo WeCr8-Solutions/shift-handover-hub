@@ -76,12 +76,20 @@ export function OrganizationSetup({ onComplete, onSkip }: OrganizationSetupProps
 
       if (orgError) throw orgError;
 
-      // Add user as owner
+      // Add user as owner of the organization
       const { error: memberError } = await supabase
         .from("organization_members")
         .insert({ organization_id: org.id, user_id: user.id, role: "owner" });
 
       if (memberError) throw memberError;
+
+      // Assign the 'admin' app_role so RLS policies grant full access
+      await supabase
+        .from("user_roles")
+        .upsert(
+          { user_id: user.id, role: "admin" as any },
+          { onConflict: "user_id,role" }
+        );
 
       // Auto-create a default team so solo operators can start immediately
       const { data: team, error: teamError } = await supabase
