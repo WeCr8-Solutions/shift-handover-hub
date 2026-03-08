@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import type { SmartAlert, SmartAlertType } from "@/hooks/useSmartAlerts";
+import { StationQuickActions, type QuickActionTarget } from "@/components/dashboard/StationQuickActions";
 import {
   AlertTriangle,
   Clock,
