@@ -322,14 +322,14 @@ export function TeamManagement() {
 interface TeamCardProps {
   team: Team;
   isSelected: boolean;
-  isOwner: boolean;
+  canManage: boolean;
   onSelect: () => void;
   onEdit: () => void;
   onDelete: () => void;
   onAddStations: () => void;
 }
 
-function TeamCard({ team, isSelected, isOwner, onSelect, onEdit, onDelete, onAddStations }: TeamCardProps) {
+function TeamCard({ team, isSelected, canManage, onSelect, onEdit, onDelete, onAddStations }: TeamCardProps) {
   const { stations } = useStations(team.id);
   const stationCount = stations.length;
 
