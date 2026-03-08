@@ -379,8 +379,17 @@ const Index = () => {
 
               <TabsContent value="stations" className="mt-0" data-tour="station-grid">
                 {isLoading && !hasData && user ? (
-                  <div className="flex items-center justify-center py-12">
-                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                      {Array.from({ length: 6 }).map((_, i) => (
+                        <div key={i} className="bg-card border border-border rounded-lg p-4 space-y-3">
+                          <Skeleton className="h-5 w-32" />
+                          <Skeleton className="h-4 w-full" />
+                          <Skeleton className="h-4 w-3/4" />
+                          <Skeleton className="h-8 w-full" />
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ) : (
                   <div className="flex gap-6">
