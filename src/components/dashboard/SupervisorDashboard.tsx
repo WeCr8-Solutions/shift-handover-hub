@@ -61,6 +61,9 @@ export function SupervisorDashboard({
     refreshRecords,
   } = useHandoffRecords(currentTeam?.id, organization?.id);
 
+  // Read org-configured refresh interval from settings
+  const refreshIntervalMs = useOrgRefreshInterval();
+
   // Centralized background refresh — no flash spinners on subsequent fetches
   const { initialLoading, isRefreshing, lastRefreshedAt, refresh: handleManualRefresh } =
     useBackgroundRefresh({
@@ -69,7 +72,7 @@ export function SupervisorDashboard({
         () => refreshStations?.() as unknown as Promise<unknown>,
         () => refreshRecords?.() as unknown as Promise<unknown>,
       ],
-      intervalMs: 300_000,
+      intervalMs: refreshIntervalMs,
       enabled: !!(organization?.id),
     });
 
