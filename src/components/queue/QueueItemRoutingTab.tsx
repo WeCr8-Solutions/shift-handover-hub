@@ -255,6 +255,63 @@ export function QueueItemRoutingTab({
                   {step.notes && (
                     <p className="text-xs text-muted-foreground mt-1 italic">{step.notes}</p>
                   )}
+
+                  {/* Dimension toggle */}
+                  <button
+                    className="flex items-center gap-1 text-xs text-primary hover:underline mt-1"
+                    onClick={() => {
+                      const isExpanding = expandedStep !== step.id;
+                      setExpandedStep(isExpanding ? step.id : null);
+                      if (isExpanding) {
+                        dimensions.loadAll(step.id, item.id);
+                      }
+                    }}
+                  >
+                    <Ruler className="w-3 h-3" />
+                    Dimensions
+                    {expandedStep === step.id ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                  </button>
+
+                  {/* Expanded dimension section */}
+                  {expandedStep === step.id && (
+                    <div className="mt-2 space-y-2">
+                      {dimensions.loading ? (
+                        <Skeleton className="h-16 w-full" />
+                      ) : (
+                        <>
+                          <DimensionCheckForm
+                            requirements={dimensions.requirements}
+                            readings={dimensions.readings}
+                            queueItemId={item.id}
+                            routingStepId={step.id}
+                            onRecordReading={dimensions.recordReading}
+                            readOnly={isComplete}
+                          />
+                          {dimensions.requirements.length === 0 && !addingDimForStep && (
+                            <p className="text-xs text-muted-foreground text-center py-2">No dimension checks required for this step.</p>
+                          )}
+                          {/* Supervisor: add dimension button */}
+                          {(hasAdminAccess || hasOrgSupervisorAccess) && !addingDimForStep && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="gap-1 text-xs w-full"
+                              onClick={() => setAddingDimForStep(step.id)}
+                            >
+                              <Plus className="w-3 h-3" /> Add Dimension Requirement
+                            </Button>
+                          )}
+                          {addingDimForStep === step.id && (
+                            <AddDimensionForm
+                              routingStepId={step.id}
+                              onAdd={dimensions.addRequirement}
+                              onCancel={() => setAddingDimForStep(null)}
+                            />
+                          )}
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
