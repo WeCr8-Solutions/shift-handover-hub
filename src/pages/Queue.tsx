@@ -133,7 +133,15 @@ export default function Queue() {
   if (authLoading || accessLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="w-full max-w-4xl space-y-4 px-6">
+          <Skeleton className="h-8 w-48" />
+          <div className="grid grid-cols-4 gap-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-20 rounded-lg" />
+            ))}
+          </div>
+          <Skeleton className="h-64 w-full rounded-lg" />
+        </div>
       </div>
     );
   }
