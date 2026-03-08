@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense, lazy } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import {
   Loader2,
@@ -17,7 +17,6 @@ import {
   GraduationCap,
   Plug,
   Store,
-  ShieldAlert,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAccess } from "@/hooks/useAdminData";
@@ -31,14 +30,22 @@ import { WorkCenterSettings } from "@/components/settings/WorkCenterSettings";
 import { OrganizationSettings } from "@/components/settings/OrganizationSettings";
 import { BillingSettings } from "@/components/settings/BillingSettings";
 import { OnboardingSettings } from "@/components/settings/OnboardingSettings";
-import { ERPConnectorSettings } from "@/components/settings/ERPConnectorSettings";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EntitlementGate } from "@/components/EntitlementGate";
 import { PartCatalogManager } from "@/components/settings/PartCatalogManager";
 import { MachineProfileMarketplace } from "@/components/station/MachineProfileMarketplace";
-import { SmartAlertSettings } from "@/components/alerts/SmartAlertSettings";
 import { useSmartAlerts } from "@/hooks/useSmartAlerts";
-import { Badge } from "@/components/ui/badge";
+import { SmartAlertSettings } from "@/components/alerts/SmartAlertSettings";
+import { LazyTabContent } from "@/components/settings/LazyTabContent";
+import { ReadOnlyGate } from "@/components/settings/ReadOnlyGate";
+import { SettingsSkeleton } from "@/components/settings/SettingsSkeleton";
+
+// Lazy-load heavy enterprise-only component
+const ERPConnectorSettings = lazy(() =>
+  import("@/components/settings/ERPConnectorSettings").then((m) => ({
+    default: m.ERPConnectorSettings,
+  }))
+);
 
 function DeveloperOnlyPlaceholder({ feature }: { feature: string }) {
   return (
@@ -57,17 +64,6 @@ function DeveloperOnlyPlaceholder({ feature }: { feature: string }) {
   );
 }
 
-function ReadOnlyNotice() {
-  return (
-    <div className="mb-4 flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
-      <ShieldAlert className="h-4 w-4 text-amber-600 shrink-0" />
-      <p className="text-sm text-amber-700 dark:text-amber-400">
-        These settings are managed by your organization admin. Contact them to request changes.
-      </p>
-    </div>
-  );
-}
-
 export default function Settings() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
@@ -80,7 +76,6 @@ export default function Settings() {
   const showBillingTab = isDeveloper || canManageBilling;
   const showERPTab = isDeveloper || canManageBilling;
 
-  // Org-level settings are editable by admins/owners/supervisors, read-only for operators
   const isOrgAdmin = organizationRole === "admin" || organizationRole === "owner";
   const isSupervisor = organizationRole === "supervisor";
   const canEditOrgSettings = isOrgAdmin || isSupervisor || isDeveloper;
@@ -99,29 +94,23 @@ export default function Settings() {
     );
   }
 
-  if (!user) {
-    return null;
-  }
+  if (!user) return null;
 
-  // Define tab configuration for DRY rendering
   const tabs = [
     { value: "general", label: "General", icon: Settings2, show: true },
     { value: "organization", label: "Organization", icon: Building2, show: true },
     { value: "billing", label: "Billing", icon: CreditCard, show: showBillingTab },
-    { value: "manufacturing", label: "Manufacturing", icon: Factory, show: true },
-    { value: "shifts", label: "Shifts", icon: Clock, show: true },
-    { value: "work-centers", label: "Work Centers", icon: Wrench, show: true },
+    { value: "manufacturing", label: "Manufacturing", icon: Factory, show: true, orgLevel: true },
+    { value: "shifts", label: "Shifts", icon: Clock, show: true, orgLevel: true },
+    { value: "work-centers", label: "Work Centers", icon: Wrench, show: true, orgLevel: true },
     { value: "notifications", label: "Notifications", icon: Bell, show: true },
-    { value: "alerts", label: "Alerts", icon: BellRing, show: true },
+    { value: "alerts", label: "Alerts", icon: BellRing, show: true, orgLevel: true },
     { value: "onboarding", label: "Onboarding", icon: GraduationCap, show: true },
     { value: "erp", label: "ERP", icon: Plug, show: showERPTab },
     { value: "marketplace", label: "Marketplace", icon: Store, show: true },
   ];
 
   const visibleTabs = tabs.filter((t) => t.show);
-
-  // Org-level tabs that require admin/supervisor access to edit
-  const orgLevelTabs = ["manufacturing", "shifts", "work-centers", "alerts"];
 
   return (
     <div className="min-h-screen bg-background">
@@ -137,12 +126,10 @@ export default function Settings() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          {/* Scrollable tabs for mobile */}
           <ScrollArea className="w-full">
             <TabsList className="inline-flex h-auto w-max gap-2 bg-transparent p-0">
               {visibleTabs.map((tab) => {
                 const Icon = tab.icon;
-                const isOrgTab = orgLevelTabs.includes(tab.value);
                 return (
                   <TabsTrigger
                     key={tab.value}
@@ -151,7 +138,7 @@ export default function Settings() {
                   >
                     <Icon className="mr-2 h-4 w-4" />
                     {tab.label}
-                    {isOrgTab && !canEditOrgSettings && (
+                    {tab.orgLevel && !canEditOrgSettings && (
                       <Lock className="ml-1.5 h-3 w-3 opacity-50" />
                     )}
                   </TabsTrigger>
@@ -161,66 +148,64 @@ export default function Settings() {
             <ScrollBar orientation="horizontal" />
           </ScrollArea>
 
-          <TabsContent value="general">
+          <LazyTabContent value="general" activeTab={activeTab}>
             <GeneralSettings />
-          </TabsContent>
+          </LazyTabContent>
 
-          <TabsContent value="organization">
+          <LazyTabContent value="organization" activeTab={activeTab}>
             <OrganizationSettings isDeveloper={isDeveloper} />
-          </TabsContent>
+          </LazyTabContent>
 
-          <TabsContent value="billing">
+          <LazyTabContent value="billing" activeTab={activeTab}>
             {showBillingTab ? <BillingSettings /> : <DeveloperOnlyPlaceholder feature="Billing and subscription" />}
-          </TabsContent>
+          </LazyTabContent>
 
-          <TabsContent value="manufacturing">
-            {!canEditOrgSettings && <ReadOnlyNotice />}
-            <div className={!canEditOrgSettings ? "pointer-events-none opacity-75" : ""}>
+          <LazyTabContent value="manufacturing" activeTab={activeTab}>
+            <ReadOnlyGate canEdit={canEditOrgSettings}>
               <div className="space-y-6">
                 <ManufacturingSettings />
                 <PartCatalogManager />
               </div>
-            </div>
-          </TabsContent>
+            </ReadOnlyGate>
+          </LazyTabContent>
 
-          <TabsContent value="shifts">
-            {!canEditOrgSettings && <ReadOnlyNotice />}
-            <div className={!canEditOrgSettings ? "pointer-events-none opacity-75" : ""}>
+          <LazyTabContent value="shifts" activeTab={activeTab}>
+            <ReadOnlyGate canEdit={canEditOrgSettings}>
               <ShiftSettings />
-            </div>
-          </TabsContent>
+            </ReadOnlyGate>
+          </LazyTabContent>
 
-          <TabsContent value="work-centers">
-            {!canEditOrgSettings && <ReadOnlyNotice />}
-            <div className={!canEditOrgSettings ? "pointer-events-none opacity-75" : ""}>
+          <LazyTabContent value="work-centers" activeTab={activeTab}>
+            <ReadOnlyGate canEdit={canEditOrgSettings}>
               <WorkCenterSettings />
-            </div>
-          </TabsContent>
+            </ReadOnlyGate>
+          </LazyTabContent>
 
-          <TabsContent value="notifications">
+          <LazyTabContent value="notifications" activeTab={activeTab}>
             <NotificationSettings />
-          </TabsContent>
+          </LazyTabContent>
 
-          <TabsContent value="alerts">
-            {!canEditOrgSettings && <ReadOnlyNotice />}
-            <div className={!canEditOrgSettings ? "pointer-events-none opacity-75" : ""}>
+          <LazyTabContent value="alerts" activeTab={activeTab}>
+            <ReadOnlyGate canEdit={canEditOrgSettings}>
               <SmartAlertSettings thresholds={thresholds} onSave={saveThresholds} />
-            </div>
-          </TabsContent>
+            </ReadOnlyGate>
+          </LazyTabContent>
 
-          <TabsContent value="onboarding">
+          <LazyTabContent value="onboarding" activeTab={activeTab}>
             <OnboardingSettings />
-          </TabsContent>
+          </LazyTabContent>
 
           {showERPTab && (
-            <TabsContent value="erp">
+            <LazyTabContent value="erp" activeTab={activeTab}>
               <EntitlementGate feature="erp_connector" requiredPlan="enterprise">
-                <ERPConnectorSettings />
+                <Suspense fallback={<SettingsSkeleton rows={3} />}>
+                  <ERPConnectorSettings />
+                </Suspense>
               </EntitlementGate>
-            </TabsContent>
+            </LazyTabContent>
           )}
 
-          <TabsContent value="marketplace">
+          <LazyTabContent value="marketplace" activeTab={activeTab}>
             <div className="space-y-6">
               <Card>
                 <CardHeader>
@@ -233,20 +218,17 @@ export default function Settings() {
                   </CardDescription>
                 </CardHeader>
               </Card>
-
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Machine Profiles</CardTitle>
-                  <CardDescription>
-                    Verified manufacturer specifications for your CNC machines.
-                  </CardDescription>
+                  <CardDescription>Verified manufacturer specifications for your CNC machines.</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <MachineProfileMarketplace stationId={null} stationName={null} />
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
+          </LazyTabContent>
         </Tabs>
       </main>
     </div>

@@ -1,14 +1,13 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
-import { Loader2, Save, Bell, Mail, Smartphone, Moon } from "lucide-react";
+import { Mail, Smartphone, Moon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNotificationPrefs } from "@/hooks/useNotificationPrefs";
+import { SettingsSkeleton } from "./SettingsSkeleton";
+import { SettingsFooter } from "./SettingsFooter";
+import { SettingsSwitchRow } from "./SettingsSwitchRow";
 
 export function NotificationSettings() {
   const { toast } = useToast();
@@ -66,15 +65,9 @@ export function NotificationSettings() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="space-y-4 py-6">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <Card key={i}><CardContent className="py-4 space-y-2"><Skeleton className="h-5 w-32" /><Skeleton className="h-4 w-48" /></CardContent></Card>
-        ))}
-      </div>
-    );
-  }
+  const handleDiscard = () => setSettings(initialSettings);
+
+  if (loading) return <SettingsSkeleton rows={3} />;
 
   return (
     <div className="space-y-6">
@@ -87,45 +80,11 @@ export function NotificationSettings() {
           <CardDescription>Choose which email notifications you want to receive</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between p-3 rounded-lg border">
-            <div>
-              <Label>Handoff Alerts</Label>
-              <p className="text-sm text-muted-foreground">Notify when a handoff requires your attention</p>
-            </div>
-            <Switch checked={settings.email_handoff_alerts} onCheckedChange={(v) => setSettings(p => ({ ...p, email_handoff_alerts: v }))} />
-          </div>
-
-          <div className="flex items-center justify-between p-3 rounded-lg border">
-            <div>
-              <Label>Quality Alerts</Label>
-              <p className="text-sm text-muted-foreground">Notify about quality issues and holds</p>
-            </div>
-            <Switch checked={settings.email_quality_alerts} onCheckedChange={(v) => setSettings(p => ({ ...p, email_quality_alerts: v }))} />
-          </div>
-
-          <div className="flex items-center justify-between p-3 rounded-lg border">
-            <div>
-              <Label>Machine Down Alerts</Label>
-              <p className="text-sm text-muted-foreground">Notify when a machine goes down</p>
-            </div>
-            <Switch checked={settings.email_machine_down} onCheckedChange={(v) => setSettings(p => ({ ...p, email_machine_down: v }))} />
-          </div>
-
-          <div className="flex items-center justify-between p-3 rounded-lg border">
-            <div>
-              <Label>Shift Reminders</Label>
-              <p className="text-sm text-muted-foreground">Get reminders before your shift starts</p>
-            </div>
-            <Switch checked={settings.email_shift_reminders} onCheckedChange={(v) => setSettings(p => ({ ...p, email_shift_reminders: v }))} />
-          </div>
-
-          <div className="flex items-center justify-between p-3 rounded-lg border">
-            <div>
-              <Label>Weekly Summary</Label>
-              <p className="text-sm text-muted-foreground">Receive a weekly production summary</p>
-            </div>
-            <Switch checked={settings.email_weekly_summary} onCheckedChange={(v) => setSettings(p => ({ ...p, email_weekly_summary: v }))} />
-          </div>
+          <SettingsSwitchRow label="Handoff Alerts" description="Notify when a handoff requires your attention" checked={settings.email_handoff_alerts} onCheckedChange={(v) => setSettings(p => ({ ...p, email_handoff_alerts: v }))} bordered />
+          <SettingsSwitchRow label="Quality Alerts" description="Notify about quality issues and holds" checked={settings.email_quality_alerts} onCheckedChange={(v) => setSettings(p => ({ ...p, email_quality_alerts: v }))} bordered />
+          <SettingsSwitchRow label="Machine Down Alerts" description="Notify when a machine goes down" checked={settings.email_machine_down} onCheckedChange={(v) => setSettings(p => ({ ...p, email_machine_down: v }))} bordered />
+          <SettingsSwitchRow label="Shift Reminders" description="Get reminders before your shift starts" checked={settings.email_shift_reminders} onCheckedChange={(v) => setSettings(p => ({ ...p, email_shift_reminders: v }))} bordered />
+          <SettingsSwitchRow label="Weekly Summary" description="Receive a weekly production summary" checked={settings.email_weekly_summary} onCheckedChange={(v) => setSettings(p => ({ ...p, email_weekly_summary: v }))} bordered />
         </CardContent>
       </Card>
 
@@ -138,22 +97,9 @@ export function NotificationSettings() {
           <CardDescription>Configure mobile and browser push notifications</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between p-3 rounded-lg border">
-            <div>
-              <Label>Enable Push Notifications</Label>
-              <p className="text-sm text-muted-foreground">Receive real-time alerts on your device</p>
-            </div>
-            <Switch checked={settings.push_enabled} onCheckedChange={(v) => setSettings(p => ({ ...p, push_enabled: v }))} />
-          </div>
-
+          <SettingsSwitchRow label="Enable Push Notifications" description="Receive real-time alerts on your device" checked={settings.push_enabled} onCheckedChange={(v) => setSettings(p => ({ ...p, push_enabled: v }))} bordered />
           {settings.push_enabled && (
-            <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
-              <div>
-                <Label>Urgent Only</Label>
-                <p className="text-sm text-muted-foreground">Only notify for critical alerts</p>
-              </div>
-              <Switch checked={settings.push_urgent_only} onCheckedChange={(v) => setSettings(p => ({ ...p, push_urgent_only: v }))} />
-            </div>
+            <SettingsSwitchRow label="Urgent Only" description="Only notify for critical alerts" checked={settings.push_urgent_only} onCheckedChange={(v) => setSettings(p => ({ ...p, push_urgent_only: v }))} bordered className="bg-muted/30" />
           )}
         </CardContent>
       </Card>
@@ -181,26 +127,13 @@ export function NotificationSettings() {
         </CardContent>
       </Card>
 
-      <div className="flex items-center justify-end gap-3">
-        {isDirty && (
-          <Badge variant="outline" className="text-amber-600 border-amber-500/30">
-            Unsaved changes
-          </Badge>
-        )}
-        <Button onClick={handleSave} disabled={isSaving || !isDirty} className="gap-2">
-          {isSaving ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            <>
-              <Save className="w-4 h-4" />
-              {isDirty ? "Save Notification Settings" : "Saved"}
-            </>
-          )}
-        </Button>
-      </div>
+      <SettingsFooter
+        isDirty={isDirty}
+        isSaving={isSaving}
+        onSave={handleSave}
+        onDiscard={handleDiscard}
+        label="Save Notification Settings"
+      />
     </div>
   );
 }
