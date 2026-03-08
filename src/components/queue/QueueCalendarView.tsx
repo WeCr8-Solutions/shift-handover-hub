@@ -326,7 +326,7 @@ export function QueueCalendarView({ items, onItemClick }: QueueCalendarViewProps
                   }}
                   components={{
                     DayContent: ({ date }) => {
-                      const dayItems = getItemsForDate(date);
+                      const dayEntries = getEntriesForDate(date);
                       return (
                         <div className="relative w-full h-full flex flex-col items-center">
                           <span>{date.getDate()}</span>
