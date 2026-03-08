@@ -57,18 +57,28 @@ export default function Setup() {
     async function checkSetupStatus() {
       if (!user) return;
       
-      const [orgResult, teamsResult, stationsResult, membersResult] = await Promise.all([
-        supabase
-          .from('organization_members')
-          .select('organization:organizations(id, name)')
-          .eq('user_id', user.id)
-          .maybeSingle(),
-        supabase.from('teams').select('id', { count: 'exact', head: true }),
-        supabase.from('stations').select('id', { count: 'exact', head: true }),
-        supabase.from('team_members').select('id', { count: 'exact', head: true }),
-      ]);
+      // First get user's org to scope all subsequent queries
+      const orgResult = await supabase
+        .from('organization_members')
+        .select('organization:organizations(id, name)')
+        .eq('user_id', user.id)
+        .maybeSingle();
 
       const hasOrg = !!orgResult.data?.organization;
+      const orgId = orgResult.data?.organization?.id;
+
+      // Scope counts to the user's organization to avoid inflated numbers
+      const [teamsResult, stationsResult, membersResult] = await Promise.all([
+        orgId
+          ? supabase.from('teams').select('id', { count: 'exact', head: true }).eq('organization_id', orgId)
+          : Promise.resolve({ count: 0 }),
+        orgId
+          ? supabase.from('stations').select('id', { count: 'exact', head: true }).eq('organization_id', orgId)
+          : Promise.resolve({ count: 0 }),
+        orgId
+          ? supabase.from('team_members').select('id', { count: 'exact', head: true }).eq('organization_id', orgId)
+          : Promise.resolve({ count: 0 }),
+      ]);
       
       setSetupStatus({
         hasOrganization: hasOrg,
