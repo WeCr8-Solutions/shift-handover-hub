@@ -310,11 +310,12 @@ export function TeamManagement() {
           teamName={newlyCreatedTeam.name}
           open={showStationManager}
           onOpenChange={setShowStationManager}
-          onStationChange={triggerStationRefresh}
+          onReassignOptimistic={({ stationId, toTeamId }) => applyOptimisticReassignment(stationId, toTeamId)}
+          onReassignRollback={({ stationId, fromTeamId }) => rollbackOptimisticReassignment(stationId, fromTeamId)}
+          onReassignCommitted={finalizeOptimisticReassignment}
           onComplete={() => {
             setShowStationManager(false);
             setNewlyCreatedTeam(null);
-            triggerStationRefresh();
           }}
         />
       )}
