@@ -108,10 +108,21 @@ export default function Queue() {
     addComment,
     getComments,
     getHistory,
+    fetchItems,
   } = useQueue(filters);
 
   const { ncrs = [], approveNCR, rejectNCR } = useNCR();
   const pendingNCRs = ncrs.filter((n) => n.authorization_status === "pending");
+
+  // Org-configured background refresh for queue data
+  const refreshIntervalMs = useOrgRefreshInterval();
+  const { isRefreshing, lastRefreshedAt, refresh: handleManualRefresh } =
+    useBackgroundRefresh({
+      key: `queue-${organization?.id}-${viewScope}-${filters.station_id || "all"}`,
+      fetchers: [() => fetchItems?.() as unknown as Promise<unknown>],
+      intervalMs: refreshIntervalMs,
+      enabled: !!user,
+    });
 
   useEffect(() => {
     if (!authLoading && !user) {
