@@ -80,15 +80,13 @@ export function useOperatorSessions() {
         }
       });
 
-    // Polling fallback for session reliability
+    // Polling fallback: 5-minute intervals
     let pollTimeout: ReturnType<typeof setTimeout>;
-    let pollInterval = 10000;
     const poll = () => {
       fetchSessions();
-      pollInterval = Math.min(pollInterval * 1.5, 30000);
-      pollTimeout = setTimeout(poll, pollInterval);
+      pollTimeout = setTimeout(poll, 300000);
     };
-    pollTimeout = setTimeout(poll, pollInterval);
+    pollTimeout = setTimeout(poll, 300000);
 
     return () => {
       clearTimeout(pollTimeout);

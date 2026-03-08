@@ -10,7 +10,6 @@ import {
   AlertTriangle,
   Clock,
   ArrowRight,
-  Loader2,
   Lightbulb,
   Package,
   Plus,
@@ -20,6 +19,7 @@ import {
   Users,
   RefreshCw,
 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { ProductionAnalytics } from "./ProductionAnalytics";
 import {
@@ -30,8 +30,8 @@ import {
   type StatusLabel,
 } from "./stationStatus";
 
-// Auto-refresh interval in milliseconds (30 seconds)
-const REFRESH_INTERVAL = 30000;
+// Auto-refresh interval: 5 minutes default (configurable via org settings)
+const REFRESH_INTERVAL = 300000;
 
 interface SupervisorDashboardProps {
   onNewHandoff: () => void;
@@ -216,8 +216,45 @@ export function SupervisorDashboard({
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-24" role="status" aria-label="Loading dashboard">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="space-y-6" role="status" aria-label="Loading dashboard">
+        {/* Header skeleton */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Skeleton className="w-10 h-10 rounded-lg" />
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-36" />
+              <Skeleton className="h-3 w-48" />
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Skeleton className="h-8 w-24" />
+            <Skeleton className="h-8 w-28" />
+          </div>
+        </div>
+        {/* KPI cards skeleton */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="bg-card border border-border rounded-lg p-3 space-y-2">
+              <Skeleton className="h-3 w-16" />
+              <Skeleton className="h-8 w-12" />
+            </div>
+          ))}
+        </div>
+        {/* Station list skeleton */}
+        <div className="bg-card border border-border rounded-lg overflow-hidden">
+          <div className="px-4 py-3 border-b border-border">
+            <Skeleton className="h-4 w-32" />
+          </div>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-3 px-4 py-2.5">
+              <Skeleton className="w-2 h-2 rounded-full" />
+              <Skeleton className="h-3 w-20" />
+              <Skeleton className="h-3 w-20" />
+              <Skeleton className="h-3 w-20" />
+              <Skeleton className="flex-1 h-1.5" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
