@@ -2,19 +2,20 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen, waitFor } from "@/test/test-utils";
 import { OperatorStationKanban } from "./OperatorStationKanban";
 
-const mockQueueData = [
-  { id: "qi-1", title: "Bracket", work_order: "WO-100", part_number: "BRK-10", operation_number: "OP10", status: "queued", priority: "normal", position: 1, quantity: 10, due_date: null, started_at: null },
-  { id: "qi-2", title: "Housing", work_order: "WO-200", part_number: "HSG-20", operation_number: "OP20", status: "in_progress", priority: "high", position: 2, quantity: 5, due_date: "2026-03-15", started_at: new Date().toISOString() },
-  { id: "qi-3", title: "Cover Plate", work_order: "WO-300", part_number: "CVR-30", operation_number: "OP30", status: "on_hold", priority: "low", position: 3, quantity: 20, due_date: null, started_at: null },
-];
-
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
     from: vi.fn().mockReturnValue({
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
       in: vi.fn().mockReturnThis(),
-      order: vi.fn().mockResolvedValue({ data: mockQueueData, error: null }),
+      order: vi.fn().mockResolvedValue({
+        data: [
+          { id: "qi-1", title: "Bracket", work_order: "WO-100", part_number: "BRK-10", operation_number: "OP10", status: "queued", priority: "normal", position: 1, quantity: 10, due_date: null, started_at: null },
+          { id: "qi-2", title: "Housing", work_order: "WO-200", part_number: "HSG-20", operation_number: "OP20", status: "in_progress", priority: "high", position: 2, quantity: 5, due_date: "2026-03-15", started_at: new Date().toISOString() },
+          { id: "qi-3", title: "Cover Plate", work_order: "WO-300", part_number: "CVR-30", operation_number: "OP30", status: "on_hold", priority: "low", position: 3, quantity: 20, due_date: null, started_at: null },
+        ],
+        error: null,
+      }),
     }),
     channel: vi.fn().mockReturnValue({
       on: vi.fn().mockReturnThis(),
