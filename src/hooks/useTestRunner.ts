@@ -229,6 +229,17 @@ export function useTestRunner() {
           "PartCatalogManager": 5,
           "useShopFloorDisplays Hook": 7,
           "ShopFloorDisplay Page": 6,
+          "useERPConnector Hook": 10,
+          "JobLine Client Connector": 4,
+          "JobLine StatusBridge": 5,
+          "JobLine AlarmBridge": 3,
+          "DashboardRefresh": 4,
+          "ProductionAnalytics": 5,
+          "StationCheckIn": 4,
+          "QueueStateMachine": 20,
+          "TeamManagement": 5,
+          "MachineStatusStore": 6,
+          "Machine Types": 4,
         };
         
         const testCount = testCounts[suiteName] || 3;
