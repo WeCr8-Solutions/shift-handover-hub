@@ -271,11 +271,12 @@ export function QueueItemRoutingTab({
                       if (isExpanding) {
                         dimensions.loadAll(step.id, item.id);
                         dimRequests.fetchRequests(step.id);
+                        setupSheets.fetchSheets(step.id);
                       }
                     }}
                   >
                     <Ruler className="w-3 h-3" />
-                    Dimensions
+                    Dimensions & Setup Sheets
                     {expandedStep === step.id ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                   </button>
 
