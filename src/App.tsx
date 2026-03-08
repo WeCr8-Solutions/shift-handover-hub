@@ -113,6 +113,8 @@ const App = () => (
                     <Route path="/resources/gcode" element={<GCodeReference />} />
                     <Route path="/resources/glossary" element={<IndustryGlossary />} />
                     <Route path="/blog" element={<Blog />} />
+                    <Route path="/help" element={<Help />} />
+                    <Route path="/help/:category/:slug" element={<HelpArticle />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
