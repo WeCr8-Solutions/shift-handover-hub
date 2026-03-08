@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTeams, useTeamMembers, Team } from "@/hooks/useTeams";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useAdminAccess } from "@/hooks/useAdminData";
 import { useStations } from "@/hooks/useStations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +30,7 @@ import { SafeDeleteDialog } from "./ui/safe-delete-dialog";
 export function TeamManagement() {
   const { user } = useAuth();
   const { organization } = useUserOrganization();
+  const { isOrgAdmin, isAdmin } = useAdminAccess();
   const { teams, loading, createTeam, updateTeam, deleteTeam } = useTeams();
   const { toast } = useToast();
 
@@ -228,7 +230,7 @@ export function TeamManagement() {
                 key={team.id}
                 team={team}
                 isSelected={selectedTeam?.id === team.id}
-                isOwner={team.created_by === user?.id}
+                canManage={team.created_by === user?.id || isOrgAdmin || isAdmin}
                 onSelect={() => setSelectedTeam(selectedTeam?.id === team.id ? null : team)}
                 onEdit={() => handleEditTeam(team)}
                 onDelete={() => handleRequestDelete(team)}
@@ -320,14 +322,14 @@ export function TeamManagement() {
 interface TeamCardProps {
   team: Team;
   isSelected: boolean;
-  isOwner: boolean;
+  canManage: boolean;
   onSelect: () => void;
   onEdit: () => void;
   onDelete: () => void;
   onAddStations: () => void;
 }
 
-function TeamCard({ team, isSelected, isOwner, onSelect, onEdit, onDelete, onAddStations }: TeamCardProps) {
+function TeamCard({ team, isSelected, canManage, onSelect, onEdit, onDelete, onAddStations }: TeamCardProps) {
   const { stations } = useStations(team.id);
   const stationCount = stations.length;
 
@@ -345,7 +347,7 @@ function TeamCard({ team, isSelected, isOwner, onSelect, onEdit, onDelete, onAdd
             <div>
               <CardTitle className="text-base">{team.name}</CardTitle>
               <div className="flex items-center gap-1.5 mt-0.5">
-                {isOwner && (
+                {canManage && (
                   <Badge variant="secondary" className="text-xs">
                     Owner
                   </Badge>
@@ -357,7 +359,7 @@ function TeamCard({ team, isSelected, isOwner, onSelect, onEdit, onDelete, onAdd
               </div>
             </div>
           </div>
-          {isOwner && (
+          {canManage && (
             <div className="flex items-center gap-1">
               <Button
                 variant="ghost"
