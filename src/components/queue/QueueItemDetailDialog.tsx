@@ -21,6 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format, formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { QuantitySummaryCard } from "@/components/ncr/QuantitySummaryCard";
+import { Skeleton } from "@/components/ui/skeleton";
 import { CreateNCRDialog } from "@/components/ncr/CreateNCRDialog";
 import { NCRListView } from "@/components/ncr/NCRListView";
 import { 
@@ -991,8 +992,14 @@ export function QueueItemDetailDialog({
             {/* Routing Steps Tab */}
             <TabsContent value="routing" className="flex-1 overflow-auto mt-4">
               {routingLoading ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                <div className="space-y-3 py-6">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <Skeleton className="h-6 w-6 rounded-full" />
+                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-4 w-20" />
+                    </div>
+                  ))}
                 </div>
               ) : routingSteps.length === 0 ? (
                 <div className="text-center py-12 space-y-3">

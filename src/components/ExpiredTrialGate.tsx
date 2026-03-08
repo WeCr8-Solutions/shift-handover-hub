@@ -2,8 +2,9 @@ import { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTrialStatus } from "@/hooks/useTrialStatus";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, CreditCard, Loader2 } from "lucide-react";
+import { AlertTriangle, CreditCard } from "lucide-react";
 
 interface ExpiredTrialGateProps {
   children: ReactNode;
@@ -15,8 +16,9 @@ export function ExpiredTrialGate({ children }: ExpiredTrialGateProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="py-12 space-y-4">
+        <Skeleton className="h-8 w-48 mx-auto" />
+        <Skeleton className="h-64 w-full rounded-lg" />
       </div>
     );
   }

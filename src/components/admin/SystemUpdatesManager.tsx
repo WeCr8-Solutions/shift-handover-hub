@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useGlobalUpdates, GlobalUpdate } from "@/hooks/useGlobalUpdates";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -281,8 +282,10 @@ export function SystemUpdatesManager() {
         </div>
 
         {loading && updates.length === 0 ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+          <div className="space-y-3 py-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-20 w-full rounded-lg" />
+            ))}
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
