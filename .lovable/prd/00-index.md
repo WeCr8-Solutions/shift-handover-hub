@@ -101,3 +101,6 @@ When updating PRDs:
 See also:
 - [User Role Architecture](../user-role-architecture.md) - Detailed role system with Mermaid diagrams
 - [Plan](../plan.md) - Development roadmap
+- [Performance Enhancement Report](../performance-enhancement-report.md) - Phases 1–6 optimization details
+- [Component Performance Audit](../component-performance-audit.md) - Per-component performance profile
+- [Dashboard Performance Audit](../../docs/prd/06-dashboard-performance-audit.md) - Original findings & target architecture

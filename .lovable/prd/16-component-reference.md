@@ -40,15 +40,16 @@ This document provides a single-source inventory of every custom component, cate
 
 | Component | Test File | Tests | Tier | Description |
 |-----------|-----------|-------|------|-------------|
-| `OperatorDashboard` | — | ❌ | Authenticated | Operator's main view with check-in/handoff |
-| `SupervisorDashboard` | `SupervisorDashboard.test.tsx` | ✅ 5 | Supervisor | Org-wide overview with station grid |
+| `OperatorDashboard` | — | ❌ | Authenticated | Operator's main view with check-in/handoff. Uses `useOrgContext()`, 10min background refresh. |
+| `SupervisorDashboard` | `SupervisorDashboard.test.tsx` | ✅ 5 | Supervisor | Org-wide overview with station grid. Uses `useOrgContext()`. `ProductionAnalytics` lazy-loaded via `React.lazy()`. |
 | `OperatorStationPanel` | `OperatorStationPanel.test.tsx` | ✅ 4 | Authenticated | Active station panel for checked-in operator |
 | `StationCheckIn` | `StationCheckIn.test.tsx` | ✅ 4 | Authenticated | Station check-in/out flow |
 | `StationDetailView` | — | ❌ | Org-Scoped | Detailed station view with active WO |
 | `StationAlertTile` | — | ❌ | Org-Scoped | Alert indicators on station cards |
 | `RefreshIndicator` | — | ❌ | Authenticated | Background refresh status indicator |
-| `ProductionAnalytics` | `ProductionAnalytics.test.tsx` | ✅ 5 | Supervisor | Throughput/utilization charts |
+| `ProductionAnalytics` | `ProductionAnalytics.test.tsx` | ✅ 5 | Supervisor | Throughput/utilization charts. **Lazy-loaded** — defers ~200KB Recharts bundle. |
 | `DashboardRefresh` | `DashboardRefresh.test.tsx` | ✅ 4 | Authenticated | Background refresh lifecycle |
+| `DashboardErrorBoundary` | — | ❌ | Public | Class-based error boundary for dashboard sections. Catches render errors and shows retry UI instead of crashing the page. |
 
 ### 2.3  Handoff System (`src/components/`)
 
@@ -282,7 +283,7 @@ This document provides a single-source inventory of every custom component, cate
 | Domain | Total | Tested | Coverage |
 |--------|-------|--------|----------|
 | Queue Management | 14 | 10 | 71% |
-| Dashboard | 9 | 6 | 67% |
+| Dashboard | 10 | 6 | 60% |
 | Handoff | 3 | 3 | 100% |
 | NCR & Quality | 5 | 4 | 80% |
 | Smart Alerts | 3 | 2 | 67% |
@@ -293,7 +294,7 @@ This document provides a single-source inventory of every custom component, cate
 | Settings | 10 | 1 | 10% |
 | Admin | 27 | 0 | 0% |
 | Core Shared | 25 | 4 | 16% |
-| **Total Core** | **110** | **31** | **28%** |
+| **Total Core** | **111** | **31** | **28%** |
 
 ---
 
@@ -339,7 +340,41 @@ All domain-specific components must be exported via `index.ts` barrel files:
 
 ---
 
-## 6  Standards Checklist
+## 6  Performance Architecture
+
+### 6.1 Code Splitting
+
+| Component | Strategy | Bundle Impact |
+|-----------|----------|---------------|
+| `ProductionAnalytics` | `React.lazy()` in SupervisorDashboard | ~200KB Recharts deferred |
+| 20+ admin panels | `React.lazy()` in Admin.tsx | Each tab lazy-loaded with `<Suspense>` skeleton |
+| `ShopFloorDisplay` | Lazy-loaded in App.tsx routes | Full page deferred |
+
+### 6.2 Data Flow
+
+```
+OrgContext (1 query, 5min stale)
+  ├── SupervisorDashboard
+  │     ├── useStations(teamId, orgId)      → React Query, 15min poll, realtime
+  │     ├── useHandoffRecords(teamId, orgId) → React Query, 15min poll, realtime
+  │     ├── useSmartAlerts()                 → React Query + RPC (1 call, 60s stale)
+  │     └── useShiftStats(teamId, orgId)     → React Query, 60s stale
+  ├── OperatorDashboard
+  │     ├── useOperatorSessions()            → useBackgroundRefresh (10min)
+  │     └── useHandoffRecords(teamId, orgId) → React Query
+  └── Queue page
+        └── useQueue(filters)               → useState + debounced realtime
+```
+
+### 6.3 Error Handling
+
+- `DashboardErrorBoundary` wraps dashboard sections — catches render errors, shows retry UI
+- `useQueue` implements optimistic updates with automatic rollback on server error
+- React Query provides automatic retry (2 attempts) on failed queries
+
+---
+
+## 7  Standards Checklist
 
 Every component MUST:
 - [ ] Use `@/` path aliases for all imports
@@ -348,5 +383,7 @@ Every component MUST:
 - [ ] Handle loading/error/empty states
 - [ ] Be registered in domain barrel export
 - [ ] Have co-located unit test (`.test.tsx`)
-- [ ] Use `useUserOrganization` for org-scoped data
+- [ ] Use `useOrgContext()` for org-scoped data (not `useUserOrganization()` directly)
 - [ ] Follow hook-mediated data access pattern
+- [ ] Wrap heavy sections in `DashboardErrorBoundary` for graceful degradation
+- [ ] Use `React.lazy()` for components with heavy dependencies (charts, editors)

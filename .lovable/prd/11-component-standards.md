@@ -72,7 +72,12 @@ When adding a component to a domain folder that has an `index.ts`, **always add 
 | **Never edit** `.env` or `supabase/config.toml` | Auto-managed |
 | **DB changes** | Use migration tool only |
 | **Queries** | Use `@tanstack/react-query` with `supabase` client |
-| **Realtime** | `supabase.channel()` — ensure RLS covers the table |
+| **Org context** | Use `useOrgContext()` from `OrgProvider` — never call `useUserOrganization()` independently in hooks/components |
+| **Realtime** | `supabase.channel()` with **500ms debounced** `invalidateQueries()` — ensure RLS covers the table |
+| **Polling** | Always set `refetchIntervalInBackground: false` to pause when tab is hidden |
+| **Optimistic updates** | For user-facing state changes (status, priority), update local state immediately and rollback on error |
+| **Error boundaries** | Wrap dashboard sections in `DashboardErrorBoundary` for graceful degradation |
+| **Lazy loading** | Use `React.lazy()` + `<Suspense>` for components with heavy dependencies (Recharts, editors) |
 | **Row limit** | Default 1000 rows — paginate or use `.range()` |
 
 ---
