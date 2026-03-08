@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { ProductionAnalytics } from "./ProductionAnalytics";
+const ProductionAnalytics = lazy(() => import("./ProductionAnalytics").then(m => ({ default: m.ProductionAnalytics })));
 import {
   STATUS_CONFIG,
   JOB_STATES,
