@@ -1,10 +1,12 @@
-import { useMemo, useEffect, useCallback } from "react";
+import { useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useStations, useHandoffRecords } from "@/hooks/useStations";
 import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useBackgroundRefresh } from "@/hooks/useBackgroundRefresh";
+import { RefreshIndicator } from "./RefreshIndicator";
 import {
   Factory,
   AlertTriangle,
@@ -17,7 +19,6 @@ import {
   Eye,
   Monitor,
   Users,
-  RefreshCw,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -29,9 +30,6 @@ import {
   getStatusBgClass,
   type StatusLabel,
 } from "./stationStatus";
-
-// Auto-refresh interval: 5 minutes default (configurable via org settings)
-const REFRESH_INTERVAL = 300000;
 
 interface SupervisorDashboardProps {
   onNewHandoff: () => void;
