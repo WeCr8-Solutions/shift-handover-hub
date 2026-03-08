@@ -332,6 +332,49 @@ export function OperatorStationPanel({
     }
   };
 
+  // Load qty data when delivery dialog opens
+  useEffect(() => {
+    if (!deliverOrder) {
+      setCompletionData({ qtyCompleted: 0, qtyScrap: 0, qtyRework: 0, qtyOriginal: 0, loaded: false });
+      setValidationErrors([]);
+      return;
+    }
+    const loadQty = async () => {
+      const { data } = await supabase
+        .from("queue_items")
+        .select("qty_original, qty_completed, qty_scrap, qty_rework, parts_completed, quantity")
+        .eq("id", deliverOrder.id)
+        .maybeSingle();
+      if (data) {
+        setCompletionData({
+          qtyOriginal: data.qty_original ?? data.quantity ?? 0,
+          qtyCompleted: data.qty_completed ?? data.parts_completed ?? 0,
+          qtyScrap: data.qty_scrap ?? 0,
+          qtyRework: data.qty_rework ?? 0,
+          loaded: true,
+        });
+      } else {
+        setCompletionData({ qtyCompleted: 0, qtyScrap: 0, qtyRework: 0, qtyOriginal: 0, loaded: true });
+      }
+    };
+    loadQty();
+  }, [deliverOrder]);
+
+  // Validate completion form
+  useEffect(() => {
+    const errors: string[] = [];
+    if (!completionData.loaded) return;
+    const { qtyOriginal, qtyCompleted, qtyScrap, qtyRework } = completionData;
+    const total = qtyCompleted + qtyScrap + qtyRework;
+
+    if (qtyOriginal > 0 && total < qtyOriginal) {
+      const unaccounted = qtyOriginal - total;
+      errors.push(`${unaccounted} part(s) unaccounted. Total must equal ${qtyOriginal}.`);
+    }
+
+    setValidationErrors(errors);
+  }, [completionData]);
+
   const handleCloseDeliveryDialog = (open: boolean) => {
     if (!open) {
       setDeliverOrder(null);
