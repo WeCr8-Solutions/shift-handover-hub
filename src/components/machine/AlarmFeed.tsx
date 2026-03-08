@@ -2,10 +2,12 @@
  * src/components/machine/AlarmFeed.tsx
  *
  * Per CONTEXT.docx §8:
- *   AlarmFeed uses useJobLineAlarms({ shiftStart, shiftEnd })
+ *   AlarmFeed uses useAlarmFeed({ shiftStart, shiftEnd })
  *   Time-window alarm list sorted newest-first.
  *   Severity colour coding. Acknowledge button.
  *   CLEARED label on active:false alarms.
+ *
+ * Per PRD 11 §1: Store access via hooks only — uses useAlarmFeed.
  */
 
 import { Badge } from "@/components/ui/badge";
@@ -22,7 +24,7 @@ import {
   Cpu,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useJobLineAlarms, useMachineStatusStore } from "@/store/machineStatusStore";
+import { useAlarmFeed } from "@/hooks/useAlarmFeed";
 import { ALARM_SEVERITY_CONFIG } from "@/types/machine";
 import type { AppAlarm } from "@/types/machine";
 
@@ -43,13 +45,13 @@ export function AlarmFeed({
   maxItems = 50,
   compact = false,
 }: AlarmFeedProps) {
-  const alarms = useJobLineAlarms(shiftStart, shiftEnd);
-  const acknowledgeAlarm = useMachineStatusStore((s) => s.acknowledgeAlarm);
+  const { alarms, activeCount, acknowledgeAlarm } = useAlarmFeed({
+    shiftStart,
+    shiftEnd,
+    maxItems,
+  });
 
-  const displayAlarms = alarms.slice(0, maxItems);
-  const activeCount = displayAlarms.filter((a) => a.active && !a.acknowledged).length;
-
-  if (displayAlarms.length === 0) {
+  if (alarms.length === 0) {
     return (
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-8 text-muted-foreground">
@@ -84,7 +86,7 @@ export function AlarmFeed({
       <CardContent className="pt-0">
         <ScrollArea className={cn(compact ? "h-48" : "h-72")}>
           <div className="space-y-1.5">
-            {displayAlarms.map((alarm) => (
+            {alarms.map((alarm) => (
               <AlarmRow
                 key={alarm.id}
                 alarm={alarm}
