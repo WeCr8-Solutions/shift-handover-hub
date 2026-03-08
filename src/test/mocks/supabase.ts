@@ -65,6 +65,7 @@ export const createSupabaseMock = () => {
       subscribe: vi.fn().mockReturnThis(),
       unsubscribe: vi.fn(),
     }),
+    removeChannel: vi.fn(),
     // Expose individual mocks for assertions
     _mocks: {
       mockFrom,
