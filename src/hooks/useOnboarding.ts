@@ -60,7 +60,7 @@ export function useOnboarding() {
     currentStep: 'welcome',
     isComplete: false,
     isLoading: true,
-    hasSeenWelcome: true,
+    hasSeenWelcome: false,
     setupWizardDismissed: false,
   });
   const [showTour, setShowTour] = useState(false);
