@@ -5,6 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { StationQuickActions, type QuickActionTarget } from "./StationQuickActions";
 import {
   ChevronDown,
   ArrowRight,
