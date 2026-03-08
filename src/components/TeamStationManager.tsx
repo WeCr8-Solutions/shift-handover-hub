@@ -380,7 +380,7 @@ export function TeamStationManager({
                     <Skeleton key={i} className="h-20 rounded-lg" />
                   ))}
                 </div>
-              ) : stations.length === 0 ? (
+              ) : visibleStations.length === 0 ? (
                 <Card>
                   <CardContent className="flex flex-col items-center justify-center py-8 text-center">
                     <Wrench className="w-10 h-10 text-muted-foreground mb-3" />
