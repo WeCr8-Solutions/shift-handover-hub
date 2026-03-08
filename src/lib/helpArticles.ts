@@ -36,6 +36,7 @@ export const helpCategories: HelpCategory[] = [
   { key: "quality", label: "Quality Management", description: "Non-Conformance Reports, disposition workflows, and quality metrics", icon: ShieldCheck },
   { key: "settings", label: "Settings", description: "Profile, notifications, billing, shift schedules, and integrations", icon: Settings },
   { key: "admin", label: "Admin Guide", description: "User management, organization oversight, audit trails, and compliance", icon: Lock },
+  { key: "tools", label: "Operator Tools", description: "Calculators, converters, and reference utilities for the shop floor", icon: Wrench },
   { key: "faq", label: "FAQ", description: "Common questions, troubleshooting, data export, and productivity tips", icon: HelpCircle },
 ];
 
