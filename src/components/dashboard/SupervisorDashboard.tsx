@@ -68,23 +68,29 @@ export function SupervisorDashboard({
     refreshRecords,
   } = useHandoffRecords(currentTeam?.id, organization?.id);
 
-  // Read org-configured refresh interval from settings
-  const refreshIntervalMs = useOrgRefreshInterval();
+  // React Query handles caching, dedup, and polling natively.
+  // Manual refresh triggers React Query refetch.
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastRefreshedAt, setLastRefreshedAt] = useState<Date | null>(null);
 
-  // Centralized background refresh — no flash spinners on subsequent fetches
-  const { initialLoading, isRefreshing, lastRefreshedAt, refresh: handleManualRefresh } =
-    useBackgroundRefresh({
-      key: `supervisor-${organization?.id}-${currentTeam?.id}`,
-      fetchers: [
-        () => refreshStations?.() as unknown as Promise<unknown>,
-        () => refreshRecords?.() as unknown as Promise<unknown>,
-      ],
-      intervalMs: refreshIntervalMs,
-      enabled: !!(organization?.id),
-    });
+  // Update lastRefreshedAt when data changes (non-loading state)
+  useEffect(() => {
+    if (!stationsLoading && !recordsLoading) {
+      setLastRefreshedAt(new Date());
+    }
+  }, [stationsLoading, recordsLoading, dbStations, dbRecords]);
 
-  // Show skeleton only on first mount — never flash again
-  const isLoading = initialLoading && (stationsLoading || recordsLoading);
+  const handleManualRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    await Promise.allSettled([
+      refreshStations(),
+      refreshRecords(),
+    ]);
+    setIsRefreshing(false);
+    setLastRefreshedAt(new Date());
+  }, [refreshStations, refreshRecords]);
+
+  const isLoading = stationsLoading || recordsLoading;
 
   // Status filter: click a KPI card to filter station list + analytics
   const [statusFilter, setStatusFilter] = useState<StatusLabel | "all">("all");
