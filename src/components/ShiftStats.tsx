@@ -10,7 +10,7 @@ import { getStatusFromJobState } from "@/components/dashboard/stationStatus";
 export function ShiftStats() {
   const { user } = useAuth();
   const { currentTeam } = useCurrentTeam();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const { stations: dbStations, loading: stationsLoading } = useStations(currentTeam?.id, organization?.id);
   const { records: dbRecords, loading: recordsLoading } = useHandoffRecords(currentTeam?.id, organization?.id);
 
