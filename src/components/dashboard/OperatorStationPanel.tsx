@@ -396,7 +396,7 @@ export function OperatorStationPanel({
     }
   }, [deliverOrder, routingInfo?.currentStepId]);
 
-  // Validate completion form
+  // Validate completion form (includes dimension check)
   useEffect(() => {
     const errors: string[] = [];
     if (!completionData.loaded) return;
@@ -408,8 +408,14 @@ export function OperatorStationPanel({
       errors.push(`${unaccounted} part(s) unaccounted. Total must equal ${qtyOriginal}.`);
     }
 
+    if (stepDimensions.hasPendingDimensions()) {
+      errors.push("Dimension checks incomplete — all required measurements must be recorded.");
+    } else if (stepDimensions.requirements.length > 0 && !stepDimensions.allDimensionsPassing()) {
+      errors.push("One or more dimensions are out of tolerance — review or request supervisor override.");
+    }
+
     setValidationErrors(errors);
-  }, [completionData]);
+  }, [completionData, stepDimensions.requirements, stepDimensions.readings]);
 
   const handleCloseDeliveryDialog = (open: boolean) => {
     if (!open) {
