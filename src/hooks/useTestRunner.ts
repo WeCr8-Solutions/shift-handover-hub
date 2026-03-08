@@ -89,6 +89,17 @@ const testFileRegistry: Record<string, { path: string; description: string }> = 
   "MachineStatusStore": { path: "src/store/machineStatusStore.test.ts", description: "Zustand machine status store operations" },
   // Types
   "Machine Types": { path: "src/types/machine.test.ts", description: "Machine type definitions & guard functions" },
+  // ── New component tests ──
+  "HandoffCard": { path: "src/components/HandoffCard.test.tsx", description: "Handoff card rendering, personnel, click handler" },
+  "QueueKanbanBoard": { path: "src/components/queue/QueueKanbanBoard.test.tsx", description: "6-column kanban rendering, item placement, drag rules" },
+  "QueueListView": { path: "src/components/queue/QueueListView.test.tsx", description: "Tabular queue view, status dropdown, row click" },
+  "NCRListView": { path: "src/components/ncr/NCRListView.test.tsx", description: "NCR table rendering, empty state, row selection" },
+  "NCRApprovalPanel": { path: "src/components/ncr/NCRApprovalPanel.test.tsx", description: "NCR approve/reject flow, pending filter, callbacks" },
+  "CreateNCRDialog": { path: "src/components/ncr/CreateNCRDialog.test.tsx", description: "NCR creation dialog, form fields, validation" },
+  "QualityMetricsDashboard": { path: "src/components/ncr/QualityMetricsDashboard.test.tsx", description: "FPY, scrap rate, rework rate metric cards" },
+  "SmartAlertPanel": { path: "src/components/alerts/SmartAlertPanel.test.tsx", description: "Alert panel filtering, expand/collapse, loading" },
+  "SmartAlertCard": { path: "src/components/alerts/SmartAlertCard.test.tsx", description: "Alert card severity styling, icons, click handler" },
+  "OperatorStationKanban": { path: "src/components/operator/OperatorStationKanban.test.tsx", description: "Station-scoped 3-column operator kanban" },
 };
 
 // Parse vitest output to extract test results
@@ -240,6 +251,17 @@ export function useTestRunner() {
           "TeamManagement": 5,
           "MachineStatusStore": 6,
           "Machine Types": 4,
+          // New component tests
+          "HandoffCard": 6,
+          "QueueKanbanBoard": 5,
+          "QueueListView": 5,
+          "NCRListView": 7,
+          "NCRApprovalPanel": 5,
+          "CreateNCRDialog": 7,
+          "QualityMetricsDashboard": 5,
+          "SmartAlertPanel": 6,
+          "SmartAlertCard": 8,
+          "OperatorStationKanban": 5,
         };
         
         const testCount = testCounts[suiteName] || 3;
@@ -609,6 +631,85 @@ function getTestName(suite: string, index: number): string {
       "validates MachineStatusSnapshot interface",
       "type guard for control types",
       "handles unknown control types",
+    ],
+    "HandoffCard": [
+      "renders machine ID and work order",
+      "renders work center type badge",
+      "renders shift label",
+      "renders personnel names",
+      "calls onClick when card is clicked",
+      "renders job state status badge",
+    ],
+    "QueueKanbanBoard": [
+      "renders all six status columns",
+      "renders items in the correct column",
+      "shows item count in column headers",
+      "calls onItemClick when a card is clicked",
+      "renders priority badge on items",
+    ],
+    "QueueListView": [
+      "renders table with column headers",
+      "renders work order and part number for each item",
+      "calls onItemClick when a row is clicked",
+      "shows status dropdown with valid transitions",
+      "renders empty state when no items",
+    ],
+    "NCRListView": [
+      "renders NCR number and work order columns",
+      "renders empty state when no NCRs",
+      "renders defect type and disposition",
+      "renders quantity affected",
+      "calls onSelect when row is clicked",
+      "renders multiple NCRs",
+      "renders authorization status badge",
+    ],
+    "NCRApprovalPanel": [
+      "renders pending NCRs for approval",
+      "shows empty state when no pending NCRs",
+      "renders approve and reject buttons",
+      "calls onApprove when approve button clicked",
+      "renders disposition and quantity info",
+    ],
+    "CreateNCRDialog": [
+      "renders dialog when open",
+      "pre-fills work order number",
+      "renders defect type dropdown",
+      "renders disposition dropdown",
+      "renders quantity input with max constraint",
+      "renders description textarea",
+      "does not render when closed",
+    ],
+    "QualityMetricsDashboard": [
+      "renders quality metric cards",
+      "returns null when no items have quantities",
+      "calculates and displays scrap count",
+      "calculates and displays rework count",
+      "shows percentage values",
+    ],
+    "SmartAlertPanel": [
+      "renders alert cards",
+      "renders empty state when no alerts",
+      "shows loading skeleton",
+      "filters alerts by type",
+      "respects maxVisible limit",
+      "expands to show all alerts",
+    ],
+    "SmartAlertCard": [
+      "renders alert title and detail",
+      "renders metric badge when present",
+      "renders without metric badge when not present",
+      "applies correct severity styling for critical",
+      "applies correct severity styling for warning",
+      "applies correct severity styling for info",
+      "calls onClick when card is clicked",
+      "renders correct icon for each alert type",
+    ],
+    "OperatorStationKanban": [
+      "renders three kanban columns",
+      "renders work orders from supabase query",
+      "shows loading skeleton initially",
+      "calls onViewOrder when view button clicked",
+      "groups items by status correctly",
     ],
   };
   
