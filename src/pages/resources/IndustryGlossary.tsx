@@ -1,7 +1,7 @@
 import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
-
+import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { useState, useMemo } from "react";
@@ -85,7 +85,7 @@ export default function IndustryGlossary() {
             />
           </div>
 
-          
+          <AdPlacement format="horizontal" className="mb-8" />
 
           {letters.map((letter) => (
             <div key={letter} className="mb-6">
@@ -109,7 +109,7 @@ export default function IndustryGlossary() {
             </p>
           )}
 
-          
+          <AdPlacement format="rectangle" className="mt-8" />
         </main>
 
         <MarketingFooter />

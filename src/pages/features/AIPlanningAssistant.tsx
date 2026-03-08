@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
-
+import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 import { Button } from "@/components/ui/button";
@@ -321,7 +321,7 @@ export default function AIPlanningAssistant() {
         </div>
       </section>
 
-      
+      <AdPlacement format="horizontal" className="py-6" />
 
       {/* ── How It Works ─────────────────────────────────────── */}
       <section className="py-16 md:py-24">
@@ -423,7 +423,7 @@ export default function AIPlanningAssistant() {
         </div>
       </section>
 
-      
+      <AdPlacement format="horizontal" className="py-4" />
 
       <MarketingFooter />
       <LeadCaptureModal />

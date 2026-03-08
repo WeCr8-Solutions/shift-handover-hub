@@ -1,7 +1,7 @@
 import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
-
+import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
@@ -59,7 +59,7 @@ export default function ResourcesIndex() {
             </p>
           </div>
 
-          
+          <AdPlacement format="horizontal" className="mb-8" />
 
           <div className="grid md:grid-cols-2 gap-6">
             {sections.map((section) => {
@@ -89,7 +89,7 @@ export default function ResourcesIndex() {
             })}
           </div>
 
-          
+          <AdPlacement format="rectangle" className="mt-12" />
         </main>
 
         <MarketingFooter />

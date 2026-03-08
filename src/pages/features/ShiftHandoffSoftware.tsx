@@ -5,7 +5,7 @@ import { ArrowRight, Clock, FileText, Users, Shield, CheckCircle2, Zap } from "l
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MockHandoffForm } from "@/components/marketing/MockAppPreviews";
-
+import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 
@@ -88,7 +88,7 @@ export default function ShiftHandoffSoftware() {
           </div>
         </section>
 
-        
+        <AdPlacement format="horizontal" className="py-4" />
 
         <section className="py-12">
           <div className="container mx-auto px-4 max-w-4xl">
@@ -122,7 +122,7 @@ export default function ShiftHandoffSoftware() {
           </div>
         </section>
 
-        
+        <AdPlacement format="horizontal" className="py-6" />
       </main>
 
       <MarketingFooter />

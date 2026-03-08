@@ -5,7 +5,7 @@ import { ArrowRight, Clock, BarChart3, Gauge, CheckCircle2, Zap } from "lucide-r
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MockUtilizationChart } from "@/components/marketing/MockUtilizationChart";
-
+import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 import { ConversionEvents } from "@/lib/analytics";
@@ -119,7 +119,7 @@ export default function MachineTimeTracking() {
           </div>
         </section>
 
-        
+        <AdPlacement format="horizontal" className="py-6" />
       </main>
 
       <MarketingFooter />
