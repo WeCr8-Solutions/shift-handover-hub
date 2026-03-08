@@ -230,7 +230,7 @@ export function TeamManagement() {
                 key={team.id}
                 team={team}
                 isSelected={selectedTeam?.id === team.id}
-                isOwner={team.created_by === user?.id}
+                canManage={team.created_by === user?.id || isOrgAdmin || isAdmin}
                 onSelect={() => setSelectedTeam(selectedTeam?.id === team.id ? null : team)}
                 onEdit={() => handleEditTeam(team)}
                 onDelete={() => handleRequestDelete(team)}
