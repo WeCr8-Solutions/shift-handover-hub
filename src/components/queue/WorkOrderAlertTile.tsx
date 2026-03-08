@@ -102,19 +102,19 @@ export function WorkOrderAlertTile({ item, stationName, stationCode, workCenterT
         .from("work_order_routing")
         .select(`
           step_number, operation_name, status,
-          completed_by_name, completed_at, estimated_duration,
+          completed_by, completed_at, estimated_duration,
           station_id,
           stations:station_id ( name )
         `)
         .eq("queue_item_id", item.id)
         .order("step_number", { ascending: true });
 
-      const routingSteps: RoutingStepInfo[] = (steps || []).map(s => ({
+      const routingSteps: RoutingStepInfo[] = (steps || []).map((s: any) => ({
         step_number: s.step_number,
         operation_name: s.operation_name,
         status: s.status,
-        station_name: (s.stations as any)?.name || null,
-        completed_by_name: s.completed_by_name,
+        station_name: s.stations?.name || null,
+        completed_by_name: s.completed_by || null,
         completed_at: s.completed_at,
         estimated_duration: s.estimated_duration,
       }));
