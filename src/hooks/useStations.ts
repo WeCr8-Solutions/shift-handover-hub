@@ -407,7 +407,6 @@ export function useHandoffRecords(teamId?: string | null, organizationId?: strin
 
 export function useShiftStats(teamId?: string | null, organizationId?: string | null) {
   const { user } = useAuth();
-  const { organization } = useUserOrganization();
   const [stats, setStats] = useState({
     activeStations: 0,
     completedHandoffs: 0,
@@ -416,7 +415,7 @@ export function useShiftStats(teamId?: string | null, organizationId?: string | 
   });
   const [loading, setLoading] = useState(true);
 
-  const effectiveOrgId = organizationId || organization?.id;
+  const effectiveOrgId = organizationId;
 
   useEffect(() => {
     if (!user) {
