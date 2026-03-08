@@ -85,11 +85,11 @@ All 6 phases of the performance improvement plan are now **complete**. This docu
 | Component | Lines | Status | Notes |
 |-----------|-------|--------|-------|
 | UserManagement | ~300 | ✅ | |
-| WorkOrderManagement | ~350 | ⚠️ | Consider lazy-loading sub-dialogs |
+| WorkOrderManagement | 653 | ⚠️ | Extract table + detail panel (Phase 4) |
 | OrganizationOversight | ~250 | ✅ | |
 | ActivityLogs | ~200 | ✅ | |
-| MachineMonitorPanel | ~300 | ⚠️ | Heavy polling — verify interval |
-| ShopFloorDisplayManagement | ~350 | ⚠️ | Large — candidate for extraction |
+| MachineMonitorPanel | 439 | ⚠️ | Lazy-load detail modals (Phase 7) |
+| ShopFloorDisplayManagement | 446 | ⚠️ | Lazy-load create/edit dialogs (Phase 7) |
 
 ---
 
