@@ -36,7 +36,7 @@ interface OperatorDashboardProps {
 
 export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDashboardProps) {
   const { currentTeam } = useCurrentTeam();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const { activeSessions, loading, isCheckedIn, checkIn, checkOut, refresh: refreshSessions } = useOperatorSessions();
   const { createHandoffRecord, refreshRecords } = useHandoffRecords(currentTeam?.id, organization?.id);
 
