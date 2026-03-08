@@ -1,6 +1,7 @@
 # Frontend Orphan Routes — Audit Report
 
 Routes with **no inbound navigation edge** from any other page.
+Updated: 2026-03-08
 
 | Route | Component | Orphan Type | Severity | Notes |
 |-------|-----------|-------------|----------|-------|
@@ -11,10 +12,11 @@ Routes with **no inbound navigation edge** from any other page.
 | `/machine-time-tracking` | MachineTimeTracking | SEO orphan | Low | Feature page outside `/features/` prefix. No nav link but intended for SEO landing. |
 | `/shift-handoff` | ShiftHandoff | SEO orphan | Low | Same as above — SEO landing page. |
 | `/manufacturing-visibility` | ManufacturingVisibility | SEO orphan | Low | Same as above — SEO landing page. |
+| `/display/:displayId` | ShopFloorDisplay (lazy) | Deeplink-only | Low | Token-authenticated, accessed via generated URLs. OK by design. |
 
 ## Summary
 - **3 potential orphans** needing navigation links or removal (`/start`, `/setup`, 3 SEO pages outside `/features/`)
-- **2 deeplink-only** routes (acceptable by design)
+- **3 deeplink-only** routes (acceptable by design)
 - **0 critical orphans** — all authed pages have auth gate redirects
 
 ## Recommendations

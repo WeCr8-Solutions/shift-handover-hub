@@ -1,6 +1,7 @@
 # Node Registry — JobLine.ai
 
 All diagram nodes must reference a real entity listed here.
+Updated: 2026-03-08
 
 ## Frontend Routes (FE_ROUTE)
 
@@ -23,6 +24,14 @@ All diagram nodes must reference a real entity listed here.
 | FE_ROUTE__updates | `/updates` | Updates | Yes | Any |
 | FE_ROUTE__start | `/start` | Start | No | None |
 | FE_ROUTE__zach | `/zach` | FounderRedirect | No | None |
+| FE_ROUTE__blog | `/blog` | Blog | No | None |
+| FE_ROUTE__help | `/help` | Help | No | None |
+| FE_ROUTE__help_article | `/help/:category/:slug` | HelpArticle | No | None |
+| FE_ROUTE__resources | `/resources` | ResourcesIndex | No | None |
+| FE_ROUTE__resources_guides | `/resources/guides` | ManufacturingGuides | No | None |
+| FE_ROUTE__resources_gcode | `/resources/gcode` | GCodeReference | No | None |
+| FE_ROUTE__resources_glossary | `/resources/glossary` | IndustryGlossary | No | None |
+| FE_ROUTE__display | `/display/:displayId` | ShopFloorDisplay (lazy) | No | Token-based |
 | FE_ROUTE__feat_shift_handoff | `/features/shift-handoff-software` | ShiftHandoffSoftware | No | None |
 | FE_ROUTE__feat_wo_tracking | `/features/work-order-tracking` | WorkOrderTracking | No | None |
 | FE_ROUTE__feat_prod_scheduling | `/features/production-scheduling` | ProductionScheduling | No | None |
@@ -39,6 +48,17 @@ All diagram nodes must reference a real entity listed here.
 | FE_ROUTE__shift_handoff | `/shift-handoff` | ShiftHandoff | No | None |
 | FE_ROUTE__mfg_visibility | `/manufacturing-visibility` | ManufacturingVisibility | No | None |
 | FE_ROUTE__not_found | `*` | NotFound | No | None |
+
+## Frontend Contexts & Providers (FE_CTX)
+
+| Node ID | Name | Data Source | Cache Strategy |
+|---------|------|------------|----------------|
+| FE_CTX__QueryClient | QueryClientProvider | — | staleTime 30s, gcTime 5min, retry 2 |
+| FE_CTX__Auth | AuthContext | supabase.auth | Event-driven |
+| FE_CTX__Org | OrgContext | useUserOrganization (React Query 5min) | Single instance, app-wide |
+| FE_CTX__Team | TeamContext | Derives from OrgContext | Zero queries |
+| FE_CTX__ActAs | ActAsProvider | Local state | — |
+| FE_CTX__Onboarding | OnboardingProvider | Supabase query | — |
 
 ## Edge Functions (API)
 
@@ -59,6 +79,22 @@ All diagram nodes must reference a real entity listed here.
 | API__fn__stripe_webhook | stripe-webhook | POST | Webhook | stripe_events, subscriptions, organizations |
 | API__fn__update_seats | update-seats | POST | Yes | organization_members, subscriptions |
 | API__fn__verify_station_context | verify-station-context-payment | POST | Yes | organization_machine_purchases |
+
+## Database RPC Functions (DB_RPC)
+
+| Node ID | Function Name | Called By | Security | Purpose |
+|---------|--------------|----------|----------|---------|
+| DB_RPC__compute_smart_alerts | `compute_smart_alerts` | useSmartAlerts | SECURITY DEFINER | Computes 9 alert types server-side (replaces 8 client queries) |
+| DB_RPC__apply_ncr_disposition | `apply_ncr_disposition` | useNCR | SECURITY DEFINER | Applies NCR disposition (scrap/rework/use-as-is) |
+| DB_RPC__reject_ncr | `reject_ncr` | useNCR | SECURITY DEFINER | Rejects NCR with reason |
+| DB_RPC__pass_work_order | `pass_work_order_to_next_step` | useQueue | SECURITY DEFINER | Advances WO through routing steps |
+| DB_RPC__validate_invite | `validate_invite_code` | useOrganizationInvites | SECURITY DEFINER | Validates invite code |
+| DB_RPC__validate_display | `validate_display_token` | ShopFloorDisplay | SECURITY DEFINER | Validates shop floor display token |
+| DB_RPC__report_issue | `report_issue` | useIssueReporter | SECURITY DEFINER | Creates issue report |
+| DB_RPC__increment_ai_usage | `increment_ai_chat_usage` | useAiChatUsage | SECURITY DEFINER | Metering for AI chat |
+| DB_RPC__increment_erp_usage | `increment_erp_sync_usage` | useERPConnector | SECURITY DEFINER | Metering for ERP syncs |
+| DB_RPC__reorder_queue | `reorder_queue_item` | useQueue | SECURITY DEFINER | Queue item reordering |
+| DB_RPC__can_act_as | `can_act_as` | ActAsContext | SECURITY DEFINER | Act-as permission check |
 
 ## Database Tables (DB) — 80 tables
 
