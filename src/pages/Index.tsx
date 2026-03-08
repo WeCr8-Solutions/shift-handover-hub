@@ -163,8 +163,6 @@ const Index = () => {
 
   // Supervisors, org admins, and platform admins get the production overview dashboard
   const showSupervisorView = !!user && hasOrgSupervisorAccess;
-  // Authenticated operators (non-supervisor) get the focused operator dashboard
-  const showOperatorView = !!user && !hasOrgSupervisorAccess && !roleLoading;
 
   const [showNewHandoff, setShowNewHandoff] = useState(false);
   const [showPerformanceUpdate, setShowPerformanceUpdate] = useState(false);
@@ -263,6 +261,7 @@ const Index = () => {
 
   const isLoading = stationsLoading || recordsLoading;
   const hasData = stations.length > 0 || handoffRecords.length > 0;
+  const isRoleResolving = authLoading || roleLoading || onboardingLoading;
 
   return (
     <div className="min-h-screen bg-background">
@@ -272,8 +271,17 @@ const Index = () => {
         {/* Trial gate for authenticated users */}
         {user ? (
           <ExpiredTrialGate>
-            {/* Supervisor / Admin Production Overview */}
-            {showSupervisorView ? (
+            {/* Show skeleton while roles/org data are still loading */}
+            {isRoleResolving ? (
+              <div className="py-12 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <Skeleton key={i} className="h-24 rounded-lg" />
+                  ))}
+                </div>
+                <Skeleton className="h-64 w-full rounded-lg" />
+              </div>
+            ) : showSupervisorView ? (
               viewMode === "operator" ? (
                 <OperatorDashboard isAdminView onBackToOverview={() => setViewMode("supervisor")} />
               ) : viewMode === "station-detail" && focusedStation ? (
@@ -297,9 +305,9 @@ const Index = () => {
                   }}
                 />
               )
-            ) : showOperatorView ? (
+            ) : (
               <OperatorDashboard />
-            ) : null}
+            )}
           </ExpiredTrialGate>
         ) : (
           <>
