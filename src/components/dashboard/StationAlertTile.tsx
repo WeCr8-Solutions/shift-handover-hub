@@ -613,6 +613,7 @@ export function StationAlertTile({ station, onViewStation, onQuickAction }: Stat
           </div>
         </CollapsibleContent>
       </div>
+      </StationQuickActions>
     </Collapsible>
   );
 }
