@@ -43,6 +43,8 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { OperatorStationKanban } from "@/components/operator/OperatorStationKanban";
+import { useDimensions } from "@/hooks/useDimensions";
+import { DimensionCheckForm } from "@/components/dimensions/DimensionCheckForm";
 import { format, isPast, formatDistanceToNow } from "date-fns";
 
 interface WorkOrder {
