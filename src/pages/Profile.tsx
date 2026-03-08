@@ -64,6 +64,7 @@ export default function Profile() {
         variant: "destructive",
       });
     } else {
+      setIsDirty(false);
       await refreshProfile();
       toast({
         title: "Profile updated",
