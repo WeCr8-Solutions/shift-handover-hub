@@ -31,6 +31,7 @@ export default function Profile() {
   
   const [displayName, setDisplayName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -41,6 +42,7 @@ export default function Profile() {
   useEffect(() => {
     if (profile) {
       setDisplayName(profile.display_name);
+      setIsDirty(false);
     }
   }, [profile]);
 
@@ -62,6 +64,7 @@ export default function Profile() {
         variant: "destructive",
       });
     } else {
+      setIsDirty(false);
       await refreshProfile();
       toast({
         title: "Profile updated",
@@ -140,7 +143,10 @@ export default function Profile() {
               <Input
                 id="display-name"
                 value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
+                onChange={(e) => {
+                  setDisplayName(e.target.value);
+                  setIsDirty(e.target.value.trim() !== (profile?.display_name || ""));
+                }}
                 placeholder="Your name"
               />
               <p className="text-xs text-muted-foreground">
@@ -163,7 +169,7 @@ export default function Profile() {
             </div>
 
             {/* Save Button */}
-            <Button onClick={handleSave} disabled={isSaving} className="gap-2">
+            <Button onClick={handleSave} disabled={isSaving || !isDirty || !displayName.trim()} className="gap-2">
               {isSaving ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -172,7 +178,7 @@ export default function Profile() {
               ) : (
                 <>
                   <Save className="w-4 h-4" />
-                  Save Changes
+                  {isDirty ? "Save Changes" : "Saved"}
                 </>
               )}
             </Button>

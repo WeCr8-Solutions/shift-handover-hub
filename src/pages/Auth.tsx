@@ -200,7 +200,7 @@ export default function Auth() {
       
       toast({
         title: "Account created!",
-        description: "Welcome to JobLine.ai! Check your email for a welcome message.",
+        description: "Please check your email to verify your account before signing in.",
       });
     }
   };

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export type OnboardingStep = 
   | 'welcome'
@@ -126,6 +127,10 @@ export function useOnboarding() {
     const nextStep: OnboardingStep = nextCoreStep || 'complete';
     const isComplete = !nextCoreStep;
 
+    // Save snapshot for rollback
+    const prevState = { ...state };
+
+    // Optimistic update
     setState(prev => ({
       ...prev,
       completedSteps: newCompletedSteps,
@@ -145,16 +150,25 @@ export function useOnboarding() {
 
     if (error) {
       console.error('Error updating onboarding:', error);
+      // Rollback on failure
+      setState(prev => ({
+        ...prev,
+        completedSteps: prevState.completedSteps,
+        currentStep: prevState.currentStep,
+        isComplete: prevState.isComplete,
+      }));
+      toast.error('Failed to save progress. Please try again.');
     }
   }, [user, state.completedSteps]);
 
   const skipOnboarding = useCallback(async () => {
     if (!user) return;
 
+    const prevState = { ...state };
     setState(prev => ({ ...prev, isComplete: true, currentStep: 'complete' }));
     setShowTour(false);
 
-    await supabase
+    const { error } = await supabase
       .from('user_onboarding')
       .update({
         is_complete: true,
@@ -162,21 +176,39 @@ export function useOnboarding() {
         completed_at: new Date().toISOString(),
       })
       .eq('user_id', user.id);
-  }, [user]);
+
+    if (error) {
+      console.error('Error skipping onboarding:', error);
+      setState(prev => ({
+        ...prev,
+        isComplete: prevState.isComplete,
+        currentStep: prevState.currentStep,
+      }));
+      toast.error('Failed to save. Please try again.');
+    }
+  }, [user, state]);
 
   const markWelcomeSeen = useCallback(async () => {
     if (!user) return;
 
     setState(prev => ({ ...prev, hasSeenWelcome: true }));
 
-    await supabase
+    const { error } = await supabase
       .from('user_onboarding')
       .update({ has_seen_welcome: true })
       .eq('user_id', user.id);
+
+    if (error) {
+      console.error('Error marking welcome seen:', error);
+      // Don't rollback this one — it's a minor UX flag, and rolling back
+      // would cause the welcome modal to re-appear which is worse
+    }
   }, [user]);
 
   const resetOnboarding = useCallback(async () => {
     if (!user) return;
+
+    const prevState = { ...state };
 
     setState({
       completedSteps: [],
@@ -187,7 +219,7 @@ export function useOnboarding() {
       setupWizardDismissed: false,
     });
 
-    await supabase
+    const { error } = await supabase
       .from('user_onboarding')
       .update({
         completed_steps: [],
@@ -199,30 +231,49 @@ export function useOnboarding() {
       })
       .eq('user_id', user.id);
 
+    if (error) {
+      console.error('Error resetting onboarding:', error);
+      setState({ ...prevState, isLoading: false });
+      toast.error('Failed to reset onboarding. Please try again.');
+      return;
+    }
+
     setShowTour(true);
-  }, [user]);
+  }, [user, state]);
 
   const dismissSetupWizard = useCallback(async () => {
     if (!user) return;
 
     setState(prev => ({ ...prev, setupWizardDismissed: true }));
 
-    await supabase
+    const { error } = await supabase
       .from('user_onboarding')
       .update({ setup_wizard_dismissed: true })
       .eq('user_id', user.id);
+
+    if (error) {
+      console.error('Error dismissing setup wizard:', error);
+      setState(prev => ({ ...prev, setupWizardDismissed: false }));
+      toast.error('Failed to save preference. Please try again.');
+    }
   }, [user]);
 
   const goToStep = useCallback(async (stepId: OnboardingStep) => {
     if (!user) return;
     
+    const prevStep = state.currentStep;
     setState(prev => ({ ...prev, currentStep: stepId }));
     
-    await supabase
+    const { error } = await supabase
       .from('user_onboarding')
       .update({ current_step: stepId })
       .eq('user_id', user.id);
-  }, [user]);
+
+    if (error) {
+      console.error('Error navigating to step:', error);
+      setState(prev => ({ ...prev, currentStep: prevStep }));
+    }
+  }, [user, state.currentStep]);
 
   const startTour = useCallback((step?: OnboardingStep) => {
     if (step) {

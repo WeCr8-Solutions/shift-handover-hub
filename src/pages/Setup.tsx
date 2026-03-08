@@ -57,18 +57,28 @@ export default function Setup() {
     async function checkSetupStatus() {
       if (!user) return;
       
-      const [orgResult, teamsResult, stationsResult, membersResult] = await Promise.all([
-        supabase
-          .from('organization_members')
-          .select('organization:organizations(id, name)')
-          .eq('user_id', user.id)
-          .maybeSingle(),
-        supabase.from('teams').select('id', { count: 'exact', head: true }),
-        supabase.from('stations').select('id', { count: 'exact', head: true }),
-        supabase.from('team_members').select('id', { count: 'exact', head: true }),
-      ]);
+      // First get user's org to scope all subsequent queries
+      const orgResult = await supabase
+        .from('organization_members')
+        .select('organization:organizations(id, name)')
+        .eq('user_id', user.id)
+        .maybeSingle();
 
       const hasOrg = !!orgResult.data?.organization;
+      const orgId = orgResult.data?.organization?.id;
+
+      // Scope counts to the user's organization to avoid inflated numbers
+      const [teamsResult, stationsResult, membersResult] = await Promise.all([
+        orgId
+          ? supabase.from('teams').select('id', { count: 'exact', head: true }).eq('organization_id', orgId)
+          : Promise.resolve({ count: 0 }),
+        orgId
+          ? supabase.from('stations').select('id', { count: 'exact', head: true }).eq('organization_id', orgId)
+          : Promise.resolve({ count: 0 }),
+        orgId
+          ? supabase.from('team_members').select('id', { count: 'exact', head: true }).eq('organization_id', orgId)
+          : Promise.resolve({ count: 0 }),
+      ]);
       
       setSetupStatus({
         hasOrganization: hasOrg,
@@ -92,31 +102,40 @@ export default function Setup() {
     checkSetupStatus();
   }, [user, currentStep]);
 
-  const refreshStatus = () => {
+  const refreshStatus = async () => {
     setLoading(true);
     if (user) {
-      Promise.all([
-        supabase
-          .from('organization_members')
-          .select('organization:organizations(id, name)')
-          .eq('user_id', user.id)
-          .maybeSingle(),
-        supabase.from('teams').select('id', { count: 'exact', head: true }),
-        supabase.from('stations').select('id', { count: 'exact', head: true }),
-        supabase.from('team_members').select('id', { count: 'exact', head: true }),
-      ]).then(([orgResult, teamsResult, stationsResult, membersResult]) => {
-        setSetupStatus({
-          hasOrganization: !!orgResult.data?.organization,
-          organizationName: orgResult.data?.organization?.name || null,
-          hasTeams: (teamsResult.count || 0) > 0,
-          hasStations: (stationsResult.count || 0) > 0,
-          hasTeamMembers: (membersResult.count || 0) > 0,
-          teamsCount: teamsResult.count || 0,
-          stationsCount: stationsResult.count || 0,
-          membersCount: membersResult.count || 0,
-        });
-        setLoading(false);
+      const orgResult = await supabase
+        .from('organization_members')
+        .select('organization:organizations(id, name)')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      const orgId = orgResult.data?.organization?.id;
+
+      const [teamsResult, stationsResult, membersResult] = await Promise.all([
+        orgId
+          ? supabase.from('teams').select('id', { count: 'exact', head: true }).eq('organization_id', orgId)
+          : Promise.resolve({ count: 0 }),
+        orgId
+          ? supabase.from('stations').select('id', { count: 'exact', head: true }).eq('organization_id', orgId)
+          : Promise.resolve({ count: 0 }),
+        orgId
+          ? supabase.from('team_members').select('id', { count: 'exact', head: true }).eq('organization_id', orgId)
+          : Promise.resolve({ count: 0 }),
+      ]);
+
+      setSetupStatus({
+        hasOrganization: !!orgResult.data?.organization,
+        organizationName: orgResult.data?.organization?.name || null,
+        hasTeams: (teamsResult.count || 0) > 0,
+        hasStations: (stationsResult.count || 0) > 0,
+        hasTeamMembers: (membersResult.count || 0) > 0,
+        teamsCount: teamsResult.count || 0,
+        stationsCount: stationsResult.count || 0,
+        membersCount: membersResult.count || 0,
       });
+      setLoading(false);
     }
   };
 
