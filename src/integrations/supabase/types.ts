@@ -5574,6 +5574,10 @@ export type Database = {
         Args: { _org_id: string; _user_id: string }
         Returns: boolean
       }
+      can_manage_dimensions: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
       can_manage_station_via_team: {
         Args: { _team_id: string; _user_id: string }
         Returns: boolean
