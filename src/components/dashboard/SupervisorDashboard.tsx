@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useStations, useHandoffRecords } from "@/hooks/useStations";
 import { useOrgContext } from "@/contexts/OrgContext";
-import { useOrgRefreshInterval } from "@/hooks/useOrgRefreshInterval";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { RefreshIndicator } from "./RefreshIndicator";
 import { SmartAlertPanel } from "@/components/alerts/SmartAlertPanel";
