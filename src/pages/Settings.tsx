@@ -110,6 +110,7 @@ export default function Settings() {
     { value: "onboarding", label: "Onboarding", icon: GraduationCap, show: true },
     { value: "erp", label: "ERP", icon: Plug, show: showERPTab },
     { value: "marketplace", label: "Marketplace", icon: Store, show: true },
+    { value: "my-issues", label: "My Issues", icon: Bug, show: true },
   ];
 
   const visibleTabs = tabs.filter((t) => t.show);
