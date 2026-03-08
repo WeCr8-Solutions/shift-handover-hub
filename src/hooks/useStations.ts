@@ -272,7 +272,8 @@ export function useHandoffRecords(teamId?: string | null, organizationId?: strin
     queryFn: () => fetchHandoffData(user!.id, teamId, effectiveOrgId),
     enabled: !!user,
     staleTime: 30_000,
-    refetchInterval: 300_000,
+    refetchInterval: 900_000, // 15min fallback — realtime handles freshness
+    refetchIntervalInBackground: false,
   });
 
   // Debounced realtime invalidation
