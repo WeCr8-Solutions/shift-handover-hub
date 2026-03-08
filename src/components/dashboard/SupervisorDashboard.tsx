@@ -450,7 +450,7 @@ export function SupervisorDashboard({
             <div className="divide-y divide-border/30">
               {activeStations.map((station) => (
                 <div
-                  key={station.id}
+                  key={station.dbId}
                   className={cn(
                     "flex items-center gap-3 px-4 py-2.5",
                     onViewStation && "cursor-pointer hover:bg-secondary/40 transition-colors",
