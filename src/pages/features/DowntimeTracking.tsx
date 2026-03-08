@@ -117,7 +117,7 @@ export default function DowntimeTracking() {
           </div>
         </section>
 
-        
+        <AdPlacement format="horizontal" className="py-6" />
       </main>
 
       <MarketingFooter />

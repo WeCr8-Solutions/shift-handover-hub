@@ -119,7 +119,7 @@ export default function MachineTimeTracking() {
           </div>
         </section>
 
-        
+        <AdPlacement format="horizontal" className="py-6" />
       </main>
 
       <MarketingFooter />

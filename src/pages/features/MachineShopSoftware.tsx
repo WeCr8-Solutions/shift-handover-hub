@@ -121,7 +121,7 @@ export default function MachineShopSoftware() {
           </div>
         </section>
 
-        
+        <AdPlacement format="horizontal" className="py-6" />
       </main>
 
       <MarketingFooter />

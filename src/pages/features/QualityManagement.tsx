@@ -118,7 +118,7 @@ export default function QualityManagement() {
           </div>
         </section>
 
-        
+        <AdPlacement format="horizontal" className="py-6" />
       </main>
 
       <MarketingFooter />

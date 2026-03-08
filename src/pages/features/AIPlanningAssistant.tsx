@@ -423,7 +423,7 @@ export default function AIPlanningAssistant() {
         </div>
       </section>
 
-      
+      <AdPlacement format="horizontal" className="py-4" />
 
       <MarketingFooter />
       <LeadCaptureModal />
