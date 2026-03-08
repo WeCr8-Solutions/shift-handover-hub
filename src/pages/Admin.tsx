@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { MachineLibraryManagement } from "@/components/admin/MachineLibraryManagement";
 import { MachineMonitorPanel } from "@/components/admin/MachineMonitorPanel";
 import { VisitorSurveyAnalytics } from "@/components/admin/VisitorSurveyAnalytics";
+import { SmartAlertAdmin } from "@/components/admin/SmartAlertAdmin";
 import { Shield, LayoutDashboard, Users, Wrench, Briefcase, Activity, FileSpreadsheet, Package, Route, Lightbulb, History, Bug, ShieldCheck, ListTodo, Settings2, Map, BookOpen, Cpu, MessageSquare, BellRing } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
