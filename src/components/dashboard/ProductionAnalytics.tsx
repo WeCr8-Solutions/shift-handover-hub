@@ -16,7 +16,7 @@ import {
   Area,
   Legend,
 } from "recharts";
-import { BarChart3, PieChart as PieChartIcon, TrendingUp, Filter, Activity, RefreshCw } from "lucide-react";
+import { BarChart3, PieChart as PieChartIcon, TrendingUp, Filter, Activity, RefreshCw, Users, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Use shared status configuration
@@ -33,6 +33,9 @@ interface StationData {
   name: string;
   is_active: boolean;
   team_id: string | null;
+  work_center?: string;
+  work_center_type?: string;
+  team?: { id: string; name: string } | null;
   current_status?: {
     current_job_state: string | null;
     current_operator_name: string | null;
@@ -66,7 +69,7 @@ interface ProductionAnalyticsProps {
 }
 
 type ShiftFilter = "all" | "Day" | "Swing" | "Night";
-type ChartView = "output" | "status" | "trend";
+type ChartView = "output" | "status" | "team" | "workcenter" | "trend";
 
 export function ProductionAnalytics({
   stations,
@@ -114,26 +117,35 @@ export function ProductionAnalytics({
     return handoffs.filter((h) => h.shift === shiftFilter);
   }, [handoffs, shiftFilter]);
 
-  // Station output data (parts per station)
+  // Station output data (parts per station) — includes team & work center context
   const stationOutputData = useMemo(() => {
-    const map = new Map<string, { name: string; parts: number; scrap: number; rework: number }>();
+    const map = new Map<string, { name: string; teamName: string; workCenter: string; parts: number; scrap: number; rework: number }>();
 
     // From current station status
     stations.forEach((s) => {
       if (!s.is_active) return;
-      const existing = map.get(s.station_id) || { name: s.name, parts: 0, scrap: 0, rework: 0 };
+      const key = s.id; // Use unique DB id
+      const teamName = s.team?.name || "Unassigned";
+      const workCenter = s.work_center || "—";
+      const label = `${s.name}`;
+      const existing = map.get(key) || { name: label, teamName, workCenter, parts: 0, scrap: 0, rework: 0 };
       existing.parts += s.current_status?.parts_complete ?? 0;
-      map.set(s.station_id, existing);
+      map.set(key, existing);
     });
 
-    // Supplement with handoff data
+    // Supplement with handoff data (keyed by machine_id which maps to station_id display code)
     filteredHandoffs.forEach((h) => {
       const stationName = h.machine_id;
-      const existing = map.get(stationName) || { name: stationName, parts: 0, scrap: 0, rework: 0 };
+      // Try to find matching station to enrich with team/work center
+      const matchStation = stations.find((s) => s.station_id === stationName || s.name === stationName);
+      const teamName = matchStation?.team?.name || "—";
+      const workCenter = matchStation?.work_center || "—";
+      const key = matchStation?.id || `handoff-${stationName}`;
+      const existing = map.get(key) || { name: stationName, teamName, workCenter, parts: 0, scrap: 0, rework: 0 };
       existing.parts += h.parts_completed_this_shift ?? 0;
       existing.scrap += h.scrap_count ?? 0;
       existing.rework += h.rework_count ?? 0;
-      map.set(stationName, existing);
+      map.set(key, existing);
     });
 
     return Array.from(map.values())
@@ -141,6 +153,40 @@ export function ProductionAnalytics({
       .sort((a, b) => b.parts - a.parts)
       .slice(0, 10);
   }, [stations, filteredHandoffs]);
+
+  // Work center aggregation for grouped analytics
+  const workCenterData = useMemo(() => {
+    const map = new Map<string, { workCenter: string; stations: number; running: number; setup: number; down: number; waiting: number; idle: number }>();
+
+    stations.forEach((s) => {
+      if (!s.is_active) return;
+      const wc = s.work_center || "Other";
+      const existing = map.get(wc) || { workCenter: wc, stations: 0, running: 0, setup: 0, down: 0, waiting: 0, idle: 0 };
+      existing.stations++;
+      const status = getStatusFromJobState(s.current_status?.current_job_state);
+      existing[status]++;
+      map.set(wc, existing);
+    });
+
+    return Array.from(map.values()).sort((a, b) => b.stations - a.stations);
+  }, [stations]);
+
+  // Team aggregation
+  const teamData = useMemo(() => {
+    const map = new Map<string, { team: string; stations: number; running: number; setup: number; down: number; waiting: number; idle: number }>();
+
+    stations.forEach((s) => {
+      if (!s.is_active) return;
+      const teamName = s.team?.name || "Unassigned";
+      const existing = map.get(teamName) || { team: teamName, stations: 0, running: 0, setup: 0, down: 0, waiting: 0, idle: 0 };
+      existing.stations++;
+      const status = getStatusFromJobState(s.current_status?.current_job_state);
+      existing[status]++;
+      map.set(teamName, existing);
+    });
+
+    return Array.from(map.values()).sort((a, b) => b.stations - a.stations);
+  }, [stations]);
 
   // Status distribution for pie chart using shared config
   const statusDistribution = useMemo(() => {
@@ -259,6 +305,8 @@ export function ProductionAnalytics({
             {[
               { key: "output" as ChartView, icon: BarChart3, label: "Output" },
               { key: "status" as ChartView, icon: PieChartIcon, label: "Status" },
+              { key: "team" as ChartView, icon: Users, label: "Teams" },
+              { key: "workcenter" as ChartView, icon: Wrench, label: "Work Centers" },
               { key: "trend" as ChartView, icon: TrendingUp, label: "Trend" },
             ].map(({ key, icon: Icon, label }) => (
               <button
@@ -339,13 +387,26 @@ export function ProductionAnalytics({
                     tickLine={false}
                   />
                   <Tooltip
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "8px",
-                      fontSize: "12px",
+                    content={({ active, payload, label }) => {
+                      if (!active || !payload?.length) return null;
+                      const data = payload[0]?.payload;
+                      return (
+                        <div className="bg-card border border-border rounded-lg p-2.5 text-xs shadow-lg">
+                          <p className="font-medium text-foreground mb-1">{label}</p>
+                          {data?.teamName && (
+                            <p className="text-muted-foreground">Team: {data.teamName}</p>
+                          )}
+                          {data?.workCenter && data.workCenter !== "—" && (
+                            <p className="text-muted-foreground mb-1">Work Center: {data.workCenter}</p>
+                          )}
+                          {payload.map((p: any, i: number) => (
+                            <p key={i} style={{ color: p.color }}>
+                              {p.name}: {p.value}
+                            </p>
+                          ))}
+                        </div>
+                      );
                     }}
-                    labelStyle={{ color: "hsl(var(--foreground))" }}
                   />
                   <Bar
                     dataKey="parts"
@@ -423,6 +484,103 @@ export function ProductionAnalytics({
                   ))}
                 </div>
               </div>
+            )}
+          </div>
+        )}
+
+        {chartView === "team" && (
+          <div>
+            <p className="text-xs text-muted-foreground mb-3">Station status by team</p>
+            {teamData.length === 0 ? (
+              <div className="flex items-center justify-center h-48 text-sm text-muted-foreground">
+                No teams configured.
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart
+                  data={teamData}
+                  margin={{ top: 5, right: 10, left: -10, bottom: 5 }}
+                  role="img"
+                  aria-label="Stacked bar chart showing station status by team"
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                  <XAxis
+                    dataKey="team"
+                    tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                    axisLine={{ stroke: "hsl(var(--border))" }}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "8px",
+                      fontSize: "12px",
+                    }}
+                  />
+                  <Legend iconType="circle" wrapperStyle={{ fontSize: "11px" }} />
+                  <Bar dataKey="running" name="Running" stackId="a" fill={STATUS_COLORS.running} isAnimationActive={!prefersReducedMotion} />
+                  <Bar dataKey="setup" name="Setup" stackId="a" fill={STATUS_COLORS.setup} isAnimationActive={!prefersReducedMotion} />
+                  <Bar dataKey="waiting" name="Waiting" stackId="a" fill={STATUS_COLORS.waiting} isAnimationActive={!prefersReducedMotion} />
+                  <Bar dataKey="down" name="Down" stackId="a" fill={STATUS_COLORS.down} isAnimationActive={!prefersReducedMotion} />
+                  <Bar dataKey="idle" name="Idle" stackId="a" fill={STATUS_COLORS.idle} radius={[4, 4, 0, 0]} isAnimationActive={!prefersReducedMotion} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        )}
+
+        {chartView === "workcenter" && (
+          <div>
+            <p className="text-xs text-muted-foreground mb-3">Station status by work center</p>
+            {workCenterData.length === 0 ? (
+              <div className="flex items-center justify-center h-48 text-sm text-muted-foreground">
+                No work centers configured.
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart
+                  data={workCenterData}
+                  margin={{ top: 5, right: 10, left: -10, bottom: 5 }}
+                  role="img"
+                  aria-label="Stacked bar chart showing station status by work center"
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                  <XAxis
+                    dataKey="workCenter"
+                    tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                    axisLine={{ stroke: "hsl(var(--border))" }}
+                    tickLine={false}
+                    angle={-20}
+                    textAnchor="end"
+                    height={50}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "8px",
+                      fontSize: "12px",
+                    }}
+                  />
+                  <Legend iconType="circle" wrapperStyle={{ fontSize: "11px" }} />
+                  <Bar dataKey="running" name="Running" stackId="a" fill={STATUS_COLORS.running} isAnimationActive={!prefersReducedMotion} />
+                  <Bar dataKey="setup" name="Setup" stackId="a" fill={STATUS_COLORS.setup} isAnimationActive={!prefersReducedMotion} />
+                  <Bar dataKey="waiting" name="Waiting" stackId="a" fill={STATUS_COLORS.waiting} isAnimationActive={!prefersReducedMotion} />
+                  <Bar dataKey="down" name="Down" stackId="a" fill={STATUS_COLORS.down} isAnimationActive={!prefersReducedMotion} />
+                  <Bar dataKey="idle" name="Idle" stackId="a" fill={STATUS_COLORS.idle} radius={[4, 4, 0, 0]} isAnimationActive={!prefersReducedMotion} />
+                </BarChart>
+              </ResponsiveContainer>
             )}
           </div>
         )}
