@@ -16,17 +16,11 @@ import {
   AlertTriangle,
   Clock,
   ArrowRight,
-  Lightbulb,
   Package,
   Plus,
-  ListTodo,
   Eye,
   Monitor,
   Users,
-  Pause,
-  Timer,
-  Zap,
-  GitBranch,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
