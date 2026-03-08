@@ -250,6 +250,12 @@ export default function Queue() {
               </div>
             )}
 
+            <RefreshIndicator
+              isRefreshing={isRefreshing}
+              lastRefreshedAt={lastRefreshedAt}
+              onRefresh={handleManualRefresh}
+            />
+
             <Button onClick={() => setCreateDialogOpen(true)} data-tour="add-queue-item">
               <Plus className="mr-2 h-4 w-4" />
               Add Item
