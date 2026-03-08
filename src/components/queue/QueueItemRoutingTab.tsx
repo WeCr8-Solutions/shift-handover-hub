@@ -9,18 +9,20 @@ import { useOrgContext } from "@/contexts/OrgContext";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { useToast } from "@/hooks/use-toast";
 import { useDimensions } from "@/hooks/useDimensions";
+import { useSetupSheets } from "@/hooks/useSetupSheets";
 import { supabase } from "@/integrations/supabase/client";
 import { RoutingSection } from "@/components/queue/RoutingSection";
 import { DimensionCheckForm } from "@/components/dimensions/DimensionCheckForm";
 import { AddDimensionForm } from "@/components/dimensions/AddDimensionForm";
 import { RequestDimensionCheckButton } from "@/components/dimensions/RequestDimensionCheckButton";
 import { DimensionRequestsPanel } from "@/components/dimensions/DimensionRequestsPanel";
+import { SetupSheetsPanel } from "@/components/queue/SetupSheetsPanel";
 import { useDimensionRequests } from "@/hooks/useDimensionRequests";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import {
   GitBranch, Circle, CircleDot, CheckCircle, Timer, Truck,
-  Wrench, User, Loader2, Save, Ruler, Plus, ChevronDown, ChevronUp,
+  Wrench, User, Loader2, Save, Ruler, Plus, ChevronDown, ChevronUp, FileText,
 } from "lucide-react";
 
 interface RoutingStepRow {
