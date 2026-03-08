@@ -234,6 +234,9 @@ export function WorkOrderAlertTile({ item, stationName, stationCode, workCenterT
   // Alert counts for pill
   const alertCount = alertData
     ? (alertData.needsDelivery ? 1 : 0) + (alertData.isOverdue ? 1 : 0) + (item.status === "on_hold" ? 1 : 0)
+      + (alertData.staleDays ? 1 : 0) + (alertData.isHighPriorityWaiting ? 1 : 0)
+      + (alertData.hasNoOperator ? 1 : 0) + (alertData.overEstimatedPct ? 1 : 0)
+      + (alertData.queuedAtStationCount ? 1 : 0)
     : (isOverdue ? 1 : 0) + (item.status === "on_hold" ? 1 : 0);
 
   return (
