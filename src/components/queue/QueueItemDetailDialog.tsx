@@ -73,6 +73,8 @@ export function QueueItemDetailDialog({
   const [routingSteps, setRoutingSteps] = useState<RoutingStepRow[]>([]);
   const [routingLoading, setRoutingLoading] = useState(false);
   const [ncrDialogOpen, setNcrDialogOpen] = useState(false);
+  const [assignedUserName, setAssignedUserName] = useState<string | null>(null);
+  const [createdByName, setCreatedByName] = useState<string | null>(null);
 
   const assignedStation = item?.station_id ? stations.find(s => s.id === item.station_id) ?? null : null;
 
