@@ -64,6 +64,7 @@ const App = () => (
   <HelmetProvider>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        <OrgProvider>
         <TeamProvider>
           <ActAsProvider>
           <OnboardingProvider>
