@@ -45,13 +45,13 @@ export function StationMachineContextDialog({ stationId, stationName, open, onOp
   dbg("render", { stationId, stationName, open, orgId });
 
   const { assignment, loading: assignLoading, unassignMachine } = useStationMachineAssignment(stationId, orgId);
+  const { status: dncStatus, connecting: dncConnecting, getStationDNCConfig, initializeConnection, disconnect: dncDisconnect } = useDNCConnector(stationId);
 
   const { toast } = useToast();
 
   const [manualProfile, setManualProfile] = useState<ManualProfile | null>(null);
   const [loadingManual, setLoadingManual] = useState(true);
-  // FIX: use separate booleans so closing the parent dialog doesn't race with
-  // opening a sub-dialog when both setState calls are batched together.
+  const [dncConfig, setDncConfig] = useState<Record<string, unknown> | null>(null);
   const [showLibrary, setShowLibrary] = useState(false);
   const [showManualEntry, setShowManualEntry] = useState(false);
 
