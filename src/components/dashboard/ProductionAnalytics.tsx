@@ -69,7 +69,7 @@ interface ProductionAnalyticsProps {
 }
 
 type ShiftFilter = "all" | "Day" | "Swing" | "Night";
-type ChartView = "output" | "status" | "trend";
+type ChartView = "output" | "status" | "team" | "workcenter" | "trend";
 
 export function ProductionAnalytics({
   stations,
