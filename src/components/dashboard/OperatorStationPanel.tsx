@@ -232,54 +232,46 @@ export function OperatorStationPanel({
   // Complete operation / deliver — uses atomic backend RPC with pre-advance validation
   const confirmDelivery = async () => {
     if (!deliverOrder || !user) return;
-    setProcessing(true);
+    const { qtyOriginal, qtyCompleted, qtyScrap, qtyRework } = completionData;
 
-    try {
-      // === Pre-advance validation ===
-      // Fetch full queue item data for quantity checks
-      const { data: fullItem } = await supabase
-        .from("queue_items")
-        .select("qty_original, qty_completed, qty_scrap, qty_rework, parts_completed, quantity, station_id")
-        .eq("id", deliverOrder.id)
-        .maybeSingle();
-
-      if (fullItem) {
-        const qtyCompleted = fullItem.qty_completed ?? fullItem.parts_completed ?? 0;
-        const qtyOriginal = fullItem.qty_original ?? fullItem.quantity ?? 0;
-        const qtyScrap = fullItem.qty_scrap ?? 0;
-        const qtyRework = fullItem.qty_rework ?? 0;
-
-        // 1. Quantity reconciliation
-        if (qtyOriginal > 0 && (qtyCompleted + qtyScrap + qtyRework) < qtyOriginal) {
-          const unaccounted = qtyOriginal - qtyCompleted - qtyScrap - qtyRework;
-          toast.error(
-            `Quantity check required: ${unaccounted} parts unaccounted for. Completed: ${qtyCompleted}, Scrap: ${qtyScrap}, Rework: ${qtyRework} of ${qtyOriginal} total.`
-          );
-          setProcessing(false);
-          return;
-        }
+    // Client-side validation (unless override)
+    if (!isOverride) {
+      if (qtyOriginal > 0 && (qtyCompleted + qtyScrap + qtyRework) < qtyOriginal) {
+        toast.error("All parts must be accounted for before advancing.");
+        return;
       }
 
-      // 2 & 3. Quality sign-off and first article checks via station state
+      // Station state checks
       const { data: stationStatus } = await supabase
         .from("current_station_status")
         .select("current_job_state")
         .eq("station_id", stationId)
         .maybeSingle();
 
-      if (stationStatus?.current_job_state === "Waiting on QA" && !isOverride) {
-        toast.error("Quality sign-off required: station is still 'Waiting on QA'. Resolve QA before advancing, or use supervisor override.");
-        setProcessing(false);
+      if (stationStatus?.current_job_state === "Waiting on QA") {
+        toast.error("Quality sign-off required: station is still 'Waiting on QA'.");
         return;
       }
-
-      if (stationStatus?.current_job_state === "First Article in Process" && !isOverride) {
-        toast.error("First article inspection must be completed before advancing. Use supervisor override if necessary.");
-        setProcessing(false);
+      if (stationStatus?.current_job_state === "First Article in Process") {
+        toast.error("First article inspection must be completed before advancing.");
         return;
       }
+    }
 
-      // === All validations passed — call atomic RPC ===
+    setProcessing(true);
+    try {
+      // Save updated quantities to the work order first
+      await supabase
+        .from("queue_items")
+        .update({
+          qty_completed: qtyCompleted,
+          qty_scrap: qtyScrap,
+          qty_rework: qtyRework,
+          parts_completed: qtyCompleted,
+        })
+        .eq("id", deliverOrder.id);
+
+      // Call atomic RPC
       const { data, error } = await supabase.rpc("pass_work_order_to_next_step", {
         _queue_item_id: deliverOrder.id,
         _current_station_id: stationId,
