@@ -68,5 +68,8 @@ export const TeamSelector = React.forwardRef<HTMLDivElement, React.HTMLAttribute
         ))}
       </SelectContent>
     </Select>
+    </div>
   );
-}
+});
+
+TeamSelector.displayName = "TeamSelector";
