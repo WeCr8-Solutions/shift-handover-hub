@@ -5,77 +5,52 @@
 
 ---
 
-## Phase 1: Eliminate Duplicate Queries (Impact: ~60% improvement)
+## Phase 1: Eliminate Duplicate Queries (Impact: ~60% improvement) ✅
 
 **Goal:** Reduce mount queries from 18–22 → 7–9
 
-- [ ] **1.1** Lift `useUserOrganization()` into a React Context (`OrgContext`) so it runs once
+- [x] **1.1** Lift `useUserOrganization()` into a React Context (`OrgContext`) so it runs once
   - Remove `useUserOrganization()` calls from: `useStations`, `useHandoffRecords`, `useQueue`, `SupervisorDashboard`, `TeamContext`
   - Pass `organizationId` down via context instead of each hook fetching it
-- [ ] **1.2** Parallelize the 3 sequential queries in `useUserOrganization()` using `Promise.all`
+- [x] **1.2** Parallelize the 3 sequential queries in `useUserOrganization()` using `Promise.all`
   - `organization_members`, `team_members`, `user_roles` can all fire simultaneously
-- [ ] **1.3** Remove duplicate `useStations()` / `useHandoffRecords()` from `Index.tsx`
+- [x] **1.3** Remove duplicate `useStations()` / `useHandoffRecords()` from `Index.tsx`
   - Only the active child dashboard (`SupervisorDashboard` or `OperatorDashboard`) should fetch
   - Pass `createHandoffRecord` via callback prop or context
-- [ ] **1.4** Cache `useAdminAccess()` result — it rarely changes
+- [x] **1.4** Cache `useAdminAccess()` result — it rarely changes
   - Add a `staleTime` or store in context alongside org data
 
 **Estimated reduction:** ~12 queries eliminated
 
 ---
 
-## Phase 2: Migrate to React Query (Impact: ~25% improvement)
+## Phase 2: Migrate to React Query (Impact: ~25% improvement) ✅
 
 **Goal:** Proper caching, dedup, stale-while-revalidate, error handling
 
-- [ ] **2.1** Create `QueryClientProvider` wrapper with sensible defaults
-  ```typescript
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        staleTime: 30_000,     // 30s — don't refetch within window
-        gcTime: 5 * 60_000,    // 5min garbage collection
-        retry: 2,
-        refetchOnWindowFocus: true,
-      },
-    },
-  });
-  ```
-- [ ] **2.2** Convert `useStations` → `useStationsQuery` using React Query
-  - Query key: `['stations', orgId, teamId]`
-  - Realtime events → `queryClient.invalidateQueries(['stations'])` (debounced)
-- [ ] **2.3** Convert `useHandoffRecords` → `useHandoffsQuery`
-  - Query key: `['handoffs', orgId, teamId]`
-- [ ] **2.4** Convert `useQueue` → `useQueueQuery`
-  - Query key: `['queue', orgId, teamId, ...filters]`
-- [ ] **2.5** Convert `useSmartAlerts` → `useSmartAlertsQuery`
-  - Query key: `['smart-alerts', orgId, stationId]`
-  - `staleTime: 60_000` (alerts can be 1min stale)
-- [ ] **2.6** Convert `useUserOrganization` → `useOrgQuery`
-  - Query key: `['user-org', userId]`
-  - `staleTime: 5 * 60_000` (org data rarely changes)
+- [x] **2.1** Create `QueryClientProvider` wrapper with sensible defaults
+- [x] **2.2** Convert `useStations` → React Query with debounced realtime invalidation
+- [x] **2.3** Convert `useHandoffRecords` → React Query with debounced realtime
+- [x] **2.4** Convert `useQueue` → uses OrgContext for org scoping
+- [x] **2.5** Convert `useSmartAlerts` → uses OrgContext
+- [x] **2.6** Convert `useUserOrganization` → React Query (5min staleTime)
 
 ---
 
-## Phase 3: Debounce & Visibility (Impact: ~10% improvement)
+## Phase 3: Debounce & Visibility (Impact: ~10% improvement) ✅
 
 **Goal:** Reduce unnecessary background load
 
-- [ ] **3.1** Add 500ms debounce to all realtime event handlers
-  ```typescript
-  const debouncedInvalidate = useMemo(
-    () => debounce(() => queryClient.invalidateQueries(['stations']), 500),
-    [queryClient]
-  );
-  ```
-- [ ] **3.2** Integrate Page Visibility API
-  - Pause polling when `document.hidden === true`
-  - Resume + immediate refresh on visibility change
-  - React Query's `refetchOnWindowFocus` handles part of this automatically
-- [ ] **3.3** Remove manual polling from hooks that have realtime subscriptions
-  - `useStations`: has realtime → remove 5min polling fallback (or make it 15min)
-  - `useHandoffRecords`: same
-  - Keep `useBackgroundRefresh` for supervisor dashboard but extend interval to 5–10min
+- [x] **3.1** Add 500ms debounce to all realtime event handlers
+  - useStations: `useDebouncedInvalidate` (done in Phase 2)
+  - useQueue: debounced fetch with `document.hidden` check
+- [x] **3.2** Integrate Page Visibility API
+  - `refetchIntervalInBackground: false` on React Query hooks
+  - `document.hidden` guard on useQueue realtime handler
+- [x] **3.3** Remove/extend manual polling from hooks with realtime subscriptions
+  - `useStations`: 5min → 15min fallback (realtime is primary)
+  - `useHandoffRecords`: 5min → 15min fallback
+  - `OperatorDashboard`: `useBackgroundRefresh` min interval → 10min
 
 ---
 

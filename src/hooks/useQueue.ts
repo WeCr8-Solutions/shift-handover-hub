@@ -230,7 +230,18 @@ export function useQueue(filters?: {
     fetchItems();
   }, [fetchItems]);
 
-  // Real-time subscription (polling handled by parent via useBackgroundRefresh)
+  // Real-time subscription with debounce to prevent query storms
+  const fetchTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const debouncedFetch = useCallback(() => {
+    if (fetchTimerRef.current) clearTimeout(fetchTimerRef.current);
+    fetchTimerRef.current = setTimeout(() => {
+      // Skip refetch when tab is hidden
+      if (!document.hidden) {
+        fetchItems();
+      }
+    }, 500);
+  }, [fetchItems]);
+
   useEffect(() => {
     if (!user) return;
 
@@ -245,16 +256,14 @@ export function useQueue(filters?: {
           schema: "public",
           table: "queue_items",
         },
-        () => {
-          fetchItems();
-        }
+        debouncedFetch
       )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, fetchItems]);
+  }, [user, debouncedFetch, organization?.id]);
 
   const createItem = useCallback(
     async (input: CreateQueueItemInput) => {

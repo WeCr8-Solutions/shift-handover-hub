@@ -40,8 +40,8 @@ export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDas
   const { activeSessions, loading, isCheckedIn, checkIn, checkOut, refresh: refreshSessions } = useOperatorSessions();
   const { createHandoffRecord, refreshRecords } = useHandoffRecords(currentTeam?.id, organization?.id);
 
-  // Org-configured background refresh
-  const refreshIntervalMs = useOrgRefreshInterval();
+  // Org-configured background refresh — extended to 10min since realtime handles freshness
+  const refreshIntervalMs = Math.max(useOrgRefreshInterval(), 600_000);
   const { isRefreshing, lastRefreshedAt, refresh: handleManualRefresh } =
     useBackgroundRefresh({
       key: `operator-${organization?.id}-${currentTeam?.id}`,
