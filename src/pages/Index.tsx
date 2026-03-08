@@ -21,7 +21,7 @@ import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useStations, useHandoffRecords, type Station, type HandoffRecord } from "@/hooks/useStations";
 import { useOnboardingContext } from "@/components/onboarding/OnboardingProvider";
 import { useAdminAccess } from "@/hooks/useAdminData";
-import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 
 import { mockStations, mockHandoffRecords } from "@/lib/mockData";
 import { type WorkCenterType, type StationInfo, type ShiftHandoffRecord } from "@/types/handoff";
