@@ -20,6 +20,12 @@ const footerLinks = {
     { label: "Team Collaboration", to: "/features/team-collaboration" },
     { label: "AI Planning", to: "/features/ai-planning-assistant" },
   ],
+  Resources: [
+    { label: "Manufacturing Guides", to: "/resources/guides" },
+    { label: "G-Code Reference", to: "/resources/gcode" },
+    { label: "Industry Glossary", to: "/resources/glossary" },
+    { label: "Blog", to: "/blog" },
+  ],
   Company: [
     { label: "Home", to: "/" },
     { label: "Book a Demo", to: "/demo" },

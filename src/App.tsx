@@ -47,6 +47,7 @@ import ManufacturingGuides from "./pages/resources/ManufacturingGuides";
 import GCodeReference from "./pages/resources/GCodeReference";
 import IndustryGlossary from "./pages/resources/IndustryGlossary";
 import ResetPassword from "./pages/ResetPassword";
+import Blog from "./pages/Blog";
 
 const queryClient = new QueryClient();
 
@@ -103,6 +104,7 @@ const App = () => (
                     <Route path="/resources/guides" element={<ManufacturingGuides />} />
                     <Route path="/resources/gcode" element={<GCodeReference />} />
                     <Route path="/resources/glossary" element={<IndustryGlossary />} />
+                    <Route path="/blog" element={<Blog />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
