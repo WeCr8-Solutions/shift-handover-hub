@@ -22,6 +22,7 @@ import { QueueStatsCards } from "@/components/queue/QueueStatsCards";
 import { WorkOrderRoutingEditor } from "@/components/routing/WorkOrderRoutingEditor";
 import { OutsideProcessingManager } from "@/components/routing/OutsideProcessingManager";
 import { WorkOrderHistory } from "@/components/admin/WorkOrderHistory";
+import { SmartAlertPanel } from "@/components/alerts/SmartAlertPanel";
 import { NCRApprovalPanel } from "@/components/ncr/NCRApprovalPanel";
 import { QualityMetricsDashboard } from "@/components/ncr/QualityMetricsDashboard";
 import { Button } from "@/components/ui/button";
