@@ -44,7 +44,9 @@ import { toast } from "sonner";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { OperatorStationKanban } from "@/components/operator/OperatorStationKanban";
 import { useDimensions } from "@/hooks/useDimensions";
+import { useDimensionRequests } from "@/hooks/useDimensionRequests";
 import { DimensionCheckForm } from "@/components/dimensions/DimensionCheckForm";
+import { RequestDimensionCheckButton } from "@/components/dimensions/RequestDimensionCheckButton";
 import { format, isPast, formatDistanceToNow } from "date-fns";
 
 interface WorkOrder {
