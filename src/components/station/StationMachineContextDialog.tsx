@@ -91,10 +91,11 @@ export function StationMachineContextDialog({ stationId, stationName, open, onOp
   // FIX: fetchManualProfile is now stable and safe to include as a dep.
   useEffect(() => {
     if (open) {
-      dbg("useEffect: dialog opened, fetching manual profile");
+      dbg("useEffect: dialog opened, fetching manual profile + DNC config");
       fetchManualProfile();
+      getStationDNCConfig(stationId).then(cfg => setDncConfig(cfg));
     }
-  }, [open, fetchManualProfile]);
+  }, [open, fetchManualProfile, getStationDNCConfig, stationId]);
 
   // Log state changes for debugging
   useEffect(() => {
