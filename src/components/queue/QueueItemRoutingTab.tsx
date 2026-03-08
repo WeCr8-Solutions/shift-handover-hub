@@ -61,7 +61,7 @@ export function QueueItemRoutingTab({
   onOpenRouting,
 }: QueueItemRoutingTabProps) {
   const { organization } = useOrgContext();
-  const { hasAdminAccess, hasOrgSupervisorAccess } = useAdminAccess();
+  const { hasAdminAccess, hasOrgSupervisorAccess, hasDimensionAccess } = useAdminAccess();
   const { toast } = useToast();
   const [addingRouting, setAddingRouting] = useState(false);
   const [newRoutingSteps, setNewRoutingSteps] = useState<RoutingStepInput[]>([]);
