@@ -193,34 +193,57 @@ export function ProductionAnalytics({
     ].filter((d) => d.value > 0);
   }, [stations]);
 
-  // Handoff trend data (grouped by hour, filtered to today only)
+  // Handoff trend data — show today if there's data, otherwise show last 7 days by date
   const trendData = useMemo(() => {
-    const hours = new Map<string, { hour: string; handoffs: number; parts: number; scrap: number }>();
-
-    // Create 24h slots
-    for (let i = 0; i < 24; i++) {
-      const label = `${i.toString().padStart(2, "0")}:00`;
-      hours.set(label, { hour: label, handoffs: 0, parts: 0, scrap: 0 });
-    }
-
     const today = new Date();
     const todayString = today.toDateString();
 
-    filteredHandoffs.forEach((h) => {
-      const date = new Date(h.created_at);
-      // Only include today's handoffs
-      if (date.toDateString() !== todayString) return;
+    // Check if any handoffs exist for today
+    const hasTodayData = filteredHandoffs.some(
+      (h) => new Date(h.created_at).toDateString() === todayString,
+    );
 
-      const hourLabel = `${date.getHours().toString().padStart(2, "0")}:00`;
-      const slot = hours.get(hourLabel);
-      if (slot) {
-        slot.handoffs++;
-        slot.parts += h.parts_completed_this_shift ?? 0;
-        slot.scrap += h.scrap_count ?? 0;
+    if (hasTodayData) {
+      // Show hourly breakdown for today
+      const hours = new Map<string, { label: string; handoffs: number; parts: number; scrap: number }>();
+      for (let i = 0; i < 24; i++) {
+        const label = `${i.toString().padStart(2, "0")}:00`;
+        hours.set(label, { label, handoffs: 0, parts: 0, scrap: 0 });
       }
-    });
-
-    return Array.from(hours.values());
+      filteredHandoffs.forEach((h) => {
+        const date = new Date(h.created_at);
+        if (date.toDateString() !== todayString) return;
+        const hourLabel = `${date.getHours().toString().padStart(2, "0")}:00`;
+        const slot = hours.get(hourLabel);
+        if (slot) {
+          slot.handoffs++;
+          slot.parts += h.parts_completed_this_shift ?? 0;
+          slot.scrap += h.scrap_count ?? 0;
+        }
+      });
+      return { mode: "hourly" as const, data: Array.from(hours.values()) };
+    } else {
+      // Show daily breakdown for last 7 days
+      const days = new Map<string, { label: string; handoffs: number; parts: number; scrap: number }>();
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        const label = d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+        const key = d.toDateString();
+        days.set(key, { label, handoffs: 0, parts: 0, scrap: 0 });
+      }
+      filteredHandoffs.forEach((h) => {
+        const date = new Date(h.created_at);
+        const key = date.toDateString();
+        const slot = days.get(key);
+        if (slot) {
+          slot.handoffs++;
+          slot.parts += h.parts_completed_this_shift ?? 0;
+          slot.scrap += h.scrap_count ?? 0;
+        }
+      });
+      return { mode: "daily" as const, data: Array.from(days.values()) };
+    }
   }, [filteredHandoffs]);
 
   const totalParts = stationOutputData.reduce((sum, d) => sum + d.parts, 0);
