@@ -5382,6 +5382,27 @@ export type Database = {
         Args: { _increment?: number; _limit_key: string; _org_id: string }
         Returns: boolean
       }
+      compute_smart_alerts: {
+        Args: {
+          _bottleneck_min_wos?: number
+          _enable_bottleneck?: boolean
+          _enable_high_priority?: boolean
+          _enable_no_operator?: boolean
+          _enable_no_routing?: boolean
+          _enable_on_hold?: boolean
+          _enable_over_time?: boolean
+          _enable_overdue?: boolean
+          _enable_stale?: boolean
+          _enable_unassigned?: boolean
+          _org_id: string
+          _over_time_critical_pct?: number
+          _over_time_pct?: number
+          _stale_critical_days?: number
+          _stale_days?: number
+          _station_id?: string
+        }
+        Returns: Json
+      }
       get_user_org_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
