@@ -69,6 +69,9 @@ const testFileRegistry: Record<string, { path: string; description: string }> = 
   // AI Context & Part Specs
   "PartSpecsSection": { path: "src/components/queue/PartSpecsSection.test.tsx", description: "Part specs dropdowns, tolerance, surface finish, catalog auto-fill" },
   "PartCatalogManager": { path: "src/components/settings/PartCatalogManager.test.tsx", description: "Part catalog CRUD and display" },
+  // Shop Floor Display
+  "useShopFloorDisplays Hook": { path: "src/hooks/useShopFloorDisplays.test.ts", description: "Shop floor display CRUD, token regen, toggle" },
+  "ShopFloorDisplay Page": { path: "src/pages/ShopFloorDisplay.test.tsx", description: "Display page token validation & mode rendering" },
 };
 
 // Parse vitest output to extract test results
@@ -207,6 +210,8 @@ export function useTestRunner() {
           "Example": 1,
           "PartSpecsSection": 10,
           "PartCatalogManager": 5,
+          "useShopFloorDisplays Hook": 7,
+          "ShopFloorDisplay Page": 6,
         };
         
         const testCount = testCounts[suiteName] || 3;
@@ -467,6 +472,23 @@ function getTestName(suite: string, index: number): string {
       "renders Add Part button",
       "renders search input",
       "shows empty state when no entries",
+    ],
+    "useShopFloorDisplays Hook": [
+      "fetches displays on mount and sets loading false",
+      "returns loading state initially",
+      "createDisplay returns no error when authenticated",
+      "deleteDisplay returns no error",
+      "regenerateToken returns no error",
+      "toggleActive returns no error",
+      "exposes refresh function",
+    ],
+    "ShopFloorDisplay Page": [
+      "shows error when no token provided",
+      "shows loading state while validating token",
+      "shows error for invalid token response",
+      "shows error on RPC failure",
+      "renders supervisor display when token valid",
+      "renders operator display when token valid",
     ],
   };
   
