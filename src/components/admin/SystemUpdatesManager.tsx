@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useGlobalUpdates, GlobalUpdate } from "@/hooks/useGlobalUpdates";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
