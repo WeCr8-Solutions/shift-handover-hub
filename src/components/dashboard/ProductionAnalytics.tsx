@@ -293,59 +293,64 @@ export function ProductionAnalytics({
           )}
         </div>
 
-        {/* Filters — horizontal scroll on mobile */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 -mb-1 scrollbar-none">
+        {/* Filters — stacked on mobile to prevent selector overflow */}
+        <div className="space-y-2 min-w-0">
           {/* Shift Filter */}
-          <div
-            className="flex items-center gap-1 bg-secondary/50 rounded-lg p-0.5 shrink-0"
-            role="group"
-            aria-label="Shift filter"
-          >
-            <Filter className="w-3 h-3 text-muted-foreground ml-2 shrink-0" aria-hidden="true" />
-            {(["all", "Day", "Swing", "Night"] as ShiftFilter[]).map((shift) => (
-              <button
-                key={shift}
-                onClick={() => setShiftFilter(shift)}
-                className={cn(
-                  "px-2.5 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap",
-                  shiftFilter === shift
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-                aria-pressed={shiftFilter === shift}
-              >
-                {shift === "all" ? "All Shifts" : shift}
-              </button>
-            ))}
+          <div className="w-full min-w-0 overflow-x-auto pb-1 -mb-1 scrollbar-none">
+            <div
+              className="inline-flex items-center gap-1 bg-secondary/50 rounded-lg p-0.5"
+              role="group"
+              aria-label="Shift filter"
+            >
+              <Filter className="w-3 h-3 text-muted-foreground ml-2 shrink-0" aria-hidden="true" />
+              {(["all", "Day", "Swing", "Night"] as ShiftFilter[]).map((shift) => (
+                <button
+                  key={shift}
+                  onClick={() => setShiftFilter(shift)}
+                  className={cn(
+                    "px-2.5 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap",
+                    shiftFilter === shift
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                  aria-pressed={shiftFilter === shift}
+                >
+                  {shift === "all" ? "All Shifts" : shift}
+                </button>
+              ))}
+            </div>
           </div>
+
           {/* Chart View Toggle */}
-          <div
-            className="flex items-center gap-0.5 bg-secondary/50 rounded-lg p-0.5 shrink-0"
-            role="group"
-            aria-label="Chart view"
-          >
-            {[
-              { key: "output" as ChartView, icon: BarChart3, label: "Output" },
-              { key: "status" as ChartView, icon: PieChartIcon, label: "Status" },
-              { key: "team" as ChartView, icon: Users, label: "Teams" },
-              { key: "workcenter" as ChartView, icon: Wrench, label: "Work Ctrs" },
-              { key: "trend" as ChartView, icon: TrendingUp, label: "Trend" },
-            ].map(({ key, icon: Icon, label }) => (
-              <button
-                key={key}
-                onClick={() => setChartView(key)}
-                className={cn(
-                  "flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap",
-                  chartView === key
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-                aria-pressed={chartView === key}
-              >
-                <Icon className="w-3 h-3 shrink-0" aria-hidden="true" />
-                {label}
-              </button>
-            ))}
+          <div className="w-full min-w-0 overflow-x-auto pb-1 -mb-1 scrollbar-none">
+            <div
+              className="inline-flex items-center gap-0.5 bg-secondary/50 rounded-lg p-0.5"
+              role="group"
+              aria-label="Chart view"
+            >
+              {[
+                { key: "output" as ChartView, icon: BarChart3, label: "Output" },
+                { key: "status" as ChartView, icon: PieChartIcon, label: "Status" },
+                { key: "team" as ChartView, icon: Users, label: "Teams" },
+                { key: "workcenter" as ChartView, icon: Wrench, label: "Work Ctrs" },
+                { key: "trend" as ChartView, icon: TrendingUp, label: "Trend" },
+              ].map(({ key, icon: Icon, label }) => (
+                <button
+                  key={key}
+                  onClick={() => setChartView(key)}
+                  className={cn(
+                    "flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap",
+                    chartView === key
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                  aria-pressed={chartView === key}
+                >
+                  <Icon className="w-3 h-3 shrink-0" aria-hidden="true" />
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
