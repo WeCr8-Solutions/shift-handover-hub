@@ -1,15 +1,12 @@
-import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Save, Factory, Cog, AlertTriangle, Package } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useGeneralSettings } from "@/hooks/useGeneralSettings";
+import { Factory, Cog, AlertTriangle, Package } from "lucide-react";
+import { useSettingsForm } from "@/hooks/useSettingsForm";
+import { SettingsSkeleton } from "./SettingsSkeleton";
+import { SettingsFooter } from "./SettingsFooter";
+import { SettingsSwitchRow } from "./SettingsSwitchRow";
 
 type ManufacturingSettingsState = {
   defaultCycleTimeMinutes: number;
@@ -58,51 +55,15 @@ const DEFAULT_SETTINGS: ManufacturingSettingsState = {
 };
 
 export function ManufacturingSettings() {
-  const { toast } = useToast();
-  const { getSetting, updateSetting, loading } = useGeneralSettings();
-  const [isSaving, setIsSaving] = useState(false);
-  const [settings, setSettings] = useState<ManufacturingSettingsState>(DEFAULT_SETTINGS);
-  const [initialSettings, setInitialSettings] = useState<ManufacturingSettingsState>(DEFAULT_SETTINGS);
+  const { form, update, setForm, isDirty, isSaving, save, discard, loading } =
+    useSettingsForm<ManufacturingSettingsState>({
+      settingKey: "manufacturing_preferences",
+      defaults: DEFAULT_SETTINGS,
+      settingType: "manufacturing",
+      successMessage: "Manufacturing settings have been updated.",
+    });
 
-  const loadSettings = useCallback(() => {
-    const saved = getSetting("manufacturing_preferences");
-    if (saved && typeof saved === "object") {
-      const merged = { ...DEFAULT_SETTINGS, ...saved } as ManufacturingSettingsState;
-      setSettings(merged);
-      setInitialSettings(merged);
-    }
-  }, [getSetting]);
-
-  useEffect(() => {
-    loadSettings();
-  }, [loadSettings]);
-
-  const isDirty = JSON.stringify(settings) !== JSON.stringify(initialSettings);
-
-  const handleSave = async () => {
-    setIsSaving(true);
-    try {
-      const { error } = await updateSetting("manufacturing_preferences", settings, "manufacturing");
-      if (error) {
-        toast({ title: "Failed to save settings", description: error, variant: "destructive" });
-      } else {
-        setInitialSettings(settings);
-        toast({ title: "Settings saved", description: "Manufacturing settings have been updated." });
-      }
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="space-y-4 py-6">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <Card key={i}><CardContent className="py-4 space-y-2"><Skeleton className="h-5 w-40" /><Skeleton className="h-4 w-64" /></CardContent></Card>
-        ))}
-      </div>
-    );
-  }
+  if (loading) return <SettingsSkeleton rows={3} />;
 
   return (
     <div className="space-y-6">
@@ -115,21 +76,26 @@ export function ManufacturingSettings() {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label>Default Cycle Time (minutes)</Label>
-              <Input type="number" min={1} value={settings.defaultCycleTimeMinutes} onChange={(e) => setSettings((p) => ({ ...p, defaultCycleTimeMinutes: Math.max(1, parseInt(e.target.value, 10) || 60) }))} />
+              <Input type="number" min={1} value={form.defaultCycleTimeMinutes} onChange={(e) => update("defaultCycleTimeMinutes", Math.max(1, parseInt(e.target.value, 10) || 60))} />
             </div>
             <div className="space-y-2">
               <Label>Default Setup Time (minutes)</Label>
-              <Input type="number" min={1} value={settings.defaultSetupTimeMinutes} onChange={(e) => setSettings((p) => ({ ...p, defaultSetupTimeMinutes: Math.max(1, parseInt(e.target.value, 10) || 30) }))} />
+              <Input type="number" min={1} value={form.defaultSetupTimeMinutes} onChange={(e) => update("defaultSetupTimeMinutes", Math.max(1, parseInt(e.target.value, 10) || 30))} />
             </div>
           </div>
-          <div className="flex items-center justify-between">
-            <div><Label>First Article Inspection Required</Label><p className="text-sm text-muted-foreground">Require first article before production</p></div>
-            <Switch checked={settings.defaultFirstArticleRequired} onCheckedChange={(v) => setSettings((p) => ({ ...p, defaultFirstArticleRequired: v }))} />
-          </div>
-          <div className="flex items-center justify-between">
-            <div><Label>QA Sign-off Required</Label><p className="text-sm text-muted-foreground">Require QA approval before completion</p></div>
-            <Switch checked={settings.defaultQaSignoffRequired} onCheckedChange={(v) => setSettings((p) => ({ ...p, defaultQaSignoffRequired: v }))} />
-          </div>
+
+          <SettingsSwitchRow
+            label="First Article Inspection Required"
+            description="Require first article before production"
+            checked={form.defaultFirstArticleRequired}
+            onCheckedChange={(v) => update("defaultFirstArticleRequired", v)}
+          />
+          <SettingsSwitchRow
+            label="QA Sign-off Required"
+            description="Require QA approval before completion"
+            checked={form.defaultQaSignoffRequired}
+            onCheckedChange={(v) => update("defaultQaSignoffRequired", v)}
+          />
         </CardContent>
       </Card>
 
@@ -140,23 +106,21 @@ export function ManufacturingSettings() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="flex items-center justify-between rounded-lg border p-3">
-              <div><Label>Track Scrap</Label><p className="text-xs text-muted-foreground">Enable scrap counting</p></div>
-              <Switch checked={settings.trackScrapByDefault} onCheckedChange={(v) => setSettings((p) => ({ ...p, trackScrapByDefault: v }))} />
-            </div>
-            <div className="flex items-center justify-between rounded-lg border p-3">
-              <div><Label>Track Rework</Label><p className="text-xs text-muted-foreground">Enable rework counting</p></div>
-              <Switch checked={settings.trackReworkByDefault} onCheckedChange={(v) => setSettings((p) => ({ ...p, trackReworkByDefault: v }))} />
-            </div>
+            <SettingsSwitchRow label="Track Scrap" description="Enable scrap counting" checked={form.trackScrapByDefault} onCheckedChange={(v) => update("trackScrapByDefault", v)} bordered />
+            <SettingsSwitchRow label="Track Rework" description="Enable rework counting" checked={form.trackReworkByDefault} onCheckedChange={(v) => update("trackReworkByDefault", v)} bordered />
           </div>
-          <div className="flex items-center justify-between">
-            <div><Label>Require Scrap Reason</Label><p className="text-sm text-muted-foreground">Operators must provide reason for scrap</p></div>
-            <Switch checked={settings.scrapReasonRequired} onCheckedChange={(v) => setSettings((p) => ({ ...p, scrapReasonRequired: v }))} />
-          </div>
-          <div className="flex items-center justify-between">
-            <div><Label>Require Rework Reason</Label><p className="text-sm text-muted-foreground">Operators must provide reason for rework</p></div>
-            <Switch checked={settings.reworkReasonRequired} onCheckedChange={(v) => setSettings((p) => ({ ...p, reworkReasonRequired: v }))} />
-          </div>
+          <SettingsSwitchRow
+            label="Require Scrap Reason"
+            description="Operators must provide reason for scrap"
+            checked={form.scrapReasonRequired}
+            onCheckedChange={(v) => update("scrapReasonRequired", v)}
+          />
+          <SettingsSwitchRow
+            label="Require Rework Reason"
+            description="Operators must provide reason for rework"
+            checked={form.reworkReasonRequired}
+            onCheckedChange={(v) => update("reworkReasonRequired", v)}
+          />
         </CardContent>
       </Card>
 
@@ -166,17 +130,21 @@ export function ManufacturingSettings() {
           <CardDescription>Configure shift handoff requirements</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div><Label>Require Supervisor Sign-off</Label><p className="text-sm text-muted-foreground">Supervisor must approve handoffs</p></div>
-            <Switch checked={settings.requireSupervisorSignoff} onCheckedChange={(v) => setSettings((p) => ({ ...p, requireSupervisorSignoff: v }))} />
-          </div>
-          <div className="flex items-center justify-between">
-            <div><Label>Require Incoming Confirmation</Label><p className="text-sm text-muted-foreground">Incoming operator must confirm handoff</p></div>
-            <Switch checked={settings.requireIncomingConfirmation} onCheckedChange={(v) => setSettings((p) => ({ ...p, requireIncomingConfirmation: v }))} />
-          </div>
+          <SettingsSwitchRow
+            label="Require Supervisor Sign-off"
+            description="Supervisor must approve handoffs"
+            checked={form.requireSupervisorSignoff}
+            onCheckedChange={(v) => update("requireSupervisorSignoff", v)}
+          />
+          <SettingsSwitchRow
+            label="Require Incoming Confirmation"
+            description="Incoming operator must confirm handoff"
+            checked={form.requireIncomingConfirmation}
+            onCheckedChange={(v) => update("requireIncomingConfirmation", v)}
+          />
           <div className="space-y-2">
             <Label>Handoff Reminder (minutes before shift end)</Label>
-            <Input type="number" min={5} max={60} value={settings.handoffReminderMinutes} onChange={(e) => setSettings((p) => ({ ...p, handoffReminderMinutes: Math.min(60, Math.max(5, parseInt(e.target.value, 10) || 15)) }))} />
+            <Input type="number" min={5} max={60} value={form.handoffReminderMinutes} onChange={(e) => update("handoffReminderMinutes", Math.min(60, Math.max(5, parseInt(e.target.value, 10) || 15)))} />
           </div>
         </CardContent>
       </Card>
@@ -187,18 +155,22 @@ export function ManufacturingSettings() {
           <CardDescription>Configure work order numbering, format, and quoting workflow</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 flex items-center justify-between">
-            <div><Label>Enable Quote System</Label><p className="text-sm text-muted-foreground">Allow creating quotes that route through approval before converting to work orders</p></div>
-            <Switch checked={settings.enableQuoteSystem} onCheckedChange={(v) => setSettings((p) => ({ ...p, enableQuoteSystem: v }))} />
-          </div>
+          <SettingsSwitchRow
+            label="Enable Quote System"
+            description="Allow creating quotes that route through approval before converting to work orders"
+            checked={form.enableQuoteSystem}
+            onCheckedChange={(v) => update("enableQuoteSystem", v)}
+            bordered
+            className="border-primary/20 bg-primary/5"
+          />
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label>Work Order Prefix</Label>
-              <Input value={settings.workOrderPrefix} onChange={(e) => setSettings((p) => ({ ...p, workOrderPrefix: e.target.value }))} placeholder="WO" maxLength={5} />
+              <Input value={form.workOrderPrefix} onChange={(e) => update("workOrderPrefix", e.target.value)} placeholder="WO" maxLength={5} />
             </div>
             <div className="space-y-2">
               <Label>Part Number Format</Label>
-              <Select value={settings.partNumberFormat} onValueChange={(v) => setSettings((p) => ({ ...p, partNumberFormat: v }))}>
+              <Select value={form.partNumberFormat} onValueChange={(v) => update("partNumberFormat", v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="alphanumeric">Alphanumeric (ABC-123)</SelectItem>
@@ -208,27 +180,28 @@ export function ManufacturingSettings() {
               </Select>
             </div>
           </div>
-          <div className="flex items-center justify-between">
-            <div><Label>Enable Delay Codes</Label><p className="text-sm text-muted-foreground">Track delays with standardized codes</p></div>
-            <Switch checked={settings.enableDelayCodes} onCheckedChange={(v) => setSettings((p) => ({ ...p, enableDelayCodes: v }))} />
-          </div>
-          <div className="flex items-center justify-between">
-            <div><Label>Require Delay Code on Hold</Label><p className="text-sm text-muted-foreground">Must select delay code when placing on hold</p></div>
-            <Switch checked={settings.requireDelayCode} onCheckedChange={(v) => setSettings((p) => ({ ...p, requireDelayCode: v }))} />
-          </div>
+          <SettingsSwitchRow
+            label="Enable Delay Codes"
+            description="Track delays with standardized codes"
+            checked={form.enableDelayCodes}
+            onCheckedChange={(v) => update("enableDelayCodes", v)}
+          />
+          <SettingsSwitchRow
+            label="Require Delay Code on Hold"
+            description="Must select delay code when placing on hold"
+            checked={form.requireDelayCode}
+            onCheckedChange={(v) => update("requireDelayCode", v)}
+          />
         </CardContent>
       </Card>
 
-      <div className="flex items-center justify-end gap-3">
-        {isDirty && (
-          <Badge variant="outline" className="text-amber-600 border-amber-500/30">
-            Unsaved changes
-          </Badge>
-        )}
-        <Button onClick={handleSave} disabled={isSaving || !isDirty} className="gap-2">
-          {isSaving ? (<><Loader2 className="h-4 w-4 animate-spin" />Saving...</>) : (<><Save className="h-4 w-4" />{isDirty ? "Save Manufacturing Settings" : "Saved"}</>)}
-        </Button>
-      </div>
+      <SettingsFooter
+        isDirty={isDirty}
+        isSaving={isSaving}
+        onSave={save}
+        onDiscard={discard}
+        label="Save Manufacturing Settings"
+      />
     </div>
   );
 }
