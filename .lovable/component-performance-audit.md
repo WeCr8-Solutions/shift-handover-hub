@@ -1,8 +1,9 @@
 # Component Performance Audit
 
 **Date:** 2026-03-08  
-**Status:** Initial audit complete  
-**Scope:** All dashboard, queue, admin, and operator components
+**Status:** Audit complete — implementation phases defined  
+**Scope:** All dashboard, queue, admin, and operator components  
+**Implementation Plan:** `.lovable/component-performance-phases.md`
 
 ---
 
@@ -14,14 +15,15 @@ All 6 phases of the performance improvement plan are now **complete**. This docu
 
 ## 1. Dashboard Components
 
-### SupervisorDashboard (725 lines)
+### SupervisorDashboard (727 lines)
 - **Status:** ⚠️ Large file — candidate for extraction
-- **Data:** `useStations` + `useHandoffRecords` + `useSmartAlerts` (all React Query)
+- **Data:** `useStations` + `useHandoffRecords` + `useSmartAlerts` (all React Query) + `useOrgContext`
 - **Rendering:** 6 `useMemo` blocks, lazy-loaded `ProductionAnalytics`
 - **Recommendations:**
   - Extract KPI card grid into `DashboardKPICards` component
   - Extract station list table into `StationListTable` component
   - Extract alert sections into dedicated wrapper
+  - **Phase:** 2 (see `component-performance-phases.md`)
 
 ### OperatorDashboard (240 lines)
 - **Status:** ✅ Acceptable size
@@ -44,23 +46,29 @@ All 6 phases of the performance improvement plan are now **complete**. This docu
 
 ## 2. Queue Components
 
-### useQueue Hook (591 lines)
-- **Status:** ⚠️ Large hook
+### useQueue Hook (605 lines)
+- **Status:** ⚠️ Large hook — candidate for React Query migration
 - **Optimizations applied:**
   - Debounced realtime handler (500ms)
   - `document.hidden` guard
   - Optimistic updates on `updateItem` with rollback
 - **Recommendations:**
+  - Migrate to React Query (`useQuery` + `useMutation`)
   - Extract `syncStationStatus` to shared utility
-  - Consider migrating to React Query for `items` state
+  - **Phase:** 5 (see `component-performance-phases.md`)
+
+### QueueItemDetailDialog (1,311 lines)
+- **Status:** 🔴 CRITICAL — largest component in project
+- **Violations:** Imports `useUserOrganization` directly (PRD 11 §5 violation)
+- **Recommendations:**
+  - Split into 6 sub-components (header, status controls, comments/history/routing/NCR tabs)
+  - Lazy-load routing and NCR tab contents
+  - Replace `useUserOrganization` → `useOrgContext`
+  - **Phase:** 1 (OrgContext fix) + 3 (extraction)
 
 ### QueueKanbanBoard
 - **Status:** ✅ Acceptable
-- **Recommendations:** Virtualize columns if >50 items
-
-### QueueItemDetailDialog
-- **Status:** ⚠️ Complex — many sub-sections
-- **Recommendations:** Lazy-load routing and NCR sub-panels
+- **Recommendations:** Virtualize columns if >50 items (Phase 6)
 
 ---
 
@@ -77,11 +85,11 @@ All 6 phases of the performance improvement plan are now **complete**. This docu
 | Component | Lines | Status | Notes |
 |-----------|-------|--------|-------|
 | UserManagement | ~300 | ✅ | |
-| WorkOrderManagement | ~350 | ⚠️ | Consider lazy-loading sub-dialogs |
+| WorkOrderManagement | 653 | ⚠️ | Extract table + detail panel (Phase 4) |
 | OrganizationOversight | ~250 | ✅ | |
 | ActivityLogs | ~200 | ✅ | |
-| MachineMonitorPanel | ~300 | ⚠️ | Heavy polling — verify interval |
-| ShopFloorDisplayManagement | ~350 | ⚠️ | Large — candidate for extraction |
+| MachineMonitorPanel | 439 | ⚠️ | Lazy-load detail modals (Phase 7) |
+| ShopFloorDisplayManagement | 446 | ⚠️ | Lazy-load create/edit dialogs (Phase 7) |
 
 ---
 
@@ -145,13 +153,15 @@ All 6 phases of the performance improvement plan are now **complete**. This docu
 
 ## 8. Future Optimization Candidates
 
-| Priority | Item | Trigger |
-|----------|------|---------|
-| Medium | Migrate `useQueue` to React Query | When queue becomes a performance bottleneck |
-| Medium | Virtualize station list | When orgs exceed 50+ stations |
-| Low | Lazy-load `react-joyride` | Bundle size optimization pass |
-| Low | Add realtime connection status indicator | User feedback requests |
-| Low | Server-side pagination for admin logs | When log volume exceeds 1000 rows |
+| Priority | Item | Phase | Trigger |
+|----------|------|-------|---------|
+| Critical | Eliminate 54 direct `useUserOrganization` imports | 1 | Immediate — PRD 11 violation |
+| Medium | Extract `SupervisorDashboard` sub-components | 2 | File exceeds 350-line target |
+| Medium | Split `QueueItemDetailDialog` (1,311 lines) | 3 | Largest component in project |
+| Medium | Split `WorkOrderManagement` (653 lines) | 4 | File exceeds 350-line target |
+| Low | Migrate `useQueue` to React Query | 5 | When queue becomes bottleneck |
+| Low | Virtualize station/queue lists | 6 | When orgs exceed 50+ stations |
+| Low | Lazy-load `react-joyride` + admin sub-dialogs | 7 | Bundle size optimization pass |
 
 ---
 

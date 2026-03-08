@@ -103,4 +103,5 @@ See also:
 - [Plan](../plan.md) - Development roadmap
 - [Performance Enhancement Report](../performance-enhancement-report.md) - Phases 1–6 optimization details
 - [Component Performance Audit](../component-performance-audit.md) - Per-component performance profile
+- [Component Performance Phases](../component-performance-phases.md) - 7-phase implementation plan for component optimizations
 - [Dashboard Performance Audit](../../docs/prd/06-dashboard-performance-audit.md) - Original findings & target architecture
