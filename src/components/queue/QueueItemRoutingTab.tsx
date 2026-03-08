@@ -70,7 +70,7 @@ export function QueueItemRoutingTab({
   const [addingDimForStep, setAddingDimForStep] = useState<string | null>(null);
 
   const dimensions = useDimensions();
-
+  const dimRequests = useDimensionRequests();
   const handleSaveRouting = async () => {
     if (!organization?.id) return;
     setSavingRouting(true);
