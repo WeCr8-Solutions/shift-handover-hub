@@ -8,7 +8,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { ShiftHandoffDemo } from "@/components/landing/ShiftHandoffDemo";
 import { SupportJoblineModal } from "@/components/SupportJoblineModal";
-
+import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 import { VisitorSurveyModal } from "@/components/marketing/VisitorSurveyModal";
