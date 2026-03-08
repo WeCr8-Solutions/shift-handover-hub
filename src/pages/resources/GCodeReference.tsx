@@ -90,7 +90,7 @@ export default function GCodeReference() {
             </div>
           ))}
 
-          
+          <AdPlacement format="rectangle" className="mt-8" />
 
           <Card className="mt-8 border-primary/20 bg-primary/5">
             <CardHeader>
