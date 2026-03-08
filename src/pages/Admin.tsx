@@ -27,7 +27,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MachineLibraryManagement } from "@/components/admin/MachineLibraryManagement";
 import { VisitorSurveyAnalytics } from "@/components/admin/VisitorSurveyAnalytics";
-import { Loader2, Shield, LayoutDashboard, Users, Wrench, Briefcase, Activity, FileSpreadsheet, Package, Route, Lightbulb, History, Bug, ShieldCheck, ListTodo, Settings2, Map, BookOpen, Cpu, MessageSquare } from "lucide-react";
+import { Shield, LayoutDashboard, Users, Wrench, Briefcase, Activity, FileSpreadsheet, Package, Route, Lightbulb, History, Bug, ShieldCheck, ListTodo, Settings2, Map, BookOpen, Cpu, MessageSquare } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Admin() {
   const navigate = useNavigate();
