@@ -63,7 +63,7 @@ export default function Teams() {
           </TabsContent>
 
           <TabsContent value="org-members">
-            <OrganizationMemberManager />
+            <OrganizationMemberManager onNavigateToInvites={() => setActiveTab("invites")} />
           </TabsContent>
 
           <TabsContent value="invites">
