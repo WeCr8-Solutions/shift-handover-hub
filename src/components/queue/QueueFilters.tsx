@@ -144,7 +144,7 @@ export function QueueFilters({ filters, onFiltersChange, showStationFilter, stat
         </Select>
       )}
 
-
+      {activeFilters.length > 0 && (
         <>
           <div className="h-6 w-px bg-border" />
           {activeFilters.map((filter, index) => (
