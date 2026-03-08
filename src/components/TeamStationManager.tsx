@@ -170,7 +170,7 @@ export function TeamStationManager({
       toast({ title: "Station updated", description: `${editName} has been updated.` });
       setEditingStation(null);
       refreshStations();
-      onStationChange?.();
+      onReassignCommitted?.();
     }
   };
 
@@ -182,7 +182,7 @@ export function TeamStationManager({
     } else {
       toast({ title: "Station deleted", description: `${station.name} has been removed.` });
       refreshStations();
-      onStationChange?.();
+      onReassignCommitted?.();
     }
   };
 
