@@ -271,7 +271,12 @@ export default function Queue() {
 
             <div className="flex items-center justify-between gap-4">
               <div data-tour="queue-filters">
-                <QueueFilters filters={filters} onFiltersChange={setFilters} />
+                <QueueFilters
+                  filters={filters}
+                  onFiltersChange={setFilters}
+                  showStationFilter={viewScope === "station"}
+                  stations={stations.map(s => ({ id: s.id, name: s.name, station_id: s.station_id }))}
+                />
               </div>
 
               <div className="flex items-center rounded-lg border p-1" data-tour="queue-views">
