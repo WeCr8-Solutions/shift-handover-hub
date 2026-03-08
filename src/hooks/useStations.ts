@@ -18,6 +18,7 @@ export interface Station {
   created_at: string;
   updated_at: string;
   current_status?: StationStatus;
+  team?: { id: string; name: string } | null;
 }
 
 export interface StationStatus {
@@ -116,7 +117,8 @@ export function useStations(teamId?: string | null, organizationId?: string | nu
       .from("stations")
       .select(`
         *,
-        current_status:current_station_status(*)
+        current_status:current_station_status(*),
+        team:teams(id, name)
       `)
       .order("name");
 
@@ -141,6 +143,8 @@ export function useStations(teamId?: string | null, organizationId?: string | nu
         current_status: Array.isArray(station.current_status)
           ? station.current_status[0] || null
           : station.current_status || null,
+        // team join: PostgREST returns object or null for FK joins
+        team: station.team || null,
       }));
       setStations(transformed);
     }
