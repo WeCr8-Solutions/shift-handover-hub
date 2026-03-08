@@ -21,6 +21,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
 import {
   Package,
   Play,
@@ -33,11 +34,16 @@ import {
   ExternalLink,
   ShieldAlert,
   AlertTriangle,
+  CalendarDays,
+  GitBranch,
+  Layers,
+  Wrench,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { OperatorStationKanban } from "@/components/operator/OperatorStationKanban";
+import { format, isPast, formatDistanceToNow } from "date-fns";
 
 interface WorkOrder {
   id: string;
