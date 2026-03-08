@@ -36,7 +36,7 @@ interface SetupStatus {
 export default function Setup() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-  const { completeStep, startTour, showTour, isComplete: onboardingComplete, currentStep, dismissSetupWizard, markWelcomeSeen } = useOnboardingContext();
+  const { completeStep, startTour, showTour, isComplete: onboardingComplete, currentStep, dismissSetupWizard, markWelcomeSeen, setupWizardDismissed, isLoading: onboardingLoading } = useOnboardingContext();
   const [setupStatus, setSetupStatus] = useState<SetupStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [bulkUploadOpen, setBulkUploadOpen] = useState(false);
@@ -45,8 +45,13 @@ export default function Setup() {
   useEffect(() => {
     if (!authLoading && !user) {
       navigate('/auth');
+      return;
     }
-  }, [authLoading, user, navigate]);
+    // Respect "Don't show again" — redirect to dashboard
+    if (!authLoading && !onboardingLoading && user && setupWizardDismissed) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [authLoading, onboardingLoading, user, setupWizardDismissed, navigate]);
 
   useEffect(() => {
     async function checkSetupStatus() {
