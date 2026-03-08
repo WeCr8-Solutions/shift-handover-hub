@@ -1,8 +1,14 @@
-import { ReactNode } from "react";
+import { ReactNode, lazy, ComponentType } from "react";
 import {
   Calculator, Ruler, ArrowRightLeft, BookOpen,
   Gauge, Timer, Scaling, Triangle, Thermometer, CircleDot,
 } from "lucide-react";
+
+// ─── Lazy-loaded tool components ──────────────────────────
+const SfmCalculator = lazy(() => import("./SfmCalculator").then(m => ({ default: m.SfmCalculator })));
+const ToleranceCalculator = lazy(() => import("./ToleranceCalculator").then(m => ({ default: m.ToleranceCalculator })));
+const UnitConverter = lazy(() => import("./UnitConverter").then(m => ({ default: m.UnitConverter })));
+const TrigCalculator = lazy(() => import("./TrigCalculator").then(m => ({ default: m.TrigCalculator })));
 
 // ─── Tool Registry ────────────────────────────────────────
 export interface ToolDefinition {
@@ -12,7 +18,9 @@ export interface ToolDefinition {
   icon: ReactNode;
   category: "machining" | "measurement" | "conversion" | "reference";
   tags: string[];
-  public?: boolean; // available without auth
+  public?: boolean;
+  /** Lazy-loaded component. null = "Coming Soon". */
+  component: ComponentType | null;
 }
 
 export const TOOL_REGISTRY: ToolDefinition[] = [
@@ -23,6 +31,7 @@ export const TOOL_REGISTRY: ToolDefinition[] = [
     icon: <Gauge className="w-5 h-5" />,
     category: "machining",
     tags: ["rpm", "sfm", "feed", "speed", "cnc", "milling"],
+    component: SfmCalculator,
   },
   {
     id: "tap-drill-chart",
@@ -31,6 +40,7 @@ export const TOOL_REGISTRY: ToolDefinition[] = [
     icon: <BookOpen className="w-5 h-5" />,
     category: "reference",
     tags: ["tap", "drill", "thread", "unc", "unf", "metric"],
+    component: null,
   },
   {
     id: "tolerance-calculator",
@@ -39,6 +49,7 @@ export const TOOL_REGISTRY: ToolDefinition[] = [
     icon: <Ruler className="w-5 h-5" />,
     category: "measurement",
     tags: ["tolerance", "dimension", "inspection", "stackup"],
+    component: ToleranceCalculator,
   },
   {
     id: "unit-converter",
@@ -48,6 +59,7 @@ export const TOOL_REGISTRY: ToolDefinition[] = [
     category: "conversion",
     tags: ["convert", "inch", "mm", "metric", "imperial"],
     public: true,
+    component: UnitConverter,
   },
   {
     id: "surface-finish",
@@ -56,6 +68,7 @@ export const TOOL_REGISTRY: ToolDefinition[] = [
     icon: <Scaling className="w-5 h-5" />,
     category: "measurement",
     tags: ["surface", "finish", "ra", "rz", "roughness"],
+    component: null,
   },
   {
     id: "trig-calculator",
@@ -65,6 +78,7 @@ export const TOOL_REGISTRY: ToolDefinition[] = [
     category: "measurement",
     tags: ["trig", "triangle", "angle", "sine", "cosine", "hypotenuse"],
     public: true,
+    component: TrigCalculator,
   },
   {
     id: "mrr-calculator",
@@ -73,6 +87,7 @@ export const TOOL_REGISTRY: ToolDefinition[] = [
     icon: <Calculator className="w-5 h-5" />,
     category: "machining",
     tags: ["mrr", "material", "removal", "volume", "milling", "turning"],
+    component: null,
   },
   {
     id: "cycle-time",
@@ -81,6 +96,7 @@ export const TOOL_REGISTRY: ToolDefinition[] = [
     icon: <Timer className="w-5 h-5" />,
     category: "machining",
     tags: ["cycle", "time", "estimate", "parts", "hour"],
+    component: null,
   },
   {
     id: "hardness-converter",
@@ -89,6 +105,7 @@ export const TOOL_REGISTRY: ToolDefinition[] = [
     icon: <Thermometer className="w-5 h-5" />,
     category: "conversion",
     tags: ["hardness", "hrc", "brinell", "vickers", "rockwell"],
+    component: null,
   },
   {
     id: "thread-calculator",
@@ -97,6 +114,7 @@ export const TOOL_REGISTRY: ToolDefinition[] = [
     icon: <CircleDot className="w-5 h-5" />,
     category: "reference",
     tags: ["thread", "pitch", "tpi", "diameter", "class"],
+    component: null,
   },
 ];
 
@@ -108,7 +126,7 @@ export const TOOL_CATEGORIES = [
   { value: "reference", label: "Reference" },
 ] as const;
 
-// Re-export components
+// Re-export components for direct imports
 export { SfmCalculator } from "./SfmCalculator";
 export { ToleranceCalculator } from "./ToleranceCalculator";
 export { UnitConverter } from "./UnitConverter";
