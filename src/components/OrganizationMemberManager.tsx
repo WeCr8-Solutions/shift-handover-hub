@@ -556,8 +556,10 @@ export function OrganizationMemberManager() {
                   <TableHead>Org Role</TableHead>
                   <TableHead>App Roles</TableHead>
                   <TableHead>Teams</TableHead>
+                  <TableHead>Seat</TableHead>
                   <TableHead>Joined</TableHead>
                   {isOrgAdmin && <TableHead className="w-12" />}
+                </TableRow>
                 </TableRow>
               </TableHeader>
               <TableBody>
