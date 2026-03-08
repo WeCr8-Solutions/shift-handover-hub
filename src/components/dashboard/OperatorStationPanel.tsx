@@ -492,9 +492,9 @@ export function OperatorStationPanel({
         </CardContent>
       </Card>
 
-      {/* Delivery confirm dialog — routing-aware */}
+      {/* Delivery confirm dialog — routing-aware with completion form */}
       <AlertDialog open={!!deliverOrder} onOpenChange={handleCloseDeliveryDialog}>
-        <AlertDialogContent>
+        <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               {routingInfo && !routingInfo.isFinalStep ? (
@@ -510,7 +510,7 @@ export function OperatorStationPanel({
               )}
             </AlertDialogTitle>
             <AlertDialogDescription asChild>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {routingInfo && !routingInfo.isFinalStep ? (
                   <p>
                     Complete your operation on <strong>{deliverOrder?.work_order || deliverOrder?.title}</strong> and
@@ -526,6 +526,104 @@ export function OperatorStationPanel({
                     Complete <strong>{deliverOrder?.work_order || deliverOrder?.title}</strong> and move it to the next
                     station?
                   </p>
+                )}
+
+                {/* Quantity completion form */}
+                {completionData.loaded && completionData.qtyOriginal > 0 && (
+                  <div className="border rounded-lg p-3 space-y-3 bg-muted/20">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">Quantity Accounting</span>
+                      <Badge variant="outline" className="text-xs">
+                        Required: {completionData.qtyOriginal}
+                      </Badge>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="space-y-1">
+                        <Label htmlFor="qty-completed" className="text-xs text-muted-foreground">
+                          Completed
+                        </Label>
+                        <Input
+                          id="qty-completed"
+                          type="number"
+                          min={0}
+                          max={completionData.qtyOriginal}
+                          value={completionData.qtyCompleted}
+                          onChange={(e) =>
+                            setCompletionData((prev) => ({
+                              ...prev,
+                              qtyCompleted: Math.max(0, parseInt(e.target.value) || 0),
+                            }))
+                          }
+                          className="h-9 text-center"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="qty-scrap" className="text-xs text-muted-foreground">
+                          Scrap
+                        </Label>
+                        <Input
+                          id="qty-scrap"
+                          type="number"
+                          min={0}
+                          value={completionData.qtyScrap}
+                          onChange={(e) =>
+                            setCompletionData((prev) => ({
+                              ...prev,
+                              qtyScrap: Math.max(0, parseInt(e.target.value) || 0),
+                            }))
+                          }
+                          className="h-9 text-center"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="qty-rework" className="text-xs text-muted-foreground">
+                          Rework
+                        </Label>
+                        <Input
+                          id="qty-rework"
+                          type="number"
+                          min={0}
+                          value={completionData.qtyRework}
+                          onChange={(e) =>
+                            setCompletionData((prev) => ({
+                              ...prev,
+                              qtyRework: Math.max(0, parseInt(e.target.value) || 0),
+                            }))
+                          }
+                          className="h-9 text-center"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Running total */}
+                    <div className="flex items-center justify-between text-xs border-t pt-2">
+                      <span className="text-muted-foreground">
+                        Total: {completionData.qtyCompleted + completionData.qtyScrap + completionData.qtyRework} / {completionData.qtyOriginal}
+                      </span>
+                      {completionData.qtyCompleted + completionData.qtyScrap + completionData.qtyRework >= completionData.qtyOriginal ? (
+                        <span className="text-green-600 font-medium flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3" /> Accounted
+                        </span>
+                      ) : (
+                        <span className="text-destructive font-medium">
+                          {completionData.qtyOriginal - completionData.qtyCompleted - completionData.qtyScrap - completionData.qtyRework} unaccounted
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Validation errors */}
+                {validationErrors.length > 0 && !isOverride && (
+                  <Alert variant="destructive" className="py-2">
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertDescription className="text-xs">
+                      {validationErrors.map((err, i) => (
+                        <p key={i}>{err}</p>
+                      ))}
+                    </AlertDescription>
+                  </Alert>
                 )}
 
                 {/* Supervisor override section */}
@@ -564,7 +662,11 @@ export function OperatorStationPanel({
             <AlertDialogCancel disabled={processing}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelivery}
-              disabled={processing || (isOverride && !overrideReason.trim())}
+              disabled={
+                processing ||
+                (isOverride && !overrideReason.trim()) ||
+                (!isOverride && validationErrors.length > 0)
+              }
               className="bg-primary hover:bg-primary/90"
             >
               {processing ? (
