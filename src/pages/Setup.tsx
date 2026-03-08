@@ -102,7 +102,7 @@ export default function Setup() {
 
   useEffect(() => {
     fetchSetupStatus();
-  }, [user, currentStep]);
+  }, [user]);
 
   const refreshStatus = () => fetchSetupStatus(true);
 
