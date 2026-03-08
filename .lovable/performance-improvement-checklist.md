@@ -37,25 +37,20 @@
 
 ---
 
-## Phase 3: Debounce & Visibility (Impact: ~10% improvement)
+## Phase 3: Debounce & Visibility (Impact: ~10% improvement) ✅
 
 **Goal:** Reduce unnecessary background load
 
-- [ ] **3.1** Add 500ms debounce to all realtime event handlers
-  ```typescript
-  const debouncedInvalidate = useMemo(
-    () => debounce(() => queryClient.invalidateQueries(['stations']), 500),
-    [queryClient]
-  );
-  ```
-- [ ] **3.2** Integrate Page Visibility API
-  - Pause polling when `document.hidden === true`
-  - Resume + immediate refresh on visibility change
-  - React Query's `refetchOnWindowFocus` handles part of this automatically
-- [ ] **3.3** Remove manual polling from hooks that have realtime subscriptions
-  - `useStations`: has realtime → remove 5min polling fallback (or make it 15min)
-  - `useHandoffRecords`: same
-  - Keep `useBackgroundRefresh` for supervisor dashboard but extend interval to 5–10min
+- [x] **3.1** Add 500ms debounce to all realtime event handlers
+  - useStations: `useDebouncedInvalidate` (done in Phase 2)
+  - useQueue: debounced fetch with `document.hidden` check
+- [x] **3.2** Integrate Page Visibility API
+  - `refetchIntervalInBackground: false` on React Query hooks
+  - `document.hidden` guard on useQueue realtime handler
+- [x] **3.3** Remove/extend manual polling from hooks with realtime subscriptions
+  - `useStations`: 5min → 15min fallback (realtime is primary)
+  - `useHandoffRecords`: 5min → 15min fallback
+  - `OperatorDashboard`: `useBackgroundRefresh` min interval → 10min
 
 ---
 
