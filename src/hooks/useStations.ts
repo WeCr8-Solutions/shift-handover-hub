@@ -116,7 +116,8 @@ export function useStations(teamId?: string | null, organizationId?: string | nu
       .from("stations")
       .select(`
         *,
-        current_status:current_station_status(*)
+        current_status:current_station_status(*),
+        team:teams(id, name)
       `)
       .order("name");
 
