@@ -34,6 +34,7 @@ const MachineMonitorPanel = lazy(() => import("@/components/admin/MachineMonitor
 const VisitorSurveyAnalytics = lazy(() => import("@/components/admin/VisitorSurveyAnalytics").then(m => ({ default: m.VisitorSurveyAnalytics })));
 const SmartAlertAdmin = lazy(() => import("@/components/admin/SmartAlertAdmin").then(m => ({ default: m.SmartAlertAdmin })));
 const ShopFloorDisplayManagement = lazy(() => import("@/components/admin/ShopFloorDisplayManagement").then(m => ({ default: m.ShopFloorDisplayManagement })));
+const NotificationQueueStatus = lazy(() => import("@/components/admin/NotificationQueueStatus").then(m => ({ default: m.NotificationQueueStatus })));
 
 const AdminTabFallback = () => <div className="p-6"><Skeleton className="h-64 w-full rounded-lg" /></div>;
 
