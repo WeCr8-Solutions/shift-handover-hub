@@ -46,16 +46,33 @@ import { workCenterIcons, workCenterColors } from "@/lib/workCenterIcons";
 import { cn } from "@/lib/utils";
 import { BulkUploadDialog } from "./BulkUploadDialog";
 
+interface ReassignStationPayload {
+  stationId: string;
+  fromTeamId: string | null;
+  toTeamId: string;
+}
+
 interface TeamStationManagerProps {
   teamId: string;
   teamName: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onComplete?: () => void;
-  onStationChange?: () => void;
+  onReassignOptimistic?: (payload: ReassignStationPayload) => void;
+  onReassignRollback?: (payload: ReassignStationPayload) => void;
+  onReassignCommitted?: () => void;
 }
 
-export function TeamStationManager({ teamId, teamName, open, onOpenChange, onComplete, onStationChange }: TeamStationManagerProps) {
+export function TeamStationManager({
+  teamId,
+  teamName,
+  open,
+  onOpenChange,
+  onComplete,
+  onReassignOptimistic,
+  onReassignRollback,
+  onReassignCommitted,
+}: TeamStationManagerProps) {
   const { stations, loading, createStation, refreshStations } = useStations(teamId);
   const { teams } = useTeams();
   const { organization } = useUserOrganization();
