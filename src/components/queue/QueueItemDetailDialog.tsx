@@ -142,6 +142,10 @@ export function QueueItemDetailDialog({
   const [convertWONumber, setConvertWONumber] = useState("");
   const [convertStationId, setConvertStationId] = useState<string | undefined>();
   const [converting, setConverting] = useState(false);
+  // Inline routing creation state
+  const [addingRouting, setAddingRouting] = useState(false);
+  const [newRoutingSteps, setNewRoutingSteps] = useState<RoutingStepInput[]>([]);
+  const [savingRouting, setSavingRouting] = useState(false);
   // Get station info if assigned
   const assignedStation = item?.station_id ? stations.find(s => s.id === item.station_id) : null;
 
