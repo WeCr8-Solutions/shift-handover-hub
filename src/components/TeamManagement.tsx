@@ -330,7 +330,7 @@ interface TeamCardProps {
   onAddStations: () => void;
 }
 
-function TeamCard({ team, isSelected, isOwner, onSelect, onDelete, onAddStations }: TeamCardProps) {
+function TeamCard({ team, isSelected, isOwner, onSelect, onEdit, onDelete, onAddStations }: TeamCardProps) {
   const { stations } = useStations(team.id);
   const stationCount = stations.length;
 
@@ -361,17 +361,32 @@ function TeamCard({ team, isSelected, isOwner, onSelect, onDelete, onAddStations
             </div>
           </div>
           {isOwner && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-muted-foreground hover:text-destructive"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete();
-              }}
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-primary"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit();
+                }}
+                title="Edit team"
+              >
+                <Pencil className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete();
+                }}
+                title="Delete team"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </div>
           )}
         </div>
       </CardHeader>
