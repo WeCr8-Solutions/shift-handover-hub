@@ -88,28 +88,50 @@ function getStatusColor(status: string): string {
   }
 }
 
-function QueueItemCard({ item, onClick }: { item: QueueItem; onClick: () => void }) {
-  const isOverdue = item.due_date && new Date(item.due_date) < new Date() && item.status !== "completed";
+function CalendarEntryCard({ entry, onClick }: { entry: CalendarEntry; onClick: () => void }) {
+  const { item, dateType } = entry;
+  const isOverdue = dateType === "due" && item.due_date && new Date(item.due_date) < new Date() && item.status !== "completed";
+  const meta = DATE_TYPE_LABELS[dateType];
+  const Icon = meta.icon;
 
   return (
-    <div
-      onClick={onClick}
-      className={cn(
-        "p-2 bg-card rounded border-l-4 shadow-sm cursor-pointer transition-all hover:shadow-md text-xs",
-        getStatusColor(item.status),
-        isOverdue && "bg-red-50 dark:bg-red-900/10"
-      )}
-    >
-      <div className="flex items-center gap-1 mb-1">
-        <Badge className={cn("text-[10px] px-1 py-0", getPriorityColor(item.priority))}>
-          {item.priority}
-        </Badge>
-      </div>
-      <p className="font-medium truncate">{item.title}</p>
-      {item.work_order && (
-        <p className="text-muted-foreground truncate">WO: {item.work_order}</p>
-      )}
-    </div>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div
+          onClick={(e) => { e.stopPropagation(); onClick(); }}
+          className={cn(
+            "p-1.5 bg-card rounded border-l-4 shadow-sm cursor-pointer transition-all hover:shadow-md text-xs",
+            getStatusColor(item.status),
+            isOverdue && "bg-destructive/5"
+          )}
+        >
+          <div className="flex items-center gap-1 mb-0.5">
+            <Icon className={cn("w-3 h-3 shrink-0", meta.className)} />
+            <span className={cn("text-[10px] font-medium", meta.className)}>{meta.label}</span>
+            <Badge className={cn("text-[9px] px-1 py-0 ml-auto", getPriorityColor(item.priority))}>
+              {item.priority}
+            </Badge>
+          </div>
+          <p className="font-medium truncate">{item.title}</p>
+          {item.work_order && (
+            <p className="text-muted-foreground truncate">WO: {item.work_order}</p>
+          )}
+          {item.estimated_duration && dateType === "due" && (
+            <p className="text-muted-foreground truncate">
+              <Clock className="w-3 h-3 inline mr-0.5" />
+              {Math.round(item.estimated_duration / 60)}h {item.estimated_duration % 60}m est.
+            </p>
+          )}
+        </div>
+      </TooltipTrigger>
+      <TooltipContent side="right" className="text-xs max-w-[200px]">
+        <p className="font-semibold">{item.title}</p>
+        <p className="text-muted-foreground">{meta.label}: {format(entry.date, "PPp")}</p>
+        {item.estimated_duration && <p>Est. duration: {Math.round(item.estimated_duration / 60)}h {item.estimated_duration % 60}m</p>}
+        {item.part_number && <p>Part: {item.part_number}</p>}
+        <p>Status: {item.status}</p>
+      </TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -118,11 +140,24 @@ export function QueueCalendarView({ items, onItemClick }: QueueCalendarViewProps
   const [viewMode, setViewMode] = useState<ViewMode>("week");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
 
-  const getItemsForDate = (date: Date) => {
-    return items.filter((item) => {
-      if (!item.due_date) return false;
-      return isSameDay(new Date(item.due_date), date);
-    });
+  // Build all calendar entries from all date fields
+  const allEntries = getEntriesForItems(items);
+
+  const getEntriesForDate = (date: Date): CalendarEntry[] => {
+    return allEntries.filter((e) => isSameDay(e.date, date));
+  };
+
+  // Capacity indicator: count estimated hours for a day
+  const getDayLoad = (date: Date): number => {
+    const dayEntries = getEntriesForDate(date);
+    let totalMinutes = 0;
+    const seen = new Set<string>();
+    for (const e of dayEntries) {
+      if (seen.has(e.item.id)) continue;
+      seen.add(e.item.id);
+      totalMinutes += e.item.estimated_duration || 0;
+    }
+    return totalMinutes;
   };
 
   const navigatePrevious = () => {
