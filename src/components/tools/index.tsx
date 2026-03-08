@@ -142,3 +142,4 @@ export { SfmCalculator } from "./SfmCalculator";
 export { ToleranceCalculator } from "./ToleranceCalculator";
 export { UnitConverter } from "./UnitConverter";
 export { TrigCalculator } from "./TrigCalculator";
+export { MathCalculator } from "./MathCalculator";
