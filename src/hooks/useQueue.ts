@@ -367,6 +367,16 @@ export function useQueue(filters?: {
     async (id: string, input: UpdateQueueItemInput, logHistory = true) => {
       if (!user || !profile) return { error: "Not authenticated" };
 
+      // ── Optimistic update: apply change to local state immediately ──
+      const previousItems = [...items];
+      if (input.status || input.priority || input.assigned_to !== undefined) {
+        setItems((prev) =>
+          prev.map((item) =>
+            item.id === id ? { ...item, ...input, updated_at: new Date().toISOString() } : item
+          )
+        );
+      }
+
       // Get old item for history
       const { data: oldItem } = await supabase
         .from("queue_items")
@@ -382,7 +392,11 @@ export function useQueue(filters?: {
         })
         .eq("id", id);
 
-      if (error) return { error: error.message };
+      if (error) {
+        // ── Revert optimistic update on failure ──
+        setItems(previousItems);
+        return { error: error.message };
+      }
 
       // Sync with current_station_status when work starts or completes
       if (oldItem?.station_id && input.status) {
