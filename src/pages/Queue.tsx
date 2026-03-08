@@ -322,8 +322,10 @@ export default function Queue() {
             </div>
 
             {loading && items.length === 0 ? (
-              <div className="flex h-64 items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <div className="space-y-3 py-6">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} className="h-16 w-full rounded-lg" />
+                ))}
               </div>
             ) : (
               <>
