@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useUserOrganization } from "./useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 
 interface Features {
   handoff_hub: boolean;
