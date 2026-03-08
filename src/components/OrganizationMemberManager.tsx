@@ -111,7 +111,11 @@ function CopyButton({ value, label }: { value: string; label: string }) {
 }
 
 // ─── Main component ──────────────────────────────────────────────────────────
-export function OrganizationMemberManager() {
+interface OrganizationMemberManagerProps {
+  onNavigateToInvites?: () => void;
+}
+
+export function OrganizationMemberManager({ onNavigateToInvites }: OrganizationMemberManagerProps) {
   const { user, profile } = useAuth();
   const { organization, organizationRole } = useUserOrganization();
   const {
@@ -734,10 +738,16 @@ export function OrganizationMemberManager() {
                           variant="outline"
                           size="sm"
                           className="gap-1 text-xs h-7"
-                          onClick={() => setShowInviteDialog(true)}
+                          onClick={() => {
+                            if (onNavigateToInvites) {
+                              onNavigateToInvites();
+                            } else {
+                              setShowInviteDialog(true);
+                            }
+                          }}
                         >
                           <UserPlus className="w-3 h-3" />
-                          Invite
+                          Create Invite
                         </Button>
                       ) : (
                         <Badge variant="outline" className="gap-1 text-xs text-muted-foreground">
