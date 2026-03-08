@@ -100,6 +100,58 @@ export type JobLineEventType =
   | "transfer.complete"
   | "transfer.failed";
 
+// === Transfer status for DNC operations ===
+export type TransferStatus = "in_progress" | "complete" | "failed";
+
+// === TransferRecord — DNC file transfer tracking ===
+export interface TransferRecord {
+  id: string;
+  machineId: string;
+  machineLabel: string;
+  fileName: string;
+  fileSize?: number;
+  protocol: "ftp" | "sftp" | "serial" | "ethernet" | "websocket" | "usb";
+  direction: "send" | "receive";
+  status: TransferStatus;
+  progress?: number; // 0-100
+  startedAt: Date;
+  completedAt?: Date;
+  error?: string;
+  workOrderNumber?: string;
+  stationId?: string;
+}
+
+// === MachineStatusSnapshot — raw payload from relay (extension shape) ===
+export interface MachineStatusSnapshot {
+  machineId: string;
+  machineState: MachineState;
+  connectionStatus: MachineConnectionStatus;
+  spindleRpm: number | null;
+  spindleOverride: number | null;
+  feedOverride: number | null;
+  activeTool: number | null;
+  activeProgram: string | null;
+  blockNumber: number | null;
+  position: { x?: number; y?: number; z?: number };
+  alarms: AlarmEntry[];
+  timestamp: string; // ISO
+}
+
+// === AlarmEntry — raw alarm from relay ===
+export interface AlarmEntry {
+  code: string;
+  message: string;
+  severity: AlarmSeverity;
+  timestamp: string; // ISO
+}
+
+// === JobLineEvent — envelope from relay ===
+export interface JobLineEvent {
+  type: JobLineEventType;
+  machineId: string;
+  payload: any; // typed per event type in bridge functions
+}
+
 // === State color mapping for UI ===
 export const MACHINE_STATE_CONFIG: Record<
   MachineState,

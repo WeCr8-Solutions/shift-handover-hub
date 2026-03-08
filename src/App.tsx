@@ -10,6 +10,7 @@ import { ActAsProvider } from "@/contexts/ActAsContext";
 import { OnboardingProvider, GuidedTour, WelcomeModal } from "@/components/onboarding";
 import { AnalyticsProvider } from "@/components/AnalyticsProvider";
 import { ActAsBanner } from "@/components/admin/ActAsBanner";
+import { JobLineProvider } from "@/components/providers/JobLineProvider";
 import { MFAEnrollmentGate } from "@/components/compliance/MFAEnrollmentGate";
 import { USPersonDeclarationGate } from "@/components/compliance/USPersonDeclarationGate";
 import Landing from "./pages/Landing";
@@ -68,6 +69,7 @@ const App = () => (
                   {/* ITAR compliance gates — both are no-ops when not required by the org */}
                   <MFAEnrollmentGate>
                   <USPersonDeclarationGate>
+                  <JobLineProvider>
                   <ActAsBanner />
                   <GuidedTour />
                   <WelcomeModal />
@@ -112,6 +114,7 @@ const App = () => (
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
+                  </JobLineProvider>
                   </USPersonDeclarationGate>
                   </MFAEnrollmentGate>
                 </AnalyticsProvider>
