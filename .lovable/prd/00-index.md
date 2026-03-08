@@ -17,6 +17,8 @@
 | 07 | [Admin & Supervisor Operations](./07-admin-supervisor-operations.md) | ✅ Active | Management workflows for stations, WOs, routing |
 | 08 | [Operator Workflow](./08-operator-workflow.md) | ✅ Active | Daily operator tasks and job execution |
 | 09 | [Developer Tooling & Integration](./09-developer-tooling-integration.md) | ✅ Active | Issues, Dev Queue, RLS Health, User Journey |
+| 10 | [ERP Connector Implementation](./10-erp-connector-implementation.md) | ✅ Active | ERP sync, status mapping, usage metering |
+| 11 | [Component Creation & Edit Standards](./11-component-standards.md) | ✅ Active | Import rules, styling, testing, gating checklist |
 
 ---
 
