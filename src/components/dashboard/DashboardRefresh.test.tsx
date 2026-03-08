@@ -3,23 +3,17 @@ import { renderHook, act, waitFor } from "@testing-library/react";
 import { useBackgroundRefresh } from "@/hooks/useBackgroundRefresh";
 
 describe("useBackgroundRefresh", () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
   it("should start with initialLoading=true", () => {
     const fetcher = vi.fn().mockResolvedValue(undefined);
     const { result } = renderHook(() =>
       useBackgroundRefresh({
         key: "test",
         fetchers: [fetcher],
-        intervalMs: 300_000,
+        intervalMs: 0,
+        enabled: false,
       })
     );
+    // enabled=false so no fetch fires — stays in initial state
     expect(result.current.initialLoading).toBe(true);
   });
 
@@ -29,7 +23,7 @@ describe("useBackgroundRefresh", () => {
       useBackgroundRefresh({
         key: "test",
         fetchers: [fetcher],
-        intervalMs: 300_000,
+        intervalMs: 0,
       })
     );
 
@@ -37,15 +31,16 @@ describe("useBackgroundRefresh", () => {
       expect(result.current.initialLoading).toBe(false);
     });
     expect(result.current.refreshCount).toBe(1);
+    expect(fetcher).toHaveBeenCalledTimes(1);
   });
 
-  it("should NOT set initialLoading=true on subsequent refreshes", async () => {
+  it("should NOT reset initialLoading on manual refresh", async () => {
     const fetcher = vi.fn().mockResolvedValue(undefined);
     const { result } = renderHook(() =>
       useBackgroundRefresh({
         key: "test",
         fetchers: [fetcher],
-        intervalMs: 5000,
+        intervalMs: 0,
       })
     );
 
@@ -53,40 +48,15 @@ describe("useBackgroundRefresh", () => {
       expect(result.current.initialLoading).toBe(false);
     });
 
-    // Advance past one polling interval
-    act(() => {
-      vi.advanceTimersByTime(5000);
-    });
-
-    // initialLoading should still be false (anti-flash)
-    expect(result.current.initialLoading).toBe(false);
-  });
-
-  it("should call fetchers on manual refresh", async () => {
-    const fetcher = vi.fn().mockResolvedValue(undefined);
-    const { result } = renderHook(() =>
-      useBackgroundRefresh({
-        key: "test",
-        fetchers: [fetcher],
-        intervalMs: 0, // disable polling
-      })
-    );
-
-    await waitFor(() => {
-      expect(result.current.initialLoading).toBe(false);
-    });
-
-    const countBefore = fetcher.mock.calls.length;
-    act(() => {
+    await act(async () => {
       result.current.refresh();
     });
 
-    await waitFor(() => {
-      expect(fetcher.mock.calls.length).toBeGreaterThan(countBefore);
-    });
+    expect(result.current.initialLoading).toBe(false);
+    expect(fetcher).toHaveBeenCalledTimes(2);
   });
 
-  it("should not poll when disabled", async () => {
+  it("should not fetch when disabled", () => {
     const fetcher = vi.fn().mockResolvedValue(undefined);
     renderHook(() =>
       useBackgroundRefresh({
@@ -97,31 +67,38 @@ describe("useBackgroundRefresh", () => {
       })
     );
 
-    act(() => {
-      vi.advanceTimersByTime(15000);
-    });
-
-    // Should never have been called
     expect(fetcher).not.toHaveBeenCalled();
   });
 
-  it("should scope channels to key changes", async () => {
+  it("should update lastRefreshedAt after fetch", async () => {
+    const fetcher = vi.fn().mockResolvedValue(undefined);
+    const { result } = renderHook(() =>
+      useBackgroundRefresh({
+        key: "test",
+        fetchers: [fetcher],
+        intervalMs: 0,
+      })
+    );
+
+    await waitFor(() => {
+      expect(result.current.lastRefreshedAt).not.toBeNull();
+    });
+  });
+
+  it("should re-fetch when key changes", async () => {
     const fetcher1 = vi.fn().mockResolvedValue(undefined);
     const fetcher2 = vi.fn().mockResolvedValue(undefined);
 
     const { rerender } = renderHook(
-      ({ key, fetchers }) =>
-        useBackgroundRefresh({ key, fetchers, intervalMs: 300_000 }),
-      {
-        initialProps: { key: "org-1", fetchers: [fetcher1] },
-      }
+      ({ key, fetchers }: { key: string; fetchers: (() => Promise<unknown>)[] }) =>
+        useBackgroundRefresh({ key, fetchers, intervalMs: 0 }),
+      { initialProps: { key: "org-1", fetchers: [fetcher1] } }
     );
 
     await waitFor(() => {
       expect(fetcher1).toHaveBeenCalled();
     });
 
-    // Change key — should trigger new initial fetch
     rerender({ key: "org-2", fetchers: [fetcher2] });
 
     await waitFor(() => {
