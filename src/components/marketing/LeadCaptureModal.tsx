@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, forwardRef } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,7 +15,7 @@ const emailSchema = z.string().trim().email("Please enter a valid email address"
 const MODAL_DISMISSED_KEY = "lead_modal_dismissed";
 const LEAD_SUBMITTED_KEY = "lead_submitted";
 
-export function LeadCaptureModal() {
+export const LeadCaptureModal = forwardRef<HTMLDivElement>(function LeadCaptureModal(_props, ref) {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
