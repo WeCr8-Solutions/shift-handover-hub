@@ -156,7 +156,6 @@ export function useStations(teamId?: string | null, organizationId?: string | nu
   useEffect(() => {
     if (!user) return;
 
-    let pollInterval = 5000;
     let isActive = true;
     let timeoutId: ReturnType<typeof setTimeout>;
 
@@ -173,7 +172,6 @@ export function useStations(teamId?: string | null, organizationId?: string | nu
         },
         () => {
           fetchStations();
-          pollInterval = 5000; // reset on realtime success
         }
       )
       .on(
@@ -185,24 +183,17 @@ export function useStations(teamId?: string | null, organizationId?: string | nu
         },
         () => {
           fetchStations();
-          pollInterval = 5000;
         }
       )
-      .subscribe((status) => {
-        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          // On error, fall back to more aggressive polling
-          pollInterval = 3000;
-        }
-      });
+      .subscribe();
 
-    // Fallback: polling to catch missed realtime events
+    // Fallback: polling at 5-minute intervals
     const poll = () => {
       if (!isActive) return;
       fetchStations();
-      pollInterval = Math.min(pollInterval * 1.5, 30000);
-      timeoutId = setTimeout(poll, pollInterval);
+      timeoutId = setTimeout(poll, 300000);
     };
-    timeoutId = setTimeout(poll, pollInterval);
+    timeoutId = setTimeout(poll, 300000);
 
     return () => {
       isActive = false;
@@ -325,7 +316,6 @@ export function useHandoffRecords(teamId?: string | null, organizationId?: strin
   useEffect(() => {
     if (!user) return;
 
-    let pollInterval = 10000;
     let isActive = true;
     let timeoutId: ReturnType<typeof setTimeout>;
 
@@ -340,24 +330,17 @@ export function useHandoffRecords(teamId?: string | null, organizationId?: strin
           table: "handoff_records",
         },
         () => {
-          // Full refetch to ensure org-scoped filtering
           fetchRecords();
-          pollInterval = 10000;
         }
       )
-      .subscribe((status) => {
-        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          pollInterval = 5000;
-        }
-      });
+      .subscribe();
 
     const poll = () => {
       if (!isActive) return;
       fetchRecords();
-      pollInterval = Math.min(pollInterval * 1.5, 60000);
-      timeoutId = setTimeout(poll, pollInterval);
+      timeoutId = setTimeout(poll, 300000);
     };
-    timeoutId = setTimeout(poll, pollInterval);
+    timeoutId = setTimeout(poll, 300000);
 
     return () => {
       isActive = false;
