@@ -5,6 +5,7 @@ import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { getSafeErrorMessage } from "@/lib/errorHandling";
 import { supabase } from "@/integrations/supabase/client";
 import { useStationMachineAssignment } from "@/hooks/useStationMachineProfile";
+import { useDNCConnector } from "@/hooks/useDNCConnector";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,6 +42,9 @@ import {
   Trash2,
   ArrowRightLeft,
   Cpu,
+  Wifi,
+  WifiOff,
+  Radio,
 } from "lucide-react";
 import { StationMachineContextDialog } from "@/components/station/StationMachineContextDialog";
 import { useToast } from "@/hooks/use-toast";
@@ -50,7 +54,7 @@ import { cn } from "@/lib/utils";
 import { BulkUploadDialog } from "./BulkUploadDialog";
 import { Separator } from "@/components/ui/separator";
 
-/** Inline read-only machine profile info for the edit station dialog */
+/** Inline machine profile + DNC info for the edit station dialog */
 function EditStationMachineInfo({
   stationId,
   stationName,
@@ -61,8 +65,11 @@ function EditStationMachineInfo({
   organizationId: string | null;
 }) {
   const { assignment, loading: assignLoading } = useStationMachineAssignment(stationId, organizationId);
+  const { getStationDNCConfig } = useDNCConnector(stationId);
   const [manualProfile, setManualProfile] = useState<Record<string, any> | null>(null);
   const [loadingManual, setLoadingManual] = useState(true);
+  const [dncConfig, setDncConfig] = useState<Record<string, any> | null>(null);
+  const [loadingDnc, setLoadingDnc] = useState(true);
   const [showMachineCtx, setShowMachineCtx] = useState(false);
 
   useEffect(() => {
@@ -76,16 +83,38 @@ function EditStationMachineInfo({
       setManualProfile(data as any);
       setLoadingManual(false);
     };
+    const fetchDnc = async () => {
+      setLoadingDnc(true);
+      const cfg = await getStationDNCConfig(stationId);
+      setDncConfig(cfg);
+      setLoadingDnc(false);
+    };
     fetchManual();
-  }, [stationId]);
+    fetchDnc();
+  }, [stationId, getStationDNCConfig]);
 
   const isLoading = assignLoading || loadingManual;
   const hasLibrary = Boolean(assignment?.machine);
   const hasManual = Boolean(manualProfile) && !hasLibrary;
 
+  const renderCapabilities = (profile: Record<string, any>) => {
+    const caps: string[] = [];
+    if (profile.five_axis_simultaneous) caps.push("5-Axis");
+    if (profile.fourth_axis) caps.push("4th Axis");
+    if (profile.live_tooling) caps.push("Live Tooling");
+    if (profile.y_axis_turn) caps.push("Y-Axis");
+    if (profile.sub_spindle) caps.push("Sub Spindle");
+    if (profile.probing) caps.push("Probing");
+    if (profile.through_spindle_coolant) caps.push("TSC");
+    if (profile.pallet_pool) caps.push("Pallet");
+    if (profile.bar_feeder) caps.push("Bar Feeder");
+    return caps;
+  };
+
   return (
     <>
       <Separator />
+      {/* Machine Profile */}
       <div className="space-y-2">
         <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wide">
           <Cpu className="w-3.5 h-3.5" />
@@ -99,7 +128,7 @@ function EditStationMachineInfo({
           </div>
         ) : hasLibrary && assignment?.machine ? (
           <Card className="border-green-500/30 bg-green-500/5">
-            <CardContent className="pt-3 pb-3">
+            <CardContent className="pt-3 pb-3 space-y-1.5">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0" />
                 <div className="min-w-0 flex-1">
@@ -109,19 +138,32 @@ function EditStationMachineInfo({
                   <p className="text-xs text-muted-foreground">
                     {assignment.machine.machine_type} · {assignment.machine.platform_category}
                   </p>
-                  {(assignment.machine.max_x_travel || assignment.machine.max_y_travel || assignment.machine.max_z_travel) && (
-                    <p className="text-[10px] text-muted-foreground mt-0.5">
-                      Travel: {assignment.machine.max_x_travel ?? '–'}×{assignment.machine.max_y_travel ?? '–'}×{assignment.machine.max_z_travel ?? '–'} mm
-                    </p>
-                  )}
                 </div>
                 <Badge variant="secondary" className="text-[10px] shrink-0">Verified</Badge>
               </div>
+              {(assignment.machine.max_x_travel || assignment.machine.max_y_travel || assignment.machine.max_z_travel) && (
+                <p className="text-[10px] text-muted-foreground pl-6">
+                  Travel: {assignment.machine.max_x_travel ?? '–'}×{assignment.machine.max_y_travel ?? '–'}×{assignment.machine.max_z_travel ?? '–'} mm
+                </p>
+              )}
+              {assignment.machine.max_part_weight && (
+                <p className="text-[10px] text-muted-foreground pl-6">
+                  Max part weight: {assignment.machine.max_part_weight} kg
+                </p>
+              )}
+              {(() => {
+                const caps = renderCapabilities(assignment.machine);
+                return caps.length > 0 ? (
+                  <div className="flex flex-wrap gap-1 pl-6">
+                    {caps.map(c => <Badge key={c} variant="outline" className="text-[9px] px-1.5 py-0">{c}</Badge>)}
+                  </div>
+                ) : null;
+              })()}
             </CardContent>
           </Card>
         ) : hasManual && manualProfile ? (
           <Card className="border-blue-500/30 bg-blue-500/5">
-            <CardContent className="pt-3 pb-3">
+            <CardContent className="pt-3 pb-3 space-y-1.5">
               <div className="flex items-center gap-2">
                 <Wrench className="w-4 h-4 text-blue-600 shrink-0" />
                 <div className="min-w-0 flex-1">
@@ -134,6 +176,39 @@ function EditStationMachineInfo({
                 </div>
                 <Badge variant="outline" className="text-[10px] shrink-0">Manual</Badge>
               </div>
+              {(manualProfile.max_x_travel || manualProfile.max_y_travel || manualProfile.max_z_travel) && (
+                <p className="text-[10px] text-muted-foreground pl-6">
+                  Travel: {manualProfile.max_x_travel ?? '–'}×{manualProfile.max_y_travel ?? '–'}×{manualProfile.max_z_travel ?? '–'} mm
+                </p>
+              )}
+              {manualProfile.max_part_weight && (
+                <p className="text-[10px] text-muted-foreground pl-6">
+                  Max part weight: {manualProfile.max_part_weight} kg
+                </p>
+              )}
+              {manualProfile.typical_tolerance && (
+                <p className="text-[10px] text-muted-foreground pl-6">
+                  Typical tolerance: ±{manualProfile.typical_tolerance} mm
+                </p>
+              )}
+              {(() => {
+                const caps = renderCapabilities(manualProfile);
+                return caps.length > 0 ? (
+                  <div className="flex flex-wrap gap-1 pl-6">
+                    {caps.map(c => <Badge key={c} variant="outline" className="text-[9px] px-1.5 py-0">{c}</Badge>)}
+                  </div>
+                ) : null;
+              })()}
+              {manualProfile.material_capability?.length > 0 && (
+                <div className="pl-6">
+                  <p className="text-[10px] text-muted-foreground mb-0.5">Materials:</p>
+                  <div className="flex flex-wrap gap-1">
+                    {manualProfile.material_capability.map((m: string) => (
+                      <Badge key={m} variant="secondary" className="text-[9px] px-1.5 py-0">{m}</Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         ) : (
@@ -150,6 +225,58 @@ function EditStationMachineInfo({
         >
           <Cpu className="w-3.5 h-3.5" />
           {hasLibrary || hasManual ? "Manage Machine Profile" : "Attach Machine Profile"}
+        </Button>
+      </div>
+
+      {/* DNC / G-Code Section */}
+      <Separator />
+      <div className="space-y-2">
+        <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          <Radio className="w-3.5 h-3.5" />
+          DNC &amp; G-Code
+        </span>
+
+        {loadingDnc ? (
+          <div className="flex items-center gap-2 py-2">
+            <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">Checking connection…</span>
+          </div>
+        ) : dncConfig ? (
+          <Card className="border-primary/30 bg-primary/5">
+            <CardContent className="pt-3 pb-3">
+              <div className="flex items-center gap-2">
+                <Wifi className="w-4 h-4 text-primary shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium">
+                    {String(dncConfig.protocol || "DNC").toUpperCase()} Connected
+                  </p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {dncConfig.host ? `${dncConfig.host}:${dncConfig.port}` : "Local connection configured"}
+                  </p>
+                </div>
+                <Badge variant="outline" className="text-[10px] border-primary/50 text-primary shrink-0">
+                  Active
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="flex items-center gap-2 py-1">
+            <WifiOff className="w-3.5 h-3.5 text-muted-foreground" />
+            <p className="text-xs text-muted-foreground">
+              No DNC/G-Code connection configured.
+            </p>
+          </div>
+        )}
+
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full gap-2 text-xs"
+          onClick={() => setShowMachineCtx(true)}
+        >
+          <Radio className="w-3.5 h-3.5" />
+          {dncConfig ? "Manage DNC Connection" : "Configure DNC / G-Code"}
         </Button>
       </div>
 
