@@ -207,6 +207,11 @@ export function WorkOrderAlertTile({ item, stationName, stationCode, workCenterT
         elapsedDisplay,
         remainingDisplay,
         durationProgress,
+        staleDays,
+        overEstimatedPct,
+        isHighPriorityWaiting,
+        hasNoOperator,
+        queuedAtStationCount,
       });
     } catch (e) {
       console.error("WorkOrderAlertTile fetch error:", e);
