@@ -14,7 +14,7 @@ import {
 import { Database, Loader2, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 
 interface SeedResult {
   operators: number;
