@@ -1,17 +1,18 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import { Loader2, Save, Bell, Mail, Smartphone, Moon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useAppSettings } from "@/hooks/useAppSettings";
+import { useNotificationPrefs } from "@/hooks/useNotificationPrefs";
 
 export function NotificationSettings() {
   const { toast } = useToast();
-  const { notifications, updateNotifications, loading } = useAppSettings();
+  const { notifications, updateNotifications, loading } = useNotificationPrefs();
   const [isSaving, setIsSaving] = useState(false);
 
   const [settings, setSettings] = useState({
@@ -26,9 +27,11 @@ export function NotificationSettings() {
     quiet_hours_end: "",
   });
 
+  const [initialSettings, setInitialSettings] = useState(settings);
+
   useEffect(() => {
     if (notifications) {
-      setSettings({
+      const loaded = {
         email_handoff_alerts: notifications.email_handoff_alerts,
         email_quality_alerts: notifications.email_quality_alerts,
         email_machine_down: notifications.email_machine_down,
@@ -38,9 +41,13 @@ export function NotificationSettings() {
         push_urgent_only: notifications.push_urgent_only,
         quiet_hours_start: notifications.quiet_hours_start || "",
         quiet_hours_end: notifications.quiet_hours_end || "",
-      });
+      };
+      setSettings(loaded);
+      setInitialSettings(loaded);
     }
   }, [notifications]);
+
+  const isDirty = JSON.stringify(settings) !== JSON.stringify(initialSettings);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -54,6 +61,7 @@ export function NotificationSettings() {
     if (error) {
       toast({ title: "Failed to save settings", description: error, variant: "destructive" });
     } else {
+      setInitialSettings(settings);
       toast({ title: "Settings saved", description: "Notification preferences have been updated." });
     }
   };
@@ -76,9 +84,7 @@ export function NotificationSettings() {
             <Mail className="w-5 h-5" />
             Email Notifications
           </CardTitle>
-          <CardDescription>
-            Choose which email notifications you want to receive
-          </CardDescription>
+          <CardDescription>Choose which email notifications you want to receive</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between p-3 rounded-lg border">
@@ -86,10 +92,7 @@ export function NotificationSettings() {
               <Label>Handoff Alerts</Label>
               <p className="text-sm text-muted-foreground">Notify when a handoff requires your attention</p>
             </div>
-            <Switch
-              checked={settings.email_handoff_alerts}
-              onCheckedChange={(v) => setSettings(p => ({ ...p, email_handoff_alerts: v }))}
-            />
+            <Switch checked={settings.email_handoff_alerts} onCheckedChange={(v) => setSettings(p => ({ ...p, email_handoff_alerts: v }))} />
           </div>
 
           <div className="flex items-center justify-between p-3 rounded-lg border">
@@ -97,10 +100,7 @@ export function NotificationSettings() {
               <Label>Quality Alerts</Label>
               <p className="text-sm text-muted-foreground">Notify about quality issues and holds</p>
             </div>
-            <Switch
-              checked={settings.email_quality_alerts}
-              onCheckedChange={(v) => setSettings(p => ({ ...p, email_quality_alerts: v }))}
-            />
+            <Switch checked={settings.email_quality_alerts} onCheckedChange={(v) => setSettings(p => ({ ...p, email_quality_alerts: v }))} />
           </div>
 
           <div className="flex items-center justify-between p-3 rounded-lg border">
@@ -108,10 +108,7 @@ export function NotificationSettings() {
               <Label>Machine Down Alerts</Label>
               <p className="text-sm text-muted-foreground">Notify when a machine goes down</p>
             </div>
-            <Switch
-              checked={settings.email_machine_down}
-              onCheckedChange={(v) => setSettings(p => ({ ...p, email_machine_down: v }))}
-            />
+            <Switch checked={settings.email_machine_down} onCheckedChange={(v) => setSettings(p => ({ ...p, email_machine_down: v }))} />
           </div>
 
           <div className="flex items-center justify-between p-3 rounded-lg border">
@@ -119,10 +116,7 @@ export function NotificationSettings() {
               <Label>Shift Reminders</Label>
               <p className="text-sm text-muted-foreground">Get reminders before your shift starts</p>
             </div>
-            <Switch
-              checked={settings.email_shift_reminders}
-              onCheckedChange={(v) => setSettings(p => ({ ...p, email_shift_reminders: v }))}
-            />
+            <Switch checked={settings.email_shift_reminders} onCheckedChange={(v) => setSettings(p => ({ ...p, email_shift_reminders: v }))} />
           </div>
 
           <div className="flex items-center justify-between p-3 rounded-lg border">
@@ -130,10 +124,7 @@ export function NotificationSettings() {
               <Label>Weekly Summary</Label>
               <p className="text-sm text-muted-foreground">Receive a weekly production summary</p>
             </div>
-            <Switch
-              checked={settings.email_weekly_summary}
-              onCheckedChange={(v) => setSettings(p => ({ ...p, email_weekly_summary: v }))}
-            />
+            <Switch checked={settings.email_weekly_summary} onCheckedChange={(v) => setSettings(p => ({ ...p, email_weekly_summary: v }))} />
           </div>
         </CardContent>
       </Card>
@@ -144,9 +135,7 @@ export function NotificationSettings() {
             <Smartphone className="w-5 h-5" />
             Push Notifications
           </CardTitle>
-          <CardDescription>
-            Configure mobile and browser push notifications
-          </CardDescription>
+          <CardDescription>Configure mobile and browser push notifications</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between p-3 rounded-lg border">
@@ -154,10 +143,7 @@ export function NotificationSettings() {
               <Label>Enable Push Notifications</Label>
               <p className="text-sm text-muted-foreground">Receive real-time alerts on your device</p>
             </div>
-            <Switch
-              checked={settings.push_enabled}
-              onCheckedChange={(v) => setSettings(p => ({ ...p, push_enabled: v }))}
-            />
+            <Switch checked={settings.push_enabled} onCheckedChange={(v) => setSettings(p => ({ ...p, push_enabled: v }))} />
           </div>
 
           {settings.push_enabled && (
@@ -166,10 +152,7 @@ export function NotificationSettings() {
                 <Label>Urgent Only</Label>
                 <p className="text-sm text-muted-foreground">Only notify for critical alerts</p>
               </div>
-              <Switch
-                checked={settings.push_urgent_only}
-                onCheckedChange={(v) => setSettings(p => ({ ...p, push_urgent_only: v }))}
-              />
+              <Switch checked={settings.push_urgent_only} onCheckedChange={(v) => setSettings(p => ({ ...p, push_urgent_only: v }))} />
             </div>
           )}
         </CardContent>
@@ -181,37 +164,30 @@ export function NotificationSettings() {
             <Moon className="w-5 h-5" />
             Quiet Hours
           </CardTitle>
-          <CardDescription>
-            Set hours when you don't want to receive notifications
-          </CardDescription>
+          <CardDescription>Set hours when you don't want to receive notifications</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Start Time</Label>
-              <Input
-                type="time"
-                value={settings.quiet_hours_start}
-                onChange={(e) => setSettings(p => ({ ...p, quiet_hours_start: e.target.value }))}
-              />
+              <Input type="time" value={settings.quiet_hours_start} onChange={(e) => setSettings(p => ({ ...p, quiet_hours_start: e.target.value }))} />
             </div>
             <div className="space-y-2">
               <Label>End Time</Label>
-              <Input
-                type="time"
-                value={settings.quiet_hours_end}
-                onChange={(e) => setSettings(p => ({ ...p, quiet_hours_end: e.target.value }))}
-              />
+              <Input type="time" value={settings.quiet_hours_end} onChange={(e) => setSettings(p => ({ ...p, quiet_hours_end: e.target.value }))} />
             </div>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Leave empty to disable quiet hours. During quiet hours, only urgent alerts will be sent.
-          </p>
+          <p className="text-xs text-muted-foreground">Leave empty to disable quiet hours. During quiet hours, only urgent alerts will be sent.</p>
         </CardContent>
       </Card>
 
-      <div className="flex justify-end">
-        <Button onClick={handleSave} disabled={isSaving} className="gap-2">
+      <div className="flex items-center justify-end gap-3">
+        {isDirty && (
+          <Badge variant="outline" className="text-amber-600 border-amber-500/30">
+            Unsaved changes
+          </Badge>
+        )}
+        <Button onClick={handleSave} disabled={isSaving || !isDirty} className="gap-2">
           {isSaving ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -220,7 +196,7 @@ export function NotificationSettings() {
           ) : (
             <>
               <Save className="w-4 h-4" />
-              Save Notification Settings
+              {isDirty ? "Save Notification Settings" : "Saved"}
             </>
           )}
         </Button>

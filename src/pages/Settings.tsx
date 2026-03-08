@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import {
   Loader2,
   Settings2,
@@ -16,11 +17,12 @@ import {
   GraduationCap,
   Plug,
   Store,
+  ShieldAlert,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useAppSettings } from "@/hooks/useAppSettings";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { useTrialStatus } from "@/hooks/useTrialStatus";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { GeneralSettings } from "@/components/settings/GeneralSettings";
 import { ManufacturingSettings } from "@/components/settings/ManufacturingSettings";
 import { ShiftSettings } from "@/components/settings/ShiftSettings";
@@ -36,6 +38,8 @@ import { PartCatalogManager } from "@/components/settings/PartCatalogManager";
 import { MachineProfileMarketplace } from "@/components/station/MachineProfileMarketplace";
 import { SmartAlertSettings } from "@/components/alerts/SmartAlertSettings";
 import { useSmartAlerts } from "@/hooks/useSmartAlerts";
+import { Badge } from "@/components/ui/badge";
+
 function DeveloperOnlyPlaceholder({ feature }: { feature: string }) {
   return (
     <Card className="border-dashed border-muted-foreground/30">
@@ -53,17 +57,33 @@ function DeveloperOnlyPlaceholder({ feature }: { feature: string }) {
   );
 }
 
+function ReadOnlyNotice() {
+  return (
+    <div className="mb-4 flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
+      <ShieldAlert className="h-4 w-4 text-amber-600 shrink-0" />
+      <p className="text-sm text-amber-700 dark:text-amber-400">
+        These settings are managed by your organization admin. Contact them to request changes.
+      </p>
+    </div>
+  );
+}
+
 export default function Settings() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-  const { loading: settingsLoading } = useAppSettings();
   const { isDeveloper, loading: accessLoading } = useAdminAccess();
   const { canManageBilling } = useTrialStatus();
+  const { organizationRole } = useOrgContext();
   const { thresholds, saveThresholds } = useSmartAlerts();
   const [activeTab, setActiveTab] = useState("general");
 
   const showBillingTab = isDeveloper || canManageBilling;
   const showERPTab = isDeveloper || canManageBilling;
+
+  // Org-level settings are editable by admins/owners/supervisors, read-only for operators
+  const isOrgAdmin = organizationRole === "admin" || organizationRole === "owner";
+  const isSupervisor = organizationRole === "supervisor";
+  const canEditOrgSettings = isOrgAdmin || isSupervisor || isDeveloper;
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -71,7 +91,7 @@ export default function Settings() {
     }
   }, [authLoading, user, navigate]);
 
-  if (authLoading || settingsLoading || accessLoading) {
+  if (authLoading || accessLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -82,6 +102,26 @@ export default function Settings() {
   if (!user) {
     return null;
   }
+
+  // Define tab configuration for DRY rendering
+  const tabs = [
+    { value: "general", label: "General", icon: Settings2, show: true },
+    { value: "organization", label: "Organization", icon: Building2, show: true },
+    { value: "billing", label: "Billing", icon: CreditCard, show: showBillingTab },
+    { value: "manufacturing", label: "Manufacturing", icon: Factory, show: true },
+    { value: "shifts", label: "Shifts", icon: Clock, show: true },
+    { value: "work-centers", label: "Work Centers", icon: Wrench, show: true },
+    { value: "notifications", label: "Notifications", icon: Bell, show: true },
+    { value: "alerts", label: "Alerts", icon: BellRing, show: true },
+    { value: "onboarding", label: "Onboarding", icon: GraduationCap, show: true },
+    { value: "erp", label: "ERP", icon: Plug, show: showERPTab },
+    { value: "marketplace", label: "Marketplace", icon: Store, show: true },
+  ];
+
+  const visibleTabs = tabs.filter((t) => t.show);
+
+  // Org-level tabs that require admin/supervisor access to edit
+  const orgLevelTabs = ["manufacturing", "shifts", "work-centers", "alerts"];
 
   return (
     <div className="min-h-screen bg-background">
@@ -97,99 +137,29 @@ export default function Settings() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0 lg:grid-cols-9">
-            <TabsTrigger
-              value="general"
-              className="border data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-            >
-              <Settings2 className="mr-2 h-4 w-4" />
-              General
-            </TabsTrigger>
-
-            <TabsTrigger
-              value="organization"
-              className="border data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-            >
-              <Building2 className="mr-2 h-4 w-4" />
-              Organization
-            </TabsTrigger>
-
-            {showBillingTab && (
-              <TabsTrigger
-                value="billing"
-                className="border data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-              >
-                <CreditCard className="mr-2 h-4 w-4" />
-                Billing
-              </TabsTrigger>
-            )}
-
-            <TabsTrigger
-              value="manufacturing"
-              className="border data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-            >
-              <Factory className="mr-2 h-4 w-4" />
-              Manufacturing
-            </TabsTrigger>
-
-            <TabsTrigger
-              value="shifts"
-              className="border data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-            >
-              <Clock className="mr-2 h-4 w-4" />
-              Shifts
-            </TabsTrigger>
-
-            <TabsTrigger
-              value="work-centers"
-              className="border data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-            >
-              <Wrench className="mr-2 h-4 w-4" />
-              Work Centers
-            </TabsTrigger>
-
-            <TabsTrigger
-              value="notifications"
-              className="border data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-            >
-              <Bell className="mr-2 h-4 w-4" />
-              Notifications
-            </TabsTrigger>
-
-            <TabsTrigger
-              value="alerts"
-              className="border data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-            >
-              <BellRing className="mr-2 h-4 w-4" />
-              Alerts
-            </TabsTrigger>
-
-            <TabsTrigger
-              value="onboarding"
-              className="border data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-            >
-              <GraduationCap className="mr-2 h-4 w-4" />
-              Onboarding
-            </TabsTrigger>
-
-            {showERPTab && (
-              <TabsTrigger
-                value="erp"
-                className="border data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-              >
-                <Plug className="mr-2 h-4 w-4" />
-                ERP
-              </TabsTrigger>
-            )}
-
-            <TabsTrigger
-              value="marketplace"
-              className="border data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-            >
-              <Store className="mr-2 h-4 w-4" />
-              Marketplace
-            </TabsTrigger>
-          </TabsList>
+          {/* Scrollable tabs for mobile */}
+          <ScrollArea className="w-full">
+            <TabsList className="inline-flex h-auto w-max gap-2 bg-transparent p-0">
+              {visibleTabs.map((tab) => {
+                const Icon = tab.icon;
+                const isOrgTab = orgLevelTabs.includes(tab.value);
+                return (
+                  <TabsTrigger
+                    key={tab.value}
+                    value={tab.value}
+                    className="border whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  >
+                    <Icon className="mr-2 h-4 w-4" />
+                    {tab.label}
+                    {isOrgTab && !canEditOrgSettings && (
+                      <Lock className="ml-1.5 h-3 w-3 opacity-50" />
+                    )}
+                  </TabsTrigger>
+                );
+              })}
+            </TabsList>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
 
           <TabsContent value="general">
             <GeneralSettings />
@@ -204,18 +174,27 @@ export default function Settings() {
           </TabsContent>
 
           <TabsContent value="manufacturing">
-            <div className="space-y-6">
-              <ManufacturingSettings />
-              <PartCatalogManager />
+            {!canEditOrgSettings && <ReadOnlyNotice />}
+            <div className={!canEditOrgSettings ? "pointer-events-none opacity-75" : ""}>
+              <div className="space-y-6">
+                <ManufacturingSettings />
+                <PartCatalogManager />
+              </div>
             </div>
           </TabsContent>
 
           <TabsContent value="shifts">
-            <ShiftSettings />
+            {!canEditOrgSettings && <ReadOnlyNotice />}
+            <div className={!canEditOrgSettings ? "pointer-events-none opacity-75" : ""}>
+              <ShiftSettings />
+            </div>
           </TabsContent>
 
           <TabsContent value="work-centers">
-            <WorkCenterSettings />
+            {!canEditOrgSettings && <ReadOnlyNotice />}
+            <div className={!canEditOrgSettings ? "pointer-events-none opacity-75" : ""}>
+              <WorkCenterSettings />
+            </div>
           </TabsContent>
 
           <TabsContent value="notifications">
@@ -223,7 +202,10 @@ export default function Settings() {
           </TabsContent>
 
           <TabsContent value="alerts">
-            <SmartAlertSettings thresholds={thresholds} onSave={saveThresholds} />
+            {!canEditOrgSettings && <ReadOnlyNotice />}
+            <div className={!canEditOrgSettings ? "pointer-events-none opacity-75" : ""}>
+              <SmartAlertSettings thresholds={thresholds} onSave={saveThresholds} />
+            </div>
           </TabsContent>
 
           <TabsContent value="onboarding">
@@ -247,8 +229,7 @@ export default function Settings() {
                     Marketplace
                   </CardTitle>
                   <CardDescription>
-                    Browse and purchase verified machine profiles, tooling packages, and other add-ons for your
-                    stations.
+                    Browse and purchase verified machine profiles, tooling packages, and other add-ons for your stations.
                   </CardDescription>
                 </CardHeader>
               </Card>
@@ -257,8 +238,7 @@ export default function Settings() {
                 <CardHeader>
                   <CardTitle className="text-lg">Machine Profiles</CardTitle>
                   <CardDescription>
-                    Verified manufacturer specifications for your CNC machines. Purchase profiles to unlock
-                    station-level context and capability matching.
+                    Verified manufacturer specifications for your CNC machines.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
