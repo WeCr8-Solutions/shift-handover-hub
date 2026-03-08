@@ -9,18 +9,20 @@ import { useOrgContext } from "@/contexts/OrgContext";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { useToast } from "@/hooks/use-toast";
 import { useDimensions } from "@/hooks/useDimensions";
+import { useSetupSheets } from "@/hooks/useSetupSheets";
 import { supabase } from "@/integrations/supabase/client";
 import { RoutingSection } from "@/components/queue/RoutingSection";
 import { DimensionCheckForm } from "@/components/dimensions/DimensionCheckForm";
 import { AddDimensionForm } from "@/components/dimensions/AddDimensionForm";
 import { RequestDimensionCheckButton } from "@/components/dimensions/RequestDimensionCheckButton";
 import { DimensionRequestsPanel } from "@/components/dimensions/DimensionRequestsPanel";
+import { SetupSheetsPanel } from "@/components/queue/SetupSheetsPanel";
 import { useDimensionRequests } from "@/hooks/useDimensionRequests";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import {
   GitBranch, Circle, CircleDot, CheckCircle, Timer, Truck,
-  Wrench, User, Loader2, Save, Ruler, Plus, ChevronDown, ChevronUp,
+  Wrench, User, Loader2, Save, Ruler, Plus, ChevronDown, ChevronUp, FileText,
 } from "lucide-react";
 
 interface RoutingStepRow {
@@ -71,6 +73,7 @@ export function QueueItemRoutingTab({
 
   const dimensions = useDimensions();
   const dimRequests = useDimensionRequests();
+  const setupSheets = useSetupSheets();
   const handleSaveRouting = async () => {
     if (!organization?.id) return;
     setSavingRouting(true);
@@ -268,11 +271,12 @@ export function QueueItemRoutingTab({
                       if (isExpanding) {
                         dimensions.loadAll(step.id, item.id);
                         dimRequests.fetchRequests(step.id);
+                        setupSheets.fetchSheets(step.id);
                       }
                     }}
                   >
                     <Ruler className="w-3 h-3" />
-                    Dimensions
+                    Dimensions & Setup Sheets
                     {expandedStep === step.id ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                   </button>
 
@@ -338,6 +342,26 @@ export function QueueItemRoutingTab({
                               onCancel={() => setAddingDimForStep(null)}
                             />
                           )}
+
+                          {/* Setup Sheets section */}
+                          <div className="pt-2 mt-2 border-t">
+                            <div className="flex items-center gap-1 mb-1">
+                              <FileText className="w-3 h-3 text-primary" />
+                              <span className="text-xs font-medium">Setup Sheets & Instructions</span>
+                            </div>
+                            <SetupSheetsPanel
+                              routingStepId={step.id}
+                              queueItemId={item.id}
+                              organizationId={organization?.id || ""}
+                              sheets={setupSheets.sheets}
+                              loading={setupSheets.loading}
+                              canEdit={hasDimensionAccess || hasOrgSupervisorAccess}
+                              onAdd={setupSheets.addSheet}
+                              onDelete={setupSheets.deleteSheet}
+                              onUploadFile={setupSheets.uploadFile}
+                              onGetSignedUrl={setupSheets.getSignedUrl}
+                            />
+                          </div>
                         </>
                       )}
                     </div>
