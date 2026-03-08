@@ -266,8 +266,9 @@ describe("ProductionAnalytics", () => {
 
   it("displays handoff count in summary", () => {
     renderAnalytics();
-    // Should show "2" for our 2 mock handoffs
-    expect(screen.getByText("2")).toBeInTheDocument();
+    // Should show "2" for our 2 mock handoffs — use the amber handoff chip specifically
+    const handoffChip = screen.getByText("Handoffs").closest("div")!;
+    expect(handoffChip.querySelector(".font-mono")!.textContent).toBe("2");
   });
 
   it("filters trend data to today only", async () => {

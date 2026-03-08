@@ -66,7 +66,6 @@ interface HandoffRecord {
 interface ProductionAnalyticsProps {
   stations: StationData[];
   handoffs: HandoffRecord[];
-  /** Optional: parent-controlled refresh state */
   isRefreshing?: boolean;
   lastRefreshedAt?: Date | null;
   onRefresh?: () => void;
@@ -74,6 +73,25 @@ interface ProductionAnalyticsProps {
 
 type ShiftFilter = "all" | "Day" | "Swing" | "Night";
 type ChartView = "output" | "status" | "team" | "workcenter" | "trend";
+
+// ─── Helpers ──────────────────────────────────────────────
+
+/** Safe numeric add — coerce nulls/undefined/NaN to 0 */
+function safeAdd(a: number, b: number | null | undefined): number {
+  return a + (Number(b) || 0);
+}
+
+/** Truncate label for chart axis display */
+function truncateLabel(label: string, maxLen = 14): string {
+  return label.length > maxLen ? label.slice(0, maxLen - 1) + "…" : label;
+}
+
+/** Format large numbers compactly for display */
+function formatCount(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 10_000) return `${(n / 1_000).toFixed(1)}K`;
+  return n.toLocaleString();
+}
 
 export function ProductionAnalytics({
   stations,
@@ -85,7 +103,7 @@ export function ProductionAnalytics({
   const [shiftFilter, setShiftFilter] = useState<ShiftFilter>("all");
   const [chartView, setChartView] = useState<ChartView>("output");
 
-  // Reduced motion (SSR-safe now via effect)
+  // Reduced motion
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -102,36 +120,32 @@ export function ProductionAnalytics({
     return handoffs.filter((h) => h.shift === shiftFilter);
   }, [handoffs, shiftFilter]);
 
-  // Station output data (parts per station) — includes team & work center context
+  // Station output data — safe numeric accumulation
   const stationOutputData = useMemo(() => {
     const map = new Map<string, { name: string; teamName: string; workCenter: string; status: StatusLabel; parts: number; scrap: number; rework: number }>();
 
-    // From current station status — include ALL active stations
     stations.forEach((s) => {
       if (!s.is_active) return;
-      const key = s.id; // Use unique DB id
+      const key = s.id;
       const teamName = s.team?.name || "Unassigned";
       const workCenter = s.work_center || "—";
-      const label = `${s.name}`;
       const status = getStatusFromJobState(s.current_status?.current_job_state);
-      const existing = map.get(key) || { name: label, teamName, workCenter, status, parts: 0, scrap: 0, rework: 0 };
-      existing.parts += s.current_status?.parts_complete ?? 0;
+      const existing = map.get(key) || { name: s.name, teamName, workCenter, status, parts: 0, scrap: 0, rework: 0 };
+      existing.parts = safeAdd(existing.parts, s.current_status?.parts_complete);
       map.set(key, existing);
     });
 
-    // Supplement with handoff data (keyed by machine_id which maps to station_id display code)
     filteredHandoffs.forEach((h) => {
       const stationName = h.machine_id;
-      // Try to find matching station to enrich with team/work center
       const matchStation = stations.find((s) => s.station_id === stationName || s.name === stationName);
       const teamName = matchStation?.team?.name || "—";
       const workCenter = matchStation?.work_center || "—";
       const status = matchStation ? getStatusFromJobState(matchStation.current_status?.current_job_state) : ("idle" as StatusLabel);
       const key = matchStation?.id || `handoff-${stationName}`;
       const existing = map.get(key) || { name: stationName, teamName, workCenter, status, parts: 0, scrap: 0, rework: 0 };
-      existing.parts += h.parts_completed_this_shift ?? 0;
-      existing.scrap += h.scrap_count ?? 0;
-      existing.rework += h.rework_count ?? 0;
+      existing.parts = safeAdd(existing.parts, h.parts_completed_this_shift);
+      existing.scrap = safeAdd(existing.scrap, h.scrap_count);
+      existing.rework = safeAdd(existing.rework, h.rework_count);
       map.set(key, existing);
     });
 
@@ -140,7 +154,7 @@ export function ProductionAnalytics({
       .slice(0, 15);
   }, [stations, filteredHandoffs]);
 
-  // Work center aggregation for grouped analytics
+  // Work center aggregation
   const workCenterData = useMemo(() => {
     const map = new Map<string, { workCenter: string; stations: number; running: number; setup: number; down: number; waiting: number; idle: number }>();
 
@@ -174,7 +188,7 @@ export function ProductionAnalytics({
     return Array.from(map.values()).sort((a, b) => b.stations - a.stations);
   }, [stations]);
 
-  // Status distribution for pie chart using shared config
+  // Status distribution for pie chart
   const statusDistribution = useMemo(() => {
     const counts = { running: 0, setup: 0, waiting: 0, down: 0, idle: 0 };
 
@@ -193,18 +207,16 @@ export function ProductionAnalytics({
     ].filter((d) => d.value > 0);
   }, [stations]);
 
-  // Handoff trend data — show today if there's data, otherwise show last 7 days by date
+  // Handoff trend data
   const trendData = useMemo(() => {
     const today = new Date();
     const todayString = today.toDateString();
 
-    // Check if any handoffs exist for today
     const hasTodayData = filteredHandoffs.some(
       (h) => new Date(h.created_at).toDateString() === todayString,
     );
 
     if (hasTodayData) {
-      // Show hourly breakdown for today
       const hours = new Map<string, { label: string; handoffs: number; parts: number; scrap: number }>();
       for (let i = 0; i < 24; i++) {
         const label = `${i.toString().padStart(2, "0")}:00`;
@@ -217,13 +229,12 @@ export function ProductionAnalytics({
         const slot = hours.get(hourLabel);
         if (slot) {
           slot.handoffs++;
-          slot.parts += h.parts_completed_this_shift ?? 0;
-          slot.scrap += h.scrap_count ?? 0;
+          slot.parts = safeAdd(slot.parts, h.parts_completed_this_shift);
+          slot.scrap = safeAdd(slot.scrap, h.scrap_count);
         }
       });
       return { mode: "hourly" as const, data: Array.from(hours.values()) };
     } else {
-      // Show daily breakdown for last 7 days
       const days = new Map<string, { label: string; handoffs: number; parts: number; scrap: number }>();
       for (let i = 6; i >= 0; i--) {
         const d = new Date(today);
@@ -238,8 +249,8 @@ export function ProductionAnalytics({
         const slot = days.get(key);
         if (slot) {
           slot.handoffs++;
-          slot.parts += h.parts_completed_this_shift ?? 0;
-          slot.scrap += h.scrap_count ?? 0;
+          slot.parts = safeAdd(slot.parts, h.parts_completed_this_shift);
+          slot.scrap = safeAdd(slot.scrap, h.scrap_count);
         }
       });
       return { mode: "daily" as const, data: Array.from(days.values()) };
@@ -248,27 +259,30 @@ export function ProductionAnalytics({
 
   const totalParts = stationOutputData.reduce((sum, d) => sum + d.parts, 0);
   const totalScrap = stationOutputData.reduce((sum, d) => sum + d.scrap, 0);
-
-  // Safe yield calculation
   const yieldRate = totalParts > 0 ? Math.round(((totalParts - totalScrap) / totalParts) * 100) : 100;
 
-  // Safe percentage calculation for status distribution
   const activeStationCount = stations.filter((s) => s.is_active).length;
   const getStatusPercentage = (value: number) => {
     if (activeStationCount === 0) return 0;
     return Math.round((value / activeStationCount) * 100);
   };
 
+  // Shared tooltip style
+  const tooltipStyle = {
+    backgroundColor: "hsl(var(--card))",
+    border: "1px solid hsl(var(--border))",
+    borderRadius: "8px",
+    fontSize: "12px",
+  };
+
   return (
-    <div className="space-y-4">
-      {/* Section Header with Filters */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <BarChart3 className="w-5 h-5 text-primary" />
+    <div className="space-y-4 overflow-hidden">
+      {/* Section Header with Filters — scrollable on small screens */}
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center gap-2 flex-wrap">
+          <BarChart3 className="w-5 h-5 text-primary shrink-0" />
           <h3 className="font-semibold text-base">Production Analytics</h3>
-          <Badge variant="outline" className="text-[10px]">
-            Live
-          </Badge>
+          <Badge variant="outline" className="text-[10px]">Live</Badge>
           {onRefresh && (
             <RefreshIndicator
               isRefreshing={isRefreshing}
@@ -278,20 +292,22 @@ export function ProductionAnalytics({
             />
           )}
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+
+        {/* Filters — horizontal scroll on mobile */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 -mb-1 scrollbar-none">
           {/* Shift Filter */}
           <div
-            className="flex items-center gap-1 bg-secondary/50 rounded-lg p-0.5"
+            className="flex items-center gap-1 bg-secondary/50 rounded-lg p-0.5 shrink-0"
             role="group"
             aria-label="Shift filter"
           >
-            <Filter className="w-3 h-3 text-muted-foreground ml-2" aria-hidden="true" />
+            <Filter className="w-3 h-3 text-muted-foreground ml-2 shrink-0" aria-hidden="true" />
             {(["all", "Day", "Swing", "Night"] as ShiftFilter[]).map((shift) => (
               <button
                 key={shift}
                 onClick={() => setShiftFilter(shift)}
                 className={cn(
-                  "px-2.5 py-1 rounded-md text-xs font-medium transition-colors",
+                  "px-2.5 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap",
                   shiftFilter === shift
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground",
@@ -304,7 +320,7 @@ export function ProductionAnalytics({
           </div>
           {/* Chart View Toggle */}
           <div
-            className="flex items-center gap-0.5 bg-secondary/50 rounded-lg p-0.5"
+            className="flex items-center gap-0.5 bg-secondary/50 rounded-lg p-0.5 shrink-0"
             role="group"
             aria-label="Chart view"
           >
@@ -312,21 +328,21 @@ export function ProductionAnalytics({
               { key: "output" as ChartView, icon: BarChart3, label: "Output" },
               { key: "status" as ChartView, icon: PieChartIcon, label: "Status" },
               { key: "team" as ChartView, icon: Users, label: "Teams" },
-              { key: "workcenter" as ChartView, icon: Wrench, label: "Work Centers" },
+              { key: "workcenter" as ChartView, icon: Wrench, label: "Work Ctrs" },
               { key: "trend" as ChartView, icon: TrendingUp, label: "Trend" },
             ].map(({ key, icon: Icon, label }) => (
               <button
                 key={key}
                 onClick={() => setChartView(key)}
                 className={cn(
-                  "flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors",
+                  "flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap",
                   chartView === key
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground",
                 )}
                 aria-pressed={chartView === key}
               >
-                <Icon className="w-3 h-3" aria-hidden="true" />
+                <Icon className="w-3 h-3 shrink-0" aria-hidden="true" />
                 {label}
               </button>
             ))}
@@ -334,34 +350,34 @@ export function ProductionAnalytics({
         </div>
       </div>
 
-      {/* Summary Stat Chips */}
-      <div className="flex gap-3 flex-wrap" role="group" aria-label="Production summary">
-        <div className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-1.5">
+      {/* Summary Stat Chips — scrollable on mobile */}
+      <div className="flex gap-3 overflow-x-auto pb-1 -mb-1 scrollbar-none" role="group" aria-label="Production summary">
+        <div className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-1.5 shrink-0">
           <Activity className="w-3.5 h-3.5 text-green-400" aria-hidden="true" />
-          <span className="text-xs text-muted-foreground">Total Parts</span>
-          <span className="text-sm font-bold font-mono text-green-400">{totalParts}</span>
+          <span className="text-xs text-muted-foreground whitespace-nowrap">Total Parts</span>
+          <span className="text-sm font-bold font-mono text-green-400">{formatCount(totalParts)}</span>
         </div>
-        <div className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-1.5">
+        <div className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-1.5 shrink-0">
           <TrendingUp className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
           <span className="text-xs text-muted-foreground">Yield</span>
           <span className="text-sm font-bold font-mono text-primary">{yieldRate}%</span>
         </div>
-        <div className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-1.5">
+        <div className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-1.5 shrink-0">
           <BarChart3 className="w-3.5 h-3.5 text-amber-400" aria-hidden="true" />
           <span className="text-xs text-muted-foreground">Handoffs</span>
-          <span className="text-sm font-bold font-mono text-amber-400">{filteredHandoffs.length}</span>
+          <span className="text-sm font-bold font-mono text-amber-400">{formatCount(filteredHandoffs.length)}</span>
         </div>
         {totalScrap > 0 && (
-          <div className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-1.5">
-            <span className="w-2 h-2 rounded-full bg-red-400" aria-hidden="true" />
+          <div className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-1.5 shrink-0">
+            <span className="w-2 h-2 rounded-full bg-red-400 shrink-0" aria-hidden="true" />
             <span className="text-xs text-muted-foreground">Scrap</span>
-            <span className="text-sm font-bold font-mono text-red-400">{totalScrap}</span>
+            <span className="text-sm font-bold font-mono text-red-400">{formatCount(totalScrap)}</span>
           </div>
         )}
       </div>
 
-      {/* Chart Area — horizontal scroll on small screens */}
-      <div className="bg-card border border-border rounded-lg p-4 overflow-x-auto overscroll-x-contain -webkit-overflow-scrolling-touch">
+      {/* Chart Area */}
+      <div className="bg-card border border-border rounded-lg p-4 overflow-hidden">
         {chartView === "output" && (
           <div>
             <p className="text-xs text-muted-foreground mb-3">Parts completed by station</p>
@@ -370,118 +386,105 @@ export function ProductionAnalytics({
                 No production data yet. Submit handoffs to see output metrics.
               </div>
             ) : (
-              <div className="min-w-[600px]">
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart
-                    data={stationOutputData}
-                    margin={{ top: 5, right: 10, left: -10, bottom: 10 }}
-                    role="img"
-                    aria-label={`Bar chart showing parts completed. Top station: ${stationOutputData[0]?.name} with ${stationOutputData[0]?.parts} parts.`}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-                    <XAxis
-                      dataKey="name"
-                      axisLine={{ stroke: "hsl(var(--border))" }}
-                      tickLine={false}
-                      height={60}
-                      tick={({ x, y, payload }: any) => {
-                        const entry = stationOutputData.find((d) => d.name === payload.value);
-                        const status = entry?.status as StatusLabel | undefined;
-                        const statusColor = status ? STATUS_COLORS[status] : "hsl(var(--muted-foreground))";
-                        const statusLabel = status ? STATUS_CONFIG[status].displayName : "";
-                        return (
-                          <g transform={`translate(${x},${y})`}>
-                            <text
-                              x={0}
-                              y={0}
-                              dy={12}
-                              textAnchor="middle"
-                              fontSize={10}
-                              fill="hsl(var(--muted-foreground))"
-                            >
-                              {payload.value}
-                            </text>
-                            {statusLabel && (
-                              <g transform={`translate(0, 28)`}>
-                                <circle cx={-(statusLabel.length * 2.7) / 2 - 5} cy={0} r={3} fill={statusColor} />
-                                <text
-                                  x={0}
-                                  y={0}
-                                  textAnchor="middle"
-                                  dominantBaseline="central"
-                                  fontSize={9}
-                                  fontWeight={600}
-                                  fill={statusColor}
-                                >
-                                  {statusLabel}
-                                </text>
-                              </g>
-                            )}
-                          </g>
-                        );
-                      }}
-                    />
-                    <YAxis
-                      tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <Tooltip
-                      content={({ active, payload, label }) => {
-                        if (!active || !payload?.length) return null;
-                        const data = payload[0]?.payload;
-                        return (
-                          <div className="bg-card border border-border rounded-lg p-2.5 text-xs shadow-lg">
-                            <p className="font-medium text-foreground mb-1">{label}</p>
-                            {data?.teamName && (
-                              <p className="text-muted-foreground">Team: {data.teamName}</p>
-                            )}
-                            {data?.workCenter && data.workCenter !== "—" && (
-                              <p className="text-muted-foreground">Work Center: {data.workCenter}</p>
-                            )}
-                            {payload.map((p: any, i: number) => (
-                              <p key={i} style={{ color: p.color }}>
-                                {p.name}: {p.value}
-                              </p>
-                            ))}
-                            {data?.status && (
-                              <div className="flex items-center gap-1.5 mt-1.5 pt-1.5 border-t border-border">
-                                <span
-                                  className="inline-block w-2 h-2 rounded-full shrink-0"
-                                  style={{ backgroundColor: STATUS_COLORS[data.status as StatusLabel] }}
-                                />
-                                <span className="font-medium" style={{ color: STATUS_COLORS[data.status as StatusLabel] }}>
-                                  {STATUS_CONFIG[data.status as StatusLabel]?.displayName}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      }}
-                    />
-                    <Bar
-                      dataKey="parts"
-                      name="Good Parts"
-                      fill={STATUS_COLORS.running}
-                      radius={[4, 4, 0, 0]}
-                      isAnimationActive={!prefersReducedMotion}
-                    />
-                    <Bar
-                      dataKey="scrap"
-                      name="Scrap"
-                      fill={STATUS_COLORS.down}
-                      radius={[4, 4, 0, 0]}
-                      isAnimationActive={!prefersReducedMotion}
-                    />
-                    <Bar
-                      dataKey="rework"
-                      name="Rework"
-                      fill={STATUS_COLORS.setup}
-                      radius={[4, 4, 0, 0]}
-                      isAnimationActive={!prefersReducedMotion}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
+              <div className="overflow-x-auto scrollbar-none">
+                <div style={{ minWidth: Math.max(600, stationOutputData.length * 60) }}>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart
+                      data={stationOutputData}
+                      margin={{ top: 5, right: 10, left: -10, bottom: 10 }}
+                      role="img"
+                      aria-label={`Bar chart showing parts completed. Top station: ${stationOutputData[0]?.name} with ${stationOutputData[0]?.parts} parts.`}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                      <XAxis
+                        dataKey="name"
+                        axisLine={{ stroke: "hsl(var(--border))" }}
+                        tickLine={false}
+                        height={60}
+                        tick={({ x, y, payload }: any) => {
+                          const entry = stationOutputData.find((d) => d.name === payload.value);
+                          const status = entry?.status as StatusLabel | undefined;
+                          const statusColor = status ? STATUS_COLORS[status] : "hsl(var(--muted-foreground))";
+                          const statusLabel = status ? STATUS_CONFIG[status].displayName : "";
+                          const displayName = truncateLabel(payload.value);
+                          return (
+                            <g transform={`translate(${x},${y})`}>
+                              <text
+                                x={0}
+                                y={0}
+                                dy={12}
+                                textAnchor="middle"
+                                fontSize={10}
+                                fill="hsl(var(--muted-foreground))"
+                              >
+                                <title>{payload.value}</title>
+                                {displayName}
+                              </text>
+                              {statusLabel && (
+                                <g transform="translate(0, 28)">
+                                  <circle cx={-(statusLabel.length * 2.7) / 2 - 5} cy={0} r={3} fill={statusColor} />
+                                  <text
+                                    x={0}
+                                    y={0}
+                                    textAnchor="middle"
+                                    dominantBaseline="central"
+                                    fontSize={9}
+                                    fontWeight={600}
+                                    fill={statusColor}
+                                  >
+                                    {statusLabel}
+                                  </text>
+                                </g>
+                              )}
+                            </g>
+                          );
+                        }}
+                      />
+                      <YAxis
+                        tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                        axisLine={false}
+                        tickLine={false}
+                        tickFormatter={(v) => formatCount(v)}
+                      />
+                      <Tooltip
+                        content={({ active, payload, label }) => {
+                          if (!active || !payload?.length) return null;
+                          const data = payload[0]?.payload;
+                          return (
+                            <div className="bg-card border border-border rounded-lg p-2.5 text-xs shadow-lg max-w-[240px]">
+                              <p className="font-medium text-foreground mb-1 truncate">{label}</p>
+                              {data?.teamName && (
+                                <p className="text-muted-foreground truncate">Team: {data.teamName}</p>
+                              )}
+                              {data?.workCenter && data.workCenter !== "—" && (
+                                <p className="text-muted-foreground truncate">Work Center: {data.workCenter}</p>
+                              )}
+                              {payload.map((p: any, i: number) => (
+                                <p key={i} style={{ color: p.color }}>
+                                  {p.name}: {formatCount(p.value)}
+                                </p>
+                              ))}
+                              {data?.status && (
+                                <div className="flex items-center gap-1.5 mt-1.5 pt-1.5 border-t border-border">
+                                  <span
+                                    className="inline-block w-2 h-2 rounded-full shrink-0"
+                                    style={{ backgroundColor: STATUS_COLORS[data.status as StatusLabel] }}
+                                  />
+                                  <span className="font-medium" style={{ color: STATUS_COLORS[data.status as StatusLabel] }}>
+                                    {STATUS_CONFIG[data.status as StatusLabel]?.displayName}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        }}
+                      />
+                      <Bar dataKey="parts" name="Good Parts" fill={STATUS_COLORS.running} radius={[4, 4, 0, 0]} isAnimationActive={!prefersReducedMotion} />
+                      <Bar dataKey="scrap" name="Scrap" fill={STATUS_COLORS.down} radius={[4, 4, 0, 0]} isAnimationActive={!prefersReducedMotion} />
+                      <Bar dataKey="rework" name="Rework" fill={STATUS_COLORS.setup} radius={[4, 4, 0, 0]} isAnimationActive={!prefersReducedMotion} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
             )}
           </div>
@@ -495,39 +498,34 @@ export function ProductionAnalytics({
                 No active stations.
               </div>
             ) : (
-              <div className="flex items-center gap-8">
-                <ResponsiveContainer width="50%" height={250}>
-                  <PieChart role="img" aria-label="Pie chart showing station status distribution">
-                    <Pie
-                      data={statusDistribution}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={55}
-                      outerRadius={90}
-                      paddingAngle={3}
-                      dataKey="value"
-                      animationBegin={0}
-                      animationDuration={prefersReducedMotion ? 0 : 800}
-                    >
-                      {statusDistribution.map((entry, i) => (
-                        <Cell key={i} fill={entry.color} stroke="none" />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px",
-                        fontSize: "12px",
-                      }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="flex-1 space-y-3">
+              <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-8">
+                <div className="w-full sm:w-1/2 max-w-[260px]">
+                  <ResponsiveContainer width="100%" height={250}>
+                    <PieChart role="img" aria-label="Pie chart showing station status distribution">
+                      <Pie
+                        data={statusDistribution}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={55}
+                        outerRadius={90}
+                        paddingAngle={3}
+                        dataKey="value"
+                        animationBegin={0}
+                        animationDuration={prefersReducedMotion ? 0 : 800}
+                      >
+                        {statusDistribution.map((entry, i) => (
+                          <Cell key={i} fill={entry.color} stroke="none" />
+                        ))}
+                      </Pie>
+                      <Tooltip contentStyle={tooltipStyle} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="flex-1 space-y-3 w-full">
                   {statusDistribution.map((d) => (
                     <div key={d.name} className="flex items-center gap-3">
-                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: d.color }} aria-hidden="true" />
-                      <span className="text-sm flex-1">{d.name}</span>
+                      <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: d.color }} aria-hidden="true" />
+                      <span className="text-sm flex-1 truncate">{d.name}</span>
                       <span className="text-sm font-bold font-mono">{d.value}</span>
                       <span className="text-xs text-muted-foreground w-10 text-right">
                         {getStatusPercentage(d.value)}%
@@ -548,42 +546,39 @@ export function ProductionAnalytics({
                 No teams configured.
               </div>
             ) : (
-              <div className="min-w-[500px]">
-                <ResponsiveContainer width="100%" height={280}>
-                  <BarChart
-                    data={teamData}
-                    margin={{ top: 5, right: 10, left: -10, bottom: 5 }}
-                    role="img"
-                    aria-label="Stacked bar chart showing station status by team"
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-                    <XAxis
-                      dataKey="team"
-                      tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-                      axisLine={{ stroke: "hsl(var(--border))" }}
-                      tickLine={false}
-                    />
-                    <YAxis
-                      tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px",
-                        fontSize: "12px",
-                      }}
-                    />
-                    <Legend iconType="circle" wrapperStyle={{ fontSize: "11px" }} />
-                    <Bar dataKey="running" name="Running" stackId="a" fill={STATUS_COLORS.running} isAnimationActive={!prefersReducedMotion} />
-                    <Bar dataKey="setup" name="Setup" stackId="a" fill={STATUS_COLORS.setup} isAnimationActive={!prefersReducedMotion} />
-                    <Bar dataKey="waiting" name="Waiting" stackId="a" fill={STATUS_COLORS.waiting} isAnimationActive={!prefersReducedMotion} />
-                    <Bar dataKey="down" name="Down" stackId="a" fill={STATUS_COLORS.down} isAnimationActive={!prefersReducedMotion} />
-                    <Bar dataKey="idle" name="Idle" stackId="a" fill={STATUS_COLORS.idle} radius={[4, 4, 0, 0]} isAnimationActive={!prefersReducedMotion} />
-                  </BarChart>
-                </ResponsiveContainer>
+              <div className="overflow-x-auto scrollbar-none">
+                <div style={{ minWidth: Math.max(500, teamData.length * 80) }}>
+                  <ResponsiveContainer width="100%" height={280}>
+                    <BarChart
+                      data={teamData}
+                      margin={{ top: 5, right: 10, left: -10, bottom: 5 }}
+                      role="img"
+                      aria-label="Stacked bar chart showing station status by team"
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                      <XAxis
+                        dataKey="team"
+                        tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                        axisLine={{ stroke: "hsl(var(--border))" }}
+                        tickLine={false}
+                        tickFormatter={(v) => truncateLabel(v, 16)}
+                      />
+                      <YAxis
+                        tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                        axisLine={false}
+                        tickLine={false}
+                        allowDecimals={false}
+                      />
+                      <Tooltip contentStyle={tooltipStyle} />
+                      <Legend iconType="circle" wrapperStyle={{ fontSize: "11px" }} />
+                      <Bar dataKey="running" name="Running" stackId="a" fill={STATUS_COLORS.running} isAnimationActive={!prefersReducedMotion} />
+                      <Bar dataKey="setup" name="Setup" stackId="a" fill={STATUS_COLORS.setup} isAnimationActive={!prefersReducedMotion} />
+                      <Bar dataKey="waiting" name="Waiting" stackId="a" fill={STATUS_COLORS.waiting} isAnimationActive={!prefersReducedMotion} />
+                      <Bar dataKey="down" name="Down" stackId="a" fill={STATUS_COLORS.down} isAnimationActive={!prefersReducedMotion} />
+                      <Bar dataKey="idle" name="Idle" stackId="a" fill={STATUS_COLORS.idle} radius={[4, 4, 0, 0]} isAnimationActive={!prefersReducedMotion} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
             )}
           </div>
@@ -597,45 +592,42 @@ export function ProductionAnalytics({
                 No work centers configured.
               </div>
             ) : (
-              <div className="min-w-[500px]">
-                <ResponsiveContainer width="100%" height={280}>
-                  <BarChart
-                    data={workCenterData}
-                    margin={{ top: 5, right: 10, left: -10, bottom: 5 }}
-                    role="img"
-                    aria-label="Stacked bar chart showing station status by work center"
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-                    <XAxis
-                      dataKey="workCenter"
-                      tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-                      axisLine={{ stroke: "hsl(var(--border))" }}
-                      tickLine={false}
-                      angle={-20}
-                      textAnchor="end"
-                      height={50}
-                    />
-                    <YAxis
-                      tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px",
-                        fontSize: "12px",
-                      }}
-                    />
-                    <Legend iconType="circle" wrapperStyle={{ fontSize: "11px" }} />
-                    <Bar dataKey="running" name="Running" stackId="a" fill={STATUS_COLORS.running} isAnimationActive={!prefersReducedMotion} />
-                    <Bar dataKey="setup" name="Setup" stackId="a" fill={STATUS_COLORS.setup} isAnimationActive={!prefersReducedMotion} />
-                    <Bar dataKey="waiting" name="Waiting" stackId="a" fill={STATUS_COLORS.waiting} isAnimationActive={!prefersReducedMotion} />
-                    <Bar dataKey="down" name="Down" stackId="a" fill={STATUS_COLORS.down} isAnimationActive={!prefersReducedMotion} />
-                    <Bar dataKey="idle" name="Idle" stackId="a" fill={STATUS_COLORS.idle} radius={[4, 4, 0, 0]} isAnimationActive={!prefersReducedMotion} />
-                  </BarChart>
-                </ResponsiveContainer>
+              <div className="overflow-x-auto scrollbar-none">
+                <div style={{ minWidth: Math.max(500, workCenterData.length * 80) }}>
+                  <ResponsiveContainer width="100%" height={280}>
+                    <BarChart
+                      data={workCenterData}
+                      margin={{ top: 5, right: 10, left: -10, bottom: 5 }}
+                      role="img"
+                      aria-label="Stacked bar chart showing station status by work center"
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                      <XAxis
+                        dataKey="workCenter"
+                        tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                        axisLine={{ stroke: "hsl(var(--border))" }}
+                        tickLine={false}
+                        tickFormatter={(v) => truncateLabel(v, 16)}
+                        angle={-20}
+                        textAnchor="end"
+                        height={50}
+                      />
+                      <YAxis
+                        tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                        axisLine={false}
+                        tickLine={false}
+                        allowDecimals={false}
+                      />
+                      <Tooltip contentStyle={tooltipStyle} />
+                      <Legend iconType="circle" wrapperStyle={{ fontSize: "11px" }} />
+                      <Bar dataKey="running" name="Running" stackId="a" fill={STATUS_COLORS.running} isAnimationActive={!prefersReducedMotion} />
+                      <Bar dataKey="setup" name="Setup" stackId="a" fill={STATUS_COLORS.setup} isAnimationActive={!prefersReducedMotion} />
+                      <Bar dataKey="waiting" name="Waiting" stackId="a" fill={STATUS_COLORS.waiting} isAnimationActive={!prefersReducedMotion} />
+                      <Bar dataKey="down" name="Down" stackId="a" fill={STATUS_COLORS.down} isAnimationActive={!prefersReducedMotion} />
+                      <Bar dataKey="idle" name="Idle" stackId="a" fill={STATUS_COLORS.idle} radius={[4, 4, 0, 0]} isAnimationActive={!prefersReducedMotion} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
             )}
           </div>
@@ -653,66 +645,46 @@ export function ProductionAnalytics({
                 No handoff data in this period. Submit handoffs to see trend metrics.
               </div>
             ) : (
-              <div className="min-w-[500px]">
-                <ResponsiveContainer width="100%" height={280}>
-                  <AreaChart
-                    data={trendData.data}
-                    margin={{ top: 5, right: 10, left: -10, bottom: 5 }}
-                    role="img"
-                    aria-label={`Area chart showing handoff activity and parts output ${trendData.mode === "hourly" ? "throughout today" : "over the last 7 days"}`}
-                  >
-                    <defs>
-                      <linearGradient id="gradParts" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor={STATUS_COLORS.running} stopOpacity={0.3} />
-                        <stop offset="95%" stopColor={STATUS_COLORS.running} stopOpacity={0} />
-                      </linearGradient>
-                      <linearGradient id="gradHandoffs" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-                    <XAxis
-                      dataKey="label"
-                      tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
-                      axisLine={{ stroke: "hsl(var(--border))" }}
-                      tickLine={false}
-                      interval={trendData.mode === "hourly" ? 2 : 0}
-                    />
-                    <YAxis
-                      tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px",
-                        fontSize: "12px",
-                      }}
-                    />
-                    <Legend iconType="circle" wrapperStyle={{ fontSize: "11px" }} />
-                    <Area
-                      type="monotone"
-                      dataKey="parts"
-                      name="Parts"
-                      stroke={STATUS_COLORS.running}
-                      fill="url(#gradParts)"
-                      strokeWidth={2}
-                      isAnimationActive={!prefersReducedMotion}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="handoffs"
-                      name="Handoffs"
-                      stroke="hsl(var(--primary))"
-                      fill="url(#gradHandoffs)"
-                      strokeWidth={2}
-                      isAnimationActive={!prefersReducedMotion}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
+              <div className="overflow-x-auto scrollbar-none">
+                <div className="min-w-[500px]">
+                  <ResponsiveContainer width="100%" height={280}>
+                    <AreaChart
+                      data={trendData.data}
+                      margin={{ top: 5, right: 10, left: -10, bottom: 5 }}
+                      role="img"
+                      aria-label={`Area chart showing handoff activity and parts output ${trendData.mode === "hourly" ? "throughout today" : "over the last 7 days"}`}
+                    >
+                      <defs>
+                        <linearGradient id="gradParts" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor={STATUS_COLORS.running} stopOpacity={0.3} />
+                          <stop offset="95%" stopColor={STATUS_COLORS.running} stopOpacity={0} />
+                        </linearGradient>
+                        <linearGradient id="gradHandoffs" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                      <XAxis
+                        dataKey="label"
+                        tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
+                        axisLine={{ stroke: "hsl(var(--border))" }}
+                        tickLine={false}
+                        interval={trendData.mode === "hourly" ? 2 : 0}
+                      />
+                      <YAxis
+                        tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                        axisLine={false}
+                        tickLine={false}
+                        tickFormatter={(v) => formatCount(v)}
+                      />
+                      <Tooltip contentStyle={tooltipStyle} />
+                      <Legend iconType="circle" wrapperStyle={{ fontSize: "11px" }} />
+                      <Area type="monotone" dataKey="parts" name="Parts" stroke={STATUS_COLORS.running} fill="url(#gradParts)" strokeWidth={2} isAnimationActive={!prefersReducedMotion} />
+                      <Area type="monotone" dataKey="handoffs" name="Handoffs" stroke="hsl(var(--primary))" fill="url(#gradHandoffs)" strokeWidth={2} isAnimationActive={!prefersReducedMotion} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
             )}
           </div>
