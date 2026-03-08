@@ -302,38 +302,63 @@ export function SupervisorDashboard({
         </div>
       </div>
 
-      {/* Team Filter Chips */}
+      {/* Team Filter — dropdown on mobile, chips on desktop */}
       {teams.length > 1 && (
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs text-muted-foreground mr-1">Scope:</span>
-          <button
-            onClick={() => setCurrentTeam(null)}
-            className={cn(
-              "px-3 py-1 rounded-full text-xs font-medium border transition-colors",
-              !currentTeam
-                ? "bg-primary text-primary-foreground border-primary"
-                : "bg-secondary/50 text-muted-foreground border-border hover:border-primary/50"
-            )}
-          >
-            <Factory className="w-3 h-3 inline mr-1" />
-            All Teams
-          </button>
-          {teams.map((team) => (
+        <>
+          {/* Mobile: compact select */}
+          <div className="flex items-center gap-2 sm:hidden">
+            <span className="text-xs text-muted-foreground shrink-0">Scope:</span>
+            <select
+              value={currentTeam?.id || "__all__"}
+              onChange={(e) => {
+                if (e.target.value === "__all__") {
+                  setCurrentTeam(null);
+                } else {
+                  const team = teams.find((t) => t.id === e.target.value);
+                  setCurrentTeam(team || null);
+                }
+              }}
+              className="w-full h-8 rounded-md border border-border bg-secondary/50 text-xs text-foreground px-2 focus:outline-none focus:ring-1 focus:ring-ring"
+            >
+              <option value="__all__">All Teams</option>
+              {teams.map((team) => (
+                <option key={team.id} value={team.id}>{team.name}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Desktop: chip row */}
+          <div className="hidden sm:flex items-center gap-2 flex-wrap">
+            <span className="text-xs text-muted-foreground mr-1">Scope:</span>
             <button
-              key={team.id}
-              onClick={() => setCurrentTeam(team)}
+              onClick={() => setCurrentTeam(null)}
               className={cn(
                 "px-3 py-1 rounded-full text-xs font-medium border transition-colors",
-                currentTeam?.id === team.id
+                !currentTeam
                   ? "bg-primary text-primary-foreground border-primary"
                   : "bg-secondary/50 text-muted-foreground border-border hover:border-primary/50"
               )}
             >
-              <Users className="w-3 h-3 inline mr-1" />
-              {team.name}
+              <Factory className="w-3 h-3 inline mr-1" />
+              All Teams
             </button>
-          ))}
-        </div>
+            {teams.map((team) => (
+              <button
+                key={team.id}
+                onClick={() => setCurrentTeam(team)}
+                className={cn(
+                  "px-3 py-1 rounded-full text-xs font-medium border transition-colors",
+                  currentTeam?.id === team.id
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-secondary/50 text-muted-foreground border-border hover:border-primary/50"
+                )}
+              >
+                <Users className="w-3 h-3 inline mr-1" />
+                {team.name}
+              </button>
+            ))}
+          </div>
+        </>
       )}
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
