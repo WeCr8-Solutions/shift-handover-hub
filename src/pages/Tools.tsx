@@ -1,37 +1,27 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, Suspense } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { SEOHead } from "@/components/SEOHead";
 import { Header } from "@/components/Header";
 import { TOOL_REGISTRY, TOOL_CATEGORIES } from "@/components/tools";
-import { SfmCalculator } from "@/components/tools/SfmCalculator";
-import { ToleranceCalculator } from "@/components/tools/ToleranceCalculator";
-import { UnitConverter } from "@/components/tools/UnitConverter";
-import { TrigCalculator } from "@/components/tools/TrigCalculator";
-import { Search, Wrench } from "lucide-react";
-
-const TOOL_COMPONENTS: Record<string, React.ComponentType> = {
-  "sfm-calculator": SfmCalculator,
-  "tolerance-calculator": ToleranceCalculator,
-  "unit-converter": UnitConverter,
-  "trig-calculator": TrigCalculator,
-};
+import { Search, Wrench, Loader2 } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const categoryColors: Record<string, string> = {
   machining: "bg-primary/10 text-primary border-primary/30",
-  measurement: "bg-accent/60 text-accent-foreground",
-  conversion: "bg-secondary text-secondary-foreground",
-  reference: "bg-muted text-muted-foreground",
+  measurement: "bg-accent/10 text-accent-foreground border-accent/30",
+  conversion: "bg-secondary text-secondary-foreground border-secondary",
+  reference: "bg-muted text-muted-foreground border-muted",
 };
 
 export default function Tools() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [activeTool, setActiveTool] = useState<string | null>(null);
+  const isMobile = useIsMobile();
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
@@ -47,7 +37,7 @@ export default function Tools() {
   }, [search, category]);
 
   const activeToolDef = TOOL_REGISTRY.find((t) => t.id === activeTool);
-  const ActiveComponent = activeTool ? TOOL_COMPONENTS[activeTool] : null;
+  const ActiveComponent = activeToolDef?.component ?? null;
 
   return (
     <>
@@ -95,14 +85,14 @@ export default function Tools() {
           {/* Tool Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filtered.map((tool) => {
-              const hasComponent = !!TOOL_COMPONENTS[tool.id];
+              const available = !!tool.component;
               return (
                 <Card
                   key={tool.id}
                   className={`cursor-pointer transition-all hover:shadow-md hover:border-primary/40 ${
-                    !hasComponent ? "opacity-60" : ""
+                    !available ? "opacity-60" : ""
                   }`}
-                  onClick={() => hasComponent && setActiveTool(tool.id)}
+                  onClick={() => available && setActiveTool(tool.id)}
                 >
                   <CardHeader className="pb-2">
                     <div className="flex items-start justify-between">
@@ -115,7 +105,7 @@ export default function Tools() {
                     <CardDescription className="text-xs">{tool.description}</CardDescription>
                   </CardHeader>
                   <CardContent className="pt-0">
-                    {!hasComponent && (
+                    {!available && (
                       <Badge variant="secondary" className="text-[9px]">Coming Soon</Badge>
                     )}
                   </CardContent>
@@ -133,18 +123,28 @@ export default function Tools() {
         </main>
       </div>
 
-      {/* Tool Dialog */}
-      <Dialog open={!!activeTool} onOpenChange={() => setActiveTool(null)}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-base">
+      {/* Tool Sheet — slides from right, full height for large tools */}
+      <Sheet open={!!activeTool} onOpenChange={() => setActiveTool(null)}>
+        <SheetContent
+          side="right"
+          className={`overflow-y-auto ${isMobile ? "w-full sm:max-w-full" : "sm:max-w-2xl"}`}
+        >
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2 text-base">
               {activeToolDef?.icon}
               {activeToolDef?.name}
-            </DialogTitle>
-          </DialogHeader>
-          {ActiveComponent && <ActiveComponent />}
-        </DialogContent>
-      </Dialog>
+            </SheetTitle>
+            {activeToolDef && (
+              <p className="text-xs text-muted-foreground">{activeToolDef.description}</p>
+            )}
+          </SheetHeader>
+          <div className="mt-4">
+            <Suspense fallback={<div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>}>
+              {ActiveComponent && <ActiveComponent />}
+            </Suspense>
+          </div>
+        </SheetContent>
+      </Sheet>
     </>
   );
 }
