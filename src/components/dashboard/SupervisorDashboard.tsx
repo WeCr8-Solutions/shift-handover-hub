@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useStations, useHandoffRecords } from "@/hooks/useStations";
-import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { useBackgroundRefresh } from "@/hooks/useBackgroundRefresh";
 import { useOrgRefreshInterval } from "@/hooks/useOrgRefreshInterval";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -57,7 +57,7 @@ export function SupervisorDashboard({
 }: SupervisorDashboardProps) {
   const navigate = useNavigate();
   const { currentTeam, setCurrentTeam, teams } = useCurrentTeam();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const {
     stations: dbStations,
     loading: stationsLoading,

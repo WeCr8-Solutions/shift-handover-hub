@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useUserOrganization } from "./useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { Json } from "@/integrations/supabase/types";
 
 export interface AppSetting {
@@ -62,7 +62,7 @@ export interface WorkCenterConfig {
 
 export function useAppSettings() {
   const { user } = useAuth();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const [settings, setSettings] = useState<AppSetting[]>([]);
   const [shifts, setShifts] = useState<ShiftSchedule[]>([]);
   const [notifications, setNotifications] = useState<NotificationPreferences | null>(null);

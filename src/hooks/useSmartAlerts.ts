@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useUserOrganization } from "./useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { useAppSettings } from "./useAppSettings";
 
 // ── Alert types ──────────────────────────────────────────────
@@ -79,7 +79,7 @@ export function useSmartAlerts(options?: {
   /** External trigger to refetch */
   refreshToken?: unknown;
 }) {
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const { getSetting, updateSetting } = useAppSettings();
   const [alerts, setAlerts] = useState<SmartAlert[]>([]);
   const [loading, setLoading] = useState(true);

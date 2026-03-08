@@ -2,7 +2,7 @@ import { Activity, AlertTriangle, Wrench, Clock, Pause } from "lucide-react";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useStations, useHandoffRecords } from "@/hooks/useStations";
 import { useAuth } from "@/contexts/AuthContext";
-import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { mockStations, mockHandoffRecords } from "@/lib/mockData";
 import { useMemo } from "react";
 import { getStatusFromJobState } from "@/components/dashboard/stationStatus";
@@ -10,7 +10,7 @@ import { getStatusFromJobState } from "@/components/dashboard/stationStatus";
 export function ShiftStats() {
   const { user } = useAuth();
   const { currentTeam } = useCurrentTeam();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const { stations: dbStations, loading: stationsLoading } = useStations(currentTeam?.id, organization?.id);
   const { records: dbRecords, loading: recordsLoading } = useHandoffRecords(currentTeam?.id, organization?.id);
 

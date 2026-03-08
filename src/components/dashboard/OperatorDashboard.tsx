@@ -12,7 +12,7 @@ import { NewHandoffForm } from "@/components/NewHandoffForm";
 import { JobPerformanceUpdateForm } from "@/components/JobPerformanceUpdateForm";
 import { useHandoffRecords } from "@/hooks/useStations";
 import { useCurrentTeam } from "@/contexts/TeamContext";
-import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { getCurrentShift } from "@/lib/mockData";
 import { LogOut, Loader2, Clock, ArrowLeft, Info } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -36,7 +36,7 @@ interface OperatorDashboardProps {
 
 export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDashboardProps) {
   const { currentTeam } = useCurrentTeam();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const { activeSessions, loading, isCheckedIn, checkIn, checkOut, refresh: refreshSessions } = useOperatorSessions();
   const { createHandoffRecord, refreshRecords } = useHandoffRecords(currentTeam?.id, organization?.id);
 

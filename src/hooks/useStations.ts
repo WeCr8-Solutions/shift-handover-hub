@@ -3,7 +3,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTeams } from "./useTeams";
 import { useActivityLog } from "./useActivityLog";
-import { useUserOrganization } from "./useUserOrganization";
 import { WorkCenterType, JobState, Shift } from "@/types/handoff";
 import { uploadOrgScopedFile, getSignedUrls } from "@/lib/storageUtils";
 
@@ -92,12 +91,11 @@ export interface HandoffRecord {
 
 export function useStations(teamId?: string | null, organizationId?: string | null) {
   const { user } = useAuth();
-  const { organization } = useUserOrganization();
   const [stations, setStations] = useState<Station[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Use passed organizationId or fall back to user's org
-  const effectiveOrgId = organizationId || organization?.id;
+  // Use passed organizationId directly — callers must provide it
+  const effectiveOrgId = organizationId;
 
   const hasFetchedOnce = useRef(false);
 
@@ -269,11 +267,10 @@ export function useStations(teamId?: string | null, organizationId?: string | nu
 export function useHandoffRecords(teamId?: string | null, organizationId?: string | null) {
   const { user } = useAuth();
   const { logActivity } = useActivityLog();
-  const { organization } = useUserOrganization();
   const [records, setRecords] = useState<HandoffRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const effectiveOrgId = organizationId || organization?.id;
+  const effectiveOrgId = organizationId;
 
   const hasFetchedOnce = useRef(false);
 
@@ -410,7 +407,6 @@ export function useHandoffRecords(teamId?: string | null, organizationId?: strin
 
 export function useShiftStats(teamId?: string | null, organizationId?: string | null) {
   const { user } = useAuth();
-  const { organization } = useUserOrganization();
   const [stats, setStats] = useState({
     activeStations: 0,
     completedHandoffs: 0,
@@ -419,7 +415,7 @@ export function useShiftStats(teamId?: string | null, organizationId?: string | 
   });
   const [loading, setLoading] = useState(true);
 
-  const effectiveOrgId = organizationId || organization?.id;
+  const effectiveOrgId = organizationId;
 
   useEffect(() => {
     if (!user) {
