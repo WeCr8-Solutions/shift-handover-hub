@@ -51,6 +51,12 @@ interface WOAlertData {
   elapsedDisplay: string | null;
   remainingDisplay: string | null;
   durationProgress: number | null;
+  // Smart alerts
+  staleDays: number | null; // days sitting without status change
+  overEstimatedPct: number | null; // how much over estimated duration (e.g. 150 = 50% over)
+  isHighPriorityWaiting: boolean; // critical/urgent stuck in queued
+  hasNoOperator: boolean; // in_progress but no assigned_to
+  queuedAtStationCount: number | null; // how many WOs queued at same station (bottleneck)
 }
 
 interface WorkOrderAlertTileProps {
@@ -136,6 +142,7 @@ export function WorkOrderAlertTile({ item, stationName, stationCode, workCenterT
       let elapsedDisplay: string | null = null;
       let remainingDisplay: string | null = null;
       let durationProgress: number | null = null;
+      let overEstimatedPct: number | null = null;
 
       if (item.started_at && (item.status === "in_progress" || item.status === "on_hold")) {
         const startTime = new Date(item.started_at).getTime();
@@ -154,7 +161,38 @@ export function WorkOrderAlertTile({ item, stationName, stationCode, workCenterT
             ? `+${remHours > 0 ? `${remHours}h ${remMins % 60}m` : `${remMins}m`} over`
             : `${remHours > 0 ? `${remHours}h ${remMins % 60}m` : `${remMins}m`} left`;
           durationProgress = Math.min((elapsedMs / estimatedMs) * 100, 100);
+          if (isOver) {
+            overEstimatedPct = Math.round((elapsedMs / estimatedMs) * 100);
+          }
         }
+      }
+
+      // Stale detection: days since last status change (use updated_at)
+      let staleDays: number | null = null;
+      if (item.status !== "completed" && item.status !== "cancelled") {
+        const refDate = item.updated_at || item.created_at;
+        if (refDate) {
+          const daysSince = Math.floor((Date.now() - new Date(refDate).getTime()) / 86400000);
+          if (daysSince >= 2) staleDays = daysSince;
+        }
+      }
+
+      // High priority waiting in queue
+      const isHighPriorityWaiting = (item.priority === "critical" || item.priority === "urgent") && item.status === "queued";
+
+      // No operator assigned but in progress
+      const hasNoOperator = item.status === "in_progress" && !item.assigned_to;
+
+      // Bottleneck: count other WOs queued at same station
+      let queuedAtStationCount: number | null = null;
+      if (item.station_id && (item.status === "queued" || item.status === "in_progress")) {
+        const { count } = await supabase
+          .from("queue_items")
+          .select("id", { count: "exact", head: true })
+          .eq("station_id", item.station_id)
+          .in("status", ["queued", "in_progress"])
+          .neq("id", item.id);
+        if (count && count >= 2) queuedAtStationCount = count;
       }
 
       setAlertData({
@@ -169,13 +207,18 @@ export function WorkOrderAlertTile({ item, stationName, stationCode, workCenterT
         elapsedDisplay,
         remainingDisplay,
         durationProgress,
+        staleDays,
+        overEstimatedPct,
+        isHighPriorityWaiting,
+        hasNoOperator,
+        queuedAtStationCount,
       });
     } catch (e) {
       console.error("WorkOrderAlertTile fetch error:", e);
     } finally {
       setLoading(false);
     }
-  }, [item.id, item.started_at, item.estimated_duration, item.due_date, item.status, currentTime]);
+  }, [item.id, item.started_at, item.estimated_duration, item.due_date, item.status, item.updated_at, item.created_at, item.priority, item.assigned_to, item.station_id, currentTime]);
 
   useEffect(() => {
     if (isOpen && !alertData) {
@@ -191,6 +234,9 @@ export function WorkOrderAlertTile({ item, stationName, stationCode, workCenterT
   // Alert counts for pill
   const alertCount = alertData
     ? (alertData.needsDelivery ? 1 : 0) + (alertData.isOverdue ? 1 : 0) + (item.status === "on_hold" ? 1 : 0)
+      + (alertData.staleDays ? 1 : 0) + (alertData.isHighPriorityWaiting ? 1 : 0)
+      + (alertData.hasNoOperator ? 1 : 0) + (alertData.overEstimatedPct ? 1 : 0)
+      + (alertData.queuedAtStationCount ? 1 : 0)
     : (isOverdue ? 1 : 0) + (item.status === "on_hold" ? 1 : 0);
 
   return (
@@ -346,7 +392,95 @@ export function WorkOrderAlertTile({ item, stationName, stationCode, workCenterT
                   </div>
                 )}
 
-                {/* Active Duration Tracking */}
+                {/* Stale in Queue Alert */}
+                {alertData.staleDays && alertData.staleDays >= 2 && (
+                  <div className={cn(
+                    "p-2.5 rounded-lg border",
+                    alertData.staleDays >= 5 ? "bg-red-500/10 border-red-500/30" : "bg-amber-500/10 border-amber-500/30",
+                  )}>
+                    <div className="flex items-center gap-2">
+                      <Clock className={cn("w-4 h-4", alertData.staleDays >= 5 ? "text-red-500" : "text-amber-500")} />
+                      <div>
+                        <span className={cn("text-xs font-medium", alertData.staleDays >= 5 ? "text-red-600" : "text-amber-700")}>
+                          Stale — {alertData.staleDays} day{alertData.staleDays !== 1 ? "s" : ""} without movement
+                        </span>
+                        <p className="text-[10px] text-muted-foreground">
+                          This work order hasn't changed status in {alertData.staleDays} days
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* High Priority Waiting */}
+                {alertData.isHighPriorityWaiting && (
+                  <div className="p-2.5 rounded-lg bg-red-500/10 border border-red-500/30">
+                    <div className="flex items-center gap-2">
+                      <Zap className="w-4 h-4 text-red-500 animate-pulse" />
+                      <div>
+                        <span className="text-xs font-medium text-red-600">
+                          {item.priority === "critical" ? "🔴 Critical" : "🟠 Urgent"} — Waiting in Queue
+                        </span>
+                        <p className="text-[10px] text-muted-foreground">
+                          High-priority work order queued but not yet started
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* No Operator Assigned */}
+                {alertData.hasNoOperator && (
+                  <div className="p-2.5 rounded-lg bg-purple-500/10 border border-purple-500/30">
+                    <div className="flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 text-purple-500" />
+                      <div>
+                        <span className="text-xs font-medium text-purple-700">No Operator Assigned</span>
+                        <p className="text-[10px] text-muted-foreground">
+                          Work order is in progress but has no operator checked in
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Over Estimated Time */}
+                {alertData.overEstimatedPct && alertData.overEstimatedPct > 100 && (
+                  <div className={cn(
+                    "p-2.5 rounded-lg border",
+                    alertData.overEstimatedPct > 200 ? "bg-red-500/10 border-red-500/30" : "bg-amber-500/10 border-amber-500/30",
+                  )}>
+                    <div className="flex items-center gap-2">
+                      <Timer className={cn("w-4 h-4", alertData.overEstimatedPct > 200 ? "text-red-500" : "text-amber-500")} />
+                      <div>
+                        <span className={cn("text-xs font-medium", alertData.overEstimatedPct > 200 ? "text-red-600" : "text-amber-700")}>
+                          {alertData.overEstimatedPct - 100}% Over Estimated Time
+                        </span>
+                        <p className="text-[10px] text-muted-foreground">
+                          Running significantly longer than planned duration
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Bottleneck Alert */}
+                {alertData.queuedAtStationCount && alertData.queuedAtStationCount >= 2 && (
+                  <div className="p-2.5 rounded-lg bg-orange-500/10 border border-orange-500/30">
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4 text-orange-500" />
+                      <div>
+                        <span className="text-xs font-medium text-orange-700">
+                          Station Bottleneck — {alertData.queuedAtStationCount} other WO{alertData.queuedAtStationCount !== 1 ? "s" : ""} waiting
+                        </span>
+                        <p className="text-[10px] text-muted-foreground">
+                          Multiple work orders competing for the same station
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {alertData.elapsedDisplay && (
                   <div className={cn(
                     "p-2.5 rounded-lg border",
