@@ -252,19 +252,70 @@ export function TeamManagement() {
         />
       )}
 
-      {/* Station Manager Dialog */}
-      {newlyCreatedTeam && (
-        <TeamStationManager
-          teamId={newlyCreatedTeam.id}
-          teamName={newlyCreatedTeam.name}
-          open={showStationManager}
-          onOpenChange={setShowStationManager}
-          onComplete={() => {
-            setShowStationManager(false);
-            setNewlyCreatedTeam(null);
-          }}
-        />
-      )}
+      {/* Edit Team Dialog */}
+      <Dialog open={!!editingTeam} onOpenChange={(open) => !open && setEditingTeam(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Team</DialogTitle>
+            <DialogDescription>Update the team name and description.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-team-name">Team Name</Label>
+              <Input
+                id="edit-team-name"
+                value={editTeamName}
+                onChange={(e) => setEditTeamName(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-team-desc">Description (optional)</Label>
+              <Input
+                id="edit-team-desc"
+                value={editTeamDescription}
+                onChange={(e) => setEditTeamDescription(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingTeam(null)}>Cancel</Button>
+            <Button onClick={handleSaveEdit} disabled={isSavingEdit || !editTeamName.trim()}>
+              {isSavingEdit ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!deletingTeam} onOpenChange={(open) => !open && setDeletingTeam(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Team</DialogTitle>
+            <DialogDescription>
+              This action is permanent. All stations in this team will be unassigned. Type <span className="font-mono font-bold text-foreground">{deletingTeam?.name}</span> to confirm.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="delete-confirm">Team Name</Label>
+            <Input
+              id="delete-confirm"
+              placeholder={`Type "${deletingTeam?.name}" to confirm`}
+              value={deleteConfirmName}
+              onChange={(e) => setDeleteConfirmName(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeletingTeam(null)}>Cancel</Button>
+            <Button
+              variant="destructive"
+              onClick={handleConfirmDelete}
+              disabled={deleteConfirmName !== deletingTeam?.name}
+            >
+              Delete Team
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -274,6 +325,7 @@ interface TeamCardProps {
   isSelected: boolean;
   isOwner: boolean;
   onSelect: () => void;
+  onEdit: () => void;
   onDelete: () => void;
   onAddStations: () => void;
 }
