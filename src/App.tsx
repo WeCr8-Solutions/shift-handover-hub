@@ -54,6 +54,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Blog from "./pages/Blog";
 import Help from "./pages/Help";
 import HelpArticle from "./pages/HelpArticle";
+import Tools from "./pages/Tools";
 import { lazy, Suspense } from "react";
 
 const ShopFloorDisplay = lazy(() => import("./pages/ShopFloorDisplay"));
