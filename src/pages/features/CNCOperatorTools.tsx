@@ -5,7 +5,7 @@ import { ArrowRight, CheckCircle2, Zap, Wrench, Smartphone, TrendingUp, FileText
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MockOperatorView } from "@/components/marketing/MockOperatorView";
-import { AdPlacement } from "@/components/marketing/AdPlacement";
+
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 
@@ -100,7 +100,7 @@ export default function CNCOperatorTools() {
           </div>
         </section>
 
-        <AdPlacement format="horizontal" className="py-4" />
+        
 
         <section className="py-12">
           <div className="container mx-auto px-4 max-w-4xl">
@@ -126,7 +126,7 @@ export default function CNCOperatorTools() {
           </div>
         </section>
 
-        <AdPlacement format="horizontal" className="py-6" />
+        
       </main>
 
       <MarketingFooter />

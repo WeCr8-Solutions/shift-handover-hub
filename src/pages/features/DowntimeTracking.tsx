@@ -5,7 +5,7 @@ import { ArrowRight, CheckCircle2, Zap, AlertTriangle, BarChart3, Wrench, Activi
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MockDowntimeLog } from "@/components/marketing/MockAppPreviews";
-import { AdPlacement } from "@/components/marketing/AdPlacement";
+
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 
@@ -91,7 +91,7 @@ export default function DowntimeTracking() {
           </div>
         </section>
 
-        <AdPlacement format="horizontal" className="py-4" />
+        
 
         <section className="py-12">
           <div className="container mx-auto px-4 max-w-4xl">
@@ -117,7 +117,7 @@ export default function DowntimeTracking() {
           </div>
         </section>
 
-        <AdPlacement format="horizontal" className="py-6" />
+        
       </main>
 
       <MarketingFooter />

@@ -8,7 +8,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { ShiftHandoffDemo } from "@/components/landing/ShiftHandoffDemo";
 import { SupportJoblineModal } from "@/components/SupportJoblineModal";
-import { AdPlacement } from "@/components/marketing/AdPlacement";
+
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 import { VisitorSurveyModal } from "@/components/marketing/VisitorSurveyModal";
@@ -1038,8 +1038,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Ad Placement - between features and how-it-works */}
-      <AdPlacement format="horizontal" className="py-4" />
 
       {/* Lead Capture */}
       <LeadCaptureBar sourcePage="landing" className="py-6" />
@@ -1195,8 +1193,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Ad Placement - before final CTA */}
-      <AdPlacement format="horizontal" className="py-4" />
 
       {/* CTA Section */}
       <section className="py-12 sm:py-16 md:py-24 lg:py-32">

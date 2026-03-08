@@ -5,7 +5,7 @@ import { ArrowRight, CheckCircle2, Zap, Shield, Users, Eye, Factory } from "luci
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MockOversightKPIs } from "@/components/marketing/MockOversightKPIs";
-import { AdPlacement } from "@/components/marketing/AdPlacement";
+
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 
@@ -114,7 +114,7 @@ export default function ManufacturingOversight() {
           </div>
         </section>
 
-        <AdPlacement format="horizontal" className="py-4" />
+        
 
         <section className="py-12">
           <div className="container mx-auto px-4 max-w-4xl">
@@ -140,7 +140,7 @@ export default function ManufacturingOversight() {
           </div>
         </section>
 
-        <AdPlacement format="horizontal" className="py-6" />
+        
       </main>
 
       <MarketingFooter />

@@ -5,7 +5,7 @@ import { ArrowRight, Clock, CheckCircle2, Zap } from "lucide-react";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MockShiftTimeline } from "@/components/marketing/MockShiftTimeline";
-import { AdPlacement } from "@/components/marketing/AdPlacement";
+
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 import { ConversionEvents } from "@/lib/analytics";
@@ -118,7 +118,7 @@ export default function ShiftHandoff() {
           </div>
         </section>
 
-        <AdPlacement format="horizontal" className="py-6" />
+        
       </main>
 
       <MarketingFooter />

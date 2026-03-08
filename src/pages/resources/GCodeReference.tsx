@@ -1,7 +1,7 @@
 import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
-import { AdPlacement } from "@/components/marketing/AdPlacement";
+
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Code, Terminal } from "lucide-react";
@@ -63,7 +63,7 @@ export default function GCodeReference() {
             </p>
           </div>
 
-          <AdPlacement format="horizontal" className="mb-8" />
+          
 
           {categories.map((category) => (
             <div key={category} className="mb-8">
@@ -90,7 +90,7 @@ export default function GCodeReference() {
             </div>
           ))}
 
-          <AdPlacement format="rectangle" className="mt-8" />
+          
 
           <Card className="mt-8 border-primary/20 bg-primary/5">
             <CardHeader>

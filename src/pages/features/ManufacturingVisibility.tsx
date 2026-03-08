@@ -5,7 +5,7 @@ import { ArrowRight, Eye, CheckCircle2, Zap } from "lucide-react";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MockVisibilityDashboard } from "@/components/marketing/MockVisibilityDashboard";
-import { AdPlacement } from "@/components/marketing/AdPlacement";
+
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 import { ConversionEvents } from "@/lib/analytics";
@@ -118,7 +118,7 @@ export default function ManufacturingVisibility() {
           </div>
         </section>
 
-        <AdPlacement format="horizontal" className="py-6" />
+        
       </main>
 
       <MarketingFooter />

@@ -1,7 +1,7 @@
 import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
-import { AdPlacement } from "@/components/marketing/AdPlacement";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -93,7 +93,7 @@ export default function ManufacturingGuides() {
             </p>
           </div>
 
-          <AdPlacement format="horizontal" className="mb-8" />
+          
 
           <div className="grid md:grid-cols-2 gap-6">
             {guides.map((guide) => {
@@ -129,7 +129,7 @@ export default function ManufacturingGuides() {
             })}
           </div>
 
-          <AdPlacement format="rectangle" className="mt-12" />
+          
         </main>
 
         <MarketingFooter />
