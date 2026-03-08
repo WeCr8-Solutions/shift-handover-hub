@@ -10,7 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { QueueItem, QueueItemComment, QueueItemHistory, QueueStatus, QueuePriority, UpdateQueueItemInput } from "@/hooks/useQueue";
+import { QueueItem, QueueItemComment, QueueItemHistory, QueueStatus, QueuePriority, UpdateQueueItemInput, RoutingStepInput } from "@/hooks/useQueue";
 import { useStations } from "@/hooks/useStations";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useUserOrganization } from "@/hooks/useUserOrganization";
@@ -24,10 +24,11 @@ import { QuantitySummaryCard } from "@/components/ncr/QuantitySummaryCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CreateNCRDialog } from "@/components/ncr/CreateNCRDialog";
 import { NCRListView } from "@/components/ncr/NCRListView";
+import { RoutingSection } from "@/components/queue/RoutingSection";
 import { 
   Clock, User, Package, Send, History, MessageSquare, Trash2, Loader2,
   Play, Pause, CheckCircle2, Wrench, FileText, AlertTriangle, ArrowRight, GitBranch,
-  CircleDot, Circle, CheckCircle, Timer, Truck, ShieldAlert, ArrowRightLeft, Plug
+  CircleDot, Circle, CheckCircle, Timer, Truck, ShieldAlert, ArrowRightLeft, Plug, Save
 } from "lucide-react";
 
 interface RoutingStepRow {
@@ -141,6 +142,10 @@ export function QueueItemDetailDialog({
   const [convertWONumber, setConvertWONumber] = useState("");
   const [convertStationId, setConvertStationId] = useState<string | undefined>();
   const [converting, setConverting] = useState(false);
+  // Inline routing creation state
+  const [addingRouting, setAddingRouting] = useState(false);
+  const [newRoutingSteps, setNewRoutingSteps] = useState<RoutingStepInput[]>([]);
+  const [savingRouting, setSavingRouting] = useState(false);
   // Get station info if assigned
   const assignedStation = item?.station_id ? stations.find(s => s.id === item.station_id) : null;
 
@@ -1002,14 +1007,96 @@ export function QueueItemDetailDialog({
                   ))}
                 </div>
               ) : routingSteps.length === 0 ? (
-                <div className="text-center py-12 space-y-3">
-                  <GitBranch className="w-10 h-10 mx-auto text-muted-foreground/40" />
-                  <p className="text-muted-foreground">No routing steps configured yet.</p>
-                  {onOpenRouting && hasAdminAccess && (
-                    <Button variant="outline" size="sm" onClick={() => onOpenRouting(item)} className="gap-2">
-                      <GitBranch className="w-4 h-4" />
-                      Set Up Routing
-                    </Button>
+                <div className="py-6 space-y-4">
+                  <div className="text-center space-y-3">
+                    <GitBranch className="w-10 h-10 mx-auto text-muted-foreground/40" />
+                    <p className="text-muted-foreground">No routing steps configured yet.</p>
+                  </div>
+
+                  {!addingRouting ? (
+                    <div className="flex justify-center gap-2">
+                      <Button variant="outline" size="sm" onClick={() => { setAddingRouting(true); setNewRoutingSteps([]); }} className="gap-2">
+                        <GitBranch className="w-4 h-4" />
+                        Add Routing
+                      </Button>
+                      {onOpenRouting && hasAdminAccess && (
+                        <Button variant="outline" size="sm" onClick={() => onOpenRouting(item)} className="gap-2">
+                          <GitBranch className="w-4 h-4" />
+                          Advanced Editor
+                        </Button>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <RoutingSection
+                        steps={newRoutingSteps}
+                        onChange={setNewRoutingSteps}
+                        stations={stations.map(s => ({ id: s.id, name: s.name, station_id: s.station_id, work_center_type: s.work_center_type || '' }))}
+                      />
+                      <div className="flex justify-end gap-2 pt-2 border-t">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => { setAddingRouting(false); setNewRoutingSteps([]); }}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          size="sm"
+                          disabled={savingRouting || newRoutingSteps.length === 0 || newRoutingSteps.some(s => !s.operation_name.trim())}
+                          className="gap-2"
+                          onClick={async () => {
+                            if (!item || !organization?.id) return;
+                            setSavingRouting(true);
+                            try {
+                              const routingRows = newRoutingSteps.map((step) => ({
+                                queue_item_id: item.id,
+                                organization_id: organization.id,
+                                step_number: step.step_number,
+                                operation_name: step.operation_name,
+                                operation_type: step.operation_type,
+                                station_id: step.station_id || null,
+                                setup_time_minutes: step.setup_time_minutes || null,
+                                first_article_minutes: step.first_article_minutes || null,
+                                cycle_time_minutes: step.cycle_time_minutes || null,
+                                notes: step.notes || null,
+                                outside_vendor: step.outside_vendor || null,
+                                po_number: step.po_number || null,
+                                expected_return_date: step.expected_return_date || null,
+                                status: "pending",
+                              }));
+
+                              const { error: routingError } = await supabase
+                                .from("work_order_routing")
+                                .insert(routingRows);
+
+                              if (routingError) throw routingError;
+
+                              // Update the WO's station_id to the first step's station
+                              const firstStationId = newRoutingSteps[0]?.station_id;
+                              if (firstStationId) {
+                                await supabase
+                                  .from("queue_items")
+                                  .update({ station_id: firstStationId })
+                                  .eq("id", item.id);
+                              }
+
+                              toast({ title: "Routing Saved", description: `${newRoutingSteps.length} routing step(s) added to this work order.` });
+                              setAddingRouting(false);
+                              setNewRoutingSteps([]);
+                              loadRouting();
+                            } catch (err: any) {
+                              toast({ title: "Error", description: err.message || "Failed to save routing", variant: "destructive" });
+                            } finally {
+                              setSavingRouting(false);
+                            }
+                          }}
+                        >
+                          {savingRouting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                          Save Routing
+                        </Button>
+                      </div>
+                    </div>
                   )}
                 </div>
               ) : (
