@@ -1,13 +1,19 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { MANUFACTURERS, MACHINE_TYPES, type MachineLibraryEntry } from "@/hooks/useStationMachineProfile";
+import {
+  MANUFACTURERS,
+  MACHINE_TYPES,
+  SPINDLE_TAPERS,
+  CONTROL_TYPES,
+  type MachineLibraryEntry,
+} from "@/hooks/useStationMachineProfile";
 import { useToast } from "@/hooks/use-toast";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -49,6 +55,20 @@ interface MachineFormData {
   typical_tolerance: number | null;
   hard_constraints: any[];
   is_verified: boolean;
+  // New fields
+  max_spindle_rpm: number | null;
+  spindle_taper: string | null;
+  spindle_power_hp: number | null;
+  tool_magazine_capacity: number | null;
+  max_tool_diameter: number | null;
+  max_tool_length: number | null;
+  control_type: string | null;
+  control_model: string | null;
+  max_turning_diameter: number | null;
+  max_turning_length: number | null;
+  bar_capacity_mm: number | null;
+  image_url: string | null;
+  datasheet_url: string | null;
 }
 
 const emptyForm: MachineFormData = {
@@ -58,6 +78,11 @@ const emptyForm: MachineFormData = {
   five_axis_simultaneous: false, fourth_axis: false, live_tooling: false, y_axis_turn: false,
   sub_spindle: false, probing: false, through_spindle_coolant: false, pallet_pool: false, bar_feeder: false,
   material_capability: [], typical_tolerance: null, hard_constraints: [], is_verified: false,
+  max_spindle_rpm: null, spindle_taper: null, spindle_power_hp: null,
+  tool_magazine_capacity: null, max_tool_diameter: null, max_tool_length: null,
+  control_type: null, control_model: null,
+  max_turning_diameter: null, max_turning_length: null, bar_capacity_mm: null,
+  image_url: null, datasheet_url: null,
 };
 
 const PLATFORM_CATEGORIES = ["3-Axis", "4-Axis", "5-Axis", "Turn", "Turn/Mill", "Swiss", "Grinder", "EDM", "Waterjet", "Laser", "CMM", "Other"];
@@ -125,6 +150,13 @@ export function MachineLibraryManagement() {
       pallet_pool: m.pallet_pool, bar_feeder: m.bar_feeder,
       material_capability: m.material_capability || [], typical_tolerance: m.typical_tolerance,
       hard_constraints: m.hard_constraints || [], is_verified: m.is_verified,
+      max_spindle_rpm: m.max_spindle_rpm, spindle_taper: m.spindle_taper,
+      spindle_power_hp: m.spindle_power_hp, tool_magazine_capacity: m.tool_magazine_capacity,
+      max_tool_diameter: m.max_tool_diameter, max_tool_length: m.max_tool_length,
+      control_type: m.control_type, control_model: m.control_model,
+      max_turning_diameter: m.max_turning_diameter, max_turning_length: m.max_turning_length,
+      bar_capacity_mm: m.bar_capacity_mm,
+      image_url: m.image_url, datasheet_url: m.datasheet_url,
     });
     setHardConstraintsJson(JSON.stringify(m.hard_constraints || [], null, 2));
     setDialogOpen(true);
@@ -166,6 +198,9 @@ export function MachineLibraryManagement() {
   const setNum = (key: keyof MachineFormData, val: string) => {
     setForm((f) => ({ ...f, [key]: val === "" ? null : Number(val) }));
   };
+  const setStr = (key: keyof MachineFormData, val: string) => {
+    setForm((f) => ({ ...f, [key]: val || null }));
+  };
 
   const toggleMaterial = (mat: string) => {
     setForm((f) => ({
@@ -179,6 +214,8 @@ export function MachineLibraryManagement() {
   };
 
   const uniqueManufacturers = [...new Set(library.map((m) => m.manufacturer))].sort();
+
+  const isTurningType = ["Turn Center (2-Axis)", "Turn/Mill (Y-Axis)", "Swiss"].includes(form.machine_type);
 
   return (
     <div className="space-y-4">
@@ -263,8 +300,10 @@ export function MachineLibraryManagement() {
                       <TableHead className="min-w-[120px]">Manufacturer</TableHead>
                       <TableHead className="min-w-[120px]">Model</TableHead>
                       <TableHead className="min-w-[140px]">Type</TableHead>
-                      <TableHead className="min-w-[80px]">Platform</TableHead>
+                      <TableHead className="min-w-[80px]">Control</TableHead>
+                      <TableHead className="text-center whitespace-nowrap min-w-[100px]">Spindle</TableHead>
                       <TableHead className="text-center whitespace-nowrap min-w-[130px]">Travel (X/Y/Z)</TableHead>
+                      <TableHead className="text-center min-w-[60px]">Tools</TableHead>
                       <TableHead className="text-center min-w-[70px]">Verified</TableHead>
                       <TableHead className="text-center min-w-[80px]">Purchases</TableHead>
                       <TableHead className="text-right min-w-[90px]">Actions</TableHead>
@@ -272,16 +311,25 @@ export function MachineLibraryManagement() {
                   </TableHeader>
                   <TableBody>
                     {filtered.length === 0 && (
-                      <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">No machines found</TableCell></TableRow>
+                      <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-8">No machines found</TableCell></TableRow>
                     )}
                     {filtered.map((m) => (
                       <TableRow key={m.id}>
                         <TableCell className="font-medium whitespace-nowrap">{m.manufacturer}</TableCell>
                         <TableCell className="whitespace-nowrap">{m.model}</TableCell>
                         <TableCell><Badge variant="outline" className="text-xs whitespace-nowrap max-w-[160px] truncate">{m.machine_type}</Badge></TableCell>
-                        <TableCell className="text-sm text-muted-foreground whitespace-nowrap">{m.platform_category}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+                          {m.control_type ? `${m.control_type}${m.control_model ? ` ${m.control_model}` : ''}` : '—'}
+                        </TableCell>
+                        <TableCell className="text-center text-sm text-muted-foreground whitespace-nowrap">
+                          {m.max_spindle_rpm ? `${m.max_spindle_rpm} RPM` : '—'}
+                          {m.spindle_taper ? ` · ${m.spindle_taper}` : ''}
+                        </TableCell>
                         <TableCell className="text-center text-sm font-mono whitespace-nowrap">
                           {m.max_x_travel ?? "—"} / {m.max_y_travel ?? "—"} / {m.max_z_travel ?? "—"}
+                        </TableCell>
+                        <TableCell className="text-center text-sm text-muted-foreground">
+                          {m.tool_magazine_capacity ?? '—'}
                         </TableCell>
                         <TableCell className="text-center">
                           {m.is_verified ? <CheckCircle2 className="w-4 h-4 text-green-500 mx-auto" /> : <X className="w-4 h-4 text-muted-foreground mx-auto" />}
@@ -354,9 +402,60 @@ export function MachineLibraryManagement() {
               </div>
               <Separator />
 
+              {/* Control & Spindle */}
+              <div>
+                <h4 className="font-semibold text-sm text-muted-foreground mb-3">Control & Spindle</h4>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  <div>
+                    <Label>Control Type</Label>
+                    <Select value={form.control_type || ""} onValueChange={(v) => setStr("control_type", v)}>
+                      <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                      <SelectContent>{CONTROL_TYPES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  <div><Label>Control Model</Label><Input placeholder="e.g. 31i-B5" value={form.control_model || ""} onChange={(e) => setStr("control_model", e.target.value)} /></div>
+                  <div><Label>Max Spindle RPM</Label><Input type="number" value={form.max_spindle_rpm ?? ""} onChange={(e) => setNum("max_spindle_rpm", e.target.value)} /></div>
+                  <div>
+                    <Label>Spindle Taper</Label>
+                    <Select value={form.spindle_taper || ""} onValueChange={(v) => setStr("spindle_taper", v)}>
+                      <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                      <SelectContent>{SPINDLE_TAPERS.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  <div><Label>Spindle Power (HP)</Label><Input type="number" value={form.spindle_power_hp ?? ""} onChange={(e) => setNum("spindle_power_hp", e.target.value)} /></div>
+                </div>
+              </div>
+              <Separator />
+
+              {/* Tool Capacity */}
+              <div>
+                <h4 className="font-semibold text-sm text-muted-foreground mb-3">Tool Capacity</h4>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  <div><Label>Magazine Capacity</Label><Input type="number" value={form.tool_magazine_capacity ?? ""} onChange={(e) => setNum("tool_magazine_capacity", e.target.value)} /></div>
+                  <div><Label>Max Tool Diameter (mm)</Label><Input type="number" value={form.max_tool_diameter ?? ""} onChange={(e) => setNum("max_tool_diameter", e.target.value)} /></div>
+                  <div><Label>Max Tool Length (mm)</Label><Input type="number" value={form.max_tool_length ?? ""} onChange={(e) => setNum("max_tool_length", e.target.value)} /></div>
+                </div>
+              </div>
+              <Separator />
+
+              {/* Turning Specs — conditional */}
+              {isTurningType && (
+                <>
+                  <div>
+                    <h4 className="font-semibold text-sm text-muted-foreground mb-3">Turning Specs</h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      <div><Label>Max Turning Diameter (mm)</Label><Input type="number" value={form.max_turning_diameter ?? ""} onChange={(e) => setNum("max_turning_diameter", e.target.value)} /></div>
+                      <div><Label>Max Turning Length (mm)</Label><Input type="number" value={form.max_turning_length ?? ""} onChange={(e) => setNum("max_turning_length", e.target.value)} /></div>
+                      <div><Label>Bar Capacity (mm)</Label><Input type="number" value={form.bar_capacity_mm ?? ""} onChange={(e) => setNum("bar_capacity_mm", e.target.value)} /></div>
+                    </div>
+                  </div>
+                  <Separator />
+                </>
+              )}
+
               {/* Travel & Envelope */}
               <div>
-                <h4 className="font-semibold text-sm text-muted-foreground mb-3">Travel & Envelope (inches/lbs)</h4>
+                <h4 className="font-semibold text-sm text-muted-foreground mb-3">Travel & Envelope</h4>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   <div><Label>X Travel</Label><Input type="number" value={form.max_x_travel ?? ""} onChange={(e) => setNum("max_x_travel", e.target.value)} /></div>
                   <div><Label>Y Travel</Label><Input type="number" value={form.max_y_travel ?? ""} onChange={(e) => setNum("max_y_travel", e.target.value)} /></div>
@@ -397,15 +496,17 @@ export function MachineLibraryManagement() {
               </div>
               <Separator />
 
-              {/* Tolerances & Constraints */}
+              {/* Tolerances, Verification & Media */}
               <div>
-                <h4 className="font-semibold text-sm text-muted-foreground mb-3">Tolerances & Constraints</h4>
+                <h4 className="font-semibold text-sm text-muted-foreground mb-3">Tolerances, Verification & Media</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div><Label>Typical Tolerance (in)</Label><Input type="number" step="0.0001" value={form.typical_tolerance ?? ""} onChange={(e) => setNum("typical_tolerance", e.target.value)} /></div>
                   <div className="flex items-center gap-2 pt-6">
                     <Checkbox checked={form.is_verified} onCheckedChange={() => toggleBool("is_verified")} id="is_verified" />
                     <Label htmlFor="is_verified" className="cursor-pointer flex items-center gap-1"><ShieldCheck className="w-4 h-4" /> Verified</Label>
                   </div>
+                  <div><Label>Image URL</Label><Input placeholder="https://..." value={form.image_url || ""} onChange={(e) => setStr("image_url", e.target.value)} /></div>
+                  <div><Label>Datasheet URL</Label><Input placeholder="https://..." value={form.datasheet_url || ""} onChange={(e) => setStr("datasheet_url", e.target.value)} /></div>
                 </div>
                 <div className="mt-3">
                   <Label>Hard Constraints (JSON)</Label>
