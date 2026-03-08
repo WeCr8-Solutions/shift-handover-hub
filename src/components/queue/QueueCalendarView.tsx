@@ -284,14 +284,14 @@ export function QueueCalendarView({ items, onItemClick }: QueueCalendarViewProps
                       <CardContent className="p-2">
                         <ScrollArea className="h-[140px] lg:h-[220px]">
                           <div className="space-y-1">
-                            {dayItems.map((item) => (
-                              <QueueItemCard
-                                key={item.id}
-                                item={item}
-                                onClick={() => onItemClick(item.id)}
+                            {dayEntries.map((entry, i) => (
+                              <CalendarEntryCard
+                                key={`${entry.item.id}-${entry.dateType}-${i}`}
+                                entry={entry}
+                                onClick={() => onItemClick(entry.item.id)}
                               />
                             ))}
-                            {dayItems.length === 0 && (
+                            {dayEntries.length === 0 && (
                               <p className="text-xs text-muted-foreground text-center py-4">
                                 No items
                               </p>
