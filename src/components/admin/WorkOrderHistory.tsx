@@ -285,7 +285,7 @@ export function WorkOrderHistory({ isAdmin = false }: WorkOrderHistoryProps) {
           </DialogHeader>
           
           {selectedWorkOrder && (
-            <div className="flex-1 overflow-hidden">
+            <div className="flex-1 min-h-0 overflow-y-auto">
               {/* Header Info */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
                 <div className="p-3 bg-muted rounded-lg">

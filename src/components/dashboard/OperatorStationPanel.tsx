@@ -498,7 +498,7 @@ export function OperatorStationPanel({
 
       {/* Delivery confirm dialog — routing-aware with completion form */}
       <AlertDialog open={!!deliverOrder} onOpenChange={handleCloseDeliveryDialog}>
-        <AlertDialogContent className="max-w-md">
+        <AlertDialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               {routingInfo && !routingInfo.isFinalStep ? (

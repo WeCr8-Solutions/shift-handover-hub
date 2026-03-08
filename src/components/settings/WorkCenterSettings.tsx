@@ -207,7 +207,7 @@ export function WorkCenterSettings() {
               </Button>
             </DialogTrigger>
 
-            <DialogContent className="max-w-lg">
+            <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{editingConfig ? "Edit Work Center" : "Add Work Center Config"}</DialogTitle>
               </DialogHeader>
