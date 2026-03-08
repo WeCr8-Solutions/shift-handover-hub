@@ -43,7 +43,7 @@ describe("safeEvaluate – constants", () => {
 describe("safeEvaluate – complex expressions", () => {
   it("quadratic-like", () => expect(safeEvaluate("(-3+sqrt(9+16))÷2")).toBeCloseTo(1));
   it("mixed operators", () => expect(safeEvaluate("2^3+4×5-6÷2")).toBe(25));
-  it("chained exponents", () => expect(safeEvaluate("2^2^3")).toBe(256));
+  it("chained exponents (left-to-right)", () => expect(safeEvaluate("2^2^3")).toBe(64));
 });
 
 describe("safeEvaluate – error handling", () => {
