@@ -91,12 +91,11 @@ export interface HandoffRecord {
 
 export function useStations(teamId?: string | null, organizationId?: string | null) {
   const { user } = useAuth();
-  const { organization } = useUserOrganization();
   const [stations, setStations] = useState<Station[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Use passed organizationId or fall back to user's org
-  const effectiveOrgId = organizationId || organization?.id;
+  // Use passed organizationId directly — callers must provide it
+  const effectiveOrgId = organizationId;
 
   const hasFetchedOnce = useRef(false);
 
