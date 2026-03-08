@@ -316,7 +316,6 @@ export function useHandoffRecords(teamId?: string | null, organizationId?: strin
   useEffect(() => {
     if (!user) return;
 
-    let pollInterval = 10000;
     let isActive = true;
     let timeoutId: ReturnType<typeof setTimeout>;
 
@@ -331,24 +330,17 @@ export function useHandoffRecords(teamId?: string | null, organizationId?: strin
           table: "handoff_records",
         },
         () => {
-          // Full refetch to ensure org-scoped filtering
           fetchRecords();
-          pollInterval = 10000;
         }
       )
-      .subscribe((status) => {
-        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          pollInterval = 5000;
-        }
-      });
+      .subscribe();
 
     const poll = () => {
       if (!isActive) return;
       fetchRecords();
-      pollInterval = Math.min(pollInterval * 1.5, 60000);
-      timeoutId = setTimeout(poll, pollInterval);
+      timeoutId = setTimeout(poll, 300000);
     };
-    timeoutId = setTimeout(poll, pollInterval);
+    timeoutId = setTimeout(poll, 300000);
 
     return () => {
       isActive = false;
