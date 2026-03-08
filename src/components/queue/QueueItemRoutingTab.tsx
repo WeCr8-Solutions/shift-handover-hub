@@ -267,6 +267,7 @@ export function QueueItemRoutingTab({
                       setExpandedStep(isExpanding ? step.id : null);
                       if (isExpanding) {
                         dimensions.loadAll(step.id, item.id);
+                        dimRequests.fetchRequests(step.id);
                       }
                     }}
                   >
@@ -293,6 +294,31 @@ export function QueueItemRoutingTab({
                           {dimensions.requirements.length === 0 && !addingDimForStep && (
                             <p className="text-xs text-muted-foreground text-center py-2">No dimension checks required for this step.</p>
                           )}
+
+                          {/* Operator: request dimension check */}
+                          {!isComplete && (
+                            <RequestDimensionCheckButton
+                              routingStepId={step.id}
+                              queueItemId={item.id}
+                              operationName={step.operation_name}
+                              onSubmit={dimRequests.submitRequest}
+                            />
+                          )}
+
+                          {/* Dimension check requests panel */}
+                          <DimensionRequestsPanel
+                            requests={dimRequests.requests}
+                            isSupervisor={hasAdminAccess || hasOrgSupervisorAccess}
+                            onReview={async (reqId, status, notes) => {
+                              const result = await dimRequests.reviewRequest(reqId, status, notes);
+                              if (!result.error) {
+                                await dimRequests.fetchRequests(step.id);
+                              }
+                              return result;
+                            }}
+                            onAddDimension={(stepId) => setAddingDimForStep(stepId)}
+                          />
+
                           {/* Supervisor: add dimension button */}
                           {(hasAdminAccess || hasOrgSupervisorAccess) && !addingDimForStep && (
                             <Button
