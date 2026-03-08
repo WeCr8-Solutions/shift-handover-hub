@@ -124,12 +124,7 @@ export default function Queue() {
   const { ncrs = [], approveNCR, rejectNCR } = useNCR();
   const pendingNCRs = ncrs.filter((n) => n.authorization_status === "pending");
 
-  // Smart alerts for queue view
-  const { alerts: smartAlerts, loading: smartAlertsLoading } = useSmartAlerts({
-    stationId: filters.station_id,
-    refreshToken: lastRefreshedAt,
-  });
-
+  // Org-configured background refresh for queue data
   const refreshIntervalMs = useOrgRefreshInterval();
   const { isRefreshing, lastRefreshedAt, refresh: handleManualRefresh } =
     useBackgroundRefresh({
@@ -138,6 +133,12 @@ export default function Queue() {
       intervalMs: refreshIntervalMs,
       enabled: !!user,
     });
+
+  // Smart alerts for queue view
+  const { alerts: smartAlerts, loading: smartAlertsLoading } = useSmartAlerts({
+    stationId: filters.station_id,
+    refreshToken: lastRefreshedAt,
+  });
 
   useEffect(() => {
     if (!authLoading && !user) {
