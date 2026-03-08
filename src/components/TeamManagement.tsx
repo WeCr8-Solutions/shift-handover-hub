@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTeams, useTeamMembers, Team } from "@/hooks/useTeams";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { useAdminAccess } from "@/hooks/useAdminData";
-import { useStations } from "@/hooks/useStations";
+import { useStations, Station } from "@/hooks/useStations";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
@@ -33,9 +33,51 @@ export function TeamManagement() {
   const { organization } = useUserOrganization();
   const { isOrgAdmin, isAdmin } = useAdminAccess();
   const { teams, loading, createTeam, updateTeam, deleteTeam } = useTeams();
+  const { stations: allStations, refreshStations } = useStations(undefined, organization?.id);
   const { toast } = useToast();
-  const [stationRefreshKey, setStationRefreshKey] = useState(0);
-  const triggerStationRefresh = () => setStationRefreshKey((k) => k + 1);
+  const [optimisticStations, setOptimisticStations] = useState<Station[]>([]);
+  const [isUsingOptimisticStations, setIsUsingOptimisticStations] = useState(false);
+
+  useEffect(() => {
+    if (!isUsingOptimisticStations) {
+      setOptimisticStations(allStations);
+    }
+  }, [allStations, isUsingOptimisticStations]);
+
+  const stationsForDisplay = isUsingOptimisticStations ? optimisticStations : allStations;
+
+  const stationCountByTeam = useMemo(
+    () =>
+      stationsForDisplay.reduce<Record<string, number>>((acc, station) => {
+        if (!station.team_id) return acc;
+        acc[station.team_id] = (acc[station.team_id] || 0) + 1;
+        return acc;
+      }, {}),
+    [stationsForDisplay],
+  );
+
+  const applyOptimisticReassignment = (stationId: string, toTeamId: string) => {
+    setIsUsingOptimisticStations(true);
+    setOptimisticStations((prev) => {
+      const base = prev.length ? prev : allStations;
+      return base.map((station) =>
+        station.id === stationId ? { ...station, team_id: toTeamId } : station,
+      );
+    });
+  };
+
+  const rollbackOptimisticReassignment = (stationId: string, fromTeamId: string | null) => {
+    setOptimisticStations((prev) =>
+      prev.map((station) =>
+        station.id === stationId ? { ...station, team_id: fromTeamId } : station,
+      ),
+    );
+  };
+
+  const finalizeOptimisticReassignment = async () => {
+    await refreshStations();
+    setIsUsingOptimisticStations(false);
+  };
 
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -235,8 +277,9 @@ export function TeamManagement() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {teams.map((team) => (
               <TeamCard
-                key={`${team.id}-${stationRefreshKey}`}
+                key={team.id}
                 team={team}
+                stationCount={stationCountByTeam[team.id] || 0}
                 isSelected={selectedTeam?.id === team.id}
                 canManage={team.created_by === user?.id || isOrgAdmin || isAdmin}
                 onSelect={() => setSelectedTeam(selectedTeam?.id === team.id ? null : team)}
@@ -267,11 +310,12 @@ export function TeamManagement() {
           teamName={newlyCreatedTeam.name}
           open={showStationManager}
           onOpenChange={setShowStationManager}
-          onStationChange={triggerStationRefresh}
+          onReassignOptimistic={({ stationId, toTeamId }) => applyOptimisticReassignment(stationId, toTeamId)}
+          onReassignRollback={({ stationId, fromTeamId }) => rollbackOptimisticReassignment(stationId, fromTeamId)}
+          onReassignCommitted={finalizeOptimisticReassignment}
           onComplete={() => {
             setShowStationManager(false);
             setNewlyCreatedTeam(null);
-            triggerStationRefresh();
           }}
         />
       )}
@@ -331,6 +375,7 @@ export function TeamManagement() {
 
 interface TeamCardProps {
   team: Team;
+  stationCount: number;
   isSelected: boolean;
   canManage: boolean;
   onSelect: () => void;
@@ -339,10 +384,7 @@ interface TeamCardProps {
   onAddStations: () => void;
 }
 
-function TeamCard({ team, isSelected, canManage, onSelect, onEdit, onDelete, onAddStations }: TeamCardProps) {
-  const { stations } = useStations(team.id);
-  const stationCount = stations.length;
-
+function TeamCard({ team, stationCount, isSelected, canManage, onSelect, onEdit, onDelete, onAddStations }: TeamCardProps) {
   return (
     <Card
       className={`cursor-pointer transition-colors hover:border-primary/50 ${isSelected ? "border-primary" : ""}`}

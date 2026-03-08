@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useStations, Station } from "@/hooks/useStations";
 import { useTeams } from "@/hooks/useTeams";
 import { useUserOrganization } from "@/hooks/useUserOrganization";
@@ -46,16 +46,33 @@ import { workCenterIcons, workCenterColors } from "@/lib/workCenterIcons";
 import { cn } from "@/lib/utils";
 import { BulkUploadDialog } from "./BulkUploadDialog";
 
+interface ReassignStationPayload {
+  stationId: string;
+  fromTeamId: string | null;
+  toTeamId: string;
+}
+
 interface TeamStationManagerProps {
   teamId: string;
   teamName: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onComplete?: () => void;
-  onStationChange?: () => void;
+  onReassignOptimistic?: (payload: ReassignStationPayload) => void;
+  onReassignRollback?: (payload: ReassignStationPayload) => void;
+  onReassignCommitted?: () => void;
 }
 
-export function TeamStationManager({ teamId, teamName, open, onOpenChange, onComplete, onStationChange }: TeamStationManagerProps) {
+export function TeamStationManager({
+  teamId,
+  teamName,
+  open,
+  onOpenChange,
+  onComplete,
+  onReassignOptimistic,
+  onReassignRollback,
+  onReassignCommitted,
+}: TeamStationManagerProps) {
   const { stations, loading, createStation, refreshStations } = useStations(teamId);
   const { teams } = useTeams();
   const { organization } = useUserOrganization();
@@ -79,6 +96,7 @@ export function TeamStationManager({ teamId, teamName, open, onOpenChange, onCom
   // Reassign state
   const [reassigningStation, setReassigningStation] = useState<Station | null>(null);
   const [reassignTeamId, setReassignTeamId] = useState("");
+  const [optimisticallyMovedOutIds, setOptimisticallyMovedOutIds] = useState<Set<string>>(new Set());
 
   const handleAddStation = async () => {
     if (!stationId.trim() || !stationName.trim() || !workCenter.trim()) {
@@ -152,7 +170,7 @@ export function TeamStationManager({ teamId, teamName, open, onOpenChange, onCom
       toast({ title: "Station updated", description: `${editName} has been updated.` });
       setEditingStation(null);
       refreshStations();
-      onStationChange?.();
+      onReassignCommitted?.();
     }
   };
 
@@ -164,34 +182,63 @@ export function TeamStationManager({ teamId, teamName, open, onOpenChange, onCom
     } else {
       toast({ title: "Station deleted", description: `${station.name} has been removed.` });
       refreshStations();
-      onStationChange?.();
+      onReassignCommitted?.();
     }
   };
 
   const handleReassignStation = async () => {
     if (!reassigningStation || !reassignTeamId) return;
+
+    const payload: ReassignStationPayload = {
+      stationId: reassigningStation.id,
+      fromTeamId: reassigningStation.team_id,
+      toTeamId: reassignTeamId,
+    };
+
+    setOptimisticallyMovedOutIds((prev) => {
+      const next = new Set(prev);
+      next.add(payload.stationId);
+      return next;
+    });
+    onReassignOptimistic?.(payload);
+
     setIsSaving(true);
     const { error } = await supabase
       .from("stations")
-      .update({ team_id: reassignTeamId })
-      .eq("id", reassigningStation.id);
+      .update({ team_id: payload.toTeamId })
+      .eq("id", payload.stationId);
     setIsSaving(false);
 
     if (error) {
+      setOptimisticallyMovedOutIds((prev) => {
+        const next = new Set(prev);
+        next.delete(payload.stationId);
+        return next;
+      });
+      onReassignRollback?.(payload);
       toast({ title: "Failed to reassign", description: getSafeErrorMessage(error), variant: "destructive" });
-    } else {
-      toast({ title: "Station reassigned", description: `${reassigningStation.name} moved to new team.` });
-      setReassigningStation(null);
-      refreshStations();
-      onStationChange?.();
+      return;
     }
+
+    toast({ title: "Station reassigned", description: `${reassigningStation.name} moved to new team.` });
+    setReassigningStation(null);
+    setReassignTeamId("");
+    await refreshStations();
+    onReassignCommitted?.();
   };
+
+  useEffect(() => {
+    if (!open) {
+      setOptimisticallyMovedOutIds(new Set());
+    }
+  }, [open]);
 
   // Filter out current team for reassignment options
   const otherTeams = teams.filter((t) => t.id !== teamId);
+  const visibleStations = stations.filter((station) => !optimisticallyMovedOutIds.has(station.id));
 
   // Group stations by work center type
-  const groupedStations = stations.reduce(
+  const groupedStations = visibleStations.reduce(
     (acc, station) => {
       const type = station.work_center_type;
       if (!acc[type]) {
@@ -323,7 +370,7 @@ export function TeamStationManager({ teamId, teamName, open, onOpenChange, onCom
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-medium">Stations in {teamName}</h3>
                 <Badge variant="secondary">
-                  {stations.length} station{stations.length !== 1 ? "s" : ""}
+                  {visibleStations.length} station{visibleStations.length !== 1 ? "s" : ""}
                 </Badge>
               </div>
 
@@ -333,7 +380,7 @@ export function TeamStationManager({ teamId, teamName, open, onOpenChange, onCom
                     <Skeleton key={i} className="h-20 rounded-lg" />
                   ))}
                 </div>
-              ) : stations.length === 0 ? (
+              ) : visibleStations.length === 0 ? (
                 <Card>
                   <CardContent className="flex flex-col items-center justify-center py-8 text-center">
                     <Wrench className="w-10 h-10 text-muted-foreground mb-3" />
