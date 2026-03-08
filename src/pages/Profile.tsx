@@ -31,6 +31,7 @@ export default function Profile() {
   
   const [displayName, setDisplayName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
