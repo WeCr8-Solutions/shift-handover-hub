@@ -1,4 +1,5 @@
 import { useState, useEffect, Suspense, lazy } from "react";
+import { MyIssuesPanel } from "@/components/settings/MyIssuesPanel";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -14,6 +15,7 @@ import {
   Building2,
   CreditCard,
   Lock,
+  Bug,
   GraduationCap,
   Plug,
   Store,
@@ -108,6 +110,7 @@ export default function Settings() {
     { value: "onboarding", label: "Onboarding", icon: GraduationCap, show: true },
     { value: "erp", label: "ERP", icon: Plug, show: showERPTab },
     { value: "marketplace", label: "Marketplace", icon: Store, show: true },
+    { value: "my-issues", label: "My Issues", icon: Bug, show: true },
   ];
 
   const visibleTabs = tabs.filter((t) => t.show);
@@ -228,6 +231,10 @@ export default function Settings() {
                 </CardContent>
               </Card>
             </div>
+          </LazyTabContent>
+
+          <LazyTabContent value="my-issues" activeTab={activeTab}>
+            <MyIssuesPanel />
           </LazyTabContent>
         </Tabs>
       </main>

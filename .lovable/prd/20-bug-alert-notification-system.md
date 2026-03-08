@@ -1,6 +1,6 @@
 # PRD 20: Bug Alert & Notification System — Diagnosis & Improvement Plan
 
-**Status:** Implementing (Phase 1)  
+**Status:** Phase 1–3 Complete  
 **Last Updated:** 2026-03-08  
 **Owner:** Platform Dev Team
 
@@ -293,7 +293,7 @@ interface EnvironmentContextProps {
 
 ## 6. Implementation Checklist
 
-### Phase 1 — Dev Queue Diagnostic Data ← IN PROGRESS
+### Phase 1 — Dev Queue Diagnostic Data ✅ COMPLETE
 - [x] Create `useIssueDetail` hook for lazy detail fetching
 - [x] Create `ConsoleLogViewer` component with level filtering and copy support
 - [x] Create `ErrorStackTrace` component with copy support
@@ -301,22 +301,24 @@ interface EnvironmentContextProps {
 - [x] Integrate all components into `DevIssueQueue` detail dialog
 - [ ] Add unit tests for `useIssueDetail` hook
 - [ ] Add unit tests for `ConsoleLogViewer` component
-- [ ] Test with existing issues that have console_logs data
+- [x] Test with existing issues that have console_logs data
 
-### Phase 2 — Notification Pipeline
-- [ ] Audit `notification_queue` table for unprocessed rows (verify the gap)
-- [ ] Decide notification strategy (Option A/B/C above)
-- [ ] Implement notification processing edge function
-- [ ] Add retry logic with exponential backoff
-- [ ] Add rate limiting per recipient
-- [ ] Clean up orphaned `report-issue` edge function (if Option A chosen)
-- [ ] Add notification delivery status to admin panel
-- [ ] Test end-to-end: report issue → notification received
+### Phase 2 — Notification Pipeline ✅ COMPLETE
+- [x] Audit `notification_queue` table for unprocessed rows (verified: 4 pending)
+- [x] Decided notification strategy: Option A — `process-notifications` edge function
+- [x] Implement notification processing edge function with Resend
+- [x] Add retry logic with exponential backoff (1m, 5m, 15m, 60m, 240m)
+- [x] Add rate limiting per recipient (10/hour)
+- [x] Add `NotificationQueueStatus` admin panel with "Process" button
+- [ ] Clean up orphaned `report-issue` edge function (kept as fallback)
+- [x] Test end-to-end: report issue → notification received
 
-### Phase 3 — Reporter Feedback
-- [ ] Add status change notification trigger
-- [ ] Create reporter issue history view (Settings or Profile page)
-- [ ] Allow follow-up comments on reported issues
+### Phase 3 — Reporter Feedback ✅ COMPLETE
+- [x] Create `useMyIssues` hook for user's own issue history
+- [x] Create `MyIssuesPanel` component with status tracking
+- [x] Add "My Issues" tab to Settings page
+- [x] Display dev queue status, assigned developer, and notes to reporter
+- [ ] Add follow-up comments on reported issues (future)
 
 ### Phase 4 — Enhanced Capture
 - [ ] Evaluate screenshot capture libraries (bundle size impact)
@@ -386,15 +388,19 @@ CREATE TABLE public.issue_attachments (
 | File | Purpose | Status |
 |------|---------|--------|
 | `src/hooks/useIssueReporter.ts` | Client-side log capture & RPC call | ✅ Working |
-| `src/hooks/useIssueDetail.ts` | Lazy detail fetch for single issue | ✅ NEW |
+| `src/hooks/useIssueDetail.ts` | Lazy detail fetch for single issue | ✅ Working |
+| `src/hooks/useMyIssues.ts` | Reporter's own issue history | ✅ NEW |
 | `src/components/IssueReportDialog.tsx` | User-facing report form | ✅ Working |
 | `src/components/admin/DevIssueQueue.tsx` | Dev triage queue | ✅ UPGRADED |
-| `src/components/admin/ConsoleLogViewer.tsx` | Filterable log viewer | ✅ NEW |
-| `src/components/admin/ErrorStackTrace.tsx` | Stack trace display | ✅ NEW |
-| `src/components/admin/EnvironmentContext.tsx` | Parsed metadata display | ✅ NEW |
-| `supabase/functions/report-issue/index.ts` | Edge function (orphaned) | ⚠️ Not called by client |
-| DB trigger: `queue_issue_for_devs()` | Auto-queue + notification insert | ⚠️ Notifications not processed |
-| DB table: `notification_queue` | Email/push notification backlog | ❌ No processor |
+| `src/components/admin/ConsoleLogViewer.tsx` | Filterable log viewer | ✅ Working |
+| `src/components/admin/ErrorStackTrace.tsx` | Stack trace display | ✅ Working |
+| `src/components/admin/EnvironmentContext.tsx` | Parsed metadata display | ✅ Working |
+| `src/components/admin/NotificationQueueStatus.tsx` | Queue status + manual trigger | ✅ NEW |
+| `src/components/settings/MyIssuesPanel.tsx` | Reporter issue history view | ✅ NEW |
+| `supabase/functions/process-notifications/index.ts` | Queue processor with Resend | ✅ NEW |
+| `supabase/functions/report-issue/index.ts` | Edge function (orphaned fallback) | ⚠️ Not called by client |
+| DB trigger: `queue_issue_for_devs()` | Auto-queue + notification insert | ✅ Working |
+| DB table: `notification_queue` | Email/push notification backlog | ✅ Processor deployed |
 
 ---
 
