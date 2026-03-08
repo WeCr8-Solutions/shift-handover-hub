@@ -251,6 +251,17 @@ export function useTestRunner() {
           "TeamManagement": 5,
           "MachineStatusStore": 6,
           "Machine Types": 4,
+          // New component tests
+          "HandoffCard": 6,
+          "QueueKanbanBoard": 5,
+          "QueueListView": 5,
+          "NCRListView": 7,
+          "NCRApprovalPanel": 5,
+          "CreateNCRDialog": 7,
+          "QualityMetricsDashboard": 5,
+          "SmartAlertPanel": 6,
+          "SmartAlertCard": 8,
+          "OperatorStationKanban": 5,
         };
         
         const testCount = testCounts[suiteName] || 3;
