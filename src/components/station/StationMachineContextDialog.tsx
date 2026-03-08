@@ -396,7 +396,7 @@ export function StationMachineContextDialog({ stationId, stationName, open, onOp
       </Dialog>
 
       {/* Sub-dialogs */}
-      <StationManufacturerAttach
+      <MachineProfileMarketplace
         stationId={stationId}
         stationName={stationName}
         open={showLibrary}
