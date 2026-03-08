@@ -2,7 +2,6 @@ import { useState } from "react";
 import { UserWithRole, OrganizationWithUsers, useAllUsers } from "@/hooks/useAdminData";
 import { useAuth } from "@/contexts/AuthContext";
 import { useActAs } from "@/contexts/ActAsContext";
-import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
