@@ -201,7 +201,7 @@ export function ShiftSettings() {
               </Button>
             </DialogTrigger>
 
-            <DialogContent>
+            <DialogContent className="max-h-[85vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{editingShift ? "Edit Shift" : "Add New Shift"}</DialogTitle>
               </DialogHeader>

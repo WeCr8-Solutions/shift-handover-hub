@@ -252,7 +252,7 @@ export function SystemUpdatesManager() {
             <DialogTrigger asChild>
               <Button size="sm" className="gap-1"><Plus className="w-4 h-4" /> New Update</Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-2xl">
+            <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{editingEntry ? "Edit System Update" : "New System Update"}</DialogTitle>
               </DialogHeader>

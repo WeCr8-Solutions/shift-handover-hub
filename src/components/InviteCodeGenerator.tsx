@@ -285,7 +285,7 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
                 Create Invite
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-h-[85vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Create Invite Code</DialogTitle>
                 <DialogDescription>
