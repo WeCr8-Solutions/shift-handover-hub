@@ -283,7 +283,7 @@ This document provides a single-source inventory of every custom component, cate
 | Domain | Total | Tested | Coverage |
 |--------|-------|--------|----------|
 | Queue Management | 14 | 10 | 71% |
-| Dashboard | 9 | 6 | 67% |
+| Dashboard | 10 | 6 | 60% |
 | Handoff | 3 | 3 | 100% |
 | NCR & Quality | 5 | 4 | 80% |
 | Smart Alerts | 3 | 2 | 67% |
@@ -294,7 +294,7 @@ This document provides a single-source inventory of every custom component, cate
 | Settings | 10 | 1 | 10% |
 | Admin | 27 | 0 | 0% |
 | Core Shared | 25 | 4 | 16% |
-| **Total Core** | **110** | **31** | **28%** |
+| **Total Core** | **111** | **31** | **28%** |
 
 ---
 
