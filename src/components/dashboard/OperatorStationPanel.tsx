@@ -363,7 +363,7 @@ export function OperatorStationPanel({
     }
   };
 
-  // Load qty data when delivery dialog opens
+  // Load qty data and dimension requirements when delivery dialog opens
   useEffect(() => {
     if (!deliverOrder) {
       setCompletionData({ qtyCompleted: 0, qtyScrap: 0, qtyRework: 0, qtyOriginal: 0, loaded: false });
@@ -389,7 +389,12 @@ export function OperatorStationPanel({
       }
     };
     loadQty();
-  }, [deliverOrder]);
+
+    // Load dimension requirements for current routing step
+    if (routingInfo?.currentStepId) {
+      stepDimensions.loadAll(routingInfo.currentStepId, deliverOrder.id);
+    }
+  }, [deliverOrder, routingInfo?.currentStepId]);
 
   // Validate completion form
   useEffect(() => {
