@@ -347,7 +347,7 @@ function TeamCard({ team, isSelected, canManage, onSelect, onEdit, onDelete, onA
             <div>
               <CardTitle className="text-base">{team.name}</CardTitle>
               <div className="flex items-center gap-1.5 mt-0.5">
-                {isOwner && (
+                {canManage && (
                   <Badge variant="secondary" className="text-xs">
                     Owner
                   </Badge>
