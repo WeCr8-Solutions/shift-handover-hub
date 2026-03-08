@@ -214,13 +214,9 @@ export function useQueue(filters?: {
     fetchItems();
   }, [fetchItems]);
 
-  // Real-time subscription + polling fallback
+  // Real-time subscription (polling handled by parent via useBackgroundRefresh)
   useEffect(() => {
     if (!user) return;
-
-    let pollInterval = 5000;
-    let isActive = true;
-    let timeoutId: ReturnType<typeof setTimeout>;
 
     const orgId = organization?.id || 'global';
     const channelName = `queue-changes-${orgId}-${user.id}`;
@@ -235,27 +231,11 @@ export function useQueue(filters?: {
         },
         () => {
           fetchItems();
-          pollInterval = 5000;
         }
       )
-      .subscribe((status) => {
-        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          pollInterval = 3000;
-        }
-      });
-
-    // Fallback polling for missed realtime events
-    const poll = () => {
-      if (!isActive) return;
-      fetchItems();
-      pollInterval = Math.min(pollInterval * 1.5, 30000);
-      timeoutId = setTimeout(poll, pollInterval);
-    };
-    timeoutId = setTimeout(poll, pollInterval);
+      .subscribe();
 
     return () => {
-      isActive = false;
-      clearTimeout(timeoutId);
       supabase.removeChannel(channel);
     };
   }, [user, fetchItems]);

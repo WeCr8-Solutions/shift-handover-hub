@@ -7,6 +7,9 @@ import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { useOperatorSessions } from "@/hooks/useOperatorSessions";
 import { useNCR } from "@/hooks/useNCR";
 import { useStations } from "@/hooks/useStations";
+import { useBackgroundRefresh } from "@/hooks/useBackgroundRefresh";
+import { useOrgRefreshInterval } from "@/hooks/useOrgRefreshInterval";
+import { RefreshIndicator } from "@/components/dashboard/RefreshIndicator";
 import { Header } from "@/components/Header";
 import { QueueKanbanBoard } from "@/components/queue/QueueKanbanBoard";
 import { QueueListView } from "@/components/queue/QueueListView";
@@ -22,11 +25,11 @@ import { NCRApprovalPanel } from "@/components/ncr/NCRApprovalPanel";
 import { QualityMetricsDashboard } from "@/components/ncr/QualityMetricsDashboard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PlanningAssistantModal } from "@/components/queue/PlanningAssistantModal";
 import {
-  Loader2,
   LayoutGrid,
   List,
   Plus,
@@ -105,10 +108,21 @@ export default function Queue() {
     addComment,
     getComments,
     getHistory,
+    fetchItems,
   } = useQueue(filters);
 
   const { ncrs = [], approveNCR, rejectNCR } = useNCR();
   const pendingNCRs = ncrs.filter((n) => n.authorization_status === "pending");
+
+  // Org-configured background refresh for queue data
+  const refreshIntervalMs = useOrgRefreshInterval();
+  const { isRefreshing, lastRefreshedAt, refresh: handleManualRefresh } =
+    useBackgroundRefresh({
+      key: `queue-${organization?.id}-${viewScope}-${filters.station_id || "all"}`,
+      fetchers: [() => fetchItems?.() as unknown as Promise<unknown>],
+      intervalMs: refreshIntervalMs,
+      enabled: !!user,
+    });
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -119,7 +133,15 @@ export default function Queue() {
   if (authLoading || accessLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="w-full max-w-4xl space-y-4 px-6">
+          <Skeleton className="h-8 w-48" />
+          <div className="grid grid-cols-4 gap-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-20 rounded-lg" />
+            ))}
+          </div>
+          <Skeleton className="h-64 w-full rounded-lg" />
+        </div>
       </div>
     );
   }
@@ -228,6 +250,12 @@ export default function Queue() {
               </div>
             )}
 
+            <RefreshIndicator
+              isRefreshing={isRefreshing}
+              lastRefreshedAt={lastRefreshedAt}
+              onRefresh={handleManualRefresh}
+            />
+
             <Button onClick={() => setCreateDialogOpen(true)} data-tour="add-queue-item">
               <Plus className="mr-2 h-4 w-4" />
               Add Item
@@ -300,8 +328,10 @@ export default function Queue() {
             </div>
 
             {loading && items.length === 0 ? (
-              <div className="flex h-64 items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <div className="space-y-3 py-6">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} className="h-16 w-full rounded-lg" />
+                ))}
               </div>
             ) : (
               <>
