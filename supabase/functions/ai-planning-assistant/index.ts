@@ -450,11 +450,184 @@ serve(async (req) => {
       duration_so_far: Math.round((Date.now() - new Date(d.started_at).getTime()) / 60000) + " min",
     }));
 
+    // --- LOAD BALANCER: compute recommendations for unassigned/pending items ---
+    const operatorsByStation: Record<string, number> = {};
+    for (const s of activeSessions as any[]) {
+      operatorsByStation[s.station_id] = (operatorsByStation[s.station_id] || 0) + 1;
+    }
+    const downtimeStationSet = new Set((activeDowntime as any[]).map((d: any) => d.station_id).filter(Boolean));
+
+    // Build availability map
+    const stationAvailabilityMap: Record<string, { has_active_downtime: boolean; downtime_reason?: string | null; checked_in_operators: number }> = {};
+    for (const s of stations as any[]) {
+      const downEvt = (activeDowntime as any[]).find((d: any) => d.station_id === s.id);
+      stationAvailabilityMap[s.id] = {
+        has_active_downtime: downtimeStationSet.has(s.id),
+        downtime_reason: downEvt?.reason_code || downEvt?.description || null,
+        checked_in_operators: operatorsByStation[s.id] || 0,
+      };
+    }
+
+    // Build load map
+    const stationLoadMap: Record<string, { queued_items: number; est_total_minutes: number; in_progress_count: number }> = {};
+    for (const [sid, load] of Object.entries(stationLoad)) {
+      stationLoadMap[sid] = {
+        queued_items: load.items,
+        est_total_minutes: load.est_minutes,
+        in_progress_count: load.in_progress,
+      };
+    }
+
+    // Build machine profile list for balancer
+    const allProfiles: any[] = [];
+    for (const a of machineProfiles as any[]) {
+      const ml = a.organization_machine_purchases?.verified_machine_library;
+      if (ml) allProfiles.push({ station_id: a.station_id, source: "verified_library", ...ml });
+    }
+    const verifiedStationIdsSet = new Set(allProfiles.map((p) => p.station_id));
+    for (const mp of manualProfiles as any[]) {
+      if (!verifiedStationIdsSet.has(mp.station_id)) {
+        allProfiles.push({ station_id: mp.station_id, source: "manual_entry", ...mp });
+      }
+    }
+
+    // Run load balancer for each unassigned/pending work order that has part specs
+    interface LBScore { station_id: string; station_name: string; station_code: string; work_center_type: string; total_score: number; workload_score: number; capability_score: number; availability_score: number; blockers: string[]; warnings: string[]; advantages: string[]; }
+    interface LBResult { wo: string; part: string; recommendations: LBScore[]; summary: string; best_station: string | null; }
+    const loadBalancerResults: LBResult[] = [];
+
+    const unassignedWOs = (queueItems as any[]).filter(
+      (q: any) => q.item_type === "work_order" && !q.station_id && q.status !== "completed" && q.status !== "cancelled"
+    ).slice(0, 10); // Limit to avoid huge prompts
+
+    for (const wo of unassignedWOs) {
+      const partReqs = {
+        material_type: wo.material_type,
+        part_length_inches: wo.part_length_inches,
+        part_width_inches: wo.part_width_inches,
+        part_height_inches: wo.part_height_inches,
+        part_weight_lbs: wo.part_weight_lbs,
+        part_shape: wo.part_shape,
+        required_tolerance: wo.required_tolerance,
+      };
+      const hasSpecs = Object.values(partReqs).some((v) => v != null);
+
+      const results: LBScore[] = [];
+      for (const s of stations as any[]) {
+        if (!s.is_active) continue;
+        const profile = allProfiles.find((p: any) => p.station_id === s.id);
+        const load = stationLoadMap[s.id];
+        const avail = stationAvailabilityMap[s.id];
+
+        let workloadScore = 95;
+        const warnList: string[] = [];
+        const blockerList: string[] = [];
+        const advList: string[] = [];
+
+        // Workload scoring
+        if (load) {
+          const hours = load.est_total_minutes / 60;
+          workloadScore = Math.max(10, Math.round(100 - hours * 5));
+          if (load.queued_items > 5) warnList.push(`${load.queued_items} items queued`);
+          if (hours > 8) warnList.push(`${Math.round(hours)}h backlog`);
+        }
+
+        // Availability scoring
+        let availScore = 80;
+        if (avail?.has_active_downtime) {
+          blockerList.push(`Machine down: ${avail.downtime_reason || "unknown"}`);
+          availScore = 0;
+        }
+        if (avail && avail.checked_in_operators > 0) availScore += 15;
+        availScore = Math.min(100, Math.max(0, availScore));
+
+        // Capability scoring
+        let capScore = profile ? 80 : 50;
+        if (profile && hasSpecs) {
+          // Envelope checks
+          if (partReqs.part_length_inches != null && profile.max_part_envelope_length != null) {
+            if (partReqs.part_length_inches > profile.max_part_envelope_length) blockerList.push("Part exceeds length envelope");
+            else advList.push("Fits length envelope");
+          }
+          if (partReqs.part_width_inches != null && profile.max_part_envelope_width != null && partReqs.part_width_inches > profile.max_part_envelope_width) blockerList.push("Part exceeds width envelope");
+          if (partReqs.part_height_inches != null && profile.max_part_envelope_height != null && partReqs.part_height_inches > profile.max_part_envelope_height) blockerList.push("Part exceeds height envelope");
+          if (partReqs.part_weight_lbs != null && profile.max_part_weight != null) {
+            if (partReqs.part_weight_lbs > profile.max_part_weight) blockerList.push("Exceeds weight limit");
+            else advList.push("Weight OK");
+          }
+          // Material check
+          if (partReqs.material_type && profile.material_capability?.length > 0) {
+            const mat = partReqs.material_type.toLowerCase();
+            const canCut = profile.material_capability.some((m: string) => mat.includes(m.toLowerCase()) || m.toLowerCase().includes(mat));
+            if (!canCut) { warnList.push("Material may not be supported"); capScore -= 15; }
+            else { advList.push("Material supported"); capScore += 5; }
+          }
+          if (profile.manufacturer) advList.push(`${profile.manufacturer} ${profile.model || ""}`);
+        }
+        if (!profile) warnList.push("No machine profile");
+
+        if (blockerList.length > 0) capScore = 0;
+        capScore = Math.min(100, Math.max(0, capScore));
+
+        const totalScore = blockerList.length > 0 ? 0 : Math.round(workloadScore * 0.35 + capScore * 0.45 + availScore * 0.20);
+
+        results.push({
+          station_id: s.id,
+          station_name: s.name,
+          station_code: s.station_id,
+          work_center_type: s.work_center_type,
+          total_score: totalScore,
+          workload_score: workloadScore,
+          capability_score: capScore,
+          availability_score: availScore,
+          blockers: blockerList,
+          warnings: warnList,
+          advantages: advList,
+        });
+      }
+
+      results.sort((a, b) => b.total_score - a.total_score);
+      const best = results.find((r) => r.total_score > 0);
+      const eligible = results.filter((r) => r.total_score > 0);
+
+      loadBalancerResults.push({
+        wo: wo.work_order || wo.title,
+        part: wo.part_number || "N/A",
+        recommendations: results.slice(0, 5),
+        summary: eligible.length > 0
+          ? `Best: ${best!.station_name} (score ${best!.total_score}/100), ${eligible.length} eligible of ${results.length}`
+          : `No eligible stations (${results.length} analyzed)`,
+        best_station: best ? `${best.station_name} (${best.station_code})` : null,
+      });
+    }
+
+    // Also compute overall shop load balance
+    const shopLoadBalance = (stations as any[])
+      .filter((s: any) => s.is_active)
+      .map((s: any) => {
+        const load = stationLoadMap[s.id];
+        const avail = stationAvailabilityMap[s.id];
+        return {
+          station: s.name,
+          code: s.station_id,
+          type: s.work_center_type,
+          queued: load?.queued_items || 0,
+          est_hours: load ? Math.round((load.est_total_minutes / 60) * 10) / 10 : 0,
+          in_progress: load?.in_progress_count || 0,
+          operators: avail?.checked_in_operators || 0,
+          down: avail?.has_active_downtime || false,
+          utilization_pct: load ? Math.min(100, Math.round((load.est_total_minutes / 480) * 100)) : 0,
+        };
+      })
+      .sort((a, b) => b.est_hours - a.est_hours);
+
     const callerRoleLabel = isSupervisorOrAbove
       ? `Supervisor/Admin (org role: ${orgRole}, platform roles: ${platformRoles.join(", ") || "operator"})`
       : `Operator (org role: ${orgRole})`;
 
     const systemPrompt = `You are a Production Planning Assistant for a manufacturing organization. You help supervisors and managers make real-time decisions about scheduling, routing, machine downtime, and priority management.
+
+You have access to a **Load Balancer** that scores stations based on workload, machine capability fit (envelope, materials, axes), and operator availability. Use these scores to make informed routing and scheduling recommendations.
 
 CURRENT DATE/TIME: ${now}
 CALLER ROLE: ${callerRoleLabel}
@@ -476,6 +649,9 @@ ${
     ? JSON.stringify(stationLoadSummary, null, 2)
     : "No station-specific queue data available."
 }
+
+### Shop Floor Load Balance (utilization overview):
+${JSON.stringify(shopLoadBalance, null, 2)}
 
 ### Active Operators on Stations:
 ${
@@ -515,6 +691,26 @@ ${
 
 ### Active Downtime Events (${downtimeSummary.length} stations currently down):
 ${downtimeSummary.length > 0 ? JSON.stringify(downtimeSummary, null, 2) : "No active downtime events."}
+
+${loadBalancerResults.length > 0 ? `### 🔄 Load Balancer — Unassigned Work Order Recommendations (${loadBalancerResults.length}):
+${JSON.stringify(loadBalancerResults, null, 2)}
+
+Use these scores when recommending station assignments. Score breakdown:
+- **Workload (35%)**: Lower queue depth = higher score
+- **Capability (45%)**: Part specs vs machine envelope/materials/tolerances
+- **Availability (20%)**: Operator presence, downtime status
+- Scores of 0 indicate hard blockers (machine down, part exceeds envelope, etc.)
+` : "### Load Balancer: No unassigned work orders to analyze."}
+
+## LOAD BALANCING GUIDELINES
+
+When recommending station assignments or rerouting:
+1. **Always check the Load Balancer scores first** — prefer stations with higher total scores
+2. **Never route to a station with blockers** (score = 0) unless the user explicitly overrides
+3. **Warn about overloaded stations** (utilization > 100%) — suggest alternatives
+4. **Consider machine capabilities** — a part that barely fits an envelope is riskier than one with margin
+5. **Factor in operator availability** — stations with checked-in operators can start sooner
+6. **For rerouting requests**, compare the current station's score vs alternatives and explain the trade-off
 
 ## WORK ORDER REROUTING & APPROVAL RULES
 
