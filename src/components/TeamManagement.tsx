@@ -299,35 +299,20 @@ export function TeamManagement() {
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={!!deletingTeam} onOpenChange={(open) => !open && setDeletingTeam(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Team</DialogTitle>
-            <DialogDescription>
-              This action is permanent. All stations in this team will be unassigned. Type <span className="font-mono font-bold text-foreground">{deletingTeam?.name}</span> to confirm.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-2">
-            <Label htmlFor="delete-confirm">Team Name</Label>
-            <Input
-              id="delete-confirm"
-              placeholder={`Type "${deletingTeam?.name}" to confirm`}
-              value={deleteConfirmName}
-              onChange={(e) => setDeleteConfirmName(e.target.value)}
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeletingTeam(null)}>Cancel</Button>
-            <Button
-              variant="destructive"
-              onClick={handleConfirmDelete}
-              disabled={deleteConfirmName !== deletingTeam?.name}
-            >
-              Delete Team
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <SafeDeleteDialog
+        open={!!deletingTeam}
+        onOpenChange={(open) => !open && setDeletingTeam(null)}
+        confirmValue={deletingTeam?.name || ""}
+        title="Delete Team"
+        description={
+          <>
+            This action is permanent. All stations in this team will be unassigned. Type{" "}
+            <span className="font-mono font-bold text-foreground">{deletingTeam?.name}</span> to confirm.
+          </>
+        }
+        deleteLabel="Delete Team"
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   );
 }
