@@ -227,11 +227,18 @@ export function TeamStationManager({
     onReassignCommitted?.();
   };
 
+  useEffect(() => {
+    if (!open) {
+      setOptimisticallyMovedOutIds(new Set());
+    }
+  }, [open]);
+
   // Filter out current team for reassignment options
   const otherTeams = teams.filter((t) => t.id !== teamId);
+  const visibleStations = stations.filter((station) => !optimisticallyMovedOutIds.has(station.id));
 
   // Group stations by work center type
-  const groupedStations = stations.reduce(
+  const groupedStations = visibleStations.reduce(
     (acc, station) => {
       const type = station.work_center_type;
       if (!acc[type]) {
