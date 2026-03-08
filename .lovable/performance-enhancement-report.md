@@ -7,7 +7,7 @@
 
 ## Summary
 
-Three phases of performance improvements were applied to the dashboard and core data-fetching layer. The existing dashboard layout, component hierarchy, and user-facing behavior are **fully preserved** — all changes are under-the-hood optimizations.
+Four phases of performance improvements were applied to the dashboard and core data-fetching layer. The existing dashboard layout, component hierarchy, and user-facing behavior are **fully preserved** — all changes are under-the-hood optimizations.
 
 ---
 
