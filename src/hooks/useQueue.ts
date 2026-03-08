@@ -277,7 +277,12 @@ export function useQueue(filters?: {
       const { data: maxPosData } = await maxPosQuery;
       const maxPosition = maxPosData?.[0]?.position || 0;
 
-      const { error } = await supabase.from("queue_items").insert({
+      // If routing steps provided, use the first step's station as the WO station
+      const effectiveStationId = input.routing_steps?.length
+        ? input.routing_steps[0].station_id || null
+        : input.station_id || null;
+
+      const { data: insertedItem, error } = await supabase.from("queue_items").insert({
         organization_id: organization?.id || null,
         team_id: currentTeam?.id || null,
         item_type: input.item_type,
@@ -290,7 +295,7 @@ export function useQueue(filters?: {
         qty_original: input.quantity || null,
         priority: input.priority || "normal",
         position: maxPosition + 1,
-        station_id: input.station_id || null,
+        station_id: effectiveStationId,
         assigned_to: input.assigned_to || null,
         assigned_by: input.assigned_to ? user.id : null,
         due_date: input.due_date || null,
@@ -311,9 +316,37 @@ export function useQueue(filters?: {
         part_catalog_id: input.part_catalog_id || null,
         required_tolerance: input.required_tolerance || null,
         surface_finish: input.surface_finish || null,
-      });
+      }).select("id").single();
 
       if (error) return { error: error.message };
+
+      // Insert routing steps if provided
+      if (input.routing_steps?.length && insertedItem?.id && organization?.id) {
+        const routingRows = input.routing_steps.map((step) => ({
+          queue_item_id: insertedItem.id,
+          organization_id: organization.id,
+          step_number: step.step_number,
+          operation_name: step.operation_name,
+          operation_type: step.operation_type,
+          station_id: step.station_id || null,
+          setup_time_minutes: step.setup_time_minutes || null,
+          first_article_minutes: step.first_article_minutes || null,
+          cycle_time_minutes: step.cycle_time_minutes || null,
+          notes: step.notes || null,
+          outside_vendor: step.outside_vendor || null,
+          po_number: step.po_number || null,
+          expected_return_date: step.expected_return_date || null,
+          status: step.step_number === 1 ? "pending" : "pending",
+        }));
+
+        const { error: routingError } = await supabase
+          .from("work_order_routing")
+          .insert(routingRows);
+
+        if (routingError) {
+          console.error("Error inserting routing steps:", routingError);
+        }
+      }
 
       await fetchItems();
       return { error: null };
