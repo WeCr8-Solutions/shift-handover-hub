@@ -650,7 +650,7 @@ export function SupervisorDashboard({
 
       {/* Production Analytics Charts */}
       <ProductionAnalytics
-        stations={dbStations}
+        stations={filteredStationsForAnalytics}
         handoffs={dbRecords}
         isRefreshing={isRefreshing}
         lastRefreshedAt={lastRefreshedAt}
