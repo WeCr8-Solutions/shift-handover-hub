@@ -7,6 +7,7 @@ import { useStations, useHandoffRecords } from "@/hooks/useStations";
 import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { useBackgroundRefresh } from "@/hooks/useBackgroundRefresh";
 import { useOrgRefreshInterval } from "@/hooks/useOrgRefreshInterval";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { RefreshIndicator } from "./RefreshIndicator";
 import { SmartAlertPanel } from "@/components/alerts/SmartAlertPanel";
 import { useSmartAlerts } from "@/hooks/useSmartAlerts";
