@@ -8,6 +8,8 @@ import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { useBackgroundRefresh } from "@/hooks/useBackgroundRefresh";
 import { useOrgRefreshInterval } from "@/hooks/useOrgRefreshInterval";
 import { RefreshIndicator } from "./RefreshIndicator";
+import { SmartAlertPanel } from "@/components/alerts/SmartAlertPanel";
+import { useSmartAlerts } from "@/hooks/useSmartAlerts";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Factory,
