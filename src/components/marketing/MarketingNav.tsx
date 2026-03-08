@@ -31,6 +31,11 @@ export function MarketingNav({ showPricing = true }: MarketingNavProps) {
           <Button variant="ghost" size="sm" onClick={() => navigate("/help")} className="hidden sm:inline-flex">
             Help
           </Button>
+          {/* TODO: Uncomment when shop products are configured
+          <Button variant="ghost" size="sm" onClick={() => navigate("/shop")} className="hidden sm:inline-flex">
+            Shop
+          </Button>
+          */}
           <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="hidden sm:inline-flex">
             Home
           </Button>
