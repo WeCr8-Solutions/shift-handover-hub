@@ -210,6 +210,8 @@ export function useTestRunner() {
           "Example": 1,
           "PartSpecsSection": 10,
           "PartCatalogManager": 5,
+          "useShopFloorDisplays Hook": 7,
+          "ShopFloorDisplay Page": 6,
         };
         
         const testCount = testCounts[suiteName] || 3;
