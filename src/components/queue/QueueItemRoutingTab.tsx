@@ -73,6 +73,7 @@ export function QueueItemRoutingTab({
 
   const dimensions = useDimensions();
   const dimRequests = useDimensionRequests();
+  const setupSheets = useSetupSheets();
   const handleSaveRouting = async () => {
     if (!organization?.id) return;
     setSavingRouting(true);
