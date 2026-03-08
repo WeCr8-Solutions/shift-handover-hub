@@ -28,10 +28,9 @@ describe("SmartAlertPanel", () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it("returns null when loading with no alerts", () => {
-    const { container } = render(<SmartAlertPanel alerts={[]} loading={true} />);
-    // Component returns null when alerts.length === 0 regardless of loading
-    expect(container.firstChild).toBeNull();
+  it("renders loading state when loading with no alerts", () => {
+    render(<SmartAlertPanel alerts={[]} loading={true} />);
+    expect(screen.getByText("Loading alerts…")).toBeInTheDocument();
   });
 
   it("filters alerts by type", () => {

@@ -29,9 +29,9 @@ describe("CreateNCRDialog", () => {
     expect(screen.getByText(/Defect Type/i)).toBeInTheDocument();
   });
 
-  it("renders disposition dropdown", () => {
+  it("renders disposition label", () => {
     render(<CreateNCRDialog {...defaultProps} />);
-    expect(screen.getByText(/Disposition/i)).toBeInTheDocument();
+    expect(screen.getByText(/Disposition \*/)).toBeInTheDocument();
   });
 
   it("renders quantity input with max constraint", () => {

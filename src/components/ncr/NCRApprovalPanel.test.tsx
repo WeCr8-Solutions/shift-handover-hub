@@ -73,7 +73,8 @@ describe("NCRApprovalPanel", () => {
     render(
       <NCRApprovalPanel ncrs={[makeNCR()]} onApprove={vi.fn()} onReject={vi.fn()} />
     );
-    expect(screen.getByText(/Scrap/i)).toBeInTheDocument();
-    expect(screen.getByText(/3/)).toBeInTheDocument();
+    const scrapElements = screen.getAllByText(/Scrap/i);
+    expect(scrapElements.length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText("3")).toBeInTheDocument();
   });
 });
