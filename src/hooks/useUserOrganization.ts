@@ -56,30 +56,50 @@ export function useUserOrganization() {
     setLoading(true);
 
     try {
-      // Fetch organization membership
-      const { data: orgMembership } = await supabase
-        .from("organization_members")
-        .select(`
-          id,
-          organization_id,
-          role,
-          joined_at,
-          organizations:organization_id (
+      // Fetch all 3 queries in parallel instead of sequentially
+      const [orgMembershipResult, teamMembershipsResult, rolesResult] = await Promise.all([
+        supabase
+          .from("organization_members")
+          .select(`
             id,
-            name,
-            slug,
-            description,
-            logo_url,
-            subscription_tier,
-            subscription_status,
-            trial_ends_at
-          )
-        `)
-        .eq("user_id", user.id)
-        .maybeSingle();
+            organization_id,
+            role,
+            joined_at,
+            organizations:organization_id (
+              id,
+              name,
+              slug,
+              description,
+              logo_url,
+              subscription_tier,
+              subscription_status,
+              trial_ends_at
+            )
+          `)
+          .eq("user_id", user.id)
+          .maybeSingle(),
+        supabase
+          .from("team_members")
+          .select(`
+            id,
+            team_id,
+            role,
+            joined_at,
+            teams:team_id (
+              id,
+              name,
+              description
+            )
+          `)
+          .eq("user_id", user.id),
+        supabase
+          .from("user_roles")
+          .select("*")
+          .eq("user_id", user.id),
+      ]);
 
+      const orgMembership = orgMembershipResult.data;
       if (orgMembership?.organizations) {
-        // Handle both array and object cases
         const org = Array.isArray(orgMembership.organizations) 
           ? orgMembership.organizations[0] 
           : orgMembership.organizations;
@@ -87,22 +107,7 @@ export function useUserOrganization() {
         setOrganizationRole(orgMembership.role);
       }
 
-      // Fetch team memberships
-      const { data: teamMemberships } = await supabase
-        .from("team_members")
-        .select(`
-          id,
-          team_id,
-          role,
-          joined_at,
-          teams:team_id (
-            id,
-            name,
-            description
-          )
-        `)
-        .eq("user_id", user.id);
-
+      const teamMemberships = teamMembershipsResult.data;
       if (teamMemberships) {
         const formattedTeams: TeamMembership[] = teamMemberships.map((tm: any) => ({
           id: tm.id,
@@ -114,12 +119,7 @@ export function useUserOrganization() {
         setTeams(formattedTeams);
       }
 
-      // Fetch user roles (app-level roles like admin, operator, etc.)
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("*")
-        .eq("user_id", user.id);
-
+      const roles = rolesResult.data;
       if (roles) {
         setUserRoles(roles as UserRole[]);
       }
