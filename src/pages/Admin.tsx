@@ -168,6 +168,11 @@ export default function Admin() {
                 <span className="hidden sm:inline">Performance</span>
                 <span className="sm:hidden">Perf</span>
               </TabsTrigger>
+              <TabsTrigger value="machine-monitor" className="gap-2">
+                <Cpu className="w-4 h-4" />
+                <span className="hidden sm:inline">Machines</span>
+                <span className="sm:hidden">CNC</span>
+              </TabsTrigger>
             </div>
             
             
