@@ -82,7 +82,7 @@ OrgContext (1 query, 5min stale)
   ├── SupervisorDashboard
   │     ├── useStations(teamId, orgId)      → React Query, 15min poll, realtime
   │     ├── useHandoffRecords(teamId, orgId) → React Query, 15min poll, realtime
-  │     ├── useSmartAlerts()                 → useState + parallel queries
+  │     ├── useSmartAlerts()                 → React Query + RPC (1 call, 60s stale)
   │     └── useShiftStats(teamId, orgId)     → React Query, 60s stale
   ├── OperatorDashboard
   │     ├── useOperatorSessions()            → useBackgroundRefresh (10min)
