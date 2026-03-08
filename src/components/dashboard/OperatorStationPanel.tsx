@@ -125,6 +125,7 @@ export function OperatorStationPanel({
   const [isOverride, setIsOverride] = useState(false);
   const [overrideReason, setOverrideReason] = useState("");
   const stepDimensions = useDimensions();
+  const operatorDimRequests = useDimensionRequests();
 
   // Completion form state
   const [completionData, setCompletionData] = useState<{
