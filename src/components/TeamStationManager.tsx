@@ -96,6 +96,7 @@ export function TeamStationManager({
   // Reassign state
   const [reassigningStation, setReassigningStation] = useState<Station | null>(null);
   const [reassignTeamId, setReassignTeamId] = useState("");
+  const [optimisticallyMovedOutIds, setOptimisticallyMovedOutIds] = useState<Set<string>>(new Set());
 
   const handleAddStation = async () => {
     if (!stationId.trim() || !stationName.trim() || !workCenter.trim()) {
