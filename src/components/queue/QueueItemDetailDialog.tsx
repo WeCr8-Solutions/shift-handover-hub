@@ -10,7 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { QueueItem, QueueItemComment, QueueItemHistory, QueueStatus, QueuePriority, UpdateQueueItemInput } from "@/hooks/useQueue";
+import { QueueItem, QueueItemComment, QueueItemHistory, QueueStatus, QueuePriority, UpdateQueueItemInput, RoutingStepInput } from "@/hooks/useQueue";
 import { useStations } from "@/hooks/useStations";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useUserOrganization } from "@/hooks/useUserOrganization";
@@ -24,10 +24,11 @@ import { QuantitySummaryCard } from "@/components/ncr/QuantitySummaryCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CreateNCRDialog } from "@/components/ncr/CreateNCRDialog";
 import { NCRListView } from "@/components/ncr/NCRListView";
+import { RoutingSection } from "@/components/queue/RoutingSection";
 import { 
   Clock, User, Package, Send, History, MessageSquare, Trash2, Loader2,
   Play, Pause, CheckCircle2, Wrench, FileText, AlertTriangle, ArrowRight, GitBranch,
-  CircleDot, Circle, CheckCircle, Timer, Truck, ShieldAlert, ArrowRightLeft, Plug
+  CircleDot, Circle, CheckCircle, Timer, Truck, ShieldAlert, ArrowRightLeft, Plug, Save
 } from "lucide-react";
 
 interface RoutingStepRow {
