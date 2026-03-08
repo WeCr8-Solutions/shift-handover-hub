@@ -39,7 +39,7 @@ export interface QuickActionTarget {
 
 interface StationQuickActionsProps {
   target: QuickActionTarget;
-  children: React.ReactNode;
+  children: ReactNode;
   onViewDetail?: (target: QuickActionTarget) => void;
   onNavigateToQueue?: (target: QuickActionTarget) => void;
   onCreateHandoff?: (target: QuickActionTarget) => void;
