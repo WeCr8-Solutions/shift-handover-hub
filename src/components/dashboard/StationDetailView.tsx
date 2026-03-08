@@ -125,7 +125,7 @@ export function StationDetailView({ stationId, stationName, onBack }: StationDet
           Station Detail — {stationName}
         </Badge>
         {hasUnsavedChanges && (
-          <Badge variant="outline" className="text-amber-500 border-amber-500/50">
+          <Badge variant="outline" className="text-warning border-warning/50">
             Unsaved changes
           </Badge>
         )}
