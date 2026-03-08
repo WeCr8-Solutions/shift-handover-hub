@@ -70,7 +70,7 @@ export interface ERPStatusMapping {
 }
 
 export function useERPConnector() {
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const { toast } = useToast();
   const orgId = organization?.id;
 

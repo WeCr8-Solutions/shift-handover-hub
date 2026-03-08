@@ -103,7 +103,7 @@ export interface WorkOrderHistoryFilters {
 
 export function useWorkOrderHistory(filters?: WorkOrderHistoryFilters) {
   const { user } = useAuth();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const [workOrders, setWorkOrders] = useState<WorkOrderWithLinkedData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

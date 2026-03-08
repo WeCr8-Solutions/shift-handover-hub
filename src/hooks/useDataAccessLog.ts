@@ -22,7 +22,7 @@ export interface DataAccessLogEntry {
  */
 export function useDataAccessLog() {
   const { user, profile } = useAuth();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
 
   const logAccess = useCallback(
     async (entry: DataAccessLogEntry): Promise<void> => {

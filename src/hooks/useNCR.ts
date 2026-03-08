@@ -67,7 +67,7 @@ export function useNCR(filters?: {
   disposition?: string;
 }) {
   const { user, profile } = useAuth();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const { logActivity } = useActivityLog();
   const [ncrs, setNcrs] = useState<NCRReport[]>([]);
   const [loading, setLoading] = useState(false);

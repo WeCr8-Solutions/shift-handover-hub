@@ -20,7 +20,7 @@ export interface MFAStatus {
  */
 export function useMFAEnforcement(): MFAStatus {
   const { user } = useAuth();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
 
   const [orgRequiresMFA, setOrgRequiresMFA] = useState(false);
   const [userHasMFAEnrolled, setUserHasMFAEnrolled] = useState(false);

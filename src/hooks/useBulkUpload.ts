@@ -25,7 +25,7 @@ export interface UploadResult {
 
 export function useBulkUpload() {
   const { user } = useAuth();
-  const { organization, organizationRole } = useUserOrganization();
+  const { organization, organizationRole } = useOrgContext();
   const { toast } = useToast();
   const [progress, setProgress] = useState<UploadProgress>({
     stage: 'idle',

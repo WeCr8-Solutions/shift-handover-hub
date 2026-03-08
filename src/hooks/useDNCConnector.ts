@@ -31,7 +31,7 @@ export interface DNCSession {
 
 export function useDNCConnector(stationId?: string) {
   const { user } = useAuth();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const [status, setStatus] = useState<DNCConnectionStatus>("disconnected");
   const [session, setSession] = useState<DNCSession | null>(null);
   const [connecting, setConnecting] = useState(false);

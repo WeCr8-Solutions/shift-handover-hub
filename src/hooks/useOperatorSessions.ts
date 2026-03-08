@@ -26,7 +26,7 @@ export interface OperatorSession {
 
 export function useOperatorSessions() {
   const { user, profile } = useAuth();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const [activeSessions, setActiveSessions] = useState<OperatorSession[]>([]);
   const [loading, setLoading] = useState(true);
   const hasFetchedOnce = useRef(false);
