@@ -79,23 +79,35 @@ export function useGeneralSettings() {
         error: "No organization found. Please join or create an organization first.",
       };
 
-    // Use upsert with the unique constraint (organization_id, team_id, setting_key)
-    // to avoid race conditions between find-then-insert/update.
-    const { error } = await supabase
-      .from("app_settings")
-      .upsert(
-        {
-          organization_id: organization.id,
-          team_id: null,
-          setting_key: key,
-          setting_value: value as Json,
-          setting_type: type,
-          updated_by: user.id,
-        },
-        { onConflict: "organization_id,team_id,setting_key" }
-      );
+    // Find existing setting scoped to this org + key (team_id IS NULL for org-level)
+    const existingSetting = settings.find(
+      (s) =>
+        s.setting_key === key &&
+        s.organization_id === organization.id &&
+        s.team_id === null,
+    );
 
-    if (error) return { error: error.message };
+    if (existingSetting) {
+      const { error } = await supabase
+        .from("app_settings")
+        .update({
+          setting_value: value as Json,
+          updated_by: user.id,
+        })
+        .eq("id", existingSetting.id);
+
+      if (error) return { error: error.message };
+    } else {
+      const { error } = await supabase.from("app_settings").insert({
+        organization_id: organization.id,
+        setting_key: key,
+        setting_value: value as Json,
+        setting_type: type,
+        updated_by: user.id,
+      });
+
+      if (error) return { error: error.message };
+    }
 
     await fetchSettings();
     return { error: null };
