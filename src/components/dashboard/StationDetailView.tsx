@@ -10,6 +10,7 @@ import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Monitor } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { MachineStatusGrid } from "@/components/machine/MachineStatusGrid";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -135,6 +136,13 @@ export function StationDetailView({ stationId, stationName, onBack }: StationDet
         onCreateHandoff={handleOpenHandoff}
         onPerformanceUpdate={handleOpenPerformance}
         onViewWorkOrder={handleViewWorkOrder}
+      />
+
+      {/* Equipment / Machine Status Cards */}
+      <MachineStatusGrid
+        organizationId={organization?.id || null}
+        stationId={stationId}
+        compact
       />
 
       {showHandoff && (
