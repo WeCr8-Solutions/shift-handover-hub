@@ -174,7 +174,8 @@ export function useStations(teamId?: string | null, organizationId?: string | nu
     queryFn: () => fetchStationsData(user!.id, teamId, effectiveOrgId),
     enabled: !!user,
     staleTime: 30_000,
-    refetchInterval: 300_000, // 5min polling fallback
+    refetchInterval: 900_000, // 15min fallback — realtime handles freshness
+    refetchIntervalInBackground: false, // pause when tab hidden
   });
 
   // Debounced realtime invalidation
