@@ -226,18 +226,19 @@ export function TeamManagement() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {teams.map((team) => (
-            <TeamCard
-              key={team.id}
-              team={team}
-              isSelected={selectedTeam?.id === team.id}
-              isOwner={team.created_by === user?.id}
-              onSelect={() => setSelectedTeam(selectedTeam?.id === team.id ? null : team)}
-              onDelete={() => handleDeleteTeam(team.id, team.name)}
-              onAddStations={() => {
-                setNewlyCreatedTeam(team);
-                setShowStationManager(true);
-              }}
-            />
+              <TeamCard
+                key={team.id}
+                team={team}
+                isSelected={selectedTeam?.id === team.id}
+                isOwner={team.created_by === user?.id}
+                onSelect={() => setSelectedTeam(selectedTeam?.id === team.id ? null : team)}
+                onEdit={() => handleEditTeam(team)}
+                onDelete={() => handleRequestDelete(team)}
+                onAddStations={() => {
+                  setNewlyCreatedTeam(team);
+                  setShowStationManager(true);
+                }}
+              />
           ))}
         </div>
       )}
