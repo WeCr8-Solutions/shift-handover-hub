@@ -1,14 +1,21 @@
+/**
+ * src/components/machine/MachineStatusGrid.tsx
+ *
+ * Based on CONTEXT.docx §8 MachineStatusGrid spec.
+ * Per PRD 11 §1: Uses useMachineMonitoring as the primary data hook.
+ */
+
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Wifi, WifiOff, Radio, Cpu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MachineCard } from "./MachineCard";
-import { useStationEquipment } from "@/hooks/useStationEquipment";
+import { useMachineMonitoring } from "@/hooks/useMachineMonitoring";
 import type { RelayConnectionState } from "@/types/machine";
 
 interface MachineStatusGridProps {
   organizationId: string | null;
-  stationId?: string | null; // optional: filter to a single station
+  stationId?: string | null;
   compact?: boolean;
   onMachineClick?: (machineId: string) => void;
 }
@@ -22,24 +29,16 @@ const RELAY_CONFIG: Record<
   disconnected: { label: "Static Data",   icon: WifiOff, dotClass: "bg-muted-foreground" },
 };
 
-/**
- * MachineStatusGrid — responsive grid of MachineCards with relay status banner.
- * 
- * Based on CONTEXT.docx §8 MachineStatusGrid spec.
- * Phase 1: Shows equipment from DB. Phase 2: Live relay overlay.
- */
 export function MachineStatusGrid({
   organizationId,
   stationId,
   compact = false,
   onMachineClick,
 }: MachineStatusGridProps) {
-  const { machines, loading, relayState } = useStationEquipment(organizationId);
-
-  // Filter to station if provided
-  const filtered = stationId
-    ? machines.filter((m) => m.stationId === stationId)
-    : machines;
+  const { machines, loading, relayState } = useMachineMonitoring({
+    organizationId,
+    stationId,
+  });
 
   const relayConfig = RELAY_CONFIG[relayState];
   const RelayIcon = relayConfig.icon;
@@ -67,7 +66,7 @@ export function MachineStatusGrid({
         <div className="flex items-center gap-2">
           <Cpu className="w-4 h-4 text-muted-foreground" />
           <span className="text-sm font-medium">
-            Equipment{stationId ? " at Station" : ""} ({filtered.length})
+            Equipment{stationId ? " at Station" : ""} ({machines.length})
           </span>
         </div>
         <Badge variant="outline" className="gap-1.5 text-xs">
@@ -78,7 +77,7 @@ export function MachineStatusGrid({
       </div>
 
       {/* Grid */}
-      {filtered.length === 0 ? (
+      {machines.length === 0 ? (
         <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
           <Cpu className="w-8 h-8 mx-auto mb-2 opacity-40" />
           <p>No equipment registered{stationId ? " at this station" : ""}.</p>
@@ -95,7 +94,7 @@ export function MachineStatusGrid({
               : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
           )}
         >
-          {filtered.map((machine) => (
+          {machines.map((machine) => (
             <MachineCard
               key={machine.machineId}
               machine={machine}
