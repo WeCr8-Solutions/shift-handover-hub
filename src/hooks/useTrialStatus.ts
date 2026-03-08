@@ -7,11 +7,11 @@ import { differenceInDays, isPast } from "date-fns";
 export function useTrialStatus() {
   const { organization, organizationRole, loading: orgLoading } = useOrgContext();
   const { subscribed, isLoading: subLoading } = useSubscription();
-  const { isDeveloper, loading: accessLoading } = useAdminAccess();
+  const { isDeveloper, isAdmin, loading: accessLoading } = useAdminAccess();
 
   const trialStatus = useMemo(() => {
     // Platform admins/developers ALWAYS bypass trial — even without an org
-    const canBypassTrial = isDeveloper;
+    const canBypassTrial = isDeveloper || isAdmin;
 
     if (!organization) {
       return {
