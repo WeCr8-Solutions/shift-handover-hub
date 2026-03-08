@@ -176,7 +176,7 @@ interface NewHandoffFormProps {
 export function NewHandoffForm({ onClose, onSubmit, initialStationId, prefillData }: NewHandoffFormProps) {
   const { user, profile } = useAuth();
   const { currentTeam } = useCurrentTeam();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const { stations } = useStations(currentTeam?.id, organization?.id);
   
   const formRef = useRef<HTMLDivElement>(null);

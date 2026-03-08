@@ -164,7 +164,7 @@ export function WorkOrderRoutingEditor({
   onClose 
 }: WorkOrderRoutingEditorProps) {
   const { user } = useAuth();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const { toast } = useToast();
   const [steps, setSteps] = useState<RoutingStep[]>([]);
   const [stations, setStations] = useState<Station[]>([]);

@@ -44,7 +44,7 @@ const DEFAULT_ENTITLEMENTS: Entitlements = {
 };
 
 export function useEntitlements() {
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const [entitlements, setEntitlements] = useState<Entitlements>(DEFAULT_ENTITLEMENTS);
   const [loading, setLoading] = useState(true);
 

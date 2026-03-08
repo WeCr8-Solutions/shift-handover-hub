@@ -53,7 +53,7 @@ const CHECKLIST_ITEMS = [
 export function ShopFloorDisplayManagement() {
   const { displays, loading, createDisplay, deleteDisplay, regenerateToken, toggleActive } = useShopFloorDisplays();
   const { teams } = useTeams();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const [createOpen, setCreateOpen] = useState(false);
   const [showChecklist, setShowChecklist] = useState(false);
 

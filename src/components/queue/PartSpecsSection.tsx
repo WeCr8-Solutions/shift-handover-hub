@@ -99,7 +99,7 @@ export function PartSpecsSection({ data, onChange, defaultOpen = false }: PartSp
   const [catalogLoading, setCatalogLoading] = useState(false);
   const [catalogSearch, setCatalogSearch] = useState("");
   const [showCatalog, setShowCatalog] = useState(false);
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
 
   const hasAnySpec = data.material_type || data.part_length_inches || data.part_width_inches || 
     data.part_height_inches || data.part_weight_lbs || data.part_shape;
