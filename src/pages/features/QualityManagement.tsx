@@ -5,7 +5,7 @@ import { ArrowRight, CheckCircle2, Zap, Shield, AlertTriangle, FileText, Trendin
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MockQualityCard } from "@/components/marketing/MockAppPreviews";
-import { AdPlacement } from "@/components/marketing/AdPlacement";
+
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 

@@ -140,7 +140,7 @@ export default function ManufacturingOversight() {
           </div>
         </section>
 
-        <AdPlacement format="horizontal" className="py-6" />
+        
       </main>
 
       <MarketingFooter />

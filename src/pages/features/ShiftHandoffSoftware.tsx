@@ -5,7 +5,7 @@ import { ArrowRight, Clock, FileText, Users, Shield, CheckCircle2, Zap } from "l
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MockHandoffForm } from "@/components/marketing/MockAppPreviews";
-import { AdPlacement } from "@/components/marketing/AdPlacement";
+
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 

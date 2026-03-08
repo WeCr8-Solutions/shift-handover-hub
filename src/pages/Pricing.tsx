@@ -226,10 +226,6 @@ export default function Pricing() {
             </div>
           </div>
 
-          {/* Ad Placement */}
-          <div className="mt-16">
-            <AdPlacement format="horizontal" />
-          </div>
         </div>
       </section>
 

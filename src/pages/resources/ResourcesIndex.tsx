@@ -89,7 +89,7 @@ export default function ResourcesIndex() {
             })}
           </div>
 
-          <AdPlacement format="rectangle" className="mt-12" />
+          
         </main>
 
         <MarketingFooter />

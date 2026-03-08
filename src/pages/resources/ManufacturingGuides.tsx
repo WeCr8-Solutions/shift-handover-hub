@@ -129,7 +129,7 @@ export default function ManufacturingGuides() {
             })}
           </div>
 
-          <AdPlacement format="rectangle" className="mt-12" />
+          
         </main>
 
         <MarketingFooter />

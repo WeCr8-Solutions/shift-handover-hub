@@ -5,7 +5,7 @@ import { ArrowRight, CheckCircle2, Zap, Activity, BarChart3, AlertTriangle, Tren
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MockProductionMetrics } from "@/components/marketing/MockProductionMetrics";
-import { AdPlacement } from "@/components/marketing/AdPlacement";
+
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 

@@ -109,7 +109,7 @@ export default function IndustryGlossary() {
             </p>
           )}
 
-          <AdPlacement format="rectangle" className="mt-8" />
+          
         </main>
 
         <MarketingFooter />
