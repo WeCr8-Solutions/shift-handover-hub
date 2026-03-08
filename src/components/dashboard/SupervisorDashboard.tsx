@@ -60,22 +60,20 @@ export function SupervisorDashboard({
     refreshRecords,
   } = useHandoffRecords(currentTeam?.id, organization?.id);
 
-  const isLoading = stationsLoading || recordsLoading;
+  // Centralized background refresh — no flash spinners on subsequent fetches
+  const { initialLoading, isRefreshing, lastRefreshedAt, refresh: handleManualRefresh } =
+    useBackgroundRefresh({
+      key: `supervisor-${organization?.id}-${currentTeam?.id}`,
+      fetchers: [
+        () => refreshStations?.() as unknown as Promise<unknown>,
+        () => refreshRecords?.() as unknown as Promise<unknown>,
+      ],
+      intervalMs: 300_000,
+      enabled: !!(organization?.id),
+    });
 
-  // Auto-refresh data periodically
-  useEffect(() => {
-    const interval = setInterval(() => {
-      refreshStations?.();
-      refreshRecords?.();
-    }, REFRESH_INTERVAL);
-
-    return () => clearInterval(interval);
-  }, [refreshStations, refreshRecords]);
-
-  const handleManualRefresh = useCallback(() => {
-    refreshStations?.();
-    refreshRecords?.();
-  }, [refreshStations, refreshRecords]);
+  // Show skeleton only on first mount — never flash again
+  const isLoading = initialLoading && (stationsLoading || recordsLoading);
 
   const orgName = organization?.name || "Organization";
   const scopeLabel = currentTeam?.name || `${orgName} · All Teams`;
