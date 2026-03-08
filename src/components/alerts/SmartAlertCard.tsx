@@ -117,6 +117,8 @@ export function SmartAlertCard({ alert, onClick, compact = false, onQuickAction 
     name: alert.title,
     type: alert.targetType === "station" ? "station" : "work_order",
     workOrder: alert.detail,
+    // For work_order alerts, targetId is the queue item — use it as activeItemId for stations too
+    activeItemId: alert.targetType === "work_order" ? alert.targetId : undefined,
   };
 
   const cardContent = compact ? (
