@@ -149,30 +149,85 @@ export function QueueItemDetailsTab({
       )}
 
       {/* Work Order Details */}
-      {item.work_order && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-3 bg-muted/30 rounded-lg">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-3 bg-muted/30 rounded-lg">
+        {item.work_order && (
           <div>
             <label className="text-xs font-medium text-muted-foreground block mb-1">Work Order</label>
             <p className="font-medium">{item.work_order}</p>
           </div>
-          {item.part_number && (
+        )}
+        {item.part_number && (
+          <div>
+            <label className="text-xs font-medium text-muted-foreground block mb-1">Part Number</label>
+            <p className="font-medium">{item.part_number}</p>
+          </div>
+        )}
+        {item.operation_number && (
+          <div>
+            <label className="text-xs font-medium text-muted-foreground block mb-1">Operation</label>
+            <p className="font-medium">{item.operation_number}</p>
+          </div>
+        )}
+        <div>
+          <label className="text-xs font-medium text-muted-foreground block mb-1">Item Type</label>
+          <p className="font-medium capitalize">{item.item_type.replace("_", " ")}</p>
+        </div>
+      </div>
+
+      {/* Quantity Breakdown */}
+      {(item.quantity || item.qty_original) && (
+        <div className="p-3 bg-muted/30 rounded-lg space-y-2">
+          <label className="text-sm font-medium block">Quantity Breakdown</label>
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-sm">
             <div>
-              <label className="text-xs font-medium text-muted-foreground block mb-1">Part Number</label>
-              <p className="font-medium">{item.part_number}</p>
+              <span className="text-xs text-muted-foreground block">Original</span>
+              <span className="font-medium">{item.qty_original ?? item.quantity ?? 0}</span>
+            </div>
+            <div>
+              <span className="text-xs text-muted-foreground block">Completed</span>
+              <span className="font-medium text-green-600 dark:text-green-400">{item.qty_completed ?? 0}</span>
+            </div>
+            <div>
+              <span className="text-xs text-muted-foreground block">Scrap</span>
+              <span className="font-medium text-red-600 dark:text-red-400">{item.qty_scrap ?? 0}</span>
+            </div>
+            <div>
+              <span className="text-xs text-muted-foreground block">Rework</span>
+              <span className="font-medium text-amber-600 dark:text-amber-400">{item.qty_rework ?? 0}</span>
+            </div>
+            <div>
+              <span className="text-xs text-muted-foreground block">Open</span>
+              <span className="font-medium text-blue-600 dark:text-blue-400">{item.qty_open ?? 0}</span>
+            </div>
+          </div>
+          {item.quantity_locked && (
+            <div className="text-xs text-amber-600 dark:text-amber-400 font-medium pt-1 border-t border-border">
+              🔒 Quantity locked — all parts accounted for
             </div>
           )}
-          {item.operation_number && (
-            <div>
-              <label className="text-xs font-medium text-muted-foreground block mb-1">Operation</label>
-              <p className="font-medium">{item.operation_number}</p>
-            </div>
-          )}
-          {item.quantity && (
-            <div>
-              <label className="text-xs font-medium text-muted-foreground block mb-1">Quantity</label>
-              <p className="font-medium">{item.quantity}</p>
-            </div>
-          )}
+        </div>
+      )}
+
+      {/* Rework / Parent WO context */}
+      {item.is_rework && item.parent_work_order_id && (
+        <div className="flex items-center gap-2 p-3 bg-amber-500/10 rounded-lg border border-amber-500/30 text-sm">
+          <Wrench className="w-4 h-4 text-amber-500" />
+          <span className="font-medium text-amber-700 dark:text-amber-300">Rework Order</span>
+          <span className="text-muted-foreground">— linked to parent work order</span>
+        </div>
+      )}
+
+      {/* Tags */}
+      {item.tags && item.tags.length > 0 && (
+        <div>
+          <label className="text-sm font-medium mb-2 block">Tags</label>
+          <div className="flex flex-wrap gap-1">
+            {item.tags.map((tag) => (
+              <span key={tag} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
+                {tag}
+              </span>
+            ))}
+          </div>
         </div>
       )}
 
