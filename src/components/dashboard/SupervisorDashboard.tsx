@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useState } from "react";
+import { useMemo, useCallback, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { useBackgroundRefresh } from "@/hooks/useBackgroundRefresh";
 import { useOrgRefreshInterval } from "@/hooks/useOrgRefreshInterval";
 import { RefreshIndicator } from "./RefreshIndicator";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Factory,
   AlertTriangle,
@@ -20,6 +21,7 @@ import {
   Eye,
   Monitor,
   Users,
+  Pause,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -82,6 +84,49 @@ export function SupervisorDashboard({
 
   // Status filter: click a KPI card to filter station list + analytics
   const [statusFilter, setStatusFilter] = useState<StatusLabel | "all">("all");
+
+  // Work Order alerts for dashboard sidebar
+  const [woAlerts, setWoAlerts] = useState<{
+    overdue: { id: string; title: string; work_order: string | null; due_date: string; priority: string }[];
+    onHold: { id: string; title: string; work_order: string | null; priority: string }[];
+    unassigned: number;
+  }>({ overdue: [], onHold: [], unassigned: 0 });
+
+  useEffect(() => {
+    if (!organization?.id) return;
+    const fetchWOAlerts = async () => {
+      const [overdueRes, holdRes, unassignedRes] = await Promise.all([
+        supabase
+          .from("queue_items")
+          .select("id, title, work_order, due_date, priority")
+          .eq("organization_id", organization.id)
+          .not("status", "in", '("completed","cancelled")')
+          .not("due_date", "is", null)
+          .lt("due_date", new Date().toISOString())
+          .order("due_date", { ascending: true })
+          .limit(5),
+        supabase
+          .from("queue_items")
+          .select("id, title, work_order, priority")
+          .eq("organization_id", organization.id)
+          .eq("status", "on_hold")
+          .order("created_at", { ascending: false })
+          .limit(5),
+        supabase
+          .from("queue_items")
+          .select("id", { count: "exact", head: true })
+          .eq("organization_id", organization.id)
+          .is("station_id", null)
+          .not("status", "in", '("completed","cancelled")'),
+      ]);
+      setWoAlerts({
+        overdue: (overdueRes.data || []) as any,
+        onHold: (holdRes.data || []) as any,
+        unassigned: unassignedRes.count || 0,
+      });
+    };
+    fetchWOAlerts();
+  }, [organization?.id, lastRefreshedAt]);
 
   const orgName = organization?.name || "Organization";
   const scopeLabel = currentTeam?.name || `${orgName} · All Teams`;
@@ -596,6 +641,71 @@ export function SupervisorDashboard({
             </div>
           </div>
 
+          {/* Work Order Alerts */}
+          {(woAlerts.overdue.length > 0 || woAlerts.onHold.length > 0 || woAlerts.unassigned > 0) && (
+            <div className="bg-card border border-border rounded-lg overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-secondary/30">
+                <div className="flex items-center gap-2">
+                  <Package className="w-4 h-4 text-primary" />
+                  <span className="font-medium text-sm">Work Order Alerts</span>
+                </div>
+              </div>
+              <div className="p-3 space-y-2">
+                {woAlerts.overdue.length > 0 && (
+                  <div className="space-y-1.5">
+                    {woAlerts.overdue.map((wo) => (
+                      <button
+                        key={wo.id}
+                        className="w-full p-2 rounded-md bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 transition-colors text-left"
+                        onClick={() => navigate(`/queue?item=${wo.id}`)}
+                      >
+                        <div className="flex items-center gap-2">
+                          <AlertTriangle className="w-3 h-3 text-red-500 flex-shrink-0" />
+                          <span className="text-xs font-medium truncate">{wo.work_order || wo.title}</span>
+                          <Badge variant="outline" className="text-[9px] px-1 py-0 ml-auto border-red-500/50 text-red-500">
+                            OVERDUE
+                          </Badge>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {woAlerts.onHold.length > 0 && (
+                  <div className="space-y-1.5">
+                    {woAlerts.onHold.map((wo) => (
+                      <button
+                        key={wo.id}
+                        className="w-full p-2 rounded-md bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 transition-colors text-left"
+                        onClick={() => navigate(`/queue?item=${wo.id}`)}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Pause className="w-3 h-3 text-amber-500 flex-shrink-0" />
+                          <span className="text-xs font-medium truncate">{wo.work_order || wo.title}</span>
+                          <Badge variant="outline" className="text-[9px] px-1 py-0 ml-auto border-amber-500/50 text-amber-500">
+                            ON HOLD
+                          </Badge>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {woAlerts.unassigned > 0 && (
+                  <button
+                    className="w-full p-2 rounded-md bg-muted/50 border border-border hover:bg-muted transition-colors text-left"
+                    onClick={() => navigate("/queue")}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Package className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+                      <span className="text-xs text-muted-foreground">
+                        {woAlerts.unassigned} unassigned work order{woAlerts.unassigned !== 1 ? "s" : ""}
+                      </span>
+                      <ArrowRight className="w-3 h-3 text-muted-foreground ml-auto" />
+                    </div>
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
           {/* Recent Handoffs */}
           <div className="bg-card border border-border rounded-lg overflow-hidden">
             <div className="px-4 py-3 border-b border-border bg-secondary/30">
