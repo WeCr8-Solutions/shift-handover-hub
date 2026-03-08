@@ -9,6 +9,7 @@ const SfmCalculator = lazy(() => import("./SfmCalculator").then(m => ({ default:
 const ToleranceCalculator = lazy(() => import("./ToleranceCalculator").then(m => ({ default: m.ToleranceCalculator })));
 const UnitConverter = lazy(() => import("./UnitConverter").then(m => ({ default: m.UnitConverter })));
 const TrigCalculator = lazy(() => import("./TrigCalculator").then(m => ({ default: m.TrigCalculator })));
+const MathCalculator = lazy(() => import("./MathCalculator").then(m => ({ default: m.MathCalculator })));
 
 // ─── Tool Registry ────────────────────────────────────────
 export interface ToolDefinition {
