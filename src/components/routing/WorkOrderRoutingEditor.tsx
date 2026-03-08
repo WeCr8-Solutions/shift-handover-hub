@@ -176,6 +176,7 @@ export function WorkOrderRoutingEditor({
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('scratch');
   const [loadingTemplate, setLoadingTemplate] = useState(false);
   const [hasExistingRouting, setHasExistingRouting] = useState(false);
+  const flowScrollRef = useRef<HTMLDivElement>(null);
 
   // Save as Template dialog state
   const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
