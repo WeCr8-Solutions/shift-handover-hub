@@ -7,6 +7,9 @@ import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { useOperatorSessions } from "@/hooks/useOperatorSessions";
 import { useNCR } from "@/hooks/useNCR";
 import { useStations } from "@/hooks/useStations";
+import { useBackgroundRefresh } from "@/hooks/useBackgroundRefresh";
+import { useOrgRefreshInterval } from "@/hooks/useOrgRefreshInterval";
+import { RefreshIndicator } from "@/components/dashboard/RefreshIndicator";
 import { Header } from "@/components/Header";
 import { QueueKanbanBoard } from "@/components/queue/QueueKanbanBoard";
 import { QueueListView } from "@/components/queue/QueueListView";
@@ -22,11 +25,11 @@ import { NCRApprovalPanel } from "@/components/ncr/NCRApprovalPanel";
 import { QualityMetricsDashboard } from "@/components/ncr/QualityMetricsDashboard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PlanningAssistantModal } from "@/components/queue/PlanningAssistantModal";
 import {
-  Loader2,
   LayoutGrid,
   List,
   Plus,
