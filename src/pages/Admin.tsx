@@ -288,6 +288,10 @@ export default function Admin() {
             <MachineMonitorPanel isAdmin={isAdmin} />
           </TabsContent>
 
+          <TabsContent value="smart-alerts">
+            <SmartAlertAdmin />
+          </TabsContent>
+
           {hasPlatformAccess && (
             <>
               <TabsContent value="activity">
