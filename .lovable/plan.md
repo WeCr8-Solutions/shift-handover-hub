@@ -1,104 +1,106 @@
 
 
-## Electron Desktop Wrapper: Implementation Checklist & Plan
+# Help Center & Documentation Hub — Plan
 
-### Pre-Implementation Category Checklist
+## Overview
 
-Before writing code, here is a structured audit of what exists and what needs to be built, organized by category.
+Build a GitHub-docs-style help center at `/help` with a sidebar navigation, searchable content, and role-based user guides. This will serve both as in-app documentation for authenticated users and as a public-facing SEO resource.
+
+## Structure
 
 ```text
-Category                        Status    Notes
-─────────────────────────────────────────────────────────────────
-1. Project Structure            ✅ Done   /desktop folder created
-2. Electron Main Process        ✅ Done   BrowserWindow + security defaults
-3. Preload Bridge               ✅ Done   Minimal safe API (version, links, paths)
-4. Config System                ✅ Done   %APPDATA%/JobLineAI/config.json
-5. Packaging (electron-builder) ✅ Done   NSIS installer, icons, shortcuts
-6. Auth Compatibility           ✅ Ready  Email/password via Supabase works in BrowserWindow
-                                ⚠️ Note   OAuth (if added) needs system browser fallback
-7. CORS / Origins               ✅ Ready  Loading hosted URL = same origin, no CORS changes
-8. Session Persistence          ✅ Ready  Supabase uses localStorage, works in Electron
-9. Backend / Edge Functions      ✅ Ready  All remain hosted, no changes needed
-10. Documentation               ✅ Done   Install guide, build guide, auth notes, release notes
-11. Existing Web App             ✅ Ready  No changes to React app required for v1
+/help                          → Help landing (search + category cards)
+/help/:category/:slug          → Individual article page
+
+Categories:
+├── getting-started/           → Onboarding, first login, setup wizard
+├── dashboard/                 → Dashboard views, widgets, refresh
+├── work-orders/               → Creating, routing, queue, kanban
+├── shift-handoffs/            → Creating handoffs, reviewing, templates
+├── teams-orgs/                → Org setup, teams, invites, roles
+├── stations/                  → Work centers, check-in, machine profiles
+├── quality/                   → NCRs, inspections, quantity tracking
+├── settings/                  → Profile, notifications, billing, ERP
+├── admin/                     → User management, oversight, analytics
+└── faq/                       → Common questions, troubleshooting
 ```
 
-### Key Design Decisions (Already Made Per Notion Doc)
+## Page Layouts
 
-1. **Mode**: Hosted Web Wrap (`appUrl: https://app.jobline.ai`) -- no local bundling for v1
-2. **Security**: `contextIsolation: true`, `nodeIntegration: false`, `sandbox: true`
-3. **OAuth**: v1 uses system browser; email/password works natively
-4. **Backend**: Stays hosted -- no backend packaging
-5. **Updates**: Manual installer distribution for v1 (no auto-updater yet)
+**Help Index (`/help`)**
+- Search bar (filters articles by title + tags)
+- Grid of category cards with icon, title, article count
+- "Popular Articles" section
+- MarketingNav + MarketingFooter wrapper
 
-### Implementation Steps
+**Article Page (`/help/:category/:slug`)**
+- Left sidebar: collapsible category tree (like GitHub docs)
+- Main content: rendered from a structured data array (title, body sections, related articles)
+- Right sidebar (desktop): table of contents auto-generated from headings
+- Breadcrumb navigation
+- "Was this helpful?" feedback at bottom
+- Previous/Next article navigation
 
-**Step 1: Create `/desktop` folder structure**
-- `/desktop/package.json` -- Electron + electron-builder deps
-- `/desktop/electron-builder.yml` -- NSIS config, appId, icons, shortcuts
-- `/desktop/tsconfig.json` -- TypeScript config for Electron main/preload
-- `/desktop/README.md` -- Quick start for developers
+## Content Scope (Initial ~40 articles)
 
-**Step 2: Electron main process** (`/desktop/src/main/index.ts`)
-- Create `BrowserWindow` with security defaults
-- Load `appUrl` from config with fallback to env
-- Block unwanted popups; allowlist Supabase auth + docs domains
-- Handle deep links and window lifecycle (single instance lock)
-- Write logs to configured `logsPath`
+Each article is a JS object with `category`, `slug`, `title`, `description`, `sections[]`, and `tags[]`. Sections contain heading + body text pairs. No markdown rendering needed — just structured JSX.
 
-**Step 3: Preload bridge** (`/desktop/src/preload/index.ts`)
-- Expose via `contextBridge`:
-  - `window.jobline.getVersion()` -- app version
-  - `window.jobline.openExternal(url)` -- open in system browser
-  - `window.jobline.openPath(type)` -- open logs/config folder
-- No `fs` or `child_process` exposure to renderer
+**Getting Started (5 articles):** Creating an account, joining an organization, navigating the dashboard, understanding roles, mobile access tips.
 
-**Step 4: Config system** (`/desktop/src/main/config.ts`)
-- Read/write `config.json` from `%APPDATA%/JobLineAI/`
-- Schema: `mode`, `appUrl`, `apiBaseUrl`, `supabaseUrl`, `supabaseAnonKey`, `updateChannel`, `logsPath`
-- Environment variable overrides take priority over config file
+**Work Orders (6 articles):** Creating work orders, queue views (list/kanban/calendar), work order statuses, routing steps, part specs, bulk upload.
 
-**Step 5: Packaging configuration** (`/desktop/electron-builder.yml`)
-- Target: NSIS installer (`JobLineAI-Setup-x.y.z.exe`)
-- Optional: portable `.exe`
-- App ID: `com.joblineai.desktop`
-- Shortcuts: Desktop + Start Menu
-- Uninstall entry in Windows Programs
-- Log/config paths in AppData (not install dir)
+**Shift Handoffs (4 articles):** Creating a handoff, reviewing incoming handoffs, handoff templates, shift stats.
 
-**Step 6: Icons & assets** (`/desktop/assets/icons/`)
-- Convert existing `jobline-logo.png` to `.ico` format (256x256 multi-res)
-- Include `icon.png` for Linux/macOS future use
+**Teams & Organizations (5 articles):** Creating an org, inviting members (QR codes), managing teams, role permissions explained, switching teams.
 
-**Step 7: Documentation**
-- `/desktop/docs/Desktop_Windows_Install.md` -- End-user install guide
-- `/desktop/docs/Desktop_Build_Guide.md` -- Developer build instructions
-- `/desktop/docs/Supabase_Auth_in_Electron.md` -- Auth flow notes, OAuth troubleshooting
-- `/desktop/docs/RELEASE_NOTES_1.0.0.md` -- Initial release notes
+**Stations & Work Centers (4 articles):** Setting up stations, operator check-in, machine profiles, work center filtering.
 
-### What Does NOT Change (v1)
+**Quality Management (4 articles):** Filing an NCR, NCR approval workflow, quantity tracking, quality metrics dashboard.
 
-- No modifications to the React web app (`/src`)
-- No changes to edge functions or database
-- No changes to Supabase config or RLS policies
-- No local backend bundling
-- No auto-update mechanism (manual installer only)
+**Settings (5 articles):** Profile settings, notification preferences, billing & subscriptions, shift configuration, ERP connector setup.
 
-### Acceptance Criteria
+**Admin Guide (4 articles):** User management, organization oversight, activity logs, system updates.
 
-1. `cd desktop && npm run build` produces `JobLineAI-Setup-1.0.0.exe`
-2. Installer runs on clean Windows machine
-3. App opens hosted web app inside Electron window
-4. Email/password login works (Supabase session persists)
-5. Logs written to `%APPDATA%/JobLineAI/logs/`
-6. `nodeIntegration: false`, `contextIsolation: true` verified
-7. External links open in system browser, not in-app
+**FAQ (3 articles):** Common errors & troubleshooting, data export, keyboard shortcuts.
 
-### Risk Mitigations
+## Technical Implementation
 
-| Risk | Mitigation |
-|------|------------|
-| Supabase OAuth redirect fails in Electron | v1: email/password only; OAuth via system browser later |
-| CORS issues with file:// protocol | v1 loads hosted URL, no file:// |
-| Large installer size (~150MB) | Expected for Electron; acceptable for desktop app |
-| Windows Defender SmartScreen warning | Code signing needed later; document for users |
+### New Files
+| File | Purpose |
+|------|---------|
+| `src/pages/Help.tsx` | Main help index page |
+| `src/pages/HelpArticle.tsx` | Individual article page with sidebar |
+| `src/components/help/HelpSidebar.tsx` | Collapsible category tree navigation |
+| `src/components/help/HelpSearch.tsx` | Search input with filtered results |
+| `src/components/help/ArticleContent.tsx` | Article body renderer |
+| `src/components/help/TableOfContents.tsx` | Right-side heading nav (desktop) |
+| `src/components/help/HelpBreadcrumb.tsx` | Breadcrumb trail |
+| `src/lib/helpArticles.ts` | All article data (structured objects) |
+
+### Modified Files
+| File | Change |
+|------|--------|
+| `src/App.tsx` | Add `/help` and `/help/:category/:slug` routes |
+| `src/components/marketing/MarketingNav.tsx` | Add "Help" link |
+| `src/components/marketing/MarketingFooter.tsx` | Add "Help Center" link |
+
+### PRD File
+| File | Purpose |
+|------|---------|
+| `.lovable/prd/13-help-center.md` | Full PRD for the help center feature |
+
+## Design Patterns
+- Reuses `MarketingNav`, `MarketingFooter`, `SEOHead`, `AdPlacement`, `Badge`, `Card`, `Input`, `ScrollArea`, `Collapsible` components
+- Sidebar uses `Collapsible` + `CollapsibleTrigger/Content` from Radix
+- Search uses React `useState` filtering over the articles array
+- URL-driven routing: `/help/:category/:slug` maps to article lookup
+- Responsive: sidebar collapses to a sheet/drawer on mobile via `useIsMobile()`
+- Each page gets `SEOHead` with unique title/description for indexing
+
+## Implementation Order
+1. Create `helpArticles.ts` data file with all categories and articles
+2. Build `HelpSidebar`, `HelpSearch`, `ArticleContent`, `TableOfContents`, `HelpBreadcrumb` components
+3. Create `Help.tsx` index page and `HelpArticle.tsx` article page
+4. Add routes to `App.tsx` and navigation links
+5. Write `.lovable/prd/13-help-center.md`
+
