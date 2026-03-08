@@ -11,6 +11,8 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Monitor } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MachineStatusGrid } from "@/components/machine/MachineStatusGrid";
+import { AlarmFeed } from "@/components/machine/AlarmFeed";
+import { MachineMonitoringGate } from "@/components/machine/MachineMonitoringGate";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -123,7 +125,7 @@ export function StationDetailView({ stationId, stationName, onBack }: StationDet
           Station Detail — {stationName}
         </Badge>
         {hasUnsavedChanges && (
-          <Badge variant="outline" className="text-amber-500 border-amber-500/50">
+          <Badge variant="outline" className="text-warning border-warning/50">
             Unsaved changes
           </Badge>
         )}
@@ -138,12 +140,17 @@ export function StationDetailView({ stationId, stationName, onBack }: StationDet
         onViewWorkOrder={handleViewWorkOrder}
       />
 
-      {/* Equipment / Machine Status Cards */}
-      <MachineStatusGrid
-        organizationId={organization?.id || null}
-        stationId={stationId}
-        compact
-      />
+      {/* Equipment / Machine Status Cards — gated behind entitlement */}
+      <MachineMonitoringGate compact>
+        <MachineStatusGrid
+          organizationId={organization?.id || null}
+          stationId={stationId}
+          compact
+        />
+
+        {/* Alarm Feed for this station's shift */}
+        <AlarmFeed compact maxItems={20} />
+      </MachineMonitoringGate>
 
       {showHandoff && (
         <NewHandoffForm
