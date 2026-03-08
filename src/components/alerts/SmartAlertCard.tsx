@@ -107,48 +107,51 @@ interface SmartAlertCardProps {
   onQuickAction?: (action: string, target: QuickActionTarget) => void;
 }
 
-export function SmartAlertCard({ alert, onClick, compact = false }: SmartAlertCardProps) {
+export function SmartAlertCard({ alert, onClick, compact = false, onQuickAction }: SmartAlertCardProps) {
   const config = ALERT_CONFIG[alert.type];
   const Icon = config.icon;
   const sev = alert.severity;
 
-  if (compact) {
-    return (
-      <button
-        className={cn(
-          "w-full p-2 rounded-md border transition-colors text-left hover:opacity-80",
-          config.bg[sev],
-          config.border[sev],
-        )}
-        onClick={() => onClick?.(alert)}
-      >
-        <div className="flex items-center gap-2">
-          <Icon
-            className={cn(
-              "w-3 h-3 flex-shrink-0",
-              config.text[sev],
-              alert.type === "high_priority_waiting" && alert.severity === "critical" && "animate-pulse",
-            )}
-          />
-          <span className="text-xs font-medium truncate">{alert.title}</span>
-          {alert.metricLabel && (
-            <Badge
-              variant="outline"
-              className={cn(
-                "text-[9px] px-1 py-0 ml-auto flex-shrink-0",
-                config.badgeBorder[sev],
-                config.badgeText[sev],
-              )}
-            >
-              {alert.metricLabel}
-            </Badge>
-          )}
-        </div>
-      </button>
-    );
-  }
+  const quickTarget: QuickActionTarget = {
+    id: alert.targetId,
+    name: alert.title,
+    type: alert.targetType === "station" ? "station" : "work_order",
+    workOrder: alert.detail,
+  };
 
-  return (
+  const cardContent = compact ? (
+    <button
+      className={cn(
+        "w-full p-2 rounded-md border transition-colors text-left hover:opacity-80",
+        config.bg[sev],
+        config.border[sev],
+      )}
+      onClick={() => onClick?.(alert)}
+    >
+      <div className="flex items-center gap-2">
+        <Icon
+          className={cn(
+            "w-3 h-3 flex-shrink-0",
+            config.text[sev],
+            alert.type === "high_priority_waiting" && alert.severity === "critical" && "animate-pulse",
+          )}
+        />
+        <span className="text-xs font-medium truncate">{alert.title}</span>
+        {alert.metricLabel && (
+          <Badge
+            variant="outline"
+            className={cn(
+              "text-[9px] px-1 py-0 ml-auto flex-shrink-0",
+              config.badgeBorder[sev],
+              config.badgeText[sev],
+            )}
+          >
+            {alert.metricLabel}
+          </Badge>
+        )}
+      </div>
+    </button>
+  ) : (
     <button
       className={cn(
         "w-full p-2.5 rounded-lg border transition-colors text-left hover:opacity-90",
@@ -190,5 +193,18 @@ export function SmartAlertCard({ alert, onClick, compact = false }: SmartAlertCa
         <ArrowRight className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
       </div>
     </button>
+  );
+
+  return (
+    <StationQuickActions
+      target={quickTarget}
+      onViewDetail={(t) => onQuickAction?.("view", t)}
+      onCreateHandoff={(t) => onQuickAction?.("handoff", t)}
+      onToggleHold={(t) => onQuickAction?.("hold", t)}
+      onRequestDelivery={(t) => onQuickAction?.("delivery", t)}
+      onReportIssue={(t) => onQuickAction?.("issue", t)}
+    >
+      <div>{cardContent}</div>
+    </StationQuickActions>
   );
 }
