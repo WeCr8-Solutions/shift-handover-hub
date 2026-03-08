@@ -15,14 +15,15 @@ All 6 phases of the performance improvement plan are now **complete**. This docu
 
 ## 1. Dashboard Components
 
-### SupervisorDashboard (725 lines)
+### SupervisorDashboard (727 lines)
 - **Status:** ⚠️ Large file — candidate for extraction
-- **Data:** `useStations` + `useHandoffRecords` + `useSmartAlerts` (all React Query)
+- **Data:** `useStations` + `useHandoffRecords` + `useSmartAlerts` (all React Query) + `useOrgContext`
 - **Rendering:** 6 `useMemo` blocks, lazy-loaded `ProductionAnalytics`
 - **Recommendations:**
   - Extract KPI card grid into `DashboardKPICards` component
   - Extract station list table into `StationListTable` component
   - Extract alert sections into dedicated wrapper
+  - **Phase:** 2 (see `component-performance-phases.md`)
 
 ### OperatorDashboard (240 lines)
 - **Status:** ✅ Acceptable size
