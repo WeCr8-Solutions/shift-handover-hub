@@ -472,7 +472,7 @@ export function StationManagement({ isAdmin }: StationManagementProps) {
                     Add Station
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="max-h-[85vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>Add New Station</DialogTitle>
                     <DialogDescription>
