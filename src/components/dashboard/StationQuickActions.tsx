@@ -90,11 +90,7 @@ export function StationQuickActions({
   return (
     <ContextMenu>
       <ContextMenuTrigger className={className} asChild>
-        {typeof children === "object" && React.isValidElement(children) ? (
-          React.cloneElement(children as React.ReactElement<{ ref?: React.Ref<HTMLDivElement> }>, { ref })
-        ) : (
-          <div ref={ref}>{children}</div>
-        )}
+        <div>{children}</div>
       </ContextMenuTrigger>
       <ContextMenuContent className="w-56">
         <ContextMenuLabel className="flex items-center gap-2 text-xs">
