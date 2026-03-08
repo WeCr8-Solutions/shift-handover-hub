@@ -66,6 +66,7 @@ export function QueueItemHeader({ item, assignedStation, isOverdue, elapsedTime,
       </DialogTitle>
       <DialogDescription>
         {isQuote ? "Quote" : isWorkOrder ? "Work Order" : "Item"} created {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
+        {createdByName && <span className="ml-1">by <span className="font-medium">{createdByName}</span></span>}
         {item.work_order && (
           <span className="ml-2 font-medium">
             • {isQuote ? "Quote #" : "WO #"}: {item.work_order}
@@ -74,6 +75,11 @@ export function QueueItemHeader({ item, assignedStation, isOverdue, elapsedTime,
         {assignedStation && (
           <span className="ml-2">
             • Station: <span className="font-medium">{assignedStation.station_id}</span> ({assignedStation.name})
+          </span>
+        )}
+        {assignedUserName && (
+          <span className="ml-2">
+            • <User className="w-3 h-3 inline" /> Assigned: <span className="font-medium">{assignedUserName}</span>
           </span>
         )}
       </DialogDescription>
