@@ -666,12 +666,6 @@ export function SupervisorDashboard({
             </div>
           </div>
 
-          {/* Smart Alerts Panel */}
-          <SmartAlertPanel
-            alerts={smartAlerts}
-            loading={smartAlertsLoading}
-            variant="sidebar"
-          />
           {/* Recent Handoffs */}
           <div className="bg-card border border-border rounded-lg overflow-hidden">
             <div className="px-4 py-3 border-b border-border bg-secondary/30">
