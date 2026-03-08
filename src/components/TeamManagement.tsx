@@ -252,6 +252,20 @@ export function TeamManagement() {
         />
       )}
 
+      {/* Station Manager Dialog */}
+      {newlyCreatedTeam && (
+        <TeamStationManager
+          teamId={newlyCreatedTeam.id}
+          teamName={newlyCreatedTeam.name}
+          open={showStationManager}
+          onOpenChange={setShowStationManager}
+          onComplete={() => {
+            setShowStationManager(false);
+            setNewlyCreatedTeam(null);
+          }}
+        />
+      )}
+
       {/* Edit Team Dialog */}
       <Dialog open={!!editingTeam} onOpenChange={(open) => !open && setEditingTeam(null)}>
         <DialogContent>
