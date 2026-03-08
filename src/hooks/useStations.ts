@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTeams } from "./useTeams";
@@ -89,120 +90,110 @@ export interface HandoffRecord {
   updated_at: string;
 }
 
+// ── Shared fetch functions ──────────────────────────────────────
+
+async function fetchStationsData(userId: string, teamId?: string | null, orgId?: string | null): Promise<Station[]> {
+  let query = supabase
+    .from("stations")
+    .select(`
+      *,
+      current_status:current_station_status(*),
+      team:teams(id, name)
+    `)
+    .order("name");
+
+  if (orgId) {
+    query = query.eq("organization_id", orgId);
+  }
+  if (teamId) {
+    query = query.eq("team_id", teamId);
+  }
+
+  const { data, error } = await query;
+
+  if (error) throw error;
+
+  return (data || []).map((station: any) => ({
+    ...station,
+    work_center_type: station.work_center_type as WorkCenterType,
+    current_status: Array.isArray(station.current_status)
+      ? station.current_status[0] || null
+      : station.current_status || null,
+    team: station.team || null,
+  }));
+}
+
+async function fetchHandoffData(userId: string, teamId?: string | null, orgId?: string | null): Promise<HandoffRecord[]> {
+  let query = supabase
+    .from("handoff_records")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(50);
+
+  if (orgId) {
+    query = query.eq("organization_id", orgId);
+  }
+  if (teamId) {
+    query = query.eq("team_id", teamId);
+  }
+
+  const { data, error } = await query;
+
+  if (error) throw error;
+
+  return (data || []) as HandoffRecord[];
+}
+
+// ── Debounce helper ────────────────────────────────────────────
+
+function useDebouncedInvalidate(queryClient: ReturnType<typeof useQueryClient>, queryKey: string[], delayMs = 500) {
+  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+
+  return useCallback(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      queryClient.invalidateQueries({ queryKey });
+    }, delayMs);
+  }, [queryClient, queryKey, delayMs]);
+}
+
+// ── useStations (React Query) ──────────────────────────────────
+
 export function useStations(teamId?: string | null, organizationId?: string | null) {
   const { user } = useAuth();
-  const [stations, setStations] = useState<Station[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  // Use passed organizationId directly — callers must provide it
+  const queryClient = useQueryClient();
   const effectiveOrgId = organizationId;
 
-  const hasFetchedOnce = useRef(false);
+  const queryKey = useMemo(
+    () => ["stations", effectiveOrgId || "none", teamId || "all"],
+    [effectiveOrgId, teamId]
+  );
 
-  const fetchStations = useCallback(async () => {
-    if (!user) {
-      setStations([]);
-      setLoading(false);
-      return;
-    }
+  const { data: stations = [], isLoading, refetch } = useQuery({
+    queryKey,
+    queryFn: () => fetchStationsData(user!.id, teamId, effectiveOrgId),
+    enabled: !!user,
+    staleTime: 30_000,
+    refetchInterval: 300_000, // 5min polling fallback
+  });
 
-    // Only show full loading spinner on first fetch to prevent flash
-    if (!hasFetchedOnce.current) {
-      setLoading(true);
-    }
-    
-    let query = supabase
-      .from("stations")
-      .select(`
-        *,
-        current_status:current_station_status(*),
-        team:teams(id, name)
-      `)
-      .order("name");
+  // Debounced realtime invalidation
+  const debouncedInvalidate = useDebouncedInvalidate(queryClient, queryKey);
 
-    // Filter by organization for proper multi-tenant isolation
-    if (effectiveOrgId) {
-      query = query.eq("organization_id", effectiveOrgId);
-    }
-
-    // Additional team filter if specified
-    if (teamId) {
-      query = query.eq("team_id", teamId);
-    }
-
-    const { data, error } = await query;
-
-    if (!error && data) {
-      const transformed = data.map((station: any) => ({
-        ...station,
-        work_center_type: station.work_center_type as WorkCenterType,
-        // current_station_status has a 1:1 FK (isOneToOne) so PostgREST
-        // returns it as a single object, not an array.
-        current_status: Array.isArray(station.current_status)
-          ? station.current_status[0] || null
-          : station.current_status || null,
-        // team join: PostgREST returns object or null for FK joins
-        team: station.team || null,
-      }));
-      setStations(transformed);
-    }
-    hasFetchedOnce.current = true;
-    setLoading(false);
-  }, [user, teamId, effectiveOrgId]);
-
-  useEffect(() => {
-    fetchStations();
-  }, [fetchStations]);
-
-  // Real-time subscription for station status updates + polling fallback
   useEffect(() => {
     if (!user) return;
 
-    let isActive = true;
-    let timeoutId: ReturnType<typeof setTimeout>;
-
-    // Primary: realtime subscription — use unique channel name per org to avoid cross-tenant leakage
-    const channelName = `station-status-${effectiveOrgId || 'global'}-${user.id}`;
+    const channelName = `station-status-${effectiveOrgId || "global"}-${user.id}`;
     const channel = supabase
       .channel(channelName)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "current_station_status",
-        },
-        () => {
-          fetchStations();
-        }
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "stations",
-        },
-        () => {
-          fetchStations();
-        }
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "current_station_status" }, debouncedInvalidate)
+      .on("postgres_changes", { event: "*", schema: "public", table: "stations" }, debouncedInvalidate)
       .subscribe();
 
-    // Fallback: polling at 5-minute intervals
-    const poll = () => {
-      if (!isActive) return;
-      fetchStations();
-      timeoutId = setTimeout(poll, 300000);
-    };
-    timeoutId = setTimeout(poll, 300000);
-
     return () => {
-      isActive = false;
-      clearTimeout(timeoutId);
       supabase.removeChannel(channel);
     };
-  }, [user, fetchStations, effectiveOrgId]);
+  }, [user, effectiveOrgId, debouncedInvalidate]);
 
   const createStation = async (stationData: {
     station_id: string;
@@ -212,12 +203,11 @@ export function useStations(teamId?: string | null, organizationId?: string | nu
     team_id?: string | null;
     organization_id?: string | null;
   }) => {
-    // Ensure organization_id is set, either explicitly or from user's org
     const stationWithOrg = {
       ...stationData,
       organization_id: stationData.organization_id || effectiveOrgId || null,
     };
-    
+
     const { data, error } = await supabase
       .from("stations")
       .insert(stationWithOrg)
@@ -225,7 +215,7 @@ export function useStations(teamId?: string | null, organizationId?: string | nu
       .single();
 
     if (!error) {
-      await fetchStations();
+      queryClient.invalidateQueries({ queryKey });
     }
     return { data, error };
   };
@@ -234,7 +224,6 @@ export function useStations(teamId?: string | null, organizationId?: string | nu
     stationId: string,
     status: Partial<Omit<StationStatus, "id" | "station_id" | "updated_at">>
   ) => {
-    // Check if status exists
     const { data: existing } = await supabase
       .from("current_station_status")
       .select("id")
@@ -257,103 +246,54 @@ export function useStations(teamId?: string | null, organizationId?: string | nu
 
   return {
     stations,
-    loading,
+    loading: isLoading,
     createStation,
     updateStationStatus,
-    refreshStations: fetchStations,
+    refreshStations: refetch,
   };
 }
+
+// ── useHandoffRecords (React Query) ────────────────────────────
 
 export function useHandoffRecords(teamId?: string | null, organizationId?: string | null) {
   const { user } = useAuth();
   const { logActivity } = useActivityLog();
-  const [records, setRecords] = useState<HandoffRecord[]>([]);
-  const [loading, setLoading] = useState(true);
-
+  const queryClient = useQueryClient();
   const effectiveOrgId = organizationId;
 
-  const hasFetchedOnce = useRef(false);
+  const queryKey = useMemo(
+    () => ["handoffs", effectiveOrgId || "none", teamId || "all"],
+    [effectiveOrgId, teamId]
+  );
 
-  const fetchRecords = useCallback(async () => {
-    if (!user) {
-      setRecords([]);
-      setLoading(false);
-      return;
-    }
+  const { data: records = [], isLoading, refetch } = useQuery({
+    queryKey,
+    queryFn: () => fetchHandoffData(user!.id, teamId, effectiveOrgId),
+    enabled: !!user,
+    staleTime: 30_000,
+    refetchInterval: 300_000,
+  });
 
-    if (!hasFetchedOnce.current) {
-      setLoading(true);
-    }
+  // Debounced realtime invalidation
+  const debouncedInvalidate = useDebouncedInvalidate(queryClient, queryKey);
 
-    let query = supabase
-      .from("handoff_records")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(50);
-
-    // Filter by org for proper multi-tenant isolation
-    if (effectiveOrgId) {
-      query = query.eq("organization_id", effectiveOrgId);
-    }
-
-    if (teamId) {
-      query = query.eq("team_id", teamId);
-    }
-
-    const { data, error } = await query;
-
-    if (!error && data) {
-      setRecords(data as HandoffRecord[]);
-    }
-    hasFetchedOnce.current = true;
-    setLoading(false);
-  }, [user, teamId, effectiveOrgId]);
-
-  useEffect(() => {
-    fetchRecords();
-  }, [fetchRecords]);
-
-  // Real-time subscription + polling fallback for handoff records
   useEffect(() => {
     if (!user) return;
 
-    let isActive = true;
-    let timeoutId: ReturnType<typeof setTimeout>;
-
-    const channelName = `handoff-records-${effectiveOrgId || 'global'}-${user.id}`;
+    const channelName = `handoff-records-${effectiveOrgId || "global"}-${user.id}`;
     const channel = supabase
       .channel(channelName)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "handoff_records",
-        },
-        () => {
-          fetchRecords();
-        }
-      )
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "handoff_records" }, debouncedInvalidate)
       .subscribe();
 
-    const poll = () => {
-      if (!isActive) return;
-      fetchRecords();
-      timeoutId = setTimeout(poll, 300000);
-    };
-    timeoutId = setTimeout(poll, 300000);
-
     return () => {
-      isActive = false;
-      clearTimeout(timeoutId);
       supabase.removeChannel(channel);
     };
-  }, [user, fetchRecords, effectiveOrgId]);
+  }, [user, effectiveOrgId, debouncedInvalidate]);
 
   const createHandoffRecord = async (
     record: Omit<HandoffRecord, "id" | "created_at" | "updated_at" | "record_version">
   ) => {
-    // Ensure organization_id is always set (required NOT NULL column)
     const recordWithOrg = {
       ...record,
       organization_id: effectiveOrgId,
@@ -377,6 +317,7 @@ export function useHandoffRecords(teamId?: string | null, organizationId?: strin
           station_id: record.station_id,
         }
       );
+      queryClient.invalidateQueries({ queryKey });
     }
 
     return { data, error };
@@ -397,70 +338,46 @@ export function useHandoffRecords(teamId?: string | null, organizationId?: strin
 
   return {
     records,
-    loading,
+    loading: isLoading,
     createHandoffRecord,
     uploadHandoffImage,
     getSignedHandoffImageUrls,
-    refreshRecords: fetchRecords,
+    refreshRecords: refetch,
   };
 }
 
+// ── useShiftStats (React Query) ────────────────────────────────
+
 export function useShiftStats(teamId?: string | null, organizationId?: string | null) {
   const { user } = useAuth();
-  const [stats, setStats] = useState({
-    activeStations: 0,
-    completedHandoffs: 0,
-    pendingIssues: 0,
-    partsProduced: 0,
-  });
-  const [loading, setLoading] = useState(true);
-
   const effectiveOrgId = organizationId;
 
-  useEffect(() => {
-    if (!user) {
-      setLoading(false);
-      return;
-    }
-
-    const fetchStats = async () => {
-      setLoading(true);
-
+  const { data: stats = { activeStations: 0, completedHandoffs: 0, pendingIssues: 0, partsProduced: 0 }, isLoading } = useQuery({
+    queryKey: ["shift-stats", effectiveOrgId || "none", teamId || "all"],
+    queryFn: async () => {
       const today = new Date().toISOString().split("T")[0];
 
-      // Fetch active stations — org-scoped
       let stationsQuery = supabase
         .from("stations")
         .select("id", { count: "exact" })
         .eq("is_active", true);
+      if (effectiveOrgId) stationsQuery = stationsQuery.eq("organization_id", effectiveOrgId);
+      if (teamId) stationsQuery = stationsQuery.eq("team_id", teamId);
 
-      if (effectiveOrgId) {
-        stationsQuery = stationsQuery.eq("organization_id", effectiveOrgId);
-      }
-      if (teamId) {
-        stationsQuery = stationsQuery.eq("team_id", teamId);
-      }
-
-      const { count: stationCount } = await stationsQuery;
-
-      // Fetch today's handoffs — org-scoped
       let handoffsQuery = supabase
         .from("handoff_records")
         .select("id, parts_completed_this_shift, issues_follow_ups", { count: "exact" })
         .eq("date", today);
+      if (effectiveOrgId) handoffsQuery = handoffsQuery.eq("organization_id", effectiveOrgId);
+      if (teamId) handoffsQuery = handoffsQuery.eq("team_id", teamId);
 
-      if (effectiveOrgId) {
-        handoffsQuery = handoffsQuery.eq("organization_id", effectiveOrgId);
-      }
-      if (teamId) {
-        handoffsQuery = handoffsQuery.eq("team_id", teamId);
-      }
-
-      const { data: handoffs, count: handoffCount } = await handoffsQuery;
+      const [{ count: stationCount }, { data: handoffs, count: handoffCount }] = await Promise.all([
+        stationsQuery,
+        handoffsQuery,
+      ]);
 
       let totalParts = 0;
       let pendingIssues = 0;
-
       if (handoffs) {
         handoffs.forEach((h: any) => {
           totalParts += h.parts_completed_this_shift || 0;
@@ -470,18 +387,16 @@ export function useShiftStats(teamId?: string | null, organizationId?: string | 
         });
       }
 
-      setStats({
+      return {
         activeStations: stationCount || 0,
         completedHandoffs: handoffCount || 0,
         pendingIssues,
         partsProduced: totalParts,
-      });
+      };
+    },
+    enabled: !!user,
+    staleTime: 60_000,
+  });
 
-      setLoading(false);
-    };
-
-    fetchStats();
-  }, [user, teamId, effectiveOrgId]);
-
-  return { stats, loading };
+  return { stats, loading: isLoading };
 }
