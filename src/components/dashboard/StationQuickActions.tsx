@@ -36,6 +36,8 @@ export interface QuickActionTarget {
   stationId?: string;
   /** Work order number for display */
   workOrder?: string;
+  /** Active queue item ID (for stations with an active work order) */
+  activeItemId?: string;
 }
 
 interface StationQuickActionsProps {
