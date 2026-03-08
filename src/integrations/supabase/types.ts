@@ -5118,6 +5118,7 @@ export type Database = {
           description: string | null
           id: string | null
           metadata: Json | null
+          organization_id: string | null
           user_display_name: string | null
           user_email: string | null
           user_id: string | null
@@ -5128,6 +5129,7 @@ export type Database = {
           description?: string | null
           id?: string | null
           metadata?: Json | null
+          organization_id?: string | null
           user_display_name?: string | null
           user_email?: string | null
           user_id?: string | null
@@ -5138,11 +5140,20 @@ export type Database = {
           description?: string | null
           id?: string | null
           metadata?: Json | null
+          organization_id?: string | null
           user_display_name?: string | null
           user_email?: string | null
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "activity_logs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       activity_logs_supervisor: {
         Row: {
@@ -5471,6 +5482,7 @@ export type Database = {
         Returns: string
       }
       validate_display_token: { Args: { _token: string }; Returns: Json }
+      validate_invite_code: { Args: { _code: string }; Returns: Json }
     }
     Enums: {
       activity_type:
