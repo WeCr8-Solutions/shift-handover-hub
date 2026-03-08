@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Clock, Wrench, AlertTriangle, Plug, Trash2, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { PartImageSection } from "@/components/queue/PartImageSection";
 
 const statusOptions: { value: QueueStatus; label: string }[] = [
   { value: "pending", label: "Pending" },
