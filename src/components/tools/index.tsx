@@ -10,6 +10,12 @@ const ToleranceCalculator = lazy(() => import("./ToleranceCalculator").then(m =>
 const UnitConverter = lazy(() => import("./UnitConverter").then(m => ({ default: m.UnitConverter })));
 const TrigCalculator = lazy(() => import("./TrigCalculator").then(m => ({ default: m.TrigCalculator })));
 const MathCalculator = lazy(() => import("./MathCalculator").then(m => ({ default: m.MathCalculator })));
+const SurfaceFinishCalculator = lazy(() => import("./SurfaceFinishCalculator").then(m => ({ default: m.SurfaceFinishCalculator })));
+const MrrCalculator = lazy(() => import("./MrrCalculator").then(m => ({ default: m.MrrCalculator })));
+const CycleTimeEstimator = lazy(() => import("./CycleTimeEstimator").then(m => ({ default: m.CycleTimeEstimator })));
+const HardnessConverter = lazy(() => import("./HardnessConverter").then(m => ({ default: m.HardnessConverter })));
+const TapDrillChart = lazy(() => import("./TapDrillChart").then(m => ({ default: m.TapDrillChart })));
+const ThreadPitchCalculator = lazy(() => import("./ThreadPitchCalculator").then(m => ({ default: m.ThreadPitchCalculator })));
 
 // ─── Tool Registry ────────────────────────────────────────
 export interface ToolDefinition {
@@ -51,7 +57,7 @@ export const TOOL_REGISTRY: ToolDefinition[] = [
     icon: <BookOpen className="w-5 h-5" />,
     category: "reference",
     tags: ["tap", "drill", "thread", "unc", "unf", "metric"],
-    component: null,
+    component: TapDrillChart,
   },
   {
     id: "tolerance-calculator",
@@ -79,7 +85,7 @@ export const TOOL_REGISTRY: ToolDefinition[] = [
     icon: <Scaling className="w-5 h-5" />,
     category: "measurement",
     tags: ["surface", "finish", "ra", "rz", "roughness"],
-    component: null,
+    component: SurfaceFinishCalculator,
   },
   {
     id: "trig-calculator",
@@ -98,7 +104,7 @@ export const TOOL_REGISTRY: ToolDefinition[] = [
     icon: <Calculator className="w-5 h-5" />,
     category: "machining",
     tags: ["mrr", "material", "removal", "volume", "milling", "turning"],
-    component: null,
+    component: MrrCalculator,
   },
   {
     id: "cycle-time",
@@ -107,7 +113,7 @@ export const TOOL_REGISTRY: ToolDefinition[] = [
     icon: <Timer className="w-5 h-5" />,
     category: "machining",
     tags: ["cycle", "time", "estimate", "parts", "hour"],
-    component: null,
+    component: CycleTimeEstimator,
   },
   {
     id: "hardness-converter",
@@ -116,7 +122,7 @@ export const TOOL_REGISTRY: ToolDefinition[] = [
     icon: <Thermometer className="w-5 h-5" />,
     category: "conversion",
     tags: ["hardness", "hrc", "brinell", "vickers", "rockwell"],
-    component: null,
+    component: HardnessConverter,
   },
   {
     id: "thread-calculator",
@@ -125,7 +131,7 @@ export const TOOL_REGISTRY: ToolDefinition[] = [
     icon: <CircleDot className="w-5 h-5" />,
     category: "reference",
     tags: ["thread", "pitch", "tpi", "diameter", "class"],
-    component: null,
+    component: ThreadPitchCalculator,
   },
 ];
 
@@ -143,3 +149,9 @@ export { ToleranceCalculator } from "./ToleranceCalculator";
 export { UnitConverter } from "./UnitConverter";
 export { TrigCalculator } from "./TrigCalculator";
 export { MathCalculator } from "./MathCalculator";
+export { SurfaceFinishCalculator } from "./SurfaceFinishCalculator";
+export { MrrCalculator } from "./MrrCalculator";
+export { CycleTimeEstimator } from "./CycleTimeEstimator";
+export { HardnessConverter } from "./HardnessConverter";
+export { TapDrillChart } from "./TapDrillChart";
+export { ThreadPitchCalculator } from "./ThreadPitchCalculator";
