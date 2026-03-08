@@ -95,6 +95,14 @@ export function SupervisorDashboard({
     refreshToken: lastRefreshedAt,
   });
 
+  // Split alerts into WO vs station categories
+  const woAlerts = useMemo(() => smartAlerts.filter(a => a.targetType === "work_order"), [smartAlerts]);
+  const stationAlerts = useMemo(() => smartAlerts.filter(a => a.targetType === "station"), [smartAlerts]);
+
+  // Collapse state — auto-collapse if many alerts to prevent dashboard overload
+  const [woAlertsOpen, setWoAlertsOpen] = useState(true);
+  const [stationAlertsOpen, setStationAlertsOpen] = useState(true);
+
   const orgName = organization?.name || "Organization";
   const scopeLabel = currentTeam?.name || `${orgName} · All Teams`;
 
