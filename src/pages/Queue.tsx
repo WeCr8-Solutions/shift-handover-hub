@@ -242,10 +242,12 @@ export default function Queue() {
               Work Queue
             </TabsTrigger>
 
-            <TabsTrigger value="outside-processing" className="flex items-center gap-2">
-              <Truck className="h-4 w-4" />
-              Outside Processing
-            </TabsTrigger>
+            {viewScope === "organization" && (
+              <TabsTrigger value="outside-processing" className="flex items-center gap-2">
+                <Truck className="h-4 w-4" />
+                Outside Processing
+              </TabsTrigger>
+            )}
 
             {hasAdminAccess && (
               <TabsTrigger value="ncr" className="flex items-center gap-2">
