@@ -370,7 +370,7 @@ export function TeamStationManager({
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-medium">Stations in {teamName}</h3>
                 <Badge variant="secondary">
-                  {stations.length} station{stations.length !== 1 ? "s" : ""}
+                  {visibleStations.length} station{visibleStations.length !== 1 ? "s" : ""}
                 </Badge>
               </div>
 
