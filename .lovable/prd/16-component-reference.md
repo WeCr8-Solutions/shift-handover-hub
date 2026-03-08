@@ -340,7 +340,41 @@ All domain-specific components must be exported via `index.ts` barrel files:
 
 ---
 
-## 6  Standards Checklist
+## 6  Performance Architecture
+
+### 6.1 Code Splitting
+
+| Component | Strategy | Bundle Impact |
+|-----------|----------|---------------|
+| `ProductionAnalytics` | `React.lazy()` in SupervisorDashboard | ~200KB Recharts deferred |
+| 20+ admin panels | `React.lazy()` in Admin.tsx | Each tab lazy-loaded with `<Suspense>` skeleton |
+| `ShopFloorDisplay` | Lazy-loaded in App.tsx routes | Full page deferred |
+
+### 6.2 Data Flow
+
+```
+OrgContext (1 query, 5min stale)
+  ├── SupervisorDashboard
+  │     ├── useStations(teamId, orgId)      → React Query, 15min poll, realtime
+  │     ├── useHandoffRecords(teamId, orgId) → React Query, 15min poll, realtime
+  │     ├── useSmartAlerts()                 → React Query + RPC (1 call, 60s stale)
+  │     └── useShiftStats(teamId, orgId)     → React Query, 60s stale
+  ├── OperatorDashboard
+  │     ├── useOperatorSessions()            → useBackgroundRefresh (10min)
+  │     └── useHandoffRecords(teamId, orgId) → React Query
+  └── Queue page
+        └── useQueue(filters)               → useState + debounced realtime
+```
+
+### 6.3 Error Handling
+
+- `DashboardErrorBoundary` wraps dashboard sections — catches render errors, shows retry UI
+- `useQueue` implements optimistic updates with automatic rollback on server error
+- React Query provides automatic retry (2 attempts) on failed queries
+
+---
+
+## 7  Standards Checklist
 
 Every component MUST:
 - [ ] Use `@/` path aliases for all imports
@@ -349,5 +383,7 @@ Every component MUST:
 - [ ] Handle loading/error/empty states
 - [ ] Be registered in domain barrel export
 - [ ] Have co-located unit test (`.test.tsx`)
-- [ ] Use `useUserOrganization` for org-scoped data
+- [ ] Use `useOrgContext()` for org-scoped data (not `useUserOrganization()` directly)
 - [ ] Follow hook-mediated data access pattern
+- [ ] Wrap heavy sections in `DashboardErrorBoundary` for graceful degradation
+- [ ] Use `React.lazy()` for components with heavy dependencies (charts, editors)
