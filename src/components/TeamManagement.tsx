@@ -33,6 +33,8 @@ export function TeamManagement() {
   const { isOrgAdmin, isAdmin } = useAdminAccess();
   const { teams, loading, createTeam, updateTeam, deleteTeam } = useTeams();
   const { toast } = useToast();
+  const [stationRefreshKey, setStationRefreshKey] = useState(0);
+  const triggerStationRefresh = () => setStationRefreshKey((k) => k + 1);
 
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
