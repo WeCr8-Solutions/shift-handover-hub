@@ -40,7 +40,7 @@ const ALL_TYPE_OPTIONS: { value: QueueItemType; label: string }[] = [
   { value: "support_ticket", label: "Support Ticket" },
 ];
 
-export function QueueFilters({ filters, onFiltersChange }: QueueFiltersProps) {
+export function QueueFilters({ filters, onFiltersChange, showStationFilter, stations = [] }: QueueFiltersProps) {
   const { isQuoteSystemEnabled } = useQuoteSystem();
   const typeOptions = isQuoteSystemEnabled
     ? ALL_TYPE_OPTIONS
