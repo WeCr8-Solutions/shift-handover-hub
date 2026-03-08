@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
+export type ActAsMode = "view_only" | "test";
+
 interface ActAsTarget {
   userId: string;
   displayName: string;
@@ -18,7 +20,11 @@ interface ActAsContextType {
   target: ActAsTarget | null;
   /** Whether act-as mode is currently active */
   isActingAs: boolean;
-  /** Start viewing as another user (view-only) */
+  /** 'view_only' for supervisors/org admins, 'test' for SDK admins/developers */
+  mode: ActAsMode | null;
+  /** Whether the actor can perform actions (only in test mode for devs/admins) */
+  canPerformActions: boolean;
+  /** Start viewing as another user */
   startActAs: (target: ActAsTarget) => Promise<void>;
   /** Exit act-as mode */
   stopActAs: () => Promise<void>;
@@ -36,6 +42,7 @@ export function ActAsProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [target, setTarget] = useState<ActAsTarget | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [mode, setMode] = useState<ActAsMode | null>(null);
 
   const startActAs = useCallback(
     async (newTarget: ActAsTarget) => {
@@ -53,6 +60,16 @@ export function ActAsProvider({ children }: { children: ReactNode }) {
         toast.error(`Rate limit reached: max ${MAX_SESSIONS_PER_HOUR} act-as sessions per hour.`);
         return;
       }
+
+      // Determine mode: SDK admins/developers get test mode, everyone else view-only
+      const { data: platformRoles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .in("role", ["admin", "developer"]);
+
+      const isDevOrAdmin = platformRoles && platformRoles.length > 0;
+      const resolvedMode: ActAsMode = isDevOrAdmin ? "test" : "view_only";
 
       // Create audit session
       const { data, error } = await supabase
@@ -73,15 +90,24 @@ export function ActAsProvider({ children }: { children: ReactNode }) {
 
       setSessionId(data.id);
       setTarget(newTarget);
-      toast.info(`Now viewing as ${newTarget.displayName}`, {
-        description: "This is view-only mode. No actions will be performed as this user.",
-      });
+      setMode(resolvedMode);
+
+      if (resolvedMode === "test") {
+        toast.info(`Test mode: acting as ${newTarget.displayName}`, {
+          description:
+            "You can interact with the app as this user to verify workflows. Actions will be logged.",
+        });
+      } else {
+        toast.info(`Viewing as ${newTarget.displayName}`, {
+          description:
+            "View-only mode. You can see their perspective but cannot perform actions.",
+        });
+      }
     },
     [user],
   );
 
   const stopActAs = useCallback(async () => {
-    // Close the session
     if (sessionId) {
       await supabase
         .from("act_as_sessions")
@@ -91,16 +117,20 @@ export function ActAsProvider({ children }: { children: ReactNode }) {
 
     setTarget(null);
     setSessionId(null);
+    setMode(null);
     toast.info("Returned to your own view.");
   }, [sessionId]);
 
   const effectiveUserId = target?.userId ?? user?.id ?? null;
+  const canPerformActions = mode === "test";
 
   return (
     <ActAsContext.Provider
       value={{
         target,
         isActingAs: !!target,
+        mode,
+        canPerformActions,
         startActAs,
         stopActAs,
         effectiveUserId,

@@ -214,11 +214,13 @@ function computeRLSAccessLevel(user: UserWithRole): RLSAccessLevel {
 
 interface UserManagementProps {
   isAdmin: boolean;
+  /** Whether the viewer has supervisor-level access (org admin, supervisor, etc.) */
+  isSupervisorOrAbove?: boolean;
 }
 
 type ViewMode = "grouped" | "flat";
 
-export function UserManagement({ isAdmin }: UserManagementProps) {
+export function UserManagement({ isAdmin, isSupervisorOrAbove = false }: UserManagementProps) {
   const { user: currentUser } = useAuth();
   const { startActAs } = useActAs();
   const { users, organizations, loading, updateUserRole } = useAllUsers();
@@ -374,11 +376,11 @@ export function UserManagement({ isAdmin }: UserManagementProps) {
       <TableCell className="text-muted-foreground text-sm">
         {new Date(user.created_at).toLocaleDateString()}
       </TableCell>
-      {isAdmin && (
+      {(isAdmin || isSupervisorOrAbove) && (
         <TableCell>
           {updatingUser === user.user_id ? (
             <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
+          ) : isAdmin ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -428,6 +430,29 @@ export function UserManagement({ isAdmin }: UserManagementProps) {
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
+          ) : (
+            /* Supervisor-only: just the View As button, no role management */
+            user.user_id !== currentUser?.id && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 gap-1 text-xs"
+                onClick={() =>
+                  startActAs({
+                    userId: user.user_id,
+                    displayName: user.display_name,
+                    email: user.email,
+                    organizationId: user.organization?.id,
+                    organizationName: user.organization?.name,
+                    roles: user.roles,
+                    orgRole: user.organization?.role,
+                  })
+                }
+              >
+                <Eye className="w-3 h-3" />
+                View As
+              </Button>
+            )
           )}
         </TableCell>
       )}
@@ -636,7 +661,7 @@ export function UserManagement({ isAdmin }: UserManagementProps) {
                               <TableHead>Org Role</TableHead>
                               <TableHead>Platform Roles</TableHead>
                               <TableHead>Joined</TableHead>
-                              {isAdmin && <TableHead className="w-12"></TableHead>}
+                              {(isAdmin || isSupervisorOrAbove) && <TableHead className="w-12"></TableHead>}
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -675,7 +700,7 @@ export function UserManagement({ isAdmin }: UserManagementProps) {
                   <TableHead>Org Role</TableHead>
                   <TableHead>Platform Roles</TableHead>
                   <TableHead>Joined</TableHead>
-                  {isAdmin && <TableHead className="w-12"></TableHead>}
+                  {(isAdmin || isSupervisorOrAbove) && <TableHead className="w-12"></TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
