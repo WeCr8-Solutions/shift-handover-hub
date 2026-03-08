@@ -54,6 +54,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Blog from "./pages/Blog";
 import Help from "./pages/Help";
 import HelpArticle from "./pages/HelpArticle";
+import Tools from "./pages/Tools";
 import { lazy, Suspense } from "react";
 
 const ShopFloorDisplay = lazy(() => import("./pages/ShopFloorDisplay"));
@@ -129,6 +130,7 @@ const App = () => (
                     <Route path="/blog" element={<Blog />} />
                     <Route path="/help" element={<Help />} />
                     <Route path="/help/:category/:slug" element={<HelpArticle />} />
+                    <Route path="/tools" element={<Tools />} />
                     <Route path="/display/:displayId" element={<Suspense fallback={<div className="min-h-screen bg-background" />}><ShopFloorDisplay /></Suspense>} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
