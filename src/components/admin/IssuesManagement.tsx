@@ -409,7 +409,7 @@ export function IssuesManagement() {
 
       {/* Issue Detail Dialog */}
       <Dialog open={!!selectedIssue} onOpenChange={() => setSelectedIssue(null)}>
-        <DialogContent className="max-w-2xl max-h-[80vh]">
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Bug className="w-5 h-5" />

@@ -295,7 +295,7 @@ export function PartCatalogManager() {
       </Card>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingId ? "Edit Part" : "Add Part to Catalog"}</DialogTitle>
           </DialogHeader>

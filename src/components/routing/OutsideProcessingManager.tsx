@@ -325,7 +325,7 @@ export function OutsideProcessingManager() {
                               <Edit2 className="w-4 h-4" />
                             </Button>
                           </DialogTrigger>
-                          <DialogContent>
+                          <DialogContent className="max-h-[85vh] overflow-y-auto">
                             <DialogHeader>
                               <DialogTitle>Edit Outside Processing</DialogTitle>
                               <DialogDescription>
