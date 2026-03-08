@@ -153,13 +153,15 @@ All 6 phases of the performance improvement plan are now **complete**. This docu
 
 ## 8. Future Optimization Candidates
 
-| Priority | Item | Trigger |
-|----------|------|---------|
-| Medium | Migrate `useQueue` to React Query | When queue becomes a performance bottleneck |
-| Medium | Virtualize station list | When orgs exceed 50+ stations |
-| Low | Lazy-load `react-joyride` | Bundle size optimization pass |
-| Low | Add realtime connection status indicator | User feedback requests |
-| Low | Server-side pagination for admin logs | When log volume exceeds 1000 rows |
+| Priority | Item | Phase | Trigger |
+|----------|------|-------|---------|
+| Critical | Eliminate 54 direct `useUserOrganization` imports | 1 | Immediate — PRD 11 violation |
+| Medium | Extract `SupervisorDashboard` sub-components | 2 | File exceeds 350-line target |
+| Medium | Split `QueueItemDetailDialog` (1,311 lines) | 3 | Largest component in project |
+| Medium | Split `WorkOrderManagement` (653 lines) | 4 | File exceeds 350-line target |
+| Low | Migrate `useQueue` to React Query | 5 | When queue becomes bottleneck |
+| Low | Virtualize station/queue lists | 6 | When orgs exceed 50+ stations |
+| Low | Lazy-load `react-joyride` + admin sub-dialogs | 7 | Bundle size optimization pass |
 
 ---
 
