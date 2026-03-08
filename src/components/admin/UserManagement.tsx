@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { UserWithRole, OrganizationWithUsers, useAllUsers } from "@/hooks/useAdminData";
 import { useAuth } from "@/contexts/AuthContext";
+import { useActAs } from "@/contexts/ActAsContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -219,6 +220,7 @@ type ViewMode = "grouped" | "flat";
 
 export function UserManagement({ isAdmin }: UserManagementProps) {
   const { user: currentUser } = useAuth();
+  const { startActAs } = useActAs();
   const { users, organizations, loading, updateUserRole } = useAllUsers();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
@@ -404,6 +406,26 @@ export function UserManagement({ isAdmin }: UserManagementProps) {
                     </DropdownMenuItem>
                   );
                 })}
+                <DropdownMenuSeparator />
+                {user.user_id !== currentUser?.id && (
+                  <DropdownMenuItem
+                    onClick={() =>
+                      startActAs({
+                        userId: user.user_id,
+                        displayName: user.display_name,
+                        email: user.email,
+                        organizationId: user.organization?.id,
+                        organizationName: user.organization?.name,
+                        roles: user.roles,
+                        orgRole: user.organization?.role,
+                      })
+                    }
+                    className="gap-2 cursor-pointer"
+                  >
+                    <Eye className="w-3 h-3" />
+                    View As {user.display_name.split(" ")[0]}
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           )}

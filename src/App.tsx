@@ -6,8 +6,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { TeamProvider } from "@/contexts/TeamContext";
+import { ActAsProvider } from "@/contexts/ActAsContext";
 import { OnboardingProvider, GuidedTour, WelcomeModal } from "@/components/onboarding";
 import { AnalyticsProvider } from "@/components/AnalyticsProvider";
+import { ActAsBanner } from "@/components/admin/ActAsBanner";
 import { MFAEnrollmentGate } from "@/components/compliance/MFAEnrollmentGate";
 import { USPersonDeclarationGate } from "@/components/compliance/USPersonDeclarationGate";
 import Landing from "./pages/Landing";
@@ -56,6 +58,7 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <TeamProvider>
+          <ActAsProvider>
           <OnboardingProvider>
             <TooltipProvider>
               <Toaster />
@@ -65,6 +68,7 @@ const App = () => (
                   {/* ITAR compliance gates — both are no-ops when not required by the org */}
                   <MFAEnrollmentGate>
                   <USPersonDeclarationGate>
+                  <ActAsBanner />
                   <GuidedTour />
                   <WelcomeModal />
                   <Routes>
@@ -114,6 +118,7 @@ const App = () => (
               </BrowserRouter>
             </TooltipProvider>
           </OnboardingProvider>
+          </ActAsProvider>
         </TeamProvider>
       </AuthProvider>
     </QueryClientProvider>

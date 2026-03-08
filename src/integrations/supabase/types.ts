@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      act_as_sessions: {
+        Row: {
+          actor_id: string
+          created_at: string
+          ended_at: string | null
+          id: string
+          organization_id: string | null
+          started_at: string
+          target_display_name: string | null
+          target_user_id: string
+        }
+        Insert: {
+          actor_id: string
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          organization_id?: string | null
+          started_at?: string
+          target_display_name?: string | null
+          target_user_id: string
+        }
+        Update: {
+          actor_id?: string
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          organization_id?: string | null
+          started_at?: string
+          target_display_name?: string | null
+          target_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "act_as_sessions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       activity_logs: {
         Row: {
           activity_type: Database["public"]["Enums"]["activity_type"]
@@ -5119,6 +5160,10 @@ export type Database = {
       apply_ncr_disposition: {
         Args: { _approver_id: string; _ncr_id: string }
         Returns: undefined
+      }
+      can_act_as: {
+        Args: { _actor_id: string; _target_user_id: string }
+        Returns: boolean
       }
       can_adjust_wo_quantity: {
         Args: { _org_id: string; _user_id: string }
