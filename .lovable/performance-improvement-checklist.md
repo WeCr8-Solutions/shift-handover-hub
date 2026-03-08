@@ -54,15 +54,18 @@
 
 ---
 
-## Phase 4: Server-Side Alert Computation (Impact: variable)
+## Phase 4: Server-Side Alert Computation (Impact: variable) ✅
 
 **Goal:** Replace 8 client-side alert queries with 1 DB function
 
-- [ ] **4.1** Create `compute_smart_alerts(org_id, station_id)` database function
+- [x] **4.1** Create `compute_smart_alerts(org_id, station_id, ...)` database function
   - Returns pre-computed alert array as JSONB
-  - Combines overdue, stale, bottleneck, etc. in a single query
-- [ ] **4.2** Update `useSmartAlerts` to call the RPC instead of 8 separate queries
-- [ ] **4.3** Consider materialized view or periodic cron for very large orgs
+  - Combines overdue, stale, bottleneck, on_hold, over_time, high_priority, no_operator, unassigned, no_routing
+  - All thresholds configurable via parameters
+- [x] **4.2** Update `useSmartAlerts` to call the RPC instead of 8 separate queries
+  - Migrated to React Query with `staleTime: 60s`, `refetchInterval: 5min`
+  - `refetchIntervalInBackground: false` for visibility optimization
+- [ ] **4.3** Consider materialized view or periodic cron for very large orgs (deferred — not needed yet)
 
 ---
 
