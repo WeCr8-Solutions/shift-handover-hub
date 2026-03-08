@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { QueueItem, QueuePriority } from "@/hooks/useQueue";
 import { cn } from "@/lib/utils";
-import { format, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-react";
+import { format, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, startOfMonth, endOfMonth, addMinutes } from "date-fns";
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, Target, Play, CheckCircle2 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface QueueCalendarViewProps {
   items: QueueItem[];
