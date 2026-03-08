@@ -10,7 +10,7 @@ import { getCurrentShift } from "@/lib/mockData";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useStations, HandoffRecord } from "@/hooks/useStations";
-import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { JobState, TriState, WorkCenterType, Shift } from "@/types/handoff";
 import { workCenterIcons, workCenterColors, getCategoryForType } from "@/lib/workCenterIcons";
 import { X, Check, Minus, Save, ChevronRight, ChevronLeft, Loader2, AlertCircle, CheckCircle2, Circle } from "lucide-react";
