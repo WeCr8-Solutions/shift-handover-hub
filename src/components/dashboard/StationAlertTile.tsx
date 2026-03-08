@@ -73,7 +73,7 @@ interface StationAlertTileProps {
   onQuickAction?: (action: string, target: QuickActionTarget) => void;
 }
 
-export function StationAlertTile({ station, onViewStation }: StationAlertTileProps) {
+export function StationAlertTile({ station, onViewStation, onQuickAction }: StationAlertTileProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [alertData, setAlertData] = useState<StationAlertData | null>(null);
   const [loading, setLoading] = useState(false);
