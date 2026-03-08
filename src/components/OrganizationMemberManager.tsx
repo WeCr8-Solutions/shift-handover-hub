@@ -111,7 +111,11 @@ function CopyButton({ value, label }: { value: string; label: string }) {
 }
 
 // ─── Main component ──────────────────────────────────────────────────────────
-export function OrganizationMemberManager() {
+interface OrganizationMemberManagerProps {
+  onNavigateToInvites?: () => void;
+}
+
+export function OrganizationMemberManager({ onNavigateToInvites }: OrganizationMemberManagerProps) {
   const { user, profile } = useAuth();
   const { organization, organizationRole } = useUserOrganization();
   const {
