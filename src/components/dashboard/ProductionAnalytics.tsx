@@ -66,7 +66,10 @@ interface HandoffRecord {
 interface ProductionAnalyticsProps {
   stations: StationData[];
   handoffs: HandoffRecord[];
-  refreshIntervalMs?: number; // Org-configurable: 300000 = 5min
+  /** Optional: parent-controlled refresh state */
+  isRefreshing?: boolean;
+  lastRefreshedAt?: Date | null;
+  onRefresh?: () => void;
 }
 
 type ShiftFilter = "all" | "Day" | "Swing" | "Night";
@@ -75,30 +78,12 @@ type ChartView = "output" | "status" | "team" | "workcenter" | "trend";
 export function ProductionAnalytics({
   stations,
   handoffs,
-  refreshIntervalMs = 300000, // Default 5 minutes
+  isRefreshing = false,
+  lastRefreshedAt = null,
+  onRefresh,
 }: ProductionAnalyticsProps) {
   const [shiftFilter, setShiftFilter] = useState<ShiftFilter>("all");
   const [chartView, setChartView] = useState<ChartView>("output");
-  const [refreshKey, setRefreshKey] = useState(0);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  // Auto-refresh logic (org-controlled interval)
-  useEffect(() => {
-    if (refreshIntervalMs <= 0) return;
-
-    const interval = setInterval(() => {
-      setRefreshKey((prev) => prev + 1);
-    }, refreshIntervalMs);
-
-    return () => clearInterval(interval);
-  }, [refreshIntervalMs]);
-
-  // Manual refresh
-  const refreshData = useCallback(async () => {
-    setIsRefreshing(true);
-    setRefreshKey((prev) => prev + 1);
-    // Reset spinner after 1s (or use promise if parent fetch returns)
-    setTimeout(() => setIsRefreshing(false), 1000);
   }, []);
 
   // Reduced motion (SSR-safe now via effect)
