@@ -297,6 +297,10 @@ export default function Admin() {
             <SmartAlertAdmin />
           </TabsContent>
 
+          <TabsContent value="displays">
+            <ShopFloorDisplayManagement />
+          </TabsContent>
+
           {hasPlatformAccess && (
             <>
               <TabsContent value="activity">
