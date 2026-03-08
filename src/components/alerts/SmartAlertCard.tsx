@@ -206,7 +206,7 @@ export function SmartAlertCard({ alert, onClick, compact = false, onQuickAction 
       onRequestDelivery={(t) => onQuickAction?.("delivery", t)}
       onReportIssue={(t) => onQuickAction?.("issue", t)}
     >
-      <div>{cardContent}</div>
+      {cardContent}
     </StationQuickActions>
   );
 }
