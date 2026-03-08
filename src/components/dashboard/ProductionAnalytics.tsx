@@ -382,16 +382,22 @@ export function ProductionAnalytics({
                           {data?.workCenter && data.workCenter !== "—" && (
                             <p className="text-muted-foreground">Work Center: {data.workCenter}</p>
                           )}
-                          {data?.status && (
-                            <p className="mb-1" style={{ color: STATUS_COLORS[data.status as StatusLabel] }}>
-                              Status: {STATUS_CONFIG[data.status as StatusLabel]?.displayName}
-                            </p>
-                          )}
                           {payload.map((p: any, i: number) => (
                             <p key={i} style={{ color: p.color }}>
                               {p.name}: {p.value}
                             </p>
                           ))}
+                          {data?.status && (
+                            <div className="flex items-center gap-1.5 mt-1.5 pt-1.5 border-t border-border">
+                              <span
+                                className="inline-block w-2 h-2 rounded-full shrink-0"
+                                style={{ backgroundColor: STATUS_COLORS[data.status as StatusLabel] }}
+                              />
+                              <span className="font-medium" style={{ color: STATUS_COLORS[data.status as StatusLabel] }}>
+                                {STATUS_CONFIG[data.status as StatusLabel]?.displayName}
+                              </span>
+                            </div>
+                          )}
                         </div>
                       );
                     }}
