@@ -6,6 +6,7 @@ import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { useTeams } from "@/hooks/useTeams";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
