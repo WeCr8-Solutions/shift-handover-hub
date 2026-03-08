@@ -392,7 +392,95 @@ export function WorkOrderAlertTile({ item, stationName, stationCode, workCenterT
                   </div>
                 )}
 
-                {/* Active Duration Tracking */}
+                {/* Stale in Queue Alert */}
+                {alertData.staleDays && alertData.staleDays >= 2 && (
+                  <div className={cn(
+                    "p-2.5 rounded-lg border",
+                    alertData.staleDays >= 5 ? "bg-red-500/10 border-red-500/30" : "bg-amber-500/10 border-amber-500/30",
+                  )}>
+                    <div className="flex items-center gap-2">
+                      <Clock className={cn("w-4 h-4", alertData.staleDays >= 5 ? "text-red-500" : "text-amber-500")} />
+                      <div>
+                        <span className={cn("text-xs font-medium", alertData.staleDays >= 5 ? "text-red-600" : "text-amber-700")}>
+                          Stale — {alertData.staleDays} day{alertData.staleDays !== 1 ? "s" : ""} without movement
+                        </span>
+                        <p className="text-[10px] text-muted-foreground">
+                          This work order hasn't changed status in {alertData.staleDays} days
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* High Priority Waiting */}
+                {alertData.isHighPriorityWaiting && (
+                  <div className="p-2.5 rounded-lg bg-red-500/10 border border-red-500/30">
+                    <div className="flex items-center gap-2">
+                      <Zap className="w-4 h-4 text-red-500 animate-pulse" />
+                      <div>
+                        <span className="text-xs font-medium text-red-600">
+                          {item.priority === "critical" ? "🔴 Critical" : "🟠 Urgent"} — Waiting in Queue
+                        </span>
+                        <p className="text-[10px] text-muted-foreground">
+                          High-priority work order queued but not yet started
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* No Operator Assigned */}
+                {alertData.hasNoOperator && (
+                  <div className="p-2.5 rounded-lg bg-purple-500/10 border border-purple-500/30">
+                    <div className="flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 text-purple-500" />
+                      <div>
+                        <span className="text-xs font-medium text-purple-700">No Operator Assigned</span>
+                        <p className="text-[10px] text-muted-foreground">
+                          Work order is in progress but has no operator checked in
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Over Estimated Time */}
+                {alertData.overEstimatedPct && alertData.overEstimatedPct > 100 && (
+                  <div className={cn(
+                    "p-2.5 rounded-lg border",
+                    alertData.overEstimatedPct > 200 ? "bg-red-500/10 border-red-500/30" : "bg-amber-500/10 border-amber-500/30",
+                  )}>
+                    <div className="flex items-center gap-2">
+                      <Timer className={cn("w-4 h-4", alertData.overEstimatedPct > 200 ? "text-red-500" : "text-amber-500")} />
+                      <div>
+                        <span className={cn("text-xs font-medium", alertData.overEstimatedPct > 200 ? "text-red-600" : "text-amber-700")}>
+                          {alertData.overEstimatedPct - 100}% Over Estimated Time
+                        </span>
+                        <p className="text-[10px] text-muted-foreground">
+                          Running significantly longer than planned duration
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Bottleneck Alert */}
+                {alertData.queuedAtStationCount && alertData.queuedAtStationCount >= 2 && (
+                  <div className="p-2.5 rounded-lg bg-orange-500/10 border border-orange-500/30">
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4 text-orange-500" />
+                      <div>
+                        <span className="text-xs font-medium text-orange-700">
+                          Station Bottleneck — {alertData.queuedAtStationCount} other WO{alertData.queuedAtStationCount !== 1 ? "s" : ""} waiting
+                        </span>
+                        <p className="text-[10px] text-muted-foreground">
+                          Multiple work orders competing for the same station
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {alertData.elapsedDisplay && (
                   <div className={cn(
                     "p-2.5 rounded-lg border",
