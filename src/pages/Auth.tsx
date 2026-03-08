@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Factory, Loader2, AlertCircle, Ticket } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { useEmail } from "@/hooks/useEmail";
@@ -240,7 +241,12 @@ export default function Auth() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <div className="w-full max-w-md space-y-4 px-6">
+          <Skeleton className="h-10 w-48 mx-auto" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-1/2 mx-auto" />
+        </div>
       </div>
     );
   }

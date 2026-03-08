@@ -6,7 +6,7 @@ import { TeamManagement } from "@/components/TeamManagement";
 import { OrganizationMemberManager } from "@/components/OrganizationMemberManager";
 import { InviteCodeGenerator } from "@/components/InviteCodeGenerator";
 import { TourTriggerButton } from "@/components/onboarding";
-import { Loader2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, UsersRound, QrCode } from "lucide-react";
 
@@ -23,8 +23,17 @@ export default function Teams() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container py-6 space-y-4">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-10 w-64" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-24 rounded-lg" />
+            ))}
+          </div>
+        </div>
       </div>
     );
   }

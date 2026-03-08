@@ -6,7 +6,8 @@ import { Header } from "@/components/Header";
 import { UpdateCard } from "@/components/updates/UpdateCard";
 import { UpdateFilters } from "@/components/updates/UpdateFilters";
 import { SystemStatusIndicator } from "@/components/updates/SystemStatusIndicator";
-import { Loader2, Megaphone } from "lucide-react";
+import { Megaphone } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { SEOHead } from "@/components/SEOHead";
 
 export default function Updates() {
@@ -34,8 +35,15 @@ export default function Updates() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-6 max-w-3xl space-y-4">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-10 w-full" />
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-24 w-full rounded-lg" />
+          ))}
+        </div>
       </div>
     );
   }
@@ -61,8 +69,10 @@ export default function Updates() {
         <UpdateFilters search={search} onSearchChange={setSearch} category={category} onCategoryChange={setCategory} />
 
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+          <div className="space-y-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-24 w-full rounded-lg" />
+            ))}
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
