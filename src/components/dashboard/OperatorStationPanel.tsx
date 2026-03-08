@@ -846,6 +846,18 @@ export function OperatorStationPanel({
                   </div>
                 )}
 
+                {/* Dimension checks — required before advancing */}
+                {stepDimensions.requirements.length > 0 && deliverOrder && routingInfo?.currentStepId && (
+                  <DimensionCheckForm
+                    requirements={stepDimensions.requirements}
+                    readings={stepDimensions.readings}
+                    queueItemId={deliverOrder.id}
+                    routingStepId={routingInfo.currentStepId}
+                    onRecordReading={stepDimensions.recordReading}
+                    loading={stepDimensions.loading}
+                  />
+                )}
+
                 {/* Validation errors */}
                 {validationErrors.length > 0 && !isOverride && (
                   <Alert variant="destructive" className="py-2">
