@@ -175,6 +175,15 @@ export function QueueItemDetailsTab({
         </div>
       </div>
 
+      {/* Part Image */}
+      <PartImageSection
+        queueItemId={item.id}
+        partImageUrl={item.part_image_url}
+        partNumber={item.part_number}
+        canEdit={true}
+        onUpdate={onUpdate as any}
+      />
+
       {/* Quantity Breakdown */}
       {(item.quantity || item.qty_original) && (
         <div className="p-3 bg-muted/30 rounded-lg space-y-2">
