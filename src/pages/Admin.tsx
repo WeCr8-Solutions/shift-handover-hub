@@ -258,73 +258,75 @@ export default function Admin() {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
-            <OrganizationOversight isAdmin={isAdmin} />
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <UserManagement isAdmin={isAdmin} isSupervisorOrAbove={isSupervisor || isOrgAdmin || isOrgOwner || isAdmin} />
-              <StationManagement isAdmin={isAdmin} />
-            </div>
+            <Suspense fallback={<AdminTabFallback />}>
+              <OrganizationOversight isAdmin={isAdmin} />
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <UserManagement isAdmin={isAdmin} isSupervisorOrAbove={isSupervisor || isOrgAdmin || isOrgOwner || isAdmin} />
+                <StationManagement isAdmin={isAdmin} />
+              </div>
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="work-orders">
-            <WorkOrderManagement isAdmin={isAdmin} />
+            <Suspense fallback={<AdminTabFallback />}><WorkOrderManagement isAdmin={isAdmin} /></Suspense>
           </TabsContent>
 
           <TabsContent value="history">
-            <WorkOrderHistory isAdmin={isAdmin} />
+            <Suspense fallback={<AdminTabFallback />}><WorkOrderHistory isAdmin={isAdmin} /></Suspense>
           </TabsContent>
 
           <TabsContent value="routing">
-            <RoutingTemplateManagement isAdmin={isAdmin} canManageTemplates={isOrgOwner || isOrgAdmin || isSupervisor || isAdmin} />
+            <Suspense fallback={<AdminTabFallback />}><RoutingTemplateManagement isAdmin={isAdmin} canManageTemplates={isOrgOwner || isOrgAdmin || isSupervisor || isAdmin} /></Suspense>
           </TabsContent>
 
           <TabsContent value="users">
-            <UserManagement isAdmin={isAdmin} isSupervisorOrAbove={isSupervisor || isOrgAdmin || isOrgOwner || isAdmin} />
+            <Suspense fallback={<AdminTabFallback />}><UserManagement isAdmin={isAdmin} isSupervisorOrAbove={isSupervisor || isOrgAdmin || isOrgOwner || isAdmin} /></Suspense>
           </TabsContent>
 
           <TabsContent value="stations">
-            <StationManagement isAdmin={isAdmin} />
+            <Suspense fallback={<AdminTabFallback />}><StationManagement isAdmin={isAdmin} /></Suspense>
           </TabsContent>
 
           <TabsContent value="organizations">
-            <OrganizationOversight isAdmin={isAdmin} />
+            <Suspense fallback={<AdminTabFallback />}><OrganizationOversight isAdmin={isAdmin} /></Suspense>
           </TabsContent>
 
           <TabsContent value="performance">
-            <PerformanceUpdatesReview isAdmin={isAdmin} />
+            <Suspense fallback={<AdminTabFallback />}><PerformanceUpdatesReview isAdmin={isAdmin} /></Suspense>
           </TabsContent>
 
           <TabsContent value="machine-monitor">
-            <MachineMonitorPanel isAdmin={isAdmin} />
+            <Suspense fallback={<AdminTabFallback />}><MachineMonitorPanel isAdmin={isAdmin} /></Suspense>
           </TabsContent>
 
           <TabsContent value="smart-alerts">
-            <SmartAlertAdmin />
+            <Suspense fallback={<AdminTabFallback />}><SmartAlertAdmin /></Suspense>
           </TabsContent>
 
           <TabsContent value="displays">
-            <ShopFloorDisplayManagement />
+            <Suspense fallback={<AdminTabFallback />}><ShopFloorDisplayManagement /></Suspense>
           </TabsContent>
 
           {hasPlatformAccess && (
             <>
               <TabsContent value="activity">
-                <ActivityLogs />
+                <Suspense fallback={<AdminTabFallback />}><ActivityLogs /></Suspense>
                 </TabsContent>
 
                 <TabsContent value="data-access">
-                  <DataAccessLogs />
+                  <Suspense fallback={<AdminTabFallback />}><DataAccessLogs /></Suspense>
                 </TabsContent>
   
                 <TabsContent value="issues">
-                <IssuesManagement />
+                <Suspense fallback={<AdminTabFallback />}><IssuesManagement /></Suspense>
               </TabsContent>
 
               <TabsContent value="system-updates">
-                <SystemUpdatesManager />
+                <Suspense fallback={<AdminTabFallback />}><SystemUpdatesManager /></Suspense>
               </TabsContent>
 
               <TabsContent value="surveys">
-                <VisitorSurveyAnalytics />
+                <Suspense fallback={<AdminTabFallback />}><VisitorSurveyAnalytics /></Suspense>
               </TabsContent>
             </>
           )}
@@ -333,33 +335,35 @@ export default function Admin() {
           {hasTestingAccess && (
             <>
               <TabsContent value="dev-queue">
-                <DevIssueQueue />
+                <Suspense fallback={<AdminTabFallback />}><DevIssueQueue /></Suspense>
               </TabsContent>
 
               <TabsContent value="dev-settings">
-                <DevSettingsPanel />
+                <Suspense fallback={<AdminTabFallback />}><DevSettingsPanel /></Suspense>
               </TabsContent>
 
               <TabsContent value="rls-health">
-                <RLSHealthCheck />
+                <Suspense fallback={<AdminTabFallback />}><RLSHealthCheck /></Suspense>
               </TabsContent>
 
               <TabsContent value="user-journey">
-                <UserJourneyDebugPanel />
+                <Suspense fallback={<AdminTabFallback />}><UserJourneyDebugPanel /></Suspense>
               </TabsContent>
 
               <TabsContent value="machine-library">
-                <MachineLibraryManagement />
+                <Suspense fallback={<AdminTabFallback />}><MachineLibraryManagement /></Suspense>
               </TabsContent>
             </>
           )}
         </Tabs>
       </main>
 
-      <BulkUploadDialog 
-        open={bulkUploadOpen} 
-        onOpenChange={setBulkUploadOpen}
-      />
+      <Suspense fallback={null}>
+        <BulkUploadDialog 
+          open={bulkUploadOpen} 
+          onOpenChange={setBulkUploadOpen}
+        />
+      </Suspense>
     </div>
   );
 }
