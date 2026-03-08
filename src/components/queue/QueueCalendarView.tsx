@@ -399,6 +399,29 @@ export function QueueCalendarView({ items, onItemClick }: QueueCalendarViewProps
                     })()}
                   </div>
                 </ScrollArea>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Unscheduled Items */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">Unscheduled ({unscheduledItems.length})</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ScrollArea className="h-[200px]">
+                <div className="space-y-2">
+                  {unscheduledItems.slice(0, 10).map((entry) => {
+                    // Create a pseudo-entry for unscheduled items using created_at
+                    const pseudoEntry: CalendarEntry = { item: entry, dateType: "due", date: new Date(entry.created_at) };
+                    return (
+                      <CalendarEntryCard
+                        key={entry.id}
+                        entry={pseudoEntry}
+                        onClick={() => onItemClick(entry.id)}
+                      />
+                    );
+                  })}
                   {unscheduledItems.length === 0 && (
                     <p className="text-sm text-muted-foreground text-center py-4">
                       All items scheduled
