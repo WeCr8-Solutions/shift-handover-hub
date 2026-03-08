@@ -93,6 +93,16 @@ export function QueueItemDetailDialog({
     setComments(data || []);
   };
 
+  const loadUserNames = async () => {
+    if (!item) return;
+    const userIds = [item.assigned_to, item.created_by].filter(Boolean) as string[];
+    if (userIds.length === 0) { setAssignedUserName(null); setCreatedByName(null); return; }
+    const { data } = await supabase.from('profiles').select('user_id, display_name').in('user_id', userIds);
+    const map = new Map((data || []).map((p: any) => [p.user_id, p.display_name]));
+    setAssignedUserName(item.assigned_to ? map.get(item.assigned_to) || null : null);
+    setCreatedByName(item.created_by ? map.get(item.created_by) || null : null);
+  };
+
   const loadHistory = async () => {
     if (!item) return;
     const { data } = await getHistory(item.id);
