@@ -143,6 +143,8 @@ export function useStations(teamId?: string | null, organizationId?: string | nu
         current_status: Array.isArray(station.current_status)
           ? station.current_status[0] || null
           : station.current_status || null,
+        // team join: PostgREST returns object or null for FK joins
+        team: station.team || null,
       }));
       setStations(transformed);
     }
