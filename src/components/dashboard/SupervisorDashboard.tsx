@@ -1,10 +1,12 @@
-import { useMemo, useEffect, useCallback } from "react";
+import { useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useStations, useHandoffRecords } from "@/hooks/useStations";
 import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useBackgroundRefresh } from "@/hooks/useBackgroundRefresh";
+import { RefreshIndicator } from "./RefreshIndicator";
 import {
   Factory,
   AlertTriangle,
@@ -17,7 +19,6 @@ import {
   Eye,
   Monitor,
   Users,
-  RefreshCw,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -29,9 +30,6 @@ import {
   getStatusBgClass,
   type StatusLabel,
 } from "./stationStatus";
-
-// Auto-refresh interval: 5 minutes default (configurable via org settings)
-const REFRESH_INTERVAL = 300000;
 
 interface SupervisorDashboardProps {
   onNewHandoff: () => void;
@@ -62,22 +60,20 @@ export function SupervisorDashboard({
     refreshRecords,
   } = useHandoffRecords(currentTeam?.id, organization?.id);
 
-  const isLoading = stationsLoading || recordsLoading;
+  // Centralized background refresh — no flash spinners on subsequent fetches
+  const { initialLoading, isRefreshing, lastRefreshedAt, refresh: handleManualRefresh } =
+    useBackgroundRefresh({
+      key: `supervisor-${organization?.id}-${currentTeam?.id}`,
+      fetchers: [
+        () => refreshStations?.() as unknown as Promise<unknown>,
+        () => refreshRecords?.() as unknown as Promise<unknown>,
+      ],
+      intervalMs: 300_000,
+      enabled: !!(organization?.id),
+    });
 
-  // Auto-refresh data periodically
-  useEffect(() => {
-    const interval = setInterval(() => {
-      refreshStations?.();
-      refreshRecords?.();
-    }, REFRESH_INTERVAL);
-
-    return () => clearInterval(interval);
-  }, [refreshStations, refreshRecords]);
-
-  const handleManualRefresh = useCallback(() => {
-    refreshStations?.();
-    refreshRecords?.();
-  }, [refreshStations, refreshRecords]);
+  // Show skeleton only on first mount — never flash again
+  const isLoading = initialLoading && (stationsLoading || recordsLoading);
 
   const orgName = organization?.name || "Organization";
   const scopeLabel = currentTeam?.name || `${orgName} · All Teams`;
@@ -278,11 +274,11 @@ export function SupervisorDashboard({
           </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          {/* Manual Refresh Button */}
-          <Button variant="ghost" size="sm" onClick={handleManualRefresh} className="gap-2" aria-label="Refresh data">
-            <RefreshCw className="w-4 h-4" />
-            <span className="hidden sm:inline">Refresh</span>
-          </Button>
+          <RefreshIndicator
+            isRefreshing={isRefreshing}
+            lastRefreshedAt={lastRefreshedAt}
+            onRefresh={handleManualRefresh}
+          />
 
           {/* Existing action buttons */}
           <Button variant="outline" size="sm" className="gap-2" onClick={onNewHandoff}>
