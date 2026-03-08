@@ -360,8 +360,8 @@ export function ProductionAnalytics({
         )}
       </div>
 
-      {/* Chart Area */}
-      <div className="bg-card border border-border rounded-lg p-4">
+      {/* Chart Area — horizontal scroll on small screens */}
+      <div className="bg-card border border-border rounded-lg p-4 overflow-x-auto overscroll-x-contain -webkit-overflow-scrolling-touch">
         {chartView === "output" && (
           <div>
             <p className="text-xs text-muted-foreground mb-3">Parts completed by station</p>
