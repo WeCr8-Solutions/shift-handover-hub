@@ -1191,8 +1191,7 @@ export default function Landing() {
           </div>
         </div>
       </section>
-
-
+      <AdPlacement format="horizontal" className="py-4" />
       {/* CTA Section */}
       <section className="py-12 sm:py-16 md:py-24 lg:py-32">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">

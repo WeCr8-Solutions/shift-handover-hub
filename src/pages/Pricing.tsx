@@ -225,7 +225,9 @@ export default function Pricing() {
               </div>
             </div>
           </div>
-
+          <div className="mt-16">
+            <AdPlacement format="horizontal" />
+          </div>
         </div>
       </section>
 

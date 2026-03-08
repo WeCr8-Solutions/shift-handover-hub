@@ -137,6 +137,8 @@ export default function Blog() {
           </div>
         </section>
 
+        <AdPlacement format="horizontal" className="py-4" />
+
         {/* CTA */}
         <section className="py-16 bg-muted/30">
           <div className="container mx-auto px-4 text-center max-w-2xl">
