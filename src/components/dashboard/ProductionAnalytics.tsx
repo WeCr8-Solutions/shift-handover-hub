@@ -370,117 +370,119 @@ export function ProductionAnalytics({
                 No production data yet. Submit handoffs to see output metrics.
               </div>
             ) : (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart
-                  data={stationOutputData}
-                  margin={{ top: 5, right: 10, left: -10, bottom: 10 }}
-                  role="img"
-                  aria-label={`Bar chart showing parts completed. Top station: ${stationOutputData[0]?.name} with ${stationOutputData[0]?.parts} parts.`}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-                  <XAxis
-                    dataKey="name"
-                    axisLine={{ stroke: "hsl(var(--border))" }}
-                    tickLine={false}
-                    height={60}
-                    tick={({ x, y, payload }: any) => {
-                      const entry = stationOutputData.find((d) => d.name === payload.value);
-                      const status = entry?.status as StatusLabel | undefined;
-                      const statusColor = status ? STATUS_COLORS[status] : "hsl(var(--muted-foreground))";
-                      const statusLabel = status ? STATUS_CONFIG[status].displayName : "";
-                      return (
-                        <g transform={`translate(${x},${y})`}>
-                          <text
-                            x={0}
-                            y={0}
-                            dy={12}
-                            textAnchor="middle"
-                            fontSize={10}
-                            fill="hsl(var(--muted-foreground))"
-                          >
-                            {payload.value}
-                          </text>
-                          {statusLabel && (
-                            <g transform={`translate(0, 28)`}>
-                              <circle cx={-(statusLabel.length * 2.7) / 2 - 5} cy={0} r={3} fill={statusColor} />
-                              <text
-                                x={0}
-                                y={0}
-                                textAnchor="middle"
-                                dominantBaseline="central"
-                                fontSize={9}
-                                fontWeight={600}
-                                fill={statusColor}
-                              >
-                                {statusLabel}
-                              </text>
-                            </g>
-                          )}
-                        </g>
-                      );
-                    }}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <Tooltip
-                    content={({ active, payload, label }) => {
-                      if (!active || !payload?.length) return null;
-                      const data = payload[0]?.payload;
-                      return (
-                        <div className="bg-card border border-border rounded-lg p-2.5 text-xs shadow-lg">
-                          <p className="font-medium text-foreground mb-1">{label}</p>
-                          {data?.teamName && (
-                            <p className="text-muted-foreground">Team: {data.teamName}</p>
-                          )}
-                          {data?.workCenter && data.workCenter !== "—" && (
-                            <p className="text-muted-foreground">Work Center: {data.workCenter}</p>
-                          )}
-                          {payload.map((p: any, i: number) => (
-                            <p key={i} style={{ color: p.color }}>
-                              {p.name}: {p.value}
-                            </p>
-                          ))}
-                          {data?.status && (
-                            <div className="flex items-center gap-1.5 mt-1.5 pt-1.5 border-t border-border">
-                              <span
-                                className="inline-block w-2 h-2 rounded-full shrink-0"
-                                style={{ backgroundColor: STATUS_COLORS[data.status as StatusLabel] }}
-                              />
-                              <span className="font-medium" style={{ color: STATUS_COLORS[data.status as StatusLabel] }}>
-                                {STATUS_CONFIG[data.status as StatusLabel]?.displayName}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    }}
-                  />
-                  <Bar
-                    dataKey="parts"
-                    name="Good Parts"
-                    fill={STATUS_COLORS.running}
-                    radius={[4, 4, 0, 0]}
-                    isAnimationActive={!prefersReducedMotion}
-                  />
-                  <Bar
-                    dataKey="scrap"
-                    name="Scrap"
-                    fill={STATUS_COLORS.down}
-                    radius={[4, 4, 0, 0]}
-                    isAnimationActive={!prefersReducedMotion}
-                  />
-                  <Bar
-                    dataKey="rework"
-                    name="Rework"
-                    fill={STATUS_COLORS.setup}
-                    radius={[4, 4, 0, 0]}
-                    isAnimationActive={!prefersReducedMotion}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+              <div className="min-w-[600px]">
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart
+                    data={stationOutputData}
+                    margin={{ top: 5, right: 10, left: -10, bottom: 10 }}
+                    role="img"
+                    aria-label={`Bar chart showing parts completed. Top station: ${stationOutputData[0]?.name} with ${stationOutputData[0]?.parts} parts.`}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                    <XAxis
+                      dataKey="name"
+                      axisLine={{ stroke: "hsl(var(--border))" }}
+                      tickLine={false}
+                      height={60}
+                      tick={({ x, y, payload }: any) => {
+                        const entry = stationOutputData.find((d) => d.name === payload.value);
+                        const status = entry?.status as StatusLabel | undefined;
+                        const statusColor = status ? STATUS_COLORS[status] : "hsl(var(--muted-foreground))";
+                        const statusLabel = status ? STATUS_CONFIG[status].displayName : "";
+                        return (
+                          <g transform={`translate(${x},${y})`}>
+                            <text
+                              x={0}
+                              y={0}
+                              dy={12}
+                              textAnchor="middle"
+                              fontSize={10}
+                              fill="hsl(var(--muted-foreground))"
+                            >
+                              {payload.value}
+                            </text>
+                            {statusLabel && (
+                              <g transform={`translate(0, 28)`}>
+                                <circle cx={-(statusLabel.length * 2.7) / 2 - 5} cy={0} r={3} fill={statusColor} />
+                                <text
+                                  x={0}
+                                  y={0}
+                                  textAnchor="middle"
+                                  dominantBaseline="central"
+                                  fontSize={9}
+                                  fontWeight={600}
+                                  fill={statusColor}
+                                >
+                                  {statusLabel}
+                                </text>
+                              </g>
+                            )}
+                          </g>
+                        );
+                      }}
+                    />
+                    <YAxis
+                      tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <Tooltip
+                      content={({ active, payload, label }) => {
+                        if (!active || !payload?.length) return null;
+                        const data = payload[0]?.payload;
+                        return (
+                          <div className="bg-card border border-border rounded-lg p-2.5 text-xs shadow-lg">
+                            <p className="font-medium text-foreground mb-1">{label}</p>
+                            {data?.teamName && (
+                              <p className="text-muted-foreground">Team: {data.teamName}</p>
+                            )}
+                            {data?.workCenter && data.workCenter !== "—" && (
+                              <p className="text-muted-foreground">Work Center: {data.workCenter}</p>
+                            )}
+                            {payload.map((p: any, i: number) => (
+                              <p key={i} style={{ color: p.color }}>
+                                {p.name}: {p.value}
+                              </p>
+                            ))}
+                            {data?.status && (
+                              <div className="flex items-center gap-1.5 mt-1.5 pt-1.5 border-t border-border">
+                                <span
+                                  className="inline-block w-2 h-2 rounded-full shrink-0"
+                                  style={{ backgroundColor: STATUS_COLORS[data.status as StatusLabel] }}
+                                />
+                                <span className="font-medium" style={{ color: STATUS_COLORS[data.status as StatusLabel] }}>
+                                  {STATUS_CONFIG[data.status as StatusLabel]?.displayName}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      }}
+                    />
+                    <Bar
+                      dataKey="parts"
+                      name="Good Parts"
+                      fill={STATUS_COLORS.running}
+                      radius={[4, 4, 0, 0]}
+                      isAnimationActive={!prefersReducedMotion}
+                    />
+                    <Bar
+                      dataKey="scrap"
+                      name="Scrap"
+                      fill={STATUS_COLORS.down}
+                      radius={[4, 4, 0, 0]}
+                      isAnimationActive={!prefersReducedMotion}
+                    />
+                    <Bar
+                      dataKey="rework"
+                      name="Rework"
+                      fill={STATUS_COLORS.setup}
+                      radius={[4, 4, 0, 0]}
+                      isAnimationActive={!prefersReducedMotion}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             )}
           </div>
         )}
