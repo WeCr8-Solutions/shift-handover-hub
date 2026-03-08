@@ -222,6 +222,10 @@ export default function Settings() {
             <NotificationSettings />
           </TabsContent>
 
+          <TabsContent value="alerts">
+            <SmartAlertSettings thresholds={thresholds} onSave={saveThresholds} />
+          </TabsContent>
+
           <TabsContent value="onboarding">
             <OnboardingSettings />
           </TabsContent>
