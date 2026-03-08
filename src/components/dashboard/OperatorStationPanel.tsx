@@ -216,11 +216,57 @@ export function OperatorStationPanel({
     setProcessing(false);
   };
 
-  // Complete operation / deliver — uses atomic backend RPC
+  // Complete operation / deliver — uses atomic backend RPC with pre-advance validation
   const confirmDelivery = async () => {
     if (!deliverOrder || !user) return;
     setProcessing(true);
+
     try {
+      // === Pre-advance validation ===
+      // Fetch full queue item data for quantity checks
+      const { data: fullItem } = await supabase
+        .from("queue_items")
+        .select("qty_original, qty_completed, qty_scrap, qty_rework, parts_completed, quantity, station_id")
+        .eq("id", deliverOrder.id)
+        .maybeSingle();
+
+      if (fullItem) {
+        const qtyCompleted = fullItem.qty_completed ?? fullItem.parts_completed ?? 0;
+        const qtyOriginal = fullItem.qty_original ?? fullItem.quantity ?? 0;
+        const qtyScrap = fullItem.qty_scrap ?? 0;
+        const qtyRework = fullItem.qty_rework ?? 0;
+
+        // 1. Quantity reconciliation
+        if (qtyOriginal > 0 && (qtyCompleted + qtyScrap + qtyRework) < qtyOriginal) {
+          const unaccounted = qtyOriginal - qtyCompleted - qtyScrap - qtyRework;
+          toast.error(
+            `Quantity check required: ${unaccounted} parts unaccounted for. Completed: ${qtyCompleted}, Scrap: ${qtyScrap}, Rework: ${qtyRework} of ${qtyOriginal} total.`
+          );
+          setProcessing(false);
+          return;
+        }
+      }
+
+      // 2 & 3. Quality sign-off and first article checks via station state
+      const { data: stationStatus } = await supabase
+        .from("current_station_status")
+        .select("current_job_state")
+        .eq("station_id", stationId)
+        .maybeSingle();
+
+      if (stationStatus?.current_job_state === "Waiting on QA" && !isOverride) {
+        toast.error("Quality sign-off required: station is still 'Waiting on QA'. Resolve QA before advancing, or use supervisor override.");
+        setProcessing(false);
+        return;
+      }
+
+      if (stationStatus?.current_job_state === "First Article in Process" && !isOverride) {
+        toast.error("First article inspection must be completed before advancing. Use supervisor override if necessary.");
+        setProcessing(false);
+        return;
+      }
+
+      // === All validations passed — call atomic RPC ===
       const { data, error } = await supabase.rpc("pass_work_order_to_next_step", {
         _queue_item_id: deliverOrder.id,
         _current_station_id: stationId,
