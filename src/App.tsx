@@ -69,6 +69,7 @@ const App = () => (
                   {/* ITAR compliance gates — both are no-ops when not required by the org */}
                   <MFAEnrollmentGate>
                   <USPersonDeclarationGate>
+                  <JobLineProvider>
                   <ActAsBanner />
                   <GuidedTour />
                   <WelcomeModal />
