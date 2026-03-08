@@ -186,7 +186,7 @@ export function NCRApprovalPanel({ ncrs, onApprove, onReject }: NCRApprovalPanel
       </div>
 
       <Dialog open={!!rejectDialog} onOpenChange={(open) => !open && setRejectDialog(null)}>
-        <DialogContent>
+        <DialogContent className="max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Reject NCR</DialogTitle>
             <DialogDescription>

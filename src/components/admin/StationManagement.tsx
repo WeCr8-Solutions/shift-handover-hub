@@ -472,7 +472,7 @@ export function StationManagement({ isAdmin }: StationManagementProps) {
                     Add Station
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="max-h-[85vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>Add New Station</DialogTitle>
                     <DialogDescription>
@@ -657,7 +657,7 @@ export function StationManagement({ isAdmin }: StationManagementProps) {
 
       {/* Edit Dialog */}
       <Dialog open={!!editingStation} onOpenChange={(open) => !open && resetForm()}>
-        <DialogContent>
+        <DialogContent className="max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Station</DialogTitle>
             <DialogDescription>

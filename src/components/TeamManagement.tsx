@@ -214,7 +214,7 @@ export function TeamManagement() {
               Create Team
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-h-[85vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create a New Team</DialogTitle>
               <DialogDescription>Teams allow you to share handoff data with other operators.</DialogDescription>
@@ -322,7 +322,7 @@ export function TeamManagement() {
 
       {/* Edit Team Dialog */}
       <Dialog open={!!editingTeam} onOpenChange={(open) => !open && setEditingTeam(null)}>
-        <DialogContent>
+        <DialogContent className="max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Team</DialogTitle>
             <DialogDescription>Update the team name and description.</DialogDescription>
@@ -575,7 +575,7 @@ function TeamMembersPanel({
                     Add Member
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="max-h-[85vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>Add Team Member</DialogTitle>
                     <DialogDescription>

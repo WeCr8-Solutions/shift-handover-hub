@@ -828,7 +828,7 @@ export function TeamStationManager({
 
       {/* Reassign Station Dialog */}
       <Dialog open={!!reassigningStation} onOpenChange={(open) => !open && setReassigningStation(null)}>
-        <DialogContent>
+        <DialogContent className="max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Reassign Station</DialogTitle>
             <DialogDescription>

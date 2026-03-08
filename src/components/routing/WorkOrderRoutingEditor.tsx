@@ -646,7 +646,7 @@ export function WorkOrderRoutingEditor({
       )}
 
       {/* Flow Visualization */}
-      <div className="relative space-y-2">
+      <div className="relative space-y-2 max-h-[60vh] overflow-y-auto rounded-lg border p-2 sm:p-0 sm:border-0 sm:max-h-none sm:overflow-visible">
         {steps.map((step, index) => {
           const opType = getOperationType(step.operation_type);
           const OpIcon = opType.icon;

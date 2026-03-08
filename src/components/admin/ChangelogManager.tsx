@@ -182,7 +182,7 @@ export function ChangelogManager() {
             <DialogTrigger asChild>
               <Button size="sm" className="gap-1"><Plus className="w-4 h-4" /> New Entry</Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-h-[85vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{editingEntry ? "Edit Changelog" : "New Changelog Entry"}</DialogTitle>
               </DialogHeader>
