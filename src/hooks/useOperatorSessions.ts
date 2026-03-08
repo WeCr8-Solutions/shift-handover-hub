@@ -59,7 +59,7 @@ export function useOperatorSessions() {
     fetchSessions();
   }, [fetchSessions]);
 
-  // Realtime subscription
+  // Realtime subscription (no inline polling — parent uses useBackgroundRefresh)
   useEffect(() => {
     if (!user) return;
 
@@ -74,22 +74,12 @@ export function useOperatorSessions() {
         fetchSessions();
       })
       .subscribe((status) => {
-        // On channel error, do an immediate refetch
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
           fetchSessions();
         }
       });
 
-    // Polling fallback: 5-minute intervals
-    let pollTimeout: ReturnType<typeof setTimeout>;
-    const poll = () => {
-      fetchSessions();
-      pollTimeout = setTimeout(poll, 300000);
-    };
-    pollTimeout = setTimeout(poll, 300000);
-
     return () => {
-      clearTimeout(pollTimeout);
       supabase.removeChannel(channel);
     };
   }, [user, fetchSessions]);
