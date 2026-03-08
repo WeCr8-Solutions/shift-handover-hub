@@ -140,71 +140,57 @@ export function useOrganizationInvites(organizationId: string | null) {
 }
 
 export async function validateInviteCode(code: string) {
-  const { data, error } = await supabase
-    .from("organization_invites")
-    .select(`
-      id,
-      organization_id,
-      team_id,
-      org_role,
-      app_role,
-      expires_at,
-      max_uses,
-      uses_count,
-      organizations:organization_id(name),
-      teams:team_id(name)
-    `)
-    .eq("invite_code", code.toUpperCase())
-    .eq("is_active", true)
-    .maybeSingle();
+  // Use the secure RPC function that excludes invited_email
+  const { data, error } = await supabase.rpc("validate_invite_code", {
+    _code: code,
+  });
 
-  if (error || !data) {
+  if (error || !data || !(data as any).valid) {
     return { valid: false, invite: null, reason: "Invalid or inactive invite code" };
   }
 
-  // Check expiration
-  if (data.expires_at && new Date(data.expires_at) < new Date()) {
-    // Auto-deactivate expired invite so the seat is returned
-    await supabase
-      .from("organization_invites")
-      .update({ is_active: false })
-      .eq("id", data.id);
-    return { valid: false, invite: null, reason: "This invite code has expired. The seat has been returned to the organization." };
-  }
+  const invite = data as {
+    valid: boolean;
+    id: string;
+    organization_id: string;
+    team_id: string | null;
+    org_role: string;
+    app_role: string | null;
+    expires_at: string | null;
+    max_uses: number | null;
+    uses_count: number;
+  };
 
-  // Check max uses
-  if (data.max_uses && data.uses_count >= data.max_uses) {
-    return { valid: false, invite: null, reason: "This invite code has reached its maximum number of uses" };
-  }
+  // Fetch org name, team name, and seat info
+  const [orgResult, teamResult, countResult, entitlementResult] = await Promise.all([
+    supabase.from("organizations").select("name").eq("id", invite.organization_id).maybeSingle(),
+    invite.team_id
+      ? supabase.from("teams").select("name").eq("id", invite.team_id).maybeSingle()
+      : Promise.resolve({ data: null }),
+    supabase
+      .from("organization_members")
+      .select("id", { count: "exact", head: true })
+      .eq("organization_id", invite.organization_id),
+    supabase
+      .from("entitlements")
+      .select("limits")
+      .eq("organization_id", invite.organization_id)
+      .maybeSingle(),
+  ]);
 
-  // Fetch seat info for the org
-  let seatsUsed: number | undefined;
-  let seatLimit: number | undefined;
-
-  const { count } = await supabase
-    .from("organization_members")
-    .select("id", { count: "exact", head: true })
-    .eq("organization_id", data.organization_id);
-
-  const { data: entitlement } = await supabase
-    .from("entitlements")
-    .select("limits")
-    .eq("organization_id", data.organization_id)
-    .maybeSingle();
-
-  seatsUsed = count ?? 0;
-  seatLimit = (entitlement?.limits as any)?.users ?? undefined;
+  const seatsUsed = countResult.count ?? 0;
+  const seatLimit = (entitlementResult.data?.limits as any)?.users ?? undefined;
 
   return {
     valid: true,
     invite: {
-      id: data.id,
-      organizationId: data.organization_id,
-      organizationName: (data.organizations as any)?.name || "Unknown",
-      teamId: data.team_id,
-      teamName: (data.teams as any)?.name || null,
-      orgRole: data.org_role,
-      appRole: data.app_role,
+      id: invite.id,
+      organizationId: invite.organization_id,
+      organizationName: orgResult.data?.name || "Unknown",
+      teamId: invite.team_id,
+      teamName: teamResult.data?.name || null,
+      orgRole: invite.org_role,
+      appRole: invite.app_role,
       seatsUsed,
       seatLimit,
     },
