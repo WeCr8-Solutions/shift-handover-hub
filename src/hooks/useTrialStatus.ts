@@ -30,8 +30,7 @@ export function useTrialStatus() {
       : null;
 
     const isOrgOwner = organizationRole === "owner";
-    const canBypassTrial = isDeveloper; // Platform admins/devs bypass
-    const canManageBilling = isDeveloper || isOrgOwner;
+    const canManageBilling = canBypassTrial || isOrgOwner;
 
     if (!trialEndsAt) {
       return {
