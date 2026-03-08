@@ -79,6 +79,9 @@ export function SupervisorDashboard({
   // Show skeleton only on first mount — never flash again
   const isLoading = initialLoading && (stationsLoading || recordsLoading);
 
+  // Status filter: click a KPI card to filter station list + analytics
+  const [statusFilter, setStatusFilter] = useState<StatusLabel | "all">("all");
+
   const orgName = organization?.name || "Organization";
   const scopeLabel = currentTeam?.name || `${orgName} · All Teams`;
 
