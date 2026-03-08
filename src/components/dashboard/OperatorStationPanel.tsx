@@ -861,7 +861,15 @@ export function OperatorStationPanel({
                   />
                 )}
 
-                {/* Validation errors */}
+                {/* Request dimension check from supervisor */}
+                {deliverOrder && routingInfo?.currentStepId && (
+                  <RequestDimensionCheckButton
+                    routingStepId={routingInfo.currentStepId}
+                    queueItemId={deliverOrder.id}
+                    operationName={routingInfo?.currentStepName || "this operation"}
+                    onSubmit={operatorDimRequests.submitRequest}
+                  />
+                )}
                 {validationErrors.length > 0 && !isOverride && (
                   <Alert variant="destructive" className="py-2">
                     <AlertTriangle className="h-4 w-4" />
