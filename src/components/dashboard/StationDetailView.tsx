@@ -140,12 +140,17 @@ export function StationDetailView({ stationId, stationName, onBack }: StationDet
         onViewWorkOrder={handleViewWorkOrder}
       />
 
-      {/* Equipment / Machine Status Cards */}
-      <MachineStatusGrid
-        organizationId={organization?.id || null}
-        stationId={stationId}
-        compact
-      />
+      {/* Equipment / Machine Status Cards — gated behind entitlement */}
+      <MachineMonitoringGate compact>
+        <MachineStatusGrid
+          organizationId={organization?.id || null}
+          stationId={stationId}
+          compact
+        />
+
+        {/* Alarm Feed for this station's shift */}
+        <AlarmFeed compact maxItems={20} />
+      </MachineMonitoringGate>
 
       {showHandoff && (
         <NewHandoffForm

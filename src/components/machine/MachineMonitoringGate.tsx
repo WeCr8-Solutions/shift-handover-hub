@@ -79,19 +79,19 @@ export function MachineMonitoringGate({ children, compact = false }: MachineMoni
       <CardContent className="text-center space-y-4">
         <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground max-w-sm mx-auto">
           <div className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+            <span className="w-1.5 h-1.5 rounded-full bg-primary/70" />
             Live machine state
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+            <span className="w-1.5 h-1.5 rounded-full bg-destructive/70" />
             Alarm detection
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+            <span className="w-1.5 h-1.5 rounded-full bg-accent-foreground/50" />
             DNC file transfer
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+            <span className="w-1.5 h-1.5 rounded-full bg-secondary-foreground/50" />
             Shift handoff data
           </div>
         </div>
