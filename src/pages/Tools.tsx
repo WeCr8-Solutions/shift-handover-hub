@@ -52,6 +52,15 @@ export default function Tools() {
         <Header />
         <main className="container max-w-6xl mx-auto px-4 py-8">
           <div className="flex items-center gap-3 mb-6">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="shrink-0"
+              onClick={() => navigate(-1)}
+              aria-label="Go back"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
             <div className="p-2 rounded-lg bg-primary/10">
               <Wrench className="w-6 h-6 text-primary" />
             </div>
