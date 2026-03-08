@@ -229,7 +229,7 @@ export default function Admin() {
           <TabsContent value="overview" className="space-y-4">
             <OrganizationOversight isAdmin={isAdmin} />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <UserManagement isAdmin={isAdmin} />
+              <UserManagement isAdmin={isAdmin} isSupervisorOrAbove={isSupervisor || isOrgAdmin || isOrgOwner || isAdmin} />
               <StationManagement isAdmin={isAdmin} />
             </div>
           </TabsContent>
