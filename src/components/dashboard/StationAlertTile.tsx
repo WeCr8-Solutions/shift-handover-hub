@@ -70,6 +70,7 @@ interface StationAlertTileProps {
     status: StatusLabel;
   };
   onViewStation?: (stationId: string, stationName: string) => void;
+  onQuickAction?: (action: string, target: QuickActionTarget) => void;
 }
 
 export function StationAlertTile({ station, onViewStation }: StationAlertTileProps) {
