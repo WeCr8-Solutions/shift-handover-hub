@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { QueueItem } from "@/hooks/useQueue";
 
 export interface WorkOrderLinkedData {

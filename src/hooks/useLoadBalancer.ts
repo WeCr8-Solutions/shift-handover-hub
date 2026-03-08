@@ -18,7 +18,7 @@ import {
  * Fetches live station data and computes scored recommendations for a given part.
  */
 export function useLoadBalancer() {
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const { currentTeam } = useCurrentTeam();
   const [result, setResult] = useState<LoadBalancerResult | null>(null);
   const [loading, setLoading] = useState(false);

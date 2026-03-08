@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { useUserOrganization } from '@/hooks/useUserOrganization';
+import { useOrgContext } from '@/contexts/OrgContext';
 import { ParsedExcelData, parseExcelFile, ParseResult } from '@/lib/excelTemplates';
 import { useToast } from '@/hooks/use-toast';
 

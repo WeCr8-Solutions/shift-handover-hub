@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { useActivityLog } from "@/hooks/useActivityLog";
 import { Json } from "@/integrations/supabase/types";
 import { uploadOrgScopedFile, getSignedUrls } from "@/lib/storageUtils";

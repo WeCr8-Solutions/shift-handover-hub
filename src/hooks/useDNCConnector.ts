@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useUserOrganization } from "./useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { toast } from "sonner";
 
 export type DNCProtocol = "ftp" | "serial" | "ethernet" | "websocket" | "usb";

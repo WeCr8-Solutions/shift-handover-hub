@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useUserOrganization } from "./useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 
 export interface MFAStatus {
   orgRequiresMFA: boolean;

@@ -5,7 +5,7 @@ import { useAdminAccess } from "@/hooks/useAdminData";
 import { differenceInDays, isPast } from "date-fns";
 
 export function useTrialStatus() {
-  const { organization, organizationRole, loading: orgLoading } = useUserOrganization();
+  const { organization, organizationRole, loading: orgLoading } = useOrgContext();
   const { subscribed, isLoading: subLoading } = useSubscription();
   const { isDeveloper, loading: accessLoading } = useAdminAccess();
 

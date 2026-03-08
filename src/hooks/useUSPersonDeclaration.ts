@@ -25,7 +25,7 @@ export interface USPersonDeclarationStatus {
 
 export function useUSPersonDeclaration(): USPersonDeclarationStatus {
   const { user } = useAuth();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
 
   const [orgRequiresDeclaration, setOrgRequiresDeclaration] = useState(false);
   const [userHasDeclared, setUserHasDeclared] = useState(false);

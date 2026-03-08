@@ -25,7 +25,7 @@ export interface ShopFloorDisplay {
 
 export function useShopFloorDisplays() {
   const { user } = useAuth();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const [displays, setDisplays] = useState<ShopFloorDisplay[]>([]);
   const [loading, setLoading] = useState(true);
 
