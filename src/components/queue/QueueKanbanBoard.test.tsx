@@ -84,7 +84,7 @@ describe("QueueKanbanBoard", () => {
         onReorder={vi.fn()}
       />
     );
-    expect(screen.getByText("WO-100")).toBeInTheDocument();
+    expect(screen.getByText("Test WO")).toBeInTheDocument();
   });
 
   it("shows item count in column headers", () => {
