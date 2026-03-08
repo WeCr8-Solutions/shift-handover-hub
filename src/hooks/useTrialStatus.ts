@@ -10,15 +10,18 @@ export function useTrialStatus() {
   const { isDeveloper, loading: accessLoading } = useAdminAccess();
 
   const trialStatus = useMemo(() => {
+    // Platform admins/developers ALWAYS bypass trial — even without an org
+    const canBypassTrial = isDeveloper;
+
     if (!organization) {
       return {
         isInTrial: false,
         isTrialExpired: false,
         trialDaysRemaining: 0,
         trialEndsAt: null,
-        canBypassTrial: false,
+        canBypassTrial,
         isOrgOwner: false,
-        canManageBilling: false,
+        canManageBilling: canBypassTrial,
       };
     }
 
