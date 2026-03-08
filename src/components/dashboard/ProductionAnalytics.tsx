@@ -193,34 +193,57 @@ export function ProductionAnalytics({
     ].filter((d) => d.value > 0);
   }, [stations]);
 
-  // Handoff trend data (grouped by hour, filtered to today only)
+  // Handoff trend data — show today if there's data, otherwise show last 7 days by date
   const trendData = useMemo(() => {
-    const hours = new Map<string, { hour: string; handoffs: number; parts: number; scrap: number }>();
-
-    // Create 24h slots
-    for (let i = 0; i < 24; i++) {
-      const label = `${i.toString().padStart(2, "0")}:00`;
-      hours.set(label, { hour: label, handoffs: 0, parts: 0, scrap: 0 });
-    }
-
     const today = new Date();
     const todayString = today.toDateString();
 
-    filteredHandoffs.forEach((h) => {
-      const date = new Date(h.created_at);
-      // Only include today's handoffs
-      if (date.toDateString() !== todayString) return;
+    // Check if any handoffs exist for today
+    const hasTodayData = filteredHandoffs.some(
+      (h) => new Date(h.created_at).toDateString() === todayString,
+    );
 
-      const hourLabel = `${date.getHours().toString().padStart(2, "0")}:00`;
-      const slot = hours.get(hourLabel);
-      if (slot) {
-        slot.handoffs++;
-        slot.parts += h.parts_completed_this_shift ?? 0;
-        slot.scrap += h.scrap_count ?? 0;
+    if (hasTodayData) {
+      // Show hourly breakdown for today
+      const hours = new Map<string, { label: string; handoffs: number; parts: number; scrap: number }>();
+      for (let i = 0; i < 24; i++) {
+        const label = `${i.toString().padStart(2, "0")}:00`;
+        hours.set(label, { label, handoffs: 0, parts: 0, scrap: 0 });
       }
-    });
-
-    return Array.from(hours.values());
+      filteredHandoffs.forEach((h) => {
+        const date = new Date(h.created_at);
+        if (date.toDateString() !== todayString) return;
+        const hourLabel = `${date.getHours().toString().padStart(2, "0")}:00`;
+        const slot = hours.get(hourLabel);
+        if (slot) {
+          slot.handoffs++;
+          slot.parts += h.parts_completed_this_shift ?? 0;
+          slot.scrap += h.scrap_count ?? 0;
+        }
+      });
+      return { mode: "hourly" as const, data: Array.from(hours.values()) };
+    } else {
+      // Show daily breakdown for last 7 days
+      const days = new Map<string, { label: string; handoffs: number; parts: number; scrap: number }>();
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        const label = d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+        const key = d.toDateString();
+        days.set(key, { label, handoffs: 0, parts: 0, scrap: 0 });
+      }
+      filteredHandoffs.forEach((h) => {
+        const date = new Date(h.created_at);
+        const key = date.toDateString();
+        const slot = days.get(key);
+        if (slot) {
+          slot.handoffs++;
+          slot.parts += h.parts_completed_this_shift ?? 0;
+          slot.scrap += h.scrap_count ?? 0;
+        }
+      });
+      return { mode: "daily" as const, data: Array.from(days.values()) };
+    }
   }, [filteredHandoffs]);
 
   const totalParts = stationOutputData.reduce((sum, d) => sum + d.parts, 0);
@@ -614,66 +637,76 @@ export function ProductionAnalytics({
 
         {chartView === "trend" && (
           <div>
-            <p className="text-xs text-muted-foreground mb-3">Handoff activity & parts output (today)</p>
-            <ResponsiveContainer width="100%" height={280}>
-              <AreaChart
-                data={trendData}
-                margin={{ top: 5, right: 10, left: -10, bottom: 5 }}
-                role="img"
-                aria-label="Area chart showing handoff activity and parts output throughout the day"
-              >
-                <defs>
-                  <linearGradient id="gradParts" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={STATUS_COLORS.running} stopOpacity={0.3} />
-                    <stop offset="95%" stopColor={STATUS_COLORS.running} stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="gradHandoffs" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-                <XAxis
-                  dataKey="hour"
-                  tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
-                  axisLine={{ stroke: "hsl(var(--border))" }}
-                  tickLine={false}
-                  interval={2}
-                />
-                <YAxis
-                  tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: "8px",
-                    fontSize: "12px",
-                  }}
-                />
-                <Legend iconType="circle" wrapperStyle={{ fontSize: "11px" }} />
-                <Area
-                  type="monotone"
-                  dataKey="parts"
-                  name="Parts"
-                  stroke={STATUS_COLORS.running}
-                  fill="url(#gradParts)"
-                  strokeWidth={2}
-                  isAnimationActive={!prefersReducedMotion}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="handoffs"
-                  name="Handoffs"
-                  stroke="hsl(var(--primary))"
-                  fill="url(#gradHandoffs)"
-                  strokeWidth={2}
-                  isAnimationActive={!prefersReducedMotion}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+            <p className="text-xs text-muted-foreground mb-3">
+              {trendData.mode === "hourly"
+                ? "Handoff activity & parts output (today, hourly)"
+                : "Handoff activity & parts output (last 7 days)"}
+            </p>
+            {trendData.data.every((d) => d.handoffs === 0 && d.parts === 0) ? (
+              <div className="flex items-center justify-center h-48 text-sm text-muted-foreground">
+                No handoff data in this period. Submit handoffs to see trend metrics.
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={280}>
+                <AreaChart
+                  data={trendData.data}
+                  margin={{ top: 5, right: 10, left: -10, bottom: 5 }}
+                  role="img"
+                  aria-label={`Area chart showing handoff activity and parts output ${trendData.mode === "hourly" ? "throughout today" : "over the last 7 days"}`}
+                >
+                  <defs>
+                    <linearGradient id="gradParts" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={STATUS_COLORS.running} stopOpacity={0.3} />
+                      <stop offset="95%" stopColor={STATUS_COLORS.running} stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="gradHandoffs" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                  <XAxis
+                    dataKey="label"
+                    tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
+                    axisLine={{ stroke: "hsl(var(--border))" }}
+                    tickLine={false}
+                    interval={trendData.mode === "hourly" ? 2 : 0}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "8px",
+                      fontSize: "12px",
+                    }}
+                  />
+                  <Legend iconType="circle" wrapperStyle={{ fontSize: "11px" }} />
+                  <Area
+                    type="monotone"
+                    dataKey="parts"
+                    name="Parts"
+                    stroke={STATUS_COLORS.running}
+                    fill="url(#gradParts)"
+                    strokeWidth={2}
+                    isAnimationActive={!prefersReducedMotion}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="handoffs"
+                    name="Handoffs"
+                    stroke="hsl(var(--primary))"
+                    fill="url(#gradHandoffs)"
+                    strokeWidth={2}
+                    isAnimationActive={!prefersReducedMotion}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
           </div>
         )}
       </div>
