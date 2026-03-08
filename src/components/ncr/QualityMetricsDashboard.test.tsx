@@ -22,12 +22,14 @@ describe("QualityMetricsDashboard", () => {
 
   it("calculates and displays scrap count", () => {
     render(<QualityMetricsDashboard items={sampleItems} />);
-    expect(screen.getByText("6 pcs")).toBeInTheDocument(); // 5+1 scrap
+    const pcsElements = screen.getAllByText("6 pcs");
+    expect(pcsElements.length).toBeGreaterThanOrEqual(1);
   });
 
   it("calculates and displays rework count", () => {
     render(<QualityMetricsDashboard items={sampleItems} />);
-    expect(screen.getByText("6 pcs")).toBeInTheDocument(); // 5+1 rework (same as scrap)
+    const pcsElements = screen.getAllByText("6 pcs");
+    expect(pcsElements.length).toBe(2); // scrap + rework both show 6 pcs
   });
 
   it("shows percentage values", () => {

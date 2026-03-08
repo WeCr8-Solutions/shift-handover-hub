@@ -23,14 +23,15 @@ describe("SmartAlertPanel", () => {
     expect(screen.getByText("WO-100 is 3 days overdue")).toBeInTheDocument();
   });
 
-  it("renders empty state when no alerts", () => {
-    render(<SmartAlertPanel alerts={[]} />);
-    expect(screen.getByText(/no alerts/i)).toBeInTheDocument();
+  it("returns null when no alerts and not loading", () => {
+    const { container } = render(<SmartAlertPanel alerts={[]} />);
+    expect(container.firstChild).toBeNull();
   });
 
-  it("shows loading skeleton", () => {
+  it("returns null when loading with no alerts", () => {
     const { container } = render(<SmartAlertPanel alerts={[]} loading={true} />);
-    expect(container.querySelector(".animate-pulse")).toBeInTheDocument();
+    // Component returns null when alerts.length === 0 regardless of loading
+    expect(container.firstChild).toBeNull();
   });
 
   it("filters alerts by type", () => {

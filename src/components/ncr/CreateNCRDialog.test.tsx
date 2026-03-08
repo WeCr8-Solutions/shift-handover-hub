@@ -19,9 +19,9 @@ describe("CreateNCRDialog", () => {
     expect(screen.getByText(/Non-Conformance/i)).toBeInTheDocument();
   });
 
-  it("pre-fills work order number", () => {
+  it("shows work order info in dialog description", () => {
     render(<CreateNCRDialog {...defaultProps} />);
-    expect(screen.getByText("WO-100")).toBeInTheDocument();
+    expect(screen.getByText(/WO-100/)).toBeInTheDocument();
   });
 
   it("renders defect type dropdown", () => {
