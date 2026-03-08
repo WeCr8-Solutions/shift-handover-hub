@@ -245,17 +245,14 @@ export function ProductionAnalytics({
           <Badge variant="outline" className="text-[10px]">
             Live
           </Badge>
-          {/* Refresh Button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={refreshData}
-            disabled={isRefreshing}
-            className="h-7 px-2"
-            title="Refresh data"
-          >
-            <RefreshCw className={cn("w-3 h-3", isRefreshing && "animate-spin")} />
-          </Button>
+          {onRefresh && (
+            <RefreshIndicator
+              isRefreshing={isRefreshing}
+              lastRefreshedAt={lastRefreshedAt}
+              onRefresh={onRefresh}
+              className="h-7 w-7"
+            />
+          )}
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           {/* Shift Filter */}
