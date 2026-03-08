@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserOrganization } from '@/hooks/useUserOrganization';
@@ -21,16 +21,20 @@ import {
   PackageCheck,
   ExternalLink,
   ArrowDown,
+  ArrowRight,
   Save,
   Loader2,
   Edit2,
   ChevronUp,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   MapPin,
   FileDown,
   BookTemplate,
   FolderOpen
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface Station {
   id: string;
@@ -172,6 +176,7 @@ export function WorkOrderRoutingEditor({
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('scratch');
   const [loadingTemplate, setLoadingTemplate] = useState(false);
   const [hasExistingRouting, setHasExistingRouting] = useState(false);
+  const flowScrollRef = useRef<HTMLDivElement>(null);
 
   // Save as Template dialog state
   const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
@@ -645,265 +650,210 @@ export function WorkOrderRoutingEditor({
         </div>
       )}
 
-      {/* Flow Visualization */}
-      <div className="relative space-y-2 max-h-[60vh] overflow-y-auto rounded-lg border p-2 sm:p-0 sm:border-0 sm:max-h-none sm:overflow-visible">
-        {steps.map((step, index) => {
-          const opType = getOperationType(step.operation_type);
-          const OpIcon = opType.icon;
-          const isEditing = editingStep === index;
-          const isEnabled = step.enabled !== false;
+      {/* Horizontal Flow Visualization */}
+      <div className="relative">
+        {/* Scroll arrow buttons */}
+        {steps.length > 3 && (
+          <>
+            <button
+              type="button"
+              onClick={() => flowScrollRef.current?.scrollBy({ left: -280, behavior: "smooth" })}
+              className="absolute left-0 top-0 bottom-0 z-10 w-10 bg-gradient-to-r from-background to-transparent flex items-center justify-start pl-1 hover:from-background/90"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => flowScrollRef.current?.scrollBy({ left: 280, behavior: "smooth" })}
+              className="absolute right-0 top-0 bottom-0 z-10 w-10 bg-gradient-to-l from-background to-transparent flex items-center justify-end pr-1 hover:from-background/90"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </>
+        )}
 
-          return (
-            <div key={index}>
-              {/* Step Card - Outside Processing gets amber hue/ring */}
-              <Card className={`relative transition-all ${isEditing ? 'ring-2 ring-primary' : ''} ${!isEnabled ? 'opacity-50 bg-muted/30' : ''} ${step.operation_type === 'outside_processing' && isEnabled ? 'border-amber-400 bg-amber-500/5 dark:bg-amber-500/10' : ''}`}>
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-4">
-                    {/* Toggle & Step Number */}
-                    <div className="flex flex-col items-center gap-1">
+        <div
+          ref={flowScrollRef}
+          className="flex gap-2 overflow-x-auto py-4 px-2 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent snap-x"
+          style={{ scrollbarWidth: "thin" }}
+        >
+          {steps.map((step, index) => {
+            const opType = getOperationType(step.operation_type);
+            const OpIcon = opType.icon;
+            const isEditing = editingStep === index;
+            const isEnabled = step.enabled !== false;
+
+            return (
+              <div key={index} className="flex items-start gap-1 snap-start shrink-0">
+                {/* Compact step card */}
+                <div
+                  className={cn(
+                    "relative flex flex-col items-center border rounded-lg bg-card transition-all cursor-pointer shrink-0",
+                    isEditing ? "ring-2 ring-primary w-[320px]" : "w-[140px] hover:border-primary/50 hover:shadow-sm",
+                    !isEnabled && "opacity-50 bg-muted/30",
+                    step.operation_type === "outside_processing" && isEnabled && "border-amber-400 bg-amber-500/5 dark:bg-amber-500/10"
+                  )}
+                  onClick={() => !isEditing && setEditingStep(index)}
+                >
+                  {/* Compact view */}
+                  {!isEditing && (
+                    <div className="p-3 flex flex-col items-center gap-2 w-full">
                       {showTemplateMode && (
                         <input
                           type="checkbox"
                           checked={isEnabled}
-                          onChange={(e) => updateStep(index, { enabled: e.target.checked })}
-                          className="w-4 h-4 rounded border-primary text-primary focus:ring-primary mb-1"
+                          onChange={(e) => { e.stopPropagation(); updateStep(index, { enabled: e.target.checked }); }}
+                          onClick={(e) => e.stopPropagation()}
+                          className="w-4 h-4 rounded border-primary text-primary focus:ring-primary absolute top-2 right-2"
                         />
                       )}
-                      <div className={`w-10 h-10 rounded-full ${opType.color} flex items-center justify-center text-white ${!isEnabled ? 'grayscale' : ''} ${opType.ring}`}>
+                      <div className={cn(
+                        "w-10 h-10 rounded-full flex items-center justify-center text-white shrink-0",
+                        opType.color,
+                        !isEnabled && "grayscale",
+                        opType.ring
+                      )}>
                         <OpIcon className="w-5 h-5" />
                       </div>
-                      <Badge variant={step.operation_type === 'outside_processing' ? 'default' : 'outline'} className={`text-xs ${step.operation_type === 'outside_processing' && isEnabled ? 'bg-amber-500 text-white hover:bg-amber-600' : ''}`}>
-                        {isEnabled ? `Step ${enabledSteps.indexOf(step) + 1}` : 'Off'}
+                      <Badge variant={step.operation_type === "outside_processing" ? "default" : "outline"}
+                        className={cn("text-[10px] px-1.5 py-0", step.operation_type === "outside_processing" && isEnabled && "bg-amber-500 text-white hover:bg-amber-600")}
+                      >
+                        {isEnabled ? `Step ${enabledSteps.indexOf(step) + 1}` : "Off"}
                       </Badge>
-                    </div>
-
-                    {/* Step Content */}
-                    <div className="flex-1 space-y-3">
-                      {isEditing ? (
-                        <div className="space-y-3">
-                          <div className="grid grid-cols-2 gap-3">
-                            <div className="space-y-1">
-                              <Label className="text-xs">Operation Name</Label>
-                              <Input
-                                value={step.operation_name}
-                                onChange={(e) => updateStep(index, { operation_name: e.target.value })}
-                                placeholder="Operation name..."
-                              />
-                            </div>
-                            <div className="space-y-1">
-                              <Label className="text-xs">Type</Label>
-                              <Select 
-                                value={step.operation_type} 
-                                onValueChange={(v) => updateStep(index, { operation_type: v as RoutingStep['operation_type'] })}
-                              >
-                                <SelectTrigger>
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {OPERATION_TYPES.map(t => (
-                                    <SelectItem key={t.value} value={t.value}>
-                                      {t.label}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
-
-                          {(step.operation_type === 'internal' || step.operation_type === 'inspection' || step.operation_type === 'engineering') && (
-                            <div className="grid grid-cols-2 gap-3">
-                              <div className="space-y-1">
-                                <Label className="text-xs flex items-center gap-1">
-                                  <MapPin className="w-3 h-3" />
-                                  Assign Station
-                                </Label>
-                                <Select 
-                                  value={step.station_id || 'none'} 
-                                  onValueChange={(v) => {
-                                    const selectedStation = stations.find(s => s.id === v);
-                                    updateStep(index, { 
-                                      station_id: v === 'none' ? undefined : v,
-                                      station_name: selectedStation?.name,
-                                      work_center_type: selectedStation?.work_center_type
-                                    });
-                                  }}
-                                >
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select station..." />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="none">Not assigned</SelectItem>
-                                    {Object.entries(stationsByType).map(([type, typeStations]) => (
-                                      <SelectGroup key={type}>
-                                        <SelectLabel className="text-xs text-muted-foreground">{type}</SelectLabel>
-                                        {typeStations.map(station => (
-                                          <SelectItem key={station.id} value={station.id}>
-                                            {station.name} ({station.station_id})
-                                          </SelectItem>
-                                        ))}
-                                      </SelectGroup>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                              <div className="space-y-1">
-                                <Label className="text-xs">Est. Duration (min)</Label>
-                                <Input
-                                  type="number"
-                                  value={step.estimated_duration || ''}
-                                  onChange={(e) => updateStep(index, { estimated_duration: parseInt(e.target.value) || undefined })}
-                                  placeholder="Minutes..."
-                                />
-                              </div>
-                            </div>
-                          )}
-
-                          {step.operation_type === 'outside_processing' && (
-                            <div className="grid grid-cols-3 gap-3">
-                              <div className="space-y-1">
-                                <Label className="text-xs">Vendor</Label>
-                                <Input
-                                  value={step.outside_vendor || ''}
-                                  onChange={(e) => updateStep(index, { outside_vendor: e.target.value })}
-                                  placeholder="Vendor name..."
-                                />
-                              </div>
-                              <div className="space-y-1">
-                                <Label className="text-xs">PO Number</Label>
-                                <Input
-                                  value={step.po_number || ''}
-                                  onChange={(e) => updateStep(index, { po_number: e.target.value })}
-                                  placeholder="PO-..."
-                                />
-                              </div>
-                              <div className="space-y-1">
-                                <Label className="text-xs">Expected Return</Label>
-                                <Input
-                                  type="date"
-                                  value={step.expected_return_date || ''}
-                                  onChange={(e) => updateStep(index, { expected_return_date: e.target.value })}
-                                />
-                              </div>
-                            </div>
-                          )}
-
-                          <div className="space-y-1">
-                            <Label className="text-xs">Instructions</Label>
-                            <Textarea
-                              value={step.instructions || ''}
-                              onChange={(e) => updateStep(index, { instructions: e.target.value })}
-                              placeholder="Special instructions or notes..."
-                              rows={2}
-                            />
-                          </div>
-
-                          <Button 
-                            size="sm" 
-                            onClick={() => setEditingStep(null)}
-                          >
-                            Done Editing
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-medium">{step.operation_name}</span>
-                            <Badge variant="secondary" className="text-xs">
-                              {opType.label}
-                            </Badge>
-                            {step.station_name && (
-                              <Badge variant="outline" className="text-xs gap-1">
-                                <MapPin className="w-3 h-3" />
-                                {step.station_name}
-                              </Badge>
-                            )}
-                            {!step.station_name && step.work_center_type && (
-                              <Badge variant="outline" className="text-xs">
-                                {step.work_center_type}
-                              </Badge>
-                            )}
-                          </div>
-                          {step.outside_vendor && (
-                            <p className="text-sm text-muted-foreground flex items-center gap-1">
-                              <ExternalLink className="w-3 h-3" />
-                              {step.outside_vendor}
-                              {step.po_number && ` • PO: ${step.po_number}`}
-                              {step.expected_return_date && ` • Return: ${step.expected_return_date}`}
-                            </p>
-                          )}
-                          {step.estimated_duration && (
-                            <p className="text-sm text-muted-foreground">
-                              Est. {step.estimated_duration} min
-                            </p>
-                          )}
-                          {step.instructions && (
-                            <p className="text-sm text-muted-foreground line-clamp-1">
-                              {step.instructions}
-                            </p>
-                          )}
-                        </div>
+                      <span className="text-xs font-medium text-center leading-tight line-clamp-2">
+                        {step.operation_name}
+                      </span>
+                      <Badge variant="secondary" className="text-[9px]">{opType.label}</Badge>
+                      {step.station_name && (
+                        <span className="text-[9px] text-muted-foreground flex items-center gap-0.5">
+                          <MapPin className="w-2.5 h-2.5" />
+                          {step.station_name}
+                        </span>
                       )}
-                    </div>
-
-                    {/* Actions */}
-                    {!isEditing && (
-                      <div className="flex flex-col gap-1">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-7 w-7"
-                          onClick={() => moveStep(index, 'up')}
-                          disabled={index === 0}
-                        >
-                          <ChevronUp className="w-4 h-4" />
+                      {step.outside_vendor && (
+                        <span className="text-[9px] text-amber-600 dark:text-amber-400 flex items-center gap-0.5">
+                          <ExternalLink className="w-2.5 h-2.5" />
+                          {step.outside_vendor}
+                        </span>
+                      )}
+                      {/* Move / Delete actions */}
+                      <div className="flex gap-0.5 mt-1">
+                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); moveStep(index, 'up'); }} disabled={index === 0}>
+                          <ChevronLeft className="w-3.5 h-3.5" />
                         </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-7 w-7"
-                          onClick={() => moveStep(index, 'down')}
-                          disabled={index === steps.length - 1}
-                        >
-                          <ChevronDown className="w-4 h-4" />
+                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); moveStep(index, 'down'); }} disabled={index === steps.length - 1}>
+                          <ChevronRight className="w-3.5 h-3.5" />
                         </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-7 w-7"
-                          onClick={() => setEditingStep(index)}
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-7 w-7 text-destructive hover:text-destructive"
-                          onClick={() => removeStep(index)}
-                          disabled={steps.length <= 1}
-                        >
-                          <Trash2 className="w-4 h-4" />
+                        <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:text-destructive" onClick={(e) => { e.stopPropagation(); removeStep(index); }} disabled={steps.length <= 1}>
+                          <Trash2 className="w-3.5 h-3.5" />
                         </Button>
                       </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+                    </div>
+                  )}
 
-              {/* Add Step Button */}
-              <div className="flex items-center justify-center py-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 text-xs text-muted-foreground hover:text-foreground"
-                  onClick={() => addStep(index)}
-                >
-                  <Plus className="w-3 h-3 mr-1" />
-                  Add Step
-                </Button>
+                  {/* Expanded editing view */}
+                  {isEditing && (
+                    <div className="p-4 space-y-3 w-full" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-white", opType.color, opType.ring)}>
+                            <OpIcon className="w-4 h-4" />
+                          </div>
+                          <span className="text-sm font-semibold">Step {step.step_number}</span>
+                        </div>
+                        <Button size="sm" variant="outline" onClick={() => setEditingStep(null)} className="h-7 text-xs">
+                          Done
+                        </Button>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="space-y-1">
+                          <Label className="text-xs">Operation Name</Label>
+                          <Input value={step.operation_name} onChange={(e) => updateStep(index, { operation_name: e.target.value })} placeholder="Operation name..." className="h-8 text-sm" />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Type</Label>
+                          <Select value={step.operation_type} onValueChange={(v) => updateStep(index, { operation_type: v as RoutingStep['operation_type'] })}>
+                            <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              {OPERATION_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      {(step.operation_type === 'internal' || step.operation_type === 'inspection' || step.operation_type === 'engineering') && (
+                        <div className="space-y-2">
+                          <div className="space-y-1">
+                            <Label className="text-xs flex items-center gap-1"><MapPin className="w-3 h-3" />Station</Label>
+                            <Select value={step.station_id || 'none'} onValueChange={(v) => {
+                              const selectedStation = stations.find(s => s.id === v);
+                              updateStep(index, { station_id: v === 'none' ? undefined : v, station_name: selectedStation?.name, work_center_type: selectedStation?.work_center_type });
+                            }}>
+                              <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="Select station..." /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="none">Not assigned</SelectItem>
+                                {Object.entries(stationsByType).map(([type, typeStations]) => (
+                                  <SelectGroup key={type}>
+                                    <SelectLabel className="text-xs text-muted-foreground">{type}</SelectLabel>
+                                    {typeStations.map(station => <SelectItem key={station.id} value={station.id}>{station.name} ({station.station_id})</SelectItem>)}
+                                  </SelectGroup>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">Est. Duration (min)</Label>
+                            <Input type="number" value={step.estimated_duration || ''} onChange={(e) => updateStep(index, { estimated_duration: parseInt(e.target.value) || undefined })} placeholder="Minutes..." className="h-8 text-sm" />
+                          </div>
+                        </div>
+                      )}
+
+                      {step.operation_type === 'outside_processing' && (
+                        <div className="space-y-2">
+                          <div className="space-y-1">
+                            <Label className="text-xs">Vendor</Label>
+                            <Input value={step.outside_vendor || ''} onChange={(e) => updateStep(index, { outside_vendor: e.target.value })} placeholder="Vendor name..." className="h-8 text-sm" />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">PO Number</Label>
+                            <Input value={step.po_number || ''} onChange={(e) => updateStep(index, { po_number: e.target.value })} placeholder="PO-..." className="h-8 text-sm" />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">Expected Return</Label>
+                            <Input type="date" value={step.expected_return_date || ''} onChange={(e) => updateStep(index, { expected_return_date: e.target.value })} className="h-8 text-sm" />
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="space-y-1">
+                        <Label className="text-xs">Instructions</Label>
+                        <Textarea value={step.instructions || ''} onChange={(e) => updateStep(index, { instructions: e.target.value })} placeholder="Special instructions..." rows={2} className="text-sm" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Arrow connector */}
+                {index < steps.length - 1 && (
+                  <div className="flex flex-col items-center justify-center self-center shrink-0 px-0.5">
+                    <ArrowRight className="w-4 h-4 text-muted-foreground/40" />
+                  </div>
+                )}
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+
+          {/* Add step at the end */}
+          <button
+            type="button"
+            onClick={() => addStep(steps.length - 1)}
+            className="flex flex-col items-center justify-center gap-1.5 p-4 rounded-lg border border-dashed border-muted-foreground/30 min-w-[100px] hover:border-primary/50 hover:bg-muted/50 transition-colors shrink-0 snap-start self-center"
+          >
+            <Plus className="w-5 h-5 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">Add Step</span>
+          </button>
+        </div>
       </div>
     </div>
   );

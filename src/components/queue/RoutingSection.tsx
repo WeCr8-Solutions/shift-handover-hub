@@ -1,14 +1,15 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { RoutingStepInput } from "@/hooks/useQueue";
-import { Route, Plus, Trash2, GripVertical, FileText, ChevronDown, ChevronUp } from "lucide-react";
+import { Route, Plus, Trash2, FileText, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -48,6 +49,17 @@ const OPERATION_TYPES = [
   { value: "shipping", label: "Shipping" },
 ];
 
+const OP_TYPE_COLORS: Record<string, string> = {
+  quote: "bg-slate-500",
+  engineering: "bg-indigo-500",
+  purchasing: "bg-cyan-500",
+  receiving: "bg-teal-500",
+  internal: "bg-primary",
+  outside_processing: "bg-amber-500",
+  inspection: "bg-purple-500",
+  shipping: "bg-green-500",
+};
+
 interface RoutingSectionProps {
   steps: RoutingStepInput[];
   onChange: (steps: RoutingStepInput[]) => void;
@@ -60,6 +72,8 @@ export function RoutingSection({ steps, onChange, stations }: RoutingSectionProp
   const [templatesLoading, setTemplatesLoading] = useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
   const [expanded, setExpanded] = useState(false);
+  const [selectedStep, setSelectedStep] = useState<number | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   // Fetch routing templates
   useEffect(() => {
@@ -114,7 +128,6 @@ export function RoutingSection({ steps, onChange, stations }: RoutingSectionProp
     }
 
     if (templateSteps?.length) {
-      // Map template steps to routing input, try to match stations by work_center_type
       const mappedSteps: RoutingStepInput[] = templateSteps.map((ts) => {
         const matchedStation = ts.work_center_type
           ? stations.find((s) => s.work_center_type === ts.work_center_type)
@@ -147,11 +160,16 @@ export function RoutingSection({ steps, onChange, stations }: RoutingSectionProp
   const addStep = useCallback(() => {
     const nextNum = steps.length > 0 ? Math.max(...steps.map((s) => s.step_number)) + 1 : 1;
     onChange([...steps, { step_number: nextNum, operation_name: "", operation_type: "internal" }]);
+    // Scroll to end after adding
+    setTimeout(() => {
+      scrollRef.current?.scrollTo({ left: scrollRef.current.scrollWidth, behavior: "smooth" });
+    }, 100);
   }, [steps, onChange]);
 
   const removeStep = useCallback((index: number) => {
     const newSteps = steps.filter((_, i) => i !== index).map((s, i) => ({ ...s, step_number: i + 1 }));
     onChange(newSteps);
+    setSelectedStep(null);
   }, [steps, onChange]);
 
   const updateStep = useCallback((index: number, field: keyof RoutingStepInput, value: string | number | undefined) => {
@@ -159,6 +177,12 @@ export function RoutingSection({ steps, onChange, stations }: RoutingSectionProp
     newSteps[index] = { ...newSteps[index], [field]: value };
     onChange(newSteps);
   }, [steps, onChange]);
+
+  const scrollBy = (dir: "left" | "right") => {
+    scrollRef.current?.scrollBy({ left: dir === "left" ? -200 : 200, behavior: "smooth" });
+  };
+
+  const opLabel = (type: string) => OPERATION_TYPES.find((o) => o.value === type)?.label || type;
 
   return (
     <div className="space-y-3">
@@ -197,12 +221,12 @@ export function RoutingSection({ steps, onChange, stations }: RoutingSectionProp
         </SelectContent>
       </Select>
 
-      {/* Steps list */}
+      {/* Horizontal scrolling steps */}
       {steps.length > 0 && (
         <div className="space-y-2">
           <button
             type="button"
-            onClick={() => setExpanded(!expanded)}
+            onClick={() => { setExpanded(!expanded); setSelectedStep(null); }}
             className="flex items-center justify-between gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors w-full px-3 py-2 rounded-md border bg-muted/30 hover:bg-muted/50"
           >
             <span className="flex items-center gap-1.5">
@@ -217,110 +241,179 @@ export function RoutingSection({ steps, onChange, stations }: RoutingSectionProp
 
           {expanded && (
             <div className="border rounded-lg bg-muted/30 overflow-hidden">
-              <div className="max-h-[50vh] overflow-y-auto p-3 space-y-3">
-                {steps.map((step, index) => (
-                  <div key={index} className="space-y-2 p-3 border rounded-md bg-background">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
-                        <GripVertical className="w-3.5 h-3.5" />
-                        Step {step.step_number}
-                      </span>
-                      <Button
+              {/* Horizontal scroll track with arrow buttons */}
+              <div className="relative">
+                {steps.length > 2 && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => scrollBy("left")}
+                      className="absolute left-0 top-0 bottom-0 z-10 w-8 bg-gradient-to-r from-muted/80 to-transparent flex items-center justify-start pl-1 hover:from-muted"
+                    >
+                      <ChevronLeft className="w-4 h-4 text-foreground" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => scrollBy("right")}
+                      className="absolute right-0 top-0 bottom-0 z-10 w-8 bg-gradient-to-l from-muted/80 to-transparent flex items-center justify-end pr-1 hover:from-muted"
+                    >
+                      <ChevronRight className="w-4 h-4 text-foreground" />
+                    </button>
+                  </>
+                )}
+
+                <div
+                  ref={scrollRef}
+                  className="flex gap-2 overflow-x-auto px-3 py-3 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent snap-x snap-mandatory"
+                  style={{ scrollbarWidth: "thin" }}
+                >
+                  {steps.map((step, index) => (
+                    <div key={index} className="flex items-center gap-1 snap-start">
+                      {/* Compact step card */}
+                      <button
                         type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeStep(index)}
-                        className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                        onClick={() => setSelectedStep(selectedStep === index ? null : index)}
+                        className={cn(
+                          "flex flex-col items-center gap-1.5 p-2.5 rounded-lg border bg-background min-w-[90px] max-w-[110px] transition-all hover:border-primary/50 shrink-0",
+                          selectedStep === index && "ring-2 ring-primary border-primary shadow-md",
+                          step.operation_type === "outside_processing" && "border-amber-400/60"
+                        )}
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
+                        <div className={cn(
+                          "w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0",
+                          OP_TYPE_COLORS[step.operation_type] || "bg-muted-foreground"
+                        )}>
+                          {step.step_number}
+                        </div>
+                        <span className="text-[10px] font-medium text-center leading-tight line-clamp-2">
+                          {step.operation_name || "Untitled"}
+                        </span>
+                        <Badge variant="outline" className="text-[9px] px-1.5 py-0">
+                          {opLabel(step.operation_type)}
+                        </Badge>
+                      </button>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      <div className="space-y-1">
-                        <Label className="text-xs">Operation Name</Label>
-                        <Input
-                          value={step.operation_name}
-                          onChange={(e) => updateStep(index, "operation_name", e.target.value)}
-                          placeholder="e.g. CNC Milling"
-                          className="h-8 text-sm"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs">Type</Label>
-                        <Select
-                          value={step.operation_type}
-                          onValueChange={(v) => updateStep(index, "operation_type", v)}
-                        >
-                          <SelectTrigger className="h-8 text-sm">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {OPERATION_TYPES.map((op) => (
-                              <SelectItem key={op.value} value={op.value}>{op.label}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
+                      {/* Arrow connector between steps */}
+                      {index < steps.length - 1 && (
+                        <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/50 shrink-0" />
+                      )}
                     </div>
+                  ))}
 
+                  {/* Add step button at end */}
+                  <button
+                    type="button"
+                    onClick={addStep}
+                    className="flex flex-col items-center justify-center gap-1 p-2.5 rounded-lg border border-dashed border-muted-foreground/30 min-w-[80px] hover:border-primary/50 hover:bg-muted/50 transition-colors shrink-0 snap-start"
+                  >
+                    <Plus className="w-5 h-5 text-muted-foreground" />
+                    <span className="text-[10px] text-muted-foreground">Add Step</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Expanded detail panel for selected step */}
+              {selectedStep !== null && steps[selectedStep] && (
+                <div className="border-t p-3 space-y-3 bg-background/80">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold flex items-center gap-1.5">
+                      <div className={cn(
+                        "w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-bold",
+                        OP_TYPE_COLORS[steps[selectedStep].operation_type] || "bg-muted-foreground"
+                      )}>
+                        {steps[selectedStep].step_number}
+                      </div>
+                      Step {steps[selectedStep].step_number} Details
+                    </span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeStep(selectedStep)}
+                      className="h-7 px-2 text-destructive hover:text-destructive gap-1"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      Remove
+                    </Button>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <div className="space-y-1">
-                      <Label className="text-xs">Station</Label>
+                      <Label className="text-xs">Operation Name</Label>
+                      <Input
+                        value={steps[selectedStep].operation_name}
+                        onChange={(e) => updateStep(selectedStep, "operation_name", e.target.value)}
+                        placeholder="e.g. CNC Milling"
+                        className="h-8 text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Type</Label>
                       <Select
-                        value={step.station_id || "none"}
-                        onValueChange={(v) => updateStep(index, "station_id", v === "none" ? undefined : v)}
+                        value={steps[selectedStep].operation_type}
+                        onValueChange={(v) => updateStep(selectedStep, "operation_type", v)}
                       >
                         <SelectTrigger className="h-8 text-sm">
-                          <SelectValue placeholder="Select station..." />
+                          <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="max-h-48">
-                          <SelectItem value="none">— Unassigned —</SelectItem>
-                          {Object.entries(stationsByType).map(([type, typeStations]) => (
-                            <div key={type}>
-                              <div className="px-3 py-1 text-xs font-semibold text-muted-foreground bg-muted/50">{type}</div>
-                              {typeStations.map((s) => (
-                                <SelectItem key={s.id} value={s.id}>
-                                  <span className="font-mono text-xs">{s.station_id}</span> — {s.name}
-                                </SelectItem>
-                              ))}
-                            </div>
+                        <SelectContent>
+                          {OPERATION_TYPES.map((op) => (
+                            <SelectItem key={op.value} value={op.value}>{op.label}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
-
-                    {step.operation_type === "outside_processing" && (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <div className="space-y-1">
-                          <Label className="text-xs">Vendor</Label>
-                          <Input
-                            value={step.outside_vendor || ""}
-                            onChange={(e) => updateStep(index, "outside_vendor", e.target.value)}
-                            placeholder="Vendor name"
-                            className="h-8 text-sm"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-xs">PO #</Label>
-                          <Input
-                            value={step.po_number || ""}
-                            onChange={(e) => updateStep(index, "po_number", e.target.value)}
-                            placeholder="PO-12345"
-                            className="h-8 text-sm"
-                          />
-                        </div>
-                      </div>
-                    )}
                   </div>
-                ))}
-              </div>
 
-              <div className="p-3 border-t bg-background/50">
-                <Button type="button" variant="outline" size="sm" onClick={addStep} className="w-full gap-1.5">
-                  <Plus className="w-3.5 h-3.5" />
-                  Add Step
-                </Button>
-              </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Station</Label>
+                    <Select
+                      value={steps[selectedStep].station_id || "none"}
+                      onValueChange={(v) => updateStep(selectedStep, "station_id", v === "none" ? undefined : v)}
+                    >
+                      <SelectTrigger className="h-8 text-sm">
+                        <SelectValue placeholder="Select station..." />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-48">
+                        <SelectItem value="none">— Unassigned —</SelectItem>
+                        {Object.entries(stationsByType).map(([type, typeStations]) => (
+                          <div key={type}>
+                            <div className="px-3 py-1 text-xs font-semibold text-muted-foreground bg-muted/50">{type}</div>
+                            {typeStations.map((s) => (
+                              <SelectItem key={s.id} value={s.id}>
+                                <span className="font-mono text-xs">{s.station_id}</span> — {s.name}
+                              </SelectItem>
+                            ))}
+                          </div>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {steps[selectedStep].operation_type === "outside_processing" && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <Label className="text-xs">Vendor</Label>
+                        <Input
+                          value={steps[selectedStep].outside_vendor || ""}
+                          onChange={(e) => updateStep(selectedStep, "outside_vendor", e.target.value)}
+                          placeholder="Vendor name"
+                          className="h-8 text-sm"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">PO #</Label>
+                        <Input
+                          value={steps[selectedStep].po_number || ""}
+                          onChange={(e) => updateStep(selectedStep, "po_number", e.target.value)}
+                          placeholder="PO-12345"
+                          className="h-8 text-sm"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
