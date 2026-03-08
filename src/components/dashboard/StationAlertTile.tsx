@@ -239,8 +239,24 @@ export function StationAlertTile({ station, onViewStation, onQuickAction }: Stat
     return { elapsed: elapsedDisplay, remaining: remainingDisplay, progress: Math.min((elapsedMs / estimatedMs) * 100, 100), isOverdue };
   };
 
+  const quickTarget: QuickActionTarget = {
+    id: station.dbId,
+    name: station.name,
+    type: "station",
+    status: station.status,
+    workOrder: station.workOrder !== "—" ? station.workOrder : undefined,
+  };
+
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <StationQuickActions
+        target={quickTarget}
+        onViewDetail={() => onViewStation?.(station.dbId, station.name)}
+        onCreateHandoff={(t) => onQuickAction?.("handoff", t)}
+        onToggleHold={(t) => onQuickAction?.("hold", t)}
+        onRequestDelivery={(t) => onQuickAction?.("delivery", t)}
+        onReportIssue={(t) => onQuickAction?.("issue", t)}
+      >
       <div className={cn(
         "border-b border-border/30 transition-colors",
         isOpen && "bg-secondary/20",
