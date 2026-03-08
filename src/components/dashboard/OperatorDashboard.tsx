@@ -152,17 +152,18 @@ export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDas
             lastRefreshedAt={lastRefreshedAt}
             onRefresh={handleManualRefresh}
           />
-        <Button
-          variant="destructive"
-          size="sm"
-          className="gap-2"
-          onClick={handleEndShiftClick}
-          disabled={endingShift}
-          aria-label={endingShift ? "Ending shift..." : "End shift"}
-        >
-          {endingShift ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
-          End Shift
-        </Button>
+          <Button
+            variant="destructive"
+            size="sm"
+            className="gap-2"
+            onClick={handleEndShiftClick}
+            disabled={endingShift}
+            aria-label={endingShift ? "Ending shift..." : "End shift"}
+          >
+            {endingShift ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
+            End Shift
+          </Button>
+        </div>
       </div>
 
       {/* Station panels */}
