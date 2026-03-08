@@ -3924,6 +3924,74 @@ export type Database = {
           },
         ]
       }
+      shop_floor_displays: {
+        Row: {
+          alert_sound_enabled: boolean | null
+          auto_rotate_enabled: boolean | null
+          auto_rotate_interval_seconds: number | null
+          created_at: string | null
+          created_by: string
+          dark_mode: string | null
+          display_mode: string
+          display_name: string
+          display_token: string
+          id: string
+          is_active: boolean | null
+          last_seen_at: string | null
+          organization_id: string
+          refresh_interval_seconds: number
+          team_ids: string[] | null
+          token_expires_at: string
+          updated_at: string | null
+        }
+        Insert: {
+          alert_sound_enabled?: boolean | null
+          auto_rotate_enabled?: boolean | null
+          auto_rotate_interval_seconds?: number | null
+          created_at?: string | null
+          created_by: string
+          dark_mode?: string | null
+          display_mode?: string
+          display_name: string
+          display_token?: string
+          id?: string
+          is_active?: boolean | null
+          last_seen_at?: string | null
+          organization_id: string
+          refresh_interval_seconds?: number
+          team_ids?: string[] | null
+          token_expires_at?: string
+          updated_at?: string | null
+        }
+        Update: {
+          alert_sound_enabled?: boolean | null
+          auto_rotate_enabled?: boolean | null
+          auto_rotate_interval_seconds?: number | null
+          created_at?: string | null
+          created_by?: string
+          dark_mode?: string | null
+          display_mode?: string
+          display_name?: string
+          display_token?: string
+          id?: string
+          is_active?: boolean | null
+          last_seen_at?: string | null
+          organization_id?: string
+          refresh_interval_seconds?: number
+          team_ids?: string[] | null
+          token_expires_at?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shop_floor_displays_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       station_machine_assignments: {
         Row: {
           assigned_at: string
@@ -5402,6 +5470,7 @@ export type Database = {
         }
         Returns: string
       }
+      validate_display_token: { Args: { _token: string }; Returns: Json }
     }
     Enums: {
       activity_type:
