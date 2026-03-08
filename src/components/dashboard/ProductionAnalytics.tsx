@@ -305,6 +305,8 @@ export function ProductionAnalytics({
             {[
               { key: "output" as ChartView, icon: BarChart3, label: "Output" },
               { key: "status" as ChartView, icon: PieChartIcon, label: "Status" },
+              { key: "team" as ChartView, icon: Users, label: "Teams" },
+              { key: "workcenter" as ChartView, icon: Wrench, label: "Work Centers" },
               { key: "trend" as ChartView, icon: TrendingUp, label: "Trend" },
             ].map(({ key, icon: Icon, label }) => (
               <button
