@@ -277,8 +277,9 @@ export function TeamManagement() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {teams.map((team) => (
               <TeamCard
-                key={`${team.id}-${stationRefreshKey}`}
+                key={team.id}
                 team={team}
+                stationCount={stationCountByTeam[team.id] || 0}
                 isSelected={selectedTeam?.id === team.id}
                 canManage={team.created_by === user?.id || isOrgAdmin || isAdmin}
                 onSelect={() => setSelectedTeam(selectedTeam?.id === team.id ? null : team)}
