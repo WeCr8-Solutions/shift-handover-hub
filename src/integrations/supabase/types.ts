@@ -3566,6 +3566,7 @@ export type Database = {
           parent_work_order_id: string | null
           part_catalog_id: string | null
           part_height_inches: number | null
+          part_image_url: string | null
           part_length_inches: number | null
           part_number: string | null
           part_shape: string | null
@@ -3620,6 +3621,7 @@ export type Database = {
           parent_work_order_id?: string | null
           part_catalog_id?: string | null
           part_height_inches?: number | null
+          part_image_url?: string | null
           part_length_inches?: number | null
           part_number?: string | null
           part_shape?: string | null
@@ -3674,6 +3676,7 @@ export type Database = {
           parent_work_order_id?: string | null
           part_catalog_id?: string | null
           part_height_inches?: number | null
+          part_image_url?: string | null
           part_length_inches?: number | null
           part_number?: string | null
           part_shape?: string | null

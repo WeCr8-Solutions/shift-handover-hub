@@ -65,6 +65,7 @@ export interface QueueItem {
   part_catalog_id?: string | null;
   required_tolerance?: string | null;
   surface_finish?: string | null;
+  part_image_url?: string | null;
 }
 
 export interface QueueItemComment {

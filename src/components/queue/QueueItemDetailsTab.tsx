@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Clock, Wrench, AlertTriangle, Plug, Trash2, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { PartImageSection } from "@/components/queue/PartImageSection";
 
 const statusOptions: { value: QueueStatus; label: string }[] = [
   { value: "pending", label: "Pending" },
@@ -173,6 +174,15 @@ export function QueueItemDetailsTab({
           <p className="font-medium capitalize">{item.item_type.replace("_", " ")}</p>
         </div>
       </div>
+
+      {/* Part Image */}
+      <PartImageSection
+        queueItemId={item.id}
+        partImageUrl={item.part_image_url}
+        partNumber={item.part_number}
+        canEdit={true}
+        onUpdate={onUpdate as any}
+      />
 
       {/* Quantity Breakdown */}
       {(item.quantity || item.qty_original) && (
