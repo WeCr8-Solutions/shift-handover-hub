@@ -53,11 +53,11 @@ export default function Setup() {
     }
   }, [authLoading, onboardingLoading, user, setupWizardDismissed, navigate]);
 
-  useEffect(() => {
-    async function checkSetupStatus() {
-      if (!user) return;
-      
-      // First get user's org to scope all subsequent queries
+  const fetchSetupStatus = async (showLoader = true) => {
+    if (!user) return;
+    if (showLoader) setLoading(true);
+
+    try {
       const orgResult = await supabase
         .from('organization_members')
         .select('organization:organizations(id, name)')
@@ -67,7 +67,6 @@ export default function Setup() {
       const hasOrg = !!orgResult.data?.organization;
       const orgId = orgResult.data?.organization?.id;
 
-      // Scope counts to the user's organization to avoid inflated numbers
       const [teamsResult, stationsResult, membersResult] = await Promise.all([
         orgId
           ? supabase.from('teams').select('id', { count: 'exact', head: true }).eq('organization_id', orgId)
@@ -79,7 +78,7 @@ export default function Setup() {
           ? supabase.from('team_members').select('id', { count: 'exact', head: true }).eq('organization_id', orgId)
           : Promise.resolve({ count: 0 }),
       ]);
-      
+
       setSetupStatus({
         hasOrganization: hasOrg,
         organizationName: orgResult.data?.organization?.name || null,
@@ -90,16 +89,19 @@ export default function Setup() {
         stationsCount: stationsResult.count || 0,
         membersCount: membersResult.count || 0,
       });
-      
-      // Show org setup if they don't have one and we're at the org step
+
       if (!hasOrg && (currentStep === 'organization-setup' || currentStep === 'welcome')) {
         setShowOrgSetup(true);
       }
-      
+    } catch (error) {
+      console.error('Error fetching setup status:', error);
+    } finally {
       setLoading(false);
     }
+  };
 
-    checkSetupStatus();
+  useEffect(() => {
+    fetchSetupStatus();
   }, [user, currentStep]);
 
   const refreshStatus = async () => {
