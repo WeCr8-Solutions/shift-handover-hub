@@ -279,6 +279,10 @@ export default function Admin() {
             <PerformanceUpdatesReview isAdmin={isAdmin} />
           </TabsContent>
 
+          <TabsContent value="machine-monitor">
+            <MachineMonitorPanel isAdmin={isAdmin} />
+          </TabsContent>
+
           {hasPlatformAccess && (
             <>
               <TabsContent value="activity">
