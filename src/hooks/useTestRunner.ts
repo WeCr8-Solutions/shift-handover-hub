@@ -69,6 +69,9 @@ const testFileRegistry: Record<string, { path: string; description: string }> = 
   // AI Context & Part Specs
   "PartSpecsSection": { path: "src/components/queue/PartSpecsSection.test.tsx", description: "Part specs dropdowns, tolerance, surface finish, catalog auto-fill" },
   "PartCatalogManager": { path: "src/components/settings/PartCatalogManager.test.tsx", description: "Part catalog CRUD and display" },
+  // Shop Floor Display
+  "useShopFloorDisplays Hook": { path: "src/hooks/useShopFloorDisplays.test.ts", description: "Shop floor display CRUD, token regen, toggle" },
+  "ShopFloorDisplay Page": { path: "src/pages/ShopFloorDisplay.test.tsx", description: "Display page token validation & mode rendering" },
 };
 
 // Parse vitest output to extract test results
