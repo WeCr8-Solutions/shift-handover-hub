@@ -121,7 +121,7 @@ export default function WorkOrderTracking() {
           </div>
         </section>
 
-        <AdPlacement format="horizontal" className="py-6" />
+        
       </main>
 
       <MarketingFooter />

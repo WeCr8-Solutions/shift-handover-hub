@@ -122,7 +122,7 @@ export default function ShiftHandoffSoftware() {
           </div>
         </section>
 
-        <AdPlacement format="horizontal" className="py-6" />
+        
       </main>
 
       <MarketingFooter />
