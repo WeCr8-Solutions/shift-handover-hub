@@ -44,8 +44,8 @@ export function fromHrc(hrc: number, to: Scale): number | null {
   switch (to) {
     case "hrc": return hrc;
     case "hv":
-      // HV ≈ 15.3 × HRC + 223 (linear approximation)
-      return 15.3 * hrc + 223;
+      // Better quadratic: HV ≈ 0.19×HRC² - 2.7×HRC + 247 (fits ASTM E140 better)
+      return 0.19 * hrc * hrc - 2.7 * hrc + 247;
     case "hb":
       // HB ≈ 5.7 × HRC + 100
       return 5.7 * hrc + 100;

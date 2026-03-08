@@ -71,7 +71,7 @@ describe("HardnessConverter", () => {
     const hv = convertHardness(45, "hrc", "hv");
     expect(hv).not.toBeNull();
     expect(hv!).toBeGreaterThan(400);
-    expect(hv!).toBeLessThan(600);
+    expect(hv!).toBeLessThan(500);
   });
   it("HRC to HB returns reasonable value", () => {
     const hb = convertHardness(45, "hrc", "hb");
