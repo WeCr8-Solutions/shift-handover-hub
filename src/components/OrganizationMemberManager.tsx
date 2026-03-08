@@ -322,6 +322,9 @@ export function OrganizationMemberManager() {
                 <Badge variant="secondary" className="ml-1 font-mono">
                   {members.length}
                 </Badge>
+                <Badge variant={seatsAvailable > 0 ? "outline" : "destructive"} className="ml-1 font-mono text-xs">
+                  {seatsUsed}/{seatLimit} seats
+                </Badge>
               </CardTitle>
               <CardDescription>
                 {organization.name}
