@@ -127,6 +127,11 @@ export function DevIssueQueue() {
   const [filter, setFilter] = useState<string>("active");
   const [notes, setNotes] = useState("");
 
+  // Lazy-fetch full diagnostic data only when detail dialog is open
+  const { issue: issueDetail, loading: detailLoading } = useIssueDetail(
+    detailOpen && selectedItem ? selectedItem.issue_id : null
+  );
+
   const fetchQueue = async () => {
     try {
       let query = supabase
