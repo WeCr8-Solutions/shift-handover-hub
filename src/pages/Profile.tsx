@@ -168,7 +168,7 @@ export default function Profile() {
             </div>
 
             {/* Save Button */}
-            <Button onClick={handleSave} disabled={isSaving} className="gap-2">
+            <Button onClick={handleSave} disabled={isSaving || !isDirty || !displayName.trim()} className="gap-2">
               {isSaving ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -177,7 +177,7 @@ export default function Profile() {
               ) : (
                 <>
                   <Save className="w-4 h-4" />
-                  Save Changes
+                  {isDirty ? "Save Changes" : "Saved"}
                 </>
               )}
             </Button>
