@@ -1,3 +1,4 @@
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ContextMenu,
@@ -52,7 +53,10 @@ interface StationQuickActionsProps {
   className?: string;
 }
 
-export function StationQuickActions({
+export const StationQuickActions = React.forwardRef<
+  HTMLDivElement,
+  StationQuickActionsProps
+>(({
   target,
   children,
   onViewDetail,
@@ -62,7 +66,7 @@ export function StationQuickActions({
   onRequestDelivery,
   onReportIssue,
   className,
-}: StationQuickActionsProps) {
+}, ref) => {
   const navigate = useNavigate();
 
   const handleViewDetail = () => {
@@ -71,7 +75,6 @@ export function StationQuickActions({
     } else if (target.type === "work_order") {
       navigate(`/queue?item=${target.id}`);
     } else if (target.activeItemId) {
-      // Station with an active work order — open the item detail directly
       navigate(`/queue?item=${target.activeItemId}`);
     } else {
       navigate(`/queue?station=${target.id}`);
@@ -94,7 +97,7 @@ export function StationQuickActions({
   return (
     <ContextMenu>
       <ContextMenuTrigger className={className} asChild>
-        {children}
+        <div ref={ref}>{children}</div>
       </ContextMenuTrigger>
       <ContextMenuContent className="w-56">
         <ContextMenuLabel className="flex items-center gap-2 text-xs">
@@ -180,4 +183,6 @@ export function StationQuickActions({
       </ContextMenuContent>
     </ContextMenu>
   );
-}
+});
+
+StationQuickActions.displayName = "StationQuickActions";
