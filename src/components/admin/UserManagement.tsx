@@ -220,6 +220,7 @@ type ViewMode = "grouped" | "flat";
 
 export function UserManagement({ isAdmin }: UserManagementProps) {
   const { user: currentUser } = useAuth();
+  const { startActAs } = useActAs();
   const { users, organizations, loading, updateUserRole } = useAllUsers();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
