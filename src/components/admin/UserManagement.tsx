@@ -700,7 +700,7 @@ export function UserManagement({ isAdmin, isSupervisorOrAbove = false }: UserMan
                   <TableHead>Org Role</TableHead>
                   <TableHead>Platform Roles</TableHead>
                   <TableHead>Joined</TableHead>
-                  {isAdmin && <TableHead className="w-12"></TableHead>}
+                  {(isAdmin || isSupervisorOrAbove) && <TableHead className="w-12"></TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
