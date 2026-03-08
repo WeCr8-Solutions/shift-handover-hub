@@ -20,6 +20,7 @@ const categoryColors: Record<string, string> = {
 };
 
 export default function Tools() {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [activeTool, setActiveTool] = useState<string | null>(null);
