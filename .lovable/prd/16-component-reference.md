@@ -40,15 +40,16 @@ This document provides a single-source inventory of every custom component, cate
 
 | Component | Test File | Tests | Tier | Description |
 |-----------|-----------|-------|------|-------------|
-| `OperatorDashboard` | — | ❌ | Authenticated | Operator's main view with check-in/handoff |
-| `SupervisorDashboard` | `SupervisorDashboard.test.tsx` | ✅ 5 | Supervisor | Org-wide overview with station grid |
+| `OperatorDashboard` | — | ❌ | Authenticated | Operator's main view with check-in/handoff. Uses `useOrgContext()`, 10min background refresh. |
+| `SupervisorDashboard` | `SupervisorDashboard.test.tsx` | ✅ 5 | Supervisor | Org-wide overview with station grid. Uses `useOrgContext()`. `ProductionAnalytics` lazy-loaded via `React.lazy()`. |
 | `OperatorStationPanel` | `OperatorStationPanel.test.tsx` | ✅ 4 | Authenticated | Active station panel for checked-in operator |
 | `StationCheckIn` | `StationCheckIn.test.tsx` | ✅ 4 | Authenticated | Station check-in/out flow |
 | `StationDetailView` | — | ❌ | Org-Scoped | Detailed station view with active WO |
 | `StationAlertTile` | — | ❌ | Org-Scoped | Alert indicators on station cards |
 | `RefreshIndicator` | — | ❌ | Authenticated | Background refresh status indicator |
-| `ProductionAnalytics` | `ProductionAnalytics.test.tsx` | ✅ 5 | Supervisor | Throughput/utilization charts |
+| `ProductionAnalytics` | `ProductionAnalytics.test.tsx` | ✅ 5 | Supervisor | Throughput/utilization charts. **Lazy-loaded** — defers ~200KB Recharts bundle. |
 | `DashboardRefresh` | `DashboardRefresh.test.tsx` | ✅ 4 | Authenticated | Background refresh lifecycle |
+| `DashboardErrorBoundary` | — | ❌ | Public | Class-based error boundary for dashboard sections. Catches render errors and shows retry UI instead of crashing the page. |
 
 ### 2.3  Handoff System (`src/components/`)
 
