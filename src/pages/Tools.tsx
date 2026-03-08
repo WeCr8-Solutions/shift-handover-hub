@@ -1,13 +1,15 @@
 import { useState, useMemo, Suspense } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { SEOHead } from "@/components/SEOHead";
 import { Header } from "@/components/Header";
 import { TOOL_REGISTRY, TOOL_CATEGORIES } from "@/components/tools";
-import { Search, Wrench, Loader2 } from "lucide-react";
+import { Search, Wrench, Loader2, ArrowLeft } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const categoryColors: Record<string, string> = {
@@ -18,6 +20,7 @@ const categoryColors: Record<string, string> = {
 };
 
 export default function Tools() {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [activeTool, setActiveTool] = useState<string | null>(null);
@@ -49,6 +52,15 @@ export default function Tools() {
         <Header />
         <main className="container max-w-6xl mx-auto px-4 py-8">
           <div className="flex items-center gap-3 mb-6">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="shrink-0"
+              onClick={() => navigate(-1)}
+              aria-label="Go back"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
             <div className="p-2 rounded-lg bg-primary/10">
               <Wrench className="w-6 h-6 text-primary" />
             </div>
