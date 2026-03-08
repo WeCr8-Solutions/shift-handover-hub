@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -7,9 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/AuthContext";
-import { useOrgContext } from "@/contexts/OrgContext";
-import { supabase } from "@/integrations/supabase/client";
+import { usePartImage } from "@/hooks/use-part-image";
 import { Camera, Upload, Trash2, Loader2, Maximize2 } from "lucide-react";
 
 interface PartImageSectionProps {
@@ -27,77 +25,32 @@ export function PartImageSection({
   canEdit,
   onUpdate,
 }: PartImageSectionProps) {
-  const { user } = useAuth();
-  const { organization } = useOrgContext();
   const { toast } = useToast();
   const fileRef = useRef<HTMLInputElement>(null);
-  const [uploading, setUploading] = useState(false);
-  const [removing, setRemoving] = useState(false);
-  const [signedUrl, setSignedUrl] = useState<string | null>(null);
-  const [loadingUrl, setLoadingUrl] = useState(false);
   const [viewOpen, setViewOpen] = useState(false);
 
-  const loadSignedUrl = async (path: string) => {
-    if (path.startsWith("http")) return path;
-    const { data } = await supabase.storage
-      .from("part-images")
-      .createSignedUrl(path, 60 * 60);
-    return data?.signedUrl || null;
-  };
-
-  // Load signed URL on mount if we have one
-  const ensureUrl = async () => {
-    if (!partImageUrl) return;
-    if (signedUrl) return;
-    setLoadingUrl(true);
-    const url = await loadSignedUrl(partImageUrl);
-    setSignedUrl(url);
-    setLoadingUrl(false);
-  };
-
-  // Trigger load when partImageUrl is present
-  if (partImageUrl && !signedUrl && !loadingUrl) {
-    ensureUrl();
-  }
+  const { signedUrl, loading, uploading, removing, upload, remove } =
+    usePartImage(queueItemId, partImageUrl, onUpdate);
 
   const handleUpload = async (file: File) => {
-    if (!user || !organization) return;
-    setUploading(true);
-    const ext = file.name.split(".").pop() || "png";
-    const path = `${organization.id}/${user.id}/${Date.now()}-${Math.random().toString(36).slice(2, 9)}.${ext}`;
-    const { error: uploadErr } = await supabase.storage.from("part-images").upload(path, file);
-    if (uploadErr) {
-      toast({ title: "Upload failed", description: uploadErr.message, variant: "destructive" });
-      setUploading(false);
-      return;
-    }
-    const result = await onUpdate(queueItemId, { part_image_url: path });
+    const result = await upload(file);
     if (result.error) {
-      toast({ title: "Error", description: result.error, variant: "destructive" });
+      toast({ title: "Upload failed", description: result.error, variant: "destructive" });
     } else {
-      const url = await loadSignedUrl(path);
-      setSignedUrl(url);
       toast({ title: "Part image attached" });
     }
-    setUploading(false);
   };
 
   const handleRemove = async () => {
-    if (!partImageUrl) return;
-    setRemoving(true);
-    // Remove from storage
-    if (!partImageUrl.startsWith("http")) {
-      await supabase.storage.from("part-images").remove([partImageUrl]);
-    }
-    const result = await onUpdate(queueItemId, { part_image_url: null });
+    const result = await remove();
     if (result.error) {
       toast({ title: "Error", description: result.error, variant: "destructive" });
     } else {
-      setSignedUrl(null);
       toast({ title: "Part image removed" });
     }
-    setRemoving(false);
   };
+
+  const altText = partNumber ? `Part ${partNumber}` : "Part image";
 
   return (
     <div className="space-y-2">
@@ -124,17 +77,12 @@ export function PartImageSection({
         <div className="relative group rounded-lg overflow-hidden border bg-muted/20">
           <img
             src={signedUrl}
-            alt={partNumber ? `Part ${partNumber}` : "Part image"}
+            alt={altText}
             className="w-full max-h-48 object-contain cursor-pointer"
             onClick={() => setViewOpen(true)}
           />
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-            <Button
-              variant="secondary"
-              size="sm"
-              className="gap-1 text-xs"
-              onClick={() => setViewOpen(true)}
-            >
+            <Button variant="secondary" size="sm" className="gap-1 text-xs" onClick={() => setViewOpen(true)}>
               <Maximize2 className="w-3 h-3" /> View Full Size
             </Button>
           </div>
@@ -150,7 +98,7 @@ export function PartImageSection({
             </Button>
           )}
         </div>
-      ) : loadingUrl ? (
+      ) : loading ? (
         <div className="h-24 rounded-lg border bg-muted/20 flex items-center justify-center">
           <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
         </div>
@@ -173,20 +121,13 @@ export function PartImageSection({
         }}
       />
 
-      {/* Full-size viewing dialog */}
       <Dialog open={viewOpen} onOpenChange={setViewOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh]">
           <DialogHeader>
-            <DialogTitle className="text-sm">
-              {partNumber ? `Part ${partNumber}` : "Part Image"}
-            </DialogTitle>
+            <DialogTitle className="text-sm">{partNumber ? `Part ${partNumber}` : "Part Image"}</DialogTitle>
           </DialogHeader>
           {signedUrl && (
-            <img
-              src={signedUrl}
-              alt={partNumber ? `Part ${partNumber}` : "Part image"}
-              className="w-full max-h-[75vh] object-contain rounded-md"
-            />
+            <img src={signedUrl} alt={altText} className="w-full max-h-[75vh] object-contain rounded-md" />
           )}
         </DialogContent>
       </Dialog>
