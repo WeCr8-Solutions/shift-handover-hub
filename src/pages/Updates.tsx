@@ -6,7 +6,8 @@ import { Header } from "@/components/Header";
 import { UpdateCard } from "@/components/updates/UpdateCard";
 import { UpdateFilters } from "@/components/updates/UpdateFilters";
 import { SystemStatusIndicator } from "@/components/updates/SystemStatusIndicator";
-import { Loader2, Megaphone } from "lucide-react";
+import { Megaphone } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { SEOHead } from "@/components/SEOHead";
 
 export default function Updates() {
