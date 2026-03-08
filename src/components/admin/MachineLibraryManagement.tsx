@@ -243,7 +243,16 @@ export function MachineLibraryManagement() {
       <Card>
         <CardContent className="p-0">
           {loading ? (
-            <div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
+            <div className="p-4 space-y-3">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex gap-4">
+                  <Skeleton className="h-4 w-28" />
+                  <Skeleton className="h-4 w-28" />
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-4 w-20" />
+                </div>
+              ))}
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <ScrollArea className="max-h-[600px]">
