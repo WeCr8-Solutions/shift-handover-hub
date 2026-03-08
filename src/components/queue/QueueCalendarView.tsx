@@ -241,7 +241,8 @@ export function QueueCalendarView({ items, onItemClick }: QueueCalendarViewProps
             <div className="overflow-x-auto -mx-2 px-2 pb-2">
               <div className="grid grid-cols-7 gap-2 min-w-[700px]">
                 {weekDays.map((day) => {
-                  const dayItems = getItemsForDate(day);
+                  const dayEntries = getEntriesForDate(day);
+                  const dayLoad = getDayLoad(day);
                   const isToday = isSameDay(day, new Date());
                   const isSelected = selectedDate && isSameDay(day, selectedDate);
 
