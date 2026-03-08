@@ -80,6 +80,8 @@ interface RoutingStep {
   station_id: string;
   status: string;
   step_number: number;
+  operation_name: string;
+  operation_type: string;
   stations?: { name: string } | null;
 }
 
@@ -90,6 +92,7 @@ interface RoutingInfo {
   nextStep: RoutingStep | null;
   totalSteps: number;
   currentStepNumber: number;
+  allSteps: RoutingStep[];
 }
 
 interface OperatorStationPanelProps {
