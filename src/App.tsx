@@ -52,6 +52,7 @@ import IndustryGlossary from "./pages/resources/IndustryGlossary";
 import ResetPassword from "./pages/ResetPassword";
 import Blog from "./pages/Blog";
 import Help from "./pages/Help";
+import HelpArticle from "./pages/HelpArticle";
 import { lazy, Suspense } from "react";
 
 const ShopFloorDisplay = lazy(() => import("./pages/ShopFloorDisplay"));
