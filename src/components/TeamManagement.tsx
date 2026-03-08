@@ -214,7 +214,7 @@ export function TeamManagement() {
               Create Team
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-h-[85vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create a New Team</DialogTitle>
               <DialogDescription>Teams allow you to share handoff data with other operators.</DialogDescription>
