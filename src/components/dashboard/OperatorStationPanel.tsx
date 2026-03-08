@@ -80,6 +80,8 @@ interface RoutingStep {
   station_id: string;
   status: string;
   step_number: number;
+  operation_name: string;
+  operation_type: string;
   stations?: { name: string } | null;
 }
 
@@ -90,6 +92,7 @@ interface RoutingInfo {
   nextStep: RoutingStep | null;
   totalSteps: number;
   currentStepNumber: number;
+  allSteps: RoutingStep[];
 }
 
 interface OperatorStationPanelProps {
@@ -178,6 +181,15 @@ export function OperatorStationPanel({
         nextStep: nextStep || null,
         totalSteps: steps.length,
         currentStepNumber: curIdx >= 0 ? curIdx + 1 : 0,
+        allSteps: steps.map((s: any) => ({
+          id: s.id,
+          station_id: s.station_id,
+          status: s.status,
+          step_number: s.step_number,
+          operation_name: s.operation_name || `Step ${s.step_number}`,
+          operation_type: s.operation_type || 'internal',
+          stations: s.stations,
+        })),
       });
     };
     fetchRouting();
@@ -554,13 +566,65 @@ export function OperatorStationPanel({
                 </div>
               )}
 
-              {/* Routing progress indicator */}
-              {routingInfo && routingInfo.totalSteps > 0 && (
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <GitBranch className="w-3 h-3" />
-                  {routingInfo.isFinalStep
-                    ? "Final operation — work order will complete"
-                    : `Next: ${routingInfo.nextStationName || "next station"}`}
+              {/* Routing timeline — horizontally scrollable */}
+              {routingInfo && routingInfo.allSteps.length > 0 && (
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                    <GitBranch className="w-3 h-3" />
+                    Routing ({routingInfo.currentStepNumber}/{routingInfo.totalSteps})
+                    {routingInfo.isFinalStep && <span className="text-primary ml-1">— Final Op</span>}
+                  </div>
+                  <div className="overflow-x-auto overscroll-x-contain pb-1 -mx-1 px-1" style={{ WebkitOverflowScrolling: 'touch' }}>
+                    <div className="flex items-center gap-0 min-w-max">
+                      {routingInfo.allSteps.map((step, idx) => {
+                        const isCurrent = step.station_id === stationId && step.status !== "completed"
+                          && !routingInfo.allSteps.slice(0, idx).some(s => s.station_id === stationId && s.status !== "completed");
+                        const isCompleted = step.status === "completed";
+                        const isPending = !isCompleted && !isCurrent;
+                        const isOutside = step.operation_type === "outside_processing";
+
+                        return (
+                          <div key={step.id} className="flex items-center">
+                            {idx > 0 && (
+                              <div className={cn(
+                                "w-4 sm:w-6 h-0.5 flex-shrink-0",
+                                isCompleted ? "bg-green-500" : isCurrent ? "bg-primary" : "bg-border"
+                              )} />
+                            )}
+                            <div className={cn(
+                              "flex flex-col items-center flex-shrink-0 px-1",
+                              isCurrent && "relative"
+                            )}>
+                              <div className={cn(
+                                "w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border-2 transition-all",
+                                isCompleted && "bg-green-500 border-green-500 text-white",
+                                isCurrent && "bg-primary border-primary text-primary-foreground ring-2 ring-primary/30 ring-offset-1",
+                                isPending && "bg-muted border-border text-muted-foreground",
+                                isOutside && !isCompleted && !isCurrent && "border-amber-500 text-amber-600"
+                              )}>
+                                {isCompleted ? "✓" : step.step_number}
+                              </div>
+                              <span className={cn(
+                                "text-[9px] mt-0.5 max-w-[60px] sm:max-w-[80px] text-center truncate leading-tight",
+                                isCurrent ? "font-semibold text-primary" : isCompleted ? "text-muted-foreground" : "text-muted-foreground/70"
+                              )}>
+                                {step.stations?.name || step.operation_name}
+                              </span>
+                              {isOutside && (
+                                <span className="text-[8px] text-amber-600 dark:text-amber-400">Outside</span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  {!routingInfo.isFinalStep && routingInfo.nextStationName && (
+                    <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                      <ArrowRight className="w-3 h-3" />
+                      Next delivery: <span className="font-medium text-foreground">{routingInfo.nextStationName}</span>
+                    </div>
+                  )}
                 </div>
               )}
 
