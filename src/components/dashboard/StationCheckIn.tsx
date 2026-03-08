@@ -11,6 +11,7 @@ import { getCurrentShift } from "@/lib/mockData";
 import { workCenterIcons, workCenterColors, getCategoryForType } from "@/lib/workCenterIcons";
 import { WorkCenterType } from "@/types/handoff";
 import { LogIn, Clock, MapPin, Loader2, Circle, Search, X, CheckSquare, Square } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 
