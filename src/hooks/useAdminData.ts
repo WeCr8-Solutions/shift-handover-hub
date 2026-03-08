@@ -94,6 +94,8 @@ export function useAdminAccess() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isSupervisor, setIsSupervisor] = useState(false);
   const [isDeveloper, setIsDeveloper] = useState(false);
+  const [isEngineering, setIsEngineering] = useState(false);
+  const [isProgramming, setIsProgramming] = useState(false);
   // Organization-level roles (from organization_members table)
   const [isOrgAdmin, setIsOrgAdmin] = useState(false);
   const [isOrgOwner, setIsOrgOwner] = useState(false);
@@ -106,6 +108,8 @@ export function useAdminAccess() {
         setIsAdmin(false);
         setIsSupervisor(false);
         setIsDeveloper(false);
+        setIsEngineering(false);
+        setIsProgramming(false);
         setIsOrgAdmin(false);
         setIsOrgOwner(false);
         setOrganizationId(null);
@@ -132,6 +136,8 @@ export function useAdminAccess() {
         setIsAdmin(roleList.includes("admin"));
         setIsSupervisor(roleList.includes("supervisor"));
         setIsDeveloper(roleList.includes("developer"));
+        setIsEngineering(roleList.includes("engineering"));
+        setIsProgramming(roleList.includes("programming"));
       }
 
       // Set organization-level roles
@@ -157,6 +163,9 @@ export function useAdminAccess() {
   const hasOrgAdminAccess = isOrgAdmin || isAdmin; // Org owner/admin OR platform admin
   const hasOrgSupervisorAccess = isSupervisor || hasOrgAdminAccess; // Supervisor OR org admin OR platform admin
   
+  // Narrow access: can manage dimensions/routing tolerances (engineering, programming, supervisor, admin)
+  const hasDimensionAccess = isEngineering || isProgramming || hasOrgSupervisorAccess;
+
   // SDK/Developer platform access (global tools, not org-scoped)
   const hasPlatformAccess = isAdmin || isDeveloper;
 
@@ -165,6 +174,8 @@ export function useAdminAccess() {
     isAdmin, 
     isSupervisor, 
     isDeveloper,
+    isEngineering,
+    isProgramming,
     // Organization roles
     isOrgAdmin,
     isOrgOwner,
@@ -174,6 +185,7 @@ export function useAdminAccess() {
     hasPlatformAccess, // SDK-level tools (admin + developer)
     hasOrgAdminAccess, // Org admins + platform admins
     hasOrgSupervisorAccess, // Supervisors + org admins + platform admins
+    hasDimensionAccess, // Engineering + programming + supervisors + admins (dimensions only)
     hasAdminAccess: hasOrgSupervisorAccess, // Legacy: anyone with supervisor+ access
     hasTestingAccess: isDeveloper || isAdmin, // Developers and platform admins
     loading 

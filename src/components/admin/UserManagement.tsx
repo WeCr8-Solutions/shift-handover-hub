@@ -53,6 +53,8 @@ const ROLE_CONFIG: Record<AppRole, { label: string; variant: "default" | "second
   admin: { label: "Admin", variant: "destructive", icon: <Shield className="w-3 h-3" /> },
   developer: { label: "Developer", variant: "default", icon: <Shield className="w-3 h-3" /> },
   supervisor: { label: "Supervisor", variant: "secondary", icon: <UserCog className="w-3 h-3" /> },
+  engineering: { label: "Engineering", variant: "secondary", icon: <UserCog className="w-3 h-3" /> },
+  programming: { label: "Programming", variant: "secondary", icon: <UserCog className="w-3 h-3" /> },
   operator: { label: "Operator", variant: "outline", icon: <UsersIcon className="w-3 h-3" /> },
   viewer: { label: "Viewer", variant: "outline", icon: <Eye className="w-3 h-3" /> },
 };

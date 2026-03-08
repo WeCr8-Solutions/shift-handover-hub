@@ -61,7 +61,7 @@ export function QueueItemRoutingTab({
   onOpenRouting,
 }: QueueItemRoutingTabProps) {
   const { organization } = useOrgContext();
-  const { hasAdminAccess, hasOrgSupervisorAccess } = useAdminAccess();
+  const { hasAdminAccess, hasOrgSupervisorAccess, hasDimensionAccess } = useAdminAccess();
   const { toast } = useToast();
   const [addingRouting, setAddingRouting] = useState(false);
   const [newRoutingSteps, setNewRoutingSteps] = useState<RoutingStepInput[]>([]);
@@ -308,7 +308,7 @@ export function QueueItemRoutingTab({
                           {/* Dimension check requests panel */}
                           <DimensionRequestsPanel
                             requests={dimRequests.requests}
-                            isSupervisor={hasAdminAccess || hasOrgSupervisorAccess}
+                            isSupervisor={hasDimensionAccess}
                             onReview={async (reqId, status, notes) => {
                               const result = await dimRequests.reviewRequest(reqId, status, notes);
                               if (!result.error) {
@@ -321,7 +321,7 @@ export function QueueItemRoutingTab({
                           />
 
                           {/* Supervisor: add dimension button */}
-                          {(hasAdminAccess || hasOrgSupervisorAccess) && !addingDimForStep && (
+                          {hasDimensionAccess && !addingDimForStep && (
                             <Button
                               size="sm"
                               variant="ghost"
