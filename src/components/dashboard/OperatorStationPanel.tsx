@@ -50,6 +50,23 @@ interface WorkOrder {
   position: number;
   quantity: number | null;
   started_at: string | null;
+  due_date: string | null;
+  description: string | null;
+  qty_original: number | null;
+  qty_completed: number | null;
+  qty_scrap: number | null;
+  qty_rework: number | null;
+  qty_open: number | null;
+  quantity_locked: boolean | null;
+  estimated_duration: number | null;
+  setup_time_minutes: number | null;
+  first_article_minutes: number | null;
+  cycle_time_minutes: number | null;
+  material_type: string | null;
+  part_weight_lbs: number | null;
+  tags: string[] | null;
+  is_rework: boolean | null;
+  assigned_to: string | null;
 }
 
 interface RoutingStep {
