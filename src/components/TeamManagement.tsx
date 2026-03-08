@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTeams, useTeamMembers, Team } from "@/hooks/useTeams";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserOrganization } from "@/hooks/useUserOrganization";
-import { useAdminData } from "@/hooks/useAdminData";
+import { useAdminAccess } from "@/hooks/useAdminData";
 import { useStations } from "@/hooks/useStations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
