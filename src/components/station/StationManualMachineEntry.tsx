@@ -26,7 +26,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ScrollArea } from "@/components/ui/scroll-area";
+
 import { Loader2, Wrench, Save } from "lucide-react";
 
 const PLATFORM_CATEGORIES = [
@@ -299,7 +299,7 @@ export function StationManualMachineEntry({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
-        <DialogHeader>
+        <DialogHeader className="shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Wrench className="w-5 h-5 text-primary" />
             Manual Station Entry — {stationName}
@@ -309,7 +309,7 @@ export function StationManualMachineEntry({
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 min-h-0 -mx-2 px-2">
+        <div className="flex-1 min-h-0 overflow-y-auto -mx-2 px-2">
           <div className="space-y-6 pb-4">
 
             {/* Station Category */}
@@ -572,7 +572,7 @@ export function StationManualMachineEntry({
               <Textarea placeholder="Any additional details about this station..." value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
             </section>
           </div>
-        </ScrollArea>
+        </div>
 
         <DialogFooter className="pt-2 border-t">
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>Cancel</Button>

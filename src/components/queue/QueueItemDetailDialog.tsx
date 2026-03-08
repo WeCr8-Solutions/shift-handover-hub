@@ -531,7 +531,7 @@ export function QueueItemDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader className={cn(
           "rounded-t-lg -mx-6 -mt-6 px-6 pt-6 pb-4 mb-2",
           isQuote && "bg-amber-500/10 border-b border-amber-500/30",
