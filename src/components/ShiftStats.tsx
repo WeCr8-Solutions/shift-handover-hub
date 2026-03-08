@@ -2,7 +2,7 @@ import { Activity, AlertTriangle, Wrench, Clock, Pause } from "lucide-react";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useStations, useHandoffRecords } from "@/hooks/useStations";
 import { useAuth } from "@/contexts/AuthContext";
-import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { mockStations, mockHandoffRecords } from "@/lib/mockData";
 import { useMemo } from "react";
 import { getStatusFromJobState } from "@/components/dashboard/stationStatus";
