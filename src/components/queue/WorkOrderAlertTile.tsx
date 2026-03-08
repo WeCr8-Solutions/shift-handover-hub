@@ -218,7 +218,7 @@ export function WorkOrderAlertTile({ item, stationName, stationCode, workCenterT
     } finally {
       setLoading(false);
     }
-  }, [item.id, item.started_at, item.estimated_duration, item.due_date, item.status, currentTime]);
+  }, [item.id, item.started_at, item.estimated_duration, item.due_date, item.status, item.updated_at, item.created_at, item.priority, item.assigned_to, item.station_id, currentTime]);
 
   useEffect(() => {
     if (isOpen && !alertData) {
