@@ -316,7 +316,15 @@ export default function Queue() {
           <TabsContent value="queue" className="mt-6 space-y-6">
             <QueueStatsCards stats={stats} />
 
-            <div className="flex items-center justify-between gap-4">
+            {smartAlerts.length > 0 && (
+              <SmartAlertPanel
+                alerts={smartAlerts}
+                loading={smartAlertsLoading}
+                variant="full"
+                maxVisible={5}
+              />
+            )}
+
               <div data-tour="queue-filters">
                 <QueueFilters
                   filters={filters}
