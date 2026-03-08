@@ -247,7 +247,7 @@ export default function Admin() {
           </TabsContent>
 
           <TabsContent value="users">
-            <UserManagement isAdmin={isAdmin} />
+            <UserManagement isAdmin={isAdmin} isSupervisorOrAbove={isSupervisor || isOrgAdmin || isOrgOwner || isAdmin} />
           </TabsContent>
 
           <TabsContent value="stations">
