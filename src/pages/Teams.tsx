@@ -6,7 +6,7 @@ import { TeamManagement } from "@/components/TeamManagement";
 import { OrganizationMemberManager } from "@/components/OrganizationMemberManager";
 import { InviteCodeGenerator } from "@/components/InviteCodeGenerator";
 import { TourTriggerButton } from "@/components/onboarding";
-import { Loader2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, UsersRound, QrCode } from "lucide-react";
 
