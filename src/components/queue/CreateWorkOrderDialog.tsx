@@ -5,13 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useQueue, QueuePriority } from "@/hooks/useQueue";
+import { useQueue, QueuePriority, RoutingStepInput } from "@/hooks/useQueue";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Package, Wrench, Hash, Calendar, Clock, AlertTriangle, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { PartSpecsSection, PartSpecsData } from "./PartSpecsSection";
+import { RoutingSection } from "./RoutingSection";
 import { cn } from "@/lib/utils";
 
 interface Station {
@@ -25,7 +26,7 @@ interface CreateWorkOrderDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   preSelectedStationId?: string;
-  onSuccess?: () => void; // New: optional callback
+  onSuccess?: () => void;
 }
 
 export function CreateWorkOrderDialog({
@@ -39,8 +40,8 @@ export function CreateWorkOrderDialog({
   const [loading, setLoading] = useState(false);
   const [stationsLoading, setStationsLoading] = useState(true);
   const [stations, setStations] = useState<Station[]>([]);
+  const [routingSteps, setRoutingSteps] = useState<RoutingStepInput[]>([]);
 
-  // Reset form when dialog opens/closes
   const defaultFormData = useMemo(
     () => ({
       work_order: "",
@@ -76,6 +77,7 @@ export function CreateWorkOrderDialog({
   useEffect(() => {
     if (open) {
       setFormData(defaultFormData);
+      setRoutingSteps([]);
       setPartSpecs({
         material_type: "",
         part_length_inches: "",
@@ -90,7 +92,7 @@ export function CreateWorkOrderDialog({
     }
   }, [open, defaultFormData]);
 
-  // Fetch stations (optimized)
+  // Fetch stations
   useEffect(() => {
     let cancelled = false;
 
@@ -133,7 +135,7 @@ export function CreateWorkOrderDialog({
     };
   }, [open, currentTeam?.id]);
 
-  // Group stations by work center type (memoized)
+  // Group stations by work center type
   const stationsByType = useMemo(() => {
     return stations.reduce(
       (acc, station) => {
@@ -146,6 +148,8 @@ export function CreateWorkOrderDialog({
       {} as Record<string, Station[]>,
     );
   }, [stations]);
+
+  const hasRouting = routingSteps.length > 0;
 
   // Validation
   const isValid = formData.work_order.trim() !== "";
@@ -166,6 +170,15 @@ export function CreateWorkOrderDialog({
         return;
       }
 
+      // Validate routing steps have operation names
+      if (hasRouting) {
+        const invalidSteps = routingSteps.filter((s) => !s.operation_name.trim());
+        if (invalidSteps.length > 0) {
+          toast.error("All routing steps must have an operation name");
+          return;
+        }
+      }
+
       setLoading(true);
       try {
         await createItem({
@@ -176,7 +189,7 @@ export function CreateWorkOrderDialog({
           part_number: formData.part_number || undefined,
           operation_number: formData.operation_number || undefined,
           quantity: formData.quantity ? parseInt(formData.quantity) : undefined,
-          station_id: formData.station_id || undefined,
+          station_id: hasRouting ? undefined : formData.station_id || undefined,
           priority: formData.priority,
           due_date: formData.due_date || undefined,
           setup_time_minutes: formData.setup_time_minutes ? parseInt(formData.setup_time_minutes) : undefined,
@@ -191,11 +204,12 @@ export function CreateWorkOrderDialog({
           part_catalog_id: partSpecs.part_catalog_id || undefined,
           required_tolerance: partSpecs.required_tolerance || undefined,
           surface_finish: partSpecs.surface_finish || undefined,
+          routing_steps: hasRouting ? routingSteps : undefined,
         });
 
         toast.success("Work order created successfully!");
         onOpenChange(false);
-        onSuccess?.(); // New: optional success callback
+        onSuccess?.();
       } catch (error) {
         console.error("Create work order error:", error);
         toast.error("Failed to create work order");
@@ -203,7 +217,7 @@ export function CreateWorkOrderDialog({
         setLoading(false);
       }
     },
-    [formData, partSpecs, createItem, isValid, onOpenChange, onSuccess],
+    [formData, partSpecs, routingSteps, hasRouting, createItem, isValid, onOpenChange, onSuccess],
   );
 
   const updateFormField = useCallback((field: keyof typeof formData, value: string) => {
@@ -236,53 +250,62 @@ export function CreateWorkOrderDialog({
             />
           </div>
 
-          {/* Machine/Station Selection */}
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2">
-              <Wrench className="w-4 h-4" />
-              Assign to Station
-            </Label>
-            <Select
-              value={formData.station_id || "none"}
-              onValueChange={(value) => updateFormField("station_id", value === "none" ? "" : value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a station..." />
-              </SelectTrigger>
-              <SelectContent className="max-h-64">
-                {stationsLoading ? (
-                  <div className="flex items-center justify-center py-4">
-                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                    Loading stations...
-                  </div>
-                ) : stations.length === 0 ? (
-                  <div className="p-3 text-sm text-muted-foreground text-center">
-                    <AlertTriangle className="w-4 h-4 mx-auto mb-1" />
-                    No active stations found
-                  </div>
-                ) : (
-                  Object.entries(stationsByType).map(([type, typeStations]) => (
-                    <div key={type} className="py-1">
-                      <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground bg-muted/50 border-b sticky top-0 z-10">
-                        {type}
-                      </div>
-                      {typeStations.map((station) => (
-                        <SelectItem key={station.id} value={station.id} className="px-3">
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono text-sm bg-muted px-1.5 py-0.5 rounded-sm">
-                              {station.station_id}
-                            </span>
-                            <span className="text-muted-foreground text-xs">•</span>
-                            <span className="truncate">{station.name}</span>
-                          </div>
-                        </SelectItem>
-                      ))}
+          {/* Routing Section — replaces station selector when active */}
+          <RoutingSection
+            steps={routingSteps}
+            onChange={setRoutingSteps}
+            stations={stations}
+          />
+
+          {/* Station Selection — only shown when no routing is defined */}
+          {!hasRouting && (
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Wrench className="w-4 h-4" />
+                Assign to Station
+              </Label>
+              <Select
+                value={formData.station_id || "none"}
+                onValueChange={(value) => updateFormField("station_id", value === "none" ? "" : value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a station..." />
+                </SelectTrigger>
+                <SelectContent className="max-h-64">
+                  {stationsLoading ? (
+                    <div className="flex items-center justify-center py-4">
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      Loading stations...
                     </div>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
-          </div>
+                  ) : stations.length === 0 ? (
+                    <div className="p-3 text-sm text-muted-foreground text-center">
+                      <AlertTriangle className="w-4 h-4 mx-auto mb-1" />
+                      No active stations found
+                    </div>
+                  ) : (
+                    Object.entries(stationsByType).map(([type, typeStations]) => (
+                      <div key={type} className="py-1">
+                        <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground bg-muted/50 border-b sticky top-0 z-10">
+                          {type}
+                        </div>
+                        {typeStations.map((station) => (
+                          <SelectItem key={station.id} value={station.id} className="px-3">
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-sm bg-muted px-1.5 py-0.5 rounded-sm">
+                                {station.station_id}
+                              </span>
+                              <span className="text-muted-foreground text-xs">•</span>
+                              <span className="truncate">{station.name}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </div>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {/* Part Number & Operation */}
           <div className="grid grid-cols-2 gap-3">
@@ -390,7 +413,6 @@ export function CreateWorkOrderDialog({
                 />
               </div>
             </div>
-            {/* Enhanced Total Estimate */}
             {totalEstMinutes > 0 && (
               <div className="p-3 bg-gradient-to-r from-primary/5 to-secondary/50 border rounded-lg">
                 <div className="flex items-center justify-between text-sm">
