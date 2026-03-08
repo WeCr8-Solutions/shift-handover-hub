@@ -89,6 +89,17 @@ const testFileRegistry: Record<string, { path: string; description: string }> = 
   "MachineStatusStore": { path: "src/store/machineStatusStore.test.ts", description: "Zustand machine status store operations" },
   // Types
   "Machine Types": { path: "src/types/machine.test.ts", description: "Machine type definitions & guard functions" },
+  // ── New component tests ──
+  "HandoffCard": { path: "src/components/HandoffCard.test.tsx", description: "Handoff card rendering, personnel, click handler" },
+  "QueueKanbanBoard": { path: "src/components/queue/QueueKanbanBoard.test.tsx", description: "6-column kanban rendering, item placement, drag rules" },
+  "QueueListView": { path: "src/components/queue/QueueListView.test.tsx", description: "Tabular queue view, status dropdown, row click" },
+  "NCRListView": { path: "src/components/ncr/NCRListView.test.tsx", description: "NCR table rendering, empty state, row selection" },
+  "NCRApprovalPanel": { path: "src/components/ncr/NCRApprovalPanel.test.tsx", description: "NCR approve/reject flow, pending filter, callbacks" },
+  "CreateNCRDialog": { path: "src/components/ncr/CreateNCRDialog.test.tsx", description: "NCR creation dialog, form fields, validation" },
+  "QualityMetricsDashboard": { path: "src/components/ncr/QualityMetricsDashboard.test.tsx", description: "FPY, scrap rate, rework rate metric cards" },
+  "SmartAlertPanel": { path: "src/components/alerts/SmartAlertPanel.test.tsx", description: "Alert panel filtering, expand/collapse, loading" },
+  "SmartAlertCard": { path: "src/components/alerts/SmartAlertCard.test.tsx", description: "Alert card severity styling, icons, click handler" },
+  "OperatorStationKanban": { path: "src/components/operator/OperatorStationKanban.test.tsx", description: "Station-scoped 3-column operator kanban" },
 };
 
 // Parse vitest output to extract test results
