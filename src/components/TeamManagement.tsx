@@ -49,7 +49,6 @@ export function TeamManagement() {
 
   // Delete confirmation state
   const [deletingTeam, setDeletingTeam] = useState<Team | null>(null);
-  const [deleteConfirmName, setDeleteConfirmName] = useState("");
 
   const handleCreateTeam = async () => {
     if (!newTeamName.trim()) {
