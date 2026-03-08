@@ -87,7 +87,7 @@ function parseTerm(tokens: Token[], pos: { i: number }): number {
 
 function parseExponent(tokens: Token[], pos: { i: number }): number {
   let base = parseUnary(tokens, pos);
-  while (pos.i < tokens.length && tokens[pos.i].type === "op" && (tokens[pos.i] as { type: "op"; value: string }).value === "^") {
+  while (pos.i < tokens.length && tokens[pos.i].type === "op" && (tokens[pos.i] as Extract<Token, { type: "op" }>).value === "^") {
     pos.i++;
     const exp = parseUnary(tokens, pos);
     base = Math.pow(base, exp);
