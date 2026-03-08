@@ -3975,13 +3975,18 @@ export type Database = {
       }
       station_manual_machine_profiles: {
         Row: {
+          asset_tag: string | null
+          bar_capacity_mm: number | null
           bar_feeder: boolean
+          control_model: string | null
+          control_type: string | null
           created_at: string
           created_by: string
           five_axis_simultaneous: boolean
           fourth_axis: boolean
           hard_constraints: Json[]
           id: string
+          image_url: string | null
           live_tooling: boolean
           machine_type: string
           manufacturer: string
@@ -3990,29 +3995,46 @@ export type Database = {
           max_part_envelope_length: number | null
           max_part_envelope_width: number | null
           max_part_weight: number | null
+          max_spindle_rpm: number | null
+          max_tool_diameter: number | null
+          max_tool_length: number | null
+          max_turning_diameter: number | null
+          max_turning_length: number | null
           max_x_travel: number | null
           max_y_travel: number | null
           max_z_travel: number | null
           model: string
+          notes: string | null
           organization_id: string
           pallet_pool: boolean
           platform_category: string
           probing: boolean
+          serial_number: string | null
+          spindle_power_hp: number | null
+          spindle_taper: string | null
+          station_category: string
           station_id: string
           sub_spindle: boolean
           through_spindle_coolant: boolean
+          tool_magazine_capacity: number | null
           typical_tolerance: number | null
           updated_at: string
           y_axis_turn: boolean
+          year_installed: number | null
         }
         Insert: {
+          asset_tag?: string | null
+          bar_capacity_mm?: number | null
           bar_feeder?: boolean
+          control_model?: string | null
+          control_type?: string | null
           created_at?: string
           created_by: string
           five_axis_simultaneous?: boolean
           fourth_axis?: boolean
           hard_constraints?: Json[]
           id?: string
+          image_url?: string | null
           live_tooling?: boolean
           machine_type: string
           manufacturer: string
@@ -4021,29 +4043,46 @@ export type Database = {
           max_part_envelope_length?: number | null
           max_part_envelope_width?: number | null
           max_part_weight?: number | null
+          max_spindle_rpm?: number | null
+          max_tool_diameter?: number | null
+          max_tool_length?: number | null
+          max_turning_diameter?: number | null
+          max_turning_length?: number | null
           max_x_travel?: number | null
           max_y_travel?: number | null
           max_z_travel?: number | null
           model: string
+          notes?: string | null
           organization_id: string
           pallet_pool?: boolean
           platform_category: string
           probing?: boolean
+          serial_number?: string | null
+          spindle_power_hp?: number | null
+          spindle_taper?: string | null
+          station_category?: string
           station_id: string
           sub_spindle?: boolean
           through_spindle_coolant?: boolean
+          tool_magazine_capacity?: number | null
           typical_tolerance?: number | null
           updated_at?: string
           y_axis_turn?: boolean
+          year_installed?: number | null
         }
         Update: {
+          asset_tag?: string | null
+          bar_capacity_mm?: number | null
           bar_feeder?: boolean
+          control_model?: string | null
+          control_type?: string | null
           created_at?: string
           created_by?: string
           five_axis_simultaneous?: boolean
           fourth_axis?: boolean
           hard_constraints?: Json[]
           id?: string
+          image_url?: string | null
           live_tooling?: boolean
           machine_type?: string
           manufacturer?: string
@@ -4052,20 +4091,32 @@ export type Database = {
           max_part_envelope_length?: number | null
           max_part_envelope_width?: number | null
           max_part_weight?: number | null
+          max_spindle_rpm?: number | null
+          max_tool_diameter?: number | null
+          max_tool_length?: number | null
+          max_turning_diameter?: number | null
+          max_turning_length?: number | null
           max_x_travel?: number | null
           max_y_travel?: number | null
           max_z_travel?: number | null
           model?: string
+          notes?: string | null
           organization_id?: string
           pallet_pool?: boolean
           platform_category?: string
           probing?: boolean
+          serial_number?: string | null
+          spindle_power_hp?: number | null
+          spindle_taper?: string | null
+          station_category?: string
           station_id?: string
           sub_spindle?: boolean
           through_spindle_coolant?: boolean
+          tool_magazine_capacity?: number | null
           typical_tolerance?: number | null
           updated_at?: string
           y_axis_turn?: boolean
+          year_installed?: number | null
         }
         Relationships: [
           {
@@ -4604,12 +4655,17 @@ export type Database = {
       }
       verified_machine_library: {
         Row: {
+          bar_capacity_mm: number | null
           bar_feeder: boolean
+          control_model: string | null
+          control_type: string | null
           created_at: string
+          datasheet_url: string | null
           five_axis_simultaneous: boolean
           fourth_axis: boolean
           hard_constraints: Json
           id: string
+          image_url: string | null
           is_verified: boolean
           live_tooling: boolean
           machine_type: string
@@ -4619,6 +4675,11 @@ export type Database = {
           max_part_envelope_length: number | null
           max_part_envelope_width: number | null
           max_part_weight: number | null
+          max_spindle_rpm: number | null
+          max_tool_diameter: number | null
+          max_tool_length: number | null
+          max_turning_diameter: number | null
+          max_turning_length: number | null
           max_x_travel: number | null
           max_y_travel: number | null
           max_z_travel: number | null
@@ -4626,19 +4687,27 @@ export type Database = {
           pallet_pool: boolean
           platform_category: string
           probing: boolean
+          spindle_power_hp: number | null
+          spindle_taper: string | null
           sub_spindle: boolean
           through_spindle_coolant: boolean
+          tool_magazine_capacity: number | null
           typical_tolerance: number | null
           updated_at: string
           y_axis_turn: boolean
         }
         Insert: {
+          bar_capacity_mm?: number | null
           bar_feeder?: boolean
+          control_model?: string | null
+          control_type?: string | null
           created_at?: string
+          datasheet_url?: string | null
           five_axis_simultaneous?: boolean
           fourth_axis?: boolean
           hard_constraints?: Json
           id?: string
+          image_url?: string | null
           is_verified?: boolean
           live_tooling?: boolean
           machine_type: string
@@ -4648,6 +4717,11 @@ export type Database = {
           max_part_envelope_length?: number | null
           max_part_envelope_width?: number | null
           max_part_weight?: number | null
+          max_spindle_rpm?: number | null
+          max_tool_diameter?: number | null
+          max_tool_length?: number | null
+          max_turning_diameter?: number | null
+          max_turning_length?: number | null
           max_x_travel?: number | null
           max_y_travel?: number | null
           max_z_travel?: number | null
@@ -4655,19 +4729,27 @@ export type Database = {
           pallet_pool?: boolean
           platform_category: string
           probing?: boolean
+          spindle_power_hp?: number | null
+          spindle_taper?: string | null
           sub_spindle?: boolean
           through_spindle_coolant?: boolean
+          tool_magazine_capacity?: number | null
           typical_tolerance?: number | null
           updated_at?: string
           y_axis_turn?: boolean
         }
         Update: {
+          bar_capacity_mm?: number | null
           bar_feeder?: boolean
+          control_model?: string | null
+          control_type?: string | null
           created_at?: string
+          datasheet_url?: string | null
           five_axis_simultaneous?: boolean
           fourth_axis?: boolean
           hard_constraints?: Json
           id?: string
+          image_url?: string | null
           is_verified?: boolean
           live_tooling?: boolean
           machine_type?: string
@@ -4677,6 +4759,11 @@ export type Database = {
           max_part_envelope_length?: number | null
           max_part_envelope_width?: number | null
           max_part_weight?: number | null
+          max_spindle_rpm?: number | null
+          max_tool_diameter?: number | null
+          max_tool_length?: number | null
+          max_turning_diameter?: number | null
+          max_turning_length?: number | null
           max_x_travel?: number | null
           max_y_travel?: number | null
           max_z_travel?: number | null
@@ -4684,8 +4771,11 @@ export type Database = {
           pallet_pool?: boolean
           platform_category?: string
           probing?: boolean
+          spindle_power_hp?: number | null
+          spindle_taper?: string | null
           sub_spindle?: boolean
           through_spindle_coolant?: boolean
+          tool_magazine_capacity?: number | null
           typical_tolerance?: number | null
           updated_at?: string
           y_axis_turn?: boolean
