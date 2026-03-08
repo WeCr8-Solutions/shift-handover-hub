@@ -13,6 +13,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { RoutingSection } from "@/components/queue/RoutingSection";
 import { DimensionCheckForm } from "@/components/dimensions/DimensionCheckForm";
 import { AddDimensionForm } from "@/components/dimensions/AddDimensionForm";
+import { RequestDimensionCheckButton } from "@/components/dimensions/RequestDimensionCheckButton";
+import { DimensionRequestsPanel } from "@/components/dimensions/DimensionRequestsPanel";
+import { useDimensionRequests } from "@/hooks/useDimensionRequests";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import {
@@ -67,7 +70,7 @@ export function QueueItemRoutingTab({
   const [addingDimForStep, setAddingDimForStep] = useState<string | null>(null);
 
   const dimensions = useDimensions();
-
+  const dimRequests = useDimensionRequests();
   const handleSaveRouting = async () => {
     if (!organization?.id) return;
     setSavingRouting(true);
@@ -264,6 +267,7 @@ export function QueueItemRoutingTab({
                       setExpandedStep(isExpanding ? step.id : null);
                       if (isExpanding) {
                         dimensions.loadAll(step.id, item.id);
+                        dimRequests.fetchRequests(step.id);
                       }
                     }}
                   >
@@ -290,6 +294,31 @@ export function QueueItemRoutingTab({
                           {dimensions.requirements.length === 0 && !addingDimForStep && (
                             <p className="text-xs text-muted-foreground text-center py-2">No dimension checks required for this step.</p>
                           )}
+
+                          {/* Operator: request dimension check */}
+                          {!isComplete && (
+                            <RequestDimensionCheckButton
+                              routingStepId={step.id}
+                              queueItemId={item.id}
+                              operationName={step.operation_name}
+                              onSubmit={dimRequests.submitRequest}
+                            />
+                          )}
+
+                          {/* Dimension check requests panel */}
+                          <DimensionRequestsPanel
+                            requests={dimRequests.requests}
+                            isSupervisor={hasAdminAccess || hasOrgSupervisorAccess}
+                            onReview={async (reqId, status, notes) => {
+                              const result = await dimRequests.reviewRequest(reqId, status, notes);
+                              if (!result.error) {
+                                await dimRequests.fetchRequests(step.id);
+                              }
+                              return result;
+                            }}
+                            onAddDimension={(stepId) => setAddingDimForStep(stepId)}
+                          />
+
                           {/* Supervisor: add dimension button */}
                           {(hasAdminAccess || hasOrgSupervisorAccess) && !addingDimForStep && (
                             <Button

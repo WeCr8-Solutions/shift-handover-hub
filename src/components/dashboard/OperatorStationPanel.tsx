@@ -44,7 +44,9 @@ import { toast } from "sonner";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { OperatorStationKanban } from "@/components/operator/OperatorStationKanban";
 import { useDimensions } from "@/hooks/useDimensions";
+import { useDimensionRequests } from "@/hooks/useDimensionRequests";
 import { DimensionCheckForm } from "@/components/dimensions/DimensionCheckForm";
+import { RequestDimensionCheckButton } from "@/components/dimensions/RequestDimensionCheckButton";
 import { format, isPast, formatDistanceToNow } from "date-fns";
 
 interface WorkOrder {
@@ -123,6 +125,7 @@ export function OperatorStationPanel({
   const [isOverride, setIsOverride] = useState(false);
   const [overrideReason, setOverrideReason] = useState("");
   const stepDimensions = useDimensions();
+  const operatorDimRequests = useDimensionRequests();
 
   // Completion form state
   const [completionData, setCompletionData] = useState<{
@@ -858,7 +861,15 @@ export function OperatorStationPanel({
                   />
                 )}
 
-                {/* Validation errors */}
+                {/* Request dimension check from supervisor */}
+                {deliverOrder && routingInfo?.currentStepId && (
+                  <RequestDimensionCheckButton
+                    routingStepId={routingInfo.currentStepId}
+                    queueItemId={deliverOrder.id}
+                    operationName={routingInfo?.allSteps?.find(s => s.step_number === routingInfo?.currentStepNumber)?.operation_name || "this operation"}
+                    onSubmit={operatorDimRequests.submitRequest}
+                  />
+                )}
                 {validationErrors.length > 0 && !isOverride && (
                   <Alert variant="destructive" className="py-2">
                     <AlertTriangle className="h-4 w-4" />
