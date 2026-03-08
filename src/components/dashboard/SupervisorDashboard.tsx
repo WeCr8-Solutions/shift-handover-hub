@@ -83,6 +83,49 @@ export function SupervisorDashboard({
   // Status filter: click a KPI card to filter station list + analytics
   const [statusFilter, setStatusFilter] = useState<StatusLabel | "all">("all");
 
+  // Work Order alerts for dashboard sidebar
+  const [woAlerts, setWoAlerts] = useState<{
+    overdue: { id: string; title: string; work_order: string | null; due_date: string; priority: string }[];
+    onHold: { id: string; title: string; work_order: string | null; priority: string }[];
+    unassigned: number;
+  }>({ overdue: [], onHold: [], unassigned: 0 });
+
+  useEffect(() => {
+    if (!organization?.id) return;
+    const fetchWOAlerts = async () => {
+      const [overdueRes, holdRes, unassignedRes] = await Promise.all([
+        supabase
+          .from("queue_items")
+          .select("id, title, work_order, due_date, priority")
+          .eq("organization_id", organization.id)
+          .not("status", "in", '("completed","cancelled")')
+          .not("due_date", "is", null)
+          .lt("due_date", new Date().toISOString())
+          .order("due_date", { ascending: true })
+          .limit(5),
+        supabase
+          .from("queue_items")
+          .select("id, title, work_order, priority")
+          .eq("organization_id", organization.id)
+          .eq("status", "on_hold")
+          .order("created_at", { ascending: false })
+          .limit(5),
+        supabase
+          .from("queue_items")
+          .select("id", { count: "exact", head: true })
+          .eq("organization_id", organization.id)
+          .is("station_id", null)
+          .not("status", "in", '("completed","cancelled")'),
+      ]);
+      setWoAlerts({
+        overdue: (overdueRes.data || []) as any,
+        onHold: (holdRes.data || []) as any,
+        unassigned: unassignedRes.count || 0,
+      });
+    };
+    fetchWOAlerts();
+  }, [organization?.id, lastRefreshedAt]);
+
   const orgName = organization?.name || "Organization";
   const scopeLabel = currentTeam?.name || `${orgName} · All Teams`;
 
