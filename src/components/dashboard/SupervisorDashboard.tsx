@@ -22,6 +22,11 @@ import {
   Eye,
   Monitor,
   Users,
+  ChevronDown,
+  ChevronUp,
+  ClipboardList,
+  Wrench,
+  BellRing,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
