@@ -8,7 +8,8 @@ import { useHandoffRecords } from "@/hooks/useStations";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Monitor, Loader2 } from "lucide-react";
+import { ArrowLeft, Monitor } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
   AlertDialogAction,
