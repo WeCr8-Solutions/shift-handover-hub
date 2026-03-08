@@ -23,6 +23,7 @@
 | 13 | [Help Center](./13-help-center.md) | ✅ Active | In-app help articles and search |
 | 14 | [Shop Floor Display](./14-shop-floor-display.md) | 🚧 Draft | TV/tablet display boards for shop floors |
 | 15 | [Hooks Reference](./15-hooks-reference.md) | ✅ Active | Complete catalog of all 47 custom React hooks |
+| 16 | [Component Reference](./16-component-reference.md) | ✅ Active | Complete catalog of all 110+ custom components |
 
 ---
 
