@@ -151,4 +151,4 @@ export const LeadCaptureModal = forwardRef<HTMLDivElement>(function LeadCaptureM
       </DialogContent>
     </Dialog>
   );
-}
+});
