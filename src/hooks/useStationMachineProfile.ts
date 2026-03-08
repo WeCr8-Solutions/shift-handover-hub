@@ -29,7 +29,48 @@ export interface MachineLibraryEntry {
   typical_tolerance: number | null;
   hard_constraints: any[];
   is_verified: boolean;
+  // New spec fields
+  max_spindle_rpm: number | null;
+  spindle_taper: string | null;
+  spindle_power_hp: number | null;
+  tool_magazine_capacity: number | null;
+  max_tool_diameter: number | null;
+  max_tool_length: number | null;
+  control_type: string | null;
+  control_model: string | null;
+  max_turning_diameter: number | null;
+  max_turning_length: number | null;
+  bar_capacity_mm: number | null;
+  image_url: string | null;
+  datasheet_url: string | null;
 }
+
+/** Station categories for non-machine workstation types */
+export const STATION_CATEGORIES = [
+  { value: "cnc_machine", label: "CNC Machine" },
+  { value: "assembly", label: "Assembly Station" },
+  { value: "inspection", label: "Inspection / QC" },
+  { value: "workstation", label: "Workstation / Desk" },
+  { value: "welding", label: "Welding" },
+  { value: "paint_finish", label: "Paint / Finish" },
+  { value: "shipping_receiving", label: "Shipping / Receiving" },
+  { value: "tool_crib", label: "Tool Crib" },
+  { value: "deburr", label: "Deburr" },
+  { value: "wash", label: "Wash" },
+  { value: "other", label: "Other" },
+] as const;
+
+export const SPINDLE_TAPERS = [
+  "CAT40", "CAT50", "BT30", "BT40", "BT50",
+  "HSK-A63", "HSK-A100", "HSK-E40", "HSK-E50",
+  "R8", "MT2", "MT3", "MT4", "MT5",
+  "5C", "16C", "Other",
+] as const;
+
+export const CONTROL_TYPES = [
+  "Fanuc", "HAAS", "Siemens", "Mazatrol", "Okuma OSP",
+  "Heidenhain", "Mitsubishi", "Fagor", "Manual", "Other",
+] as const;
 
 export interface MachinePurchase {
   id: string;

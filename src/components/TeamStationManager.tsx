@@ -111,6 +111,30 @@ function EditStationMachineInfo({
     return caps;
   };
 
+  /** Render instance-level details (serial, asset tag, control, spindle) */
+  const renderInstanceDetails = (profile: Record<string, any>) => {
+    const details: { label: string; value: string }[] = [];
+    if (profile.serial_number) details.push({ label: "S/N", value: profile.serial_number });
+    if (profile.asset_tag) details.push({ label: "Asset", value: profile.asset_tag });
+    if (profile.control_type) details.push({ label: "Control", value: `${profile.control_type}${profile.control_model ? ` ${profile.control_model}` : ''}` });
+    if (profile.max_spindle_rpm) details.push({ label: "Spindle", value: `${profile.max_spindle_rpm} RPM` });
+    if (profile.spindle_taper) details.push({ label: "Taper", value: profile.spindle_taper });
+    if (profile.spindle_power_hp) details.push({ label: "Power", value: `${profile.spindle_power_hp} HP` });
+    if (profile.tool_magazine_capacity) details.push({ label: "Tools", value: `${profile.tool_magazine_capacity} pockets` });
+    if (profile.year_installed) details.push({ label: "Installed", value: String(profile.year_installed) });
+    return details;
+  };
+
+  const getCategoryLabel = (cat: string | undefined) => {
+    const labels: Record<string, string> = {
+      cnc_machine: "CNC Machine", assembly: "Assembly", inspection: "Inspection",
+      workstation: "Workstation", desk: "Desk", welding: "Welding",
+      paint_finish: "Paint/Finish", shipping_receiving: "Shipping/Receiving",
+      tool_crib: "Tool Crib", deburr: "Deburr", wash: "Wash", other: "Other",
+    };
+    return labels[cat || ""] || cat || "Machine";
+  };
+
   return (
     <>
       <Separator />
@@ -151,6 +175,19 @@ function EditStationMachineInfo({
                   Max part weight: {assignment.machine.max_part_weight} kg
                 </p>
               )}
+              {/* New: spindle/control/tool details from verified library */}
+              {(() => {
+                const details = renderInstanceDetails(assignment.machine);
+                return details.length > 0 ? (
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 pl-6">
+                    {details.map(d => (
+                      <p key={d.label} className="text-[10px] text-muted-foreground">
+                        <span className="font-medium">{d.label}:</span> {d.value}
+                      </p>
+                    ))}
+                  </div>
+                ) : null;
+              })()}
               {(() => {
                 const caps = renderCapabilities(assignment.machine);
                 return caps.length > 0 ? (
@@ -168,14 +205,29 @@ function EditStationMachineInfo({
                 <Wrench className="w-4 h-4 text-blue-600 shrink-0" />
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium truncate">
-                    {manualProfile.manufacturer} {manualProfile.model}
+                    {manualProfile.manufacturer !== "N/A" ? `${manualProfile.manufacturer} ` : ""}{manualProfile.model}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {manualProfile.machine_type} · {manualProfile.platform_category}
+                    {getCategoryLabel(manualProfile.station_category)}
+                    {manualProfile.machine_type && manualProfile.station_category === "cnc_machine" ? ` · ${manualProfile.machine_type}` : ""}
+                    {manualProfile.platform_category && manualProfile.platform_category !== "N/A" ? ` · ${manualProfile.platform_category}` : ""}
                   </p>
                 </div>
                 <Badge variant="outline" className="text-[10px] shrink-0">Manual</Badge>
               </div>
+              {/* Instance details: serial, asset tag, control, spindle */}
+              {(() => {
+                const details = renderInstanceDetails(manualProfile);
+                return details.length > 0 ? (
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 pl-6">
+                    {details.map(d => (
+                      <p key={d.label} className="text-[10px] text-muted-foreground">
+                        <span className="font-medium">{d.label}:</span> {d.value}
+                      </p>
+                    ))}
+                  </div>
+                ) : null;
+              })()}
               {(manualProfile.max_x_travel || manualProfile.max_y_travel || manualProfile.max_z_travel) && (
                 <p className="text-[10px] text-muted-foreground pl-6">
                   Travel: {manualProfile.max_x_travel ?? '–'}×{manualProfile.max_y_travel ?? '–'}×{manualProfile.max_z_travel ?? '–'} mm
@@ -208,6 +260,11 @@ function EditStationMachineInfo({
                     ))}
                   </div>
                 </div>
+              )}
+              {manualProfile.notes && (
+                <p className="text-[10px] text-muted-foreground pl-6 italic">
+                  {manualProfile.notes}
+                </p>
               )}
             </CardContent>
           </Card>
