@@ -126,6 +126,10 @@ export function OrganizationMemberManager() {
     removeAppRole,
   } = useOrganizationMembers(organization?.id || null);
   const { sendTeamInviteEmail } = useEmail();
+  const { limits, loading: entitlementsLoading } = useEntitlements();
+  const seatLimit = limits?.users ?? 1;
+  const seatsUsed = members.length;
+  const seatsAvailable = Math.max(0, seatLimit - seatsUsed);
   const { toast } = useToast();
 
   // ── Invite dialog state ──────────────────────────────────────────────────
