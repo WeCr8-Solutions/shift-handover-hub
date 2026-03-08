@@ -8,7 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useQueue, QueuePriority, RoutingStepInput } from "@/hooks/useQueue";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Package, Wrench, Hash, Calendar, Clock, AlertTriangle, CheckCircle } from "lucide-react";
+import { Loader2, Package, Wrench, Hash, Calendar as CalendarIcon, Clock, AlertTriangle, CheckCircle } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { PartSpecsSection, PartSpecsData } from "./PartSpecsSection";
@@ -362,16 +364,38 @@ export function CreateWorkOrderDialog({
           {/* Due Date */}
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
-              <Calendar className="w-4 h-4" />
+              <CalendarIcon className="w-4 h-4" />
               Due Date
             </Label>
-            <Input
-              type="date"
-              value={formData.due_date}
-              onChange={(e) => updateFormField("due_date", e.target.value)}
-              min={format(new Date(), "yyyy-MM-dd")}
-              className="text-sm"
-            />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !formData.due_date && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {formData.due_date
+                    ? format(new Date(formData.due_date + "T00:00:00"), "PPP")
+                    : "Pick a due date"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={formData.due_date ? new Date(formData.due_date + "T00:00:00") : undefined}
+                  onSelect={(date) =>
+                    updateFormField("due_date", date ? format(date, "yyyy-MM-dd") : "")
+                  }
+                  disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
           </div>
 
           {/* Machine Time Breakdown */}
