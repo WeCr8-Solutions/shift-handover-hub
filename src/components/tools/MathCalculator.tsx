@@ -59,8 +59,10 @@ function isAlpha(c: string) { return (c >= "a" && c <= "z") || (c >= "A" && c <=
 // Recursive descent parser with proper precedence
 function parseExpr(tokens: Token[], pos: { i: number }): number {
   let left = parseTerm(tokens, pos);
-  while (pos.i < tokens.length && tokens[pos.i].type === "op" && (tokens[pos.i].value === "+" || tokens[pos.i].value === "-")) {
-    const op = (tokens[pos.i] as { type: "op"; value: string }).value;
+  while (pos.i < tokens.length) {
+    const t = tokens[pos.i];
+    if (t.type !== "op" || (t.value !== "+" && t.value !== "-")) break;
+    const op = t.value;
     pos.i++;
     const right = parseTerm(tokens, pos);
     left = op === "+" ? left + right : left - right;
