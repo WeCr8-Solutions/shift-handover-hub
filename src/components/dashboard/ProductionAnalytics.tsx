@@ -387,13 +387,26 @@ export function ProductionAnalytics({
                     tickLine={false}
                   />
                   <Tooltip
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "8px",
-                      fontSize: "12px",
+                    content={({ active, payload, label }) => {
+                      if (!active || !payload?.length) return null;
+                      const data = payload[0]?.payload;
+                      return (
+                        <div className="bg-card border border-border rounded-lg p-2.5 text-xs shadow-lg">
+                          <p className="font-medium text-foreground mb-1">{label}</p>
+                          {data?.teamName && (
+                            <p className="text-muted-foreground">Team: {data.teamName}</p>
+                          )}
+                          {data?.workCenter && data.workCenter !== "—" && (
+                            <p className="text-muted-foreground mb-1">Work Center: {data.workCenter}</p>
+                          )}
+                          {payload.map((p: any, i: number) => (
+                            <p key={i} style={{ color: p.color }}>
+                              {p.name}: {p.value}
+                            </p>
+                          ))}
+                        </div>
+                      );
                     }}
-                    labelStyle={{ color: "hsl(var(--foreground))" }}
                   />
                   <Bar
                     dataKey="parts"
