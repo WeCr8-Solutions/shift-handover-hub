@@ -370,41 +370,35 @@ export function QueueCalendarView({ items, onItemClick }: QueueCalendarViewProps
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ScrollArea className="h-[200px]">
+                <ScrollArea className="h-[250px]">
                   <div className="space-y-2">
-                    {getItemsForDate(selectedDate).map((item) => (
-                      <QueueItemCard
-                        key={item.id}
-                        item={item}
-                        onClick={() => onItemClick(item.id)}
+                    {getEntriesForDate(selectedDate).map((entry, i) => (
+                      <CalendarEntryCard
+                        key={`${entry.item.id}-${entry.dateType}-${i}`}
+                        entry={entry}
+                        onClick={() => onItemClick(entry.item.id)}
                       />
                     ))}
-                    {getItemsForDate(selectedDate).length === 0 && (
+                    {getEntriesForDate(selectedDate).length === 0 && (
                       <p className="text-sm text-muted-foreground text-center py-4">
                         No items scheduled
                       </p>
                     )}
+                    {(() => {
+                      const load = getDayLoad(selectedDate);
+                      if (load <= 0) return null;
+                      return (
+                        <div className={cn(
+                          "mt-2 p-2 rounded text-xs font-medium border",
+                          load > 480 ? "bg-destructive/10 text-destructive border-destructive/20" : "bg-muted text-muted-foreground border-border"
+                        )}>
+                          Day load: {Math.round(load / 60)}h {load % 60}m
+                          {load > 480 && " ⚠️ Over capacity"}
+                        </div>
+                      );
+                    })()}
                   </div>
                 </ScrollArea>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Unscheduled Items */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Unscheduled ({unscheduledItems.length})</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ScrollArea className="h-[200px]">
-                <div className="space-y-2">
-                  {unscheduledItems.slice(0, 10).map((item) => (
-                    <QueueItemCard
-                      key={item.id}
-                      item={item}
-                      onClick={() => onItemClick(item.id)}
-                    />
-                  ))}
                   {unscheduledItems.length === 0 && (
                     <p className="text-sm text-muted-foreground text-center py-4">
                       All items scheduled
