@@ -31,6 +31,7 @@ import {
   getStatusBgClass,
   type StatusLabel,
 } from "./stationStatus";
+import { StationAlertTile } from "./StationAlertTile";
 
 interface SupervisorDashboardProps {
   onNewHandoff: () => void;
@@ -528,39 +529,13 @@ export function SupervisorDashboard({
               </button>
             </div>
           ) : (
-            <div className="divide-y divide-border/30">
+            <div>
               {activeStations.map((station) => (
-                <button
+                <StationAlertTile
                   key={station.dbId}
-                  className="flex items-center gap-3 px-4 py-2.5 w-full text-left hover:bg-secondary/40 transition-colors group"
-                  onClick={() => onViewStation?.(station.dbId, station.name)}
-                >
-                  <div className={cn("w-2 h-2 rounded-full flex-shrink-0", getStatusBgClass(station.status))} />
-                  <div className="flex flex-col min-w-0 w-28 flex-shrink-0">
-                    <span className="text-xs font-mono font-medium truncate">{station.name}</span>
-                    <div className="flex items-center gap-1">
-                      {station.teamName && (
-                        <span className="text-[10px] text-muted-foreground truncate">{station.teamName}</span>
-                      )}
-                      {station.teamName && station.workCenter && (
-                        <span className="text-[10px] text-muted-foreground">·</span>
-                      )}
-                      <span className="text-[10px] text-muted-foreground truncate">{station.workCenter}</span>
-                    </div>
-                  </div>
-                  <span className="text-xs text-muted-foreground w-20 truncate flex-shrink-0 hidden sm:block">{station.operator}</span>
-                  <span className="text-xs font-mono text-primary w-20 flex-shrink-0 truncate hidden sm:block">{station.workOrder}</span>
-                  <div className="flex-1 h-1.5 bg-secondary rounded-full overflow-hidden hidden sm:block">
-                    <div
-                      className={cn("h-full rounded-full transition-all", getStatusBgClass(station.status))}
-                      style={{ width: `${station.progress}%` }}
-                    />
-                  </div>
-                  <span className="text-[10px] font-mono text-muted-foreground w-10 text-right hidden sm:block">
-                    {station.progress}%
-                  </span>
-                  <ArrowRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-primary transition-colors flex-shrink-0" />
-                </button>
+                  station={station}
+                  onViewStation={onViewStation}
+                />
               ))}
             </div>
           )}
