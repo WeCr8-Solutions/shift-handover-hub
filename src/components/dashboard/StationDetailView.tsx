@@ -11,6 +11,8 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Monitor } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MachineStatusGrid } from "@/components/machine/MachineStatusGrid";
+import { AlarmFeed } from "@/components/machine/AlarmFeed";
+import { MachineMonitoringGate } from "@/components/machine/MachineMonitoringGate";
 import {
   AlertDialog,
   AlertDialogAction,
