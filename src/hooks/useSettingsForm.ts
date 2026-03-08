@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useGeneralSettings } from "@/hooks/useGeneralSettings";
 
@@ -65,20 +65,26 @@ export function useSettingsForm<T extends Record<string, unknown>>({
   const [form, setForm] = useState<T>(defaults);
   const [initial, setInitial] = useState<T>(defaults);
   const [isSaving, setIsSaving] = useState(false);
+  /**
+   * Guard: only apply backend data on the *first* successful load.
+   * Subsequent refetches (e.g. after save) should NOT reset the form –
+   * save() already sets `initial` optimistically, which is the source of truth.
+   */
+  const hasLoadedRef = useRef(false);
 
-  // Sync form state when settings load from the backend
-  const loadFromBackend = useCallback(() => {
+  // Sync form state when settings load from the backend (first load only)
+  useEffect(() => {
+    if (hasLoadedRef.current) return;          // Already hydrated once
+    if (loading) return;                        // Wait for fetch to finish
+
     const saved = getSetting(settingKey);
     if (saved && typeof saved === "object") {
       const merged = { ...defaults, ...saved } as T;
       setForm(merged);
       setInitial(merged);
     }
-  }, [getSetting, settingKey, defaults]);
-
-  useEffect(() => {
-    loadFromBackend();
-  }, [loadFromBackend]);
+    hasLoadedRef.current = true;
+  }, [loading, getSetting, settingKey, defaults]);
 
   const isDirty = JSON.stringify(form) !== JSON.stringify(initial);
 
@@ -101,6 +107,9 @@ export function useSettingsForm<T extends Record<string, unknown>>({
           variant: "destructive",
         });
       } else {
+        // Optimistically update initial to the saved form so isDirty becomes false.
+        // The backend refetch triggered by updateSetting will keep the settings
+        // state in sync, but we don't re-apply it to the form (hasLoadedRef guard).
         setInitial(form);
         toast({ title: successMessage });
       }

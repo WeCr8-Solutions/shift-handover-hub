@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrgContext } from "@/contexts/OrgContext";
@@ -22,26 +22,39 @@ export function useGeneralSettings() {
   const { organization } = useOrgContext();
   const [settings, setSettings] = useState<AppSetting[]>([]);
   const [loading, setLoading] = useState(true);
+  /** Track the org id we last fetched for to avoid stale cross-org reads. */
+  const lastFetchedOrgRef = useRef<string | null>(null);
 
   const fetchSettings = useCallback(async () => {
     if (!user) return;
+
     setLoading(true);
 
     try {
-      const { data } = await supabase
+      let query = supabase
         .from("app_settings")
         .select("*")
         .order("setting_key");
 
-      if (data) {
+      // Scope to the current org when available
+      if (organization?.id) {
+        query = query.eq("organization_id", organization.id);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error("Error fetching settings:", error);
+      } else if (data) {
         setSettings(data as AppSetting[]);
+        lastFetchedOrgRef.current = organization?.id ?? null;
       }
     } catch (error) {
       console.error("Error fetching settings:", error);
     }
 
     setLoading(false);
-  }, [user]);
+  }, [user, organization?.id]);
 
   useEffect(() => {
     fetchSettings();
@@ -50,7 +63,7 @@ export function useGeneralSettings() {
   const getSetting = useCallback(
     (key: string): Record<string, unknown> | null => {
       const setting = settings.find((s) => s.setting_key === key);
-      return setting?.setting_value || null;
+      return setting?.setting_value ?? null;
     },
     [settings]
   );
@@ -66,29 +79,23 @@ export function useGeneralSettings() {
         error: "No organization found. Please join or create an organization first.",
       };
 
-    const existingSetting = settings.find((s) => s.setting_key === key);
-
-    if (existingSetting) {
-      const { error } = await supabase
-        .from("app_settings")
-        .update({
+    // Use upsert with the unique constraint (organization_id, team_id, setting_key)
+    // to avoid race conditions between find-then-insert/update.
+    const { error } = await supabase
+      .from("app_settings")
+      .upsert(
+        {
+          organization_id: organization.id,
+          team_id: null,
+          setting_key: key,
           setting_value: value as Json,
+          setting_type: type,
           updated_by: user.id,
-        })
-        .eq("id", existingSetting.id);
+        },
+        { onConflict: "organization_id,team_id,setting_key" }
+      );
 
-      if (error) return { error: error.message };
-    } else {
-      const { error } = await supabase.from("app_settings").insert({
-        organization_id: organization.id,
-        setting_key: key,
-        setting_value: value as Json,
-        setting_type: type,
-        updated_by: user.id,
-      });
-
-      if (error) return { error: error.message };
-    }
+    if (error) return { error: error.message };
 
     await fetchSettings();
     return { error: null };
