@@ -155,7 +155,7 @@ export function SupervisorDashboard({
     return items;
   }, [dbStations]);
 
-  // Active station list using shared status config
+  // Active station list using shared status config — filtered by statusFilter
   const activeStations = useMemo(() => {
     return dbStations
       .filter((s) => s.is_active)
@@ -180,8 +180,18 @@ export function SupervisorDashboard({
           progress,
           status: stateLabel,
         };
-      });
-  }, [dbStations]);
+      })
+      .filter((s) => statusFilter === "all" || s.status === statusFilter);
+  }, [dbStations, statusFilter]);
+
+  // Stations filtered by status for analytics
+  const filteredStationsForAnalytics = useMemo(() => {
+    if (statusFilter === "all") return dbStations;
+    return dbStations.filter((s) => {
+      if (!s.is_active) return false;
+      return getStatusFromJobState(s.current_status?.current_job_state) === statusFilter;
+    });
+  }, [dbStations, statusFilter]);
 
   // Recent handoffs
   const recentHandoffs = useMemo(() => {
