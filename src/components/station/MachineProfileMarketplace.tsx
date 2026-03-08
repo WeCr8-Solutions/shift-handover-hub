@@ -299,7 +299,7 @@ export function MachineProfileMarketplace({ stationId, stationName, open, onOpen
   return (
     <>
       <Dialog open={open && !detailMachine} onOpenChange={onOpenChange!}>
-        <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <ShoppingBag className="w-5 h-5 text-primary" />

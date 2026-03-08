@@ -366,7 +366,7 @@ export function MachineLibraryManagement() {
 
       {/* Add/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden flex flex-col w-[95vw] sm:w-auto">
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto flex flex-col w-[95vw] sm:w-auto">
           <DialogHeader>
             <DialogTitle className="truncate">{editingId ? "Edit Machine Profile" : "Add Machine Profile"}</DialogTitle>
           </DialogHeader>
