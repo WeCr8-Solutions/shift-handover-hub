@@ -5,6 +5,7 @@ import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { getSafeErrorMessage } from "@/lib/errorHandling";
 import { supabase } from "@/integrations/supabase/client";
 import { useStationMachineAssignment } from "@/hooks/useStationMachineProfile";
+import { useDNCConnector } from "@/hooks/useDNCConnector";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
