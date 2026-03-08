@@ -20,7 +20,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Users, Plus, UserPlus, Trash2, Crown, Shield, User, Loader2, Wrench, QrCode } from "lucide-react";
+import { Users, Plus, UserPlus, Trash2, Crown, Shield, User, Loader2, Wrench, QrCode, Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { TeamStationManager } from "./TeamStationManager";
 import { InviteCodeGenerator } from "./InviteCodeGenerator";
@@ -28,7 +28,7 @@ import { InviteCodeGenerator } from "./InviteCodeGenerator";
 export function TeamManagement() {
   const { user } = useAuth();
   const { organization } = useUserOrganization();
-  const { teams, loading, createTeam, deleteTeam } = useTeams();
+  const { teams, loading, createTeam, updateTeam, deleteTeam } = useTeams();
   const { toast } = useToast();
 
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
@@ -39,6 +39,16 @@ export function TeamManagement() {
   const [newTeamName, setNewTeamName] = useState("");
   const [newTeamDescription, setNewTeamDescription] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+
+  // Edit team state
+  const [editingTeam, setEditingTeam] = useState<Team | null>(null);
+  const [editTeamName, setEditTeamName] = useState("");
+  const [editTeamDescription, setEditTeamDescription] = useState("");
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+
+  // Delete confirmation state
+  const [deletingTeam, setDeletingTeam] = useState<Team | null>(null);
+  const [deleteConfirmName, setDeleteConfirmName] = useState("");
 
   const handleCreateTeam = async () => {
     if (!newTeamName.trim()) {
@@ -87,24 +97,47 @@ export function TeamManagement() {
     }
   };
 
-  const handleDeleteTeam = async (teamId: string, teamName: string) => {
-    const { error } = await deleteTeam(teamId);
+  const handleEditTeam = (team: Team) => {
+    setEditingTeam(team);
+    setEditTeamName(team.name);
+    setEditTeamDescription(team.description || "");
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingTeam || !editTeamName.trim()) return;
+    setIsSavingEdit(true);
+    const { error } = await updateTeam(editingTeam.id, {
+      name: editTeamName.trim(),
+      description: editTeamDescription.trim() || undefined,
+    });
+    setIsSavingEdit(false);
 
     if (error) {
-      toast({
-        title: "Failed to delete team",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast({ title: "Failed to update team", description: error.message, variant: "destructive" });
     } else {
-      toast({
-        title: "Team deleted",
-        description: `${teamName} has been deleted.`,
-      });
-      if (selectedTeam?.id === teamId) {
+      toast({ title: "Team updated", description: `${editTeamName} has been updated.` });
+      setEditingTeam(null);
+    }
+  };
+
+  const handleRequestDelete = (team: Team) => {
+    setDeletingTeam(team);
+    setDeleteConfirmName("");
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingTeam || deleteConfirmName !== deletingTeam.name) return;
+
+    const { error } = await deleteTeam(deletingTeam.id);
+    if (error) {
+      toast({ title: "Failed to delete team", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Team deleted", description: `${deletingTeam.name} has been deleted.` });
+      if (selectedTeam?.id === deletingTeam.id) {
         setSelectedTeam(null);
       }
     }
+    setDeletingTeam(null);
   };
 
   if (loading) {
@@ -193,18 +226,19 @@ export function TeamManagement() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {teams.map((team) => (
-            <TeamCard
-              key={team.id}
-              team={team}
-              isSelected={selectedTeam?.id === team.id}
-              isOwner={team.created_by === user?.id}
-              onSelect={() => setSelectedTeam(selectedTeam?.id === team.id ? null : team)}
-              onDelete={() => handleDeleteTeam(team.id, team.name)}
-              onAddStations={() => {
-                setNewlyCreatedTeam(team);
-                setShowStationManager(true);
-              }}
-            />
+              <TeamCard
+                key={team.id}
+                team={team}
+                isSelected={selectedTeam?.id === team.id}
+                isOwner={team.created_by === user?.id}
+                onSelect={() => setSelectedTeam(selectedTeam?.id === team.id ? null : team)}
+                onEdit={() => handleEditTeam(team)}
+                onDelete={() => handleRequestDelete(team)}
+                onAddStations={() => {
+                  setNewlyCreatedTeam(team);
+                  setShowStationManager(true);
+                }}
+              />
           ))}
         </div>
       )}
@@ -231,6 +265,71 @@ export function TeamManagement() {
           }}
         />
       )}
+
+      {/* Edit Team Dialog */}
+      <Dialog open={!!editingTeam} onOpenChange={(open) => !open && setEditingTeam(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Team</DialogTitle>
+            <DialogDescription>Update the team name and description.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-team-name">Team Name</Label>
+              <Input
+                id="edit-team-name"
+                value={editTeamName}
+                onChange={(e) => setEditTeamName(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-team-desc">Description (optional)</Label>
+              <Input
+                id="edit-team-desc"
+                value={editTeamDescription}
+                onChange={(e) => setEditTeamDescription(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingTeam(null)}>Cancel</Button>
+            <Button onClick={handleSaveEdit} disabled={isSavingEdit || !editTeamName.trim()}>
+              {isSavingEdit ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!deletingTeam} onOpenChange={(open) => !open && setDeletingTeam(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Team</DialogTitle>
+            <DialogDescription>
+              This action is permanent. All stations in this team will be unassigned. Type <span className="font-mono font-bold text-foreground">{deletingTeam?.name}</span> to confirm.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="delete-confirm">Team Name</Label>
+            <Input
+              id="delete-confirm"
+              placeholder={`Type "${deletingTeam?.name}" to confirm`}
+              value={deleteConfirmName}
+              onChange={(e) => setDeleteConfirmName(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeletingTeam(null)}>Cancel</Button>
+            <Button
+              variant="destructive"
+              onClick={handleConfirmDelete}
+              disabled={deleteConfirmName !== deletingTeam?.name}
+            >
+              Delete Team
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -240,11 +339,12 @@ interface TeamCardProps {
   isSelected: boolean;
   isOwner: boolean;
   onSelect: () => void;
+  onEdit: () => void;
   onDelete: () => void;
   onAddStations: () => void;
 }
 
-function TeamCard({ team, isSelected, isOwner, onSelect, onDelete, onAddStations }: TeamCardProps) {
+function TeamCard({ team, isSelected, isOwner, onSelect, onEdit, onDelete, onAddStations }: TeamCardProps) {
   const { stations } = useStations(team.id);
   const stationCount = stations.length;
 
@@ -275,17 +375,32 @@ function TeamCard({ team, isSelected, isOwner, onSelect, onDelete, onAddStations
             </div>
           </div>
           {isOwner && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-muted-foreground hover:text-destructive"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete();
-              }}
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-primary"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit();
+                }}
+                title="Edit team"
+              >
+                <Pencil className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete();
+                }}
+                title="Delete team"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </div>
           )}
         </div>
       </CardHeader>
