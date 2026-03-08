@@ -322,7 +322,7 @@ export function TeamManagement() {
 
       {/* Edit Team Dialog */}
       <Dialog open={!!editingTeam} onOpenChange={(open) => !open && setEditingTeam(null)}>
-        <DialogContent>
+        <DialogContent className="max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Team</DialogTitle>
             <DialogDescription>Update the team name and description.</DialogDescription>
