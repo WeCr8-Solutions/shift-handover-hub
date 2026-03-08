@@ -308,7 +308,7 @@ export function QueueItemRoutingTab({
                           {/* Dimension check requests panel */}
                           <DimensionRequestsPanel
                             requests={dimRequests.requests}
-                            isSupervisor={hasAdminAccess || hasOrgSupervisorAccess}
+                            isSupervisor={hasDimensionAccess}
                             onReview={async (reqId, status, notes) => {
                               const result = await dimRequests.reviewRequest(reqId, status, notes);
                               if (!result.error) {
