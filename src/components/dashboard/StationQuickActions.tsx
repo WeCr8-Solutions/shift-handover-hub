@@ -176,6 +176,4 @@ export function StationQuickActions({
       </ContextMenuContent>
     </ContextMenu>
   );
-});
-
-StationQuickActions.displayName = "StationQuickActions";
+}
