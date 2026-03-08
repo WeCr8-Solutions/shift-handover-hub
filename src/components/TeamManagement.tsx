@@ -97,24 +97,47 @@ export function TeamManagement() {
     }
   };
 
-  const handleDeleteTeam = async (teamId: string, teamName: string) => {
-    const { error } = await deleteTeam(teamId);
+  const handleEditTeam = (team: Team) => {
+    setEditingTeam(team);
+    setEditTeamName(team.name);
+    setEditTeamDescription(team.description || "");
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingTeam || !editTeamName.trim()) return;
+    setIsSavingEdit(true);
+    const { error } = await updateTeam(editingTeam.id, {
+      name: editTeamName.trim(),
+      description: editTeamDescription.trim() || undefined,
+    });
+    setIsSavingEdit(false);
 
     if (error) {
-      toast({
-        title: "Failed to delete team",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast({ title: "Failed to update team", description: error.message, variant: "destructive" });
     } else {
-      toast({
-        title: "Team deleted",
-        description: `${teamName} has been deleted.`,
-      });
-      if (selectedTeam?.id === teamId) {
+      toast({ title: "Team updated", description: `${editTeamName} has been updated.` });
+      setEditingTeam(null);
+    }
+  };
+
+  const handleRequestDelete = (team: Team) => {
+    setDeletingTeam(team);
+    setDeleteConfirmName("");
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingTeam || deleteConfirmName !== deletingTeam.name) return;
+
+    const { error } = await deleteTeam(deletingTeam.id);
+    if (error) {
+      toast({ title: "Failed to delete team", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Team deleted", description: `${deletingTeam.name} has been deleted.` });
+      if (selectedTeam?.id === deletingTeam.id) {
         setSelectedTeam(null);
       }
     }
+    setDeletingTeam(null);
   };
 
   if (loading) {
