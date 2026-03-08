@@ -5,7 +5,7 @@ import { ArrowRight, CheckCircle2, Zap, Wrench, Monitor, BarChart3, Users } from
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MockShopFloorView } from "@/components/marketing/MockShopFloorView";
-
+import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 
