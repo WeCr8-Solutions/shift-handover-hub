@@ -28,7 +28,7 @@ import { InviteCodeGenerator } from "./InviteCodeGenerator";
 export function TeamManagement() {
   const { user } = useAuth();
   const { organization } = useUserOrganization();
-  const { teams, loading, createTeam, deleteTeam } = useTeams();
+  const { teams, loading, createTeam, updateTeam, deleteTeam } = useTeams();
   const { toast } = useToast();
 
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
@@ -39,6 +39,16 @@ export function TeamManagement() {
   const [newTeamName, setNewTeamName] = useState("");
   const [newTeamDescription, setNewTeamDescription] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+
+  // Edit team state
+  const [editingTeam, setEditingTeam] = useState<Team | null>(null);
+  const [editTeamName, setEditTeamName] = useState("");
+  const [editTeamDescription, setEditTeamDescription] = useState("");
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+
+  // Delete confirmation state
+  const [deletingTeam, setDeletingTeam] = useState<Team | null>(null);
+  const [deleteConfirmName, setDeleteConfirmName] = useState("");
 
   const handleCreateTeam = async () => {
     if (!newTeamName.trim()) {
