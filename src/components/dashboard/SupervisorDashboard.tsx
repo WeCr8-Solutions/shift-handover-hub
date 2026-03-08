@@ -11,7 +11,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { RefreshIndicator } from "./RefreshIndicator";
 import { SmartAlertPanel } from "@/components/alerts/SmartAlertPanel";
 import { useSmartAlerts } from "@/hooks/useSmartAlerts";
-import { supabase } from "@/integrations/supabase/client";
+
 import {
   Factory,
   AlertTriangle,
