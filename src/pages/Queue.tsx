@@ -56,11 +56,19 @@ export default function Queue() {
   const { stations = [] } = useStations();
 
   const urlStationId = searchParams.get("station");
+  const urlItemId = searchParams.get("item");
 
   const [activeTab, setActiveTab] = useState<QueueTab>("queue");
   const [view, setView] = useState<QueueView>("kanban");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(urlItemId);
+
+  // Auto-open work order detail when navigated with ?item= param
+  useEffect(() => {
+    if (urlItemId) {
+      setSelectedItemId(urlItemId);
+    }
+  }, [urlItemId]);
   const [routingEditorItem, setRoutingEditorItem] = useState<{
     id: string;
     work_order: string;
