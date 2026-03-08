@@ -58,7 +58,16 @@ import { lazy, Suspense } from "react";
 
 const ShopFloorDisplay = lazy(() => import("./pages/ShopFloorDisplay"));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000,       // 30s — don't refetch within window
+      gcTime: 5 * 60_000,      // 5min garbage collection
+      retry: 2,
+      refetchOnWindowFocus: true,
+    },
+  },
+});
 
 const App = () => (
   <HelmetProvider>
