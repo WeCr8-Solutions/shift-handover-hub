@@ -26,6 +26,16 @@ export interface ToolDefinition {
 
 export const TOOL_REGISTRY: ToolDefinition[] = [
   {
+    id: "math-calculator",
+    name: "Math Calculator",
+    description: "General-purpose calculator with order of operations, functions, and history.",
+    icon: <Calculator className="w-5 h-5" />,
+    category: "measurement",
+    tags: ["math", "calculator", "arithmetic", "algebra", "sqrt", "trig"],
+    public: true,
+    component: MathCalculator,
+  },
+  {
     id: "sfm-calculator",
     name: "Speed & Feed Calculator",
     description: "RPM, feed rate, and chip load from SFM and cutter geometry.",
