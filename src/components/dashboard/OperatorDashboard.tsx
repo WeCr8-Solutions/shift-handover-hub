@@ -3,6 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useOperatorSessions } from "@/hooks/useOperatorSessions";
+import { useBackgroundRefresh } from "@/hooks/useBackgroundRefresh";
+import { useOrgRefreshInterval } from "@/hooks/useOrgRefreshInterval";
+import { RefreshIndicator } from "./RefreshIndicator";
 import { StationCheckIn } from "./StationCheckIn";
 import { OperatorStationPanel } from "./OperatorStationPanel";
 import { NewHandoffForm } from "@/components/NewHandoffForm";
@@ -34,9 +37,21 @@ interface OperatorDashboardProps {
 export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDashboardProps) {
   const { currentTeam } = useCurrentTeam();
   const { organization } = useUserOrganization();
-  const { activeSessions, loading, isCheckedIn, checkIn, checkOut } = useOperatorSessions();
-  const { createHandoffRecord } = useHandoffRecords(currentTeam?.id, organization?.id);
+  const { activeSessions, loading, isCheckedIn, checkIn, checkOut, refresh: refreshSessions } = useOperatorSessions();
+  const { createHandoffRecord, refreshRecords } = useHandoffRecords(currentTeam?.id, organization?.id);
 
+  // Org-configured background refresh
+  const refreshIntervalMs = useOrgRefreshInterval();
+  const { isRefreshing, lastRefreshedAt, refresh: handleManualRefresh } =
+    useBackgroundRefresh({
+      key: `operator-${organization?.id}-${currentTeam?.id}`,
+      fetchers: [
+        () => refreshSessions?.() as unknown as Promise<unknown>,
+        () => refreshRecords?.() as unknown as Promise<unknown>,
+      ],
+      intervalMs: refreshIntervalMs,
+      enabled: !!(organization?.id) && isCheckedIn,
+    });
   const [showHandoff, setShowHandoff] = useState(false);
   const [showPerformance, setShowPerformance] = useState(false);
   const [handoffStationId, setHandoffStationId] = useState<string | undefined>();
@@ -131,17 +146,24 @@ export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDas
             {activeSessions.length} station{activeSessions.length !== 1 ? "s" : ""}
           </span>
         </div>
-        <Button
-          variant="destructive"
-          size="sm"
-          className="gap-2"
-          onClick={handleEndShiftClick}
-          disabled={endingShift}
-          aria-label={endingShift ? "Ending shift..." : "End shift"}
-        >
-          {endingShift ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
-          End Shift
-        </Button>
+        <div className="flex items-center gap-2">
+          <RefreshIndicator
+            isRefreshing={isRefreshing}
+            lastRefreshedAt={lastRefreshedAt}
+            onRefresh={handleManualRefresh}
+          />
+          <Button
+            variant="destructive"
+            size="sm"
+            className="gap-2"
+            onClick={handleEndShiftClick}
+            disabled={endingShift}
+            aria-label={endingShift ? "Ending shift..." : "End shift"}
+          >
+            {endingShift ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
+            End Shift
+          </Button>
+        </div>
       </div>
 
       {/* Station panels */}
