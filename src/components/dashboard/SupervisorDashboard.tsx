@@ -274,11 +274,11 @@ export function SupervisorDashboard({
           </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          {/* Manual Refresh Button */}
-          <Button variant="ghost" size="sm" onClick={handleManualRefresh} className="gap-2" aria-label="Refresh data">
-            <RefreshCw className="w-4 h-4" />
-            <span className="hidden sm:inline">Refresh</span>
-          </Button>
+          <RefreshIndicator
+            isRefreshing={isRefreshing}
+            lastRefreshedAt={lastRefreshedAt}
+            onRefresh={handleManualRefresh}
+          />
 
           {/* Existing action buttons */}
           <Button variant="outline" size="sm" className="gap-2" onClick={onNewHandoff}>
