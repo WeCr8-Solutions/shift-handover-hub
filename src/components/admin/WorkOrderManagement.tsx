@@ -44,7 +44,7 @@ import { Loader2, MoreHorizontal, Search, Package, Route, Trash2, AlertCircle, P
 import { useToast } from "@/hooks/use-toast";
 import { WorkOrderRoutingEditor } from "@/components/routing/WorkOrderRoutingEditor";
 import { CreateWorkOrderDialog } from "@/components/queue/CreateWorkOrderDialog";
-import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { useAllOrganizations } from "@/hooks/useAdminData";
 import { format } from "date-fns";
 import { Database } from "@/integrations/supabase/types";

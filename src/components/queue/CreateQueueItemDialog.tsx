@@ -46,7 +46,7 @@ const priorityOptions: { value: QueuePriority; label: string; color: string }[] 
 export function CreateQueueItemDialog({ open, onOpenChange, onCreate, preselectedStationId }: CreateQueueItemDialogProps) {
   const { toast } = useToast();
   const { currentTeam } = useCurrentTeam();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const { isQuoteSystemEnabled } = useQuoteSystem();
   const { stations, loading: stationsLoading } = useStations(currentTeam?.id, organization?.id);
 

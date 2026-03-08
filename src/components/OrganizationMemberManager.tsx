@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useOrganizationMembers, OrganizationMember } from "@/hooks/useOrganizationMembers";
-import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEmail } from "@/hooks/useEmail";
 import { useEntitlements } from "@/hooks/useEntitlements";

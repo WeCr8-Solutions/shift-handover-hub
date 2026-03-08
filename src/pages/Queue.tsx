@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQueue, QueueStatus, QueueItemType } from "@/hooks/useQueue";
 import { useAdminAccess } from "@/hooks/useAdminData";
-import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { useOperatorSessions } from "@/hooks/useOperatorSessions";
 import { useNCR } from "@/hooks/useNCR";
 import { useStations } from "@/hooks/useStations";

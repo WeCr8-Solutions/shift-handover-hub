@@ -13,7 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { QueueItem, QueueItemComment, QueueItemHistory, QueueStatus, QueuePriority, UpdateQueueItemInput, RoutingStepInput } from "@/hooks/useQueue";
 import { useStations } from "@/hooks/useStations";
 import { useCurrentTeam } from "@/contexts/TeamContext";
-import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { useToast } from "@/hooks/use-toast";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { useNCR } from "@/hooks/useNCR";

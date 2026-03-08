@@ -6,7 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useStations, Station } from "@/hooks/useStations";
-import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { getCurrentShift } from "@/lib/mockData";
 import { workCenterIcons, workCenterColors, getCategoryForType } from "@/lib/workCenterIcons";
 import { WorkCenterType } from "@/types/handoff";

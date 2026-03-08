@@ -26,7 +26,7 @@ export function SeedTestDataButton() {
   const [isSeeding, setIsSeeding] = useState(false);
   const [result, setResult] = useState<SeedResult | null>(null);
   const { toast } = useToast();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
 
   const seedTestData = async () => {
     if (!organization?.id) {

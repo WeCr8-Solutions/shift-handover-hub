@@ -13,7 +13,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 
 export function BillingSettings() {
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const { tier, subscriptionEnd, isLoading, openCustomerPortal, createCheckout, updateSeats } = useSubscription();
   const {
     plan,

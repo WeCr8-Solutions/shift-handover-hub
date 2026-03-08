@@ -81,7 +81,7 @@ interface InviteCodeGeneratorProps {
 }
 
 export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps = {}) {
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const { invites, loading, createInvite, deactivateInvite, deleteInvite } = useOrganizationInvites(
     organization?.id || null
   );

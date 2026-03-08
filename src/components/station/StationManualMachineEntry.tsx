@@ -107,7 +107,7 @@ export function StationManualMachineEntry({
   onSaved,
 }: Props) {
   const { user } = useAuth();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
 

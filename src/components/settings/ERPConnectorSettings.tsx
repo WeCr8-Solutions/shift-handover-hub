@@ -28,7 +28,7 @@ import {
 import { useERPConnector } from "@/hooks/useERPConnector";
 import { useStations } from "@/hooks/useStations";
 import { useCurrentTeam } from "@/contexts/TeamContext";
-import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import { useSubscription, ERP_ADDON_TIERS } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";

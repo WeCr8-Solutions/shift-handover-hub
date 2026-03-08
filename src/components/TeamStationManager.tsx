@@ -376,7 +376,7 @@ export function TeamStationManager({
 }: TeamStationManagerProps) {
   const { stations, loading, createStation, refreshStations } = useStations(teamId);
   const { teams } = useTeams();
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const { toast } = useToast();
 
   const [showAddForm, setShowAddForm] = useState(false);

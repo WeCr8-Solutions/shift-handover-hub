@@ -13,7 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Loader2, Save, Building2, Users, Shield, Briefcase } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { OnboardingProgress } from "@/components/onboarding";
-import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { useAdminAccess } from "@/hooks/useAdminData";
 
 export default function Profile() {
