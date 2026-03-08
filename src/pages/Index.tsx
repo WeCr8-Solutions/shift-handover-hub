@@ -163,8 +163,6 @@ const Index = () => {
 
   // Supervisors, org admins, and platform admins get the production overview dashboard
   const showSupervisorView = !!user && hasOrgSupervisorAccess;
-  // Authenticated operators (non-supervisor) get the focused operator dashboard
-  const showOperatorView = !!user && !hasOrgSupervisorAccess && !roleLoading;
 
   const [showNewHandoff, setShowNewHandoff] = useState(false);
   const [showPerformanceUpdate, setShowPerformanceUpdate] = useState(false);
