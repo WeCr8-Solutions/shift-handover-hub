@@ -1,6 +1,6 @@
 import {
   Rocket, LayoutDashboard, ClipboardList, ArrowRightLeft,
-  Users, Radio, ShieldCheck, Settings, Lock, HelpCircle,
+  Users, Radio, ShieldCheck, Settings, Lock, HelpCircle, Wrench,
 } from "lucide-react";
 
 export interface HelpSection {
