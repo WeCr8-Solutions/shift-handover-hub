@@ -52,9 +52,10 @@ interface TeamStationManagerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onComplete?: () => void;
+  onStationChange?: () => void;
 }
 
-export function TeamStationManager({ teamId, teamName, open, onOpenChange, onComplete }: TeamStationManagerProps) {
+export function TeamStationManager({ teamId, teamName, open, onOpenChange, onComplete, onStationChange }: TeamStationManagerProps) {
   const { stations, loading, createStation, refreshStations } = useStations(teamId);
   const { teams } = useTeams();
   const { organization } = useUserOrganization();
