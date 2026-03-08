@@ -359,7 +359,7 @@ function TeamCard({ team, isSelected, canManage, onSelect, onEdit, onDelete, onA
               </div>
             </div>
           </div>
-          {isOwner && (
+          {canManage && (
             <div className="flex items-center gap-1">
               <Button
                 variant="ghost"
