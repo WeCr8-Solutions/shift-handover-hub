@@ -1,5 +1,5 @@
-import { useMemo, useState, useEffect, useCallback } from "react";
-import { Badge } from "@/components/ui/badge";
+import { useMemo, useState } from "react";
+import { RefreshIndicator } from "./RefreshIndicator";
 import { Button } from "@/components/ui/button";
 import {
   BarChart,
