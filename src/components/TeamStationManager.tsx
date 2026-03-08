@@ -152,6 +152,7 @@ export function TeamStationManager({ teamId, teamName, open, onOpenChange, onCom
       toast({ title: "Station updated", description: `${editName} has been updated.` });
       setEditingStation(null);
       refreshStations();
+      onStationChange?.();
     }
   };
 
