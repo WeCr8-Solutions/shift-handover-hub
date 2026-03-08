@@ -51,6 +51,8 @@ import GCodeReference from "./pages/resources/GCodeReference";
 import IndustryGlossary from "./pages/resources/IndustryGlossary";
 import ResetPassword from "./pages/ResetPassword";
 import Blog from "./pages/Blog";
+import Help from "./pages/Help";
+import HelpArticle from "./pages/HelpArticle";
 
 const queryClient = new QueryClient();
 
@@ -111,6 +113,8 @@ const App = () => (
                     <Route path="/resources/gcode" element={<GCodeReference />} />
                     <Route path="/resources/glossary" element={<IndustryGlossary />} />
                     <Route path="/blog" element={<Blog />} />
+                    <Route path="/help" element={<Help />} />
+                    <Route path="/help/:category/:slug" element={<HelpArticle />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
