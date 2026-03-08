@@ -1,6 +1,6 @@
 # JobLine.ai Product Requirements Documents
 
-**Last Updated**: 2026-02-09
+**Last Updated**: 2026-03-08
 
 ---
 
