@@ -114,7 +114,7 @@ describe("QueueKanbanBoard", () => {
         onReorder={vi.fn()}
       />
     );
-    const card = screen.getByText("WO-100");
+    const card = screen.getByText("Test WO");
     card.click();
     expect(onItemClick).toHaveBeenCalledWith("qi-1");
   });
