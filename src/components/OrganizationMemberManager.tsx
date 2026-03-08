@@ -560,7 +560,6 @@ export function OrganizationMemberManager() {
                   <TableHead>Joined</TableHead>
                   {isOrgAdmin && <TableHead className="w-12" />}
                 </TableRow>
-                </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredMembers.map((member) => {
