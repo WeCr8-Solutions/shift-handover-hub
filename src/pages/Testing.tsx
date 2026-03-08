@@ -47,8 +47,18 @@ export default function Testing() {
 
   if (authLoading || accessLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container py-6 space-y-4">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-10 w-72" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-20 rounded-lg" />
+            ))}
+          </div>
+          <Skeleton className="h-64 w-full rounded-lg" />
+        </div>
       </div>
     );
   }

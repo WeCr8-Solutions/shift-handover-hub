@@ -69,8 +69,10 @@ export default function Updates() {
         <UpdateFilters search={search} onSearchChange={setSearch} category={category} onCategoryChange={setCategory} />
 
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+          <div className="space-y-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-24 w-full rounded-lg" />
+            ))}
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
