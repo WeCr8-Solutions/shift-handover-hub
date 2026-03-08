@@ -261,9 +261,11 @@ export function TeamManagement() {
           teamName={newlyCreatedTeam.name}
           open={showStationManager}
           onOpenChange={setShowStationManager}
+          onStationChange={triggerStationRefresh}
           onComplete={() => {
             setShowStationManager(false);
             setNewlyCreatedTeam(null);
+            triggerStationRefresh();
           }}
         />
       )}
