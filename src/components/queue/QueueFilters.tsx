@@ -118,7 +118,33 @@ export function QueueFilters({ filters, onFiltersChange, showStationFilter, stat
         </SelectContent>
       </Select>
 
-      {activeFilters.length > 0 && (
+      {showStationFilter && stations.length > 0 && (
+        <Select
+          value={filters.station_id || ""}
+          onValueChange={(value) => {
+            onFiltersChange({
+              ...filters,
+              station_id: value || undefined,
+            });
+          }}
+        >
+          <SelectTrigger className="w-[200px]">
+            <div className="flex items-center gap-2">
+              <Wrench className="h-3.5 w-3.5 text-muted-foreground" />
+              <SelectValue placeholder="Select station..." />
+            </div>
+          </SelectTrigger>
+          <SelectContent>
+            {stations.map((station) => (
+              <SelectItem key={station.id} value={station.id}>
+                {station.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+
+
         <>
           <div className="h-6 w-px bg-border" />
           {activeFilters.map((filter, index) => (
