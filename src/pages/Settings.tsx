@@ -15,6 +15,7 @@ import {
   Building2,
   CreditCard,
   Lock,
+  Bug,
   GraduationCap,
   Plug,
   Store,

@@ -336,7 +336,12 @@ export default function Admin() {
           {hasTestingAccess && (
             <>
               <TabsContent value="dev-queue">
-                <Suspense fallback={<AdminTabFallback />}><DevIssueQueue /></Suspense>
+                <Suspense fallback={<AdminTabFallback />}>
+                  <div className="space-y-6">
+                    <DevIssueQueue />
+                    <NotificationQueueStatus />
+                  </div>
+                </Suspense>
               </TabsContent>
 
               <TabsContent value="dev-settings">
