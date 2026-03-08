@@ -378,13 +378,12 @@ export function ProductionAnalytics({
                             {payload.value}
                           </text>
                           {statusLabel && (
-                            <g>
-                              <circle cx={-((statusLabel.length * 2.7 + 8) / 2)} cy={29} r={3} fill={statusColor} />
+                            <g transform={`translate(0, 28)`}>
+                              <circle cx={-(statusLabel.length * 2.7) / 2 - 5} cy={0} r={3} fill={statusColor} />
                               <text
-                                x={-((statusLabel.length * 2.7 + 8) / 2) + 7}
+                                x={0}
                                 y={0}
-                                dy={32}
-                                textAnchor="start"
+                                textAnchor="middle"
                                 dominantBaseline="central"
                                 fontSize={9}
                                 fontWeight={600}
