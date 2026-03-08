@@ -5744,7 +5744,14 @@ export type Database = {
         | "quantity_override"
         | "rework_wo_created"
         | "work_order_quantity_adjusted"
-      app_role: "admin" | "operator" | "supervisor" | "viewer" | "developer"
+      app_role:
+        | "admin"
+        | "operator"
+        | "supervisor"
+        | "viewer"
+        | "developer"
+        | "engineering"
+        | "programming"
       impact_level: "low" | "medium" | "high" | "critical"
       issue_severity: "low" | "medium" | "high" | "critical"
       issue_status:
@@ -5932,7 +5939,15 @@ export const Constants = {
         "rework_wo_created",
         "work_order_quantity_adjusted",
       ],
-      app_role: ["admin", "operator", "supervisor", "viewer", "developer"],
+      app_role: [
+        "admin",
+        "operator",
+        "supervisor",
+        "viewer",
+        "developer",
+        "engineering",
+        "programming",
+      ],
       impact_level: ["low", "medium", "high", "critical"],
       issue_severity: ["low", "medium", "high", "critical"],
       issue_status: [
