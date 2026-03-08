@@ -374,57 +374,16 @@ export function OperatorStationPanel({
             </div>
           )}
 
-          {/* Queue */}
-          {queuedOrders.length > 0 && (
-            <>
-              {activeOrder && <Separator />}
-              <div>
-                <h5 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-                  Up Next ({queuedOrders.length})
-                </h5>
-                <div className="space-y-2 max-h-[300px] overflow-y-auto">
-                  {queuedOrders.map((order, i) => (
-                    <div
-                      key={order.id}
-                      className="flex items-center gap-2 p-2 rounded border hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="w-5 h-5 rounded-full bg-muted flex items-center justify-center text-[10px] font-mono font-bold">
-                        {i + 1}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <span className="text-sm font-medium truncate block">{order.work_order || order.title}</span>
-                        {order.part_number && (
-                          <span className="text-[10px] text-muted-foreground">
-                            {order.part_number}
-                            {order.operation_number && ` • Op ${order.operation_number}`}
-                          </span>
-                        )}
-                      </div>
-                      <Badge variant="outline" className={cn("text-[9px] px-1.5", priorityClass(order.priority))}>
-                        {order.priority}
-                      </Badge>
-                      <Button
-                        size="sm"
-                        className="h-7 px-2 gap-1"
-                        onClick={() => handleStart(order)}
-                        disabled={processing || !!activeOrder}
-                      >
-                        <Play className="w-3 h-3" /> Start
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
-
-          {!activeOrder && queuedOrders.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
-              <Package className="w-10 h-10 mx-auto mb-2 opacity-50" />
-              <p className="text-sm font-medium">No work orders</p>
-              <p className="text-xs">Check with your supervisor</p>
-            </div>
-          )}
+          {/* Station Queue Kanban */}
+          <Separator />
+          <OperatorStationKanban
+            stationId={stationId}
+            onStartOrder={(orderId) => {
+              const order = orders.find((o) => o.id === orderId);
+              if (order) handleStart(order);
+            }}
+            onViewOrder={(orderId) => handleNavigateToOrder(orderId)}
+          />
 
           {/* Quick actions */}
           <Separator />
@@ -434,14 +393,6 @@ export function OperatorStationPanel({
             </Button>
             <Button variant="outline" size="sm" className="gap-1 text-xs" onClick={onPerformanceUpdate}>
               <Lightbulb className="w-3 h-3" /> Performance Update
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1 text-xs"
-              onClick={() => navigate(`/queue?station=${stationId}`)}
-            >
-              Full Queue
             </Button>
           </div>
         </CardContent>
