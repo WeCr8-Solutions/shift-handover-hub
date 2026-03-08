@@ -1038,8 +1038,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Ad Placement - between features and how-it-works */}
-      <AdPlacement format="horizontal" className="py-4" />
 
       {/* Lead Capture */}
       <LeadCaptureBar sourcePage="landing" className="py-6" />
