@@ -474,9 +474,20 @@ export function SupervisorDashboard({
                   aria-label={onViewStation ? `View ${station.name} details` : undefined}
                 >
                   <div className={cn("w-2 h-2 rounded-full flex-shrink-0", getStatusBgClass(station.status))} />
-                  <span className="text-xs font-mono font-medium w-20 flex-shrink-0">{station.id}</span>
+                  <div className="flex flex-col min-w-0 w-28 flex-shrink-0">
+                    <span className="text-xs font-mono font-medium truncate">{station.name}</span>
+                    <div className="flex items-center gap-1">
+                      {station.teamName && (
+                        <span className="text-[10px] text-muted-foreground truncate">{station.teamName}</span>
+                      )}
+                      {station.teamName && station.workCenter && (
+                        <span className="text-[10px] text-muted-foreground">·</span>
+                      )}
+                      <span className="text-[10px] text-muted-foreground truncate">{station.workCenter}</span>
+                    </div>
+                  </div>
                   <span className="text-xs text-muted-foreground w-20 truncate flex-shrink-0">{station.operator}</span>
-                  <span className="text-xs font-mono text-primary w-20 flex-shrink-0">{station.workOrder}</span>
+                  <span className="text-xs font-mono text-primary w-20 flex-shrink-0 truncate">{station.workOrder}</span>
                   <div className="flex-1 h-1.5 bg-secondary rounded-full overflow-hidden">
                     <div
                       className={cn("h-full rounded-full transition-all", getStatusBgClass(station.status))}

@@ -18,6 +18,7 @@ export interface Station {
   created_at: string;
   updated_at: string;
   current_status?: StationStatus;
+  team?: { id: string; name: string } | null;
 }
 
 export interface StationStatus {
