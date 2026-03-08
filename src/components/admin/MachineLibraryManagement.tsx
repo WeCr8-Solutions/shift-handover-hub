@@ -514,7 +514,7 @@ export function MachineLibraryManagement() {
                 </div>
               </div>
             </div>
-          </ScrollArea>
+          </div>
           <div className="flex justify-end gap-2 pt-4 border-t">
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
             <Button onClick={handleSave} disabled={saving}>
