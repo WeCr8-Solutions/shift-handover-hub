@@ -16,8 +16,9 @@ export function ExpiredTrialGate({ children }: ExpiredTrialGateProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="py-12 space-y-4">
+        <Skeleton className="h-8 w-48 mx-auto" />
+        <Skeleton className="h-64 w-full rounded-lg" />
       </div>
     );
   }

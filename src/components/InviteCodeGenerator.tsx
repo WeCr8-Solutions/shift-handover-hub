@@ -539,8 +539,10 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
 
           <TabsContent value="history">
             {loadingRedemptions ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              <div className="space-y-3 py-4">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <Skeleton key={i} className="h-12 w-full rounded-lg" />
+                ))}
               </div>
             ) : redemptions.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">

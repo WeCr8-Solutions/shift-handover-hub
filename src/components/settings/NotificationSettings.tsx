@@ -60,8 +60,10 @@ export function NotificationSettings() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-6 h-6 animate-spin" />
+      <div className="space-y-4 py-6">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Card key={i}><CardContent className="py-4 space-y-2"><Skeleton className="h-5 w-32" /><Skeleton className="h-4 w-48" /></CardContent></Card>
+        ))}
       </div>
     );
   }

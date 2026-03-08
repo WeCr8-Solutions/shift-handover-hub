@@ -601,8 +601,10 @@ ORDER BY ordinal_position;`;
         </CardHeader>
         <CardContent>
           {loadingHistory ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+            <div className="space-y-2 py-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-12 w-full rounded-lg" />
+              ))}
             </div>
           ) : historicalRuns.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">

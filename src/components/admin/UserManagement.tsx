@@ -463,8 +463,15 @@ export function UserManagement({ isAdmin, isSupervisorOrAbove = false }: UserMan
   if (loading) {
     return (
       <Card>
-        <CardContent className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        <CardContent className="py-6 space-y-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-4">
+              <Skeleton className="h-8 w-8 rounded-full" />
+              <Skeleton className="h-4 w-40" />
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-20" />
+            </div>
+          ))}
         </CardContent>
       </Card>
     );

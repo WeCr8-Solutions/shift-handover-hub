@@ -324,8 +324,10 @@ export function TeamStationManager({ teamId, teamName, open, onOpenChange, onCom
               </div>
 
               {loading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 py-4">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <Skeleton key={i} className="h-20 rounded-lg" />
+                  ))}
                 </div>
               ) : stations.length === 0 ? (
                 <Card>
