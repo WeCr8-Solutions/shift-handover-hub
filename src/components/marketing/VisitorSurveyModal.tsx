@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, forwardRef } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,7 +35,7 @@ const LOOKING_FOR_OPTIONS = [
   "Other",
 ];
 
-export function VisitorSurveyModal() {
+export const VisitorSurveyModal = forwardRef<HTMLDivElement>(function VisitorSurveyModal(_props, ref) {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<1 | 2>(1);
   const [heardAbout, setHeardAbout] = useState("");
