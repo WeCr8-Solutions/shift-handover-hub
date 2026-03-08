@@ -59,6 +59,7 @@ export default function Settings() {
   const { loading: settingsLoading } = useAppSettings();
   const { isDeveloper, loading: accessLoading } = useAdminAccess();
   const { canManageBilling } = useTrialStatus();
+  const { thresholds, saveThresholds } = useSmartAlerts();
   const [activeTab, setActiveTab] = useState("general");
 
   const showBillingTab = isDeveloper || canManageBilling;
