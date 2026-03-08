@@ -16,6 +16,45 @@ interface QueueCalendarViewProps {
 }
 
 type ViewMode = "week" | "month";
+type DateType = "due" | "scheduled_start" | "scheduled_end" | "started" | "est_complete";
+
+interface CalendarEntry {
+  item: QueueItem;
+  dateType: DateType;
+  date: Date;
+}
+
+const DATE_TYPE_LABELS: Record<DateType, { label: string; icon: typeof CalendarIcon; className: string }> = {
+  due: { label: "Due", icon: Target, className: "text-destructive" },
+  scheduled_start: { label: "Sched. Start", icon: Play, className: "text-primary" },
+  scheduled_end: { label: "Sched. End", icon: CheckCircle2, className: "text-green-600" },
+  started: { label: "Started", icon: Play, className: "text-blue-500" },
+  est_complete: { label: "Est. Complete", icon: Clock, className: "text-amber-500" },
+};
+
+function getEntriesForItems(items: QueueItem[]): CalendarEntry[] {
+  const entries: CalendarEntry[] = [];
+  for (const item of items) {
+    if (item.due_date) {
+      entries.push({ item, dateType: "due", date: new Date(item.due_date) });
+    }
+    if (item.scheduled_start) {
+      entries.push({ item, dateType: "scheduled_start", date: new Date(item.scheduled_start) });
+    }
+    if (item.scheduled_end) {
+      entries.push({ item, dateType: "scheduled_end", date: new Date(item.scheduled_end) });
+    }
+    if (item.started_at && item.status === "in_progress") {
+      entries.push({ item, dateType: "started", date: new Date(item.started_at) });
+    }
+    // Estimated completion: started_at + estimated_duration
+    if (item.started_at && item.estimated_duration && item.status === "in_progress") {
+      const estComplete = addMinutes(new Date(item.started_at), item.estimated_duration);
+      entries.push({ item, dateType: "est_complete", date: estComplete });
+    }
+  }
+  return entries;
+}
 
 function getPriorityColor(priority: QueuePriority): string {
   switch (priority) {
