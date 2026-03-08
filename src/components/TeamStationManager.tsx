@@ -188,21 +188,43 @@ export function TeamStationManager({
 
   const handleReassignStation = async () => {
     if (!reassigningStation || !reassignTeamId) return;
+
+    const payload: ReassignStationPayload = {
+      stationId: reassigningStation.id,
+      fromTeamId: reassigningStation.team_id,
+      toTeamId: reassignTeamId,
+    };
+
+    setOptimisticallyMovedOutIds((prev) => {
+      const next = new Set(prev);
+      next.add(payload.stationId);
+      return next;
+    });
+    onReassignOptimistic?.(payload);
+
     setIsSaving(true);
     const { error } = await supabase
       .from("stations")
-      .update({ team_id: reassignTeamId })
-      .eq("id", reassigningStation.id);
+      .update({ team_id: payload.toTeamId })
+      .eq("id", payload.stationId);
     setIsSaving(false);
 
     if (error) {
+      setOptimisticallyMovedOutIds((prev) => {
+        const next = new Set(prev);
+        next.delete(payload.stationId);
+        return next;
+      });
+      onReassignRollback?.(payload);
       toast({ title: "Failed to reassign", description: getSafeErrorMessage(error), variant: "destructive" });
-    } else {
-      toast({ title: "Station reassigned", description: `${reassigningStation.name} moved to new team.` });
-      setReassigningStation(null);
-      refreshStations();
-      onStationChange?.();
+      return;
     }
+
+    toast({ title: "Station reassigned", description: `${reassigningStation.name} moved to new team.` });
+    setReassigningStation(null);
+    setReassignTeamId("");
+    await refreshStations();
+    onReassignCommitted?.();
   };
 
   // Filter out current team for reassignment options
