@@ -347,22 +347,55 @@ export function ProductionAnalytics({
                 No production data yet. Submit handoffs to see output metrics.
               </div>
             ) : (
-              <ResponsiveContainer width="100%" height={280}>
+              <ResponsiveContainer width="100%" height={300}>
                 <BarChart
                   data={stationOutputData}
-                  margin={{ top: 5, right: 10, left: -10, bottom: 5 }}
+                  margin={{ top: 5, right: 10, left: -10, bottom: 10 }}
                   role="img"
                   aria-label={`Bar chart showing parts completed. Top station: ${stationOutputData[0]?.name} with ${stationOutputData[0]?.parts} parts.`}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                   <XAxis
                     dataKey="name"
-                    tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
                     axisLine={{ stroke: "hsl(var(--border))" }}
                     tickLine={false}
-                    angle={-20}
-                    textAnchor="end"
-                    height={50}
+                    height={60}
+                    tick={({ x, y, payload }: any) => {
+                      const entry = stationOutputData.find((d) => d.name === payload.value);
+                      const status = entry?.status as StatusLabel | undefined;
+                      const statusColor = status ? STATUS_COLORS[status] : "hsl(var(--muted-foreground))";
+                      const statusLabel = status ? STATUS_CONFIG[status].displayName : "";
+                      return (
+                        <g transform={`translate(${x},${y})`}>
+                          <text
+                            x={0}
+                            y={0}
+                            dy={12}
+                            textAnchor="middle"
+                            fontSize={10}
+                            fill="hsl(var(--muted-foreground))"
+                          >
+                            {payload.value}
+                          </text>
+                          {statusLabel && (
+                            <>
+                              <circle cx={-statusLabel.length * 2.5 - 4} cy={26} r={3} fill={statusColor} />
+                              <text
+                                x={0}
+                                y={0}
+                                dy={30}
+                                textAnchor="middle"
+                                fontSize={9}
+                                fontWeight={600}
+                                fill={statusColor}
+                              >
+                                {statusLabel}
+                              </text>
+                            </>
+                          )}
+                        </g>
+                      );
+                    }}
                   />
                   <YAxis
                     tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
