@@ -24,36 +24,16 @@
 
 ---
 
-## Phase 2: Migrate to React Query (Impact: ~25% improvement)
+## Phase 2: Migrate to React Query (Impact: ~25% improvement) ✅
 
 **Goal:** Proper caching, dedup, stale-while-revalidate, error handling
 
-- [ ] **2.1** Create `QueryClientProvider` wrapper with sensible defaults
-  ```typescript
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        staleTime: 30_000,     // 30s — don't refetch within window
-        gcTime: 5 * 60_000,    // 5min garbage collection
-        retry: 2,
-        refetchOnWindowFocus: true,
-      },
-    },
-  });
-  ```
-- [ ] **2.2** Convert `useStations` → `useStationsQuery` using React Query
-  - Query key: `['stations', orgId, teamId]`
-  - Realtime events → `queryClient.invalidateQueries(['stations'])` (debounced)
-- [ ] **2.3** Convert `useHandoffRecords` → `useHandoffsQuery`
-  - Query key: `['handoffs', orgId, teamId]`
-- [ ] **2.4** Convert `useQueue` → `useQueueQuery`
-  - Query key: `['queue', orgId, teamId, ...filters]`
-- [ ] **2.5** Convert `useSmartAlerts` → `useSmartAlertsQuery`
-  - Query key: `['smart-alerts', orgId, stationId]`
-  - `staleTime: 60_000` (alerts can be 1min stale)
-- [ ] **2.6** Convert `useUserOrganization` → `useOrgQuery`
-  - Query key: `['user-org', userId]`
-  - `staleTime: 5 * 60_000` (org data rarely changes)
+- [x] **2.1** Create `QueryClientProvider` wrapper with sensible defaults
+- [x] **2.2** Convert `useStations` → React Query with debounced realtime invalidation
+- [x] **2.3** Convert `useHandoffRecords` → React Query with debounced realtime
+- [x] **2.4** Convert `useQueue` → uses OrgContext for org scoping
+- [x] **2.5** Convert `useSmartAlerts` → uses OrgContext
+- [x] **2.6** Convert `useUserOrganization` → React Query (5min staleTime)
 
 ---
 
