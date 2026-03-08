@@ -92,8 +92,12 @@ export function SupervisorDashboard({
   const [woAlerts, setWoAlerts] = useState<{
     overdue: { id: string; title: string; work_order: string | null; due_date: string; priority: string }[];
     onHold: { id: string; title: string; work_order: string | null; priority: string }[];
+    stale: { id: string; title: string; work_order: string | null; updated_at: string; status: string; days_stale: number }[];
+    overTime: { id: string; title: string; work_order: string | null; started_at: string; estimated_duration: number; pct_over: number }[];
+    bottleneckStations: { station_name: string; station_id: string; wo_count: number }[];
+    highPriorityWaiting: { id: string; title: string; work_order: string | null; priority: string }[];
     unassigned: number;
-  }>({ overdue: [], onHold: [], unassigned: 0 });
+  }>({ overdue: [], onHold: [], stale: [], overTime: [], bottleneckStations: [], highPriorityWaiting: [], unassigned: 0 });
 
   useEffect(() => {
     if (!organization?.id) return;
