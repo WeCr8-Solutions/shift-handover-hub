@@ -85,7 +85,7 @@ export default function IndustryGlossary() {
             />
           </div>
 
-          <AdPlacement format="horizontal" className="mb-8" />
+          
 
           {letters.map((letter) => (
             <div key={letter} className="mb-6">
