@@ -3,7 +3,13 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { QueueStatus, QueueItemType } from "@/hooks/useQueue";
 import { useQuoteSystem } from "@/hooks/useQuoteSystem";
-import { X } from "lucide-react";
+import { X, Wrench } from "lucide-react";
+
+interface StationOption {
+  id: string;
+  name: string;
+  station_id: string;
+}
 
 interface QueueFiltersProps {
   filters: {
@@ -13,6 +19,8 @@ interface QueueFiltersProps {
     assigned_to?: string;
   };
   onFiltersChange: (filters: QueueFiltersProps["filters"]) => void;
+  showStationFilter?: boolean;
+  stations?: StationOption[];
 }
 
 const statusOptions: { value: QueueStatus; label: string }[] = [
