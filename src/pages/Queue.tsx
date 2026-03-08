@@ -6,6 +6,7 @@ import { useAdminAccess } from "@/hooks/useAdminData";
 import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { useOperatorSessions } from "@/hooks/useOperatorSessions";
 import { useNCR } from "@/hooks/useNCR";
+import { useStations } from "@/hooks/useStations";
 import { Header } from "@/components/Header";
 import { QueueKanbanBoard } from "@/components/queue/QueueKanbanBoard";
 import { QueueListView } from "@/components/queue/QueueListView";
