@@ -77,6 +77,7 @@ export function Header() {
             <div className="flex items-center gap-2">
               {user && <TeamSelector />}
               {user && <NavIconButton to="/queue" icon={ListTodo} label="Queue Management" />}
+              <NavIconButton to="/tools" icon={Wrench} label="Operator Tools" />
               {hasOrgSupervisorAccess && <NavIconButton to="/teams" icon={Users} label="Team Management" />}
               {user && <NavIconButton to="/settings" icon={Settings} label="Settings" />}
               {hasAdminAccess && (
