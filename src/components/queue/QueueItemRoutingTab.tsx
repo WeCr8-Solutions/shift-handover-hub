@@ -13,6 +13,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { RoutingSection } from "@/components/queue/RoutingSection";
 import { DimensionCheckForm } from "@/components/dimensions/DimensionCheckForm";
 import { AddDimensionForm } from "@/components/dimensions/AddDimensionForm";
+import { RequestDimensionCheckButton } from "@/components/dimensions/RequestDimensionCheckButton";
+import { DimensionRequestsPanel } from "@/components/dimensions/DimensionRequestsPanel";
+import { useDimensionRequests } from "@/hooks/useDimensionRequests";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import {
