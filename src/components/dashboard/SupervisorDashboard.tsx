@@ -435,7 +435,7 @@ export function SupervisorDashboard({
               </div>
               <span className={cn("text-2xl font-bold font-mono", kpi.textColor)}>
                 {kpi.value}
-                {kpi.total !== undefined && (
+                {"total" in kpi && kpi.total !== undefined && (
                   <span className="text-sm text-muted-foreground font-normal">/{kpi.total}</span>
                 )}
               </span>
