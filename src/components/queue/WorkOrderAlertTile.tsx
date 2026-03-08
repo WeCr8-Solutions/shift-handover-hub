@@ -142,6 +142,7 @@ export function WorkOrderAlertTile({ item, stationName, stationCode, workCenterT
       let elapsedDisplay: string | null = null;
       let remainingDisplay: string | null = null;
       let durationProgress: number | null = null;
+      let overEstimatedPct: number | null = null;
 
       if (item.started_at && (item.status === "in_progress" || item.status === "on_hold")) {
         const startTime = new Date(item.started_at).getTime();
@@ -160,7 +161,38 @@ export function WorkOrderAlertTile({ item, stationName, stationCode, workCenterT
             ? `+${remHours > 0 ? `${remHours}h ${remMins % 60}m` : `${remMins}m`} over`
             : `${remHours > 0 ? `${remHours}h ${remMins % 60}m` : `${remMins}m`} left`;
           durationProgress = Math.min((elapsedMs / estimatedMs) * 100, 100);
+          if (isOver) {
+            overEstimatedPct = Math.round((elapsedMs / estimatedMs) * 100);
+          }
         }
+      }
+
+      // Stale detection: days since last status change (use updated_at)
+      let staleDays: number | null = null;
+      if (item.status !== "completed" && item.status !== "cancelled") {
+        const refDate = item.updated_at || item.created_at;
+        if (refDate) {
+          const daysSince = Math.floor((Date.now() - new Date(refDate).getTime()) / 86400000);
+          if (daysSince >= 2) staleDays = daysSince;
+        }
+      }
+
+      // High priority waiting in queue
+      const isHighPriorityWaiting = (item.priority === "critical" || item.priority === "urgent") && item.status === "queued";
+
+      // No operator assigned but in progress
+      const hasNoOperator = item.status === "in_progress" && !item.assigned_to;
+
+      // Bottleneck: count other WOs queued at same station
+      let queuedAtStationCount: number | null = null;
+      if (item.station_id && (item.status === "queued" || item.status === "in_progress")) {
+        const { count } = await supabase
+          .from("queue_items")
+          .select("id", { count: "exact", head: true })
+          .eq("station_id", item.station_id)
+          .in("status", ["queued", "in_progress"])
+          .neq("id", item.id);
+        if (count && count >= 2) queuedAtStationCount = count;
       }
 
       setAlertData({
