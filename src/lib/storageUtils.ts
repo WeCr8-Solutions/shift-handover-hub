@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
-type BucketName = "ncr-attachments" | "handoff-attachments" | "performance-updates";
+type BucketName = "ncr-attachments" | "handoff-attachments" | "performance-updates" | "part-images" | "setup-sheets";
 
 /**
  * Upload a file to an org-scoped storage bucket.
