@@ -31,6 +31,7 @@ import {
   getStatusBgClass,
   type StatusLabel,
 } from "./stationStatus";
+import { StationAlertTile } from "./StationAlertTile";
 
 interface SupervisorDashboardProps {
   onNewHandoff: () => void;
