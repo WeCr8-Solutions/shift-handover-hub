@@ -444,6 +444,19 @@ export function SupervisorDashboard({
         })}
       </div>
 
+      {/* Active filter indicator */}
+      {statusFilter !== "all" && (
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary" className="text-xs gap-1">
+            <div className={cn("w-2 h-2 rounded-full", STATUS_CONFIG[statusFilter].bgClass)} />
+            Showing: {STATUS_CONFIG[statusFilter].displayName} stations
+          </Badge>
+          <Button variant="ghost" size="sm" className="h-6 text-xs px-2" onClick={() => setStatusFilter("all")}>
+            Clear filter
+          </Button>
+        </div>
+      )}
+
       {/* Attention Required */}
       {attentionItems.length > 0 && (
         <div className="bg-red-500/5 border border-red-500/20 rounded-lg p-4">
