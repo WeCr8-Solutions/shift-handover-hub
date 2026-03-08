@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { Clock, User, Package, AlertTriangle, GripVertical, Plug } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { StationQuickActions, type QuickActionTarget } from "@/components/dashboard/StationQuickActions";
 
 interface QueueKanbanBoardProps {
   itemsByStatus: Record<QueueStatus, QueueItem[]>;
@@ -64,7 +65,17 @@ interface QueueCardProps {
 function QueueCard({ item, onClick, isDragging, onDragStart, onDragEnd }: QueueCardProps) {
   const isOverdue = item.due_date && new Date(item.due_date) < new Date() && item.status !== "completed";
 
+  const quickTarget: QuickActionTarget = {
+    id: item.id,
+    name: item.title,
+    type: "work_order",
+    status: item.status,
+    stationId: item.station_id ?? undefined,
+    workOrder: item.work_order ?? undefined,
+  };
+
   return (
+    <StationQuickActions target={quickTarget}>
     <div
       draggable
       onDragStart={(e) => onDragStart(e, item)}
@@ -130,6 +141,7 @@ function QueueCard({ item, onClick, isDragging, onDragStart, onDragEnd }: QueueC
         </div>
       </div>
     </div>
+    </StationQuickActions>
   );
 }
 

@@ -5,6 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { StationQuickActions, type QuickActionTarget } from "./StationQuickActions";
 import {
   ChevronDown,
   ArrowRight,
@@ -69,9 +70,10 @@ interface StationAlertTileProps {
     status: StatusLabel;
   };
   onViewStation?: (stationId: string, stationName: string) => void;
+  onQuickAction?: (action: string, target: QuickActionTarget) => void;
 }
 
-export function StationAlertTile({ station, onViewStation }: StationAlertTileProps) {
+export function StationAlertTile({ station, onViewStation, onQuickAction }: StationAlertTileProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [alertData, setAlertData] = useState<StationAlertData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -237,8 +239,24 @@ export function StationAlertTile({ station, onViewStation }: StationAlertTilePro
     return { elapsed: elapsedDisplay, remaining: remainingDisplay, progress: Math.min((elapsedMs / estimatedMs) * 100, 100), isOverdue };
   };
 
+  const quickTarget: QuickActionTarget = {
+    id: station.dbId,
+    name: station.name,
+    type: "station",
+    status: station.status,
+    workOrder: station.workOrder !== "—" ? station.workOrder : undefined,
+  };
+
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <StationQuickActions
+        target={quickTarget}
+        onViewDetail={() => onViewStation?.(station.dbId, station.name)}
+        onCreateHandoff={(t) => onQuickAction?.("handoff", t)}
+        onToggleHold={(t) => onQuickAction?.("hold", t)}
+        onRequestDelivery={(t) => onQuickAction?.("delivery", t)}
+        onReportIssue={(t) => onQuickAction?.("issue", t)}
+      >
       <div className={cn(
         "border-b border-border/30 transition-colors",
         isOpen && "bg-secondary/20",
@@ -595,6 +613,7 @@ export function StationAlertTile({ station, onViewStation }: StationAlertTilePro
           </div>
         </CollapsibleContent>
       </div>
+      </StationQuickActions>
     </Collapsible>
   );
 }
