@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Clock, Bell, Shield, ListTodo, Settings, Users, FlaskConical, Bug, Megaphone, Menu } from "lucide-react";
+import { Clock, Bell, Shield, ListTodo, Settings, Users, FlaskConical, Bug, Megaphone, Menu, Wrench } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getCurrentShift } from "@/lib/mockData";
 import { StatusBadge } from "./StatusBadge";
@@ -77,6 +77,7 @@ export function Header() {
             <div className="flex items-center gap-2">
               {user && <TeamSelector />}
               {user && <NavIconButton to="/queue" icon={ListTodo} label="Queue Management" />}
+              <NavIconButton to="/tools" icon={Wrench} label="Operator Tools" />
               {hasOrgSupervisorAccess && <NavIconButton to="/teams" icon={Users} label="Team Management" />}
               {user && <NavIconButton to="/settings" icon={Settings} label="Settings" />}
               {hasAdminAccess && (
@@ -152,6 +153,7 @@ export function Header() {
                     <Separator />
                     <nav className="flex flex-col gap-1">
                       {user && <MobileNavLink to="/queue" icon={ListTodo} label="Queue Management" onClose={() => setMobileMenuOpen(false)} />}
+                      <MobileNavLink to="/tools" icon={Wrench} label="Operator Tools" onClose={() => setMobileMenuOpen(false)} />
                       {hasOrgSupervisorAccess && <MobileNavLink to="/teams" icon={Users} label="Team Management" onClose={() => setMobileMenuOpen(false)} />}
                       {user && <MobileNavLink to="/settings" icon={Settings} label="Settings" onClose={() => setMobileMenuOpen(false)} />}
                       {hasAdminAccess && (
