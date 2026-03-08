@@ -18,6 +18,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Package,
   Play,
@@ -29,6 +31,7 @@ import {
   ArrowRight,
   ExternalLink,
   ShieldAlert,
+  AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -90,6 +93,16 @@ export function OperatorStationPanel({
   const [routingInfo, setRoutingInfo] = useState<RoutingInfo | null>(null);
   const [isOverride, setIsOverride] = useState(false);
   const [overrideReason, setOverrideReason] = useState("");
+
+  // Completion form state
+  const [completionData, setCompletionData] = useState<{
+    qtyCompleted: number;
+    qtyScrap: number;
+    qtyRework: number;
+    qtyOriginal: number;
+    loaded: boolean;
+  }>({ qtyCompleted: 0, qtyScrap: 0, qtyRework: 0, qtyOriginal: 0, loaded: false });
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   const activeOrder = orders.find((o) => o.status === "in_progress") ?? null;
   const queuedOrders = orders.filter((o) => o.status === "pending" || o.status === "queued");
@@ -219,54 +232,46 @@ export function OperatorStationPanel({
   // Complete operation / deliver — uses atomic backend RPC with pre-advance validation
   const confirmDelivery = async () => {
     if (!deliverOrder || !user) return;
-    setProcessing(true);
+    const { qtyOriginal, qtyCompleted, qtyScrap, qtyRework } = completionData;
 
-    try {
-      // === Pre-advance validation ===
-      // Fetch full queue item data for quantity checks
-      const { data: fullItem } = await supabase
-        .from("queue_items")
-        .select("qty_original, qty_completed, qty_scrap, qty_rework, parts_completed, quantity, station_id")
-        .eq("id", deliverOrder.id)
-        .maybeSingle();
-
-      if (fullItem) {
-        const qtyCompleted = fullItem.qty_completed ?? fullItem.parts_completed ?? 0;
-        const qtyOriginal = fullItem.qty_original ?? fullItem.quantity ?? 0;
-        const qtyScrap = fullItem.qty_scrap ?? 0;
-        const qtyRework = fullItem.qty_rework ?? 0;
-
-        // 1. Quantity reconciliation
-        if (qtyOriginal > 0 && (qtyCompleted + qtyScrap + qtyRework) < qtyOriginal) {
-          const unaccounted = qtyOriginal - qtyCompleted - qtyScrap - qtyRework;
-          toast.error(
-            `Quantity check required: ${unaccounted} parts unaccounted for. Completed: ${qtyCompleted}, Scrap: ${qtyScrap}, Rework: ${qtyRework} of ${qtyOriginal} total.`
-          );
-          setProcessing(false);
-          return;
-        }
+    // Client-side validation (unless override)
+    if (!isOverride) {
+      if (qtyOriginal > 0 && (qtyCompleted + qtyScrap + qtyRework) < qtyOriginal) {
+        toast.error("All parts must be accounted for before advancing.");
+        return;
       }
 
-      // 2 & 3. Quality sign-off and first article checks via station state
+      // Station state checks
       const { data: stationStatus } = await supabase
         .from("current_station_status")
         .select("current_job_state")
         .eq("station_id", stationId)
         .maybeSingle();
 
-      if (stationStatus?.current_job_state === "Waiting on QA" && !isOverride) {
-        toast.error("Quality sign-off required: station is still 'Waiting on QA'. Resolve QA before advancing, or use supervisor override.");
-        setProcessing(false);
+      if (stationStatus?.current_job_state === "Waiting on QA") {
+        toast.error("Quality sign-off required: station is still 'Waiting on QA'.");
         return;
       }
-
-      if (stationStatus?.current_job_state === "First Article in Process" && !isOverride) {
-        toast.error("First article inspection must be completed before advancing. Use supervisor override if necessary.");
-        setProcessing(false);
+      if (stationStatus?.current_job_state === "First Article in Process") {
+        toast.error("First article inspection must be completed before advancing.");
         return;
       }
+    }
 
-      // === All validations passed — call atomic RPC ===
+    setProcessing(true);
+    try {
+      // Save updated quantities to the work order first
+      await supabase
+        .from("queue_items")
+        .update({
+          qty_completed: qtyCompleted,
+          qty_scrap: qtyScrap,
+          qty_rework: qtyRework,
+          parts_completed: qtyCompleted,
+        })
+        .eq("id", deliverOrder.id);
+
+      // Call atomic RPC
       const { data, error } = await supabase.rpc("pass_work_order_to_next_step", {
         _queue_item_id: deliverOrder.id,
         _current_station_id: stationId,
@@ -318,6 +323,49 @@ export function OperatorStationPanel({
       navigate(`/queue?item=${orderId}`);
     }
   };
+
+  // Load qty data when delivery dialog opens
+  useEffect(() => {
+    if (!deliverOrder) {
+      setCompletionData({ qtyCompleted: 0, qtyScrap: 0, qtyRework: 0, qtyOriginal: 0, loaded: false });
+      setValidationErrors([]);
+      return;
+    }
+    const loadQty = async () => {
+      const { data } = await supabase
+        .from("queue_items")
+        .select("qty_original, qty_completed, qty_scrap, qty_rework, parts_completed, quantity")
+        .eq("id", deliverOrder.id)
+        .maybeSingle();
+      if (data) {
+        setCompletionData({
+          qtyOriginal: data.qty_original ?? data.quantity ?? 0,
+          qtyCompleted: data.qty_completed ?? data.parts_completed ?? 0,
+          qtyScrap: data.qty_scrap ?? 0,
+          qtyRework: data.qty_rework ?? 0,
+          loaded: true,
+        });
+      } else {
+        setCompletionData({ qtyCompleted: 0, qtyScrap: 0, qtyRework: 0, qtyOriginal: 0, loaded: true });
+      }
+    };
+    loadQty();
+  }, [deliverOrder]);
+
+  // Validate completion form
+  useEffect(() => {
+    const errors: string[] = [];
+    if (!completionData.loaded) return;
+    const { qtyOriginal, qtyCompleted, qtyScrap, qtyRework } = completionData;
+    const total = qtyCompleted + qtyScrap + qtyRework;
+
+    if (qtyOriginal > 0 && total < qtyOriginal) {
+      const unaccounted = qtyOriginal - total;
+      errors.push(`${unaccounted} part(s) unaccounted. Total must equal ${qtyOriginal}.`);
+    }
+
+    setValidationErrors(errors);
+  }, [completionData]);
 
   const handleCloseDeliveryDialog = (open: boolean) => {
     if (!open) {
@@ -444,9 +492,9 @@ export function OperatorStationPanel({
         </CardContent>
       </Card>
 
-      {/* Delivery confirm dialog — routing-aware */}
+      {/* Delivery confirm dialog — routing-aware with completion form */}
       <AlertDialog open={!!deliverOrder} onOpenChange={handleCloseDeliveryDialog}>
-        <AlertDialogContent>
+        <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               {routingInfo && !routingInfo.isFinalStep ? (
@@ -462,7 +510,7 @@ export function OperatorStationPanel({
               )}
             </AlertDialogTitle>
             <AlertDialogDescription asChild>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {routingInfo && !routingInfo.isFinalStep ? (
                   <p>
                     Complete your operation on <strong>{deliverOrder?.work_order || deliverOrder?.title}</strong> and
@@ -478,6 +526,104 @@ export function OperatorStationPanel({
                     Complete <strong>{deliverOrder?.work_order || deliverOrder?.title}</strong> and move it to the next
                     station?
                   </p>
+                )}
+
+                {/* Quantity completion form */}
+                {completionData.loaded && completionData.qtyOriginal > 0 && (
+                  <div className="border rounded-lg p-3 space-y-3 bg-muted/20">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">Quantity Accounting</span>
+                      <Badge variant="outline" className="text-xs">
+                        Required: {completionData.qtyOriginal}
+                      </Badge>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="space-y-1">
+                        <Label htmlFor="qty-completed" className="text-xs text-muted-foreground">
+                          Completed
+                        </Label>
+                        <Input
+                          id="qty-completed"
+                          type="number"
+                          min={0}
+                          max={completionData.qtyOriginal}
+                          value={completionData.qtyCompleted}
+                          onChange={(e) =>
+                            setCompletionData((prev) => ({
+                              ...prev,
+                              qtyCompleted: Math.max(0, parseInt(e.target.value) || 0),
+                            }))
+                          }
+                          className="h-9 text-center"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="qty-scrap" className="text-xs text-muted-foreground">
+                          Scrap
+                        </Label>
+                        <Input
+                          id="qty-scrap"
+                          type="number"
+                          min={0}
+                          value={completionData.qtyScrap}
+                          onChange={(e) =>
+                            setCompletionData((prev) => ({
+                              ...prev,
+                              qtyScrap: Math.max(0, parseInt(e.target.value) || 0),
+                            }))
+                          }
+                          className="h-9 text-center"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="qty-rework" className="text-xs text-muted-foreground">
+                          Rework
+                        </Label>
+                        <Input
+                          id="qty-rework"
+                          type="number"
+                          min={0}
+                          value={completionData.qtyRework}
+                          onChange={(e) =>
+                            setCompletionData((prev) => ({
+                              ...prev,
+                              qtyRework: Math.max(0, parseInt(e.target.value) || 0),
+                            }))
+                          }
+                          className="h-9 text-center"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Running total */}
+                    <div className="flex items-center justify-between text-xs border-t pt-2">
+                      <span className="text-muted-foreground">
+                        Total: {completionData.qtyCompleted + completionData.qtyScrap + completionData.qtyRework} / {completionData.qtyOriginal}
+                      </span>
+                      {completionData.qtyCompleted + completionData.qtyScrap + completionData.qtyRework >= completionData.qtyOriginal ? (
+                        <span className="text-green-600 font-medium flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3" /> Accounted
+                        </span>
+                      ) : (
+                        <span className="text-destructive font-medium">
+                          {completionData.qtyOriginal - completionData.qtyCompleted - completionData.qtyScrap - completionData.qtyRework} unaccounted
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Validation errors */}
+                {validationErrors.length > 0 && !isOverride && (
+                  <Alert variant="destructive" className="py-2">
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertDescription className="text-xs">
+                      {validationErrors.map((err, i) => (
+                        <p key={i}>{err}</p>
+                      ))}
+                    </AlertDescription>
+                  </Alert>
                 )}
 
                 {/* Supervisor override section */}
@@ -516,7 +662,11 @@ export function OperatorStationPanel({
             <AlertDialogCancel disabled={processing}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelivery}
-              disabled={processing || (isOverride && !overrideReason.trim())}
+              disabled={
+                processing ||
+                (isOverride && !overrideReason.trim()) ||
+                (!isOverride && validationErrors.length > 0)
+              }
               className="bg-primary hover:bg-primary/90"
             >
               {processing ? (
