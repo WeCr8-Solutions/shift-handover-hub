@@ -16,7 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronRight, Ruler, Search, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useUserOrganization } from "@/hooks/useUserOrganization";
+import { useOrgContext } from "@/contexts/OrgContext";
 
 export const MATERIAL_TYPES = [
   "Aluminum",
