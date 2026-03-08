@@ -95,16 +95,12 @@ export function CreateQueueItemDialog({ open, onOpenChange, onCreate, preselecte
       return;
     }
 
-    // Auto-set qty fields for quotes and work orders
-    if ((formData.item_type === "quote" || formData.item_type === "work_order") && formData.quantity) {
-      (formData as any).qty_original = formData.quantity;
-    }
-
     setLoading(true);
-    const { error } = await onCreate({
+    const submitData: CreateQueueItemInput = {
       ...formData,
       due_date: dueDate?.toISOString(),
-    });
+    };
+    const { error } = await onCreate(submitData);
     setLoading(false);
 
     if (error) {
