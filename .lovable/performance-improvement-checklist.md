@@ -5,19 +5,19 @@
 
 ---
 
-## Phase 1: Eliminate Duplicate Queries (Impact: ~60% improvement)
+## Phase 1: Eliminate Duplicate Queries (Impact: ~60% improvement) ✅
 
 **Goal:** Reduce mount queries from 18–22 → 7–9
 
-- [ ] **1.1** Lift `useUserOrganization()` into a React Context (`OrgContext`) so it runs once
+- [x] **1.1** Lift `useUserOrganization()` into a React Context (`OrgContext`) so it runs once
   - Remove `useUserOrganization()` calls from: `useStations`, `useHandoffRecords`, `useQueue`, `SupervisorDashboard`, `TeamContext`
   - Pass `organizationId` down via context instead of each hook fetching it
-- [ ] **1.2** Parallelize the 3 sequential queries in `useUserOrganization()` using `Promise.all`
+- [x] **1.2** Parallelize the 3 sequential queries in `useUserOrganization()` using `Promise.all`
   - `organization_members`, `team_members`, `user_roles` can all fire simultaneously
-- [ ] **1.3** Remove duplicate `useStations()` / `useHandoffRecords()` from `Index.tsx`
+- [x] **1.3** Remove duplicate `useStations()` / `useHandoffRecords()` from `Index.tsx`
   - Only the active child dashboard (`SupervisorDashboard` or `OperatorDashboard`) should fetch
   - Pass `createHandoffRecord` via callback prop or context
-- [ ] **1.4** Cache `useAdminAccess()` result — it rarely changes
+- [x] **1.4** Cache `useAdminAccess()` result — it rarely changes
   - Add a `staleTime` or store in context alongside org data
 
 **Estimated reduction:** ~12 queries eliminated
