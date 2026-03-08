@@ -769,7 +769,7 @@ export function TeamStationManager({
 
       {/* Edit Station Dialog */}
       <Dialog open={!!editingStation} onOpenChange={(open) => !open && setEditingStation(null)}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Station</DialogTitle>
             <DialogDescription>Update station details for {editingStation?.station_id}</DialogDescription>

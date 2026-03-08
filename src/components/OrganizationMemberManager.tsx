@@ -371,7 +371,7 @@ export function OrganizationMemberManager({ onNavigateToInvites }: OrganizationM
                     </Button>
                   </DialogTrigger>
 
-                  <DialogContent className="sm:max-w-md">
+                  <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
                     {/* ── Step: form ── */}
                     {dialogStep === "form" && (
                       <>
