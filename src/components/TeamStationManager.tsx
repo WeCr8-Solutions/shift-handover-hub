@@ -4,6 +4,7 @@ import { useTeams } from "@/hooks/useTeams";
 import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { getSafeErrorMessage } from "@/lib/errorHandling";
 import { supabase } from "@/integrations/supabase/client";
+import { useStationMachineAssignment } from "@/hooks/useStationMachineProfile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,12 +40,128 @@ import {
   Pencil,
   Trash2,
   ArrowRightLeft,
+  Cpu,
 } from "lucide-react";
+import { StationMachineContextDialog } from "@/components/station/StationMachineContextDialog";
 import { useToast } from "@/hooks/use-toast";
 import { WorkCenterType, ALL_WORK_CENTER_TYPES } from "@/types/handoff";
 import { workCenterIcons, workCenterColors } from "@/lib/workCenterIcons";
 import { cn } from "@/lib/utils";
 import { BulkUploadDialog } from "./BulkUploadDialog";
+import { Separator } from "@/components/ui/separator";
+
+/** Inline read-only machine profile info for the edit station dialog */
+function EditStationMachineInfo({
+  stationId,
+  stationName,
+  organizationId,
+}: {
+  stationId: string;
+  stationName: string;
+  organizationId: string | null;
+}) {
+  const { assignment, loading: assignLoading } = useStationMachineAssignment(stationId, organizationId);
+  const [manualProfile, setManualProfile] = useState<Record<string, any> | null>(null);
+  const [loadingManual, setLoadingManual] = useState(true);
+  const [showMachineCtx, setShowMachineCtx] = useState(false);
+
+  useEffect(() => {
+    const fetchManual = async () => {
+      setLoadingManual(true);
+      const { data } = await supabase
+        .from("station_manual_machine_profiles" as any)
+        .select("*")
+        .eq("station_id", stationId)
+        .maybeSingle();
+      setManualProfile(data as any);
+      setLoadingManual(false);
+    };
+    fetchManual();
+  }, [stationId]);
+
+  const isLoading = assignLoading || loadingManual;
+  const hasLibrary = Boolean(assignment?.machine);
+  const hasManual = Boolean(manualProfile) && !hasLibrary;
+
+  return (
+    <>
+      <Separator />
+      <div className="space-y-2">
+        <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          <Cpu className="w-3.5 h-3.5" />
+          Machine Profile
+        </span>
+
+        {isLoading ? (
+          <div className="flex items-center gap-2 py-2">
+            <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">Loading machine info…</span>
+          </div>
+        ) : hasLibrary && assignment?.machine ? (
+          <Card className="border-green-500/30 bg-green-500/5">
+            <CardContent className="pt-3 pb-3">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium truncate">
+                    {assignment.machine.manufacturer} {assignment.machine.model}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {assignment.machine.machine_type} · {assignment.machine.platform_category}
+                  </p>
+                  {(assignment.machine.max_x_travel || assignment.machine.max_y_travel || assignment.machine.max_z_travel) && (
+                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                      Travel: {assignment.machine.max_x_travel ?? '–'}×{assignment.machine.max_y_travel ?? '–'}×{assignment.machine.max_z_travel ?? '–'} mm
+                    </p>
+                  )}
+                </div>
+                <Badge variant="secondary" className="text-[10px] shrink-0">Verified</Badge>
+              </div>
+            </CardContent>
+          </Card>
+        ) : hasManual && manualProfile ? (
+          <Card className="border-blue-500/30 bg-blue-500/5">
+            <CardContent className="pt-3 pb-3">
+              <div className="flex items-center gap-2">
+                <Wrench className="w-4 h-4 text-blue-600 shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium truncate">
+                    {manualProfile.manufacturer} {manualProfile.model}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {manualProfile.machine_type} · {manualProfile.platform_category}
+                  </p>
+                </div>
+                <Badge variant="outline" className="text-[10px] shrink-0">Manual</Badge>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <p className="text-xs text-muted-foreground py-1">
+            No machine profile attached to this station.
+          </p>
+        )}
+
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full gap-2 text-xs"
+          onClick={() => setShowMachineCtx(true)}
+        >
+          <Cpu className="w-3.5 h-3.5" />
+          {hasLibrary || hasManual ? "Manage Machine Profile" : "Attach Machine Profile"}
+        </Button>
+      </div>
+
+      <StationMachineContextDialog
+        stationId={stationId}
+        stationName={stationName}
+        open={showMachineCtx}
+        onOpenChange={setShowMachineCtx}
+      />
+    </>
+  );
+}
 
 interface ReassignStationPayload {
   stationId: string;
@@ -468,7 +585,7 @@ export function TeamStationManager({
 
       {/* Edit Station Dialog */}
       <Dialog open={!!editingStation} onOpenChange={(open) => !open && setEditingStation(null)}>
-        <DialogContent>
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Edit Station</DialogTitle>
             <DialogDescription>Update station details for {editingStation?.station_id}</DialogDescription>
@@ -497,6 +614,15 @@ export function TeamStationManager({
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Machine Profile Section */}
+            {editingStation && (
+              <EditStationMachineInfo
+                stationId={editingStation.id}
+                stationName={editingStation.name}
+                organizationId={organization?.id ?? null}
+              />
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditingStation(null)}>
