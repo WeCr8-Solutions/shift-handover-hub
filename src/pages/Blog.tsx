@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, Clock, User } from "lucide-react";
 import { Link } from "react-router-dom";
+import { AdPlacement } from "@/components/marketing/AdPlacement";
 
 const blogPosts = [
   {
