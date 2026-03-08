@@ -6,6 +6,7 @@ import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useStations, useHandoffRecords } from "@/hooks/useStations";
 import { useUserOrganization } from "@/hooks/useUserOrganization";
 import { useBackgroundRefresh } from "@/hooks/useBackgroundRefresh";
+import { useOrgRefreshInterval } from "@/hooks/useOrgRefreshInterval";
 import { RefreshIndicator } from "./RefreshIndicator";
 import {
   Factory,
