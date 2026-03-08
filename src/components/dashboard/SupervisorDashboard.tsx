@@ -712,14 +712,16 @@ export function SupervisorDashboard({
         </div>
       </div>
 
-      {/* Production Analytics Charts */}
-      <ProductionAnalytics
-        stations={filteredStationsForAnalytics}
-        handoffs={dbRecords}
-        isRefreshing={isRefreshing}
-        lastRefreshedAt={lastRefreshedAt}
-        onRefresh={handleManualRefresh}
-      />
+      {/* Production Analytics Charts — lazy loaded */}
+      <Suspense fallback={<div className="bg-card border border-border rounded-lg p-8 text-center text-muted-foreground text-sm">Loading analytics…</div>}>
+        <ProductionAnalytics
+          stations={filteredStationsForAnalytics}
+          handoffs={dbRecords}
+          isRefreshing={isRefreshing}
+          lastRefreshedAt={lastRefreshedAt}
+          onRefresh={handleManualRefresh}
+        />
+      </Suspense>
     </div>
   );
 }
