@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { useIssueDetail } from "@/hooks/useIssueDetail";
+import {
   Card,
   CardContent,
   CardDescription,
@@ -53,6 +54,9 @@ import {
   Loader2,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { ConsoleLogViewer } from "./ConsoleLogViewer";
+import { ErrorStackTrace } from "./ErrorStackTrace";
+import { EnvironmentContext } from "./EnvironmentContext";
 
 interface DevQueueItem {
   id: string;
