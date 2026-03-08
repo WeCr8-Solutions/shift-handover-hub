@@ -406,6 +406,26 @@ export function UserManagement({ isAdmin }: UserManagementProps) {
                     </DropdownMenuItem>
                   );
                 })}
+                <DropdownMenuSeparator />
+                {user.user_id !== currentUser?.id && (
+                  <DropdownMenuItem
+                    onClick={() =>
+                      startActAs({
+                        userId: user.user_id,
+                        displayName: user.display_name,
+                        email: user.email,
+                        organizationId: user.organization?.id,
+                        organizationName: user.organization?.name,
+                        roles: user.roles,
+                        orgRole: user.organization?.role,
+                      })
+                    }
+                    className="gap-2 cursor-pointer"
+                  >
+                    <Eye className="w-3 h-3" />
+                    View As {user.display_name.split(" ")[0]}
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           )}
