@@ -299,7 +299,7 @@ export function StationManualMachineEntry({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
-        <DialogHeader>
+        <DialogHeader className="shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Wrench className="w-5 h-5 text-primary" />
             Manual Station Entry — {stationName}
@@ -309,7 +309,7 @@ export function StationManualMachineEntry({
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 min-h-0 -mx-2 px-2">
+        <div className="flex-1 min-h-0 overflow-y-auto -mx-2 px-2">
           <div className="space-y-6 pb-4">
 
             {/* Station Category */}
