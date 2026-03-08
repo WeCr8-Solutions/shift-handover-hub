@@ -22,6 +22,7 @@
 | 12 | [Ad Placement Strategy](./12-ad-placement-strategy.md) | ✅ Active | Monetization via ad placements |
 | 13 | [Help Center](./13-help-center.md) | ✅ Active | In-app help articles and search |
 | 14 | [Shop Floor Display](./14-shop-floor-display.md) | 🚧 Draft | TV/tablet display boards for shop floors |
+| 15 | [Hooks Reference](./15-hooks-reference.md) | ✅ Active | Complete catalog of all 47 custom React hooks |
 
 ---
 
