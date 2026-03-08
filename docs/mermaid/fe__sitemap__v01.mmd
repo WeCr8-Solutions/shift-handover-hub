@@ -1,6 +1,7 @@
 %% Frontend Sitemap — JobLine.ai
 %% Type: flowchart TD
 %% Shows all routes, auth gates, role gates, and navigation edges
+%% Updated: 2026-03-08
 
 flowchart TD
     subgraph Public["Public Pages (No Auth)"]
@@ -12,6 +13,7 @@ flowchart TD
         START["/start"]
         ZACH["/zach  Redirect"]
         DON_OK["/donation-success"]
+        BLOG["/blog"]
     end
 
     subgraph Features["Feature Marketing Pages (No Auth)"]
@@ -32,6 +34,18 @@ flowchart TD
         F_MV["/manufacturing-visibility"]
     end
 
+    subgraph Resources["Resource Pages (No Auth)"]
+        RES_IDX["/resources"]
+        RES_GUIDES["/resources/guides"]
+        RES_GCODE["/resources/gcode"]
+        RES_GLOSS["/resources/glossary"]
+    end
+
+    subgraph HelpPages["Help Center (No Auth)"]
+        HELP["/help"]
+        HELP_ART["/help/:category/:slug"]
+    end
+
     subgraph Authed["Authenticated Pages"]
         DASH["/dashboard"]
         TEAMS["/teams"]
@@ -47,6 +61,10 @@ flowchart TD
         TESTING["/testing<br/>admin + developer"]
     end
 
+    subgraph LazyLoaded["Lazy-Loaded Pages"]
+        DISPLAY["/display/:displayId<br/>ShopFloorDisplay<br/>React.lazy"]
+    end
+
     NOTFOUND["/* NotFound"]
 
     %% Navigation edges
@@ -55,6 +73,8 @@ flowchart TD
     LAND -->|"Pricing link"| PRICING
     LAND -->|"Demo link"| DEMO
     LAND -->|"Feature links"| Features
+    LAND -->|"Resource links"| Resources
+    LAND -->|"Help link"| HELP
 
     AUTH -->|"Success"| DASH
     AUTH -->|"New user"| SETUP
@@ -76,6 +96,14 @@ flowchart TD
     %% Role gates
     DASH -->|"admin role check"| ADMIN
     DASH -->|"dev/admin role check"| TESTING
+
+    %% Resource navigation
+    RES_IDX --> RES_GUIDES
+    RES_IDX --> RES_GCODE
+    RES_IDX --> RES_GLOSS
+
+    %% Help navigation
+    HELP --> HELP_ART
 
     %% Safe exits
     ADMIN -->|"Back"| DASH

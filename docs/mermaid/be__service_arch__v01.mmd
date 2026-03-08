@@ -1,8 +1,16 @@
 %% Service Architecture — JobLine.ai Frontend
 %% Type: classDiagram
-%% Shows hooks, contexts, and data flow boundaries
+%% Shows hooks, contexts, providers, and data flow boundaries
+%% Updated: 2026-03-08 — reflects performance phases 1-6
 
 classDiagram
+    class QueryClientProvider {
+        +staleTime: 30s
+        +gcTime: 5min
+        +retry: 2
+        +refetchOnWindowFocus: true
+    }
+
     class AuthContext {
         +user: User
         +profile: Profile
@@ -12,16 +20,33 @@ classDiagram
         +signOut()
     }
 
+    class OrgContext {
+        +organization: Organization
+        +organizationId: string
+        +orgRole: string
+        +isOrgAdmin: boolean
+        +teams: Team[]
+        +isLoading: boolean
+        <<React Query cached 5min stale>>
+    }
+
     class TeamContext {
         +selectedTeam: Team
         +teams: Team[]
         +setSelectedTeam()
+        <<derives from OrgContext>>
     }
 
     class OnboardingProvider {
         +currentStep: string
         +isComplete: boolean
         +completeStep()
+    }
+
+    class DashboardErrorBoundary {
+        +hasError: boolean
+        +handleRetry()
+        <<class-based error boundary>>
     }
 
     class useQueue {
@@ -32,20 +57,33 @@ classDiagram
         +updateItem()
         +deleteItem()
         +reorderItem()
+        <<useState + debounced realtime 500ms>>
+        <<optimistic updates with rollback>>
     }
 
     class useStations {
         +stations: Station[]
         +loading: boolean
-        +fetchStations()
-        +createStation()
-        +updateStation()
+        +handoffRecords: HandoffRecord[]
+        +shiftStats: ShiftStats
+        <<React Query 30s stale + 15min poll>>
+        <<realtime invalidation debounced 500ms>>
+        <<refetchIntervalInBackground: false>>
+    }
+
+    class useSmartAlerts {
+        +alerts: SmartAlert[]
+        +isLoading: boolean
+        <<React Query 60s stale + 5min poll>>
+        <<single RPC compute_smart_alerts>>
+        <<replaces 8 parallel client queries>>
     }
 
     class useHandoffRecords {
         +records: HandoffRecord[]
         +createHandoffRecord()
         +fetchRecords()
+        <<React Query 30s stale + 15min poll>>
     }
 
     class useNCR {
@@ -105,24 +143,41 @@ classDiagram
         +submitDeclaration()
     }
 
-    %% Data flow relationships
-    AuthContext <|-- useQueue : uses auth
-    AuthContext <|-- useStations : uses auth
+    %% Provider tree (top to bottom)
+    QueryClientProvider <|-- AuthContext : wraps
+    AuthContext <|-- OrgContext : wraps
+    OrgContext <|-- TeamContext : wraps (derives data)
+
+    %% OrgContext is the single source of org data
+    OrgContext <|-- useStations : reads org from context
+    OrgContext <|-- useQueue : reads org from context
+    OrgContext <|-- useSmartAlerts : reads org from context
+    OrgContext <|-- useEntitlements : reads org from context
+    OrgContext <|-- useERPConnector : reads org from context
+
+    %% Auth dependencies
     AuthContext <|-- useHandoffRecords : uses auth
     AuthContext <|-- useNCR : uses auth
     AuthContext <|-- useDataAccessLog : uses auth
 
-    TeamContext <|-- useQueue : scopes by team
+    %% Team scoping
     TeamContext <|-- useStations : scopes by team
     TeamContext <|-- useHandoffRecords : scopes by team
 
+    %% Audit logging
     useQueue --> useActivityLog : logs mutations
     useStations --> useActivityLog : logs mutations
     useNCR --> useActivityLog : logs mutations
 
+    %% Billing chain
     useSubscription --> useEntitlements : provides plan
     useEntitlements --> useQueue : gates features
     useEntitlements --> useERPConnector : gates ERP
 
+    %% Compliance
     useMFAEnforcement --> AuthContext : checks org settings
     useUSPersonDeclaration --> AuthContext : checks org settings
+
+    %% Error boundary
+    DashboardErrorBoundary --> useStations : wraps
+    DashboardErrorBoundary --> useSmartAlerts : wraps

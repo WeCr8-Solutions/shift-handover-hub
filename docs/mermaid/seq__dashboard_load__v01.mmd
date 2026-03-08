@@ -1,15 +1,19 @@
-%% Sequence: Dashboard Load
+%% Sequence: Dashboard Load (Post-Performance Optimization)
 %% Type: sequenceDiagram
+%% Updated: 2026-03-08 — reflects phases 1-6
 
 sequenceDiagram
     actor USER as User
     participant APP as App.tsx
+    participant QC as QueryClient
     participant AUTH as AuthContext
     participant SB as Supabase Client
     participant DB as PostgreSQL
+    participant ORG as OrgContext
     participant TEAM as TeamContext
     participant DASH as Index (Dashboard)
     participant HOOKS as Data Hooks
+    participant RT as Realtime
 
     USER->>APP: Navigate to /dashboard
 
@@ -20,43 +24,66 @@ sequenceDiagram
     alt No Session
         AUTH-->>APP: Redirect to /auth
     else Has Session
-        AUTH->>SB: Fetch profile + roles
+        AUTH->>SB: Fetch profile
         SB->>DB: SELECT from profiles WHERE user_id
         DB-->>SB: Profile data
-        SB->>DB: SELECT from user_roles WHERE user_id
-        DB-->>SB: Roles array
-        SB-->>AUTH: { profile, roles }
+        SB-->>AUTH: { profile }
 
-        AUTH->>TEAM: Initialize team context
-        TEAM->>SB: Fetch org membership
-        SB->>DB: SELECT from organization_members
-        DB-->>SB: Org + teams
-        SB-->>TEAM: Set selectedTeam
+        AUTH->>ORG: Initialize OrgContext
 
+        Note over ORG,DB: Single useUserOrganization call (React Query, 5min stale)
+        ORG->>QC: Check cache for ['user-org', userId]
+
+        alt Cache hit (< 5min old)
+            QC-->>ORG: Cached org/team/role data
+        else Cache miss
+            ORG->>SB: Promise.all([org_members, team_members, user_roles])
+            par Parallel org queries
+                SB->>DB: SELECT from organization_members
+                SB->>DB: SELECT from team_members
+                SB->>DB: SELECT from user_roles
+            end
+            DB-->>SB: All 3 results
+            SB-->>ORG: { org, teams, roles }
+            ORG->>QC: Cache result (5min stale)
+        end
+
+        ORG->>TEAM: Derive team context (zero queries)
         TEAM-->>DASH: Render dashboard
 
-        par Parallel data fetching
-            DASH->>HOOKS: useStations(teamId)
-            HOOKS->>SB: SELECT from stations WHERE org_id
+        par Parallel data fetching (React Query with dedup)
+            DASH->>HOOKS: useStations(teamId, orgId)
+            HOOKS->>QC: Check ['stations', orgId, teamId]
+            QC->>SB: SELECT from stations WHERE org_id (if stale > 30s)
             SB->>DB: Query with RLS
             DB-->>SB: Stations
-            SB-->>HOOKS: Station data
+            SB-->>QC: Cache result
+            QC-->>HOOKS: Station data
 
-            DASH->>HOOKS: useQueue(teamId)
-            HOOKS->>SB: SELECT from queue_items WHERE org_id
-            SB->>DB: Query with RLS
-            DB-->>SB: Queue items
-            SB-->>HOOKS: Queue data
-
-            DASH->>HOOKS: useHandoffRecords(teamId)
-            HOOKS->>SB: SELECT from handoff_records
+            DASH->>HOOKS: useHandoffRecords(teamId, orgId)
+            HOOKS->>QC: Check ['handoffs', orgId, teamId]
+            QC->>SB: SELECT from handoff_records (if stale > 30s)
             SB->>DB: Query with RLS
             DB-->>SB: Handoffs
-            SB-->>HOOKS: Handoff data
+            SB-->>QC: Cache result
+            QC-->>HOOKS: Handoff data
+
+            DASH->>HOOKS: useSmartAlerts(orgId)
+            HOOKS->>QC: Check ['smart-alerts', orgId]
+            QC->>SB: RPC compute_smart_alerts(_org_id) (if stale > 60s)
+            SB->>DB: Single server-side function (9 alert types)
+            DB-->>SB: JSONB alert array
+            SB-->>QC: Cache result
+            QC-->>HOOKS: Alert data
         end
 
         HOOKS-->>DASH: Render with data
-        DASH-->>USER: Dashboard visible
+        DASH-->>USER: Dashboard visible (TTI < 1.5s)
 
-        Note over HOOKS,SB: Realtime subscriptions + polling fallback activated
+        Note over HOOKS,RT: Realtime subscriptions activated (debounced 500ms)
+        HOOKS->>RT: Subscribe to stations/handoffs channels
+        RT-->>HOOKS: On change -> debounced invalidateQueries()
+
+        Note over QC: Polling fallback: 15min stations, 5min alerts
+        Note over QC: Paused when document.hidden === true
     end
