@@ -72,6 +72,23 @@ const testFileRegistry: Record<string, { path: string; description: string }> = 
   // Shop Floor Display
   "useShopFloorDisplays Hook": { path: "src/hooks/useShopFloorDisplays.test.ts", description: "Shop floor display CRUD, token regen, toggle" },
   "ShopFloorDisplay Page": { path: "src/pages/ShopFloorDisplay.test.tsx", description: "Display page token validation & mode rendering" },
+  // ERP & Connectors
+  "useERPConnector Hook": { path: "src/hooks/useERPConnector.test.ts", description: "ERP connection, sync, status mapping, tenant isolation" },
+  "JobLine Client Connector": { path: "src/connectors/jobline/client.test.ts", description: "JobLine relay client connection & messaging" },
+  "JobLine StatusBridge": { path: "src/connectors/jobline/statusBridge.test.ts", description: "Machine status snapshot bridging & offline fallback" },
+  "JobLine AlarmBridge": { path: "src/connectors/jobline/alarmBridge.test.ts", description: "Machine alarm event bridging" },
+  // Dashboard (additional)
+  "DashboardRefresh": { path: "src/components/dashboard/DashboardRefresh.test.tsx", description: "Background refresh lifecycle & visibility-aware polling" },
+  "ProductionAnalytics": { path: "src/components/dashboard/ProductionAnalytics.test.tsx", description: "Production analytics chart rendering" },
+  "StationCheckIn": { path: "src/components/dashboard/StationCheckIn.test.tsx", description: "Station check-in flow & session management" },
+  // Queue (additional)
+  "QueueStateMachine": { path: "src/components/queue/QueueStateMachine.test.ts", description: "Status transition validation, kanban drag-drop rules" },
+  // Team Management
+  "TeamManagement": { path: "src/components/TeamManagement.test.tsx", description: "Team CRUD and member management UI" },
+  // Store
+  "MachineStatusStore": { path: "src/store/machineStatusStore.test.ts", description: "Zustand machine status store operations" },
+  // Types
+  "Machine Types": { path: "src/types/machine.test.ts", description: "Machine type definitions & guard functions" },
 };
 
 // Parse vitest output to extract test results
@@ -212,6 +229,17 @@ export function useTestRunner() {
           "PartCatalogManager": 5,
           "useShopFloorDisplays Hook": 7,
           "ShopFloorDisplay Page": 6,
+          "useERPConnector Hook": 10,
+          "JobLine Client Connector": 4,
+          "JobLine StatusBridge": 5,
+          "JobLine AlarmBridge": 3,
+          "DashboardRefresh": 4,
+          "ProductionAnalytics": 5,
+          "StationCheckIn": 4,
+          "QueueStateMachine": 20,
+          "TeamManagement": 5,
+          "MachineStatusStore": 6,
+          "Machine Types": 4,
         };
         
         const testCount = testCounts[suiteName] || 3;
@@ -489,6 +517,98 @@ function getTestName(suite: string, index: number): string {
       "shows error on RPC failure",
       "renders supervisor display when token valid",
       "renders operator display when token valid",
+    ],
+    "useERPConnector Hook": [
+      "fetches erp_connections scoped to org on mount",
+      "returns work center mappings including unmapped entries",
+      "loads all 5 JobBoss status mappings",
+      "invokes erp-sync edge function with test_connection flag",
+      "invokes incremental sync with correct org_id",
+      "handles sync errors gracefully",
+      "loads sync logs showing last successful sync stats",
+      "stores JobBoss field mapping in connection metadata",
+      "scopes all queries to organization_id",
+      "handles missing connection gracefully",
+    ],
+    "JobLine Client Connector": [
+      "establishes WebSocket connection",
+      "handles connection errors",
+      "sends registration message on connect",
+      "reconnects on disconnect",
+    ],
+    "JobLine StatusBridge": [
+      "bridges status snapshot to store format",
+      "handles offline status fallback",
+      "maps control-type-specific fields",
+      "handles missing identity gracefully",
+      "bridges batch status updates",
+    ],
+    "JobLine AlarmBridge": [
+      "bridges alarm event to store",
+      "handles alarm clear events",
+      "filters duplicate alarms",
+    ],
+    "DashboardRefresh": [
+      "initializes refresh cycle on mount",
+      "pauses polling when tab hidden",
+      "resumes polling when tab visible",
+      "respects configurable interval",
+    ],
+    "ProductionAnalytics": [
+      "renders throughput chart",
+      "renders utilization donut",
+      "handles empty data state",
+      "updates on refresh",
+      "shows correct time range",
+    ],
+    "StationCheckIn": [
+      "renders station selection",
+      "handles check-in action",
+      "shows active session state",
+      "handles check-out action",
+    ],
+    "QueueStateMachine": [
+      "pending can only go to queued or cancelled",
+      "queued can go to in_progress, cancelled, or pending",
+      "in_progress can go to on_hold, completed, queued, or cancelled",
+      "on_hold can only go to in_progress or cancelled",
+      "completed can only go to pending (rework)",
+      "cancelled is terminal — no transitions allowed",
+      "Start Work from pending requires queued intermediate step",
+      "Start Work from queued goes directly to in_progress",
+      "should block dragging from pending to in_progress",
+      "should allow dragging from pending to queued",
+      "should allow dragging from in_progress to completed",
+      "should block dragging from cancelled to any status",
+      "should block dragging from completed to in_progress",
+      "should only show valid transitions for each status",
+      "should include the current status in dropdown",
+      "should not show spinner when items already loaded",
+      "should show spinner only on initial empty load",
+      "should include all 6 statuses including cancelled",
+      "admins should default to organization scope",
+      "URL station param overrides to station scope",
+    ],
+    "TeamManagement": [
+      "renders team list",
+      "handles create team",
+      "handles add member",
+      "handles remove member",
+      "shows empty state",
+    ],
+    "MachineStatusStore": [
+      "updates relay connection state",
+      "stores machine identity keyed by id",
+      "inserts new machine status",
+      "updates existing machine status",
+      "clears all state",
+      "selects alarms for machine",
+    ],
+    "Machine Types": [
+      "validates MachineIdentity interface",
+      "validates MachineStatusSnapshot interface",
+      "type guard for control types",
+      "handles unknown control types",
     ],
   };
   
