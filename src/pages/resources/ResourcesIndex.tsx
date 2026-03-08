@@ -59,7 +59,7 @@ export default function ResourcesIndex() {
             </p>
           </div>
 
-          <AdPlacement format="horizontal" className="mb-8" />
+          
 
           <div className="grid md:grid-cols-2 gap-6">
             {sections.map((section) => {
