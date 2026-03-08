@@ -585,6 +585,7 @@ export function ProductionAnalytics({
           </div>
         )}
 
+        {chartView === "trend" && (
           <div>
             <p className="text-xs text-muted-foreground mb-3">Handoff activity & parts output (today)</p>
             <ResponsiveContainer width="100%" height={280}>
