@@ -21,16 +21,20 @@ import {
   PackageCheck,
   ExternalLink,
   ArrowDown,
+  ArrowRight,
   Save,
   Loader2,
   Edit2,
   ChevronUp,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   MapPin,
   FileDown,
   BookTemplate,
   FolderOpen
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface Station {
   id: string;
