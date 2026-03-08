@@ -321,7 +321,7 @@ export function QueueItemRoutingTab({
                           />
 
                           {/* Supervisor: add dimension button */}
-                          {(hasAdminAccess || hasOrgSupervisorAccess) && !addingDimForStep && (
+                          {hasDimensionAccess && !addingDimForStep && (
                             <Button
                               size="sm"
                               variant="ghost"
