@@ -24,6 +24,7 @@ import { Users, Plus, UserPlus, Trash2, Crown, Shield, User, Loader2, Wrench, Qr
 import { useToast } from "@/hooks/use-toast";
 import { TeamStationManager } from "./TeamStationManager";
 import { InviteCodeGenerator } from "./InviteCodeGenerator";
+import { SafeDeleteDialog } from "./ui/safe-delete-dialog";
 
 export function TeamManagement() {
   const { user } = useAuth();
