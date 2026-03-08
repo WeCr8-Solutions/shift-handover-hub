@@ -59,7 +59,7 @@ export function useTrialStatus() {
       isOrgOwner,
       canManageBilling,
     };
-  }, [organization, organizationRole, subscribed, isDeveloper]);
+  }, [organization, organizationRole, subscribed, isDeveloper, isAdmin]);
 
   return {
     ...trialStatus,
