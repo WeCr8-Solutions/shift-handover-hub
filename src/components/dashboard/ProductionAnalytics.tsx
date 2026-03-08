@@ -117,26 +117,35 @@ export function ProductionAnalytics({
     return handoffs.filter((h) => h.shift === shiftFilter);
   }, [handoffs, shiftFilter]);
 
-  // Station output data (parts per station)
+  // Station output data (parts per station) — includes team & work center context
   const stationOutputData = useMemo(() => {
-    const map = new Map<string, { name: string; parts: number; scrap: number; rework: number }>();
+    const map = new Map<string, { name: string; teamName: string; workCenter: string; parts: number; scrap: number; rework: number }>();
 
     // From current station status
     stations.forEach((s) => {
       if (!s.is_active) return;
-      const existing = map.get(s.station_id) || { name: s.name, parts: 0, scrap: 0, rework: 0 };
+      const key = s.id; // Use unique DB id
+      const teamName = s.team?.name || "Unassigned";
+      const workCenter = s.work_center || "—";
+      const label = `${s.name}`;
+      const existing = map.get(key) || { name: label, teamName, workCenter, parts: 0, scrap: 0, rework: 0 };
       existing.parts += s.current_status?.parts_complete ?? 0;
-      map.set(s.station_id, existing);
+      map.set(key, existing);
     });
 
-    // Supplement with handoff data
+    // Supplement with handoff data (keyed by machine_id which maps to station_id display code)
     filteredHandoffs.forEach((h) => {
       const stationName = h.machine_id;
-      const existing = map.get(stationName) || { name: stationName, parts: 0, scrap: 0, rework: 0 };
+      // Try to find matching station to enrich with team/work center
+      const matchStation = stations.find((s) => s.station_id === stationName || s.name === stationName);
+      const teamName = matchStation?.team?.name || "—";
+      const workCenter = matchStation?.work_center || "—";
+      const key = matchStation?.id || `handoff-${stationName}`;
+      const existing = map.get(key) || { name: stationName, teamName, workCenter, parts: 0, scrap: 0, rework: 0 };
       existing.parts += h.parts_completed_this_shift ?? 0;
       existing.scrap += h.scrap_count ?? 0;
       existing.rework += h.rework_count ?? 0;
-      map.set(stationName, existing);
+      map.set(key, existing);
     });
 
     return Array.from(map.values())
@@ -144,6 +153,40 @@ export function ProductionAnalytics({
       .sort((a, b) => b.parts - a.parts)
       .slice(0, 10);
   }, [stations, filteredHandoffs]);
+
+  // Work center aggregation for grouped analytics
+  const workCenterData = useMemo(() => {
+    const map = new Map<string, { workCenter: string; stations: number; running: number; setup: number; down: number; waiting: number; idle: number }>();
+
+    stations.forEach((s) => {
+      if (!s.is_active) return;
+      const wc = s.work_center || "Other";
+      const existing = map.get(wc) || { workCenter: wc, stations: 0, running: 0, setup: 0, down: 0, waiting: 0, idle: 0 };
+      existing.stations++;
+      const status = getStatusFromJobState(s.current_status?.current_job_state);
+      existing[status]++;
+      map.set(wc, existing);
+    });
+
+    return Array.from(map.values()).sort((a, b) => b.stations - a.stations);
+  }, [stations]);
+
+  // Team aggregation
+  const teamData = useMemo(() => {
+    const map = new Map<string, { team: string; stations: number; running: number; setup: number; down: number; waiting: number; idle: number }>();
+
+    stations.forEach((s) => {
+      if (!s.is_active) return;
+      const teamName = s.team?.name || "Unassigned";
+      const existing = map.get(teamName) || { team: teamName, stations: 0, running: 0, setup: 0, down: 0, waiting: 0, idle: 0 };
+      existing.stations++;
+      const status = getStatusFromJobState(s.current_status?.current_job_state);
+      existing[status]++;
+      map.set(teamName, existing);
+    });
+
+    return Array.from(map.values()).sort((a, b) => b.stations - a.stations);
+  }, [stations]);
 
   // Status distribution for pie chart using shared config
   const statusDistribution = useMemo(() => {
