@@ -79,7 +79,7 @@ export function useSmartAlerts(options?: {
   /** External trigger to refetch */
   refreshToken?: unknown;
 }) {
-  const { organization } = useUserOrganization();
+  const { organization } = useOrgContext();
   const { getSetting, updateSetting } = useAppSettings();
   const [alerts, setAlerts] = useState<SmartAlert[]>([]);
   const [loading, setLoading] = useState(true);
