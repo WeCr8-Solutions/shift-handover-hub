@@ -10,24 +10,24 @@ import { BookOpen, Code, BookA, ArrowRight, GitCompare } from "lucide-react";
 const sections = [
   {
     title: "Manufacturing Guides",
-    description: "Best practices for shift handoffs, work order management, CNC setup, quality workflows, and production visibility.",
+    description: "12 in-depth guides covering shift handoffs, work order management, CNC setup, quality workflows, scheduling, downtime tracking, setup reduction, and production visibility.",
     icon: BookOpen,
     href: "/resources/guides",
-    count: "6 guides",
+    count: "12 guides",
   },
   {
-    title: "G-Code Reference",
-    description: "Complete G-code and M-code command reference for CNC milling and turning. Covers Fanuc, Haas, Mazak, and ISO 6983.",
+    title: "G-Code & M-Code Reference",
+    description: "Complete reference with ~100 G-codes and ~80 M-codes for CNC milling and turning. Covers motion, canned cycles, compensation, coordinate systems, coolant, spindle, automation, and turning-specific codes. Searchable with category tabs.",
     icon: Code,
     href: "/resources/gcode",
-    count: "27 commands",
+    count: "180+ codes",
   },
   {
     title: "Industry Glossary",
-    description: "Manufacturing terminology, CNC definitions, quality management concepts, and production planning terms explained.",
+    description: "90+ manufacturing terms defined in detail — CNC machining, quality management (ISO 9001, AS9100), lean manufacturing, GD&T, tooling, materials, and production planning. Written for machinists and engineers.",
     icon: BookA,
     href: "/resources/glossary",
-    count: "26 terms",
+    count: "90+ terms",
   },
   {
     title: "Tool Comparisons",
@@ -42,8 +42,8 @@ export default function ResourcesIndex() {
   return (
     <>
       <SEOHead
-        title="Manufacturing Resources, G-Code Reference & Guides | JobLine.ai"
-        description="Free manufacturing resources: shift handoff guides, G-code reference, CNC glossary, and tool comparisons for machine shops and production teams."
+        title="Manufacturing Resources — G-Code Reference, Glossary & Guides | JobLine.ai"
+        description="Free manufacturing resources: 12 expert guides, 180+ G-code and M-code references, 90+ industry glossary terms, and tool comparisons for machine shops and production teams."
       />
       <div className="min-h-screen bg-background">
         <MarketingNav />
@@ -54,8 +54,8 @@ export default function ResourcesIndex() {
               Manufacturing Resources
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Free guides, references, and tools for manufacturing teams.
-              From G-code commands to shift handoff best practices.
+              Free guides, references, and tools for manufacturing teams —
+              from G-code commands and industry terminology to shift handoff best practices and lean manufacturing.
             </p>
           </div>
 
@@ -75,7 +75,7 @@ export default function ResourcesIndex() {
                         <Badge variant="outline" className="text-xs">{section.count}</Badge>
                       </div>
                       <CardTitle className="text-xl">{section.title}</CardTitle>
-                      <CardDescription>{section.description}</CardDescription>
+                      <CardDescription className="leading-relaxed">{section.description}</CardDescription>
                     </CardHeader>
                     <CardContent>
                       <span className="text-primary font-medium text-sm flex items-center gap-1">
