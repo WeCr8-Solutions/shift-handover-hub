@@ -104,16 +104,17 @@ export function ProductionAnalytics({
 
   // Station output data (parts per station) — includes team & work center context
   const stationOutputData = useMemo(() => {
-    const map = new Map<string, { name: string; teamName: string; workCenter: string; parts: number; scrap: number; rework: number }>();
+    const map = new Map<string, { name: string; teamName: string; workCenter: string; status: StatusLabel; parts: number; scrap: number; rework: number }>();
 
-    // From current station status
+    // From current station status — include ALL active stations
     stations.forEach((s) => {
       if (!s.is_active) return;
       const key = s.id; // Use unique DB id
       const teamName = s.team?.name || "Unassigned";
       const workCenter = s.work_center || "—";
       const label = `${s.name}`;
-      const existing = map.get(key) || { name: label, teamName, workCenter, parts: 0, scrap: 0, rework: 0 };
+      const status = getStatusFromJobState(s.current_status?.current_job_state);
+      const existing = map.get(key) || { name: label, teamName, workCenter, status, parts: 0, scrap: 0, rework: 0 };
       existing.parts += s.current_status?.parts_complete ?? 0;
       map.set(key, existing);
     });
@@ -125,8 +126,9 @@ export function ProductionAnalytics({
       const matchStation = stations.find((s) => s.station_id === stationName || s.name === stationName);
       const teamName = matchStation?.team?.name || "—";
       const workCenter = matchStation?.work_center || "—";
+      const status = matchStation ? getStatusFromJobState(matchStation.current_status?.current_job_state) : ("idle" as StatusLabel);
       const key = matchStation?.id || `handoff-${stationName}`;
-      const existing = map.get(key) || { name: stationName, teamName, workCenter, parts: 0, scrap: 0, rework: 0 };
+      const existing = map.get(key) || { name: stationName, teamName, workCenter, status, parts: 0, scrap: 0, rework: 0 };
       existing.parts += h.parts_completed_this_shift ?? 0;
       existing.scrap += h.scrap_count ?? 0;
       existing.rework += h.rework_count ?? 0;
@@ -134,9 +136,8 @@ export function ProductionAnalytics({
     });
 
     return Array.from(map.values())
-      .filter((d) => d.parts > 0 || d.scrap > 0)
       .sort((a, b) => b.parts - a.parts)
-      .slice(0, 10);
+      .slice(0, 15);
   }, [stations, filteredHandoffs]);
 
   // Work center aggregation for grouped analytics
