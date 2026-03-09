@@ -395,7 +395,7 @@ export function SupervisorDashboard({
                   return (
                     <div
                       key={h.id}
-                      className="p-2.5 rounded-md bg-secondary/20 border border-border/50 cursor-pointer hover:border-primary/40 transition-colors"
+                      className="p-2.5 rounded-md bg-secondary/20 border border-border/50 cursor-pointer hover:border-primary/40 hover:bg-secondary/40 transition-colors group"
                       onClick={() => onViewHandoff?.(h.id)}
                     >
                       <div className="flex items-center justify-between mb-1">
@@ -407,9 +407,24 @@ export function SupervisorDashboard({
                         <ArrowRight className="w-3 h-3 text-primary" />
                         <span className="font-medium text-xs">{h.to}</span>
                       </div>
-                      <Badge variant="outline" className={cn("mt-1 text-[9px] px-1.5 py-0", statusConfig.borderClass, statusConfig.textClass)}>
-                        {h.state}
-                      </Badge>
+                      <div className="flex items-center justify-between mt-1.5 gap-2">
+                        <Badge variant="outline" className={cn("text-[9px] px-1.5 py-0", statusConfig.borderClass, statusConfig.textClass)}>
+                          {h.state}
+                        </Badge>
+                        {h.workOrder && (
+                          <button
+                            className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-primary transition-colors opacity-0 group-hover:opacity-100"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onViewWorkOrder?.(h.workOrder);
+                            }}
+                            title={`View WO ${h.workOrder}`}
+                          >
+                            <Package className="w-3 h-3" />
+                            <span className="font-mono">{h.workOrder}</span>
+                          </button>
+                        )}
+                      </div>
                     </div>
                   );
                 })
