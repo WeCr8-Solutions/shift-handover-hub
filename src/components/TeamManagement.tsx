@@ -415,6 +415,64 @@ export function TeamManagement() {
         deleteLabel="Delete Team"
         onConfirm={handleConfirmDelete}
       />
+      {/* Display Setup Dialog */}
+      <Dialog open={!!displaySetupTeam} onOpenChange={(open) => !open && setDisplaySetupTeam(null)}>
+        <DialogContent className="max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Monitor className="w-5 h-5 text-primary" />
+              Setup Shop Floor Display
+            </DialogTitle>
+            <DialogDescription>
+              Create a display for <span className="font-semibold">{displaySetupTeam?.name}</span> to show on wall-mounted monitors or tablets.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="display-name">Display Name</Label>
+              <Input
+                id="display-name"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="e.g. CNC Floor Monitor"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Display Mode</Label>
+              <Select value={displayMode} onValueChange={(v) => setDisplayMode(v as "supervisor" | "operator")}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="supervisor">
+                    <div className="flex flex-col">
+                      <span>Supervisor</span>
+                      <span className="text-xs text-muted-foreground">KPIs, station grid, WO queue</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="operator">
+                    <div className="flex flex-col">
+                      <span>Operator</span>
+                      <span className="text-xs text-muted-foreground">Large station cards, progress bars</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="bg-secondary/30 rounded-lg p-3 text-xs text-muted-foreground space-y-1">
+              <p>• Display will show stations and work orders for <span className="font-medium text-foreground">{displaySetupTeam?.name}</span> only</p>
+              <p>• Token-based access — no login required on the display device</p>
+              <p>• Manage tokens and settings from Admin → Displays</p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDisplaySetupTeam(null)}>Cancel</Button>
+            <Button onClick={handleSetupDisplay} disabled={isCreatingDisplay || !displayName.trim()}>
+              {isCreatingDisplay ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Creating...</> : "Create Display"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -424,10 +482,13 @@ interface TeamCardProps {
   stationCount: number;
   isSelected: boolean;
   canManage: boolean;
+  canSetupDisplay: boolean;
+  hasDisplay: boolean;
   onSelect: () => void;
   onEdit: () => void;
   onDelete: () => void;
   onAddStations: () => void;
+  onSetupDisplay: () => void;
 }
 
 function TeamCard({ team, stationCount, isSelected, canManage, onSelect, onEdit, onDelete, onAddStations }: TeamCardProps) {
