@@ -52,6 +52,9 @@ import GCodeReference from "./pages/resources/GCodeReference";
 import IndustryGlossary from "./pages/resources/IndustryGlossary";
 import BeginnersGuide from "./pages/resources/BeginnersGuide";
 import ManufacturingCareers from "./pages/resources/ManufacturingCareers";
+import SafetyCompliance from "./pages/resources/SafetyCompliance";
+import QualityInspection from "./pages/resources/QualityInspection";
+import LeanManufacturing from "./pages/resources/LeanManufacturing";
 import ResetPassword from "./pages/ResetPassword";
 import Blog from "./pages/Blog";
 import Help from "./pages/Help";
@@ -131,6 +134,9 @@ const App = () => (
                     <Route path="/resources/glossary" element={<IndustryGlossary />} />
                     <Route path="/resources/beginners" element={<BeginnersGuide />} />
                     <Route path="/resources/careers" element={<ManufacturingCareers />} />
+                    <Route path="/resources/safety" element={<SafetyCompliance />} />
+                    <Route path="/resources/quality" element={<QualityInspection />} />
+                    <Route path="/resources/lean" element={<LeanManufacturing />} />
                     <Route path="/blog" element={<Blog />} />
                     <Route path="/help" element={<Help />} />
                     <Route path="/help/:category/:slug" element={<HelpArticle />} />

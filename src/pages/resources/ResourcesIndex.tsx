@@ -5,7 +5,7 @@ import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
-import { BookOpen, Code, BookA, ArrowRight, GitCompare, GraduationCap, Briefcase } from "lucide-react";
+import { BookOpen, Code, BookA, ArrowRight, GitCompare, GraduationCap, Briefcase, ShieldAlert, ClipboardCheck, TrendingUp } from "lucide-react";
 
 const sections = [
   {
@@ -42,6 +42,27 @@ const sections = [
     icon: Briefcase,
     href: "/resources/careers",
     count: "8 careers",
+  },
+  {
+    title: "Safety & Compliance",
+    description: "Interactive guide to OSHA regulations, lockout/tagout, PPE requirements, chemical safety (SDS/HazCom), machine guarding, electrical safety, confined space entry, and emergency procedures.",
+    icon: ShieldAlert,
+    href: "/resources/safety",
+    count: "13 topics",
+  },
+  {
+    title: "Quality & Inspection",
+    description: "Deep dive into precision measurement, GD&T, CMM operations, SPC control charts, first article inspection (AS9102), Gage R&R, calibration, surface finish, and process capability analysis.",
+    icon: ClipboardCheck,
+    href: "/resources/quality",
+    count: "12 topics",
+  },
+  {
+    title: "Lean Manufacturing Toolkit",
+    description: "Master lean principles, 5S, value stream mapping, kanban, kaizen, SMED quick changeover, TPM, OEE, Six Sigma DMAIC, poka-yoke mistake-proofing, and gemba walks.",
+    icon: TrendingUp,
+    href: "/resources/lean",
+    count: "13 topics",
   },
   {
     title: "Tool Comparisons",
