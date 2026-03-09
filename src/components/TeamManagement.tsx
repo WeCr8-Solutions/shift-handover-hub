@@ -491,7 +491,7 @@ interface TeamCardProps {
   onSetupDisplay: () => void;
 }
 
-function TeamCard({ team, stationCount, isSelected, canManage, onSelect, onEdit, onDelete, onAddStations }: TeamCardProps) {
+function TeamCard({ team, stationCount, isSelected, canManage, canSetupDisplay, hasDisplay, onSelect, onEdit, onDelete, onAddStations, onSetupDisplay }: TeamCardProps) {
   return (
     <Card
       className={`cursor-pointer transition-colors hover:border-primary/50 ${isSelected ? "border-primary" : ""}`}
@@ -515,6 +515,12 @@ function TeamCard({ team, stationCount, isSelected, canManage, onSelect, onEdit,
                   <Wrench className="w-3 h-3" />
                   {stationCount}
                 </Badge>
+                {hasDisplay && (
+                  <Badge variant="outline" className="text-xs gap-1 text-primary border-primary/30">
+                    <Monitor className="w-3 h-3" />
+                    Display
+                  </Badge>
+                )}
               </div>
             </div>
           </div>
@@ -548,20 +554,37 @@ function TeamCard({ team, stationCount, isSelected, canManage, onSelect, onEdit,
           )}
         </div>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-2">
         <CardDescription className="line-clamp-2">{team.description || "No description"}</CardDescription>
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full gap-2"
-          onClick={(e) => {
-            e.stopPropagation();
-            onAddStations();
-          }}
-        >
-          <Wrench className="w-4 h-4" />
-          {stationCount > 0 ? "Manage Stations" : "Add Stations"}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1 gap-2"
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddStations();
+            }}
+          >
+            <Wrench className="w-4 h-4" />
+            {stationCount > 0 ? "Stations" : "Add Stations"}
+          </Button>
+          {canSetupDisplay && !hasDisplay && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={(e) => {
+                e.stopPropagation();
+                onSetupDisplay();
+              }}
+              title="Setup shop floor display for this team"
+            >
+              <Monitor className="w-4 h-4" />
+              Display
+            </Button>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
