@@ -123,6 +123,16 @@ export default function Queue() {
     fetchItems,
   } = useQueue(filters);
 
+  // Auto-open work order detail when navigated with ?wo= param (from handoff modal)
+  useEffect(() => {
+    if (urlWorkOrder && items.length > 0 && !selectedItemId) {
+      const match = items.find((i) => i.work_order === urlWorkOrder);
+      if (match) {
+        setSelectedItemId(match.id);
+      }
+    }
+  }, [urlWorkOrder, items, selectedItemId]);
+
   const { ncrs = [], approveNCR, rejectNCR } = useNCR();
   const pendingNCRs = ncrs.filter((n) => n.authorization_status === "pending");
 
