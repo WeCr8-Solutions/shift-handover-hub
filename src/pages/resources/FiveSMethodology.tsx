@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { ScrollAwareAccordion } from "@/components/ScrollAwareAccordion";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Search,
@@ -221,7 +222,7 @@ export default function FiveSMethodology() {
           {filtered.length === 0 ? (
             <p className="text-center text-muted-foreground py-12">No topics match your search.</p>
           ) : (
-            <Accordion type="multiple" className="space-y-3">
+            <ScrollAwareAccordion className="space-y-3">
               {filtered.map((section) => {
                 const Icon = section.icon;
                 const isDone = completed.has(section.id);
@@ -251,7 +252,7 @@ export default function FiveSMethodology() {
                   </AccordionItem>
                 );
               })}
-            </Accordion>
+            </ScrollAwareAccordion>
           )}
 
           <AdPlacement format="rectangle" className="mt-12" />
