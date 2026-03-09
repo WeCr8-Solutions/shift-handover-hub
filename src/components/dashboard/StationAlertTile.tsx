@@ -519,10 +519,10 @@ export function StationAlertTile({ station, onViewStation, onQuickAction }: Stat
 
                 {/* Queue Count */}
                 {alertData.queueCount > 0 && !alertData.activeItem && (
-                  <div className="p-2.5 rounded-lg border border-purple-500/30 bg-purple-500/10">
+                  <div className="p-2.5 rounded-lg border border-accent/30 bg-accent/10">
                     <div className="flex items-center gap-2">
-                      <ListTodo className="w-4 h-4 text-purple-600" />
-                      <span className="text-xs font-semibold text-purple-700">
+                      <ListTodo className="w-4 h-4 text-accent" />
+                      <span className="text-xs font-semibold text-accent-foreground">
                         {alertData.queueCount} {alertData.queueCount === 1 ? "Order" : "Orders"} Queued
                       </span>
                     </div>
@@ -531,10 +531,10 @@ export function StationAlertTile({ station, onViewStation, onQuickAction }: Stat
 
                 {/* Machine Down */}
                 {station.status === "down" && (
-                  <div className="p-2.5 rounded-lg bg-red-500/10 border border-red-500/30">
+                  <div className="p-2.5 rounded-lg bg-[hsl(var(--state-down)/0.1)] border border-[hsl(var(--state-down)/0.3)]">
                     <div className="flex items-center gap-2">
-                      <AlertTriangle className="w-4 h-4 text-red-500" />
-                      <span className="text-xs font-medium text-red-600">Machine Down — Requires Attention</span>
+                      <AlertTriangle className="w-4 h-4 text-[hsl(var(--state-down))]" />
+                      <span className="text-xs font-medium text-[hsl(var(--state-down))]">Machine Down — Requires Attention</span>
                     </div>
                   </div>
                 )}
