@@ -207,7 +207,7 @@ Deno.serve(async (req) => {
         type: "community",
         content: "Hey! If anyone here works in manufacturing/machine shops, there's this tool called JobLine.ai that handles shift handoffs digitally. Free tier available. Built for small shops that can't afford expensive MES systems.",
         hashtags: [],
-        cta: "https://joblineai.lovable.app",
+        cta: "https://jobline.ai",
       },
     ];
 
