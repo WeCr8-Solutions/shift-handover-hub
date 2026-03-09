@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { Database, Json } from "@/integrations/supabase/types";
 
 type ActivityType = Database["public"]["Enums"]["activity_type"];
