@@ -29,7 +29,7 @@ serve(async (req) => {
     const { price_id, amount_cents } = await req.json();
     logStep("Request body parsed", { price_id, amount_cents });
 
-    const origin = req.headers.get("origin") || "https://joblineai.lovable.app";
+    const origin = req.headers.get("origin") || "https://jobline.ai";
     
     let lineItems: Stripe.Checkout.SessionCreateParams.LineItem[];
 

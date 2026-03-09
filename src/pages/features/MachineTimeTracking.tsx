@@ -30,7 +30,7 @@ const jsonLd = {
   applicationCategory: "BusinessApplication",
   operatingSystem: "Web Browser",
   description: "Track CNC machine time, utilization, and downtime with software-only manufacturing tracking. No IoT hardware required.",
-  url: "https://joblineai.lovable.app/machine-time-tracking",
+  url: "https://jobline.ai/machine-time-tracking",
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD", description: "Free trial available" },
 };
 

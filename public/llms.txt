@@ -86,7 +86,7 @@ JobLine.ai provides free educational resources for manufacturing professionals:
 - **Help Center** — Product documentation and support
 - **Tools** — Free manufacturing calculators
 
-Visit https://joblineai.lovable.app/resources to explore.
+Visit https://jobline.ai/resources to explore.
 
 ## Who Uses JobLine.ai?
 
@@ -125,12 +125,12 @@ JobLine.ai eliminates this with **structured digital handoffs** that ensure noth
 
 | Resource | URL |
 |----------|-----|
-| Website | https://joblineai.lovable.app |
-| Pricing | https://joblineai.lovable.app/pricing |
-| Book a Demo | https://joblineai.lovable.app/demo |
-| Resources | https://joblineai.lovable.app/resources |
-| Blog | https://joblineai.lovable.app/blog |
-| Help Center | https://joblineai.lovable.app/help |
+| Website | https://jobline.ai |
+| Pricing | https://jobline.ai/pricing |
+| Book a Demo | https://jobline.ai/demo |
+| Resources | https://jobline.ai/resources |
+| Blog | https://jobline.ai/blog |
+| Help Center | https://jobline.ai/help |
 | Parent Company | https://www.wecr8.info |
 
 ---
@@ -139,7 +139,7 @@ JobLine.ai eliminates this with **structured digital handoffs** that ensure noth
 
 JobLine.ai relies on community support to keep core features free for manufacturing teams.
 
-- Visit: https://joblineai.lovable.app
+- Visit: https://jobline.ai
 - Scroll to footer → click "Support JobLine" (heart icon)
 - Choose: $5, $10, $25, or custom amount
 
@@ -160,7 +160,7 @@ JobLine.ai relies on community support to keep core features free for manufactur
   "company_size_target": "Small to mid-sized (5-500 employees)",
   "pricing_model": "Freemium with paid tiers",
   "free_tier": true,
-  "website": "https://joblineai.lovable.app",
+  "website": "https://jobline.ai",
   "donation_enabled": true,
   "donation_location": "Website footer, 'Support JobLine' button",
   "currency": "USD",

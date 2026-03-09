@@ -35,7 +35,7 @@ const jsonLd = [
     "applicationCategory": "BusinessApplication",
     "operatingSystem": "Web Browser",
     "description": "Manufacturing oversight software providing real-time visibility across shifts, teams, and stations. Role-based dashboards for owners, managers, supervisors, and quality teams.",
-    "url": "https://joblineai.lovable.app/features/manufacturing-oversight",
+    "url": "https://jobline.ai/features/manufacturing-oversight",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
   },
   {

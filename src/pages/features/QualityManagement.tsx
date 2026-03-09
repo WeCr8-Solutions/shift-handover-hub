@@ -27,7 +27,7 @@ const jsonLd = {
   "applicationCategory": "BusinessApplication",
   "operatingSystem": "Web Browser",
   "description": "Manufacturing quality management software. Track inspections, manage quality holds, reduce scrap, and maintain audit-ready records for ISO and AS9100 compliance.",
-  "url": "https://joblineai.lovable.app/features/quality-management",
+  "url": "https://jobline.ai/features/quality-management",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
 };
 

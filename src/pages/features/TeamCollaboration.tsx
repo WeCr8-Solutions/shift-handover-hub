@@ -27,7 +27,7 @@ const jsonLd = {
   "applicationCategory": "BusinessApplication",
   "operatingSystem": "Web Browser",
   "description": "Manufacturing team collaboration software. Role-based access, QR code invites, cross-shift communication, and multi-team coordination for production environments.",
-  "url": "https://joblineai.lovable.app/features/team-collaboration",
+  "url": "https://jobline.ai/features/team-collaboration",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
 };
 

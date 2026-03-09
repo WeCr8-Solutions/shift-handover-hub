@@ -30,7 +30,7 @@ const jsonLd = {
   applicationCategory: "BusinessApplication",
   operatingSystem: "Web Browser",
   description: "Digital shift handoff system for manufacturing. Eliminate lost information between shifts with structured forms and real-time status updates.",
-  url: "https://joblineai.lovable.app/shift-handoff",
+  url: "https://jobline.ai/shift-handoff",
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD", description: "Free trial available" },
 };
 
