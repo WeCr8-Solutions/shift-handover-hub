@@ -624,7 +624,7 @@ export function StationManagement({ isAdmin, access }: StationManagementProps) {
                                 <TableHead>Work Center</TableHead>
                                 <TableHead>Type</TableHead>
                                 <TableHead>Status</TableHead>
-                                {isAdmin && <TableHead className="w-12"></TableHead>}
+                                {isPlatformAdmin && <TableHead className="w-12"></TableHead>}
                               </TableRow>
                             </TableHeader>
                             <TableBody>
