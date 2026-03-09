@@ -33,10 +33,16 @@ export function useWorkCenterConfigs() {
     setLoading(true);
 
     try {
-      const { data } = await supabase
+      let query = supabase
         .from("work_center_config")
         .select("*")
         .order("sort_order");
+
+      if (organization?.id) {
+        query = query.eq("organization_id", organization.id);
+      }
+
+      const { data } = await query;
 
       if (data) {
         setWorkCenterConfigs(data as WorkCenterConfig[]);
