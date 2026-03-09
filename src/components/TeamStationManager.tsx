@@ -374,9 +374,9 @@ export function TeamStationManager({
   onReassignRollback,
   onReassignCommitted,
 }: TeamStationManagerProps) {
-  const { stations, loading, createStation, refreshStations } = useStations(teamId, organization?.id);
   const { teams } = useTeams();
   const { organization } = useOrgContext();
+  const { stations, loading, createStation, refreshStations } = useStations(teamId, organization?.id);
   const { toast } = useToast();
 
   const [showAddForm, setShowAddForm] = useState(false);
