@@ -179,6 +179,8 @@ export function SupervisorDashboard({
       to: r.incoming_operator_name,
       time: new Date(r.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       state: r.primary_state,
+      workOrder: r.work_order,
+      partNumber: r.part_number,
     }));
   }, [dbRecords]);
 
