@@ -158,7 +158,7 @@ Deno.serve(async (req) => {
         type: "problem_solution",
         content: "Lost information during shift changes costs US manufacturing $50B+ annually. Digital handoffs solve this. JobLine.ai makes it accessible to every shop.",
         hashtags: ["Manufacturing", "Productivity", "MES", "ShopFloor"],
-        cta: "Try free: joblineai.lovable.app",
+        cta: "Try free: jobline.ai",
       },
       {
         platform: "twitter",
