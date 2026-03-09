@@ -410,7 +410,8 @@ export function useAllUsers(options?: { organizationId?: string | null }) {
   return { users, organizations, loading, lastUpdated, fetchUsers, updateUserRole };
 }
 
-export function useAllTeams() {
+export function useAllTeams(options?: { organizationId?: string | null }) {
+  const orgId = options?.organizationId ?? null;
   const [teams, setTeams] = useState<TeamWithStats[]>([]);
   const [loading, setLoading] = useState(true);
   const { logActivity } = useActivityLog();
@@ -418,10 +419,11 @@ export function useAllTeams() {
   const fetchTeams = useCallback(async () => {
     setLoading(true);
 
-    const { data: teamsData, error: teamsError } = await supabase
-      .from("teams")
-      .select("*")
-      .order("created_at", { ascending: false });
+    const teamsQuery = orgId
+      ? supabase.from("teams").select("*").eq("organization_id", orgId).order("created_at", { ascending: false })
+      : supabase.from("teams").select("*").order("created_at", { ascending: false });
+
+    const { data: teamsData, error: teamsError } = await teamsQuery;
 
     if (teamsError) {
       console.error("Error fetching teams:", teamsError);
@@ -451,7 +453,7 @@ export function useAllTeams() {
 
     setTeams(teamsWithStats);
     setLoading(false);
-  }, []);
+  }, [orgId]);
 
   useEffect(() => {
     fetchTeams();
