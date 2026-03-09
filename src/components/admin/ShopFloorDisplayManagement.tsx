@@ -104,6 +104,11 @@ export function ShopFloorDisplayManagement() {
       dark_mode: formDarkMode,
       auto_rotate_enabled: formAutoRotate,
       token_expiry_days: formExpiry,
+      connection_type: formConnectionType,
+      ip_address: formConnectionType === "ip" ? formIpAddress : undefined,
+      bluetooth_enabled: formConnectionType === "bluetooth" ? formBluetoothEnabled : false,
+      bluetooth_device_name: formConnectionType === "bluetooth" ? formBluetoothDeviceName : undefined,
+      cast_protocol: formCastProtocol || undefined,
     });
     if (result.error) {
       toast.error(result.error);
