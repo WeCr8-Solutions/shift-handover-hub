@@ -370,6 +370,16 @@ export function TeamManagement() {
                     setEditingDisplay(display);
                     setEditDisplayName(display.display_name);
                     setEditDisplayMode(display.display_mode);
+                    setEditDisplayConnectionType(display.connection_type || "url");
+                    setEditDisplayIpAddress(display.ip_address || "");
+                    setEditDisplayBluetoothEnabled(display.bluetooth_enabled || false);
+                    setEditDisplayBluetoothDeviceName(display.bluetooth_device_name || "");
+                    setEditDisplayCastProtocol(display.cast_protocol || "");
+                    setEditDisplayRefreshInterval(display.refresh_interval_seconds || 30);
+                    setEditDisplayAutoRotate(display.auto_rotate_enabled || false);
+                    setEditDisplayAutoRotateInterval(display.auto_rotate_interval_seconds || 30);
+                    setEditDisplayDarkMode(display.dark_mode || "auto");
+                    setEditDisplayAlertSound(display.alert_sound_enabled || false);
                   }
                 }}
                 onDeleteDisplay={() => {
