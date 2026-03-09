@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { StationCard } from "@/components/StationCard";
 import { HandoffCard } from "@/components/HandoffCard";
+import { HandoffDetailModal } from "@/components/HandoffDetailModal";
 import { ShiftStats } from "@/components/ShiftStats";
 import { NewHandoffForm } from "@/components/NewHandoffForm";
 import { JobPerformanceUpdateForm } from "@/components/JobPerformanceUpdateForm";
@@ -178,6 +179,7 @@ const Index = () => {
   const [selectedTypes, setSelectedTypes] = useState<WorkCenterType[]>([]);
   const [selectedStationForAction, setSelectedStationForAction] = useState<string | undefined>();
   const [viewMode, setViewMode] = useState<"supervisor" | "operator" | "station-detail">("supervisor");
+  const [selectedHandoff, setSelectedHandoff] = useState<ShiftHandoffRecord | null>(null);
   const [focusedStation, setFocusedStation] = useState<{
     id: string;
     name: string;
@@ -310,6 +312,10 @@ const Index = () => {
                   onViewStation={(id, name) => {
                     setFocusedStation({ id, name });
                     setViewMode("station-detail");
+                  }}
+                  onViewHandoff={(handoffId) => {
+                    const found = handoffRecords.find((h) => h.recordId === handoffId);
+                    if (found) setSelectedHandoff(found);
                   }}
                 />
               )
@@ -506,7 +512,7 @@ const Index = () => {
                     </div>
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                       {filteredHandoffs.map((record) => (
-                        <HandoffCard key={record.recordId} record={record} />
+                        <HandoffCard key={record.recordId} record={record} onClick={() => setSelectedHandoff(record)} />
                       ))}
                     </div>
                     {filteredHandoffs.length === 0 && (
@@ -568,6 +574,13 @@ const Index = () => {
         open={showCreateWorkOrder}
         onOpenChange={setShowCreateWorkOrder}
         preSelectedStationId={selectedStationForAction}
+      />
+
+      {/* Handoff Detail Modal */}
+      <HandoffDetailModal
+        open={!!selectedHandoff}
+        onOpenChange={(open) => !open && setSelectedHandoff(null)}
+        record={selectedHandoff}
       />
 
       {/* AI Planning Assistant - supervisors/admins only */}

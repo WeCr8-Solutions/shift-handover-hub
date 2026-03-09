@@ -36,6 +36,7 @@ interface SupervisorDashboardProps {
   onCreateWorkOrder: () => void;
   onSwitchToOperatorView?: () => void;
   onViewStation?: (stationId: string, stationName: string) => void;
+  onViewHandoff?: (handoffId: string) => void;
 }
 
 export function SupervisorDashboard({
@@ -44,6 +45,7 @@ export function SupervisorDashboard({
   onCreateWorkOrder,
   onSwitchToOperatorView,
   onViewStation,
+  onViewHandoff,
 }: SupervisorDashboardProps) {
   const navigate = useNavigate();
   const { currentTeam, setCurrentTeam, teams } = useCurrentTeam();
@@ -387,7 +389,11 @@ export function SupervisorDashboard({
                   const handoffStatus = getStatusFromJobState(h.state);
                   const statusConfig = STATUS_CONFIG[handoffStatus];
                   return (
-                    <div key={h.id} className="p-2.5 rounded-md bg-secondary/20 border border-border/50">
+                    <div
+                      key={h.id}
+                      className="p-2.5 rounded-md bg-secondary/20 border border-border/50 cursor-pointer hover:border-primary/40 transition-colors"
+                      onClick={() => onViewHandoff?.(h.id)}
+                    >
                       <div className="flex items-center justify-between mb-1">
                         <span className="font-mono text-xs font-medium">{h.station}</span>
                         <span className="text-[10px] text-muted-foreground">{h.time}</span>
