@@ -407,7 +407,7 @@ export function StationAlertTile({ station, onViewStation, onQuickAction }: Stat
                           <div className="flex items-center justify-between mb-0.5">
                             <span className={cn(
                               "text-[10px] flex items-center gap-1",
-                              timeInfo.isOverdue ? "text-red-500 font-medium" : "text-muted-foreground",
+                              timeInfo.isOverdue ? "text-destructive font-medium" : "text-muted-foreground",
                             )}>
                               {timeInfo.isOverdue && <AlertCircle className="w-2.5 h-2.5" />}
                               {timeInfo.remaining}
@@ -416,7 +416,7 @@ export function StationAlertTile({ station, onViewStation, onQuickAction }: Stat
                           {timeInfo.progress !== null && (
                             <Progress
                               value={timeInfo.progress}
-                              className={cn("h-1", timeInfo.isOverdue && "[&>div]:bg-red-500")}
+                              className={cn("h-1", timeInfo.isOverdue && "[&>div]:bg-destructive")}
                             />
                           )}
                         </div>
