@@ -134,6 +134,9 @@ const App = () => (
                     <Route path="/resources/glossary" element={<IndustryGlossary />} />
                     <Route path="/resources/beginners" element={<BeginnersGuide />} />
                     <Route path="/resources/careers" element={<ManufacturingCareers />} />
+                    <Route path="/resources/safety" element={<SafetyCompliance />} />
+                    <Route path="/resources/quality" element={<QualityInspection />} />
+                    <Route path="/resources/lean" element={<LeanManufacturing />} />
                     <Route path="/blog" element={<Blog />} />
                     <Route path="/help" element={<Help />} />
                     <Route path="/help/:category/:slug" element={<HelpArticle />} />
