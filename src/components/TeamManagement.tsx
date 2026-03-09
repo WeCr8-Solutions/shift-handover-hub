@@ -23,7 +23,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Users, Plus, UserPlus, Trash2, Crown, Shield, User, Loader2, Wrench, QrCode, Pencil, Monitor, Copy, ExternalLink, Globe, Wifi, Bluetooth } from "lucide-react";
+import { Users, Plus, UserPlus, Trash2, Crown, Shield, User, Loader2, Wrench, QrCode, Pencil, Monitor, Copy, ExternalLink, Globe, Wifi, Bluetooth, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { TeamStationManager } from "./TeamStationManager";
 import { InviteCodeGenerator } from "./InviteCodeGenerator";
@@ -35,7 +35,7 @@ export function TeamManagement() {
   const { isOrgAdmin, isAdmin, hasOrgSupervisorAccess } = useAdminAccess();
   const { teams, loading, createTeam, updateTeam, deleteTeam } = useTeams();
   const { stations: allStations, refreshStations } = useStations(undefined, organization?.id);
-  const { displays, createDisplay } = useShopFloorDisplays();
+  const { displays, createDisplay, updateDisplay, deleteDisplay } = useShopFloorDisplays();
   const { toast } = useToast();
   const [optimisticStations, setOptimisticStations] = useState<Station[]>([]);
   const [isUsingOptimisticStations, setIsUsingOptimisticStations] = useState(false);
@@ -111,11 +111,17 @@ export function TeamManagement() {
   const [displayBluetoothDeviceName, setDisplayBluetoothDeviceName] = useState("");
   const [displayCastProtocol, setDisplayCastProtocol] = useState("");
 
-  // Check if team already has a display configured
+  // Display edit/delete state
+  const [editingDisplay, setEditingDisplay] = useState<import("@/hooks/useShopFloorDisplays").ShopFloorDisplay | null>(null);
+  const [editDisplayName, setEditDisplayName] = useState("");
+  const [editDisplayMode, setEditDisplayMode] = useState<"supervisor" | "operator">("supervisor");
+  const [isSavingDisplay, setIsSavingDisplay] = useState(false);
+  const [deletingDisplay, setDeletingDisplay] = useState<import("@/hooks/useShopFloorDisplays").ShopFloorDisplay | null>(null);
+  // Map team ID → display object for quick lookup
   const teamDisplayMap = useMemo(() => {
-    const map: Record<string, boolean> = {};
+    const map: Record<string, import("@/hooks/useShopFloorDisplays").ShopFloorDisplay> = {};
     displays.forEach(d => {
-      (d.team_ids || []).forEach(tid => { map[tid] = true; });
+      (d.team_ids || []).forEach(tid => { map[tid] = d; });
     });
     return map;
   }, [displays]);
@@ -348,18 +354,41 @@ export function TeamManagement() {
                   setDisplayName(`${team.name} Display`);
                   setDisplayMode("supervisor");
                 }}
+                onEditDisplay={() => {
+                  const display = teamDisplayMap[team.id];
+                  if (display) {
+                    setEditingDisplay(display);
+                    setEditDisplayName(display.display_name);
+                    setEditDisplayMode(display.display_mode);
+                  }
+                }}
+                onDeleteDisplay={() => {
+                  const display = teamDisplayMap[team.id];
+                  if (display) setDeletingDisplay(display);
+                }}
               />
           ))}
         </div>
       )}
 
-      {/* Team Members Panel */}
+      {/* Team Members Panel with Back Button */}
       {selectedTeam && (
-        <TeamMembersPanel
-          team={selectedTeam}
-          showInviteDialog={showInviteDialog}
-          setShowInviteDialog={setShowInviteDialog}
-        />
+        <div className="space-y-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-2 text-muted-foreground hover:text-foreground"
+            onClick={() => setSelectedTeam(null)}
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Teams
+          </Button>
+          <TeamMembersPanel
+            team={selectedTeam}
+            showInviteDialog={showInviteDialog}
+            setShowInviteDialog={setShowInviteDialog}
+          />
+        </div>
       )}
 
       {/* Station Manager Dialog */}
@@ -562,6 +591,87 @@ export function TeamManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Display Dialog */}
+      <Dialog open={!!editingDisplay} onOpenChange={(open) => !open && setEditingDisplay(null)}>
+        <DialogContent className="max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Pencil className="w-5 h-5 text-primary" />
+              Edit Display
+            </DialogTitle>
+            <DialogDescription>Update display name and mode.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-display-name">Display Name</Label>
+              <Input
+                id="edit-display-name"
+                value={editDisplayName}
+                onChange={(e) => setEditDisplayName(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Display Mode</Label>
+              <Select value={editDisplayMode} onValueChange={(v) => setEditDisplayMode(v as "supervisor" | "operator")}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="supervisor">Supervisor</SelectItem>
+                  <SelectItem value="operator">Operator</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingDisplay(null)}>Cancel</Button>
+            <Button
+              onClick={async () => {
+                if (!editingDisplay) return;
+                setIsSavingDisplay(true);
+                const { error } = await updateDisplay(editingDisplay.id, {
+                  display_name: editDisplayName.trim(),
+                  display_mode: editDisplayMode,
+                } as any);
+                setIsSavingDisplay(false);
+                if (error) {
+                  toast({ title: "Failed to update display", description: error, variant: "destructive" });
+                } else {
+                  toast({ title: "Display updated" });
+                  setEditingDisplay(null);
+                }
+              }}
+              disabled={isSavingDisplay || !editDisplayName.trim()}
+            >
+              {isSavingDisplay ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Display Dialog */}
+      <SafeDeleteDialog
+        open={!!deletingDisplay}
+        onOpenChange={(open) => !open && setDeletingDisplay(null)}
+        confirmValue={deletingDisplay?.display_name || ""}
+        title="Delete Display"
+        description={
+          <>
+            This will permanently remove this display configuration. Type{" "}
+            <span className="font-mono font-bold text-foreground">{deletingDisplay?.display_name}</span> to confirm.
+          </>
+        }
+        deleteLabel="Delete Display"
+        onConfirm={async () => {
+          if (!deletingDisplay) return;
+          const { error } = await deleteDisplay(deletingDisplay.id);
+          if (error) {
+            toast({ title: "Failed to delete display", description: error, variant: "destructive" });
+          } else {
+            toast({ title: "Display deleted" });
+          }
+          setDeletingDisplay(null);
+        }}
+      />
     </div>
   );
 }
@@ -578,9 +688,11 @@ interface TeamCardProps {
   onDelete: () => void;
   onAddStations: () => void;
   onSetupDisplay: () => void;
+  onEditDisplay: () => void;
+  onDeleteDisplay: () => void;
 }
 
-function TeamCard({ team, stationCount, isSelected, canManage, canSetupDisplay, hasDisplay, onSelect, onEdit, onDelete, onAddStations, onSetupDisplay }: TeamCardProps) {
+function TeamCard({ team, stationCount, isSelected, canManage, canSetupDisplay, hasDisplay, onSelect, onEdit, onDelete, onAddStations, onSetupDisplay, onEditDisplay, onDeleteDisplay }: TeamCardProps) {
   return (
     <Card
       className={`cursor-pointer transition-colors hover:border-primary/50 ${isSelected ? "border-primary" : ""}`}
@@ -674,6 +786,35 @@ function TeamCard({ team, stationCount, isSelected, canManage, canSetupDisplay, 
             </Button>
           )}
         </div>
+        {/* Display management actions when display exists */}
+        {hasDisplay && canManage && (
+          <div className="flex gap-2 pt-1 border-t border-border">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex-1 gap-2 text-muted-foreground hover:text-primary"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEditDisplay();
+              }}
+            >
+              <Pencil className="w-3.5 h-3.5" />
+              Edit Display
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex-1 gap-2 text-muted-foreground hover:text-destructive"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDeleteDisplay();
+              }}
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              Delete Display
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
