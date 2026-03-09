@@ -30,6 +30,20 @@ const sections = [
     count: "90+ terms",
   },
   {
+    title: "Beginner's Guide",
+    description: "New to manufacturing? Start here — 13 sections covering shop floor basics, blueprint reading, CNC fundamentals, quality inspection, safety, lean manufacturing, tooling, materials, and essential metrics for new operators and students.",
+    icon: GraduationCap,
+    href: "/resources/beginners",
+    count: "13 sections",
+  },
+  {
+    title: "Manufacturing Careers",
+    description: "Explore career paths in CNC machining, quality inspection, manufacturing engineering, production supervision, welding, robotics, and supply chain. Includes salary ranges, required skills, certifications, and advancement paths.",
+    icon: Briefcase,
+    href: "/resources/careers",
+    count: "8 careers",
+  },
+  {
     title: "Tool Comparisons",
     description: "Side-by-side comparisons of manufacturing software, MES systems, and shop floor management tools. Coming soon.",
     icon: GitCompare,
