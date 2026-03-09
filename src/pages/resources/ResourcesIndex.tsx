@@ -5,7 +5,7 @@ import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
-import { BookOpen, Code, BookA, ArrowRight, GitCompare } from "lucide-react";
+import { BookOpen, Code, BookA, ArrowRight, GitCompare, GraduationCap, Briefcase } from "lucide-react";
 
 const sections = [
   {
