@@ -429,15 +429,15 @@ export function StationAlertTile({ station, onViewStation, onQuickAction }: Stat
                 {alertData.pendingDeliveries.length > 0 && (
                   <div className={cn(
                     "p-2.5 rounded-lg border-2",
-                    alertData.pendingDeliveries.some(d => d.priority === "critical") ? "border-red-500 bg-red-500/10" :
-                    alertData.pendingDeliveries.some(d => d.priority === "urgent") ? "border-orange-500 bg-orange-500/10" :
-                    "border-amber-500 bg-amber-500/10",
+                    alertData.pendingDeliveries.some(d => d.priority === "critical") ? "border-[hsl(var(--priority-critical))] bg-[hsl(var(--priority-critical)/0.1)]" :
+                    alertData.pendingDeliveries.some(d => d.priority === "urgent") ? "border-[hsl(var(--priority-urgent))] bg-[hsl(var(--priority-urgent)/0.1)]" :
+                    "border-[hsl(var(--priority-high))] bg-[hsl(var(--priority-high)/0.1)]",
                   )}>
                     <div className="flex items-center gap-2 mb-1.5">
                       <Truck className={cn(
                         "w-4 h-4",
                         alertData.pendingDeliveries.some(d => ["critical", "urgent"].includes(d.priority))
-                          ? "text-red-500 animate-bounce" : "text-amber-600",
+                          ? "text-[hsl(var(--priority-critical))] animate-bounce" : "text-[hsl(var(--warning))]",
                       )} />
                       <span className="text-xs font-bold uppercase tracking-wide">
                         ⚠️ {alertData.pendingDeliveries.length} Needs Delivery
