@@ -321,12 +321,19 @@ export function TeamManagement() {
                 stationCount={stationCountByTeam[team.id] || 0}
                 isSelected={selectedTeam?.id === team.id}
                 canManage={team.created_by === user?.id || isOrgAdmin || isAdmin}
+                canSetupDisplay={hasOrgSupervisorAccess}
+                hasDisplay={!!teamDisplayMap[team.id]}
                 onSelect={() => setSelectedTeam(selectedTeam?.id === team.id ? null : team)}
                 onEdit={() => handleEditTeam(team)}
                 onDelete={() => handleRequestDelete(team)}
                 onAddStations={() => {
                   setNewlyCreatedTeam(team);
                   setShowStationManager(true);
+                }}
+                onSetupDisplay={() => {
+                  setDisplaySetupTeam(team);
+                  setDisplayName(`${team.name} Display`);
+                  setDisplayMode("supervisor");
                 }}
               />
           ))}
