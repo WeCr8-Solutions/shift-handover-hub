@@ -192,7 +192,8 @@ export function useAdminAccess() {
   };
 }
 
-export function useAllUsers() {
+export function useAllUsers(options?: { organizationId?: string | null }) {
+  const orgId = options?.organizationId ?? null;
   const [users, setUsers] = useState<UserWithRole[]>([]);
   const [organizations, setOrganizations] = useState<OrganizationWithUsers[]>([]);
   const [loading, setLoading] = useState(true);
@@ -203,12 +204,20 @@ export function useAllUsers() {
   const fetchUsers = useCallback(async () => {
     setLoading(true);
 
-    // Fetch all data in parallel
+    // Fetch all data in parallel — scope org members query if orgId provided
+    const orgMembersQuery = orgId
+      ? supabase.from("organization_members").select("*").eq("organization_id", orgId)
+      : supabase.from("organization_members").select("*");
+
+    const orgsQuery = orgId
+      ? supabase.from("organizations").select("*").eq("id", orgId)
+      : supabase.from("organizations").select("*");
+
     const [profilesResult, rolesResult, orgMembersResult, orgsResult, teamMembersResult, teamsResult] = await Promise.all([
       supabase.from("profiles").select("*").order("created_at", { ascending: false }),
       supabase.from("user_roles").select("*"),
-      supabase.from("organization_members").select("*"),
-      supabase.from("organizations").select("*"),
+      orgMembersQuery,
+      orgsQuery,
       supabase.from("team_members").select("*"),
       supabase.from("teams").select("id, name"),
     ]);
@@ -226,8 +235,14 @@ export function useAllUsers() {
     const teamMembers = teamMembersResult.data || [];
     const allTeams = teamsResult.data || [];
 
+    // If org-scoped, only include profiles that are members of this org
+    const orgMemberUserIds = orgId ? new Set(orgMembers.map(om => om.user_id)) : null;
+    const scopedProfiles = orgMemberUserIds
+      ? profiles.filter(p => orgMemberUserIds.has(p.user_id))
+      : profiles;
+
     // Build users with roles, org membership, and team membership
-    const usersWithRoles: UserWithRole[] = profiles.map((profile) => {
+    const usersWithRoles: UserWithRole[] = scopedProfiles.map((profile) => {
       const userOrgMembership = orgMembers.find((om) => om.user_id === profile.user_id);
       const userOrg = userOrgMembership 
         ? allOrgs.find((o) => o.id === userOrgMembership.organization_id)
@@ -259,15 +274,17 @@ export function useAllUsers() {
     // Group users by organization
     const orgMap = new Map<string, OrganizationWithUsers>();
     
-    // Add "No Organization" bucket
-    orgMap.set("no-org", {
-      id: "no-org",
-      name: "No Organization",
-      slug: "no-org",
-      subscription_tier: null,
-      subscription_status: null,
-      users: [],
-    });
+    if (!orgId) {
+      // Platform view: add "No Organization" bucket
+      orgMap.set("no-org", {
+        id: "no-org",
+        name: "No Organization",
+        slug: "no-org",
+        subscription_tier: null,
+        subscription_status: null,
+        users: [],
+      });
+    }
 
     // Add all organizations
     allOrgs.forEach((org) => {
@@ -283,8 +300,8 @@ export function useAllUsers() {
 
     // Assign users to organizations
     usersWithRoles.forEach((user) => {
-      const orgId = user.organization?.id || "no-org";
-      const org = orgMap.get(orgId);
+      const userOrgId = user.organization?.id || "no-org";
+      const org = orgMap.get(userOrgId);
       if (org) {
         org.users.push(user);
       }
@@ -299,7 +316,7 @@ export function useAllUsers() {
     setOrganizations(orgArray);
     setLastUpdated(new Date());
     setLoading(false);
-  }, []);
+  }, [orgId]);
 
   // Debounced refresh for realtime events
   const debouncedRefresh = useCallback(() => {
