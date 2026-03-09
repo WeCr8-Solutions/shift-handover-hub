@@ -35,7 +35,7 @@ export function TeamManagement() {
   const { isOrgAdmin, isAdmin, hasOrgSupervisorAccess } = useAdminAccess();
   const { teams, loading, createTeam, updateTeam, deleteTeam } = useTeams();
   const { stations: allStations, refreshStations } = useStations(undefined, organization?.id);
-  const { displays, createDisplay } = useShopFloorDisplays();
+  const { displays, createDisplay, updateDisplay, deleteDisplay } = useShopFloorDisplays();
   const { toast } = useToast();
   const [optimisticStations, setOptimisticStations] = useState<Station[]>([]);
   const [isUsingOptimisticStations, setIsUsingOptimisticStations] = useState(false);
