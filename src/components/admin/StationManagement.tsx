@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { StationWithTeam, useAllStations, useAllTeams, useAllOrganizations } from "@/hooks/useAdminData";
+import type { AdminComponentAccess } from "@/types/admin";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
