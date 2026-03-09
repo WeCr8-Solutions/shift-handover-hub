@@ -472,7 +472,7 @@ export function OperatorStationPanel({
                   </Badge>
                   <Badge className={priorityClass(activeOrder.priority)}>{activeOrder.priority}</Badge>
                   {activeOrder.is_rework && (
-                    <Badge variant="outline" className="text-amber-600 border-amber-500/50 gap-1">
+                    <Badge variant="outline" className="text-[hsl(var(--warning))] border-[hsl(var(--warning)/0.5)] gap-1">
                       <Wrench className="w-3 h-3" /> Rework
                     </Badge>
                   )}
