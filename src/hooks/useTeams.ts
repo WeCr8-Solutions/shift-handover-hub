@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { getSafeErrorMessage } from "@/lib/errorHandling";
 
 export interface Team {

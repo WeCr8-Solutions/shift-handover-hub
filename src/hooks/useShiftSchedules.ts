@@ -46,7 +46,7 @@ export function useShiftSchedules() {
     }
 
     setLoading(false);
-  }, [user]);
+  }, [user, organization?.id]);
 
   useEffect(() => {
     fetchShifts();

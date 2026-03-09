@@ -52,7 +52,7 @@ export function useWorkCenterConfigs() {
     }
 
     setLoading(false);
-  }, [user]);
+  }, [user, organization?.id]);
 
   useEffect(() => {
     fetchConfigs();
