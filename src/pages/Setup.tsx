@@ -149,9 +149,10 @@ export default function Setup() {
           <div className="max-w-lg mx-auto">
             <OrganizationSetup 
               onComplete={handleOrgSetupComplete}
-              onSkip={() => {
+              onSkip={async () => {
                 setShowOrgSetup(false);
-                completeStep('organization-setup');
+                await completeStep('organization-setup');
+                await markWelcomeSeen();
               }}
             />
           </div>

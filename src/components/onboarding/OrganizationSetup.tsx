@@ -83,13 +83,9 @@ export function OrganizationSetup({ onComplete, onSkip }: OrganizationSetupProps
 
       if (memberError) throw memberError;
 
-      // Assign the 'admin' app_role so RLS policies grant full access
-      await supabase
-        .from("user_roles")
-        .upsert(
-          { user_id: user.id, role: "admin" as any },
-          { onConflict: "user_id,role" }
-        );
+      // Note: The org creator gets 'owner' role in organization_members above.
+      // Platform-level admin role is NOT self-assigned here — that would be
+      // a privilege escalation. Org ownership provides sufficient access.
 
       // Auto-create a default team so solo operators can start immediately
       const { data: team, error: teamError } = await supabase
