@@ -32,9 +32,10 @@ import { SafeDeleteDialog } from "./ui/safe-delete-dialog";
 export function TeamManagement() {
   const { user } = useAuth();
   const { organization } = useOrgContext();
-  const { isOrgAdmin, isAdmin } = useAdminAccess();
+  const { isOrgAdmin, isAdmin, hasOrgSupervisorAccess } = useAdminAccess();
   const { teams, loading, createTeam, updateTeam, deleteTeam } = useTeams();
   const { stations: allStations, refreshStations } = useStations(undefined, organization?.id);
+  const { displays, createDisplay } = useShopFloorDisplays();
   const { toast } = useToast();
   const [optimisticStations, setOptimisticStations] = useState<Station[]>([]);
   const [isUsingOptimisticStations, setIsUsingOptimisticStations] = useState(false);
