@@ -7,6 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useCurrentTeam } from "@/contexts/TeamContext";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { useStations } from "@/hooks/useStations";
 import { useJobPerformanceUpdates, UpdateType, Priority } from "@/hooks/useJobPerformanceUpdates";
 import { workCenterIcons, workCenterColors } from "@/lib/workCenterIcons";
@@ -64,7 +65,8 @@ interface JobPerformanceUpdateFormProps {
 
 export function JobPerformanceUpdateForm({ onClose }: JobPerformanceUpdateFormProps) {
   const { currentTeam } = useCurrentTeam();
-  const { stations } = useStations(currentTeam?.id);
+  const { organization } = useOrgContext();
+  const { stations } = useStations(currentTeam?.id, organization?.id);
   const { createUpdate, uploadImage } = useJobPerformanceUpdates(currentTeam?.id);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
