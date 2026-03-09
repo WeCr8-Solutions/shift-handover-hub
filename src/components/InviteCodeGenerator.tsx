@@ -553,13 +553,14 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
                 <p className="text-sm">When members join using invite codes, they'll appear here.</p>
               </div>
             ) : (
+              <div className="overflow-x-auto -mx-6 px-6">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>User</TableHead>
                     <TableHead>Invite Code</TableHead>
-                    <TableHead>Team</TableHead>
-                    <TableHead>Roles Assigned</TableHead>
+                    <TableHead className="hidden sm:table-cell">Team</TableHead>
+                    <TableHead className="hidden md:table-cell">Roles Assigned</TableHead>
                     <TableHead>Redeemed At</TableHead>
                   </TableRow>
                 </TableHeader>
