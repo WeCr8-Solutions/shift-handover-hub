@@ -67,6 +67,7 @@ export interface CreateJobPerformanceUpdateInput {
 
 export function useJobPerformanceUpdates(teamId?: string | null) {
   const { user, profile } = useAuth();
+  const { organization } = useOrgContext();
   const { logActivity } = useActivityLog();
   const [updates, setUpdates] = useState<JobPerformanceUpdate[]>([]);
   const [loading, setLoading] = useState(true);
