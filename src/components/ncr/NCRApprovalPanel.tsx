@@ -99,7 +99,7 @@ export function NCRApprovalPanel({ ncrs, onApprove, onReject }: NCRApprovalPanel
                     {ncr.ncr_number}
                   </CardTitle>
                   <div className="flex items-center gap-2">
-                    <Badge variant={disp.color as any}>{disp.label}</Badge>
+                    <Badge variant={disp.color}>{disp.label}</Badge>
                     <Badge variant="secondary">
                       <Clock className="w-3 h-3 mr-1" />
                       Pending

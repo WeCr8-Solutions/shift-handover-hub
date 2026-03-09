@@ -129,12 +129,14 @@ export function computeQualityMetrics(
   };
 }
 
+export type NCRBadgeVariant = "default" | "destructive" | "secondary" | "outline";
+
 /**
  * Format NCR disposition for display.
  */
 export function formatDisposition(
   disposition: string,
-): { label: string; color: string } {
+): { label: string; color: NCRBadgeVariant } {
   switch (disposition) {
     case "scrap":
       return { label: "Scrap", color: "destructive" };

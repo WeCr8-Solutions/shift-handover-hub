@@ -3,6 +3,28 @@ import { render, screen, fireEvent } from "@/test/test-utils";
 import { NCRListView } from "./NCRListView";
 import { NCRReport } from "@/hooks/useNCR";
 
+vi.mock("@/hooks/useUserOrganization", () => ({
+  useUserOrganization: () => ({
+    organization: {
+      id: "org-1",
+      name: "Test Org",
+      slug: "test-org",
+      description: null,
+      logo_url: null,
+      subscription_tier: "team",
+      subscription_status: "active",
+      trial_ends_at: null,
+    },
+    organizationRole: "supervisor",
+    teams: [],
+    userRoles: [],
+    primaryRole: "supervisor",
+    primaryTeam: null,
+    loading: false,
+    refresh: async () => {},
+  }),
+}));
+
 const makeNCR = (overrides: Partial<NCRReport> = {}): NCRReport => ({
   id: "ncr-1",
   organization_id: "org-1",

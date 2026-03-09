@@ -24,11 +24,14 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci
 
       - name: Run tests
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
         run: npm test
 
       - name: Upload coverage (if generated)
@@ -52,6 +55,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci

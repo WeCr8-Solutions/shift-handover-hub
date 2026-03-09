@@ -55,6 +55,46 @@ vi.mock("sonner", () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
 
+vi.mock("@/components/operator/OperatorStationKanban", () => ({
+  OperatorStationKanban: () => null,
+}));
+
+vi.mock("@/hooks/useDimensions", () => ({
+  useDimensions: (() => {
+    const stableDimensions = {
+      requirements: [],
+      readings: {},
+      loading: false,
+      loadAll: vi.fn(),
+      hasPendingDimensions: () => false,
+      allDimensionsPassing: () => true,
+      recordReading: vi.fn(),
+    };
+    return () => stableDimensions;
+  })(),
+}));
+
+vi.mock("@/hooks/useDimensionRequests", () => ({
+  useDimensionRequests: (() => {
+    const stableRequests = {
+      requests: [],
+      loading: false,
+      error: null,
+      refresh: vi.fn(),
+      submitRequest: vi.fn(),
+    };
+    return () => stableRequests;
+  })(),
+}));
+
+vi.mock("@/components/dimensions/DimensionCheckForm", () => ({
+  DimensionCheckForm: () => null,
+}));
+
+vi.mock("@/components/dimensions/RequestDimensionCheckButton", () => ({
+  RequestDimensionCheckButton: () => null,
+}));
+
 import { OperatorStationPanel } from "./OperatorStationPanel";
 import { toast } from "sonner";
 

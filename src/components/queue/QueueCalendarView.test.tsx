@@ -4,6 +4,28 @@ import { QueueCalendarView } from "./QueueCalendarView";
 import { QueueItem } from "@/hooks/useQueue";
 import { format } from "date-fns";
 
+vi.mock("@/hooks/useUserOrganization", () => ({
+  useUserOrganization: () => ({
+    organization: {
+      id: "org-1",
+      name: "Test Org",
+      slug: "test-org",
+      description: null,
+      logo_url: null,
+      subscription_tier: "team",
+      subscription_status: "active",
+      trial_ends_at: null,
+    },
+    organizationRole: "supervisor",
+    teams: [],
+    userRoles: [],
+    primaryRole: "supervisor",
+    primaryTeam: null,
+    loading: false,
+    refresh: async () => {},
+  }),
+}));
+
 // Mock queue item factory
 function createMockQueueItem(overrides: Partial<QueueItem> = {}): QueueItem {
   return {

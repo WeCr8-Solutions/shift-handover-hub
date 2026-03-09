@@ -24,6 +24,12 @@ No need to start Ollama separately — it starts with Docker Desktop.
 
 Default for all skills: **`qwen2.5-coder:7b`**
 
+### Model Selection for Token Savings
+
+- Start with `qwen2.5-coder:7b` for most tasks to maximize speed and minimize resource cost.
+- Escalate to `qwen2.5-coder:14b` only when 7b produces incomplete or low-confidence fixes.
+- De-escalate back to 7b after complex fixes to keep routine runs efficient.
+
 Override with env var:
 
 ```bash

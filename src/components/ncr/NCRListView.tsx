@@ -49,7 +49,7 @@ export function NCRListView({ ncrs, onSelect }: NCRListViewProps) {
                 <TableCell>{ncr.work_order_number}</TableCell>
                 <TableCell className="max-w-[150px] truncate">{ncr.defect_type}</TableCell>
                 <TableCell>
-                  <Badge variant={disp.color as any} className="text-xs">{disp.label}</Badge>
+                  <Badge variant={disp.color} className="text-xs">{disp.label}</Badge>
                 </TableCell>
                 <TableCell>{ncr.quantity_affected}</TableCell>
                 <TableCell>

@@ -1,6 +1,28 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@/test/test-utils";
 import { StatusBadge, getJobStateStatus, getJobStateShortName } from "./StatusBadge";
+
+vi.mock("@/hooks/useUserOrganization", () => ({
+  useUserOrganization: () => ({
+    organization: {
+      id: "org-1",
+      name: "Test Org",
+      slug: "test-org",
+      description: null,
+      logo_url: null,
+      subscription_tier: "team",
+      subscription_status: "active",
+      trial_ends_at: null,
+    },
+    organizationRole: "supervisor",
+    teams: [],
+    userRoles: [],
+    primaryRole: "supervisor",
+    primaryTeam: null,
+    loading: false,
+    refresh: async () => {},
+  }),
+}));
 
 describe("StatusBadge", () => {
   it("renders ok status with correct styling", () => {

@@ -3,6 +3,28 @@ import { render, screen, fireEvent } from "@/test/test-utils";
 import { SmartAlertCard } from "./SmartAlertCard";
 import type { SmartAlert } from "@/hooks/useSmartAlerts";
 
+vi.mock("@/hooks/useUserOrganization", () => ({
+  useUserOrganization: () => ({
+    organization: {
+      id: "org-1",
+      name: "Test Org",
+      slug: "test-org",
+      description: null,
+      logo_url: null,
+      subscription_tier: "team",
+      subscription_status: "active",
+      trial_ends_at: null,
+    },
+    organizationRole: "supervisor",
+    teams: [],
+    userRoles: [],
+    primaryRole: "supervisor",
+    primaryTeam: null,
+    loading: false,
+    refresh: async () => {},
+  }),
+}));
+
 const makeAlert = (overrides: Partial<SmartAlert> = {}): SmartAlert => ({
   id: "alert-1",
   type: "overdue",

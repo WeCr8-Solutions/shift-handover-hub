@@ -4,6 +4,17 @@ All skills enforce these rules. Every suggestion from Ollama is evaluated agains
 
 ---
 
+## Local LLM Task Routing
+
+Use local Ollama models first when possible to conserve hosted tokens.
+
+- Route to local model: bulk lint cleanup, repetitive type narrowing, test mock scaffolding, and file-level refactors.
+- Keep hosted model for final arbitration when output is unclear, risky, or cross-cutting.
+- Never auto-merge local model output without validation (typecheck, tests, and codacy checks).
+- Prefer deterministic settings for code tasks (low temperature).
+
+---
+
 ## TypeScript
 
 ### Replacing `any`

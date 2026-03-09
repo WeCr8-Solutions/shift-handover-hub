@@ -52,7 +52,7 @@ describe("Team Management System", () => {
       // The old code used `profiles:user_id(...)` which fails with PGRST200
       // because organization_members has no FK to profiles.
       // The fix uses separate queries: one for org_members, one for profiles.
-      const mockFrom = supabase.from;
+      const mockFrom = vi.mocked(supabase.from);
       mockFrom.mockImplementation((table: string) => {
         const obj: any = {};
         obj.select = vi.fn().mockReturnValue(obj);

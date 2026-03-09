@@ -3,6 +3,28 @@ import { render, screen } from "@/test/test-utils";
 import { QueueListView } from "./QueueListView";
 import { QueueItem } from "@/hooks/useQueue";
 
+vi.mock("@/hooks/useUserOrganization", () => ({
+  useUserOrganization: () => ({
+    organization: {
+      id: "org-1",
+      name: "Test Org",
+      slug: "test-org",
+      description: null,
+      logo_url: null,
+      subscription_tier: "team",
+      subscription_status: "active",
+      trial_ends_at: null,
+    },
+    organizationRole: "supervisor",
+    teams: [],
+    userRoles: [],
+    primaryRole: "supervisor",
+    primaryTeam: null,
+    loading: false,
+    refresh: async () => {},
+  }),
+}));
+
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
     from: vi.fn().mockReturnValue({

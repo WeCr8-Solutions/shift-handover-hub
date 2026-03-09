@@ -49,6 +49,26 @@ OLLAMA_MODEL=qwen2.5-coder:14b /repair-any src/components/StationCard.tsx
 Ollama analyzes → Claude applies fix → Codacy validates → npm test confirms
 ```
 
+## Local LLM Delegation Policy
+
+To reduce cloud token usage, skills may delegate heavyweight analysis and first-pass patch proposals to local models via Ollama.
+
+- Preferred for: large-file reviews, repetitive lint/type fixes, and test-failure triage.
+- Keep final authority in-repo: apply only validated edits that pass project rules and tests.
+- Use cloud model directly for: security-critical logic, ambiguous requirements, or cross-file architecture decisions.
+
+Recommended default:
+
+```bash
+OLLAMA_MODEL=qwen2.5-coder:7b /ollama-review src/components/dashboard/OperatorStationPanel.tsx
+```
+
+Higher-reasoning option for complex refactors:
+
+```bash
+OLLAMA_MODEL=qwen2.5-coder:14b /repair-types src/hooks/useERPConnector.ts
+```
+
 Every edit triggers `codacy_cli_analyze` automatically per `.github/instructions/codacy.instructions.md`.
 
 ## Configuration
