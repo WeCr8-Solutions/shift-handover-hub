@@ -371,13 +371,24 @@ export function TeamManagement() {
         </div>
       )}
 
-      {/* Team Members Panel */}
+      {/* Team Members Panel with Back Button */}
       {selectedTeam && (
-        <TeamMembersPanel
-          team={selectedTeam}
-          showInviteDialog={showInviteDialog}
-          setShowInviteDialog={setShowInviteDialog}
-        />
+        <div className="space-y-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-2 text-muted-foreground hover:text-foreground"
+            onClick={() => setSelectedTeam(null)}
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Teams
+          </Button>
+          <TeamMembersPanel
+            team={selectedTeam}
+            showInviteDialog={showInviteDialog}
+            setShowInviteDialog={setShowInviteDialog}
+          />
+        </div>
       )}
 
       {/* Station Manager Dialog */}
