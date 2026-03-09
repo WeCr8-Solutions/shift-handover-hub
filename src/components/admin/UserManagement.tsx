@@ -384,11 +384,11 @@ export function UserManagement({ isAdmin, isSupervisorOrAbove = false, access }:
       <TableCell className="text-muted-foreground text-sm">
         {new Date(user.created_at).toLocaleDateString()}
       </TableCell>
-      {(isAdmin || isSupervisorOrAbove) && (
+      {(isPlatformAdmin || canManage) && (
         <TableCell>
           {updatingUser === user.user_id ? (
             <Loader2 className="w-4 h-4 animate-spin" />
-          ) : isAdmin ? (
+          ) : isPlatformAdmin ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8">
