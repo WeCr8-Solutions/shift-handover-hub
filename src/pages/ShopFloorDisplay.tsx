@@ -12,6 +12,7 @@ import {
   RefreshCw,
   Tv,
   XCircle,
+  Users,
 } from "lucide-react";
 
 interface DisplayConfig {
@@ -32,17 +33,22 @@ interface DisplayConfig {
 interface StationData {
   id: string;
   name: string;
+  station_id: string;
   work_center: string;
   work_center_type: string;
   is_active: boolean;
+  team_id: string | null;
+  team_name: string | null;
   current_status: {
     current_job_state: string | null;
     current_job_work_order: string | null;
     current_job_part_number: string | null;
     current_operator_name: string | null;
+    current_operator_id: string | null;
     parts_complete: number | null;
     parts_required: number | null;
     condition_notes: string | null;
+    condition_status: string | null;
   } | null;
 }
 
@@ -51,10 +57,17 @@ interface QueueItemData {
   title: string;
   work_order: string | null;
   part_number: string | null;
+  operation_number: string | null;
   status: string;
   priority: string;
   due_date: string | null;
   station_id: string | null;
+  station_name: string | null;
+  team_name: string | null;
+  quantity: number | null;
+  qty_completed: number | null;
+  qty_open: number | null;
+  assigned_to: string | null;
 }
 
 export default function ShopFloorDisplay() {
@@ -68,27 +81,48 @@ export default function ShopFloorDisplay() {
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const [error, setError] = useState<string | null>(null);
 
-  // Validate token on mount
+  // Fetch all data via the secure RPC (validates token + returns org-scoped data)
+  const fetchData = useCallback(async () => {
+    if (!token) return;
+    const { data, error: err } = await supabase.rpc("fetch_display_data", { _token: token });
+    if (err || !data) {
+      setError("Failed to fetch display data");
+      return;
+    }
+    const result = data as any;
+    if (!result.valid) {
+      setError(result.reason || "Token invalid or expired");
+      return;
+    }
+
+    // Set config on first call
+    setConfig({
+      valid: true,
+      display_id: result.display_id,
+      organization_id: result.organization_id,
+      display_name: result.display_name,
+      display_mode: result.display_mode,
+      team_ids: result.team_ids,
+      refresh_interval_seconds: result.refresh_interval_seconds,
+      auto_rotate_enabled: result.auto_rotate_enabled,
+      auto_rotate_interval_seconds: result.auto_rotate_interval_seconds,
+      dark_mode: result.dark_mode,
+      alert_sound_enabled: result.alert_sound_enabled,
+    });
+
+    setStations((result.stations || []) as StationData[]);
+    setQueueItems((result.queue_items || []) as QueueItemData[]);
+    setLastRefresh(new Date());
+  }, [token]);
+
+  // Initial validation + data fetch
   useEffect(() => {
     if (!token) {
       setError("No display token provided");
       return;
     }
-    const validate = async () => {
-      const { data, error: err } = await supabase.rpc("validate_display_token", { _token: token });
-      if (err || !data) {
-        setError("Failed to validate display token");
-        return;
-      }
-      const result = data as unknown as DisplayConfig;
-      if (!result.valid) {
-        setError(result.reason || "Token invalid or expired");
-        return;
-      }
-      setConfig(result);
-    };
-    validate();
-  }, [token]);
+    fetchData();
+  }, [token, fetchData]);
 
   // Apply dark mode
   useEffect(() => {
@@ -98,61 +132,11 @@ export default function ShopFloorDisplay() {
     } else if (config.dark_mode === "never") {
       document.documentElement.classList.remove("dark");
     }
-    // "auto" follows system preference (default behavior)
   }, [config?.dark_mode]);
 
-  // Fetch data
-  const fetchData = useCallback(async () => {
-    if (!config?.organization_id) return;
-    const orgId = config.organization_id;
-    const teamIds = config.team_ids || [];
-
-    // Stations query
-    let stationsQ = supabase
-      .from("stations")
-      .select(`
-        id, name, work_center, work_center_type, is_active,
-        current_station_status (
-          current_job_state, current_job_work_order, current_job_part_number,
-          current_operator_name, parts_complete, parts_required, condition_notes
-        )
-      `)
-      .eq("organization_id", orgId)
-      .eq("is_active", true);
-
-    if (teamIds.length > 0) {
-      stationsQ = stationsQ.in("team_id", teamIds);
-    }
-
-    // Queue items query
-    let queueQ = supabase
-      .from("queue_items")
-      .select("id, title, work_order, part_number, status, priority, due_date, station_id")
-      .eq("organization_id", orgId)
-      .not("status", "in", '("completed","cancelled")')
-      .order("priority", { ascending: true })
-      .limit(50);
-
-    const [stationsRes, queueRes] = await Promise.all([stationsQ, queueQ]);
-
-    if (stationsRes.data) {
-      setStations(stationsRes.data.map((s: any) => ({
-        ...s,
-        current_status: Array.isArray(s.current_station_status)
-          ? s.current_station_status[0] || null
-          : s.current_station_status || null,
-      })));
-    }
-    if (queueRes.data) {
-      setQueueItems(queueRes.data as QueueItemData[]);
-    }
-    setLastRefresh(new Date());
-  }, [config?.organization_id, config?.team_ids]);
-
-  // Initial + interval refresh
+  // Periodic refresh
   useEffect(() => {
     if (!config) return;
-    fetchData();
     const interval = setInterval(fetchData, (config.refresh_interval_seconds || 30) * 1000);
     return () => clearInterval(interval);
   }, [config, fetchData]);
@@ -220,6 +204,19 @@ function SupervisorDisplay({ config, stations, queueItems, lastRefresh }: {
   queueItems: QueueItemData[];
   lastRefresh: Date;
 }) {
+  // Group stations by team for team-scoped displays
+  const teamGroups = useMemo(() => {
+    const teams = new Map<string, { name: string; stations: StationData[] }>();
+    stations.forEach(s => {
+      const key = s.team_id || "__none__";
+      if (!teams.has(key)) teams.set(key, { name: s.team_name || "Unassigned", stations: [] });
+      teams.get(key)!.stations.push(s);
+    });
+    return teams;
+  }, [stations]);
+
+  const hasMultipleTeams = teamGroups.size > 1;
+
   const kpis = useMemo(() => {
     let running = 0, down = 0, setup = 0, idle = 0;
     stations.forEach(s => {
@@ -240,7 +237,14 @@ function SupervisorDisplay({ config, stations, queueItems, lastRefresh }: {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Factory className="w-6 h-6 text-primary" />
-          <h1 className="text-xl font-bold">{config.display_name}</h1>
+          <div>
+            <h1 className="text-xl font-bold">{config.display_name}</h1>
+            {hasMultipleTeams && (
+              <p className="text-xs text-muted-foreground">
+                {teamGroups.size} team{teamGroups.size !== 1 ? "s" : ""} · {stations.length} station{stations.length !== 1 ? "s" : ""}
+              </p>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
@@ -285,49 +289,36 @@ function SupervisorDisplay({ config, stations, queueItems, lastRefresh }: {
       {/* Main grid */}
       <div className="grid lg:grid-cols-3 gap-4">
         {/* Station Grid */}
-        <div className="lg:col-span-2">
-          <div className="bg-card border border-border rounded-lg overflow-hidden">
-            <div className="px-4 py-2.5 border-b border-border bg-secondary/30 flex items-center gap-2">
-              <Monitor className="w-4 h-4 text-primary" />
-              <span className="font-medium text-sm">Stations ({stations.length})</span>
+        <div className="lg:col-span-2 space-y-4">
+          {hasMultipleTeams ? (
+            // Render stations grouped by team
+            Array.from(teamGroups.entries()).map(([teamId, group]) => (
+              <div key={teamId} className="bg-card border border-border rounded-lg overflow-hidden">
+                <div className="px-4 py-2.5 border-b border-border bg-secondary/30 flex items-center gap-2">
+                  <Users className="w-4 h-4 text-primary" />
+                  <span className="font-medium text-sm">{group.name}</span>
+                  <Badge variant="outline" className="text-[9px] ml-auto">{group.stations.length}</Badge>
+                </div>
+                <div className="grid grid-cols-2 xl:grid-cols-3 gap-px bg-border">
+                  {group.stations.map(station => (
+                    <StationCell key={station.id} station={station} />
+                  ))}
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="bg-card border border-border rounded-lg overflow-hidden">
+              <div className="px-4 py-2.5 border-b border-border bg-secondary/30 flex items-center gap-2">
+                <Monitor className="w-4 h-4 text-primary" />
+                <span className="font-medium text-sm">Stations ({stations.length})</span>
+              </div>
+              <div className="grid grid-cols-2 xl:grid-cols-3 gap-px bg-border">
+                {stations.map(station => (
+                  <StationCell key={station.id} station={station} />
+                ))}
+              </div>
             </div>
-            <div className="grid grid-cols-2 xl:grid-cols-3 gap-px bg-border">
-              {stations.map(station => {
-                const info = getStatusInfo(station.current_status?.current_job_state);
-                const progress = station.current_status?.parts_required
-                  ? Math.round(((station.current_status?.parts_complete || 0) / station.current_status.parts_required) * 100)
-                  : 0;
-                return (
-                  <div key={station.id} className="bg-card p-3 space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold text-sm truncate">{station.name}</span>
-                      <Badge className={cn("text-[9px]", info.bg === "bg-destructive" ? "bg-destructive text-destructive-foreground" : info.bg === "bg-primary" ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground")}>
-                        {info.label}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {station.current_status?.current_job_work_order || "No active job"}
-                    </p>
-                    <div className="flex items-center justify-between text-[10px]">
-                      <span className="text-muted-foreground">
-                        {station.current_status?.current_operator_name || "No operator"}
-                      </span>
-                      {station.current_status?.parts_required ? (
-                        <span className="font-mono">
-                          {station.current_status.parts_complete || 0}/{station.current_status.parts_required}
-                        </span>
-                      ) : null}
-                    </div>
-                    {progress > 0 && (
-                      <div className="w-full bg-secondary rounded-full h-1.5">
-                        <div className="bg-primary rounded-full h-1.5 transition-all" style={{ width: `${Math.min(progress, 100)}%` }} />
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+          )}
         </div>
 
         {/* WO Queue sidebar */}
@@ -349,6 +340,14 @@ function SupervisorDisplay({ config, stations, queueItems, lastRefresh }: {
                   <span>{item.part_number || "—"}</span>
                   <span>{item.status}</span>
                 </div>
+                {item.station_name && (
+                  <span className="text-[10px] text-muted-foreground">@ {item.station_name}</span>
+                )}
+                {item.qty_completed != null && item.quantity != null && (
+                  <span className="text-[10px] font-mono text-muted-foreground ml-2">
+                    {item.qty_completed}/{item.quantity}
+                  </span>
+                )}
                 {item.due_date && new Date(item.due_date) < new Date() && (
                   <Badge variant="destructive" className="text-[8px] mt-0.5">OVERDUE</Badge>
                 )}
@@ -360,6 +359,52 @@ function SupervisorDisplay({ config, stations, queueItems, lastRefresh }: {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ── Station Cell (shared) ── */
+function StationCell({ station }: { station: StationData }) {
+  const info = getStatusInfo(station.current_status?.current_job_state);
+  const progress = station.current_status?.parts_required
+    ? Math.round(((station.current_status?.parts_complete || 0) / station.current_status.parts_required) * 100)
+    : 0;
+
+  return (
+    <div className="bg-card p-3 space-y-1.5">
+      <div className="flex items-center justify-between">
+        <span className="font-semibold text-sm truncate">{station.name}</span>
+        <Badge className={cn("text-[9px]",
+          info.bg === "bg-destructive" ? "bg-destructive text-destructive-foreground" :
+          info.bg === "bg-primary" ? "bg-primary text-primary-foreground" :
+          "bg-secondary text-secondary-foreground"
+        )}>
+          {info.label}
+        </Badge>
+      </div>
+      <p className="text-xs text-muted-foreground truncate">
+        {station.current_status?.current_job_work_order || "No active job"}
+      </p>
+      <div className="flex items-center justify-between text-[10px]">
+        <span className="text-muted-foreground">
+          {station.current_status?.current_operator_name || "No operator"}
+        </span>
+        {station.current_status?.parts_required ? (
+          <span className="font-mono">
+            {station.current_status.parts_complete || 0}/{station.current_status.parts_required}
+          </span>
+        ) : null}
+      </div>
+      {station.current_status?.condition_notes && (
+        <p className="text-[10px] text-chart-3 truncate" title={station.current_status.condition_notes}>
+          ⚠ {station.current_status.condition_notes}
+        </p>
+      )}
+      {progress > 0 && (
+        <div className="w-full bg-secondary rounded-full h-1.5">
+          <div className="bg-primary rounded-full h-1.5 transition-all" style={{ width: `${Math.min(progress, 100)}%` }} />
+        </div>
+      )}
     </div>
   );
 }
@@ -458,6 +503,14 @@ function OperatorDisplay({ config, stations, queueItems, lastRefresh }: {
                 </Badge>
               </div>
 
+              {/* Team name */}
+              {station.team_name && (
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Users className="w-3 h-3" />
+                  {station.team_name}
+                </p>
+              )}
+
               {/* Active WO */}
               <div>
                 <p className="text-xs text-muted-foreground mb-0.5">Active Job</p>
@@ -476,6 +529,13 @@ function OperatorDisplay({ config, stations, queueItems, lastRefresh }: {
                   {station.current_status?.current_operator_name || "None"}
                 </p>
               </div>
+
+              {/* Condition notes */}
+              {station.current_status?.condition_notes && (
+                <div className="bg-chart-3/10 border border-chart-3/30 rounded-lg px-3 py-2">
+                  <p className="text-xs text-chart-3 font-medium">⚠ {station.current_status.condition_notes}</p>
+                </div>
+              )}
 
               {/* Progress bar */}
               {station.current_status?.parts_required ? (
