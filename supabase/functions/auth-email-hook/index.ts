@@ -34,7 +34,7 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
   reauthentication: ReauthenticationEmail,
 }
 
-// Configuration
+// Configuration — v2 deploy stamp
 const SITE_NAME = "joblineai"
 const SENDER_DOMAIN = "notify.jobline.ai"
 const ROOT_DOMAIN = "jobline.ai"
