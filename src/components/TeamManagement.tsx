@@ -115,6 +115,16 @@ export function TeamManagement() {
   const [editingDisplay, setEditingDisplay] = useState<import("@/hooks/useShopFloorDisplays").ShopFloorDisplay | null>(null);
   const [editDisplayName, setEditDisplayName] = useState("");
   const [editDisplayMode, setEditDisplayMode] = useState<"supervisor" | "operator">("supervisor");
+  const [editDisplayConnectionType, setEditDisplayConnectionType] = useState<"url" | "ip" | "bluetooth">("url");
+  const [editDisplayIpAddress, setEditDisplayIpAddress] = useState("");
+  const [editDisplayBluetoothEnabled, setEditDisplayBluetoothEnabled] = useState(false);
+  const [editDisplayBluetoothDeviceName, setEditDisplayBluetoothDeviceName] = useState("");
+  const [editDisplayCastProtocol, setEditDisplayCastProtocol] = useState("");
+  const [editDisplayRefreshInterval, setEditDisplayRefreshInterval] = useState(30);
+  const [editDisplayAutoRotate, setEditDisplayAutoRotate] = useState(false);
+  const [editDisplayAutoRotateInterval, setEditDisplayAutoRotateInterval] = useState(30);
+  const [editDisplayDarkMode, setEditDisplayDarkMode] = useState<"auto" | "always" | "never">("auto");
+  const [editDisplayAlertSound, setEditDisplayAlertSound] = useState(false);
   const [isSavingDisplay, setIsSavingDisplay] = useState(false);
   const [deletingDisplay, setDeletingDisplay] = useState<import("@/hooks/useShopFloorDisplays").ShopFloorDisplay | null>(null);
   // Map team ID → display object for quick lookup
