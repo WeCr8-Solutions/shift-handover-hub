@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Menu, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Menu, X } from "lucide-react";
 import joblineLogo from "@/assets/jobline-logo.png";
 
 interface MarketingNavProps {
@@ -18,9 +18,21 @@ const navLinks = [
 
 export function MarketingNav({ showPricing = true }: MarketingNavProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const visibleLinks = navLinks.filter((l) => !l.pricingOnly || showPricing);
+  const isResourcesRoute = location.pathname.startsWith("/resources");
+
+  const handleBack = () => {
+    // Prefer browser history for natural back behavior, with route fallback.
+    if (window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+
+    navigate(location.pathname === "/resources" ? "/" : "/resources");
+  };
 
   const handleNav = (href: string) => {
     navigate(href);
@@ -33,6 +45,13 @@ export function MarketingNav({ showPricing = true }: MarketingNavProps) {
         <button onClick={() => handleNav("/")} className="flex items-center gap-2">
           <img src={joblineLogo} alt="JobLine.ai" className="h-8 sm:h-10 w-auto" />
         </button>
+
+        {isResourcesRoute && (
+          <Button variant="ghost" size="sm" onClick={handleBack} className="hidden sm:inline-flex gap-2">
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </Button>
+        )}
 
         {/* Desktop links */}
         <div className="hidden sm:flex items-center gap-3">
@@ -60,6 +79,18 @@ export function MarketingNav({ showPricing = true }: MarketingNavProps) {
       {/* Mobile dropdown */}
       {mobileOpen && (
         <div className="sm:hidden border-t border-border bg-background px-4 py-3 space-y-1">
+          {isResourcesRoute && (
+            <button
+              onClick={() => {
+                handleBack();
+                setMobileOpen(false);
+              }}
+              className="flex w-full items-center gap-2 px-3 py-2.5 rounded-md text-sm font-medium text-foreground hover:bg-accent transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back
+            </button>
+          )}
           {visibleLinks.map((link) => (
             <button
               key={link.href}
