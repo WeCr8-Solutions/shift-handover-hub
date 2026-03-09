@@ -54,7 +54,7 @@ function getStatusColor(status: QueueStatus): string {
   }
 }
 
-export function QueueListView({ items, onItemClick, onStatusChange, onDelete }: QueueListViewProps) {
+export function QueueListView({ items, onItemClick, onStatusChange, onDelete, onOpenRouting }: QueueListViewProps) {
   const [stations, setStations] = useState<Map<string, StationInfo>>(new Map());
 
   // Fetch station info for all items
