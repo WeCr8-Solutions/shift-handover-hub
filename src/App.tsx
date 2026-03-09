@@ -92,6 +92,7 @@ const App = () => (
               <Sonner />
               <BrowserRouter>
                 <AnalyticsProvider>
+                  <ScrollToTop />
                   {/* ITAR compliance gates — both are no-ops when not required by the org */}
                   <MFAEnrollmentGate>
                   <USPersonDeclarationGate>
