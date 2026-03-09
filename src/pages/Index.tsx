@@ -572,6 +572,13 @@ const Index = () => {
         preSelectedStationId={selectedStationForAction}
       />
 
+      {/* Handoff Detail Modal */}
+      <HandoffDetailModal
+        open={!!selectedHandoff}
+        onOpenChange={(open) => !open && setSelectedHandoff(null)}
+        record={selectedHandoff}
+      />
+
       {/* AI Planning Assistant - supervisors/admins only */}
       {hasOrgSupervisorAccess && organization && <PlanningAssistantModal organizationId={organization.id} />}
     </div>
