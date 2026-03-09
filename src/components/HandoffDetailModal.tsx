@@ -131,6 +131,20 @@ export function HandoffDetailModal({ open, onOpenChange, record, onViewWorkOrder
             <span>Rev: <span className="font-mono text-foreground">{record.part.revision}</span></span>
             <span>Op: <span className="font-mono text-foreground">{record.part.operationNumber}</span></span>
           </div>
+          {onViewWorkOrder && record.workOrder && record.workOrder !== "—" && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 text-xs ml-auto"
+              onClick={() => {
+                onOpenChange(false);
+                onViewWorkOrder(record.workOrder);
+              }}
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              View Work Order
+            </Button>
+          )}
         </div>
 
         <Separator />
