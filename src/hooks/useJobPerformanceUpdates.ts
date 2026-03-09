@@ -87,6 +87,10 @@ export function useJobPerformanceUpdates(teamId?: string | null) {
       .order("created_at", { ascending: false })
       .limit(100);
 
+    if (organization?.id) {
+      query = query.eq("organization_id", organization.id);
+    }
+
     if (teamId) {
       query = query.eq("team_id", teamId);
     }
@@ -97,7 +101,7 @@ export function useJobPerformanceUpdates(teamId?: string | null) {
       setUpdates(data as JobPerformanceUpdate[]);
     }
     setLoading(false);
-  }, [user, teamId]);
+  }, [user, teamId, organization?.id]);
 
   useEffect(() => {
     fetchUpdates();
