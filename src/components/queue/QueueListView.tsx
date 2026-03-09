@@ -24,6 +24,7 @@ interface QueueListViewProps {
   onItemClick: (itemId: string) => void;
   onStatusChange: (itemId: string, newStatus: QueueStatus) => Promise<{ error: string | null }>;
   onDelete: (itemId: string) => Promise<{ error: string | null }>;
+  onOpenRouting?: (item: { id: string; work_order?: string | null; part_number?: string | null }) => void;
 }
 
 interface StationInfo {
@@ -53,7 +54,7 @@ function getStatusColor(status: QueueStatus): string {
   }
 }
 
-export function QueueListView({ items, onItemClick, onStatusChange, onDelete }: QueueListViewProps) {
+export function QueueListView({ items, onItemClick, onStatusChange, onDelete, onOpenRouting }: QueueListViewProps) {
   const [stations, setStations] = useState<Map<string, StationInfo>>(new Map());
 
   // Fetch station info for all items
@@ -113,6 +114,7 @@ export function QueueListView({ items, onItemClick, onStatusChange, onDelete }: 
                     stationCode={station?.station_id}
                     workCenterType={station?.work_center_type}
                     onItemClick={onItemClick}
+                    onOpenRouting={onOpenRouting}
                   />
                   {/* Inline status change */}
                   <div className="absolute top-1.5 right-12 sm:right-14 z-10">

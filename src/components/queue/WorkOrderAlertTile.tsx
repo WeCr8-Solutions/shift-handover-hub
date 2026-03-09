@@ -65,6 +65,7 @@ interface WorkOrderAlertTileProps {
   stationCode?: string | null;
   workCenterType?: string | null;
   onItemClick: (itemId: string) => void;
+  onOpenRouting?: (item: { id: string; work_order?: string | null; part_number?: string | null }) => void;
 }
 
 function getPriorityConfig(priority: QueuePriority) {
@@ -88,7 +89,7 @@ function getStatusConfig(status: QueueStatus) {
   }
 }
 
-export function WorkOrderAlertTile({ item, stationName, stationCode, workCenterType, onItemClick }: WorkOrderAlertTileProps) {
+export function WorkOrderAlertTile({ item, stationName, stationCode, workCenterType, onItemClick, onOpenRouting }: WorkOrderAlertTileProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [alertData, setAlertData] = useState<WOAlertData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -605,12 +606,25 @@ export function WorkOrderAlertTile({ item, stationName, stationCode, workCenterT
                   </div>
                 )}
 
-                {/* No routing */}
+                {/* No routing — offer to add */}
                 {alertData.totalSteps === 0 && item.status !== "completed" && item.status !== "cancelled" && (
                   <div className="p-2.5 rounded-lg border border-border bg-muted/30">
-                    <div className="flex items-center gap-2">
-                      <GitBranch className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">No routing defined</span>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <GitBranch className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground">No routing defined</span>
+                      </div>
+                      {onOpenRouting && (
+                        <button
+                          className="text-xs text-primary hover:underline font-medium"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onOpenRouting({ id: item.id, work_order: item.work_order, part_number: item.part_number });
+                          }}
+                        >
+                          + Add Routing
+                        </button>
+                      )}
                     </div>
                   </div>
                 )}

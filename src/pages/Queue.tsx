@@ -387,6 +387,7 @@ export default function Queue() {
                     onItemClick={setSelectedItemId}
                     onStatusChange={(itemId, newStatus) => updateItem(itemId, { status: newStatus })}
                     onDelete={deleteItem}
+                    onOpenRouting={handleOpenRouting}
                   />
                 )}
 
