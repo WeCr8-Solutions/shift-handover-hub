@@ -108,7 +108,7 @@ export function DashboardAlertSection({
                         item.severity === "critical"
                           ? "bg-destructive/10 border-destructive/30 hover:bg-destructive/20"
                           : item.severity === "warning"
-                          ? "bg-amber-500/10 border-amber-500/30 hover:bg-amber-500/20"
+                          ? "bg-[hsl(var(--warning)/0.1)] border-[hsl(var(--warning)/0.3)] hover:bg-[hsl(var(--warning)/0.2)]"
                           : "bg-muted/50 border-border hover:bg-muted",
                       )}
                       onClick={() => handleAttentionItemClick(item)}
@@ -126,7 +126,7 @@ export function DashboardAlertSection({
                         className={cn(
                           "w-2 h-2 rounded-full flex-shrink-0",
                           item.severity === "critical" ? "bg-destructive"
-                            : item.severity === "warning" ? "bg-amber-500"
+                            : item.severity === "warning" ? "bg-[hsl(var(--warning))]"
                             : "bg-muted-foreground/50",
                         )}
                       />

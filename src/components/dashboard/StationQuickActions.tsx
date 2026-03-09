@@ -142,12 +142,12 @@ export function StationQuickActions({
           >
             {isOnHold ? (
               <>
-                <Play className="w-3.5 h-3.5 text-green-600" />
+                <Play className="w-3.5 h-3.5 text-[hsl(var(--success))]" />
                 Resume Work
               </>
             ) : (
               <>
-                <Pause className="w-3.5 h-3.5 text-amber-600" />
+                <Pause className="w-3.5 h-3.5 text-[hsl(var(--warning))]" />
                 Put on Hold
               </>
             )}

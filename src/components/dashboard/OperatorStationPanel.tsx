@@ -837,7 +837,7 @@ export function OperatorStationPanel({
                         Total: {completionData.qtyCompleted + completionData.qtyScrap + completionData.qtyRework} / {completionData.qtyOriginal}
                       </span>
                       {completionData.qtyCompleted + completionData.qtyScrap + completionData.qtyRework >= completionData.qtyOriginal ? (
-                        <span className="text-green-600 font-medium flex items-center gap-1">
+                        <span className="text-[hsl(var(--success))] font-medium flex items-center gap-1">
                           <CheckCircle2 className="w-3 h-3" /> Accounted
                         </span>
                       ) : (
