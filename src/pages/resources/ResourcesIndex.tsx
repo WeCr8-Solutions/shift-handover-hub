@@ -65,6 +65,27 @@ const sections = [
     count: "13 topics",
   },
   {
+    title: "5S Methodology",
+    description: "Complete 5S guide: Sort (Seiri), Set in Order (Seiton), Shine (Seiso), Standardize (Seiketsu), Sustain (Shitsuke). Includes red tag systems, floor marking standards, visual management, and audit scoring.",
+    icon: LayoutGrid,
+    href: "/resources/5s",
+    count: "12 topics",
+  },
+  {
+    title: "Kanban & Sorting Techniques",
+    description: "Pull systems, FIFO lanes, supermarket systems, heijunka leveling, WIP limits, ABC analysis, CONWIP, milk runs, priority sequencing rules, and visual scheduling boards.",
+    icon: Kanban,
+    href: "/resources/kanban",
+    count: "12 topics",
+  },
+  {
+    title: "Manufacturing Pioneers",
+    description: "The visionaries who shaped modern manufacturing — Henry Ford, Taiichi Ohno, Deming, Shingo, Goldratt, and more. Biographies, key contributions, and Wikipedia references.",
+    icon: Users,
+    href: "/resources/pioneers",
+    count: "13 figures",
+  },
+  {
     title: "Tool Comparisons",
     description: "Side-by-side comparisons of manufacturing software, MES systems, and shop floor management tools. Coming soon.",
     icon: GitCompare,

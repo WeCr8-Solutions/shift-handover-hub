@@ -140,6 +140,9 @@ const App = () => (
                     <Route path="/resources/safety" element={<SafetyCompliance />} />
                     <Route path="/resources/quality" element={<QualityInspection />} />
                     <Route path="/resources/lean" element={<LeanManufacturing />} />
+                    <Route path="/resources/5s" element={<FiveSMethodology />} />
+                    <Route path="/resources/kanban" element={<KanbanSortingTechniques />} />
+                    <Route path="/resources/pioneers" element={<ManufacturingPioneers />} />
                     <Route path="/blog" element={<Blog />} />
                     <Route path="/help" element={<Help />} />
                     <Route path="/help/:category/:slug" element={<HelpArticle />} />
