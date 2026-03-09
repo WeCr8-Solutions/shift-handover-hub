@@ -55,6 +55,20 @@
     --state-waiting: 220 70% 55%;
     --state-down: 0 70% 50%;
 
+    /* Priority levels */
+    --priority-critical: 0 84% 60%;
+    --priority-urgent: 25 95% 53%;
+    --priority-high: 38 92% 50%;
+    --priority-normal: 220 70% 55%;
+
+    /* Semantic: success / warning / info accents */
+    --success: 142 71% 45%;
+    --success-foreground: 142 71% 29%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 32 95% 44%;
+    --info: 217 91% 60%;
+    --info-foreground: 217 91% 48%;
+
     --sidebar-background: 220 20% 8%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 185 70% 45%;
