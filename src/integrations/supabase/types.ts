@@ -5791,6 +5791,10 @@ export type Database = {
         }
         Returns: Json
       }
+      redeem_invite_code: {
+        Args: { _code: string; _user_id: string }
+        Returns: Json
+      }
       reject_ncr: {
         Args: { _ncr_id: string; _reason: string; _rejector_id: string }
         Returns: undefined
