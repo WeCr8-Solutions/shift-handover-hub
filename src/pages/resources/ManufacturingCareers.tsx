@@ -330,7 +330,7 @@ export default function ManufacturingCareers() {
                       </AccordionItem>
                     );
                   })}
-                </Accordion>
+                </ScrollAwareAccordion>
               )}
             </TabsContent>
 

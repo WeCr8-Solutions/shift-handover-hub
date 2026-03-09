@@ -260,7 +260,7 @@ export default function QualityInspection() {
                   </AccordionItem>
                 );
               })}
-            </Accordion>
+            </ScrollAwareAccordion>
           )}
 
           <AdPlacement format="rectangle" className="mt-12" />

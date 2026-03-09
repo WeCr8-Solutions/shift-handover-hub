@@ -252,7 +252,7 @@ export default function FiveSMethodology() {
                   </AccordionItem>
                 );
               })}
-            </Accordion>
+            </ScrollAwareAccordion>
           )}
 
           <AdPlacement format="rectangle" className="mt-12" />

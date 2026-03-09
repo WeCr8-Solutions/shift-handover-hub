@@ -286,7 +286,7 @@ export default function BeginnersGuide() {
                   </AccordionItem>
                 );
               })}
-            </Accordion>
+            </ScrollAwareAccordion>
           )}
 
           <AdPlacement format="rectangle" className="mt-12" />

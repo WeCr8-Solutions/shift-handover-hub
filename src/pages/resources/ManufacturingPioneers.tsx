@@ -396,7 +396,7 @@ export default function ManufacturingPioneers() {
                   </AccordionItem>
                 );
               })}
-            </Accordion>
+            </ScrollAwareAccordion>
           )}
 
           <AdPlacement format="rectangle" className="mt-12" />
