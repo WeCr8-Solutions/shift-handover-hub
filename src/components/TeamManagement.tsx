@@ -117,11 +117,11 @@ export function TeamManagement() {
   const [editDisplayMode, setEditDisplayMode] = useState<"supervisor" | "operator">("supervisor");
   const [isSavingDisplay, setIsSavingDisplay] = useState(false);
   const [deletingDisplay, setDeletingDisplay] = useState<import("@/hooks/useShopFloorDisplays").ShopFloorDisplay | null>(null);
-  // Check if team already has a display configured
+  // Map team ID → display object for quick lookup
   const teamDisplayMap = useMemo(() => {
-    const map: Record<string, boolean> = {};
+    const map: Record<string, import("@/hooks/useShopFloorDisplays").ShopFloorDisplay> = {};
     displays.forEach(d => {
-      (d.team_ids || []).forEach(tid => { map[tid] = true; });
+      (d.team_ids || []).forEach(tid => { map[tid] = d; });
     });
     return map;
   }, [displays]);
