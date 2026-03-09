@@ -553,13 +553,13 @@ export function OperatorStationPanel({
                     </div>
                     <Progress value={pct} className="h-2" />
                     <div className="grid grid-cols-4 gap-1 text-[11px] text-center">
-                      <div className="rounded bg-green-500/10 text-green-700 dark:text-green-400 py-0.5">
+                      <div className="rounded bg-[hsl(var(--success)/0.1)] text-[hsl(var(--success))] py-0.5">
                         ✓ {completed}
                       </div>
                       <div className="rounded bg-destructive/10 text-destructive py-0.5">
                         ✗ {scrap}
                       </div>
-                      <div className="rounded bg-amber-500/10 text-amber-700 dark:text-amber-400 py-0.5">
+                      <div className="rounded bg-[hsl(var(--warning)/0.1)] text-[hsl(var(--warning))] py-0.5">
                         ↺ {rework}
                       </div>
                       <div className="rounded bg-primary/10 text-primary py-0.5">
@@ -567,7 +567,7 @@ export function OperatorStationPanel({
                       </div>
                     </div>
                     {activeOrder.quantity_locked && (
-                      <span className="text-[10px] text-amber-600 dark:text-amber-400">🔒 Quantity locked</span>
+                      <span className="text-[10px] text-[hsl(var(--warning))]">🔒 Quantity locked</span>
                     )}
                   </div>
                 );
