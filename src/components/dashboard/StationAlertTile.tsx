@@ -477,15 +477,15 @@ export function StationAlertTile({ station, onViewStation, onQuickAction }: Stat
                 {alertData.incomingItems.length > 0 && (
                   <div className={cn(
                     "p-2.5 rounded-lg border-2",
-                    alertData.incomingItems.some(d => d.priority === "critical") ? "border-red-400 bg-red-500/10" :
-                    alertData.incomingItems.some(d => d.priority === "urgent") ? "border-orange-400 bg-orange-500/10" :
-                    "border-blue-400 bg-blue-500/10",
+                    alertData.incomingItems.some(d => d.priority === "critical") ? "border-[hsl(var(--priority-critical))] bg-[hsl(var(--priority-critical)/0.1)]" :
+                    alertData.incomingItems.some(d => d.priority === "urgent") ? "border-[hsl(var(--priority-urgent))] bg-[hsl(var(--priority-urgent)/0.1)]" :
+                    "border-[hsl(var(--info))] bg-[hsl(var(--info)/0.1)]",
                   )}>
                     <div className="flex items-center gap-2 mb-1.5">
                       <Bell className={cn(
                         "w-4 h-4",
                         alertData.incomingItems.some(d => ["critical", "urgent"].includes(d.priority))
-                          ? "text-red-500" : "text-blue-500",
+                          ? "text-[hsl(var(--priority-critical))]" : "text-[hsl(var(--info))]",
                       )} />
                       <span className="text-xs font-bold uppercase tracking-wide">
                         📦 {alertData.incomingItems.length} Incoming
