@@ -114,6 +114,7 @@ export function QueueListView({ items, onItemClick, onStatusChange, onDelete, on
                     stationCode={station?.station_id}
                     workCenterType={station?.work_center_type}
                     onItemClick={onItemClick}
+                    onOpenRouting={onOpenRouting}
                   />
                   {/* Inline status change */}
                   <div className="absolute top-1.5 right-12 sm:right-14 z-10">
