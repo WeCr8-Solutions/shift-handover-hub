@@ -605,6 +605,7 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
                   ))}
                 </TableBody>
               </Table>
+              </div>
             )}
           </TabsContent>
         </Tabs>
