@@ -64,7 +64,8 @@ interface JobPerformanceUpdateFormProps {
 
 export function JobPerformanceUpdateForm({ onClose }: JobPerformanceUpdateFormProps) {
   const { currentTeam } = useCurrentTeam();
-  const { stations } = useStations(currentTeam?.id);
+  const { organization } = useOrgContext();
+  const { stations } = useStations(currentTeam?.id, organization?.id);
   const { createUpdate, uploadImage } = useJobPerformanceUpdates(currentTeam?.id);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
