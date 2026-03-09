@@ -250,7 +250,7 @@ export function QueueItemActions({
             );
           })()}
           <div className="flex-1" />
-          {onOpenRouting && hasAdminAccess && (
+          {onOpenRouting && hasOrgSupervisorAccess && (
             <Button variant="outline" onClick={() => onOpenRouting(item)} className="gap-2">
               <GitBranch className="w-4 h-4" />
               Edit Routing
