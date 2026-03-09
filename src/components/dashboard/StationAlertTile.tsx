@@ -582,10 +582,10 @@ export function StationAlertTile({ station, onViewStation, onQuickAction }: Stat
 
                 {/* Waiting Station Alert */}
                 {station.status === "waiting" && !alertData.activeItem && (
-                  <div className="p-2.5 rounded-lg bg-blue-500/10 border border-blue-500/30">
+                  <div className="p-2.5 rounded-lg bg-[hsl(var(--state-waiting)/0.1)] border border-[hsl(var(--state-waiting)/0.3)]">
                     <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-blue-500" />
-                      <span className="text-xs font-medium text-blue-700">
+                      <Clock className="w-4 h-4 text-[hsl(var(--state-waiting))]" />
+                      <span className="text-xs font-medium text-[hsl(var(--state-waiting))]">
                         Station Waiting
                       </span>
                     </div>
