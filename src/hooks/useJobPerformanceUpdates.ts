@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { useActivityLog } from "./useActivityLog";
 import { uploadOrgScopedFile, getSignedUrls } from "@/lib/storageUtils";
 
@@ -66,6 +67,7 @@ export interface CreateJobPerformanceUpdateInput {
 
 export function useJobPerformanceUpdates(teamId?: string | null) {
   const { user, profile } = useAuth();
+  const { organization } = useOrgContext();
   const { logActivity } = useActivityLog();
   const [updates, setUpdates] = useState<JobPerformanceUpdate[]>([]);
   const [loading, setLoading] = useState(true);
@@ -85,6 +87,10 @@ export function useJobPerformanceUpdates(teamId?: string | null) {
       .order("created_at", { ascending: false })
       .limit(100);
 
+    if (organization?.id) {
+      query = query.eq("organization_id", organization.id);
+    }
+
     if (teamId) {
       query = query.eq("team_id", teamId);
     }
@@ -95,7 +101,7 @@ export function useJobPerformanceUpdates(teamId?: string | null) {
       setUpdates(data as JobPerformanceUpdate[]);
     }
     setLoading(false);
-  }, [user, teamId]);
+  }, [user, teamId, organization?.id]);
 
   useEffect(() => {
     fetchUpdates();
@@ -130,21 +136,13 @@ export function useJobPerformanceUpdates(teamId?: string | null) {
       return { data: null, error: new Error("User not authenticated") };
     }
 
-    // Get org_id from user's org membership
-    const { data: orgMember } = await supabase
-      .from("organization_members")
-      .select("organization_id")
-      .eq("user_id", user.id)
-      .limit(1)
-      .maybeSingle();
-
     const { data, error } = await supabase
       .from("job_performance_updates")
       .insert({
         ...input,
         user_id: user.id,
         user_name: profile.display_name,
-        organization_id: orgMember?.organization_id || "",
+        organization_id: organization?.id || "",
       })
       .select()
       .single();
@@ -170,18 +168,9 @@ export function useJobPerformanceUpdates(teamId?: string | null) {
       return { url: null, error: new Error("User not authenticated") };
     }
 
-    // Get org_id for org-scoped path
-    const { data: orgMember } = await supabase
-      .from("organization_members")
-      .select("organization_id")
-      .eq("user_id", user.id)
-      .limit(1)
-      .maybeSingle();
-
-    if (orgMember?.organization_id) {
-      // New org-scoped path
+    if (organization?.id) {
       const { path, error } = await uploadOrgScopedFile(
-        "performance-updates", file, orgMember.organization_id, user.id
+        "performance-updates", file, organization.id, user.id
       );
       return { url: path, error };
     }
