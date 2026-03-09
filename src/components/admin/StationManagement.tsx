@@ -414,7 +414,7 @@ export function StationManagement({ isAdmin, access }: StationManagementProps) {
         </TableCell>
       )}
       <TableCell>
-        {isAdmin ? (
+        {isPlatformAdmin ? (
           <Switch
             checked={station.is_active}
             onCheckedChange={() => handleToggleActive(station)}
