@@ -358,9 +358,9 @@ export function ProductionAnalytics({
       {/* Summary Stat Chips — scrollable on mobile */}
       <div className="flex gap-3 overflow-x-auto pb-1 -mb-1 scrollbar-none" role="group" aria-label="Production summary">
         <div className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-1.5 shrink-0">
-          <Activity className="w-3.5 h-3.5 text-green-400" aria-hidden="true" />
+          <Activity className="w-3.5 h-3.5 text-[hsl(var(--state-running))]" aria-hidden="true" />
           <span className="text-xs text-muted-foreground whitespace-nowrap">Total Parts</span>
-          <span className="text-sm font-bold font-mono text-green-400">{formatCount(totalParts)}</span>
+          <span className="text-sm font-bold font-mono text-[hsl(var(--state-running))]">{formatCount(totalParts)}</span>
         </div>
         <div className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-1.5 shrink-0">
           <TrendingUp className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
@@ -368,15 +368,15 @@ export function ProductionAnalytics({
           <span className="text-sm font-bold font-mono text-primary">{yieldRate}%</span>
         </div>
         <div className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-1.5 shrink-0">
-          <BarChart3 className="w-3.5 h-3.5 text-amber-400" aria-hidden="true" />
+          <BarChart3 className="w-3.5 h-3.5 text-[hsl(var(--state-setup))]" aria-hidden="true" />
           <span className="text-xs text-muted-foreground">Handoffs</span>
-          <span className="text-sm font-bold font-mono text-amber-400">{formatCount(filteredHandoffs.length)}</span>
+          <span className="text-sm font-bold font-mono text-[hsl(var(--state-setup))]">{formatCount(filteredHandoffs.length)}</span>
         </div>
         {totalScrap > 0 && (
           <div className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-1.5 shrink-0">
-            <span className="w-2 h-2 rounded-full bg-red-400 shrink-0" aria-hidden="true" />
+            <span className="w-2 h-2 rounded-full bg-[hsl(var(--state-down))] shrink-0" aria-hidden="true" />
             <span className="text-xs text-muted-foreground">Scrap</span>
-            <span className="text-sm font-bold font-mono text-red-400">{formatCount(totalScrap)}</span>
+            <span className="text-sm font-bold font-mono text-[hsl(var(--state-down))]">{formatCount(totalScrap)}</span>
           </div>
         )}
       </div>
