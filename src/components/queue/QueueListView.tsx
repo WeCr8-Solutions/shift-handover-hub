@@ -24,6 +24,7 @@ interface QueueListViewProps {
   onItemClick: (itemId: string) => void;
   onStatusChange: (itemId: string, newStatus: QueueStatus) => Promise<{ error: string | null }>;
   onDelete: (itemId: string) => Promise<{ error: string | null }>;
+  onOpenRouting?: (item: { id: string; work_order?: string | null; part_number?: string | null }) => void;
 }
 
 interface StationInfo {
