@@ -36,24 +36,40 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    // Auth check: only service-role, admins, or developers can trigger
+    // Auth check: REQUIRE authorization - only service-role, admins, or developers can trigger
     const authHeader = req.headers.get("Authorization");
-    if (authHeader) {
-      const token = authHeader.replace("Bearer ", "");
-      const { data: userData } = await supabaseAdmin.auth.getUser(token);
-      if (userData?.user) {
-        const { data: isAdmin } = await supabaseAdmin.rpc("is_dev_or_admin", {
-          _user_id: userData.user.id,
-        });
-        if (!isAdmin) {
-          return new Response(
-            JSON.stringify({ error: "Admin or developer access required" }),
-            { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-          );
-        }
-        logStep("Authorized via user token", { userId: userData.user.id });
-      }
+    if (!authHeader) {
+      logStep("ERROR: No authorization header");
+      return new Response(
+        JSON.stringify({ error: "Authorization required" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: userData, error: authError } = await supabaseAdmin.auth.getUser(token);
+    
+    if (authError || !userData?.user) {
+      logStep("ERROR: Invalid token", { error: authError?.message });
+      return new Response(
+        JSON.stringify({ error: "Invalid or expired token" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const { data: isAdmin } = await supabaseAdmin.rpc("is_dev_or_admin", {
+      _user_id: userData.user.id,
+    });
+    
+    if (!isAdmin) {
+      logStep("ERROR: Insufficient permissions", { userId: userData.user.id });
+      return new Response(
+        JSON.stringify({ error: "Admin or developer access required" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
+    logStep("Authorized", { userId: userData.user.id });
 
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
     if (!resendApiKey) {
