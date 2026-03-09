@@ -79,11 +79,11 @@ const sections = [
     count: "12 topics",
   },
   {
-    title: "Manufacturing Pioneers",
-    description: "The visionaries who shaped modern manufacturing — Henry Ford, Taiichi Ohno, Deming, Shingo, Goldratt, and more. Biographies, key contributions, and Wikipedia references.",
+    title: "Industrial & Manufacturing Pioneers",
+    description: "25+ visionaries who built modern industry — Carnegie (steel), Rockefeller (oil), Von Braun (space), Ford, Ohno, Deming, Tesla, Edison, Katherine Johnson, and more. Biographies, legacies, and Wikipedia links.",
     icon: Users,
     href: "/resources/pioneers",
-    count: "13 figures",
+    count: "25+ figures",
   },
   {
     title: "Tool Comparisons",
