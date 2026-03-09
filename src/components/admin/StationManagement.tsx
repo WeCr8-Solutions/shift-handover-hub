@@ -425,7 +425,7 @@ export function StationManagement({ isAdmin, access }: StationManagementProps) {
           </Badge>
         )}
       </TableCell>
-      {isAdmin && (
+      {isPlatformAdmin && (
         <TableCell>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
