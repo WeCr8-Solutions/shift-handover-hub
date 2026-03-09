@@ -431,11 +431,11 @@ export function OperatorStationPanel({
   const priorityClass = (p: string) => {
     switch (p) {
       case "critical":
-        return "bg-red-500 text-white";
+        return "bg-[hsl(var(--priority-critical))] text-white";
       case "urgent":
-        return "bg-orange-500 text-white";
+        return "bg-[hsl(var(--priority-urgent))] text-white";
       case "high":
-        return "bg-amber-500 text-white";
+        return "bg-[hsl(var(--priority-high))] text-white";
       default:
         return "bg-muted text-muted-foreground";
     }
