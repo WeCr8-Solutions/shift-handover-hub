@@ -581,6 +581,10 @@ const Index = () => {
         open={!!selectedHandoff}
         onOpenChange={(open) => !open && setSelectedHandoff(null)}
         record={selectedHandoff}
+        onViewWorkOrder={(workOrder) => {
+          setSelectedHandoff(null);
+          navigate(`/queue?wo=${encodeURIComponent(workOrder)}`);
+        }}
       />
 
       {/* AI Planning Assistant - supervisors/admins only */}
