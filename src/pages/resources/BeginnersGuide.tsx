@@ -250,7 +250,7 @@ export default function BeginnersGuide() {
           {filtered.length === 0 ? (
             <p className="text-center text-muted-foreground py-12">No topics match your search.</p>
           ) : (
-            <Accordion type="multiple" className="space-y-3">
+            <ScrollAwareAccordion className="space-y-3">
               {filtered.map((section) => {
                 const Icon = section.icon;
                 const isDone = completed.has(section.id);
