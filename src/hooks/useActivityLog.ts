@@ -42,6 +42,8 @@ export function useActivityLog() {
 }
 
 export function useActivityLogs(limit = 50) {
+  const { organization } = useOrgContext();
+
   const fetchActivityLogs = useCallback(async (filters?: {
     activityType?: ActivityType;
     userId?: string;
@@ -53,6 +55,11 @@ export function useActivityLogs(limit = 50) {
       .select("*")
       .order("created_at", { ascending: false })
       .limit(limit);
+
+    // Scope to organization for multi-tenant isolation
+    if (organization?.id) {
+      query = query.eq("organization_id", organization.id);
+    }
 
     if (filters?.activityType) {
       query = query.eq("activity_type", filters.activityType);
@@ -70,7 +77,7 @@ export function useActivityLogs(limit = 50) {
     const { data, error } = await query;
 
     return { data, error };
-  }, [limit]);
+  }, [limit, organization?.id]);
 
   return { fetchActivityLogs };
 }

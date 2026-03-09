@@ -218,6 +218,7 @@ export function useWorkOrderHistory(filters?: WorkOrderHistoryFilters) {
       let performanceQuery = supabase
         .from("job_performance_updates")
         .select("*")
+        .eq("organization_id", organization.id)
         .order("created_at", { ascending: false })
         .limit(20);
       

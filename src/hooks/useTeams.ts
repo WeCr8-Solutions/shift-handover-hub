@@ -27,6 +27,7 @@ export interface TeamMember {
 
 export function useTeams() {
   const { user } = useAuth();
+  const { organization } = useOrgContext();
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -38,16 +39,22 @@ export function useTeams() {
     }
 
     setLoading(true);
-    const { data, error } = await supabase
+    let query = supabase
       .from("teams")
       .select("*")
       .order("created_at", { ascending: false });
+
+    if (organization?.id) {
+      query = query.eq("organization_id", organization.id);
+    }
+
+    const { data, error } = await query;
 
     if (!error && data) {
       setTeams(data as Team[]);
     }
     setLoading(false);
-  }, [user]);
+  }, [user, organization?.id]);
 
   useEffect(() => {
     fetchTeams();
