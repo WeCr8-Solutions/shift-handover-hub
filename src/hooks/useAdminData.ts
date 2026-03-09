@@ -476,7 +476,8 @@ export function useAllTeams(options?: { organizationId?: string | null }) {
   return { teams, loading, fetchTeams, deleteTeam };
 }
 
-export function useAllStations() {
+export function useAllStations(options?: { organizationId?: string | null }) {
+  const orgId = options?.organizationId ?? null;
   const [stations, setStations] = useState<StationWithTeam[]>([]);
   const [loading, setLoading] = useState(true);
   const { logActivity } = useActivityLog();
@@ -484,10 +485,11 @@ export function useAllStations() {
   const fetchStations = useCallback(async () => {
     setLoading(true);
 
-    const { data: stationsData, error: stationsError } = await supabase
-      .from("stations")
-      .select("*")
-      .order("created_at", { ascending: false });
+    const stationsQuery = orgId
+      ? supabase.from("stations").select("*").eq("organization_id", orgId).order("created_at", { ascending: false })
+      : supabase.from("stations").select("*").order("created_at", { ascending: false });
+
+    const { data: stationsData, error: stationsError } = await stationsQuery;
 
     if (stationsError) {
       console.error("Error fetching stations:", stationsError);
@@ -512,7 +514,7 @@ export function useAllStations() {
 
     setStations(stationsWithTeam);
     setLoading(false);
-  }, []);
+  }, [orgId]);
 
   useEffect(() => {
     fetchStations();
