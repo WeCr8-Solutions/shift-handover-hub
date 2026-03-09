@@ -582,12 +582,12 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
                           {redemption.invite?.invite_code}
                         </code>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="hidden sm:table-cell">
                         {redemption.invite?.team?.name || (
                           <span className="text-muted-foreground">—</span>
                         )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="hidden md:table-cell">
                         <div className="flex flex-wrap gap-1">
                           <Badge variant="outline" className="text-xs">Org: {redemption.invite?.org_role}</Badge>
                           {redemption.invite?.app_role && (
