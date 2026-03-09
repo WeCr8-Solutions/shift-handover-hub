@@ -256,7 +256,7 @@ export function UserManagement({ isAdmin, isSupervisorOrAbove = false, access }:
   const filteredUsers = filterUsers(users);
 
   const handleRoleChange = async (userId: string, role: AppRole, hasRole: boolean) => {
-    if (!isAdmin) {
+    if (!isPlatformAdmin) {
       toast({
         title: "Permission denied",
         description: "Only admins can modify user roles.",
