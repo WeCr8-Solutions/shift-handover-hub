@@ -304,17 +304,17 @@ export default function ManufacturingPioneers() {
   return (
     <>
       <SEOHead
-        title="Manufacturing Pioneers — Key Figures Who Shaped Industry | JobLine.ai"
-        description="Explore the pioneers of modern manufacturing: Henry Ford, Taiichi Ohno, W. Edwards Deming, Shigeo Shingo, Eli Whitney, and more. Learn their contributions to lean, quality, and mass production."
+        title="Industrial & Manufacturing Pioneers — Carnegie, Rockefeller, Von Braun & More | JobLine.ai"
+        description="Explore 25+ pioneers who shaped industry: Andrew Carnegie (steel), John D. Rockefeller (oil), Wernher von Braun (space), Henry Ford, Taiichi Ohno, Deming, Tesla, Edison, Katherine Johnson, and more. Free interactive resource with biographies and Wikipedia references."
       />
       <div className="min-h-screen bg-background">
         <MarketingNav />
         <main className="container py-12 max-w-4xl">
           <div className="text-center mb-8">
             <Badge variant="secondary" className="mb-4">History & Influence</Badge>
-            <h1 className="text-4xl font-bold tracking-tight mb-4">Manufacturing Pioneers</h1>
+            <h1 className="text-4xl font-bold tracking-tight mb-4">Industrial & Manufacturing Pioneers</h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              The visionaries who shaped modern manufacturing — from scientific management and mass production to lean thinking and total quality. Explore their contributions and legacy.
+              The visionaries who built modern industry — from steel and oil titans to space pioneers, quality revolutionaries, and lean thinkers. Explore their contributions and lasting legacy.
             </p>
           </div>
 
