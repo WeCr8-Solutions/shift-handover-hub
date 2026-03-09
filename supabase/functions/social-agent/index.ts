@@ -200,7 +200,7 @@ Deno.serve(async (req) => {
         type: "awareness",
         content: "Running a machine shop? Tired of information getting lost between shifts?\n\nJobLine.ai is a new shift handoff and work order tracking tool built specifically for small manufacturers. It has a free tier so any shop can try it.\n\n🔧 Digital handoffs\n📋 Work order tracking\n📱 Works on tablets\n💰 Free tier available",
         hashtags: ["Manufacturing", "MachineShop", "SmallBusiness"],
-        cta: "Check it out → joblineai.lovable.app",
+        cta: "Check it out → jobline.ai",
       },
       {
         platform: "discord",
