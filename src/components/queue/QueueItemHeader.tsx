@@ -72,6 +72,11 @@ export function QueueItemHeader({ item, assignedStation, isOverdue, elapsedTime,
             • {isQuote ? "Quote #" : "WO #"}: {item.work_order}
           </span>
         )}
+        {item.part_number && (
+          <span className="ml-2">
+            • Part: <span className="font-medium">{item.part_number}</span>
+          </span>
+        )}
         {assignedStation && (
           <span className="ml-2">
             • Station: <span className="font-medium">{assignedStation.station_id}</span> ({assignedStation.name})

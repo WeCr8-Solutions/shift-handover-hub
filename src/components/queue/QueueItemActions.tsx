@@ -50,7 +50,7 @@ export function QueueItemActions({
 }: QueueItemActionsProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { hasAdminAccess } = useAdminAccess();
+  const { hasAdminAccess, hasOrgSupervisorAccess } = useAdminAccess();
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [convertDialogOpen, setConvertDialogOpen] = useState(false);
   const [convertWONumber, setConvertWONumber] = useState("");
@@ -134,50 +134,41 @@ export function QueueItemActions({
       }
     }
 
-    const currentStepIdx = routingSteps.findIndex(
-      s => s.station_id === item.station_id && s.status !== "completed"
-    );
-    const nextStep = currentStepIdx >= 0 ? routingSteps[currentStepIdx + 1] : null;
-
-    if (nextStep) {
+    // Use atomic RPC for routing advancement
+    if (item.station_id && routingSteps.length > 0) {
       try {
-        if (currentStepIdx >= 0) {
-          const { data: { user } } = await supabase.auth.getUser();
-          await supabase
-            .from("work_order_routing")
-            .update({ status: "completed", completed_at: new Date().toISOString(), completed_by: user?.id })
-            .eq("id", routingSteps[currentStepIdx].id);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          toast({ title: "Error", description: "Authentication required", variant: "destructive" });
+          setActionLoading(null);
+          return;
         }
 
-        if (nextStep.station_id) {
-          await supabase.from("queue_items").update({ status: "queued", station_id: nextStep.station_id, started_at: null }).eq("id", item.id);
-          await supabase.from("work_order_routing").update({ status: "pending" }).eq("id", nextStep.id);
-          await supabase.from("current_station_status").upsert({
-            station_id: nextStep.station_id,
-            current_job_work_order: item.work_order || item.title,
-            current_job_part_number: item.part_number,
-            current_job_state: "Waiting on Material",
-            current_operator_name: null,
-            current_operator_id: null,
-            parts_complete: 0,
-            parts_required: item.quantity || 0,
-          }, { onConflict: "station_id" });
-        }
+        const { data: result, error } = await supabase.rpc("pass_work_order_to_next_step", {
+          _queue_item_id: item.id,
+          _current_station_id: item.station_id,
+          _actor_id: user.id,
+          _is_override: false,
+          _override_reason: null,
+        });
 
-        if (item.station_id) {
-          await supabase.from("current_station_status").update({
-            current_job_work_order: null, current_job_part_number: null, current_job_state: null,
-            current_operator_name: null, current_operator_id: null, parts_complete: null, parts_required: null,
-          }).eq("station_id", item.station_id);
+        if (error) {
+          toast({ title: "Transition Blocked", description: error.message, variant: "destructive" });
+        } else {
+          const action = (result as any)?.action;
+          if (action === "advanced") {
+            toast({ title: "Operation Complete", description: `Advanced to ${(result as any)?.next_station_name || "next station"}` });
+          } else {
+            toast({ title: "Work Order Completed!", description: "All operations finished" });
+          }
+          onReloadHistory();
+          onReloadRouting();
         }
-
-        toast({ title: "Operation Complete", description: `Advanced to ${nextStep.station_name || "next station"}` });
-        onReloadHistory();
-        onReloadRouting();
       } catch {
         toast({ title: "Error", description: "Failed to advance work order", variant: "destructive" });
       }
     } else {
+      // No routing — simple completion
       const { error } = await onUpdate(item.id, { status: "completed", completed_at: new Date().toISOString() });
       if (error) {
         toast({ title: "Error", description: error, variant: "destructive" });
@@ -259,7 +250,7 @@ export function QueueItemActions({
             );
           })()}
           <div className="flex-1" />
-          {onOpenRouting && hasAdminAccess && (
+          {onOpenRouting && hasOrgSupervisorAccess && (
             <Button variant="outline" onClick={() => onOpenRouting(item)} className="gap-2">
               <GitBranch className="w-4 h-4" />
               Edit Routing
@@ -292,7 +283,7 @@ export function QueueItemActions({
               <ArrowRightLeft className="w-4 h-4" />
               Convert to Work Order
             </Button>
-            {onOpenRouting && hasAdminAccess && (
+            {onOpenRouting && hasOrgSupervisorAccess && (
               <Button variant="outline" onClick={() => onOpenRouting(item)} className="gap-2">
                 <GitBranch className="w-4 h-4" />
                 Edit Routing
