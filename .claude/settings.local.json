@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run test)",
+      "Bash(npx vitest run src/components/dashboard/OperatorStationPanel.test.tsx)",
+      "Bash(npx vitest run src/pages/ShopFloorDisplay.test.tsx)",
+      "Bash(npx vitest run src/hooks/useShopFloorDisplays.test.ts src/hooks/useStations.test.ts src/components/ShiftStats.test.tsx src/components/TeamManagement.test.tsx src/components/dashboard/OperatorStationPanel.test.tsx src/components/dashboard/StationCheckIn.test.tsx src/components/dashboard/SupervisorDashboard.test.tsx src/components/queue/PartSpecsSection.test.tsx src/components/queue/QueueFilters.test.tsx src/pages/ShopFloorDisplay.test.tsx src/components/settings/PartCatalogManager.test.tsx)",
+      "Bash(npx vitest run src/components/dashboard/StationCheckIn.test.tsx)",
+      "Bash(npx vitest run src/components/queue/QueueFilters.test.tsx)",
+      "Bash(node -e \"const tt = require\\(''./src/test/test-utils.tsx''\\); console.log\\(Object.keys\\(tt\\)\\)\")",
+      "Bash(npx vitest run src/components/queue/QueueFilters.test.tsx --reporter=verbose)",
+      "Bash(npx vitest run --reporter=verbose)",
+      "Bash(curl http://localhost:11434/*)",
+      "Bash(npx eslint *)",
+      "Bash(npx tsc --noEmit*)"
+    ]
+  }
+}

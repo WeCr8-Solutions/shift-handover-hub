@@ -5,6 +5,7 @@ import { ReactElement, ReactNode } from "react";
 import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { OrgProvider } from "@/contexts/OrgContext";
 
 // Create a fresh QueryClient for each test
 function createTestQueryClient() {
@@ -25,13 +26,15 @@ interface AllProvidersProps {
   children: ReactNode;
 }
 
-function AllProviders({ children }: AllProvidersProps) {
+export function AllProviders({ children }: AllProvidersProps) {
   const queryClient = createTestQueryClient();
 
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <TooltipProvider>{children}</TooltipProvider>
+        <OrgProvider>
+          <TooltipProvider>{children}</TooltipProvider>
+        </OrgProvider>
       </BrowserRouter>
     </QueryClientProvider>
   );
@@ -47,7 +50,8 @@ function customRender(
 
 // Re-export everything from testing-library
 export * from "@testing-library/react";
-export { customRender as render, screen, waitFor, fireEvent, within, userEvent };
+export { customRender as render, userEvent };
+export { screen, waitFor, fireEvent, within } from "@testing-library/dom";
 
 // Mock Supabase client for tests
 export const mockSupabaseClient = {
@@ -70,6 +74,27 @@ export const mockSupabaseClient = {
   functions: {
     invoke: vi.fn(),
   },
+};
+
+// Shared org fixture — use in vi.mock("@/hooks/useUserOrganization") for hook tests
+export const mockOrg = {
+  organization: {
+    id: "test-org-id",
+    name: "Test Org",
+    slug: "test-org",
+    description: null,
+    logo_url: null,
+    subscription_tier: "team",
+    subscription_status: "active",
+    trial_ends_at: null,
+  },
+  organizationRole: "supervisor" as const,
+  teams: [],
+  userRoles: [],
+  primaryRole: "supervisor",
+  primaryTeam: null,
+  loading: false,
+  refresh: async () => {},
 };
 
 // Mock user data

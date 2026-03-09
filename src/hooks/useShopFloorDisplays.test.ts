@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
+import { AllProviders } from "@/test/test-utils";
 
 // Must use factory with no top-level variable refs
 vi.mock("@/integrations/supabase/client", () => {
@@ -21,7 +22,16 @@ vi.mock("@/integrations/supabase/client", () => {
 });
 
 vi.mock("@/hooks/useUserOrganization", () => ({
-  useUserOrganization: () => ({ organization: { id: "org-1", name: "Test Org" } }),
+  useUserOrganization: () => ({
+    organization: { id: "org-1", name: "Test Org", slug: "test-org", description: null, logo_url: null, subscription_tier: "team", subscription_status: "active", trial_ends_at: null },
+    organizationRole: "supervisor",
+    teams: [],
+    userRoles: [],
+    primaryRole: "supervisor",
+    primaryTeam: null,
+    loading: false,
+    refresh: async () => {},
+  }),
 }));
 
 vi.mock("@/contexts/AuthContext", () => ({
@@ -36,18 +46,18 @@ describe("useShopFloorDisplays", () => {
   });
 
   it("fetches displays on mount and sets loading false", async () => {
-    const { result } = renderHook(() => useShopFloorDisplays());
+    const { result } = renderHook(() => useShopFloorDisplays(), { wrapper: AllProviders });
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.displays).toEqual([]);
   });
 
   it("returns loading state initially", () => {
-    const { result } = renderHook(() => useShopFloorDisplays());
+    const { result } = renderHook(() => useShopFloorDisplays(), { wrapper: AllProviders });
     expect(result.current.loading).toBe(true);
   });
 
   it("createDisplay returns no error when authenticated", async () => {
-    const { result } = renderHook(() => useShopFloorDisplays());
+    const { result } = renderHook(() => useShopFloorDisplays(), { wrapper: AllProviders });
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     await act(async () => {
@@ -61,7 +71,7 @@ describe("useShopFloorDisplays", () => {
   });
 
   it("deleteDisplay returns no error", async () => {
-    const { result } = renderHook(() => useShopFloorDisplays());
+    const { result } = renderHook(() => useShopFloorDisplays(), { wrapper: AllProviders });
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     await act(async () => {
@@ -71,7 +81,7 @@ describe("useShopFloorDisplays", () => {
   });
 
   it("regenerateToken returns no error", async () => {
-    const { result } = renderHook(() => useShopFloorDisplays());
+    const { result } = renderHook(() => useShopFloorDisplays(), { wrapper: AllProviders });
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     await act(async () => {
@@ -81,7 +91,7 @@ describe("useShopFloorDisplays", () => {
   });
 
   it("toggleActive returns no error", async () => {
-    const { result } = renderHook(() => useShopFloorDisplays());
+    const { result } = renderHook(() => useShopFloorDisplays(), { wrapper: AllProviders });
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     await act(async () => {
@@ -91,7 +101,7 @@ describe("useShopFloorDisplays", () => {
   });
 
   it("exposes refresh function", async () => {
-    const { result } = renderHook(() => useShopFloorDisplays());
+    const { result } = renderHook(() => useShopFloorDisplays(), { wrapper: AllProviders });
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(typeof result.current.refresh).toBe("function");
   });

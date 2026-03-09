@@ -8,8 +8,14 @@ vi.mock("@/contexts/AuthContext", () => ({
 
 vi.mock("@/hooks/useUserOrganization", () => ({
   useUserOrganization: () => ({
-    organization: { id: "test-org-id", name: "Test Org" },
+    organization: { id: "test-org-id", name: "Test Org", slug: "test-org", description: null, logo_url: null, subscription_tier: "team", subscription_status: "active", trial_ends_at: null },
+    organizationRole: "supervisor",
+    teams: [],
+    userRoles: [],
+    primaryRole: "supervisor",
+    primaryTeam: null,
     loading: false,
+    refresh: async () => {},
   }),
 }));
 

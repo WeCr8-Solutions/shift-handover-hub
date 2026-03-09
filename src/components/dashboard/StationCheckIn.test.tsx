@@ -1,11 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@/test/test-utils";
 import userEvent from "@testing-library/user-event";
-import { BrowserRouter } from "react-router-dom";
 
 // --- Mocks ---
 vi.mock("@/hooks/useUserOrganization", () => ({
-  useUserOrganization: () => ({ organization: { id: "org-1", name: "Test Org" } }),
+  useUserOrganization: () => ({
+    organization: { id: "org-1", name: "Test Org", slug: "test-org", description: null, logo_url: null, subscription_tier: "team", subscription_status: "active", trial_ends_at: null },
+    organizationRole: "supervisor",
+    teams: [],
+    userRoles: [],
+    primaryRole: "supervisor",
+    primaryTeam: null,
+    loading: false,
+    refresh: async () => {},
+  }),
 }));
 
 vi.mock("@/lib/mockData", () => ({
@@ -62,11 +70,7 @@ function renderCheckIn(onCheckIn = vi.fn().mockResolvedValue(undefined)) {
   return {
     user: userEvent.setup(),
     onCheckIn,
-    ...render(
-      <BrowserRouter>
-        <StationCheckIn onCheckIn={onCheckIn} />
-      </BrowserRouter>,
-    ),
+    ...render(<StationCheckIn onCheckIn={onCheckIn} />),
   };
 }
 
@@ -78,11 +82,7 @@ describe("StationCheckIn", () => {
 
   it("renders loading state when stations are loading", () => {
     mockLoading = true;
-    render(
-      <BrowserRouter>
-        <StationCheckIn onCheckIn={vi.fn()} />
-      </BrowserRouter>,
-    );
+    render(<StationCheckIn onCheckIn={vi.fn()} />);
     expect(screen.getByRole("status")).toBeInTheDocument();
   });
 
@@ -242,11 +242,11 @@ describe("StationCheckIn", () => {
   it("updates button text with selection count", async () => {
     const { user } = renderCheckIn();
 
-    expect(screen.getByRole("button", { name: /start shift \(0 stations\)/i })).toBeInTheDocument();
+    expect(screen.getByText(/Start Shift \(0 stations\)/i)).toBeInTheDocument();
 
     const station1 = screen.getByText("CNC Lathe 01").closest("[role='checkbox']");
     await user.click(station1!);
 
-    expect(screen.getByRole("button", { name: /start shift \(1 station\)/i })).toBeInTheDocument();
+    expect(screen.getByText(/Start Shift \(1 station\)/i)).toBeInTheDocument();
   });
 });

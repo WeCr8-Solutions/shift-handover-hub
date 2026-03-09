@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, waitFor, act } from "@testing-library/react";
+import { AllProviders } from "@/test/test-utils";
 
 // ---- JobBoss Cloud ERP test data ----
 const JOBBOSS_CONNECTION = {
@@ -198,9 +199,20 @@ vi.mock("@/hooks/useUserOrganization", () => ({
     organization: {
       id: "org-jobboss-1",
       name: "ACME Manufacturing",
+      slug: "acme-mfg",
+      description: null,
+      logo_url: null,
       subscription_tier: "team",
       subscription_status: "active",
+      trial_ends_at: null,
     },
+    organizationRole: "supervisor",
+    teams: [],
+    userRoles: [],
+    primaryRole: "supervisor",
+    primaryTeam: null,
+    loading: false,
+    refresh: async () => {},
   }),
 }));
 
@@ -222,7 +234,7 @@ describe("useERPConnector — JobBoss Cloud ERP Integration", () => {
 
   describe("Connection Loading", () => {
     it("fetches erp_connections scoped to org on mount", async () => {
-      renderHook(() => useERPConnector());
+      renderHook(() => useERPConnector(), { wrapper: AllProviders });
 
       await waitFor(() => {
         expect(fromCallTracker).toContain("erp_connections");
@@ -230,7 +242,7 @@ describe("useERPConnector — JobBoss Cloud ERP Integration", () => {
     });
 
     it("loads all related tables in parallel on mount", async () => {
-      renderHook(() => useERPConnector());
+      renderHook(() => useERPConnector(), { wrapper: AllProviders });
 
       await waitFor(() => {
         expect(fromCallTracker).toContain("erp_connections");
@@ -241,7 +253,7 @@ describe("useERPConnector — JobBoss Cloud ERP Integration", () => {
     });
 
     it("returns connection with jobboss vendor after load", async () => {
-      const { result } = renderHook(() => useERPConnector());
+      const { result } = renderHook(() => useERPConnector(), { wrapper: AllProviders });
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false);
@@ -255,7 +267,7 @@ describe("useERPConnector — JobBoss Cloud ERP Integration", () => {
 
   describe("JobBoss Work Center Mappings", () => {
     it("returns work center mappings including unmapped entries", async () => {
-      const { result } = renderHook(() => useERPConnector());
+      const { result } = renderHook(() => useERPConnector(), { wrapper: AllProviders });
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false);
@@ -266,7 +278,7 @@ describe("useERPConnector — JobBoss Cloud ERP Integration", () => {
     });
 
     it("identifies unmapped work centers (null jobline_station_id)", async () => {
-      const { result } = renderHook(() => useERPConnector());
+      const { result } = renderHook(() => useERPConnector(), { wrapper: AllProviders });
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false);
@@ -282,7 +294,7 @@ describe("useERPConnector — JobBoss Cloud ERP Integration", () => {
 
   describe("JobBoss Status Mappings", () => {
     it("loads all 5 JobBoss status mappings", async () => {
-      const { result } = renderHook(() => useERPConnector());
+      const { result } = renderHook(() => useERPConnector(), { wrapper: AllProviders });
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false);
@@ -292,7 +304,7 @@ describe("useERPConnector — JobBoss Cloud ERP Integration", () => {
     });
 
     it("maps JobBoss 'Active' to JobLine 'in_progress'", async () => {
-      const { result } = renderHook(() => useERPConnector());
+      const { result } = renderHook(() => useERPConnector(), { wrapper: AllProviders });
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false);
@@ -307,7 +319,7 @@ describe("useERPConnector — JobBoss Cloud ERP Integration", () => {
 
   describe("Test Connection (JobBoss Cloud)", () => {
     it("invokes erp-sync edge function with test_connection flag", async () => {
-      const { result } = renderHook(() => useERPConnector());
+      const { result } = renderHook(() => useERPConnector(), { wrapper: AllProviders });
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false);
@@ -331,7 +343,7 @@ describe("useERPConnector — JobBoss Cloud ERP Integration", () => {
 
   describe("Sync Execution", () => {
     it("invokes incremental sync with correct org_id", async () => {
-      const { result } = renderHook(() => useERPConnector());
+      const { result } = renderHook(() => useERPConnector(), { wrapper: AllProviders });
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false);
@@ -353,7 +365,7 @@ describe("useERPConnector — JobBoss Cloud ERP Integration", () => {
     });
 
     it("invokes full sync when requested", async () => {
-      const { result } = renderHook(() => useERPConnector());
+      const { result } = renderHook(() => useERPConnector(), { wrapper: AllProviders });
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false);
@@ -376,7 +388,7 @@ describe("useERPConnector — JobBoss Cloud ERP Integration", () => {
 
   describe("Sync History with Tiered Payment Validation", () => {
     it("loads sync logs showing last successful sync stats", async () => {
-      const { result } = renderHook(() => useERPConnector());
+      const { result } = renderHook(() => useERPConnector(), { wrapper: AllProviders });
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false);
@@ -388,7 +400,7 @@ describe("useERPConnector — JobBoss Cloud ERP Integration", () => {
     it("connection is active only when org has paid subscription", async () => {
       // The mock org has subscription_tier: "team" and status: "active"
       // Connection is_active should be true
-      const { result } = renderHook(() => useERPConnector());
+      const { result } = renderHook(() => useERPConnector(), { wrapper: AllProviders });
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false);
@@ -400,7 +412,7 @@ describe("useERPConnector — JobBoss Cloud ERP Integration", () => {
 
   describe("Field Mapping — JobBoss-specific keys", () => {
     it("stores JobBoss field mapping in connection metadata", async () => {
-      const { result } = renderHook(() => useERPConnector());
+      const { result } = renderHook(() => useERPConnector(), { wrapper: AllProviders });
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false);
@@ -417,7 +429,7 @@ describe("useERPConnector — JobBoss Cloud ERP Integration", () => {
 
   describe("Tenant Isolation", () => {
     it("scopes all queries to organization_id", async () => {
-      renderHook(() => useERPConnector());
+      renderHook(() => useERPConnector(), { wrapper: AllProviders });
 
       await waitFor(() => {
         // All ERP tables should be queried

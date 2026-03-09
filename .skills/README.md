@@ -1,0 +1,57 @@
+# .skills — Ollama-Powered Repair Skills
+
+Project-level skill definitions for AI-assisted code repair using a local Ollama model.
+These back the Claude Code slash commands in `.claude/commands/`.
+
+## Prerequisites
+
+1. **Ollama installed** — [ollama.com](https://ollama.com)
+2. **Model pulled:**
+   ```
+   ollama pull qwen2.5-coder:7b
+   ```
+3. **Ollama running** (starts automatically on most systems, or run `ollama serve`)
+
+## Available Skills
+
+| Command | Purpose | PRD Phase |
+|---|---|---|
+| `/ollama-review <file>` | General code review — TS, ESLint, test coverage | Any |
+| `/repair-test <file>` | Fix failing test suites (missing provider wrappers) | Phase 1 |
+| `/repair-types <file>` | Fix TypeScript type errors (empty interfaces, require()) | Phase 2 |
+| `/repair-hooks <file>` | Fix hook dependency warnings (useCallback/useEffect) | Phase 3 |
+| `/repair-any <file>` | Replace `no-explicit-any` with precise types | Phase 4 |
+
+## Usage
+
+```bash
+# General review
+/ollama-review src/hooks/useERPConnector.test.ts
+
+# Fix a broken test suite
+/repair-test src/hooks/useOperatorSessions.test.ts
+
+# Replace any types in a file
+/repair-any src/components/StationCard.tsx
+```
+
+## Override Ollama Model
+
+Set `OLLAMA_MODEL` in your shell before invoking:
+
+```bash
+OLLAMA_MODEL=qwen2.5-coder:14b /repair-any src/components/StationCard.tsx
+```
+
+## Workflow
+
+```
+Ollama analyzes → Claude applies fix → Codacy validates → npm test confirms
+```
+
+Every edit triggers `codacy_cli_analyze` automatically per `.github/instructions/codacy.instructions.md`.
+
+## Configuration
+
+See [ollama-config.md](./ollama-config.md) for model options.
+See [guidelines.md](./guidelines.md) for project coding rules enforced by all skills.

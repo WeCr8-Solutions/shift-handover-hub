@@ -1,7 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter } from "react-router-dom";
+import { render, screen } from "@/test/test-utils";
 
 // --- Mocks ---
 vi.mock("@/contexts/AuthContext", () => ({
@@ -20,9 +18,14 @@ vi.mock("@/contexts/TeamContext", () => ({
 
 vi.mock("@/hooks/useUserOrganization", () => ({
   useUserOrganization: () => ({
-    organization: { id: "org-1", name: "Acme Mfg" },
+    organization: { id: "org-1", name: "Acme Mfg", slug: "acme-mfg", description: null, logo_url: null, subscription_tier: "team", subscription_status: "active", trial_ends_at: null },
     organizationRole: "admin",
+    teams: [],
+    userRoles: [],
+    primaryRole: "admin",
+    primaryTeam: null,
     loading: false,
+    refresh: async () => {},
   }),
 }));
 
@@ -62,14 +65,7 @@ vi.mock("@/hooks/useStations", () => ({
 import { ShiftStats } from "./ShiftStats";
 
 function renderComponent() {
-  const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  return render(
-    <QueryClientProvider client={qc}>
-      <BrowserRouter>
-        <ShiftStats />
-      </BrowserRouter>
-    </QueryClientProvider>
-  );
+  return render(<ShiftStats />);
 }
 
 describe("ShiftStats — org-scoped rendering", () => {

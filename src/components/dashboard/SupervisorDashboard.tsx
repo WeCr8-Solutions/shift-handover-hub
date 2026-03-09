@@ -280,6 +280,7 @@ export function SupervisorDashboard({
           <div className="flex items-center gap-2 sm:hidden">
             <span className="text-xs text-muted-foreground shrink-0">Scope:</span>
             <select
+              aria-label="Filter by team"
               value={currentTeam?.id || "__all__"}
               onChange={(e) => {
                 if (e.target.value === "__all__") setCurrentTeam(null);
@@ -296,38 +297,45 @@ export function SupervisorDashboard({
               ))}
             </select>
           </div>
-          <div className="hidden sm:flex items-center gap-2 flex-wrap">
-            <span className="text-xs text-muted-foreground mr-1">Scope:</span>
-            <button
-              onClick={() => setCurrentTeam(null)}
-              aria-pressed={!currentTeam}
-              className={cn(
-                "px-3 py-1 rounded-full text-xs font-medium border transition-colors",
-                !currentTeam
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-secondary/50 text-muted-foreground border-border hover:border-primary/50"
-              )}
-            >
+          <fieldset className="hidden sm:flex items-center gap-2 flex-wrap border-0 p-0 m-0">
+            <legend className="text-xs text-muted-foreground mr-1 float-left">Scope:</legend>
+            <label className={cn(
+              "px-3 py-1 rounded-full text-xs font-medium border transition-colors cursor-pointer",
+              !currentTeam
+                ? "bg-primary text-primary-foreground border-primary"
+                : "bg-secondary/50 text-muted-foreground border-border hover:border-primary/50"
+            )}>
+              <input
+                type="radio"
+                name="team-scope"
+                value="__all__"
+                checked={!currentTeam}
+                onChange={() => setCurrentTeam(null)}
+                className="sr-only"
+              />
               <Factory className="w-3 h-3 inline mr-1" aria-hidden="true" />
               All Teams
-            </button>
+            </label>
             {teams.map((team) => (
-              <button
-                key={team.id}
-                onClick={() => setCurrentTeam(team)}
-                aria-pressed={currentTeam?.id === team.id}
-                className={cn(
-                  "px-3 py-1 rounded-full text-xs font-medium border transition-colors",
-                  currentTeam?.id === team.id
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-secondary/50 text-muted-foreground border-border hover:border-primary/50"
-                )}
-              >
+              <label key={team.id} className={cn(
+                "px-3 py-1 rounded-full text-xs font-medium border transition-colors cursor-pointer",
+                currentTeam?.id === team.id
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-secondary/50 text-muted-foreground border-border hover:border-primary/50"
+              )}>
+                <input
+                  type="radio"
+                  name="team-scope"
+                  value={team.id}
+                  checked={currentTeam?.id === team.id}
+                  onChange={() => setCurrentTeam(team)}
+                  className="sr-only"
+                />
                 <Users className="w-3 h-3 inline mr-1" aria-hidden="true" />
                 {team.name}
-              </button>
+              </label>
             ))}
-          </div>
+          </fieldset>
         </>
       )}
 

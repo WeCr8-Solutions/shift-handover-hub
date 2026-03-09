@@ -187,7 +187,7 @@ export function OperatorStationPanel({
         nextStep: nextStep || null,
         totalSteps: steps.length,
         currentStepNumber: curIdx >= 0 ? curIdx + 1 : 0,
-        allSteps: steps.map((s: any) => ({
+        allSteps: steps.map((s: RoutingStep) => ({
           id: s.id,
           station_id: s.station_id,
           status: s.status,
@@ -199,7 +199,7 @@ export function OperatorStationPanel({
       });
     };
     fetchRouting();
-  }, [activeOrder?.id, stationId]);
+  }, [activeOrder, stationId]);
 
   // Fetch orders
   const fetchOrders = async () => {
@@ -397,7 +397,7 @@ export function OperatorStationPanel({
     if (routingInfo?.currentStepId) {
       stepDimensions.loadAll(routingInfo.currentStepId, deliverOrder.id);
     }
-  }, [deliverOrder, routingInfo?.currentStepId]);
+  }, [deliverOrder, routingInfo?.currentStepId, stepDimensions]);
 
   // Validate completion form (includes dimension check)
   useEffect(() => {
@@ -418,7 +418,7 @@ export function OperatorStationPanel({
     }
 
     setValidationErrors(errors);
-  }, [completionData, stepDimensions.requirements, stepDimensions.readings]);
+  }, [completionData, stepDimensions]);
 
   const handleCloseDeliveryDialog = (open: boolean) => {
     if (!open) {
@@ -591,7 +591,7 @@ export function OperatorStationPanel({
                     Routing ({routingInfo.currentStepNumber}/{routingInfo.totalSteps})
                     {routingInfo.isFinalStep && <span className="text-primary ml-1">— Final Op</span>}
                   </div>
-                  <div className="overflow-x-auto overscroll-x-contain pb-1 -mx-1 px-1" style={{ WebkitOverflowScrolling: 'touch' }}>
+                  <div className="overflow-x-auto overscroll-x-contain pb-1 -mx-1 px-1 webkit-overflow-scrolling">
                     <div className="flex items-center gap-0 min-w-max">
                       {routingInfo.allSteps.map((step, idx) => {
                         const isCurrent = step.station_id === stationId && step.status !== "completed"

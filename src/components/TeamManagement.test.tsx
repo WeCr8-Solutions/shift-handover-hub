@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
+import { supabase } from "@/integrations/supabase/client";
 
 // ─── Mocks ────────────────────────────────────────────────────────────────
 vi.mock("@/integrations/supabase/client", () => ({
@@ -32,14 +33,14 @@ vi.mock("@/contexts/AuthContext", () => ({
 
 vi.mock("@/hooks/useUserOrganization", () => ({
   useUserOrganization: () => ({
-    organization: { id: "org-1", name: "Test Org" },
+    organization: { id: "org-1", name: "Test Org", slug: "test-org", description: null, logo_url: null, subscription_tier: "team", subscription_status: "active", trial_ends_at: null },
     organizationRole: "owner",
     teams: [],
     userRoles: [],
     primaryRole: "operator",
     primaryTeam: null,
     loading: false,
-    refresh: vi.fn(),
+    refresh: async () => {},
   }),
 }));
 
@@ -51,8 +52,6 @@ describe("Team Management System", () => {
       // The old code used `profiles:user_id(...)` which fails with PGRST200
       // because organization_members has no FK to profiles.
       // The fix uses separate queries: one for org_members, one for profiles.
-      const { supabase } = require("@/integrations/supabase/client");
-
       const mockFrom = supabase.from;
       mockFrom.mockImplementation((table: string) => {
         const obj: any = {};

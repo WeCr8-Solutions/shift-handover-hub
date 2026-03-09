@@ -59,9 +59,9 @@ describe("ShopFloorDisplay", () => {
       error: { message: "RPC error" },
     });
     renderWithRoute("/display/abc123?token=test-token");
-    
+
     expect(await screen.findByText("Display Unavailable")).toBeInTheDocument();
-    expect(await screen.findByText("Failed to validate display token")).toBeInTheDocument();
+    expect(await screen.findByText("Failed to fetch display data")).toBeInTheDocument();
   });
 
   it("renders supervisor display when token valid with supervisor mode", async () => {
