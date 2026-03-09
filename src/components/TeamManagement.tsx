@@ -612,36 +612,162 @@ export function TeamManagement() {
         </DialogContent>
       </Dialog>
 
-      {/* Edit Display Dialog */}
+      {/* Edit Display Dialog — Full Context */}
       <Dialog open={!!editingDisplay} onOpenChange={(open) => !open && setEditingDisplay(null)}>
-        <DialogContent className="max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Pencil className="w-5 h-5 text-primary" />
+              <Monitor className="w-5 h-5 text-primary" />
               Edit Display
             </DialogTitle>
-            <DialogDescription>Update display name and mode.</DialogDescription>
+            <DialogDescription>Update all display settings. Changes apply immediately.</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-5">
+            {/* Display Name */}
             <div className="space-y-2">
               <Label htmlFor="edit-display-name">Display Name</Label>
-              <Input
-                id="edit-display-name"
-                value={editDisplayName}
-                onChange={(e) => setEditDisplayName(e.target.value)}
-              />
+              <Input id="edit-display-name" value={editDisplayName} onChange={(e) => setEditDisplayName(e.target.value)} />
             </div>
+
+            {/* Display Mode */}
             <div className="space-y-2">
               <Label>Display Mode</Label>
               <Select value={editDisplayMode} onValueChange={(v) => setEditDisplayMode(v as "supervisor" | "operator")}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="supervisor">Supervisor</SelectItem>
-                  <SelectItem value="operator">Operator</SelectItem>
+                  <SelectItem value="supervisor">Supervisor — KPIs, station grid</SelectItem>
+                  <SelectItem value="operator">Operator — Large cards, progress</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Connection Method */}
+            <div className="space-y-2">
+              <Label>Connection Method</Label>
+              <div className="grid grid-cols-3 gap-2">
+                {([
+                  { value: "url" as const, icon: Globe, label: "URL/QR" },
+                  { value: "ip" as const, icon: Wifi, label: "IP Cast" },
+                  { value: "bluetooth" as const, icon: Bluetooth, label: "Bluetooth" },
+                ] as const).map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setEditDisplayConnectionType(opt.value)}
+                    className={`flex flex-col items-center gap-1 p-2.5 rounded-lg border text-xs transition-colors ${
+                      editDisplayConnectionType === opt.value
+                        ? "bg-primary/10 border-primary text-primary"
+                        : "bg-secondary/30 border-border text-muted-foreground hover:border-primary/50"
+                    }`}
+                  >
+                    <opt.icon className="w-4 h-4" />
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+
+              {editDisplayConnectionType === "ip" && (
+                <div className="space-y-2 p-3 rounded-lg bg-secondary/30 border border-border">
+                  <div className="space-y-1">
+                    <Label className="text-xs">Device IP Address</Label>
+                    <Input value={editDisplayIpAddress} onChange={e => setEditDisplayIpAddress(e.target.value)} placeholder="e.g. 192.168.1.100" className="font-mono" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Cast Protocol</Label>
+                    <Select value={editDisplayCastProtocol} onValueChange={setEditDisplayCastProtocol}>
+                      <SelectTrigger><SelectValue placeholder="Select protocol" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="chromecast">Chromecast</SelectItem>
+                        <SelectItem value="miracast">Miracast</SelectItem>
+                        <SelectItem value="airplay">AirPlay</SelectItem>
+                        <SelectItem value="custom">Custom/Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
+
+              {editDisplayConnectionType === "bluetooth" && (
+                <div className="space-y-2 p-3 rounded-lg bg-secondary/30 border border-border">
+                  <div className="flex items-center gap-2">
+                    <input type="checkbox" checked={editDisplayBluetoothEnabled} onChange={e => setEditDisplayBluetoothEnabled(e.target.checked)} className="rounded border-border" />
+                    <Label className="text-xs">Enable Bluetooth Pairing</Label>
+                  </div>
+                  {editDisplayBluetoothEnabled && (
+                    <div className="space-y-1">
+                      <Label className="text-xs">Device Name</Label>
+                      <Input value={editDisplayBluetoothDeviceName} onChange={e => setEditDisplayBluetoothDeviceName(e.target.value)} placeholder="e.g. Shop-TV-Bay-1" />
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Refresh & Rotation */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs">Refresh Interval (sec)</Label>
+                <Input type="number" min={5} max={300} value={editDisplayRefreshInterval} onChange={e => setEditDisplayRefreshInterval(Number(e.target.value))} />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Dark Mode</Label>
+                <Select value={editDisplayDarkMode} onValueChange={(v) => setEditDisplayDarkMode(v as "auto" | "always" | "never")}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="auto">Auto</SelectItem>
+                    <SelectItem value="always">Always</SelectItem>
+                    <SelectItem value="never">Never</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <input type="checkbox" checked={editDisplayAutoRotate} onChange={e => setEditDisplayAutoRotate(e.target.checked)} className="rounded border-border" />
+                <Label className="text-xs">Auto-Rotate Stations</Label>
+              </div>
+              {editDisplayAutoRotate && (
+                <div className="space-y-1 pl-5">
+                  <Label className="text-xs">Rotate Interval (sec)</Label>
+                  <Input type="number" min={5} max={300} value={editDisplayAutoRotateInterval} onChange={e => setEditDisplayAutoRotateInterval(Number(e.target.value))} />
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input type="checkbox" checked={editDisplayAlertSound} onChange={e => setEditDisplayAlertSound(e.target.checked)} className="rounded border-border" />
+              <Label className="text-xs">Alert Sound Enabled</Label>
+            </div>
+
+            {/* Token Info */}
+            {editingDisplay && (
+              <div className="bg-secondary/30 rounded-lg p-3 text-xs text-muted-foreground space-y-1 border border-border">
+                <p className="font-medium text-foreground">Token Info</p>
+                <p>Status: <Badge variant={editingDisplay.is_active ? "default" : "secondary"} className="text-[10px] ml-1">{editingDisplay.is_active ? "Active" : "Inactive"}</Badge></p>
+                <p>Expires: {editingDisplay.token_expires_at ? new Date(editingDisplay.token_expires_at).toLocaleDateString() : "N/A"}</p>
+                {editingDisplay.last_seen_at && <p>Last seen: {new Date(editingDisplay.last_seen_at).toLocaleString()}</p>}
+              </div>
+            )}
+
+            {/* Danger Zone — Delete */}
+            <div className="border-t border-destructive/30 pt-3">
+              <Button
+                variant="destructive"
+                size="sm"
+                className="w-full gap-2"
+                onClick={() => {
+                  if (editingDisplay) {
+                    setDeletingDisplay(editingDisplay);
+                    setEditingDisplay(null);
+                  }
+                }}
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete This Display
+              </Button>
+            </div>
           </div>
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditingDisplay(null)}>Cancel</Button>
             <Button
@@ -651,12 +777,22 @@ export function TeamManagement() {
                 const { error } = await updateDisplay(editingDisplay.id, {
                   display_name: editDisplayName.trim(),
                   display_mode: editDisplayMode,
+                  connection_type: editDisplayConnectionType,
+                  ip_address: editDisplayConnectionType === "ip" ? editDisplayIpAddress : null,
+                  bluetooth_enabled: editDisplayConnectionType === "bluetooth" ? editDisplayBluetoothEnabled : false,
+                  bluetooth_device_name: editDisplayConnectionType === "bluetooth" ? editDisplayBluetoothDeviceName : null,
+                  cast_protocol: editDisplayCastProtocol || null,
+                  refresh_interval_seconds: editDisplayRefreshInterval,
+                  auto_rotate_enabled: editDisplayAutoRotate,
+                  auto_rotate_interval_seconds: editDisplayAutoRotateInterval,
+                  dark_mode: editDisplayDarkMode,
+                  alert_sound_enabled: editDisplayAlertSound,
                 } as any);
                 setIsSavingDisplay(false);
                 if (error) {
                   toast({ title: "Failed to update display", description: error, variant: "destructive" });
                 } else {
-                  toast({ title: "Display updated" });
+                  toast({ title: "Display updated", description: "All settings saved." });
                   setEditingDisplay(null);
                 }
               }}
