@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { StationCard } from "@/components/StationCard";
 import { HandoffCard } from "@/components/HandoffCard";
+import { HandoffDetailModal } from "@/components/HandoffDetailModal";
 import { ShiftStats } from "@/components/ShiftStats";
 import { NewHandoffForm } from "@/components/NewHandoffForm";
 import { JobPerformanceUpdateForm } from "@/components/JobPerformanceUpdateForm";
