@@ -501,9 +501,9 @@ export function StationAlertTile({ station, onViewStation, onQuickAction }: Stat
                           <span className="text-[10px] text-muted-foreground">from {item.fromStationName}</span>
                           {item.priority !== "normal" && item.priority !== "low" && (
                             <Badge className={cn("text-[9px] ml-auto",
-                              item.priority === "critical" && "bg-red-600",
-                              item.priority === "urgent" && "bg-orange-600",
-                              item.priority === "high" && "bg-amber-600",
+                              item.priority === "critical" && "bg-[hsl(var(--priority-critical))]",
+                              item.priority === "urgent" && "bg-[hsl(var(--priority-urgent))]",
+                              item.priority === "high" && "bg-[hsl(var(--priority-high))]",
                             )}>
                               {item.priority.toUpperCase()}
                             </Badge>
