@@ -354,6 +354,18 @@ export function TeamManagement() {
                   setDisplayName(`${team.name} Display`);
                   setDisplayMode("supervisor");
                 }}
+                onEditDisplay={() => {
+                  const display = teamDisplayMap[team.id];
+                  if (display) {
+                    setEditingDisplay(display);
+                    setEditDisplayName(display.display_name);
+                    setEditDisplayMode(display.display_mode);
+                  }
+                }}
+                onDeleteDisplay={() => {
+                  const display = teamDisplayMap[team.id];
+                  if (display) setDeletingDisplay(display);
+                }}
               />
           ))}
         </div>
