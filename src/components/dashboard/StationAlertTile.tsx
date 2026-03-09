@@ -544,24 +544,24 @@ export function StationAlertTile({ station, onViewStation, onQuickAction }: Stat
                   <div className={cn(
                     "p-2.5 rounded-lg border",
                     alertData.queueCount > 0
-                      ? "bg-amber-500/10 border-amber-500/30"
+                      ? "bg-[hsl(var(--warning)/0.1)] border-[hsl(var(--warning)/0.3)]"
                       : "bg-muted/50 border-border",
                   )}>
                     <div className="flex items-center gap-2">
                       <Clock className={cn(
                         "w-4 h-4",
-                        alertData.queueCount > 0 ? "text-amber-500" : "text-muted-foreground",
+                        alertData.queueCount > 0 ? "text-[hsl(var(--warning))]" : "text-muted-foreground",
                       )} />
                       <div className="flex-1">
                         <span className={cn(
                           "text-xs font-medium",
-                          alertData.queueCount > 0 ? "text-amber-700" : "text-muted-foreground",
+                          alertData.queueCount > 0 ? "text-[hsl(var(--warning))]" : "text-muted-foreground",
                         )}>
                           Station Idle
                           {station.operator === "—" && " — No Operator"}
                         </span>
                         {alertData.queueCount > 0 && (
-                          <p className="text-[10px] text-amber-600 mt-0.5">
+                          <p className="text-[10px] text-[hsl(var(--warning))] mt-0.5">
                             {alertData.queueCount} {alertData.queueCount === 1 ? "order" : "orders"} waiting in queue
                           </p>
                         )}
