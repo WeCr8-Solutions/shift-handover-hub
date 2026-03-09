@@ -27,10 +27,16 @@ export function useShiftSchedules() {
     setLoading(true);
 
     try {
-      const { data } = await supabase
+      let query = supabase
         .from("shift_schedules")
         .select("*")
         .order("start_time");
+
+      if (organization?.id) {
+        query = query.eq("organization_id", organization.id);
+      }
+
+      const { data } = await query;
 
       if (data) {
         setShifts(data as ShiftSchedule[]);
@@ -40,7 +46,7 @@ export function useShiftSchedules() {
     }
 
     setLoading(false);
-  }, [user]);
+  }, [user, organization?.id]);
 
   useEffect(() => {
     fetchShifts();
