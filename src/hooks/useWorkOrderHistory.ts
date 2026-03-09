@@ -204,6 +204,7 @@ export function useWorkOrderHistory(filters?: WorkOrderHistoryFilters) {
       let handoffsQuery = supabase
         .from("handoff_records")
         .select("*")
+        .eq("organization_id", organization.id)
         .order("created_at", { ascending: false })
         .limit(20);
       
