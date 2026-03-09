@@ -83,6 +83,11 @@ export function ShopFloorDisplayManagement() {
     setFormDarkMode("auto");
     setFormAutoRotate(false);
     setFormExpiry(30);
+    setFormConnectionType("url");
+    setFormIpAddress("");
+    setFormBluetoothEnabled(false);
+    setFormBluetoothDeviceName("");
+    setFormCastProtocol("");
   };
 
   const handleCreate = async () => {
