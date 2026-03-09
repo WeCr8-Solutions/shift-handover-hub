@@ -605,7 +605,7 @@ export function OperatorStationPanel({
                             {idx > 0 && (
                               <div className={cn(
                                 "w-4 sm:w-6 h-0.5 flex-shrink-0",
-                                isCompleted ? "bg-green-500" : isCurrent ? "bg-primary" : "bg-border"
+                                isCompleted ? "bg-[hsl(var(--success))]" : isCurrent ? "bg-primary" : "bg-border"
                               )} />
                             )}
                             <div className={cn(
@@ -614,10 +614,10 @@ export function OperatorStationPanel({
                             )}>
                               <div className={cn(
                                 "w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border-2 transition-all",
-                                isCompleted && "bg-green-500 border-green-500 text-white",
+                                isCompleted && "bg-[hsl(var(--success))] border-[hsl(var(--success))] text-white",
                                 isCurrent && "bg-primary border-primary text-primary-foreground ring-2 ring-primary/30 ring-offset-1",
                                 isPending && "bg-muted border-border text-muted-foreground",
-                                isOutside && !isCompleted && !isCurrent && "border-amber-500 text-amber-600"
+                                isOutside && !isCompleted && !isCurrent && "border-[hsl(var(--warning))] text-[hsl(var(--warning))]"
                               )}>
                                 {isCompleted ? "✓" : step.step_number}
                               </div>
@@ -628,7 +628,7 @@ export function OperatorStationPanel({
                                 {step.stations?.name || step.operation_name}
                               </span>
                               {isOutside && (
-                                <span className="text-[8px] text-amber-600 dark:text-amber-400">Outside</span>
+                                <span className="text-[8px] text-[hsl(var(--warning))]">Outside</span>
                               )}
                             </div>
                           </div>
