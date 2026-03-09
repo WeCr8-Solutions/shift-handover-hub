@@ -89,7 +89,7 @@ function getStatusConfig(status: QueueStatus) {
   }
 }
 
-export function WorkOrderAlertTile({ item, stationName, stationCode, workCenterType, onItemClick }: WorkOrderAlertTileProps) {
+export function WorkOrderAlertTile({ item, stationName, stationCode, workCenterType, onItemClick, onOpenRouting }: WorkOrderAlertTileProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [alertData, setAlertData] = useState<WOAlertData | null>(null);
   const [loading, setLoading] = useState(false);
