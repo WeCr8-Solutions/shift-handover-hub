@@ -606,12 +606,25 @@ export function WorkOrderAlertTile({ item, stationName, stationCode, workCenterT
                   </div>
                 )}
 
-                {/* No routing */}
+                {/* No routing — offer to add */}
                 {alertData.totalSteps === 0 && item.status !== "completed" && item.status !== "cancelled" && (
                   <div className="p-2.5 rounded-lg border border-border bg-muted/30">
-                    <div className="flex items-center gap-2">
-                      <GitBranch className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">No routing defined</span>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <GitBranch className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground">No routing defined</span>
+                      </div>
+                      {onOpenRouting && (
+                        <button
+                          className="text-xs text-primary hover:underline font-medium"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onOpenRouting({ id: item.id, work_order: item.work_order, part_number: item.part_number });
+                          }}
+                        >
+                          + Add Routing
+                        </button>
+                      )}
                     </div>
                   </div>
                 )}
