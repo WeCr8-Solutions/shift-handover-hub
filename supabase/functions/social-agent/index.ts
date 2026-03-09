@@ -165,7 +165,7 @@ Deno.serve(async (req) => {
         type: "donation",
         content: "Want to support accessible manufacturing tech? JobLine.ai accepts donations to keep their software free for small shops. Every $5 helps.",
         hashtags: ["Manufacturing", "OpenSource", "SmallBusiness", "SupportSmallBiz"],
-        cta: "Donate: joblineai.lovable.app → footer",
+        cta: "Donate: jobline.ai → footer",
       },
       {
         platform: "linkedin",
