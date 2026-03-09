@@ -378,12 +378,12 @@ export function StationAlertTile({ station, onViewStation, onQuickAction }: Stat
                   return (
                     <div className={cn(
                       "p-2.5 rounded-lg border",
-                      isOnHold ? "bg-amber-500/10 border-amber-500/30" : "bg-green-500/10 border-green-500/30",
+                      isOnHold ? "bg-[hsl(var(--warning)/0.1)] border-[hsl(var(--warning)/0.3)]" : "bg-[hsl(var(--success)/0.1)] border-[hsl(var(--success)/0.3)]",
                     )}>
                       <div className="flex items-center justify-between mb-1">
                         <Badge variant="outline" className={cn(
                           "text-[10px]",
-                          isOnHold ? "border-amber-500/50 text-amber-600" : "border-green-500/50 text-green-600",
+                          isOnHold ? "border-[hsl(var(--warning)/0.5)] text-[hsl(var(--warning))]" : "border-[hsl(var(--success)/0.5)] text-[hsl(var(--success))]",
                         )}>
                           {isOnHold ? <Pause className="w-2.5 h-2.5 mr-1" /> : <Play className="w-2.5 h-2.5 mr-1" />}
                           {isOnHold ? "ON HOLD" : "IN PROGRESS"}
