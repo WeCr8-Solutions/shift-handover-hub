@@ -60,6 +60,11 @@ export function useShopFloorDisplays() {
     dark_mode?: "auto" | "always" | "never";
     alert_sound_enabled?: boolean;
     token_expiry_days?: number;
+    connection_type?: "url" | "ip" | "bluetooth";
+    ip_address?: string;
+    bluetooth_enabled?: boolean;
+    bluetooth_device_name?: string;
+    cast_protocol?: string;
   }) => {
     if (!user || !organization?.id) return { error: "Not authenticated or no org" };
     const expiryDays = input.token_expiry_days || 30;
@@ -75,6 +80,11 @@ export function useShopFloorDisplays() {
       alert_sound_enabled: input.alert_sound_enabled || false,
       token_expires_at: new Date(Date.now() + expiryDays * 86400000).toISOString(),
       created_by: user.id,
+      connection_type: input.connection_type || "url",
+      ip_address: input.ip_address || null,
+      bluetooth_enabled: input.bluetooth_enabled || false,
+      bluetooth_device_name: input.bluetooth_device_name || null,
+      cast_protocol: input.cast_protocol || null,
     });
     if (error) return { error: error.message };
     await fetchDisplays();
