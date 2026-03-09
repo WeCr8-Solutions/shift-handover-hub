@@ -8,8 +8,9 @@ import { TourTriggerButton } from "@/components/onboarding";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Shield, LayoutDashboard, Users, Wrench, Briefcase, Activity, FileSpreadsheet, Package, Route, Lightbulb, History, Bug, ShieldCheck, ListTodo, Settings2, Map, BookOpen, Cpu, MessageSquare, BellRing, Tv } from "lucide-react";
+import { Shield, LayoutDashboard, Users, Wrench, Briefcase, Activity, FileSpreadsheet, Package, Route, Lightbulb, History, Bug, ShieldCheck, ListTodo, Settings2, Map, BookOpen, Cpu, MessageSquare, BellRing, Tv, Globe, Building } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { AdminComponentAccess } from "@/types/admin";
 
 // Lazy-load heavy admin panels (Phase 6 — code splitting)
 const UserManagement = lazy(() => import("@/components/admin/UserManagement").then(m => ({ default: m.UserManagement })));
@@ -35,15 +36,41 @@ const VisitorSurveyAnalytics = lazy(() => import("@/components/admin/VisitorSurv
 const SmartAlertAdmin = lazy(() => import("@/components/admin/SmartAlertAdmin").then(m => ({ default: m.SmartAlertAdmin })));
 const ShopFloorDisplayManagement = lazy(() => import("@/components/admin/ShopFloorDisplayManagement").then(m => ({ default: m.ShopFloorDisplayManagement })));
 const NotificationQueueStatus = lazy(() => import("@/components/admin/NotificationQueueStatus").then(m => ({ default: m.NotificationQueueStatus })));
+const PlatformOverviewTab = lazy(() => import("@/components/admin/PlatformOverviewTab").then(m => ({ default: m.PlatformOverviewTab })));
 
 const AdminTabFallback = () => <div className="p-6"><Skeleton className="h-64 w-full rounded-lg" /></div>;
+
+/** Small scope indicator badge for tabs */
+function ScopeBadge({ scope }: { scope: "platform" | "org" }) {
+  if (scope === "platform") {
+    return <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 gap-0.5 border-destructive/40 text-destructive"><Globe className="w-2.5 h-2.5" />Platform</Badge>;
+  }
+  return <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 gap-0.5 border-primary/40 text-primary"><Building className="w-2.5 h-2.5" />Org</Badge>;
+}
 
 export default function Admin() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-  const { isAdmin, isDeveloper, isSupervisor, isOrgAdmin, isOrgOwner, hasAdminAccess, hasTestingAccess, hasPlatformAccess, loading: accessLoading } = useAdminAccess();
-  const { stats, loading: statsLoading, lastUpdated: statsLastUpdated, fetchStats } = useSystemStats();
+  const {
+    isAdmin, isDeveloper, isSupervisor, isOrgAdmin, isOrgOwner,
+    hasAdminAccess, hasTestingAccess, hasPlatformAccess, hasPlatformAdminAccess,
+    hasOrgAdminAccess, hasOrgSupervisorAccess, organizationId,
+    loading: accessLoading
+  } = useAdminAccess();
+
+  // Derive org scope: platform admins see everything (null), others see their org
+  const scopedOrgId = hasPlatformAccess ? null : organizationId;
+
+  const { stats, loading: statsLoading, lastUpdated: statsLastUpdated, fetchStats } = useSystemStats({ organizationId: scopedOrgId });
   const [bulkUploadOpen, setBulkUploadOpen] = useState(false);
+
+  // Build structured access object for child components
+  const access: AdminComponentAccess = {
+    isPlatformAdmin: hasPlatformAdminAccess,
+    canManageOrg: hasOrgAdminAccess,
+    canManageProduction: hasOrgSupervisorAccess,
+    organizationId: scopedOrgId,
+  };
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -129,6 +156,14 @@ export default function Admin() {
               <LayoutDashboard className="w-4 h-4" />
               Overview
             </TabsTrigger>
+
+            {/* Platform Overview - SDK admins only */}
+            {hasPlatformAccess && (
+              <TabsTrigger value="platform-overview" className="gap-2">
+                <Globe className="w-4 h-4" />
+                <span className="hidden sm:inline">Platform</span>
+              </TabsTrigger>
+            )}
             
             {/* Separator */}
             <div className="w-px h-6 bg-border mx-1 hidden sm:block" />
@@ -138,7 +173,7 @@ export default function Admin() {
               <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider hidden lg:inline">Org</span>
               <TabsTrigger value="organizations" className="gap-2">
                 <Briefcase className="w-4 h-4" />
-                <span className="hidden sm:inline">Organizations</span>
+                <span className="hidden sm:inline">{hasPlatformAccess ? "Organizations" : "My Org"}</span>
                 <span className="sm:hidden">Orgs</span>
               </TabsTrigger>
               <TabsTrigger value="users" className="gap-2">
@@ -260,44 +295,50 @@ export default function Admin() {
 
           <TabsContent value="overview" className="space-y-4">
             <Suspense fallback={<AdminTabFallback />}>
-              <OrganizationOversight isAdmin={isAdmin} />
+              <OrganizationOversight access={access} />
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <UserManagement isAdmin={isAdmin} isSupervisorOrAbove={isSupervisor || isOrgAdmin || isOrgOwner || isAdmin} />
-                <StationManagement isAdmin={isAdmin} />
+                <UserManagement access={access} />
+                <StationManagement access={access} />
               </div>
             </Suspense>
           </TabsContent>
 
+          {hasPlatformAccess && (
+            <TabsContent value="platform-overview">
+              <Suspense fallback={<AdminTabFallback />}><PlatformOverviewTab /></Suspense>
+            </TabsContent>
+          )}
+
           <TabsContent value="work-orders">
-            <Suspense fallback={<AdminTabFallback />}><WorkOrderManagement isAdmin={isAdmin} /></Suspense>
+            <Suspense fallback={<AdminTabFallback />}><WorkOrderManagement isAdmin={access.isPlatformAdmin} /></Suspense>
           </TabsContent>
 
           <TabsContent value="history">
-            <Suspense fallback={<AdminTabFallback />}><WorkOrderHistory isAdmin={isAdmin} /></Suspense>
+            <Suspense fallback={<AdminTabFallback />}><WorkOrderHistory isAdmin={access.isPlatformAdmin} /></Suspense>
           </TabsContent>
 
           <TabsContent value="routing">
-            <Suspense fallback={<AdminTabFallback />}><RoutingTemplateManagement isAdmin={isAdmin} canManageTemplates={isOrgOwner || isOrgAdmin || isSupervisor || isAdmin} /></Suspense>
+            <Suspense fallback={<AdminTabFallback />}><RoutingTemplateManagement isAdmin={access.isPlatformAdmin} canManageTemplates={access.canManageProduction} /></Suspense>
           </TabsContent>
 
           <TabsContent value="users">
-            <Suspense fallback={<AdminTabFallback />}><UserManagement isAdmin={isAdmin} isSupervisorOrAbove={isSupervisor || isOrgAdmin || isOrgOwner || isAdmin} /></Suspense>
+            <Suspense fallback={<AdminTabFallback />}><UserManagement access={access} /></Suspense>
           </TabsContent>
 
           <TabsContent value="stations">
-            <Suspense fallback={<AdminTabFallback />}><StationManagement isAdmin={isAdmin} /></Suspense>
+            <Suspense fallback={<AdminTabFallback />}><StationManagement access={access} /></Suspense>
           </TabsContent>
 
           <TabsContent value="organizations">
-            <Suspense fallback={<AdminTabFallback />}><OrganizationOversight isAdmin={isAdmin} /></Suspense>
+            <Suspense fallback={<AdminTabFallback />}><OrganizationOversight access={access} /></Suspense>
           </TabsContent>
 
           <TabsContent value="performance">
-            <Suspense fallback={<AdminTabFallback />}><PerformanceUpdatesReview isAdmin={isAdmin} /></Suspense>
+            <Suspense fallback={<AdminTabFallback />}><PerformanceUpdatesReview isAdmin={access.isPlatformAdmin} /></Suspense>
           </TabsContent>
 
           <TabsContent value="machine-monitor">
-            <Suspense fallback={<AdminTabFallback />}><MachineMonitorPanel isAdmin={isAdmin} /></Suspense>
+            <Suspense fallback={<AdminTabFallback />}><MachineMonitorPanel isAdmin={access.isPlatformAdmin} /></Suspense>
           </TabsContent>
 
           <TabsContent value="smart-alerts">
