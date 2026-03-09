@@ -40,7 +40,7 @@ const STEP_STATUS_STYLES: Record<string, { bg: string; text: string; icon: typeo
   skipped: { bg: "bg-muted", text: "text-muted-foreground/50", icon: Circle },
 };
 
-export function HandoffDetailModal({ open, onOpenChange, record }: HandoffDetailModalProps) {
+export function HandoffDetailModal({ open, onOpenChange, record, onViewWorkOrder }: HandoffDetailModalProps) {
   const [routingSteps, setRoutingSteps] = useState<RoutingStep[]>([]);
   const [loadingRouting, setLoadingRouting] = useState(false);
 
