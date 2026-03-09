@@ -5,11 +5,12 @@ import { Separator } from "@/components/ui/separator";
 import { StatusBadge, getJobStateStatus, getJobStateShortName } from "./StatusBadge";
 import { workCenterIcons, workCenterColors } from "@/lib/workCenterIcons";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import {
   Clock, User, FileText, Circle, Package, CheckCircle2,
-  ArrowRight, Loader2, Route, Wrench, AlertTriangle,
+  ArrowRight, Loader2, Route, Wrench, AlertTriangle, ExternalLink,
 } from "lucide-react";
 import type { ShiftHandoffRecord } from "@/types/handoff";
 
@@ -30,6 +31,7 @@ interface HandoffDetailModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   record: ShiftHandoffRecord | null;
+  onViewWorkOrder?: (workOrder: string) => void;
 }
 
 const STEP_STATUS_STYLES: Record<string, { bg: string; text: string; icon: typeof CheckCircle2 }> = {
@@ -39,7 +41,7 @@ const STEP_STATUS_STYLES: Record<string, { bg: string; text: string; icon: typeo
   skipped: { bg: "bg-muted", text: "text-muted-foreground/50", icon: Circle },
 };
 
-export function HandoffDetailModal({ open, onOpenChange, record }: HandoffDetailModalProps) {
+export function HandoffDetailModal({ open, onOpenChange, record, onViewWorkOrder }: HandoffDetailModalProps) {
   const [routingSteps, setRoutingSteps] = useState<RoutingStep[]>([]);
   const [loadingRouting, setLoadingRouting] = useState(false);
 
@@ -129,6 +131,20 @@ export function HandoffDetailModal({ open, onOpenChange, record }: HandoffDetail
             <span>Rev: <span className="font-mono text-foreground">{record.part.revision}</span></span>
             <span>Op: <span className="font-mono text-foreground">{record.part.operationNumber}</span></span>
           </div>
+          {onViewWorkOrder && record.workOrder && record.workOrder !== "—" && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 text-xs ml-auto"
+              onClick={() => {
+                onOpenChange(false);
+                onViewWorkOrder(record.workOrder);
+              }}
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              View Work Order
+            </Button>
+          )}
         </div>
 
         <Separator />

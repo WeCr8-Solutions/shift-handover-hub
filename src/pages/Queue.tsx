@@ -59,6 +59,7 @@ export default function Queue() {
 
   const urlStationId = searchParams.get("station");
   const urlItemId = searchParams.get("item");
+  const urlWorkOrder = searchParams.get("wo");
 
   const [activeTab, setActiveTab] = useState<QueueTab>("queue");
   const [view, setView] = useState<QueueView>("kanban");
@@ -71,6 +72,7 @@ export default function Queue() {
       setSelectedItemId(urlItemId);
     }
   }, [urlItemId]);
+
   const [routingEditorItem, setRoutingEditorItem] = useState<{
     id: string;
     work_order: string;
@@ -120,6 +122,16 @@ export default function Queue() {
     getHistory,
     fetchItems,
   } = useQueue(filters);
+
+  // Auto-open work order detail when navigated with ?wo= param (from handoff modal)
+  useEffect(() => {
+    if (urlWorkOrder && items.length > 0 && !selectedItemId) {
+      const match = items.find((i) => i.work_order === urlWorkOrder);
+      if (match) {
+        setSelectedItemId(match.id);
+      }
+    }
+  }, [urlWorkOrder, items, selectedItemId]);
 
   const { ncrs = [], approveNCR, rejectNCR } = useNCR();
   const pendingNCRs = ncrs.filter((n) => n.authorization_status === "pending");
