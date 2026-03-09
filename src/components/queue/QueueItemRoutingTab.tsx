@@ -373,7 +373,7 @@ export function QueueItemRoutingTab({
         })}
       </div>
 
-      {onOpenRouting && hasAdminAccess && (
+      {onOpenRouting && hasOrgSupervisorAccess && (
         <div className="mt-4 pt-4 border-t">
           <Button variant="outline" size="sm" onClick={() => onOpenRouting(item)} className="gap-2">
             <GitBranch className="w-4 h-4" />
