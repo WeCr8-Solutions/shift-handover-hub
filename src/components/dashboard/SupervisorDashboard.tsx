@@ -300,6 +300,7 @@ export function SupervisorDashboard({
             <span className="text-xs text-muted-foreground mr-1">Scope:</span>
             <button
               onClick={() => setCurrentTeam(null)}
+              aria-pressed={!currentTeam}
               className={cn(
                 "px-3 py-1 rounded-full text-xs font-medium border transition-colors",
                 !currentTeam
@@ -307,13 +308,14 @@ export function SupervisorDashboard({
                   : "bg-secondary/50 text-muted-foreground border-border hover:border-primary/50"
               )}
             >
-              <Factory className="w-3 h-3 inline mr-1" />
+              <Factory className="w-3 h-3 inline mr-1" aria-hidden="true" />
               All Teams
             </button>
             {teams.map((team) => (
               <button
                 key={team.id}
                 onClick={() => setCurrentTeam(team)}
+                aria-pressed={currentTeam?.id === team.id}
                 className={cn(
                   "px-3 py-1 rounded-full text-xs font-medium border transition-colors",
                   currentTeam?.id === team.id
@@ -321,7 +323,7 @@ export function SupervisorDashboard({
                     : "bg-secondary/50 text-muted-foreground border-border hover:border-primary/50"
                 )}
               >
-                <Users className="w-3 h-3 inline mr-1" />
+                <Users className="w-3 h-3 inline mr-1" aria-hidden="true" />
                 {team.name}
               </button>
             ))}
