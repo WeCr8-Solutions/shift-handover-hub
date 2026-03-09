@@ -151,7 +151,7 @@ Deno.serve(async (req) => {
         type: "awareness",
         content: "🏭 Most machine shops can't afford $100K MES systems. JobLine.ai is changing that with free shift handoff software built for small manufacturers.",
         hashtags: ["Manufacturing", "MachineShop", "MES", "Industry40", "SmallBusiness"],
-        cta: "Check it out: joblineai.lovable.app",
+        cta: "Check it out: jobline.ai",
       },
       {
         platform: "twitter",
