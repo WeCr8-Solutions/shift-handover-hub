@@ -31,6 +31,9 @@ import {
   Tv,
   Wrench,
   ClipboardList,
+  Bluetooth,
+  Wifi,
+  Globe,
 } from "lucide-react";
 
 /* ── Readiness Checklist ── */
