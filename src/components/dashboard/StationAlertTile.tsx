@@ -300,7 +300,7 @@ export function StationAlertTile({ station, onViewStation, onQuickAction }: Stat
               {!isOpen && alertData && totalAlerts > 0 && (
                 <Badge className={cn(
                   "text-[9px] px-1.5 py-0 flex-shrink-0",
-                  hasCritical ? "bg-red-500" : "bg-amber-500",
+                  hasCritical ? "bg-[hsl(var(--priority-critical))]" : "bg-[hsl(var(--priority-high))]",
                 )}>
                   {totalAlerts}
                 </Badge>
