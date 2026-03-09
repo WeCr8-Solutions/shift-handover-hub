@@ -73,15 +73,6 @@ export default function Queue() {
     }
   }, [urlItemId]);
 
-  // Auto-open work order detail when navigated with ?wo= param (from handoff modal)
-  useEffect(() => {
-    if (urlWorkOrder && items.length > 0 && !selectedItemId) {
-      const match = items.find((i) => i.work_order === urlWorkOrder);
-      if (match) {
-        setSelectedItemId(match.id);
-      }
-    }
-  }, [urlWorkOrder, items, selectedItemId]);
   const [routingEditorItem, setRoutingEditorItem] = useState<{
     id: string;
     work_order: string;
