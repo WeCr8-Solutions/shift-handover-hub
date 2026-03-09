@@ -435,12 +435,13 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
                 <p>No invite codes yet. Create one to get started.</p>
               </div>
             ) : (
+              <div className="overflow-x-auto -mx-6 px-6">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Code</TableHead>
-                    <TableHead>For Email</TableHead>
-                    <TableHead>Team</TableHead>
+                    <TableHead className="hidden sm:table-cell">For Email</TableHead>
+                    <TableHead className="hidden md:table-cell">Team</TableHead>
                     <TableHead>Roles</TableHead>
                     <TableHead>Usage</TableHead>
                     <TableHead>Status</TableHead>
@@ -460,7 +461,7 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
                             {invite.invite_code}
                           </code>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden sm:table-cell">
                           {invite.invited_email ? (
                             <div className="flex items-center gap-1 text-sm">
                               <Mail className="w-3 h-3 text-muted-foreground" />
@@ -472,7 +473,7 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
                             <span className="text-muted-foreground text-xs">Anyone</span>
                           )}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden md:table-cell">
                           {invite.team?.name || <span className="text-muted-foreground">—</span>}
                         </TableCell>
                         <TableCell>
@@ -524,7 +525,7 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
                                 <XCircle className="w-4 h-4" />
                               </Button>
                             )}
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete(invite.id)} title="Delete">
+                         <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete(invite.id)} title="Delete">
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           </div>
@@ -534,6 +535,7 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
                   })}
                 </TableBody>
               </Table>
+              </div>
             )}
           </TabsContent>
 
@@ -551,13 +553,14 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
                 <p className="text-sm">When members join using invite codes, they'll appear here.</p>
               </div>
             ) : (
+              <div className="overflow-x-auto -mx-6 px-6">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>User</TableHead>
                     <TableHead>Invite Code</TableHead>
-                    <TableHead>Team</TableHead>
-                    <TableHead>Roles Assigned</TableHead>
+                    <TableHead className="hidden sm:table-cell">Team</TableHead>
+                    <TableHead className="hidden md:table-cell">Roles Assigned</TableHead>
                     <TableHead>Redeemed At</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -579,12 +582,12 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
                           {redemption.invite?.invite_code}
                         </code>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="hidden sm:table-cell">
                         {redemption.invite?.team?.name || (
                           <span className="text-muted-foreground">—</span>
                         )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="hidden md:table-cell">
                         <div className="flex flex-wrap gap-1">
                           <Badge variant="outline" className="text-xs">Org: {redemption.invite?.org_role}</Badge>
                           {redemption.invite?.app_role && (
@@ -602,6 +605,7 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
                   ))}
                 </TableBody>
               </Table>
+              </div>
             )}
           </TabsContent>
         </Tabs>
@@ -609,7 +613,7 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
 
       {/* QR Code Dialog */}
       <Dialog open={showQRDialog} onOpenChange={setShowQRDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <QrCode className="w-5 h-5" />
