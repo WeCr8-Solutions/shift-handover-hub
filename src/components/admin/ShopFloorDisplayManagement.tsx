@@ -318,6 +318,86 @@ export function ShopFloorDisplayManagement() {
 
             <Separator />
 
+            {/* Connection / Casting */}
+            <div className="space-y-3">
+              <Label className="text-xs font-medium">Connection Method</Label>
+              <div className="grid grid-cols-3 gap-2">
+                {([
+                  { value: "url" as const, icon: Globe, label: "URL/QR Code" },
+                  { value: "ip" as const, icon: Wifi, label: "IP Address" },
+                  { value: "bluetooth" as const, icon: Bluetooth, label: "Bluetooth" },
+                ] as const).map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setFormConnectionType(opt.value)}
+                    className={cn(
+                      "flex flex-col items-center gap-1.5 p-3 rounded-lg border text-xs transition-colors",
+                      formConnectionType === opt.value
+                        ? "bg-primary/10 border-primary text-primary"
+                        : "bg-secondary/30 border-border text-muted-foreground hover:border-primary/50"
+                    )}
+                  >
+                    <opt.icon className="w-4 h-4" />
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+
+              {formConnectionType === "ip" && (
+                <div className="space-y-2 p-3 rounded-lg bg-secondary/30 border border-border">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Device IP Address</Label>
+                    <Input
+                      value={formIpAddress}
+                      onChange={e => setFormIpAddress(e.target.value)}
+                      placeholder="e.g. 192.168.1.100"
+                      className="h-8 font-mono"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Cast Protocol</Label>
+                    <Select value={formCastProtocol} onValueChange={setFormCastProtocol}>
+                      <SelectTrigger className="h-8"><SelectValue placeholder="Select protocol" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="chromecast">Chromecast</SelectItem>
+                        <SelectItem value="miracast">Miracast</SelectItem>
+                        <SelectItem value="airplay">AirPlay</SelectItem>
+                        <SelectItem value="custom">Custom/Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
+
+              {formConnectionType === "bluetooth" && (
+                <div className="space-y-2 p-3 rounded-lg bg-secondary/30 border border-border">
+                  <div className="flex items-center gap-2">
+                    <Switch checked={formBluetoothEnabled} onCheckedChange={setFormBluetoothEnabled} />
+                    <Label className="text-xs">Enable Bluetooth Pairing</Label>
+                  </div>
+                  {formBluetoothEnabled && (
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Device Name</Label>
+                      <Input
+                        value={formBluetoothDeviceName}
+                        onChange={e => setFormBluetoothDeviceName(e.target.value)}
+                        placeholder="e.g. Shop-TV-Bay-1"
+                        className="h-8"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {formConnectionType === "url" && (
+                <p className="text-[11px] text-muted-foreground pl-1">
+                  A unique URL with QR code will be generated. Open it on any browser or scan with a tablet.
+                </p>
+              )}
+            </div>
+
+            <Separator />
+
             {/* Settings row */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
