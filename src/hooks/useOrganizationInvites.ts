@@ -198,113 +198,24 @@ export async function validateInviteCode(code: string) {
 }
 
 export async function redeemInviteCode(code: string, userId: string) {
-  // First validate the code
-  const { data: invite, error: validateError } = await supabase
-    .from("organization_invites")
-    .select("*")
-    .eq("invite_code", code.toUpperCase())
-    .eq("is_active", true)
-    .maybeSingle();
+  const { data, error } = await supabase.rpc("redeem_invite_code", {
+    _code: code,
+    _user_id: userId,
+  });
 
-  if (validateError || !invite) {
-    return { error: new Error("Invalid or expired invite code") };
+  if (error) {
+    return { error: new Error(error.message) };
   }
 
-  // Check expiration before proceeding
-  if (invite.expires_at && new Date(invite.expires_at) < new Date()) {
-    // Auto-deactivate expired invite
-    await supabase
-      .from("organization_invites")
-      .update({ is_active: false })
-      .eq("id", invite.id);
-    return { error: new Error("This invite code has expired (15-day limit). The seat has been returned to the organization for another user.") };
+  const result = data as { error?: string; success?: boolean; organization_id?: string; team_id?: string | null };
+
+  if (result.error) {
+    return { error: new Error(result.error) };
   }
 
-  // Check max uses
-  if (invite.max_uses && invite.uses_count >= invite.max_uses) {
-    return { error: new Error("This invite code has reached its maximum number of uses") };
-  }
-
-  // Pre-check seat limits before attempting INSERT (prevents cryptic RLS errors)
-  const { count: memberCount } = await supabase
-    .from("organization_members")
-    .select("id", { count: "exact", head: true })
-    .eq("organization_id", invite.organization_id);
-
-  const { data: entitlement } = await supabase
-    .from("entitlements")
-    .select("limits")
-    .eq("organization_id", invite.organization_id)
-    .maybeSingle();
-
-  const seatLimit = (entitlement?.limits as any)?.users;
-  if (seatLimit && (memberCount ?? 0) >= seatLimit) {
-    return { error: new Error("This organization has reached its seat limit. Please ask an admin to add more seats.") };
-  }
-
-  // Check if already a member
-  const { data: existing } = await supabase
-    .from("organization_members")
-    .select("id")
-    .eq("organization_id", invite.organization_id)
-    .eq("user_id", userId)
-    .maybeSingle();
-
-  if (existing) {
-    return { error: new Error("You are already a member of this organization") };
-  }
-
-  // Add to organization
-  const { error: orgError } = await supabase
-    .from("organization_members")
-    .insert({
-      organization_id: invite.organization_id,
-      user_id: userId,
-      role: invite.org_role,
-    });
-
-  if (orgError) {
-    return { error: orgError };
-  }
-
-  // Add to team if specified
-  if (invite.team_id) {
-    await supabase
-      .from("team_members")
-      .insert({
-        team_id: invite.team_id,
-        user_id: userId,
-        role: "member",
-        organization_id: invite.organization_id,
-      });
-  }
-
-  // Assign app role if specified
-  if (invite.app_role) {
-    const appRole = invite.app_role as AppRole;
-    const { data: existingRole } = await supabase
-      .from("user_roles")
-      .select("id")
-      .eq("user_id", userId)
-      .eq("role", appRole)
-      .maybeSingle();
-
-    if (!existingRole) {
-      await supabase
-        .from("user_roles")
-        .insert([{ user_id: userId, role: appRole }]);
-    }
-  }
-
-  // Record redemption and increment uses_count
-  await supabase
-    .from("invite_redemptions")
-    .insert({ invite_id: invite.id, user_id: userId });
-
-  await supabase
-    .from("organization_invites")
-    .update({ uses_count: invite.uses_count + 1 })
-    .eq("id", invite.id);
-
-  return { error: null, organizationId: invite.organization_id, teamId: invite.team_id };
+  return {
+    error: null,
+    organizationId: result.organization_id,
+    teamId: result.team_id,
+  };
 }
