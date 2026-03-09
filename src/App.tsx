@@ -50,6 +50,8 @@ import ResourcesIndex from "./pages/resources/ResourcesIndex";
 import ManufacturingGuides from "./pages/resources/ManufacturingGuides";
 import GCodeReference from "./pages/resources/GCodeReference";
 import IndustryGlossary from "./pages/resources/IndustryGlossary";
+import BeginnersGuide from "./pages/resources/BeginnersGuide";
+import ManufacturingCareers from "./pages/resources/ManufacturingCareers";
 import ResetPassword from "./pages/ResetPassword";
 import Blog from "./pages/Blog";
 import Help from "./pages/Help";
