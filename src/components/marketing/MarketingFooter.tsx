@@ -24,6 +24,7 @@ const footerLinks = {
     { label: "Manufacturing Guides", to: "/resources/guides" },
     { label: "G-Code Reference", to: "/resources/gcode" },
     { label: "Industry Glossary", to: "/resources/glossary" },
+    { label: "Tool Comparisons", to: "/resources/comparisons" },
     { label: "Blog", to: "/blog" },
   ],
   Company: [

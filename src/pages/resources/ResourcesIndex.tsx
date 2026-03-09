@@ -87,10 +87,10 @@ const sections = [
   },
   {
     title: "Tool Comparisons",
-    description: "Side-by-side comparisons of manufacturing software, MES systems, and shop floor management tools. Coming soon.",
+    description: "Side-by-side comparisons of job-shop software approaches: JobLine.ai, generic MES suites, and spreadsheet/whiteboard workflows. Includes practical selection criteria for deployment speed, operator adoption, routing visibility, and quality traceability.",
     icon: GitCompare,
-    href: "/resources/guides",
-    count: "Coming soon",
+    href: "/resources/comparisons",
+    count: "Comparison guide",
   },
 ];
 
