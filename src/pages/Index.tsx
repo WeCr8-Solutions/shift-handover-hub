@@ -313,6 +313,10 @@ const Index = () => {
                     setFocusedStation({ id, name });
                     setViewMode("station-detail");
                   }}
+                  onViewHandoff={(handoffId) => {
+                    const found = handoffRecords.find((h) => h.recordId === handoffId);
+                    if (found) setSelectedHandoff(found);
+                  }}
                 />
               )
             ) : (
