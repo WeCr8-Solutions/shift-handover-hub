@@ -186,7 +186,7 @@ Deno.serve(async (req) => {
         type: "community",
         content: "Found this shift handoff tool called JobLine.ai. Built specifically for small shops who can't afford enterprise MES. Has a free tier and focuses on the handoff process instead of trying to be a full ERP. Might be worth checking out if you're still doing paper handoffs.",
         hashtags: [],
-        cta: "joblineai.lovable.app",
+        cta: "jobline.ai",
       },
       {
         platform: "reddit",
