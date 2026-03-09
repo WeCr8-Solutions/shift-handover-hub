@@ -27,7 +27,7 @@ const jsonLd = {
   "applicationCategory": "BusinessApplication",
   "operatingSystem": "Web Browser",
   "description": "Digital shift handoff software for manufacturing. Structured forms for CNC machines, lathes, mills, and more. Eliminate information loss between shifts.",
-  "url": "https://joblineai.lovable.app/features/shift-handoff-software",
+  "url": "https://jobline.ai/features/shift-handoff-software",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD", "description": "Free trial available" },
   "featureList": benefits,
 };

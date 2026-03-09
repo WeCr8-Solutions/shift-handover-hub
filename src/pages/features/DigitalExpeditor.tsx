@@ -34,7 +34,7 @@ const jsonLd = {
   "applicationCategory": "BusinessApplication",
   "operatingSystem": "Web Browser",
   "description": "Digital expeditor software for manufacturing. Real-time production visibility, bottleneck detection, routing coordination, and on-time delivery tracking for machine shops.",
-  "url": "https://joblineai.lovable.app/features/digital-expeditor",
+  "url": "https://jobline.ai/features/digital-expeditor",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
   "featureList": benefits,
 };

@@ -280,7 +280,7 @@ export default function Landing() {
           "@context": "https://schema.org",
           "@type": "WebApplication",
           "name": "JobLine.ai",
-          "url": "https://joblineai.lovable.app",
+          "url": "https://jobline.ai",
           "applicationCategory": "BusinessApplication",
           "operatingSystem": "Web Browser",
           "description": "Digital expeditor and smart shift handoff system for CNC manufacturing operations.",

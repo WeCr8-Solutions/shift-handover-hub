@@ -27,7 +27,7 @@ const jsonLd = {
   "applicationCategory": "BusinessApplication",
   "operatingSystem": "Web Browser",
   "description": "Manufacturing downtime tracking software. Log downtime events, track reason codes, analyze trends, and reduce unplanned downtime across your shop floor.",
-  "url": "https://joblineai.lovable.app/features/downtime-tracking",
+  "url": "https://jobline.ai/features/downtime-tracking",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
 };
 

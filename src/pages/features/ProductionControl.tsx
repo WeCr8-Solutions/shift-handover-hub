@@ -34,7 +34,7 @@ const jsonLd = {
   "applicationCategory": "BusinessApplication",
   "operatingSystem": "Web Browser",
   "description": "Production control software for manufacturing. Real-time monitoring, quality tracking, analytics dashboards, and continuous improvement tools for the shop floor.",
-  "url": "https://joblineai.lovable.app/features/production-control",
+  "url": "https://jobline.ai/features/production-control",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
 };
 

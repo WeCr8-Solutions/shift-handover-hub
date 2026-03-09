@@ -34,7 +34,7 @@ const jsonLd = {
   "applicationCategory": "BusinessApplication",
   "operatingSystem": "Web Browser",
   "description": "Mobile-friendly tools for CNC operators. Job tracking, shift handoffs, performance updates, and continuous improvement — designed for the shop floor.",
-  "url": "https://joblineai.lovable.app/features/cnc-operator-tools",
+  "url": "https://jobline.ai/features/cnc-operator-tools",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
 };
 

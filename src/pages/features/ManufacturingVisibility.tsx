@@ -30,7 +30,7 @@ const jsonLd = {
   applicationCategory: "BusinessApplication",
   operatingSystem: "Web Browser",
   description: "Real-time manufacturing floor visibility. See every machine, operator, and job from any device. Built for machine shops and production teams.",
-  url: "https://joblineai.lovable.app/manufacturing-visibility",
+  url: "https://jobline.ai/manufacturing-visibility",
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD", description: "Free trial available" },
 };
 

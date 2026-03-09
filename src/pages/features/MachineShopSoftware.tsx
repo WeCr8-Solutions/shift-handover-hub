@@ -34,7 +34,7 @@ const jsonLd = {
   "applicationCategory": "BusinessApplication",
   "operatingSystem": "Web Browser",
   "description": "Machine shop management software for CNC operations. Track stations, manage shifts, coordinate work orders, and monitor equipment — all from one platform.",
-  "url": "https://joblineai.lovable.app/features/machine-shop-software",
+  "url": "https://jobline.ai/features/machine-shop-software",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
 };
 

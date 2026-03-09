@@ -34,7 +34,7 @@ const jsonLd = {
   "applicationCategory": "BusinessApplication",
   "operatingSystem": "Web Browser",
   "description": "Work order tracking and queue management for manufacturing. Kanban boards, priority scheduling, multi-step routing, and real-time status updates.",
-  "url": "https://joblineai.lovable.app/features/work-order-tracking",
+  "url": "https://jobline.ai/features/work-order-tracking",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
 };
 

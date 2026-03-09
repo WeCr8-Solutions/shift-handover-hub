@@ -34,7 +34,7 @@ const jsonLd = {
   "applicationCategory": "BusinessApplication",
   "operatingSystem": "Web Browser",
   "description": "Production scheduling software for manufacturing. Visual scheduling with calendar views, priority queues, and multi-operation routing for CNC machine shops.",
-  "url": "https://joblineai.lovable.app/features/production-scheduling",
+  "url": "https://jobline.ai/features/production-scheduling",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
 };
 
