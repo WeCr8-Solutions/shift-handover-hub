@@ -37,6 +37,7 @@ interface SupervisorDashboardProps {
   onSwitchToOperatorView?: () => void;
   onViewStation?: (stationId: string, stationName: string) => void;
   onViewHandoff?: (handoffId: string) => void;
+  onViewWorkOrder?: (workOrder: string) => void;
 }
 
 export function SupervisorDashboard({
