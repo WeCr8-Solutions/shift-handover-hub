@@ -687,7 +687,7 @@ function TeamMembersPanel({
                     Invite Code
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>Generate Invite Code for {team.name}</DialogTitle>
                     <DialogDescription>

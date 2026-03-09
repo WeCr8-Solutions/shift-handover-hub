@@ -45,7 +45,7 @@ export default function Teams() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="container py-6">
+      <main className="container py-6 overflow-x-hidden">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold">Teams & Members</h1>
           <TourTriggerButton />
