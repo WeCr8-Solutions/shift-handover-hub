@@ -261,8 +261,8 @@ export function StationAlertTile({ station, onViewStation, onQuickAction }: Stat
       <div className={cn(
         "border-b border-border/30 transition-colors",
         isOpen && "bg-secondary/20",
-        station.status === "down" && "bg-red-500/5",
-        hasCritical && "bg-amber-500/5",
+        station.status === "down" && "bg-[hsl(var(--state-down)/0.05)]",
+        hasCritical && "bg-[hsl(var(--warning)/0.05)]",
       )}>
         {/* Compact Row — always visible */}
         <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5">
