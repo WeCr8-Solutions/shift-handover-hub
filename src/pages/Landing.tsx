@@ -1150,6 +1150,8 @@ export default function Landing() {
                 {testimonials.map((_, i) => (
                   <button
                     key={i}
+                    type="button"
+                    aria-label={`Go to testimonial ${i + 1}`}
                     onClick={() => handleTestimonialChange(i, 'click')}
                     className={cn(
                       "w-2 h-2 rounded-full transition-all",
@@ -1315,8 +1317,10 @@ export default function Landing() {
           <div className="relative w-full aspect-video">
             {/* Close button overlay */}
             <button
+              type="button"
               onClick={handleDemoModalClose}
               className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center text-white transition-colors"
+              aria-label="Close demo video"
             >
               <X className="w-4 h-4" />
             </button>

@@ -117,10 +117,15 @@ export function Header() {
                   <TooltipContent>Report an Issue</TooltipContent>
                 </Tooltip>
               )}
-              <button className="relative p-2 rounded-lg hover:bg-secondary transition-colors">
-                <Bell className="w-5 h-5 text-muted-foreground" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-status-critical rounded-full" />
-              </button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" title="Notifications">
+                    <Bell className="w-5 h-5 text-muted-foreground" />
+                    <span className="absolute top-1 right-1 w-2 h-2 bg-status-critical rounded-full" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Notifications</TooltipContent>
+              </Tooltip>
               <UserMenu />
             </div>
           )}
