@@ -525,7 +525,7 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
                                 <XCircle className="w-4 h-4" />
                               </Button>
                             )}
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete(invite.id)} title="Delete">
+                         <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete(invite.id)} title="Delete">
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           </div>
@@ -535,6 +535,7 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
                   })}
                 </TableBody>
               </Table>
+              </div>
             )}
           </TabsContent>
 
