@@ -5,21 +5,21 @@
 
   <!-- Homepage -->
   <url>
-    <loc>https://joblineai.lovable.app/</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://joblineai.lovable.app/" />
+    <loc>https://jobline.ai/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/" />
     <lastmod>2026-03-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <image:image>
-      <image:loc>https://joblineai.lovable.app/og-image.png</image:loc>
+      <image:loc>https://jobline.ai/og-image.png</image:loc>
       <image:title>JobLine.ai - Digital Expeditor &amp; Smart Shift Handoff System</image:title>
     </image:image>
   </url>
 
   <!-- Pricing -->
   <url>
-    <loc>https://joblineai.lovable.app/pricing</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://joblineai.lovable.app/pricing" />
+    <loc>https://jobline.ai/pricing</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/pricing" />
     <lastmod>2026-03-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
@@ -27,8 +27,8 @@
 
   <!-- Demo -->
   <url>
-    <loc>https://joblineai.lovable.app/demo</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://joblineai.lovable.app/demo" />
+    <loc>https://jobline.ai/demo</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/demo" />
     <lastmod>2026-03-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
@@ -36,114 +36,114 @@
 
   <!-- Feature Marketing Pages -->
   <url>
-    <loc>https://joblineai.lovable.app/features/shift-handoff-software</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://joblineai.lovable.app/features/shift-handoff-software" />
+    <loc>https://jobline.ai/features/shift-handoff-software</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/features/shift-handoff-software" />
     <lastmod>2026-03-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
     <image:image>
-      <image:loc>https://joblineai.lovable.app/og-image.png</image:loc>
+      <image:loc>https://jobline.ai/og-image.png</image:loc>
       <image:title>Shift Handoff Software for Manufacturing</image:title>
     </image:image>
   </url>
   <url>
-    <loc>https://joblineai.lovable.app/features/work-order-tracking</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://joblineai.lovable.app/features/work-order-tracking" />
+    <loc>https://jobline.ai/features/work-order-tracking</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/features/work-order-tracking" />
     <lastmod>2026-03-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
     <image:image>
-      <image:loc>https://joblineai.lovable.app/og-image.png</image:loc>
+      <image:loc>https://jobline.ai/og-image.png</image:loc>
       <image:title>Work Order Tracking Software</image:title>
     </image:image>
   </url>
   <url>
-    <loc>https://joblineai.lovable.app/features/production-scheduling</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://joblineai.lovable.app/features/production-scheduling" />
+    <loc>https://jobline.ai/features/production-scheduling</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/features/production-scheduling" />
     <lastmod>2026-03-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://joblineai.lovable.app/features/machine-shop-software</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://joblineai.lovable.app/features/machine-shop-software" />
+    <loc>https://jobline.ai/features/machine-shop-software</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/features/machine-shop-software" />
     <lastmod>2026-03-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://joblineai.lovable.app/features/production-control</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://joblineai.lovable.app/features/production-control" />
+    <loc>https://jobline.ai/features/production-control</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/features/production-control" />
     <lastmod>2026-03-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://joblineai.lovable.app/features/digital-expeditor</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://joblineai.lovable.app/features/digital-expeditor" />
+    <loc>https://jobline.ai/features/digital-expeditor</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/features/digital-expeditor" />
     <lastmod>2026-03-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://joblineai.lovable.app/features/manufacturing-oversight</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://joblineai.lovable.app/features/manufacturing-oversight" />
+    <loc>https://jobline.ai/features/manufacturing-oversight</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/features/manufacturing-oversight" />
     <lastmod>2026-03-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://joblineai.lovable.app/features/quality-management</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://joblineai.lovable.app/features/quality-management" />
+    <loc>https://jobline.ai/features/quality-management</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/features/quality-management" />
     <lastmod>2026-03-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://joblineai.lovable.app/features/cnc-operator-tools</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://joblineai.lovable.app/features/cnc-operator-tools" />
+    <loc>https://jobline.ai/features/cnc-operator-tools</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/features/cnc-operator-tools" />
     <lastmod>2026-03-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://joblineai.lovable.app/features/team-collaboration</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://joblineai.lovable.app/features/team-collaboration" />
+    <loc>https://jobline.ai/features/team-collaboration</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/features/team-collaboration" />
     <lastmod>2026-03-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://joblineai.lovable.app/features/downtime-tracking</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://joblineai.lovable.app/features/downtime-tracking" />
+    <loc>https://jobline.ai/features/downtime-tracking</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/features/downtime-tracking" />
     <lastmod>2026-03-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://joblineai.lovable.app/features/ai-planning-assistant</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://joblineai.lovable.app/features/ai-planning-assistant" />
+    <loc>https://jobline.ai/features/ai-planning-assistant</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/features/ai-planning-assistant" />
     <lastmod>2026-03-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://joblineai.lovable.app/machine-time-tracking</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://joblineai.lovable.app/machine-time-tracking" />
+    <loc>https://jobline.ai/machine-time-tracking</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/machine-time-tracking" />
     <lastmod>2026-03-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://joblineai.lovable.app/shift-handoff</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://joblineai.lovable.app/shift-handoff" />
+    <loc>https://jobline.ai/shift-handoff</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/shift-handoff" />
     <lastmod>2026-03-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://joblineai.lovable.app/manufacturing-visibility</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://joblineai.lovable.app/manufacturing-visibility" />
+    <loc>https://jobline.ai/manufacturing-visibility</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/manufacturing-visibility" />
     <lastmod>2026-03-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -151,85 +151,85 @@
 
   <!-- Resource Pages -->
   <url>
-    <loc>https://joblineai.lovable.app/resources</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://joblineai.lovable.app/resources" />
+    <loc>https://jobline.ai/resources</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/resources" />
     <lastmod>2026-03-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://joblineai.lovable.app/resources/guides</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://joblineai.lovable.app/resources/guides" />
+    <loc>https://jobline.ai/resources/guides</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/resources/guides" />
     <lastmod>2026-03-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://joblineai.lovable.app/resources/gcode</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://joblineai.lovable.app/resources/gcode" />
+    <loc>https://jobline.ai/resources/gcode</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/resources/gcode" />
     <lastmod>2026-03-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://joblineai.lovable.app/resources/glossary</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://joblineai.lovable.app/resources/glossary" />
+    <loc>https://jobline.ai/resources/glossary</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/resources/glossary" />
     <lastmod>2026-03-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://joblineai.lovable.app/resources/beginners</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://joblineai.lovable.app/resources/beginners" />
+    <loc>https://jobline.ai/resources/beginners</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/resources/beginners" />
     <lastmod>2026-03-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://joblineai.lovable.app/resources/careers</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://joblineai.lovable.app/resources/careers" />
+    <loc>https://jobline.ai/resources/careers</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/resources/careers" />
     <lastmod>2026-03-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://joblineai.lovable.app/resources/safety</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://joblineai.lovable.app/resources/safety" />
+    <loc>https://jobline.ai/resources/safety</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/resources/safety" />
     <lastmod>2026-03-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://joblineai.lovable.app/resources/quality</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://joblineai.lovable.app/resources/quality" />
+    <loc>https://jobline.ai/resources/quality</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/resources/quality" />
     <lastmod>2026-03-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://joblineai.lovable.app/resources/lean</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://joblineai.lovable.app/resources/lean" />
+    <loc>https://jobline.ai/resources/lean</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/resources/lean" />
     <lastmod>2026-03-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://joblineai.lovable.app/resources/5s</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://joblineai.lovable.app/resources/5s" />
+    <loc>https://jobline.ai/resources/5s</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/resources/5s" />
     <lastmod>2026-03-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://joblineai.lovable.app/resources/kanban</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://joblineai.lovable.app/resources/kanban" />
+    <loc>https://jobline.ai/resources/kanban</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/resources/kanban" />
     <lastmod>2026-03-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://joblineai.lovable.app/resources/pioneers</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://joblineai.lovable.app/resources/pioneers" />
+    <loc>https://jobline.ai/resources/pioneers</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/resources/pioneers" />
     <lastmod>2026-03-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -237,15 +237,15 @@
 
   <!-- Blog & Help -->
   <url>
-    <loc>https://joblineai.lovable.app/blog</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://joblineai.lovable.app/blog" />
+    <loc>https://jobline.ai/blog</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/blog" />
     <lastmod>2026-03-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://joblineai.lovable.app/help</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://joblineai.lovable.app/help" />
+    <loc>https://jobline.ai/help</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/help" />
     <lastmod>2026-03-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -253,8 +253,8 @@
 
   <!-- Tools -->
   <url>
-    <loc>https://joblineai.lovable.app/tools</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://joblineai.lovable.app/tools" />
+    <loc>https://jobline.ai/tools</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/tools" />
     <lastmod>2026-03-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>

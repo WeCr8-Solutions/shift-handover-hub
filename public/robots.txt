@@ -188,6 +188,6 @@ Disallow: /admin
 Disallow: /display/
 Disallow: /functions/
 
-Sitemap: https://joblineai.lovable.app/sitemap.xml
+Sitemap: https://jobline.ai/sitemap.xml
 
 Crawl-delay: 1
