@@ -111,6 +111,12 @@ export function TeamManagement() {
   const [displayBluetoothDeviceName, setDisplayBluetoothDeviceName] = useState("");
   const [displayCastProtocol, setDisplayCastProtocol] = useState("");
 
+  // Display edit/delete state
+  const [editingDisplay, setEditingDisplay] = useState<import("@/hooks/useShopFloorDisplays").ShopFloorDisplay | null>(null);
+  const [editDisplayName, setEditDisplayName] = useState("");
+  const [editDisplayMode, setEditDisplayMode] = useState<"supervisor" | "operator">("supervisor");
+  const [isSavingDisplay, setIsSavingDisplay] = useState(false);
+  const [deletingDisplay, setDeletingDisplay] = useState<import("@/hooks/useShopFloorDisplays").ShopFloorDisplay | null>(null);
   // Check if team already has a display configured
   const teamDisplayMap = useMemo(() => {
     const map: Record<string, boolean> = {};
