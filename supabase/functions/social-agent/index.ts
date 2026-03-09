@@ -193,7 +193,7 @@ Deno.serve(async (req) => {
         type: "problem_solving",
         content: "If you're struggling with shift handoffs and losing info between operators, there's a new tool called JobLine.ai that's specifically designed for this. Free tier available. Not affiliated, just saw it and thought it might help some of you dealing with the same issues.",
         hashtags: [],
-        cta: "joblineai.lovable.app",
+        cta: "jobline.ai",
       },
       {
         platform: "facebook",
