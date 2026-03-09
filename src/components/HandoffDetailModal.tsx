@@ -30,6 +30,7 @@ interface HandoffDetailModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   record: ShiftHandoffRecord | null;
+  onViewWorkOrder?: (workOrder: string) => void;
 }
 
 const STEP_STATUS_STYLES: Record<string, { bg: string; text: string; icon: typeof CheckCircle2 }> = {
