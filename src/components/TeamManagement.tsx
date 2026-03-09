@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useOrgContext } from "@/contexts/OrgContext";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { useStations, Station } from "@/hooks/useStations";
+import { useShopFloorDisplays } from "@/hooks/useShopFloorDisplays";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
@@ -22,7 +23,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Users, Plus, UserPlus, Trash2, Crown, Shield, User, Loader2, Wrench, QrCode, Pencil } from "lucide-react";
+import { Users, Plus, UserPlus, Trash2, Crown, Shield, User, Loader2, Wrench, QrCode, Pencil, Monitor, Copy, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { TeamStationManager } from "./TeamStationManager";
 import { InviteCodeGenerator } from "./InviteCodeGenerator";
@@ -31,9 +32,10 @@ import { SafeDeleteDialog } from "./ui/safe-delete-dialog";
 export function TeamManagement() {
   const { user } = useAuth();
   const { organization } = useOrgContext();
-  const { isOrgAdmin, isAdmin } = useAdminAccess();
+  const { isOrgAdmin, isAdmin, hasOrgSupervisorAccess } = useAdminAccess();
   const { teams, loading, createTeam, updateTeam, deleteTeam } = useTeams();
   const { stations: allStations, refreshStations } = useStations(undefined, organization?.id);
+  const { displays, createDisplay } = useShopFloorDisplays();
   const { toast } = useToast();
   const [optimisticStations, setOptimisticStations] = useState<Station[]>([]);
   const [isUsingOptimisticStations, setIsUsingOptimisticStations] = useState(false);
@@ -96,6 +98,43 @@ export function TeamManagement() {
 
   // Delete confirmation state
   const [deletingTeam, setDeletingTeam] = useState<Team | null>(null);
+
+  // Display setup state
+  const [displaySetupTeam, setDisplaySetupTeam] = useState<Team | null>(null);
+  const [displayMode, setDisplayMode] = useState<"supervisor" | "operator">("supervisor");
+  const [displayName, setDisplayName] = useState("");
+  const [isCreatingDisplay, setIsCreatingDisplay] = useState(false);
+  const [createdDisplayUrl, setCreatedDisplayUrl] = useState<string | null>(null);
+
+  // Check if team already has a display configured
+  const teamDisplayMap = useMemo(() => {
+    const map: Record<string, boolean> = {};
+    displays.forEach(d => {
+      (d.team_ids || []).forEach(tid => { map[tid] = true; });
+    });
+    return map;
+  }, [displays]);
+
+  const handleSetupDisplay = async () => {
+    if (!displaySetupTeam || !displayName.trim()) return;
+    setIsCreatingDisplay(true);
+    const result = await createDisplay({
+      display_name: displayName.trim(),
+      display_mode: displayMode,
+      team_ids: [displaySetupTeam.id],
+    });
+    setIsCreatingDisplay(false);
+    if (result.error) {
+      toast({ title: "Failed to create display", description: result.error, variant: "destructive" });
+    } else {
+      // Find the newly created display to get its URL
+      // Re-fetch will happen via hook, but we can construct the URL
+      toast({ title: "Display created!", description: `${displayName} is ready for ${displaySetupTeam.name}.` });
+      setCreatedDisplayUrl(null); // Will show after displays refresh
+      setDisplaySetupTeam(null);
+      setDisplayName("");
+    }
+  };
 
   const handleCreateTeam = async () => {
     if (!newTeamName.trim()) {
@@ -282,12 +321,19 @@ export function TeamManagement() {
                 stationCount={stationCountByTeam[team.id] || 0}
                 isSelected={selectedTeam?.id === team.id}
                 canManage={team.created_by === user?.id || isOrgAdmin || isAdmin}
+                canSetupDisplay={hasOrgSupervisorAccess}
+                hasDisplay={!!teamDisplayMap[team.id]}
                 onSelect={() => setSelectedTeam(selectedTeam?.id === team.id ? null : team)}
                 onEdit={() => handleEditTeam(team)}
                 onDelete={() => handleRequestDelete(team)}
                 onAddStations={() => {
                   setNewlyCreatedTeam(team);
                   setShowStationManager(true);
+                }}
+                onSetupDisplay={() => {
+                  setDisplaySetupTeam(team);
+                  setDisplayName(`${team.name} Display`);
+                  setDisplayMode("supervisor");
                 }}
               />
           ))}
@@ -369,6 +415,64 @@ export function TeamManagement() {
         deleteLabel="Delete Team"
         onConfirm={handleConfirmDelete}
       />
+      {/* Display Setup Dialog */}
+      <Dialog open={!!displaySetupTeam} onOpenChange={(open) => !open && setDisplaySetupTeam(null)}>
+        <DialogContent className="max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Monitor className="w-5 h-5 text-primary" />
+              Setup Shop Floor Display
+            </DialogTitle>
+            <DialogDescription>
+              Create a display for <span className="font-semibold">{displaySetupTeam?.name}</span> to show on wall-mounted monitors or tablets.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="display-name">Display Name</Label>
+              <Input
+                id="display-name"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="e.g. CNC Floor Monitor"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Display Mode</Label>
+              <Select value={displayMode} onValueChange={(v) => setDisplayMode(v as "supervisor" | "operator")}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="supervisor">
+                    <div className="flex flex-col">
+                      <span>Supervisor</span>
+                      <span className="text-xs text-muted-foreground">KPIs, station grid, WO queue</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="operator">
+                    <div className="flex flex-col">
+                      <span>Operator</span>
+                      <span className="text-xs text-muted-foreground">Large station cards, progress bars</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="bg-secondary/30 rounded-lg p-3 text-xs text-muted-foreground space-y-1">
+              <p>• Display will show stations and work orders for <span className="font-medium text-foreground">{displaySetupTeam?.name}</span> only</p>
+              <p>• Token-based access — no login required on the display device</p>
+              <p>• Manage tokens and settings from Admin → Displays</p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDisplaySetupTeam(null)}>Cancel</Button>
+            <Button onClick={handleSetupDisplay} disabled={isCreatingDisplay || !displayName.trim()}>
+              {isCreatingDisplay ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Creating...</> : "Create Display"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -378,13 +482,16 @@ interface TeamCardProps {
   stationCount: number;
   isSelected: boolean;
   canManage: boolean;
+  canSetupDisplay: boolean;
+  hasDisplay: boolean;
   onSelect: () => void;
   onEdit: () => void;
   onDelete: () => void;
   onAddStations: () => void;
+  onSetupDisplay: () => void;
 }
 
-function TeamCard({ team, stationCount, isSelected, canManage, onSelect, onEdit, onDelete, onAddStations }: TeamCardProps) {
+function TeamCard({ team, stationCount, isSelected, canManage, canSetupDisplay, hasDisplay, onSelect, onEdit, onDelete, onAddStations, onSetupDisplay }: TeamCardProps) {
   return (
     <Card
       className={`cursor-pointer transition-colors hover:border-primary/50 ${isSelected ? "border-primary" : ""}`}
@@ -408,6 +515,12 @@ function TeamCard({ team, stationCount, isSelected, canManage, onSelect, onEdit,
                   <Wrench className="w-3 h-3" />
                   {stationCount}
                 </Badge>
+                {hasDisplay && (
+                  <Badge variant="outline" className="text-xs gap-1 text-primary border-primary/30">
+                    <Monitor className="w-3 h-3" />
+                    Display
+                  </Badge>
+                )}
               </div>
             </div>
           </div>
@@ -441,20 +554,37 @@ function TeamCard({ team, stationCount, isSelected, canManage, onSelect, onEdit,
           )}
         </div>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-2">
         <CardDescription className="line-clamp-2">{team.description || "No description"}</CardDescription>
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full gap-2"
-          onClick={(e) => {
-            e.stopPropagation();
-            onAddStations();
-          }}
-        >
-          <Wrench className="w-4 h-4" />
-          {stationCount > 0 ? "Manage Stations" : "Add Stations"}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1 gap-2"
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddStations();
+            }}
+          >
+            <Wrench className="w-4 h-4" />
+            {stationCount > 0 ? "Stations" : "Add Stations"}
+          </Button>
+          {canSetupDisplay && !hasDisplay && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={(e) => {
+                e.stopPropagation();
+                onSetupDisplay();
+              }}
+              title="Setup shop floor display for this team"
+            >
+              <Monitor className="w-4 h-4" />
+              Display
+            </Button>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
