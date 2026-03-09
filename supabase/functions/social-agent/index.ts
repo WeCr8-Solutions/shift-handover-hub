@@ -172,7 +172,7 @@ Deno.serve(async (req) => {
         type: "awareness",
         content: "The manufacturing industry loses $50B+ annually to poor shift handoffs.\n\nJobLine.ai is tackling this with accessible, affordable software for small machine shops - including a free tier.\n\nDigital shift handoffs ensure critical information never gets lost between operators.",
         hashtags: ["Manufacturing", "DigitalTransformation", "MES", "SmallBusiness", "Industry40"],
-        cta: "Learn more: joblineai.lovable.app",
+        cta: "Learn more: jobline.ai",
       },
       {
         platform: "linkedin",
