@@ -582,7 +582,8 @@ export function useAllStations(options?: { organizationId?: string | null }) {
   return { stations, loading, fetchStations, createStation, updateStation, deleteStation };
 }
 
-export function useSystemStats() {
+export function useSystemStats(options?: { organizationId?: string | null }) {
+  const orgId = options?.organizationId ?? null;
   const [stats, setStats] = useState<SystemStats>({
     totalUsers: 0,
     totalOrganizations: 0,
@@ -603,40 +604,73 @@ export function useSystemStats() {
     const today = new Date().toISOString().split("T")[0];
     const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
 
-    const [
-      { count: userCount },
-      { count: orgCount },
-      { count: teamCount },
-      { count: stationCount },
-      { count: handoffCount },
-      { count: activeCount },
-      { count: todayCount },
-      { count: weekCount },
-    ] = await Promise.all([
-      supabase.from("profiles").select("*", { count: "exact", head: true }),
-      supabase.from("organizations").select("*", { count: "exact", head: true }),
-      supabase.from("teams").select("*", { count: "exact", head: true }),
-      supabase.from("stations").select("*", { count: "exact", head: true }),
-      supabase.from("handoff_records").select("*", { count: "exact", head: true }),
-      supabase.from("stations").select("*", { count: "exact", head: true }).eq("is_active", true),
-      supabase.from("handoff_records").select("*", { count: "exact", head: true }).eq("date", today),
-      supabase.from("handoff_records").select("*", { count: "exact", head: true }).gte("date", weekAgo),
-    ]);
+    if (orgId) {
+      // Org-scoped stats
+      const [
+        { count: memberCount },
+        { count: teamCount },
+        { count: stationCount },
+        { count: handoffCount },
+        { count: activeCount },
+        { count: todayCount },
+        { count: weekCount },
+      ] = await Promise.all([
+        supabase.from("organization_members").select("*", { count: "exact", head: true }).eq("organization_id", orgId),
+        supabase.from("teams").select("*", { count: "exact", head: true }).eq("organization_id", orgId),
+        supabase.from("stations").select("*", { count: "exact", head: true }).eq("organization_id", orgId),
+        supabase.from("handoff_records").select("*", { count: "exact", head: true }).eq("organization_id", orgId),
+        supabase.from("stations").select("*", { count: "exact", head: true }).eq("organization_id", orgId).eq("is_active", true),
+        supabase.from("handoff_records").select("*", { count: "exact", head: true }).eq("organization_id", orgId).eq("date", today),
+        supabase.from("handoff_records").select("*", { count: "exact", head: true }).eq("organization_id", orgId).gte("date", weekAgo),
+      ]);
 
-    setStats({
-      totalUsers: userCount || 0,
-      totalOrganizations: orgCount || 0,
-      totalTeams: teamCount || 0,
-      totalStations: stationCount || 0,
-      totalHandoffs: handoffCount || 0,
-      activeStations: activeCount || 0,
-      handoffsToday: todayCount || 0,
-      handoffsThisWeek: weekCount || 0,
-    });
+      setStats({
+        totalUsers: memberCount || 0,
+        totalOrganizations: 1,
+        totalTeams: teamCount || 0,
+        totalStations: stationCount || 0,
+        totalHandoffs: handoffCount || 0,
+        activeStations: activeCount || 0,
+        handoffsToday: todayCount || 0,
+        handoffsThisWeek: weekCount || 0,
+      });
+    } else {
+      // Platform-wide stats
+      const [
+        { count: userCount },
+        { count: orgCount },
+        { count: teamCount },
+        { count: stationCount },
+        { count: handoffCount },
+        { count: activeCount },
+        { count: todayCount },
+        { count: weekCount },
+      ] = await Promise.all([
+        supabase.from("profiles").select("*", { count: "exact", head: true }),
+        supabase.from("organizations").select("*", { count: "exact", head: true }),
+        supabase.from("teams").select("*", { count: "exact", head: true }),
+        supabase.from("stations").select("*", { count: "exact", head: true }),
+        supabase.from("handoff_records").select("*", { count: "exact", head: true }),
+        supabase.from("stations").select("*", { count: "exact", head: true }).eq("is_active", true),
+        supabase.from("handoff_records").select("*", { count: "exact", head: true }).eq("date", today),
+        supabase.from("handoff_records").select("*", { count: "exact", head: true }).gte("date", weekAgo),
+      ]);
+
+      setStats({
+        totalUsers: userCount || 0,
+        totalOrganizations: orgCount || 0,
+        totalTeams: teamCount || 0,
+        totalStations: stationCount || 0,
+        totalHandoffs: handoffCount || 0,
+        activeStations: activeCount || 0,
+        handoffsToday: todayCount || 0,
+        handoffsThisWeek: weekCount || 0,
+      });
+    }
 
     setLastUpdated(new Date());
     setLoading(false);
-  }, []);
+  }, [orgId]);
 
   // Debounced refresh for realtime events
   const debouncedRefresh = useCallback(() => {
