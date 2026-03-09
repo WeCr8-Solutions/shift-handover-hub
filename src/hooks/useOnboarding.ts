@@ -94,9 +94,13 @@ export function useOnboarding() {
           setupWizardDismissed: data.setup_wizard_dismissed || false,
         });
       } else {
+        // Use upsert to handle race condition with handle_new_user trigger
         const { error: insertError } = await supabase
           .from('user_onboarding')
-          .insert({ user_id: user.id, has_seen_welcome: false });
+          .upsert(
+            { user_id: user.id, has_seen_welcome: false },
+            { onConflict: 'user_id' }
+          );
 
         if (insertError) {
           console.error('Error creating onboarding record:', insertError);
