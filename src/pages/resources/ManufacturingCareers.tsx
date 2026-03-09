@@ -1,11 +1,18 @@
+import { useState, useMemo, useCallback } from "react";
 import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+  Search,
   Wrench,
   TrendingUp,
   GraduationCap,
@@ -18,10 +25,18 @@ import {
   BarChart3,
   ClipboardCheck,
   Settings,
+  CheckCircle2,
+  RotateCcw,
 } from "lucide-react";
+
+const STORAGE_KEY = "careers-guide-progress";
+
+const salaryBands = ["All", "$38K–$75K", "$40K–$72K", "$50K–$110K"] as const;
+const growthLevels = ["All", "High demand", "Fastest growing", "Steady", "Strong"] as const;
 
 const careerPaths = [
   {
+    id: "cnc-machinist",
     title: "CNC Machinist",
     icon: Settings,
     salary: "$42K – $72K",
@@ -33,6 +48,7 @@ const careerPaths = [
     advancement: "CNC Programmer → Manufacturing Engineer → Shop Manager",
   },
   {
+    id: "quality-inspector",
     title: "Quality Inspector",
     icon: ClipboardCheck,
     salary: "$40K – $68K",
@@ -44,6 +60,7 @@ const careerPaths = [
     advancement: "Senior Inspector → Quality Engineer → Quality Manager",
   },
   {
+    id: "manufacturing-engineer",
     title: "Manufacturing Engineer",
     icon: Factory,
     salary: "$65K – $105K",
@@ -55,6 +72,7 @@ const careerPaths = [
     advancement: "Senior Mfg Engineer → Engineering Manager → Director of Operations",
   },
   {
+    id: "production-supervisor",
     title: "Production Supervisor",
     icon: Briefcase,
     salary: "$55K – $85K",
@@ -66,6 +84,7 @@ const careerPaths = [
     advancement: "Production Manager → Plant Manager → VP Operations",
   },
   {
+    id: "welding-technician",
     title: "Welding Technician",
     icon: Wrench,
     salary: "$38K – $75K",
@@ -77,6 +96,7 @@ const careerPaths = [
     advancement: "Senior Welder → Welding Inspector (CWI) → Welding Engineer",
   },
   {
+    id: "automation-robotics",
     title: "Industrial Automation / Robotics",
     icon: Cpu,
     salary: "$60K – $110K",
@@ -88,6 +108,7 @@ const careerPaths = [
     advancement: "Senior Automation Tech → Controls Engineer → Automation Manager",
   },
   {
+    id: "supply-chain",
     title: "Supply Chain & Production Planning",
     icon: BarChart3,
     salary: "$50K – $90K",
@@ -99,6 +120,7 @@ const careerPaths = [
     advancement: "Senior Planner → Supply Chain Manager → VP Supply Chain",
   },
   {
+    id: "quality-engineer",
     title: "Quality / Compliance Engineer",
     icon: Shield,
     salary: "$65K – $100K",
@@ -122,7 +144,53 @@ const certifications = [
   { name: "Certified Manufacturing Engineer (CMfgE)", org: "SME", field: "Engineering" },
 ];
 
+function loadProgress(): Set<string> {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? new Set(JSON.parse(raw)) : new Set();
+  } catch {
+    return new Set();
+  }
+}
+function saveProgress(set: Set<string>) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...set]));
+}
+
 export default function ManufacturingCareers() {
+  const [search, setSearch] = useState("");
+  const [growthFilter, setGrowthFilter] = useState<string>("All");
+  const [explored, setExplored] = useState<Set<string>>(() => loadProgress());
+
+  const toggleExplored = useCallback((id: string) => {
+    setExplored((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      saveProgress(next);
+      return next;
+    });
+  }, []);
+
+  const resetProgress = useCallback(() => {
+    setExplored(new Set());
+    localStorage.removeItem(STORAGE_KEY);
+  }, []);
+
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase();
+    return careerPaths.filter((c) => {
+      const matchesGrowth = growthFilter === "All" || c.growth === growthFilter;
+      const matchesSearch =
+        !q ||
+        c.title.toLowerCase().includes(q) ||
+        c.description.toLowerCase().includes(q) ||
+        c.skills.some((s) => s.toLowerCase().includes(q));
+      return matchesGrowth && matchesSearch;
+    });
+  }, [search, growthFilter]);
+
+  const progressPercent = Math.round((explored.size / careerPaths.length) * 100);
+
   return (
     <>
       <SEOHead
@@ -133,69 +201,136 @@ export default function ManufacturingCareers() {
         <MarketingNav />
 
         <main className="container py-12 max-w-5xl">
-          <div className="text-center mb-12">
+          <div className="text-center mb-8">
             <Badge variant="secondary" className="mb-4">Career Guide</Badge>
             <h1 className="text-4xl font-bold tracking-tight mb-4">
               Manufacturing Career Paths
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Manufacturing offers high-paying, hands-on careers that don't always require a four-year degree.
-              Explore roles, salary ranges, required skills, and advancement paths.
+              Explore roles, mark ones you're interested in, and track your research.
             </p>
           </div>
 
-          <AdPlacement format="horizontal" className="mb-8" />
+          {/* Progress bar */}
+          <Card className="mb-6">
+            <CardContent className="pt-6 pb-4">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-medium">{explored.size} of {careerPaths.length} careers explored</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-primary">{progressPercent}%</span>
+                  {explored.size > 0 && (
+                    <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 text-muted-foreground" onClick={resetProgress}>
+                      <RotateCcw className="w-3 h-3" /> Reset
+                    </Button>
+                  )}
+                </div>
+              </div>
+              <Progress value={progressPercent} className="h-2" />
+            </CardContent>
+          </Card>
 
-          <Tabs defaultValue="careers" className="space-y-8">
+          <AdPlacement format="horizontal" className="mb-6" />
+
+          <Tabs defaultValue="careers" className="space-y-6">
             <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
               <TabsTrigger value="careers">Career Paths</TabsTrigger>
               <TabsTrigger value="certifications">Certifications</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="careers" className="space-y-6">
-              {careerPaths.map((career, i) => {
-                const Icon = career.icon;
-                return (
-                  <Card key={i} className="overflow-hidden">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                          <Icon className="w-5 h-5 text-primary" />
-                        </div>
-                        <div className="space-y-1 flex-1">
-                          <CardTitle className="text-lg">{career.title}</CardTitle>
-                          <div className="flex flex-wrap gap-2">
-                            <Badge variant="outline" className="text-xs gap-1">
-                              <DollarSign className="w-3 h-3" /> {career.salary}
-                            </Badge>
-                            <Badge variant="outline" className="text-xs gap-1">
-                              <TrendingUp className="w-3 h-3" /> {career.growth}
-                            </Badge>
-                            <Badge variant="outline" className="text-xs gap-1">
-                              <GraduationCap className="w-3 h-3" /> {career.entry}
-                            </Badge>
+            <TabsContent value="careers" className="space-y-4">
+              {/* Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search careers, skills…"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+
+              {/* Growth filters */}
+              <div className="flex flex-wrap gap-1.5">
+                {(growthLevels as readonly string[]).map((level) => (
+                  <Button
+                    key={level}
+                    variant={growthFilter === level ? "default" : "outline"}
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => setGrowthFilter(level)}
+                  >
+                    {level}
+                  </Button>
+                ))}
+              </div>
+
+              {filtered.length === 0 ? (
+                <p className="text-center text-muted-foreground py-12">No careers match your search.</p>
+              ) : (
+                <Accordion type="multiple" className="space-y-3">
+                  {filtered.map((career) => {
+                    const Icon = career.icon;
+                    const isDone = explored.has(career.id);
+                    return (
+                      <AccordionItem key={career.id} value={career.id} className="border rounded-lg px-4 overflow-hidden">
+                        <AccordionTrigger className="hover:no-underline py-4 gap-3">
+                          <div className="flex items-center gap-3 flex-1 text-left">
+                            <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                              <Icon className="w-4 h-4 text-primary" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="font-medium text-sm">{career.title}</span>
+                                {isDone && <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />}
+                              </div>
+                              <div className="flex flex-wrap gap-1.5 mt-1">
+                                <Badge variant="outline" className="text-[10px] gap-1">
+                                  <DollarSign className="w-2.5 h-2.5" /> {career.salary}
+                                </Badge>
+                                <Badge variant="outline" className="text-[10px] gap-1">
+                                  <TrendingUp className="w-2.5 h-2.5" /> {career.growth}
+                                </Badge>
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <p className="text-muted-foreground leading-relaxed text-sm">{career.description}</p>
-                      <div>
-                        <p className="text-xs font-medium text-foreground mb-2">Key Skills</p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {career.skills.map((skill) => (
-                            <Badge key={skill} variant="secondary" className="text-xs">{skill}</Badge>
-                          ))}
-                        </div>
-                      </div>
-                      <div>
-                        <p className="text-xs font-medium text-foreground mb-1">Career Advancement</p>
-                        <p className="text-xs text-muted-foreground">{career.advancement}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+                        </AccordionTrigger>
+                        <AccordionContent className="pb-4 space-y-4">
+                          <Badge variant="secondary" className="text-xs gap-1">
+                            <GraduationCap className="w-3 h-3" /> {career.entry}
+                          </Badge>
+                          <p className="text-muted-foreground leading-relaxed text-sm">{career.description}</p>
+                          <div>
+                            <p className="text-xs font-medium text-foreground mb-2">Key Skills</p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {career.skills.map((skill) => (
+                                <Badge key={skill} variant="secondary" className="text-xs">{skill}</Badge>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-xs font-medium text-foreground mb-1">Career Advancement</p>
+                            <p className="text-xs text-muted-foreground">{career.advancement}</p>
+                          </div>
+                          <div className="flex items-center gap-2 pt-2 border-t">
+                            <Checkbox
+                              id={`explore-${career.id}`}
+                              checked={isDone}
+                              onCheckedChange={() => toggleExplored(career.id)}
+                            />
+                            <label htmlFor={`explore-${career.id}`} className="text-xs text-muted-foreground cursor-pointer select-none">
+                              Mark as explored
+                            </label>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    );
+                  })}
+                </Accordion>
+              )}
             </TabsContent>
 
             <TabsContent value="certifications">
@@ -212,7 +347,7 @@ export default function ManufacturingCareers() {
                 <CardContent>
                   <div className="grid sm:grid-cols-2 gap-4">
                     {certifications.map((cert, i) => (
-                      <div key={i} className="p-4 border rounded-lg space-y-1">
+                      <div key={i} className="p-4 border rounded-lg space-y-1 hover:border-primary/50 transition-colors">
                         <p className="font-medium text-sm text-foreground">{cert.name}</p>
                         <p className="text-xs text-muted-foreground">{cert.org}</p>
                         <Badge variant="outline" className="text-xs mt-1">{cert.field}</Badge>
