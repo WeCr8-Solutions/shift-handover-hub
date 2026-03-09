@@ -68,6 +68,11 @@ export function ShopFloorDisplayManagement() {
   const [formDarkMode, setFormDarkMode] = useState<"auto" | "always" | "never">("auto");
   const [formAutoRotate, setFormAutoRotate] = useState(false);
   const [formExpiry, setFormExpiry] = useState(30);
+  const [formConnectionType, setFormConnectionType] = useState<"url" | "ip" | "bluetooth">("url");
+  const [formIpAddress, setFormIpAddress] = useState("");
+  const [formBluetoothEnabled, setFormBluetoothEnabled] = useState(false);
+  const [formBluetoothDeviceName, setFormBluetoothDeviceName] = useState("");
+  const [formCastProtocol, setFormCastProtocol] = useState("");
   const [creating, setCreating] = useState(false);
 
   const resetForm = () => {
