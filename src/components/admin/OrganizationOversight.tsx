@@ -31,12 +31,16 @@ import {
 } from "@/components/ui/accordion";
 import { Loader2, Search, Users, Building2, Wrench, Trash2, Briefcase, Crown, Mail, Plug } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import type { AdminComponentAccess } from "@/types/admin";
 
 interface OrganizationOversightProps {
-  isAdmin: boolean;
+  isAdmin?: boolean;
+  access?: AdminComponentAccess;
 }
 
-export function OrganizationOversight({ isAdmin }: OrganizationOversightProps) {
+export function OrganizationOversight({ isAdmin, access }: OrganizationOversightProps) {
+  // Derive from access if provided, fall back to legacy isAdmin prop
+  const isPlatformAdmin = access?.isPlatformAdmin ?? isAdmin ?? false;
   const { organizations, loading, deleteOrganization } = useAllOrganizations();
   const { toast } = useToast();
   
