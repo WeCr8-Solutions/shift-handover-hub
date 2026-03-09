@@ -317,6 +317,9 @@ const Index = () => {
                     const found = handoffRecords.find((h) => h.recordId === handoffId);
                     if (found) setSelectedHandoff(found);
                   }}
+                  onViewWorkOrder={(workOrder) => {
+                    navigate(`/queue?wo=${encodeURIComponent(workOrder)}`);
+                  }}
                 />
               )
             ) : (
