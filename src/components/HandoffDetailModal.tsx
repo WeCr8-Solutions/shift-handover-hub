@@ -10,7 +10,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import {
   Clock, User, FileText, Circle, Package, CheckCircle2,
-  ArrowRight, Loader2, Route, Wrench, AlertTriangle,
+  ArrowRight, Loader2, Route, Wrench, AlertTriangle, ExternalLink,
 } from "lucide-react";
 import type { ShiftHandoffRecord } from "@/types/handoff";
 
