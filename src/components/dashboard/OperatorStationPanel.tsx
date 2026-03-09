@@ -431,11 +431,11 @@ export function OperatorStationPanel({
   const priorityClass = (p: string) => {
     switch (p) {
       case "critical":
-        return "bg-red-500 text-white";
+        return "bg-[hsl(var(--priority-critical))] text-white";
       case "urgent":
-        return "bg-orange-500 text-white";
+        return "bg-[hsl(var(--priority-urgent))] text-white";
       case "high":
-        return "bg-amber-500 text-white";
+        return "bg-[hsl(var(--priority-high))] text-white";
       default:
         return "bg-muted text-muted-foreground";
     }
@@ -472,7 +472,7 @@ export function OperatorStationPanel({
                   </Badge>
                   <Badge className={priorityClass(activeOrder.priority)}>{activeOrder.priority}</Badge>
                   {activeOrder.is_rework && (
-                    <Badge variant="outline" className="text-amber-600 border-amber-500/50 gap-1">
+                    <Badge variant="outline" className="text-[hsl(var(--warning))] border-[hsl(var(--warning)/0.5)] gap-1">
                       <Wrench className="w-3 h-3" /> Rework
                     </Badge>
                   )}
@@ -553,13 +553,13 @@ export function OperatorStationPanel({
                     </div>
                     <Progress value={pct} className="h-2" />
                     <div className="grid grid-cols-4 gap-1 text-[11px] text-center">
-                      <div className="rounded bg-green-500/10 text-green-700 dark:text-green-400 py-0.5">
+                      <div className="rounded bg-[hsl(var(--success)/0.1)] text-[hsl(var(--success))] py-0.5">
                         ✓ {completed}
                       </div>
                       <div className="rounded bg-destructive/10 text-destructive py-0.5">
                         ✗ {scrap}
                       </div>
-                      <div className="rounded bg-amber-500/10 text-amber-700 dark:text-amber-400 py-0.5">
+                      <div className="rounded bg-[hsl(var(--warning)/0.1)] text-[hsl(var(--warning))] py-0.5">
                         ↺ {rework}
                       </div>
                       <div className="rounded bg-primary/10 text-primary py-0.5">
@@ -567,7 +567,7 @@ export function OperatorStationPanel({
                       </div>
                     </div>
                     {activeOrder.quantity_locked && (
-                      <span className="text-[10px] text-amber-600 dark:text-amber-400">🔒 Quantity locked</span>
+                      <span className="text-[10px] text-[hsl(var(--warning))]">🔒 Quantity locked</span>
                     )}
                   </div>
                 );
@@ -605,7 +605,7 @@ export function OperatorStationPanel({
                             {idx > 0 && (
                               <div className={cn(
                                 "w-4 sm:w-6 h-0.5 flex-shrink-0",
-                                isCompleted ? "bg-green-500" : isCurrent ? "bg-primary" : "bg-border"
+                                isCompleted ? "bg-[hsl(var(--success))]" : isCurrent ? "bg-primary" : "bg-border"
                               )} />
                             )}
                             <div className={cn(
@@ -614,10 +614,10 @@ export function OperatorStationPanel({
                             )}>
                               <div className={cn(
                                 "w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border-2 transition-all",
-                                isCompleted && "bg-green-500 border-green-500 text-white",
+                                isCompleted && "bg-[hsl(var(--success))] border-[hsl(var(--success))] text-white",
                                 isCurrent && "bg-primary border-primary text-primary-foreground ring-2 ring-primary/30 ring-offset-1",
                                 isPending && "bg-muted border-border text-muted-foreground",
-                                isOutside && !isCompleted && !isCurrent && "border-amber-500 text-amber-600"
+                                isOutside && !isCompleted && !isCurrent && "border-[hsl(var(--warning))] text-[hsl(var(--warning))]"
                               )}>
                                 {isCompleted ? "✓" : step.step_number}
                               </div>
@@ -628,7 +628,7 @@ export function OperatorStationPanel({
                                 {step.stations?.name || step.operation_name}
                               </span>
                               {isOutside && (
-                                <span className="text-[8px] text-amber-600 dark:text-amber-400">Outside</span>
+                                <span className="text-[8px] text-[hsl(var(--warning))]">Outside</span>
                               )}
                             </div>
                           </div>
@@ -837,7 +837,7 @@ export function OperatorStationPanel({
                         Total: {completionData.qtyCompleted + completionData.qtyScrap + completionData.qtyRework} / {completionData.qtyOriginal}
                       </span>
                       {completionData.qtyCompleted + completionData.qtyScrap + completionData.qtyRework >= completionData.qtyOriginal ? (
-                        <span className="text-green-600 font-medium flex items-center gap-1">
+                        <span className="text-[hsl(var(--success))] font-medium flex items-center gap-1">
                           <CheckCircle2 className="w-3 h-3" /> Accounted
                         </span>
                       ) : (

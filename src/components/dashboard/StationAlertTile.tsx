@@ -261,8 +261,8 @@ export function StationAlertTile({ station, onViewStation, onQuickAction }: Stat
       <div className={cn(
         "border-b border-border/30 transition-colors",
         isOpen && "bg-secondary/20",
-        station.status === "down" && "bg-red-500/5",
-        hasCritical && "bg-amber-500/5",
+        station.status === "down" && "bg-[hsl(var(--state-down)/0.05)]",
+        hasCritical && "bg-[hsl(var(--warning)/0.05)]",
       )}>
         {/* Compact Row — always visible */}
         <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5">
@@ -300,7 +300,7 @@ export function StationAlertTile({ station, onViewStation, onQuickAction }: Stat
               {!isOpen && alertData && totalAlerts > 0 && (
                 <Badge className={cn(
                   "text-[9px] px-1.5 py-0 flex-shrink-0",
-                  hasCritical ? "bg-red-500" : "bg-amber-500",
+                  hasCritical ? "bg-[hsl(var(--priority-critical))]" : "bg-[hsl(var(--priority-high))]",
                 )}>
                   {totalAlerts}
                 </Badge>
@@ -378,12 +378,12 @@ export function StationAlertTile({ station, onViewStation, onQuickAction }: Stat
                   return (
                     <div className={cn(
                       "p-2.5 rounded-lg border",
-                      isOnHold ? "bg-amber-500/10 border-amber-500/30" : "bg-green-500/10 border-green-500/30",
+                      isOnHold ? "bg-[hsl(var(--warning)/0.1)] border-[hsl(var(--warning)/0.3)]" : "bg-[hsl(var(--success)/0.1)] border-[hsl(var(--success)/0.3)]",
                     )}>
                       <div className="flex items-center justify-between mb-1">
                         <Badge variant="outline" className={cn(
                           "text-[10px]",
-                          isOnHold ? "border-amber-500/50 text-amber-600" : "border-green-500/50 text-green-600",
+                          isOnHold ? "border-[hsl(var(--warning)/0.5)] text-[hsl(var(--warning))]" : "border-[hsl(var(--success)/0.5)] text-[hsl(var(--success))]",
                         )}>
                           {isOnHold ? <Pause className="w-2.5 h-2.5 mr-1" /> : <Play className="w-2.5 h-2.5 mr-1" />}
                           {isOnHold ? "ON HOLD" : "IN PROGRESS"}
@@ -407,7 +407,7 @@ export function StationAlertTile({ station, onViewStation, onQuickAction }: Stat
                           <div className="flex items-center justify-between mb-0.5">
                             <span className={cn(
                               "text-[10px] flex items-center gap-1",
-                              timeInfo.isOverdue ? "text-red-500 font-medium" : "text-muted-foreground",
+                              timeInfo.isOverdue ? "text-destructive font-medium" : "text-muted-foreground",
                             )}>
                               {timeInfo.isOverdue && <AlertCircle className="w-2.5 h-2.5" />}
                               {timeInfo.remaining}
@@ -416,7 +416,7 @@ export function StationAlertTile({ station, onViewStation, onQuickAction }: Stat
                           {timeInfo.progress !== null && (
                             <Progress
                               value={timeInfo.progress}
-                              className={cn("h-1", timeInfo.isOverdue && "[&>div]:bg-red-500")}
+                              className={cn("h-1", timeInfo.isOverdue && "[&>div]:bg-destructive")}
                             />
                           )}
                         </div>
@@ -429,15 +429,15 @@ export function StationAlertTile({ station, onViewStation, onQuickAction }: Stat
                 {alertData.pendingDeliveries.length > 0 && (
                   <div className={cn(
                     "p-2.5 rounded-lg border-2",
-                    alertData.pendingDeliveries.some(d => d.priority === "critical") ? "border-red-500 bg-red-500/10" :
-                    alertData.pendingDeliveries.some(d => d.priority === "urgent") ? "border-orange-500 bg-orange-500/10" :
-                    "border-amber-500 bg-amber-500/10",
+                    alertData.pendingDeliveries.some(d => d.priority === "critical") ? "border-[hsl(var(--priority-critical))] bg-[hsl(var(--priority-critical)/0.1)]" :
+                    alertData.pendingDeliveries.some(d => d.priority === "urgent") ? "border-[hsl(var(--priority-urgent))] bg-[hsl(var(--priority-urgent)/0.1)]" :
+                    "border-[hsl(var(--priority-high))] bg-[hsl(var(--priority-high)/0.1)]",
                   )}>
                     <div className="flex items-center gap-2 mb-1.5">
                       <Truck className={cn(
                         "w-4 h-4",
                         alertData.pendingDeliveries.some(d => ["critical", "urgent"].includes(d.priority))
-                          ? "text-red-500 animate-bounce" : "text-amber-600",
+                          ? "text-[hsl(var(--priority-critical))] animate-bounce" : "text-[hsl(var(--warning))]",
                       )} />
                       <span className="text-xs font-bold uppercase tracking-wide">
                         ⚠️ {alertData.pendingDeliveries.length} Needs Delivery
@@ -457,9 +457,9 @@ export function StationAlertTile({ station, onViewStation, onQuickAction }: Stat
                           </span>
                           {d.priority !== "normal" && d.priority !== "low" && (
                             <Badge className={cn("text-[9px] ml-auto",
-                              d.priority === "critical" && "bg-red-600",
-                              d.priority === "urgent" && "bg-orange-600",
-                              d.priority === "high" && "bg-amber-600",
+                              d.priority === "critical" && "bg-[hsl(var(--priority-critical))]",
+                              d.priority === "urgent" && "bg-[hsl(var(--priority-urgent))]",
+                              d.priority === "high" && "bg-[hsl(var(--priority-high))]",
                             )}>
                               <Zap className="w-2 h-2 mr-0.5" />{d.priority.toUpperCase()}
                             </Badge>
@@ -477,15 +477,15 @@ export function StationAlertTile({ station, onViewStation, onQuickAction }: Stat
                 {alertData.incomingItems.length > 0 && (
                   <div className={cn(
                     "p-2.5 rounded-lg border-2",
-                    alertData.incomingItems.some(d => d.priority === "critical") ? "border-red-400 bg-red-500/10" :
-                    alertData.incomingItems.some(d => d.priority === "urgent") ? "border-orange-400 bg-orange-500/10" :
-                    "border-blue-400 bg-blue-500/10",
+                    alertData.incomingItems.some(d => d.priority === "critical") ? "border-[hsl(var(--priority-critical))] bg-[hsl(var(--priority-critical)/0.1)]" :
+                    alertData.incomingItems.some(d => d.priority === "urgent") ? "border-[hsl(var(--priority-urgent))] bg-[hsl(var(--priority-urgent)/0.1)]" :
+                    "border-[hsl(var(--info))] bg-[hsl(var(--info)/0.1)]",
                   )}>
                     <div className="flex items-center gap-2 mb-1.5">
                       <Bell className={cn(
                         "w-4 h-4",
                         alertData.incomingItems.some(d => ["critical", "urgent"].includes(d.priority))
-                          ? "text-red-500" : "text-blue-500",
+                          ? "text-[hsl(var(--priority-critical))]" : "text-[hsl(var(--info))]",
                       )} />
                       <span className="text-xs font-bold uppercase tracking-wide">
                         📦 {alertData.incomingItems.length} Incoming
@@ -501,9 +501,9 @@ export function StationAlertTile({ station, onViewStation, onQuickAction }: Stat
                           <span className="text-[10px] text-muted-foreground">from {item.fromStationName}</span>
                           {item.priority !== "normal" && item.priority !== "low" && (
                             <Badge className={cn("text-[9px] ml-auto",
-                              item.priority === "critical" && "bg-red-600",
-                              item.priority === "urgent" && "bg-orange-600",
-                              item.priority === "high" && "bg-amber-600",
+                              item.priority === "critical" && "bg-[hsl(var(--priority-critical))]",
+                              item.priority === "urgent" && "bg-[hsl(var(--priority-urgent))]",
+                              item.priority === "high" && "bg-[hsl(var(--priority-high))]",
                             )}>
                               {item.priority.toUpperCase()}
                             </Badge>
@@ -519,10 +519,10 @@ export function StationAlertTile({ station, onViewStation, onQuickAction }: Stat
 
                 {/* Queue Count */}
                 {alertData.queueCount > 0 && !alertData.activeItem && (
-                  <div className="p-2.5 rounded-lg border border-purple-500/30 bg-purple-500/10">
+                  <div className="p-2.5 rounded-lg border border-accent/30 bg-accent/10">
                     <div className="flex items-center gap-2">
-                      <ListTodo className="w-4 h-4 text-purple-600" />
-                      <span className="text-xs font-semibold text-purple-700">
+                      <ListTodo className="w-4 h-4 text-accent" />
+                      <span className="text-xs font-semibold text-accent-foreground">
                         {alertData.queueCount} {alertData.queueCount === 1 ? "Order" : "Orders"} Queued
                       </span>
                     </div>
@@ -531,10 +531,10 @@ export function StationAlertTile({ station, onViewStation, onQuickAction }: Stat
 
                 {/* Machine Down */}
                 {station.status === "down" && (
-                  <div className="p-2.5 rounded-lg bg-red-500/10 border border-red-500/30">
+                  <div className="p-2.5 rounded-lg bg-[hsl(var(--state-down)/0.1)] border border-[hsl(var(--state-down)/0.3)]">
                     <div className="flex items-center gap-2">
-                      <AlertTriangle className="w-4 h-4 text-red-500" />
-                      <span className="text-xs font-medium text-red-600">Machine Down — Requires Attention</span>
+                      <AlertTriangle className="w-4 h-4 text-[hsl(var(--state-down))]" />
+                      <span className="text-xs font-medium text-[hsl(var(--state-down))]">Machine Down — Requires Attention</span>
                     </div>
                   </div>
                 )}
@@ -544,24 +544,24 @@ export function StationAlertTile({ station, onViewStation, onQuickAction }: Stat
                   <div className={cn(
                     "p-2.5 rounded-lg border",
                     alertData.queueCount > 0
-                      ? "bg-amber-500/10 border-amber-500/30"
+                      ? "bg-[hsl(var(--warning)/0.1)] border-[hsl(var(--warning)/0.3)]"
                       : "bg-muted/50 border-border",
                   )}>
                     <div className="flex items-center gap-2">
                       <Clock className={cn(
                         "w-4 h-4",
-                        alertData.queueCount > 0 ? "text-amber-500" : "text-muted-foreground",
+                        alertData.queueCount > 0 ? "text-[hsl(var(--warning))]" : "text-muted-foreground",
                       )} />
                       <div className="flex-1">
                         <span className={cn(
                           "text-xs font-medium",
-                          alertData.queueCount > 0 ? "text-amber-700" : "text-muted-foreground",
+                          alertData.queueCount > 0 ? "text-[hsl(var(--warning))]" : "text-muted-foreground",
                         )}>
                           Station Idle
                           {station.operator === "—" && " — No Operator"}
                         </span>
                         {alertData.queueCount > 0 && (
-                          <p className="text-[10px] text-amber-600 mt-0.5">
+                          <p className="text-[10px] text-[hsl(var(--warning))] mt-0.5">
                             {alertData.queueCount} {alertData.queueCount === 1 ? "order" : "orders"} waiting in queue
                           </p>
                         )}
@@ -582,10 +582,10 @@ export function StationAlertTile({ station, onViewStation, onQuickAction }: Stat
 
                 {/* Waiting Station Alert */}
                 {station.status === "waiting" && !alertData.activeItem && (
-                  <div className="p-2.5 rounded-lg bg-blue-500/10 border border-blue-500/30">
+                  <div className="p-2.5 rounded-lg bg-[hsl(var(--state-waiting)/0.1)] border border-[hsl(var(--state-waiting)/0.3)]">
                     <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-blue-500" />
-                      <span className="text-xs font-medium text-blue-700">
+                      <Clock className="w-4 h-4 text-[hsl(var(--state-waiting))]" />
+                      <span className="text-xs font-medium text-[hsl(var(--state-waiting))]">
                         Station Waiting
                       </span>
                     </div>
