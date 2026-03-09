@@ -39,6 +39,22 @@
         gtag('config','G-FDFFDKQS0Q');
         gtag('config','AW-17425064696');
 
+        // Google Ads conversion helper: call from CTA handlers.
+        window.gtag_report_conversion = function(url) {
+          var callback = function() {
+            if (typeof(url) !== 'undefined') {
+              window.location = url;
+            }
+          };
+
+          gtag('event', 'conversion', {
+            send_to: 'AW-17425064696/VSEqCNulzYEbEPjF9fRA',
+            event_callback: callback
+          });
+
+          return false;
+        };
+
         // Google AdSense
         var as=document.createElement('script');as.async=true;
         as.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3639153716376265';
