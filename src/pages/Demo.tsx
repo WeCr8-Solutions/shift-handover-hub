@@ -78,7 +78,7 @@ export default function Demo() {
           "@type": "WebPage",
           "name": "Book a Demo - JobLine.ai",
           "description": "Request a personalized demo of JobLine.ai's digital expeditor and shift handoff system.",
-          "url": "https://joblineai.lovable.app/demo",
+          "url": "https://jobline.ai/demo",
           "mainEntity": {
             "@type": "ContactPoint",
             "contactType": "sales",
