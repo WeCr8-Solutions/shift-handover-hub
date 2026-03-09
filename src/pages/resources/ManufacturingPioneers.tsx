@@ -32,7 +32,7 @@ import {
 
 const STORAGE_KEY = "manufacturing-pioneers-progress";
 
-const categories = ["All", "Scientific Management", "Mass Production", "Quality", "Lean/TPS", "Systems Thinking", "Industrial Engineering", "Innovation", "Modern"] as const;
+const categories = ["All", "Scientific Management", "Mass Production", "Quality", "Lean/TPS", "Systems Thinking", "Industrial Engineering", "Innovation", "Modern", "Industrialists", "Oil & Energy", "Space & Aerospace", "Science & Engineering"] as const;
 
 const sections = [
   {
