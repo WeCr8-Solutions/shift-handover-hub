@@ -39,6 +39,7 @@ flowchart TD
         RES_GUIDES["/resources/guides"]
         RES_GCODE["/resources/gcode"]
         RES_GLOSS["/resources/glossary"]
+        BLOG_IDX["/blog"]
     end
 
     subgraph HelpPages["Help Center (No Auth)"]
@@ -67,7 +68,7 @@ flowchart TD
 
     NOTFOUND["/* NotFound"]
 
-    %% Navigation edges
+    %% Navigation edges — Landing
     LAND -->|"CTA signup"| AUTH
     LAND -->|"CTA login"| AUTH
     LAND -->|"Pricing link"| PRICING
@@ -79,6 +80,11 @@ flowchart TD
     AUTH -->|"Success"| DASH
     AUTH -->|"New user"| SETUP
     RESET -->|"Success"| AUTH
+
+    %% MarketingNav links (shared across public pages)
+    LAND -->|"Nav"| RES_IDX
+    LAND -->|"Nav"| BLOG_IDX
+    LAND -->|"Nav"| HELP
 
     %% Auth gate
     DASH -.->|"No auth redirect"| AUTH
@@ -104,6 +110,11 @@ flowchart TD
 
     %% Help navigation
     HELP --> HELP_ART
+
+    %% Footer links (Marketing pages → feature/resource/help pages)
+    RES_IDX -->|"Footer"| Features
+    RES_IDX -->|"Footer"| HelpPages
+    BLOG_IDX -->|"Footer"| Features
 
     %% Safe exits
     ADMIN -->|"Back"| DASH
