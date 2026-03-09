@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
     const companyData = {
       name: "JobLine.ai",
       tagline: "Digital Expeditor & Smart Shift Handoff System",
-      website: "https://joblineai.lovable.app",
+      website: "https://jobline.ai",
       mission: "Democratize manufacturing technology for small and mid-sized machine shops",
       parent_company: "WeCr8 Solutions LLC",
       parent_url: "https://www.wecr8.info",
