@@ -23,7 +23,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Users, Plus, UserPlus, Trash2, Crown, Shield, User, Loader2, Wrench, QrCode, Pencil, Monitor, Copy, ExternalLink } from "lucide-react";
+import { Users, Plus, UserPlus, Trash2, Crown, Shield, User, Loader2, Wrench, QrCode, Pencil, Monitor, Copy, ExternalLink, Globe, Wifi, Bluetooth } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { TeamStationManager } from "./TeamStationManager";
 import { InviteCodeGenerator } from "./InviteCodeGenerator";
@@ -105,6 +105,11 @@ export function TeamManagement() {
   const [displayName, setDisplayName] = useState("");
   const [isCreatingDisplay, setIsCreatingDisplay] = useState(false);
   const [createdDisplayUrl, setCreatedDisplayUrl] = useState<string | null>(null);
+  const [displayConnectionType, setDisplayConnectionType] = useState<"url" | "ip" | "bluetooth">("url");
+  const [displayIpAddress, setDisplayIpAddress] = useState("");
+  const [displayBluetoothEnabled, setDisplayBluetoothEnabled] = useState(false);
+  const [displayBluetoothDeviceName, setDisplayBluetoothDeviceName] = useState("");
+  const [displayCastProtocol, setDisplayCastProtocol] = useState("");
 
   // Check if team already has a display configured
   const teamDisplayMap = useMemo(() => {
@@ -122,17 +127,25 @@ export function TeamManagement() {
       display_name: displayName.trim(),
       display_mode: displayMode,
       team_ids: [displaySetupTeam.id],
+      connection_type: displayConnectionType,
+      ip_address: displayConnectionType === "ip" ? displayIpAddress : undefined,
+      bluetooth_enabled: displayConnectionType === "bluetooth" ? displayBluetoothEnabled : false,
+      bluetooth_device_name: displayConnectionType === "bluetooth" ? displayBluetoothDeviceName : undefined,
+      cast_protocol: displayCastProtocol || undefined,
     });
     setIsCreatingDisplay(false);
     if (result.error) {
       toast({ title: "Failed to create display", description: result.error, variant: "destructive" });
     } else {
-      // Find the newly created display to get its URL
-      // Re-fetch will happen via hook, but we can construct the URL
       toast({ title: "Display created!", description: `${displayName} is ready for ${displaySetupTeam.name}.` });
-      setCreatedDisplayUrl(null); // Will show after displays refresh
+      setCreatedDisplayUrl(null);
       setDisplaySetupTeam(null);
       setDisplayName("");
+      setDisplayConnectionType("url");
+      setDisplayIpAddress("");
+      setDisplayBluetoothEnabled(false);
+      setDisplayBluetoothDeviceName("");
+      setDisplayCastProtocol("");
     }
   };
 
@@ -459,6 +472,82 @@ export function TeamManagement() {
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Connection Method */}
+            <div className="space-y-2">
+              <Label>Connection Method</Label>
+              <div className="grid grid-cols-3 gap-2">
+                {([
+                  { value: "url" as const, icon: Globe, label: "URL/QR" },
+                  { value: "ip" as const, icon: Wifi, label: "IP Cast" },
+                  { value: "bluetooth" as const, icon: Bluetooth, label: "Bluetooth" },
+                ] as const).map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setDisplayConnectionType(opt.value)}
+                    className={`flex flex-col items-center gap-1 p-2.5 rounded-lg border text-xs transition-colors ${
+                      displayConnectionType === opt.value
+                        ? "bg-primary/10 border-primary text-primary"
+                        : "bg-secondary/30 border-border text-muted-foreground hover:border-primary/50"
+                    }`}
+                  >
+                    <opt.icon className="w-4 h-4" />
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+
+              {displayConnectionType === "ip" && (
+                <div className="space-y-2 p-3 rounded-lg bg-secondary/30 border border-border">
+                  <div className="space-y-1">
+                    <Label className="text-xs">Device IP Address</Label>
+                    <Input
+                      value={displayIpAddress}
+                      onChange={e => setDisplayIpAddress(e.target.value)}
+                      placeholder="e.g. 192.168.1.100"
+                      className="font-mono"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Cast Protocol</Label>
+                    <Select value={displayCastProtocol} onValueChange={setDisplayCastProtocol}>
+                      <SelectTrigger><SelectValue placeholder="Select protocol" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="chromecast">Chromecast</SelectItem>
+                        <SelectItem value="miracast">Miracast</SelectItem>
+                        <SelectItem value="airplay">AirPlay</SelectItem>
+                        <SelectItem value="custom">Custom/Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
+
+              {displayConnectionType === "bluetooth" && (
+                <div className="space-y-2 p-3 rounded-lg bg-secondary/30 border border-border">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={displayBluetoothEnabled}
+                      onChange={e => setDisplayBluetoothEnabled(e.target.checked)}
+                      className="rounded border-border"
+                    />
+                    <Label className="text-xs">Enable Bluetooth Pairing</Label>
+                  </div>
+                  {displayBluetoothEnabled && (
+                    <div className="space-y-1">
+                      <Label className="text-xs">Device Name</Label>
+                      <Input
+                        value={displayBluetoothDeviceName}
+                        onChange={e => setDisplayBluetoothDeviceName(e.target.value)}
+                        placeholder="e.g. Shop-TV-Bay-1"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
             <div className="bg-secondary/30 rounded-lg p-3 text-xs text-muted-foreground space-y-1">
               <p>• Display will show stations and work orders for <span className="font-medium text-foreground">{displaySetupTeam?.name}</span> only</p>
               <p>• Token-based access — no login required on the display device</p>

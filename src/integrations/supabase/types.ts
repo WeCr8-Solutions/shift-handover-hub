@@ -4221,6 +4221,10 @@ export type Database = {
           alert_sound_enabled: boolean | null
           auto_rotate_enabled: boolean | null
           auto_rotate_interval_seconds: number | null
+          bluetooth_device_name: string | null
+          bluetooth_enabled: boolean | null
+          cast_protocol: string | null
+          connection_type: string | null
           created_at: string | null
           created_by: string
           dark_mode: string | null
@@ -4228,6 +4232,7 @@ export type Database = {
           display_name: string
           display_token: string
           id: string
+          ip_address: string | null
           is_active: boolean | null
           last_seen_at: string | null
           organization_id: string
@@ -4240,6 +4245,10 @@ export type Database = {
           alert_sound_enabled?: boolean | null
           auto_rotate_enabled?: boolean | null
           auto_rotate_interval_seconds?: number | null
+          bluetooth_device_name?: string | null
+          bluetooth_enabled?: boolean | null
+          cast_protocol?: string | null
+          connection_type?: string | null
           created_at?: string | null
           created_by: string
           dark_mode?: string | null
@@ -4247,6 +4256,7 @@ export type Database = {
           display_name: string
           display_token?: string
           id?: string
+          ip_address?: string | null
           is_active?: boolean | null
           last_seen_at?: string | null
           organization_id: string
@@ -4259,6 +4269,10 @@ export type Database = {
           alert_sound_enabled?: boolean | null
           auto_rotate_enabled?: boolean | null
           auto_rotate_interval_seconds?: number | null
+          bluetooth_device_name?: string | null
+          bluetooth_enabled?: boolean | null
+          cast_protocol?: string | null
+          connection_type?: string | null
           created_at?: string | null
           created_by?: string
           dark_mode?: string | null
@@ -4266,6 +4280,7 @@ export type Database = {
           display_name?: string
           display_token?: string
           id?: string
+          ip_address?: string | null
           is_active?: boolean | null
           last_seen_at?: string | null
           organization_id?: string

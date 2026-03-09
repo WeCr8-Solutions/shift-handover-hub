@@ -31,6 +31,9 @@ import {
   Tv,
   Wrench,
   ClipboardList,
+  Bluetooth,
+  Wifi,
+  Globe,
 } from "lucide-react";
 
 /* ── Readiness Checklist ── */
@@ -65,6 +68,11 @@ export function ShopFloorDisplayManagement() {
   const [formDarkMode, setFormDarkMode] = useState<"auto" | "always" | "never">("auto");
   const [formAutoRotate, setFormAutoRotate] = useState(false);
   const [formExpiry, setFormExpiry] = useState(30);
+  const [formConnectionType, setFormConnectionType] = useState<"url" | "ip" | "bluetooth">("url");
+  const [formIpAddress, setFormIpAddress] = useState("");
+  const [formBluetoothEnabled, setFormBluetoothEnabled] = useState(false);
+  const [formBluetoothDeviceName, setFormBluetoothDeviceName] = useState("");
+  const [formCastProtocol, setFormCastProtocol] = useState("");
   const [creating, setCreating] = useState(false);
 
   const resetForm = () => {
@@ -75,6 +83,11 @@ export function ShopFloorDisplayManagement() {
     setFormDarkMode("auto");
     setFormAutoRotate(false);
     setFormExpiry(30);
+    setFormConnectionType("url");
+    setFormIpAddress("");
+    setFormBluetoothEnabled(false);
+    setFormBluetoothDeviceName("");
+    setFormCastProtocol("");
   };
 
   const handleCreate = async () => {
@@ -91,6 +104,11 @@ export function ShopFloorDisplayManagement() {
       dark_mode: formDarkMode,
       auto_rotate_enabled: formAutoRotate,
       token_expiry_days: formExpiry,
+      connection_type: formConnectionType,
+      ip_address: formConnectionType === "ip" ? formIpAddress : undefined,
+      bluetooth_enabled: formConnectionType === "bluetooth" ? formBluetoothEnabled : false,
+      bluetooth_device_name: formConnectionType === "bluetooth" ? formBluetoothDeviceName : undefined,
+      cast_protocol: formCastProtocol || undefined,
     });
     if (result.error) {
       toast.error(result.error);
@@ -296,6 +314,86 @@ export function ShopFloorDisplayManagement() {
                   </button>
                 ))}
               </div>
+            </div>
+
+            <Separator />
+
+            {/* Connection / Casting */}
+            <div className="space-y-3">
+              <Label className="text-xs font-medium">Connection Method</Label>
+              <div className="grid grid-cols-3 gap-2">
+                {([
+                  { value: "url" as const, icon: Globe, label: "URL/QR Code" },
+                  { value: "ip" as const, icon: Wifi, label: "IP Address" },
+                  { value: "bluetooth" as const, icon: Bluetooth, label: "Bluetooth" },
+                ] as const).map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setFormConnectionType(opt.value)}
+                    className={cn(
+                      "flex flex-col items-center gap-1.5 p-3 rounded-lg border text-xs transition-colors",
+                      formConnectionType === opt.value
+                        ? "bg-primary/10 border-primary text-primary"
+                        : "bg-secondary/30 border-border text-muted-foreground hover:border-primary/50"
+                    )}
+                  >
+                    <opt.icon className="w-4 h-4" />
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+
+              {formConnectionType === "ip" && (
+                <div className="space-y-2 p-3 rounded-lg bg-secondary/30 border border-border">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Device IP Address</Label>
+                    <Input
+                      value={formIpAddress}
+                      onChange={e => setFormIpAddress(e.target.value)}
+                      placeholder="e.g. 192.168.1.100"
+                      className="h-8 font-mono"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Cast Protocol</Label>
+                    <Select value={formCastProtocol} onValueChange={setFormCastProtocol}>
+                      <SelectTrigger className="h-8"><SelectValue placeholder="Select protocol" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="chromecast">Chromecast</SelectItem>
+                        <SelectItem value="miracast">Miracast</SelectItem>
+                        <SelectItem value="airplay">AirPlay</SelectItem>
+                        <SelectItem value="custom">Custom/Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
+
+              {formConnectionType === "bluetooth" && (
+                <div className="space-y-2 p-3 rounded-lg bg-secondary/30 border border-border">
+                  <div className="flex items-center gap-2">
+                    <Switch checked={formBluetoothEnabled} onCheckedChange={setFormBluetoothEnabled} />
+                    <Label className="text-xs">Enable Bluetooth Pairing</Label>
+                  </div>
+                  {formBluetoothEnabled && (
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Device Name</Label>
+                      <Input
+                        value={formBluetoothDeviceName}
+                        onChange={e => setFormBluetoothDeviceName(e.target.value)}
+                        placeholder="e.g. Shop-TV-Bay-1"
+                        className="h-8"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {formConnectionType === "url" && (
+                <p className="text-[11px] text-muted-foreground pl-1">
+                  A unique URL with QR code will be generated. Open it on any browser or scan with a tablet.
+                </p>
+              )}
             </div>
 
             <Separator />
