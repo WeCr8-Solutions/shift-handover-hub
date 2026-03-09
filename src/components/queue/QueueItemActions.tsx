@@ -50,7 +50,7 @@ export function QueueItemActions({
 }: QueueItemActionsProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { hasAdminAccess } = useAdminAccess();
+  const { hasAdminAccess, hasOrgSupervisorAccess } = useAdminAccess();
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [convertDialogOpen, setConvertDialogOpen] = useState(false);
   const [convertWONumber, setConvertWONumber] = useState("");
