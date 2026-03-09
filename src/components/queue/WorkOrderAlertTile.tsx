@@ -65,6 +65,7 @@ interface WorkOrderAlertTileProps {
   stationCode?: string | null;
   workCenterType?: string | null;
   onItemClick: (itemId: string) => void;
+  onOpenRouting?: (item: { id: string; work_order?: string | null; part_number?: string | null }) => void;
 }
 
 function getPriorityConfig(priority: QueuePriority) {
