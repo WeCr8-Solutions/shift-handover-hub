@@ -168,18 +168,9 @@ export function useJobPerformanceUpdates(teamId?: string | null) {
       return { url: null, error: new Error("User not authenticated") };
     }
 
-    // Get org_id for org-scoped path
-    const { data: orgMember } = await supabase
-      .from("organization_members")
-      .select("organization_id")
-      .eq("user_id", user.id)
-      .limit(1)
-      .maybeSingle();
-
-    if (orgMember?.organization_id) {
-      // New org-scoped path
+    if (organization?.id) {
       const { path, error } = await uploadOrgScopedFile(
-        "performance-updates", file, orgMember.organization_id, user.id
+        "performance-updates", file, organization.id, user.id
       );
       return { url: path, error };
     }
