@@ -127,7 +127,7 @@ Deno.serve(async (req) => {
     // Donation info
     const donationInfo = {
       enabled: true,
-      url: "https://joblineai.lovable.app",
+      url: "https://jobline.ai",
       location: "Website footer → 'Support JobLine' button (heart icon)",
       processor: "Stripe",
       amounts: {
