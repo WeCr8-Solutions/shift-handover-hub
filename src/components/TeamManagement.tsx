@@ -99,6 +99,43 @@ export function TeamManagement() {
   // Delete confirmation state
   const [deletingTeam, setDeletingTeam] = useState<Team | null>(null);
 
+  // Display setup state
+  const [displaySetupTeam, setDisplaySetupTeam] = useState<Team | null>(null);
+  const [displayMode, setDisplayMode] = useState<"supervisor" | "operator">("supervisor");
+  const [displayName, setDisplayName] = useState("");
+  const [isCreatingDisplay, setIsCreatingDisplay] = useState(false);
+  const [createdDisplayUrl, setCreatedDisplayUrl] = useState<string | null>(null);
+
+  // Check if team already has a display configured
+  const teamDisplayMap = useMemo(() => {
+    const map: Record<string, boolean> = {};
+    displays.forEach(d => {
+      (d.team_ids || []).forEach(tid => { map[tid] = true; });
+    });
+    return map;
+  }, [displays]);
+
+  const handleSetupDisplay = async () => {
+    if (!displaySetupTeam || !displayName.trim()) return;
+    setIsCreatingDisplay(true);
+    const result = await createDisplay({
+      display_name: displayName.trim(),
+      display_mode: displayMode,
+      team_ids: [displaySetupTeam.id],
+    });
+    setIsCreatingDisplay(false);
+    if (result.error) {
+      toast({ title: "Failed to create display", description: result.error, variant: "destructive" });
+    } else {
+      // Find the newly created display to get its URL
+      // Re-fetch will happen via hook, but we can construct the URL
+      toast({ title: "Display created!", description: `${displayName} is ready for ${displaySetupTeam.name}.` });
+      setCreatedDisplayUrl(null); // Will show after displays refresh
+      setDisplaySetupTeam(null);
+      setDisplayName("");
+    }
+  };
+
   const handleCreateTeam = async () => {
     if (!newTeamName.trim()) {
       toast({
