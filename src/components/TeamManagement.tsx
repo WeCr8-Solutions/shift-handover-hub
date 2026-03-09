@@ -105,6 +105,11 @@ export function TeamManagement() {
   const [displayName, setDisplayName] = useState("");
   const [isCreatingDisplay, setIsCreatingDisplay] = useState(false);
   const [createdDisplayUrl, setCreatedDisplayUrl] = useState<string | null>(null);
+  const [displayConnectionType, setDisplayConnectionType] = useState<"url" | "ip" | "bluetooth">("url");
+  const [displayIpAddress, setDisplayIpAddress] = useState("");
+  const [displayBluetoothEnabled, setDisplayBluetoothEnabled] = useState(false);
+  const [displayBluetoothDeviceName, setDisplayBluetoothDeviceName] = useState("");
+  const [displayCastProtocol, setDisplayCastProtocol] = useState("");
 
   // Check if team already has a display configured
   const teamDisplayMap = useMemo(() => {
@@ -122,17 +127,25 @@ export function TeamManagement() {
       display_name: displayName.trim(),
       display_mode: displayMode,
       team_ids: [displaySetupTeam.id],
+      connection_type: displayConnectionType,
+      ip_address: displayConnectionType === "ip" ? displayIpAddress : undefined,
+      bluetooth_enabled: displayConnectionType === "bluetooth" ? displayBluetoothEnabled : false,
+      bluetooth_device_name: displayConnectionType === "bluetooth" ? displayBluetoothDeviceName : undefined,
+      cast_protocol: displayCastProtocol || undefined,
     });
     setIsCreatingDisplay(false);
     if (result.error) {
       toast({ title: "Failed to create display", description: result.error, variant: "destructive" });
     } else {
-      // Find the newly created display to get its URL
-      // Re-fetch will happen via hook, but we can construct the URL
       toast({ title: "Display created!", description: `${displayName} is ready for ${displaySetupTeam.name}.` });
-      setCreatedDisplayUrl(null); // Will show after displays refresh
+      setCreatedDisplayUrl(null);
       setDisplaySetupTeam(null);
       setDisplayName("");
+      setDisplayConnectionType("url");
+      setDisplayIpAddress("");
+      setDisplayBluetoothEnabled(false);
+      setDisplayBluetoothDeviceName("");
+      setDisplayCastProtocol("");
     }
   };
 
