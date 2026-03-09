@@ -272,7 +272,7 @@ export default function ManufacturingCareers() {
               {filtered.length === 0 ? (
                 <p className="text-center text-muted-foreground py-12">No careers match your search.</p>
               ) : (
-                <Accordion type="multiple" className="space-y-3">
+                <ScrollAwareAccordion className="space-y-3">
                   {filtered.map((career) => {
                     const Icon = career.icon;
                     const isDone = explored.has(career.id);
