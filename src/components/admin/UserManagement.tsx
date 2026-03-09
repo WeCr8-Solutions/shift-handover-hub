@@ -46,6 +46,7 @@ import {
 import { Loader2, MoreHorizontal, Search, Shield, UserCog, Eye, Users as UsersIcon, Building2, Crown, User, ShieldCheck, ShieldAlert, Lock, Unlock, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Database } from "@/integrations/supabase/types";
+import type { AdminComponentAccess } from "@/types/admin";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
@@ -216,17 +217,21 @@ function computeRLSAccessLevel(user: UserWithRole): RLSAccessLevel {
 }
 
 interface UserManagementProps {
-  isAdmin: boolean;
+  isAdmin?: boolean;
   /** Whether the viewer has supervisor-level access (org admin, supervisor, etc.) */
   isSupervisorOrAbove?: boolean;
+  access?: AdminComponentAccess;
 }
 
 type ViewMode = "grouped" | "flat";
 
-export function UserManagement({ isAdmin, isSupervisorOrAbove = false }: UserManagementProps) {
+export function UserManagement({ isAdmin, isSupervisorOrAbove = false, access }: UserManagementProps) {
+  // Derive from access if provided, fall back to legacy props
+  const isPlatformAdmin = access?.isPlatformAdmin ?? isAdmin ?? false;
+  const canManage = access?.canManageOrg ?? isSupervisorOrAbove;
   const { user: currentUser } = useAuth();
   const { startActAs } = useActAs();
-  const { users, organizations, loading, updateUserRole } = useAllUsers();
+  const { users, organizations, loading, updateUserRole } = useAllUsers({ organizationId: access?.organizationId ?? null });
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [updatingUser, setUpdatingUser] = useState<string | null>(null);
@@ -251,7 +256,7 @@ export function UserManagement({ isAdmin, isSupervisorOrAbove = false }: UserMan
   const filteredUsers = filterUsers(users);
 
   const handleRoleChange = async (userId: string, role: AppRole, hasRole: boolean) => {
-    if (!isAdmin) {
+    if (!isPlatformAdmin) {
       toast({
         title: "Permission denied",
         description: "Only admins can modify user roles.",
@@ -379,11 +384,11 @@ export function UserManagement({ isAdmin, isSupervisorOrAbove = false }: UserMan
       <TableCell className="text-muted-foreground text-sm">
         {new Date(user.created_at).toLocaleDateString()}
       </TableCell>
-      {(isAdmin || isSupervisorOrAbove) && (
+      {(isPlatformAdmin || canManage) && (
         <TableCell>
           {updatingUser === user.user_id ? (
             <Loader2 className="w-4 h-4 animate-spin" />
-          ) : isAdmin ? (
+          ) : isPlatformAdmin ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -671,7 +676,7 @@ export function UserManagement({ isAdmin, isSupervisorOrAbove = false }: UserMan
                               <TableHead>Org Role</TableHead>
                               <TableHead>Platform Roles</TableHead>
                               <TableHead>Joined</TableHead>
-                              {(isAdmin || isSupervisorOrAbove) && <TableHead className="w-12"></TableHead>}
+                              {(isPlatformAdmin || canManage) && <TableHead className="w-12"></TableHead>}
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -710,7 +715,7 @@ export function UserManagement({ isAdmin, isSupervisorOrAbove = false }: UserMan
                   <TableHead>Org Role</TableHead>
                   <TableHead>Platform Roles</TableHead>
                   <TableHead>Joined</TableHead>
-                  {(isAdmin || isSupervisorOrAbove) && <TableHead className="w-12"></TableHead>}
+                  {(isPlatformAdmin || canManage) && <TableHead className="w-12"></TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>

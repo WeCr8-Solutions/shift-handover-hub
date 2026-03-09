@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { StationWithTeam, useAllStations, useAllTeams, useAllOrganizations } from "@/hooks/useAdminData";
+import type { AdminComponentAccess } from "@/types/admin";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -54,7 +55,8 @@ import { useToast } from "@/hooks/use-toast";
 const WORK_CENTER_TYPES = ["CNC Mill", "CNC Lathe", "Welding", "Water Jet", "Assembly", "Inspection", "Other"];
 
 interface StationManagementProps {
-  isAdmin: boolean;
+  isAdmin?: boolean;
+  access?: AdminComponentAccess;
 }
 
 interface StationWithOrg extends StationWithTeam {
@@ -81,9 +83,10 @@ interface TeamBucket {
 
 type ViewMode = "grouped" | "flat";
 
-export function StationManagement({ isAdmin }: StationManagementProps) {
-  const { stations, loading, createStation, updateStation, deleteStation } = useAllStations();
-  const { teams } = useAllTeams();
+export function StationManagement({ isAdmin, access }: StationManagementProps) {
+  const isPlatformAdmin = access?.isPlatformAdmin ?? isAdmin ?? false;
+  const { stations, loading, createStation, updateStation, deleteStation } = useAllStations({ organizationId: access?.organizationId ?? null });
+  const { teams } = useAllTeams({ organizationId: access?.organizationId ?? null });
   const { organizations } = useAllOrganizations();
   const { toast } = useToast();
   
@@ -411,7 +414,7 @@ export function StationManagement({ isAdmin }: StationManagementProps) {
         </TableCell>
       )}
       <TableCell>
-        {isAdmin ? (
+        {isPlatformAdmin ? (
           <Switch
             checked={station.is_active}
             onCheckedChange={() => handleToggleActive(station)}
@@ -422,7 +425,7 @@ export function StationManagement({ isAdmin }: StationManagementProps) {
           </Badge>
         )}
       </TableCell>
-      {isAdmin && (
+      {isPlatformAdmin && (
         <TableCell>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -464,7 +467,7 @@ export function StationManagement({ isAdmin }: StationManagementProps) {
                 {stations.length} station(s) • {stations.filter((s) => s.is_active).length} active • {organizations.length} org(s)
               </CardDescription>
             </div>
-            {isAdmin && (
+            {isPlatformAdmin && (
               <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
                 <DialogTrigger asChild>
                   <Button className="gap-2">
@@ -621,7 +624,7 @@ export function StationManagement({ isAdmin }: StationManagementProps) {
                                 <TableHead>Work Center</TableHead>
                                 <TableHead>Type</TableHead>
                                 <TableHead>Status</TableHead>
-                                {isAdmin && <TableHead className="w-12"></TableHead>}
+                                {isPlatformAdmin && <TableHead className="w-12"></TableHead>}
                               </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -645,7 +648,7 @@ export function StationManagement({ isAdmin }: StationManagementProps) {
                 <TableHead>Type</TableHead>
                 <TableHead>Team</TableHead>
                 <TableHead>Status</TableHead>
-                {isAdmin && <TableHead className="w-12"></TableHead>}
+                {isPlatformAdmin && <TableHead className="w-12"></TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
