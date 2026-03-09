@@ -217,17 +217,21 @@ function computeRLSAccessLevel(user: UserWithRole): RLSAccessLevel {
 }
 
 interface UserManagementProps {
-  isAdmin: boolean;
+  isAdmin?: boolean;
   /** Whether the viewer has supervisor-level access (org admin, supervisor, etc.) */
   isSupervisorOrAbove?: boolean;
+  access?: AdminComponentAccess;
 }
 
 type ViewMode = "grouped" | "flat";
 
-export function UserManagement({ isAdmin, isSupervisorOrAbove = false }: UserManagementProps) {
+export function UserManagement({ isAdmin, isSupervisorOrAbove = false, access }: UserManagementProps) {
+  // Derive from access if provided, fall back to legacy props
+  const isPlatformAdmin = access?.isPlatformAdmin ?? isAdmin ?? false;
+  const canManage = access?.canManageOrg ?? isSupervisorOrAbove;
   const { user: currentUser } = useAuth();
   const { startActAs } = useActAs();
-  const { users, organizations, loading, updateUserRole } = useAllUsers();
+  const { users, organizations, loading, updateUserRole } = useAllUsers({ organizationId: access?.organizationId ?? null });
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [updatingUser, setUpdatingUser] = useState<string | null>(null);

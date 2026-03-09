@@ -299,7 +299,7 @@ export function OrganizationOversight({ isAdmin, access }: OrganizationOversight
                     })()}
 
 
-                    {isAdmin && (
+                    {isPlatformAdmin && (
                       <div className="flex items-center justify-end pt-3 border-t">
                         <Button
                           variant="ghost"

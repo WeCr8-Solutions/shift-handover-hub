@@ -55,7 +55,8 @@ import { useToast } from "@/hooks/use-toast";
 const WORK_CENTER_TYPES = ["CNC Mill", "CNC Lathe", "Welding", "Water Jet", "Assembly", "Inspection", "Other"];
 
 interface StationManagementProps {
-  isAdmin: boolean;
+  isAdmin?: boolean;
+  access?: AdminComponentAccess;
 }
 
 interface StationWithOrg extends StationWithTeam {
@@ -82,9 +83,10 @@ interface TeamBucket {
 
 type ViewMode = "grouped" | "flat";
 
-export function StationManagement({ isAdmin }: StationManagementProps) {
-  const { stations, loading, createStation, updateStation, deleteStation } = useAllStations();
-  const { teams } = useAllTeams();
+export function StationManagement({ isAdmin, access }: StationManagementProps) {
+  const isPlatformAdmin = access?.isPlatformAdmin ?? isAdmin ?? false;
+  const { stations, loading, createStation, updateStation, deleteStation } = useAllStations({ organizationId: access?.organizationId ?? null });
+  const { teams } = useAllTeams({ organizationId: access?.organizationId ?? null });
   const { organizations } = useAllOrganizations();
   const { toast } = useToast();
   
