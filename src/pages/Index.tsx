@@ -508,7 +508,7 @@ const Index = () => {
                     </div>
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                       {filteredHandoffs.map((record) => (
-                        <HandoffCard key={record.recordId} record={record} />
+                        <HandoffCard key={record.recordId} record={record} onClick={() => setSelectedHandoff(record)} />
                       ))}
                     </div>
                     {filteredHandoffs.length === 0 && (
