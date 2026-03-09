@@ -7,15 +7,17 @@ These back the Claude Code slash commands in `.claude/commands/`.
 
 1. **Ollama installed** — [ollama.com](https://ollama.com)
 2. **Model pulled:**
-   ```
+
+   ```bash
    ollama pull qwen2.5-coder:7b
    ```
+
 3. **Ollama running** (starts automatically on most systems, or run `ollama serve`)
 
 ## Available Skills
 
 | Command | Purpose | PRD Phase |
-|---|---|---|
+| --- | --- | --- |
 | `/ollama-review <file>` | General code review — TS, ESLint, test coverage | Any |
 | `/repair-test <file>` | Fix failing test suites (missing provider wrappers) | Phase 1 |
 | `/repair-types <file>` | Fix TypeScript type errors (empty interfaces, require()) | Phase 2 |
@@ -45,7 +47,7 @@ OLLAMA_MODEL=qwen2.5-coder:14b /repair-any src/components/StationCard.tsx
 
 ## Workflow
 
-```
+```text
 Ollama analyzes → Claude applies fix → Codacy validates → npm test confirms
 ```
 

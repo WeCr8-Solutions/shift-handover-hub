@@ -14,22 +14,27 @@ Define a token-efficient repair workflow where local LLM models (Ollama) perform
 ## Confirmed Fixes Already Applied
 
 1. CI cache lockfile path hardening
+
 - File: `.github/workflows/test.yml`
 - Change: add `cache-dependency-path: package-lock.json` for root jobs.
 
-2. CI test memory headroom
+1. CI test memory headroom
+
 - File: `.github/workflows/test.yml`
 - Change: run tests with `NODE_OPTIONS=--max-old-space-size=4096`.
 
-3. CI Vitest concurrency reduction
+1. CI Vitest concurrency reduction
+
 - File: `vitest.config.ts`
 - Change: `maxWorkers` and `fileParallelism` constrained in CI.
 
-4. TypeScript mock typing fix
+1. TypeScript mock typing fix
+
 - File: `src/components/TeamManagement.test.tsx`
 - Change: `const mockFrom = vi.mocked(supabase.from);`
 
-5. Local LLM repair task completed (scoped)
+1. Local LLM repair task completed (scoped)
+
 - Files:
   - `src/components/ncr/QualityMetricsDashboard.test.tsx`
   - `src/components/ncr/CreateNCRDialog.test.tsx`
@@ -41,18 +46,21 @@ Define a token-efficient repair workflow where local LLM models (Ollama) perform
 ### Group A - Missing Auth Context in Provider Chain
 
 Primary runtime path:
+
 - `src/test/test-utils.tsx` (AllProviders wrapper)
 - `src/contexts/OrgContext.tsx` (OrgProvider invokes `useUserOrganization`)
 - `src/hooks/useUserOrganization.ts` (calls `useAuth`)
 - `src/contexts/AuthContext.tsx` (throws when context is undefined)
 
 Observed hotspot lines from stack traces:
+
 - `src/test/test-utils.tsx:29`
 - `src/contexts/OrgContext.tsx:47`
 - `src/hooks/useUserOrganization.ts:124`
 - `src/contexts/AuthContext.tsx:210`
 
 Failed file set observed in latest full run output:
+
 - `src/components/alerts/SmartAlertCard.test.tsx`
 - `src/components/alerts/SmartAlertPanel.test.tsx`
 - `src/components/settings/__tests__/ReadOnlyGate.test.tsx`
@@ -62,19 +70,23 @@ Failed file set observed in latest full run output:
 - `src/components/station/__tests__/MachineCapabilityBadges.test.tsx`
 
 Notes:
+
 - Several failing files likely share the same root cause and can be fixed in a batched, file-scoped mocking pass.
 - A global test wrapper change to include `AuthProvider` can introduce regressions when tests mock `@/contexts/AuthContext` incompletely.
 
 ### Group B - Memory Stability (Mitigated, Monitor)
 
 Symptoms previously observed:
+
 - `FATAL ERROR: Ineffective mark-compacts near heap limit`
 
 Mitigations already in place:
+
 - `.github/workflows/test.yml` heap increase
 - `vitest.config.ts` CI worker throttling
 
 Residual risk:
+
 - Local machines or non-CI runs may still OOM if parallelism is forced externally.
 
 ## Local LLM Repair Checklist System

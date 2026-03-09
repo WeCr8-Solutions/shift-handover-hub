@@ -26,6 +26,7 @@ Priority order (highest to lowest):
    - Example: `type Profile = Database["public"]["Tables"]["profiles"]["Row"]`
 
 2. **`unknown` + type guard** — when the type is truly unknowable at compile time
+
    ```ts
    function process(value: unknown) {
      if (typeof value === 'string') { /* safe */ }
@@ -35,15 +36,18 @@ Priority order (highest to lowest):
 3. **Specific union** — `string | number | boolean` rather than `any`
 
 4. **Last resort** — inline suppression for third-party callback signatures that cannot be typed:
+
    ```ts
    // eslint-disable-next-line @typescript-eslint/no-explicit-any
    onEvent: (payload: any) => void
    ```
+
    Never use file-level `/* eslint-disable */`.
 
 ### Empty Interfaces
 
 Replace empty interface extension with type alias:
+
 ```ts
 // Before
 interface CommandProps extends React.HTMLAttributes<HTMLDivElement> {}
@@ -55,6 +59,7 @@ type CommandProps = React.HTMLAttributes<HTMLDivElement>
 ### Imports
 
 ESM only — no `require()`:
+
 ```ts
 // Before
 const plugin = require('tailwindcss-animate')
@@ -70,10 +75,12 @@ import plugin from 'tailwindcss-animate'
 - **Always** use `src/test/test-utils.tsx` exports, not bare `@testing-library/react`
 - **Render wrapper:** `AllProviders` wraps `QueryClientProvider → BrowserRouter → OrgProvider → TooltipProvider`
 - **Hook tests:** pass `{ wrapper: AllProviders }` to `renderHook`
+
   ```ts
   import { AllProviders } from '@/test/test-utils'
   const { result } = renderHook(() => useMyHook(), { wrapper: AllProviders })
   ```
+
 - **Mock fixtures:** reuse `mockOrg`, `mockUser`, `mockStation`, `mockQueueItem` from `test-utils.tsx`
 - **Supabase:** use `mockSupabaseClient` from `test-utils.tsx`; mock via `vi.mock('@/integrations/supabase/client')`
 
@@ -109,7 +116,7 @@ import plugin from 'tailwindcss-animate'
 
 After **every** file edit, run `codacy_cli_analyze`:
 
-```
+```text
 tool: codacy_cli_analyze
 rootPath: d:\MajorProjects\shift-handover-hub
 file: <edited file path>
