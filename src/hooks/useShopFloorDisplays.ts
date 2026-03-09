@@ -21,6 +21,11 @@ export interface ShopFloorDisplay {
   created_by: string;
   created_at: string;
   updated_at: string;
+  connection_type: "url" | "ip" | "bluetooth";
+  ip_address: string | null;
+  bluetooth_enabled: boolean;
+  bluetooth_device_name: string | null;
+  cast_protocol: string | null;
 }
 
 export function useShopFloorDisplays() {
