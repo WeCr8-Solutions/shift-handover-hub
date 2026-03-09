@@ -45,6 +45,7 @@ export function SupervisorDashboard({
   onCreateWorkOrder,
   onSwitchToOperatorView,
   onViewStation,
+  onViewHandoff,
 }: SupervisorDashboardProps) {
   const navigate = useNavigate();
   const { currentTeam, setCurrentTeam, teams } = useCurrentTeam();
