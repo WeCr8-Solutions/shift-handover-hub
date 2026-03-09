@@ -179,7 +179,7 @@ Deno.serve(async (req) => {
         type: "thought_leadership",
         content: "Why do enterprise MES systems cost $100K+?\n\nSmall machine shops need the same visibility into their operations, but can't justify that investment.\n\nJobLine.ai focuses on what matters most: shift handoffs and work order visibility. Modern UI, mobile-friendly, and accessible pricing.\n\nManufacturing technology should work for everyone.",
         hashtags: ["ManufacturingExcellence", "SmallBusinessTech", "MES", "ContinuousImprovement"],
-        cta: "See it in action: joblineai.lovable.app",
+        cta: "See it in action: jobline.ai",
       },
       {
         platform: "reddit",
