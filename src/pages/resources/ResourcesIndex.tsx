@@ -5,7 +5,7 @@ import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
-import { BookOpen, Code, BookA, ArrowRight, GitCompare } from "lucide-react";
+import { BookOpen, Code, BookA, ArrowRight, GitCompare, GraduationCap, Briefcase } from "lucide-react";
 
 const sections = [
   {
@@ -28,6 +28,20 @@ const sections = [
     icon: BookA,
     href: "/resources/glossary",
     count: "90+ terms",
+  },
+  {
+    title: "Beginner's Guide",
+    description: "New to manufacturing? Start here — 13 sections covering shop floor basics, blueprint reading, CNC fundamentals, quality inspection, safety, lean manufacturing, tooling, materials, and essential metrics for new operators and students.",
+    icon: GraduationCap,
+    href: "/resources/beginners",
+    count: "13 sections",
+  },
+  {
+    title: "Manufacturing Careers",
+    description: "Explore career paths in CNC machining, quality inspection, manufacturing engineering, production supervision, welding, robotics, and supply chain. Includes salary ranges, required skills, certifications, and advancement paths.",
+    icon: Briefcase,
+    href: "/resources/careers",
+    count: "8 careers",
   },
   {
     title: "Tool Comparisons",
