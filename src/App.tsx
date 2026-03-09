@@ -13,6 +13,7 @@ import { AnalyticsProvider } from "@/components/AnalyticsProvider";
 import { ActAsBanner } from "@/components/admin/ActAsBanner";
 import { JobLineProvider } from "@/components/providers/JobLineProvider";
 import { MFAEnrollmentGate } from "@/components/compliance/MFAEnrollmentGate";
+import { ScrollToTop } from "@/components/ScrollToTop";
 import { USPersonDeclarationGate } from "@/components/compliance/USPersonDeclarationGate";
 import Landing from "./pages/Landing";
 import Index from "./pages/Index";
@@ -91,6 +92,7 @@ const App = () => (
               <Sonner />
               <BrowserRouter>
                 <AnalyticsProvider>
+                  <ScrollToTop />
                   {/* ITAR compliance gates — both are no-ops when not required by the org */}
                   <MFAEnrollmentGate>
                   <USPersonDeclarationGate>
