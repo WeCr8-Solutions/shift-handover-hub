@@ -55,6 +55,9 @@ import ManufacturingCareers from "./pages/resources/ManufacturingCareers";
 import SafetyCompliance from "./pages/resources/SafetyCompliance";
 import QualityInspection from "./pages/resources/QualityInspection";
 import LeanManufacturing from "./pages/resources/LeanManufacturing";
+import FiveSMethodology from "./pages/resources/FiveSMethodology";
+import KanbanSortingTechniques from "./pages/resources/KanbanSortingTechniques";
+import ManufacturingPioneers from "./pages/resources/ManufacturingPioneers";
 import ResetPassword from "./pages/ResetPassword";
 import Blog from "./pages/Blog";
 import Help from "./pages/Help";
@@ -137,6 +140,9 @@ const App = () => (
                     <Route path="/resources/safety" element={<SafetyCompliance />} />
                     <Route path="/resources/quality" element={<QualityInspection />} />
                     <Route path="/resources/lean" element={<LeanManufacturing />} />
+                    <Route path="/resources/5s" element={<FiveSMethodology />} />
+                    <Route path="/resources/kanban" element={<KanbanSortingTechniques />} />
+                    <Route path="/resources/pioneers" element={<ManufacturingPioneers />} />
                     <Route path="/blog" element={<Blog />} />
                     <Route path="/help" element={<Help />} />
                     <Route path="/help/:category/:slug" element={<HelpArticle />} />
