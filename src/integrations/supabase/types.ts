@@ -5702,6 +5702,7 @@ export type Database = {
         }
         Returns: Json
       }
+      fetch_display_data: { Args: { _token: string }; Returns: Json }
       get_user_org_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
