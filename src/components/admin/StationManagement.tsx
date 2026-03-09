@@ -467,7 +467,7 @@ export function StationManagement({ isAdmin, access }: StationManagementProps) {
                 {stations.length} station(s) • {stations.filter((s) => s.is_active).length} active • {organizations.length} org(s)
               </CardDescription>
             </div>
-            {isAdmin && (
+            {isPlatformAdmin && (
               <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
                 <DialogTrigger asChild>
                   <Button className="gap-2">
