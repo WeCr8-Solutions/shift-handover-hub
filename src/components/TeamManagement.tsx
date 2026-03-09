@@ -688,9 +688,11 @@ interface TeamCardProps {
   onDelete: () => void;
   onAddStations: () => void;
   onSetupDisplay: () => void;
+  onEditDisplay: () => void;
+  onDeleteDisplay: () => void;
 }
 
-function TeamCard({ team, stationCount, isSelected, canManage, canSetupDisplay, hasDisplay, onSelect, onEdit, onDelete, onAddStations, onSetupDisplay }: TeamCardProps) {
+function TeamCard({ team, stationCount, isSelected, canManage, canSetupDisplay, hasDisplay, onSelect, onEdit, onDelete, onAddStations, onSetupDisplay, onEditDisplay, onDeleteDisplay }: TeamCardProps) {
   return (
     <Card
       className={`cursor-pointer transition-colors hover:border-primary/50 ${isSelected ? "border-primary" : ""}`}
@@ -784,6 +786,35 @@ function TeamCard({ team, stationCount, isSelected, canManage, canSetupDisplay, 
             </Button>
           )}
         </div>
+        {/* Display management actions when display exists */}
+        {hasDisplay && canManage && (
+          <div className="flex gap-2 pt-1 border-t border-border">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex-1 gap-2 text-muted-foreground hover:text-primary"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEditDisplay();
+              }}
+            >
+              <Pencil className="w-3.5 h-3.5" />
+              Edit Display
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex-1 gap-2 text-muted-foreground hover:text-destructive"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDeleteDisplay();
+              }}
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              Delete Display
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
