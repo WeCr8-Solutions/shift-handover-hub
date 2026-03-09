@@ -179,6 +179,7 @@ const Index = () => {
   const [selectedTypes, setSelectedTypes] = useState<WorkCenterType[]>([]);
   const [selectedStationForAction, setSelectedStationForAction] = useState<string | undefined>();
   const [viewMode, setViewMode] = useState<"supervisor" | "operator" | "station-detail">("supervisor");
+  const [selectedHandoff, setSelectedHandoff] = useState<ShiftHandoffRecord | null>(null);
   const [focusedStation, setFocusedStation] = useState<{
     id: string;
     name: string;
