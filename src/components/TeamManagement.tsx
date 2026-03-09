@@ -591,6 +591,87 @@ export function TeamManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Display Dialog */}
+      <Dialog open={!!editingDisplay} onOpenChange={(open) => !open && setEditingDisplay(null)}>
+        <DialogContent className="max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Pencil className="w-5 h-5 text-primary" />
+              Edit Display
+            </DialogTitle>
+            <DialogDescription>Update display name and mode.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-display-name">Display Name</Label>
+              <Input
+                id="edit-display-name"
+                value={editDisplayName}
+                onChange={(e) => setEditDisplayName(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Display Mode</Label>
+              <Select value={editDisplayMode} onValueChange={(v) => setEditDisplayMode(v as "supervisor" | "operator")}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="supervisor">Supervisor</SelectItem>
+                  <SelectItem value="operator">Operator</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingDisplay(null)}>Cancel</Button>
+            <Button
+              onClick={async () => {
+                if (!editingDisplay) return;
+                setIsSavingDisplay(true);
+                const { error } = await updateDisplay(editingDisplay.id, {
+                  display_name: editDisplayName.trim(),
+                  display_mode: editDisplayMode,
+                } as any);
+                setIsSavingDisplay(false);
+                if (error) {
+                  toast({ title: "Failed to update display", description: error, variant: "destructive" });
+                } else {
+                  toast({ title: "Display updated" });
+                  setEditingDisplay(null);
+                }
+              }}
+              disabled={isSavingDisplay || !editDisplayName.trim()}
+            >
+              {isSavingDisplay ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Display Dialog */}
+      <SafeDeleteDialog
+        open={!!deletingDisplay}
+        onOpenChange={(open) => !open && setDeletingDisplay(null)}
+        confirmValue={deletingDisplay?.display_name || ""}
+        title="Delete Display"
+        description={
+          <>
+            This will permanently remove this display configuration. Type{" "}
+            <span className="font-mono font-bold text-foreground">{deletingDisplay?.display_name}</span> to confirm.
+          </>
+        }
+        deleteLabel="Delete Display"
+        onConfirm={async () => {
+          if (!deletingDisplay) return;
+          const { error } = await deleteDisplay(deletingDisplay.id);
+          if (error) {
+            toast({ title: "Failed to delete display", description: error, variant: "destructive" });
+          } else {
+            toast({ title: "Display deleted" });
+          }
+          setDeletingDisplay(null);
+        }}
+      />
     </div>
   );
 }
