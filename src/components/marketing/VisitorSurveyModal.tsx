@@ -65,7 +65,7 @@ export function VisitorSurveyModal() {
   }, [shouldShow]);
 
   const handleDismiss = () => {
-    localStorage.setItem(SURVEY_DISMISSED_KEY, "1");
+    sessionStorage.setItem(SURVEY_DISMISSED_KEY, "1");
     sessionStorage.removeItem(SURVEY_MODAL_ACTIVE_KEY);
     setOpen(false);
     trackEvent("survey_dismissed", {});
