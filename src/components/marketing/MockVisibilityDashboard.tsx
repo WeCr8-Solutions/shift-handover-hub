@@ -59,10 +59,10 @@ export function MockVisibilityDashboard() {
           <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Station Map</div>
           <div className="grid grid-cols-4 gap-2">
             {[
-              { id: "CNC-01", c: "bg-green-500" }, { id: "CNC-02", c: "bg-green-500" },
-              { id: "LATHE-01", c: "bg-yellow-500" }, { id: "LATHE-02", c: "bg-yellow-500" },
-              { id: "MILL-01", c: "bg-green-500" }, { id: "MILL-02", c: "bg-green-500" },
-              { id: "MILL-03", c: "bg-muted-foreground" }, { id: "CNC-04", c: "bg-red-500" },
+              { id: "CNC-01", c: "bg-status-ok" }, { id: "CNC-02", c: "bg-status-ok" },
+              { id: "LATHE-01", c: "bg-status-warning" }, { id: "LATHE-02", c: "bg-status-warning" },
+              { id: "MILL-01", c: "bg-status-ok" }, { id: "MILL-02", c: "bg-status-ok" },
+              { id: "MILL-03", c: "bg-muted-foreground" }, { id: "CNC-04", c: "bg-status-critical" },
             ].map((s) => (
               <div key={s.id} className="flex items-center gap-1.5 px-2 py-1.5 rounded bg-muted/30 border border-border">
                 <span className={`w-2 h-2 rounded-full ${s.c}`} />
