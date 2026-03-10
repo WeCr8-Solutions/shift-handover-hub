@@ -303,7 +303,7 @@ export function OrganizationSetup({ onComplete, onSkip }: OrganizationSetupProps
                 "Works for a solo operator or a full crew",
               ].map((item) => (
                 <div key={item} className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-status-ok shrink-0" />
                   <span className="text-sm">{item}</span>
                 </div>
               ))}
