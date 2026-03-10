@@ -64,7 +64,7 @@ function ConnectionStatusBadge({ status }: { status: string }) {
   switch (status) {
     case "connected":
       return (
-        <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+        <Badge className="bg-status-ok/10 text-status-ok border-status-ok/30">
           <CheckCircle2 className="mr-1 h-3 w-3" />
           Connected
         </Badge>
