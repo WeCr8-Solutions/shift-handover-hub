@@ -258,8 +258,8 @@ export function SeedTestDataButton() {
           <AlertDialogDescription className="space-y-2">
             {result ? (
               <div className="space-y-3">
-                <div className="flex items-center gap-2 text-green-600">
-                  <CheckCircle2 className="w-5 h-5" />
+                 <div className="flex items-center gap-2 text-status-ok">
+                   <CheckCircle2 className="w-5 h-5" />
                   <span className="font-medium">Data seeded successfully!</span>
                 </div>
                 <ul className="text-sm space-y-1 ml-7">
