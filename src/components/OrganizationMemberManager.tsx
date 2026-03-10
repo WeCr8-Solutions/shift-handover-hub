@@ -482,7 +482,7 @@ export function OrganizationMemberManager({ onNavigateToInvites }: OrganizationM
                       <>
                         <DialogHeader>
                           <DialogTitle className="flex items-center gap-2">
-                            <CheckCircle className="w-5 h-5 text-green-500" />
+                            <CheckCircle className="w-5 h-5 text-status-ok" />
                             Invite Created
                           </DialogTitle>
                           <DialogDescription>
