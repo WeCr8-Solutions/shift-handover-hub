@@ -230,7 +230,7 @@ export function RoleHierarchyTree() {
                 {/* Organization Level */}
                 <div>
                   <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                    <Building2 className="w-4 h-4 text-purple-500" />
+                    <Building2 className="w-4 h-4 text-role-org-owner" />
                     Organization Level
                     <Badge variant="secondary" className="text-xs">{orgRoles.length}</Badge>
                   </h4>
