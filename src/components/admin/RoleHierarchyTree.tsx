@@ -202,7 +202,7 @@ export function RoleHierarchyTree() {
                 {/* Platform Level */}
                 <div>
                   <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                    <Shield className="w-4 h-4 text-red-500" />
+                    <Shield className="w-4 h-4 text-role-admin" />
                     Platform Level
                     <Badge variant="secondary" className="text-xs">{platformRoles.length}</Badge>
                   </h4>
