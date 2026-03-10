@@ -216,7 +216,7 @@ export function RoleHierarchyTree() {
                 {/* App Level */}
                 <div>
                   <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                    <Wrench className="w-4 h-4 text-green-500" />
+                    <Wrench className="w-4 h-4 text-role-operator" />
                     App Roles (Capabilities)
                     <Badge variant="secondary" className="text-xs">{appRoles.length}</Badge>
                   </h4>
