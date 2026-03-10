@@ -33,32 +33,41 @@ export const LeadCaptureModal = forwardRef<HTMLDivElement>(function LeadCaptureM
   useEffect(() => {
     if (!shouldShow()) return;
 
-    // Desktop: exit intent via mouseleave
-    const handleMouseLeave = (e: MouseEvent) => {
-      if (e.clientY <= 0 && shouldShow()) {
-        setOpen(true);
-        trackEvent("lead_modal_shown", { trigger: "exit_intent", ...getUtmParams() });
-      }
+    // Minimum delay before lead modal can appear (lets survey fire first at 8s)
+    const MIN_DELAY_MS = 30000;
+    let canShow = false;
+    let hasShown = false;
+
+    const minDelayTimer = setTimeout(() => {
+      canShow = true;
+    }, MIN_DELAY_MS);
+
+    const tryShow = (trigger: string) => {
+      if (hasShown || !canShow || !shouldShow()) return;
+      hasShown = true;
+      setOpen(true);
+      trackEvent("lead_modal_shown", { trigger, ...getUtmParams() });
     };
 
-    // Mobile: 45-second timer
+    // Desktop: exit intent via mouseleave (only after min delay)
+    const handleMouseLeave = (e: MouseEvent) => {
+      if (e.clientY <= 0) tryShow("exit_intent");
+    };
+
+    // Mobile: 60-second timer
     const isTouchDevice = "ontouchstart" in window || navigator.maxTouchPoints > 0;
-    let timer: ReturnType<typeof setTimeout> | undefined;
+    let mobileTimer: ReturnType<typeof setTimeout> | undefined;
 
     if (isTouchDevice) {
-      timer = setTimeout(() => {
-        if (shouldShow()) {
-          setOpen(true);
-          trackEvent("lead_modal_shown", { trigger: "timeout", ...getUtmParams() });
-        }
-      }, 45000);
+      mobileTimer = setTimeout(() => tryShow("timeout"), 60000);
     } else {
       document.addEventListener("mouseleave", handleMouseLeave);
     }
 
     return () => {
+      clearTimeout(minDelayTimer);
       document.removeEventListener("mouseleave", handleMouseLeave);
-      if (timer) clearTimeout(timer);
+      if (mobileTimer) clearTimeout(mobileTimer);
     };
   }, [shouldShow]);
 
