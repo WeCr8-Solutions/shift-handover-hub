@@ -62,8 +62,8 @@ import { Database } from "@/integrations/supabase/types";
 type AppRole = Database["public"]["Enums"]["app_role"];
 
 const ORG_ROLE_CONFIG = {
-  owner: { label: "Owner", icon: Crown, color: "text-yellow-600" },
-  admin: { label: "Admin", icon: Shield, color: "text-blue-600" },
+  owner: { label: "Owner", icon: Crown, color: "text-warning" },
+  admin: { label: "Admin", icon: Shield, color: "text-role-org-admin" },
   member: { label: "Member", icon: Users, color: "text-muted-foreground" },
 } as const;
 
