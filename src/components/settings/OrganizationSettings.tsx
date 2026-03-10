@@ -269,7 +269,7 @@ export function OrganizationSettings({ isDeveloper = false }: OrganizationSettin
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div className="flex items-center gap-3">
-              <Crown className="h-5 w-5 text-amber-500" />
+              <Crown className="h-5 w-5 text-warning" />
               <div>
                 <p className="font-medium">Organization Role</p>
                 <p className="text-sm text-muted-foreground">Your role in {organization.name}</p>
