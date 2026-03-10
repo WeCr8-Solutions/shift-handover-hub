@@ -300,7 +300,7 @@ export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadD
                     <ScrollArea className="h-24">
                       <ul className="text-xs space-y-1">
                         {crossSheetWarnings.map((warning, i) => (
-                          <li key={i} className="text-yellow-600">
+                          <li key={i} className="text-warning">
                             {warning.sheet} Row {warning.row}: {warning.message}
                           </li>
                         ))}
