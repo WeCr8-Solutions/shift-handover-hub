@@ -36,7 +36,7 @@ export function MachineCard({ machine, compact = false, onClick }: MachineCardPr
       className={cn(
         "relative overflow-hidden transition-all duration-200 group",
         onClick && "cursor-pointer hover:shadow-md hover:border-primary/30",
-        isAlarming && "border-red-500/40 shadow-red-500/10 shadow-sm",
+        isAlarming && "border-status-critical/40 shadow-status-critical/10 shadow-sm",
         isOffline && "opacity-60",
       )}
       onClick={onClick}
