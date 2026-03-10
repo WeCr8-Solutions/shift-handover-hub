@@ -329,7 +329,7 @@ export function ERPConnectorSettings() {
                 </div>
                 <Progress value={Math.min((erpUsage.sync_count / erpUsage.sync_limit) * 100, 100)} />
                 {erpUsage.sync_count >= erpUsage.sync_limit * 0.8 && (
-                  <p className="flex items-center gap-1 text-xs text-amber-600">
+                  <p className="flex items-center gap-1 text-xs text-warning">
                     <AlertTriangle className="h-3 w-3" />
                     Approaching sync limit — consider upgrading your ERP tier
                   </p>
