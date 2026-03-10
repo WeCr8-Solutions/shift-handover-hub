@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { getPriorityLightColor } from "@/lib/status-colors";
 
 interface AssignedWorkOrder {
   id: string;
