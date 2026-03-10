@@ -154,14 +154,7 @@ export function OperatorWorkflowPanel() {
     return `${formatMinutes(remaining)} left`;
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "critical": return "text-red-600 bg-red-500/10 border-red-500/30";
-      case "urgent": return "text-orange-600 bg-orange-500/10 border-orange-500/30";
-      case "high": return "text-amber-600 bg-amber-500/10 border-amber-500/30";
-      default: return "text-muted-foreground bg-muted border-border";
-    }
-  };
+  const getPriorityColor = (priority: string) => getPriorityLightColor(priority);
 
   if (!user) return null;
 
