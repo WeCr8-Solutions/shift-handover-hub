@@ -24,10 +24,10 @@ const machines = [
 ];
 
 const colors = {
-  run: "bg-green-500",
-  setup: "bg-yellow-500",
+  run: "bg-status-ok",
+  setup: "bg-status-warning",
   idle: "bg-muted-foreground/50",
-  down: "bg-red-500",
+  down: "bg-status-critical",
 };
 
 export function MockUtilizationChart() {
