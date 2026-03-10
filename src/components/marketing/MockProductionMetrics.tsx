@@ -60,7 +60,7 @@ export function MockProductionMetrics() {
                 </div>
                 <div className="h-2 rounded-full bg-muted/40 overflow-hidden">
                   <div
-                    className={`h-full rounded-full transition-all ${pct >= 80 ? "bg-green-500" : pct >= 50 ? "bg-primary" : pct > 0 ? "bg-yellow-500" : "bg-muted"}`}
+                    className={`h-full rounded-full transition-all ${pct >= 80 ? "bg-status-ok" : pct >= 50 ? "bg-primary" : pct > 0 ? "bg-status-warning" : "bg-muted"}`}
                     style={{ width: `${pct}%` }}
                   />
                 </div>
