@@ -689,7 +689,7 @@ export function OrganizationMemberManager({ onNavigateToInvites }: OrganizationM
                                 )}
                                 <DropdownMenuLabel>App Roles</DropdownMenuLabel>
                                 <DropdownMenuItem onClick={() => handleToggleAppRole(member, "supervisor")}>
-                                  <UserCog className="w-4 h-4 mr-2 text-blue-600" />
+                                  <UserCog className="w-4 h-4 mr-2 text-role-supervisor" />
                                   {member.app_roles?.includes("supervisor") ? "Remove Supervisor" : "Assign Supervisor"}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => handleToggleAppRole(member, "operator")}>
