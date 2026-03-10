@@ -224,7 +224,7 @@ export function ChangelogManager() {
                         {entry.version && <Badge variant="outline" className="text-xs">{entry.version}</Badge>}
                         <Badge variant="outline" className={`text-xs ${cfg.color}`}>{cfg.label}</Badge>
                         {entry.is_published ? (
-                          <Badge className="text-xs bg-green-500/10 text-green-600 border-green-300" variant="outline">Published</Badge>
+                          <Badge className="text-xs bg-status-ok/10 text-status-ok border-status-ok/30" variant="outline">Published</Badge>
                         ) : (
                           <Badge variant="outline" className="text-xs text-muted-foreground">Draft</Badge>
                         )}

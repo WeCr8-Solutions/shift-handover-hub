@@ -64,7 +64,7 @@ export function TestHistoryList({ history, onClearHistory }: TestHistoryListProp
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="text-green-600">
+                  <Badge variant="secondary" className="text-status-ok">
                     {run.passedTests} passed
                   </Badge>
                   {run.failedTests > 0 && (
