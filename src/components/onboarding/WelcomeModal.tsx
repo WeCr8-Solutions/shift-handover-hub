@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -65,10 +65,11 @@ export function WelcomeModal() {
     isStepCompleted,
   } = useOnboardingContext();
 
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(true);
 
-  // Gate: only show for brand-new users who haven't seen welcome yet
-  if (isLoading || isComplete || showTour || currentStep === "complete" || hasSeenWelcome) {
+  // Gate: never show on public landing page, or for returning/complete users
+  if (isLoading || isComplete || showTour || currentStep === "complete" || hasSeenWelcome || location.pathname === "/") {
     return null;
   }
 
