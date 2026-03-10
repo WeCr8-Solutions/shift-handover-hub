@@ -674,7 +674,7 @@ export function OrganizationMemberManager({ onNavigateToInvites }: OrganizationM
                                       onClick={() => handleUpdateOrgRole(member, "admin")}
                                       disabled={member.role === "admin"}
                                     >
-                                      <Shield className="w-4 h-4 mr-2 text-blue-600" />
+                                       <Shield className="w-4 h-4 mr-2 text-role-org-admin" />
                                       Make Admin
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
