@@ -24,10 +24,10 @@ import { DatabaseFunctionsReference } from "./DatabaseFunctionsReference";
 import { EntitlementsReference } from "./EntitlementsReference";
 
 const scopeConfig = {
-  platform: { badge: "destructive" as const, color: "bg-red-500", description: "Global access via user_roles" },
-  organization: { badge: "default" as const, color: "bg-purple-500", description: "Scoped via organization_members" },
-  team: { badge: "secondary" as const, color: "bg-blue-500", description: "Scoped via team_members" },
-  app: { badge: "outline" as const, color: "bg-green-500", description: "Capability role in user_roles" },
+  platform: { badge: "destructive" as const, color: "bg-role-admin", description: "Global access via user_roles" },
+  organization: { badge: "default" as const, color: "bg-role-org-owner", description: "Scoped via organization_members" },
+  team: { badge: "secondary" as const, color: "bg-status-waiting", description: "Scoped via team_members" },
+  app: { badge: "outline" as const, color: "bg-role-operator", description: "Capability role in user_roles" },
 };
 
 const roleIcons: Record<string, React.ReactNode> = {
