@@ -106,7 +106,7 @@ export function ToleranceCalculator() {
                   type="number"
                   step="0.0001"
                   placeholder="—"
-                  className={cn("h-8 text-xs", r.status === "pass" && "border-green-500", r.status === "warn" && "border-amber-500", r.status === "fail" && "border-destructive")}
+                  className={cn("h-8 text-xs", r.status === "pass" && "border-status-ok", r.status === "warn" && "border-warning", r.status === "fail" && "border-destructive")}
                 />
               </div>
             </div>
