@@ -70,12 +70,12 @@ const ORG_ROLE_CONFIG = {
 const APP_ROLE_CONFIG: Record<string, { label: string; color: string; description: string }> = {
   supervisor: {
     label: "Supervisor",
-    color: "bg-blue-500/10 text-blue-700 border-blue-200",
+    color: "bg-role-supervisor/10 text-role-supervisor border-role-supervisor/20",
     description: "Can oversee teams and review performance updates",
   },
   operator: {
     label: "Operator",
-    color: "bg-green-500/10 text-green-700 border-green-200",
+    color: "bg-role-operator/10 text-role-operator border-role-operator/20",
     description: "Can submit handoffs and performance updates",
   },
 };
