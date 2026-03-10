@@ -106,7 +106,7 @@ export function ToleranceCalculator() {
                   type="number"
                   step="0.0001"
                   placeholder="—"
-                  className={cn("h-8 text-xs", r.status === "pass" && "border-green-500", r.status === "warn" && "border-amber-500", r.status === "fail" && "border-destructive")}
+                  className={cn("h-8 text-xs", r.status === "pass" && "border-status-ok", r.status === "warn" && "border-warning", r.status === "fail" && "border-destructive")}
                 />
               </div>
             </div>
@@ -119,8 +119,8 @@ export function ToleranceCalculator() {
                   variant="outline"
                   className={cn(
                     "text-[9px] ml-auto",
-                    r.status === "pass" && "bg-green-500/10 text-green-700 border-green-500/30",
-                    r.status === "warn" && "bg-amber-500/10 text-amber-700 border-amber-500/30",
+                    r.status === "pass" && "bg-status-ok/10 text-status-ok border-status-ok/30",
+                    r.status === "warn" && "bg-warning/10 text-warning border-warning/30",
                     r.status === "fail" && "bg-destructive/10 text-destructive border-destructive/30"
                   )}
                 >

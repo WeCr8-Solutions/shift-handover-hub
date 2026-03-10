@@ -26,7 +26,7 @@ export function MockOperatorView() {
             <div className="font-semibold">CNC-01</div>
             <div className="text-[10px] text-muted-foreground">Checked in · 2nd Shift</div>
           </div>
-          <Badge className="text-[10px] bg-green-500/20 text-green-400 border-green-500/30">Running</Badge>
+          <Badge className="text-[10px] bg-status-ok/20 text-status-ok border-status-ok/30">Running</Badge>
         </div>
 
         {/* Current job */}
@@ -66,8 +66,8 @@ export function MockOperatorView() {
         </div>
 
         {/* Incoming handoff note */}
-        <div className="rounded-lg bg-yellow-500/10 border border-yellow-500/20 p-2.5">
-          <div className="text-[10px] font-semibold text-yellow-400 mb-1">📋 Handoff Note from 1st Shift</div>
+        <div className="rounded-lg bg-status-warning/10 border border-status-warning/20 p-2.5">
+          <div className="text-[10px] font-semibold text-status-warning mb-1">📋 Handoff Note from 1st Shift</div>
           <div className="text-xs text-foreground">OD tolerance trending high — verify offset before resuming. Tool #3 insert changed at part 130.</div>
           <div className="text-[10px] text-muted-foreground mt-1">— Mike Torres, 2:00 PM</div>
         </div>

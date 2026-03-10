@@ -70,7 +70,7 @@ export default function MachineTimeTracking() {
             <ul className="space-y-3 mb-10">
               {benefits.map((b, i) => (
                 <li key={i} className="flex items-start gap-3 text-lg">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
+                  <CheckCircle2 className="w-5 h-5 text-status-ok mt-1 flex-shrink-0" />
                   <span>{b}</span>
                 </li>
               ))}

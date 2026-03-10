@@ -745,10 +745,10 @@ function getCategoryIcon(icon: string) {
 
 function TestStatusIcon({ status }: { status: RoleScopeTestResult["status"] }) {
   switch (status) {
-    case "pass": return <CheckCircle2 className="w-4 h-4 text-green-500" />;
-    case "fail": return <XCircle className="w-4 h-4 text-red-500" />;
-    case "warning": return <AlertCircle className="w-4 h-4 text-amber-500" />;
-    case "running": return <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />;
+    case "pass": return <CheckCircle2 className="w-4 h-4 text-status-ok" />;
+    case "fail": return <XCircle className="w-4 h-4 text-status-critical" />;
+    case "warning": return <AlertCircle className="w-4 h-4 text-warning" />;
+    case "running": return <Loader2 className="w-4 h-4 text-status-waiting animate-spin" />;
     case "pending": return <Clock className="w-4 h-4 text-muted-foreground" />;
     case "skipped": return <Eye className="w-4 h-4 text-muted-foreground" />;
     default: return <AlertCircle className="w-4 h-4 text-muted-foreground" />;
@@ -774,7 +774,7 @@ function SuiteCard({ suite }: { suite: RoleScopeTestSuite }) {
         </div>
         <div className="flex items-center gap-2">
           {suite.warnings > 0 && (
-            <Badge variant="outline" className="text-xs text-amber-600 border-amber-300">
+            <Badge variant="outline" className="text-xs text-warning border-warning/30">
               {suite.warnings} warning{suite.warnings > 1 ? "s" : ""}
             </Badge>
           )}
@@ -804,12 +804,12 @@ function SuiteCard({ suite }: { suite: RoleScopeTestSuite }) {
               <div className="flex-1 min-w-0">
                 <span className="text-muted-foreground block">{test.name}</span>
                 {test.details && (
-                  <span className="text-xs text-green-600 dark:text-green-400 block mt-0.5">
+                  <span className="text-xs text-status-ok block mt-0.5">
                     ✓ {test.details}
                   </span>
                 )}
                 {test.error && (
-                  <span className="text-xs text-red-600 dark:text-red-400 block mt-0.5">
+                  <span className="text-xs text-status-critical block mt-0.5">
                     ✗ {test.error}
                   </span>
                 )}
@@ -1053,8 +1053,8 @@ export function RoleScopeTestRunner() {
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
-                <ShieldCheck className="w-5 h-5 text-indigo-600" />
+              <div className="w-10 h-10 rounded-lg bg-role-org-admin/10 flex items-center justify-center">
+                <ShieldCheck className="w-5 h-5 text-role-org-admin" />
               </div>
               <div>
                 <CardTitle className="text-lg">Role & Scope Tests</CardTitle>
@@ -1139,17 +1139,17 @@ export function RoleScopeTestRunner() {
                 </CardDescription>
               </div>
               <div className="flex items-center gap-4 text-sm">
-                <div className="flex items-center gap-1 text-green-600">
+                <div className="flex items-center gap-1 text-status-ok">
                   <CheckCircle2 className="w-4 h-4" />
                   <span>{currentRun.passedTests} passed</span>
                 </div>
                 {currentRun.warningTests > 0 && (
-                  <div className="flex items-center gap-1 text-amber-600">
+                  <div className="flex items-center gap-1 text-warning">
                     <AlertCircle className="w-4 h-4" />
                     <span>{currentRun.warningTests} warnings</span>
                   </div>
                 )}
-                <div className="flex items-center gap-1 text-red-600">
+                <div className="flex items-center gap-1 text-status-critical">
                   <XCircle className="w-4 h-4" />
                   <span>{currentRun.failedTests} failed</span>
                 </div>

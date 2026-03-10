@@ -32,9 +32,9 @@ const liveFeed = [
 ];
 
 const typeColors: Record<string, string> = {
-  success: "bg-green-500",
-  error: "bg-red-500",
-  info: "bg-blue-500",
+  success: "bg-status-ok",
+  error: "bg-status-critical",
+  info: "bg-status-waiting",
 };
 
 export function MockVisibilityDashboard() {
@@ -46,9 +46,9 @@ export function MockVisibilityDashboard() {
           {kpis.map((k) => (
             <div key={k.label} className="rounded-lg bg-muted/40 p-2.5 text-center border border-border">
               <span className="text-[10px] text-muted-foreground block">{k.label}</span>
-              <span className={`font-bold text-lg ${k.good ? "text-foreground" : "text-red-400"}`}>{k.value}</span>
+              <span className={`font-bold text-lg ${k.good ? "text-foreground" : "text-status-critical"}`}>{k.value}</span>
               {k.trend && (
-                <span className={`text-[10px] block ${k.good ? "text-green-400" : "text-red-400"}`}>{k.trend} vs last shift</span>
+                <span className={`text-[10px] block ${k.good ? "text-status-ok" : "text-status-critical"}`}>{k.trend} vs last shift</span>
               )}
             </div>
           ))}
@@ -59,10 +59,10 @@ export function MockVisibilityDashboard() {
           <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Station Map</div>
           <div className="grid grid-cols-4 gap-2">
             {[
-              { id: "CNC-01", c: "bg-green-500" }, { id: "CNC-02", c: "bg-green-500" },
-              { id: "LATHE-01", c: "bg-yellow-500" }, { id: "LATHE-02", c: "bg-yellow-500" },
-              { id: "MILL-01", c: "bg-green-500" }, { id: "MILL-02", c: "bg-green-500" },
-              { id: "MILL-03", c: "bg-muted-foreground" }, { id: "CNC-04", c: "bg-red-500" },
+              { id: "CNC-01", c: "bg-status-ok" }, { id: "CNC-02", c: "bg-status-ok" },
+              { id: "LATHE-01", c: "bg-status-warning" }, { id: "LATHE-02", c: "bg-status-warning" },
+              { id: "MILL-01", c: "bg-status-ok" }, { id: "MILL-02", c: "bg-status-ok" },
+              { id: "MILL-03", c: "bg-muted-foreground" }, { id: "CNC-04", c: "bg-status-critical" },
             ].map((s) => (
               <div key={s.id} className="flex items-center gap-1.5 px-2 py-1.5 rounded bg-muted/30 border border-border">
                 <span className={`w-2 h-2 rounded-full ${s.c}`} />
@@ -77,7 +77,7 @@ export function MockVisibilityDashboard() {
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Activity Feed</span>
             <Badge variant="outline" className="text-[10px] gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full bg-status-ok animate-pulse" />
               Live
             </Badge>
           </div>

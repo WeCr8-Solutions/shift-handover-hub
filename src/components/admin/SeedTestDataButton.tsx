@@ -258,8 +258,8 @@ export function SeedTestDataButton() {
           <AlertDialogDescription className="space-y-2">
             {result ? (
               <div className="space-y-3">
-                <div className="flex items-center gap-2 text-green-600">
-                  <CheckCircle2 className="w-5 h-5" />
+                 <div className="flex items-center gap-2 text-status-ok">
+                   <CheckCircle2 className="w-5 h-5" />
                   <span className="font-medium">Data seeded successfully!</span>
                 </div>
                 <ul className="text-sm space-y-1 ml-7">
@@ -280,7 +280,7 @@ export function SeedTestDataButton() {
                   <li>• 5 routing steps per work order</li>
                   <li>• Assigned to your existing stations</li>
                 </ul>
-                <p className="text-amber-600 mt-2">
+                <p className="text-warning mt-2">
                   Note: This adds data to your current organization. Existing data will not be affected.
                 </p>
               </>

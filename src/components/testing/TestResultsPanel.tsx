@@ -14,15 +14,15 @@ interface TestResultsPanelProps {
 function TestResultIcon({ status }: { status: TestResult["status"] }) {
   switch (status) {
     case "pass":
-      return <CheckCircle2 className="w-4 h-4 text-green-500" />;
+      return <CheckCircle2 className="w-4 h-4 text-status-ok" />;
     case "fail":
-      return <XCircle className="w-4 h-4 text-red-500" />;
+      return <XCircle className="w-4 h-4 text-status-critical" />;
     case "running":
-      return <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />;
+      return <Loader2 className="w-4 h-4 text-status-waiting animate-spin" />;
     case "pending":
-      return <Clock className="w-4 h-4 text-yellow-500" />;
+      return <Clock className="w-4 h-4 text-status-warning" />;
     default:
-      return <AlertCircle className="w-4 h-4 text-gray-500" />;
+      return <AlertCircle className="w-4 h-4 text-muted-foreground" />;
   }
 }
 
@@ -77,11 +77,11 @@ export function TestResultsPanel({ run, isRunning }: TestResultsPanelProps) {
             </CardDescription>
           </div>
           <div className="flex items-center gap-4 text-sm">
-            <div className="flex items-center gap-1 text-green-600">
+            <div className="flex items-center gap-1 text-status-ok">
               <CheckCircle2 className="w-4 h-4" />
               <span>{run.passedTests} passed</span>
             </div>
-            <div className="flex items-center gap-1 text-red-600">
+            <div className="flex items-center gap-1 text-status-critical">
               <XCircle className="w-4 h-4" />
               <span>{run.failedTests} failed</span>
             </div>

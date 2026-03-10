@@ -269,7 +269,7 @@ export function OrganizationSettings({ isDeveloper = false }: OrganizationSettin
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div className="flex items-center gap-3">
-              <Crown className="h-5 w-5 text-amber-500" />
+              <Crown className="h-5 w-5 text-warning" />
               <div>
                 <p className="font-medium">Organization Role</p>
                 <p className="text-sm text-muted-foreground">Your role in {organization.name}</p>
@@ -288,7 +288,7 @@ export function OrganizationSettings({ isDeveloper = false }: OrganizationSettin
                 {teams.map((membership: any) => (
                   <div key={membership.id} className="flex items-center justify-between rounded-lg border p-3">
                     <div className="flex items-center gap-3">
-                      <Users className="h-4 w-4 text-blue-500" />
+                      <Users className="h-4 w-4 text-status-waiting" />
                       <div>
                         <p className="text-sm font-medium">{membership.team?.name ?? "Unnamed Team"}</p>
                         {membership.team?.description && (
@@ -326,9 +326,9 @@ export function OrganizationSettings({ isDeveloper = false }: OrganizationSettin
       )}
 
       {isAdmin && (
-        <Card className="border-amber-500/30">
+         <Card className="border-warning/30">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-amber-600">
+            <CardTitle className="flex items-center gap-2 text-warning">
               <Shield className="h-5 w-5" />
               ITAR / Export Control Settings
             </CardTitle>
@@ -376,7 +376,7 @@ export function OrganizationSettings({ isDeveloper = false }: OrganizationSettin
                 onClick={handleSaveCompliance}
                 disabled={savingCompliance}
                 variant="outline"
-                className="gap-2 border-amber-500/50 text-amber-600 hover:bg-amber-500/10"
+                className="gap-2 border-warning/50 text-warning hover:bg-warning/10"
               >
                 {savingCompliance ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                 Save Compliance Settings

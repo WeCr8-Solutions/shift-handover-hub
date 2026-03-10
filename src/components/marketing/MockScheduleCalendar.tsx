@@ -18,7 +18,7 @@ function AppWindowChrome({ title, children }: { title: string; children: React.R
 
 const days = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 const jobs = [
-  { wo: "WO-1847", part: "BRKT-4510", day: 0, span: 3, pri: "Rush", color: "bg-red-500/20 border-red-500/40 text-red-300" },
+  { wo: "WO-1847", part: "BRKT-4510", day: 0, span: 3, pri: "Rush", color: "bg-status-critical/20 border-status-critical/40 text-status-critical" },
   { wo: "WO-1855", part: "SHAFT-220", day: 1, span: 2, pri: "High", color: "bg-primary/20 border-primary/40 text-primary" },
   { wo: "WO-1860", part: "HSG-110", day: 3, span: 2, pri: "Normal", color: "bg-muted border-border text-foreground" },
   { wo: "WO-1852", part: "FLNG-300", day: 0, span: 2, pri: "Normal", color: "bg-muted border-border text-foreground" },
@@ -80,7 +80,7 @@ export function MockScheduleCalendar() {
         })}
 
         <div className="flex items-center gap-4 pt-2 text-[10px] text-muted-foreground">
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-red-500/40" /> Rush</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-status-critical/40" /> Rush</span>
           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-primary/40" /> High Priority</span>
           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-muted" /> Normal</span>
           <span className="ml-auto">Drag to reschedule</span>

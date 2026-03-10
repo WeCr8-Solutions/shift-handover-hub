@@ -24,10 +24,10 @@ import { DatabaseFunctionsReference } from "./DatabaseFunctionsReference";
 import { EntitlementsReference } from "./EntitlementsReference";
 
 const scopeConfig = {
-  platform: { badge: "destructive" as const, color: "bg-red-500", description: "Global access via user_roles" },
-  organization: { badge: "default" as const, color: "bg-purple-500", description: "Scoped via organization_members" },
-  team: { badge: "secondary" as const, color: "bg-blue-500", description: "Scoped via team_members" },
-  app: { badge: "outline" as const, color: "bg-green-500", description: "Capability role in user_roles" },
+  platform: { badge: "destructive" as const, color: "bg-role-admin", description: "Global access via user_roles" },
+  organization: { badge: "default" as const, color: "bg-role-org-owner", description: "Scoped via organization_members" },
+  team: { badge: "secondary" as const, color: "bg-status-waiting", description: "Scoped via team_members" },
+  app: { badge: "outline" as const, color: "bg-role-operator", description: "Capability role in user_roles" },
 };
 
 const roleIcons: Record<string, React.ReactNode> = {
@@ -53,7 +53,7 @@ function RoleCard({ role }: { role: RoleDefinition }) {
       <CollapsibleTrigger asChild>
         <button className="w-full text-left p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors">
           <div className="flex items-start gap-3">
-            <div className={`w-8 h-8 rounded-full ${config.color} text-white flex items-center justify-center shrink-0`}>
+            <div className={`w-8 h-8 rounded-full ${config.color} text-primary-foreground flex items-center justify-center shrink-0`}>
               {roleIcons[role.id] || <Users className="w-4 h-4" />}
             </div>
             <div className="flex-1 min-w-0">
@@ -81,7 +81,7 @@ function RoleCard({ role }: { role: RoleDefinition }) {
             <ul className="text-xs space-y-0.5">
               {role.capabilities.map((cap, i) => (
                 <li key={i} className="flex items-start gap-1">
-                  <span className="w-1 h-1 rounded-full bg-green-500 shrink-0 mt-1.5" />
+                  <span className="w-1 h-1 rounded-full bg-status-ok shrink-0 mt-1.5" />
                   {cap}
                 </li>
               ))}
@@ -97,8 +97,8 @@ function RoleCard({ role }: { role: RoleDefinition }) {
               </div>
               <ul className="text-xs space-y-0.5">
                 {role.restrictions.map((res, i) => (
-                  <li key={i} className="flex items-start gap-1 text-amber-600 dark:text-amber-400">
-                    <span className="w-1 h-1 rounded-full bg-amber-500 shrink-0 mt-1.5" />
+                  <li key={i} className="flex items-start gap-1 text-warning">
+                    <span className="w-1 h-1 rounded-full bg-warning shrink-0 mt-1.5" />
                     {res}
                   </li>
                 ))}
@@ -202,7 +202,7 @@ export function RoleHierarchyTree() {
                 {/* Platform Level */}
                 <div>
                   <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                    <Shield className="w-4 h-4 text-red-500" />
+                    <Shield className="w-4 h-4 text-role-admin" />
                     Platform Level
                     <Badge variant="secondary" className="text-xs">{platformRoles.length}</Badge>
                   </h4>
@@ -216,7 +216,7 @@ export function RoleHierarchyTree() {
                 {/* App Level */}
                 <div>
                   <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                    <Wrench className="w-4 h-4 text-green-500" />
+                    <Wrench className="w-4 h-4 text-role-operator" />
                     App Roles (Capabilities)
                     <Badge variant="secondary" className="text-xs">{appRoles.length}</Badge>
                   </h4>
@@ -230,7 +230,7 @@ export function RoleHierarchyTree() {
                 {/* Organization Level */}
                 <div>
                   <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                    <Building2 className="w-4 h-4 text-purple-500" />
+                    <Building2 className="w-4 h-4 text-role-org-owner" />
                     Organization Level
                     <Badge variant="secondary" className="text-xs">{orgRoles.length}</Badge>
                   </h4>
@@ -244,7 +244,7 @@ export function RoleHierarchyTree() {
                 {/* Team Level */}
                 <div>
                   <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                    <Users className="w-4 h-4 text-blue-500" />
+                    <Users className="w-4 h-4 text-status-waiting" />
                     Team Level
                     <Badge variant="secondary" className="text-xs">{teamRoles.length}</Badge>
                   </h4>

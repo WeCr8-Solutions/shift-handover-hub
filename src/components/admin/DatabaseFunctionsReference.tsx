@@ -4,11 +4,11 @@ import { Code, Shield, Building2, Users, Zap, Settings } from "lucide-react";
 import { databaseFunctions, DatabaseFunction } from "@/hooks/useRoleArchitecture";
 
 const categoryConfig = {
-  "role-check": { label: "Role Checks", icon: Shield, color: "bg-red-500/10 text-red-500 border-red-500/20" },
-  "org-check": { label: "Org Checks", icon: Building2, color: "bg-purple-500/10 text-purple-500 border-purple-500/20" },
-  "team-check": { label: "Team Checks", icon: Users, color: "bg-blue-500/10 text-blue-500 border-blue-500/20" },
-  "feature-check": { label: "Feature/Limits", icon: Zap, color: "bg-amber-500/10 text-amber-500 border-amber-500/20" },
-  "utility": { label: "Utility", icon: Settings, color: "bg-gray-500/10 text-gray-500 border-gray-500/20" },
+  "role-check": { label: "Role Checks", icon: Shield, color: "bg-role-admin/10 text-role-admin border-role-admin/20" },
+  "org-check": { label: "Org Checks", icon: Building2, color: "bg-role-org-owner/10 text-role-org-owner border-role-org-owner/20" },
+  "team-check": { label: "Team Checks", icon: Users, color: "bg-status-waiting/10 text-status-waiting border-status-waiting/20" },
+  "feature-check": { label: "Feature/Limits", icon: Zap, color: "bg-warning/10 text-warning border-warning/20" },
+  "utility": { label: "Utility", icon: Settings, color: "bg-muted text-muted-foreground border-border" },
 };
 
 function FunctionCard({ func }: { func: DatabaseFunction }) {

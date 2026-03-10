@@ -99,7 +99,7 @@ export default function DowntimeTracking() {
             <ul className="grid sm:grid-cols-2 gap-4 mb-16">
               {benefits.map((b, i) => (
                 <li key={i} className="flex items-start gap-3 p-4 rounded-lg bg-card border border-border">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                  <CheckCircle2 className="w-5 h-5 text-status-ok mt-0.5 flex-shrink-0" />
                   <span>{b}</span>
                 </li>
               ))}

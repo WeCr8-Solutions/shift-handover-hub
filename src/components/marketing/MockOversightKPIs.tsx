@@ -40,7 +40,7 @@ export function MockOversightKPIs() {
               <div className="text-[10px] text-muted-foreground mb-1">{k.label}</div>
               <div className="flex items-baseline gap-2">
                 <span className="text-xl font-bold text-foreground">{k.value}</span>
-                <span className={`text-[10px] font-medium ${k.label === "Scrap Rate" ? "text-green-400" : k.up ? "text-green-400" : "text-red-400"}`}>
+                <span className={`text-[10px] font-medium ${k.label === "Scrap Rate" ? "text-status-ok" : k.up ? "text-status-ok" : "text-status-critical"}`}>
                   {k.change}
                 </span>
               </div>
@@ -63,7 +63,7 @@ export function MockOversightKPIs() {
                   {s.issues > 0 ? (
                     <Badge variant="destructive" className="text-[9px] px-1.5 py-0 h-3.5">{s.issues} alert</Badge>
                   ) : (
-                    <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-3.5 text-green-400">Clear</Badge>
+                    <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-3.5 text-status-ok">Clear</Badge>
                   )}
                 </div>
               </div>
@@ -72,7 +72,7 @@ export function MockOversightKPIs() {
         </div>
 
         <div className="text-[10px] text-muted-foreground flex items-center gap-1">
-          <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+          <span className="w-1.5 h-1.5 rounded-full bg-status-ok animate-pulse" />
           Updated 30 seconds ago · Viewing as: <strong className="text-foreground">Shop Owner</strong>
         </div>
       </div>

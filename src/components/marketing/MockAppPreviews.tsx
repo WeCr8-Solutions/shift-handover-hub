@@ -37,7 +37,7 @@ export function MockHandoffForm() {
         </div>
 
         <div className="flex items-center gap-3">
-          <StatusPill color="bg-green-500" label="Running" />
+          <StatusPill color="bg-status-ok" label="Running" />
           <span className="text-muted-foreground">Op 20 — Finish Mill</span>
         </div>
 
@@ -53,9 +53,9 @@ export function MockHandoffForm() {
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="h-2 w-2 rounded-full bg-green-500" />
+          <div className="h-2 w-2 rounded-full bg-status-ok" />
           <span className="text-xs text-muted-foreground">Dims verified ✓</span>
-          <div className="h-2 w-2 rounded-full bg-green-500 ml-3" />
+          <div className="h-2 w-2 rounded-full bg-status-ok ml-3" />
           <span className="text-xs text-muted-foreground">Material ready ✓</span>
         </div>
       </div>
@@ -66,10 +66,10 @@ export function MockHandoffForm() {
 /* ── 2. MockStationDashboard ──────────────────────────── */
 
 const stations = [
-  { id: "CNC-01", status: "Running", color: "bg-green-500", operator: "M. Torres", job: "WO-1847", parts: "142/200" },
-  { id: "LATHE-02", status: "Setup", color: "bg-yellow-500", operator: "J. Kim", job: "WO-1852", parts: "0/80" },
+  { id: "CNC-01", status: "Running", color: "bg-status-ok", operator: "M. Torres", job: "WO-1847", parts: "142/200" },
+  { id: "LATHE-02", status: "Setup", color: "bg-status-warning", operator: "J. Kim", job: "WO-1852", parts: "0/80" },
   { id: "MILL-03", status: "Idle", color: "bg-muted-foreground", operator: "—", job: "—", parts: "—" },
-  { id: "CNC-04", status: "Down", color: "bg-red-500", operator: "R. Patel", job: "WO-1839", parts: "67/150" },
+  { id: "CNC-04", status: "Down", color: "bg-status-critical", operator: "R. Patel", job: "WO-1839", parts: "67/150" },
 ];
 
 export function MockStationDashboard() {
@@ -163,8 +163,8 @@ export function MockDowntimeLog() {
                 </td>
                 <td className="py-2 text-foreground">{r.dur}</td>
                 <td className="py-2">
-                  <span className={`inline-flex items-center gap-1 ${r.resolved ? "text-green-500" : "text-yellow-500"}`}>
-                    <div className={`h-1.5 w-1.5 rounded-full ${r.resolved ? "bg-green-500" : "bg-yellow-500"}`} />
+                  <span className={`inline-flex items-center gap-1 ${r.resolved ? "text-status-ok" : "text-status-warning"}`}>
+                    <div className={`h-1.5 w-1.5 rounded-full ${r.resolved ? "bg-status-ok" : "bg-status-warning"}`} />
                     {r.resolved ? "Resolved" : "Active"}
                   </span>
                 </td>

@@ -87,7 +87,7 @@ export function MockShiftTimeline() {
         <div className="space-y-3">
           {handoffs.map((h, i) => (
             <div key={i} className={`p-3 rounded-lg border ${
-              h.status === "flagged" ? "bg-red-500/5 border-red-500/20" :
+              h.status === "flagged" ? "bg-status-critical/5 border-status-critical/20" :
               h.status === "pending" ? "bg-muted/20 border-border/50" :
               "bg-muted/30 border-border"
             }`}>
@@ -100,13 +100,13 @@ export function MockShiftTimeline() {
                   )}
                 </div>
                 {h.status === "complete" && (
-                  <span className="text-[10px] text-green-400 flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500" /> Verified
+                  <span className="text-[10px] text-status-ok flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-status-ok" /> Verified
                   </span>
                 )}
                 {h.status === "flagged" && (
-                  <span className="text-[10px] text-red-400 flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-red-500" /> Needs Attention
+                  <span className="text-[10px] text-status-critical flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-status-critical" /> Needs Attention
                   </span>
                 )}
                 {h.status === "pending" && (
@@ -121,7 +121,7 @@ export function MockShiftTimeline() {
                     <span>{h.job}</span>
                     <span>Parts: {h.parts}</span>
                   </div>
-                  <div className={`text-[10px] ${h.status === "flagged" ? "text-red-400" : "text-muted-foreground"}`}>
+                  <div className={`text-[10px] ${h.status === "flagged" ? "text-status-critical" : "text-muted-foreground"}`}>
                     {h.notes}
                   </div>
                 </>

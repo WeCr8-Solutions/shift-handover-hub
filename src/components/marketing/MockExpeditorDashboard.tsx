@@ -17,15 +17,15 @@ function AppWindowChrome({ title, children }: { title: string; children: React.R
 }
 
 const alerts = [
-  { type: "overdue", label: "OVERDUE", wo: "WO-1839", part: "CVR-900", station: "CNC-04", note: "Machine down — spindle alarm since 2:15 PM", color: "text-red-400" },
-  { type: "at-risk", label: "AT RISK", wo: "WO-1847", part: "BRKT-4510", station: "CNC-01", note: "Due tomorrow — 58 parts remaining, tolerance trending high", color: "text-yellow-400" },
-  { type: "blocked", label: "BLOCKED", wo: "WO-1855", part: "SHAFT-220", station: "—", note: "Waiting on outside processing (heat treat) — ETA unknown", color: "text-orange-400" },
+  { type: "overdue", label: "OVERDUE", wo: "WO-1839", part: "CVR-900", station: "CNC-04", note: "Machine down — spindle alarm since 2:15 PM", color: "text-status-critical" },
+  { type: "at-risk", label: "AT RISK", wo: "WO-1847", part: "BRKT-4510", station: "CNC-01", note: "Due tomorrow — 58 parts remaining, tolerance trending high", color: "text-status-warning" },
+  { type: "blocked", label: "BLOCKED", wo: "WO-1855", part: "SHAFT-220", station: "—", note: "Waiting on outside processing (heat treat) — ETA unknown", color: "text-priority-urgent" },
 ];
 
 const floorSummary = [
-  { label: "Running", count: 4, color: "bg-green-500" },
-  { label: "Setup", count: 2, color: "bg-yellow-500" },
-  { label: "Down", count: 1, color: "bg-red-500" },
+  { label: "Running", count: 4, color: "bg-status-ok" },
+  { label: "Setup", count: 2, color: "bg-status-warning" },
+  { label: "Down", count: 1, color: "bg-status-critical" },
   { label: "Idle", count: 1, color: "bg-muted-foreground" },
 ];
 
@@ -78,7 +78,7 @@ export function MockExpeditorDashboard() {
         <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1">
           <span>3 alerts · 12 active jobs · 8 stations monitored</span>
           <span className="flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+            <span className="w-1.5 h-1.5 rounded-full bg-status-ok animate-pulse" />
             Live
           </span>
         </div>

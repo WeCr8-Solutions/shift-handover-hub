@@ -24,10 +24,10 @@ const machines = [
 ];
 
 const colors = {
-  run: "bg-green-500",
-  setup: "bg-yellow-500",
+  run: "bg-status-ok",
+  setup: "bg-status-warning",
   idle: "bg-muted-foreground/50",
-  down: "bg-red-500",
+  down: "bg-status-critical",
 };
 
 export function MockUtilizationChart() {
@@ -58,10 +58,10 @@ export function MockUtilizationChart() {
 
         {/* Legend */}
         <div className="flex items-center gap-4 text-[10px] text-muted-foreground pt-1">
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-green-500" /> Run Time</span>
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-yellow-500" /> Setup</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-status-ok" /> Run Time</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-status-warning" /> Setup</span>
           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-muted-foreground/50" /> Idle</span>
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-red-500" /> Down</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-status-critical" /> Down</span>
         </div>
 
         {/* Summary */}
@@ -72,11 +72,11 @@ export function MockUtilizationChart() {
           </div>
           <div className="rounded-lg bg-muted/40 p-2 text-center border border-border">
             <span className="text-[10px] text-muted-foreground block">Total Downtime</span>
-            <span className="font-bold text-red-400">2h 47m</span>
+            <span className="font-bold text-status-critical">2h 47m</span>
           </div>
           <div className="rounded-lg bg-muted/40 p-2 text-center border border-border">
             <span className="text-[10px] text-muted-foreground block">Setup Time</span>
-            <span className="font-bold text-yellow-400">1h 32m</span>
+            <span className="font-bold text-status-warning">1h 32m</span>
           </div>
         </div>
       </div>

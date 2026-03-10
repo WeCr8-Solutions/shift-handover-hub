@@ -192,13 +192,13 @@ This replaces **4+ duplicated** `getPriorityColor` functions and **2 duplicated*
 
 | Batch | Files | Status | Notes |
 |---|---|---|---|
-| 1: Core Status | 15 | ⬜ TODO | Start here — highest impact |
-| 2: Dashboard & Production | 12 | ⬜ TODO | |
-| 3: Marketing & Mocks | 12 | ⬜ TODO | |
-| 4: Role & Permissions | 6 | ⬜ TODO | |
-| 5: Tools & Misc | 8 | ⬜ TODO | |
-| 6: UI Primitives | 3 | ⬜ TODO | Optional |
-| Shared Utilities | 1 | ⬜ TODO | Extract before Batch 1 |
+| 1: Core Status | 15 | ✅ DONE | Shared utility extracted, all queue/alert files migrated |
+| 2: Dashboard & Production | 12 | ✅ DONE | Station cards, routing, admin tables migrated |
+| 3: Marketing & Mocks | 12 | ✅ DONE | All mock dashboards + feature pages migrated |
+| 4: Role & Permissions | 6 | ✅ DONE | Role matrix, hierarchy, org settings migrated |
+| 5: Tools & Misc | 8 | ✅ DONE | Tolerance calc, test runners, pricing migrated |
+| 6: UI Primitives | 3 | ⬜ TODO | Optional — shadcn overlay defaults |
+| Shared Utilities | 1 | ✅ DONE | src/lib/status-colors.ts created |
 
 ---
 

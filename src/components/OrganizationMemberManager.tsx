@@ -62,20 +62,20 @@ import { Database } from "@/integrations/supabase/types";
 type AppRole = Database["public"]["Enums"]["app_role"];
 
 const ORG_ROLE_CONFIG = {
-  owner: { label: "Owner", icon: Crown, color: "text-yellow-600" },
-  admin: { label: "Admin", icon: Shield, color: "text-blue-600" },
+  owner: { label: "Owner", icon: Crown, color: "text-warning" },
+  admin: { label: "Admin", icon: Shield, color: "text-role-org-admin" },
   member: { label: "Member", icon: Users, color: "text-muted-foreground" },
 } as const;
 
 const APP_ROLE_CONFIG: Record<string, { label: string; color: string; description: string }> = {
   supervisor: {
     label: "Supervisor",
-    color: "bg-blue-500/10 text-blue-700 border-blue-200",
+    color: "bg-role-supervisor/10 text-role-supervisor border-role-supervisor/20",
     description: "Can oversee teams and review performance updates",
   },
   operator: {
     label: "Operator",
-    color: "bg-green-500/10 text-green-700 border-green-200",
+    color: "bg-role-operator/10 text-role-operator border-role-operator/20",
     description: "Can submit handoffs and performance updates",
   },
 };
@@ -105,7 +105,7 @@ function CopyButton({ value, label }: { value: string; label: string }) {
   };
   return (
     <Button variant="outline" size="icon" onClick={handleCopy} aria-label={`Copy ${label}`} className="shrink-0">
-      {copied ? <CheckCircle className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+      {copied ? <CheckCircle className="w-4 h-4 text-status-ok" /> : <Copy className="w-4 h-4" />}
     </Button>
   );
 }
@@ -482,7 +482,7 @@ export function OrganizationMemberManager({ onNavigateToInvites }: OrganizationM
                       <>
                         <DialogHeader>
                           <DialogTitle className="flex items-center gap-2">
-                            <CheckCircle className="w-5 h-5 text-green-500" />
+                            <CheckCircle className="w-5 h-5 text-status-ok" />
                             Invite Created
                           </DialogTitle>
                           <DialogDescription>
@@ -674,7 +674,7 @@ export function OrganizationMemberManager({ onNavigateToInvites }: OrganizationM
                                       onClick={() => handleUpdateOrgRole(member, "admin")}
                                       disabled={member.role === "admin"}
                                     >
-                                      <Shield className="w-4 h-4 mr-2 text-blue-600" />
+                                       <Shield className="w-4 h-4 mr-2 text-role-org-admin" />
                                       Make Admin
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
@@ -689,11 +689,11 @@ export function OrganizationMemberManager({ onNavigateToInvites }: OrganizationM
                                 )}
                                 <DropdownMenuLabel>App Roles</DropdownMenuLabel>
                                 <DropdownMenuItem onClick={() => handleToggleAppRole(member, "supervisor")}>
-                                  <UserCog className="w-4 h-4 mr-2 text-blue-600" />
+                                  <UserCog className="w-4 h-4 mr-2 text-role-supervisor" />
                                   {member.app_roles?.includes("supervisor") ? "Remove Supervisor" : "Assign Supervisor"}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => handleToggleAppRole(member, "operator")}>
-                                  <Users className="w-4 h-4 mr-2 text-green-600" />
+                                  <Users className="w-4 h-4 mr-2 text-role-operator" />
                                   {member.app_roles?.includes("operator") ? "Remove Operator" : "Assign Operator"}
                                 </DropdownMenuItem>
                                 {!isOwner && !isSelf && (

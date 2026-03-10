@@ -291,8 +291,8 @@ export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadD
               {crossSheetWarnings.length > 0 && (
                 <Card className="border-yellow-500/50">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-yellow-600 flex items-center gap-2">
-                      <AlertTriangle className="w-4 h-4" />
+                   <CardTitle className="text-sm font-medium text-warning flex items-center gap-2">
+                       <AlertTriangle className="w-4 h-4" />
                       Cross-Reference Warnings ({crossSheetWarnings.length})
                     </CardTitle>
                   </CardHeader>
@@ -300,7 +300,7 @@ export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadD
                     <ScrollArea className="h-24">
                       <ul className="text-xs space-y-1">
                         {crossSheetWarnings.map((warning, i) => (
-                          <li key={i} className="text-yellow-600">
+                          <li key={i} className="text-warning">
                             {warning.sheet} Row {warning.row}: {warning.message}
                           </li>
                         ))}
@@ -317,8 +317,8 @@ export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadD
               {hasData && (
                 <Card>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-green-500" />
+                     <CardTitle className="text-sm font-medium flex items-center gap-2">
+                       <CheckCircle2 className="w-4 h-4 text-status-ok" />
                       Data Preview
                     </CardTitle>
                   </CardHeader>
@@ -490,44 +490,44 @@ export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadD
 
           {/* Upload Complete */}
           {progress.stage === 'complete' && uploadResult && (
-            <Card className="border-green-500">
+             <Card className="border-status-ok">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-green-600 flex items-center gap-2">
+                <CardTitle className="text-sm font-medium text-status-ok flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4" />
                   Upload Complete!
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-5 gap-2">
-                  <div className="p-3 bg-green-500/10 rounded-lg text-center">
-                    <p className="text-lg font-bold text-green-600">{uploadResult.teamsCreated}</p>
-                    <p className="text-xs text-muted-foreground">Teams</p>
-                  </div>
-                  <div className="p-3 bg-green-500/10 rounded-lg text-center">
-                    <p className="text-lg font-bold text-green-600">{uploadResult.departmentsCreated}</p>
-                    <p className="text-xs text-muted-foreground">Departments</p>
-                  </div>
-                  <div className="p-3 bg-green-500/10 rounded-lg text-center">
-                    <p className="text-lg font-bold text-green-600">{uploadResult.stationsCreated}</p>
-                    <p className="text-xs text-muted-foreground">Stations</p>
-                  </div>
-                  <div className="p-3 bg-green-500/10 rounded-lg text-center">
-                    <p className="text-lg font-bold text-green-600">{uploadResult.usersAddedToOrg}</p>
-                    <p className="text-xs text-muted-foreground">Users Added</p>
-                  </div>
-                  <div className="p-3 bg-blue-500/10 rounded-lg text-center">
-                    <p className="text-lg font-bold text-blue-600">{uploadResult.inviteCodesCreated}</p>
-                    <p className="text-xs text-muted-foreground">Invite Codes</p>
-                  </div>
-                  <div className="p-3 bg-green-500/10 rounded-lg text-center">
-                    <p className="text-lg font-bold text-green-600">{uploadResult.workOrdersCreated}</p>
-                    <p className="text-xs text-muted-foreground">Work Orders</p>
+                   <div className="p-3 bg-status-ok/10 rounded-lg text-center">
+                     <p className="text-lg font-bold text-status-ok">{uploadResult.teamsCreated}</p>
+                     <p className="text-xs text-muted-foreground">Teams</p>
+                   </div>
+                   <div className="p-3 bg-status-ok/10 rounded-lg text-center">
+                     <p className="text-lg font-bold text-status-ok">{uploadResult.departmentsCreated}</p>
+                     <p className="text-xs text-muted-foreground">Departments</p>
+                   </div>
+                   <div className="p-3 bg-status-ok/10 rounded-lg text-center">
+                     <p className="text-lg font-bold text-status-ok">{uploadResult.stationsCreated}</p>
+                     <p className="text-xs text-muted-foreground">Stations</p>
+                   </div>
+                   <div className="p-3 bg-status-ok/10 rounded-lg text-center">
+                     <p className="text-lg font-bold text-status-ok">{uploadResult.usersAddedToOrg}</p>
+                     <p className="text-xs text-muted-foreground">Users Added</p>
+                   </div>
+                   <div className="p-3 bg-status-waiting/10 rounded-lg text-center">
+                     <p className="text-lg font-bold text-status-waiting">{uploadResult.inviteCodesCreated}</p>
+                     <p className="text-xs text-muted-foreground">Invite Codes</p>
+                   </div>
+                   <div className="p-3 bg-status-ok/10 rounded-lg text-center">
+                     <p className="text-lg font-bold text-status-ok">{uploadResult.workOrdersCreated}</p>
+                     <p className="text-xs text-muted-foreground">Work Orders</p>
                   </div>
                 </div>
 
                 {uploadResult.warnings.length > 0 && (
-                  <div className="p-3 bg-yellow-500/10 rounded-lg">
-                    <p className="text-sm font-medium text-yellow-600 flex items-center gap-2 mb-2">
+                   <div className="p-3 bg-warning/10 rounded-lg">
+                     <p className="text-sm font-medium text-warning flex items-center gap-2 mb-2">
                       <AlertTriangle className="w-4 h-4" />
                       Warnings ({uploadResult.warnings.length})
                     </p>

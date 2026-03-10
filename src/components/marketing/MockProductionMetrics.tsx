@@ -24,10 +24,10 @@ const stations = [
 ];
 
 const statusColor: Record<string, string> = {
-  Running: "bg-green-500",
-  Setup: "bg-yellow-500",
+  Running: "bg-status-ok",
+  Setup: "bg-status-warning",
   Idle: "bg-muted-foreground",
-  Down: "bg-red-500",
+  Down: "bg-status-critical",
 };
 
 export function MockProductionMetrics() {
@@ -54,13 +54,13 @@ export function MockProductionMetrics() {
                   </div>
                   <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
                     <span>{s.parts}/{s.target} parts</span>
-                    {s.scrap > 0 && <span className="text-red-400">{s.scrap} scrap</span>}
-                    {s.rework > 0 && <span className="text-yellow-400">{s.rework} rework</span>}
+                    {s.scrap > 0 && <span className="text-status-critical">{s.scrap} scrap</span>}
+                    {s.rework > 0 && <span className="text-status-warning">{s.rework} rework</span>}
                   </div>
                 </div>
                 <div className="h-2 rounded-full bg-muted/40 overflow-hidden">
                   <div
-                    className={`h-full rounded-full transition-all ${pct >= 80 ? "bg-green-500" : pct >= 50 ? "bg-primary" : pct > 0 ? "bg-yellow-500" : "bg-muted"}`}
+                    className={`h-full rounded-full transition-all ${pct >= 80 ? "bg-status-ok" : pct >= 50 ? "bg-primary" : pct > 0 ? "bg-status-warning" : "bg-muted"}`}
                     style={{ width: `${pct}%` }}
                   />
                 </div>
@@ -77,11 +77,11 @@ export function MockProductionMetrics() {
           </div>
           <div className="rounded-lg bg-muted/40 p-2 text-center border border-border">
             <span className="text-[10px] text-muted-foreground block">Scrap Rate</span>
-            <span className="font-bold text-red-400">2.9%</span>
+            <span className="font-bold text-status-critical">2.9%</span>
           </div>
           <div className="rounded-lg bg-muted/40 p-2 text-center border border-border">
             <span className="text-[10px] text-muted-foreground block">On Target</span>
-            <span className="font-bold text-green-400">1 of 4</span>
+            <span className="font-bold text-status-ok">1 of 4</span>
           </div>
         </div>
       </div>
