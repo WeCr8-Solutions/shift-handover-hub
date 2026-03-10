@@ -189,14 +189,14 @@ export function OperatorWorkflowPanel() {
           <>
             {/* Active Work Order */}
             {activeWorkOrder && (
-              <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/30">
+              <div className="p-3 rounded-lg bg-status-ok/10 border border-status-ok/30">
                 <div className="flex items-center justify-between mb-2">
-                  <Badge className="bg-green-600 text-white text-[10px]">
+                  <Badge className="bg-status-ok text-primary-foreground text-[10px]">
                     <Play className="w-2.5 h-2.5 mr-1" />
                     ACTIVE
                   </Badge>
                   {activeWorkOrder.started_at && (
-                    <span className="text-xs text-green-600 font-mono flex items-center gap-1">
+                    <span className="text-xs text-status-ok font-mono flex items-center gap-1">
                       <Timer className="w-3 h-3" />
                       {getElapsedTime(activeWorkOrder.started_at)}
                     </span>
