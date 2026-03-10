@@ -24,10 +24,10 @@ const stations = [
 ];
 
 const statusColor: Record<string, string> = {
-  Running: "bg-green-500",
-  Setup: "bg-yellow-500",
+  Running: "bg-status-ok",
+  Setup: "bg-status-warning",
   Idle: "bg-muted-foreground",
-  Down: "bg-red-500",
+  Down: "bg-status-critical",
 };
 
 export function MockProductionMetrics() {
