@@ -48,7 +48,7 @@ export function VisitorSurveyModal() {
   const shouldShow = useCallback(() => {
     if (user) return false;
     if (localStorage.getItem(SURVEY_COMPLETED_KEY)) return false;
-    if (localStorage.getItem(SURVEY_DISMISSED_KEY)) return false;
+    if (sessionStorage.getItem(SURVEY_DISMISSED_KEY)) return false;
     return true;
   }, [user]);
 
