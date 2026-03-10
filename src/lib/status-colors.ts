@@ -438,4 +438,3 @@ export function getPriorityContainerStyles(priorities: string[], fallbackToken =
   if (priorities.includes("high"))     return "border-priority-high bg-priority-high/10";
   return `border-${fallbackToken} bg-${fallbackToken}/10`;
 }
-}
