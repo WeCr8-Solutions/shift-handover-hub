@@ -804,12 +804,12 @@ function SuiteCard({ suite }: { suite: RoleScopeTestSuite }) {
               <div className="flex-1 min-w-0">
                 <span className="text-muted-foreground block">{test.name}</span>
                 {test.details && (
-                  <span className="text-xs text-green-600 dark:text-green-400 block mt-0.5">
+                  <span className="text-xs text-status-ok block mt-0.5">
                     ✓ {test.details}
                   </span>
                 )}
                 {test.error && (
-                  <span className="text-xs text-red-600 dark:text-red-400 block mt-0.5">
+                  <span className="text-xs text-status-critical block mt-0.5">
                     ✗ {test.error}
                   </span>
                 )}
