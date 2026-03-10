@@ -37,7 +37,7 @@ function StepRow({ step, isCurrent, isComplete, isStepCompleted }: StepRowProps)
   return (
     <div className={`flex items-center gap-3 rounded-md p-2 ${isCurrent ? "bg-primary/5" : ""}`}>
       {completed ? (
-        <CheckCircle2 className="h-4 w-4 shrink-0 text-green-500" />
+        <CheckCircle2 className="h-4 w-4 shrink-0 text-status-ok" />
       ) : (
         <Circle className={`h-4 w-4 shrink-0 ${isCurrent ? "text-primary" : "text-muted-foreground/40"}`} />
       )}
