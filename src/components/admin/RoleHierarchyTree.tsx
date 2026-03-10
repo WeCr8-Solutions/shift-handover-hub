@@ -97,8 +97,8 @@ function RoleCard({ role }: { role: RoleDefinition }) {
               </div>
               <ul className="text-xs space-y-0.5">
                 {role.restrictions.map((res, i) => (
-                  <li key={i} className="flex items-start gap-1 text-amber-600 dark:text-amber-400">
-                    <span className="w-1 h-1 rounded-full bg-amber-500 shrink-0 mt-1.5" />
+                  <li key={i} className="flex items-start gap-1 text-warning">
+                    <span className="w-1 h-1 rounded-full bg-warning shrink-0 mt-1.5" />
                     {res}
                   </li>
                 ))}
