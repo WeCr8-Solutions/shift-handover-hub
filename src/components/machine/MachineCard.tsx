@@ -82,7 +82,7 @@ export function MachineCard({ machine, compact = false, onClick }: MachineCardPr
               className={cn(
                 "text-[10px] px-1.5 py-0 font-semibold uppercase tracking-wide",
                 stateConfig.colorClass,
-                isAlarming && "animate-pulse border-red-500/50",
+                isAlarming && "animate-pulse border-status-critical/50",
               )}
             >
               {isOffline ? "OFFLINE" : stateConfig.label}
