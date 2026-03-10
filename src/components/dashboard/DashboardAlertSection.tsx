@@ -3,13 +3,8 @@ import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { SmartAlertPanel } from "@/components/alerts/SmartAlertPanel";
 import { cn } from "@/lib/utils";
-import {
-  ClipboardList,
-  Wrench,
-  ChevronDown,
-  ChevronUp,
-  ArrowRight,
-} from "lucide-react";
+import { getSeverityContainerStyles, getSeverityDotColor } from "@/lib/status-colors";
+import { ClipboardList, Wrench, ChevronDown, ChevronUp, ArrowRight } from "lucide-react";
 import type { SmartAlert } from "@/hooks/useSmartAlerts";
 
 interface AttentionItem {
@@ -33,30 +28,21 @@ interface DashboardAlertSectionProps {
 }
 
 export function DashboardAlertSection({
-  woAlerts,
-  stationAlerts,
-  attentionItems,
-  smartAlertsLoading,
-  woAlertsOpen,
-  onWoAlertsOpenChange,
-  stationAlertsOpen,
-  onStationAlertsOpenChange,
-  onViewStation,
+  woAlerts, stationAlerts, attentionItems, smartAlertsLoading,
+  woAlertsOpen, onWoAlertsOpenChange, stationAlertsOpen, onStationAlertsOpenChange, onViewStation,
 }: DashboardAlertSectionProps) {
   const handleAttentionItemClick = useCallback(
-    (item: AttentionItem) => {
-      onViewStation?.(item.stationId, item.stationName);
-    },
+    (item: AttentionItem) => { onViewStation?.(item.stationId, item.stationName); },
     [onViewStation],
   );
 
-  if (woAlerts.length === 0 && stationAlerts.length === 0 && attentionItems.length === 0) {
-    return null;
-  }
+  if (woAlerts.length === 0 && stationAlerts.length === 0 && attentionItems.length === 0) return null;
+
+  const Chevron = ({ open }: { open: boolean }) =>
+    open ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      {/* Work Order Alerts */}
       {woAlerts.length > 0 && (
         <Collapsible open={woAlertsOpen} onOpenChange={onWoAlertsOpenChange}>
           <div className="bg-card border border-border rounded-lg overflow-hidden">
@@ -67,22 +53,16 @@ export function DashboardAlertSection({
                   <span className="font-medium text-sm">Work Order Alerts</span>
                   <Badge variant="destructive" className="text-[9px] px-1.5 py-0">{woAlerts.length}</Badge>
                 </div>
-                {woAlertsOpen ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+                <Chevron open={woAlertsOpen} />
               </button>
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <SmartAlertPanel
-                alerts={woAlerts}
-                loading={smartAlertsLoading}
-                variant="sidebar"
-                maxVisible={5}
-              />
+              <SmartAlertPanel alerts={woAlerts} loading={smartAlertsLoading} variant="sidebar" maxVisible={5} />
             </CollapsibleContent>
           </div>
         </Collapsible>
       )}
 
-      {/* Station / Machine Alerts */}
       {(stationAlerts.length > 0 || attentionItems.length > 0) && (
         <Collapsible open={stationAlertsOpen} onOpenChange={onStationAlertsOpenChange}>
           <div className="bg-card border border-border rounded-lg overflow-hidden">
@@ -93,43 +73,25 @@ export function DashboardAlertSection({
                   <span className="font-medium text-sm">Station Alerts</span>
                   <Badge variant="destructive" className="text-[9px] px-1.5 py-0">{stationAlerts.length + attentionItems.length}</Badge>
                 </div>
-                {stationAlertsOpen ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+                <Chevron open={stationAlertsOpen} />
               </button>
             </CollapsibleTrigger>
             <CollapsibleContent>
-              {/* Attention items (machine down, waiting, idle) */}
               {attentionItems.length > 0 && (
                 <div className="p-3 space-y-1.5">
                   {attentionItems.map((item, i) => (
                     <div
                       key={i}
                       className={cn(
-                        "flex items-center gap-3 p-2 rounded-md border cursor-pointer transition-colors",
-                        item.severity === "critical"
-                          ? "bg-destructive/10 border-destructive/30 hover:bg-destructive/20"
-                          : item.severity === "warning"
-                          ? "bg-[hsl(var(--warning)/0.1)] border-[hsl(var(--warning)/0.3)] hover:bg-[hsl(var(--warning)/0.2)]"
-                          : "bg-muted/50 border-border hover:bg-muted",
+                        "flex items-center gap-3 p-2 rounded-md border cursor-pointer transition-colors hover:opacity-80",
+                        getSeverityContainerStyles(item.severity),
                       )}
                       onClick={() => handleAttentionItemClick(item)}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          handleAttentionItemClick(item);
-                        }
-                      }}
+                      role="button" tabIndex={0}
+                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleAttentionItemClick(item); } }}
                       aria-label={`View ${item.stationName} details`}
                     >
-                      <div
-                        className={cn(
-                          "w-2 h-2 rounded-full flex-shrink-0",
-                          item.severity === "critical" ? "bg-destructive"
-                            : item.severity === "warning" ? "bg-[hsl(var(--warning))]"
-                            : "bg-muted-foreground/50",
-                        )}
-                      />
+                      <div className={cn("w-2 h-2 rounded-full flex-shrink-0", getSeverityDotColor(item.severity))} />
                       <div className="flex-1 min-w-0">
                         <span className="text-sm font-medium">{item.label}</span>
                         <p className="text-xs text-muted-foreground truncate">{item.detail}</p>
@@ -139,14 +101,8 @@ export function DashboardAlertSection({
                   ))}
                 </div>
               )}
-              {/* Smart station alerts */}
               {stationAlerts.length > 0 && (
-                <SmartAlertPanel
-                  alerts={stationAlerts}
-                  loading={smartAlertsLoading}
-                  variant="sidebar"
-                  maxVisible={5}
-                />
+                <SmartAlertPanel alerts={stationAlerts} loading={smartAlertsLoading} variant="sidebar" maxVisible={5} />
               )}
             </CollapsibleContent>
           </div>

@@ -358,3 +358,84 @@ export function getTestResultRowStyle(failed: boolean): string {
     ? "bg-status-critical/5 border-status-critical/20 dark:bg-status-critical/10 dark:border-status-critical/30"
     : "bg-status-ok/5 border-status-ok/20 dark:bg-status-ok/10 dark:border-status-ok/30";
 }
+
+/* ── Smart Alert severity styles ── */
+
+export type AlertSeverity = "critical" | "warning" | "info";
+
+/** Maps a severity level to bg / border / text token classes */
+export function getAlertSeverityStyles(severity: AlertSeverity, token: string): {
+  bg: string; border: string; text: string; badgeText: string; badgeBorder: string;
+} {
+  const intensities = {
+    critical: { bgOp: "/10", borderOp: "/30", badgeBorderOp: "/50" },
+    warning:  { bgOp: "/10", borderOp: "/30", badgeBorderOp: "/50" },
+    info:     { bgOp: "/5",  borderOp: "/20", badgeBorderOp: "/30" },
+  };
+  const i = intensities[severity];
+  return {
+    bg: `bg-${token}${i.bgOp}`,
+    border: `border-${token}${i.borderOp}`,
+    text: `text-${token}`,
+    badgeText: `text-${token}`,
+    badgeBorder: `border-${token}${i.badgeBorderOp}`,
+  };
+}
+
+/** Maps smart alert type → base token and icon name */
+export const ALERT_TYPE_TOKENS: Record<string, { token: string; tokenCritical?: string }> = {
+  overdue:               { token: "status-critical" },
+  on_hold:               { token: "warning" },
+  stale:                 { token: "priority-urgent", tokenCritical: "status-critical" },
+  over_time:             { token: "warning", tokenCritical: "status-critical" },
+  high_priority_waiting: { token: "status-critical" },
+  no_operator:           { token: "role-org-owner" },
+  bottleneck:            { token: "priority-urgent" },
+  unassigned:            { token: "muted-foreground" },
+  no_routing:            { token: "muted-foreground" },
+};
+
+/** Get full style set for an alert type + severity combo */
+export function getSmartAlertStyles(type: string, severity: AlertSeverity) {
+  const cfg = ALERT_TYPE_TOKENS[type] || { token: "muted-foreground" };
+  const token = severity === "critical" && cfg.tokenCritical ? cfg.tokenCritical : cfg.token;
+  // For neutral types (unassigned, no_routing), use muted styles
+  if (token === "muted-foreground") {
+    const isC = severity === "critical";
+    return {
+      bg: isC ? "bg-muted/80" : severity === "warning" ? "bg-muted/50" : "bg-muted/30",
+      border: "border-border",
+      text: isC ? "text-foreground" : "text-muted-foreground",
+      badgeText: "text-muted-foreground",
+      badgeBorder: "border-border",
+    };
+  }
+  return getAlertSeverityStyles(severity, token);
+}
+
+/** Severity-aware container: bg + border for cards/sections */
+export function getSeverityContainerStyles(severity: "critical" | "warning" | "info"): string {
+  switch (severity) {
+    case "critical": return "bg-destructive/10 border-destructive/30";
+    case "warning":  return "bg-warning/10 border-warning/30";
+    case "info":     return "bg-muted/50 border-border";
+  }
+}
+
+/** Severity dot color */
+export function getSeverityDotColor(severity: "critical" | "warning" | "info"): string {
+  switch (severity) {
+    case "critical": return "bg-destructive";
+    case "warning":  return "bg-warning";
+    case "info":     return "bg-muted-foreground/50";
+  }
+}
+
+/** Priority-aware container: border + bg based on highest priority in a list */
+export function getPriorityContainerStyles(priorities: string[], fallbackToken = "info"): string {
+  if (priorities.includes("critical")) return "border-priority-critical bg-priority-critical/10";
+  if (priorities.includes("urgent"))   return "border-priority-urgent bg-priority-urgent/10";
+  if (priorities.includes("high"))     return "border-priority-high bg-priority-high/10";
+  return `border-${fallbackToken} bg-${fallbackToken}/10`;
+}
+}
