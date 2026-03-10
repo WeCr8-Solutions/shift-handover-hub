@@ -228,9 +228,9 @@ export function ProductionAnalytics({
         </div>
 
         <div className="space-y-2 min-w-0">
-          <ToggleChipGroup items={SHIFT_OPTIONS} value={shiftFilter}
+          <ToggleChipGroup<ShiftFilter> items={SHIFT_OPTIONS} value={shiftFilter}
             onChange={setShiftFilter} ariaLabel="Shift filter" />
-          <ToggleChipGroup items={CHART_VIEW_OPTIONS} value={chartView}
+          <ToggleChipGroup<ChartView> items={CHART_VIEW_OPTIONS} value={chartView}
             onChange={setChartView} ariaLabel="Chart view" showIcon />
         </div>
       </div>

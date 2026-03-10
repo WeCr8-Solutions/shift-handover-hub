@@ -108,7 +108,7 @@ export function StatChip({ icon: Icon, dotColor, label, value, valueClass }: Sta
 // ─── Toggle Chip Group ─────────────────────────────────────
 
 interface ToggleChipGroupProps<T extends string> {
-  items: readonly { key: T; label: string; icon?: LucideIcon }[];
+  items: readonly { readonly key: T; readonly label: string; readonly icon?: LucideIcon }[];
   value: T;
   onChange: (key: T) => void;
   ariaLabel: string;
