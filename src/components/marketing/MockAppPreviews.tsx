@@ -37,7 +37,7 @@ export function MockHandoffForm() {
         </div>
 
         <div className="flex items-center gap-3">
-          <StatusPill color="bg-green-500" label="Running" />
+          <StatusPill color="bg-status-ok" label="Running" />
           <span className="text-muted-foreground">Op 20 — Finish Mill</span>
         </div>
 
