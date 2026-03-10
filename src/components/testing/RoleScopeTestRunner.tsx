@@ -774,7 +774,7 @@ function SuiteCard({ suite }: { suite: RoleScopeTestSuite }) {
         </div>
         <div className="flex items-center gap-2">
           {suite.warnings > 0 && (
-            <Badge variant="outline" className="text-xs text-amber-600 border-amber-300">
+            <Badge variant="outline" className="text-xs text-warning border-warning/30">
               {suite.warnings} warning{suite.warnings > 1 ? "s" : ""}
             </Badge>
           )}
