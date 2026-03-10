@@ -58,10 +58,10 @@ export function MockUtilizationChart() {
 
         {/* Legend */}
         <div className="flex items-center gap-4 text-[10px] text-muted-foreground pt-1">
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-green-500" /> Run Time</span>
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-yellow-500" /> Setup</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-status-ok" /> Run Time</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-status-warning" /> Setup</span>
           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-muted-foreground/50" /> Idle</span>
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-red-500" /> Down</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-status-critical" /> Down</span>
         </div>
 
         {/* Summary */}
