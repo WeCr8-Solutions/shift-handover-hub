@@ -66,10 +66,10 @@ export function MockHandoffForm() {
 /* ── 2. MockStationDashboard ──────────────────────────── */
 
 const stations = [
-  { id: "CNC-01", status: "Running", color: "bg-green-500", operator: "M. Torres", job: "WO-1847", parts: "142/200" },
-  { id: "LATHE-02", status: "Setup", color: "bg-yellow-500", operator: "J. Kim", job: "WO-1852", parts: "0/80" },
+  { id: "CNC-01", status: "Running", color: "bg-status-ok", operator: "M. Torres", job: "WO-1847", parts: "142/200" },
+  { id: "LATHE-02", status: "Setup", color: "bg-status-warning", operator: "J. Kim", job: "WO-1852", parts: "0/80" },
   { id: "MILL-03", status: "Idle", color: "bg-muted-foreground", operator: "—", job: "—", parts: "—" },
-  { id: "CNC-04", status: "Down", color: "bg-red-500", operator: "R. Patel", job: "WO-1839", parts: "67/150" },
+  { id: "CNC-04", status: "Down", color: "bg-status-critical", operator: "R. Patel", job: "WO-1839", parts: "67/150" },
 ];
 
 export function MockStationDashboard() {
