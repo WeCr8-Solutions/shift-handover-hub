@@ -54,8 +54,8 @@ export function MockProductionMetrics() {
                   </div>
                   <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
                     <span>{s.parts}/{s.target} parts</span>
-                    {s.scrap > 0 && <span className="text-red-400">{s.scrap} scrap</span>}
-                    {s.rework > 0 && <span className="text-yellow-400">{s.rework} rework</span>}
+                    {s.scrap > 0 && <span className="text-status-critical">{s.scrap} scrap</span>}
+                    {s.rework > 0 && <span className="text-status-warning">{s.rework} rework</span>}
                   </div>
                 </div>
                 <div className="h-2 rounded-full bg-muted/40 overflow-hidden">
