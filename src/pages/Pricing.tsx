@@ -129,7 +129,7 @@ export default function Pricing() {
                   {/* Current Plan Badge */}
                   {isCurrentPlan && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <Badge className="bg-green-500 text-white px-4 py-1 gap-1">
+                       <Badge className="bg-status-ok text-primary-foreground px-4 py-1 gap-1">
                         <Crown className="w-3 h-3" />
                         Your Plan
                       </Badge>
