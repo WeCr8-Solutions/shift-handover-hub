@@ -262,7 +262,7 @@ export function OperatorWorkflowPanel() {
                         key={wo.id}
                         className={cn(
                           "flex items-center gap-2 p-2 rounded border cursor-pointer hover:bg-muted/50 transition-colors",
-                          wo.status === "on_hold" && "bg-amber-500/5 border-amber-500/30"
+                          wo.status === "on_hold" && "bg-warning/5 border-warning/30"
                         )}
                         onClick={() => navigate(`/queue?item=${wo.id}`)}
                       >
