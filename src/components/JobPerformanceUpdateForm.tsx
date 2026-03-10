@@ -31,18 +31,18 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 const updateTypes: { value: UpdateType; label: string; icon: React.ComponentType<{ className?: string }>; color: string }[] = [
-  { value: "setup_change", label: "Setup Change", icon: Settings, color: "bg-blue-500/10 text-blue-500 border-blue-500/30" },
-  { value: "adjustment", label: "Adjustment", icon: Wrench, color: "bg-amber-500/10 text-amber-500 border-amber-500/30" },
-  { value: "improvement", label: "Improvement", icon: Lightbulb, color: "bg-emerald-500/10 text-emerald-500 border-emerald-500/30" },
-  { value: "issue", label: "Issue/Problem", icon: AlertTriangle, color: "bg-red-500/10 text-red-500 border-red-500/30" },
-  { value: "other", label: "Other", icon: MoreHorizontal, color: "bg-gray-500/10 text-gray-500 border-gray-500/30" },
+  { value: "setup_change", label: "Setup Change", icon: Settings, color: "bg-status-waiting/10 text-status-waiting border-status-waiting/30" },
+  { value: "adjustment", label: "Adjustment", icon: Wrench, color: "bg-warning/10 text-warning border-warning/30" },
+  { value: "improvement", label: "Improvement", icon: Lightbulb, color: "bg-status-ok/10 text-status-ok border-status-ok/30" },
+  { value: "issue", label: "Issue/Problem", icon: AlertTriangle, color: "bg-status-critical/10 text-status-critical border-status-critical/30" },
+  { value: "other", label: "Other", icon: MoreHorizontal, color: "bg-muted text-muted-foreground border-border" },
 ];
 
 const priorities: { value: Priority; label: string; color: string }[] = [
-  { value: "low", label: "Low", color: "bg-gray-500/10 text-gray-500" },
-  { value: "normal", label: "Normal", color: "bg-blue-500/10 text-blue-500" },
-  { value: "high", label: "High", color: "bg-amber-500/10 text-amber-500" },
-  { value: "critical", label: "Critical", color: "bg-red-500/10 text-red-500" },
+  { value: "low", label: "Low", color: "bg-muted text-muted-foreground" },
+  { value: "normal", label: "Normal", color: "bg-status-waiting/10 text-status-waiting" },
+  { value: "high", label: "High", color: "bg-warning/10 text-warning" },
+  { value: "critical", label: "Critical", color: "bg-status-critical/10 text-status-critical" },
 ];
 
 const impactCheckboxes = [

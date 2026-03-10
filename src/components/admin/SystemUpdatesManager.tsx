@@ -33,15 +33,15 @@ const statusOptions = ["live", "scheduled", "investigating", "resolved", "deprec
 const impactOptions = ["low", "medium", "high", "critical"];
 
 const impactColors: Record<string, string> = {
-  low: "text-green-600", medium: "text-yellow-600", high: "text-orange-600", critical: "text-red-600",
+  low: "text-status-ok", medium: "text-warning", high: "text-priority-urgent", critical: "text-status-critical",
 };
 
 const categoryColors: Record<string, string> = {
-  feature: "bg-blue-500/10 text-blue-600 border-blue-300",
-  improvement: "bg-amber-500/10 text-amber-600 border-amber-300",
-  bug_fix: "bg-red-500/10 text-red-600 border-red-300",
-  system_notice: "bg-orange-500/10 text-orange-600 border-orange-300",
-  security: "bg-purple-500/10 text-purple-600 border-purple-300",
+  feature: "bg-status-waiting/10 text-status-waiting border-status-waiting/30",
+  improvement: "bg-warning/10 text-warning border-warning/30",
+  bug_fix: "bg-status-critical/10 text-status-critical border-status-critical/30",
+  system_notice: "bg-priority-urgent/10 text-priority-urgent border-priority-urgent/30",
+  security: "bg-role-org-owner/10 text-role-org-owner border-role-org-owner/30",
   maintenance: "bg-muted text-muted-foreground border-border",
 };
 

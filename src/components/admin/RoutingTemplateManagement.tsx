@@ -74,14 +74,14 @@ interface RoutingTemplate {
 }
 
 const OPERATION_TYPES = [
-  { value: 'quote', label: 'Quoting/Estimating', icon: Factory, color: 'bg-slate-500' },
-  { value: 'engineering', label: 'Engineering/Programming', icon: Factory, color: 'bg-indigo-500' },
-  { value: 'purchasing', label: 'Purchasing/Procurement', icon: Factory, color: 'bg-cyan-500' },
-  { value: 'receiving', label: 'Receiving/Material Handling', icon: Factory, color: 'bg-teal-500' },
-  { value: 'internal', label: 'Internal Process', icon: Factory, color: 'bg-blue-500' },
-  { value: 'outside_processing', label: 'Outside Processing', icon: Truck, color: 'bg-amber-500' },
-  { value: 'inspection', label: 'Inspection/QC', icon: ClipboardCheck, color: 'bg-purple-500' },
-  { value: 'shipping', label: 'Shipping', icon: PackageCheck, color: 'bg-green-500' },
+  { value: 'quote', label: 'Quoting/Estimating', icon: Factory, color: 'bg-muted' },
+  { value: 'engineering', label: 'Engineering/Programming', icon: Factory, color: 'bg-role-org-admin' },
+  { value: 'purchasing', label: 'Purchasing/Procurement', icon: Factory, color: 'bg-info' },
+  { value: 'receiving', label: 'Receiving/Material Handling', icon: Factory, color: 'bg-info' },
+  { value: 'internal', label: 'Internal Process', icon: Factory, color: 'bg-status-waiting' },
+  { value: 'outside_processing', label: 'Outside Processing', icon: Truck, color: 'bg-warning' },
+  { value: 'inspection', label: 'Inspection/QC', icon: ClipboardCheck, color: 'bg-role-org-owner' },
+  { value: 'shipping', label: 'Shipping', icon: PackageCheck, color: 'bg-status-ok' },
 ];
 
 const WORK_CENTER_TYPES = [
