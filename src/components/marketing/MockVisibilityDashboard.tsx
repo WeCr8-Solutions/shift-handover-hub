@@ -32,9 +32,9 @@ const liveFeed = [
 ];
 
 const typeColors: Record<string, string> = {
-  success: "bg-green-500",
-  error: "bg-red-500",
-  info: "bg-blue-500",
+  success: "bg-status-ok",
+  error: "bg-status-critical",
+  info: "bg-status-waiting",
 };
 
 export function MockVisibilityDashboard() {
