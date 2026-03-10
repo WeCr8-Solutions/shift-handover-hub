@@ -87,7 +87,7 @@ export function MockShiftTimeline() {
         <div className="space-y-3">
           {handoffs.map((h, i) => (
             <div key={i} className={`p-3 rounded-lg border ${
-              h.status === "flagged" ? "bg-red-500/5 border-red-500/20" :
+              h.status === "flagged" ? "bg-status-critical/5 border-status-critical/20" :
               h.status === "pending" ? "bg-muted/20 border-border/50" :
               "bg-muted/30 border-border"
             }`}>
