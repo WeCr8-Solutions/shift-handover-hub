@@ -81,7 +81,7 @@ function RoleCard({ role }: { role: RoleDefinition }) {
             <ul className="text-xs space-y-0.5">
               {role.capabilities.map((cap, i) => (
                 <li key={i} className="flex items-start gap-1">
-                  <span className="w-1 h-1 rounded-full bg-green-500 shrink-0 mt-1.5" />
+                  <span className="w-1 h-1 rounded-full bg-status-ok shrink-0 mt-1.5" />
                   {cap}
                 </li>
               ))}
