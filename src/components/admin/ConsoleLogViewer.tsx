@@ -154,14 +154,14 @@ function LogEntry({ entry }: { entry: ConsoleLogEntry }) {
   const [stackOpen, setStackOpen] = useState(false);
 
   return (
-    <div className={`px-3 py-1.5 ${LEVEL_STYLES[entry.level]}`}>
+    <div className={`px-3 py-1.5 ${LOG_LEVEL_STYLES[entry.level]}`}>
       <div className="flex items-start gap-2">
         <span className="text-muted-foreground/60 shrink-0 select-none">
           {entry.timestamp ? formatTimestamp(entry.timestamp) : "—"}
         </span>
         <Badge
           variant="outline"
-          className={`shrink-0 text-[10px] px-1 py-0 leading-4 uppercase ${LEVEL_BADGE_STYLES[entry.level]}`}
+          className={`shrink-0 text-[10px] px-1 py-0 leading-4 uppercase ${LOG_LEVEL_BADGE_STYLES[entry.level]}`}
         >
           {entry.level}
         </Badge>

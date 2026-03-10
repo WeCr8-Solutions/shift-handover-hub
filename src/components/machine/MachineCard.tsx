@@ -131,7 +131,7 @@ export function MachineCard({ machine, compact = false, onClick }: MachineCardPr
         {/* Alarm codes */}
         {hasAlarms && (
           <div className="mt-2 flex items-center gap-1.5 flex-wrap">
-            <AlertTriangle className="w-3 h-3 text-red-500 shrink-0" />
+            <AlertTriangle className="w-3 h-3 text-status-critical shrink-0" />
             {machine.activeAlarmCodes.map((code) => (
               <Badge
                 key={code}

@@ -278,7 +278,7 @@ export function OperatorWorkflowPanel() {
                               {wo.work_order || wo.title}
                             </span>
                             {wo.status === "on_hold" && (
-                              <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 text-amber-600 border-amber-500/30">
+                              <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 text-warning border-warning/30">
                                 <Pause className="w-2 h-2 mr-0.5" />
                                 Hold
                               </Badge>

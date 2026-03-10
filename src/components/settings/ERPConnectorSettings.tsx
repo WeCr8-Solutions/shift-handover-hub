@@ -745,7 +745,7 @@ export function ERPConnectorSettings() {
                         {log.records_fetched ?? 0} fetched · {log.records_created ?? 0} new · {log.records_updated ?? 0}{" "}
                         updated
                         {(log.errors_count ?? 0) > 0 && (
-                          <span className="ml-1 text-red-500">· {log.errors_count} errors</span>
+                          <span className="ml-1 text-status-critical">· {log.errors_count} errors</span>
                         )}
                         {log.duration_ms != null && (
                           <span className="ml-1">· {(log.duration_ms / 1000).toFixed(1)}s</span>

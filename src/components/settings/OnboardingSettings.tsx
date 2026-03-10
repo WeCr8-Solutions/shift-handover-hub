@@ -166,9 +166,9 @@ export function OnboardingSettings() {
                 className="flex items-center gap-3 rounded-lg border bg-card p-3 transition-colors hover:bg-accent/50"
               >
                 {completed ? (
-                  <CheckCircle2 className="h-5 w-5 shrink-0 text-green-500" />
+                  <CheckCircle2 className="h-5 w-5 shrink-0 text-status-ok" />
                 ) : (
-                  <Star className="h-5 w-5 shrink-0 text-amber-500/60" />
+                  <Star className="h-5 w-5 shrink-0 text-warning/60" />
                 )}
 
                 <div className="min-w-0 flex-1">
