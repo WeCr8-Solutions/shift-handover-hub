@@ -24,10 +24,11 @@ export default defineConfig(({ mode }) => ({
       "react",
       "react-dom",
       "react/jsx-runtime",
+      "react/jsx-dev-runtime",
       "@tanstack/react-query",
     ],
   },
   optimizeDeps: {
-    include: ["@tanstack/react-query"],
+    include: ["react", "react-dom", "react/jsx-runtime", "@tanstack/react-query"],
   },
 }));
