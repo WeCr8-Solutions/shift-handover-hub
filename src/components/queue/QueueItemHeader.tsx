@@ -5,26 +5,14 @@ import { Station } from "@/hooks/useStations";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { Clock, FileText, Package, User } from "lucide-react";
+import { getPriorityBadgeColor, getQueueStatusBadgeColor } from "@/lib/status-colors";
 
 export function getPriorityColor(priority: QueuePriority): string {
-  switch (priority) {
-    case "critical": return "bg-red-500 text-white";
-    case "urgent": return "bg-orange-500 text-white";
-    case "high": return "bg-yellow-500 text-white";
-    case "normal": return "bg-blue-500 text-white";
-    case "low": return "bg-gray-400 text-white";
-  }
+  return getPriorityBadgeColor(priority);
 }
 
 export function getStatusColor(status: QueueStatus): string {
-  switch (status) {
-    case "pending": return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200";
-    case "queued": return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
-    case "in_progress": return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
-    case "on_hold": return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200";
-    case "completed": return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
-    case "cancelled": return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
-  }
+  return getQueueStatusBadgeColor(status);
 }
 
 interface QueueItemHeaderProps {

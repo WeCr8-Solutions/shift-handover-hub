@@ -70,22 +70,22 @@ interface WorkOrderAlertTileProps {
 
 function getPriorityConfig(priority: QueuePriority) {
   switch (priority) {
-    case "critical": return { bg: "bg-red-500", text: "text-red-600", border: "border-red-500/50" };
-    case "urgent": return { bg: "bg-orange-500", text: "text-orange-600", border: "border-orange-500/50" };
-    case "high": return { bg: "bg-amber-500", text: "text-amber-600", border: "border-amber-500/50" };
-    case "normal": return { bg: "bg-blue-500", text: "text-blue-500", border: "border-blue-500/50" };
-    case "low": return { bg: "bg-muted", text: "text-muted-foreground", border: "border-border" };
+    case "critical": return { bg: "bg-priority-critical",  text: "text-status-critical",   border: "border-status-critical/50" };
+    case "urgent":   return { bg: "bg-priority-urgent",    text: "text-priority-urgent",    border: "border-priority-urgent/50" };
+    case "high":     return { bg: "bg-priority-high",      text: "text-warning",            border: "border-warning/50" };
+    case "normal":   return { bg: "bg-status-waiting",     text: "text-status-waiting",     border: "border-status-waiting/50" };
+    case "low":      return { bg: "bg-muted",              text: "text-muted-foreground",   border: "border-border" };
   }
 }
 
 function getStatusConfig(status: QueueStatus) {
   switch (status) {
-    case "in_progress": return { label: "In Progress", icon: Play, color: "text-green-600", bg: "bg-green-500/10", border: "border-green-500/30" };
-    case "on_hold": return { label: "On Hold", icon: Pause, color: "text-amber-600", bg: "bg-amber-500/10", border: "border-amber-500/30" };
+    case "in_progress": return { label: "In Progress", icon: Play, color: "text-status-ok", bg: "bg-status-ok/10", border: "border-status-ok/30" };
+    case "on_hold": return { label: "On Hold", icon: Pause, color: "text-warning", bg: "bg-warning/10", border: "border-warning/30" };
     case "pending": return { label: "Pending", icon: Clock, color: "text-muted-foreground", bg: "bg-muted/50", border: "border-border" };
-    case "queued": return { label: "Queued", icon: Circle, color: "text-purple-600", bg: "bg-purple-500/10", border: "border-purple-500/30" };
-    case "completed": return { label: "Completed", icon: CheckCircle2, color: "text-green-600", bg: "bg-green-500/10", border: "border-green-500/30" };
-    case "cancelled": return { label: "Cancelled", icon: XCircle, color: "text-red-600", bg: "bg-red-500/10", border: "border-red-500/30" };
+    case "queued": return { label: "Queued", icon: Circle, color: "text-role-org-owner", bg: "bg-role-org-owner/10", border: "border-role-org-owner/30" };
+    case "completed": return { label: "Completed", icon: CheckCircle2, color: "text-status-ok", bg: "bg-status-ok/10", border: "border-status-ok/30" };
+    case "cancelled": return { label: "Cancelled", icon: XCircle, color: "text-status-critical", bg: "bg-status-critical/10", border: "border-status-critical/30" };
   }
 }
 

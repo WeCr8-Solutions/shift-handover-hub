@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { QueueItem, QueuePriority } from "@/hooks/useQueue";
 import { cn } from "@/lib/utils";
+import { getPriorityBadgeColor, getQueueStatusBorderColor } from "@/lib/status-colors";
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, startOfMonth, endOfMonth, addMinutes } from "date-fns";
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, Target, Play, CheckCircle2 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -27,9 +28,9 @@ interface CalendarEntry {
 const DATE_TYPE_LABELS: Record<DateType, { label: string; icon: typeof CalendarIcon; className: string }> = {
   due: { label: "Due", icon: Target, className: "text-destructive" },
   scheduled_start: { label: "Sched. Start", icon: Play, className: "text-primary" },
-  scheduled_end: { label: "Sched. End", icon: CheckCircle2, className: "text-green-600" },
-  started: { label: "Started", icon: Play, className: "text-blue-500" },
-  est_complete: { label: "Est. Complete", icon: Clock, className: "text-amber-500" },
+  scheduled_end: { label: "Sched. End", icon: CheckCircle2, className: "text-status-ok" },
+  started: { label: "Started", icon: Play, className: "text-status-waiting" },
+  est_complete: { label: "Est. Complete", icon: Clock, className: "text-warning" },
 };
 
 function getEntriesForItems(items: QueueItem[]): CalendarEntry[] {
@@ -57,35 +58,11 @@ function getEntriesForItems(items: QueueItem[]): CalendarEntry[] {
 }
 
 function getPriorityColor(priority: QueuePriority): string {
-  switch (priority) {
-    case "critical":
-      return "bg-red-500 text-white";
-    case "urgent":
-      return "bg-orange-500 text-white";
-    case "high":
-      return "bg-yellow-500 text-white";
-    case "normal":
-      return "bg-blue-500 text-white";
-    case "low":
-      return "bg-gray-400 text-white";
-  }
+  return getPriorityBadgeColor(priority);
 }
 
 function getStatusColor(status: string): string {
-  switch (status) {
-    case "pending":
-      return "border-l-gray-400";
-    case "queued":
-      return "border-l-yellow-400";
-    case "in_progress":
-      return "border-l-blue-400";
-    case "on_hold":
-      return "border-l-orange-400";
-    case "completed":
-      return "border-l-green-400";
-    default:
-      return "border-l-gray-400";
-  }
+  return getQueueStatusBorderColor(status);
 }
 
 function CalendarEntryCard({ entry, onClick }: { entry: CalendarEntry; onClick: () => void }) {

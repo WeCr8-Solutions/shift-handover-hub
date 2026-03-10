@@ -35,19 +35,19 @@ interface QueueItem {
 
 const STATUS_COLORS: Record<string, string> = {
   pending: "bg-muted text-muted-foreground",
-  queued: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-  in_progress: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200",
-  on_hold: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-  completed: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-  cancelled: "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300",
+  queued: "bg-status-waiting/10 text-status-waiting",
+  in_progress: "bg-warning/10 text-warning",
+  on_hold: "bg-status-critical/10 text-status-critical",
+  completed: "bg-status-ok/10 text-status-ok",
+  cancelled: "bg-muted text-muted-foreground",
 };
 
 const PRIORITY_COLORS: Record<string, string> = {
-  low: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
-  normal: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
-  high: "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300",
-  urgent: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
-  critical: "bg-red-500 text-white",
+  low: "bg-muted text-muted-foreground",
+  normal: "bg-status-waiting/10 text-status-waiting",
+  high: "bg-priority-urgent/10 text-priority-urgent",
+  urgent: "bg-status-critical/10 text-status-critical",
+  critical: "bg-priority-critical text-primary-foreground",
 };
 
 export interface WorkOrderTableProps {

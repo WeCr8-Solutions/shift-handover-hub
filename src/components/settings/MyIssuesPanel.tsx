@@ -24,9 +24,9 @@ import { useState } from "react";
 
 const severityColors: Record<string, string> = {
   critical: "bg-destructive text-destructive-foreground",
-  high: "bg-orange-500 text-white",
-  medium: "bg-yellow-500 text-white",
-  low: "bg-green-500 text-white",
+  high: "bg-priority-urgent text-primary-foreground",
+  medium: "bg-warning text-primary-foreground",
+  low: "bg-status-ok text-primary-foreground",
 };
 
 const statusIcons: Record<string, typeof Clock> = {

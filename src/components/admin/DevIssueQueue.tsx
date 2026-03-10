@@ -88,11 +88,11 @@ interface DevQueueItem {
 }
 
 const priorityColors: Record<number, string> = {
-  5: "bg-red-500",
-  4: "bg-orange-500",
-  3: "bg-yellow-500",
-  2: "bg-blue-500",
-  1: "bg-gray-500",
+  5: "bg-status-critical",
+  4: "bg-priority-urgent",
+  3: "bg-status-warning",
+  2: "bg-status-waiting",
+  1: "bg-muted",
 };
 
 const priorityLabels: Record<number, string> = {
@@ -104,11 +104,11 @@ const priorityLabels: Record<number, string> = {
 };
 
 const statusColors: Record<string, string> = {
-  queued: "bg-gray-500",
-  in_progress: "bg-blue-500",
-  blocked: "bg-red-500",
-  completed: "bg-green-500",
-  deferred: "bg-yellow-500",
+  queued: "bg-muted",
+  in_progress: "bg-status-waiting",
+  blocked: "bg-status-critical",
+  completed: "bg-status-ok",
+  deferred: "bg-status-warning",
 };
 
 const effortLabels: Record<string, string> = {

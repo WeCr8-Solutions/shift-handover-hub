@@ -1,14 +1,15 @@
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { getSystemStatusColor } from "@/lib/status-colors";
 
 interface SystemStatusIndicatorProps {
   status: "operational" | "degraded" | "outage";
 }
 
 const statusConfig = {
-  operational: { label: "Operational", dotClass: "bg-green-500", badgeClass: "border-green-500/30 text-green-600" },
-  degraded: { label: "Degraded", dotClass: "bg-yellow-500 animate-pulse", badgeClass: "border-yellow-500/30 text-yellow-600" },
-  outage: { label: "Outage", dotClass: "bg-red-500 animate-pulse", badgeClass: "border-red-500/30 text-red-600" },
+  operational: { label: "Operational", ...getSystemStatusColor("operational") },
+  degraded: { label: "Degraded", ...getSystemStatusColor("degraded") },
+  outage: { label: "Outage", ...getSystemStatusColor("outage") },
 };
 
 export function SystemStatusIndicator({ status }: SystemStatusIndicatorProps) {

@@ -10,29 +10,19 @@ import {
   Rocket, Bug, Lightbulb, AlertTriangle, Shield, Wrench, ChevronDown, ChevronUp, Check
 } from "lucide-react";
 
+import { UPDATE_CATEGORY_COLORS, UPDATE_IMPACT_COLORS, UPDATE_STATUS_COLORS } from "@/lib/status-colors";
+
 const categoryConfig: Record<string, { label: string; icon: React.ComponentType<{ className?: string }>; color: string }> = {
-  feature: { label: "Feature", icon: Rocket, color: "bg-blue-500/10 text-blue-600 border-blue-300" },
-  improvement: { label: "Improvement", icon: Lightbulb, color: "bg-amber-500/10 text-amber-600 border-amber-300" },
-  bug_fix: { label: "Bug Fix", icon: Bug, color: "bg-red-500/10 text-red-600 border-red-300" },
-  system_notice: { label: "System Notice", icon: AlertTriangle, color: "bg-orange-500/10 text-orange-600 border-orange-300" },
-  security: { label: "Security", icon: Shield, color: "bg-purple-500/10 text-purple-600 border-purple-300" },
-  maintenance: { label: "Maintenance", icon: Wrench, color: "bg-muted text-muted-foreground border-border" },
+  feature: { label: "Feature", icon: Rocket, color: UPDATE_CATEGORY_COLORS.feature },
+  improvement: { label: "Improvement", icon: Lightbulb, color: UPDATE_CATEGORY_COLORS.improvement },
+  bug_fix: { label: "Bug Fix", icon: Bug, color: UPDATE_CATEGORY_COLORS.bug_fix },
+  system_notice: { label: "System Notice", icon: AlertTriangle, color: UPDATE_CATEGORY_COLORS.system_notice },
+  security: { label: "Security", icon: Shield, color: UPDATE_CATEGORY_COLORS.security },
+  maintenance: { label: "Maintenance", icon: Wrench, color: UPDATE_CATEGORY_COLORS.maintenance },
 };
 
-const impactColors: Record<string, string> = {
-  low: "bg-green-500",
-  medium: "bg-yellow-500",
-  high: "bg-orange-500",
-  critical: "bg-red-500",
-};
-
-const statusBadgeColors: Record<string, string> = {
-  live: "bg-green-500/10 text-green-600 border-green-300",
-  scheduled: "bg-blue-500/10 text-blue-600 border-blue-300",
-  investigating: "bg-orange-500/10 text-orange-600 border-orange-300",
-  resolved: "bg-muted text-muted-foreground border-border",
-  deprecated: "bg-muted text-muted-foreground border-border",
-};
+const impactColors = UPDATE_IMPACT_COLORS;
+const statusBadgeColors = UPDATE_STATUS_COLORS;
 
 interface UpdateCardProps {
   update: GlobalUpdate;

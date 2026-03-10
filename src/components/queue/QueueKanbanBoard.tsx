@@ -8,6 +8,7 @@ import { Clock, User, Package, AlertTriangle, GripVertical, Plug } from "lucide-
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { StationQuickActions, type QuickActionTarget } from "@/components/dashboard/StationQuickActions";
+import { getPriorityBadgeColor, getQueueStatusColumnColor } from "@/lib/status-colors";
 
 interface QueueKanbanBoardProps {
   itemsByStatus: Record<QueueStatus, QueueItem[]>;
@@ -27,27 +28,16 @@ const VALID_TRANSITIONS: Record<QueueStatus, QueueStatus[]> = {
 };
 
 const statusColumns: { status: QueueStatus; title: string; color: string }[] = [
-  { status: "pending", title: "Pending", color: "bg-gray-100 dark:bg-gray-800" },
-  { status: "queued", title: "Queued", color: "bg-yellow-50 dark:bg-yellow-900/20" },
-  { status: "in_progress", title: "In Progress", color: "bg-blue-50 dark:bg-blue-900/20" },
-  { status: "on_hold", title: "On Hold", color: "bg-orange-50 dark:bg-orange-900/20" },
-  { status: "completed", title: "Completed", color: "bg-green-50 dark:bg-green-900/20" },
-  { status: "cancelled", title: "Cancelled", color: "bg-red-50 dark:bg-red-900/20" },
+  { status: "pending", title: "Pending", color: getQueueStatusColumnColor("pending") },
+  { status: "queued", title: "Queued", color: getQueueStatusColumnColor("queued") },
+  { status: "in_progress", title: "In Progress", color: getQueueStatusColumnColor("in_progress") },
+  { status: "on_hold", title: "On Hold", color: getQueueStatusColumnColor("on_hold") },
+  { status: "completed", title: "Completed", color: getQueueStatusColumnColor("completed") },
+  { status: "cancelled", title: "Cancelled", color: getQueueStatusColumnColor("cancelled") },
 ];
 
 function getPriorityColor(priority: QueuePriority): string {
-  switch (priority) {
-    case "critical":
-      return "bg-red-500 text-white";
-    case "urgent":
-      return "bg-orange-500 text-white";
-    case "high":
-      return "bg-yellow-500 text-white";
-    case "normal":
-      return "bg-blue-500 text-white";
-    case "low":
-      return "bg-gray-400 text-white";
-  }
+  return getPriorityBadgeColor(priority);
 }
 
 function getTypeLabel(type: string): string {

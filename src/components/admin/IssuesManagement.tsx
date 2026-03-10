@@ -57,19 +57,19 @@ interface Issue {
 }
 
 const severityColors: Record<string, string> = {
-  low: "bg-green-500/10 text-green-600 border-green-500/20",
-  medium: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
-  high: "bg-orange-500/10 text-orange-600 border-orange-500/20",
-  critical: "bg-red-500/10 text-red-600 border-red-500/20",
+  low: "bg-status-ok/10 text-status-ok border-status-ok/20",
+  medium: "bg-warning/10 text-warning border-warning/20",
+  high: "bg-priority-urgent/10 text-priority-urgent border-priority-urgent/20",
+  critical: "bg-status-critical/10 text-status-critical border-status-critical/20",
 };
 
 const statusColors: Record<string, string> = {
-  open: "bg-blue-500/10 text-blue-600 border-blue-500/20",
-  investigating: "bg-purple-500/10 text-purple-600 border-purple-500/20",
-  in_progress: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
-  resolved: "bg-green-500/10 text-green-600 border-green-500/20",
-  closed: "bg-gray-500/10 text-gray-600 border-gray-500/20",
-  wont_fix: "bg-gray-500/10 text-gray-600 border-gray-500/20",
+  open: "bg-status-waiting/10 text-status-waiting border-status-waiting/20",
+  investigating: "bg-role-org-owner/10 text-role-org-owner border-role-org-owner/20",
+  in_progress: "bg-warning/10 text-warning border-warning/20",
+  resolved: "bg-status-ok/10 text-status-ok border-status-ok/20",
+  closed: "bg-muted text-muted-foreground border-border",
+  wont_fix: "bg-muted text-muted-foreground border-border",
 };
 
 const statusIcons: Record<string, React.ReactNode> = {

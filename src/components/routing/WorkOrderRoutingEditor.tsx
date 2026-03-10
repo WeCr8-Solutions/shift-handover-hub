@@ -68,14 +68,14 @@ interface WorkOrderRoutingEditorProps {
 }
 
 const OPERATION_TYPES = [
-  { value: 'quote', label: 'Quoting/Estimating', icon: Factory, color: 'bg-slate-500', ring: '' },
-  { value: 'engineering', label: 'Engineering/Programming', icon: Factory, color: 'bg-indigo-500', ring: '' },
-  { value: 'purchasing', label: 'Purchasing/Procurement', icon: Factory, color: 'bg-cyan-500', ring: '' },
-  { value: 'receiving', label: 'Receiving/Material Handling', icon: Factory, color: 'bg-teal-500', ring: '' },
-  { value: 'internal', label: 'Machine Process', icon: Factory, color: 'bg-blue-500', ring: '' },
-  { value: 'inspection', label: 'Quality Check', icon: ClipboardCheck, color: 'bg-purple-500', ring: '' },
-  { value: 'outside_processing', label: 'Outside Processing', icon: Truck, color: 'bg-amber-500', ring: 'ring-2 ring-amber-400 ring-offset-2 ring-offset-background' },
-  { value: 'shipping', label: 'Shipping/Delivery', icon: PackageCheck, color: 'bg-green-500', ring: '' },
+  { value: 'quote', label: 'Quoting/Estimating', icon: Factory, color: 'bg-muted', ring: '' },
+  { value: 'engineering', label: 'Engineering/Programming', icon: Factory, color: 'bg-role-org-admin', ring: '' },
+  { value: 'purchasing', label: 'Purchasing/Procurement', icon: Factory, color: 'bg-info', ring: '' },
+  { value: 'receiving', label: 'Receiving/Material Handling', icon: Factory, color: 'bg-info', ring: '' },
+  { value: 'internal', label: 'Machine Process', icon: Factory, color: 'bg-status-waiting', ring: '' },
+  { value: 'inspection', label: 'Quality Check', icon: ClipboardCheck, color: 'bg-role-org-owner', ring: '' },
+  { value: 'outside_processing', label: 'Outside Processing', icon: Truck, color: 'bg-warning', ring: 'ring-2 ring-warning ring-offset-2 ring-offset-background' },
+  { value: 'shipping', label: 'Shipping/Delivery', icon: PackageCheck, color: 'bg-status-ok', ring: '' },
 ];
 
 // Complete manufacturing lifecycle from quote to ship with all standard shop floor steps
