@@ -74,6 +74,48 @@ export default {
           waiting: "hsl(var(--state-waiting))",
           down: "hsl(var(--state-down))",
         },
+        priority: {
+          critical: "hsl(var(--priority-critical))",
+          urgent: "hsl(var(--priority-urgent))",
+          high: "hsl(var(--priority-high))",
+          normal: "hsl(var(--priority-normal))",
+        },
+        role: {
+          admin: "hsl(var(--role-admin))",
+          developer: "hsl(var(--role-developer))",
+          supervisor: "hsl(var(--role-supervisor))",
+          operator: "hsl(var(--role-operator))",
+          viewer: "hsl(var(--role-viewer))",
+          "org-owner": "hsl(var(--role-org-owner))",
+          "org-admin": "hsl(var(--role-org-admin))",
+        },
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+        },
+        info: {
+          DEFAULT: "hsl(var(--info))",
+          foreground: "hsl(var(--info-foreground))",
+        },
+        chart: {
+          1: "hsl(var(--chart-1))",
+          2: "hsl(var(--chart-2))",
+          3: "hsl(var(--chart-3))",
+          4: "hsl(var(--chart-4))",
+          5: "hsl(var(--chart-5))",
+          6: "hsl(var(--chart-6))",
+        },
+        surface: {
+          elevated: "hsl(var(--surface-elevated))",
+          sunken: "hsl(var(--surface-sunken))",
+          overlay: "hsl(var(--surface-overlay))",
+        },
+        hover: "hsl(var(--hover))",
+        active: "hsl(var(--active))",
       },
       borderRadius: {
         lg: "var(--radius)",
