@@ -232,10 +232,10 @@ export function ERPConnectorSettings() {
   return (
     <div className="space-y-6">
       {!isEnterprise ? (
-        <Card className="border-dashed border-amber-500/30 bg-amber-500/5">
+        <Card className="border-dashed border-warning/30 bg-warning/5">
           <CardHeader className="pb-2 text-center">
-            <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/10">
-              <AlertTriangle className="h-6 w-6 text-amber-500" />
+            <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-warning/10">
+              <AlertTriangle className="h-6 w-6 text-warning" />
             </div>
             <CardTitle className="text-xl">Enterprise Plan Required</CardTitle>
             <CardDescription>
