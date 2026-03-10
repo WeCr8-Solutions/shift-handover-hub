@@ -42,33 +42,67 @@
 
     --radius: 0.5rem;
 
-    /* Status colors */
+    /* ── Status colors ── */
     --status-ok: 142 70% 45%;
     --status-warning: 38 92% 50%;
     --status-critical: 0 70% 50%;
     --status-waiting: 220 70% 55%;
     --status-info: 185 70% 45%;
 
-    /* Machine states */
+    /* ── Machine states ── */
     --state-running: 142 70% 45%;
     --state-setup: 38 92% 50%;
     --state-waiting: 220 70% 55%;
     --state-down: 0 70% 50%;
 
-    /* Priority levels */
+    /* ── Priority levels ── */
     --priority-critical: 0 84% 60%;
     --priority-urgent: 25 95% 53%;
     --priority-high: 38 92% 50%;
     --priority-normal: 220 70% 55%;
 
-    /* Semantic: success / warning / info accents */
+    /* ── Semantic feedback ── */
     --success: 142 71% 45%;
-    --success-foreground: 142 71% 29%;
+    --success-foreground: 150 80% 85%;
     --warning: 38 92% 50%;
-    --warning-foreground: 32 95% 44%;
+    --warning-foreground: 45 95% 88%;
     --info: 217 91% 60%;
-    --info-foreground: 217 91% 48%;
+    --info-foreground: 213 94% 88%;
 
+    /* ── Surface layers ── */
+    --surface-elevated: 220 18% 15%;
+    --surface-sunken: 220 20% 8%;
+    --surface-overlay: 220 20% 6%;
+
+    /* ── Role colors ── */
+    --role-admin: 0 84% 60%;
+    --role-developer: 25 95% 53%;
+    --role-supervisor: 199 89% 48%;
+    --role-operator: 142 70% 45%;
+    --role-viewer: 220 13% 46%;
+    --role-org-owner: 271 81% 56%;
+    --role-org-admin: 239 84% 67%;
+
+    /* ── Chart palette ── */
+    --chart-1: 185 70% 45%;
+    --chart-2: 142 70% 45%;
+    --chart-3: 38 92% 50%;
+    --chart-4: 271 81% 56%;
+    --chart-5: 199 89% 48%;
+    --chart-6: 0 70% 50%;
+
+    /* ── Interactive states ── */
+    --hover: 220 15% 24%;
+    --active: 220 15% 28%;
+    --focus-ring: 185 70% 45%;
+
+    /* ── Elevation shadows ── */
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.3);
+    --shadow-md: 0 4px 12px -2px hsl(0 0% 0% / 0.4);
+    --shadow-lg: 0 10px 30px -4px hsl(0 0% 0% / 0.5);
+    --shadow-glow: 0 0 20px -4px hsl(185 70% 45% / 0.3);
+
+    /* ── Sidebar ── */
     --sidebar-background: 220 20% 8%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 185 70% 45%;
