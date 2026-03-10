@@ -77,11 +77,11 @@ export function TestResultsPanel({ run, isRunning }: TestResultsPanelProps) {
             </CardDescription>
           </div>
           <div className="flex items-center gap-4 text-sm">
-            <div className="flex items-center gap-1 text-green-600">
+            <div className="flex items-center gap-1 text-status-ok">
               <CheckCircle2 className="w-4 h-4" />
               <span>{run.passedTests} passed</span>
             </div>
-            <div className="flex items-center gap-1 text-red-600">
+            <div className="flex items-center gap-1 text-status-critical">
               <XCircle className="w-4 h-4" />
               <span>{run.failedTests} failed</span>
             </div>
