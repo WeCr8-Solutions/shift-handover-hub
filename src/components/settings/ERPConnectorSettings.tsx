@@ -616,11 +616,11 @@ export function ERPConnectorSettings() {
                 {workCenterMappings.map((wc) => (
                   <TableRow
                     key={wc.id}
-                    className={!wc.jobline_station_id ? "bg-yellow-50/50 dark:bg-yellow-900/10" : ""}
+                    className={!wc.jobline_station_id ? "bg-warning/5 dark:bg-warning/10" : ""}
                   >
                     <TableCell className="font-medium">
                       {wc.erp_work_center_name || "—"}
-                      {!wc.jobline_station_id && <AlertTriangle className="ml-1 inline h-3 w-3 text-yellow-500" />}
+                      {!wc.jobline_station_id && <AlertTriangle className="ml-1 inline h-3 w-3 text-warning" />}
                     </TableCell>
                     <TableCell className="font-mono text-xs text-muted-foreground">{wc.erp_work_center_id}</TableCell>
                     <TableCell>
