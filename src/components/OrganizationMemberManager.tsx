@@ -105,7 +105,7 @@ function CopyButton({ value, label }: { value: string; label: string }) {
   };
   return (
     <Button variant="outline" size="icon" onClick={handleCopy} aria-label={`Copy ${label}`} className="shrink-0">
-      {copied ? <CheckCircle className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+      {copied ? <CheckCircle className="w-4 h-4 text-status-ok" /> : <Copy className="w-4 h-4" />}
     </Button>
   );
 }
