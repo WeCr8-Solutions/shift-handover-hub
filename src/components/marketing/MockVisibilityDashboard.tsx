@@ -1,20 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-
-function AppWindowChrome({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="rounded-xl border border-border bg-card shadow-2xl overflow-hidden">
-      <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/60 border-b border-border">
-        <div className="flex gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-red-400/60" />
-          <div className="w-3 h-3 rounded-full bg-yellow-400/60" />
-          <div className="w-3 h-3 rounded-full bg-green-400/60" />
-        </div>
-        <span className="text-xs text-muted-foreground ml-2 font-medium">{title}</span>
-      </div>
-      <div className="p-4 sm:p-6">{children}</div>
-    </div>
-  );
-}
+import { AppWindowChrome } from "./AppWindowChrome";
 
 const kpis = [
   { label: "Floor Utilization", value: "72%", trend: "+4%", good: true },

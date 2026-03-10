@@ -18,10 +18,10 @@ export function MockShopFloorView() {
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Machine Overview</span>
             <div className="flex gap-1.5">
               {[
-                { c: "bg-green-500", n: 4 },
-                { c: "bg-yellow-500", n: 2 },
+                { c: "bg-status-ok", n: 4 },
+                { c: "bg-status-warning", n: 2 },
                 { c: "bg-muted-foreground", n: 1 },
-                { c: "bg-red-500", n: 1 },
+                { c: "bg-status-critical", n: 1 },
               ].map((s) => (
                 <span key={s.c} className="flex items-center gap-1 text-[10px] text-muted-foreground">
                   <span className={`w-1.5 h-1.5 rounded-full ${s.c}`} /> {s.n}
