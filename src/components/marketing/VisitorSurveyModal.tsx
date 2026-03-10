@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, forwardRef } from "react";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -108,9 +108,9 @@ export const VisitorSurveyModal = forwardRef<HTMLDivElement>(function VisitorSur
   };
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) handleDismiss(); }}>
-      <DialogContent className="sm:max-w-md">
-        <DialogTitle className="sr-only">Quick Survey</DialogTitle>
+    <Drawer open={open} onOpenChange={(v) => { if (!v) handleDismiss(); }}>
+      <DrawerContent className="px-6 pb-8 pt-4 max-w-lg mx-auto">
+        <DrawerTitle className="sr-only">Quick Survey</DrawerTitle>
         <div className="flex flex-col gap-5 py-2">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
@@ -197,7 +197,7 @@ export const VisitorSurveyModal = forwardRef<HTMLDivElement>(function VisitorSur
             Skip survey
           </button>
         </div>
-      </DialogContent>
-    </Dialog>
+      </DrawerContent>
+    </Drawer>
   );
 });
