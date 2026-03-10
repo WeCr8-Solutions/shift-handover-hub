@@ -1053,8 +1053,8 @@ export function RoleScopeTestRunner() {
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
-                <ShieldCheck className="w-5 h-5 text-indigo-600" />
+              <div className="w-10 h-10 rounded-lg bg-role-org-admin/10 flex items-center justify-center">
+                <ShieldCheck className="w-5 h-5 text-role-org-admin" />
               </div>
               <div>
                 <CardTitle className="text-lg">Role & Scope Tests</CardTitle>
