@@ -35,7 +35,7 @@ const LOOKING_FOR_OPTIONS = [
   "Other",
 ];
 
-export const VisitorSurveyModal = forwardRef<HTMLDivElement>(function VisitorSurveyModal(_props, ref) {
+export function VisitorSurveyModal() {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<1 | 2>(1);
   const [heardAbout, setHeardAbout] = useState("");
