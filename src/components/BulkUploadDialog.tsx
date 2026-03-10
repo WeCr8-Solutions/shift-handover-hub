@@ -317,8 +317,8 @@ export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadD
               {hasData && (
                 <Card>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-green-500" />
+                     <CardTitle className="text-sm font-medium flex items-center gap-2">
+                       <CheckCircle2 className="w-4 h-4 text-status-ok" />
                       Data Preview
                     </CardTitle>
                   </CardHeader>
