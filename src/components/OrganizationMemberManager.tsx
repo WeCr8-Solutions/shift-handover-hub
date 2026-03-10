@@ -693,7 +693,7 @@ export function OrganizationMemberManager({ onNavigateToInvites }: OrganizationM
                                   {member.app_roles?.includes("supervisor") ? "Remove Supervisor" : "Assign Supervisor"}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => handleToggleAppRole(member, "operator")}>
-                                  <Users className="w-4 h-4 mr-2 text-green-600" />
+                                  <Users className="w-4 h-4 mr-2 text-role-operator" />
                                   {member.app_roles?.includes("operator") ? "Remove Operator" : "Assign Operator"}
                                 </DropdownMenuItem>
                                 {!isOwner && !isSelf && (

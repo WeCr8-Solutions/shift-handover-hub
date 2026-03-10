@@ -53,9 +53,9 @@ export function MockHandoffForm() {
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="h-2 w-2 rounded-full bg-green-500" />
+          <div className="h-2 w-2 rounded-full bg-status-ok" />
           <span className="text-xs text-muted-foreground">Dims verified ✓</span>
-          <div className="h-2 w-2 rounded-full bg-green-500 ml-3" />
+          <div className="h-2 w-2 rounded-full bg-status-ok ml-3" />
           <span className="text-xs text-muted-foreground">Material ready ✓</span>
         </div>
       </div>

@@ -526,8 +526,8 @@ export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadD
                 </div>
 
                 {uploadResult.warnings.length > 0 && (
-                  <div className="p-3 bg-yellow-500/10 rounded-lg">
-                    <p className="text-sm font-medium text-yellow-600 flex items-center gap-2 mb-2">
+                   <div className="p-3 bg-warning/10 rounded-lg">
+                     <p className="text-sm font-medium text-warning flex items-center gap-2 mb-2">
                       <AlertTriangle className="w-4 h-4" />
                       Warnings ({uploadResult.warnings.length})
                     </p>

@@ -56,7 +56,7 @@ export function RolePermissionMatrix() {
                     return (
                       <TableCell key={header.key} className="text-center">
                         {hasPermission ? (
-                          <Check className="w-4 h-4 text-green-500 mx-auto" />
+                          <Check className="w-4 h-4 text-status-ok mx-auto" />
                         ) : (
                           <X className="w-4 h-4 text-muted-foreground/30 mx-auto" />
                         )}

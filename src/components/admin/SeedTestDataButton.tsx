@@ -280,7 +280,7 @@ export function SeedTestDataButton() {
                   <li>• 5 routing steps per work order</li>
                   <li>• Assigned to your existing stations</li>
                 </ul>
-                <p className="text-amber-600 mt-2">
+                <p className="text-warning mt-2">
                   Note: This adds data to your current organization. Existing data will not be affected.
                 </p>
               </>

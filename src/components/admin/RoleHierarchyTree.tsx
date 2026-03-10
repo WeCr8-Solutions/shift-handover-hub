@@ -244,7 +244,7 @@ export function RoleHierarchyTree() {
                 {/* Team Level */}
                 <div>
                   <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                    <Users className="w-4 h-4 text-blue-500" />
+                    <Users className="w-4 h-4 text-status-waiting" />
                     Team Level
                     <Badge variant="secondary" className="text-xs">{teamRoles.length}</Badge>
                   </h4>

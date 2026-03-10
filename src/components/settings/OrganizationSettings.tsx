@@ -376,7 +376,7 @@ export function OrganizationSettings({ isDeveloper = false }: OrganizationSettin
                 onClick={handleSaveCompliance}
                 disabled={savingCompliance}
                 variant="outline"
-                className="gap-2 border-amber-500/50 text-amber-600 hover:bg-amber-500/10"
+                className="gap-2 border-warning/50 text-warning hover:bg-warning/10"
               >
                 {savingCompliance ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                 Save Compliance Settings

@@ -381,7 +381,7 @@ export function OrganizationSetup({ onComplete, onSkip }: OrganizationSetupProps
 
             {validatedInvite && (
               <div className="space-y-4">
-                <div className="flex items-center gap-2 text-green-600 text-sm">
+               <div className="flex items-center gap-2 text-status-ok text-sm">
                   <CheckCircle2 className="w-4 h-4" />
                   Valid invite code
                 </div>

@@ -1139,12 +1139,12 @@ export function RoleScopeTestRunner() {
                 </CardDescription>
               </div>
               <div className="flex items-center gap-4 text-sm">
-                <div className="flex items-center gap-1 text-green-600">
+                <div className="flex items-center gap-1 text-status-ok">
                   <CheckCircle2 className="w-4 h-4" />
                   <span>{currentRun.passedTests} passed</span>
                 </div>
                 {currentRun.warningTests > 0 && (
-                  <div className="flex items-center gap-1 text-amber-600">
+                  <div className="flex items-center gap-1 text-warning">
                     <AlertCircle className="w-4 h-4" />
                     <span>{currentRun.warningTests} warnings</span>
                   </div>
