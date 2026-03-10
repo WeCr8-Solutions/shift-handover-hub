@@ -293,3 +293,68 @@ export const WORK_CENTER_COLORS: Record<string, string> = {
   "Receiving":              "text-chart-2",
   "Grinding":               "text-info",
 };
+
+/* ── Changelog change types ── */
+
+export const CHANGELOG_TYPE_COLORS: Record<string, string> = {
+  feature:     "bg-status-waiting/10 text-status-waiting border-status-waiting/30",
+  fix:         "bg-status-critical/10 text-status-critical border-status-critical/30",
+  improvement: "bg-warning/10 text-warning border-warning/30",
+  breaking:    "bg-destructive/10 text-destructive border-destructive/30",
+};
+
+/* ── Console log levels ── */
+
+export const LOG_LEVEL_STYLES: Record<string, string> = {
+  error: "text-status-critical bg-status-critical/10",
+  warn:  "text-warning bg-warning/10",
+  info:  "text-info bg-info/10",
+  log:   "text-muted-foreground bg-muted/50",
+  debug: "text-muted-foreground/60 bg-muted/30",
+};
+
+export const LOG_LEVEL_BADGE_STYLES: Record<string, string> = {
+  error: "bg-status-critical/20 text-status-critical hover:bg-status-critical/30",
+  warn:  "bg-warning/20 text-warning hover:bg-warning/30",
+  info:  "bg-info/20 text-info hover:bg-info/30",
+  log:   "bg-muted text-muted-foreground hover:bg-muted/80",
+  debug: "bg-muted/50 text-muted-foreground/60 hover:bg-muted/60",
+};
+
+/* ── Connection status ── */
+
+export function getConnectionStatusColor(status: string): string {
+  switch (status) {
+    case "connected": return "bg-status-ok/10 text-status-ok border-status-ok/30";
+    case "error":     return "bg-destructive text-destructive-foreground";
+    default:          return "bg-muted text-muted-foreground";
+  }
+}
+
+/* ── Sync status (inline text) ── */
+
+export function getSyncStatusTextColor(status: string): string {
+  switch (status) {
+    case "success": return "text-status-ok";
+    case "failed":  return "text-status-critical";
+    default:        return "text-warning";
+  }
+}
+
+/* ── Test result backgrounds ── */
+
+export function getTestResultBg(status: string): string {
+  switch (status) {
+    case "pass":    return "bg-status-ok/5 dark:bg-status-ok/10";
+    case "fail":    return "bg-status-critical/5 dark:bg-status-critical/10";
+    case "warning": return "bg-warning/5 dark:bg-warning/10";
+    case "running": return "bg-info/5 dark:bg-info/10";
+    default:        return "";
+  }
+}
+
+export function getTestResultRowStyle(failed: boolean): string {
+  return failed
+    ? "bg-status-critical/5 border-status-critical/20 dark:bg-status-critical/10 dark:border-status-critical/30"
+    : "bg-status-ok/5 border-status-ok/20 dark:bg-status-ok/10 dark:border-status-ok/30";
+}

@@ -35,9 +35,9 @@ interface ChangelogEntry {
 }
 
 const changeTypeConfig: Record<string, { label: string; icon: React.ComponentType<{ className?: string }>; color: string }> = {
-  feature: { label: "Feature", icon: Rocket, color: "bg-blue-500/10 text-blue-600 border-blue-300" },
-  fix: { label: "Fix", icon: Bug, color: "bg-red-500/10 text-red-600 border-red-300" },
-  improvement: { label: "Improvement", icon: Lightbulb, color: "bg-amber-500/10 text-amber-600 border-amber-300" },
+  feature: { label: "Feature", icon: Rocket, color: "bg-status-waiting/10 text-status-waiting border-status-waiting/30" },
+  fix: { label: "Fix", icon: Bug, color: "bg-status-critical/10 text-status-critical border-status-critical/30" },
+  improvement: { label: "Improvement", icon: Lightbulb, color: "bg-warning/10 text-warning border-warning/30" },
   breaking: { label: "Breaking", icon: AlertTriangle, color: "bg-destructive/10 text-destructive border-destructive/30" },
 };
 
@@ -224,7 +224,7 @@ export function ChangelogManager() {
                         {entry.version && <Badge variant="outline" className="text-xs">{entry.version}</Badge>}
                         <Badge variant="outline" className={`text-xs ${cfg.color}`}>{cfg.label}</Badge>
                         {entry.is_published ? (
-                          <Badge className="text-xs bg-green-500/10 text-green-600 border-green-300" variant="outline">Published</Badge>
+                          <Badge className="text-xs bg-status-ok/10 text-status-ok border-status-ok/30" variant="outline">Published</Badge>
                         ) : (
                           <Badge variant="outline" className="text-xs text-muted-foreground">Draft</Badge>
                         )}

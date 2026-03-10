@@ -793,10 +793,10 @@ function SuiteCard({ suite }: { suite: RoleScopeTestSuite }) {
             key={test.id}
             className={cn(
               "flex items-start justify-between py-2 px-3 rounded text-sm",
-              test.status === "pass" && "bg-green-50 dark:bg-green-950/20",
-              test.status === "fail" && "bg-red-50 dark:bg-red-950/20",
-              test.status === "warning" && "bg-amber-50 dark:bg-amber-950/20",
-              test.status === "running" && "bg-blue-50 dark:bg-blue-950/20",
+              test.status === "pass" && "bg-status-ok/5 dark:bg-status-ok/10",
+              test.status === "fail" && "bg-status-critical/5 dark:bg-status-critical/10",
+              test.status === "warning" && "bg-warning/5 dark:bg-warning/10",
+              test.status === "running" && "bg-info/5 dark:bg-info/10",
             )}
           >
             <div className="flex items-start gap-2 flex-1">

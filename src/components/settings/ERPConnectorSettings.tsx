@@ -64,7 +64,7 @@ function ConnectionStatusBadge({ status }: { status: string }) {
   switch (status) {
     case "connected":
       return (
-        <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+        <Badge className="bg-status-ok/10 text-status-ok border-status-ok/30">
           <CheckCircle2 className="mr-1 h-3 w-3" />
           Connected
         </Badge>
@@ -232,10 +232,10 @@ export function ERPConnectorSettings() {
   return (
     <div className="space-y-6">
       {!isEnterprise ? (
-        <Card className="border-dashed border-amber-500/30 bg-amber-500/5">
+        <Card className="border-dashed border-warning/30 bg-warning/5">
           <CardHeader className="pb-2 text-center">
-            <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/10">
-              <AlertTriangle className="h-6 w-6 text-amber-500" />
+            <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-warning/10">
+              <AlertTriangle className="h-6 w-6 text-warning" />
             </div>
             <CardTitle className="text-xl">Enterprise Plan Required</CardTitle>
             <CardDescription>
@@ -329,7 +329,7 @@ export function ERPConnectorSettings() {
                 </div>
                 <Progress value={Math.min((erpUsage.sync_count / erpUsage.sync_limit) * 100, 100)} />
                 {erpUsage.sync_count >= erpUsage.sync_limit * 0.8 && (
-                  <p className="flex items-center gap-1 text-xs text-amber-600">
+                  <p className="flex items-center gap-1 text-xs text-warning">
                     <AlertTriangle className="h-3 w-3" />
                     Approaching sync limit — consider upgrading your ERP tier
                   </p>
@@ -505,10 +505,10 @@ export function ERPConnectorSettings() {
                     <span
                       className={
                         lastSync.status === "success"
-                          ? "text-green-600"
+                          ? "text-status-ok"
                           : lastSync.status === "failed"
-                            ? "text-red-600"
-                            : "text-yellow-600"
+                            ? "text-status-critical"
+                            : "text-warning"
                       }
                     >
                       {lastSync.status}
@@ -616,11 +616,11 @@ export function ERPConnectorSettings() {
                 {workCenterMappings.map((wc) => (
                   <TableRow
                     key={wc.id}
-                    className={!wc.jobline_station_id ? "bg-yellow-50/50 dark:bg-yellow-900/10" : ""}
+                    className={!wc.jobline_station_id ? "bg-warning/5 dark:bg-warning/10" : ""}
                   >
                     <TableCell className="font-medium">
                       {wc.erp_work_center_name || "—"}
-                      {!wc.jobline_station_id && <AlertTriangle className="ml-1 inline h-3 w-3 text-yellow-500" />}
+                      {!wc.jobline_station_id && <AlertTriangle className="ml-1 inline h-3 w-3 text-warning" />}
                     </TableCell>
                     <TableCell className="font-mono text-xs text-muted-foreground">{wc.erp_work_center_id}</TableCell>
                     <TableCell>
@@ -745,7 +745,7 @@ export function ERPConnectorSettings() {
                         {log.records_fetched ?? 0} fetched · {log.records_created ?? 0} new · {log.records_updated ?? 0}{" "}
                         updated
                         {(log.errors_count ?? 0) > 0 && (
-                          <span className="ml-1 text-red-500">· {log.errors_count} errors</span>
+                          <span className="ml-1 text-status-critical">· {log.errors_count} errors</span>
                         )}
                         {log.duration_ms != null && (
                           <span className="ml-1">· {(log.duration_ms / 1000).toFixed(1)}s</span>

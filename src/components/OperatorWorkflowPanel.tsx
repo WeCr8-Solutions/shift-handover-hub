@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { getPriorityLightColor } from "@/lib/status-colors";
 
 interface AssignedWorkOrder {
   id: string;
@@ -153,14 +154,7 @@ export function OperatorWorkflowPanel() {
     return `${formatMinutes(remaining)} left`;
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "critical": return "text-red-600 bg-red-500/10 border-red-500/30";
-      case "urgent": return "text-orange-600 bg-orange-500/10 border-orange-500/30";
-      case "high": return "text-amber-600 bg-amber-500/10 border-amber-500/30";
-      default: return "text-muted-foreground bg-muted border-border";
-    }
-  };
+  const getPriorityColor = (priority: string) => getPriorityLightColor(priority);
 
   if (!user) return null;
 
@@ -195,14 +189,14 @@ export function OperatorWorkflowPanel() {
           <>
             {/* Active Work Order */}
             {activeWorkOrder && (
-              <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/30">
+              <div className="p-3 rounded-lg bg-status-ok/10 border border-status-ok/30">
                 <div className="flex items-center justify-between mb-2">
-                  <Badge className="bg-green-600 text-white text-[10px]">
+                  <Badge className="bg-status-ok text-primary-foreground text-[10px]">
                     <Play className="w-2.5 h-2.5 mr-1" />
                     ACTIVE
                   </Badge>
                   {activeWorkOrder.started_at && (
-                    <span className="text-xs text-green-600 font-mono flex items-center gap-1">
+                    <span className="text-xs text-status-ok font-mono flex items-center gap-1">
                       <Timer className="w-3 h-3" />
                       {getElapsedTime(activeWorkOrder.started_at)}
                     </span>
@@ -268,7 +262,7 @@ export function OperatorWorkflowPanel() {
                         key={wo.id}
                         className={cn(
                           "flex items-center gap-2 p-2 rounded border cursor-pointer hover:bg-muted/50 transition-colors",
-                          wo.status === "on_hold" && "bg-amber-500/5 border-amber-500/30"
+                          wo.status === "on_hold" && "bg-warning/5 border-warning/30"
                         )}
                         onClick={() => navigate(`/queue?item=${wo.id}`)}
                       >
@@ -284,7 +278,7 @@ export function OperatorWorkflowPanel() {
                               {wo.work_order || wo.title}
                             </span>
                             {wo.status === "on_hold" && (
-                              <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 text-amber-600 border-amber-500/30">
+                              <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 text-warning border-warning/30">
                                 <Pause className="w-2 h-2 mr-0.5" />
                                 Hold
                               </Badge>

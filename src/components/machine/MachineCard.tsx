@@ -36,7 +36,7 @@ export function MachineCard({ machine, compact = false, onClick }: MachineCardPr
       className={cn(
         "relative overflow-hidden transition-all duration-200 group",
         onClick && "cursor-pointer hover:shadow-md hover:border-primary/30",
-        isAlarming && "border-red-500/40 shadow-red-500/10 shadow-sm",
+        isAlarming && "border-status-critical/40 shadow-status-critical/10 shadow-sm",
         isOffline && "opacity-60",
       )}
       onClick={onClick}
@@ -66,7 +66,7 @@ export function MachineCard({ machine, compact = false, onClick }: MachineCardPr
               <TooltipTrigger asChild>
                 <div>
                   {machine.connectionOk ? (
-                    <Wifi className="w-3.5 h-3.5 text-green-500" />
+                    <Wifi className="w-3.5 h-3.5 text-status-ok" />
                   ) : (
                     <WifiOff className="w-3.5 h-3.5 text-muted-foreground" />
                   )}
@@ -82,7 +82,7 @@ export function MachineCard({ machine, compact = false, onClick }: MachineCardPr
               className={cn(
                 "text-[10px] px-1.5 py-0 font-semibold uppercase tracking-wide",
                 stateConfig.colorClass,
-                isAlarming && "animate-pulse border-red-500/50",
+                isAlarming && "animate-pulse border-status-critical/50",
               )}
             >
               {isOffline ? "OFFLINE" : stateConfig.label}
@@ -131,7 +131,7 @@ export function MachineCard({ machine, compact = false, onClick }: MachineCardPr
         {/* Alarm codes */}
         {hasAlarms && (
           <div className="mt-2 flex items-center gap-1.5 flex-wrap">
-            <AlertTriangle className="w-3 h-3 text-red-500 shrink-0" />
+            <AlertTriangle className="w-3 h-3 text-status-critical shrink-0" />
             {machine.activeAlarmCodes.map((code) => (
               <Badge
                 key={code}

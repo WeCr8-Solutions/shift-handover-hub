@@ -10,24 +10,9 @@ import {
 import { Terminal, ChevronDown, Copy, Check, Filter } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import type { ConsoleLogEntry } from "@/hooks/useIssueDetail";
+import { LOG_LEVEL_STYLES, LOG_LEVEL_BADGE_STYLES } from "@/lib/status-colors";
 
 type LogLevel = ConsoleLogEntry["level"] | "all";
-
-const LEVEL_STYLES: Record<string, string> = {
-  error: "text-red-400 bg-red-500/10",
-  warn: "text-amber-400 bg-amber-500/10",
-  info: "text-blue-400 bg-blue-500/10",
-  log: "text-muted-foreground bg-muted/50",
-  debug: "text-muted-foreground/60 bg-muted/30",
-};
-
-const LEVEL_BADGE_STYLES: Record<string, string> = {
-  error: "bg-red-500/20 text-red-400 hover:bg-red-500/30",
-  warn: "bg-amber-500/20 text-amber-400 hover:bg-amber-500/30",
-  info: "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30",
-  log: "bg-muted text-muted-foreground hover:bg-muted/80",
-  debug: "bg-muted/50 text-muted-foreground/60 hover:bg-muted/60",
-};
 
 interface ConsoleLogViewerProps {
   logs: ConsoleLogEntry[];
@@ -89,12 +74,12 @@ export function ConsoleLogViewer({
               {logs.length}
             </Badge>
             {levelCounts.error > 0 && (
-              <Badge className="bg-red-500/20 text-red-400 text-xs">
+              <Badge className={`${LOG_LEVEL_BADGE_STYLES.error} text-xs`}>
                 {levelCounts.error} error{levelCounts.error > 1 ? "s" : ""}
               </Badge>
             )}
             {levelCounts.warn > 0 && (
-              <Badge className="bg-amber-500/20 text-amber-400 text-xs">
+              <Badge className={`${LOG_LEVEL_BADGE_STYLES.warn} text-xs`}>
                 {levelCounts.warn} warn
               </Badge>
             )}
@@ -123,7 +108,7 @@ export function ConsoleLogViewer({
                     isActive
                       ? level === "all"
                         ? "bg-primary/20 text-primary"
-                        : LEVEL_BADGE_STYLES[level]
+                        : LOG_LEVEL_BADGE_STYLES[level]
                       : "text-muted-foreground"
                   }`}
                   onClick={() => setLevelFilter(level)}
@@ -169,14 +154,14 @@ function LogEntry({ entry }: { entry: ConsoleLogEntry }) {
   const [stackOpen, setStackOpen] = useState(false);
 
   return (
-    <div className={`px-3 py-1.5 ${LEVEL_STYLES[entry.level]}`}>
+    <div className={`px-3 py-1.5 ${LOG_LEVEL_STYLES[entry.level]}`}>
       <div className="flex items-start gap-2">
         <span className="text-muted-foreground/60 shrink-0 select-none">
           {entry.timestamp ? formatTimestamp(entry.timestamp) : "—"}
         </span>
         <Badge
           variant="outline"
-          className={`shrink-0 text-[10px] px-1 py-0 leading-4 uppercase ${LEVEL_BADGE_STYLES[entry.level]}`}
+          className={`shrink-0 text-[10px] px-1 py-0 leading-4 uppercase ${LOG_LEVEL_BADGE_STYLES[entry.level]}`}
         >
           {entry.level}
         </Badge>

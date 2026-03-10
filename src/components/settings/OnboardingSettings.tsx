@@ -37,7 +37,7 @@ function StepRow({ step, isCurrent, isComplete, isStepCompleted }: StepRowProps)
   return (
     <div className={`flex items-center gap-3 rounded-md p-2 ${isCurrent ? "bg-primary/5" : ""}`}>
       {completed ? (
-        <CheckCircle2 className="h-4 w-4 shrink-0 text-green-500" />
+        <CheckCircle2 className="h-4 w-4 shrink-0 text-status-ok" />
       ) : (
         <Circle className={`h-4 w-4 shrink-0 ${isCurrent ? "text-primary" : "text-muted-foreground/40"}`} />
       )}
@@ -141,10 +141,10 @@ export function OnboardingSettings() {
         </CardContent>
       </Card>
 
-      <Card className="border-amber-500/30">
+      <Card className="border-warning/30">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-amber-500" />
+            <Sparkles className="h-5 w-5 text-warning" />
             Manufacturing Pro Tours
             <Badge variant="secondary" className="ml-1 text-xs">
               Optional
@@ -166,9 +166,9 @@ export function OnboardingSettings() {
                 className="flex items-center gap-3 rounded-lg border bg-card p-3 transition-colors hover:bg-accent/50"
               >
                 {completed ? (
-                  <CheckCircle2 className="h-5 w-5 shrink-0 text-green-500" />
+                  <CheckCircle2 className="h-5 w-5 shrink-0 text-status-ok" />
                 ) : (
-                  <Star className="h-5 w-5 shrink-0 text-amber-500/60" />
+                  <Star className="h-5 w-5 shrink-0 text-warning/60" />
                 )}
 
                 <div className="min-w-0 flex-1">
