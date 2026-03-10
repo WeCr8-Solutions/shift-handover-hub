@@ -63,7 +63,7 @@ export function MockOversightKPIs() {
                   {s.issues > 0 ? (
                     <Badge variant="destructive" className="text-[9px] px-1.5 py-0 h-3.5">{s.issues} alert</Badge>
                   ) : (
-                    <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-3.5 text-green-400">Clear</Badge>
+                    <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-3.5 text-status-ok">Clear</Badge>
                   )}
                 </div>
               </div>
