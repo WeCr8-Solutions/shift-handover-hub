@@ -43,15 +43,15 @@ export function TestHistoryList({ history, onClearHistory }: TestHistoryListProp
                 className={cn(
                   "flex items-center justify-between p-3 rounded-lg border",
                   run.failedTests === 0 
-                    ? "bg-green-50 border-green-200 dark:bg-green-950/20 dark:border-green-800"
-                    : "bg-red-50 border-red-200 dark:bg-red-950/20 dark:border-red-800"
+                    ? "bg-status-ok/5 border-status-ok/20 dark:bg-status-ok/10 dark:border-status-ok/30"
+                    : "bg-status-critical/5 border-status-critical/20 dark:bg-status-critical/10 dark:border-status-critical/30"
                 )}
               >
                 <div className="flex items-center gap-3">
                   {run.failedTests === 0 ? (
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
+                    <CheckCircle2 className="w-5 h-5 text-status-ok" />
                   ) : (
-                    <XCircle className="w-5 h-5 text-red-600" />
+                    <XCircle className="w-5 h-5 text-status-critical" />
                   )}
                   <div>
                     <div className="font-medium text-sm">
