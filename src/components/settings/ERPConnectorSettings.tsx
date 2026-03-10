@@ -505,10 +505,10 @@ export function ERPConnectorSettings() {
                     <span
                       className={
                         lastSync.status === "success"
-                          ? "text-green-600"
+                          ? "text-status-ok"
                           : lastSync.status === "failed"
-                            ? "text-red-600"
-                            : "text-yellow-600"
+                            ? "text-status-critical"
+                            : "text-warning"
                       }
                     >
                       {lastSync.status}
