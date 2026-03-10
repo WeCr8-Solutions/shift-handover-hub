@@ -8,6 +8,7 @@ import { LayoutList, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { WorkOrderAlertTile } from "./WorkOrderAlertTile";
+import { getQueueStatusBadgeColor } from "@/lib/status-colors";
 
 // Valid state transitions matching the DB trigger
 const VALID_TRANSITIONS: Record<QueueStatus, QueueStatus[]> = {
@@ -44,14 +45,7 @@ const statusOptions: { value: QueueStatus; label: string }[] = [
 ];
 
 function getStatusColor(status: QueueStatus): string {
-  switch (status) {
-    case "pending": return "bg-muted text-muted-foreground";
-    case "queued": return "bg-purple-500/10 text-purple-600 border-purple-500/30";
-    case "in_progress": return "bg-green-500/10 text-green-600 border-green-500/30";
-    case "on_hold": return "bg-amber-500/10 text-amber-600 border-amber-500/30";
-    case "completed": return "bg-green-500/10 text-green-600 border-green-500/30";
-    case "cancelled": return "bg-red-500/10 text-red-600 border-red-500/30";
-  }
+  return getQueueStatusBadgeColor(status);
 }
 
 export function QueueListView({ items, onItemClick, onStatusChange, onDelete, onOpenRouting }: QueueListViewProps) {
