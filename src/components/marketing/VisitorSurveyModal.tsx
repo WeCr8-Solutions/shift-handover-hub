@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, forwardRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,7 +35,7 @@ const LOOKING_FOR_OPTIONS = [
   "Other",
 ];
 
-export const VisitorSurveyModal = forwardRef<HTMLDivElement>(function VisitorSurveyModal(_props, ref) {
+export function VisitorSurveyModal() {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<1 | 2>(1);
   const [heardAbout, setHeardAbout] = useState("");
@@ -48,7 +48,7 @@ export const VisitorSurveyModal = forwardRef<HTMLDivElement>(function VisitorSur
   const shouldShow = useCallback(() => {
     if (user) return false;
     if (localStorage.getItem(SURVEY_COMPLETED_KEY)) return false;
-    if (localStorage.getItem(SURVEY_DISMISSED_KEY)) return false;
+    if (sessionStorage.getItem(SURVEY_DISMISSED_KEY)) return false;
     return true;
   }, [user]);
 
@@ -65,7 +65,7 @@ export const VisitorSurveyModal = forwardRef<HTMLDivElement>(function VisitorSur
   }, [shouldShow]);
 
   const handleDismiss = () => {
-    localStorage.setItem(SURVEY_DISMISSED_KEY, "1");
+    sessionStorage.setItem(SURVEY_DISMISSED_KEY, "1");
     sessionStorage.removeItem(SURVEY_MODAL_ACTIVE_KEY);
     setOpen(false);
     trackEvent("survey_dismissed", {});
@@ -200,4 +200,4 @@ export const VisitorSurveyModal = forwardRef<HTMLDivElement>(function VisitorSur
       </DrawerContent>
     </Drawer>
   );
-});
+}
