@@ -66,7 +66,7 @@ export function MachineCard({ machine, compact = false, onClick }: MachineCardPr
               <TooltipTrigger asChild>
                 <div>
                   {machine.connectionOk ? (
-                    <Wifi className="w-3.5 h-3.5 text-green-500" />
+                    <Wifi className="w-3.5 h-3.5 text-status-ok" />
                   ) : (
                     <WifiOff className="w-3.5 h-3.5 text-muted-foreground" />
                   )}
