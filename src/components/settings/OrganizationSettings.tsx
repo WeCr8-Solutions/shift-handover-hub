@@ -326,9 +326,9 @@ export function OrganizationSettings({ isDeveloper = false }: OrganizationSettin
       )}
 
       {isAdmin && (
-        <Card className="border-amber-500/30">
+         <Card className="border-warning/30">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-amber-600">
+            <CardTitle className="flex items-center gap-2 text-warning">
               <Shield className="h-5 w-5" />
               ITAR / Export Control Settings
             </CardTitle>
