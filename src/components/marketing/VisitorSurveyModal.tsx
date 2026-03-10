@@ -60,7 +60,7 @@ export const VisitorSurveyModal = forwardRef<HTMLDivElement>(function VisitorSur
         sessionStorage.setItem(SURVEY_MODAL_ACTIVE_KEY, "1");
         trackEvent("survey_shown", { source_page: window.location.pathname });
       }
-    }, 10000);
+    }, 8000);
     return () => clearTimeout(timer);
   }, [shouldShow]);
 
