@@ -46,9 +46,9 @@ export function MockVisibilityDashboard() {
           {kpis.map((k) => (
             <div key={k.label} className="rounded-lg bg-muted/40 p-2.5 text-center border border-border">
               <span className="text-[10px] text-muted-foreground block">{k.label}</span>
-              <span className={`font-bold text-lg ${k.good ? "text-foreground" : "text-red-400"}`}>{k.value}</span>
+              <span className={`font-bold text-lg ${k.good ? "text-foreground" : "text-status-critical"}`}>{k.value}</span>
               {k.trend && (
-                <span className={`text-[10px] block ${k.good ? "text-green-400" : "text-red-400"}`}>{k.trend} vs last shift</span>
+                <span className={`text-[10px] block ${k.good ? "text-status-ok" : "text-status-critical"}`}>{k.trend} vs last shift</span>
               )}
             </div>
           ))}
