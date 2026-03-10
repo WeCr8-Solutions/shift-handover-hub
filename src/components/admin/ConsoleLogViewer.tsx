@@ -74,12 +74,12 @@ export function ConsoleLogViewer({
               {logs.length}
             </Badge>
             {levelCounts.error > 0 && (
-              <Badge className="bg-red-500/20 text-red-400 text-xs">
+              <Badge className={`${LOG_LEVEL_BADGE_STYLES.error} text-xs`}>
                 {levelCounts.error} error{levelCounts.error > 1 ? "s" : ""}
               </Badge>
             )}
             {levelCounts.warn > 0 && (
-              <Badge className="bg-amber-500/20 text-amber-400 text-xs">
+              <Badge className={`${LOG_LEVEL_BADGE_STYLES.warn} text-xs`}>
                 {levelCounts.warn} warn
               </Badge>
             )}
