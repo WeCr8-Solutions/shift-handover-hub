@@ -1149,7 +1149,7 @@ export function RoleScopeTestRunner() {
                     <span>{currentRun.warningTests} warnings</span>
                   </div>
                 )}
-                <div className="flex items-center gap-1 text-red-600">
+                <div className="flex items-center gap-1 text-status-critical">
                   <XCircle className="w-4 h-4" />
                   <span>{currentRun.failedTests} failed</span>
                 </div>
