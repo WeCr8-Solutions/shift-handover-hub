@@ -190,8 +190,8 @@ function getStatusInfo(state: string | null): { label: string; color: string; bg
 
 const PRIORITY_COLORS: Record<string, string> = {
   critical: "bg-destructive text-destructive-foreground",
-  urgent: "bg-amber-500 text-white",
-  high: "bg-orange-500 text-white",
+  urgent: "bg-warning text-primary-foreground",
+  high: "bg-priority-urgent text-primary-foreground",
   normal: "bg-secondary text-secondary-foreground",
   low: "bg-muted text-muted-foreground",
 };

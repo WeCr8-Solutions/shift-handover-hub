@@ -294,11 +294,11 @@ export function StationWorkOrderPicker({ stationId, stationName, className }: St
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "critical":
-        return "bg-red-500 text-white";
+        return "bg-priority-critical text-primary-foreground";
       case "urgent":
-        return "bg-orange-500 text-white";
+        return "bg-priority-urgent text-primary-foreground";
       case "high":
-        return "bg-amber-500 text-white";
+        return "bg-priority-high text-primary-foreground";
       default:
         return "bg-muted text-muted-foreground";
     }

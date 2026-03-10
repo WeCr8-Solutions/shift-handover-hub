@@ -83,18 +83,18 @@ interface PerformanceUpdatesReviewProps {
 }
 
 const statusColors: Record<string, string> = {
-  pending: "bg-yellow-500/10 text-yellow-600 border-yellow-500/30",
-  reviewed: "bg-blue-500/10 text-blue-600 border-blue-500/30",
-  approved: "bg-green-500/10 text-green-600 border-green-500/30",
-  implemented: "bg-purple-500/10 text-purple-600 border-purple-500/30",
-  rejected: "bg-red-500/10 text-red-600 border-red-500/30",
+  pending: "bg-warning/10 text-warning border-warning/30",
+  reviewed: "bg-status-waiting/10 text-status-waiting border-status-waiting/30",
+  approved: "bg-status-ok/10 text-status-ok border-status-ok/30",
+  implemented: "bg-role-org-owner/10 text-role-org-owner border-role-org-owner/30",
+  rejected: "bg-status-critical/10 text-status-critical border-status-critical/30",
 };
 
 const priorityColors: Record<string, string> = {
-  low: "bg-slate-500/10 text-slate-600",
-  normal: "bg-blue-500/10 text-blue-600",
-  high: "bg-orange-500/10 text-orange-600",
-  critical: "bg-red-500/10 text-red-600",
+  low: "bg-muted text-muted-foreground",
+  normal: "bg-status-waiting/10 text-status-waiting",
+  high: "bg-priority-urgent/10 text-priority-urgent",
+  critical: "bg-status-critical/10 text-status-critical",
 };
 
 export function PerformanceUpdatesReview({ isAdmin }: PerformanceUpdatesReviewProps) {

@@ -40,9 +40,9 @@ interface QueueItem {
 }
 
 const statusConfig: Record<string, { color: string; Icon: typeof Clock }> = {
-  pending: { color: "bg-yellow-500", Icon: Clock },
-  processing: { color: "bg-blue-500", Icon: Loader2 },
-  sent: { color: "bg-green-500", Icon: CheckCircle2 },
+  pending: { color: "bg-status-warning", Icon: Clock },
+  processing: { color: "bg-status-waiting", Icon: Loader2 },
+  sent: { color: "bg-status-ok", Icon: CheckCircle2 },
   failed: { color: "bg-destructive", Icon: XCircle },
 };
 

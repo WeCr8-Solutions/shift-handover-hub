@@ -101,8 +101,8 @@ export function OperatorStationKanban({
   const priorityDot = (p: string) => {
     switch (p) {
       case "critical": return "bg-destructive";
-      case "urgent": return "bg-orange-500";
-      case "high": return "bg-yellow-500";
+      case "urgent": return "bg-priority-urgent";
+      case "high": return "bg-priority-high";
       default: return "bg-muted-foreground/40";
     }
   };
