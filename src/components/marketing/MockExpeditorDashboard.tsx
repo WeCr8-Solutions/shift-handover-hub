@@ -23,9 +23,9 @@ const alerts = [
 ];
 
 const floorSummary = [
-  { label: "Running", count: 4, color: "bg-green-500" },
-  { label: "Setup", count: 2, color: "bg-yellow-500" },
-  { label: "Down", count: 1, color: "bg-red-500" },
+  { label: "Running", count: 4, color: "bg-status-ok" },
+  { label: "Setup", count: 2, color: "bg-status-warning" },
+  { label: "Down", count: 1, color: "bg-status-critical" },
   { label: "Idle", count: 1, color: "bg-muted-foreground" },
 ];
 
