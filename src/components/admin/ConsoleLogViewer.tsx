@@ -108,7 +108,7 @@ export function ConsoleLogViewer({
                     isActive
                       ? level === "all"
                         ? "bg-primary/20 text-primary"
-                        : LEVEL_BADGE_STYLES[level]
+                        : LOG_LEVEL_BADGE_STYLES[level]
                       : "text-muted-foreground"
                   }`}
                   onClick={() => setLevelFilter(level)}
