@@ -100,13 +100,13 @@ export function MockShiftTimeline() {
                   )}
                 </div>
                 {h.status === "complete" && (
-                  <span className="text-[10px] text-green-400 flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500" /> Verified
+                  <span className="text-[10px] text-status-ok flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-status-ok" /> Verified
                   </span>
                 )}
                 {h.status === "flagged" && (
-                  <span className="text-[10px] text-red-400 flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-red-500" /> Needs Attention
+                  <span className="text-[10px] text-status-critical flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-status-critical" /> Needs Attention
                   </span>
                 )}
                 {h.status === "pending" && (
