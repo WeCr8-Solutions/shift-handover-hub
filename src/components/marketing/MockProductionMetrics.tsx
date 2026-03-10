@@ -77,11 +77,11 @@ export function MockProductionMetrics() {
           </div>
           <div className="rounded-lg bg-muted/40 p-2 text-center border border-border">
             <span className="text-[10px] text-muted-foreground block">Scrap Rate</span>
-            <span className="font-bold text-red-400">2.9%</span>
+            <span className="font-bold text-status-critical">2.9%</span>
           </div>
           <div className="rounded-lg bg-muted/40 p-2 text-center border border-border">
             <span className="text-[10px] text-muted-foreground block">On Target</span>
-            <span className="font-bold text-green-400">1 of 4</span>
+            <span className="font-bold text-status-ok">1 of 4</span>
           </div>
         </div>
       </div>

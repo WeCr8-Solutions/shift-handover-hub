@@ -77,7 +77,7 @@ export function MockVisibilityDashboard() {
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Activity Feed</span>
             <Badge variant="outline" className="text-[10px] gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full bg-status-ok animate-pulse" />
               Live
             </Badge>
           </div>

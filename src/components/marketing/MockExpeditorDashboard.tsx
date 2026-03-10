@@ -78,7 +78,7 @@ export function MockExpeditorDashboard() {
         <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1">
           <span>3 alerts · 12 active jobs · 8 stations monitored</span>
           <span className="flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+            <span className="w-1.5 h-1.5 rounded-full bg-status-ok animate-pulse" />
             Live
           </span>
         </div>

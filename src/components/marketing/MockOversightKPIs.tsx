@@ -72,7 +72,7 @@ export function MockOversightKPIs() {
         </div>
 
         <div className="text-[10px] text-muted-foreground flex items-center gap-1">
-          <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+          <span className="w-1.5 h-1.5 rounded-full bg-status-ok animate-pulse" />
           Updated 30 seconds ago · Viewing as: <strong className="text-foreground">Shop Owner</strong>
         </div>
       </div>

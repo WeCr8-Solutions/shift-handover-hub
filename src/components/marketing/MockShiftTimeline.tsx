@@ -121,7 +121,7 @@ export function MockShiftTimeline() {
                     <span>{h.job}</span>
                     <span>Parts: {h.parts}</span>
                   </div>
-                  <div className={`text-[10px] ${h.status === "flagged" ? "text-red-400" : "text-muted-foreground"}`}>
+                  <div className={`text-[10px] ${h.status === "flagged" ? "text-status-critical" : "text-muted-foreground"}`}>
                     {h.notes}
                   </div>
                 </>

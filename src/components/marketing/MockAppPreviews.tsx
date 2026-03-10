@@ -163,8 +163,8 @@ export function MockDowntimeLog() {
                 </td>
                 <td className="py-2 text-foreground">{r.dur}</td>
                 <td className="py-2">
-                  <span className={`inline-flex items-center gap-1 ${r.resolved ? "text-green-500" : "text-yellow-500"}`}>
-                    <div className={`h-1.5 w-1.5 rounded-full ${r.resolved ? "bg-green-500" : "bg-yellow-500"}`} />
+                  <span className={`inline-flex items-center gap-1 ${r.resolved ? "text-status-ok" : "text-status-warning"}`}>
+                    <div className={`h-1.5 w-1.5 rounded-full ${r.resolved ? "bg-status-ok" : "bg-status-warning"}`} />
                     {r.resolved ? "Resolved" : "Active"}
                   </span>
                 </td>

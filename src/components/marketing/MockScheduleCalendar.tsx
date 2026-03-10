@@ -80,7 +80,7 @@ export function MockScheduleCalendar() {
         })}
 
         <div className="flex items-center gap-4 pt-2 text-[10px] text-muted-foreground">
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-red-500/40" /> Rush</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-status-critical/40" /> Rush</span>
           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-primary/40" /> High Priority</span>
           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-muted" /> Normal</span>
           <span className="ml-auto">Drag to reschedule</span>

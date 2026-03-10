@@ -25,8 +25,8 @@ const routingSteps = [
 ];
 
 const statusStyles: Record<string, { dot: string; text: string; label: string }> = {
-  complete: { dot: "bg-green-500", text: "text-green-400", label: "Complete" },
-  "in-progress": { dot: "bg-blue-500", text: "text-blue-400", label: "In Progress" },
+  complete: { dot: "bg-status-ok", text: "text-status-ok", label: "Complete" },
+  "in-progress": { dot: "bg-status-waiting", text: "text-status-waiting", label: "In Progress" },
   pending: { dot: "bg-muted-foreground/50", text: "text-muted-foreground", label: "Pending" },
 };
 

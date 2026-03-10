@@ -72,11 +72,11 @@ export function MockUtilizationChart() {
           </div>
           <div className="rounded-lg bg-muted/40 p-2 text-center border border-border">
             <span className="text-[10px] text-muted-foreground block">Total Downtime</span>
-            <span className="font-bold text-red-400">2h 47m</span>
+            <span className="font-bold text-status-critical">2h 47m</span>
           </div>
           <div className="rounded-lg bg-muted/40 p-2 text-center border border-border">
             <span className="text-[10px] text-muted-foreground block">Setup Time</span>
-            <span className="font-bold text-yellow-400">1h 32m</span>
+            <span className="font-bold text-status-warning">1h 32m</span>
           </div>
         </div>
       </div>
