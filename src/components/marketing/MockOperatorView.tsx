@@ -26,7 +26,7 @@ export function MockOperatorView() {
             <div className="font-semibold">CNC-01</div>
             <div className="text-[10px] text-muted-foreground">Checked in · 2nd Shift</div>
           </div>
-          <Badge className="text-[10px] bg-green-500/20 text-green-400 border-green-500/30">Running</Badge>
+          <Badge className="text-[10px] bg-status-ok/20 text-status-ok border-status-ok/30">Running</Badge>
         </div>
 
         {/* Current job */}
