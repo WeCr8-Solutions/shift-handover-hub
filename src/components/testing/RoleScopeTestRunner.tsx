@@ -745,10 +745,10 @@ function getCategoryIcon(icon: string) {
 
 function TestStatusIcon({ status }: { status: RoleScopeTestResult["status"] }) {
   switch (status) {
-    case "pass": return <CheckCircle2 className="w-4 h-4 text-green-500" />;
-    case "fail": return <XCircle className="w-4 h-4 text-red-500" />;
-    case "warning": return <AlertCircle className="w-4 h-4 text-amber-500" />;
-    case "running": return <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />;
+    case "pass": return <CheckCircle2 className="w-4 h-4 text-status-ok" />;
+    case "fail": return <XCircle className="w-4 h-4 text-status-critical" />;
+    case "warning": return <AlertCircle className="w-4 h-4 text-warning" />;
+    case "running": return <Loader2 className="w-4 h-4 text-status-waiting animate-spin" />;
     case "pending": return <Clock className="w-4 h-4 text-muted-foreground" />;
     case "skipped": return <Eye className="w-4 h-4 text-muted-foreground" />;
     default: return <AlertCircle className="w-4 h-4 text-muted-foreground" />;
