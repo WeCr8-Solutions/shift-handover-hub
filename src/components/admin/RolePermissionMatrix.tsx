@@ -5,13 +5,13 @@ import { Check, X, Shield, Code, UserCheck, Wrench, Eye, Building2, Users } from
 import { permissionMatrix } from "@/hooks/useRoleArchitecture";
 
 const roleHeaders = [
-  { key: "admin", label: "Admin", icon: Shield, color: "text-red-500" },
-  { key: "developer", label: "Developer", icon: Code, color: "text-orange-500" },
-  { key: "supervisor", label: "Supervisor", icon: UserCheck, color: "text-sky-500" },
-  { key: "operator", label: "Operator", icon: Wrench, color: "text-green-500" },
-  { key: "viewer", label: "Viewer", icon: Eye, color: "text-gray-500" },
-  { key: "orgOwner", label: "Org Owner", icon: Building2, color: "text-purple-500" },
-  { key: "orgAdmin", label: "Org Admin", icon: Users, color: "text-indigo-500" },
+  { key: "admin", label: "Admin", icon: Shield, color: "text-role-admin" },
+  { key: "developer", label: "Developer", icon: Code, color: "text-role-developer" },
+  { key: "supervisor", label: "Supervisor", icon: UserCheck, color: "text-role-supervisor" },
+  { key: "operator", label: "Operator", icon: Wrench, color: "text-role-operator" },
+  { key: "viewer", label: "Viewer", icon: Eye, color: "text-role-viewer" },
+  { key: "orgOwner", label: "Org Owner", icon: Building2, color: "text-role-org-owner" },
+  { key: "orgAdmin", label: "Org Admin", icon: Users, color: "text-role-org-admin" },
 ];
 
 export function RolePermissionMatrix() {
