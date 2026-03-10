@@ -490,9 +490,9 @@ export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadD
 
           {/* Upload Complete */}
           {progress.stage === 'complete' && uploadResult && (
-            <Card className="border-green-500">
+             <Card className="border-status-ok">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-green-600 flex items-center gap-2">
+                <CardTitle className="text-sm font-medium text-status-ok flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4" />
                   Upload Complete!
                 </CardTitle>
