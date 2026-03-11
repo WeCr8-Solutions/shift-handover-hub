@@ -1,6 +1,6 @@
 # JobLine.ai
 
-**Digital Expeditor & Smart Shift Handoff System for Manufacturing**
+## Digital Expeditor & Smart Shift Handoff System for Manufacturing
 
 JobLine.ai replaces clipboards and paper-based processes on the production floor with real-time digital coordination. Purpose-built for CNC machine shops, aerospace, defense, and precision manufacturing teams, it streamlines shift handoffs, work order tracking, station monitoring, and team collaboration — so nothing falls through the cracks between shifts.
 
@@ -20,7 +20,7 @@ JobLine.ai replaces clipboards and paper-based processes on the production floor
 ## Tech Stack
 
 | Layer | Technology |
-|-------|-----------|
+| ----- | ---------- |
 | Frontend | React 18, TypeScript, Vite 5, Tailwind CSS, Radix UI, TanStack Query |
 | Backend | Supabase (PostgreSQL), Deno Edge Functions, Row-Level Security |
 | Desktop | Electron (Windows installer + portable) |
@@ -48,8 +48,24 @@ npm run dev
 
 Open the [Lovable project](https://lovable.dev) and click **Share → Publish**.
 
+Lovable publishes a snapshot of the project. GitHub pushes do not update the live site until you run **Publish → Update** inside Lovable.
+
 To connect a custom domain, navigate to **Project → Settings → Domains → Connect Domain**.  
 See: [Custom domain docs](https://docs.lovable.dev/features/custom-domain#custom-domain)
+
+### Deterministic Deploy (Vercel)
+
+This repo now includes [vercel.json](vercel.json) and a generated [public/release.json](public/release.json) manifest so every deployment exposes its active commit and build stamp.
+
+1. Import the repository into Vercel.
+2. Keep the default build command: `npm run build`.
+3. Keep the output directory: `dist`.
+4. After deploy, verify `https://your-domain/release.json` shows the expected commit SHA.
+
+Detailed guides:
+
+- [docs/deploy/live-release-checklist.md](docs/deploy/live-release-checklist.md)
+- [docs/deploy/vercel-deploy.md](docs/deploy/vercel-deploy.md)
 
 ### Self-Hosted (ITAR-Compliant)
 
