@@ -444,7 +444,7 @@ export default function Landing() {
         {/* Background Effects */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-1/4 left-1/4 w-48 sm:w-72 md:w-96 h-48 sm:h-72 md:h-96 bg-primary/20 rounded-full blur-[80px] sm:blur-[100px] md:blur-[128px] animate-pulse" />
-          <div className="absolute bottom-1/4 right-1/4 w-48 sm:w-72 md:w-96 h-48 sm:h-72 md:h-96 bg-blue-500/10 rounded-full blur-[80px] sm:blur-[100px] md:blur-[128px] animate-pulse" style={{ animationDelay: "1s" }} />
+          <div className="absolute bottom-1/4 right-1/4 w-48 sm:w-72 md:w-96 h-48 sm:h-72 md:h-96 bg-blue-500/10 rounded-full blur-[80px] sm:blur-[100px] md:blur-[128px] animate-pulse animation-delay-1000" />
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#1a1a2e_1px,transparent_1px),linear-gradient(to_bottom,#1a1a2e_1px,transparent_1px)] bg-[size:2rem_2rem] sm:bg-[size:3rem_3rem] md:bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_110%)]" />
         </div>
 
@@ -588,19 +588,19 @@ export default function Landing() {
                       <span className="text-[10px] sm:text-xs font-medium text-muted-foreground">Output by Station</span>
                       <Badge variant="outline" className="text-[8px] px-1 py-0">Today</Badge>
                     </div>
-                    <div className="flex items-end gap-1.5" style={{ height: '5rem' }}>
+                    <div className="flex h-20 items-end gap-1.5">
                       {[
-                        { h: 75, label: "CNC-01" },
-                        { h: 58, label: "CNC-02" },
-                        { h: 90, label: "CNC-03" },
-                        { h: 40, label: "LTH-01" },
-                        { h: 65, label: "LTH-02" },
-                        { h: 85, label: "MIL-01" },
-                        { h: 20, label: "MIL-02" },
-                        { h: 70, label: "GRD-01" },
+                        { hClass: "h-[75%]", label: "CNC-01" },
+                        { hClass: "h-[58%]", label: "CNC-02" },
+                        { hClass: "h-[90%]", label: "CNC-03" },
+                        { hClass: "h-[40%]", label: "LTH-01" },
+                        { hClass: "h-[65%]", label: "LTH-02" },
+                        { hClass: "h-[85%]", label: "MIL-01" },
+                        { hClass: "h-[20%]", label: "MIL-02" },
+                        { hClass: "h-[70%]", label: "GRD-01" },
                       ].map((bar) => (
                         <div key={bar.label} className="flex-1 flex flex-col justify-end items-center h-full">
-                          <div className="w-full rounded-t-sm bg-primary/80" style={{ height: `${bar.h}%` }} />
+                          <div className={cn("w-full rounded-t-sm bg-primary/80", bar.hClass)} />
                           <span className="text-[6px] sm:text-[7px] text-muted-foreground font-mono truncate w-full text-center mt-0.5">{bar.label}</span>
                         </div>
                       ))}
@@ -647,10 +647,10 @@ export default function Landing() {
                   </div>
                   <div className="divide-y divide-border/30">
                     {[
-                      { id: "CNC-01", operator: "Mike R.", part: "PN-4521", wo: "WO-0847", progress: 78, status: "running" },
-                      { id: "CNC-02", operator: "Sarah C.", part: "PN-8832", wo: "WO-0851", progress: 45, status: "running" },
-                      { id: "LATHE-01", operator: "James W.", part: "PN-1127", wo: "WO-0849", progress: 12, status: "setup" },
-                      { id: "MILL-03", operator: "Lisa M.", part: "PN-9943", wo: "WO-0853", progress: 92, status: "running" },
+                      { id: "CNC-01", operator: "Mike R.", part: "PN-4521", wo: "WO-0847", progress: 78, progressClass: "w-[78%]", status: "running" },
+                      { id: "CNC-02", operator: "Sarah C.", part: "PN-8832", wo: "WO-0851", progress: 45, progressClass: "w-[45%]", status: "running" },
+                      { id: "LATHE-01", operator: "James W.", part: "PN-1127", wo: "WO-0849", progress: 12, progressClass: "w-[12%]", status: "setup" },
+                      { id: "MILL-03", operator: "Lisa M.", part: "PN-9943", wo: "WO-0853", progress: 92, progressClass: "w-[92%]", status: "running" },
                     ].map((station) => (
                       <div key={station.id} className="flex items-center gap-2 px-2.5 py-1.5">
                         <div className={cn(
@@ -661,7 +661,7 @@ export default function Landing() {
                         <span className="text-[10px] text-muted-foreground w-14 truncate flex-shrink-0">{station.operator}</span>
                         <span className="text-[10px] font-mono text-primary w-14 flex-shrink-0">{station.wo}</span>
                         <div className="flex-1 h-1 bg-secondary rounded-full overflow-hidden">
-                          <div className={cn("h-full rounded-full", station.status === "running" ? "bg-green-500" : "bg-amber-500")} style={{ width: `${station.progress}%` }} />
+                          <div className={cn("h-full rounded-full", station.progressClass, station.status === "running" ? "bg-green-500" : "bg-amber-500")} />
                         </div>
                         <span className="text-[9px] font-mono text-muted-foreground w-8 text-right">{station.progress}%</span>
                       </div>

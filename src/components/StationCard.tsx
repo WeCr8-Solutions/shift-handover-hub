@@ -782,18 +782,16 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
               {effectiveJob.partsComplete} / {effectiveJob.partsRequired}
             </span>
           </div>
-          <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
-            <div 
-              className={cn(
-                "h-full rounded-full transition-all duration-500",
-                stateAttr === "running" && "bg-state-running",
-                stateAttr === "setup" && "bg-state-setup",
-                stateAttr === "waiting" && "bg-state-waiting",
-                stateAttr === "down" && "bg-state-down"
-              )}
-              style={{ width: `${progress}%` }}
-            />
-          </div>
+          <Progress
+            value={progress}
+            className={cn(
+              "h-1.5",
+              stateAttr === "running" && "[&>div]:bg-state-running",
+              stateAttr === "setup" && "[&>div]:bg-state-setup",
+              stateAttr === "waiting" && "[&>div]:bg-state-waiting",
+              stateAttr === "down" && "[&>div]:bg-state-down"
+            )}
+          />
         </div>
       )}
 

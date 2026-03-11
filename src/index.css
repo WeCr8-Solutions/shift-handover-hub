@@ -213,4 +213,8 @@
   .text-gradient {
     @apply bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent;
   }
+
+  .animation-delay-1000 {
+    animation-delay: 1s;
+  }
 }
