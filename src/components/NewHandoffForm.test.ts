@@ -329,13 +329,13 @@ describe("NewHandoffForm Logic", () => {
 
     it("handles corrupted draft gracefully", () => {
       localStorage.setItem(STORAGE_KEY, "corrupted{{{");
-      let result = null;
+      let result: ReturnType<typeof getInitialFormData> | null = null;
       try {
         result = JSON.parse(localStorage.getItem(STORAGE_KEY)!);
       } catch {
         result = getInitialFormData("John");
       }
-      expect(result.outgoingOperator).toBe("John");
+      expect(result!.outgoingOperator).toBe("John");
     });
   });
 });

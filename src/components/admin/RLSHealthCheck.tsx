@@ -128,6 +128,7 @@ export function RLSHealthCheck() {
       const { data, error } = await supabase.functions.invoke<RLSHealthRun>("rls-health");
 
       if (error) throw error;
+      if (!data) throw new Error("No data returned");
 
       setCurrentRun(data);
       fetchHistory(); // Refresh history

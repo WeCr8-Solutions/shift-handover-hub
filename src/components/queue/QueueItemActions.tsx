@@ -149,7 +149,7 @@ export function QueueItemActions({
           _current_station_id: item.station_id,
           _actor_id: user.id,
           _is_override: false,
-          _override_reason: null,
+          _override_reason: undefined,
         });
 
         if (error) {

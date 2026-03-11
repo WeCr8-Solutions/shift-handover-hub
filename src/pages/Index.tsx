@@ -63,7 +63,7 @@ function toStationInfo(station: Station): StationInfo {
       ? {
           workOrder: status.current_job_work_order,
           partNumber: status.current_job_part_number || "",
-          state: status.current_job_state as StationInfo["currentJob"]["state"],
+          state: status.current_job_state as StationInfo["currentJob"] extends undefined ? never : NonNullable<StationInfo["currentJob"]>["state"],
           operator: status.current_operator_name || "",
           partsComplete: status.parts_complete || 0,
           partsRequired: status.parts_required || 0,

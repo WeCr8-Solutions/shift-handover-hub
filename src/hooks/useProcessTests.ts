@@ -87,7 +87,7 @@ const routingTests: TestDefinition[] = [
       const hasRequiredFields = outsideProcessingStep.is_outside_process && 
         outsideProcessingStep.vendor_name && 
         outsideProcessingStep.estimated_days > 0;
-      return { success: hasRequiredFields, details: `Outside process vendor: ${outsideProcessingStep.vendor_name}` };
+      return { success: !!hasRequiredFields, details: `Outside process vendor: ${outsideProcessingStep.vendor_name}` };
     },
   },
 ];
@@ -127,7 +127,7 @@ const workOrderTests: TestDefinition[] = [
     name: "Work order cannot transition from completed to in_progress",
     category: "Work Order Flow",
     test: async () => {
-      const validTransitions = {
+      const validTransitions: Record<string, string[]> = {
         completed: [], // Terminal state - no transitions allowed
       };
       const cannotTransition = !validTransitions.completed.includes("in_progress");

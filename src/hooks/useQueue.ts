@@ -292,8 +292,8 @@ export function useQueue(filters?: {
         ? input.routing_steps[0].station_id || null
         : input.station_id || null;
 
-      const { data: insertedItem, error } = await supabase.from("queue_items").insert({
-        organization_id: organization?.id || null,
+      const { data: insertedItem, error } = await supabase.from("queue_items").insert([{
+        organization_id: organization?.id || "",
         team_id: currentTeam?.id || null,
         item_type: input.item_type,
         title: input.title,
@@ -326,7 +326,7 @@ export function useQueue(filters?: {
         part_catalog_id: input.part_catalog_id || null,
         required_tolerance: input.required_tolerance || null,
         surface_finish: input.surface_finish || null,
-      }).select("id").single();
+      }]).select("id").single();
 
       if (error) return { error: error.message };
 
@@ -515,8 +515,8 @@ export function useQueue(filters?: {
       const { error } = await supabase.rpc("reorder_queue_item", {
         _item_id: itemId,
         _new_position: newPosition,
-        _org_id: organization?.id || null,
-        _team_id: currentTeam?.id || null,
+        _org_id: organization?.id || undefined,
+        _team_id: currentTeam?.id || undefined,
       });
 
       if (error) return { error: error.message };

@@ -55,9 +55,10 @@ export function useShiftSchedules() {
   const createShift = async (shift: Omit<ShiftSchedule, "id">) => {
     if (!user) return { error: "Not authenticated" };
 
+    const { organization_id: _ignored, ...shiftWithoutOrg } = shift as any;
     const { error } = await supabase.from("shift_schedules").insert({
       organization_id: organization?.id || null,
-      ...shift,
+      ...shiftWithoutOrg,
     });
 
     if (error) return { error: error.message };

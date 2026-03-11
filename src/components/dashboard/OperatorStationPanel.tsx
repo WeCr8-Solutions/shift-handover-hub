@@ -81,7 +81,7 @@ interface WorkOrder {
 
 interface RoutingStep {
   id: string;
-  station_id: string;
+  station_id: string | null;
   status: string;
   step_number: number;
   operation_name: string;
@@ -187,7 +187,7 @@ export function OperatorStationPanel({
         nextStep: nextStep || null,
         totalSteps: steps.length,
         currentStepNumber: curIdx >= 0 ? curIdx + 1 : 0,
-        allSteps: steps.map((s: RoutingStep) => ({
+        allSteps: steps.map((s) => ({
           id: s.id,
           station_id: s.station_id,
           status: s.status,
@@ -319,7 +319,7 @@ export function OperatorStationPanel({
         _current_station_id: stationId,
         _actor_id: user.id,
         _is_override: isOverride,
-        _override_reason: isOverride ? overrideReason : null,
+        _override_reason: isOverride ? overrideReason : undefined,
       });
 
       if (error) {
