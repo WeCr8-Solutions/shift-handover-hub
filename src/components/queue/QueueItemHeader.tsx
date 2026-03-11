@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { Clock, FileText, Package, User } from "lucide-react";
 import { getPriorityBadgeColor, getQueueStatusBadgeColor } from "@/lib/status-colors";
+import { ItemTypeBadge } from "@/components/queue/ItemTypeBadge";
 
 export function getPriorityColor(priority: QueuePriority): string {
   return getPriorityBadgeColor(priority);
@@ -31,12 +32,12 @@ export function QueueItemHeader({ item, assignedStation, isOverdue, elapsedTime,
   return (
     <DialogHeader className={cn(
       "rounded-t-lg -mx-6 -mt-6 px-6 pt-6 pb-4 mb-2",
-      isQuote && "bg-amber-500/10 border-b border-amber-500/30",
+      isQuote && "bg-warning/10 border-b border-warning/30",
       isWorkOrder && "bg-primary/5 border-b border-primary/20"
     )}>
       <div className="flex items-center gap-2 flex-wrap">
-        {isQuote && <Badge className="bg-amber-500 text-white text-xs font-semibold px-3">QUOTE</Badge>}
-        {isWorkOrder && <Badge className="bg-primary text-primary-foreground text-xs font-semibold px-3">WORK ORDER</Badge>}
+        {isQuote && <ItemTypeBadge type="quote" variant="solid" />}
+        {isWorkOrder && <ItemTypeBadge type="work_order" variant="solid" />}
         <Badge className={getPriorityColor(item.priority)}>{item.priority}</Badge>
         <Badge className={getStatusColor(item.status)}>{item.status.replace("_", " ")}</Badge>
         {isOverdue && <Badge variant="destructive">Overdue</Badge>}
@@ -48,7 +49,7 @@ export function QueueItemHeader({ item, assignedStation, isOverdue, elapsedTime,
         )}
       </div>
       <DialogTitle className="flex items-center gap-2">
-        {isQuote && <FileText className="w-5 h-5 text-amber-500" />}
+        {isQuote && <FileText className="w-5 h-5 text-warning" />}
         {isWorkOrder && <Package className="w-5 h-5 text-primary" />}
         {item.title}
       </DialogTitle>

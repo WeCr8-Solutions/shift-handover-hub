@@ -1,73 +1,61 @@
-# Welcome to your Lovable project
+# JobLine.ai
 
-## Project info
+**Digital Expeditor & Smart Shift Handoff System for Manufacturing**
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+JobLine.ai replaces clipboards and paper-based processes on the production floor with real-time digital coordination. Purpose-built for CNC machine shops, aerospace, defense, and precision manufacturing teams, it streamlines shift handoffs, work order tracking, station monitoring, and team collaboration — so nothing falls through the cracks between shifts.
 
-## How can I edit this code?
+## Core Features
 
-There are several ways of editing your application.
+- **Real-Time Shift Handoffs** — seamless transitions with live status updates
+- **Work Order Queue** — Kanban, list, and calendar views with priority management
+- **Station Monitoring** — track CNC machines, lathes, and work centers in real time
+- **Team Collaboration** — multi-team org structure, role-based access, QR code onboarding
+- **Quality Management** — NCR tracking, scrap reporting, and inspection results
+- **ERP Connector** — bidirectional sync with JobBoss, Epicor, and Plex
+- **Digital Expeditor Dashboard** — replaces clipboard expeditors with real-time oversight
+- **Downtime Tracking** — reason codes, trend analysis, unplanned stoppage reduction
+- **Bulk Upload** — Excel template import for work orders
+- **AI Planning Assistant** — AI-powered scheduling and priority recommendations
 
-**Use Lovable**
+## Tech Stack
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 18, TypeScript, Vite 5, Tailwind CSS, Radix UI, TanStack Query |
+| Backend | Supabase (PostgreSQL), Deno Edge Functions, Row-Level Security |
+| Desktop | Electron (Windows installer + portable) |
+| Billing | Stripe |
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+## Getting Started
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
+# Clone the repository
 git clone <YOUR_GIT_URL>
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Navigate to the project directory
+cd shift-handover-hub
 
-# Step 3: Install the necessary dependencies.
+# Install dependencies
 npm i
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start the development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Deployment
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Cloud (Lovable)
 
-**Use GitHub Codespaces**
+Open the [Lovable project](https://lovable.dev) and click **Share → Publish**.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+To connect a custom domain, navigate to **Project → Settings → Domains → Connect Domain**.  
+See: [Custom domain docs](https://docs.lovable.dev/features/custom-domain#custom-domain)
 
-## What technologies are used for this project?
+### Self-Hosted (ITAR-Compliant)
 
-This project is built with:
+Set `VITE_DISABLE_ANALYTICS=true` in your environment to suppress all external telemetry.  
+See `desktop/` for Electron packaging and `docs/prd/02-itar-self-hosted-deployment.md` for full guidance.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## License
 
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Proprietary — © JobLine.ai. All rights reserved.

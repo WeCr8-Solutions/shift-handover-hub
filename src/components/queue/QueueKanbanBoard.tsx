@@ -4,11 +4,12 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { QueueItem, QueueStatus, QueuePriority } from "@/hooks/useQueue";
 import { cn } from "@/lib/utils";
-import { Clock, User, Package, AlertTriangle, GripVertical, Plug } from "lucide-react";
+import { Clock, User, Package, AlertTriangle, GripVertical } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { StationQuickActions, type QuickActionTarget } from "@/components/dashboard/StationQuickActions";
 import { getPriorityBadgeColor, getQueueStatusColumnColor } from "@/lib/status-colors";
+import { ItemTypeBadge } from "@/components/queue/ItemTypeBadge";
 
 interface QueueKanbanBoardProps {
   itemsByStatus: Record<QueueStatus, QueueItem[]>;
@@ -74,9 +75,9 @@ function QueueCard({ item, onClick, isDragging, onDragStart, onDragEnd }: QueueC
       {...(item.item_type === "quote" ? { "data-tour": "kanban-quote-card" } : item.item_type === "work_order" ? { "data-tour": "kanban-wo-card" } : {})}
       className={cn(
         "p-3 bg-card rounded-lg border shadow-sm cursor-pointer transition-all hover:shadow-md hover:border-primary/50",
-        item.item_type === "quote" && "border-l-4 border-l-amber-500",
+        item.item_type === "quote" && "border-l-4 border-l-warning",
         item.item_type === "work_order" && "border-l-4 border-l-primary",
-        isOverdue && "border-red-300 bg-red-50/50 dark:bg-red-900/10",
+        isOverdue && "border-status-critical/30 bg-status-critical/5",
         isDragging && "opacity-50 scale-95"
       )}
     >
@@ -87,24 +88,14 @@ function QueueCard({ item, onClick, isDragging, onDragStart, onDragEnd }: QueueC
             <Badge className={cn("text-xs", getPriorityColor(item.priority))}>
               {item.priority}
             </Badge>
-            {item.item_type === "quote" ? (
-              <Badge variant="outline" className="text-xs border-amber-500/50 text-amber-600 dark:text-amber-400 bg-amber-500/10">
-                Quote
-              </Badge>
-            ) : item.item_type === "work_order" ? (
-              <Badge variant="outline" className="text-xs border-primary/50 text-primary bg-primary/10">
-                Work Order
-              </Badge>
+            {item.item_type === "quote" || item.item_type === "work_order" ? (
+              <ItemTypeBadge type={item.item_type} />
             ) : (
               <span className="text-xs text-muted-foreground">
                 {getTypeLabel(item.item_type)}
               </span>
             )}
-            {item.erp_source && (
-              <Badge variant="outline" className="text-xs border-purple-500/50 text-purple-600 dark:text-purple-400 bg-purple-500/10">
-                <Plug className="w-2.5 h-2.5 mr-0.5" />ERP
-              </Badge>
-            )}
+            {item.erp_source && <ItemTypeBadge type="erp" />}
           </div>
           <h4 className="font-medium text-sm truncate">{item.title}</h4>
           {item.work_order && (
@@ -115,7 +106,7 @@ function QueueCard({ item, onClick, isDragging, onDragStart, onDragEnd }: QueueC
           )}
           <div className="flex items-center justify-between mt-2">
             {item.due_date && (
-              <div className={cn("flex items-center gap-1 text-xs", isOverdue ? "text-red-600" : "text-muted-foreground")}>
+              <div className={cn("flex items-center gap-1 text-xs", isOverdue ? "text-status-critical" : "text-muted-foreground")}>
                 {isOverdue && <AlertTriangle className="w-3 h-3" />}
                 <Clock className="w-3 h-3" />
                 <span>{format(new Date(item.due_date), "MMM d")}</span>

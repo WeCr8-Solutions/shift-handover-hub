@@ -4,8 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { StationInfo, JobState } from "@/types/handoff";
 import { StatusBadge, getJobStateStatus, getJobStateShortName } from "./StatusBadge";
 import { workCenterIcons, workCenterColors } from "@/lib/workCenterIcons";
-import { 
-  AlertTriangle, Check, Plus, ListTodo, Lightbulb, Play, ChevronRight, 
+import {
+  AlertTriangle, Check, Plus, ListTodo, Lightbulb, Play, ChevronRight,
   Clock, Package, Pause, Timer, AlertCircle, Truck, MapPin, ArrowRight,
   CheckCircle2, Bell, Zap, Circle, Cpu
 } from "lucide-react";
@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
+import { getQueueStatusBadgeColor } from "@/lib/status-colors";
 
 interface ActiveQueueItem {
   id: string;
@@ -479,29 +480,14 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
 
   const timeInfo = getTimeInfo();
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "critical": return "text-red-600 border-red-500/50 bg-red-500/10";
-      case "urgent": return "text-orange-600 border-orange-500/50 bg-orange-500/10";
-      case "high": return "text-amber-600 border-amber-500/50 bg-amber-500/10";
-      default: return "";
-    }
-  };
-
   const getStatusDisplay = (status: string) => {
     switch (status) {
-      case "in_progress":
-        return { label: "IN PROGRESS", icon: Play, color: "bg-green-500/10 text-green-600 border-green-500/30" };
-      case "on_hold":
-        return { label: "ON HOLD", icon: Pause, color: "bg-amber-500/10 text-amber-600 border-amber-500/30" };
-      case "pending":
-        return { label: "PENDING", icon: Clock, color: "bg-blue-500/10 text-blue-600 border-blue-500/30" };
-      case "queued":
-        return { label: "QUEUED", icon: ListTodo, color: "bg-purple-500/10 text-purple-600 border-purple-500/30" };
-      case "completed":
-        return { label: "COMPLETED", icon: CheckCircle2, color: "bg-green-500/10 text-green-600 border-green-500/30" };
-      default:
-        return { label: status.toUpperCase(), icon: Clock, color: "bg-secondary" };
+      case "in_progress": return { label: "IN PROGRESS", icon: Play,        color: getQueueStatusBadgeColor("in_progress") };
+      case "on_hold":     return { label: "ON HOLD",     icon: Pause,       color: getQueueStatusBadgeColor("on_hold") };
+      case "pending":     return { label: "PENDING",     icon: Clock,       color: getQueueStatusBadgeColor("pending") };
+      case "queued":      return { label: "QUEUED",      icon: ListTodo,    color: getQueueStatusBadgeColor("queued") };
+      case "completed":   return { label: "COMPLETED",   icon: CheckCircle2, color: getQueueStatusBadgeColor("completed") };
+      default:            return { label: status.toUpperCase(), icon: Clock, color: "bg-secondary" };
     }
   };
 
@@ -545,35 +531,35 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
       {pendingDelivery && (
         <div className={cn(
           "mb-3 p-3 rounded-lg border-2 transition-all duration-300",
-          pendingDelivery.priority === "critical" && "border-red-500 bg-red-500/20 animate-pulse",
-          pendingDelivery.priority === "urgent" && "border-orange-500 bg-orange-500/20 animate-pulse",
-          pendingDelivery.priority === "high" && "border-amber-500 bg-amber-500/15",
-          !["critical", "urgent", "high"].includes(pendingDelivery.priority) && "border-amber-500 bg-amber-500/10",
-          deliveryFlash && "ring-2 ring-amber-400 ring-offset-2 ring-offset-background"
+          pendingDelivery.priority === "critical" && "border-status-critical bg-status-critical/20 animate-pulse",
+          pendingDelivery.priority === "urgent" && "border-priority-urgent bg-priority-urgent/20 animate-pulse",
+          pendingDelivery.priority === "high" && "border-warning bg-warning/15",
+          !["critical", "urgent", "high"].includes(pendingDelivery.priority) && "border-warning bg-warning/10",
+          deliveryFlash && "ring-2 ring-warning ring-offset-2 ring-offset-background"
         )}>
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <div className={cn(
                 "p-1.5 rounded-full",
-                pendingDelivery.priority === "critical" ? "bg-red-500 animate-bounce" : 
-                pendingDelivery.priority === "urgent" ? "bg-orange-500 animate-bounce" : "bg-amber-500"
+                pendingDelivery.priority === "critical" ? "bg-status-critical animate-bounce" :
+                pendingDelivery.priority === "urgent" ? "bg-priority-urgent animate-bounce" : "bg-warning"
               )}>
-                <Truck className="w-4 h-4 text-white" />
+                <Truck className="w-4 h-4 text-primary-foreground" />
               </div>
               <div>
                 <span className={cn(
                   "text-sm font-bold uppercase tracking-wide",
-                  pendingDelivery.priority === "critical" ? "text-red-600" :
-                  pendingDelivery.priority === "urgent" ? "text-orange-600" : "text-amber-700"
+                  pendingDelivery.priority === "critical" ? "text-status-critical" :
+                  pendingDelivery.priority === "urgent" ? "text-priority-urgent" : "text-warning"
                 )}>
                   ⚠️ NEEDS DELIVERY
                 </span>
                 {pendingDelivery.priority && pendingDelivery.priority !== "normal" && pendingDelivery.priority !== "low" && (
                   <Badge className={cn(
                     "ml-2 text-[9px]",
-                    pendingDelivery.priority === "critical" && "bg-red-600",
-                    pendingDelivery.priority === "urgent" && "bg-orange-600",
-                    pendingDelivery.priority === "high" && "bg-amber-600"
+                    pendingDelivery.priority === "critical" && "bg-status-critical",
+                    pendingDelivery.priority === "urgent" && "bg-priority-urgent",
+                    pendingDelivery.priority === "high" && "bg-warning"
                   )}>
                     <Zap className="w-2 h-2 mr-0.5" />
                     {pendingDelivery.priority.toUpperCase()}
@@ -600,23 +586,23 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
       {incomingItems.length > 0 && (
         <div className={cn(
           "mb-3 p-3 rounded-lg border-2 transition-all",
-          incomingItems.some(i => i.priority === "critical") && "border-red-400 bg-red-500/10",
-          incomingItems.some(i => i.priority === "urgent") && !incomingItems.some(i => i.priority === "critical") && "border-orange-400 bg-orange-500/10",
-          !incomingItems.some(i => ["critical", "urgent"].includes(i.priority)) && "border-blue-400 bg-blue-500/10"
+          incomingItems.some(i => i.priority === "critical") && "border-status-critical/70 bg-status-critical/10",
+          incomingItems.some(i => i.priority === "urgent") && !incomingItems.some(i => i.priority === "critical") && "border-priority-urgent/70 bg-priority-urgent/10",
+          !incomingItems.some(i => ["critical", "urgent"].includes(i.priority)) && "border-status-waiting/70 bg-status-waiting/10"
         )}>
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <div className={cn(
                 "p-1.5 rounded-full",
-                incomingItems.some(i => i.priority === "critical") ? "bg-red-500" :
-                incomingItems.some(i => i.priority === "urgent") ? "bg-orange-500" : "bg-blue-500"
+                incomingItems.some(i => i.priority === "critical") ? "bg-status-critical" :
+                incomingItems.some(i => i.priority === "urgent") ? "bg-priority-urgent" : "bg-status-waiting"
               )}>
-                <Bell className="w-4 h-4 text-white" />
+                <Bell className="w-4 h-4 text-primary-foreground" />
               </div>
               <span className={cn(
                 "text-sm font-bold uppercase tracking-wide",
-                incomingItems.some(i => i.priority === "critical") ? "text-red-600" :
-                incomingItems.some(i => i.priority === "urgent") ? "text-orange-600" : "text-blue-700"
+                incomingItems.some(i => i.priority === "critical") ? "text-status-critical" :
+                incomingItems.some(i => i.priority === "urgent") ? "text-priority-urgent" : "text-status-waiting"
               )}>
                 📦 {incomingItems.length} INCOMING
               </span>
@@ -637,9 +623,9 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
                 {item.priority && item.priority !== "normal" && item.priority !== "low" && (
                   <Badge className={cn(
                     "text-[9px]",
-                    item.priority === "critical" && "bg-red-600",
-                    item.priority === "urgent" && "bg-orange-600",
-                    item.priority === "high" && "bg-amber-600"
+                    item.priority === "critical" && "bg-status-critical",
+                    item.priority === "urgent" && "bg-priority-urgent",
+                    item.priority === "high" && "bg-warning"
                   )}>
                     {item.priority.toUpperCase()}
                   </Badge>
@@ -657,10 +643,10 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
 
       {/* Queued Items Display (items waiting to be started at this station) */}
       {!activeQueueItem && queuedItems.length > 0 && (
-        <div className="mb-3 p-2.5 rounded-lg border border-purple-500/50 bg-purple-500/10">
+        <div className="mb-3 p-2.5 rounded-lg border border-role-org-owner/50 bg-role-org-owner/10">
           <div className="flex items-center gap-2 mb-1.5">
-            <ListTodo className="w-4 h-4 text-purple-600" />
-            <span className="text-xs font-semibold text-purple-700">
+            <ListTodo className="w-4 h-4 text-role-org-owner" />
+            <span className="text-xs font-semibold text-role-org-owner">
               {queueCount} {queueCount === 1 ? "Order" : "Orders"} in Queue
             </span>
           </div>
@@ -674,9 +660,9 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
                 {item.priority && item.priority !== "normal" && item.priority !== "low" && (
                   <Badge variant="outline" className={cn(
                     "text-[9px]",
-                    item.priority === "critical" && "bg-red-500/20 text-red-600 border-red-500/50",
-                    item.priority === "urgent" && "bg-orange-500/20 text-orange-600 border-orange-500/50",
-                    item.priority === "high" && "bg-amber-500/20 text-amber-600 border-amber-500/50"
+                    item.priority === "critical" && "bg-status-critical/20 text-status-critical border-status-critical/50",
+                    item.priority === "urgent" && "bg-priority-urgent/20 text-priority-urgent border-priority-urgent/50",
+                    item.priority === "high" && "bg-warning/20 text-warning border-warning/50"
                   )}>
                     {item.priority}
                   </Badge>
@@ -696,9 +682,8 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
       {activeQueueItem && (
         <div className={cn(
           "mb-3 p-2 rounded-lg border",
-          activeQueueItem.status === "in_progress" && "bg-green-500/10 border-green-500/30",
-          activeQueueItem.status === "on_hold" && "bg-amber-500/10 border-amber-500/30",
-          getPriorityColor(activeQueueItem.priority) && activeQueueItem.priority !== "normal" && activeQueueItem.priority !== "low"
+          activeQueueItem.status === "in_progress" && "bg-status-ok/10 border-status-ok/30",
+          activeQueueItem.status === "on_hold" && "bg-warning/10 border-warning/30"
         )}>
           <div className="flex items-center justify-between mb-1.5">
             {(() => {
@@ -739,17 +724,17 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
               <div className="flex items-center justify-between mb-1">
                 <span className={cn(
                   "text-[10px] font-medium flex items-center gap-1",
-                  timeInfo.isOverdue ? "text-red-500" : "text-muted-foreground"
+                  timeInfo.isOverdue ? "text-status-critical" : "text-muted-foreground"
                 )}>
                   {timeInfo.isOverdue && <AlertCircle className="w-2.5 h-2.5" />}
                   {timeInfo.remaining}
                 </span>
               </div>
-              <Progress 
-                value={timeInfo.progress} 
+              <Progress
+                value={timeInfo.progress}
                 className={cn(
                   "h-1",
-                  timeInfo.isOverdue && "[&>div]:bg-red-500"
+                  timeInfo.isOverdue && "[&>div]:bg-status-critical"
                 )}
               />
             </div>
@@ -759,11 +744,11 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
 
       {/* Machine Down Status */}
       {hasActiveAlarm && !activeQueueItem && (
-        <div className="mb-3 p-2 rounded-lg bg-red-500/10 border border-red-500/30">
+        <div className="mb-3 p-2 rounded-lg bg-status-critical/10 border border-status-critical/30">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-red-500" />
+            <AlertTriangle className="w-4 h-4 text-status-critical" />
             <div>
-              <span className="text-xs font-medium text-red-600">Machine Down</span>
+              <span className="text-xs font-medium text-status-critical">Machine Down</span>
               <p className="text-[10px] text-muted-foreground">Requires attention</p>
             </div>
           </div>
@@ -860,26 +845,26 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
       {completedNeedingDelivery.length > 0 && (
         <div className={cn(
           "mb-3 p-2.5 rounded-lg border-2 transition-all",
-          completedNeedingDelivery.some(i => i.priority === "critical") && "border-red-500 bg-red-500/10 animate-pulse",
-          completedNeedingDelivery.some(i => i.priority === "urgent") && !completedNeedingDelivery.some(i => i.priority === "critical") && "border-orange-500 bg-orange-500/10",
-          !completedNeedingDelivery.some(i => ["critical", "urgent"].includes(i.priority)) && "border-amber-500 bg-amber-500/10"
+          completedNeedingDelivery.some(i => i.priority === "critical") && "border-status-critical bg-status-critical/10 animate-pulse",
+          completedNeedingDelivery.some(i => i.priority === "urgent") && !completedNeedingDelivery.some(i => i.priority === "critical") && "border-priority-urgent bg-priority-urgent/10",
+          !completedNeedingDelivery.some(i => ["critical", "urgent"].includes(i.priority)) && "border-warning bg-warning/10"
         )}>
           <div className="flex items-center gap-2 mb-2">
             <div className={cn(
               "p-1.5 rounded-full",
-              completedNeedingDelivery.some(i => i.priority === "critical") ? "bg-red-500" :
-              completedNeedingDelivery.some(i => i.priority === "urgent") ? "bg-orange-500" : "bg-amber-500"
+              completedNeedingDelivery.some(i => i.priority === "critical") ? "bg-status-critical" :
+              completedNeedingDelivery.some(i => i.priority === "urgent") ? "bg-priority-urgent" : "bg-warning"
             )}>
               <Truck className={cn(
-                "w-4 h-4 text-white",
+                "w-4 h-4 text-primary-foreground",
                 completedNeedingDelivery.some(i => ["critical", "urgent"].includes(i.priority)) && "animate-bounce"
               )} />
             </div>
             <div>
               <span className={cn(
                 "text-xs font-bold uppercase tracking-wide",
-                completedNeedingDelivery.some(i => i.priority === "critical") ? "text-red-600" :
-                completedNeedingDelivery.some(i => i.priority === "urgent") ? "text-orange-600" : "text-amber-700"
+                completedNeedingDelivery.some(i => i.priority === "critical") ? "text-status-critical" :
+                completedNeedingDelivery.some(i => i.priority === "urgent") ? "text-priority-urgent" : "text-warning"
               )}>
                 ⚠️ {completedNeedingDelivery.length} NEEDS DELIVERY
               </span>
@@ -901,9 +886,9 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
                 {item.priority && item.priority !== "normal" && item.priority !== "low" && (
                   <Badge className={cn(
                     "text-[9px]",
-                    item.priority === "critical" && "bg-red-600",
-                    item.priority === "urgent" && "bg-orange-600",
-                    item.priority === "high" && "bg-amber-600"
+                    item.priority === "critical" && "bg-status-critical",
+                    item.priority === "urgent" && "bg-priority-urgent",
+                    item.priority === "high" && "bg-warning"
                   )}>
                     {item.priority.toUpperCase()}
                   </Badge>
@@ -922,7 +907,7 @@ export function StationCard({ station, stationDbId, onClick, onNewHandoff, onPer
       {/* Status Footer */}
       <div className="flex items-center gap-2 pt-2 border-t border-border">
         {pendingDelivery && (
-          <div className="flex items-center gap-1 text-amber-600">
+          <div className="flex items-center gap-1 text-warning">
             <Truck className="w-3.5 h-3.5" />
             <span className="text-xs font-medium">Delivery Needed</span>
           </div>

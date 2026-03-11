@@ -157,21 +157,21 @@ export const MACHINE_STATE_CONFIG: Record<
   MachineState,
   { label: string; colorClass: string; dotClass: string }
 > = {
-  running:     { label: "Running",     colorClass: "text-green-600",  dotClass: "bg-green-500" },
-  idle:        { label: "Idle",        colorClass: "text-blue-600",   dotClass: "bg-blue-500" },
-  alarm:       { label: "Alarm",       colorClass: "text-red-600",    dotClass: "bg-red-500" },
-  estop:       { label: "E-Stop",      colorClass: "text-purple-600", dotClass: "bg-purple-500" },
-  "feed-hold": { label: "Feed Hold",   colorClass: "text-amber-600",  dotClass: "bg-amber-500" },
-  setup:       { label: "Setup",       colorClass: "text-cyan-600",   dotClass: "bg-cyan-500" },
-  offline:     { label: "Offline",     colorClass: "text-muted-foreground", dotClass: "bg-muted-foreground" },
-  unknown:     { label: "Unknown",     colorClass: "text-muted-foreground", dotClass: "bg-muted-foreground" },
+  running:     { label: "Running",     colorClass: "text-status-ok",           dotClass: "bg-status-ok" },
+  idle:        { label: "Idle",        colorClass: "text-status-waiting",      dotClass: "bg-status-waiting" },
+  alarm:       { label: "Alarm",       colorClass: "text-status-critical",     dotClass: "bg-status-critical" },
+  estop:       { label: "E-Stop",      colorClass: "text-role-org-owner",      dotClass: "bg-role-org-owner" },
+  "feed-hold": { label: "Feed Hold",   colorClass: "text-warning",             dotClass: "bg-warning" },
+  setup:       { label: "Setup",       colorClass: "text-info",                dotClass: "bg-info" },
+  offline:     { label: "Offline",     colorClass: "text-muted-foreground",    dotClass: "bg-muted-foreground" },
+  unknown:     { label: "Unknown",     colorClass: "text-muted-foreground",    dotClass: "bg-muted-foreground" },
 };
 
 export const ALARM_SEVERITY_CONFIG: Record<
   AlarmSeverity,
   { label: string; colorClass: string; bgClass: string; borderClass: string }
 > = {
-  fault:   { label: "FAULT",   colorClass: "text-red-600",    bgClass: "bg-red-500/10",    borderClass: "border-red-500/30" },
-  alarm:   { label: "ALARM",   colorClass: "text-orange-600", bgClass: "bg-orange-500/10", borderClass: "border-orange-500/30" },
-  warning: { label: "WARNING", colorClass: "text-yellow-600", bgClass: "bg-yellow-500/10", borderClass: "border-yellow-500/30" },
+  fault:   { label: "FAULT",   colorClass: "text-status-critical",  bgClass: "bg-status-critical/10",  borderClass: "border-status-critical/30" },
+  alarm:   { label: "ALARM",   colorClass: "text-priority-urgent",  bgClass: "bg-priority-urgent/10",  borderClass: "border-priority-urgent/30" },
+  warning: { label: "WARNING", colorClass: "text-warning",          bgClass: "bg-warning/10",          borderClass: "border-warning/30" },
 };

@@ -20,14 +20,14 @@ describe("MACHINE_STATE_CONFIG", () => {
     }
   });
 
-  it("running state has green color scheme", () => {
-    expect(MACHINE_STATE_CONFIG.running.colorClass).toContain("green");
-    expect(MACHINE_STATE_CONFIG.running.dotClass).toContain("green");
+  it("running state uses status-ok token", () => {
+    expect(MACHINE_STATE_CONFIG.running.colorClass).toContain("status-ok");
+    expect(MACHINE_STATE_CONFIG.running.dotClass).toContain("status-ok");
   });
 
-  it("alarm state has red color scheme", () => {
-    expect(MACHINE_STATE_CONFIG.alarm.colorClass).toContain("red");
-    expect(MACHINE_STATE_CONFIG.alarm.dotClass).toContain("red");
+  it("alarm state uses status-critical token", () => {
+    expect(MACHINE_STATE_CONFIG.alarm.colorClass).toContain("status-critical");
+    expect(MACHINE_STATE_CONFIG.alarm.dotClass).toContain("status-critical");
   });
 });
 
@@ -44,8 +44,8 @@ describe("ALARM_SEVERITY_CONFIG", () => {
     }
   });
 
-  it("fault is the most severe with red coloring", () => {
-    expect(ALARM_SEVERITY_CONFIG.fault.colorClass).toContain("red");
+  it("fault is the most severe with status-critical token", () => {
+    expect(ALARM_SEVERITY_CONFIG.fault.colorClass).toContain("status-critical");
     expect(ALARM_SEVERITY_CONFIG.fault.label).toBe("FAULT");
   });
 });
