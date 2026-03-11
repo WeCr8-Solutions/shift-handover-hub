@@ -187,7 +187,7 @@ export function OperatorStationPanel({
         nextStep: nextStep || null,
         totalSteps: steps.length,
         currentStepNumber: curIdx >= 0 ? curIdx + 1 : 0,
-        allSteps: steps.map((s: RoutingStep) => ({
+        allSteps: steps.map((s) => ({
           id: s.id,
           station_id: s.station_id,
           status: s.status,
