@@ -71,11 +71,7 @@ interface RoutingTemplate {
   organization_id: string;
   created_at: string;
   steps?: RoutingTemplateStep[];
-}
-  organization_id: string;
-  created_at: string;
-  steps?: RoutingTemplateStep[];
-}
+
 
 const OPERATION_TYPES = [
   { value: 'quote', label: 'Quoting/Estimating', icon: Factory, color: 'bg-muted' },
