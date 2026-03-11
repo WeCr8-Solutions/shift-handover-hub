@@ -326,7 +326,7 @@ export function useQueue(filters?: {
         part_catalog_id: input.part_catalog_id || null,
         required_tolerance: input.required_tolerance || null,
         surface_finish: input.surface_finish || null,
-      }).select("id").single();
+      }]).select("id").single();
 
       if (error) return { error: error.message };
 
