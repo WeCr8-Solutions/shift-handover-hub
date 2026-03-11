@@ -87,7 +87,7 @@ const routingTests: TestDefinition[] = [
       const hasRequiredFields = outsideProcessingStep.is_outside_process && 
         outsideProcessingStep.vendor_name && 
         outsideProcessingStep.estimated_days > 0;
-      return { success: hasRequiredFields, details: `Outside process vendor: ${outsideProcessingStep.vendor_name}` };
+      return { success: !!hasRequiredFields, details: `Outside process vendor: ${outsideProcessingStep.vendor_name}` };
     },
   },
 ];
