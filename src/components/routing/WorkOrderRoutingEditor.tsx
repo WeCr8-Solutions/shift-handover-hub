@@ -153,8 +153,8 @@ function autoSuggestStation(step: RoutingStep, stations: Station[]): Station | u
 interface OrgTemplate {
   id: string;
   name: string;
-  description?: string;
-  part_number_pattern?: string;
+  description?: string | null;
+  part_number_pattern?: string | null;
 }
 
 export function WorkOrderRoutingEditor({ 
