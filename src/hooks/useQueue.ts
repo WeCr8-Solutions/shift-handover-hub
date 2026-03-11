@@ -293,7 +293,7 @@ export function useQueue(filters?: {
         : input.station_id || null;
 
       const { data: insertedItem, error } = await supabase.from("queue_items").insert([{
-        organization_id: organization?.id || null,
+        organization_id: organization?.id || "",
         team_id: currentTeam?.id || null,
         item_type: input.item_type,
         title: input.title,
