@@ -1107,7 +1107,7 @@ export function useProcessTests() {
       const suiteResults: ProcessTestResult[] = [];
       let passed = 0;
       let failed = 0;
-      let skipped = 0;
+      const skipped = 0;
       const suiteStartTime = Date.now();
 
       for (const testDef of suiteDefinition.tests) {

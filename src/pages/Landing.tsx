@@ -14,7 +14,7 @@ import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 import { VisitorSurveyModal } from "@/components/marketing/VisitorSurveyModal";
 import { trackEvent, ConversionEvents } from "@/lib/analytics";
 import { getUtmParams } from "@/lib/utm";
-import demoVideo from "@/assets/jobline-demo-video.mp4";
+const demoVideo = "/jobline-demo-video.mp4";
 import { 
   ArrowRight, 
   Zap, 

@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Zap, Lock, Infinity, Check, X } from "lucide-react";
+import { Zap, Lock, Infinity as InfinityIcon, Check, X } from "lucide-react";
 import { entitlements } from "@/hooks/useRoleArchitecture";
 
 export function EntitlementsReference() {
@@ -54,7 +54,7 @@ export function EntitlementsReference() {
                     <TableCell>
                       {limit.plans.enterprise === "unlimited" ? (
                         <Badge variant="secondary" className="gap-1">
-                          <Infinity className="w-3 h-3" />
+                          <InfinityIcon className="w-3 h-3" />
                           Unlimited
                         </Badge>
                       ) : (

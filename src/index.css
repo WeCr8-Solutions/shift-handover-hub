@@ -1,7 +1,3 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 /* Font loading:
    - Cloud (default): loaded from Google Fonts CDN below.
    - Self-hosted ITAR (VITE_DISABLE_ANALYTICS=true): comment out the @import
@@ -9,6 +5,10 @@
      Font files must be placed in src/assets/fonts/ — see README there.
 */
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 @layer base {
   :root {
