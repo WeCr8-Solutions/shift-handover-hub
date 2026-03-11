@@ -133,7 +133,7 @@ serve(async (req) => {
     // =========================================================================
     // Fetch ALL context data in parallel
     // =========================================================================
-    const safeQuery = async (promise: Promise<any>) => {
+    const safeQuery = async (promise: PromiseLike<any>) => {
       try {
         const res = await promise;
         return res.data ?? [];
