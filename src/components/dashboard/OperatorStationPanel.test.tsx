@@ -153,7 +153,7 @@ describe("OperatorStationPanel", () => {
       _current_station_id: "stn-1",
       _actor_id: "user-1",
       _is_override: false,
-      _override_reason: null,
+      _override_reason: undefined,
     });
     expect(result.data).toEqual({ action: "advanced" });
   });

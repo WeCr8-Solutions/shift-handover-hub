@@ -67,7 +67,11 @@ interface RoutingTemplate {
   name: string;
   description: string | null;
   part_number_pattern: string | null;
-  is_default: boolean;
+  is_default: boolean | null;
+  organization_id: string;
+  created_at: string;
+  steps?: RoutingTemplateStep[];
+}
   organization_id: string;
   created_at: string;
   steps?: RoutingTemplateStep[];

@@ -38,8 +38,8 @@ interface OutsideProcessingItem {
   completed_at: string | null;
   notes: string | null;
   queue_item?: {
-    work_order: string;
-    part_number: string;
+    work_order: string | null;
+    part_number: string | null;
     title: string;
   };
 }

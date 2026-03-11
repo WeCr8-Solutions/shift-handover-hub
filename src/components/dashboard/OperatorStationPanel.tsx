@@ -319,7 +319,7 @@ export function OperatorStationPanel({
         _current_station_id: stationId,
         _actor_id: user.id,
         _is_override: isOverride,
-        _override_reason: isOverride ? overrideReason : null,
+        _override_reason: isOverride ? overrideReason : undefined,
       });
 
       if (error) {

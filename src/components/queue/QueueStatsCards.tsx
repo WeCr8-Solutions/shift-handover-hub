@@ -54,7 +54,7 @@ export function QueueStatsCards({ stats }: QueueStatsCardsProps) {
   ];
 
   // Add quality metrics if available
-  const qualityCards = [];
+  const qualityCards: typeof cards = [];
   if (stats.fpy !== undefined) {
     qualityCards.push({
       label: "First Pass Yield",

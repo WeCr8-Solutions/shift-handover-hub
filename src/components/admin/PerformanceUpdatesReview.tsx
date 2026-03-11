@@ -256,7 +256,7 @@ export function PerformanceUpdatesReview({ isAdmin }: PerformanceUpdatesReviewPr
   };
 
   const getImpactBadges = (update: PerformanceUpdate) => {
-    const badges = [];
+    const badges: string[] = [];
     if (update.affects_cycle_time) badges.push("Cycle Time");
     if (update.affects_quality) badges.push("Quality");
     if (update.affects_safety) badges.push("Safety");
@@ -264,7 +264,7 @@ export function PerformanceUpdatesReview({ isAdmin }: PerformanceUpdatesReviewPr
   };
 
   const getRequirementBadges = (update: PerformanceUpdate) => {
-    const badges = [];
+    const badges: string[] = [];
     if (update.requires_tooling_change) badges.push("Tooling");
     if (update.requires_program_update) badges.push("Program");
     if (update.requires_fixture_modification) badges.push("Fixture");
