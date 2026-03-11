@@ -179,12 +179,12 @@ export function useIssueReporter() {
       // Use direct database function call (much faster than Edge Function)
       const { data: issueId, error } = await supabase.rpc("report_issue", {
         _title: report.title,
-        _description: report.description || null,
+        _description: report.description || undefined,
         _severity: report.severity || "medium",
-        _error_message: latestError?.message || null,
-        _error_stack: latestError?.stack || null,
+        _error_message: latestError?.message || undefined,
+        _error_stack: latestError?.stack || undefined,
         _console_logs: consoleLogs,
-        _page_url: report.includePage !== false ? window.location.href : null,
+        _page_url: report.includePage !== false ? window.location.href : undefined,
         _metadata: metadata,
       });
 

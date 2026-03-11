@@ -15,7 +15,7 @@ interface QueueStatsCardsProps {
 }
 
 export function QueueStatsCards({ stats }: QueueStatsCardsProps) {
-  const cards = [
+  const cards: { label: string; value: string | number; icon: typeof ListTodo; color: string; bgColor: string }[] = [
     {
       label: "Total Items",
       value: stats.total,

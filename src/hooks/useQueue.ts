@@ -515,8 +515,8 @@ export function useQueue(filters?: {
       const { error } = await supabase.rpc("reorder_queue_item", {
         _item_id: itemId,
         _new_position: newPosition,
-        _org_id: organization?.id || null,
-        _team_id: currentTeam?.id || null,
+        _org_id: organization?.id ?? null,
+        _team_id: currentTeam?.id ?? null,
       });
 
       if (error) return { error: error.message };

@@ -226,7 +226,7 @@ export function useStations(teamId?: string | null, organizationId?: string | nu
 
     const { data, error } = await supabase
       .from("stations")
-      .insert(stationWithOrg)
+      .insert([stationWithOrg])
       .select()
       .single();
 
