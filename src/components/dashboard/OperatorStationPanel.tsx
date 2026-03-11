@@ -81,7 +81,7 @@ interface WorkOrder {
 
 interface RoutingStep {
   id: string;
-  station_id: string;
+  station_id: string | null;
   status: string;
   step_number: number;
   operation_name: string;
