@@ -80,6 +80,25 @@ serve(async (req: Request): Promise<Response> => {
 
     const user = data.user;
 
+    // Verify user is org member
+    const { data: membership, error: membershipError } = await supabase
+      .from("organization_members")
+      .select("role")
+      .eq("user_id", user.id)
+      .eq("organization_id", organization_id)
+      .maybeSingle();
+
+    if (membershipError) {
+      console.error("Membership check error:", membershipError);
+    }
+
+    if (!membership) {
+      return new Response(JSON.stringify({ error: "Access denied: not an org member" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Check if already purchased
     const { data: existing, error: existingError } = await supabase
       .from("organization_machine_purchases")
