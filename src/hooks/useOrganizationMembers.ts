@@ -114,9 +114,9 @@ export function useOrganizationMembers(organizationId: string | null) {
           email: prof.email,
           avatar_url: prof.avatar_url,
         } : undefined,
-        app_roles: userRoles
-          ?.filter((r) => r.user_id === m.user_id)
-          .map((r) => r.role as AppRole) || [],
+        app_roles: (userRoles || [])
+          .filter((r: any) => r.user_id === m.user_id)
+          .map((r: any) => r.role as AppRole),
         team_memberships: teamMap.get(m.user_id) || [],
       };
     });

@@ -330,7 +330,7 @@ export function WorkOrderRoutingEditor({
         operation_type: (ts.operation_type || 'internal') as RoutingStep['operation_type'],
         station_id: matchedStation?.id,
         station_name: matchedStation?.name,
-        work_center_type: matchedStation?.work_center_type || ts.work_center_type,
+        work_center_type: matchedStation?.work_center_type || ts.work_center_type || undefined,
         estimated_duration: ts.setup_time_minutes
           ? (ts.setup_time_minutes + (ts.cycle_time_minutes || 0) + (ts.first_article_minutes || 0))
           : undefined,

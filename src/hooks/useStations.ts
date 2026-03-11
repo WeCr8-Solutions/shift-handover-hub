@@ -221,7 +221,7 @@ export function useStations(teamId?: string | null, organizationId?: string | nu
   }) => {
     const stationWithOrg = {
       ...stationData,
-      organization_id: stationData.organization_id || effectiveOrgId || null,
+      organization_id: stationData.organization_id || effectiveOrgId || "",
     };
 
     const { data, error } = await supabase

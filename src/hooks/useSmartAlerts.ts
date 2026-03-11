@@ -105,7 +105,7 @@ export function useSmartAlerts(options?: {
 
       const { data, error } = await supabase.rpc("compute_smart_alerts", {
         _org_id: organization.id,
-        _station_id: options?.stationId ?? null,
+        _station_id: options?.stationId || undefined,
         _stale_days: thresholds.staleDays,
         _stale_critical_days: thresholds.staleCriticalDays,
         _over_time_pct: thresholds.overTimePct,
