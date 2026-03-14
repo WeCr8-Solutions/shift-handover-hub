@@ -337,7 +337,7 @@ export default function Queue() {
               />
             )}
 
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-col items-start sm:flex-row sm:items-center justify-between gap-4">
               <div data-tour="queue-filters">
                 <QueueFilters
                   filters={filters}

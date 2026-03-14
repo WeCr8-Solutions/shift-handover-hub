@@ -71,7 +71,7 @@ export function HandoffCard({ record, onClick, onViewWorkOrder }: HandoffCardPro
       </div>
 
       {/* Personnel */}
-      <div className="flex items-center gap-4 mb-3 text-xs">
+      <div className="flex items-center gap-4 mb-3 text-xs flex-wrap">
         <div className="flex items-center gap-1.5">
           <User className="w-3 h-3 text-muted-foreground" />
           <span className="text-muted-foreground">Out:</span>

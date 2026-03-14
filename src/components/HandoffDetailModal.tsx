@@ -99,7 +99,7 @@ export function HandoffDetailModal({ open, onOpenChange, record, onViewWorkOrder
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
             <div className={cn("p-2 rounded-lg bg-secondary", iconColor)}>
@@ -126,7 +126,7 @@ export function HandoffDetailModal({ open, onOpenChange, record, onViewWorkOrder
           <Badge variant="outline" className="text-xs">
             {record.workCenterType}
           </Badge>
-          <div className="flex items-center gap-3 text-xs text-muted-foreground ml-auto">
+          <div className="flex items-center gap-3 text-xs text-muted-foreground ml-auto flex-wrap">
             <span>Part: <span className="font-mono text-foreground">{record.part.partNumber}</span></span>
             <span>Rev: <span className="font-mono text-foreground">{record.part.revision}</span></span>
             <span>Op: <span className="font-mono text-foreground">{record.part.operationNumber}</span></span>

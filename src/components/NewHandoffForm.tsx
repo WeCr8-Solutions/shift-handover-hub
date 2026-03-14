@@ -682,7 +682,7 @@ export function NewHandoffForm({ onClose, onSubmit, initialStationId, prefillDat
               {/* Handoff Type Selector */}
               <div className="space-y-2">
                 <Label>Handoff Type</Label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   {HANDOFF_TYPE_OPTIONS.map((opt) => (
                     <button
                       key={opt.value}
@@ -1008,7 +1008,7 @@ export function NewHandoffForm({ onClose, onSubmit, initialStationId, prefillDat
               )}
 
               <div className="section-header mt-6">Quality Status</div>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label>Parts Completed</Label>
                   <Input
