@@ -178,7 +178,7 @@ export default function ShopFloorDisplay() {
 
 /* ── Status helpers ── */
 
-function getStatusInfo(state: string | null): { label: string; color: string; bg: string } {
+function getStatusInfo(state: string | null | undefined): { label: string; color: string; bg: string } {
   if (!state) return { label: "Idle", color: "text-muted-foreground", bg: "bg-muted" };
   const s = state.toLowerCase();
   if (s.includes("running") || s.includes("production")) return { label: "Running", color: "text-primary", bg: "bg-primary" };
