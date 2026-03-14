@@ -27,7 +27,7 @@ interface StationAlertData {
 interface StationAlertTileProps {
   station: {
     id: string; dbId: string; name: string; teamName: string | null;
-    workCenter: string; workCenterType: string; operator: string;
+    workCenter: string | undefined; workCenterType: string | undefined; operator: string;
     workOrder: string; partNumber: string; progress: number; status: StatusLabel;
   };
   onViewStation?: (stationId: string, stationName: string) => void;
