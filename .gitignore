@@ -28,3 +28,7 @@ desktop/release/
 desktop/dist/
 desktop/node_modules/
 desktop/package-lock.json
+
+
+#Ignore vscode AI rules
+.github/instructions/codacy.instructions.md
