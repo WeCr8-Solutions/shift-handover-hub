@@ -7,11 +7,11 @@ import { componentTagger } from "lovable-tagger";
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
-    port: 4040,
+    port: 4000,
     hmr: {
       overlay: false,
       host: "localhost",
-      port: 4040,
+      port: 4000,
       protocol: "ws",
     },
   },
@@ -24,11 +24,10 @@ export default defineConfig(({ mode }) => ({
       "react",
       "react-dom",
       "react/jsx-runtime",
-      "react/jsx-dev-runtime",
       "@tanstack/react-query",
     ],
   },
   optimizeDeps: {
-    include: ["react", "react-dom", "react/jsx-runtime", "@tanstack/react-query"],
+    include: ["@tanstack/react-query"],
   },
 }));
