@@ -1,0 +1,21 @@
+{
+  "name": "JobLine.ai",
+  "short_name": "JobLine",
+  "description": "Digital Expeditor & Smart Shift Handoff System for Manufacturing",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/Jobline.ai_favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
