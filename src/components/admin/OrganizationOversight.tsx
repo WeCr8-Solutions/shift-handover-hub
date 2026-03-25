@@ -352,7 +352,19 @@ export function OrganizationOversight({ isAdmin, access }: OrganizationOversight
 
 
                     {isPlatformAdmin && (
-                      <div className="flex items-center justify-end pt-3 border-t">
+                      <div className="flex items-center justify-end gap-2 pt-3 border-t">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-1"
+                          onClick={() => {
+                            setOrgToGrant(org);
+                            setGrantDuration("30");
+                          }}
+                        >
+                          <Gift className="w-4 h-4" />
+                          Grant Complimentary
+                        </Button>
                         <Button
                           variant="ghost"
                           size="sm"
