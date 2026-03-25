@@ -64,6 +64,9 @@ export function OrganizationOversight({ isAdmin, access }: OrganizationOversight
   const [orgToDelete, setOrgToDelete] = useState<OrganizationWithStats | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [erpStatuses, setErpStatuses] = useState<Map<string, { status: string; vendor: string }>>(new Map());
+  const [orgToGrant, setOrgToGrant] = useState<OrganizationWithStats | null>(null);
+  const [grantDuration, setGrantDuration] = useState("30");
+  const [isGranting, setIsGranting] = useState(false);
 
   // Fetch ERP connection status per org
   useEffect(() => {
