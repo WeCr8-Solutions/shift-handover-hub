@@ -29,7 +29,23 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Loader2, Search, Users, Building2, Wrench, Trash2, Briefcase, Crown, Mail, Plug } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Loader2, Search, Users, Building2, Wrench, Trash2, Briefcase, Crown, Mail, Plug, Gift } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { AdminComponentAccess } from "@/types/admin";
 
