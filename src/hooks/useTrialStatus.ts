@@ -48,7 +48,7 @@ export function useTrialStatus() {
     const isExpired = isPast(trialEndsAt);
     const daysRemaining = isExpired ? 0 : differenceInDays(trialEndsAt, now);
     const status = organization.subscription_status;
-    const hasActiveSubscription = subscribed || status === "active";
+    const hasActiveSubscription = subscribed || status === "active" || status === "complimentary";
 
     return {
       isInTrial: !isExpired && !hasActiveSubscription && (status === "trial" || status === "free" || !status),
