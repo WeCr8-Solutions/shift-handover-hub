@@ -112,7 +112,40 @@ export function OrganizationOversight({ isAdmin, access }: OrganizationOversight
     }
   };
 
-  const getTierBadgeVariant = (tier: string | null) => {
+  const handleGrantComplimentary = async () => {
+    if (!orgToGrant) return;
+
+    setIsGranting(true);
+    const days = parseInt(grantDuration);
+    const newTrialEnd = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
+
+    const { error } = await supabase
+      .from("organizations")
+      .update({
+        subscription_status: "complimentary",
+        subscription_tier: "team",
+        trial_ends_at: newTrialEnd,
+      })
+      .eq("id", orgToGrant.id);
+
+    setIsGranting(false);
+
+    if (error) {
+      toast({
+        title: "Failed to grant access",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Complimentary access granted",
+        description: `${orgToGrant.name} now has free Team-tier access for ${days} days.`,
+      });
+      setOrgToGrant(null);
+    }
+  };
+
+
     switch (tier) {
       case "enterprise": return "default";
       case "professional": return "secondary";
