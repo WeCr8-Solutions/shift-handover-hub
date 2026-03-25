@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { useAuth } from "@/contexts/AuthContext";
 import { useOnboardingContext, ONBOARDING_STEPS } from "./OnboardingProvider";
 import type { OnboardingStep } from "./OnboardingProvider";
 import {
@@ -50,6 +51,7 @@ const STEP_ROUTE_MAP: Record<string, string> = {
 
 export function WelcomeModal() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const {
     currentStep,
     isComplete,
@@ -68,8 +70,8 @@ export function WelcomeModal() {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(true);
 
-  // Gate: never show on public landing page, or for returning/complete users
-  if (isLoading || isComplete || showTour || currentStep === "complete" || hasSeenWelcome || location.pathname === "/") {
+  // Gate: never show for unauthenticated users, on public landing page, or for returning/complete users
+  if (!user || isLoading || isComplete || showTour || currentStep === "complete" || hasSeenWelcome || location.pathname === "/") {
     return null;
   }
 
