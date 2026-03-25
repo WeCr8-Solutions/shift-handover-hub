@@ -51,6 +51,7 @@ const STEP_ROUTE_MAP: Record<string, string> = {
 
 export function WelcomeModal() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const {
     currentStep,
     isComplete,
@@ -69,8 +70,8 @@ export function WelcomeModal() {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(true);
 
-  // Gate: never show on public landing page, or for returning/complete users
-  if (isLoading || isComplete || showTour || currentStep === "complete" || hasSeenWelcome || location.pathname === "/") {
+  // Gate: never show for unauthenticated users, on public landing page, or for returning/complete users
+  if (!user || isLoading || isComplete || showTour || currentStep === "complete" || hasSeenWelcome || location.pathname === "/") {
     return null;
   }
 
