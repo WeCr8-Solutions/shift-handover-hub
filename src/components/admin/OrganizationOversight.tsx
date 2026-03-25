@@ -145,7 +145,7 @@ export function OrganizationOversight({ isAdmin, access }: OrganizationOversight
     }
   };
 
-
+  const getTierBadgeVariant = (tier: string | null) => {
     switch (tier) {
       case "enterprise": return "default";
       case "professional": return "secondary";
