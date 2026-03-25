@@ -406,6 +406,52 @@ export function OrganizationOversight({ isAdmin, access }: OrganizationOversight
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Grant Complimentary Access Dialog */}
+      <Dialog open={!!orgToGrant} onOpenChange={(open) => !open && setOrgToGrant(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Gift className="w-5 h-5 text-primary" />
+              Grant Complimentary Access
+            </DialogTitle>
+            <DialogDescription>
+              Grant free Team-tier access to <strong>{orgToGrant?.name}</strong>. This bypasses billing and sets the subscription to complimentary status.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>Duration</Label>
+              <Select value={grantDuration} onValueChange={setGrantDuration}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="7">7 days</SelectItem>
+                  <SelectItem value="14">14 days</SelectItem>
+                  <SelectItem value="30">30 days</SelectItem>
+                  <SelectItem value="60">60 days</SelectItem>
+                  <SelectItem value="90">90 days</SelectItem>
+                  <SelectItem value="180">6 months</SelectItem>
+                  <SelectItem value="365">1 year</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="rounded-lg border bg-muted/30 p-3 text-sm text-muted-foreground">
+              <p>Current status: <strong>{orgToGrant?.subscription_status || "none"}</strong></p>
+              <p>Current tier: <strong>{orgToGrant?.subscription_tier || "free"}</strong></p>
+              <p className="mt-1">Will be set to: <strong className="text-primary">Team (Complimentary)</strong> for <strong>{grantDuration} days</strong></p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOrgToGrant(null)}>Cancel</Button>
+            <Button onClick={handleGrantComplimentary} disabled={isGranting} className="gap-2">
+              {isGranting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Gift className="w-4 h-4" />}
+              {isGranting ? "Granting..." : "Grant Access"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
