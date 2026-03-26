@@ -7,109 +7,25 @@ import {
   Menu,
   X,
   ChevronDown,
-  Cog,
-  ClipboardCheck,
-  BarChart3,
-  Wrench,
-  Users,
-  Cpu,
-  Clock,
-  Shield,
-  Gauge,
   BookOpen,
-  Code,
-  BookA,
-  GraduationCap,
-  Briefcase,
-  ShieldAlert,
-  TrendingUp,
-  LayoutGrid,
-  Kanban,
-  GitCompare,
-  FileText,
   Monitor,
-  Cable,
+  LayoutDashboard,
 } from "lucide-react";
 import joblineLogo from "@/assets/jobline-logo.png";
 import { industrySlugFromName } from "@/pages/industries/industryData";
+import { useAuth } from "@/contexts/AuthContext";
+import { platformFeatures, extensionItems, industryCategories, learnItems } from "./navData";
 
 interface MarketingNavProps {
   showPricing?: boolean;
 }
-
-/* ── Mega-menu data ── */
-
-const platformFeatures = [
-  { label: "Digital Expeditor", href: "/features/digital-expeditor", icon: Gauge, desc: "Real-time work order routing & visibility" },
-  { label: "Shift Handoff", href: "/features/shift-handoff-software", icon: Clock, desc: "Structured shift-to-shift knowledge transfer" },
-  { label: "Work Order Tracking", href: "/features/work-order-tracking", icon: ClipboardCheck, desc: "Full lifecycle job tracking" },
-  { label: "Production Scheduling", href: "/features/production-scheduling", icon: BarChart3, desc: "Capacity planning & scheduling" },
-  { label: "Quality Management", href: "/features/quality-management", icon: Shield, desc: "NCRs, inspections & traceability" },
-  { label: "AI Planning Assistant", href: "/features/ai-planning-assistant", icon: Cpu, desc: "AI-powered production insights" },
-  { label: "Machine Shop Software", href: "/features/machine-shop-software", icon: Cog, desc: "Purpose-built for job shops" },
-  { label: "Downtime Tracking", href: "/features/downtime-tracking", icon: Wrench, desc: "Capture & reduce downtime" },
-];
-
-const extensionItems = [
-  { label: "JobLine G-Code", href: "/features/cnc-operator-tools", icon: Code, desc: "Multi-dialect G-code intelligence for VS Code" },
-  { label: "JobLine Machine Connect", href: "/features/cnc-operator-tools", icon: Cable, desc: "DNC connectivity — FTP, serial & network" },
-];
-
-const industryCategories = [
-  {
-    heading: "Manufacturing",
-    items: [
-      "Job Shops",
-      "Machine Shops",
-      "Aerospace & Defense",
-      "Medical Device Manufacturers",
-      "Industrial Manufacturing",
-      "Automotive Parts",
-    ],
-  },
-  {
-    heading: "Process & Specialty",
-    items: [
-      "Electronics Assembly",
-      "Plastics & Rubber",
-      "Metal Fabrication",
-      "Food & Beverage",
-      "Pharma & Life Sciences",
-      "Chemical Processing",
-    ],
-  },
-  {
-    heading: "Emerging Sectors",
-    items: [
-      "Renewable Energy",
-      "Additive Manufacturing",
-      "Semiconductor",
-      "EV & Battery",
-    ],
-  },
-];
-
-const learnItems = [
-  { label: "Manufacturing Guides", href: "/resources/guides", icon: BookOpen },
-  { label: "G-Code Reference", href: "/resources/gcode", icon: Code },
-  { label: "Industry Glossary", href: "/resources/glossary", icon: BookA },
-  { label: "Beginner's Guide", href: "/resources/beginners", icon: GraduationCap },
-  { label: "Careers", href: "/resources/careers", icon: Briefcase },
-  { label: "Safety & Compliance", href: "/resources/safety", icon: ShieldAlert },
-  { label: "Quality & Inspection", href: "/resources/quality", icon: ClipboardCheck },
-  { label: "Lean Manufacturing", href: "/resources/lean", icon: TrendingUp },
-  { label: "5S Methodology", href: "/resources/5s", icon: LayoutGrid },
-  { label: "Kanban & Sorting", href: "/resources/kanban", icon: Kanban },
-  { label: "Pioneers", href: "/resources/pioneers", icon: Users },
-  { label: "Tool Comparisons", href: "/resources/comparisons", icon: GitCompare },
-  { label: "ERP Selection Guide", href: "/resources/erp-guide", icon: FileText },
-];
 
 type MenuKey = "platform" | "industries" | "learn" | null;
 
 export function MarketingNav({ showPricing = true }: MarketingNavProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openMenu, setOpenMenu] = useState<MenuKey>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout>>();
@@ -197,16 +113,28 @@ export function MarketingNav({ showPricing = true }: MarketingNavProps) {
             Blog
           </button>
 
-          <Button onClick={() => go("/auth")} size="sm" className="ml-2 gap-1.5">
-            Start Free Trial <ArrowRight className="w-3.5 h-3.5" />
-          </Button>
+          {user ? (
+            <Button onClick={() => go("/dashboard")} size="sm" className="ml-2 gap-1.5">
+              <LayoutDashboard className="w-3.5 h-3.5" /> Dashboard
+            </Button>
+          ) : (
+            <Button onClick={() => go("/auth")} size="sm" className="ml-2 gap-1.5">
+              Start Free Trial <ArrowRight className="w-3.5 h-3.5" />
+            </Button>
+          )}
         </div>
 
         {/* Mobile */}
         <div className="flex md:hidden items-center gap-2">
-          <Button onClick={() => go("/auth")} size="sm" className="gap-1 text-xs">
-            Start Free <ArrowRight className="w-3 h-3" />
-          </Button>
+          {user ? (
+            <Button onClick={() => go("/dashboard")} size="sm" className="gap-1 text-xs">
+              <LayoutDashboard className="w-3 h-3" /> Dashboard
+            </Button>
+          ) : (
+            <Button onClick={() => go("/auth")} size="sm" className="gap-1 text-xs">
+              Start Free <ArrowRight className="w-3 h-3" />
+            </Button>
+          )}
           <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => setMobileOpen(!mobileOpen)}>
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </Button>
@@ -223,7 +151,6 @@ export function MarketingNav({ showPricing = true }: MarketingNavProps) {
           <div className="container mx-auto px-4 py-6">
             {openMenu === "platform" && (
               <div className="grid grid-cols-[1fr_auto] gap-8">
-                {/* Features grid */}
                 <div>
                   <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Platform Features</h4>
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
@@ -232,7 +159,6 @@ export function MarketingNav({ showPricing = true }: MarketingNavProps) {
                     ))}
                   </div>
                 </div>
-                {/* Extensions sidebar */}
                 <div className="border-l border-border pl-6 min-w-[240px]">
                   <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
                     <Monitor className="w-3 h-3 inline mr-1 -mt-0.5" />
