@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { Clock, Bell, Shield, ListTodo, Settings, Users, FlaskConical, Bug, Megaphone, Menu, Wrench } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Clock, Bell, Shield, ListTodo, Settings, Users, FlaskConical, Bug, Megaphone, Menu, Wrench, ChevronDown, LayoutDashboard, Monitor, Factory, Eye } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { getCurrentShift } from "@/lib/mockData";
 import { StatusBadge } from "./StatusBadge";
 import { UserMenu } from "./UserMenu";
@@ -15,7 +15,10 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { platformFeatures, extensionItems, industryCategories, learnItems } from "@/components/marketing/navData";
+import { industrySlugFromName } from "@/pages/industries/industryData";
 import joblineLogo from "@/assets/jobline-logo.png";
 
 function NavIconButton({ to, icon: Icon, label, iconClass }: { to: string; icon: React.ElementType; label: string; iconClass?: string }) {
@@ -42,8 +45,42 @@ function MobileNavLink({ to, icon: Icon, label, iconClass, onClose }: { to: stri
   );
 }
 
+function MobileCollapsible({ title, children }: { title: string; children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="border-b border-border/50 pb-1">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex w-full items-center justify-between px-2 py-2.5 text-sm font-medium text-foreground"
+      >
+        {title}
+        <ChevronDown className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && <div className="pl-2 pb-2">{children}</div>}
+    </div>
+  );
+}
+
+/* ── Header dropdown for Platform/Industries/Learn ── */
+function HeaderDropdown({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="sm" className="gap-1 text-muted-foreground hover:text-foreground text-xs">
+          {label}
+          <ChevronDown className="w-3 h-3" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-56 max-h-80 overflow-y-auto">
+        {children}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 export function Header() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { hasAdminAccess, hasOrgAdminAccess, hasOrgSupervisorAccess, hasTestingAccess } = useAdminAccess();
   const { unreadCount, systemStatus, unacknowledgedRequired, acknowledgeUpdate } = useGlobalUpdates();
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -63,6 +100,8 @@ export function Header() {
     hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false,
   });
 
+  const canViewProductionFloor = hasAdminAccess || hasOrgSupervisorAccess;
+
   return (
     <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
       <div className="container py-3">
@@ -74,8 +113,79 @@ export function Header() {
 
           {/* Desktop nav */}
           {!isMobile && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
+              {/* Dashboard button with role-aware options */}
+              {user && canViewProductionFloor ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="default" size="sm" className="gap-1.5">
+                      <LayoutDashboard className="w-4 h-4" />
+                      Dashboard
+                      <ChevronDown className="w-3 h-3" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start">
+                    <DropdownMenuItem onClick={() => navigate("/dashboard")}>
+                      <Factory className="w-4 h-4 mr-2" />
+                      Production Floor
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate("/dashboard?view=operator")}>
+                      <Eye className="w-4 h-4 mr-2" />
+                      Operator View
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : user ? (
+                <Button variant="default" size="sm" className="gap-1.5" asChild>
+                  <Link to="/dashboard">
+                    <LayoutDashboard className="w-4 h-4" />
+                    Dashboard
+                  </Link>
+                </Button>
+              ) : null}
+
               {user && <TeamSelector />}
+
+              {/* Platform / Industries / Learn dropdowns */}
+              <HeaderDropdown label="Platform">
+                {platformFeatures.map((p) => (
+                  <DropdownMenuItem key={p.href} onClick={() => navigate(p.href)}>
+                    <p.icon className="w-4 h-4 mr-2 text-primary" />
+                    {p.label}
+                  </DropdownMenuItem>
+                ))}
+                <Separator className="my-1" />
+                <div className="px-2 py-1 text-[10px] font-semibold uppercase text-muted-foreground">VS Code Extensions</div>
+                {extensionItems.map((ext) => (
+                  <DropdownMenuItem key={ext.label} onClick={() => navigate(ext.href)}>
+                    <ext.icon className="w-4 h-4 mr-2 text-primary" />
+                    {ext.label}
+                  </DropdownMenuItem>
+                ))}
+              </HeaderDropdown>
+
+              <HeaderDropdown label="Industries">
+                {industryCategories.map((cat) => (
+                  <div key={cat.heading}>
+                    <div className="px-2 py-1 text-[10px] font-semibold uppercase text-muted-foreground">{cat.heading}</div>
+                    {cat.items.map((item) => (
+                      <DropdownMenuItem key={item} onClick={() => navigate(`/industries/${industrySlugFromName(item)}`)}>
+                        {item}
+                      </DropdownMenuItem>
+                    ))}
+                  </div>
+                ))}
+              </HeaderDropdown>
+
+              <HeaderDropdown label="Learn">
+                {learnItems.map((item) => (
+                  <DropdownMenuItem key={item.href} onClick={() => navigate(item.href)}>
+                    <item.icon className="w-4 h-4 mr-2 text-primary" />
+                    {item.label}
+                  </DropdownMenuItem>
+                ))}
+              </HeaderDropdown>
+
               {user && <NavIconButton to="/queue" icon={ListTodo} label="Queue Management" />}
               <NavIconButton to="/tools" icon={Wrench} label="Operator Tools" />
               {hasOrgSupervisorAccess && <NavIconButton to="/teams" icon={Users} label="Team Management" />}
@@ -133,6 +243,15 @@ export function Header() {
           {/* Mobile nav */}
           {isMobile && (
             <div className="flex items-center gap-2">
+              {/* Mobile Dashboard button */}
+              {user && (
+                <Button variant="default" size="sm" className="gap-1 text-xs" asChild>
+                  <Link to="/dashboard">
+                    <LayoutDashboard className="w-3.5 h-3.5" />
+                    Dashboard
+                  </Link>
+                </Button>
+              )}
               <div className="flex items-center gap-1.5 text-muted-foreground">
                 <Clock className="w-4 h-4" />
                 <span className="font-mono text-xs">{timeString}</span>
@@ -154,7 +273,63 @@ export function Header() {
                     <SheetTitle>Menu</SheetTitle>
                   </SheetHeader>
                   <div className="flex flex-col gap-4 mt-4">
+                    {/* Dashboard links at top */}
+                    {user && canViewProductionFloor && (
+                      <div className="flex flex-col gap-1">
+                        <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-2 py-2.5 rounded-md bg-primary/10 hover:bg-primary/20 transition-colors">
+                          <Factory className="w-5 h-5 text-primary" />
+                          <span className="text-sm font-medium">Production Floor</span>
+                        </Link>
+                        <Link to="/dashboard?view=operator" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-2 py-2.5 rounded-md hover:bg-secondary transition-colors">
+                          <Eye className="w-5 h-5 text-muted-foreground" />
+                          <span className="text-sm font-medium">Operator View</span>
+                        </Link>
+                      </div>
+                    )}
                     {user && <TeamSelector />}
+                    <Separator />
+
+                    {/* Platform / Industries / Learn */}
+                    <MobileCollapsible title="Platform">
+                      <div className="px-2 py-1">
+                        <div className="text-xs font-semibold uppercase text-muted-foreground mb-1">Features</div>
+                        {platformFeatures.map((p) => (
+                          <Link key={p.href} to={p.href} onClick={() => setMobileMenuOpen(false)} className="block w-full text-left px-2 py-1.5 text-sm text-foreground hover:text-primary">
+                            {p.label}
+                          </Link>
+                        ))}
+                      </div>
+                      <div className="px-2 py-1 mt-1">
+                        <div className="text-xs font-semibold uppercase text-muted-foreground mb-1">VS Code Extensions</div>
+                        {extensionItems.map((ext) => (
+                          <Link key={ext.label} to={ext.href} onClick={() => setMobileMenuOpen(false)} className="block w-full text-left px-2 py-1.5 text-sm text-foreground hover:text-primary">
+                            {ext.label}
+                          </Link>
+                        ))}
+                      </div>
+                    </MobileCollapsible>
+
+                    <MobileCollapsible title="Industries">
+                      {industryCategories.map((cat) => (
+                        <div key={cat.heading} className="px-2 py-1">
+                          <div className="text-xs font-semibold uppercase text-muted-foreground mb-1">{cat.heading}</div>
+                          {cat.items.map((item) => (
+                            <Link key={item} to={`/industries/${industrySlugFromName(item)}`} onClick={() => setMobileMenuOpen(false)} className="block w-full text-left px-2 py-1.5 text-sm text-foreground hover:text-primary">
+                              {item}
+                            </Link>
+                          ))}
+                        </div>
+                      ))}
+                    </MobileCollapsible>
+
+                    <MobileCollapsible title="Learn">
+                      {learnItems.map((item) => (
+                        <Link key={item.href} to={item.href} onClick={() => setMobileMenuOpen(false)} className="block w-full text-left px-2 py-2 text-sm text-foreground hover:bg-accent rounded-md">
+                          {item.label}
+                        </Link>
+                      ))}
+                    </MobileCollapsible>
+
                     <Separator />
                     <nav className="flex flex-col gap-1">
                       {user && <MobileNavLink to="/queue" icon={ListTodo} label="Queue Management" onClose={() => setMobileMenuOpen(false)} />}
