@@ -19,7 +19,11 @@ export default defineConfig(({ mode }) => ({
     },
   },
   plugins: [
-    mdx({ remarkPlugins: [remarkFrontmatter, remarkMdxFrontmatter] }),
+    mdx({
+      remarkPlugins: [remarkFrontmatter, remarkMdxFrontmatter],
+      jsxImportSource: "react",
+      providerImportSource: undefined,
+    }),
     react(),
     mode === "development" && componentTagger(),
   ].filter(Boolean),
@@ -31,6 +35,7 @@ export default defineConfig(({ mode }) => ({
       "react",
       "react-dom",
       "react/jsx-runtime",
+      "react/jsx-dev-runtime",
       "@tanstack/react-query",
     ],
   },
