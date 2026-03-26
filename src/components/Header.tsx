@@ -444,6 +444,14 @@ export function Header() {
 
       <IssueReportDialog open={issueDialogOpen} onOpenChange={setIssueDialogOpen} />
       <UpdateAcknowledgeModal updates={unacknowledgedRequired} onAcknowledge={acknowledgeUpdate} />
+      {/* Mobile notification sheet */}
+      {isMobile && (
+        <Sheet open={notifOpen} onOpenChange={setNotifOpen}>
+          <SheetContent side="bottom" className="p-0 rounded-t-xl max-h-[80vh]">
+            <NotificationPanel onClose={() => setNotifOpen(false)} />
+          </SheetContent>
+        </Sheet>
+      )}
     </header>
   );
 }
