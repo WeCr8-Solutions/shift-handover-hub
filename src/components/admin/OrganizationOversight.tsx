@@ -167,18 +167,18 @@ export function OrganizationOversight({ isAdmin, access }: OrganizationOversight
   return (
     <>
       <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
+        <CardHeader className="px-3 py-3 sm:px-6 sm:py-4">
+          <div className="flex flex-col gap-3">
             <div>
-              <CardTitle className="flex items-center gap-2">
-                <Briefcase className="w-5 h-5" />
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
                 Organization Oversight
               </CardTitle>
-              <CardDescription>
-                {organizations.length} organization(s) • {organizations.reduce((sum, o) => sum + o.member_count, 0)} total members • {organizations.reduce((sum, o) => sum + o.team_count, 0)} teams
+              <CardDescription className="text-xs sm:text-sm">
+                {organizations.length} org(s) • {organizations.reduce((sum, o) => sum + o.member_count, 0)} members • {organizations.reduce((sum, o) => sum + o.team_count, 0)} teams
               </CardDescription>
             </div>
-            <div className="relative w-64">
+            <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search organizations..."
@@ -202,123 +202,94 @@ export function OrganizationOversight({ isAdmin, access }: OrganizationOversight
             <Accordion type="multiple" defaultValue={filteredOrgs.map(o => o.id)} className="space-y-3">
               {filteredOrgs.map((org) => (
                 <AccordionItem key={org.id} value={org.id} className="border rounded-lg overflow-hidden">
-                  <AccordionTrigger className="hover:no-underline px-4 py-4 bg-muted/30">
-                    <div className="flex items-center justify-between w-full pr-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <Briefcase className="w-6 h-6 text-primary" />
-                        </div>
-                        <div className="text-left">
-                          <div className="flex items-center gap-2">
-                            <p className="font-semibold text-lg">{org.name}</p>
-                            <Badge variant={getTierBadgeVariant(org.subscription_tier)}>
-                              {org.subscription_tier || "Free"}
-                            </Badge>
-                            {org.subscription_status && (
-                              <Badge 
-                                variant={org.subscription_status === "active" ? "secondary" : "destructive"}
-                                className="text-xs"
-                              >
-                                {org.subscription_status}
-                              </Badge>
-                            )}
-                          </div>
-                          <p className="text-sm text-muted-foreground">@{org.slug}</p>
-                        </div>
+                  <AccordionTrigger className="hover:no-underline px-3 py-3 sm:px-4 sm:py-4 bg-muted/30">
+                    <div className="flex items-center gap-2 sm:gap-3 w-full pr-2 min-w-0">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                        <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary" className="gap-1">
-                          <Users className="w-3 h-3" />
-                          {org.member_count}
-                        </Badge>
-                        <Badge variant="outline" className="gap-1">
-                          <Building2 className="w-3 h-3" />
-                          {org.team_count}
-                        </Badge>
-                        <Badge variant="outline" className="gap-1">
-                          <Wrench className="w-3 h-3" />
-                          {org.station_count}
-                        </Badge>
+                      <div className="text-left min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <p className="font-semibold text-sm sm:text-base truncate">{org.name}</p>
+                          <Badge variant={getTierBadgeVariant(org.subscription_tier)} className="text-[10px] px-1.5 py-0">
+                            {org.subscription_tier || "Free"}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
+                          <span>{org.member_count} users</span>
+                          <span>•</span>
+                          <span>{org.team_count} teams</span>
+                          <span>•</span>
+                          <span>{org.station_count} stations</span>
+                        </div>
                       </div>
                     </div>
                   </AccordionTrigger>
-                  <AccordionContent className="px-4 pb-4">
+                  <AccordionContent className="px-3 pb-3 sm:px-4 sm:pb-4">
                     {/* Organization Owner Card - Primary Account Holder */}
-                    <div className="mb-4 p-4 rounded-lg border-2 border-primary/20 bg-primary/5">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center">
-                            <Crown className="w-7 h-7 text-primary" />
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2 mb-1">
-                              <Badge variant="default" className="gap-1">
-                                <Crown className="w-3 h-3" />
-                                Organization Owner
-                              </Badge>
-                              <span className="text-xs text-muted-foreground">Primary Account Holder</span>
-                            </div>
-                            {org.owner_name ? (
-                              <>
-                                <p className="font-semibold text-lg">{org.owner_name}</p>
-                                <p className="text-sm text-muted-foreground flex items-center gap-1">
-                                  <Mail className="w-3 h-3" />
-                                  {org.owner_email}
-                                </p>
-                              </>
-                            ) : (
-                              <p className="text-muted-foreground italic">No owner assigned</p>
-                            )}
-                          </div>
+                    <div className="mb-3 p-3 rounded-lg border-2 border-primary/20 bg-primary/5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                          <Crown className="w-5 h-5 text-primary" />
                         </div>
-                        <div className="text-right space-y-1">
-                          <p className="text-xs text-muted-foreground">Billing Contact</p>
-                          <Badge variant="outline" className="gap-1">
-                            <Mail className="w-3 h-3" />
-                            {org.owner_email || "Not set"}
-                          </Badge>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <Badge variant="default" className="gap-1 text-[10px] px-1.5 py-0">
+                              <Crown className="w-2.5 h-2.5" />
+                              Owner
+                            </Badge>
+                          </div>
+                          {org.owner_name ? (
+                            <>
+                              <p className="font-semibold text-sm truncate">{org.owner_name}</p>
+                              <p className="text-xs text-muted-foreground truncate">
+                                {org.owner_email}
+                              </p>
+                            </>
+                          ) : (
+                            <p className="text-xs text-muted-foreground italic">No owner assigned</p>
+                          )}
                         </div>
                       </div>
                       
                       {/* Subscription & Billing Info */}
-                      <div className="mt-4 pt-3 border-t border-primary/20 grid grid-cols-3 gap-4">
-                        <div className="text-center p-2 rounded bg-background/50">
-                          <p className="text-2xl font-bold text-primary">{org.subscription_tier || "Free"}</p>
-                          <p className="text-xs text-muted-foreground">Subscription Plan</p>
+                      <div className="mt-3 pt-2 border-t border-primary/20 grid grid-cols-3 gap-2">
+                        <div className="text-center p-1.5 rounded bg-background/50">
+                          <p className="text-sm sm:text-lg font-bold text-primary">{org.subscription_tier || "Free"}</p>
+                          <p className="text-[10px] text-muted-foreground">Plan</p>
                         </div>
-                        <div className="text-center p-2 rounded bg-background/50">
-                          <p className="text-2xl font-bold">{org.subscription_status || "N/A"}</p>
-                          <p className="text-xs text-muted-foreground">Billing Status</p>
+                        <div className="text-center p-1.5 rounded bg-background/50">
+                          <p className="text-sm sm:text-lg font-bold">{org.subscription_status || "N/A"}</p>
+                          <p className="text-[10px] text-muted-foreground">Status</p>
                         </div>
-                        <div className="text-center p-2 rounded bg-background/50">
-                          <p className="text-2xl font-bold">{new Date(org.created_at).toLocaleDateString()}</p>
-                          <p className="text-xs text-muted-foreground">Created Date</p>
+                        <div className="text-center p-1.5 rounded bg-background/50">
+                          <p className="text-sm sm:text-lg font-bold">{new Date(org.created_at).toLocaleDateString()}</p>
+                          <p className="text-[10px] text-muted-foreground">Created</p>
                         </div>
                       </div>
                     </div>
 
                     {/* Organization Stats */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                      <div className="p-4 rounded-lg bg-muted/50 text-center">
-                        <div className="flex items-center justify-center gap-2 mb-2">
-                          <Users className="w-5 h-5 text-muted-foreground" />
-                          <p className="text-3xl font-bold">{org.member_count}</p>
+                    <div className="grid grid-cols-3 gap-2 mb-3">
+                      <div className="p-2 rounded-lg bg-muted/50 text-center">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <Users className="w-3.5 h-3.5 text-muted-foreground" />
+                          <p className="text-lg sm:text-2xl font-bold">{org.member_count}</p>
                         </div>
-                        <p className="text-sm text-muted-foreground">Team Members</p>
+                        <p className="text-[10px] sm:text-xs text-muted-foreground">Members</p>
                       </div>
-                      <div className="p-4 rounded-lg bg-muted/50 text-center">
-                        <div className="flex items-center justify-center gap-2 mb-2">
-                          <Building2 className="w-5 h-5 text-muted-foreground" />
-                          <p className="text-3xl font-bold">{org.team_count}</p>
+                      <div className="p-2 rounded-lg bg-muted/50 text-center">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <Building2 className="w-3.5 h-3.5 text-muted-foreground" />
+                          <p className="text-lg sm:text-2xl font-bold">{org.team_count}</p>
                         </div>
-                        <p className="text-sm text-muted-foreground">Teams</p>
+                        <p className="text-[10px] sm:text-xs text-muted-foreground">Teams</p>
                       </div>
-                      <div className="p-4 rounded-lg bg-muted/50 text-center">
-                        <div className="flex items-center justify-center gap-2 mb-2">
-                          <Wrench className="w-5 h-5 text-muted-foreground" />
-                          <p className="text-3xl font-bold">{org.station_count}</p>
+                      <div className="p-2 rounded-lg bg-muted/50 text-center">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <Wrench className="w-3.5 h-3.5 text-muted-foreground" />
+                          <p className="text-lg sm:text-2xl font-bold">{org.station_count}</p>
                         </div>
-                        <p className="text-sm text-muted-foreground">Stations</p>
+                        <p className="text-[10px] sm:text-xs text-muted-foreground">Stations</p>
                       </div>
                     </div>
 

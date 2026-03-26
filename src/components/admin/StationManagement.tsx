@@ -389,14 +389,14 @@ export function StationManagement({ isAdmin, access }: StationManagementProps) {
 
   const renderStationRow = (station: StationWithOrg, showTeam: boolean = true) => (
     <TableRow key={station.id}>
-      <TableCell>
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-            <Wrench className="w-4 h-4 text-primary" />
+      <TableCell className="px-2 sm:px-4">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+            <Wrench className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
           </div>
-          <div>
-            <p className="font-medium">{station.name}</p>
-            <p className="text-xs text-muted-foreground">{station.station_id}</p>
+          <div className="min-w-0">
+            <p className="font-medium text-xs sm:text-sm truncate">{station.name}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{station.station_id}</p>
           </div>
         </div>
       </TableCell>
@@ -455,16 +455,16 @@ export function StationManagement({ isAdmin, access }: StationManagementProps) {
 
   return (
     <Card>
-      <CardHeader>
-        <div className="flex flex-col gap-4">
+      <CardHeader className="px-3 py-3 sm:px-6 sm:py-4">
+        <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="flex items-center gap-2">
-                <Wrench className="w-5 h-5" />
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <Wrench className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
                 Station Management
               </CardTitle>
-              <CardDescription>
-                {stations.length} station(s) • {stations.filter((s) => s.is_active).length} active • {organizations.length} org(s)
+              <CardDescription className="text-xs sm:text-sm">
+                {stations.length} stations • {stations.filter((s) => s.is_active).length} active
               </CardDescription>
             </div>
             {isPlatformAdmin && (
@@ -543,58 +543,47 @@ export function StationManagement({ isAdmin, access }: StationManagementProps) {
           <Accordion type="multiple" defaultValue={organizationBuckets.map(b => b.id)} className="space-y-3">
             {organizationBuckets.map((orgBucket) => (
               <AccordionItem key={orgBucket.id} value={orgBucket.id} className="border rounded-lg overflow-hidden">
-                <AccordionTrigger className="hover:no-underline px-4 py-3 bg-muted/30">
-                  <div className="flex items-center gap-3 flex-1">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Building2 className="w-5 h-5 text-primary" />
+                <AccordionTrigger className="hover:no-underline px-3 py-2 sm:px-4 sm:py-3 bg-muted/30">
+                  <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                     </div>
-                    <div className="text-left">
-                      <p className="font-semibold">{orgBucket.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {orgBucket.stationCount} station(s) • {orgBucket.teams.length} team(s)
+                    <div className="text-left min-w-0 flex-1">
+                      <p className="font-semibold text-sm sm:text-base truncate">{orgBucket.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {orgBucket.stationCount} stations • {orgBucket.teams.length} teams
                       </p>
                     </div>
                   </div>
-                  <Badge variant="secondary" className="mr-4">
+                  <Badge variant="secondary" className="mr-2 sm:mr-4 text-xs shrink-0">
                     <Wrench className="w-3 h-3 mr-1" />
                     {orgBucket.stationCount}
                   </Badge>
                 </AccordionTrigger>
-                <AccordionContent className="px-4 pb-4">
+                <AccordionContent className="px-3 pb-3 sm:px-4 sm:pb-4">
                   {/* Organization Owner Card */}
                   {orgBucket.id !== "unassigned" && orgBucket.ownerName && (
-                    <div className="mb-4 p-3 rounded-lg border-2 border-primary/20 bg-primary/5">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                            <Crown className="w-5 h-5 text-primary" />
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="font-semibold">{orgBucket.ownerName}</span>
-                              <Badge variant="default" className="gap-1 text-xs">
-                                <Crown className="w-3 h-3" />
-                                Owner
-                              </Badge>
-                            </div>
-                            <p className="text-xs text-muted-foreground flex items-center gap-1">
-                              <Mail className="w-3 h-3" />
-                              {orgBucket.ownerEmail}
-                            </p>
-                          </div>
+                    <div className="mb-3 p-2.5 rounded-lg border-2 border-primary/20 bg-primary/5">
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                          <Crown className="w-4 h-4 text-primary" />
                         </div>
-                        <div className="flex items-center gap-2">
-                          {orgBucket.subscriptionTier && (
-                            <Badge variant="secondary" className="text-xs">
-                              {orgBucket.subscriptionTier}
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="font-semibold text-sm truncate">{orgBucket.ownerName}</span>
+                            <Badge variant="default" className="gap-1 text-[10px] px-1.5 py-0">
+                              <Crown className="w-2.5 h-2.5" />
+                              Owner
                             </Badge>
-                          )}
-                          {orgBucket.subscriptionStatus && (
-                            <Badge 
-                              variant={orgBucket.subscriptionStatus === "active" ? "outline" : "destructive"}
-                              className="text-xs"
-                            >
-                              {orgBucket.subscriptionStatus}
+                          </div>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {orgBucket.ownerEmail}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          {orgBucket.subscriptionTier && (
+                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                              {orgBucket.subscriptionTier}
                             </Badge>
                           )}
                         </div>

@@ -320,17 +320,17 @@ export function UserManagement({ isAdmin, isSupervisorOrAbove = false, access }:
 
   const renderUserRow = (user: UserWithRole, showOrg: boolean = false) => (
     <TableRow key={user.id}>
-      <TableCell>
-        <div className="flex items-center gap-3">
-          <Avatar className="h-8 w-8">
-            <AvatarFallback className="bg-primary/10 text-primary text-sm">
+      <TableCell className="px-2 sm:px-4">
+        <div className="flex items-center gap-2">
+          <Avatar className="h-6 w-6 sm:h-8 sm:w-8 shrink-0">
+            <AvatarFallback className="bg-primary/10 text-primary text-xs sm:text-sm">
               {user.display_name.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <div>
-            <p className="font-medium">{user.display_name}</p>
+          <div className="min-w-0">
+            <p className="font-medium text-xs sm:text-sm truncate">{user.display_name}</p>
             {user.user_id === currentUser?.id && (
-              <span className="text-xs text-muted-foreground">(You)</span>
+              <span className="text-[10px] text-muted-foreground">(You)</span>
             )}
           </div>
         </div>
@@ -486,18 +486,16 @@ export function UserManagement({ isAdmin, isSupervisorOrAbove = false, access }:
 
   return (
     <Card>
-      <CardHeader>
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <UsersIcon className="w-5 h-5" />
-                User Management
-              </CardTitle>
-              <CardDescription>
-                {users.length} users across {organizations.length} organization(s) • Hover on RLS Access for permission details
-              </CardDescription>
-            </div>
+      <CardHeader className="px-3 py-3 sm:px-6 sm:py-4">
+        <div className="flex flex-col gap-3">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <UsersIcon className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
+              User Management
+            </CardTitle>
+            <CardDescription className="text-xs sm:text-sm">
+              {users.length} users • {organizations.length} org(s)
+            </CardDescription>
           </div>
           
           {/* Filters Row */}
@@ -564,67 +562,47 @@ export function UserManagement({ isAdmin, isSupervisorOrAbove = false, access }:
                 
                 return (
                   <AccordionItem key={org.id} value={org.id} className="border rounded-lg overflow-hidden">
-                    <AccordionTrigger className="hover:no-underline px-4 py-3 bg-muted/30">
-                      <div className="flex items-center gap-3 flex-1">
-                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <Building2 className="w-5 h-5 text-primary" />
+                    <AccordionTrigger className="hover:no-underline px-3 py-2 sm:px-4 sm:py-3 bg-muted/30">
+                      <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                          <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                         </div>
-                        <div className="text-left flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-semibold">{org.name}</span>
+                        <div className="text-left flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="font-semibold text-sm sm:text-base truncate">{org.name}</span>
                             {org.subscription_tier && (
-                              <Badge variant="default" className="text-xs gap-1">
+                              <Badge variant="default" className="text-[10px] px-1.5 py-0">
                                 {org.subscription_tier}
                               </Badge>
                             )}
-                            {org.subscription_status && (
-                              <Badge 
-                                variant={org.subscription_status === "active" ? "secondary" : "destructive"} 
-                                className="text-xs"
-                              >
-                                {org.subscription_status}
-                              </Badge>
-                            )}
                           </div>
-                          <div className="text-sm text-muted-foreground">
+                          <div className="text-xs text-muted-foreground">
                             {orgUsers.length} user(s)
-                            {org.id === "no-org" && " • Not assigned to any organization"}
                           </div>
                         </div>
-                        <Badge variant="outline" className="mr-4 gap-1">
+                        <Badge variant="outline" className="mr-2 sm:mr-4 gap-1 text-xs shrink-0">
                           <UsersIcon className="w-3 h-3" />
                           {orgUsers.length}
                         </Badge>
                       </div>
                     </AccordionTrigger>
-                    <AccordionContent className="px-4 pb-4">
+                    <AccordionContent className="px-3 pb-3 sm:px-4 sm:pb-4">
                       {/* Owner Card - Prominently displayed */}
                       {orgOwner && org.id !== "no-org" && (
-                        <div className="mb-4 p-4 rounded-lg border-2 border-primary/20 bg-primary/5">
-                          <div className="flex items-start justify-between">
-                            <div className="flex items-center gap-3">
-                              <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
-                                <Crown className="w-6 h-6 text-primary" />
-                              </div>
-                              <div>
-                                <div className="flex items-center gap-2">
-                                  <span className="font-semibold text-lg">{orgOwner.display_name}</span>
-                                  <Badge variant="default" className="gap-1">
-                                    <Crown className="w-3 h-3" />
-                                    Organization Owner
-                                  </Badge>
-                                </div>
-                                <p className="text-sm text-muted-foreground">{orgOwner.email}</p>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                  Primary account holder & billing contact
-                                </p>
-                              </div>
+                        <div className="mb-3 p-3 rounded-lg border-2 border-primary/20 bg-primary/5">
+                          <div className="flex items-center gap-2 sm:gap-3">
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                              <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                             </div>
-                            <div className="text-right">
-                              {renderAccessLevelBadge(orgOwner)}
-                              <div className="mt-2 text-xs text-muted-foreground">
-                                Joined {new Date(orgOwner.created_at).toLocaleDateString()}
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="font-semibold text-sm truncate">{orgOwner.display_name}</span>
+                                <Badge variant="default" className="gap-1 text-[10px] px-1.5 py-0">
+                                  <Crown className="w-2.5 h-2.5" />
+                                  Owner
+                                </Badge>
                               </div>
+                              <p className="text-xs text-muted-foreground truncate">{orgOwner.email}</p>
                             </div>
                           </div>
                           {/* Subscription Info */}
