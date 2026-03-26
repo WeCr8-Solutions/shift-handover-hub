@@ -257,15 +257,21 @@ export function Header() {
                   <TooltipContent>Report an Issue</TooltipContent>
                 </Tooltip>
               )}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" title="Notifications">
+              <Popover open={notifOpen} onOpenChange={setNotifOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" size="icon" title="Notifications" className="relative">
                     <Bell className="w-5 h-5 text-muted-foreground" />
-                    <span className="absolute top-1 right-1 w-2 h-2 bg-status-critical rounded-full" />
+                    {notifBadgeCount > 0 && (
+                      <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
+                        {notifBadgeCount > 9 ? "9+" : notifBadgeCount}
+                      </span>
+                    )}
                   </Button>
-                </TooltipTrigger>
-                <TooltipContent>Notifications</TooltipContent>
-              </Tooltip>
+                </PopoverTrigger>
+                <PopoverContent align="end" className="w-96 p-0">
+                  <NotificationPanel onClose={() => setNotifOpen(false)} />
+                </PopoverContent>
+              </Popover>
               <UserMenu />
             </div>
           )}
@@ -415,10 +421,17 @@ export function Header() {
                           Report an Issue
                         </Button>
                       )}
-                      <button className="relative flex items-center gap-2 p-2 rounded-lg hover:bg-secondary transition-colors text-sm">
+                      <button
+                        className="relative flex items-center gap-2 p-2 rounded-lg hover:bg-secondary transition-colors text-sm"
+                        onClick={() => { setMobileMenuOpen(false); setNotifOpen(true); }}
+                      >
                         <Bell className="w-5 h-5 text-muted-foreground" />
                         <span>Notifications</span>
-                        <span className="w-2 h-2 bg-status-critical rounded-full" />
+                        {notifBadgeCount > 0 && (
+                          <span className="w-4 h-4 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
+                            {notifBadgeCount > 9 ? "9+" : notifBadgeCount}
+                          </span>
+                        )}
                       </button>
                     </div>
                   </div>
