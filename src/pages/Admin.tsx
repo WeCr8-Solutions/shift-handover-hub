@@ -65,6 +65,7 @@ export default function Admin() {
   const scopedOrgId = hasPlatformAccess ? null : organizationId;
 
   const { stats, loading: statsLoading, lastUpdated: statsLastUpdated, fetchStats } = useSystemStats({ organizationId: scopedOrgId });
+  const isMobile = useIsMobile();
   const [bulkUploadOpen, setBulkUploadOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
 
