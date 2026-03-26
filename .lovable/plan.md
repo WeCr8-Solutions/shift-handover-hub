@@ -1,42 +1,70 @@
 
 
-# Unify Navigation and Add Dashboard Button
+# Consolidate Navigation -- ECI-Inspired Structure
 
-## What's Wrong
+## Current Problems
 
-1. **Two separate navs** -- `MarketingNav.tsx` (public pages) and `Header.tsx` (authenticated dashboard) have completely different structures. The marketing nav has the updated Platform/Industries/Learn mega-menus; the dashboard header has none of this.
-2. **No explicit "Dashboard" button** -- The only way to reach the dashboard is clicking the logo. Users need a visible, labeled button.
-3. **Role confusion** -- Users can't easily switch between Supervisor overview and Operator view from the header.
+1. **Learn dropdown has 13 items** -- overwhelming, no descriptions, just a wall of links
+2. **No "Support" or "Company" sections** -- Blog and Pricing float as standalone top-level items
+3. **Mega-menu panels are dense** -- Platform panel crams 8 features + 2 extensions with icon cards; Industries is just plain text lists
+4. **Dashboard Header duplicates everything** in tiny dropdown menus that scroll -- poor UX
 
-## Plan
+## New Top-Level Structure
 
-### Step 1: Add a visible "Dashboard" button to both navs
+Following the ECI pattern (Products / Industries / Support / Learn / Company):
 
-**MarketingNav.tsx** -- When the user is authenticated, show a "Dashboard" button (with LayoutDashboard icon) next to "Start Free Trial" (or replacing it). Links to `/dashboard`.
+```text
+Logo   |  Products v  |  Industries v  |  Learn v  |  Company v  |  Pricing  |  [Dashboard / Start Free Trial]
+```
 
-**Header.tsx** -- Add a labeled "Dashboard" button (not just a logo click) as the first nav item. For users with supervisor/admin access, make it a split button or dropdown with two options:
-- "Production Floor" (supervisor overview)
-- "Operator View" (operator station view)
+### Products Mega-Menu
+Two columns with title + description (ECI style):
+- Left: **Platform** -- Digital Expeditor, Shift Handoff, Work Order Tracking, Production Scheduling, Quality Management, AI Planning Assistant, Machine Shop Software, Downtime Tracking
+- Right: **Developer Tools** -- JobLine G-Code (beta badge), JobLine Machine Connect (beta badge)
+- Bottom row CTA: "See all features" link
 
-This uses existing role detection from `useAdminAccess`.
+### Industries Mega-Menu
+Keep the 3-column category layout (Manufacturing / Process & Specialty / Emerging) but add a right-side promotional panel with a tagline: "Built for precision manufacturing" and a CTA to view all industries.
 
-### Step 2: Add Platform/Industries/Learn links to the dashboard Header
+### Learn Mega-Menu (ECI-style: title + description, 2 columns)
+Consolidate 13 items into grouped categories:
+- **Resources** -- Manufacturing Guides, G-Code Reference, Industry Glossary, ERP Selection Guide (with short descriptions)
+- **Blog** -- Tips, best practices, and industry insights (links to /blog)
+- **Training** -- Beginner's Guide, Safety & Compliance, Lean Manufacturing, 5S, Kanban (grouped)
+- Bottom CTA: "Explore all resources >"
 
-Add a small set of contextual links in the Header so authenticated users can still access Industries and Learn resources without navigating back to the marketing site. These will be simple dropdown menus (not full mega-menus) to keep the header compact. Reuse the same data arrays from `MarketingNav` by extracting them into a shared file.
+### Company (new dropdown, simple)
+- About (links to a future /about or /)
+- Careers (/resources/careers -- moved from Learn)
+- Pioneers (/resources/pioneers -- moved from Learn)
+- Contact / Help (/help)
 
-### Step 3: Extract shared nav data
+## Changes
 
-Move `platformFeatures`, `extensionItems`, `industryCategories`, and `learnItems` arrays into a shared file `src/components/marketing/navData.ts` so both `MarketingNav.tsx` and `Header.tsx` import from the same source. This ensures consistency.
+### 1. `src/components/marketing/navData.ts`
+- Restructure `learnItems` into grouped categories with descriptions (new `NavLearnCategory` interface)
+- Add `companyItems` array
+- Keep `platformFeatures` and `extensionItems` as-is (already have descriptions)
+- Add descriptions to industry items (new interface with `name` + `slug`)
 
-### Step 4: Mobile parity
+### 2. `src/components/marketing/MarketingNav.tsx`
+- Change `MenuKey` to `"products" | "industries" | "learn" | "company" | null`
+- Remove standalone Blog/Pricing buttons from dropdown area; Blog moves into Learn, Pricing stays as plain link
+- Rebuild each mega-menu panel with ECI-style layout: title + description pairs in clean columns, optional promotional sidebar
+- Learn panel: 2-column grid with category headings and 3-4 items each with descriptions
+- Company panel: simple 4-item list with descriptions
 
-Update the mobile Sheet in `Header.tsx` to include:
-- A prominent "Dashboard" link at the top
-- Collapsible sections for Platform, Industries, Learn (matching the marketing mobile nav)
+### 3. `src/components/Header.tsx`
+- Update `HeaderDropdown` content to match new groupings
+- Move Blog/Help into Learn and Company dropdowns respectively
+- Keep dashboard-specific nav items (Queue, Tools, Teams, etc.) separate from marketing dropdowns
+
+### 4. Mobile menus (both files)
+- Update `MobileSection`/`MobileCollapsible` titles to match new top-level: Products, Industries, Learn, Company
+- Move Blog into Learn section, Help/Careers into Company section
 
 ## Files Changed
-
-- `src/components/marketing/navData.ts` -- New shared data file
-- `src/components/marketing/MarketingNav.tsx` -- Import from navData, add Dashboard button for authenticated users
-- `src/components/Header.tsx` -- Add Dashboard button with role-aware options, add Platform/Industries/Learn dropdowns, update mobile menu
+- `src/components/marketing/navData.ts` -- Restructure data with descriptions, add companyItems, group learnItems
+- `src/components/marketing/MarketingNav.tsx` -- New mega-menu layouts, new menu keys, ECI-style panels
+- `src/components/Header.tsx` -- Update dropdowns to match new groupings
 
