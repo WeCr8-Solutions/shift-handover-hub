@@ -257,6 +257,10 @@ export default function Admin() {
                     <MessageSquare className="w-4 h-4" />
                     <span className="hidden sm:inline">Surveys</span>
                   </TabsTrigger>
+                  <TabsTrigger value="blog-admin" className="gap-2">
+                    <FileText className="w-4 h-4" />
+                    <span className="hidden sm:inline">Blog</span>
+                  </TabsTrigger>
                 </div>
               </>
             )}
