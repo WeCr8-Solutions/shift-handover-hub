@@ -180,7 +180,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(null);
 
     try {
-      await supabase.auth.signOut();
+      await supabase.auth.signOut({ scope: "local" });
     } catch (e) {
       // Session may already be expired/invalid — that's fine, we've cleared local state
       console.warn("Sign out request failed (session may already be expired):", e);
