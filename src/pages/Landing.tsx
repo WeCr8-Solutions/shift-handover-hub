@@ -11,6 +11,7 @@ import { SupportJoblineModal } from "@/components/SupportJoblineModal";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
+import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 import { VisitorSurveyModal } from "@/components/marketing/VisitorSurveyModal";
 import { trackEvent, ConversionEvents } from "@/lib/analytics";
 import { getUtmParams } from "@/lib/utm";
