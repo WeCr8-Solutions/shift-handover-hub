@@ -400,12 +400,12 @@ export function StationManagement({ isAdmin, access }: StationManagementProps) {
           </div>
         </div>
       </TableCell>
-      <TableCell>{station.work_center}</TableCell>
-      <TableCell>
+      <TableCell className="hidden sm:table-cell">{station.work_center}</TableCell>
+      <TableCell className="hidden md:table-cell">
         <Badge variant="secondary">{station.work_center_type}</Badge>
       </TableCell>
       {showTeam && (
-        <TableCell>
+        <TableCell className="hidden md:table-cell">
           {station.team_name ? (
             <Badge variant="outline">{station.team_name}</Badge>
           ) : (
@@ -470,9 +470,9 @@ export function StationManagement({ isAdmin, access }: StationManagementProps) {
             {isPlatformAdmin && (
               <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
                 <DialogTrigger asChild>
-                  <Button className="gap-2">
+                  <Button className="gap-2" size="sm">
                     <Plus className="w-4 h-4" />
-                    Add Station
+                    <span className="hidden sm:inline">Add Station</span>
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-h-[85vh] overflow-y-auto">
@@ -497,8 +497,8 @@ export function StationManagement({ isAdmin, access }: StationManagementProps) {
           </div>
           
           {/* Filters Row */}
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="relative flex-1 min-w-[200px]">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3">
+            <div className="relative flex-1 min-w-0">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search stations..."
@@ -507,37 +507,34 @@ export function StationManagement({ isAdmin, access }: StationManagementProps) {
                 className="pl-9"
               />
             </div>
-            
-            <Select value={selectedOrg} onValueChange={setSelectedOrg}>
-              <SelectTrigger className="w-[200px]">
-                <Building2 className="w-4 h-4 mr-2" />
-                <SelectValue placeholder="Filter by org" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Organizations</SelectItem>
-                <SelectItem value="unassigned">Unassigned</SelectItem>
-                {organizations.map((org) => (
-                  <SelectItem key={org.id} value={org.id}>
-                    {org.name}
+            <div className="grid grid-cols-2 sm:flex gap-2">
+              <Select value={selectedOrg} onValueChange={setSelectedOrg}>
+                <SelectTrigger className="w-full sm:w-[200px]">
+                  <Building2 className="w-4 h-4 mr-2 shrink-0" />
+                  <SelectValue placeholder="Filter by org" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Organizations</SelectItem>
+                  <SelectItem value="unassigned">Unassigned</SelectItem>
+                  {organizations.map((org) => (
+                    <SelectItem key={org.id} value={org.id}>
+                      {org.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)}>
+                <SelectTrigger className="w-full sm:w-[140px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="grouped">
+                    <span className="flex items-center gap-2"><FolderOpen className="w-4 h-4" />Grouped</span>
                   </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            
-            <Select value={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)}>
-              <SelectTrigger className="w-[140px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="grouped">
-                  <span className="flex items-center gap-2">
-                    <FolderOpen className="w-4 h-4" />
-                    Grouped
-                  </span>
-                </SelectItem>
-                <SelectItem value="flat">Flat View</SelectItem>
-              </SelectContent>
-            </Select>
+                  <SelectItem value="flat">Flat View</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
       </CardHeader>
@@ -620,11 +617,11 @@ export function StationManagement({ isAdmin, access }: StationManagementProps) {
                           <Table>
                             <TableHeader>
                               <TableRow>
-                                <TableHead>Station</TableHead>
-                                <TableHead>Work Center</TableHead>
-                                <TableHead>Type</TableHead>
-                                <TableHead>Status</TableHead>
-                                {isPlatformAdmin && <TableHead className="w-12"></TableHead>}
+                              <TableHead>Station</TableHead>
+                              <TableHead className="hidden sm:table-cell">Work Center</TableHead>
+                              <TableHead className="hidden md:table-cell">Type</TableHead>
+                              <TableHead>Status</TableHead>
+                              {isPlatformAdmin && <TableHead className="w-10"></TableHead>}
                               </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -640,21 +637,23 @@ export function StationManagement({ isAdmin, access }: StationManagementProps) {
             ))}
           </Accordion>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Station</TableHead>
-                <TableHead>Work Center</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Team</TableHead>
-                <TableHead>Status</TableHead>
-                {isPlatformAdmin && <TableHead className="w-12"></TableHead>}
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Station</TableHead>
+                  <TableHead className="hidden sm:table-cell">Work Center</TableHead>
+                  <TableHead className="hidden md:table-cell">Type</TableHead>
+                  <TableHead className="hidden md:table-cell">Team</TableHead>
+                  <TableHead>Status</TableHead>
+                  {isPlatformAdmin && <TableHead className="w-10"></TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredStations.map((station) => renderStationRow(station, true))}
             </TableBody>
-          </Table>
+            </Table>
+          </div>
         )}
       </CardContent>
 

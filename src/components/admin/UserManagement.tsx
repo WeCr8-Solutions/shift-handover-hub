@@ -335,9 +335,9 @@ export function UserManagement({ isAdmin, isSupervisorOrAbove = false, access }:
           </div>
         </div>
       </TableCell>
-      <TableCell className="text-muted-foreground text-sm">{user.email}</TableCell>
+      <TableCell className="hidden sm:table-cell text-muted-foreground text-sm">{user.email}</TableCell>
       {showOrg && (
-        <TableCell>
+        <TableCell className="hidden md:table-cell">
           {user.organization ? (
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="gap-1">
@@ -350,10 +350,10 @@ export function UserManagement({ isAdmin, isSupervisorOrAbove = false, access }:
           )}
         </TableCell>
       )}
-      <TableCell>
+      <TableCell className="hidden lg:table-cell">
         {renderAccessLevelBadge(user)}
       </TableCell>
-      <TableCell>
+      <TableCell className="hidden md:table-cell">
         <div className="flex items-center gap-2">
           {user.organization && (
             <Badge variant="secondary" className="gap-1 text-xs">
@@ -363,7 +363,7 @@ export function UserManagement({ isAdmin, isSupervisorOrAbove = false, access }:
           )}
         </div>
       </TableCell>
-      <TableCell>
+      <TableCell className="hidden lg:table-cell">
         <div className="flex flex-wrap gap-1">
           {user.roles.length > 0 ? (
             user.roles.map((role) => (
@@ -381,7 +381,7 @@ export function UserManagement({ isAdmin, isSupervisorOrAbove = false, access }:
           )}
         </div>
       </TableCell>
-      <TableCell className="text-muted-foreground text-sm">
+      <TableCell className="hidden sm:table-cell text-muted-foreground text-sm">
         {new Date(user.created_at).toLocaleDateString()}
       </TableCell>
       {(isPlatformAdmin || canManage) && (
@@ -501,8 +501,8 @@ export function UserManagement({ isAdmin, isSupervisorOrAbove = false, access }:
           </div>
           
           {/* Filters Row */}
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="relative flex-1 min-w-[200px]">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3">
+            <div className="relative flex-1 min-w-0">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search users..."
@@ -511,32 +511,32 @@ export function UserManagement({ isAdmin, isSupervisorOrAbove = false, access }:
                 className="pl-9"
               />
             </div>
-            
-            <Select value={selectedOrg} onValueChange={setSelectedOrg}>
-              <SelectTrigger className="w-[200px]">
-                <Building2 className="w-4 h-4 mr-2" />
-                <SelectValue placeholder="Filter by org" />
-              </SelectTrigger>
-              <SelectContent className="bg-popover border shadow-lg z-50">
-                <SelectItem value="all">All Organizations</SelectItem>
-                <SelectItem value="no-org">No Organization</SelectItem>
-                {organizations.filter(o => o.id !== "no-org").map((org) => (
-                  <SelectItem key={org.id} value={org.id}>
-                    {org.name} ({org.users.length})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            
-            <Select value={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)}>
-              <SelectTrigger className="w-[140px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-popover border shadow-lg z-50">
-                <SelectItem value="grouped">Grouped View</SelectItem>
-                <SelectItem value="flat">Flat View</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="grid grid-cols-2 sm:flex gap-2">
+              <Select value={selectedOrg} onValueChange={setSelectedOrg}>
+                <SelectTrigger className="w-full sm:w-[200px]">
+                  <Building2 className="w-4 h-4 mr-2 shrink-0" />
+                  <SelectValue placeholder="Filter by org" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border shadow-lg z-50">
+                  <SelectItem value="all">All Organizations</SelectItem>
+                  <SelectItem value="no-org">No Organization</SelectItem>
+                  {organizations.filter(o => o.id !== "no-org").map((org) => (
+                    <SelectItem key={org.id} value={org.id}>
+                      {org.name} ({org.users.length})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)}>
+                <SelectTrigger className="w-full sm:w-[140px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border shadow-lg z-50">
+                  <SelectItem value="grouped">Grouped View</SelectItem>
+                  <SelectItem value="flat">Flat View</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
       </CardHeader>
@@ -657,8 +657,8 @@ export function UserManagement({ isAdmin, isSupervisorOrAbove = false, access }:
                           <TableHeader>
                             <TableRow>
                               <TableHead>User</TableHead>
-                              <TableHead>Email</TableHead>
-                              <TableHead>
+                              <TableHead className="hidden sm:table-cell">Email</TableHead>
+                              <TableHead className="hidden lg:table-cell">
                                 <div className="flex items-center gap-1">
                                   RLS Access
                                   <TooltipProvider>
@@ -673,9 +673,9 @@ export function UserManagement({ isAdmin, isSupervisorOrAbove = false, access }:
                                   </TooltipProvider>
                                 </div>
                               </TableHead>
-                              <TableHead>Org Role</TableHead>
-                              <TableHead>Platform Roles</TableHead>
-                              <TableHead>Joined</TableHead>
+                              <TableHead className="hidden md:table-cell">Org Role</TableHead>
+                              <TableHead className="hidden lg:table-cell">Platform Roles</TableHead>
+                              <TableHead className="hidden sm:table-cell">Joined</TableHead>
                               {(isPlatformAdmin || canManage) && <TableHead className="w-12"></TableHead>}
                             </TableRow>
                           </TableHeader>
@@ -695,9 +695,9 @@ export function UserManagement({ isAdmin, isSupervisorOrAbove = false, access }:
               <TableHeader>
                 <TableRow>
                   <TableHead>User</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Organization</TableHead>
-                  <TableHead>
+                  <TableHead className="hidden sm:table-cell">Email</TableHead>
+                  <TableHead className="hidden md:table-cell">Organization</TableHead>
+                  <TableHead className="hidden lg:table-cell">
                     <div className="flex items-center gap-1">
                       RLS Access
                       <TooltipProvider>
@@ -712,10 +712,10 @@ export function UserManagement({ isAdmin, isSupervisorOrAbove = false, access }:
                       </TooltipProvider>
                     </div>
                   </TableHead>
-                  <TableHead>Org Role</TableHead>
-                  <TableHead>Platform Roles</TableHead>
-                  <TableHead>Joined</TableHead>
-                  {(isPlatformAdmin || canManage) && <TableHead className="w-12"></TableHead>}
+                  <TableHead className="hidden md:table-cell">Org Role</TableHead>
+                  <TableHead className="hidden lg:table-cell">Platform Roles</TableHead>
+                  <TableHead className="hidden sm:table-cell">Joined</TableHead>
+                  {(isPlatformAdmin || canManage) && <TableHead className="w-10"></TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
