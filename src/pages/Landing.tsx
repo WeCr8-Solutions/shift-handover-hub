@@ -8,6 +8,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { ShiftHandoffDemo } from "@/components/landing/ShiftHandoffDemo";
 import { SupportJoblineModal } from "@/components/SupportJoblineModal";
+import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
@@ -289,156 +290,8 @@ export default function Landing() {
           "audience": { "@type": "Audience", "audienceType": "Manufacturing Professionals" }
         }}
       />
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50">
-        <div className="container mx-auto px-3 sm:px-4 lg:px-6 h-14 sm:h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <img src={joblineLogo} alt="JobLine.ai" className="h-20 sm:h-24 lg:h-28 w-auto" />
-          </div>
-          
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-6 xl:gap-8">
-            {navLinks.map((link) => (
-              link.isRoute ? (
-                <button
-                  key={link.href}
-                  onClick={() => handleNavClick(link.href, link.isRoute, link.label)}
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {link.label}
-                </button>
-              ) : (
-                <a 
-                  key={link.href}
-                  href={link.href} 
-                  onClick={() => handleCtaClick(`nav_${link.label.toLowerCase().replace(/\s+/g, '_')}`, 'nav', link.label)}
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {link.label}
-                </a>
-              )
-            ))}
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => {
-                handleCtaClick('try_digital_handoff', 'nav_header', 'Try Digital Handoff');
-                document.querySelector('#handoff-demo')?.scrollIntoView({ behavior: 'smooth' });
-              }}
-              className="gap-1.5 border-primary/50 text-primary hover:bg-primary/10"
-            >
-              <Zap className="w-3.5 h-3.5" />
-              Try Digital Handoff
-            </Button>
-          </div>
-
-          <div className="flex items-center gap-2 sm:gap-3">
-            {user ? (
-              <Button onClick={() => {
-                handleCtaClick('go_to_dashboard', 'nav_header');
-                navigate("/dashboard");
-              }} size="sm" className="gap-1.5 sm:gap-2 text-xs sm:text-sm">
-                <span className="hidden xs:inline">Go to </span>Dashboard
-                <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              </Button>
-            ) : (
-              <>
-                <Button variant="ghost" onClick={() => {
-                  handleCtaClick('sign_in', 'nav_header');
-                  navigate("/auth");
-                }} size="sm" className="hidden sm:flex text-xs sm:text-sm">
-                  Sign In
-                </Button>
-                <Button onClick={() => {
-                  handleCtaClick('get_started', 'nav_header');
-                  navigate("/auth");
-                }} size="sm" className="gap-1.5 sm:gap-2 text-xs sm:text-sm">
-                  <span className="hidden xs:inline">Get </span>Started
-                  <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                </Button>
-              </>
-            )}
-
-            {/* Mobile Menu Button */}
-            <Sheet open={mobileMenuOpen} onOpenChange={(open) => {
-              if (open) {
-                handleMobileMenuOpen();
-              } else {
-                setMobileMenuOpen(false);
-              }
-            }}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="lg:hidden h-9 w-9">
-                  <Menu className="h-5 w-5" />
-                  <span className="sr-only">Toggle menu</span>
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-[280px] sm:w-[320px] p-0">
-                <div className="flex flex-col h-full">
-                  {/* Mobile Menu Header */}
-                  <div className="flex items-center justify-between p-4 border-b border-border">
-                    <img src={joblineLogo} alt="JobLine.ai" className="h-10 w-auto" />
-                  </div>
-                  
-                  {/* Mobile Menu Links */}
-                  <div className="flex-1 overflow-y-auto py-4">
-                    <nav className="flex flex-col gap-1 px-3">
-                      {navLinks.map((link) => (
-                        <button
-                          key={link.href}
-                          onClick={() => handleNavClick(link.href, link.isRoute)}
-                          className="flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium text-foreground hover:bg-secondary transition-colors text-left"
-                        >
-                          {link.label}
-                        </button>
-                      ))}
-                    </nav>
-                  </div>
-                  
-                  {/* Mobile Menu Footer */}
-                  <div className="p-4 border-t border-border space-y-3">
-                    {user ? (
-                      <Button 
-                        onClick={() => {
-                          handleMobileMenuCtaClick('go_to_dashboard');
-                          navigate("/dashboard");
-                        }} 
-                        className="w-full gap-2"
-                      >
-                        Go to Dashboard
-                        <ArrowRight className="w-4 h-4" />
-                      </Button>
-                    ) : (
-                      <>
-                        <Button 
-                          onClick={() => {
-                            handleMobileMenuCtaClick('get_started');
-                            navigate("/auth");
-                          }} 
-                          className="w-full gap-2"
-                        >
-                          Get Started
-                          <ArrowRight className="w-4 h-4" />
-                        </Button>
-                        <Button 
-                          variant="outline"
-                          onClick={() => {
-                            handleMobileMenuCtaClick('sign_in');
-                            navigate("/auth");
-                          }} 
-                          className="w-full"
-                        >
-                          Sign In
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </SheetContent>
-            </Sheet>
-          </div>
-        </div>
-      </nav>
+      {/* Unified marketing navigation */}
+      <MarketingNav />
 
       {/* Hero Section */}
       <section className="relative min-h-[100dvh] flex flex-col justify-center pt-16 pb-8">
