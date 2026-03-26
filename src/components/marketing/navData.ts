@@ -53,8 +53,8 @@ export const platformFeatures: NavFeatureItem[] = [
 ];
 
 export const extensionItems: NavFeatureItem[] = [
-  { label: "JobLine G-Code", href: "/features/cnc-operator-tools", icon: Code, desc: "Multi-dialect G-code intelligence for VS Code" },
-  { label: "JobLine Machine Connect", href: "/features/cnc-operator-tools", icon: Cable, desc: "DNC connectivity — FTP, serial & network" },
+  { label: "JobLine G-Code", href: "/features/vscode-gcode", icon: Code, desc: "Multi-dialect G-code intelligence for VS Code" },
+  { label: "JobLine Machine Connect", href: "/features/machine-connect", icon: Cable, desc: "DNC connectivity — FTP, serial & network" },
 ];
 
 export const industryCategories: IndustryCategory[] = [

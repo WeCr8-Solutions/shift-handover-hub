@@ -46,6 +46,8 @@ import AIPlanningAssistant from "./pages/features/AIPlanningAssistant";
 import MachineTimeTracking from "./pages/features/MachineTimeTracking";
 import ShiftHandoff from "./pages/features/ShiftHandoff";
 import ManufacturingVisibility from "./pages/features/ManufacturingVisibility";
+import VSCodeGCode from "./pages/features/VSCodeGCode";
+import MachineConnectPage from "./pages/features/MachineConnect";
 import Updates from "./pages/Updates";
 import Start from "./pages/Start";
 import ResourcesIndex from "./pages/resources/ResourcesIndex";
@@ -139,6 +141,8 @@ const App = () => (
                     <Route path="/machine-time-tracking" element={<MachineTimeTracking />} />
                     <Route path="/shift-handoff" element={<ShiftHandoff />} />
                     <Route path="/manufacturing-visibility" element={<ManufacturingVisibility />} />
+                    <Route path="/features/vscode-gcode" element={<VSCodeGCode />} />
+                    <Route path="/features/machine-connect" element={<MachineConnectPage />} />
                     <Route path="/resources" element={<ResourcesIndex />} />
                     <Route path="/resources/guides" element={<ManufacturingGuides />} />
                     <Route path="/resources/gcode" element={<GCodeReference />} />
