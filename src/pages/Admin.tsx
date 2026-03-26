@@ -117,7 +117,7 @@ export default function Admin() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="container mx-auto px-4 py-6 space-y-6">
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6">
         {/* Page Header */}
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-3">
@@ -158,7 +158,7 @@ export default function Admin() {
         </div>
 
         {/* Management Tabs - Organized by Bucket System */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-3 sm:space-y-4">
           {/* Mobile: grouped select dropdown */}
           {isMobile ? (
             <Select value={activeTab} onValueChange={setActiveTab}>
