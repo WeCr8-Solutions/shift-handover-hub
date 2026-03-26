@@ -1,53 +1,51 @@
 
 
-# File-Based MDX Blog System
+# Admin Dashboard Mobile Optimization
 
-## Overview
+## Problem
+At 360px viewport, the admin dashboard has severe usability issues:
+- **25+ tabs** render as a wrapped wall of tiny buttons, consuming most of the screen
+- **Filter rows** with fixed-width selects (200px, 140px) overflow horizontally
+- **Page header** buttons and badge stack poorly
+- **Stats cards** grid doesn't collapse cleanly on small screens
+- **Tables** in child components cause horizontal scroll issues
 
-Replace the hardcoded blog post array with real MDX files loaded via Vite glob imports. Add individual post pages at `/blog/:slug`.
+## Approach
+Replace the desktop tab strip with a **mobile dropdown navigator** on small screens, and fix overflow in key child components.
 
 ## Changes
 
-### 1. Install dependencies
-- `@mdx-js/rollup` -- Vite-compatible MDX compiler
-- `remark-frontmatter` -- Parse YAML frontmatter blocks
-- `remark-mdx-frontmatter` -- Export frontmatter as a named export
+### 1. `src/pages/Admin.tsx` -- Mobile tab navigation
+- On screens < 1024px (`useIsMobile`), replace the `TabsList` with a **grouped `<Select>` dropdown** that mirrors the bucket structure (Org, Production, Activity, Dev)
+- Use `<optgroup>` -style grouping via Select with category labels
+- Keep the full `TabsList` visible only on `lg:` and above
+- Shrink page header: stack title/badge vertically, hide "Bulk Upload" text (icon-only on mobile), reduce heading size
 
-### 2. Update `vite.config.ts`
-- Import `mdx` from `@mdx-js/rollup` and both remark plugins
-- Add `mdx({ remarkPlugins: [remarkFrontmatter, remarkMdxFrontmatter] })` to the plugins array (before `react()`)
+### 2. `src/components/admin/AdminStatsCards.tsx` -- Compact mobile grid
+- Change grid to `grid-cols-2` on mobile (currently `grid-cols-1`) for better density
+- Reduce card padding on small screens with responsive classes
 
-### 3. Create `content/posts/` with 6 MDX files
-Migrate each hardcoded post into its own `.mdx` file (e.g. `shift-handoff-best-practices.mdx`) with frontmatter matching the requested shape and placeholder body content (2-3 paragraphs of relevant manufacturing content per post).
+### 3. `src/components/admin/WorkOrderManagement.tsx` -- Fix filter overflow
+- Stack filters vertically on mobile: search full-width, selects in a 2-col grid below
+- Remove fixed `w-[200px]` / `w-[140px]` on selects, use `w-full` on mobile
+- "Add Work Order" button: icon-only on mobile
 
-### 4. Rewrite `src/pages/Blog.tsx`
-- Use `import.meta.glob('/content/posts/*.mdx', { eager: true })` to load all posts at build time
-- Extract frontmatter from each module's named `frontmatter` export
-- Sort by `publishedDate` descending
-- Keep all existing card UI, category filters, hero, CTA, and footer unchanged -- only swap data source
-- Wrap each card title in a `<Link to={/blog/${slug}}>` so posts are clickable
+### 4. `src/components/admin/UserManagement.tsx` -- Responsive table
+- Wrap table in `overflow-x-auto` container
+- Hide less-critical columns (email, org) on mobile via `hidden sm:table-cell`
+- Compact the search/filter row
 
-### 5. Create `src/pages/BlogPost.tsx`
-- Use `useParams()` to get `:slug`
-- Use the same glob import to find the matching post by slug
-- Render: MarketingNav, post header (title, date, author, category badge), MDX content via the default export component, back link, MarketingFooter
-- Style MDX content with Tailwind prose classes (`prose prose-neutral dark:prose-invert`)
+### 5. `src/components/admin/StationManagement.tsx` -- Responsive table
+- Same treatment: `overflow-x-auto`, hide secondary columns on mobile
+- Stack filter controls vertically on small screens
 
-### 6. Add route in `src/App.tsx`
-- Import `BlogPost` and add `<Route path="/blog/:slug" element={<BlogPost />} />` above the catch-all
+## Files Changed
 
-### 7. Add MDX type declaration
-- Create `src/types/mdx.d.ts` declaring the module `*.mdx` with `default` (React component) and `frontmatter` (record) exports
-
-## Files
-
-| File | Action |
+| File | Change |
 |------|--------|
-| `package.json` | Add 3 deps |
-| `vite.config.ts` | Add MDX plugin |
-| `src/types/mdx.d.ts` | New -- type declarations |
-| `content/posts/*.mdx` (6 files) | New -- blog content |
-| `src/pages/Blog.tsx` | Rewrite data source |
-| `src/pages/BlogPost.tsx` | New -- individual post page |
-| `src/App.tsx` | Add `/blog/:slug` route |
+| `src/pages/Admin.tsx` | Mobile dropdown nav replacing TabsList, compact header |
+| `src/components/admin/AdminStatsCards.tsx` | 2-col mobile grid, smaller card padding |
+| `src/components/admin/WorkOrderManagement.tsx` | Stacked filters, responsive select widths |
+| `src/components/admin/UserManagement.tsx` | Responsive table columns, overflow handling |
+| `src/components/admin/StationManagement.tsx` | Responsive table columns, overflow handling |
 
