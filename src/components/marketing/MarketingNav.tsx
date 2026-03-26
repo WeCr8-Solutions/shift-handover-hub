@@ -173,7 +173,7 @@ export function MarketingNav({ showPricing = true }: MarketingNavProps) {
                           <div>
                             <div className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
                               {ext.label}
-                              <span className="ml-1.5 text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600">Beta</span>
+                              <span className="ml-1.5 text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded bg-accent text-accent-foreground">Beta</span>
                             </div>
                             <div className="text-xs text-muted-foreground mt-0.5 leading-snug">{ext.desc}</div>
                           </div>
