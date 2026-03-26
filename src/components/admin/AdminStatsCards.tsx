@@ -80,7 +80,7 @@ export function AdminStatsCards({ stats, loading, lastUpdated, onRefresh, hasPla
 
   if (loading && !lastUpdated) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
         {Array.from({ length: 6 }).map((_, i) => (
           <Card key={i}>
             <CardHeader className="pb-2">
@@ -139,18 +139,18 @@ export function AdminStatsCards({ stats, loading, lastUpdated, onRefresh, hasPla
       </div>
 
       {/* Stats Grid */}
-      <div className={`grid grid-cols-1 md:grid-cols-2 ${hasPlatformAccess ? 'lg:grid-cols-3 xl:grid-cols-6' : 'lg:grid-cols-3'} gap-4`}>
+      <div className={`grid grid-cols-2 ${hasPlatformAccess ? 'md:grid-cols-3 xl:grid-cols-6' : 'md:grid-cols-3'} gap-3`}>
         {statCards.map((stat) => (
           <Card key={stat.title}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardHeader className="flex flex-row items-center justify-between pb-1 px-3 pt-3 sm:px-6 sm:pt-6 sm:pb-2">
+              <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
                 {stat.title}
               </CardTitle>
-              <stat.icon className="h-4 w-4 text-muted-foreground" />
+              <stat.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-              <p className="text-xs text-muted-foreground">{stat.description}</p>
+            <CardContent className="px-3 pb-3 sm:px-6 sm:pb-6">
+              <div className="text-lg sm:text-2xl font-bold">{stat.value}</div>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">{stat.description}</p>
             </CardContent>
           </Card>
         ))}
