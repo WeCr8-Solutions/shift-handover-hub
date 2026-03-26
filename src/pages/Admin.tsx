@@ -375,6 +375,10 @@ export default function Admin() {
               <TabsContent value="surveys">
                 <Suspense fallback={<AdminTabFallback />}><VisitorSurveyAnalytics /></Suspense>
               </TabsContent>
+
+              <TabsContent value="blog-admin">
+                <Suspense fallback={<AdminTabFallback />}><BlogAdmin /></Suspense>
+              </TabsContent>
             </>
           )}
 
