@@ -108,7 +108,7 @@ export default function Admin() {
   }
 
 
-  const isMobile = useIsMobile();
+
 
   if (!hasAdminAccess) {
     return null;
