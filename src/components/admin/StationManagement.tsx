@@ -560,41 +560,30 @@ export function StationManagement({ isAdmin, access }: StationManagementProps) {
                     {orgBucket.stationCount}
                   </Badge>
                 </AccordionTrigger>
-                <AccordionContent className="px-4 pb-4">
+                <AccordionContent className="px-3 pb-3 sm:px-4 sm:pb-4">
                   {/* Organization Owner Card */}
                   {orgBucket.id !== "unassigned" && orgBucket.ownerName && (
-                    <div className="mb-4 p-3 rounded-lg border-2 border-primary/20 bg-primary/5">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                            <Crown className="w-5 h-5 text-primary" />
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="font-semibold">{orgBucket.ownerName}</span>
-                              <Badge variant="default" className="gap-1 text-xs">
-                                <Crown className="w-3 h-3" />
-                                Owner
-                              </Badge>
-                            </div>
-                            <p className="text-xs text-muted-foreground flex items-center gap-1">
-                              <Mail className="w-3 h-3" />
-                              {orgBucket.ownerEmail}
-                            </p>
-                          </div>
+                    <div className="mb-3 p-2.5 rounded-lg border-2 border-primary/20 bg-primary/5">
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                          <Crown className="w-4 h-4 text-primary" />
                         </div>
-                        <div className="flex items-center gap-2">
-                          {orgBucket.subscriptionTier && (
-                            <Badge variant="secondary" className="text-xs">
-                              {orgBucket.subscriptionTier}
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="font-semibold text-sm truncate">{orgBucket.ownerName}</span>
+                            <Badge variant="default" className="gap-1 text-[10px] px-1.5 py-0">
+                              <Crown className="w-2.5 h-2.5" />
+                              Owner
                             </Badge>
-                          )}
-                          {orgBucket.subscriptionStatus && (
-                            <Badge 
-                              variant={orgBucket.subscriptionStatus === "active" ? "outline" : "destructive"}
-                              className="text-xs"
-                            >
-                              {orgBucket.subscriptionStatus}
+                          </div>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {orgBucket.ownerEmail}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          {orgBucket.subscriptionTier && (
+                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                              {orgBucket.subscriptionTier}
                             </Badge>
                           )}
                         </div>
