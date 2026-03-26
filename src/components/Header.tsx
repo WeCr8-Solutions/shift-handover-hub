@@ -146,7 +146,17 @@ export function Header() {
 
               {user && <TeamSelector />}
 
-              {/* Products dropdown */}
+              {/* App action icons — before marketing nav when logged in */}
+              {user && <NavIconButton to="/queue" icon={ListTodo} label="Queue Management" />}
+              <NavIconButton to="/tools" icon={Wrench} label="Operator Tools" />
+              {hasOrgSupervisorAccess && <NavIconButton to="/teams" icon={Users} label="Team Management" />}
+              {user && <NavIconButton to="/settings" icon={Settings} label="Settings" />}
+              {hasAdminAccess && (
+                <NavIconButton to="/admin" icon={Shield} label={hasOrgAdminAccess ? "Admin Dashboard" : "Supervisor Dashboard"} iconClass="text-primary" />
+              )}
+              {hasTestingAccess && <NavIconButton to="/testing" icon={FlaskConical} label="Testing Dashboard" iconClass="text-purple-500" />}
+
+              {/* Marketing/info dropdowns */}
               <HeaderDropdown label="Products">
                 <DropdownMenuLabel className="text-[10px] uppercase tracking-wider">Platform</DropdownMenuLabel>
                 {platformFeatures.map((p) => (
@@ -171,7 +181,6 @@ export function Header() {
                 ))}
               </HeaderDropdown>
 
-              {/* Industries dropdown */}
               <HeaderDropdown label="Industries">
                 {industryCategories.map((cat) => (
                   <div key={cat.heading}>
@@ -185,7 +194,6 @@ export function Header() {
                 ))}
               </HeaderDropdown>
 
-              {/* Learn dropdown */}
               <HeaderDropdown label="Learn">
                 {learnCategories.map((cat) => (
                   <div key={cat.heading}>
@@ -200,7 +208,6 @@ export function Header() {
                 ))}
               </HeaderDropdown>
 
-              {/* Company dropdown */}
               <HeaderDropdown label="Company">
                 {companyItems.map((item) => (
                   <DropdownMenuItem key={item.href} onClick={() => navigate(item.href)}>
@@ -213,14 +220,6 @@ export function Header() {
                 ))}
               </HeaderDropdown>
 
-              {user && <NavIconButton to="/queue" icon={ListTodo} label="Queue Management" />}
-              <NavIconButton to="/tools" icon={Wrench} label="Operator Tools" />
-              {hasOrgSupervisorAccess && <NavIconButton to="/teams" icon={Users} label="Team Management" />}
-              {user && <NavIconButton to="/settings" icon={Settings} label="Settings" />}
-              {hasAdminAccess && (
-                <NavIconButton to="/admin" icon={Shield} label={hasOrgAdminAccess ? "Admin Dashboard" : "Supervisor Dashboard"} iconClass="text-primary" />
-              )}
-              {hasTestingAccess && <NavIconButton to="/testing" icon={FlaskConical} label="Testing Dashboard" iconClass="text-purple-500" />}
               <SystemStatusIndicator status={systemStatus} />
               {user && (
                 <Tooltip>
@@ -313,9 +312,30 @@ export function Header() {
                       </div>
                     )}
                     {user && <TeamSelector />}
+
+                    {/* App actions — shown FIRST when logged in */}
+                    {user && (
+                      <>
+                        <Separator />
+                        <nav className="flex flex-col gap-1">
+                          <MobileNavLink to="/queue" icon={ListTodo} label="Queue Management" onClose={() => setMobileMenuOpen(false)} />
+                          <MobileNavLink to="/tools" icon={Wrench} label="Operator Tools" onClose={() => setMobileMenuOpen(false)} />
+                          {hasOrgSupervisorAccess && <MobileNavLink to="/teams" icon={Users} label="Team Management" onClose={() => setMobileMenuOpen(false)} />}
+                          <MobileNavLink to="/settings" icon={Settings} label="Settings" onClose={() => setMobileMenuOpen(false)} />
+                          {hasAdminAccess && (
+                            <MobileNavLink to="/admin" icon={Shield} label={hasOrgAdminAccess ? "Admin Dashboard" : "Supervisor Dashboard"} iconClass="text-primary" onClose={() => setMobileMenuOpen(false)} />
+                          )}
+                          {hasTestingAccess && (
+                            <MobileNavLink to="/testing" icon={FlaskConical} label="Testing Dashboard" iconClass="text-purple-500" onClose={() => setMobileMenuOpen(false)} />
+                          )}
+                          <MobileNavLink to="/updates" icon={Megaphone} label={`Updates${unreadCount > 0 ? ` (${unreadCount})` : ""}`} onClose={() => setMobileMenuOpen(false)} />
+                        </nav>
+                      </>
+                    )}
+
                     <Separator />
 
-                    {/* Products */}
+                    {/* Marketing/info sections — below app actions */}
                     <MobileCollapsible title="Products">
                       <div className="px-2 py-1">
                         <div className="text-xs font-semibold uppercase text-muted-foreground mb-1">Platform</div>
@@ -335,7 +355,6 @@ export function Header() {
                       </div>
                     </MobileCollapsible>
 
-                    {/* Industries */}
                     <MobileCollapsible title="Industries">
                       {industryCategories.map((cat) => (
                         <div key={cat.heading} className="px-2 py-1">
@@ -349,7 +368,6 @@ export function Header() {
                       ))}
                     </MobileCollapsible>
 
-                    {/* Learn */}
                     <MobileCollapsible title="Learn">
                       {learnCategories.map((cat) => (
                         <div key={cat.heading} className="px-2 py-1">
@@ -363,7 +381,6 @@ export function Header() {
                       ))}
                     </MobileCollapsible>
 
-                    {/* Company */}
                     <MobileCollapsible title="Company">
                       {companyItems.map((item) => (
                         <Link key={item.href} to={item.href} onClick={() => setMobileMenuOpen(false)} className="block w-full text-left px-2 py-2 text-sm text-foreground hover:bg-accent rounded-md">
@@ -372,22 +389,16 @@ export function Header() {
                       ))}
                     </MobileCollapsible>
 
-                    <Separator />
-                    <nav className="flex flex-col gap-1">
-                      {user && <MobileNavLink to="/queue" icon={ListTodo} label="Queue Management" onClose={() => setMobileMenuOpen(false)} />}
-                      <MobileNavLink to="/tools" icon={Wrench} label="Operator Tools" onClose={() => setMobileMenuOpen(false)} />
-                      {hasOrgSupervisorAccess && <MobileNavLink to="/teams" icon={Users} label="Team Management" onClose={() => setMobileMenuOpen(false)} />}
-                      {user && <MobileNavLink to="/settings" icon={Settings} label="Settings" onClose={() => setMobileMenuOpen(false)} />}
-                      {hasAdminAccess && (
-                        <MobileNavLink to="/admin" icon={Shield} label={hasOrgAdminAccess ? "Admin Dashboard" : "Supervisor Dashboard"} iconClass="text-primary" onClose={() => setMobileMenuOpen(false)} />
-                      )}
-                      {hasTestingAccess && (
-                        <MobileNavLink to="/testing" icon={FlaskConical} label="Testing Dashboard" iconClass="text-purple-500" onClose={() => setMobileMenuOpen(false)} />
-                      )}
-                      {user && (
-                        <MobileNavLink to="/updates" icon={Megaphone} label={`Updates${unreadCount > 0 ? ` (${unreadCount})` : ""}`} onClose={() => setMobileMenuOpen(false)} />
-                      )}
-                    </nav>
+                    {/* Non-logged-in app links */}
+                    {!user && (
+                      <>
+                        <Separator />
+                        <nav className="flex flex-col gap-1">
+                          <MobileNavLink to="/tools" icon={Wrench} label="Operator Tools" onClose={() => setMobileMenuOpen(false)} />
+                        </nav>
+                      </>
+                    )}
+
                     <Separator />
                     <div className="flex flex-col gap-3 px-2">
                       <div className="flex items-center justify-between">

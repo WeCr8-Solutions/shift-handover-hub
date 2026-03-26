@@ -16,6 +16,7 @@ import { SupervisorDashboard } from "@/components/dashboard/SupervisorDashboard"
 import { OperatorDashboard } from "@/components/dashboard/OperatorDashboard";
 import { StationDetailView } from "@/components/dashboard/StationDetailView";
 import { ExpiredTrialGate } from "@/components/ExpiredTrialGate";
+import { ComplimentaryAwardBanner } from "@/components/ComplimentaryAwardBanner";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrentTeam } from "@/contexts/TeamContext";
@@ -278,6 +279,7 @@ const Index = () => {
       <Header />
 
       <main className="container py-6">
+        <ComplimentaryAwardBanner />
         {/* Trial gate for authenticated users */}
         {user ? (
           <ExpiredTrialGate>
