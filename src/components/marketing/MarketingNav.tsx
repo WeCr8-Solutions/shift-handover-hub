@@ -14,13 +14,19 @@ import {
 import joblineLogo from "@/assets/jobline-logo.png";
 import { industrySlugFromName } from "@/pages/industries/industryData";
 import { useAuth } from "@/contexts/AuthContext";
-import { platformFeatures, extensionItems, industryCategories, learnItems } from "./navData";
+import {
+  platformFeatures,
+  extensionItems,
+  industryCategories,
+  learnCategories,
+  companyItems,
+} from "./navData";
 
 interface MarketingNavProps {
   showPricing?: boolean;
 }
 
-type MenuKey = "platform" | "industries" | "learn" | null;
+type MenuKey = "products" | "industries" | "learn" | "company" | null;
 
 export function MarketingNav({ showPricing = true }: MarketingNavProps) {
   const navigate = useNavigate();
@@ -69,24 +75,6 @@ export function MarketingNav({ showPricing = true }: MarketingNavProps) {
     </button>
   );
 
-  const FeatureButton = ({ item }: { item: typeof platformFeatures[0] }) => {
-    const Icon = item.icon;
-    return (
-      <button
-        onClick={() => go(item.href)}
-        className="flex items-start gap-3 p-3 rounded-lg hover:bg-accent/50 transition-colors text-left"
-      >
-        <div className="w-9 h-9 rounded-md bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-          <Icon className="w-4.5 h-4.5 text-primary" />
-        </div>
-        <div>
-          <div className="text-sm font-medium text-foreground">{item.label}</div>
-          <div className="text-xs text-muted-foreground mt-0.5">{item.desc}</div>
-        </div>
-      </button>
-    );
-  };
-
   return (
     <nav ref={navRef} className="border-b border-border bg-background/90 backdrop-blur-xl sticky top-0 z-50">
       <div className="container mx-auto px-4 h-14 flex items-center justify-between">
@@ -102,15 +90,13 @@ export function MarketingNav({ showPricing = true }: MarketingNavProps) {
 
         {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-1" onMouseLeave={handleLeave}>
-          <DropdownTrigger label="Platform" menuKey="platform" />
+          <DropdownTrigger label="Products" menuKey="products" />
           <DropdownTrigger label="Industries" menuKey="industries" />
           <DropdownTrigger label="Learn" menuKey="learn" />
+          <DropdownTrigger label="Company" menuKey="company" />
 
           <button onClick={() => go("/pricing")} className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-md">
             Pricing
-          </button>
-          <button onClick={() => go("/blog")} className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-md">
-            Blog
           </button>
 
           {user ? (
@@ -141,7 +127,7 @@ export function MarketingNav({ showPricing = true }: MarketingNavProps) {
         </div>
       </div>
 
-      {/* Desktop mega-menu */}
+      {/* ── Desktop mega-menu panels ── */}
       {openMenu && (
         <div
           className="hidden md:block absolute left-0 right-0 border-b border-border bg-background shadow-lg z-40"
@@ -149,35 +135,62 @@ export function MarketingNav({ showPricing = true }: MarketingNavProps) {
           onMouseLeave={handleLeave}
         >
           <div className="container mx-auto px-4 py-6">
-            {openMenu === "platform" && (
+            {/* Products */}
+            {openMenu === "products" && (
               <div className="grid grid-cols-[1fr_auto] gap-8">
                 <div>
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Platform Features</h4>
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-                    {platformFeatures.map((p) => (
-                      <FeatureButton key={p.href} item={p} />
-                    ))}
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Platform</h4>
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-3">
+                    {platformFeatures.map((p) => {
+                      const Icon = p.icon;
+                      return (
+                        <button key={p.href} onClick={() => go(p.href)} className="flex items-start gap-3 p-2 rounded-lg hover:bg-accent/50 transition-colors text-left group">
+                          <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                            <Icon className="w-4 h-4 text-primary" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">{p.label}</div>
+                            <div className="text-xs text-muted-foreground mt-0.5 leading-snug">{p.desc}</div>
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
                 <div className="border-l border-border pl-6 min-w-[240px]">
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">
                     <Monitor className="w-3 h-3 inline mr-1 -mt-0.5" />
-                    VS Code Extensions
+                    Developer Tools
                   </h4>
-                  <div className="space-y-1">
-                    {extensionItems.map((ext) => (
-                      <FeatureButton key={ext.label} item={ext} />
-                    ))}
+                  <div className="space-y-2">
+                    {extensionItems.map((ext) => {
+                      const Icon = ext.icon;
+                      return (
+                        <button key={ext.label} onClick={() => go(ext.href)} className="flex items-start gap-3 p-2 rounded-lg hover:bg-accent/50 transition-colors text-left w-full group">
+                          <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                            <Icon className="w-4 h-4 text-primary" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+                              {ext.label}
+                              <span className="ml-1.5 text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded bg-accent text-accent-foreground">Beta</span>
+                            </div>
+                            <div className="text-xs text-muted-foreground mt-0.5 leading-snug">{ext.desc}</div>
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
-                  <p className="text-[11px] text-muted-foreground mt-3 leading-snug">
-                    The VS Code extension you use at your desk connects to the platform running on your Haas.
-                  </p>
+                  <button onClick={() => go("/features")} className="mt-4 text-xs font-semibold text-primary hover:underline">
+                    See all features →
+                  </button>
                 </div>
               </div>
             )}
 
+            {/* Industries */}
             {openMenu === "industries" && (
-              <div className="grid grid-cols-3 gap-8">
+              <div className="grid grid-cols-[1fr_1fr_1fr_auto] gap-8">
                 {industryCategories.map((cat) => (
                   <div key={cat.heading}>
                     <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">{cat.heading}</h4>
@@ -195,38 +208,72 @@ export function MarketingNav({ showPricing = true }: MarketingNavProps) {
                     </ul>
                   </div>
                 ))}
+                <div className="border-l border-border pl-6 flex flex-col justify-center min-w-[200px]">
+                  <p className="text-sm font-semibold text-foreground">Built for precision manufacturing</p>
+                  <p className="text-xs text-muted-foreground mt-1 leading-snug">Purpose-built solutions for shops of every size.</p>
+                  <button onClick={() => go("/industries")} className="mt-3 text-xs font-semibold text-primary hover:underline text-left">
+                    View all industries →
+                  </button>
+                </div>
               </div>
             )}
 
+            {/* Learn */}
             {openMenu === "learn" && (
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-                {learnItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <button
-                      key={item.href}
-                      onClick={() => go(item.href)}
-                      className="flex items-center gap-2.5 p-2.5 rounded-lg hover:bg-accent/50 transition-colors text-left"
-                    >
-                      <Icon className="w-4 h-4 text-primary shrink-0" />
-                      <span className="text-sm font-medium text-foreground">{item.label}</span>
-                    </button>
-                  );
-                })}
-                <button
-                  onClick={() => go("/resources")}
-                  className="flex items-center gap-2.5 p-2.5 rounded-lg hover:bg-accent/50 transition-colors text-left col-span-full border-t border-border mt-2 pt-3"
-                >
-                  <BookOpen className="w-4 h-4 text-primary shrink-0" />
-                  <span className="text-sm font-semibold text-primary">View All Resources →</span>
-                </button>
+              <div>
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-8">
+                  {learnCategories.map((cat) => (
+                    <div key={cat.heading}>
+                      <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">{cat.heading}</h4>
+                      <div className="space-y-1">
+                        {cat.items.map((item) => {
+                          const Icon = item.icon;
+                          return (
+                            <button key={item.href} onClick={() => go(item.href)} className="flex items-start gap-2.5 p-2 rounded-lg hover:bg-accent/50 transition-colors text-left w-full group">
+                              <Icon className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                              <div>
+                                <div className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">{item.label}</div>
+                                {item.desc && <div className="text-xs text-muted-foreground mt-0.5 leading-snug">{item.desc}</div>}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="border-t border-border mt-4 pt-3">
+                  <button onClick={() => go("/resources")} className="flex items-center gap-2 text-sm font-semibold text-primary hover:underline">
+                    <BookOpen className="w-4 h-4" /> Explore all resources →
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Company */}
+            {openMenu === "company" && (
+              <div className="max-w-md">
+                <div className="space-y-1">
+                  {companyItems.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <button key={item.href} onClick={() => go(item.href)} className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-accent/50 transition-colors text-left w-full group">
+                        <Icon className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                        <div>
+                          <div className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">{item.label}</div>
+                          {item.desc && <div className="text-xs text-muted-foreground mt-0.5">{item.desc}</div>}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>
         </div>
       )}
 
-      {/* Mobile dropdown */}
+      {/* ── Mobile dropdown ── */}
       {mobileOpen && (
         <div className="md:hidden border-t border-border bg-background px-4 py-3 space-y-1 max-h-[80vh] overflow-y-auto">
           {isResourcesRoute && (
@@ -235,9 +282,9 @@ export function MarketingNav({ showPricing = true }: MarketingNavProps) {
             </button>
           )}
 
-          <MobileSection title="Platform">
+          <MobileSection title="Products">
             <div className="px-3 py-1">
-              <div className="text-xs font-semibold uppercase text-muted-foreground mb-1">Features</div>
+              <div className="text-xs font-semibold uppercase text-muted-foreground mb-1">Platform</div>
               {platformFeatures.map((p) => (
                 <button key={p.href} onClick={() => go(p.href)} className="block w-full text-left px-2 py-1.5 text-sm text-foreground hover:text-primary">
                   {p.label}
@@ -245,7 +292,7 @@ export function MarketingNav({ showPricing = true }: MarketingNavProps) {
               ))}
             </div>
             <div className="px-3 py-1 mt-1">
-              <div className="text-xs font-semibold uppercase text-muted-foreground mb-1">VS Code Extensions</div>
+              <div className="text-xs font-semibold uppercase text-muted-foreground mb-1">Developer Tools</div>
               {extensionItems.map((ext) => (
                 <button key={ext.label} onClick={() => go(ext.href)} className="block w-full text-left px-2 py-1.5 text-sm text-foreground hover:text-primary">
                   {ext.label}
@@ -268,7 +315,20 @@ export function MarketingNav({ showPricing = true }: MarketingNavProps) {
           </MobileSection>
 
           <MobileSection title="Learn">
-            {learnItems.map((item) => (
+            {learnCategories.map((cat) => (
+              <div key={cat.heading} className="px-3 py-1">
+                <div className="text-xs font-semibold uppercase text-muted-foreground mb-1">{cat.heading}</div>
+                {cat.items.map((item) => (
+                  <button key={item.href} onClick={() => go(item.href)} className="block w-full text-left px-2 py-1.5 text-sm text-foreground hover:text-primary">
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            ))}
+          </MobileSection>
+
+          <MobileSection title="Company">
+            {companyItems.map((item) => (
               <button key={item.href} onClick={() => go(item.href)} className="block w-full text-left px-3 py-2 text-sm text-foreground hover:bg-accent rounded-md">
                 {item.label}
               </button>
@@ -276,8 +336,6 @@ export function MarketingNav({ showPricing = true }: MarketingNavProps) {
           </MobileSection>
 
           <button onClick={() => go("/pricing")} className="block w-full text-left px-3 py-2.5 rounded-md text-sm font-medium text-foreground hover:bg-accent">Pricing</button>
-          <button onClick={() => go("/blog")} className="block w-full text-left px-3 py-2.5 rounded-md text-sm font-medium text-foreground hover:bg-accent">Blog</button>
-          <button onClick={() => go("/help")} className="block w-full text-left px-3 py-2.5 rounded-md text-sm font-medium text-foreground hover:bg-accent">Help</button>
         </div>
       )}
     </nav>

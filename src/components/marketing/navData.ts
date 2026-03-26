@@ -20,8 +20,13 @@ import {
   GitCompare,
   FileText,
   Cable,
+  HelpCircle,
+  Building2,
+  Newspaper,
   type LucideIcon,
 } from "lucide-react";
+
+/* ── Shared interfaces ── */
 
 export interface NavFeatureItem {
   label: string;
@@ -34,12 +39,20 @@ export interface NavLinkItem {
   label: string;
   href: string;
   icon: LucideIcon;
+  desc?: string;
 }
 
 export interface IndustryCategory {
   heading: string;
   items: string[];
 }
+
+export interface LearnCategory {
+  heading: string;
+  items: NavLinkItem[];
+}
+
+/* ── Products ── */
 
 export const platformFeatures: NavFeatureItem[] = [
   { label: "Digital Expeditor", href: "/features/digital-expeditor", icon: Gauge, desc: "Real-time work order routing & visibility" },
@@ -56,6 +69,8 @@ export const extensionItems: NavFeatureItem[] = [
   { label: "JobLine G-Code", href: "/features/vscode-gcode", icon: Code, desc: "Multi-dialect G-code intelligence for VS Code" },
   { label: "JobLine Machine Connect", href: "/features/machine-connect", icon: Cable, desc: "DNC connectivity — FTP, serial & network" },
 ];
+
+/* ── Industries ── */
 
 export const industryCategories: IndustryCategory[] = [
   {
@@ -91,18 +106,46 @@ export const industryCategories: IndustryCategory[] = [
   },
 ];
 
-export const learnItems: NavLinkItem[] = [
-  { label: "Manufacturing Guides", href: "/resources/guides", icon: BookOpen },
-  { label: "G-Code Reference", href: "/resources/gcode", icon: Code },
-  { label: "Industry Glossary", href: "/resources/glossary", icon: BookA },
-  { label: "Beginner's Guide", href: "/resources/beginners", icon: GraduationCap },
-  { label: "Careers", href: "/resources/careers", icon: Briefcase },
-  { label: "Safety & Compliance", href: "/resources/safety", icon: ShieldAlert },
-  { label: "Quality & Inspection", href: "/resources/quality", icon: ClipboardCheck },
-  { label: "Lean Manufacturing", href: "/resources/lean", icon: TrendingUp },
-  { label: "5S Methodology", href: "/resources/5s", icon: LayoutGrid },
-  { label: "Kanban & Sorting", href: "/resources/kanban", icon: Kanban },
-  { label: "Pioneers", href: "/resources/pioneers", icon: Users },
-  { label: "Tool Comparisons", href: "/resources/comparisons", icon: GitCompare },
-  { label: "ERP Selection Guide", href: "/resources/erp-guide", icon: FileText },
+/* ── Learn (grouped with descriptions) ── */
+
+export const learnCategories: LearnCategory[] = [
+  {
+    heading: "Resources",
+    items: [
+      { label: "Manufacturing Guides", href: "/resources/guides", icon: BookOpen, desc: "Expert insights & documentation" },
+      { label: "G-Code Reference", href: "/resources/gcode", icon: Code, desc: "Syntax, cycles & dialect differences" },
+      { label: "Industry Glossary", href: "/resources/glossary", icon: BookA, desc: "Key terms & definitions" },
+      { label: "ERP Selection Guide", href: "/resources/erp-guide", icon: FileText, desc: "Choose the right ERP for your shop" },
+      { label: "Tool Comparisons", href: "/resources/comparisons", icon: GitCompare, desc: "Side-by-side software reviews" },
+    ],
+  },
+  {
+    heading: "Training",
+    items: [
+      { label: "Beginner's Guide", href: "/resources/beginners", icon: GraduationCap, desc: "Get started with manufacturing basics" },
+      { label: "Safety & Compliance", href: "/resources/safety", icon: ShieldAlert, desc: "OSHA, lockout/tagout & PPE" },
+      { label: "Lean Manufacturing", href: "/resources/lean", icon: TrendingUp, desc: "Eliminate waste & improve flow" },
+      { label: "5S Methodology", href: "/resources/5s", icon: LayoutGrid, desc: "Sort, set, shine, standardize, sustain" },
+      { label: "Kanban & Sorting", href: "/resources/kanban", icon: Kanban, desc: "Pull systems & visual management" },
+      { label: "Quality & Inspection", href: "/resources/quality", icon: ClipboardCheck, desc: "QC processes & measurement techniques" },
+    ],
+  },
+  {
+    heading: "Blog",
+    items: [
+      { label: "Blog", href: "/blog", icon: Newspaper, desc: "Tips, best practices & industry news" },
+    ],
+  },
+];
+
+/* ── Flat learnItems for backward compat ── */
+export const learnItems: NavLinkItem[] = learnCategories.flatMap((c) => c.items);
+
+/* ── Company ── */
+
+export const companyItems: NavLinkItem[] = [
+  { label: "About JobLine", href: "/", icon: Building2, desc: "Our mission & story" },
+  { label: "Careers", href: "/resources/careers", icon: Briefcase, desc: "Join the team building the future of manufacturing" },
+  { label: "Pioneers", href: "/resources/pioneers", icon: Users, desc: "Innovators who shaped modern manufacturing" },
+  { label: "Help & Support", href: "/help", icon: HelpCircle, desc: "Documentation, FAQs & contact us" },
 ];

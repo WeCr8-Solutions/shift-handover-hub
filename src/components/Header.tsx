@@ -15,9 +15,9 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { platformFeatures, extensionItems, industryCategories, learnItems } from "@/components/marketing/navData";
+import { platformFeatures, extensionItems, industryCategories, learnCategories, companyItems } from "@/components/marketing/navData";
 import { industrySlugFromName } from "@/pages/industries/industryData";
 import joblineLogo from "@/assets/jobline-logo.png";
 
@@ -61,7 +61,7 @@ function MobileCollapsible({ title, children }: { title: string; children: React
   );
 }
 
-/* ── Header dropdown for Platform/Industries/Learn ── */
+/* ── Header dropdown ── */
 function HeaderDropdown({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <DropdownMenu>
@@ -71,7 +71,7 @@ function HeaderDropdown({ label, children }: { label: string; children: React.Re
           <ChevronDown className="w-3 h-3" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-56 max-h-80 overflow-y-auto">
+      <DropdownMenuContent align="start" className="w-64 max-h-80 overflow-y-auto">
         {children}
       </DropdownMenuContent>
     </DropdownMenu>
@@ -146,28 +146,36 @@ export function Header() {
 
               {user && <TeamSelector />}
 
-              {/* Platform / Industries / Learn dropdowns */}
-              <HeaderDropdown label="Platform">
+              {/* Products dropdown */}
+              <HeaderDropdown label="Products">
+                <DropdownMenuLabel className="text-[10px] uppercase tracking-wider">Platform</DropdownMenuLabel>
                 {platformFeatures.map((p) => (
                   <DropdownMenuItem key={p.href} onClick={() => navigate(p.href)}>
                     <p.icon className="w-4 h-4 mr-2 text-primary" />
-                    {p.label}
+                    <div>
+                      <div className="text-sm">{p.label}</div>
+                      <div className="text-[11px] text-muted-foreground">{p.desc}</div>
+                    </div>
                   </DropdownMenuItem>
                 ))}
-                <Separator className="my-1" />
-                <div className="px-2 py-1 text-[10px] font-semibold uppercase text-muted-foreground">VS Code Extensions</div>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="text-[10px] uppercase tracking-wider">Developer Tools</DropdownMenuLabel>
                 {extensionItems.map((ext) => (
                   <DropdownMenuItem key={ext.label} onClick={() => navigate(ext.href)}>
                     <ext.icon className="w-4 h-4 mr-2 text-primary" />
-                    {ext.label}
+                    <div>
+                      <div className="text-sm">{ext.label}</div>
+                      <div className="text-[11px] text-muted-foreground">{ext.desc}</div>
+                    </div>
                   </DropdownMenuItem>
                 ))}
               </HeaderDropdown>
 
+              {/* Industries dropdown */}
               <HeaderDropdown label="Industries">
                 {industryCategories.map((cat) => (
                   <div key={cat.heading}>
-                    <div className="px-2 py-1 text-[10px] font-semibold uppercase text-muted-foreground">{cat.heading}</div>
+                    <DropdownMenuLabel className="text-[10px] uppercase tracking-wider">{cat.heading}</DropdownMenuLabel>
                     {cat.items.map((item) => (
                       <DropdownMenuItem key={item} onClick={() => navigate(`/industries/${industrySlugFromName(item)}`)}>
                         {item}
@@ -177,11 +185,30 @@ export function Header() {
                 ))}
               </HeaderDropdown>
 
+              {/* Learn dropdown */}
               <HeaderDropdown label="Learn">
-                {learnItems.map((item) => (
+                {learnCategories.map((cat) => (
+                  <div key={cat.heading}>
+                    <DropdownMenuLabel className="text-[10px] uppercase tracking-wider">{cat.heading}</DropdownMenuLabel>
+                    {cat.items.map((item) => (
+                      <DropdownMenuItem key={item.href} onClick={() => navigate(item.href)}>
+                        <item.icon className="w-4 h-4 mr-2 text-primary" />
+                        {item.label}
+                      </DropdownMenuItem>
+                    ))}
+                  </div>
+                ))}
+              </HeaderDropdown>
+
+              {/* Company dropdown */}
+              <HeaderDropdown label="Company">
+                {companyItems.map((item) => (
                   <DropdownMenuItem key={item.href} onClick={() => navigate(item.href)}>
                     <item.icon className="w-4 h-4 mr-2 text-primary" />
-                    {item.label}
+                    <div>
+                      <div className="text-sm">{item.label}</div>
+                      {item.desc && <div className="text-[11px] text-muted-foreground">{item.desc}</div>}
+                    </div>
                   </DropdownMenuItem>
                 ))}
               </HeaderDropdown>
@@ -243,7 +270,6 @@ export function Header() {
           {/* Mobile nav */}
           {isMobile && (
             <div className="flex items-center gap-2">
-              {/* Mobile Dashboard button */}
               {user && (
                 <Button variant="default" size="sm" className="gap-1 text-xs" asChild>
                   <Link to="/dashboard">
@@ -289,10 +315,10 @@ export function Header() {
                     {user && <TeamSelector />}
                     <Separator />
 
-                    {/* Platform / Industries / Learn */}
-                    <MobileCollapsible title="Platform">
+                    {/* Products */}
+                    <MobileCollapsible title="Products">
                       <div className="px-2 py-1">
-                        <div className="text-xs font-semibold uppercase text-muted-foreground mb-1">Features</div>
+                        <div className="text-xs font-semibold uppercase text-muted-foreground mb-1">Platform</div>
                         {platformFeatures.map((p) => (
                           <Link key={p.href} to={p.href} onClick={() => setMobileMenuOpen(false)} className="block w-full text-left px-2 py-1.5 text-sm text-foreground hover:text-primary">
                             {p.label}
@@ -300,7 +326,7 @@ export function Header() {
                         ))}
                       </div>
                       <div className="px-2 py-1 mt-1">
-                        <div className="text-xs font-semibold uppercase text-muted-foreground mb-1">VS Code Extensions</div>
+                        <div className="text-xs font-semibold uppercase text-muted-foreground mb-1">Developer Tools</div>
                         {extensionItems.map((ext) => (
                           <Link key={ext.label} to={ext.href} onClick={() => setMobileMenuOpen(false)} className="block w-full text-left px-2 py-1.5 text-sm text-foreground hover:text-primary">
                             {ext.label}
@@ -309,6 +335,7 @@ export function Header() {
                       </div>
                     </MobileCollapsible>
 
+                    {/* Industries */}
                     <MobileCollapsible title="Industries">
                       {industryCategories.map((cat) => (
                         <div key={cat.heading} className="px-2 py-1">
@@ -322,8 +349,23 @@ export function Header() {
                       ))}
                     </MobileCollapsible>
 
+                    {/* Learn */}
                     <MobileCollapsible title="Learn">
-                      {learnItems.map((item) => (
+                      {learnCategories.map((cat) => (
+                        <div key={cat.heading} className="px-2 py-1">
+                          <div className="text-xs font-semibold uppercase text-muted-foreground mb-1">{cat.heading}</div>
+                          {cat.items.map((item) => (
+                            <Link key={item.href} to={item.href} onClick={() => setMobileMenuOpen(false)} className="block w-full text-left px-2 py-1.5 text-sm text-foreground hover:text-primary">
+                              {item.label}
+                            </Link>
+                          ))}
+                        </div>
+                      ))}
+                    </MobileCollapsible>
+
+                    {/* Company */}
+                    <MobileCollapsible title="Company">
+                      {companyItems.map((item) => (
                         <Link key={item.href} to={item.href} onClick={() => setMobileMenuOpen(false)} className="block w-full text-left px-2 py-2 text-sm text-foreground hover:bg-accent rounded-md">
                           {item.label}
                         </Link>
