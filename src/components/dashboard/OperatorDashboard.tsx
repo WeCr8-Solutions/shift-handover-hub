@@ -17,6 +17,7 @@ import { getCurrentShift } from "@/lib/mockData";
 import { LogOut, Loader2, Clock, ArrowLeft, Info } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ComplimentaryAwardBanner } from "@/components/ComplimentaryAwardBanner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -134,6 +135,9 @@ export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDas
           </AlertDescription>
         </Alert>
       )}
+
+      {/* Complimentary Access Alert */}
+      <ComplimentaryAwardBanner />
 
       {/* Top bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
