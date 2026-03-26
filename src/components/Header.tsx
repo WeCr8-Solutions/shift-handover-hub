@@ -146,7 +146,17 @@ export function Header() {
 
               {user && <TeamSelector />}
 
-              {/* Products dropdown */}
+              {/* App action icons — before marketing nav when logged in */}
+              {user && <NavIconButton to="/queue" icon={ListTodo} label="Queue Management" />}
+              <NavIconButton to="/tools" icon={Wrench} label="Operator Tools" />
+              {hasOrgSupervisorAccess && <NavIconButton to="/teams" icon={Users} label="Team Management" />}
+              {user && <NavIconButton to="/settings" icon={Settings} label="Settings" />}
+              {hasAdminAccess && (
+                <NavIconButton to="/admin" icon={Shield} label={hasOrgAdminAccess ? "Admin Dashboard" : "Supervisor Dashboard"} iconClass="text-primary" />
+              )}
+              {hasTestingAccess && <NavIconButton to="/testing" icon={FlaskConical} label="Testing Dashboard" iconClass="text-purple-500" />}
+
+              {/* Marketing/info dropdowns */}
               <HeaderDropdown label="Products">
                 <DropdownMenuLabel className="text-[10px] uppercase tracking-wider">Platform</DropdownMenuLabel>
                 {platformFeatures.map((p) => (
@@ -171,7 +181,6 @@ export function Header() {
                 ))}
               </HeaderDropdown>
 
-              {/* Industries dropdown */}
               <HeaderDropdown label="Industries">
                 {industryCategories.map((cat) => (
                   <div key={cat.heading}>
@@ -185,7 +194,6 @@ export function Header() {
                 ))}
               </HeaderDropdown>
 
-              {/* Learn dropdown */}
               <HeaderDropdown label="Learn">
                 {learnCategories.map((cat) => (
                   <div key={cat.heading}>
@@ -200,7 +208,6 @@ export function Header() {
                 ))}
               </HeaderDropdown>
 
-              {/* Company dropdown */}
               <HeaderDropdown label="Company">
                 {companyItems.map((item) => (
                   <DropdownMenuItem key={item.href} onClick={() => navigate(item.href)}>
@@ -213,14 +220,6 @@ export function Header() {
                 ))}
               </HeaderDropdown>
 
-              {user && <NavIconButton to="/queue" icon={ListTodo} label="Queue Management" />}
-              <NavIconButton to="/tools" icon={Wrench} label="Operator Tools" />
-              {hasOrgSupervisorAccess && <NavIconButton to="/teams" icon={Users} label="Team Management" />}
-              {user && <NavIconButton to="/settings" icon={Settings} label="Settings" />}
-              {hasAdminAccess && (
-                <NavIconButton to="/admin" icon={Shield} label={hasOrgAdminAccess ? "Admin Dashboard" : "Supervisor Dashboard"} iconClass="text-primary" />
-              )}
-              {hasTestingAccess && <NavIconButton to="/testing" icon={FlaskConical} label="Testing Dashboard" iconClass="text-purple-500" />}
               <SystemStatusIndicator status={systemStatus} />
               {user && (
                 <Tooltip>
