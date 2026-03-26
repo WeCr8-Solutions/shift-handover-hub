@@ -7,7 +7,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, Clock, User } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PostFrontmatter {
   title: string;
@@ -17,26 +18,65 @@ interface PostFrontmatter {
   excerpt: string;
   category: string;
   readTime: string;
+  source: "mdx" | "db";
 }
 
-interface PostModule {
-  frontmatter: PostFrontmatter;
+interface MdxModule {
+  frontmatter: Omit<PostFrontmatter, "source">;
 }
 
-const modules = import.meta.glob<PostModule>("/content/posts/*.mdx", { eager: true });
-
-const allPosts: PostFrontmatter[] = Object.values(modules)
-  .map((m) => m.frontmatter)
-  .sort((a, b) => new Date(b.publishedDate).getTime() - new Date(a.publishedDate).getTime());
-
-const categories = ["All", ...Array.from(new Set(allPosts.map((p) => p.category)))];
+// MDX file-based posts (seed content)
+const mdxModules = import.meta.glob<MdxModule>("/content/posts/*.mdx", { eager: true });
+const mdxPosts: PostFrontmatter[] = Object.values(mdxModules).map((m) => ({
+  ...m.frontmatter,
+  source: "mdx" as const,
+}));
 
 export default function Blog() {
+  const [dbPosts, setDbPosts] = useState<PostFrontmatter[]>([]);
   const [activeCategory, setActiveCategory] = useState("All");
+
+  useEffect(() => {
+    supabase
+      .from("blog_posts")
+      .select("title, slug, published_date, author, excerpt, category, read_time")
+      .eq("is_published", true)
+      .then(({ data }) => {
+        if (data) {
+          setDbPosts(
+            data.map((p) => ({
+              title: p.title,
+              slug: p.slug,
+              publishedDate: p.published_date,
+              author: p.author,
+              excerpt: p.excerpt,
+              category: p.category,
+              readTime: p.read_time,
+              source: "db" as const,
+            }))
+          );
+        }
+      });
+  }, []);
+
+  // Merge and dedupe by slug (DB wins), sort by date desc
+  const allPosts = useMemo(() => {
+    const slugMap = new Map<string, PostFrontmatter>();
+    mdxPosts.forEach((p) => slugMap.set(p.slug, p));
+    dbPosts.forEach((p) => slugMap.set(p.slug, p)); // DB overrides MDX if same slug
+    return Array.from(slugMap.values()).sort(
+      (a, b) => new Date(b.publishedDate).getTime() - new Date(a.publishedDate).getTime()
+    );
+  }, [dbPosts]);
+
+  const categories = useMemo(
+    () => ["All", ...Array.from(new Set(allPosts.map((p) => p.category)))],
+    [allPosts]
+  );
 
   const filteredPosts = useMemo(
     () => (activeCategory === "All" ? allPosts : allPosts.filter((p) => p.category === activeCategory)),
-    [activeCategory]
+    [activeCategory, allPosts]
   );
 
   return (

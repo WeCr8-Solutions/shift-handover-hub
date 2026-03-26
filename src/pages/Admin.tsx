@@ -8,7 +8,7 @@ import { TourTriggerButton } from "@/components/onboarding";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Shield, LayoutDashboard, Users, Wrench, Briefcase, Activity, FileSpreadsheet, Package, Route, Lightbulb, History, Bug, ShieldCheck, ListTodo, Settings2, Map, BookOpen, Cpu, MessageSquare, BellRing, Tv, Globe, Building } from "lucide-react";
+import { Shield, LayoutDashboard, Users, Wrench, Briefcase, Activity, FileSpreadsheet, Package, Route, Lightbulb, History, Bug, ShieldCheck, ListTodo, Settings2, Map, BookOpen, Cpu, MessageSquare, BellRing, Tv, Globe, Building, FileText } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { AdminComponentAccess } from "@/types/admin";
 
@@ -37,6 +37,7 @@ const SmartAlertAdmin = lazy(() => import("@/components/admin/SmartAlertAdmin").
 const ShopFloorDisplayManagement = lazy(() => import("@/components/admin/ShopFloorDisplayManagement").then(m => ({ default: m.ShopFloorDisplayManagement })));
 const NotificationQueueStatus = lazy(() => import("@/components/admin/NotificationQueueStatus").then(m => ({ default: m.NotificationQueueStatus })));
 const PlatformOverviewTab = lazy(() => import("@/components/admin/PlatformOverviewTab").then(m => ({ default: m.PlatformOverviewTab })));
+const BlogAdmin = lazy(() => import("@/components/admin/BlogAdmin").then(m => ({ default: m.BlogAdmin })));
 
 const AdminTabFallback = () => <div className="p-6"><Skeleton className="h-64 w-full rounded-lg" /></div>;
 
@@ -256,6 +257,10 @@ export default function Admin() {
                     <MessageSquare className="w-4 h-4" />
                     <span className="hidden sm:inline">Surveys</span>
                   </TabsTrigger>
+                  <TabsTrigger value="blog-admin" className="gap-2">
+                    <FileText className="w-4 h-4" />
+                    <span className="hidden sm:inline">Blog</span>
+                  </TabsTrigger>
                 </div>
               </>
             )}
@@ -369,6 +374,10 @@ export default function Admin() {
 
               <TabsContent value="surveys">
                 <Suspense fallback={<AdminTabFallback />}><VisitorSurveyAnalytics /></Suspense>
+              </TabsContent>
+
+              <TabsContent value="blog-admin">
+                <Suspense fallback={<AdminTabFallback />}><BlogAdmin /></Suspense>
               </TabsContent>
             </>
           )}
