@@ -156,15 +156,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    // Log logout before signing out
+    // Log logout before signing out (fire-and-forget, don't block on failure)
     if (user) {
-      await logActivity(
+      logActivity(
         user.id,
         "logout",
         "User signed out",
         user.email,
         profile?.display_name
-      );
+      ).catch(() => {});
     }
     
     // Clear sensitive localStorage data on logout to prevent data exposure
@@ -174,10 +174,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     ];
     sensitiveKeys.forEach(key => localStorage.removeItem(key));
     
-    await supabase.auth.signOut();
+    // Clear local state first so UI updates immediately
     setUser(null);
     setSession(null);
     setProfile(null);
+
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {
+      // Session may already be expired/invalid — that's fine, we've cleared local state
+      console.warn("Sign out request failed (session may already be expired):", e);
+    }
   };
 
   const refreshProfile = async () => {
