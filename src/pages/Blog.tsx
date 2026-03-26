@@ -1,41 +1,70 @@
+import { useEffect, useState, useMemo } from "react";
+import { Link } from "react-router-dom";
 import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { ArrowRight, Clock, User } from "lucide-react";
-import { Link } from "react-router-dom";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
-import { useState, useMemo, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-interface PostFrontmatter {
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+interface PostMeta {
   title: string;
   slug: string;
   publishedDate: string;
   author: string;
+  authorTitle?: string;
   excerpt: string;
   category: string;
   readTime: string;
+  coverImage?: string;
+  tags?: string[];
+  featured?: boolean;
   source: "mdx" | "db";
 }
 
-interface MdxModule {
-  frontmatter: Omit<PostFrontmatter, "source">;
-}
+// ---------------------------------------------------------------------------
+// Vite glob — lazy load to keep bundles small
+// ---------------------------------------------------------------------------
+const postModules = import.meta.glob<{ frontmatter: Omit<PostMeta, "source"> }>(
+  "/content/posts/*.mdx"
+);
 
-// MDX file-based posts (seed content)
-const mdxModules = import.meta.glob<MdxModule>("/content/posts/*.mdx", { eager: true });
-const mdxPosts: PostFrontmatter[] = Object.values(mdxModules).map((m) => ({
-  ...m.frontmatter,
-  source: "mdx" as const,
-}));
+const CATEGORIES = [
+  "All",
+  "Shift Handover",
+  "Machine Intelligence",
+  "Operations",
+  "Shop Floor",
+  "CNC Programming",
+  "Industry Trends",
+];
 
+// ---------------------------------------------------------------------------
+// Blog Index
+// ---------------------------------------------------------------------------
 export default function Blog() {
-  const [dbPosts, setDbPosts] = useState<PostFrontmatter[]>([]);
+  const [mdxPosts, setMdxPosts] = useState<PostMeta[]>([]);
+  const [dbPosts, setDbPosts] = useState<PostMeta[]>([]);
   const [activeCategory, setActiveCategory] = useState("All");
+  const [loading, setLoading] = useState(true);
 
+  // Load MDX posts
+  useEffect(() => {
+    async function loadMdx() {
+      const loaded: PostMeta[] = [];
+      for (const path in postModules) {
+        const mod = await postModules[path]();
+        if (mod.frontmatter) loaded.push({ ...mod.frontmatter, source: "mdx" });
+      }
+      setMdxPosts(loaded);
+      setLoading(false);
+    }
+    loadMdx();
+  }, []);
+
+  // Load DB posts
   useEffect(() => {
     supabase
       .from("blog_posts")
@@ -59,118 +88,249 @@ export default function Blog() {
       });
   }, []);
 
-  // Merge and dedupe by slug (DB wins), sort by date desc
+  // Merge & dedupe (DB wins on slug conflict)
   const allPosts = useMemo(() => {
-    const slugMap = new Map<string, PostFrontmatter>();
+    const slugMap = new Map<string, PostMeta>();
     mdxPosts.forEach((p) => slugMap.set(p.slug, p));
-    dbPosts.forEach((p) => slugMap.set(p.slug, p)); // DB overrides MDX if same slug
+    dbPosts.forEach((p) => slugMap.set(p.slug, p));
     return Array.from(slugMap.values()).sort(
-      (a, b) => new Date(b.publishedDate).getTime() - new Date(a.publishedDate).getTime()
+      (a, b) =>
+        new Date(b.publishedDate).getTime() - new Date(a.publishedDate).getTime()
     );
-  }, [dbPosts]);
+  }, [mdxPosts, dbPosts]);
 
-  const categories = useMemo(
-    () => ["All", ...Array.from(new Set(allPosts.map((p) => p.category)))],
-    [allPosts]
-  );
+  const filtered =
+    activeCategory === "All"
+      ? allPosts
+      : allPosts.filter((p) => p.category === activeCategory);
 
-  const filteredPosts = useMemo(
-    () => (activeCategory === "All" ? allPosts : allPosts.filter((p) => p.category === activeCategory)),
-    [activeCategory, allPosts]
-  );
+  const featured = filtered.find((p) => p.featured);
+  const rest = filtered.filter((p) => !p.featured || activeCategory !== "All");
+
+  const pageTitle =
+    "Manufacturing Blog — Shift Handover, CNC & Shop Floor Insights";
+  const pageDescription =
+    "Practical guides for manufacturing teams: shift handover best practices, CNC programming tips, machine intelligence, and shop floor operations from the JobLine.ai team.";
 
   return (
     <>
       <SEOHead
-        title="Manufacturing Blog | JobLine.ai"
-        description="Expert insights on shift handoffs, production scheduling, CNC operations, quality management, and shop floor optimization for modern manufacturers."
-        keywords="manufacturing blog, shift handoff tips, CNC machine shop, production scheduling, quality management, digital expeditor"
-        canonical="https://jobline.ai/blog"
+        title={pageTitle}
+        description={pageDescription}
+        canonical="/blog"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Blog",
+          name: "JobLine.ai Manufacturing Blog",
+          description: pageDescription,
+          url: "https://jobline.ai/blog",
+          publisher: {
+            "@type": "Organization",
+            name: "JobLine.ai",
+            url: "https://jobline.ai",
+            logo: {
+              "@type": "ImageObject",
+              url: "https://jobline.ai/logo.png",
+            },
+          },
+        }}
       />
+
       <div className="min-h-screen bg-background text-foreground">
         <MarketingNav />
 
-        {/* Hero */}
-        <section className="py-16 sm:py-24 bg-muted/30">
-          <div className="container mx-auto px-4 text-center max-w-3xl">
-            <Badge variant="secondary" className="mb-4">Manufacturing Insights</Badge>
-            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">
-              The JobLine Blog
-            </h1>
-            <p className="text-lg text-muted-foreground">
-              Practical guides, industry insights, and best practices for modern manufacturing teams.
-            </p>
-          </div>
-        </section>
+        {/* HERO HEADER */}
+        <header className="border-b border-border px-6 py-20 text-center">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-primary">
+            JobLine.ai / Resources
+          </p>
+          <h1 className="mx-auto max-w-3xl text-4xl font-bold leading-tight tracking-tight md:text-5xl">
+            Shop Floor Intelligence.
+            <br />
+            <span className="text-primary">Written for Builders.</span>
+          </h1>
+          <p className="mx-auto mt-4 max-w-xl text-base text-muted-foreground">
+            Practical guides on shift handover, CNC programming, machine
+            monitoring, and modern manufacturing operations — from the team
+            building JobLine.ai.
+          </p>
+        </header>
 
-        {/* Category filters */}
-        <section className="border-b border-border sticky top-16 z-40 bg-background/90 backdrop-blur-sm">
-          <div className="container mx-auto px-4 flex gap-2 overflow-x-auto py-3">
-            {categories.map((cat) => (
-              <Button
+        <div className="mx-auto max-w-7xl px-6 py-12">
+          {/* CATEGORY FILTER */}
+          <nav
+            aria-label="Blog categories"
+            className="mb-12 flex flex-wrap gap-2"
+          >
+            {CATEGORIES.map((cat) => (
+              <button
                 key={cat}
-                variant={cat === activeCategory ? "default" : "ghost"}
-                size="sm"
-                className="shrink-0"
                 onClick={() => setActiveCategory(cat)}
+                aria-pressed={activeCategory === cat}
+                className={`rounded-full border px-4 py-1.5 text-sm font-medium transition-all ${
+                  activeCategory === cat
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                }`}
               >
                 {cat}
-              </Button>
+              </button>
             ))}
-          </div>
-        </section>
+          </nav>
 
-        {/* Posts grid */}
-        <section className="py-12">
-          <div className="container mx-auto px-4">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredPosts.map((post) => (
-                <Card key={post.slug} className="group hover:shadow-lg transition-shadow border-border">
-                  <CardContent className="p-6 flex flex-col h-full">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Badge variant="outline" className="text-xs">{post.category}</Badge>
-                      <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Clock className="w-3 h-3" /> {post.readTime}
-                      </span>
-                    </div>
-                    <Link to={`/blog/${post.slug}`}>
-                      <h2 className="text-lg font-semibold mb-2 group-hover:text-primary transition-colors leading-snug">
-                        {post.title}
-                      </h2>
-                    </Link>
-                    <p className="text-sm text-muted-foreground mb-4 flex-1">
-                      {post.excerpt}
-                    </p>
-                    <div className="flex items-center justify-between pt-3 border-t border-border">
-                      <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        <User className="w-3 h-3" /> {post.author}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(post.publishedDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+          {loading && (
+            <div className="py-24 text-center text-muted-foreground">
+              Loading posts…
             </div>
-          </div>
-        </section>
+          )}
+
+          {!loading && (
+            <>
+              {/* FEATURED POST — full-width hero card */}
+              {featured && activeCategory === "All" && (
+                <article className="mb-12" aria-label="Featured post">
+                  <Link
+                    to={`/blog/${featured.slug}`}
+                    className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-muted/30 transition-all hover:border-primary/40 md:flex-row"
+                  >
+                    {featured.coverImage && (
+                      <div className="aspect-video w-full overflow-hidden md:w-1/2">
+                        <img
+                          src={featured.coverImage}
+                          alt={featured.title}
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          width={800}
+                          height={450}
+                          loading="eager"
+                        />
+                      </div>
+                    )}
+                    <div className="flex flex-col justify-center p-8 md:w-1/2">
+                      <div className="mb-3 flex items-center gap-3">
+                        <span className="rounded-full bg-primary/15 px-3 py-1 text-xs font-semibold text-primary">
+                          Featured
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {featured.category}
+                        </span>
+                      </div>
+                      <h2 className="mb-3 text-2xl font-bold leading-snug group-hover:text-primary md:text-3xl">
+                        {featured.title}
+                      </h2>
+                      <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
+                        {featured.excerpt}
+                      </p>
+                      <PostMetaLine post={featured} />
+                    </div>
+                  </Link>
+                </article>
+              )}
+
+              {/* POST GRID */}
+              {rest.length === 0 && (
+                <p className="py-16 text-center text-muted-foreground">
+                  No posts in this category yet.
+                </p>
+              )}
+
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {rest.map((post) => (
+                  <BlogCard key={post.slug} post={post} />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
 
         <AdPlacement format="horizontal" className="py-4" />
 
-        {/* CTA */}
-        <section className="py-16 bg-muted/30">
-          <div className="container mx-auto px-4 text-center max-w-2xl">
-            <h2 className="text-2xl font-bold mb-3">Ready to modernize your shop floor?</h2>
-            <p className="text-muted-foreground mb-6">Start your free trial and see how JobLine.ai transforms shift handoffs, work orders, and production tracking.</p>
-            <Button asChild size="lg" className="gap-2">
-              <Link to="/auth">Start Free Trial <ArrowRight className="w-4 h-4" /></Link>
-            </Button>
+        {/* INTERNAL LINKS — bottom CTA */}
+        <section className="border-t border-border bg-muted/30 px-6 py-16 text-center">
+          <h2 className="mb-2 text-xl font-bold">
+            Ready to modernize your shift handover?
+          </h2>
+          <p className="mb-6 text-sm text-muted-foreground">
+            See how JobLine.ai replaces paper logs with real-time digital
+            handoffs.
+          </p>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Link
+              to="/"
+              className="rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
+            >
+              See JobLine.ai
+            </Link>
+            <Link
+              to="/features"
+              className="rounded-lg border border-border px-6 py-3 text-sm font-semibold text-foreground transition hover:border-primary/40"
+            >
+              View Features
+            </Link>
           </div>
         </section>
 
         <MarketingFooter />
       </div>
     </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Blog Card Component
+// ---------------------------------------------------------------------------
+function BlogCard({ post }: { post: PostMeta }) {
+  return (
+    <article>
+      <Link
+        to={`/blog/${post.slug}`}
+        className="group flex h-full flex-col overflow-hidden rounded-xl border border-border bg-muted/30 transition-all hover:border-primary/40"
+      >
+        {post.coverImage && (
+          <div className="aspect-video overflow-hidden">
+            <img
+              src={post.coverImage}
+              alt={post.title}
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              width={600}
+              height={338}
+              loading="lazy"
+            />
+          </div>
+        )}
+        <div className="flex flex-1 flex-col p-6">
+          <span className="mb-2 text-xs font-semibold uppercase tracking-wider text-primary/80">
+            {post.category}
+          </span>
+          <h2 className="mb-2 flex-1 text-lg font-bold leading-snug group-hover:text-primary">
+            {post.title}
+          </h2>
+          <p className="mb-4 text-sm leading-relaxed text-muted-foreground line-clamp-2">
+            {post.excerpt}
+          </p>
+          <PostMetaLine post={post} />
+        </div>
+      </Link>
+    </article>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Shared post meta line (author + date + readTime)
+// ---------------------------------------------------------------------------
+function PostMetaLine({ post }: { post: PostMeta }) {
+  return (
+    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+      <span className="font-medium text-foreground/60">{post.author}</span>
+      <span>·</span>
+      <time dateTime={post.publishedDate}>
+        {new Date(post.publishedDate).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })}
+      </time>
+      <span>·</span>
+      <span>{post.readTime}</span>
+    </div>
   );
 }
