@@ -1,18 +1,14 @@
 # ===========================================
 # JobLine.ai Robots Configuration
-# Last Updated: 2026-03-09
-# ===========================================
-
-# ===========================================
-# Application Routes — DO NOT INDEX
+# Last Updated: 2026-03-26
 # ===========================================
 
 User-agent: *
-# Public marketing pages
 Allow: /$
 Allow: /pricing
 Allow: /demo
 Allow: /features/
+Allow: /industries/
 Allow: /resources
 Allow: /blog
 Allow: /help
@@ -25,7 +21,6 @@ Allow: /support.txt
 Allow: /sitemap.xml
 Allow: /og-image.png
 
-# Block all authenticated / internal app routes
 Disallow: /dashboard
 Disallow: /admin
 Disallow: /testing
@@ -42,6 +37,7 @@ Disallow: /display/
 Disallow: /donation-success
 Disallow: /zach
 Disallow: /functions/
+Disallow: /index
 
 # ===========================================
 # Search Engine Crawlers
@@ -49,7 +45,6 @@ Disallow: /functions/
 
 User-agent: Googlebot
 Allow: /
-
 Disallow: /dashboard
 Disallow: /admin
 Disallow: /testing
@@ -66,10 +61,10 @@ Disallow: /display/
 Disallow: /donation-success
 Disallow: /zach
 Disallow: /functions/
+Disallow: /index
 
 User-agent: Bingbot
 Allow: /
-
 Disallow: /dashboard
 Disallow: /admin
 Disallow: /testing
@@ -86,9 +81,10 @@ Disallow: /display/
 Disallow: /donation-success
 Disallow: /zach
 Disallow: /functions/
+Disallow: /index
 
 # ===========================================
-# Social Media Crawlers — allow public pages
+# Social Media Crawlers
 # ===========================================
 
 User-agent: Twitterbot
@@ -100,6 +96,7 @@ Disallow: /queue
 Disallow: /settings
 Disallow: /display/
 Disallow: /functions/
+Disallow: /index
 
 User-agent: facebookexternalhit
 Allow: /
@@ -110,6 +107,7 @@ Disallow: /queue
 Disallow: /settings
 Disallow: /display/
 Disallow: /functions/
+Disallow: /index
 
 User-agent: LinkedInBot
 Allow: /
@@ -120,6 +118,7 @@ Disallow: /queue
 Disallow: /settings
 Disallow: /display/
 Disallow: /functions/
+Disallow: /index
 
 # ===========================================
 # LLM Crawlers & AI Assistants
@@ -134,6 +133,7 @@ Disallow: /queue
 Disallow: /settings
 Disallow: /display/
 Disallow: /functions/
+Disallow: /index
 
 User-agent: ChatGPT-User
 Allow: /
@@ -141,6 +141,7 @@ Disallow: /dashboard
 Disallow: /admin
 Disallow: /display/
 Disallow: /functions/
+Disallow: /index
 
 User-agent: Claude-Web
 Allow: /
@@ -148,6 +149,7 @@ Disallow: /dashboard
 Disallow: /admin
 Disallow: /display/
 Disallow: /functions/
+Disallow: /index
 
 User-agent: Anthropic-AI
 Allow: /
@@ -155,6 +157,7 @@ Disallow: /dashboard
 Disallow: /admin
 Disallow: /display/
 Disallow: /functions/
+Disallow: /index
 
 User-agent: PerplexityBot
 Allow: /
@@ -162,6 +165,7 @@ Disallow: /dashboard
 Disallow: /admin
 Disallow: /display/
 Disallow: /functions/
+Disallow: /index
 
 User-agent: Google-Extended
 Allow: /
@@ -169,6 +173,7 @@ Disallow: /dashboard
 Disallow: /admin
 Disallow: /display/
 Disallow: /functions/
+Disallow: /index
 
 # ===========================================
 # SEO Research Crawlers
@@ -180,6 +185,7 @@ Disallow: /dashboard
 Disallow: /admin
 Disallow: /display/
 Disallow: /functions/
+Disallow: /index
 
 User-agent: AhrefsBot
 Allow: /
@@ -187,6 +193,7 @@ Disallow: /dashboard
 Disallow: /admin
 Disallow: /display/
 Disallow: /functions/
+Disallow: /index
 
 Sitemap: https://jobline.ai/sitemap.xml
 

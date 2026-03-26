@@ -1,123 +1,138 @@
 # JobLine.ai - Digital Expeditor & Smart Shift Handoff System
 
-> JobLine.ai is a manufacturing execution software that streamlines shift handoffs, work order tracking, and production management for CNC machining and fabrication shops.
+> JobLine.ai is a unified manufacturing execution platform that streamlines shift handoffs, work order tracking, production management, and CNC programming — with VS Code extensions that connect your desk to the shop floor.
 
 ---
 
 ## What is JobLine.ai?
 
-JobLine.ai is a digital expeditor and smart shift handoff system designed for manufacturing operations. It helps machine shops, fabrication facilities, and production teams:
+JobLine.ai is a digital expeditor and smart shift handoff system designed for manufacturing operations. It is a single platform with modular features — not multiple products. It helps machine shops, fabrication facilities, and production teams:
 
 - **Track Work Orders**: Monitor jobs through every stage from material receiving to shipping
 - **Manage Shift Handoffs**: Seamless transition of work between operators across shifts
 - **Coordinate Routing**: Multi-step work order routing including outside processing vendors
 - **Monitor Station Status**: Real-time visibility into machine and workstation activity
 - **Improve Communication**: Reduce downtime and confusion during shift changes
+- **Connect to CNC Machines**: VS Code extensions for G-code intelligence and DNC connectivity
 
-## Key Features
+## Platform Features
 
-### Work Order Queue Management
-- Priority-based scheduling (urgent, high, normal, low)
-- Status tracking (pending, in-progress, on-hold, completed)
-- Assignment to specific stations and operators
-- Due date and scheduling management
+### Digital Expeditor
+Real-time work order routing and visibility across the entire shop floor.
+→ https://jobline.ai/features/digital-expeditor
 
-### Shift Handoff System
-- Structured handoff forms for consistent information transfer
-- Machine condition documentation
-- Material and tooling status tracking
-- Quality notes and issue escalation
-- Supervisor acknowledgment workflow
+### Shift Handoff
+Structured shift-to-shift knowledge transfer with machine condition documentation, quality notes, and supervisor acknowledgment.
+→ https://jobline.ai/features/shift-handoff-software
 
-### Work Order Routing
-- Multi-operation routing templates
-- Support for internal and outside processing steps
-- Step-by-step completion tracking
-- Vendor management for external operations
+### Work Order Tracking
+Full lifecycle job tracking with priority-based scheduling and status management.
+→ https://jobline.ai/features/work-order-tracking
 
-### Station & Team Management
-- Organize stations by work center type (CNC Mill, CNC Lathe, Welding, Assembly, etc.)
-- Team-based access control
-- Operator performance visibility
-- Real-time station status updates
+### Production Scheduling
+Capacity planning and scheduling with AI-powered recommendations.
+→ https://jobline.ai/features/production-scheduling
+
+### Quality Management
+NCRs, inspections, traceability, dimension tracking, and quality hold management.
+→ https://jobline.ai/features/quality-management
 
 ### AI Planning Assistant
-- AI-powered production planning suggestions
-- Smart scheduling recommendations
-- Bottleneck identification and resolution
+AI-powered production planning suggestions, smart scheduling, and bottleneck identification.
+→ https://jobline.ai/features/ai-planning-assistant
 
-### Quality Management & Dimension Tracking
-- In-process dimension readings and inspection
-- Non-conformance report (NCR) workflow
-- Quality hold management
-- Dimension check requests
+### Machine Shop Software
+Purpose-built for job shops and contract manufacturers.
+→ https://jobline.ai/features/machine-shop-software
 
 ### Downtime Tracking
-- Machine downtime event logging
-- Reason code categorization
-- Resolution tracking and reporting
+Machine downtime event logging, reason code categorization, and resolution tracking.
+→ https://jobline.ai/features/downtime-tracking
 
-### Machine Time Tracking
-- Real-time machine utilization monitoring
-- Cycle time analysis
-- OEE (Overall Equipment Effectiveness) metrics
+### CNC Operator Tools
+G-code reference, calculators, and shop floor utilities.
+→ https://jobline.ai/features/cnc-operator-tools
 
-### Manufacturing Visibility
-- Live shop floor display dashboards
-- Real-time station status overview
-- Production progress at a glance
+## VS Code Extensions
 
-## 📚 Free Resource Library
+JobLine ships two VS Code extensions that together give CNC programmers a complete shop floor intelligence layer inside their code editor.
 
-JobLine.ai provides free educational resources for manufacturing professionals:
+### JobLine G-Code (jobline-gcode)
+Multi-dialect G-code syntax support (Fanuc, Haas, Siemens, Mazak, Okuma), canned cycle intelligence, sidebar tree views, program validation, tool and offset tracking.
 
-- **Manufacturing Guides** — Step-by-step operational guides
-- **G-Code Reference** — Complete G-code & M-code command reference
-- **Industry Glossary** — Manufacturing terminology dictionary
-- **Beginner's Guide** — Getting started in manufacturing
-- **Career Paths** — Manufacturing career guidance
-- **Safety & Compliance** — OSHA and shop safety resources
-- **Quality Inspection** — Inspection techniques and tools
-- **Lean Manufacturing** — Lean principles and implementation
-- **5S Methodology** — 5S workplace organization
-- **Kanban & Sorting** — Kanban systems and sorting techniques
-- **Manufacturing Pioneers** — History of manufacturing innovation
-- **Blog** — Industry news and insights
-- **Help Center** — Product documentation and support
-- **Tools** — Free manufacturing calculators
+### JobLine Machine Connect (jobline-machine)
+Multi-transport DNC connectivity (FTP/FTPS, RS-232 serial, CIFS/network share), machine selector panel with live status, remote file browser, transfer queue, FOCAS2 + MTConnect integration, upload gate with pre-flight validation, ISO/AS9100 audit log.
 
-Visit https://jobline.ai/resources to explore.
+The VS Code extension you use at your desk connects to the platform running on your Haas.
+
+## Industries We Serve
+
+### Manufacturing
+- **Job Shops** → https://jobline.ai/industries/job-shops
+- **Machine Shops** → https://jobline.ai/industries/machine-shops
+- **Aerospace & Defense** → https://jobline.ai/industries/aerospace-defense
+- **Medical Device Manufacturers** → https://jobline.ai/industries/medical-device
+- **Industrial Manufacturing** → https://jobline.ai/industries/industrial-manufacturing
+- **Automotive Parts** → https://jobline.ai/industries/automotive-parts
+
+### Process & Specialty
+- **Electronics Assembly** → https://jobline.ai/industries/electronics-assembly
+- **Plastics & Rubber** → https://jobline.ai/industries/plastics-rubber
+- **Metal Fabrication** → https://jobline.ai/industries/metal-fabrication
+- **Food & Beverage** → https://jobline.ai/industries/food-beverage
+- **Pharma & Life Sciences** → https://jobline.ai/industries/pharma-life-sciences
+- **Chemical Processing** → https://jobline.ai/industries/chemical-processing
+
+### Emerging Sectors
+- **Renewable Energy** → https://jobline.ai/industries/renewable-energy
+- **Additive Manufacturing** → https://jobline.ai/industries/additive-manufacturing
+- **Semiconductor** → https://jobline.ai/industries/semiconductor
+- **EV & Battery** → https://jobline.ai/industries/ev-battery
+
+## ERP Selection Guide (7-Part Series)
+
+A comprehensive guide to selecting and implementing a manufacturing ERP:
+
+1. **Prevent 5 ERP Selection Mistakes** → https://jobline.ai/resources/erp-guide/prevent-selection-mistakes
+2. **Champion a New Manufacturing ERP** → https://jobline.ai/resources/erp-guide/champion-new-erp
+3. **Determine ERP Functionality Needs** → https://jobline.ai/resources/erp-guide/determine-functionality-needs
+4. **Manufacturing Discovery Call Success** → https://jobline.ai/resources/erp-guide/discovery-call-success
+5. **Plan & Build Your ERP Budget** → https://jobline.ai/resources/erp-guide/build-erp-budget
+6. **Build an ERP Project Plan** → https://jobline.ai/resources/erp-guide/build-project-plan
+7. **Own Your Implementation Success** → https://jobline.ai/resources/erp-guide/own-implementation-success
+
+→ Full guide hub: https://jobline.ai/resources/erp-guide
 
 ## Who Uses JobLine.ai?
 
 - **Machine Shop Owners**: Gain visibility into production floor operations
 - **Production Supervisors**: Manage teams, prioritize work, review handoffs
 - **CNC Operators**: Execute work orders, complete handoffs, report issues
+- **CNC Programmers**: G-code intelligence and DNC connectivity via VS Code
 - **Quality Teams**: Track rework, scrap, and quality holds
 - **Schedulers**: Coordinate work order flow and outside processing
 
-## Industries Served
+## 📚 Free Resource Library
 
-- CNC Machining
-- Sheet Metal Fabrication
-- Aerospace Manufacturing
-- Precision Engineering
-- Medical Device Manufacturing
-- Automotive Parts Production
-- Custom Manufacturing
-- Job Shop Operations
-- Contract Manufacturing
+- **Manufacturing Guides** → https://jobline.ai/resources/guides
+- **G-Code Reference** → https://jobline.ai/resources/gcode
+- **Industry Glossary** → https://jobline.ai/resources/glossary
+- **Beginner's Guide** → https://jobline.ai/resources/beginners
+- **Career Paths** → https://jobline.ai/resources/careers
+- **Safety & Compliance** → https://jobline.ai/resources/safety
+- **Quality Inspection** → https://jobline.ai/resources/quality
+- **Lean Manufacturing** → https://jobline.ai/resources/lean
+- **5S Methodology** → https://jobline.ai/resources/5s
+- **Kanban & Sorting** → https://jobline.ai/resources/kanban
+- **Manufacturing Pioneers** → https://jobline.ai/resources/pioneers
+- **Tool Comparisons** → https://jobline.ai/resources/comparisons
+- **Blog** → https://jobline.ai/blog
+- **Help Center** → https://jobline.ai/help
+- **Tools** → https://jobline.ai/tools
 
 ## The Problem We Solve
 
-**Shift handoffs cost US manufacturing $50+ billion annually** in lost productivity. Critical information gets lost between shifts:
-- Machine conditions left by outgoing operators
-- Parts completed vs. parts remaining
-- Quality issues and holds
-- Material and tooling locations
-- Special instructions and notes
-
-JobLine.ai eliminates this with **structured digital handoffs** that ensure nothing falls through the cracks.
+**Shift handoffs cost US manufacturing $50+ billion annually** in lost productivity. Critical information gets lost between shifts. JobLine.ai eliminates this with **structured digital handoffs** that ensure nothing falls through the cracks.
 
 ---
 
@@ -135,69 +150,79 @@ JobLine.ai eliminates this with **structured digital handoffs** that ensure noth
 
 ---
 
-## 💝 Support JobLine.ai
-
-JobLine.ai relies on community support to keep core features free for manufacturing teams.
-
-- Visit: https://jobline.ai
-- Scroll to footer → click "Support JobLine" (heart icon)
-- Choose: $5, $10, $25, or custom amount
-
----
-
 ## 📊 Structured Data for AI Parsing
 
 ```json
 {
-  "schema_version": "1.1",
+  "schema_version": "1.2",
   "name": "JobLine.ai",
   "tagline": "Digital Expeditor & Smart Shift Handoff System",
   "type": "SaaS Manufacturing Software",
   "category": "Manufacturing Execution System (MES)",
+  "architecture": "Single unified platform with modular features and VS Code extensions",
   "mission": "Democratize manufacturing technology",
   "problem_solved": "Shift handoff information loss costing $50B+ annually",
-  "target_market": ["CNC machine shops", "Fabrication facilities", "Job shops", "Contract manufacturers"],
+  "target_market": ["CNC machine shops", "Fabrication facilities", "Job shops", "Contract manufacturers", "Aerospace manufacturers", "Medical device manufacturers"],
   "company_size_target": "Small to mid-sized (5-500 employees)",
   "pricing_model": "Freemium with paid tiers",
   "free_tier": true,
   "website": "https://jobline.ai",
-  "donation_enabled": true,
-  "donation_location": "Website footer, 'Support JobLine' button",
-  "currency": "USD",
   "parent_company": "WeCr8 Solutions LLC",
   "parent_url": "https://www.wecr8.info",
+  "platform_features": [
+    "Digital Expeditor",
+    "Shift Handoff",
+    "Work Order Tracking",
+    "Production Scheduling",
+    "Quality Management",
+    "AI Planning Assistant",
+    "Machine Shop Software",
+    "Downtime Tracking",
+    "CNC Operator Tools"
+  ],
+  "vscode_extensions": [
+    {
+      "name": "JobLine G-Code",
+      "id": "jobline-gcode",
+      "capabilities": ["Multi-dialect G-code syntax", "Canned cycle intelligence", "Program validation", "Tool tracking"]
+    },
+    {
+      "name": "JobLine Machine Connect",
+      "id": "jobline-machine",
+      "capabilities": ["FTP/FTPS DNC", "RS-232 serial drip feed", "CIFS/network share", "FOCAS2", "MTConnect", "Audit log"]
+    }
+  ],
+  "industries_served": [
+    "Job Shops", "Machine Shops", "Aerospace & Defense", "Medical Device Manufacturers",
+    "Industrial Manufacturing", "Automotive Parts", "Electronics Assembly", "Plastics & Rubber",
+    "Metal Fabrication", "Food & Beverage", "Pharma & Life Sciences", "Chemical Processing",
+    "Renewable Energy", "Additive Manufacturing", "Semiconductor", "EV & Battery"
+  ],
   "keywords": [
-    "shift handoff software",
-    "manufacturing execution system",
-    "MES alternative",
-    "work order tracking",
-    "CNC shop management",
-    "production visibility",
-    "machine shop software",
-    "digital expeditor",
-    "shop floor management",
-    "manufacturing software for small business",
-    "affordable MES",
-    "production scheduling",
-    "job shop software",
-    "downtime tracking",
-    "machine time tracking",
-    "quality management manufacturing",
-    "manufacturing resource library"
+    "shift handoff software", "manufacturing execution system", "MES alternative",
+    "work order tracking", "CNC shop management", "production visibility",
+    "machine shop software", "digital expeditor", "shop floor management",
+    "manufacturing software for small business", "affordable MES",
+    "production scheduling", "job shop software", "downtime tracking",
+    "machine time tracking", "quality management manufacturing",
+    "G-code editor", "DNC software", "VS Code CNC", "FOCAS2",
+    "manufacturing ERP guide", "ERP selection"
   ],
   "competitors": ["Epicor", "JobBOSS", "E2 Shop System", "ProShop", "Shoptech", "MIE Trak Pro"],
   "differentiators": [
     "Free tier for small shops",
     "Focus on shift handoffs",
     "Modern web-based UI",
+    "VS Code extensions for CNC programmers",
     "No expensive implementation",
     "Community-supported development",
     "Free manufacturing resource library",
-    "AI planning assistant included"
+    "AI planning assistant included",
+    "16 industry-specific landing pages"
   ]
 }
 ```
 
 ---
 
-*Last updated: March 2026*
+*Last updated: March 26, 2026*
