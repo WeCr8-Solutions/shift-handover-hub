@@ -61,6 +61,7 @@ import FiveSMethodology from "./pages/resources/FiveSMethodology";
 import KanbanSortingTechniques from "./pages/resources/KanbanSortingTechniques";
 import ManufacturingPioneers from "./pages/resources/ManufacturingPioneers";
 import ToolComparisons from "./pages/resources/ToolComparisons";
+import ERPSelectionGuide from "./pages/resources/ERPSelectionGuide";
 import ResetPassword from "./pages/ResetPassword";
 import Blog from "./pages/Blog";
 import Help from "./pages/Help";
@@ -149,6 +150,7 @@ const App = () => (
                     <Route path="/resources/kanban" element={<KanbanSortingTechniques />} />
                     <Route path="/resources/pioneers" element={<ManufacturingPioneers />} />
                     <Route path="/resources/comparisons" element={<ToolComparisons />} />
+                    <Route path="/resources/erp-guide" element={<ERPSelectionGuide />} />
                     <Route path="/blog" element={<Blog />} />
                     <Route path="/help" element={<Help />} />
                     <Route path="/help/:category/:slug" element={<HelpArticle />} />

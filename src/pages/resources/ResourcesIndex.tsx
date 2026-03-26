@@ -5,7 +5,7 @@ import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
-import { BookOpen, Code, BookA, ArrowRight, GitCompare, GraduationCap, Briefcase, ShieldAlert, ClipboardCheck, TrendingUp, LayoutGrid, Kanban, Users } from "lucide-react";
+import { BookOpen, Code, BookA, ArrowRight, GitCompare, GraduationCap, Briefcase, ShieldAlert, ClipboardCheck, TrendingUp, LayoutGrid, Kanban, Users, FileText } from "lucide-react";
 
 const sections = [
   {
@@ -91,6 +91,13 @@ const sections = [
     icon: GitCompare,
     href: "/resources/comparisons",
     count: "Comparison guide",
+  },
+  {
+    title: "ERP Selection Guide",
+    description: "A practical 7-part series covering how to avoid costly selection mistakes, champion a system upgrade, define functionality needs, run discovery calls, build a budget, create an implementation plan, and own your go-live success.",
+    icon: FileText,
+    href: "/resources/erp-guide",
+    count: "7-part series",
   },
 ];
 
