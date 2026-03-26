@@ -106,11 +106,12 @@ export default function Admin() {
     );
   }
 
+
+  const isMobile = useIsMobile();
+
   if (!hasAdminAccess) {
     return null;
   }
-
-  const isMobile = useIsMobile();
 
   return (
     <div className="min-h-screen bg-background">
