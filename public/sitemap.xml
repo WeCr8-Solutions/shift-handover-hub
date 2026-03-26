@@ -7,7 +7,7 @@
   <url>
     <loc>https://jobline.ai/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/" />
-    <lastmod>2026-03-09</lastmod>
+    <lastmod>2026-03-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <image:image>
@@ -19,8 +19,7 @@
   <!-- Pricing -->
   <url>
     <loc>https://jobline.ai/pricing</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/pricing" />
-    <lastmod>2026-03-09</lastmod>
+    <lastmod>2026-03-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -28,209 +27,309 @@
   <!-- Demo -->
   <url>
     <loc>https://jobline.ai/demo</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/demo" />
-    <lastmod>2026-03-09</lastmod>
+    <lastmod>2026-03-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
 
-  <!-- Feature Marketing Pages -->
+  <!-- Platform Feature Pages -->
   <url>
-    <loc>https://jobline.ai/features/shift-handoff-software</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/features/shift-handoff-software" />
-    <lastmod>2026-03-09</lastmod>
+    <loc>https://jobline.ai/features/digital-expeditor</loc>
+    <lastmod>2026-03-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
-    <image:image>
-      <image:loc>https://jobline.ai/og-image.png</image:loc>
-      <image:title>Shift Handoff Software for Manufacturing</image:title>
-    </image:image>
+  </url>
+  <url>
+    <loc>https://jobline.ai/features/shift-handoff-software</loc>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
   </url>
   <url>
     <loc>https://jobline.ai/features/work-order-tracking</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/features/work-order-tracking" />
-    <lastmod>2026-03-09</lastmod>
+    <lastmod>2026-03-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
-    <image:image>
-      <image:loc>https://jobline.ai/og-image.png</image:loc>
-      <image:title>Work Order Tracking Software</image:title>
-    </image:image>
   </url>
   <url>
     <loc>https://jobline.ai/features/production-scheduling</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/features/production-scheduling" />
-    <lastmod>2026-03-09</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://jobline.ai/features/machine-shop-software</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/features/machine-shop-software" />
-    <lastmod>2026-03-09</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://jobline.ai/features/production-control</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/features/production-control" />
-    <lastmod>2026-03-09</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://jobline.ai/features/digital-expeditor</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/features/digital-expeditor" />
-    <lastmod>2026-03-09</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://jobline.ai/features/manufacturing-oversight</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/features/manufacturing-oversight" />
-    <lastmod>2026-03-09</lastmod>
+    <lastmod>2026-03-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://jobline.ai/features/quality-management</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/features/quality-management" />
-    <lastmod>2026-03-09</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://jobline.ai/features/cnc-operator-tools</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/features/cnc-operator-tools" />
-    <lastmod>2026-03-09</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://jobline.ai/features/team-collaboration</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/features/team-collaboration" />
-    <lastmod>2026-03-09</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://jobline.ai/features/downtime-tracking</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/features/downtime-tracking" />
-    <lastmod>2026-03-09</lastmod>
+    <lastmod>2026-03-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://jobline.ai/features/ai-planning-assistant</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/features/ai-planning-assistant" />
-    <lastmod>2026-03-09</lastmod>
+    <lastmod>2026-03-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://jobline.ai/machine-time-tracking</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/machine-time-tracking" />
-    <lastmod>2026-03-09</lastmod>
+    <loc>https://jobline.ai/features/machine-shop-software</loc>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://jobline.ai/features/downtime-tracking</loc>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://jobline.ai/features/cnc-operator-tools</loc>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://jobline.ai/features/production-control</loc>
+    <lastmod>2026-03-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://jobline.ai/shift-handoff</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/shift-handoff" />
-    <lastmod>2026-03-09</lastmod>
+    <loc>https://jobline.ai/features/manufacturing-oversight</loc>
+    <lastmod>2026-03-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://jobline.ai/manufacturing-visibility</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/manufacturing-visibility" />
-    <lastmod>2026-03-09</lastmod>
+    <loc>https://jobline.ai/features/team-collaboration</loc>
+    <lastmod>2026-03-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+  </url>
+
+  <!-- Industry Pages -->
+  <url>
+    <loc>https://jobline.ai/industries/job-shops</loc>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://jobline.ai/industries/machine-shops</loc>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://jobline.ai/industries/aerospace-defense</loc>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://jobline.ai/industries/medical-device</loc>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://jobline.ai/industries/industrial-manufacturing</loc>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://jobline.ai/industries/automotive-parts</loc>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://jobline.ai/industries/electronics-assembly</loc>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://jobline.ai/industries/plastics-rubber</loc>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://jobline.ai/industries/metal-fabrication</loc>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://jobline.ai/industries/food-beverage</loc>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://jobline.ai/industries/pharma-life-sciences</loc>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://jobline.ai/industries/chemical-processing</loc>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://jobline.ai/industries/renewable-energy</loc>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://jobline.ai/industries/additive-manufacturing</loc>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://jobline.ai/industries/semiconductor</loc>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://jobline.ai/industries/ev-battery</loc>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- ERP Selection Guide (7-Part Series) -->
+  <url>
+    <loc>https://jobline.ai/resources/erp-guide</loc>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://jobline.ai/resources/erp-guide/prevent-selection-mistakes</loc>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://jobline.ai/resources/erp-guide/champion-new-erp</loc>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://jobline.ai/resources/erp-guide/determine-functionality-needs</loc>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://jobline.ai/resources/erp-guide/discovery-call-success</loc>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://jobline.ai/resources/erp-guide/build-erp-budget</loc>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://jobline.ai/resources/erp-guide/build-project-plan</loc>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://jobline.ai/resources/erp-guide/own-implementation-success</loc>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
 
   <!-- Resource Pages -->
   <url>
     <loc>https://jobline.ai/resources</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/resources" />
-    <lastmod>2026-03-09</lastmod>
+    <lastmod>2026-03-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://jobline.ai/resources/guides</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/resources/guides" />
-    <lastmod>2026-03-09</lastmod>
+    <lastmod>2026-03-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://jobline.ai/resources/gcode</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/resources/gcode" />
-    <lastmod>2026-03-09</lastmod>
+    <lastmod>2026-03-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://jobline.ai/resources/glossary</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/resources/glossary" />
-    <lastmod>2026-03-09</lastmod>
+    <lastmod>2026-03-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://jobline.ai/resources/beginners</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/resources/beginners" />
-    <lastmod>2026-03-09</lastmod>
+    <lastmod>2026-03-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://jobline.ai/resources/careers</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/resources/careers" />
-    <lastmod>2026-03-09</lastmod>
+    <lastmod>2026-03-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://jobline.ai/resources/safety</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/resources/safety" />
-    <lastmod>2026-03-09</lastmod>
+    <lastmod>2026-03-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://jobline.ai/resources/quality</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/resources/quality" />
-    <lastmod>2026-03-09</lastmod>
+    <lastmod>2026-03-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://jobline.ai/resources/lean</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/resources/lean" />
-    <lastmod>2026-03-09</lastmod>
+    <lastmod>2026-03-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://jobline.ai/resources/5s</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/resources/5s" />
-    <lastmod>2026-03-09</lastmod>
+    <lastmod>2026-03-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://jobline.ai/resources/kanban</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/resources/kanban" />
-    <lastmod>2026-03-09</lastmod>
+    <lastmod>2026-03-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://jobline.ai/resources/pioneers</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/resources/pioneers" />
-    <lastmod>2026-03-09</lastmod>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://jobline.ai/resources/comparisons</loc>
+    <lastmod>2026-03-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -238,24 +337,41 @@
   <!-- Blog & Help -->
   <url>
     <loc>https://jobline.ai/blog</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/blog" />
-    <lastmod>2026-03-09</lastmod>
+    <lastmod>2026-03-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://jobline.ai/help</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/help" />
-    <lastmod>2026-03-09</lastmod>
+    <lastmod>2026-03-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
+  </url>
+
+  <!-- Legacy Marketing Pages -->
+  <url>
+    <loc>https://jobline.ai/machine-time-tracking</loc>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://jobline.ai/shift-handoff</loc>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://jobline.ai/manufacturing-visibility</loc>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>
 
   <!-- Tools -->
   <url>
     <loc>https://jobline.ai/tools</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/tools" />
-    <lastmod>2026-03-09</lastmod>
+    <lastmod>2026-03-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
