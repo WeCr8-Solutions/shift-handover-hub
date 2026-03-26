@@ -1,0 +1,338 @@
+export interface IndustryData {
+  slug: string;
+  name: string;
+  headline: string;
+  description: string;
+  metaDescription: string;
+  challenges: { title: string; description: string }[];
+  benefits: { title: string; description: string }[];
+}
+
+export const industries: Record<string, IndustryData> = {
+  "job-shops": {
+    slug: "job-shops",
+    name: "Job Shops",
+    headline: "Production Software Built for High-Mix, Low-Volume Job Shops",
+    description: "Manage dozens of unique parts across shifting priorities. JobLine.ai gives your job shop real-time routing visibility, structured shift handoffs, and smart scheduling — without the complexity of enterprise ERP.",
+    metaDescription: "JobLine.ai helps job shops track work orders, manage shift handoffs, and optimize production scheduling for high-mix, low-volume manufacturing.",
+    challenges: [
+      { title: "Constantly Shifting Priorities", description: "Hot jobs arrive daily, disrupting your schedule. JobLine's drag-and-drop queue and priority flags let you re-sequence in seconds." },
+      { title: "Tribal Knowledge Loss", description: "When your best machinist goes home, critical setup info goes with them. Structured handoff forms capture every detail — tooling, offsets, quality notes." },
+      { title: "Quoting Accuracy", description: "Without real cycle-time data, quotes are guesswork. JobLine tracks actual run times per operation so your next quote is based on facts." },
+      { title: "Shop Floor Visibility", description: "Walking the floor to check job status wastes hours. Real-time dashboards show every job's location, status, and operator in one view." },
+    ],
+    benefits: [
+      { title: "Real-Time Work Order Routing", description: "See every job's position in your shop — from raw material to shipping — updated live as operators complete steps." },
+      { title: "Structured Shift Handoffs", description: "Eliminate verbal-only handoffs with digital forms that capture machine condition, part counts, quality issues, and next-shift priorities." },
+      { title: "Smart Scheduling", description: "AI-assisted capacity planning that accounts for setup times, operator skills, and machine availability across your entire shop." },
+      { title: "Quality Traceability", description: "Dimension checks, inspection gates, and NCR tracking tied directly to routing steps — so nothing ships without sign-off." },
+    ],
+  },
+  "machine-shops": {
+    slug: "machine-shops",
+    name: "Machine Shops",
+    headline: "CNC Machine Shop Software That Operators Actually Use",
+    description: "From 3-axis mills to multi-spindle lathes, JobLine.ai is built for the realities of CNC machining — gloved hands, shop lighting, and operators who need answers in seconds.",
+    metaDescription: "Machine shop software built for CNC operators. Track work orders, manage tooling, and streamline shift handoffs with JobLine.ai.",
+    challenges: [
+      { title: "Setup Time Waste", description: "Operators spend 20+ minutes hunting for setup sheets and offsets. JobLine puts all setup data one tap away at the machine." },
+      { title: "Tool Management", description: "Broken tools and missing inserts cause unplanned downtime. Track tooling notes per operation and flag replacements before they fail." },
+      { title: "First Article Delays", description: "Waiting for QA to inspect first articles stalls production. Digital dimension check requests notify QA instantly and track response time." },
+      { title: "Multi-Machine Monitoring", description: "Operators running 2–3 machines need quick status views. JobLine's operator dashboard shows all assigned machines at a glance." },
+    ],
+    benefits: [
+      { title: "Operator-First Interface", description: "Large touch targets, high-contrast displays, and minimal clicks — designed for the shop floor, not the office." },
+      { title: "Machine-Level Tracking", description: "Track jobs, cycles, and downtime at the individual machine level with station-specific dashboards." },
+      { title: "Integrated Quality Checks", description: "In-process dimension recording with tolerance validation — operators know immediately if a reading is out of spec." },
+      { title: "Downtime Capture", description: "One-tap downtime logging with reason codes that feed directly into your OEE and utilization reports." },
+    ],
+  },
+  "aerospace-defense": {
+    slug: "aerospace-defense",
+    name: "Aerospace & Defense",
+    headline: "ITAR-Ready Production Tracking for Aerospace Manufacturers",
+    description: "Meet AS9100, ITAR, and NADCAP requirements with built-in compliance controls, MFA enforcement, and full production traceability.",
+    metaDescription: "Aerospace manufacturing software with ITAR compliance, MFA enforcement, and full traceability. Built for AS9100 shops using JobLine.ai.",
+    challenges: [
+      { title: "ITAR Compliance", description: "US Person declarations, MFA enforcement, and data access logging are mandatory — not optional. JobLine includes these controls natively." },
+      { title: "Full Traceability", description: "Every part needs a complete production history — who ran it, when, on what machine, with which tooling. JobLine's audit trail captures it all." },
+      { title: "Long Routing Sequences", description: "Aerospace parts often have 15–30 routing steps across multiple departments. JobLine handles complex multi-step routings with ease." },
+      { title: "Document Control", description: "Revision-controlled work instructions and inspection plans must be accessible at the point of use — not buried in a file server." },
+    ],
+    benefits: [
+      { title: "Built-In ITAR Controls", description: "US Person declarations, MFA enrollment gates, and comprehensive data access logging — all enforced at the platform level." },
+      { title: "Complete Audit Trail", description: "Every action is logged: who, what, when, and where. Generate compliance reports in seconds for your next AS9100 audit." },
+      { title: "Dimension Check Workflows", description: "First article and in-process inspection workflows with tolerance tracking, measurement recording, and QA sign-off gates." },
+      { title: "Secure Data Handling", description: "Row-level security, encrypted connections, and role-based access ensure controlled technical data stays controlled." },
+    ],
+  },
+  "medical-device": {
+    slug: "medical-device",
+    name: "Medical Device Manufacturers",
+    headline: "Production Tracking for FDA-Regulated Medical Device Manufacturing",
+    description: "Maintain 21 CFR Part 820 compliance with traceable production records, validated inspection workflows, and complete device history records.",
+    metaDescription: "Medical device manufacturing software with FDA compliance, device history records, and quality management. JobLine.ai for regulated manufacturing.",
+    challenges: [
+      { title: "Device History Records", description: "Every device needs a complete production record. JobLine automatically compiles routing history, inspection data, and operator records." },
+      { title: "Validated Processes", description: "IQ/OQ/PQ validation requires documented evidence. JobLine's structured workflows provide the digital trail auditors need." },
+      { title: "CAPA Integration", description: "Corrective actions must trace back to specific production events. JobLine's quality management links NCRs to exact routing steps and operators." },
+      { title: "Lot Traceability", description: "Material lot numbers must follow parts through every operation. Track raw material lots from receiving through final inspection." },
+    ],
+    benefits: [
+      { title: "Automated DHR Compilation", description: "Production records, inspection results, and operator sign-offs compile automatically as work progresses through routing steps." },
+      { title: "Quality Gate Enforcement", description: "Mandatory inspection checkpoints prevent work from advancing until quality criteria are met and documented." },
+      { title: "Full Material Traceability", description: "Track material lots, certificates of conformance, and supplier data tied to every production run." },
+      { title: "Audit-Ready Reporting", description: "Generate production history, quality trends, and compliance reports formatted for FDA and ISO 13485 auditors." },
+    ],
+  },
+  "industrial-manufacturing": {
+    slug: "industrial-manufacturing",
+    name: "Industrial Manufacturing",
+    headline: "Streamline High-Volume Industrial Production Operations",
+    description: "Coordinate complex production lines, manage multi-shift operations, and maintain quality standards across high-volume industrial manufacturing.",
+    metaDescription: "Industrial manufacturing software for high-volume production. Work order tracking, shift management, and quality control with JobLine.ai.",
+    challenges: [
+      { title: "Multi-Shift Coordination", description: "Information lost between shifts causes rework and delays. Digital handoffs ensure continuity across all shifts." },
+      { title: "Production Bottlenecks", description: "Identifying and resolving bottlenecks requires real-time visibility. JobLine highlights station-level throughput in real time." },
+      { title: "Maintenance Scheduling", description: "Unplanned downtime from missed PM schedules disrupts production. Track maintenance records and receive due-date alerts." },
+      { title: "Standardized Processes", description: "Ensuring consistent procedures across shifts and operators. Structured routing templates enforce process discipline." },
+    ],
+    benefits: [
+      { title: "Cross-Shift Visibility", description: "Every shift starts with a complete picture of what happened before — no morning meetings required." },
+      { title: "Real-Time Production Dashboards", description: "Monitor throughput, WIP levels, and on-time delivery metrics across your entire operation." },
+      { title: "Equipment Management", description: "Track maintenance history, calibration schedules, and equipment status at each workstation." },
+      { title: "Performance Analytics", description: "Identify trends in cycle times, scrap rates, and operator efficiency to drive continuous improvement." },
+    ],
+  },
+  "automotive-parts": {
+    slug: "automotive-parts",
+    name: "Automotive Parts",
+    headline: "Production Management for Automotive Component Manufacturers",
+    description: "Meet IATF 16949 requirements, manage just-in-time delivery schedules, and maintain the quality standards automotive OEMs demand.",
+    metaDescription: "Automotive parts manufacturing software with IATF 16949 support, JIT tracking, and quality management. JobLine.ai for auto suppliers.",
+    challenges: [
+      { title: "JIT Delivery Pressure", description: "Late deliveries mean line-down charges. JobLine's priority scheduling and real-time tracking keep your shipments on time." },
+      { title: "PPAP Documentation", description: "Production Part Approval Process requires extensive documentation. Structured quality records simplify PPAP submissions." },
+      { title: "High Volume, Tight Tolerances", description: "SPC data and in-process checks are essential. Record dimensions at routing steps and flag out-of-tolerance trends early." },
+      { title: "Customer-Specific Requirements", description: "Every OEM has unique packaging, labeling, and quality requirements. Configure work order templates per customer." },
+    ],
+    benefits: [
+      { title: "On-Time Delivery Tracking", description: "Real-time visibility into every order's progress ensures you meet JIT commitments and avoid penalties." },
+      { title: "Quality Documentation", description: "Inspection records, dimension data, and process parameters captured automatically for PPAP and audit compliance." },
+      { title: "Capacity Planning", description: "AI-assisted scheduling accounts for setup times, tool changes, and operator availability to maximize throughput." },
+      { title: "Customer Portal Ready", description: "Share real-time order status with customers through configurable visibility settings." },
+    ],
+  },
+  "electronics-assembly": {
+    slug: "electronics-assembly",
+    name: "Electronics Assembly",
+    headline: "Track PCB Assembly and Electronics Manufacturing Operations",
+    description: "Manage SMT lines, through-hole assembly, and test operations with full component traceability and workstation-level tracking.",
+    metaDescription: "Electronics assembly manufacturing software. Track PCB production, component traceability, and testing with JobLine.ai.",
+    challenges: [
+      { title: "Component Traceability", description: "Track component lot codes and date codes through every assembly step for warranty and recall support." },
+      { title: "Test Station Management", description: "Functional test, in-circuit test, and burn-in stations each have unique requirements. Configure station-specific workflows." },
+      { title: "ECO Management", description: "Engineering change orders affect active production. Route ECO notifications to affected stations and operators instantly." },
+      { title: "Rework Tracking", description: "Board-level rework needs detailed logging. Track rework reasons, technician actions, and re-test results per serial number." },
+    ],
+    benefits: [
+      { title: "Station-Level Tracking", description: "Monitor each assembly and test station independently with tailored dashboards and queue management." },
+      { title: "Component Lot Tracking", description: "Link component lots to finished assemblies for complete forward and backward traceability." },
+      { title: "Quality Gate Integration", description: "Enforce test pass requirements before advancing boards to the next production step." },
+      { title: "Real-Time WIP Visibility", description: "See board counts at every station — from SMT placement through final test and packaging." },
+    ],
+  },
+  "plastics-rubber": {
+    slug: "plastics-rubber",
+    name: "Plastics & Rubber",
+    headline: "Production Tracking for Injection Molding and Extrusion Operations",
+    description: "Track mold cycles, manage tool maintenance, and monitor quality for injection molding, extrusion, and rubber processing operations.",
+    metaDescription: "Plastics and rubber manufacturing software. Track injection molding, extrusion operations, and mold maintenance with JobLine.ai.",
+    challenges: [
+      { title: "Mold/Die Management", description: "Track shot counts, maintenance schedules, and cavity status for every mold in your inventory." },
+      { title: "Process Parameter Tracking", description: "Temperature, pressure, and cycle time parameters directly affect quality. Log and monitor critical process settings." },
+      { title: "Material Lot Control", description: "Resin lot numbers, colorant batches, and additive mixes must be traceable through production." },
+      { title: "Multi-Cavity Quality", description: "Individual cavity performance varies. Track quality metrics per cavity position to identify maintenance needs." },
+    ],
+    benefits: [
+      { title: "Tool Lifecycle Management", description: "Track mold shot counts, PM schedules, and repair history to prevent unexpected mold failures." },
+      { title: "Process Monitoring", description: "Log critical process parameters at each run and identify drift before it creates scrap." },
+      { title: "Automated Cycle Tracking", description: "Record cycle times, shot counts, and reject rates to feed OEE calculations and capacity planning." },
+      { title: "Quality Traceability", description: "Link material lots, process settings, and quality results for complete batch traceability." },
+    ],
+  },
+  "metal-fabrication": {
+    slug: "metal-fabrication",
+    name: "Metal Fabrication",
+    headline: "Shop Floor Software for Metal Fabrication Operations",
+    description: "Coordinate cutting, bending, welding, and finishing operations with routing-based tracking designed for fab shops.",
+    metaDescription: "Metal fabrication shop software. Track cutting, welding, and finishing operations with work order routing on JobLine.ai.",
+    challenges: [
+      { title: "Multi-Operation Routing", description: "Fab jobs flow through laser, press brake, welding, and finishing — each with different operators and schedules." },
+      { title: "Nested Cutting Optimization", description: "Material utilization depends on nest efficiency. Track material usage and remnant inventory per job." },
+      { title: "Weld Quality Documentation", description: "Certified welding operations require documented weld procedures, welder qualifications, and inspection records." },
+      { title: "Large Assembly Coordination", description: "Multi-piece assemblies need sub-component tracking. Monitor individual piece progress within larger assemblies." },
+    ],
+    benefits: [
+      { title: "Visual Routing Boards", description: "See every fabrication job's position across your shop — from nesting through final assembly and shipping." },
+      { title: "Welding Station Support", description: "Capture weld parameters, welder ID, and inspection results with station-specific data entry forms." },
+      { title: "Material Usage Tracking", description: "Log material consumed per job for accurate costing and remnant inventory management." },
+      { title: "Multi-Piece Assembly View", description: "Track sub-components through independent routings and monitor assembly readiness in real time." },
+    ],
+  },
+  "food-beverage": {
+    slug: "food-beverage",
+    name: "Food & Beverage",
+    headline: "Production Tracking for Food and Beverage Manufacturing",
+    description: "Maintain FSMA compliance, manage batch records, and track production lines with full ingredient traceability.",
+    metaDescription: "Food and beverage manufacturing software with FSMA compliance, batch tracking, and ingredient traceability. JobLine.ai for food production.",
+    challenges: [
+      { title: "Ingredient Traceability", description: "One-up/one-down traceability is mandatory. Track ingredient lots from receiving through finished goods." },
+      { title: "Batch Record Management", description: "Complete batch records with weights, times, temperatures, and operator sign-offs at each production step." },
+      { title: "Sanitation Scheduling", description: "CIP and sanitation between production runs must be documented and verified before the next batch starts." },
+      { title: "Allergen Control", description: "Allergen cross-contamination prevention requires documented changeover procedures and line clearance verification." },
+    ],
+    benefits: [
+      { title: "Full Lot Traceability", description: "Track ingredients forward to finished goods and backward from customer complaints to source lots." },
+      { title: "Digital Batch Records", description: "Replace paper batch sheets with structured digital records that capture every parameter in real time." },
+      { title: "Sanitation Verification", description: "Document line clearance and sanitation completion before releasing production lines for the next run." },
+      { title: "Compliance Reporting", description: "Generate traceability reports, batch summaries, and audit documentation in formats regulators expect." },
+    ],
+  },
+  "pharma-life-sciences": {
+    slug: "pharma-life-sciences",
+    name: "Pharma & Life Sciences",
+    headline: "GMP-Ready Production Tracking for Pharmaceutical Manufacturing",
+    description: "Support 21 CFR Part 211 compliance with electronic batch records, validated workflows, and complete manufacturing traceability.",
+    metaDescription: "Pharmaceutical manufacturing software with GMP compliance, electronic batch records, and validated workflows. JobLine.ai for pharma.",
+    challenges: [
+      { title: "GMP Compliance", description: "Every production step must be documented, reviewed, and approved. JobLine's structured routing provides the digital framework." },
+      { title: "Electronic Batch Records", description: "Paper-based batch records are error-prone and slow to review. Digital records capture data as production happens." },
+      { title: "Environmental Monitoring", description: "Cleanroom conditions, temperature logs, and humidity records must be maintained and linked to production batches." },
+      { title: "Change Control", description: "Process changes require formal documentation and approval. Track change requests through structured workflows." },
+    ],
+    benefits: [
+      { title: "Validated Workflow Engine", description: "Structured routing steps with required fields, sign-offs, and approval gates match GMP requirements." },
+      { title: "Electronic Signatures", description: "Operator and supervisor sign-offs with timestamp, user ID, and role for 21 CFR Part 11 alignment." },
+      { title: "Deviation Management", description: "Log and track deviations at the point of occurrence, linked to specific batch records and routing steps." },
+      { title: "Audit Trail", description: "Complete, tamper-evident audit trail of every data entry, modification, and approval action." },
+    ],
+  },
+  "chemical-processing": {
+    slug: "chemical-processing",
+    name: "Chemical Processing",
+    headline: "Batch and Process Tracking for Chemical Manufacturers",
+    description: "Track batch formulations, manage reactor scheduling, and maintain safety compliance for chemical production operations.",
+    metaDescription: "Chemical processing manufacturing software. Track batch production, reactor scheduling, and safety compliance with JobLine.ai.",
+    challenges: [
+      { title: "Batch Formulation Control", description: "Recipe accuracy is critical. Track ingredient additions, mixing times, and reaction parameters per batch." },
+      { title: "Reactor Scheduling", description: "Reactor availability, cleaning requirements, and batch sequencing create complex scheduling challenges." },
+      { title: "Safety Documentation", description: "SDS compliance, PPE requirements, and safety checklists must be accessible at every workstation." },
+      { title: "Waste Tracking", description: "Hazardous waste generation must be documented per batch for EPA reporting and disposal compliance." },
+    ],
+    benefits: [
+      { title: "Recipe Management", description: "Define and enforce batch recipes with ingredient quantities, addition sequences, and process parameters." },
+      { title: "Equipment Scheduling", description: "Coordinate reactor, mixer, and packaging line schedules with visibility into cleaning and changeover requirements." },
+      { title: "Safety Compliance", description: "Attach safety data sheets, PPE requirements, and emergency procedures to workstation profiles." },
+      { title: "Batch Genealogy", description: "Complete forward and backward traceability from raw materials through finished chemical products." },
+    ],
+  },
+  "renewable-energy": {
+    slug: "renewable-energy",
+    name: "Renewable Energy",
+    headline: "Manufacturing Software for Renewable Energy Component Production",
+    description: "Track production of solar panels, wind turbine components, and energy storage systems with full traceability and quality management.",
+    metaDescription: "Renewable energy manufacturing software. Track solar panel, wind turbine, and battery production with JobLine.ai.",
+    challenges: [
+      { title: "Long Lead Times", description: "Large-scale components have extended production cycles. Track multi-week routings with milestone visibility." },
+      { title: "Certification Requirements", description: "UL, IEC, and regional certifications require documented production processes and test records." },
+      { title: "Serial Number Tracking", description: "Individual component serialization for warranty tracking and field performance monitoring." },
+      { title: "Supply Chain Coordination", description: "Manage sub-component arrivals and coordinate assembly schedules across multiple production areas." },
+    ],
+    benefits: [
+      { title: "Milestone Tracking", description: "Break long production cycles into visible milestones so management can track progress at a glance." },
+      { title: "Serial-Level Traceability", description: "Track individual components from raw material through final test with complete production history." },
+      { title: "Certification Support", description: "Structured test records and inspection data formatted for certification body submissions." },
+      { title: "Multi-Area Coordination", description: "Coordinate production across fabrication, assembly, and test areas with cross-station visibility." },
+    ],
+  },
+  "additive-manufacturing": {
+    slug: "additive-manufacturing",
+    name: "Additive Manufacturing",
+    headline: "Production Management for 3D Printing and Additive Operations",
+    description: "Manage build plates, track post-processing operations, and maintain material traceability for metal and polymer additive manufacturing.",
+    metaDescription: "Additive manufacturing software. Track 3D printing builds, post-processing, and material traceability with JobLine.ai.",
+    challenges: [
+      { title: "Build Plate Management", description: "Multiple parts per build plate need individual tracking through shared and separate post-processing steps." },
+      { title: "Post-Processing Routing", description: "Support removal, heat treatment, machining, and surface finishing each have unique requirements per part." },
+      { title: "Powder/Material Management", description: "Track powder lot numbers, recycling ratios, and material certifications for every build." },
+      { title: "Build Parameter Records", description: "Layer thickness, laser power, scan speed, and atmosphere conditions must be documented per build." },
+    ],
+    benefits: [
+      { title: "Build-Level Tracking", description: "Track entire build plates and individual parts through shared and divergent post-processing routes." },
+      { title: "Material Lot Traceability", description: "Link powder lots, recycling history, and material certificates to specific builds and parts." },
+      { title: "Process Parameter Logging", description: "Capture machine settings, environmental conditions, and build parameters for every production run." },
+      { title: "Post-Processing Routing", description: "Define and track multi-step post-processing routes from support removal through final inspection." },
+    ],
+  },
+  "semiconductor": {
+    slug: "semiconductor",
+    name: "Semiconductor",
+    headline: "Fab and Assembly Tracking for Semiconductor Manufacturing",
+    description: "Track wafer lots through hundreds of process steps with the granular traceability semiconductor manufacturing demands.",
+    metaDescription: "Semiconductor manufacturing software. Track wafer lots, fab processes, and assembly operations with JobLine.ai.",
+    challenges: [
+      { title: "High Step Count Routings", description: "Semiconductor processes can have 200+ steps. JobLine handles complex, long routings without performance degradation." },
+      { title: "Lot Splitting and Merging", description: "Wafer lots split for parallel processing and merge for packaging. Track genealogy through split/merge events." },
+      { title: "Cleanroom Compliance", description: "Cleanroom protocols, gowning verification, and contamination controls must be enforced at every step." },
+      { title: "Equipment Qualification", description: "Tools must be qualified before processing. Track equipment qualification status and restrict unqualified tools." },
+    ],
+    benefits: [
+      { title: "Complex Routing Support", description: "Handle routings with hundreds of steps, parallel paths, and conditional branching without limitation." },
+      { title: "Lot Genealogy", description: "Complete lot history through splits, merges, and rework with full parent-child traceability." },
+      { title: "Equipment Status Tracking", description: "Monitor tool qualification status, maintenance schedules, and recipe assignments per equipment." },
+      { title: "Yield Analytics", description: "Track pass/fail rates per step, identify yield-limiting operations, and drive continuous improvement." },
+    ],
+  },
+  "ev-battery": {
+    slug: "ev-battery",
+    name: "EV & Battery",
+    headline: "Production Tracking for Electric Vehicle and Battery Manufacturing",
+    description: "Manage cell production, module assembly, and pack integration with the safety controls and traceability EV manufacturing requires.",
+    metaDescription: "EV and battery manufacturing software. Track cell production, module assembly, and pack integration with JobLine.ai.",
+    challenges: [
+      { title: "Cell-Level Traceability", description: "Every cell needs individual tracking through formation, aging, grading, and module integration." },
+      { title: "Safety-Critical Processes", description: "Electrolyte handling, welding, and high-voltage operations require documented safety verifications." },
+      { title: "Matching and Grading", description: "Cells must be graded and matched for module assembly. Track electrical test data and sorting decisions." },
+      { title: "Rapid Scale-Up", description: "New gigafactory lines come online quickly. The system must scale from pilot to mass production seamlessly." },
+    ],
+    benefits: [
+      { title: "Cell Serialization", description: "Track individual cells from electrode coating through formation, grading, and final pack assembly." },
+      { title: "Safety Checkpoint Enforcement", description: "Mandatory safety verifications at critical process steps prevent work from advancing without sign-off." },
+      { title: "Test Data Integration", description: "Link electrical test results, capacity measurements, and impedance data to individual cells and modules." },
+      { title: "Scalable Architecture", description: "Cloud-native platform scales from pilot lines to full production without infrastructure changes." },
+    ],
+  },
+};
+
+export const industrySlugFromName = (name: string): string => {
+  const map: Record<string, string> = {
+    "Job Shops": "job-shops",
+    "Machine Shops": "machine-shops",
+    "Aerospace & Defense": "aerospace-defense",
+    "Medical Device Manufacturers": "medical-device",
+    "Industrial Manufacturing": "industrial-manufacturing",
+    "Automotive Parts": "automotive-parts",
+    "Electronics Assembly": "electronics-assembly",
+    "Plastics & Rubber": "plastics-rubber",
+    "Metal Fabrication": "metal-fabrication",
+    "Food & Beverage": "food-beverage",
+    "Pharma & Life Sciences": "pharma-life-sciences",
+    "Chemical Processing": "chemical-processing",
+    "Renewable Energy": "renewable-energy",
+    "Additive Manufacturing": "additive-manufacturing",
+    "Semiconductor": "semiconductor",
+    "EV & Battery": "ev-battery",
+  };
+  return map[name] || name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+};

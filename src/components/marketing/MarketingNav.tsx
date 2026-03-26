@@ -30,6 +30,7 @@ import {
   FileText,
 } from "lucide-react";
 import joblineLogo from "@/assets/jobline-logo.png";
+import { industrySlugFromName } from "@/pages/industries/industryData";
 
 interface MarketingNavProps {
   showPricing?: boolean;
@@ -38,14 +39,14 @@ interface MarketingNavProps {
 /* ── Mega-menu data ── */
 
 const productItems = [
-  { label: "Digital Expeditor", href: "/digital-expeditor", icon: Gauge, desc: "Real-time work order routing & visibility" },
-  { label: "Shift Handoff", href: "/shift-handoff-software", icon: Clock, desc: "Structured shift-to-shift knowledge transfer" },
-  { label: "Work Order Tracking", href: "/work-order-tracking", icon: ClipboardCheck, desc: "Full lifecycle job tracking" },
-  { label: "Production Scheduling", href: "/production-scheduling", icon: BarChart3, desc: "Capacity planning & scheduling" },
-  { label: "Quality Management", href: "/quality-management", icon: Shield, desc: "NCRs, inspections & traceability" },
-  { label: "AI Planning Assistant", href: "/ai-planning-assistant", icon: Cpu, desc: "AI-powered production insights" },
-  { label: "Machine Shop Software", href: "/machine-shop-software", icon: Cog, desc: "Purpose-built for job shops" },
-  { label: "Downtime Tracking", href: "/downtime-tracking", icon: Wrench, desc: "Capture & reduce downtime" },
+  { label: "Digital Expeditor", href: "/features/digital-expeditor", icon: Gauge, desc: "Real-time work order routing & visibility" },
+  { label: "Shift Handoff", href: "/features/shift-handoff-software", icon: Clock, desc: "Structured shift-to-shift knowledge transfer" },
+  { label: "Work Order Tracking", href: "/features/work-order-tracking", icon: ClipboardCheck, desc: "Full lifecycle job tracking" },
+  { label: "Production Scheduling", href: "/features/production-scheduling", icon: BarChart3, desc: "Capacity planning & scheduling" },
+  { label: "Quality Management", href: "/features/quality-management", icon: Shield, desc: "NCRs, inspections & traceability" },
+  { label: "AI Planning Assistant", href: "/features/ai-planning-assistant", icon: Cpu, desc: "AI-powered production insights" },
+  { label: "Machine Shop Software", href: "/features/machine-shop-software", icon: Cog, desc: "Purpose-built for job shops" },
+  { label: "Downtime Tracking", href: "/features/downtime-tracking", icon: Wrench, desc: "Capture & reduce downtime" },
 ];
 
 const industryCategories = [
@@ -234,7 +235,7 @@ export function MarketingNav({ showPricing = true }: MarketingNavProps) {
                       {cat.items.map((item) => (
                         <li key={item}>
                           <button
-                            onClick={() => go("/pricing")}
+                            onClick={() => go(`/industries/${industrySlugFromName(item)}`)}
                             className="text-sm text-foreground hover:text-primary transition-colors"
                           >
                             {item}
@@ -299,7 +300,7 @@ export function MarketingNav({ showPricing = true }: MarketingNavProps) {
               <div key={cat.heading} className="px-3 py-1">
                 <div className="text-xs font-semibold uppercase text-muted-foreground mb-1">{cat.heading}</div>
                 {cat.items.map((item) => (
-                  <button key={item} onClick={() => go("/pricing")} className="block w-full text-left px-2 py-1.5 text-sm text-foreground hover:text-primary">
+                  <button key={item} onClick={() => go(`/industries/${industrySlugFromName(item)}`)} className="block w-full text-left px-2 py-1.5 text-sm text-foreground hover:text-primary">
                     {item}
                   </button>
                 ))}
