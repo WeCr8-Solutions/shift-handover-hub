@@ -66,6 +66,7 @@ import ToolComparisons from "./pages/resources/ToolComparisons";
 import ERPSelectionGuide from "./pages/resources/ERPSelectionGuide";
 import ResetPassword from "./pages/ResetPassword";
 import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
 import Help from "./pages/Help";
 import HelpArticle from "./pages/HelpArticle";
 import Tools from "./pages/Tools";
@@ -158,6 +159,7 @@ const App = () => (
                     <Route path="/resources/comparisons" element={<ToolComparisons />} />
                     <Route path="/resources/erp-guide" element={<ERPSelectionGuide />} />
                     <Route path="/blog" element={<Blog />} />
+                    <Route path="/blog/:slug" element={<BlogPost />} />
                     <Route path="/help" element={<Help />} />
                     <Route path="/help/:category/:slug" element={<HelpArticle />} />
                     <Route path="/tools" element={<Tools />} />
