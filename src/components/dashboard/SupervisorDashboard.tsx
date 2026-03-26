@@ -10,6 +10,7 @@ import { useSmartAlerts } from "@/hooks/useSmartAlerts";
 import { DashboardKPICards } from "./DashboardKPICards";
 import { DashboardAlertSection } from "./DashboardAlertSection";
 import { StationListTable } from "./StationListTable";
+import { ComplimentaryAwardBanner } from "@/components/ComplimentaryAwardBanner";
 
 import {
   Factory,
@@ -341,6 +342,9 @@ export function SupervisorDashboard({
 
       {/* KPI Cards */}
       <DashboardKPICards kpis={kpis} statusFilter={statusFilter} onStatusFilterChange={setStatusFilter} />
+
+      {/* Complimentary Access Alert */}
+      <ComplimentaryAwardBanner />
 
       {/* Alerts */}
       <DashboardAlertSection
