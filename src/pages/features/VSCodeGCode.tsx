@@ -230,7 +230,7 @@ export default function VSCodeGCode() {
           </div>
         </section>
 
-        <LeadCaptureBar context="vscode-gcode" />
+        <LeadCaptureBar sourcePage="vscode-gcode" />
 
         {/* CTA */}
         <section className="py-16 sm:py-24 border-t border-border/50">

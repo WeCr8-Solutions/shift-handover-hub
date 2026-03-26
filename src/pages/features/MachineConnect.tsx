@@ -262,7 +262,7 @@ export default function MachineConnect() {
           </div>
         </section>
 
-        <LeadCaptureBar context="machine-connect" />
+        <LeadCaptureBar sourcePage="machine-connect" />
 
         {/* CTA */}
         <section className="py-16 sm:py-24 border-t border-border/50">
