@@ -50,7 +50,6 @@ const navLinks = [
   { href: "/pricing", label: "Pricing", isRoute: true },
   { href: "/features/digital-expeditor", label: "Platform", isRoute: true },
   { href: "/resources", label: "Resources", isRoute: true },
-  { href: "/resources", label: "Resources", isRoute: true },
   { href: "/blog", label: "Blog", isRoute: true },
   { href: "#testimonials", label: "Testimonials" },
 ];
