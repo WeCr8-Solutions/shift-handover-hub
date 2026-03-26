@@ -117,12 +117,12 @@ export function Header() {
 
           {/* Desktop nav */}
           {!isMobile && (
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 min-w-0 overflow-hidden">
               {/* Dashboard button with role-aware options */}
               {user && canViewProductionFloor ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="default" size="sm" className="gap-1.5">
+                    <Button variant="default" size="sm" className="gap-1.5 shrink-0">
                       <LayoutDashboard className="w-4 h-4" />
                       Dashboard
                       <ChevronDown className="w-3 h-3" />
@@ -140,7 +140,7 @@ export function Header() {
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : user ? (
-                <Button variant="default" size="sm" className="gap-1.5" asChild>
+                <Button variant="default" size="sm" className="gap-1.5 shrink-0" asChild>
                   <Link to="/dashboard">
                     <LayoutDashboard className="w-4 h-4" />
                     Dashboard
@@ -160,119 +160,149 @@ export function Header() {
               )}
               {hasTestingAccess && <NavIconButton to="/testing" icon={FlaskConical} label="Testing Dashboard" iconClass="text-purple-500" />}
 
-              {/* Marketing/info dropdowns */}
-              <HeaderDropdown label="Products">
-                <DropdownMenuLabel className="text-[10px] uppercase tracking-wider">Platform</DropdownMenuLabel>
-                {platformFeatures.map((p) => (
-                  <DropdownMenuItem key={p.href} onClick={() => navigate(p.href)}>
-                    <p.icon className="w-4 h-4 mr-2 text-primary" />
-                    <div>
-                      <div className="text-sm">{p.label}</div>
-                      <div className="text-[11px] text-muted-foreground">{p.desc}</div>
+              {/* Marketing/info dropdowns — hidden below xl when logged in */}
+              <div className={`flex items-center gap-1 ${user ? "hidden xl:flex" : "flex"}`}>
+                <HeaderDropdown label="Products">
+                  <DropdownMenuLabel className="text-[10px] uppercase tracking-wider">Platform</DropdownMenuLabel>
+                  {platformFeatures.map((p) => (
+                    <DropdownMenuItem key={p.href} onClick={() => navigate(p.href)}>
+                      <p.icon className="w-4 h-4 mr-2 text-primary" />
+                      <div>
+                        <div className="text-sm">{p.label}</div>
+                        <div className="text-[11px] text-muted-foreground">{p.desc}</div>
+                      </div>
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel className="text-[10px] uppercase tracking-wider">Developer Tools</DropdownMenuLabel>
+                  {extensionItems.map((ext) => (
+                    <DropdownMenuItem key={ext.label} onClick={() => navigate(ext.href)}>
+                      <ext.icon className="w-4 h-4 mr-2 text-primary" />
+                      <div>
+                        <div className="text-sm">{ext.label}</div>
+                        <div className="text-[11px] text-muted-foreground">{ext.desc}</div>
+                      </div>
+                    </DropdownMenuItem>
+                  ))}
+                </HeaderDropdown>
+
+                <HeaderDropdown label="Industries">
+                  {industryCategories.map((cat) => (
+                    <div key={cat.heading}>
+                      <DropdownMenuLabel className="text-[10px] uppercase tracking-wider">{cat.heading}</DropdownMenuLabel>
+                      {cat.items.map((item) => (
+                        <DropdownMenuItem key={item} onClick={() => navigate(`/industries/${industrySlugFromName(item)}`)}>
+                          {item}
+                        </DropdownMenuItem>
+                      ))}
                     </div>
-                  </DropdownMenuItem>
-                ))}
-                <DropdownMenuSeparator />
-                <DropdownMenuLabel className="text-[10px] uppercase tracking-wider">Developer Tools</DropdownMenuLabel>
-                {extensionItems.map((ext) => (
-                  <DropdownMenuItem key={ext.label} onClick={() => navigate(ext.href)}>
-                    <ext.icon className="w-4 h-4 mr-2 text-primary" />
-                    <div>
-                      <div className="text-sm">{ext.label}</div>
-                      <div className="text-[11px] text-muted-foreground">{ext.desc}</div>
+                  ))}
+                </HeaderDropdown>
+
+                <HeaderDropdown label="Learn">
+                  {learnCategories.map((cat) => (
+                    <div key={cat.heading}>
+                      <DropdownMenuLabel className="text-[10px] uppercase tracking-wider">{cat.heading}</DropdownMenuLabel>
+                      {cat.items.map((item) => (
+                        <DropdownMenuItem key={item.href} onClick={() => navigate(item.href)}>
+                          <item.icon className="w-4 h-4 mr-2 text-primary" />
+                          {item.label}
+                        </DropdownMenuItem>
+                      ))}
                     </div>
-                  </DropdownMenuItem>
-                ))}
-              </HeaderDropdown>
+                  ))}
+                </HeaderDropdown>
 
-              <HeaderDropdown label="Industries">
-                {industryCategories.map((cat) => (
-                  <div key={cat.heading}>
-                    <DropdownMenuLabel className="text-[10px] uppercase tracking-wider">{cat.heading}</DropdownMenuLabel>
-                    {cat.items.map((item) => (
-                      <DropdownMenuItem key={item} onClick={() => navigate(`/industries/${industrySlugFromName(item)}`)}>
-                        {item}
-                      </DropdownMenuItem>
-                    ))}
-                  </div>
-                ))}
-              </HeaderDropdown>
-
-              <HeaderDropdown label="Learn">
-                {learnCategories.map((cat) => (
-                  <div key={cat.heading}>
-                    <DropdownMenuLabel className="text-[10px] uppercase tracking-wider">{cat.heading}</DropdownMenuLabel>
-                    {cat.items.map((item) => (
-                      <DropdownMenuItem key={item.href} onClick={() => navigate(item.href)}>
-                        <item.icon className="w-4 h-4 mr-2 text-primary" />
-                        {item.label}
-                      </DropdownMenuItem>
-                    ))}
-                  </div>
-                ))}
-              </HeaderDropdown>
-
-              <HeaderDropdown label="Company">
-                {companyItems.map((item) => (
-                  <DropdownMenuItem key={item.href} onClick={() => navigate(item.href)}>
-                    <item.icon className="w-4 h-4 mr-2 text-primary" />
-                    <div>
-                      <div className="text-sm">{item.label}</div>
-                      {item.desc && <div className="text-[11px] text-muted-foreground">{item.desc}</div>}
-                    </div>
-                  </DropdownMenuItem>
-                ))}
-              </HeaderDropdown>
-
-              <SystemStatusIndicator status={systemStatus} />
-              {user && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" asChild className="relative">
-                      <Link to="/updates">
-                        <Megaphone className="w-5 h-5" />
-                        {unreadCount > 0 && (
-                          <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-primary text-primary-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
-                            {unreadCount > 9 ? "9+" : unreadCount}
-                          </span>
-                        )}
-                      </Link>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>System Updates{unreadCount > 0 ? ` (${unreadCount} new)` : ""}</TooltipContent>
-                </Tooltip>
-              )}
-              <StatusBadge status={shiftStatus}>{shift} Shift</StatusBadge>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Clock className="w-4 h-4" />
-                <span className="font-mono text-sm">{timeString}</span>
+                <HeaderDropdown label="Company">
+                  {companyItems.map((item) => (
+                    <DropdownMenuItem key={item.href} onClick={() => navigate(item.href)}>
+                      <item.icon className="w-4 h-4 mr-2 text-primary" />
+                      <div>
+                        <div className="text-sm">{item.label}</div>
+                        {item.desc && <div className="text-[11px] text-muted-foreground">{item.desc}</div>}
+                      </div>
+                    </DropdownMenuItem>
+                  ))}
+                </HeaderDropdown>
               </div>
+
+              {/* "More" fallback for logged-in users on lg (not xl) screens */}
               {user && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" onClick={() => setIssueDialogOpen(true)}>
-                      <Bug className="w-5 h-5 text-muted-foreground" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Report an Issue</TooltipContent>
-                </Tooltip>
+                <div className="hidden lg:flex xl:hidden items-center">
+                  <HeaderDropdown label="More">
+                    <DropdownMenuLabel className="text-[10px] uppercase tracking-wider">Products</DropdownMenuLabel>
+                    {platformFeatures.map((p) => (
+                      <DropdownMenuItem key={p.href} onClick={() => navigate(p.href)}>{p.label}</DropdownMenuItem>
+                    ))}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel className="text-[10px] uppercase tracking-wider">Industries</DropdownMenuLabel>
+                    {industryCategories.flatMap((cat) => cat.items).slice(0, 6).map((item) => (
+                      <DropdownMenuItem key={item} onClick={() => navigate(`/industries/${industrySlugFromName(item)}`)}>{item}</DropdownMenuItem>
+                    ))}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel className="text-[10px] uppercase tracking-wider">Learn & Company</DropdownMenuLabel>
+                    {learnCategories.flatMap((cat) => cat.items).slice(0, 4).map((item) => (
+                      <DropdownMenuItem key={item.href} onClick={() => navigate(item.href)}>{item.label}</DropdownMenuItem>
+                    ))}
+                    {companyItems.slice(0, 4).map((item) => (
+                      <DropdownMenuItem key={item.href} onClick={() => navigate(item.href)}>{item.label}</DropdownMenuItem>
+                    ))}
+                  </HeaderDropdown>
+                </div>
               )}
-              <Popover open={notifOpen} onOpenChange={setNotifOpen}>
-                <PopoverTrigger asChild>
-                  <Button variant="ghost" size="icon" title="Notifications" className="relative">
-                    <Bell className="w-5 h-5 text-muted-foreground" />
-                    {notifBadgeCount > 0 && (
-                      <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
-                        {notifBadgeCount > 9 ? "9+" : notifBadgeCount}
-                      </span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent align="end" className="w-96 p-0">
-                  <NotificationPanel onClose={() => setNotifOpen(false)} />
-                </PopoverContent>
-              </Popover>
-              <UserMenu />
+
+              {/* Right-side actions — always visible */}
+              <div className="flex items-center gap-1 shrink-0 ml-auto">
+                <SystemStatusIndicator status={systemStatus} />
+                {user && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon" asChild className="relative">
+                        <Link to="/updates">
+                          <Megaphone className="w-5 h-5" />
+                          {unreadCount > 0 && (
+                            <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-primary text-primary-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
+                              {unreadCount > 9 ? "9+" : unreadCount}
+                            </span>
+                          )}
+                        </Link>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>System Updates{unreadCount > 0 ? ` (${unreadCount} new)` : ""}</TooltipContent>
+                  </Tooltip>
+                )}
+                <StatusBadge status={shiftStatus}>{shift} Shift</StatusBadge>
+                <div className="hidden xl:flex items-center gap-2 text-muted-foreground">
+                  <Clock className="w-4 h-4" />
+                  <span className="font-mono text-sm">{timeString}</span>
+                </div>
+                {user && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon" onClick={() => setIssueDialogOpen(true)}>
+                        <Bug className="w-5 h-5 text-muted-foreground" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Report an Issue</TooltipContent>
+                  </Tooltip>
+                )}
+                <Popover open={notifOpen} onOpenChange={setNotifOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="ghost" size="icon" title="Notifications" className="relative">
+                      <Bell className="w-5 h-5 text-muted-foreground" />
+                      {notifBadgeCount > 0 && (
+                        <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
+                          {notifBadgeCount > 9 ? "9+" : notifBadgeCount}
+                        </span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent align="end" className="w-96 p-0">
+                    <NotificationPanel onClose={() => setNotifOpen(false)} />
+                  </PopoverContent>
+                </Popover>
+                <UserMenu />
+              </div>
             </div>
           )}
 
