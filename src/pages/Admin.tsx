@@ -37,6 +37,7 @@ const SmartAlertAdmin = lazy(() => import("@/components/admin/SmartAlertAdmin").
 const ShopFloorDisplayManagement = lazy(() => import("@/components/admin/ShopFloorDisplayManagement").then(m => ({ default: m.ShopFloorDisplayManagement })));
 const NotificationQueueStatus = lazy(() => import("@/components/admin/NotificationQueueStatus").then(m => ({ default: m.NotificationQueueStatus })));
 const PlatformOverviewTab = lazy(() => import("@/components/admin/PlatformOverviewTab").then(m => ({ default: m.PlatformOverviewTab })));
+const BlogAdmin = lazy(() => import("@/components/admin/BlogAdmin").then(m => ({ default: m.BlogAdmin })));
 
 const AdminTabFallback = () => <div className="p-6"><Skeleton className="h-64 w-full rounded-lg" /></div>;
 
