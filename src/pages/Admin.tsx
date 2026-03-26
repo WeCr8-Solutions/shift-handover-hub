@@ -164,7 +164,6 @@ export default function Admin() {
               <SelectTrigger className="w-full" data-tour="admin-tabs">
                 <SelectValue placeholder="Select section" />
               </SelectTrigger>
-              </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
                   <SelectLabel>General</SelectLabel>
@@ -211,85 +210,70 @@ export default function Admin() {
               </SelectContent>
             </Select>
           ) : (
-          <TabsList data-tour="admin-tabs" className="flex-wrap h-auto gap-1 p-2">
-            {/* Overview */}
-            <TabsTrigger value="overview" className="gap-2">
-              <LayoutDashboard className="w-4 h-4" />
-              Overview
-            </TabsTrigger>
-
-            {/* Platform Overview - SDK admins only */}
-            {hasPlatformAccess && (
-              <TabsTrigger value="platform-overview" className="gap-2">
-                <Globe className="w-4 h-4" />
-                Platform
+            <TabsList data-tour="admin-tabs" className="flex-wrap h-auto gap-1 p-2">
+              <TabsTrigger value="overview" className="gap-2">
+                <LayoutDashboard className="w-4 h-4" />
+                Overview
               </TabsTrigger>
-            )}
-            
-            {/* Separator */}
-            <div className="w-px h-6 bg-border mx-1" />
-            
-            {/* ORG BUCKET */}
-            <div className="flex items-center gap-1 px-1 py-0.5 rounded bg-muted/50">
-              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider hidden lg:inline">Org</span>
-              <TabsTrigger value="organizations" className="gap-2">
-                <Briefcase className="w-4 h-4" />
-                {hasPlatformAccess ? "Organizations" : "My Org"}
-              </TabsTrigger>
-              <TabsTrigger value="users" className="gap-2">
-                <Users className="w-4 h-4" />
-                Users
-              </TabsTrigger>
-              <TabsTrigger value="stations" className="gap-2">
-                <Wrench className="w-4 h-4" />
-                Stations
-              </TabsTrigger>
-            </div>
-            
-            {/* Separator */}
-            <div className="w-px h-6 bg-border mx-1" />
-            
-            {/* PRODUCTION BUCKET */}
-            <div className="flex items-center gap-1 px-1 py-0.5 rounded bg-muted/50">
-              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider hidden lg:inline">Production</span>
-              <TabsTrigger value="work-orders" className="gap-2">
-                <Package className="w-4 h-4" />
-                Work Orders
-              </TabsTrigger>
-              <TabsTrigger value="history" className="gap-2">
-                <History className="w-4 h-4" />
-                History
-              </TabsTrigger>
-              <TabsTrigger value="routing" className="gap-2">
-                <Route className="w-4 h-4" />
-                Routing
-              </TabsTrigger>
-              <TabsTrigger value="performance" className="gap-2">
-                <Lightbulb className="w-4 h-4" />
-                Performance
-              </TabsTrigger>
-              <TabsTrigger value="machine-monitor" className="gap-2">
-                <Cpu className="w-4 h-4" />
-                Machines
-              </TabsTrigger>
-              <TabsTrigger value="smart-alerts" className="gap-2">
-                <BellRing className="w-4 h-4" />
-                Alerts
-              </TabsTrigger>
-              <TabsTrigger value="displays" className="gap-2">
-                <Tv className="w-4 h-4" />
-                Displays
-              </TabsTrigger>
-            </div>
-            
-            
-            {/* ACTIVITY BUCKET */}
-            {hasPlatformAccess && (
-              <>
-                <div className="w-px h-6 bg-border mx-1" />
-                
-                <div className="flex items-center gap-1 px-1 py-0.5 rounded bg-muted/50">
-                  <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider hidden lg:inline">Activity</span>
+              {hasPlatformAccess && (
+                <TabsTrigger value="platform-overview" className="gap-2">
+                  <Globe className="w-4 h-4" />
+                  Platform
+                </TabsTrigger>
+              )}
+              <div className="w-px h-6 bg-border mx-1" />
+              <div className="flex items-center gap-1 px-1 py-0.5 rounded bg-muted/50">
+                <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider hidden lg:inline">Org</span>
+                <TabsTrigger value="organizations" className="gap-2">
+                  <Briefcase className="w-4 h-4" />
+                  {hasPlatformAccess ? "Organizations" : "My Org"}
+                </TabsTrigger>
+                <TabsTrigger value="users" className="gap-2">
+                  <Users className="w-4 h-4" />
+                  Users
+                </TabsTrigger>
+                <TabsTrigger value="stations" className="gap-2">
+                  <Wrench className="w-4 h-4" />
+                  Stations
+                </TabsTrigger>
+              </div>
+              <div className="w-px h-6 bg-border mx-1" />
+              <div className="flex items-center gap-1 px-1 py-0.5 rounded bg-muted/50">
+                <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider hidden lg:inline">Production</span>
+                <TabsTrigger value="work-orders" className="gap-2">
+                  <Package className="w-4 h-4" />
+                  Work Orders
+                </TabsTrigger>
+                <TabsTrigger value="history" className="gap-2">
+                  <History className="w-4 h-4" />
+                  History
+                </TabsTrigger>
+                <TabsTrigger value="routing" className="gap-2">
+                  <Route className="w-4 h-4" />
+                  Routing
+                </TabsTrigger>
+                <TabsTrigger value="performance" className="gap-2">
+                  <Lightbulb className="w-4 h-4" />
+                  Performance
+                </TabsTrigger>
+                <TabsTrigger value="machine-monitor" className="gap-2">
+                  <Cpu className="w-4 h-4" />
+                  Machines
+                </TabsTrigger>
+                <TabsTrigger value="smart-alerts" className="gap-2">
+                  <BellRing className="w-4 h-4" />
+                  Alerts
+                </TabsTrigger>
+                <TabsTrigger value="displays" className="gap-2">
+                  <Tv className="w-4 h-4" />
+                  Displays
+                </TabsTrigger>
+              </div>
+              {hasPlatformAccess && (
+                <>
+                  <div className="w-px h-6 bg-border mx-1" />
+                  <div className="flex items-center gap-1 px-1 py-0.5 rounded bg-muted/50">
+                    <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider hidden lg:inline">Activity</span>
                     <TabsTrigger value="activity" className="gap-2">
                       <Activity className="w-4 h-4" />
                       Activity
@@ -298,96 +282,54 @@ export default function Admin() {
                       <Shield className="w-4 h-4" />
                       Data Access
                     </TabsTrigger>
-                  <TabsTrigger value="issues" className="gap-2">
-                    <Bug className="w-4 h-4" />
-                    Issues
-                  </TabsTrigger>
-                  <TabsTrigger value="system-updates" className="gap-2">
-                    <BookOpen className="w-4 h-4" />
-                    Updates
-                  </TabsTrigger>
-                  <TabsTrigger value="surveys" className="gap-2">
-                    <MessageSquare className="w-4 h-4" />
-                    Surveys
-                  </TabsTrigger>
-                  <TabsTrigger value="blog-admin" className="gap-2">
-                    <FileText className="w-4 h-4" />
-                    Blog
-                  </TabsTrigger>
-                </div>
-              </>
-            )}
-            
-            {/* DEV TOOLS BUCKET */}
-            {hasTestingAccess && (
-              <>
-                <div className="w-px h-6 bg-border mx-1" />
-                
-                <div className="flex items-center gap-1 px-1 py-0.5 rounded bg-destructive/10 border border-destructive/20">
-                  <span className="text-[10px] text-destructive font-medium uppercase tracking-wider hidden lg:inline">Dev</span>
-                  <TabsTrigger value="dev-queue" className="gap-2">
-                    <ListTodo className="w-4 h-4" />
-                    Queue
-                  </TabsTrigger>
-                  <TabsTrigger value="dev-settings" className="gap-2">
-                    <Settings2 className="w-4 h-4" />
-                    Settings
-                  </TabsTrigger>
-                  <TabsTrigger value="rls-health" className="gap-2">
-                    <ShieldCheck className="w-4 h-4" />
-                    RLS
-                  </TabsTrigger>
-                  <TabsTrigger value="user-journey" className="gap-2">
-                    <Map className="w-4 h-4" />
-                    Journey
-                  </TabsTrigger>
-                  <TabsTrigger value="machine-library" className="gap-2">
-                    <Cpu className="w-4 h-4" />
-                    Library
-                  </TabsTrigger>
-                </div>
-              </>
-            )}
-          </TabsList>
-          )}
-
-          {/* Hidden TabsTriggers for mobile select to work with Radix Tabs */}
-          {isMobile && (
-            <div className="hidden">
-              <TabsList>
-                <TabsTrigger value="overview" />
-                {hasPlatformAccess && <TabsTrigger value="platform-overview" />}
-                <TabsTrigger value="organizations" />
-                <TabsTrigger value="users" />
-                <TabsTrigger value="stations" />
-                <TabsTrigger value="work-orders" />
-                <TabsTrigger value="history" />
-                <TabsTrigger value="routing" />
-                <TabsTrigger value="performance" />
-                <TabsTrigger value="machine-monitor" />
-                <TabsTrigger value="smart-alerts" />
-                <TabsTrigger value="displays" />
-                {hasPlatformAccess && (
-                  <>
-                    <TabsTrigger value="activity" />
-                    <TabsTrigger value="data-access" />
-                    <TabsTrigger value="issues" />
-                    <TabsTrigger value="system-updates" />
-                    <TabsTrigger value="surveys" />
-                    <TabsTrigger value="blog-admin" />
-                  </>
-                )}
-                {hasTestingAccess && (
-                  <>
-                    <TabsTrigger value="dev-queue" />
-                    <TabsTrigger value="dev-settings" />
-                    <TabsTrigger value="rls-health" />
-                    <TabsTrigger value="user-journey" />
-                    <TabsTrigger value="machine-library" />
-                  </>
-                )}
-              </TabsList>
-            </div>
+                    <TabsTrigger value="issues" className="gap-2">
+                      <Bug className="w-4 h-4" />
+                      Issues
+                    </TabsTrigger>
+                    <TabsTrigger value="system-updates" className="gap-2">
+                      <BookOpen className="w-4 h-4" />
+                      Updates
+                    </TabsTrigger>
+                    <TabsTrigger value="surveys" className="gap-2">
+                      <MessageSquare className="w-4 h-4" />
+                      Surveys
+                    </TabsTrigger>
+                    <TabsTrigger value="blog-admin" className="gap-2">
+                      <FileText className="w-4 h-4" />
+                      Blog
+                    </TabsTrigger>
+                  </div>
+                </>
+              )}
+              {hasTestingAccess && (
+                <>
+                  <div className="w-px h-6 bg-border mx-1" />
+                  <div className="flex items-center gap-1 px-1 py-0.5 rounded bg-destructive/10 border border-destructive/20">
+                    <span className="text-[10px] text-destructive font-medium uppercase tracking-wider hidden lg:inline">Dev</span>
+                    <TabsTrigger value="dev-queue" className="gap-2">
+                      <ListTodo className="w-4 h-4" />
+                      Queue
+                    </TabsTrigger>
+                    <TabsTrigger value="dev-settings" className="gap-2">
+                      <Settings2 className="w-4 h-4" />
+                      Settings
+                    </TabsTrigger>
+                    <TabsTrigger value="rls-health" className="gap-2">
+                      <ShieldCheck className="w-4 h-4" />
+                      RLS
+                    </TabsTrigger>
+                    <TabsTrigger value="user-journey" className="gap-2">
+                      <Map className="w-4 h-4" />
+                      Journey
+                    </TabsTrigger>
+                    <TabsTrigger value="machine-library" className="gap-2">
+                      <Cpu className="w-4 h-4" />
+                      Library
+                    </TabsTrigger>
+                  </div>
+                </>
+              )}
+            </TabsList>
           )}
 
           <TabsContent value="overview" className="space-y-4">
