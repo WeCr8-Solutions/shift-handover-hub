@@ -156,16 +156,13 @@ export default function Admin() {
         </div>
 
         {/* Management Tabs - Organized by Bucket System */}
-        <Tabs defaultValue="overview" className="space-y-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           {/* Mobile: grouped select dropdown */}
           {isMobile ? (
-            <Select defaultValue="overview" onValueChange={(val) => {
-              // Programmatically click the hidden TabsTrigger
-              const trigger = document.querySelector(`[data-radix-collection-item][value="${val}"]`) as HTMLElement;
-              trigger?.click();
-            }}>
+            <Select value={activeTab} onValueChange={setActiveTab}>
               <SelectTrigger className="w-full" data-tour="admin-tabs">
                 <SelectValue placeholder="Select section" />
+              </SelectTrigger>
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
