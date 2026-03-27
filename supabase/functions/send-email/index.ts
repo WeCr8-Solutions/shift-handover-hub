@@ -360,7 +360,7 @@ Deno.serve(async (req) => {
     // Send via Resend
     // Note: In production, replace 'onboarding@resend.dev' with your verified domain
     const { data: emailData, error } = await resend.emails.send({
-      from: 'JobLine.ai <onboarding@resend.dev>',
+      from: 'JobLine.ai <noreply@wecr8.info>',
       to: [to],
       subject,
       html,
