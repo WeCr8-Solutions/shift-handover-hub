@@ -153,6 +153,7 @@ export async function validateInviteCode(code: string) {
     valid: boolean;
     id: string;
     organization_id: string;
+    organization_name: string | null;
     team_id: string | null;
     org_role: string;
     app_role: string | null;
@@ -161,9 +162,8 @@ export async function validateInviteCode(code: string) {
     uses_count: number;
   };
 
-  // Fetch org name, team name, and seat info
-  const [orgResult, teamResult, countResult, entitlementResult] = await Promise.all([
-    supabase.from("organizations").select("name").eq("id", invite.organization_id).maybeSingle(),
+  // Fetch team name, seat count, and entitlements — org name now comes from the RPC
+  const [teamResult, countResult, entitlementResult] = await Promise.all([
     invite.team_id
       ? supabase.from("teams").select("name").eq("id", invite.team_id).maybeSingle()
       : Promise.resolve({ data: null }),
@@ -186,7 +186,7 @@ export async function validateInviteCode(code: string) {
     invite: {
       id: invite.id,
       organizationId: invite.organization_id,
-      organizationName: orgResult.data?.name || "Unknown",
+      organizationName: invite.organization_name || "Unknown",
       teamId: invite.team_id,
       teamName: teamResult.data?.name || null,
       orgRole: invite.org_role,
