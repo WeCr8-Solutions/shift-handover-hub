@@ -95,6 +95,9 @@ export function MarketingNav({ showPricing = true }: MarketingNavProps) {
           <DropdownTrigger label="Learn" menuKey="learn" />
           <DropdownTrigger label="Company" menuKey="company" />
 
+          <button onClick={() => go("/dev")} className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-md">
+            Developers
+          </button>
           <button onClick={() => go("/pricing")} className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-md">
             Pricing
           </button>
@@ -335,6 +338,7 @@ export function MarketingNav({ showPricing = true }: MarketingNavProps) {
             ))}
           </MobileSection>
 
+          <button onClick={() => go("/dev")} className="block w-full text-left px-3 py-2.5 rounded-md text-sm font-medium text-foreground hover:bg-accent">Developers</button>
           <button onClick={() => go("/pricing")} className="block w-full text-left px-3 py-2.5 rounded-md text-sm font-medium text-foreground hover:bg-accent">Pricing</button>
         </div>
       )}
