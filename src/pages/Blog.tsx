@@ -33,6 +33,7 @@ const postModules = import.meta.glob<{ frontmatter: Omit<PostMeta, "source"> }>(
 
 const CATEGORIES = [
   "All",
+  "Product Update",
   "Shift Handover",
   "Machine Intelligence",
   "Operations",
