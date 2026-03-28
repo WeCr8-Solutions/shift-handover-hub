@@ -5,6 +5,16 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
+      "source": "/:path*",
+      "destination": "/dev/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "dev\\.jobline\\.ai"
+        }
+      ]
+    },
+    {
       "source": "/((?!.*\\.).*)",
       "destination": "/index.html"
     }

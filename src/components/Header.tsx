@@ -160,8 +160,9 @@ export function Header() {
               )}
               {hasTestingAccess && <NavIconButton to="/testing" icon={FlaskConical} label="Testing Dashboard" iconClass="text-purple-500" />}
 
-              {/* Marketing/info dropdowns — hidden below xl when logged in */}
-              <div className={`flex items-center gap-1 ${user ? "hidden xl:flex" : "flex"}`}>
+              {/* Marketing/info dropdowns — only show for non-logged-in users */}
+              {!user && (
+              <div className="flex items-center gap-1">
                 <HeaderDropdown label="Products">
                   <DropdownMenuLabel className="text-[10px] uppercase tracking-wider">Platform</DropdownMenuLabel>
                   {platformFeatures.map((p) => (
@@ -225,31 +226,8 @@ export function Header() {
                   ))}
                 </HeaderDropdown>
               </div>
-
-              {/* "More" fallback for logged-in users on lg (not xl) screens */}
-              {user && (
-                <div className="hidden lg:flex xl:hidden items-center">
-                  <HeaderDropdown label="More">
-                    <DropdownMenuLabel className="text-[10px] uppercase tracking-wider">Products</DropdownMenuLabel>
-                    {platformFeatures.map((p) => (
-                      <DropdownMenuItem key={p.href} onClick={() => navigate(p.href)}>{p.label}</DropdownMenuItem>
-                    ))}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuLabel className="text-[10px] uppercase tracking-wider">Industries</DropdownMenuLabel>
-                    {industryCategories.flatMap((cat) => cat.items).slice(0, 6).map((item) => (
-                      <DropdownMenuItem key={item} onClick={() => navigate(`/industries/${industrySlugFromName(item)}`)}>{item}</DropdownMenuItem>
-                    ))}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuLabel className="text-[10px] uppercase tracking-wider">Learn & Company</DropdownMenuLabel>
-                    {learnCategories.flatMap((cat) => cat.items).slice(0, 4).map((item) => (
-                      <DropdownMenuItem key={item.href} onClick={() => navigate(item.href)}>{item.label}</DropdownMenuItem>
-                    ))}
-                    {companyItems.slice(0, 4).map((item) => (
-                      <DropdownMenuItem key={item.href} onClick={() => navigate(item.href)}>{item.label}</DropdownMenuItem>
-                    ))}
-                  </HeaderDropdown>
-                </div>
               )}
+
 
               {/* Right-side actions — always visible */}
               <div className="flex items-center gap-1 shrink-0 ml-auto">
