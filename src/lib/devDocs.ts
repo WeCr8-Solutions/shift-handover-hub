@@ -72,7 +72,7 @@ export const devDocs: DevDoc[] = [
       { heading: "Rate limiting", body: "The API enforces rate limits of 100 requests per minute per key. When exceeded, you receive a 429 status with a Retry-After header. The SDK automatically retries with exponential backoff. Burst limits allow up to 20 requests per second." },
     ],
     codeExamples: [
-      { language: "typescript", label: "TypeScript", code: `// API Key auth\nconst client = new JobLineClient({\n  apiKey: 'jl_key_abc123...',\n  orgId: 'org_xyz...',\n});\n\n// JWT auth (browser)\nconst client = new JobLineClient({\n  session: supabaseSession,\n});` },
+      { language: "typescript", label: "TypeScript", code: `// API Key auth\nconst client = new JobLineClient({\n  apiKey: 'jl_key_abc123...',\n  orgId: 'org_xyz...',\n});\n\n// Browser session auth\nconst client = new JobLineClient({\n  session: browserSession,\n});` },
       { language: "bash", label: "cURL", code: `# API Key\ncurl -H "Authorization: Bearer jl_key_abc123..." \\\n     -H "X-Org-Id: org_xyz..." \\\n     https://api.jobline.ai/v1/work-orders\n\n# JWT\ncurl -H "Authorization: Bearer eyJhbG..." \\\n     https://api.jobline.ai/v1/work-orders` },
     ],
   },
@@ -140,7 +140,7 @@ export const devDocs: DevDoc[] = [
     tags: ["vscode", "gcode", "syntax", "fanuc", "haas", "mazak", "siemens"],
     sections: [
       { heading: "Installation", body: "Search for 'JobLine G-Code' in the VS Code marketplace or install directly: ext install WeCr8-Solutions.jobline-gcode. The extension activates automatically for .nc, .cnc, .gcode, .tap, and .ngc file types. No additional configuration is required for basic usage." },
-      { heading: "Supported dialects", body: "The extension provides intelligent support for 6 major CNC dialects: Fanuc (including macro B), Haas, Mazak (Mazatrol conversational + EIA), Siemens 840D (ShopMill/ShopTurn), Heidenhain (TNC/iTNC), and Okuma (OSP). Dialect detection is automatic based on file content patterns, or can be set manually via the status bar selector." },
+      { heading: "Supported dialects", body: "The extension provides intelligent support for major CNC programming languages and dialects. Dialect detection is automatic based on file content patterns, or can be set manually. Supported formats include common ISO and proprietary G-code variants used in modern manufacturing." },
       { heading: "Features", body: "Core features include: syntax highlighting with semantic token coloring, real-time diagnostics (missing line numbers, undefined tool calls, unbalanced parentheses), hover documentation for G/M codes, go-to-definition for subroutine calls, and code folding for program sections. All features work offline — no API connection required." },
       { heading: "Snippets", body: "Over 200 built-in snippets for common machining operations: tool changes, canned drilling cycles, cutter compensation, work coordinate setup, and probing routines. Snippets are dialect-aware — typing 'drill' shows Fanuc G81 patterns when in Fanuc mode, and Siemens CYCLE81 patterns when in Siemens mode." },
       { heading: "Configuration", body: "Settings are available under File → Preferences → Settings → JobLine G-Code. Key options: jobline.gcode.defaultDialect (auto | fanuc | haas | mazak | siemens | heidenhain | okuma), jobline.gcode.diagnostics.enabled (true/false), jobline.gcode.theme (default | high-contrast | monokai). All settings sync across VS Code instances." },
@@ -159,7 +159,7 @@ export const devDocs: DevDoc[] = [
     sections: [
       { heading: "Overview", body: "Machine Connect is a companion VS Code extension and desktop relay service that bridges physical CNC machines to the JobLine platform. It supports DNC program transfer (RS-232 serial), network-connected machines (Ethernet/IP, Focas, MTConnect), and real-time status monitoring. Currently in private beta — join the waitlist for early access." },
       { heading: "Architecture", body: "The relay runs as a lightweight background service on a shop-floor PC connected to your machines. It communicates with JobLine via secure WebSocket (wss://relay.jobline.ai). Each machine is bound to a JobLine station, enabling automatic status updates, program transfer triggers, and cycle time logging." },
-      { heading: "Supported protocols", body: "Serial DNC: RS-232 with configurable baud rate (1200–115200), parity, data bits, and flow control (XON/XOFF, RTS/CTS). Network: Fanuc Focas2, Mazak Smooth API, Haas Q-commands, Siemens OPC UA, MTConnect. Each protocol adapter handles connection lifecycle, error recovery, and data normalization." },
+      { heading: "Supported protocols", body: "Machine Connect supports serial DNC (RS-232 with standard baud rates and flow control) and common network machine protocols. Each adapter handles connection lifecycle, error recovery, and automatic data normalization. Contact us to discuss your specific machine's compatibility." },
       { heading: "Station binding", body: "Each machine connection is mapped to a JobLine station via the relay configuration. When the relay detects a cycle start, it updates the station status in real-time. Cycle complete events automatically increment parts count. Program upload/download can be triggered from the JobLine dashboard or VS Code." },
       { heading: "Getting started (Beta)", body: "Request beta access at jobline.ai/features/machine-connect. Once approved, you'll receive a relay installer and API credentials. Install the relay on a Windows PC with access to your machines, configure connections in the relay.config.json, and pair with your JobLine organization using the provided pairing code." },
     ],
@@ -172,8 +172,8 @@ export const devDocs: DevDoc[] = [
     description: "Sync work orders, BOMs, and inventory with your ERP system.",
     tags: ["erp", "integration", "sync", "jobboss", "epicor", "sap"],
     sections: [
-      { heading: "Supported systems", body: "JobLine integrates with major ERP systems used in precision manufacturing: JobBOSS², Epicor Kinetic, SAP Business One, E2 Shop System, and ProShop. Each connector handles bi-directional sync of work orders, routing steps, and completion status. Additional ERP support is added based on customer demand." },
-      { heading: "Setup", body: "Navigate to Settings → Integrations → ERP in the JobLine dashboard. Select your ERP vendor, enter connection credentials (API endpoint, client ID, client secret), and configure sync frequency. The system performs a test connection and initial data pull to verify configuration. OAuth2 is used where supported; API key auth as fallback." },
+      { heading: "Supported systems", body: "JobLine integrates with enterprise manufacturing systems via REST APIs and webhooks. Each connector handles bi-directional sync of work orders, routing steps, and completion status. Custom integrations can be built using the Webhooks API and REST endpoints." },
+      { heading: "Setup", body: "Navigate to Settings → Integrations in the JobLine dashboard. Configure connection credentials (API endpoint, authentication details) and sync frequency. OAuth2 and API key authentication are supported. The system validates connections before syncing data." },
       { heading: "Sync behavior", body: "Syncs run on a configurable interval (default: 15 minutes). New work orders in the ERP are pulled into JobLine with mapped statuses. Completion updates in JobLine are pushed back to the ERP. Conflict resolution follows a 'last-write-wins' strategy with full audit logging. Manual sync can be triggered from the dashboard." },
       { heading: "Field mapping", body: "Default field mappings cover work order number, part number, quantity, due date, status, and routing operations. Custom field mappings can be configured for vendor-specific fields. Status mappings (e.g., ERP 'Released' → JobLine 'queued') are configurable per organization." },
       { heading: "Error handling", body: "Sync errors are logged with full context: record ID, error type, retry count, and resolution status. Failed records are retried up to 3 times with exponential backoff. Persistent failures generate notifications and appear in the sync dashboard for manual review." },
@@ -261,26 +261,14 @@ export const devDocs: DevDoc[] = [
   // ── CHANGELOG ────────────────────────────────────────────────
   {
     category: "changelog", categoryLabel: "Changelog",
-    slug: "2025-q1", title: "Q1 2025 Updates",
-    description: "Major features and improvements shipped in Q1 2025.",
-    tags: ["changelog", "release notes", "2025"],
+    slug: "api-v1", title: "API v1 Stable",
+    description: "Current stable release with full production support.",
+    tags: ["changelog", "release notes", "api", "stable"],
     sections: [
-      { heading: "Digital Expeditor launch", body: "The core expeditor workflow went live with drag-and-drop Kanban boards, automated priority scoring, and real-time station utilization tracking. Work orders flow through configurable routing steps with operator check-in/check-out and automatic progress calculation." },
-      { heading: "Smart Shift Handoff v2", body: "Complete rewrite of the handoff form with work-center-specific fields (CNC machine condition, water jet parameters, welding settings), photo attachments, and supervisor sign-off workflows. Handoff data is now linked to station status for seamless continuity." },
-      { heading: "VS Code G-Code Intelligence", body: "Released the G-Code Intelligence extension on the VS Code marketplace with support for 6 CNC dialects. Features include semantic highlighting, real-time diagnostics, hover documentation, and 200+ dialect-aware snippets." },
-      { heading: "Organization & Team management", body: "Multi-organization support with team-scoped data isolation, invite system with QR codes, role-based access control (Owner, Admin, Supervisor, Operator, Viewer), and comprehensive audit logging for ITAR compliance." },
-    ],
-  },
-  {
-    category: "changelog", categoryLabel: "Changelog",
-    slug: "2025-q2", title: "Q2 2025 Updates",
-    description: "ERP integration, quality management, and Machine Connect beta.",
-    tags: ["changelog", "release notes", "2025", "erp", "quality"],
-    sections: [
-      { heading: "ERP Integration framework", body: "Launched the ERP connector framework with initial support for JobBOSS² and Epicor Kinetic. Bi-directional sync of work orders, routing operations, and completion status with configurable field mappings and conflict resolution." },
-      { heading: "Quality Management module", body: "Non-Conformance Report (NCR) creation and disposition workflow, dimension check requests with inspection readings, first-article inspection tracking, and quality analytics dashboard. Supports AS9100/ISO 9001 compliance requirements." },
-      { heading: "Machine Connect private beta", body: "Started private beta of the Machine Connect relay service. Initial support for Fanuc Focas2, Haas Q-commands, and RS-232 serial DNC. Real-time cycle monitoring and automatic parts counting for connected machines." },
-      { heading: "API v1 release", body: "Released the public REST API (v1) with full documentation, TypeScript SDK, and sandbox environment. API covers work orders, handoffs, stations, equipment, quality, and user management endpoints." },
+      { heading: "REST API", body: "JobLine provides a stable v1 REST API for work orders, shift handoffs, stations, equipment, and quality management. All endpoints are production-ready with comprehensive documentation and TypeScript SDK support." },
+      { heading: "Real-time capabilities", body: "WebSocket relay and webhook system for real-time event streaming. Subscribe to work order updates, shift changes, station status, and quality events. Events are delivered with retry logic and signature verification." },
+      { heading: "Authentication", body: "Secure API key and session-based authentication. Keys are organization-scoped with configurable permissions. Rate limiting and automatic retry handling built into the SDK." },
+      { heading: "Integrations", body: "Build custom integrations using REST APIs, webhooks, and the Model Context Protocol (MCP). Extensible architecture supports enterprise manufacturing systems." },
     ],
   },
   {
