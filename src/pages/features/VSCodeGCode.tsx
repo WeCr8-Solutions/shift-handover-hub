@@ -17,29 +17,31 @@ import {
   Cpu,
   Sparkles,
   Terminal,
-  FlaskConical,
   Eye,
+  Download,
+  ExternalLink,
 } from "lucide-react";
 
 const dialects = [
-  { name: "Fanuc", desc: "Full G/M-code support with macro-B variable highlighting" },
-  { name: "Haas", desc: "NGC dialect with setting codes and coolant macros" },
-  { name: "Mazak", desc: "Mazatrol conversational + EIA/ISO G-code" },
-  { name: "Siemens", desc: "Sinumerik 840D ShopMill / ShopTurn programs" },
-  { name: "Heidenhain", desc: "Klartext and DIN/ISO conversational" },
-  { name: "Okuma", desc: "OSP-P300 and OSP-P200 program support" },
+  { name: "Fanuc", desc: "0i/30i/31i series with full Macro B variable highlighting" },
+  { name: "Haas", desc: "NGC controls — VF, ST, UMC, UR with setting codes" },
+  { name: "Siemens", desc: "Sinumerik 840D/828D with CYCLE call support" },
+  { name: "Mazak", desc: "Smooth technology / Matrix (EIA/ISO mode)" },
+  { name: "Okuma", desc: "OSP-P series program support" },
+  { name: "Fanuc Robot TP", desc: "Fanuc robot teach pendant program intelligence" },
+  { name: "ABB RAPID", desc: "ABB robot RAPID language support" },
 ];
 
 const features = [
   {
     icon: Eye,
     title: "Syntax Highlighting",
-    desc: "Context-aware colorization for G-codes, M-codes, axis words, feed rates, tool calls, comments, and macro variables across all supported dialects.",
+    desc: "Dialect-specific colorization for G-codes, M-codes, axis words, feed rates, tool calls, comments, and macro variables. Readable contrast across all VS Code themes.",
   },
   {
     icon: Lightbulb,
-    title: "IntelliSense & Hover Docs",
-    desc: "Hover any G or M code to see plain-English descriptions, parameter ranges, and usage examples. Autocomplete suggests valid codes as you type.",
+    title: "Hover Tooltips & IntelliSense",
+    desc: "Hover any G or M code for full descriptions, parameter ranges, and usage notes inline. No tab switching. No external manual.",
   },
   {
     icon: AlertTriangle,
@@ -48,13 +50,13 @@ const features = [
   },
   {
     icon: Layers,
-    title: "Program Structure Outline",
-    desc: "VS Code's Outline view shows tool changes, subroutine calls, and operation blocks — jump to any section instantly in large programs.",
+    title: "Live Sidebar — 5 Views",
+    desc: "Operations, Tools, Offsets, Canned Cycles, and Alarms & Warnings — all updating in real time as you type. Click any item to jump to its line.",
   },
   {
     icon: FileCode2,
-    title: "Snippet Library",
-    desc: "Pre-built snippets for tool changes, canned cycles (G81–G89), probing routines, and common setup patterns. Add your own shop-specific templates.",
+    title: "Macro B Parser",
+    desc: "Variables (#1, #100, #5041), arithmetic expressions, and control flow (IF, WHILE, GOTO) correctly tokenized and evaluated. No false positives.",
   },
   {
     icon: Sparkles,
@@ -63,15 +65,19 @@ const features = [
   },
 ];
 
+const MARKETPLACE_URL =
+  "https://marketplace.visualstudio.com/items?itemName=WeCr8-Solutions.jobline-gcode";
+
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
-  name: "JobLine G-Code — VS Code Extension",
+  name: "JobLine G-Code Intelligence — VS Code Extension",
   applicationCategory: "DeveloperApplication",
   operatingSystem: "Windows, macOS, Linux",
   description:
-    "Multi-dialect G-code intelligence for VS Code. Syntax highlighting, IntelliSense, diagnostics, and AI integration for CNC programmers.",
+    "Multi-dialect G-code and robot program intelligence for VS Code. Syntax highlighting, hover tooltips, live sidebar, diagnostics, and AI integration for CNC programmers.",
   url: "https://jobline.ai/features/vscode-gcode",
+  downloadUrl: MARKETPLACE_URL,
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
 };
 
@@ -81,9 +87,9 @@ export default function VSCodeGCode() {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="JobLine G-Code — VS Code Extension for CNC Programming"
-        description="Multi-dialect G-code language intelligence inside VS Code. Syntax highlighting, autocomplete, real-time diagnostics, and MCP integration for Fanuc, Haas, Mazak, Siemens, and more."
-        keywords="G-code VS Code extension, CNC programming IDE, Fanuc G-code editor, Haas G-code syntax, CNC code IntelliSense, G-code diagnostics, machinist code editor"
+        title="JobLine G-Code Intelligence — Free VS Code Extension for CNC Programming"
+        description="Multi-dialect G-code and robot program intelligence inside VS Code. Syntax highlighting, hover tooltips, live sidebar, diagnostics, and MCP integration for Fanuc, Haas, Siemens, Mazak, Okuma, Fanuc Robot TP, and ABB RAPID. Free to install."
+        keywords="G-code VS Code extension, CNC programming IDE, Fanuc G-code editor, Haas G-code syntax, CNC code IntelliSense, G-code diagnostics, machinist code editor, Fanuc Robot TP, ABB RAPID"
         canonical="/features/vscode-gcode"
         jsonLd={jsonLd}
       />
@@ -99,51 +105,49 @@ export default function VSCodeGCode() {
                 <Code className="w-4 h-4" />
                 VS Code Extension
               </div>
-              <Badge variant="outline" className="border-amber-500/40 text-amber-500 bg-amber-500/10 gap-1">
-                <FlaskConical className="w-3 h-3" />
-                Beta
+              <Badge variant="outline" className="border-green-500/40 text-green-500 bg-green-500/10 gap-1">
+                <CheckCircle2 className="w-3 h-3" />
+                Available Now
               </Badge>
             </div>
 
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-4">
               JobLine{" "}
               <span className="bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent">
-                G-Code
+                G-Code Intelligence
               </span>
             </h1>
 
-            <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mb-4">
-              Multi-dialect G-code intelligence inside VS Code. Syntax highlighting, autocomplete, real-time
-              diagnostics, and AI integration — purpose-built for CNC programmers and manufacturing engineers.
+            <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mb-8">
+              Multi-dialect G-code and robot program intelligence inside VS Code. Syntax highlighting, hover tooltips,
+              live sidebar, diagnostics, and AI integration — purpose-built for CNC programmers and manufacturing engineers.
+              <strong className="text-foreground"> Free to install. No account required.</strong>
             </p>
 
-            <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 px-4 py-3 mb-8 text-sm text-amber-200 flex items-start gap-2">
-              <FlaskConical className="w-4 h-4 mt-0.5 shrink-0 text-amber-500" />
-              <span>
-                <strong>Beta Program</strong> — This extension is currently in closed beta testing with select
-                manufacturing partners. Core functionality is stable; we're refining dialect coverage and
-                diagnostic rules based on real-world CNC programs before public release.
-              </span>
-            </div>
-
             <div className="flex flex-col sm:flex-row gap-3">
-              <Button size="lg" onClick={() => navigate("/auth")} className="gap-2">
-                Join the Beta Waitlist <ArrowRight className="w-4 h-4" />
+              <Button size="lg" asChild className="gap-2">
+                <a href={MARKETPLACE_URL} target="_blank" rel="noopener noreferrer">
+                  <Download className="w-4 h-4" /> Install from VS Code Marketplace
+                </a>
               </Button>
               <Button size="lg" variant="outline" onClick={() => navigate("/features/machine-connect")} className="gap-2">
                 <Cpu className="w-4 h-4" /> See Machine Connect
               </Button>
             </div>
+
+            <p className="text-sm text-muted-foreground mt-4">
+              Or press <code className="px-1.5 py-0.5 rounded bg-muted text-foreground text-xs">Ctrl+P</code> in VS Code and run:{" "}
+              <code className="px-1.5 py-0.5 rounded bg-muted text-foreground text-xs">ext install WeCr8-Solutions.jobline-gcode</code>
+            </p>
           </div>
         </section>
 
         {/* Supported Dialects */}
         <section className="py-12 sm:py-16 border-t border-border/50">
           <div className="container mx-auto px-4 max-w-4xl">
-            <h2 className="text-2xl font-bold mb-2">Supported CNC Dialects</h2>
+            <h2 className="text-2xl font-bold mb-2">Supported CNC Dialects & Robot Languages</h2>
             <p className="text-muted-foreground mb-8 max-w-xl">
-              One extension, every major control. Each dialect gets its own grammar, hover docs, and diagnostic
-              ruleset.
+              Five CNC dialects. Two robot languages. Each gets its own grammar, hover docs, and diagnostic ruleset.
             </p>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {dialects.map((d) => (
@@ -193,7 +197,7 @@ export default function VSCodeGCode() {
           <div className="container mx-auto px-4 max-w-3xl text-center">
             <h2 className="text-2xl font-bold mb-3">Part of the JobLine Platform</h2>
             <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
-              The G-Code extension generates the language intelligence layer. Pair it with{" "}
+              The G-Code extension provides the language intelligence layer. Pair it with{" "}
               <button onClick={() => navigate("/features/machine-connect")} className="text-primary hover:underline">
                 Machine Connect
               </button>{" "}
@@ -209,16 +213,18 @@ export default function VSCodeGCode() {
         {/* Benefits checklist */}
         <section className="py-12 sm:py-16 border-t border-border/50">
           <div className="container mx-auto px-4 max-w-3xl">
-            <h2 className="text-2xl font-bold mb-6">Why CNC Programmers Choose JobLine G-Code</h2>
+            <h2 className="text-2xl font-bold mb-6">Why CNC Programmers Choose JobLine G-Code Intelligence</h2>
             <ul className="grid sm:grid-cols-2 gap-x-8 gap-y-3">
               {[
+                "Free — no credit card, no account required",
                 "Works offline — no cloud dependency for editing",
+                "5 CNC dialects + 2 robot languages",
                 "Catches errors before they reach the controller",
-                "Hover docs reduce manual-lookup time",
-                "Shop-specific snippet templates",
+                "Hover docs eliminate manual-lookup time",
+                "Live sidebar with 5 views updated as you type",
+                "Macro B parser with expression evaluation",
+                "AI agents can validate & explain your code via MCP",
                 "Outline view for navigating large programs",
-                "AI agents can validate & explain your code",
-                "Free during beta — no credit card required",
                 "Feeds data into the JobLine production dashboard",
               ].map((b) => (
                 <li key={b} className="flex items-start gap-2 text-sm text-muted-foreground">
@@ -235,17 +241,24 @@ export default function VSCodeGCode() {
         {/* CTA */}
         <section className="py-16 sm:py-24 border-t border-border/50">
           <div className="container mx-auto px-4 max-w-2xl text-center">
-            <Badge variant="outline" className="mb-4 border-amber-500/40 text-amber-500 bg-amber-500/10 gap-1">
-              <FlaskConical className="w-3 h-3" /> Currently in Beta
+            <Badge variant="outline" className="mb-4 border-green-500/40 text-green-500 bg-green-500/10 gap-1">
+              <CheckCircle2 className="w-3 h-3" /> Free on VS Code Marketplace
             </Badge>
             <h2 className="text-2xl sm:text-3xl font-bold mb-3">Ready to Write Better G-Code?</h2>
             <p className="text-muted-foreground mb-6">
-              Sign up to join the beta program. We're onboarding shops weekly and collecting feedback to make this
-              the definitive CNC programming extension.
+              Install JobLine G-Code Intelligence from the VS Code Marketplace. Five CNC dialects, two robot languages,
+              hover tooltips, live sidebar, and Macro B parsing — all free.
             </p>
-            <Button size="lg" onClick={() => navigate("/auth")} className="gap-2">
-              Join Beta Waitlist <ArrowRight className="w-4 h-4" />
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button size="lg" asChild className="gap-2">
+                <a href={MARKETPLACE_URL} target="_blank" rel="noopener noreferrer">
+                  <Download className="w-4 h-4" /> Install Free Extension
+                </a>
+              </Button>
+              <Button size="lg" variant="outline" onClick={() => navigate("/blog/jobline-gcode-vs-code-extension-available")} className="gap-2">
+                <ExternalLink className="w-4 h-4" /> Read the Launch Post
+              </Button>
+            </div>
           </div>
         </section>
       </main>
