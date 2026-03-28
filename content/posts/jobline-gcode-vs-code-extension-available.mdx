@@ -1,0 +1,197 @@
+---
+title: "JobLine G-Code Intelligence Is Live: Install from the VS Code Marketplace Today"
+slug: "jobline-gcode-vs-code-extension-available"
+publishedDate: "2026-03-27"
+author: "Zach Goodbody"
+authorTitle: "Founder, JobLine.ai"
+excerpt: "JobLine G-Code Intelligence is now on the VS Code Marketplace — free, with syntax highlighting for Fanuc, Haas, Siemens, Mazak, Okuma, Fanuc Robot TP, and ABB RAPID. JobLine.ai platform live."
+category: "Product Update"
+readTime: "8 min read"
+tags:
+  - jobline-gcode
+  - VS Code
+  - G-Code
+  - CNC
+  - Fanuc Robot
+  - ABB RAPID
+  - Product Launch
+featured: true
+---
+
+**JobLine G-Code Intelligence** is now available on the VS Code Marketplace. Deep G-code and robot program intelligence for CNC machinists and automation engineers — five CNC dialects, two robot languages, hover tooltips, a live sidebar, and Macro B parsing. Free to install.
+
+The JobLine.ai web platform is simultaneously live at [jobline.ai](https://jobline.ai). The extension and the platform are built to work together — and the extension works fully without a platform account.
+
+---
+
+## Install the VS Code Extension — Free
+
+**[Install JobLine G-Code Intelligence →](https://marketplace.visualstudio.com/items?itemName=WeCr8-Solutions.jobline-gcode)**
+
+Or press `Ctrl+P` in VS Code and run:
+
+```bash
+ext install WeCr8-Solutions.jobline-gcode
+```
+
+Don't have VS Code? It's free — [code.visualstudio.com](https://code.visualstudio.com). VS Code 1.85 or newer required. No account needed for core features.
+
+---
+
+## How to Install — Step by Step
+
+### Step 1 — Get VS Code (if you need it)
+
+VS Code is a free code editor from Microsoft — Windows, macOS, and Linux. Download it at [code.visualstudio.com](https://code.visualstudio.com). No sign-in required. Run the installer using default settings.
+
+### Step 2 — Install the Extension
+
+**Option A — Extensions Panel:**
+
+1. Open VS Code.
+2. Press `Ctrl+Shift+X` (Windows/Linux) or `Cmd+Shift+X` (macOS).
+3. Search **jobline-gcode**.
+4. Click **Install** on *JobLine G-Code Intelligence* by WeCr8 Solutions.
+
+**Option B — Quick Open:**
+
+1. Press `Ctrl+P` / `Cmd+P`.
+2. Paste and press Enter:
+
+```bash
+ext install WeCr8-Solutions.jobline-gcode
+```
+
+**Option C — Marketplace website:**
+
+Visit [marketplace.visualstudio.com/items?itemName=WeCr8-Solutions.jobline-gcode](https://marketplace.visualstudio.com/items?itemName=WeCr8-Solutions.jobline-gcode) and click **Install**. Your browser opens VS Code and completes the installation.
+
+### Step 3 — Open a G-Code File
+
+1. Open any file with extension: `.nc .gcode .ngc .tap .cnc .mpf .spf .prg .min`
+2. Syntax highlighting activates automatically.
+3. Click the `[Fanuc]` indicator in the status bar to select your CNC dialect.
+4. Click the **JobLine** icon in the Activity Bar to open the live sidebar.
+
+---
+
+## What JobLine G-Code Intelligence Does
+
+### Dialect-Aware Syntax Highlighting
+
+Not generic coloring — dialect-specific rules for each CNC control. G-codes, M-codes, address words, macro variables, comments, and motion types each distinctly colored. Guaranteed readable contrast across all VS Code themes. Nine supported file extensions.
+
+### Rich Hover Tooltips
+
+Hover any G-code, M-code, or address word for a full description, parameter list, and usage notes inline. No tab switching. No external manual.
+
+| Hover | You See |
+|-------|---------|
+| `G83` | Peck Drilling Cycle — Z, R, Q, P, F parameters |
+| `G02` | Circular Interpolation CW — I, J, K, R |
+| `M06` | Tool Change |
+| `G54` | Work Coordinate System 1 |
+| `X Y Z` | Axis descriptions |
+| `F S T H D` | Feed / spindle / tool / offset descriptions |
+| `CYCLE83` | Siemens peck drill — positional parameter list |
+
+### Live Sidebar — 5 Views, Updated as You Type
+
+| View | Shows |
+|------|-------|
+| **Operations** | Each tool change as a named operation with line range — click to jump |
+| **Tools** | All T-numbers called with descriptions, in program order |
+| **Offsets** | Work coordinate systems G54–G59 in use |
+| **Canned Cycles** | Every G81/G82/G83/etc. with full parameter set |
+| **Alarms & Warnings** | Diagnostic results — expands significantly in v0.2 |
+
+### Macro B Parser
+
+Variables (`#1`, `#100`, `#5041`), arithmetic expressions (`Z[#1 + 0.5]`), and control flow (`IF`, `WHILE`, `GOTO`) are all correctly tokenized and evaluated where possible. Unresolvable expressions tracked — no false positives.
+
+---
+
+## Supported Dialects and Robot Languages
+
+### CNC Control Dialects
+
+| Dialect | Controls |
+|---------|----------|
+| **Fanuc** | 0i, 30i, 31i series |
+| **Haas** | NGC controls — VF, ST, UMC, UR |
+| **Siemens** | Sinumerik 840D / 828D — includes CYCLE calls |
+| **Mazak** | Smooth technology / Matrix (EIA/ISO mode) |
+| **Okuma** | OSP-P series |
+
+**Also supported — robot languages:** Fanuc Robot TP and ABB RAPID. CNC machining programs and robot programs in the same VS Code workspace, with the same quality of language support.
+
+---
+
+## Commands and Settings
+
+### Commands — Ctrl+Shift+P → type "JobLine"
+
+| Command | Status in v0.1 |
+|---------|----------------|
+| `JobLine: Select CNC Control Type` — switch dialect instantly | ✓ Live |
+| `JobLine: Validate Program` — safety and arc validation | Placeholder → full in v0.2 |
+| `JobLine: Format G-Code` — word spacing, decimals, capitalization | Placeholder → full in v0.3 |
+
+### Settings — Ctrl+, → search "jobline"
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `jobline.controlType` | fanuc | Active dialect |
+| `jobline.machineType` | mill | mill / lathe / mill-turn / grinder |
+| `jobline.units` | inch | Overridden by G20/G21 in file |
+| `jobline.validation.enableSafetyChecks` | true | Crash-prevention rules |
+| `jobline.validation.enableArcValidation` | true | G02/G03 arc geometry check |
+| `jobline.validation.arcTolerance` | 0.001 | Arc closure tolerance |
+| `jobline.formatter.wordSpacing` | true | Spaces between G-code words |
+| `jobline.formatter.uppercaseGM` | true | Uppercase G and M codes |
+| `jobline.formatter.decimalPlaces` | null | Normalize decimal places |
+
+---
+
+## Roadmap
+
+| Version | What Ships |
+|---------|-----------|
+| **v0.1 — Now** | Syntax highlighting, hover tooltips, live sidebar, dialect selector, Macro B, Fanuc Robot TP, ABB RAPID |
+| **v0.2** | Inline diagnostic squiggles — cycle errors, arc violations, safety rules highlighted as you type |
+| **v0.3** | Full G-code formatter implementation |
+| **v0.4** | Subprogram resolution and cross-file navigation |
+| **v1.0** | DNC machine connectivity — direct file transfer to CNC controllers |
+
+Feature requests and bug reports: [github.com/WeCr8-Solutions/jobline.ai-g-code/issues](https://github.com/WeCr8-Solutions/jobline.ai-g-code/issues)
+
+---
+
+## Frequently Asked Questions
+
+**Where do I download JobLine G-Code Intelligence?**
+
+From the VS Code Marketplace at [marketplace.visualstudio.com/items?itemName=WeCr8-Solutions.jobline-gcode](https://marketplace.visualstudio.com/items?itemName=WeCr8-Solutions.jobline-gcode) — click Install. Or open VS Code, press Ctrl+Shift+X, search "jobline-gcode", click Install. Or press Ctrl+P and run: `ext install WeCr8-Solutions.jobline-gcode`. Free. VS Code 1.85+ required.
+
+**Do I need a JobLine.ai account?**
+
+No. All core features — syntax highlighting, hover tooltips, live sidebar, Macro B parsing, dialect selection — are free with no account required. A JobLine.ai account unlocks platform-connected features: live work order context, machine status, tooling data, and shift notes in the editor.
+
+**What CNC dialects and robot languages are supported?**
+
+Five CNC dialects: Fanuc (0i/30i/31i), Haas (NGC), Siemens (Sinumerik 840D/828D), Mazak (Smooth/Matrix), Okuma (OSP-P). Two robot languages: Fanuc Robot TP and ABB RAPID.
+
+---
+
+## Key Takeaways
+
+- **Marketplace:** [Install from VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=WeCr8-Solutions.jobline-gcode) — Free.
+- **Quick install:** `Ctrl+P` → `ext install WeCr8-Solutions.jobline-gcode` → Enter.
+- **VS Code required.** Free at [code.visualstudio.com](https://code.visualstudio.com). Version 1.85 or newer.
+- **5 CNC dialects:** Fanuc · Haas · Siemens (840D/828D) · Mazak · Okuma. Switch from the status bar.
+- **2 robot languages:** Fanuc Robot TP and ABB RAPID.
+- **File extensions:** `.nc .gcode .ngc .tap .cnc .mpf .spf .prg .min`
+- **Features:** Syntax highlighting · Hover tooltips · Live sidebar (5 views) · Macro B parser.
+- **3 commands** via Command Palette: Select Control Type (live) · Validate Program (v0.2) · Format G-Code (v0.3).
+- **9 settings** including controlType, machineType, units, validation rules, and formatter options.
+- **Roadmap:** v0.2 inline diagnostics → v0.3 formatter → v0.4 subprogram navigation → v1.0 DNC machine connectivity.
