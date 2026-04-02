@@ -117,7 +117,8 @@ export function Header() {
 
           {/* Desktop nav */}
           {!isMobile && (
-            <div className="flex items-center gap-1 min-w-0 overflow-hidden">
+            <>
+            <div className="flex items-center gap-1 min-w-0 overflow-hidden flex-1">
               {/* Dashboard button with role-aware options */}
               {user && canViewProductionFloor ? (
                 <DropdownMenu>
@@ -229,8 +230,9 @@ export function Header() {
               )}
 
 
-              {/* Right-side actions — always visible */}
-              <div className="flex items-center gap-1 shrink-0 ml-auto">
+            </div>
+            {/* Right-side actions — always visible, outside overflow-hidden */}
+            <div className="flex items-center gap-1 shrink-0">
                 <SystemStatusIndicator status={systemStatus} />
                 {user && (
                   <Tooltip>
@@ -281,7 +283,7 @@ export function Header() {
                 </Popover>
                 <UserMenu />
               </div>
-            </div>
+            </>
           )}
 
           {/* Mobile nav */}
