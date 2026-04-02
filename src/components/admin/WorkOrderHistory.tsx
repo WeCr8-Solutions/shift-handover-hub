@@ -153,7 +153,7 @@ export function WorkOrderHistory({ isAdmin = false, showQuickBooksExport = false
                 Search and export completed work orders with linked production data
               </CardDescription>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <Button 
                 variant="outline" 
                 onClick={handleExportExcel}
@@ -166,6 +166,16 @@ export function WorkOrderHistory({ isAdmin = false, showQuickBooksExport = false
                 )}
                 Export Excel
               </Button>
+              {showQuickBooksExport && (
+                <Button 
+                  variant="outline" 
+                  onClick={handleExportQuickBooks}
+                  disabled={workOrders.length === 0}
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  QuickBooks CSV
+                </Button>
+              )}
               <Button 
                 variant="outline" 
                 onClick={handleExportPDF}
