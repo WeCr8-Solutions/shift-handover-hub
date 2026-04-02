@@ -338,6 +338,7 @@ export function Header() {
                         <Separator />
                         <nav className="flex flex-col gap-1">
                           <MobileNavLink to="/queue" icon={ListTodo} label="Queue Management" onClose={() => setMobileMenuOpen(false)} />
+                          {(hasAdminAccess || hasOrgSupervisorAccess) && <MobileNavLink to="/history" icon={History} label="Work Order History" onClose={() => setMobileMenuOpen(false)} />}
                           <MobileNavLink to="/tools" icon={Wrench} label="Operator Tools" onClose={() => setMobileMenuOpen(false)} />
                           {hasOrgSupervisorAccess && <MobileNavLink to="/teams" icon={Users} label="Team Management" onClose={() => setMobileMenuOpen(false)} />}
                           <MobileNavLink to="/settings" icon={Settings} label="Settings" onClose={() => setMobileMenuOpen(false)} />
