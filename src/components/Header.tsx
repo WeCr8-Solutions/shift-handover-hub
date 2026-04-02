@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Clock, Bell, Shield, ListTodo, Settings, Users, FlaskConical, Bug, Megaphone, Menu, Wrench, ChevronDown, LayoutDashboard, Monitor, Factory, Eye, History } from "lucide-react";
+import { Clock, Bell, Shield, ListTodo, Settings, Users, FlaskConical, Bug, Megaphone, Menu, Wrench, ChevronDown, LayoutDashboard, Monitor, Factory, Eye, History, FileQuestion } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { getCurrentShift } from "@/lib/mockData";
 import { StatusBadge } from "./StatusBadge";
