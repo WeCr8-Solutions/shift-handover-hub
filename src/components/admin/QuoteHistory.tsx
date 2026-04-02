@@ -149,23 +149,23 @@ export function QuoteHistory() {
                 />
               </div>
             </div>
-            <div className="flex gap-2">
-              <div>
+            <div className="flex gap-2 w-full sm:w-auto">
+              <div className="flex-1 sm:flex-none">
                 <Label className="sr-only">From Date</Label>
                 <Input
                   type="date"
                   value={dateFrom}
                   onChange={(e) => setDateFrom(e.target.value)}
-                  className="w-40"
+                  className="w-full sm:w-40"
                 />
               </div>
-              <div>
+              <div className="flex-1 sm:flex-none">
                 <Label className="sr-only">To Date</Label>
                 <Input
                   type="date"
                   value={dateTo}
                   onChange={(e) => setDateTo(e.target.value)}
-                  className="w-40"
+                  className="w-full sm:w-40"
                 />
               </div>
             </div>
@@ -239,7 +239,7 @@ export function QuoteHistory() {
 
       {/* Detail Dialog */}
       <Dialog open={!!selectedQuote} onOpenChange={(open) => !open && setSelectedQuote(null)}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl w-full max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <FileQuestion className="w-5 h-5" />

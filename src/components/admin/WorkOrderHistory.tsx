@@ -202,23 +202,23 @@ export function WorkOrderHistory({ isAdmin = false, showQuickBooksExport = false
                 />
               </div>
             </div>
-            <div className="flex gap-2">
-              <div>
+            <div className="flex gap-2 w-full sm:w-auto">
+              <div className="flex-1 sm:flex-none">
                 <Label className="sr-only">From Date</Label>
                 <Input
                   type="date"
                   value={dateFrom}
                   onChange={(e) => setDateFrom(e.target.value)}
-                  className="w-40"
+                  className="w-full sm:w-40"
                 />
               </div>
-              <div>
+              <div className="flex-1 sm:flex-none">
                 <Label className="sr-only">To Date</Label>
                 <Input
                   type="date"
                   value={dateTo}
                   onChange={(e) => setDateTo(e.target.value)}
-                  className="w-40"
+                  className="w-full sm:w-40"
                 />
               </div>
             </div>
@@ -257,7 +257,7 @@ export function WorkOrderHistory({ isAdmin = false, showQuickBooksExport = false
                         {getStatusIcon(wo.status)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-medium">{wo.work_order || wo.title}</span>
                           <Badge variant="outline" className={getStatusColor(wo.status)}>
                             {wo.status}
@@ -266,7 +266,7 @@ export function WorkOrderHistory({ isAdmin = false, showQuickBooksExport = false
                             {wo.priority}
                           </Badge>
                         </div>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1 flex-wrap">
                           {wo.part_number && (
                             <span>Part: {wo.part_number}</span>
                           )}
@@ -338,28 +338,30 @@ export function WorkOrderHistory({ isAdmin = false, showQuickBooksExport = false
                 </div>
               ) : (
                 <Tabs defaultValue="routing" className="flex-1">
-                  <TabsList className="w-full justify-start">
-                    <TabsTrigger value="routing" className="gap-1">
-                      <GitBranch className="w-4 h-4" />
-                      Routing ({linkedData?.routing.length || 0})
-                    </TabsTrigger>
-                    <TabsTrigger value="handoffs" className="gap-1">
-                      <Repeat className="w-4 h-4" />
-                      Handoffs ({linkedData?.handoffs.length || 0})
-                    </TabsTrigger>
-                    <TabsTrigger value="performance" className="gap-1">
-                      <Lightbulb className="w-4 h-4" />
-                      Updates ({linkedData?.performanceUpdates.length || 0})
-                    </TabsTrigger>
-                    <TabsTrigger value="downtime" className="gap-1">
-                      <AlertTriangle className="w-4 h-4" />
-                      Downtime ({linkedData?.downtimeEvents.length || 0})
-                    </TabsTrigger>
-                    <TabsTrigger value="history" className="gap-1">
-                      <History className="w-4 h-4" />
-                      History
-                    </TabsTrigger>
-                  </TabsList>
+                  <div className="overflow-x-auto">
+                    <TabsList className="justify-start min-w-max">
+                      <TabsTrigger value="routing" className="gap-1">
+                        <GitBranch className="w-4 h-4" />
+                        <span className="hidden sm:inline">Routing </span>({linkedData?.routing.length || 0})
+                      </TabsTrigger>
+                      <TabsTrigger value="handoffs" className="gap-1">
+                        <Repeat className="w-4 h-4" />
+                        <span className="hidden sm:inline">Handoffs </span>({linkedData?.handoffs.length || 0})
+                      </TabsTrigger>
+                      <TabsTrigger value="performance" className="gap-1">
+                        <Lightbulb className="w-4 h-4" />
+                        <span className="hidden sm:inline">Updates </span>({linkedData?.performanceUpdates.length || 0})
+                      </TabsTrigger>
+                      <TabsTrigger value="downtime" className="gap-1">
+                        <AlertTriangle className="w-4 h-4" />
+                        <span className="hidden sm:inline">Downtime </span>({linkedData?.downtimeEvents.length || 0})
+                      </TabsTrigger>
+                      <TabsTrigger value="history" className="gap-1">
+                        <History className="w-4 h-4" />
+                        <span className="hidden sm:inline">History</span>
+                      </TabsTrigger>
+                    </TabsList>
+                  </div>
 
                   <ScrollArea className="h-[350px] mt-4">
                     <TabsContent value="routing" className="mt-0">
