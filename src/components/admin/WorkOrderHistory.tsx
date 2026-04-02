@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useWorkOrderHistory, WorkOrderWithLinkedData, WorkOrderLinkedData } from "@/hooks/useWorkOrderHistory";
-import { exportWorkOrdersToExcel, generateWorkOrderReport, downloadBlob, printReport } from "@/lib/workOrderExport";
+import { exportWorkOrdersToExcel, exportWorkOrdersToQuickBooksCSV, generateWorkOrderReport, downloadBlob, printReport } from "@/lib/workOrderExport";
 import { format } from "date-fns";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
