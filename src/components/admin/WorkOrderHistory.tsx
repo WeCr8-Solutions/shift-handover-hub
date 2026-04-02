@@ -37,9 +37,10 @@ import {
 
 interface WorkOrderHistoryProps {
   isAdmin?: boolean;
+  showQuickBooksExport?: boolean;
 }
 
-export function WorkOrderHistory({ isAdmin = false }: WorkOrderHistoryProps) {
+export function WorkOrderHistory({ isAdmin = false, showQuickBooksExport = false }: WorkOrderHistoryProps) {
   const [search, setSearch] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
