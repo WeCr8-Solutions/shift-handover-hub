@@ -75,6 +75,7 @@ import ERPGuidePart from "./pages/resources/ERPGuidePart";
 import DevPortal from "./pages/DevPortal";
 import DevDocArticle from "./pages/DevDocArticle";
 import WorkOrderHistoryPage from "./pages/WorkOrderHistoryPage";
+import QuoteHistoryPage from "./pages/QuoteHistoryPage";
 import { lazy, Suspense } from "react";
 
 const ShopFloorDisplay = lazy(() => import("./pages/ShopFloorDisplay"));
