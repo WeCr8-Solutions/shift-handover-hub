@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useWorkOrderHistory, WorkOrderWithLinkedData, WorkOrderLinkedData } from "@/hooks/useWorkOrderHistory";
-import { exportWorkOrdersToExcel, generateWorkOrderReport, downloadBlob, printReport } from "@/lib/workOrderExport";
+import { exportWorkOrdersToExcel, exportWorkOrdersToQuickBooksCSV, generateWorkOrderReport, downloadBlob, printReport } from "@/lib/workOrderExport";
 import { format } from "date-fns";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -37,9 +37,10 @@ import {
 
 interface WorkOrderHistoryProps {
   isAdmin?: boolean;
+  showQuickBooksExport?: boolean;
 }
 
-export function WorkOrderHistory({ isAdmin = false }: WorkOrderHistoryProps) {
+export function WorkOrderHistory({ isAdmin = false, showQuickBooksExport = false }: WorkOrderHistoryProps) {
   const [search, setSearch] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
@@ -101,6 +102,16 @@ export function WorkOrderHistory({ isAdmin = false }: WorkOrderHistoryProps) {
     setExporting(false);
   };
 
+  const handleExportQuickBooks = () => {
+    if (workOrders.length === 0) {
+      toast.error("No work orders to export");
+      return;
+    }
+    const blob = exportWorkOrdersToQuickBooksCSV(workOrders);
+    downloadBlob(blob, `work-orders-quickbooks-${format(new Date(), "yyyy-MM-dd")}.csv`);
+    toast.success("QuickBooks CSV exported");
+  };
+
   const handleExportPDF = () => {
     if (!selectedWorkOrder || !linkedData) {
       toast.error("Select a work order first");
@@ -142,7 +153,7 @@ export function WorkOrderHistory({ isAdmin = false }: WorkOrderHistoryProps) {
                 Search and export completed work orders with linked production data
               </CardDescription>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <Button 
                 variant="outline" 
                 onClick={handleExportExcel}
@@ -155,6 +166,16 @@ export function WorkOrderHistory({ isAdmin = false }: WorkOrderHistoryProps) {
                 )}
                 Export Excel
               </Button>
+              {showQuickBooksExport && (
+                <Button 
+                  variant="outline" 
+                  onClick={handleExportQuickBooks}
+                  disabled={workOrders.length === 0}
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  QuickBooks CSV
+                </Button>
+              )}
               <Button 
                 variant="outline" 
                 onClick={handleExportPDF}

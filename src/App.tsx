@@ -74,6 +74,7 @@ import IndustryPage from "./pages/industries/IndustryPage";
 import ERPGuidePart from "./pages/resources/ERPGuidePart";
 import DevPortal from "./pages/DevPortal";
 import DevDocArticle from "./pages/DevDocArticle";
+import WorkOrderHistoryPage from "./pages/WorkOrderHistoryPage";
 import { lazy, Suspense } from "react";
 
 const ShopFloorDisplay = lazy(() => import("./pages/ShopFloorDisplay"));
@@ -121,6 +122,7 @@ const App = () => (
                     <Route path="/admin" element={<Admin />} />
                     <Route path="/testing" element={<Testing />} />
                     <Route path="/queue" element={<Queue />} />
+                    <Route path="/history" element={<WorkOrderHistoryPage />} />
                     <Route path="/setup" element={<Setup />} />
                     <Route path="/pricing" element={<Pricing />} />
                     <Route path="/settings" element={<Settings />} />

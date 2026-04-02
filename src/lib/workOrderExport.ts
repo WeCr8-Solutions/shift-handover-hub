@@ -433,6 +433,56 @@ export function generateWorkOrderReport(
   return html;
 }
 
+// QuickBooks-compatible CSV export (flat format for IIF/CSV import)
+export function exportWorkOrdersToQuickBooksCSV(
+  workOrders: WorkOrderWithLinkedData[]
+): Blob {
+  const headers = [
+    "Date",
+    "Transaction Type",
+    "Num",
+    "Name",
+    "Item",
+    "Description",
+    "Qty",
+    "Rate",
+    "Amount",
+    "Class",
+    "Memo",
+  ];
+
+  const rows = workOrders.map((wo) => {
+    const completedDate = wo.completed_at
+      ? format(new Date(wo.completed_at), "MM/dd/yyyy")
+      : wo.created_at
+        ? format(new Date(wo.created_at), "MM/dd/yyyy")
+        : "";
+
+    return [
+      completedDate,
+      "Work Order",
+      wo.work_order || "",
+      wo.team_name || "",
+      wo.part_number || "",
+      wo.title || "",
+      String(wo.quantity || 1),
+      "",
+      "",
+      wo.station_name || "",
+      `Priority: ${wo.priority || "normal"} | Status: ${wo.status}`,
+    ];
+  });
+
+  const csvContent = [
+    headers.join(","),
+    ...rows.map((row) =>
+      row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")
+    ),
+  ].join("\n");
+
+  return new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+}
+
 export function downloadBlob(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");

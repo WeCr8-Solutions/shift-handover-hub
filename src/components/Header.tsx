@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Clock, Bell, Shield, ListTodo, Settings, Users, FlaskConical, Bug, Megaphone, Menu, Wrench, ChevronDown, LayoutDashboard, Monitor, Factory, Eye } from "lucide-react";
+import { Clock, Bell, Shield, ListTodo, Settings, Users, FlaskConical, Bug, Megaphone, Menu, Wrench, ChevronDown, LayoutDashboard, Monitor, Factory, Eye, History } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { getCurrentShift } from "@/lib/mockData";
 import { StatusBadge } from "./StatusBadge";
@@ -152,6 +152,7 @@ export function Header() {
 
               {/* App action icons — before marketing nav when logged in */}
               {user && <NavIconButton to="/queue" icon={ListTodo} label="Queue Management" />}
+              {(hasAdminAccess || hasOrgSupervisorAccess) && <NavIconButton to="/history" icon={History} label="Work Order History" />}
               <NavIconButton to="/tools" icon={Wrench} label="Operator Tools" />
               {hasOrgSupervisorAccess && <NavIconButton to="/teams" icon={Users} label="Team Management" />}
               {user && <NavIconButton to="/settings" icon={Settings} label="Settings" />}
@@ -337,6 +338,7 @@ export function Header() {
                         <Separator />
                         <nav className="flex flex-col gap-1">
                           <MobileNavLink to="/queue" icon={ListTodo} label="Queue Management" onClose={() => setMobileMenuOpen(false)} />
+                          {(hasAdminAccess || hasOrgSupervisorAccess) && <MobileNavLink to="/history" icon={History} label="Work Order History" onClose={() => setMobileMenuOpen(false)} />}
                           <MobileNavLink to="/tools" icon={Wrench} label="Operator Tools" onClose={() => setMobileMenuOpen(false)} />
                           {hasOrgSupervisorAccess && <MobileNavLink to="/teams" icon={Users} label="Team Management" onClose={() => setMobileMenuOpen(false)} />}
                           <MobileNavLink to="/settings" icon={Settings} label="Settings" onClose={() => setMobileMenuOpen(false)} />
