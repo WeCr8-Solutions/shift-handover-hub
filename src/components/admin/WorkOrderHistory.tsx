@@ -102,6 +102,16 @@ export function WorkOrderHistory({ isAdmin = false, showQuickBooksExport = false
     setExporting(false);
   };
 
+  const handleExportQuickBooks = () => {
+    if (workOrders.length === 0) {
+      toast.error("No work orders to export");
+      return;
+    }
+    const blob = exportWorkOrdersToQuickBooksCSV(workOrders);
+    downloadBlob(blob, `work-orders-quickbooks-${format(new Date(), "yyyy-MM-dd")}.csv`);
+    toast.success("QuickBooks CSV exported");
+  };
+
   const handleExportPDF = () => {
     if (!selectedWorkOrder || !linkedData) {
       toast.error("Select a work order first");
