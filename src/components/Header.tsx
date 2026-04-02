@@ -153,6 +153,7 @@ export function Header() {
               {/* App action icons — before marketing nav when logged in */}
               {user && <NavIconButton to="/queue" icon={ListTodo} label="Queue Management" />}
               {(hasAdminAccess || hasOrgSupervisorAccess) && <NavIconButton to="/history" icon={History} label="Work Order History" />}
+              {(hasAdminAccess || hasOrgSupervisorAccess) && <NavIconButton to="/quote-history" icon={FileQuestion} label="Quote History" />}
               <NavIconButton to="/tools" icon={Wrench} label="Operator Tools" />
               {hasOrgSupervisorAccess && <NavIconButton to="/teams" icon={Users} label="Team Management" />}
               {user && <NavIconButton to="/settings" icon={Settings} label="Settings" />}
