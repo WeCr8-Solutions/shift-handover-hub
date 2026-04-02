@@ -115,9 +115,8 @@ export function Header() {
             <img src={joblineLogo} alt="JobLine.ai" className="h-8 lg:h-10 w-auto" />
           </Link>
 
-          {/* Desktop nav */}
+          {/* Desktop nav — flex-1 so it never pushes the right-side off screen */}
           {!isMobile && (
-            <>
             <div className="flex items-center gap-1 min-w-0 overflow-hidden flex-1">
               {/* Dashboard button with role-aware options */}
               {user && canViewProductionFloor ? (
@@ -231,8 +230,11 @@ export function Header() {
 
 
             </div>
-            {/* Right-side actions — always visible, outside overflow-hidden */}
-            <div className="flex items-center gap-1 shrink-0">
+          )}
+
+          {/* Right-side / mobile row — ml-auto shrink-0 guarantees it is always visible */}
+          {!isMobile ? (
+            <div className="flex items-center gap-1 shrink-0 ml-auto">
                 <SystemStatusIndicator status={systemStatus} />
                 {user && (
                   <Tooltip>
@@ -283,12 +285,8 @@ export function Header() {
                 </Popover>
                 <UserMenu />
               </div>
-            </>
-          )}
-
-          {/* Mobile nav */}
-          {isMobile && (
-            <div className="flex items-center gap-2">
+          ) : (
+            <div className="flex items-center gap-2 shrink-0 ml-auto">
               {user && (
                 <Button variant="default" size="sm" className="gap-1 text-xs" asChild>
                   <Link to="/dashboard">
