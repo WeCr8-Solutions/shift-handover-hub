@@ -124,6 +124,7 @@ const App = () => (
                     <Route path="/testing" element={<Testing />} />
                     <Route path="/queue" element={<Queue />} />
                     <Route path="/history" element={<WorkOrderHistoryPage />} />
+                    <Route path="/quote-history" element={<QuoteHistoryPage />} />
                     <Route path="/setup" element={<Setup />} />
                     <Route path="/pricing" element={<Pricing />} />
                     <Route path="/settings" element={<Settings />} />
