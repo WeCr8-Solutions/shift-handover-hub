@@ -4,7 +4,7 @@ import { millingMrr, turningMrr } from "../MrrCalculator";
 import { estimateCycleTime } from "../CycleTimeEstimator";
 import { convertHardness } from "../HardnessConverter";
 import { tpiToPitch, pitchToTpi, threadDiameters } from "../ThreadPitchCalculator";
-import { UNC_TAPS, METRIC_TAPS } from "../TapDrillChart";
+import { UNC_THREAD_DATA, METRIC_THREAD_DATA } from "../threadData";
 
 describe("SurfaceFinishCalculator", () => {
   it("computes Ra correctly", () => {
@@ -109,20 +109,20 @@ describe("ThreadPitchCalculator", () => {
 });
 
 describe("TapDrillChart data integrity", () => {
-  it("UNC taps have valid entries", () => {
-    expect(UNC_TAPS.length).toBeGreaterThan(10);
-    UNC_TAPS.forEach(t => {
-      expect(t.majorDia).toBeGreaterThan(0);
-      expect(t.drillDec).toBeGreaterThan(0);
-      expect(t.drillDec).toBeLessThan(t.majorDia);
+  it("UNC threads have valid entries", () => {
+    expect(UNC_THREAD_DATA.length).toBeGreaterThan(10);
+    UNC_THREAD_DATA.forEach(t => {
+      expect(t.basicMajorDia).toBeGreaterThan(0);
+      expect(t.tapDrillDec75).toBeGreaterThan(0);
+      expect(t.tapDrillDec75).toBeLessThan(t.basicMajorDia);
     });
   });
-  it("Metric taps have valid entries", () => {
-    expect(METRIC_TAPS.length).toBeGreaterThan(5);
-    METRIC_TAPS.forEach(t => {
-      expect(t.majorDia).toBeGreaterThan(0);
-      expect(t.drillDec).toBeGreaterThan(0);
-      expect(t.drillDec).toBeLessThan(t.majorDia);
+  it("Metric threads have valid entries", () => {
+    expect(METRIC_THREAD_DATA.length).toBeGreaterThan(5);
+    METRIC_THREAD_DATA.forEach(t => {
+      expect(t.basicMajorDia).toBeGreaterThan(0);
+      expect(t.tapDrillDec75).toBeGreaterThan(0);
+      expect(t.tapDrillDec75).toBeLessThan(t.basicMajorDia);
     });
   });
 });
