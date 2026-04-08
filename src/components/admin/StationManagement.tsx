@@ -51,8 +51,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Loader2, MoreHorizontal, Plus, Search, Wrench, Trash2, Pencil, Building2, Users, FolderOpen, ChevronRight, Crown, Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-const WORK_CENTER_TYPES = ["CNC Mill", "CNC Lathe", "Welding", "Water Jet", "Assembly", "Inspection", "Other"];
+import { WorkCenterTypeCombobox } from "@/components/ui/WorkCenterTypeCombobox";
 
 interface StationManagementProps {
   isAdmin?: boolean;
