@@ -857,6 +857,27 @@ export function WorkOrderRoutingEditor({
           </button>
         </div>
       </div>
+
+      {/* Sticky mobile save footer */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 sm:hidden border-t bg-background p-3 flex gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex-1"
+          onClick={onClose}
+        >
+          Cancel
+        </Button>
+        <Button
+          size="sm"
+          className="flex-1 gap-2"
+          onClick={handleSave}
+          disabled={isSaving}
+        >
+          {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+          {isSaving ? "Saving..." : "Save Routing"}
+        </Button>
+      </div>
     </div>
   );
 }
