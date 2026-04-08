@@ -274,7 +274,7 @@ export function RoutingSection({ steps, onChange, stations }: RoutingSectionProp
                         type="button"
                         onClick={() => setSelectedStep(selectedStep === index ? null : index)}
                         className={cn(
-                          "flex flex-col items-center gap-1.5 p-2.5 rounded-lg border bg-background min-w-[90px] max-w-[110px] transition-all hover:border-primary/50 shrink-0",
+                          "flex flex-col items-center gap-1.5 p-2 sm:p-2.5 rounded-lg border bg-background min-w-[80px] sm:min-w-[90px] max-w-[100px] sm:max-w-[110px] transition-all hover:border-primary/50 shrink-0",
                           selectedStep === index && "ring-2 ring-primary border-primary shadow-md",
                           step.operation_type === "outside_processing" && "border-amber-400/60"
                         )}
