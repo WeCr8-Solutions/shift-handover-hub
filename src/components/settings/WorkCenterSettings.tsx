@@ -14,6 +14,7 @@ import { useWorkCenterConfigs, WorkCenterConfig } from "@/hooks/useWorkCenterCon
 import { workCenterIcons, workCenterColors } from "@/lib/workCenterIcons";
 import { WorkCenterType } from "@/types/handoff";
 import { cn } from "@/lib/utils";
+import { WorkCenterTypeCombobox } from "@/components/ui/WorkCenterTypeCombobox";
 
 const WORK_CENTER_TYPES: WorkCenterType[] = [
   "CNC Mill", "CNC Lathe", "Water Jet", "Press Brake",
