@@ -522,28 +522,29 @@ export function WorkOrderRoutingEditor({
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-bold flex items-center gap-2">
-            <Factory className="w-5 h-5" />
-            Production Routing
+    <div className="space-y-4 pb-20 sm:pb-6">
+      {/* Header — stacks on mobile */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="text-lg sm:text-xl font-bold flex items-center gap-2">
+            <Factory className="w-5 h-5 shrink-0" />
+            <span className="truncate">Production Routing</span>
           </h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground truncate">
             WO: {workOrderNumber} {partNumber && `• Part: ${partNumber}`}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           {/* Save as Template */}
           <Dialog open={saveTemplateOpen} onOpenChange={setSaveTemplateOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" size="sm" disabled={enabledSteps.length === 0} data-tour="routing-save-template">
-                <BookTemplate className="w-4 h-4 mr-2" />
-                Save as Template
+              <Button variant="outline" size="sm" disabled={enabledSteps.length === 0} data-tour="routing-save-template" className="text-xs sm:text-sm">
+                <BookTemplate className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Save as Template</span>
+                <span className="sm:hidden">Template</span>
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Save Routing as Template</DialogTitle>
                 <DialogDescription>
@@ -588,7 +589,8 @@ export function WorkOrderRoutingEditor({
             </DialogContent>
           </Dialog>
 
-          <Button onClick={handleSave} disabled={isSaving} data-tour="routing-save">
+          {/* Save button — also duplicated in sticky footer on mobile */}
+          <Button onClick={handleSave} disabled={isSaving} data-tour="routing-save" size="sm" className="hidden sm:inline-flex">
             {isSaving ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
