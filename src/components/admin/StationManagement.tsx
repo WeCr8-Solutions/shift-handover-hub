@@ -51,8 +51,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Loader2, MoreHorizontal, Plus, Search, Wrench, Trash2, Pencil, Building2, Users, FolderOpen, ChevronRight, Crown, Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-const WORK_CENTER_TYPES = ["CNC Mill", "CNC Lathe", "Welding", "Water Jet", "Assembly", "Inspection", "Other"];
+import { WorkCenterTypeCombobox } from "@/components/ui/WorkCenterTypeCombobox";
 
 interface StationManagementProps {
   isAdmin?: boolean;
@@ -352,19 +351,10 @@ export function StationManagement({ isAdmin, access }: StationManagementProps) {
         </div>
         <div className="space-y-2">
           <Label htmlFor="work_center_type">Type *</Label>
-          <Select
+          <WorkCenterTypeCombobox
             value={formData.work_center_type}
             onValueChange={(v) => setFormData({ ...formData, work_center_type: v })}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select type" />
-            </SelectTrigger>
-            <SelectContent>
-              {WORK_CENTER_TYPES.map((type) => (
-                <SelectItem key={type} value={type}>{type}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          />
         </div>
       </div>
       <div className="space-y-2">

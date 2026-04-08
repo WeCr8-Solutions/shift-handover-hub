@@ -14,6 +14,7 @@ import { useWorkCenterConfigs, WorkCenterConfig } from "@/hooks/useWorkCenterCon
 import { workCenterIcons, workCenterColors } from "@/lib/workCenterIcons";
 import { WorkCenterType } from "@/types/handoff";
 import { cn } from "@/lib/utils";
+import { WorkCenterTypeCombobox } from "@/components/ui/WorkCenterTypeCombobox";
 
 const WORK_CENTER_TYPES: WorkCenterType[] = [
   "CNC Mill", "CNC Lathe", "Water Jet", "Press Brake",
@@ -156,14 +157,12 @@ export function WorkCenterSettings() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Work Center Type</Label>
-                    <Select value={formData.work_center_type} onValueChange={(v) => { setFormData((p) => ({ ...p, work_center_type: v, display_name: p.display_name || v })); }} disabled={!!editingConfig}>
-                      <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
-                      <SelectContent>
-                        {(editingConfig ? WORK_CENTER_TYPES : availableTypes).map((type) => (
-                          <SelectItem key={type} value={type}>{type}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <WorkCenterTypeCombobox
+                      value={formData.work_center_type}
+                      onValueChange={(v) => { setFormData((p) => ({ ...p, work_center_type: v, display_name: p.display_name || v })); }}
+                      disabled={!!editingConfig}
+                      excludeTypes={editingConfig ? [] : configuredTypes}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label>Display Name</Label>

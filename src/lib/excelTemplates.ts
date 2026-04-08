@@ -628,11 +628,11 @@ function parseStationsSheet(
     if (!workCenterType) {
       errors.push({ sheet: 'Stations', row: rowNumber, column: 'Work Center Type', message: 'Required field', value: workCenterType });
     } else if (!ALL_WORK_CENTER_TYPES.includes(workCenterType as typeof ALL_WORK_CENTER_TYPES[number])) {
-      errors.push({ 
+      warnings.push({ 
         sheet: 'Stations', 
         row: rowNumber, 
         column: 'Work Center Type', 
-        message: `Invalid value. Must be one of: ${ALL_WORK_CENTER_TYPES.join(', ')}`,
+        message: `Custom type "${workCenterType}" is not a predefined type — it will be used as-is.`,
         value: workCenterType 
       });
     }
@@ -649,7 +649,7 @@ function parseStationsSheet(
       });
     }
 
-    if (stationId && name && workCenter && workCenterType && ALL_WORK_CENTER_TYPES.includes(workCenterType as typeof ALL_WORK_CENTER_TYPES[number])) {
+    if (stationId && name && workCenter && workCenterType) {
       data.push({
         station_id: stationId,
         name,
