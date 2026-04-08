@@ -630,18 +630,10 @@ export function TeamStationManager({
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="work-center-type">Station Type *</Label>
-                      <Select value={workCenterType} onValueChange={(v) => setWorkCenterType(v as WorkCenterType)}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {ALL_WORK_CENTER_TYPES.map((type) => (
-                            <SelectItem key={type} value={type}>
-                              {type}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <WorkCenterTypeCombobox
+                        value={workCenterType}
+                        onValueChange={(v) => setWorkCenterType(v as WorkCenterType)}
+                      />
                     </div>
                   </div>
                   <div className="flex justify-end gap-2">
@@ -785,18 +777,10 @@ export function TeamStationManager({
             </div>
             <div className="space-y-2">
               <Label>Station Type</Label>
-              <Select value={editWorkCenterType} onValueChange={(v) => setEditWorkCenterType(v as WorkCenterType)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {ALL_WORK_CENTER_TYPES.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {type}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <WorkCenterTypeCombobox
+                value={editWorkCenterType}
+                onValueChange={(v) => setEditWorkCenterType(v as WorkCenterType)}
+              />
             </div>
 
             {/* Machine Profile Section */}

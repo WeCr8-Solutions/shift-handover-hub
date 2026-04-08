@@ -352,19 +352,10 @@ export function StationManagement({ isAdmin, access }: StationManagementProps) {
         </div>
         <div className="space-y-2">
           <Label htmlFor="work_center_type">Type *</Label>
-          <Select
+          <WorkCenterTypeCombobox
             value={formData.work_center_type}
             onValueChange={(v) => setFormData({ ...formData, work_center_type: v })}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select type" />
-            </SelectTrigger>
-            <SelectContent>
-              {WORK_CENTER_TYPES.map((type) => (
-                <SelectItem key={type} value={type}>{type}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          />
         </div>
       </div>
       <div className="space-y-2">
