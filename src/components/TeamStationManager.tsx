@@ -52,6 +52,7 @@ import { WorkCenterType, ALL_WORK_CENTER_TYPES } from "@/types/handoff";
 import { workCenterIcons, workCenterColors } from "@/lib/workCenterIcons";
 import { cn } from "@/lib/utils";
 import { BulkUploadDialog } from "./BulkUploadDialog";
+import { WorkCenterTypeCombobox } from "@/components/ui/WorkCenterTypeCombobox";
 import { Separator } from "@/components/ui/separator";
 
 /** Inline machine profile + DNC info for the edit station dialog */
