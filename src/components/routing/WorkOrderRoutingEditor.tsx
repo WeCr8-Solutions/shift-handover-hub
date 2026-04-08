@@ -676,7 +676,7 @@ export function WorkOrderRoutingEditor({
 
         <div
           ref={flowScrollRef}
-          className="flex gap-2 overflow-x-auto py-4 px-2 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent snap-x"
+          className="flex gap-1.5 sm:gap-2 overflow-x-auto py-3 sm:py-4 px-2 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent snap-x"
           style={{ scrollbarWidth: "thin" }}
         >
           {steps.map((step, index) => {
@@ -691,7 +691,7 @@ export function WorkOrderRoutingEditor({
                 <div
                   className={cn(
                     "relative flex flex-col items-center border rounded-lg bg-card transition-all cursor-pointer shrink-0",
-                    isEditing ? "ring-2 ring-primary w-[320px]" : "w-[140px] hover:border-primary/50 hover:shadow-sm",
+                    isEditing ? "ring-2 ring-primary w-[280px] sm:w-[320px]" : "w-[110px] sm:w-[140px] hover:border-primary/50 hover:shadow-sm",
                     !isEnabled && "opacity-50 bg-muted/30",
                     step.operation_type === "outside_processing" && isEnabled && "border-amber-400 bg-amber-500/5 dark:bg-amber-500/10"
                   )}
