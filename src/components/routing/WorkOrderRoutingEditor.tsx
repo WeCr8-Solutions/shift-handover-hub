@@ -522,28 +522,29 @@ export function WorkOrderRoutingEditor({
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-bold flex items-center gap-2">
-            <Factory className="w-5 h-5" />
-            Production Routing
+    <div className="space-y-4 pb-20 sm:pb-6">
+      {/* Header — stacks on mobile */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="text-lg sm:text-xl font-bold flex items-center gap-2">
+            <Factory className="w-5 h-5 shrink-0" />
+            <span className="truncate">Production Routing</span>
           </h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground truncate">
             WO: {workOrderNumber} {partNumber && `• Part: ${partNumber}`}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           {/* Save as Template */}
           <Dialog open={saveTemplateOpen} onOpenChange={setSaveTemplateOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" size="sm" disabled={enabledSteps.length === 0} data-tour="routing-save-template">
-                <BookTemplate className="w-4 h-4 mr-2" />
-                Save as Template
+              <Button variant="outline" size="sm" disabled={enabledSteps.length === 0} data-tour="routing-save-template" className="text-xs sm:text-sm">
+                <BookTemplate className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Save as Template</span>
+                <span className="sm:hidden">Template</span>
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Save Routing as Template</DialogTitle>
                 <DialogDescription>
@@ -588,7 +589,8 @@ export function WorkOrderRoutingEditor({
             </DialogContent>
           </Dialog>
 
-          <Button onClick={handleSave} disabled={isSaving} data-tour="routing-save">
+          {/* Save button — also duplicated in sticky footer on mobile */}
+          <Button onClick={handleSave} disabled={isSaving} data-tour="routing-save" size="sm" className="hidden sm:inline-flex">
             {isSaving ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -674,7 +676,7 @@ export function WorkOrderRoutingEditor({
 
         <div
           ref={flowScrollRef}
-          className="flex gap-2 overflow-x-auto py-4 px-2 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent snap-x"
+          className="flex gap-1.5 sm:gap-2 overflow-x-auto py-3 sm:py-4 px-2 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent snap-x"
           style={{ scrollbarWidth: "thin" }}
         >
           {steps.map((step, index) => {
@@ -689,7 +691,7 @@ export function WorkOrderRoutingEditor({
                 <div
                   className={cn(
                     "relative flex flex-col items-center border rounded-lg bg-card transition-all cursor-pointer shrink-0",
-                    isEditing ? "ring-2 ring-primary w-[320px]" : "w-[140px] hover:border-primary/50 hover:shadow-sm",
+                    isEditing ? "ring-2 ring-primary w-[280px] sm:w-[320px]" : "w-[110px] sm:w-[140px] hover:border-primary/50 hover:shadow-sm",
                     !isEnabled && "opacity-50 bg-muted/30",
                     step.operation_type === "outside_processing" && isEnabled && "border-amber-400 bg-amber-500/5 dark:bg-amber-500/10"
                   )}
@@ -854,6 +856,27 @@ export function WorkOrderRoutingEditor({
             <span className="text-xs text-muted-foreground">Add Step</span>
           </button>
         </div>
+      </div>
+
+      {/* Sticky mobile save footer */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 sm:hidden border-t bg-background p-3 flex gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex-1"
+          onClick={onClose}
+        >
+          Cancel
+        </Button>
+        <Button
+          size="sm"
+          className="flex-1 gap-2"
+          onClick={handleSave}
+          disabled={isSaving}
+        >
+          {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+          {isSaving ? "Saving..." : "Save Routing"}
+        </Button>
       </div>
     </div>
   );
