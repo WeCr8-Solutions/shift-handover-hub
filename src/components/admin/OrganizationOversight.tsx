@@ -58,7 +58,7 @@ export function OrganizationOversight({ isAdmin, access }: OrganizationOversight
   useEffect(() => {
     const fetchErpStatuses = async () => {
       const { data } = await supabase
-        .from("erp_connections")
+        .from("erp_connections_safe" as any)
         .select("organization_id, connection_status, erp_vendor");
       if (data) {
         const map = new Map<string, { status: string; vendor: string }>();
