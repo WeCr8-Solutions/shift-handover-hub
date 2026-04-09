@@ -15,6 +15,9 @@ import {
   Loader2,
   CheckCircle2,
   Share2,
+  Wrench,
+  Factory,
+  Car,
 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
