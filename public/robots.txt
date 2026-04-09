@@ -1,26 +1,33 @@
 # ===========================================
 # JobLine.ai Robots Configuration
-# Last Updated: 2026-03-26
+# Last Updated: 2026-04-09
 # ===========================================
 
 User-agent: *
+
+# --- Public pages ---
 Allow: /$
 Allow: /pricing
 Allow: /demo
 Allow: /features/
 Allow: /industries/
 Allow: /resources
+Allow: /resources/
 Allow: /blog
 Allow: /help
 Allow: /tools
 Allow: /machine-time-tracking
 Allow: /shift-handoff
 Allow: /manufacturing-visibility
+
+# --- AI & SEO discovery files ---
 Allow: /llms.txt
 Allow: /support.txt
 Allow: /sitemap.xml
 Allow: /og-image.png
+Allow: /robots.txt
 
+# --- Authenticated / internal pages ---
 Disallow: /dashboard
 Disallow: /admin
 Disallow: /testing
@@ -30,12 +37,16 @@ Disallow: /queue
 Disallow: /setup
 Disallow: /settings
 Disallow: /updates
+Disallow: /history
+Disallow: /quote-history
 Disallow: /auth
 Disallow: /reset-password
 Disallow: /start
 Disallow: /display/
 Disallow: /donation-success
 Disallow: /zach
+Disallow: /dev
+Disallow: /dev/
 Disallow: /functions/
 Disallow: /index
 
@@ -54,12 +65,16 @@ Disallow: /queue
 Disallow: /setup
 Disallow: /settings
 Disallow: /updates
+Disallow: /history
+Disallow: /quote-history
 Disallow: /auth
 Disallow: /reset-password
 Disallow: /start
 Disallow: /display/
 Disallow: /donation-success
 Disallow: /zach
+Disallow: /dev
+Disallow: /dev/
 Disallow: /functions/
 Disallow: /index
 
@@ -74,12 +89,16 @@ Disallow: /queue
 Disallow: /setup
 Disallow: /settings
 Disallow: /updates
+Disallow: /history
+Disallow: /quote-history
 Disallow: /auth
 Disallow: /reset-password
 Disallow: /start
 Disallow: /display/
 Disallow: /donation-success
 Disallow: /zach
+Disallow: /dev
+Disallow: /dev/
 Disallow: /functions/
 Disallow: /index
 
@@ -96,6 +115,8 @@ Disallow: /queue
 Disallow: /settings
 Disallow: /display/
 Disallow: /functions/
+Disallow: /dev
+Disallow: /dev/
 Disallow: /index
 
 User-agent: facebookexternalhit
@@ -107,6 +128,8 @@ Disallow: /queue
 Disallow: /settings
 Disallow: /display/
 Disallow: /functions/
+Disallow: /dev
+Disallow: /dev/
 Disallow: /index
 
 User-agent: LinkedInBot
@@ -118,6 +141,8 @@ Disallow: /queue
 Disallow: /settings
 Disallow: /display/
 Disallow: /functions/
+Disallow: /dev
+Disallow: /dev/
 Disallow: /index
 
 # ===========================================
@@ -126,6 +151,8 @@ Disallow: /index
 
 User-agent: GPTBot
 Allow: /
+Allow: /llms.txt
+Allow: /support.txt
 Disallow: /dashboard
 Disallow: /admin
 Disallow: /teams
@@ -133,46 +160,68 @@ Disallow: /queue
 Disallow: /settings
 Disallow: /display/
 Disallow: /functions/
+Disallow: /dev
+Disallow: /dev/
 Disallow: /index
 
 User-agent: ChatGPT-User
 Allow: /
+Allow: /llms.txt
+Allow: /support.txt
 Disallow: /dashboard
 Disallow: /admin
 Disallow: /display/
 Disallow: /functions/
+Disallow: /dev
+Disallow: /dev/
 Disallow: /index
 
 User-agent: Claude-Web
 Allow: /
+Allow: /llms.txt
+Allow: /support.txt
 Disallow: /dashboard
 Disallow: /admin
 Disallow: /display/
 Disallow: /functions/
+Disallow: /dev
+Disallow: /dev/
 Disallow: /index
 
 User-agent: Anthropic-AI
 Allow: /
+Allow: /llms.txt
+Allow: /support.txt
 Disallow: /dashboard
 Disallow: /admin
 Disallow: /display/
 Disallow: /functions/
+Disallow: /dev
+Disallow: /dev/
 Disallow: /index
 
 User-agent: PerplexityBot
 Allow: /
+Allow: /llms.txt
+Allow: /support.txt
 Disallow: /dashboard
 Disallow: /admin
 Disallow: /display/
 Disallow: /functions/
+Disallow: /dev
+Disallow: /dev/
 Disallow: /index
 
 User-agent: Google-Extended
 Allow: /
+Allow: /llms.txt
+Allow: /support.txt
 Disallow: /dashboard
 Disallow: /admin
 Disallow: /display/
 Disallow: /functions/
+Disallow: /dev
+Disallow: /dev/
 Disallow: /index
 
 # ===========================================
@@ -185,6 +234,8 @@ Disallow: /dashboard
 Disallow: /admin
 Disallow: /display/
 Disallow: /functions/
+Disallow: /dev
+Disallow: /dev/
 Disallow: /index
 
 User-agent: AhrefsBot
@@ -193,6 +244,8 @@ Disallow: /dashboard
 Disallow: /admin
 Disallow: /display/
 Disallow: /functions/
+Disallow: /dev
+Disallow: /dev/
 Disallow: /index
 
 Sitemap: https://jobline.ai/sitemap.xml

@@ -53,15 +53,29 @@ Machine downtime event logging, reason code categorization, and resolution track
 G-code reference, calculators, and shop floor utilities.
 → https://jobline.ai/features/cnc-operator-tools
 
+### Production Control
+Real-time production monitoring, WIP tracking, and throughput analysis.
+→ https://jobline.ai/features/production-control
+
+### Manufacturing Oversight
+Management dashboards, KPIs, and cross-facility visibility for leadership.
+→ https://jobline.ai/features/manufacturing-oversight
+
+### Team Collaboration
+Shift-aware messaging, announcements, and cross-team communication tools.
+→ https://jobline.ai/features/team-collaboration
+
 ## VS Code Extensions
 
 JobLine ships two VS Code extensions that together give CNC programmers a complete shop floor intelligence layer inside their code editor.
 
 ### JobLine G-Code (jobline-gcode)
 Multi-dialect G-code syntax support (Fanuc, Haas, Siemens, Mazak, Okuma), canned cycle intelligence, sidebar tree views, program validation, tool and offset tracking.
+→ https://jobline.ai/features/vscode-gcode
 
 ### JobLine Machine Connect (jobline-machine)
 Multi-transport DNC connectivity (FTP/FTPS, RS-232 serial, CIFS/network share), machine selector panel with live status, remote file browser, transfer queue, FOCAS2 + MTConnect integration, upload gate with pre-flight validation, ISO/AS9100 audit log.
+→ https://jobline.ai/features/machine-connect
 
 The VS Code extension you use at your desk connects to the platform running on your Haas.
 
@@ -154,7 +168,7 @@ A comprehensive guide to selecting and implementing a manufacturing ERP:
 
 ```json
 {
-  "schema_version": "1.2",
+  "schema_version": "1.3",
   "name": "JobLine.ai",
   "tagline": "Digital Expeditor & Smart Shift Handoff System",
   "type": "SaaS Manufacturing Software",
@@ -178,17 +192,22 @@ A comprehensive guide to selecting and implementing a manufacturing ERP:
     "AI Planning Assistant",
     "Machine Shop Software",
     "Downtime Tracking",
-    "CNC Operator Tools"
+    "CNC Operator Tools",
+    "Production Control",
+    "Manufacturing Oversight",
+    "Team Collaboration"
   ],
   "vscode_extensions": [
     {
       "name": "JobLine G-Code",
       "id": "jobline-gcode",
+      "page": "https://jobline.ai/features/vscode-gcode",
       "capabilities": ["Multi-dialect G-code syntax", "Canned cycle intelligence", "Program validation", "Tool tracking"]
     },
     {
       "name": "JobLine Machine Connect",
       "id": "jobline-machine",
+      "page": "https://jobline.ai/features/machine-connect",
       "capabilities": ["FTP/FTPS DNC", "RS-232 serial drip feed", "CIFS/network share", "FOCAS2", "MTConnect", "Audit log"]
     }
   ],
@@ -198,6 +217,24 @@ A comprehensive guide to selecting and implementing a manufacturing ERP:
     "Metal Fabrication", "Food & Beverage", "Pharma & Life Sciences", "Chemical Processing",
     "Renewable Energy", "Additive Manufacturing", "Semiconductor", "EV & Battery"
   ],
+  "resource_library": {
+    "total_pages": 13,
+    "sections": [
+      {"name": "Manufacturing Guides", "url": "https://jobline.ai/resources/guides", "count": 12},
+      {"name": "G-Code Reference", "url": "https://jobline.ai/resources/gcode", "count": 180},
+      {"name": "Industry Glossary", "url": "https://jobline.ai/resources/glossary", "count": 90},
+      {"name": "Beginner's Guide", "url": "https://jobline.ai/resources/beginners", "count": 13},
+      {"name": "Manufacturing Careers", "url": "https://jobline.ai/resources/careers", "count": 8},
+      {"name": "Safety & Compliance", "url": "https://jobline.ai/resources/safety", "count": 13},
+      {"name": "Quality & Inspection", "url": "https://jobline.ai/resources/quality", "count": 12},
+      {"name": "Lean Manufacturing", "url": "https://jobline.ai/resources/lean", "count": 13},
+      {"name": "5S Methodology", "url": "https://jobline.ai/resources/5s", "count": 12},
+      {"name": "Kanban & Sorting", "url": "https://jobline.ai/resources/kanban", "count": 12},
+      {"name": "Manufacturing Pioneers", "url": "https://jobline.ai/resources/pioneers", "count": 25},
+      {"name": "Tool Comparisons", "url": "https://jobline.ai/resources/comparisons"},
+      {"name": "ERP Selection Guide", "url": "https://jobline.ai/resources/erp-guide", "count": 7}
+    ]
+  },
   "keywords": [
     "shift handoff software", "manufacturing execution system", "MES alternative",
     "work order tracking", "CNC shop management", "production visibility",
@@ -206,7 +243,8 @@ A comprehensive guide to selecting and implementing a manufacturing ERP:
     "production scheduling", "job shop software", "downtime tracking",
     "machine time tracking", "quality management manufacturing",
     "G-code editor", "DNC software", "VS Code CNC", "FOCAS2",
-    "manufacturing ERP guide", "ERP selection"
+    "manufacturing ERP guide", "ERP selection", "production control",
+    "manufacturing oversight", "team collaboration manufacturing"
   ],
   "competitors": ["Epicor", "JobBOSS", "E2 Shop System", "ProShop", "Shoptech", "MIE Trak Pro"],
   "differentiators": [
@@ -218,11 +256,12 @@ A comprehensive guide to selecting and implementing a manufacturing ERP:
     "Community-supported development",
     "Free manufacturing resource library",
     "AI planning assistant included",
-    "16 industry-specific landing pages"
+    "16 industry-specific landing pages",
+    "7-part ERP selection guide"
   ]
 }
 ```
 
 ---
 
-*Last updated: March 26, 2026*
+*Last updated: April 9, 2026*
