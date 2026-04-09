@@ -114,8 +114,8 @@ export default function Start() {
   return (
     <>
       <SEOHead
-        title="Get Started with JobLine.ai"
-        description="Scan. Sign up. Simplify your shop floor. Track work orders, manage shift handoffs, and gain real-time production visibility."
+        title="Keep Your Shop Moving | JobLine.ai"
+        description="Real-time job tracking for auto repair shops, CNC shops, cabinet shops & more. Scan. Sign up. See your shop live in 60 seconds."
         noindex
         canonical="/start"
       />
