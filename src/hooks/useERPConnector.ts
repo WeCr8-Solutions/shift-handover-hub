@@ -85,9 +85,9 @@ export function useERPConnector() {
 
   const fetchConnection = useCallback(async () => {
     if (!orgId) return;
-    // Use the safe view that excludes secrets
+    // Use the safe view that excludes encrypted credential columns
     const { data } = await supabase
-      .from("erp_connections")
+      .from("erp_connections_safe" as any)
       .select("id, organization_id, erp_vendor, instance_type, api_base_url, oauth_token_endpoint, scopes, tenant_identifier, sync_interval_minutes, is_active, last_tested_at, connection_status, metadata, created_by, created_at, updated_at")
       .eq("organization_id", orgId)
       .maybeSingle();
