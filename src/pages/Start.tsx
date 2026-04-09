@@ -130,12 +130,25 @@ export default function Start() {
             loading="eager"
           />
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
-            Your Shop Floor, Simplified
+            Keep Your Shop Moving.
           </h1>
           <p className="text-muted-foreground text-base sm:text-lg leading-relaxed">
-            Digital expediting &amp; smart shift handoffs for CNC shops and
-            manufacturing teams.
+            Real-time job tracking for small shops.
+            <br />
+            <span className="font-medium text-foreground/80">Simple. Fast. Built for the way you work.</span>
           </p>
+        </section>
+
+        {/* Industries */}
+        <section className="w-full max-w-md mt-6 flex justify-center gap-6">
+          {industries.map((ind) => (
+            <div key={ind.label} className="flex flex-col items-center gap-1.5">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <ind.icon className="w-5 h-5 text-primary" />
+              </div>
+              <span className="text-[11px] text-muted-foreground font-medium">{ind.label}</span>
+            </div>
+          ))}
         </section>
 
         {/* Benefits */}
