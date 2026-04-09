@@ -45,8 +45,21 @@ export function OrganizationSettings({ isDeveloper = false }: OrganizationSettin
     setFormData({
       name: organization.name ?? "",
       description: organization.description ?? "",
-      billing_email: (organization as any).billing_email ?? "",
+      billing_email: "",
     });
+
+    // Load billing email from separate billing table (admin-only)
+    const loadBilling = async () => {
+      const { data } = await supabase
+        .from("organization_billing")
+        .select("billing_email")
+        .eq("organization_id", organization.id)
+        .maybeSingle();
+      if (data?.billing_email) {
+        setFormData(prev => ({ ...prev, billing_email: data.billing_email ?? "" }));
+      }
+    };
+    loadBilling();
   }, [organization]);
 
   useEffect(() => {
