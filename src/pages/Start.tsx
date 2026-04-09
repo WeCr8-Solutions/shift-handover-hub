@@ -15,6 +15,9 @@ import {
   Loader2,
   CheckCircle2,
   Share2,
+  Wrench,
+  Factory,
+  Car,
 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -28,19 +31,25 @@ const QR_URL = "https://jobline.ai/start";
 const benefits = [
   {
     icon: ClipboardList,
-    title: "Track Work Orders",
-    description: "Know exactly what's running, what's next, and what's behind.",
+    title: "Track Every Job",
+    description: "See status, priority & what's next — in real time.",
   },
   {
     icon: ArrowRightLeft,
-    title: "Smart Shift Handoffs",
-    description: "Never lose context between shifts again.",
+    title: "Better Handoffs",
+    description: "Keep your team aligned. Keep customers happy.",
   },
   {
     icon: Eye,
-    title: "Real-Time Visibility",
-    description: "See your entire shop floor at a glance.",
+    title: "Every Touchpoint",
+    description: "From check-in to completion, nothing slips through.",
   },
+];
+
+const industries = [
+  { icon: Wrench, label: "Auto Repair" },
+  { icon: Factory, label: "CNC & Manufacturing" },
+  { icon: Car, label: "Body Shops" },
 ];
 
 export default function Start() {
@@ -105,8 +114,8 @@ export default function Start() {
   return (
     <>
       <SEOHead
-        title="Get Started with JobLine.ai"
-        description="Scan. Sign up. Simplify your shop floor. Track work orders, manage shift handoffs, and gain real-time production visibility."
+        title="Keep Your Shop Moving | JobLine.ai"
+        description="Real-time job tracking for auto repair shops, CNC shops, cabinet shops & more. Scan. Sign up. See your shop live in 60 seconds."
         noindex
         canonical="/start"
       />
@@ -121,12 +130,25 @@ export default function Start() {
             loading="eager"
           />
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
-            Your Shop Floor, Simplified
+            Keep Your Shop Moving.
           </h1>
           <p className="text-muted-foreground text-base sm:text-lg leading-relaxed">
-            Digital expediting &amp; smart shift handoffs for CNC shops and
-            manufacturing teams.
+            Real-time job tracking for small shops.
+            <br />
+            <span className="font-medium text-foreground/80">Simple. Fast. Built for the way you work.</span>
           </p>
+        </section>
+
+        {/* Industries */}
+        <section className="w-full max-w-md mt-6 flex justify-center gap-6">
+          {industries.map((ind) => (
+            <div key={ind.label} className="flex flex-col items-center gap-1.5">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <ind.icon className="w-5 h-5 text-primary" />
+              </div>
+              <span className="text-[11px] text-muted-foreground font-medium">{ind.label}</span>
+            </div>
+          ))}
         </section>
 
         {/* Benefits */}
@@ -158,7 +180,7 @@ export default function Start() {
               navigate("/auth");
             }}
           >
-            Get Started Free
+            Try It Free
           </Button>
           <Button
             variant="outline"
@@ -241,9 +263,12 @@ export default function Start() {
           url={QR_URL}
         />
 
-        <footer className="mt-10 text-center">
-          <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} JobLine.ai — Built for the shop floor.
+        <footer className="mt-10 text-center space-y-1">
+          <p className="text-xs font-medium text-muted-foreground">
+            Built for small shops. Big impact.
+          </p>
+          <p className="text-xs text-muted-foreground/60">
+            © {new Date().getFullYear()} JobLine.ai
           </p>
         </footer>
       </main>
