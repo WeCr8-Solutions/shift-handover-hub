@@ -62,7 +62,7 @@ export function OrganizationOversight({ isAdmin, access }: OrganizationOversight
         .select("organization_id, connection_status, erp_vendor");
       if (data) {
         const map = new Map<string, { status: string; vendor: string }>();
-        data.forEach((c) => map.set(c.organization_id, { status: c.connection_status, vendor: c.erp_vendor }));
+        (data as any[]).forEach((c: any) => map.set(c.organization_id, { status: c.connection_status, vendor: c.erp_vendor }));
         setErpStatuses(map);
       }
     };
