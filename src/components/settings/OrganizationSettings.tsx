@@ -133,14 +133,25 @@ export function OrganizationSettings({ isDeveloper = false }: OrganizationSettin
     setIsSaving(true);
 
     try {
+      // Update org name/description
       const { error } = await supabase
         .from("organizations")
         .update({
           name: formData.name.trim(),
           description: formData.description.trim() || null,
-          billing_email: formData.billing_email.trim() || null,
         })
         .eq("id", organization.id);
+
+      // Update billing email in separate billing table
+      if (!error) {
+        const billingEmail = formData.billing_email.trim() || null;
+        await supabase
+          .from("organization_billing")
+          .upsert({
+            organization_id: organization.id,
+            billing_email: billingEmail,
+          }, { onConflict: "organization_id" });
+      }
 
       if (error) {
         toast({
