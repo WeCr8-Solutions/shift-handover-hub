@@ -31,19 +31,25 @@ const QR_URL = "https://jobline.ai/start";
 const benefits = [
   {
     icon: ClipboardList,
-    title: "Track Work Orders",
-    description: "Know exactly what's running, what's next, and what's behind.",
+    title: "Track Every Job",
+    description: "See status, priority & what's next — in real time.",
   },
   {
     icon: ArrowRightLeft,
-    title: "Smart Shift Handoffs",
-    description: "Never lose context between shifts again.",
+    title: "Better Handoffs",
+    description: "Keep your team aligned. Keep customers happy.",
   },
   {
     icon: Eye,
-    title: "Real-Time Visibility",
-    description: "See your entire shop floor at a glance.",
+    title: "Every Touchpoint",
+    description: "From check-in to completion, nothing slips through.",
   },
+];
+
+const industries = [
+  { icon: Wrench, label: "Auto Repair" },
+  { icon: Factory, label: "CNC & Manufacturing" },
+  { icon: Car, label: "Body Shops" },
 ];
 
 export default function Start() {
