@@ -180,7 +180,7 @@ export default function Start() {
               navigate("/auth");
             }}
           >
-            Get Started Free
+            Try It Free
           </Button>
           <Button
             variant="outline"
