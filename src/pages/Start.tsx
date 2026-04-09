@@ -263,9 +263,12 @@ export default function Start() {
           url={QR_URL}
         />
 
-        <footer className="mt-10 text-center">
-          <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} JobLine.ai — Built for the shop floor.
+        <footer className="mt-10 text-center space-y-1">
+          <p className="text-xs font-medium text-muted-foreground">
+            Built for small shops. Big impact.
+          </p>
+          <p className="text-xs text-muted-foreground/60">
+            © {new Date().getFullYear()} JobLine.ai
           </p>
         </footer>
       </main>
