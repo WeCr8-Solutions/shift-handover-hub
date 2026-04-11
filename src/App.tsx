@@ -68,6 +68,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import Help from "./pages/Help";
+import UseCases from "./pages/UseCases";
 import HelpArticle from "./pages/HelpArticle";
 import Tools from "./pages/Tools";
 import IndustryPage from "./pages/industries/IndustryPage";
@@ -166,6 +167,7 @@ const App = () => (
                     <Route path="/resources/erp-guide" element={<ERPSelectionGuide />} />
                     <Route path="/blog" element={<Blog />} />
                     <Route path="/blog/:slug" element={<BlogPost />} />
+                    <Route path="/use-cases" element={<UseCases />} />
                     <Route path="/help" element={<Help />} />
                     <Route path="/help/:category/:slug" element={<HelpArticle />} />
                     <Route path="/tools" element={<Tools />} />

@@ -145,6 +145,7 @@ export const learnItems: NavLinkItem[] = learnCategories.flatMap((c) => c.items)
 
 export const companyItems: NavLinkItem[] = [
   { label: "About JobLine", href: "/", icon: Building2, desc: "Our mission & story" },
+  { label: "Use Cases", href: "/use-cases", icon: Wrench, desc: "See how shops like yours use JobLine" },
   { label: "Careers", href: "/resources/careers", icon: Briefcase, desc: "Join the team building the future of manufacturing" },
   { label: "Pioneers", href: "/resources/pioneers", icon: Users, desc: "Innovators who shaped modern manufacturing" },
   { label: "Help & Support", href: "/help", icon: HelpCircle, desc: "Documentation, FAQs & contact us" },
