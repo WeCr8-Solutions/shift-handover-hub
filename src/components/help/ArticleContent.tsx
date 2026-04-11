@@ -1,5 +1,6 @@
 import type { HelpArticle } from "@/lib/helpArticles";
 import { Badge } from "@/components/ui/badge";
+import { UseCaseRoutingPreview } from "./UseCaseRoutingPreview";
 
 interface ArticleContentProps {
   article: HelpArticle;
@@ -24,6 +25,10 @@ export function ArticleContent({ article }: ArticleContentProps) {
           </section>
         ))}
       </div>
+
+      {article.category === "use-cases" && (
+        <UseCaseRoutingPreview slug={article.slug} />
+      )}
     </article>
   );
 }

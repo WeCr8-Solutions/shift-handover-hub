@@ -1,6 +1,6 @@
 import {
   Rocket, LayoutDashboard, ClipboardList, ArrowRightLeft,
-  Users, Radio, ShieldCheck, Settings, Lock, HelpCircle, Wrench,
+  Users, Radio, ShieldCheck, Settings, Lock, HelpCircle, Wrench, Factory,
 } from "lucide-react";
 
 export interface HelpSection {
@@ -36,6 +36,7 @@ export const helpCategories: HelpCategory[] = [
   { key: "quality", label: "Quality Management", description: "Non-Conformance Reports, disposition workflows, and quality metrics", icon: ShieldCheck },
   { key: "settings", label: "Settings", description: "Profile, notifications, billing, shift schedules, and integrations", icon: Settings },
   { key: "admin", label: "Admin Guide", description: "User management, organization oversight, audit trails, and compliance", icon: Lock },
+  { key: "use-cases", label: "Use Cases", description: "See how shops like yours use JobLine — automotive, mechanical, oil change, and more", icon: Factory },
   { key: "tools", label: "Operator Tools", description: "Calculators, converters, and reference utilities for the shop floor", icon: Wrench },
   { key: "faq", label: "FAQ", description: "Common questions, troubleshooting, data export, and productivity tips", icon: HelpCircle },
 ];
@@ -847,6 +848,95 @@ export const helpArticles: HelpArticle[] = [
       { heading: "Recognize Suspicious Activity", body: "If you notice actions in the activity log that you did not perform, or if you receive notification emails for actions you did not take, your account may be compromised. Immediately change your password and notify your Org Admin. They can review the activity log for unauthorized access and take appropriate action." },
       { heading: "Shared Devices", body: "If multiple operators share a single computer or tablet, each person should sign in with their own account at the start of their shift and sign out at the end. Do not use a shared \"station account\" — individual accounts ensure accurate attribution of handoffs, parts counts, and activity logs. Browser \"incognito mode\" or \"private window\" can help prevent sessions from persisting across users." },
       { heading: "Report Security Concerns", body: "If you believe there is a security vulnerability, unauthorized access, or data exposure, report it immediately to your Org Admin and through the in-app issue reporter. Include as much detail as possible: what you observed, when, and any screenshots or error messages. Security issues are treated with the highest priority." },
+    ],
+  },
+  // ════════════════════════════════════════════════════════════════
+  // ── USE CASES ──────────────────────────────────────────────────
+  // ════════════════════════════════════════════════════════════════
+  {
+    category: "use-cases", categoryLabel: "Use Cases",
+    slug: "automotive-repair-shop", title: "Automotive Repair Shops",
+    description: "How auto repair shops use JobLine to track vehicle repairs, manage bays, and hand off between shifts.",
+    tags: ["automotive", "repair", "mechanic", "vehicle", "bay", "use case"],
+    relatedSlugs: ["use-cases/oil-change-quick-lube", "use-cases/fleet-maintenance"],
+    sections: [
+      { heading: "Why JobLine for Auto Repair?", body: "Automotive repair shops juggle multiple vehicles across several bays, each at a different stage of diagnosis, parts ordering, or repair. JobLine replaces whiteboards and sticky notes with a digital system that tracks every vehicle from intake to delivery — so no job falls through the cracks between shifts." },
+      { heading: "Setting Up Your Shop", body: "Create stations for each bay (Bay 1, Bay 2, etc.) plus stations for Diagnostics, Parts Counter, and Customer Pickup. Each bay maps to a physical lift or workspace. Operators check in to their assigned bay at shift start, just like clocking into a machine in a CNC shop." },
+      { heading: "Work Orders as Repair Orders", body: "Each vehicle gets a work order with the customer name, VIN, and complaint description as the part number and notes fields. Routing steps map to the repair flow: Intake → Diagnostics → Parts Ordering → Repair → Quality Check → Customer Pickup. Supervisors can see every vehicle's status at a glance on the Kanban board." },
+      { heading: "Shift Handoff Notes", body: "When first shift ends, the outgoing tech documents what was completed, what's still in progress, and any parts on order. They can attach photos of damage, worn components, or diagnostic screenshots. The incoming tech sees exactly where each vehicle stands — no guessing, no re-diagnosis, no wasted time." },
+      { heading: "Sample Routing: Brake Job", body: "A typical brake repair routes through: 1) Intake (customer drops off vehicle, advisor creates RO) → 2) Diagnostics (measure rotor thickness, check caliper slides) → 3) Parts (order rotors and pads if not in stock) → 4) Repair Bay (remove old, install new, bleed lines) → 5) Quality Check (test drive, verify no noise or pull) → 6) Customer Pickup (final invoice, keys returned). Each step logs who did it, when, and any notes." },
+      { heading: "Tracking Quality & Comebacks", body: "If a customer returns with the same complaint, file an NCR (Non-Conformance Report) linked to the original repair order. This tracks comeback rates by technician and repair type, helping you identify training needs or recurring part failures. Over time, your quality dashboard reveals patterns that save money and protect your reputation." },
+    ],
+  },
+  {
+    category: "use-cases", categoryLabel: "Use Cases",
+    slug: "oil-change-quick-lube", title: "Oil Change & Quick Lube Centers",
+    description: "Streamline high-volume oil changes and preventive maintenance with fast check-in and standardized routing.",
+    tags: ["oil change", "quick lube", "preventive maintenance", "fast service", "use case"],
+    relatedSlugs: ["use-cases/automotive-repair-shop", "use-cases/fleet-maintenance"],
+    sections: [
+      { heading: "High Volume, Zero Confusion", body: "Quick lube shops process dozens of vehicles per day with tight turnaround targets. JobLine keeps every vehicle moving through a standardized pipeline so nothing gets skipped — filter not changed, fluids not topped off, tire pressure not checked. Each service step is a routing checkpoint." },
+      { heading: "Standardized Service Routing", body: "Set up a routing template for your standard service: 1) Drive-In & Check-In → 2) Drain & Fill → 3) Filter Replacement → 4) Fluid Top-Off (brake, coolant, washer, power steering) → 5) Tire Pressure Check → 6) Multi-Point Inspection → 7) Drive-Out & Payment. Techs check off each step as completed — nothing gets missed." },
+      { heading: "Upsell Tracking", body: "During the multi-point inspection, if a tech notices worn wipers, a dirty cabin filter, or low transmission fluid, they log it as a note on the routing step. The advisor at drive-out sees these recommendations and can offer the upsell with documentation and even photos to show the customer." },
+      { heading: "Shift Handoffs for Peak Hours", body: "During shift overlap, outgoing techs note which bays have vehicles mid-service, what supplies are running low (e.g., 5W-30 drum at 20%), and any equipment issues (e.g., pit lift making noise). Incoming techs see this immediately on their dashboard instead of doing a walkthrough." },
+      { heading: "Performance Metrics", body: "Track average service time per vehicle, vehicles serviced per shift, and upsell conversion rates. Supervisors can see which techs are fastest, which are most thorough, and where bottlenecks occur. This data drives scheduling decisions and training focus." },
+    ],
+  },
+  {
+    category: "use-cases", categoryLabel: "Use Cases",
+    slug: "fleet-maintenance", title: "Fleet & Heavy Equipment Maintenance",
+    description: "Manage preventive maintenance schedules and repairs across a fleet of trucks, buses, or heavy equipment.",
+    tags: ["fleet", "trucks", "heavy equipment", "preventive maintenance", "DOT", "use case"],
+    relatedSlugs: ["use-cases/automotive-repair-shop", "use-cases/general-fabrication"],
+    sections: [
+      { heading: "Fleet-Wide Visibility", body: "Fleet shops maintain dozens or hundreds of vehicles with strict DOT compliance requirements. JobLine gives you a single dashboard showing every unit's status — which trucks are in for PM, which are waiting on parts, which are road-ready. Supervisors no longer have to walk the yard to know what's happening." },
+      { heading: "PM Scheduling as Work Orders", body: "Create recurring work orders for each unit based on mileage or time intervals (PM-A every 10,000 miles, PM-B every 25,000). Each PM has a standardized routing: Oil & Filter → Brake Inspection → Tire Inspection → Fluid Levels → Electrical Check → DOT Compliance Items → Road Test. Techs follow the checklist and sign off on each step." },
+      { heading: "Parts & Inventory Notes", body: "When a tech discovers an issue during PM — say, a cracked air line or worn king pin — they add it as a note with a photo on the routing step. The parts department sees the request immediately and can source the part while the tech continues the PM. No paper forms, no walking to the parts counter." },
+      { heading: "Shift Handoffs for 24/7 Shops", body: "Fleet shops often run two or three shifts to keep trucks on the road. Handoff notes capture exactly where each unit stands: 'Unit 4472 — PM-B complete except for brake adjustment, rear drums at 50%, parts ordered for Friday. Unit 4501 — waiting on turbo actuator, do not move from Bay 3.' Incoming techs know instantly what to work on." },
+      { heading: "Compliance & Audit Trail", body: "Every routing step completion, every handoff note, and every NCR is timestamped and attributed to a specific technician. When DOT auditors ask for maintenance records on Unit 4472, you pull up the complete digital history instead of digging through filing cabinets." },
+    ],
+  },
+  {
+    category: "use-cases", categoryLabel: "Use Cases",
+    slug: "general-fabrication", title: "Fabrication & Welding Shops",
+    description: "Track custom fabrication jobs, welding certifications, and multi-step production through your shop.",
+    tags: ["fabrication", "welding", "custom", "manufacturing", "steel", "use case"],
+    relatedSlugs: ["use-cases/automotive-repair-shop", "use-cases/cnc-machine-shop"],
+    sections: [
+      { heading: "Custom Jobs, Consistent Tracking", body: "Fabrication shops handle one-off and short-run projects where every job is different. JobLine adapts to this by letting you define custom routing per work order: Cut → Fit-Up → Weld → Grind → Paint → Assemble → Ship. Each step can have different operators and different stations." },
+      { heading: "Welding Certifications & Quality", body: "Assign certified welders to welding steps using operator skills and certifications in JobLine. The system tracks which welder performed each weld, supporting traceability requirements for structural and pressure vessel work. NCRs link back to specific welds and welders for root cause analysis." },
+      { heading: "Photo Documentation", body: "Fabrication work is visual. Operators attach photos at each routing step — fit-up alignment photos, weld bead photos, paint finish photos. These images travel with the work order through the routing and are available during shift handoffs so the next operator sees exactly what was done." },
+      { heading: "Shift Handoffs for Long Projects", body: "Large fabrication projects span multiple shifts and days. Handoff notes capture: 'Frame assembly 60% complete, tack-welded per drawing Rev C. Left side gussets still need final weld — use E7018 rod, preheat to 300°F per WPS-042. Overhead crane reserved for Bay 2 tomorrow morning.' This level of detail prevents costly rework." },
+      { heading: "Material Tracking", body: "Log material lot numbers and heat numbers on work order notes for traceability. When a quality issue surfaces months later, you can trace back to the specific material lot, the welder, and the date — all from JobLine's digital record." },
+    ],
+  },
+  {
+    category: "use-cases", categoryLabel: "Use Cases",
+    slug: "cnc-machine-shop", title: "CNC Machine Shops",
+    description: "The original JobLine use case — managing CNC production, tool offsets, shift handoffs, and quality tracking.",
+    tags: ["CNC", "machining", "manufacturing", "production", "tool offset", "use case"],
+    relatedSlugs: ["use-cases/general-fabrication", "shift-handoffs/creating-a-handoff"],
+    sections: [
+      { heading: "Purpose-Built for Machining", body: "JobLine was designed from the ground up for CNC machine shops. Every feature — from work order routing with operation numbers to shift handoff forms with tool offset fields — speaks the language of machining. If you run mills, lathes, grinders, or EDM machines, this is your native environment." },
+      { heading: "Station-Per-Machine Setup", body: "Create a station for each CNC machine: VMC-01, HMC-02, Lathe-03, etc. Each station has its own check-in, its own queue of work orders, and its own handoff history. Operators see only the jobs assigned to their machine, keeping focus tight and reducing errors." },
+      { heading: "Routing with Operation Numbers", body: "Work order routing follows your operation sequence: Op 10 (Saw) → Op 20 (Mill Rough) → Op 30 (Mill Finish) → Op 40 (Deburr) → Op 50 (Inspect) → Op 60 (Ship). Each operation assigns to a specific station or work center type. The digital expeditor view shows exactly where every job sits in the production flow." },
+      { heading: "Shift Handoffs with Machine Context", body: "CNC handoff forms include machine-specific fields: spindle hours, coolant concentration, tool wear status, offset adjustments made, and program notes. Outgoing operators document: 'Running program O4472, tool 3 replaced at part 847, offset adjusted -0.0003\" on Z. Coolant at 8.2%, added 2 gallons concentrate. Parts on skid by door — 847 of 1000 complete.'" },
+      { heading: "Quality Integration", body: "First article inspections, in-process checks, and final inspections are routing steps with dimension tracking. When a part is out of spec, operators file an NCR with the measured vs. nominal values, and supervisors disposition (scrap, rework, or use-as-is) with full traceability." },
+      { heading: "Why It Works", body: "Manufacturing shops lose thousands of dollars per shift to miscommunication — wrong offsets, wrong programs, wrong material, or jobs that sit idle because nobody knew they were ready. JobLine eliminates these gaps with structured digital records that travel with the job and the shift." },
+    ],
+  },
+  {
+    category: "use-cases", categoryLabel: "Use Cases",
+    slug: "body-shop-collision", title: "Body Shops & Collision Centers",
+    description: "Track collision repair from estimate through paint and reassembly with visual handoffs and quality checkpoints.",
+    tags: ["body shop", "collision", "paint", "insurance", "repair", "use case"],
+    relatedSlugs: ["use-cases/automotive-repair-shop"],
+    sections: [
+      { heading: "Collision Repair Workflow", body: "Collision repair is inherently multi-step and visual. JobLine routes each vehicle through: Estimate & Teardown → Parts Ordering → Body Repair (pull, straighten, replace panels) → Prep & Prime → Paint → Reassembly → Detail → Quality Check → Customer Delivery. Each step has an assigned tech and timeline." },
+      { heading: "Insurance Documentation", body: "Attach supplement photos at each routing step. When the estimator discovers hidden damage during teardown, they photograph it and add a supplement note. This creates an auditable trail for insurance adjusters — every photo timestamped, every supplement documented." },
+      { heading: "Paint & Color Matching", body: "Log paint codes, variant numbers, and mix formulas as notes on the Paint routing step. When a vehicle comes back for touch-up or an adjacent panel needs blending, the original formula is in JobLine — not on a sticky note that fell off the mixing bench." },
+      { heading: "Shift Handoffs Between Departments", body: "A vehicle might pass through three different departments (body, paint, reassembly) over several days. Handoff notes ensure each department knows exactly what's been done: 'Quarter panel replaced, filler applied and blocked to 180 grit. Ready for prime. Caution: adjacent door has soft edge at belt line, needs careful blend.' Photos attached for clarity." },
+      { heading: "Cycle Time Tracking", body: "Track how long each vehicle spends at each stage. Identify bottlenecks — if cars are stacking up waiting for paint, you know you need more booth time or another painter. This data drives staffing and scheduling decisions that directly impact throughput and revenue." },
     ],
   },
 ];

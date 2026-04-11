@@ -12,8 +12,10 @@ const popularSlugs = [
   "getting-started/creating-an-account",
   "work-orders/creating-work-orders",
   "shift-handoffs/creating-a-handoff",
+  "use-cases/automotive-repair-shop",
+  "use-cases/oil-change-quick-lube",
+  "use-cases/cnc-machine-shop",
   "teams-orgs/inviting-members",
-  "stations/operator-check-in",
   "faq/common-errors",
 ];
 
