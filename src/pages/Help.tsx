@@ -7,6 +7,7 @@ import { HelpSearch } from "@/components/help";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { helpCategories, getArticlesByCategory, helpArticles } from "@/lib/helpArticles";
+import { Car, Droplets, Truck, Flame, Cog, Hammer } from "lucide-react";
 
 const popularSlugs = [
   "getting-started/creating-an-account",
@@ -50,6 +51,32 @@ export default function Help() {
               Search our documentation or browse by category below.
             </p>
             <HelpSearch large className="max-w-xl mx-auto" />
+          </div>
+        </section>
+
+        {/* Use Cases Banner */}
+        <section className="container mx-auto px-4 pt-8 max-w-5xl">
+          <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
+            <p className="text-sm font-semibold text-foreground mb-2">What kind of shop do you run?</p>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { slug: "automotive-repair-shop", label: "Auto Repair", icon: Car },
+                { slug: "oil-change-quick-lube", label: "Oil Change / Lube", icon: Droplets },
+                { slug: "fleet-maintenance", label: "Fleet / Heavy Equipment", icon: Truck },
+                { slug: "general-fabrication", label: "Fabrication & Welding", icon: Flame },
+                { slug: "cnc-machine-shop", label: "CNC Machining", icon: Cog },
+                { slug: "body-shop-collision", label: "Body Shop / Collision", icon: Hammer },
+              ].map(({ slug, label, icon: Icon }) => (
+                <button
+                  key={slug}
+                  onClick={() => navigate(`/help/use-cases/${slug}`)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-border bg-background hover:border-primary/50 hover:bg-primary/10 transition-colors"
+                >
+                  <Icon className="w-3.5 h-3.5 text-primary" />
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
         </section>
 
