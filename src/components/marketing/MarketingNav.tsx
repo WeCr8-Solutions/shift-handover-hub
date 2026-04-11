@@ -96,6 +96,9 @@ export function MarketingNav({ showPricing = true }: MarketingNavProps) {
           <DropdownTrigger label="Learn" menuKey="learn" />
           <DropdownTrigger label="Company" menuKey="company" />
 
+          <button onClick={() => go("/use-cases")} className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-md">
+            Use Cases
+          </button>
           <button onClick={() => go("/help")} className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-md">
             <HelpCircle className="w-3.5 h-3.5" /> Help
           </button>
