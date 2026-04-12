@@ -6490,6 +6490,7 @@ export type Database = {
         | "developer"
         | "engineering"
         | "programming"
+        | "flyer_worker"
       impact_level: "low" | "medium" | "high" | "critical"
       issue_severity: "low" | "medium" | "high" | "critical"
       issue_status:
@@ -6685,6 +6686,7 @@ export const Constants = {
         "developer",
         "engineering",
         "programming",
+        "flyer_worker",
       ],
       impact_level: ["low", "medium", "high", "critical"],
       issue_severity: ["low", "medium", "high", "critical"],
