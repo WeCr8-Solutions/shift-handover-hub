@@ -58,6 +58,7 @@ const ROLE_CONFIG: Record<AppRole, { label: string; variant: "default" | "second
   programming: { label: "Programming", variant: "secondary", icon: <UserCog className="w-3 h-3" /> },
   operator: { label: "Operator", variant: "outline", icon: <UsersIcon className="w-3 h-3" /> },
   viewer: { label: "Viewer", variant: "outline", icon: <Eye className="w-3 h-3" /> },
+  flyer_worker: { label: "Flyer Worker", variant: "outline", icon: <UsersIcon className="w-3 h-3" /> },
 };
 
 const ORG_ROLE_CONFIG: Record<string, { label: string; icon: React.ReactNode }> = {
