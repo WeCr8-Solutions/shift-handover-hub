@@ -22,6 +22,7 @@ import Auth from "./pages/Auth";
 import Teams from "./pages/Teams";
 import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
+import FieldView from "./pages/FieldView";
 import Testing from "./pages/Testing";
 import Queue from "./pages/Queue";
 import Setup from "./pages/Setup";
@@ -122,6 +123,8 @@ const App = () => (
                     <Route path="/teams" element={<Teams />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/admin" element={<Admin />} />
+                    <Route path="/field" element={<FieldView />} />
+                    <Route path="/field/:token" element={<FieldView />} />
                     <Route path="/testing" element={<Testing />} />
                     <Route path="/queue" element={<Queue />} />
                     <Route path="/history" element={<WorkOrderHistoryPage />} />

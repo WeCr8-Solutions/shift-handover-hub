@@ -1,0 +1,108 @@
+================================================================================
+JOBLINE.AI PLATFORM ARCHITECTURE
+================================================================================
+Last updated: 2026-03-27
+
+OVERVIEW
+--------
+JobLine.ai is a three-repository platform. All user-facing state, subscriptions,
+and UI live in shift-handover-hub. The other two repos are add-ins that connect
+back to the hub.
+
+================================================================================
+REPOSITORIES
+================================================================================
+
+1. shift-handover-hub  (THIS REPO — Core Platform)
+   ─────────────────────────────────────────────────
+   Path (WeCr8 desktop): D:\MajorProjects\shift-handover-hub
+   Role: Main dashboard and application. Source of truth for all user state,
+         subscriptions, and the primary UI. All add-ins feed data into this.
+   Stack:
+     - React + Vite + TypeScript
+     - Shadcn / Radix UI component library
+     - Supabase (database, auth, realtime)
+     - Lovable.dev build tooling
+     - Vercel deployment
+   Status: Active — live deploys, ongoing development
+
+
+2. jobline.ai-g-code  (VS Code Extension Add-In)
+   ────────────────────────────────────────────────
+   Path (WeCr8 desktop): D:\MajorProjects\jobline.ai-g-code
+   GitHub: https://github.com/WeCr8-Solutions/jobline.ai-g-code
+   Role: Subscription-gated VS Code extension. Provides G-code intelligence
+         directly in the editor. DNC connectivity (planned for v1.0) will
+         communicate through the relay layer.
+   Stack: TypeScript VS Code extension
+   Status: v0.1.0 — 3 commits, marketplace-ready
+   Rules:
+     - NEVER queries Supabase directly
+     - Reads/writes only via the relay or direct file access
+     - Subscription token issued by the hub
+
+
+3. jobline-relay  (Connectivity Layer — monorepo)
+   ──────────────────────────────────────────────────
+   Path (WeCr8 desktop): D:\MajorProjects\jobline-relay
+   GitHub: https://github.com/WeCr8-Solutions/jobline.ai-machineconnect
+   Role: Subscription-gated connectivity add-in. Bridges CNC machines to the
+         hub dashboard. Pure infrastructure — no user-facing dashboard.
+
+   Packages within the monorepo:
+   ┌────────────────────────┬───────────────────────────┬──────────────────────────────────────────────────────────────┐
+   │ Directory              │ npm package               │ Role                                                         │
+   ├────────────────────────┼───────────────────────────┼──────────────────────────────────────────────────────────────┤
+   │ jobline-relay/         │ @jobline/relay            │ WebSocket event broker (VS Code / machines ↔ hub)            │
+   │ machineconnect/        │ @jobline/machineconnect   │ CNC machine connector (serial, Ethernet, MTConnect)          │
+   │ hub-bridge/            │ @jobline/hub-bridge       │ Relay subscriber → forwards events to shift-handover-hub API │
+   │ jobline-relay-sdk/     │ (SDK)                     │ Client SDK for consuming relay events                        │
+   └────────────────────────┴───────────────────────────┴──────────────────────────────────────────────────────────────┘
+
+================================================================================
+DATA FLOW
+================================================================================
+
+  CNC Machine
+      │
+      ▼
+  @jobline/machineconnect        (serial / Ethernet / MTConnect)
+      │
+      ▼
+  @jobline/relay                 (WebSocket event broker)
+      │
+      ├──► @jobline/hub-bridge ──► shift-handover-hub  (main dashboard / Supabase)
+      │
+      └──► jobline.ai-g-code       (VS Code extension, editor-side)
+
+================================================================================
+ARCHITECTURAL RULES
+================================================================================
+
+1. shift-handover-hub is the single source of truth.
+   All user state, subscription management, and UI lives here.
+
+2. jobline-relay is pure infrastructure.
+   It has no user-facing dashboard of its own.
+
+3. jobline.ai-g-code is a VS Code client only.
+   It never queries Supabase directly. It trusts a token issued by the hub.
+
+4. Subscription gating lives in the hub.
+   Add-ins receive and validate a token issued by the hub — they do not
+   implement their own subscription logic.
+
+5. When deciding where new code belongs, ask:
+   - Is this user state, subscription logic, or UI? → shift-handover-hub
+   - Is this CNC-specific connectivity logic? → jobline-relay / machineconnect
+   - Is this editor-side G-code tooling? → jobline.ai-g-code
+
+================================================================================
+MACHINE-SPECIFIC NOTES
+================================================================================
+
+Local paths above are for the WeCr8 desktop machine.
+On other machines (e.g. WeCr8 laptop), paths will differ.
+GitHub URLs are the authoritative cross-machine references.
+
+================================================================================
