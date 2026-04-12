@@ -15,10 +15,11 @@ CREATE TABLE IF NOT EXISTS public.flyer_mediums (
 );
 
 INSERT INTO public.flyer_mediums (name, description, sort_order) VALUES
-  ('Full-page Color 8.5×11',        'Standard full-page color flyer',        1),
-  ('Half-page Color',               'Half-page color flyer (two per sheet)',  2),
-  ('Small Card (Business Card size)','Small format card handout',             3),
-  ('Door Hanger',                   'Die-cut door hanger',                    4)
+  ('Full-page Color 8.5×11',        'Standard full-page color flyer',                          1),
+  ('Half-page Color',               'Half-page color flyer (two per sheet)',                   2),
+  ('Tri-fold',                      'Tri-fold brochure (reserved for future designs)',          3),
+  ('Small Card (Business Card size)','Small format card handout',                              4),
+  ('Door Hanger',                   'Die-cut door hanger',                                     5)
 ON CONFLICT (name) DO NOTHING;
 
 ALTER TABLE public.flyer_mediums ENABLE ROW LEVEL SECURITY;

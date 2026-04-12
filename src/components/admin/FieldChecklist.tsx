@@ -111,8 +111,9 @@ function suggestedDesign(stop: DropStop): FlyerDesignId {
 const FALLBACK_MEDIUMS: Medium[] = [
   { id: "full-page",   name: "Full-page Color 8.5×11",        sort_order: 1 },
   { id: "half-page",   name: "Half-page Color",                sort_order: 2 },
-  { id: "small-card",  name: "Small Card (Business Card size)", sort_order: 3 },
-  { id: "door-hanger", name: "Door Hanger",                    sort_order: 4 },
+  { id: "tri-fold",    name: "Tri-fold",                       sort_order: 3 },
+  { id: "small-card",  name: "Small Card (Business Card size)", sort_order: 4 },
+  { id: "door-hanger", name: "Door Hanger",                    sort_order: 5 },
 ];
 
 // ─── Types ────────────────────────────────────────────────────────────────────
