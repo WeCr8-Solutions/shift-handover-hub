@@ -49,22 +49,70 @@ export const INTERACTION_OPTIONS = [
 
 type InteractionKey = typeof INTERACTION_OPTIONS[number]["key"];
 
-// ─── Flyer recommendation per business type ───────────────────────────────────
+// ─── Flyer designs (content / campaign type) ─────────────────────────────────
+// Each entry represents a distinct flyer design with its own message/audience.
+// Expand this list as new designs are printed.
 
-function flyerRecommendation(stop: DropStop): string {
-  if (stop.isFirearms)  return "Firearms / Gunsmith flyer";
-  if (stop.isAerospace) return "Aerospace & Defense flyer";
-  if (stop.isOffRoad)   return "Off-road / Performance flyer";
-  return "CNC / Machinist flyer";
+export const FLYER_DESIGNS = [
+  {
+    id: "cnc-machinist",
+    name: "CNC & Machinist",
+    description: "Job tracking, shift handover, work orders for CNC operators & machinists",
+    suggestFor: (s: DropStop) => !s.isFirearms && !s.isAerospace && !s.isOffRoad,
+  },
+  {
+    id: "welding-fab",
+    name: "Welding & Fabrication",
+    description: "Shift handover and job tracking for welders and metal fabricators",
+    suggestFor: (s: DropStop) => s.isOffRoad || (!s.isFirearms && !s.isAerospace),
+  },
+  {
+    id: "aerospace-defense",
+    name: "Aerospace & Defense",
+    description: "Compliance-ready job tracking for aerospace and defense shops",
+    suggestFor: (s: DropStop) => s.isAerospace,
+  },
+  {
+    id: "offroad-performance",
+    name: "Off-Road & Performance",
+    description: "Build tracking and team coordination for off-road and performance shops",
+    suggestFor: (s: DropStop) => s.isOffRoad,
+  },
+  {
+    id: "firearms-gunsmith",
+    name: "Firearms & Gunsmith",
+    description: "Work order and compliance tracking for gunsmith shops",
+    suggestFor: (s: DropStop) => s.isFirearms,
+  },
+  {
+    id: "general-job-tracking",
+    name: "General Job Tracking",
+    description: "Universal Jobline.ai — works for any trade or shop",
+    suggestFor: () => true,
+  },
+  {
+    id: "cabinet-woodworking",
+    name: "Cabinet & Woodworking",
+    description: "Project and job tracking for cabinet makers and woodworking shops",
+    suggestFor: () => false, // leave for manual selection
+  },
+] as const;
+
+export type FlyerDesignId = typeof FLYER_DESIGNS[number]["id"];
+
+/** Returns the best-match design id for a given stop */
+function suggestedDesign(stop: DropStop): FlyerDesignId {
+  const match = FLYER_DESIGNS.find(d => d.suggestFor(stop));
+  return match ? match.id : "general-job-tracking";
 }
 
-// ─── Static fallback mediums (used if flyer_mediums table not yet migrated) ───
+// ─── Static fallback formats (used if flyer_mediums table not yet migrated) ──
 
 const FALLBACK_MEDIUMS: Medium[] = [
-  { id: "full-page",   name: "Full-page Color 8.5×11",       sort_order: 1 },
-  { id: "half-page",   name: "Half-page Color",               sort_order: 2 },
-  { id: "small-card",  name: "Small Card (Business Card size)",sort_order: 3 },
-  { id: "door-hanger", name: "Door Hanger",                   sort_order: 4 },
+  { id: "full-page",   name: "Full-page Color 8.5×11",        sort_order: 1 },
+  { id: "half-page",   name: "Half-page Color",                sort_order: 2 },
+  { id: "small-card",  name: "Small Card (Business Card size)", sort_order: 3 },
+  { id: "door-hanger", name: "Door Hanger",                    sort_order: 4 },
 ];
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -87,7 +135,8 @@ interface StopVisit {
   id: string;
   stop_key: string;
   zone_number: number;
-  medium_name: string | null;
+  medium_name: string | null;   // format/size
+  flyer_design: string | null;  // content/design type
   flyer_count: number;
   interaction_flags: string[];
   contact_name: string | null;
@@ -159,9 +208,17 @@ function VisitHistoryItem({ v }: { v: StopVisit }) {
       "border-red-200 bg-red-50 dark:bg-red-950/20":      color === "red",
       "border bg-muted/30":                                color === "none",
     })}>
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
         <span className="font-medium">{dateStr} · {timeStr}</span>
-        <span className="text-muted-foreground">{v.flyer_count} flyer{v.flyer_count !== 1 ? "s" : ""} · {v.medium_name ?? "—"}</span>
+        <span className="text-muted-foreground tabular-nums">{v.flyer_count} flyer{v.flyer_count !== 1 ? "s" : ""}</span>
+      </div>
+      <div className="flex items-center gap-1.5 flex-wrap">
+        {v.medium_name && <Badge variant="outline" className="text-[10px] h-4 px-1">{v.medium_name}</Badge>}
+        {v.flyer_design && (
+          <Badge variant="secondary" className="text-[10px] h-4 px-1">
+            {FLYER_DESIGNS.find(d => d.id === v.flyer_design)?.name ?? v.flyer_design}
+          </Badge>
+        )}
       </div>
       {flagLabels && <p className="text-muted-foreground">{flagLabels}</p>}
       {(v.contact_name || v.contact_title) && (
@@ -251,18 +308,20 @@ function LogSheet({
   onSaved: () => void;
   onClose: () => void;
 }) {
-  const [mediumId, setMediumId]   = useState("");
-  const [count, setCount]         = useState("5");
-  const [flags, setFlags]         = useState<Set<InteractionKey>>(new Set());
+  const [mediumId, setMediumId]     = useState("");
+  const [flyerDesign, setFlyerDesign] = useState<FlyerDesignId | "">("");
+  const [count, setCount]           = useState("5");
+  const [flags, setFlags]           = useState<Set<InteractionKey>>(new Set());
   const [contactName, setContactName]   = useState("");
   const [contactTitle, setContactTitle] = useState("");
-  const [notes, setNotes]         = useState("");
-  const [saving, setSaving]       = useState(false);
+  const [notes, setNotes]           = useState("");
+  const [saving, setSaving]         = useState(false);
   const [showHistory, setShowHistory] = useState(false);
 
   useEffect(() => {
     if (stop) {
       setMediumId(mediums[0]?.id ?? "");
+      setFlyerDesign(suggestedDesign(stop));
       setCount("5");
       setFlags(new Set());
       setContactName("");
@@ -298,6 +357,7 @@ function LogSheet({
         stop_name:        stop.name,
         medium_id:        mediumId || null,
         medium_name:      medium?.name ?? null,
+        flyer_design:     flyerDesign || null,
         flyer_count:      parseInt(count, 10) || 0,
         interaction_flags: [...flags],
         contact_name:     contactName.trim() || null,
@@ -316,8 +376,6 @@ function LogSheet({
 
   if (!stop) return null;
 
-  const rec = flyerRecommendation(stop);
-
   return (
     <Sheet open={!!stop} onOpenChange={open => !open && onClose()}>
       <SheetContent side="bottom" className="max-h-[92vh] overflow-y-auto pb-8">
@@ -329,12 +387,6 @@ function LogSheet({
           {stop.address && (
             <p className="text-xs text-muted-foreground pl-7">{stop.address}</p>
           )}
-          {/* Flyer recommendation */}
-          <div className="pl-7 mt-1">
-            <Badge variant="secondary" className="text-xs">
-              Recommended: {rec}
-            </Badge>
-          </div>
         </SheetHeader>
 
         {/* Previous visits toggle */}
@@ -363,12 +415,40 @@ function LogSheet({
             Log {visits.length > 0 ? "Another " : ""}Visit
           </p>
 
-          {/* Medium */}
+          {/* Flyer design (content/campaign type) */}
           <div className="space-y-1.5">
-            <Label className="text-sm">Flyer Type Left</Label>
+            <Label className="text-sm">Flyer Design</Label>
+            <Select
+              value={flyerDesign}
+              onValueChange={v => setFlyerDesign(v as FlyerDesignId)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Which flyer design?" />
+              </SelectTrigger>
+              <SelectContent position="popper" className="z-[200]">
+                {FLYER_DESIGNS.map(d => (
+                  <SelectItem key={d.id} value={d.id}>
+                    <span className="font-medium">{d.name}</span>
+                    <span className="block text-xs text-muted-foreground leading-tight">
+                      {d.description}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {flyerDesign && (
+              <p className="text-xs text-muted-foreground">
+                {FLYER_DESIGNS.find(d => d.id === flyerDesign)?.description}
+              </p>
+            )}
+          </div>
+
+          {/* Format / size */}
+          <div className="space-y-1.5">
+            <Label className="text-sm">Format / Size</Label>
             <Select value={mediumId} onValueChange={setMediumId}>
               <SelectTrigger>
-                <SelectValue placeholder="Select type…" />
+                <SelectValue placeholder="Select size…" />
               </SelectTrigger>
               <SelectContent position="popper" className="z-[200]">
                 {mediums.map(m => (
@@ -512,7 +592,7 @@ export function FieldChecklist({
     const [vRes, mRes] = await Promise.all([
       supabase
         .from("flyer_stop_visits" as never)
-        .select("id,stop_key,zone_number,medium_name,flyer_count,interaction_flags,contact_name,contact_title,visited_by_name,visited_at,notes")
+        .select("id,stop_key,zone_number,medium_name,flyer_design,flyer_count,interaction_flags,contact_name,contact_title,visited_by_name,visited_at,notes")
         .eq("campaign_id" as never, campaignId as never)
         .order("visited_at" as never, { ascending: false }),
       supabase
