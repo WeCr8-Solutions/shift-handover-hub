@@ -1,51 +1,62 @@
 /**
- * FieldChecklist.tsx
+ * FieldChecklist.tsx — Mobile-first flyer drop field checklist
  *
- * Mobile-first field checklist for the San Diego County flyer drop.
- * Shows zones as accordions; each zone lists its stops with a check-off button.
- * Tapping a stop opens a quick "Log Visit" sheet (medium, count, notes).
- *
- * Access: admin / developer / flyer_worker roles only.
- * Props:
- *   campaignId    — UUID of the flyer_campaigns row
- *   dbZones       — flyer_zones rows (to get zone IDs)
- *   assignedZones — optional array of zone numbers to scope display (helper mode)
- *   assignmentId  — optional UUID of flyer_zone_assignments row
- *   currentUserId — auth.uid() of the signed-in user
- *   displayName   — name to stamp on visits
+ * Per-stop features:
+ *  - Color-coded rows based on last interaction type
+ *  - Full running visit history per business
+ *  - Interaction checkboxes (spoke to, left at desk, no one home, etc.)
+ *  - Point of contact name + title
+ *  - Flyer type recommendation based on business category
+ *  - Flyer count starting at 1
+ *  - Free-text notes
  */
 
 import React, { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { ZONE_STOPS, getStopsForZone, DropStop } from "./flyerRouteData";
-import { FLYER_ZONES } from "./flyerZoneData";
+import { getStopsForZone, DropStop } from "./flyerRouteData";
 import { toast } from "sonner";
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
+  Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from "@/components/ui/accordion";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
+  Sheet, SheetContent, SheetHeader, SheetTitle,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Circle, MapPin, Star, Shield, Zap } from "lucide-react";
+import { CheckCircle2, Circle, MapPin, Star, Shield, Zap, Plus, Clock, User } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+// ─── Interaction options ──────────────────────────────────────────────────────
+
+export const INTERACTION_OPTIONS = [
+  { key: "spoke_to_person",   label: "Spoke with someone",           needsContact: true  },
+  { key: "left_front_desk",   label: "Left at front desk",           needsContact: false },
+  { key: "left_lobby",        label: "Left in lobby / waiting area", needsContact: false },
+  { key: "left_with_manager", label: "Left with manager / owner",    needsContact: true  },
+  { key: "qr_scanned",        label: "QR code scanned / interest shown", needsContact: true },
+  { key: "follow_up",         label: "Will follow up",               needsContact: false },
+  { key: "no_one_available",  label: "No one available",             needsContact: false },
+  { key: "closed",            label: "Business closed / locked",     needsContact: false },
+  { key: "not_interested",    label: "Not interested",               needsContact: false },
+] as const;
+
+type InteractionKey = typeof INTERACTION_OPTIONS[number]["key"];
+
+// ─── Flyer recommendation per business type ───────────────────────────────────
+
+function flyerRecommendation(stop: DropStop): string {
+  if (stop.isFirearms)  return "Firearms / Gunsmith flyer";
+  if (stop.isAerospace) return "Aerospace & Defense flyer";
+  if (stop.isOffRoad)   return "Off-road / Performance flyer";
+  return "CNC / Machinist flyer";
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -69,6 +80,9 @@ interface StopVisit {
   zone_number: number;
   medium_name: string | null;
   flyer_count: number;
+  interaction_flags: string[];
+  contact_name: string | null;
+  contact_title: string | null;
   visited_by_name: string | null;
   visited_at: string;
   notes: string | null;
@@ -77,113 +91,134 @@ interface StopVisit {
 interface FieldChecklistProps {
   campaignId: string;
   dbZones: DbZone[];
-  assignedZones?: number[];   // undefined = all zones (admin view)
+  assignedZones?: number[];
   assignmentId?: string;
   currentUserId: string;
   displayName: string;
 }
 
-// ─── Zone progress pill ───────────────────────────────────────────────────────
+// ─── Color helpers ────────────────────────────────────────────────────────────
 
-function ZoneProgress({
-  zoneNumber,
-  visits,
-}: {
-  zoneNumber: number;
-  visits: StopVisit[];
-}) {
-  const stops = getStopsForZone(zoneNumber).filter(
-    s => !(zoneNumber === 14 && s.key === "z14_regional_note"),
-  );
-  const visited = new Set(
-    visits.filter(v => v.zone_number === zoneNumber).map(v => v.stop_key),
-  );
-  const done = stops.filter(s => visited.has(s.key)).length;
-  const total = stops.length;
-  const pct = total === 0 ? 0 : Math.round((done / total) * 100);
-  const color =
-    pct === 100 ? "bg-green-500" : pct > 0 ? "bg-blue-500" : "bg-muted";
+type VisitColor = "green" | "blue" | "amber" | "red" | "none";
+
+function visitColor(visits: StopVisit[]): VisitColor {
+  if (!visits.length) return "none";
+  const flags = visits[0].interaction_flags ?? [];
+  if (flags.includes("spoke_to_person") || flags.includes("qr_scanned") || flags.includes("left_with_manager")) return "green";
+  if (flags.includes("left_front_desk") || flags.includes("left_lobby")) return "blue";
+  if (flags.includes("follow_up")) return "blue";
+  if (flags.includes("no_one_available") || flags.includes("closed")) return "amber";
+  if (flags.includes("not_interested")) return "red";
+  return "green"; // visited, no specific flag
+}
+
+const COLOR_ICON: Record<VisitColor, string> = {
+  green: "text-green-500",
+  blue:  "text-blue-500",
+  amber: "text-amber-500",
+  red:   "text-red-400",
+  none:  "text-muted-foreground",
+};
+
+const COLOR_ROW: Record<VisitColor, string> = {
+  green: "bg-green-50/60 dark:bg-green-950/20",
+  blue:  "bg-blue-50/60 dark:bg-blue-950/20",
+  amber: "bg-amber-50/60 dark:bg-amber-950/20",
+  red:   "bg-red-50/40 dark:bg-red-950/10",
+  none:  "bg-background",
+};
+
+// ─── Visit history row ────────────────────────────────────────────────────────
+
+function VisitHistoryItem({ v }: { v: StopVisit }) {
+  const color = visitColor([v]);
+  const dateStr = new Date(v.visited_at).toLocaleDateString("en-US", {
+    month: "short", day: "numeric", year: "numeric",
+  });
+  const timeStr = new Date(v.visited_at).toLocaleTimeString([], {
+    hour: "2-digit", minute: "2-digit",
+  });
+  const flagLabels = (v.interaction_flags ?? [])
+    .map(k => INTERACTION_OPTIONS.find(o => o.key === k)?.label ?? k)
+    .join(" · ");
 
   return (
-    <span className="flex items-center gap-2 text-sm text-muted-foreground">
-      <span className="w-20 h-2 rounded-full bg-muted overflow-hidden">
-        <span
-          className={cn("block h-full rounded-full transition-all", color)}
-          style={{ width: `${pct}%` }}
-        />
-      </span>
-      <span className="tabular-nums">
-        {done}/{total}
-      </span>
-    </span>
+    <div className={cn("rounded-lg border px-3 py-2.5 text-xs space-y-1", {
+      "border-green-200 bg-green-50 dark:bg-green-950/30": color === "green",
+      "border-blue-200 bg-blue-50 dark:bg-blue-950/30":   color === "blue",
+      "border-amber-200 bg-amber-50 dark:bg-amber-950/30": color === "amber",
+      "border-red-200 bg-red-50 dark:bg-red-950/20":      color === "red",
+      "border bg-muted/30":                                color === "none",
+    })}>
+      <div className="flex items-center justify-between gap-2">
+        <span className="font-medium">{dateStr} · {timeStr}</span>
+        <span className="text-muted-foreground">{v.flyer_count} flyer{v.flyer_count !== 1 ? "s" : ""} · {v.medium_name ?? "—"}</span>
+      </div>
+      {flagLabels && <p className="text-muted-foreground">{flagLabels}</p>}
+      {(v.contact_name || v.contact_title) && (
+        <p className="flex items-center gap-1">
+          <User className="w-3 h-3" />
+          {[v.contact_name, v.contact_title].filter(Boolean).join(" — ")}
+        </p>
+      )}
+      {v.notes && <p className="italic text-muted-foreground">{v.notes}</p>}
+      {v.visited_by_name && (
+        <p className="text-muted-foreground">by {v.visited_by_name}</p>
+      )}
+    </div>
   );
 }
 
 // ─── Stop row ─────────────────────────────────────────────────────────────────
 
-function StopRow({
-  stop,
-  visit,
-  onTap,
-}: {
+function StopRow({ stop, visits, onTap }: {
   stop: DropStop;
-  visit: StopVisit | undefined;
+  visits: StopVisit[];
   onTap: (stop: DropStop) => void;
 }) {
+  const color  = visitColor(visits);
+  const latest = visits[0];
+
   return (
     <button
+      type="button"
       onClick={() => onTap(stop)}
       className={cn(
-        "w-full flex items-start gap-3 px-4 py-3 border-b last:border-0 text-left",
-        "active:bg-muted/60 transition-colors",
-        visit ? "bg-green-50/50 dark:bg-green-950/20" : "bg-background",
+        "w-full flex items-start gap-3 px-4 py-3 border-b last:border-0 text-left active:opacity-70 transition-colors",
+        COLOR_ROW[color],
       )}
     >
       <span className="mt-0.5 shrink-0">
-        {visit ? (
-          <CheckCircle2 className="w-5 h-5 text-green-500" />
-        ) : (
-          <Circle className="w-5 h-5 text-muted-foreground" />
-        )}
+        {color !== "none"
+          ? <CheckCircle2 className={cn("w-5 h-5", COLOR_ICON[color])} />
+          : <Circle className="w-5 h-5 text-muted-foreground" />
+        }
       </span>
       <span className="flex-1 min-w-0">
         <span className="flex items-center gap-1.5 flex-wrap">
-          <span
-            className={cn(
-              "font-medium text-sm",
-              visit ? "text-green-700 dark:text-green-400" : "text-foreground",
-            )}
-          >
+          <span className={cn("font-medium text-sm", color !== "none" && COLOR_ICON[color])}>
             {stop.name}
           </span>
-          {stop.isPriority && (
-            <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500 shrink-0" />
-          )}
-          {stop.isFirearms && (
-            <Shield className="w-3.5 h-3.5 text-red-500 shrink-0" />
-          )}
-          {stop.isAerospace && (
-            <Zap className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+          {stop.isPriority  && <Star   className="w-3.5 h-3.5 text-amber-500 fill-amber-500 shrink-0" />}
+          {stop.isFirearms  && <Shield className="w-3.5 h-3.5 text-red-500 shrink-0" />}
+          {stop.isAerospace && <Zap    className="w-3.5 h-3.5 text-blue-500 shrink-0" />}
+          {visits.length > 1 && (
+            <Badge variant="outline" className="text-[10px] h-4 px-1">{visits.length}×</Badge>
           )}
         </span>
-        <span className="block text-xs text-muted-foreground truncate">
-          {stop.address}
-        </span>
-        {visit && (
-          <span className="block text-xs text-green-600 dark:text-green-400 mt-0.5">
-            {visit.flyer_count} flyer{visit.flyer_count !== 1 ? "s" : ""} ·{" "}
-            {visit.medium_name ?? "—"} ·{" "}
-            {new Date(visit.visited_at).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
+        <span className="block text-xs text-muted-foreground truncate">{stop.address}</span>
+        {latest && (
+          <span className="block text-xs text-muted-foreground mt-0.5">
+            Last: {new Date(latest.visited_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+            {latest.contact_name && ` · ${latest.contact_name}`}
           </span>
         )}
-        {stop.notes && !visit && (
-          <span className="block text-xs text-muted-foreground mt-0.5 italic">
-            {stop.notes}
-          </span>
+        {!latest && stop.notes && (
+          <span className="block text-xs text-muted-foreground mt-0.5 italic">{stop.notes}</span>
         )}
+      </span>
+      <span className="shrink-0 mt-1">
+        <Plus className="w-4 h-4 text-muted-foreground/60" />
       </span>
     </button>
   );
@@ -191,46 +226,54 @@ function StopRow({
 
 // ─── Log Visit sheet ──────────────────────────────────────────────────────────
 
-interface LogSheetProps {
+function LogSheet({
+  stop, zoneId, zoneNumber, campaignId, visits, mediums,
+  assignmentId, currentUserId, displayName, onSaved, onClose,
+}: {
   stop: DropStop | null;
   zoneId: string;
   zoneNumber: number;
   campaignId: string;
-  existingVisit: StopVisit | undefined;
+  visits: StopVisit[];
   mediums: Medium[];
   assignmentId?: string;
   currentUserId: string;
   displayName: string;
   onSaved: () => void;
   onClose: () => void;
-}
-
-function LogSheet({
-  stop,
-  zoneId,
-  zoneNumber,
-  campaignId,
-  existingVisit,
-  mediums,
-  assignmentId,
-  currentUserId,
-  displayName,
-  onSaved,
-  onClose,
-}: LogSheetProps) {
-  const [mediumId, setMediumId] = useState<string>("");
-  const [count, setCount] = useState("5");
-  const [notes, setNotes] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+}) {
+  const [mediumId, setMediumId]   = useState("");
+  const [count, setCount]         = useState("5");
+  const [flags, setFlags]         = useState<Set<InteractionKey>>(new Set());
+  const [contactName, setContactName]   = useState("");
+  const [contactTitle, setContactTitle] = useState("");
+  const [notes, setNotes]         = useState("");
+  const [saving, setSaving]       = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
 
   useEffect(() => {
     if (stop) {
       setMediumId(mediums[0]?.id ?? "");
       setCount("5");
+      setFlags(new Set());
+      setContactName("");
+      setContactTitle("");
       setNotes("");
+      setShowHistory(false);
     }
   }, [stop, mediums]);
+
+  const needsContact = [...flags].some(
+    f => INTERACTION_OPTIONS.find(o => o.key === f)?.needsContact,
+  );
+
+  function toggleFlag(key: InteractionKey) {
+    setFlags(prev => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
+    });
+  }
 
   async function handleSave() {
     if (!stop) return;
@@ -239,222 +282,263 @@ function LogSheet({
     const { error } = await supabase
       .from("flyer_stop_visits" as never)
       .insert({
-        campaign_id: campaignId,
-        zone_id: zoneId,
-        zone_number: zoneNumber,
-        stop_key: stop.key,
-        stop_name: stop.name,
-        medium_id: mediumId || null,
-        medium_name: medium?.name ?? null,
-        flyer_count: parseInt(count, 10) || 0,
-        visited_by: currentUserId,
-        visited_by_name: displayName,
-        assignment_id: assignmentId ?? null,
-        notes: notes.trim() || null,
+        campaign_id:      campaignId,
+        zone_id:          zoneId,
+        zone_number:      zoneNumber,
+        stop_key:         stop.key,
+        stop_name:        stop.name,
+        medium_id:        mediumId || null,
+        medium_name:      medium?.name ?? null,
+        flyer_count:      parseInt(count, 10) || 0,
+        interaction_flags: [...flags],
+        contact_name:     contactName.trim() || null,
+        contact_title:    contactTitle.trim() || null,
+        visited_by:       currentUserId,
+        visited_by_name:  displayName,
+        assignment_id:    assignmentId ?? null,
+        notes:            notes.trim() || null,
       } as never);
     setSaving(false);
-    if (error) {
-      toast.error("Failed to save visit");
-      return;
-    }
+    if (error) { toast.error("Failed to save visit"); return; }
     toast.success(`${stop.name} logged!`);
     onSaved();
     onClose();
   }
 
-  async function handleDelete() {
-    if (!existingVisit) return;
-    setDeleting(true);
-    const { error } = await supabase
-      .from("flyer_stop_visits" as never)
-      .delete()
-      .eq("id", existingVisit.id as never);
-    setDeleting(false);
-    if (error) {
-      toast.error("Failed to remove visit");
-      return;
-    }
-    toast.success("Visit removed");
-    onSaved();
-    onClose();
-  }
+  if (!stop) return null;
+
+  const rec = flyerRecommendation(stop);
 
   return (
     <Sheet open={!!stop} onOpenChange={open => !open && onClose()}>
-      <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto">
-        <SheetHeader className="mb-4">
-          <SheetTitle className="flex items-start gap-2">
+      <SheetContent side="bottom" className="max-h-[92vh] overflow-y-auto pb-8">
+        <SheetHeader className="mb-3">
+          <SheetTitle className="flex items-start gap-2 text-base">
             <MapPin className="w-5 h-5 mt-0.5 text-primary shrink-0" />
-            <span>{stop?.name}</span>
+            <span className="leading-tight">{stop.name}</span>
           </SheetTitle>
-          {stop?.address && (
-            <p className="text-sm text-muted-foreground">{stop.address}</p>
+          {stop.address && (
+            <p className="text-xs text-muted-foreground pl-7">{stop.address}</p>
           )}
+          {/* Flyer recommendation */}
+          <div className="pl-7 mt-1">
+            <Badge variant="secondary" className="text-xs">
+              Recommended: {rec}
+            </Badge>
+          </div>
         </SheetHeader>
 
-        {existingVisit ? (
-          <div className="space-y-4">
-            <div className="rounded-lg border p-3 bg-green-50 dark:bg-green-950/30 text-sm space-y-1">
-              <p className="font-medium text-green-700 dark:text-green-400">
-                Already visited
-              </p>
-              <p>
-                {existingVisit.flyer_count} flyer
-                {existingVisit.flyer_count !== 1 ? "s" : ""} ·{" "}
-                {existingVisit.medium_name ?? "—"}
-              </p>
-              {existingVisit.notes && (
-                <p className="text-muted-foreground italic">
-                  {existingVisit.notes}
-                </p>
-              )}
-            </div>
-            <Button
-              variant="destructive"
-              className="w-full"
-              onClick={handleDelete}
-              disabled={deleting}
+        {/* Previous visits toggle */}
+        {visits.length > 0 && (
+          <div className="mb-4">
+            <button
+              type="button"
+              onClick={() => setShowHistory(h => !h)}
+              className="flex items-center gap-1.5 text-xs text-primary font-medium mb-2"
             >
-              {deleting ? "Removing…" : "Remove Visit"}
-            </Button>
+              <Clock className="w-3.5 h-3.5" />
+              {visits.length} previous visit{visits.length !== 1 ? "s" : ""}
+              <span className="text-muted-foreground">({showHistory ? "hide" : "show"})</span>
+            </button>
+            {showHistory && (
+              <div className="space-y-2 mb-3">
+                {visits.map(v => <VisitHistoryItem key={v.id} v={v} />)}
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Medium</Label>
-              <Select value={mediumId} onValueChange={setMediumId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select flyer type" />
-                </SelectTrigger>
-                <SelectContent>
-                  {mediums.map(m => (
-                    <SelectItem key={m.id} value={m.id}>
-                      {m.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+        )}
 
-            <div className="space-y-2">
-              <Label>Flyers Left</Label>
-              <div className="flex gap-2">
-                {["3", "5", "8", "10"].map(n => (
-                  <Button
-                    key={n}
-                    variant={count === n ? "default" : "outline"}
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => setCount(n)}
-                  >
-                    {n}
-                  </Button>
+        {/* New visit form */}
+        <div className="space-y-4">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+            Log {visits.length > 0 ? "Another " : ""}Visit
+          </p>
+
+          {/* Medium */}
+          <div className="space-y-1.5">
+            <Label className="text-sm">Flyer Type Left</Label>
+            <Select value={mediumId} onValueChange={setMediumId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select type…" />
+              </SelectTrigger>
+              <SelectContent>
+                {mediums.map(m => (
+                  <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Count */}
+          <div className="space-y-1.5">
+            <Label className="text-sm">How Many Left</Label>
+            <div className="flex gap-2 flex-wrap">
+              {["1", "3", "5", "8", "10"].map(n => (
+                <Button
+                  key={n}
+                  variant={count === n ? "default" : "outline"}
+                  size="sm"
+                  className="flex-1 min-w-[2.5rem]"
+                  onClick={() => setCount(n)}
+                >
+                  {n}
+                </Button>
+              ))}
+              <Input
+                type="number" min="1" max="99"
+                value={count}
+                onChange={e => setCount(e.target.value)}
+                className="w-16 text-center"
+              />
+            </div>
+          </div>
+
+          {/* Interaction checkboxes */}
+          <div className="space-y-2">
+            <Label className="text-sm">What happened?</Label>
+            <div className="grid grid-cols-1 gap-2">
+              {INTERACTION_OPTIONS.map(opt => (
+                <label
+                  key={opt.key}
+                  className="flex items-center gap-3 cursor-pointer rounded-md border px-3 py-2 text-sm hover:bg-muted/40 transition-colors"
+                >
+                  <Checkbox
+                    checked={flags.has(opt.key as InteractionKey)}
+                    onCheckedChange={() => toggleFlag(opt.key as InteractionKey)}
+                  />
+                  {opt.label}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Contact fields — shown when a flag that needs a contact is checked */}
+          {needsContact && (
+            <div className="space-y-3 rounded-lg border p-3 bg-muted/20">
+              <p className="text-xs font-medium text-muted-foreground">Point of Contact</p>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Name</Label>
                 <Input
-                  type="number"
-                  min="1"
-                  max="99"
-                  value={count}
-                  onChange={e => setCount(e.target.value)}
-                  className="w-16 text-center"
+                  placeholder="e.g. John Smith"
+                  value={contactName}
+                  onChange={e => setContactName(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Title / Role (optional)</Label>
+                <Input
+                  placeholder="e.g. Shop Manager, Owner"
+                  value={contactTitle}
+                  onChange={e => setContactTitle(e.target.value)}
                 />
               </div>
             </div>
+          )}
 
-            <div className="space-y-2">
-              <Label>Notes (optional)</Label>
-              <Textarea
-                placeholder="Spoke to manager, left at front desk…"
-                value={notes}
-                onChange={e => setNotes(e.target.value)}
-                rows={2}
-              />
-            </div>
-
-            <Button
-              className="w-full"
-              onClick={handleSave}
-              disabled={saving || !mediumId}
-            >
-              {saving ? "Saving…" : "Log Visit"}
-            </Button>
+          {/* Notes */}
+          <div className="space-y-1.5">
+            <Label className="text-sm">Notes (optional)</Label>
+            <Textarea
+              placeholder="Anything else worth remembering…"
+              value={notes}
+              onChange={e => setNotes(e.target.value)}
+              rows={2}
+            />
           </div>
-        )}
+
+          <Button
+            className="w-full"
+            onClick={handleSave}
+            disabled={saving || !mediumId}
+          >
+            {saving ? "Saving…" : "Log Visit"}
+          </Button>
+        </div>
       </SheetContent>
     </Sheet>
+  );
+}
+
+// ─── Zone progress bar ────────────────────────────────────────────────────────
+
+function ZoneProgress({ zoneNumber, visitMap }: {
+  zoneNumber: number;
+  visitMap: Map<string, StopVisit[]>;
+}) {
+  const stops = getStopsForZone(zoneNumber).filter(
+    s => !(zoneNumber === 14 && s.key === "z14_regional_note"),
+  );
+  const done = stops.filter(s => (visitMap.get(s.key)?.length ?? 0) > 0).length;
+  const total = stops.length;
+  const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+  return (
+    <span className="flex items-center gap-2 text-sm text-muted-foreground">
+      <span className="w-16 h-1.5 rounded-full bg-muted overflow-hidden">
+        <span
+          className={cn("block h-full rounded-full w-[var(--bar-w)]", pct === 100 ? "bg-green-500" : "bg-primary")}
+          style={{ "--bar-w": `${pct}%` } as React.CSSProperties}
+        />
+      </span>
+      <span className="tabular-nums text-xs">{done}/{total}</span>
+    </span>
   );
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function FieldChecklist({
-  campaignId,
-  dbZones,
-  assignedZones,
-  assignmentId,
-  currentUserId,
-  displayName,
+  campaignId, dbZones, assignedZones, assignmentId, currentUserId, displayName,
 }: FieldChecklistProps) {
-  const [visits, setVisits] = useState<StopVisit[]>([]);
+  const [visits,  setVisits]  = useState<StopVisit[]>([]);
   const [mediums, setMediums] = useState<Medium[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedStop, setSelectedStop] = useState<DropStop | null>(null);
   const [selectedZone, setSelectedZone] = useState<DbZone | null>(null);
 
-  // Which zones to show
   const visibleZones = dbZones
     .filter(z => !assignedZones || assignedZones.includes(z.zone_number))
     .sort((a, b) => a.zone_number - b.zone_number);
 
   const loadData = useCallback(async () => {
-    const [visitsRes, mediumsRes] = await Promise.all([
+    const [vRes, mRes] = await Promise.all([
       supabase
         .from("flyer_stop_visits" as never)
-        .select("id, stop_key, zone_number, medium_name, flyer_count, visited_by_name, visited_at, notes")
-        .eq("campaign_id" as never, campaignId as never),
+        .select("id,stop_key,zone_number,medium_name,flyer_count,interaction_flags,contact_name,contact_title,visited_by_name,visited_at,notes")
+        .eq("campaign_id" as never, campaignId as never)
+        .order("visited_at" as never, { ascending: false }),
       supabase
         .from("flyer_mediums" as never)
-        .select("id, name, sort_order")
+        .select("id,name,sort_order")
         .eq("active" as never, true as never)
         .order("sort_order" as never),
     ]);
-    if (visitsRes.data)
-      setVisits((visitsRes.data as unknown) as StopVisit[]);
-    if (mediumsRes.data)
-      setMediums((mediumsRes.data as unknown) as Medium[]);
+    if (vRes.data) setVisits((vRes.data as unknown) as StopVisit[]);
+    if (mRes.data) setMediums((mRes.data as unknown) as Medium[]);
     setLoading(false);
   }, [campaignId]);
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+  useEffect(() => { loadData(); }, [loadData]);
 
-  // Build visit index: stop_key → latest visit
-  const visitIndex = new Map<string, StopVisit>();
+  // visitMap: stop_key → all visits, newest first
+  const visitMap = new Map<string, StopVisit[]>();
   for (const v of visits) {
-    if (!visitIndex.has(v.stop_key)) visitIndex.set(v.stop_key, v);
+    const arr = visitMap.get(v.stop_key) ?? [];
+    arr.push(v);
+    visitMap.set(v.stop_key, arr);
   }
 
   const totalStops = visibleZones.reduce(
-    (acc, z) =>
-      acc +
-      getStopsForZone(z.zone_number).filter(
-        s => !(z.zone_number === 14 && s.key === "z14_regional_note"),
-      ).length,
-    0,
+    (acc, z) => acc + getStopsForZone(z.zone_number).filter(
+      s => !(z.zone_number === 14 && s.key === "z14_regional_note"),
+    ).length, 0,
   );
   const doneStops = visibleZones.reduce(
-    (acc, z) =>
-      acc +
-      getStopsForZone(z.zone_number).filter(
-        s =>
-          !(z.zone_number === 14 && s.key === "z14_regional_note") &&
-          visitIndex.has(s.key),
-      ).length,
-    0,
+    (acc, z) => acc + getStopsForZone(z.zone_number).filter(
+      s => !(z.zone_number === 14 && s.key === "z14_regional_note") &&
+           (visitMap.get(s.key)?.length ?? 0) > 0,
+    ).length, 0,
   );
-  const overallPct =
-    totalStops === 0 ? 0 : Math.round((doneStops / totalStops) * 100);
+  const overallPct = totalStops === 0 ? 0 : Math.round((doneStops / totalStops) * 100);
 
   if (loading) {
     return (
@@ -466,7 +550,7 @@ export function FieldChecklist({
 
   return (
     <div className="max-w-2xl mx-auto">
-      {/* Overall progress */}
+      {/* Sticky overall progress */}
       <div className="sticky top-0 z-10 bg-background border-b px-4 py-3 flex items-center gap-3">
         <div className="flex-1">
           <div className="flex items-center justify-between mb-1">
@@ -477,60 +561,48 @@ export function FieldChecklist({
           </div>
           <div className="h-2 rounded-full bg-muted overflow-hidden">
             <div
-              className={cn(
-                "h-full rounded-full transition-all",
-                overallPct === 100 ? "bg-green-500" : "bg-primary",
-              )}
-              style={{ width: `${overallPct}%` }}
+              className={cn("h-full rounded-full transition-all w-[var(--bar-w)]", overallPct === 100 ? "bg-green-500" : "bg-primary")}
+              style={{ "--bar-w": `${overallPct}%` } as React.CSSProperties}
             />
           </div>
         </div>
-        <Badge variant={overallPct === 100 ? "default" : "secondary"}>
-          {overallPct}%
-        </Badge>
+        <Badge variant={overallPct === 100 ? "default" : "secondary"}>{overallPct}%</Badge>
       </div>
 
-      {/* Zone list */}
+      {/* Color legend */}
+      <div className="px-4 py-2 flex items-center gap-3 flex-wrap text-xs text-muted-foreground border-b bg-muted/20">
+        <span className="flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5 text-green-500" /> Spoke / interest</span>
+        <span className="flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5 text-blue-500" /> Left materials</span>
+        <span className="flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5 text-amber-500" /> No one available</span>
+        <span className="flex items-center gap-1"><Circle className="w-3.5 h-3.5 text-muted-foreground" /> Not yet visited</span>
+      </div>
+
+      {/* Zone accordions */}
       <Accordion type="multiple" className="divide-y">
         {visibleZones.map(zone => {
           const stops = getStopsForZone(zone.zone_number).filter(
             s => !(zone.zone_number === 14 && s.key === "z14_regional_note"),
           );
-          const zoneVisits = visits.filter(
-            v => v.zone_number === zone.zone_number,
-          );
-          const doneCount = stops.filter(s => visitIndex.has(s.key)).length;
+          const doneCount = stops.filter(s => (visitMap.get(s.key)?.length ?? 0) > 0).length;
           const isDone = doneCount === stops.length && stops.length > 0;
 
           return (
-            <AccordionItem
-              key={zone.id}
-              value={String(zone.zone_number)}
-              className="border-0"
-            >
+            <AccordionItem key={zone.id} value={String(zone.zone_number)} className="border-0">
               <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/40 [&[data-state=open]]:bg-muted/20">
                 <div className="flex items-start gap-3 w-full text-left">
-                  <span
-                    className={cn(
-                      "shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold mt-0.5",
-                      isDone
-                        ? "bg-green-500 text-white"
-                        : doneCount > 0
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-muted-foreground",
-                    )}
-                  >
+                  <span className={cn(
+                    "shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold mt-0.5",
+                    isDone    ? "bg-green-500 text-white"
+                    : doneCount > 0 ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground",
+                  )}>
                     {zone.zone_number}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <span className="block font-medium text-sm leading-tight">
-                      {zone.zone_name}
-                    </span>
-                    <span className="block text-xs text-muted-foreground">
-                      {zone.city}
-                    </span>
+                    <span className="block font-medium text-sm leading-tight">{zone.zone_name}</span>
+                    <span className="block text-xs text-muted-foreground">{zone.city}</span>
                   </div>
-                  <ZoneProgress zoneNumber={zone.zone_number} visits={zoneVisits} />
+                  <ZoneProgress zoneNumber={zone.zone_number} visitMap={visitMap} />
                 </div>
               </AccordionTrigger>
               <AccordionContent className="p-0">
@@ -539,17 +611,12 @@ export function FieldChecklist({
                     <StopRow
                       key={stop.key}
                       stop={stop}
-                      visit={visitIndex.get(stop.key)}
-                      onTap={s => {
-                        setSelectedStop(s);
-                        setSelectedZone(zone);
-                      }}
+                      visits={visitMap.get(stop.key) ?? []}
+                      onTap={s => { setSelectedStop(s); setSelectedZone(zone); }}
                     />
                   ))}
                   {stops.length === 0 && (
-                    <p className="px-4 py-3 text-sm text-muted-foreground italic">
-                      No stops defined for this zone.
-                    </p>
+                    <p className="px-4 py-3 text-sm text-muted-foreground italic">No stops for this zone.</p>
                   )}
                 </div>
               </AccordionContent>
@@ -558,23 +625,20 @@ export function FieldChecklist({
         })}
       </Accordion>
 
-      {/* Log visit bottom sheet */}
+      {/* Log visit sheet */}
       {selectedStop && selectedZone && (
         <LogSheet
           stop={selectedStop}
           zoneId={selectedZone.id}
           zoneNumber={selectedZone.zone_number}
           campaignId={campaignId}
-          existingVisit={visitIndex.get(selectedStop.key)}
+          visits={visitMap.get(selectedStop.key) ?? []}
           mediums={mediums}
           assignmentId={assignmentId}
           currentUserId={currentUserId}
           displayName={displayName}
           onSaved={loadData}
-          onClose={() => {
-            setSelectedStop(null);
-            setSelectedZone(null);
-          }}
+          onClose={() => { setSelectedStop(null); setSelectedZone(null); }}
         />
       )}
     </div>
