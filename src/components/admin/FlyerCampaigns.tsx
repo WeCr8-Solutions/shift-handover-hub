@@ -231,10 +231,10 @@ export function FlyerCampaigns() {
 
     // Get campaign
     const { data: campaigns } = await supabase
-      .from("flyer_campaigns")
+      .from("flyer_campaigns" as never)
       .select("id")
-      .eq("slug", "san_diego_drop")
-      .limit(1) as unknown as { data: { id: string }[] | null };
+      .eq("slug" as never, "san_diego_drop" as never)
+      .limit(1 as never) as unknown as { data: { id: string }[] | null };
 
     const cid = campaigns?.[0]?.id ?? null;
     setCampaignId(cid);
@@ -242,21 +242,21 @@ export function FlyerCampaigns() {
     if (cid) {
       const [zonesRes, logsRes, asgRes] = await Promise.all([
         supabase
-          .from("flyer_zones")
+          .from("flyer_zones" as never)
           .select("id,zone_number,zone_name,city,utm_content,full_utm_url,bitly_short_url,qr_filename,status,flyer_count,total_scans,total_signups,total_hires,notes")
-          .eq("campaign_id", cid)
-          .order("zone_number") as unknown as Promise<{ data: DbZone[] | null; error: unknown }>,
+          .eq("campaign_id" as never, cid as never)
+          .order("zone_number" as never) as unknown as Promise<{ data: DbZone[] | null; error: unknown }>,
         supabase
-          .from("flyer_drop_logs")
+          .from("flyer_drop_logs" as never)
           .select("id,zone_id,dropped_at,flyer_count,business_count,notes")
-          .eq("campaign_id", cid)
-          .order("dropped_at", { ascending: false })
-          .limit(200) as unknown as Promise<{ data: DbDropLog[] | null; error: unknown }>,
+          .eq("campaign_id" as never, cid as never)
+          .order("dropped_at" as never, { ascending: false } as never)
+          .limit(200 as never) as unknown as Promise<{ data: DbDropLog[] | null; error: unknown }>,
         supabase
-          .from("flyer_zone_assignments")
+          .from("flyer_zone_assignments" as never)
           .select("id,assignee_name,assignee_email,zone_numbers,invite_token,assigned_to_user_id,is_active,created_at")
-          .eq("campaign_id", cid)
-          .order("created_at", { ascending: false }) as unknown as Promise<{ data: DbAssignment[] | null; error: unknown }>,
+          .eq("campaign_id" as never, cid as never)
+          .order("created_at" as never, { ascending: false } as never) as unknown as Promise<{ data: DbAssignment[] | null; error: unknown }>,
       ]);
 
       if (zonesRes.data) setDbZones(zonesRes.data);
@@ -292,13 +292,13 @@ export function FlyerCampaigns() {
       return;
     }
     setDropSaving(true);
-    const { error } = await (supabase.from("flyer_drop_logs").insert({
+    const { error } = await (supabase.from("flyer_drop_logs" as never).insert({
       campaign_id: campaignId,
       zone_id: dropZoneId,
       flyer_count: parseInt(dropFlyerCount) || 0,
       business_count: parseInt(dropBusinessCount) || 0,
       notes: dropNotes || null,
-    }) as unknown as Promise<{ error: unknown }>);
+    } as never) as unknown as Promise<{ error: unknown }>);
 
     setDropSaving(false);
     if (error) {
@@ -319,9 +319,9 @@ export function FlyerCampaigns() {
   async function saveResults() {
     if (!editingResultsId) return;
     const { error } = await (supabase
-      .from("flyer_zones")
-      .update({ total_scans: resultsEdit.scans, total_signups: resultsEdit.signups, total_hires: resultsEdit.hires })
-      .eq("id", editingResultsId) as unknown as Promise<{ error: unknown }>);
+      .from("flyer_zones" as never)
+      .update({ total_scans: resultsEdit.scans, total_signups: resultsEdit.signups, total_hires: resultsEdit.hires } as never)
+      .eq("id" as never, editingResultsId as never) as unknown as Promise<{ error: unknown }>);
     if (error) { toast.error("Save failed."); return; }
     toast.success("Results updated.");
     setEditingResultsId(null);
@@ -357,14 +357,14 @@ export function FlyerCampaigns() {
     }
     setAsgSaving(true);
     const { error } = await (supabase
-      .from("flyer_zone_assignments")
+      .from("flyer_zone_assignments" as never)
       .insert({
         campaign_id: campaignId,
         assignee_name: name,
         assignee_email: asgEmail.trim() || null,
         zone_numbers: parsedZones,
         assigned_by: user.id,
-      }) as unknown as Promise<{ error: unknown }>);
+      } as never) as unknown as Promise<{ error: unknown }>);
     setAsgSaving(false);
     if (error) { toast.error("Failed to create assignment."); return; }
     toast.success(`Assignment created for ${name}.`);
@@ -376,9 +376,9 @@ export function FlyerCampaigns() {
 
   async function deactivateAssignment(id: string) {
     const { error } = await (supabase
-      .from("flyer_zone_assignments")
-      .update({ is_active: false })
-      .eq("id", id) as unknown as Promise<{ error: unknown }>);
+      .from("flyer_zone_assignments" as never)
+      .update({ is_active: false } as never)
+      .eq("id" as never, id as never) as unknown as Promise<{ error: unknown }>);
     if (error) { toast.error("Failed to deactivate."); return; }
     toast.success("Assignment deactivated.");
     fetchData(true);
