@@ -58,6 +58,15 @@ function flyerRecommendation(stop: DropStop): string {
   return "CNC / Machinist flyer";
 }
 
+// ─── Static fallback mediums (used if flyer_mediums table not yet migrated) ───
+
+const FALLBACK_MEDIUMS: Medium[] = [
+  { id: "full-page",    name: "Full-page Color 8.5×11", sort_order: 1 },
+  { id: "half-page",    name: "Half-page Color",        sort_order: 2 },
+  { id: "business-card",name: "Business Card",          sort_order: 3 },
+  { id: "door-hanger",  name: "Door Hanger",            sort_order: 4 },
+];
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface DbZone {
@@ -361,7 +370,7 @@ function LogSheet({
               <SelectTrigger>
                 <SelectValue placeholder="Select type…" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent position="popper" className="z-[200]">
                 {mediums.map(m => (
                   <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
                 ))}
@@ -513,7 +522,9 @@ export function FieldChecklist({
         .order("sort_order" as never),
     ]);
     if (vRes.data) setVisits((vRes.data as unknown) as StopVisit[]);
-    if (mRes.data) setMediums((mRes.data as unknown) as Medium[]);
+    // Fall back to static list if table not yet migrated or returns empty
+    const dbMediums = (mRes.data as unknown) as Medium[] | null;
+    setMediums(dbMediums && dbMediums.length > 0 ? dbMediums : FALLBACK_MEDIUMS);
     setLoading(false);
   }, [campaignId]);
 

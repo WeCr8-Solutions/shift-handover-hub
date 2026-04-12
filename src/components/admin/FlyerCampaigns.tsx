@@ -886,7 +886,7 @@ ON CONFLICT (user_id, role) DO NOTHING;`}
                 <SelectTrigger>
                   <SelectValue placeholder="Select zone…" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent position="popper" className="z-[200]">
                   {dbZones.map(z => (
                     <SelectItem key={z.id} value={z.id}>
                       Z{String(z.zone_number).padStart(2, "0")} — {z.zone_name}
