@@ -61,10 +61,10 @@ function flyerRecommendation(stop: DropStop): string {
 // ─── Static fallback mediums (used if flyer_mediums table not yet migrated) ───
 
 const FALLBACK_MEDIUMS: Medium[] = [
-  { id: "full-page",    name: "Full-page Color 8.5×11", sort_order: 1 },
-  { id: "half-page",    name: "Half-page Color",        sort_order: 2 },
-  { id: "business-card",name: "Business Card",          sort_order: 3 },
-  { id: "door-hanger",  name: "Door Hanger",            sort_order: 4 },
+  { id: "full-page",   name: "Full-page Color 8.5×11",       sort_order: 1 },
+  { id: "half-page",   name: "Half-page Color",               sort_order: 2 },
+  { id: "small-card",  name: "Small Card (Business Card size)",sort_order: 3 },
+  { id: "door-hanger", name: "Door Hanger",                   sort_order: 4 },
 ];
 
 // ─── Types ────────────────────────────────────────────────────────────────────
