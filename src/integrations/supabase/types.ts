@@ -1772,6 +1772,211 @@ export type Database = {
           },
         ]
       }
+      flyer_campaigns: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          name: string
+          slug: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          slug: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          slug?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      flyer_drop_logs: {
+        Row: {
+          business_count: number
+          campaign_id: string
+          created_at: string
+          dropped_at: string
+          dropped_by: string | null
+          flyer_count: number
+          id: string
+          notes: string | null
+          zone_id: string
+        }
+        Insert: {
+          business_count?: number
+          campaign_id: string
+          created_at?: string
+          dropped_at?: string
+          dropped_by?: string | null
+          flyer_count?: number
+          id?: string
+          notes?: string | null
+          zone_id: string
+        }
+        Update: {
+          business_count?: number
+          campaign_id?: string
+          created_at?: string
+          dropped_at?: string
+          dropped_by?: string | null
+          flyer_count?: number
+          id?: string
+          notes?: string | null
+          zone_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flyer_drop_logs_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "flyer_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flyer_drop_logs_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "flyer_zones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flyer_zone_assignments: {
+        Row: {
+          assigned_by: string | null
+          assigned_to_user_id: string | null
+          assignee_email: string | null
+          assignee_name: string
+          campaign_id: string
+          created_at: string
+          id: string
+          invite_token: string
+          is_active: boolean
+          updated_at: string
+          zone_numbers: number[]
+        }
+        Insert: {
+          assigned_by?: string | null
+          assigned_to_user_id?: string | null
+          assignee_email?: string | null
+          assignee_name: string
+          campaign_id: string
+          created_at?: string
+          id?: string
+          invite_token?: string
+          is_active?: boolean
+          updated_at?: string
+          zone_numbers?: number[]
+        }
+        Update: {
+          assigned_by?: string | null
+          assigned_to_user_id?: string | null
+          assignee_email?: string | null
+          assignee_name?: string
+          campaign_id?: string
+          created_at?: string
+          id?: string
+          invite_token?: string
+          is_active?: boolean
+          updated_at?: string
+          zone_numbers?: number[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flyer_zone_assignments_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "flyer_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flyer_zones: {
+        Row: {
+          bitly_back_half: string | null
+          bitly_short_url: string | null
+          campaign_id: string
+          city: string
+          created_at: string
+          flyer_count: number
+          full_utm_url: string
+          id: string
+          notes: string | null
+          qr_filename: string | null
+          status: string
+          total_hires: number
+          total_scans: number
+          total_signups: number
+          updated_at: string
+          utm_content: string
+          zone_name: string
+          zone_number: number
+        }
+        Insert: {
+          bitly_back_half?: string | null
+          bitly_short_url?: string | null
+          campaign_id: string
+          city: string
+          created_at?: string
+          flyer_count?: number
+          full_utm_url: string
+          id?: string
+          notes?: string | null
+          qr_filename?: string | null
+          status?: string
+          total_hires?: number
+          total_scans?: number
+          total_signups?: number
+          updated_at?: string
+          utm_content: string
+          zone_name: string
+          zone_number: number
+        }
+        Update: {
+          bitly_back_half?: string | null
+          bitly_short_url?: string | null
+          campaign_id?: string
+          city?: string
+          created_at?: string
+          flyer_count?: number
+          full_utm_url?: string
+          id?: string
+          notes?: string | null
+          qr_filename?: string | null
+          status?: string
+          total_hires?: number
+          total_scans?: number
+          total_signups?: number
+          updated_at?: string
+          utm_content?: string
+          zone_name?: string
+          zone_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flyer_zones_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "flyer_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       global_update_acknowledgements: {
         Row: {
           acknowledged_at: string
@@ -6490,6 +6695,7 @@ export type Database = {
         | "developer"
         | "engineering"
         | "programming"
+        | "flyer_worker"
       impact_level: "low" | "medium" | "high" | "critical"
       issue_severity: "low" | "medium" | "high" | "critical"
       issue_status:
@@ -6685,6 +6891,7 @@ export const Constants = {
         "developer",
         "engineering",
         "programming",
+        "flyer_worker",
       ],
       impact_level: ["low", "medium", "high", "critical"],
       issue_severity: ["low", "medium", "high", "critical"],
