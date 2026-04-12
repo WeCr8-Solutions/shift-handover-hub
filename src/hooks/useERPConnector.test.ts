@@ -147,6 +147,7 @@ vi.mock("@/integrations/supabase/client", () => {
       from: fn().mockImplementation((table: string) => {
         fromCallTracker.push(table);
         switch (table) {
+          case "erp_connections_safe":
           case "erp_connections":
             return makeChainable(JOBBOSS_CONNECTION);
           case "erp_sync_logs":
@@ -237,7 +238,7 @@ describe("useERPConnector — JobBoss Cloud ERP Integration", () => {
       renderHook(() => useERPConnector(), { wrapper: AllProviders });
 
       await waitFor(() => {
-        expect(fromCallTracker).toContain("erp_connections");
+        expect(fromCallTracker).toContain("erp_connections_safe");
       });
     });
 
@@ -245,7 +246,7 @@ describe("useERPConnector — JobBoss Cloud ERP Integration", () => {
       renderHook(() => useERPConnector(), { wrapper: AllProviders });
 
       await waitFor(() => {
-        expect(fromCallTracker).toContain("erp_connections");
+        expect(fromCallTracker).toContain("erp_connections_safe");
         expect(fromCallTracker).toContain("erp_sync_logs");
         expect(fromCallTracker).toContain("erp_work_center_mappings");
         expect(fromCallTracker).toContain("erp_status_mappings");
@@ -437,7 +438,7 @@ describe("useERPConnector — JobBoss Cloud ERP Integration", () => {
       });
 
       // Verify supabase.from was called with all ERP tables
-      expect(supabase.from).toHaveBeenCalledWith("erp_connections");
+      expect(supabase.from).toHaveBeenCalledWith("erp_connections_safe");
       expect(supabase.from).toHaveBeenCalledWith("erp_sync_logs");
       expect(supabase.from).toHaveBeenCalledWith("erp_work_center_mappings");
       expect(supabase.from).toHaveBeenCalledWith("erp_status_mappings");
