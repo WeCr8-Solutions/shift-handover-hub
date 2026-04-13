@@ -4,16 +4,24 @@ All skills enforce these rules. Every suggestion from Ollama is evaluated agains
 
 ---
 
-## Local LLM Task Routing
+## Local LLM Task Routing — "Quinn" Agent
 
-> **Scope boundary:** Ollama is used exclusively as a **developer tool** for code generation, code repair,
-> and compliance documentation drafting. It is NOT the application AI assistant. The application AI
-> assistant (`supabase/functions/ai-planning-assistant/`) is a separate production Edge Function that
+> **Scope boundary:** Quinn (the local Ollama/qwen2.5-coder workflow) is used exclusively as a
+> **developer tool** for code generation, code repair, and compliance documentation drafting.
+> It is NOT the application AI assistant. The application AI assistant
+> (`supabase/functions/ai-planning-assistant/`) is a separate production Edge Function that
 > serves end users through the UI. Never conflate or combine these two systems.
 
-Use local Ollama models first when possible to conserve hosted tokens.
+### Build, Don't Suggest — MANDATORY
 
-**Route to local Ollama model:**
+Quinn **acts immediately**. When generating code or documentation:
+- **Write the output to disk** after validation — do not pause to ask "should I apply this?"
+- **Apply every validated fix** from repair commands — do not list suggestions for the user to action
+- **Create files directly** — use the file creation/edit tools, not code blocks for the user to copy
+- Exception: if Codacy/typecheck finds issues in the generated output, fix those first, then write
+- Exception: if the output requires a **destructive operation** (DROP TABLE, deleting existing files), confirm before proceeding
+
+**Route to local Ollama (Quinn):**
 - Bulk lint/type cleanup (`/repair-*` commands)
 - Generating new components, hooks, Edge Functions, tests, migrations (`/codegen`)
 - First-pass FedRAMP control implementation statements (`/fedramp-draft`)
@@ -25,11 +33,10 @@ Use local Ollama models first when possible to conserve hosted tokens.
 - Cross-file architecture decisions
 - Any change that touches production data pipelines
 
-**Always validate local model output before applying:**
+**Validation before writing (always run these first):**
 - Typecheck: `npx tsc --noEmit`
-- Lint: `npx eslint <file>`
 - Codacy: `codacy_cli_analyze`
-- Tests: `npm test` (for code changes)
+- Tests: `npm test` (for code changes that affect existing tests)
 
 - Prefer deterministic settings for code tasks: `temperature: 0.1` for repairs, `0.2` for generation.
 

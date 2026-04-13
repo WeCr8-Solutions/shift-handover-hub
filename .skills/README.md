@@ -1,11 +1,15 @@
-# .skills — Ollama-Powered Developer Skills
+# .skills — Quinn: Ollama-Powered Developer Agent
 
-Project-level skill definitions for AI-assisted **developer tasks** using a local Ollama model.
+Project-level skill definitions for the **Quinn** developer agent — local Ollama/qwen2.5-coder used for code generation, code repair, and compliance documentation.
 These back the Claude Code slash commands in `.claude/commands/`.
 
+> **Quinn builds, not suggests.**
+> Every command writes output directly to disk after validation. Quinn does not present code blocks
+> for the developer to copy — it creates files, applies fixes, and reports what it did.
+
 > **Important scope boundary:**
-> These skills use local Ollama models to help **developers** write code and compliance documents.
-> They are completely separate from the `ai-planning-assistant` Edge Function in `supabase/functions/`
+> Quinn uses local Ollama to help **developers** write code and compliance documents.
+> Quinn is completely separate from the `ai-planning-assistant` Edge Function in `supabase/functions/`
 > which powers the in-app AI assistant for **end users** managing work orders and shop floor flow.
 > Do not conflate these two systems.
 
@@ -71,31 +75,33 @@ Set `OLLAMA_MODEL` in your shell before invoking:
 OLLAMA_MODEL=qwen2.5-coder:14b /repair-any src/components/StationCard.tsx
 ```
 
-## Workflow
+## Quinn's Workflow — Build, Don't Suggest
+
+Quinn **acts**. Every command ends with changes on disk, not a list of recommendations.
 
 ### Repair workflow
 ```text
-Ollama analyzes → Claude applies fix → Codacy validates → npm test confirms
+Quinn analyzes → fixes applied to disk → Codacy validates → errors auto-fixed → npm test confirms
 ```
 
 ### Generation workflow
 ```text
-Ollama generates draft → Claude reviews for correctness → Typecheck/Codacy validates → Applied to disk
+Quinn generates → security/import review → written to disk → typecheck + Codacy → issues auto-fixed → done
 ```
 
 ### Compliance workflow
 ```text
-Ollama drafts policy → Claude fact-checks against actual system → Written to docs/approval/fedramp/
+Quinn drafts → fact-checked against actual system → corrections applied inline → written to docs/approval/fedramp/
 ```
 
-## Local LLM Delegation Policy
+## Quinn Agent Policy
 
-To reduce cloud token usage, skills delegate heavyweight first-pass work to local Ollama models.
-
-- **Preferred for local model:** bulk lint cleanup, repetitive type narrowing, test scaffolding, new component generation, compliance document drafts
-- **Keep cloud model for:** security-critical logic review, ambiguous cross-file architecture decisions, final validation
-- **Never auto-apply:** always review local model output before writing to disk
-- **Low temperature always:** code and compliance tasks use `temperature: 0.1–0.2` for determinism
+- **Act, don't suggest:** Quinn writes files and applies fixes. It does not present output for the user to manually copy.
+- **Validate before writing:** typecheck + Codacy run first; issues are fixed before finalizing.
+- **Auto-fix Codacy findings:** after writing any file, Quinn runs `codacy_cli_analyze` and applies fixes itself.
+- **Destructive operations only:** confirm before any DROP TABLE, file deletion, or overwrite of a file with significant content.
+- **Low temperature:** `0.1` for repairs/SQL, `0.2` for generation. Determinism over creativity.
+- **Escalate to 14b:** when 7b output is incomplete or clearly wrong, retry with `qwen2.5-coder:14b` automatically.
 
 Recommended default:
 

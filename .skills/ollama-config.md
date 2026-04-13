@@ -1,7 +1,8 @@
 # Ollama Configuration
 
-> **Scope:** Developer tooling only — code generation, code repair, compliance documentation drafting.
-> This is entirely separate from the `ai-planning-assistant` Edge Function (`supabase/functions/ai-planning-assistant/`) that serves end users inside the application.
+> **Quinn** — local Ollama developer agent (qwen2.5-coder). Builds code and docs. Does not suggest.
+> Scope: developer tooling only — code generation, code repair, compliance documentation.
+> Entirely separate from the `ai-planning-assistant` Edge Function (`supabase/functions/ai-planning-assistant/`) that serves end users.
 
 ## Runtime
 

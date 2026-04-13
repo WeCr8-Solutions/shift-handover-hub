@@ -1,8 +1,8 @@
-Draft a FedRAMP/NIST compliance document section using local Ollama, then refine and write.
+Draft a FedRAMP/NIST compliance document section using Quinn (local Ollama/qwen2.5-coder), then **write it directly to disk**.
 
 > **Scope: Developer/compliance tooling only.**
-> This command uses local Ollama to assist writing compliance documentation.
-> It has no relation to the `ai-planning-assistant` Edge Function that serves end users.
+> Quinn writes documents — it does not suggest. Output is written immediately after a review pass.
+> This has no relation to the `ai-planning-assistant` Edge Function that serves end users.
 
 **Usage:** `/fedramp-draft <control-id> "<title>" "<context>"`
 
@@ -91,18 +91,19 @@ Draft a FedRAMP/NIST compliance document section using local Ollama, then refine
      | jq -r '.response'
    ```
 
-7. Review the Ollama output. The output is a **first draft** — check for:
-   - Accuracy against the actual system (correct URLs, configs, tools)
-   - Missing sub-control parameters (check NIST SP 800-53 Rev 5 for the specific control family)
-   - FedRAMP-specific parameter values (e.g., AC-2: review accounts every 60 days for Moderate)
-   - Any claims that overstate current implementation vs. planned
+7. Review the Ollama output and **apply corrections inline** (do not ask the user to fix it):
+   - Accuracy: verify URLs, configs, and tool names match the actual system
+   - FedRAMP parameter values: confirm Moderate-specific thresholds (e.g., AC-2 account review every 60 days)
+   - Overstatements: downgrade any claims that exceed current implementation to "planned" language
+   - Completeness: if a required sub-control is missing, add it directly
 
-8. Ask: **"Write this to a file, append to an existing doc, or keep as draft? [file/append/draft]"**
-   - `file` — Write to `docs/approval/fedramp/<control-id-lowercase>.md` as a standalone document
-   - `append` — Append to an existing doc (prompt for which file)
-   - `draft` — Output only; user decides where to place it
+8. **Write the file immediately** — do not ask for permission:
+   - Single control → `docs/approval/fedramp/<control-id-lowercase>.md`
+   - If the file already exists → append as a new `##` section
+   - Batch → one file per family, e.g. `docs/approval/fedramp/ssp-appendix-a-ac.md`
+   Announce what was written.
 
-9. If writing to disk, run `codacy_cli_analyze` on the file.
+9. Run `codacy_cli_analyze` on the written file. Fix any issues found.
 
 ---
 

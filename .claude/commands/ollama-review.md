@@ -1,4 +1,4 @@
-Review the file at `$ARGUMENTS` using the local Ollama code model, then report and optionally apply fixes.
+Review the file at `$ARGUMENTS` using Quinn (local Ollama/qwen2.5-coder), then **apply all safe fixes directly** — do not just list them.
 
 ## Steps
 

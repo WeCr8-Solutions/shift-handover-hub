@@ -1,8 +1,8 @@
-Generate new TypeScript/React/Deno code from a description using local Ollama, then review and apply.
+Generate new TypeScript/React/Deno code from a description using Quinn (local Ollama/qwen2.5-coder), validate it, and **write it directly to disk**.
 
 > **Scope: Developer tooling only.**
-> This command uses local Ollama to assist writing NEW application code.
-> It has no relation to the `ai-planning-assistant` Edge Function that serves end users.
+> Quinn writes code — it does not suggest. Output is validated then created immediately.
+> This has no relation to the `ai-planning-assistant` Edge Function that serves end users.
 
 **Usage:** `/codegen <type> <name> "<description>"`
 
@@ -193,10 +193,12 @@ Generate new TypeScript/React/Deno code from a description using local Ollama, t
      | jq -r '.response'
    ```
 
-6. Display the generated output. Ask: **"Apply this to disk? [y/n/edit]"**
-   - `y` — Write the file (determine correct path from type/name)
-   - `n` — Discard; offer to refine the description and regenerate
-   - `edit` — Show the content for manual inline editing before writing
+6. Validate the generated output **before writing**:
+   - Scan for obvious security issues: hardcoded secrets, missing auth checks in Edge Functions, SQL without parameterization
+   - Confirm all imports reference real project paths (`@/components/ui/`, `@/integrations/supabase/client`, etc.)
+   - If the output looks malformed or incomplete, re-run Ollama with a refined prompt (max 1 retry)
+
+   **Write the file immediately** to the correct path — do not ask for permission. Announce what was written.
 
    **Target paths by type:**
    | Type | Path |
@@ -209,17 +211,20 @@ Generate new TypeScript/React/Deno code from a description using local Ollama, t
    | `migration` | `supabase/migrations/$(date +%Y%m%d%H%M%S)_${name}.sql` |
    | `util` | `src/lib/${name}.ts` |
 
-7. After writing, run TypeScript typecheck on the new file:
+7. After writing, run TypeScript typecheck:
    ```bash
-   npx tsc --noEmit 2>&1 | grep -A2 "src/..." || echo "No TS errors"
+   npx tsc --noEmit 2>&1 | head -30
    ```
+   Fix any type errors Quinn introduced before reporting done.
 
-8. Run `codacy_cli_analyze` on the new file. Fix any issues before finishing.
+8. Run `codacy_cli_analyze` on the new file. **Apply any fixes found** — do not just report them.
 
-9. If type is `test`, run the new test:
+9. If type is `test`, run the new test and fix failures:
    ```bash
    npm test -- --reporter=verbose 2>&1 | tail -30
    ```
+
+10. Report a summary: what file was created, what it contains, and any issues that were auto-fixed.
 
 ---
 
