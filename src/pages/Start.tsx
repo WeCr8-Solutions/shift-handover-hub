@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { QRCodeSVG } from "qrcode.react";
 import { SEOHead } from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,11 @@ import {
   Wrench,
   Factory,
   Car,
+  Flame,
+  LayoutGrid,
+  FileText,
+  RefreshCw,
+  PlayCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -28,42 +33,99 @@ const emailSchema = z.string().trim().email("Please enter a valid email").max(25
 
 const QR_URL = "https://jobline.ai/start";
 
-const benefits = [
-  {
-    icon: ClipboardList,
-    title: "Track Every Job",
-    description: "See status, priority & what's next — in real time.",
-  },
-  {
-    icon: ArrowRightLeft,
-    title: "Better Handoffs",
-    description: "Keep your team aligned. Keep customers happy.",
-  },
-  {
-    icon: Eye,
-    title: "Every Touchpoint",
-    description: "From check-in to completion, nothing slips through.",
-  },
+type ShopType = "cnc" | "auto" | "body" | "weld" | "general";
+
+const VALID_TYPES: ShopType[] = ["cnc", "auto", "body", "weld", "general"];
+
+const SHOP_TYPES: { type: ShopType; icon: React.ElementType; label: string }[] = [
+  { type: "cnc", icon: Factory, label: "CNC & Mfg" },
+  { type: "auto", icon: Wrench, label: "Auto Repair" },
+  { type: "body", icon: Car, label: "Body Shops" },
+  { type: "weld", icon: Flame, label: "Welding / Fab" },
+  { type: "general", icon: LayoutGrid, label: "General" },
 ];
 
-const industries = [
-  { icon: Wrench, label: "Auto Repair" },
-  { icon: Factory, label: "CNC & Manufacturing" },
-  { icon: Car, label: "Body Shops" },
-];
+const SHOP_CONTENT = {
+  cnc: {
+    headline: "Still walking the shop floor to know what's running?",
+    subheadline: "Track every job, machine status, and handoff in real time.",
+    cta: "See CNC Shop Demo",
+    demoLabel: "Example workflow for a CNC shop",
+    features: [
+      { icon: ClipboardList, title: "Track Every Job", description: "See status, priority, and what is next in real time." },
+      { icon: ArrowRightLeft, title: "Better Shift Handoffs", description: "Keep operators, leads, and supervisors aligned." },
+      { icon: Eye, title: "See What's Running Now", description: "Know machine and work order status without guessing." },
+    ],
+  },
+  auto: {
+    headline: "Know every vehicle status without asking your team",
+    subheadline: "Track repairs, updates, and handoffs in one place.",
+    cta: "See Auto Shop Demo",
+    demoLabel: "Example workflow for an auto repair shop",
+    features: [
+      { icon: ClipboardList, title: "Track Every Vehicle", description: "See what is checked in, in progress, blocked, or ready." },
+      { icon: RefreshCw, title: "Service Updates", description: "Keep advisors and techs aligned without repeated questions." },
+      { icon: Eye, title: "Clear Job Status", description: "Reduce confusion on what is waiting, active, or complete." },
+    ],
+  },
+  body: {
+    headline: "Stop losing track of repairs and handoffs",
+    subheadline: "See every stage from intake to completion in one place.",
+    cta: "See Body Shop Demo",
+    demoLabel: "Example workflow for a body shop",
+    features: [
+      { icon: ClipboardList, title: "Track Repairs by Stage", description: "Follow progress from teardown to paint to delivery." },
+      { icon: FileText, title: "No Missed Notes", description: "Keep repair notes visible across the team." },
+      { icon: ArrowRightLeft, title: "Better Team Handoffs", description: "Reduce delays between departments and touchpoints." },
+    ],
+  },
+  weld: {
+    headline: "Missed notes causing rework?",
+    subheadline: "Track fabrication jobs and handoffs clearly from start to finish.",
+    cta: "See Fabrication Demo",
+    demoLabel: "Example workflow for fabrication and welding",
+    features: [
+      { icon: ClipboardList, title: "Track Jobs Clearly", description: "Know where every job stands without chasing updates." },
+      { icon: RefreshCw, title: "Reduce Rework", description: "Keep notes visible so details do not get lost." },
+      { icon: ArrowRightLeft, title: "Improve Handoffs", description: "Make transitions between stations easier to manage." },
+    ],
+  },
+  general: {
+    headline: "Keep your shop moving with clear job visibility",
+    subheadline: "Track status, handoffs, and what is next in one place.",
+    cta: "See JobLine Demo",
+    demoLabel: "Example workflow for small shops",
+    features: [
+      { icon: ClipboardList, title: "Track Every Job", description: "See work status in one place." },
+      { icon: ArrowRightLeft, title: "Better Handoffs", description: "Keep your team aligned." },
+      { icon: Eye, title: "Less Guessing", description: "Know what is running and what is next." },
+    ],
+  },
+} as const;
 
 export default function Start() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const demoRef = useRef<HTMLElement>(null);
+
+  const rawType = searchParams.get("type") ?? "";
+  const src = searchParams.get("src") ?? "unknown";
+  const initialType: ShopType = VALID_TYPES.includes(rawType as ShopType)
+    ? (rawType as ShopType)
+    : "cnc";
+
+  const [selectedType, setSelectedType] = useState<ShopType>(initialType);
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
 
-  // Apply default UTM params if none present
   useEffect(() => {
+    localStorage.setItem("jobline_start_type", selectedType);
+    localStorage.setItem("jobline_start_src", src);
+
     const captured = captureUtmParams();
     const hasAny = Object.keys(captured).length > 0;
-
     if (!hasAny) {
       sessionStorage.setItem(
         "jobline_utm",
@@ -75,11 +137,35 @@ export default function Start() {
       );
     }
 
-    trackEvent("qr_landing_view", {
-      source_page: "start",
+    trackEvent("start_page_view", {
+      type: selectedType,
+      src,
+      path: "/start",
       ...getUtmParams(),
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handleTypeSelect = (type: ShopType) => {
+    setSelectedType(type);
+    localStorage.setItem("jobline_start_type", type);
+    trackEvent("type_selected", { type, src, path: "/start" });
+  };
+
+  const handleCtaClick = () => {
+    trackEvent("cta_click", { type: selectedType, src, path: "/start" });
+    demoRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleDemoClick = () => {
+    trackEvent("demo_click", { type: selectedType, src, path: "/start" });
+    navigate("/demo");
+  };
+
+  const handleSignupClick = () => {
+    trackEvent("signup_click", { type: selectedType, src, path: "/start" });
+    navigate("/auth");
+  };
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,7 +174,6 @@ export default function Start() {
       toast.error(result.error.errors[0].message);
       return;
     }
-
     setLoading(true);
     try {
       const { error } = await supabase.from("email_leads" as any).insert({
@@ -97,10 +182,10 @@ export default function Start() {
         lead_type: "qr_interest",
       });
       if (error) throw error;
-
-      trackEvent("lead_captured", {
-        source_page: "qr_start",
-        lead_type: "qr_interest",
+      trackEvent("email_capture_submit", {
+        type: selectedType,
+        src,
+        path: "/start",
         ...getUtmParams(),
       });
       setSubmitted(true);
@@ -111,92 +196,168 @@ export default function Start() {
     }
   };
 
+  const content = SHOP_CONTENT[selectedType];
+
   return (
     <>
       <SEOHead
-        title="Keep Your Shop Moving | JobLine.ai"
-        description="Real-time job tracking for auto repair shops, CNC shops, cabinet shops & more. Scan. Sign up. See your shop live in 60 seconds."
+        title="JobLine.ai — Job Tracking Built for Your Shop"
+        description="Real-time job tracking for CNC shops, auto repair, body shops, fabrication, and more. Scan. See your shop live in seconds."
         noindex
         canonical="/start"
       />
 
       <main className="min-h-screen bg-background flex flex-col items-center px-4 py-8 sm:py-12">
-        {/* Hero */}
-        <section className="w-full max-w-md text-center space-y-4">
-          <img
-            src={logo}
-            alt="JobLine.ai logo"
-            className="h-12 sm:h-14 mx-auto"
-            loading="eager"
-          />
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
-            Keep Your Shop Moving.
-          </h1>
-          <p className="text-muted-foreground text-base sm:text-lg leading-relaxed">
-            Real-time job tracking for small shops.
-            <br />
-            <span className="font-medium text-foreground/80">Simple. Fast. Built for the way you work.</span>
-          </p>
-        </section>
 
-        {/* Industries */}
-        <section className="w-full max-w-md mt-6 flex justify-center gap-6">
-          {industries.map((ind) => (
-            <div key={ind.label} className="flex flex-col items-center gap-1.5">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <ind.icon className="w-5 h-5 text-primary" />
-              </div>
-              <span className="text-[11px] text-muted-foreground font-medium">{ind.label}</span>
+        {/* ── Section 1: Top Conversion Block ── */}
+        <section className="w-full max-w-md space-y-5">
+
+          {/* Logo */}
+          <div className="text-center">
+            <img
+              src={logo}
+              alt="JobLine.ai logo"
+              className="h-12 sm:h-14 mx-auto"
+              loading="eager"
+            />
+          </div>
+
+          {/* Dynamic Headline */}
+          <div className="text-center space-y-2">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground leading-snug">
+              {content.headline}
+            </h1>
+            <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
+              {content.subheadline}
+            </p>
+          </div>
+
+          {/* Shop Type Selector */}
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-muted-foreground text-center tracking-wide uppercase">
+              What kind of shop are you running?
+            </p>
+            <div className="flex justify-between gap-2">
+              {SHOP_TYPES.map(({ type, icon: Icon, label }) => {
+                const isSelected = selectedType === type;
+                return (
+                  <button
+                    key={type}
+                    onClick={() => handleTypeSelect(type)}
+                    className={[
+                      "flex flex-col items-center gap-1.5 flex-1 py-2.5 px-1 rounded-lg border transition-all duration-150 min-h-[60px]",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      isSelected
+                        ? "bg-primary/15 border-primary scale-[1.04] shadow-sm"
+                        : "bg-muted/40 border-border/50 hover:bg-muted/70 hover:border-border",
+                    ].join(" ")}
+                    aria-pressed={isSelected}
+                  >
+                    <Icon
+                      className={[
+                        "w-5 h-5 transition-colors",
+                        isSelected ? "text-primary drop-shadow-[0_0_4px_hsl(var(--primary))]" : "text-muted-foreground",
+                      ].join(" ")}
+                    />
+                    <span
+                      className={[
+                        "text-[10px] font-semibold leading-tight text-center",
+                        isSelected ? "text-foreground" : "text-muted-foreground",
+                      ].join(" ")}
+                    >
+                      {label}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
-          ))}
-        </section>
+          </div>
 
-        {/* Benefits */}
-        <section className="w-full max-w-md mt-8 space-y-3">
-          {benefits.map((b) => (
-            <Card key={b.title} className="border-border/60">
-              <CardContent className="flex items-start gap-3 p-4">
-                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                  <b.icon className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <p className="font-semibold text-sm text-foreground">{b.title}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {b.description}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </section>
-
-        {/* CTAs */}
-        <section className="w-full max-w-md mt-8 space-y-3">
+          {/* Primary CTA */}
           <Button
             size="lg"
             className="w-full text-base font-semibold h-12"
-            onClick={() => {
-              trackEvent("cta_click", { cta_id: "qr_get_started", section: "start" });
-              navigate("/auth");
-            }}
+            onClick={handleCtaClick}
           >
-            Try It Free
+            {content.cta}
           </Button>
+
+          {/* Dynamic Feature Cards */}
+          <div className="space-y-2.5">
+            {content.features.map((f) => (
+              <Card key={f.title} className="border-border/60">
+                <CardContent className="flex items-start gap-3 p-4">
+                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <f.icon className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm text-foreground">{f.title}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{f.description}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+
+        {/* ── Section 2: Demo Block ── */}
+        <section ref={demoRef} className="w-full max-w-md mt-12 space-y-4">
+          <div className="text-center space-y-1">
+            <h2 className="text-lg font-bold text-foreground">
+              See how it works in a real shop
+            </h2>
+            <p className="text-xs text-muted-foreground">{content.demoLabel}</p>
+          </div>
+
+          {/* Demo preview cards */}
+          <div className="rounded-xl border border-border/60 bg-muted/30 p-4 space-y-2">
+            {[
+              { label: "Lathe — Part #4412", status: "In Progress", color: "text-yellow-400" },
+              { label: "Mill #2 — Rush Order", status: "Waiting on Material", color: "text-red-400" },
+              { label: "QC Station", status: "Ready for Pickup", color: "text-green-400" },
+            ].map((item) => (
+              <div
+                key={item.label}
+                className="flex items-center justify-between px-3 py-2 rounded-lg bg-background/60 border border-border/40"
+              >
+                <span className="text-xs font-medium text-foreground">{item.label}</span>
+                <span className={`text-[11px] font-semibold ${item.color}`}>{item.status}</span>
+              </div>
+            ))}
+            <p className="text-[10px] text-muted-foreground text-center pt-1">
+              Sample job board — yours updates live
+            </p>
+          </div>
+
           <Button
-            variant="outline"
             size="lg"
-            className="w-full text-base h-12"
-            onClick={() => {
-              trackEvent("cta_click", { cta_id: "qr_see_how", section: "start" });
-              navigate("/");
-            }}
+            variant="outline"
+            className="w-full h-12 text-base font-semibold gap-2"
+            onClick={handleDemoClick}
           >
-            See How It Works
+            <PlayCircle className="w-5 h-5" />
+            Try Live Demo (No Login)
           </Button>
         </section>
 
-        {/* Email Capture */}
-        <section className="w-full max-w-md mt-8">
+        {/* ── Section 3: Credibility ── */}
+        <section className="w-full max-w-md mt-10 text-center">
+          <p className="text-xs text-muted-foreground/70 leading-relaxed">
+            Built for small shops that need clearer job visibility and better handoffs.
+          </p>
+        </section>
+
+        {/* ── Section 4: Secondary Conversion ── */}
+        <section className="w-full max-w-md mt-8 space-y-4">
+          <Button
+            size="lg"
+            className="w-full text-base font-semibold h-12"
+            onClick={handleSignupClick}
+          >
+            Start Free — No Credit Card
+          </Button>
+
+          {/* Email Capture */}
           {submitted ? (
             <div className="flex items-center justify-center gap-2 p-4 rounded-xl bg-primary/5 border border-primary/20">
               <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
@@ -207,12 +368,9 @@ export default function Start() {
           ) : (
             <div className="p-4 rounded-xl bg-muted/50 border border-border/60 space-y-2">
               <p className="text-sm font-medium text-foreground text-center">
-                Not ready to sign up? Get updates instead.
+                Not ready yet? Get product updates.
               </p>
-              <form
-                onSubmit={handleEmailSubmit}
-                className="flex gap-2"
-              >
+              <form onSubmit={handleEmailSubmit} className="flex gap-2">
                 <Input
                   type="email"
                   placeholder="your@email.com"
@@ -227,34 +385,28 @@ export default function Start() {
                   disabled={loading}
                   className="h-10 px-4 whitespace-nowrap"
                 >
-                  {loading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    "Subscribe"
-                  )}
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Subscribe"}
                 </Button>
               </form>
             </div>
           )}
         </section>
 
-        {/* QR Code */}
+        {/* ── Section 5: Footer ── */}
         <section className="w-full max-w-md mt-10 flex flex-col items-center space-y-3">
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
-            className="gap-2"
+            className="gap-2 text-muted-foreground"
             onClick={() => setShareOpen(true)}
           >
             <Share2 className="w-4 h-4" />
             Share this page
           </Button>
           <div className="bg-card p-3 rounded-xl shadow-sm border border-border">
-            <QRCodeSVG value={QR_URL} size={120} level="M" />
+            <QRCodeSVG value={QR_URL} size={100} level="M" />
           </div>
-          <p className="text-[11px] text-muted-foreground">
-            jobline.ai/start
-          </p>
+          <p className="text-[10px] text-muted-foreground/60">jobline.ai/start</p>
         </section>
 
         <SocialShareModal
@@ -263,7 +415,7 @@ export default function Start() {
           url={QR_URL}
         />
 
-        <footer className="mt-10 text-center space-y-1">
+        <footer className="mt-8 text-center space-y-1">
           <p className="text-xs font-medium text-muted-foreground">
             Built for small shops. Big impact.
           </p>
