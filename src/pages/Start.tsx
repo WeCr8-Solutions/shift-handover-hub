@@ -9,127 +9,28 @@ import { supabase } from "@/integrations/supabase/client";
 import { trackEvent } from "@/lib/analytics";
 import { captureUtmParams, getUtmParams } from "@/lib/utm";
 import {
-  ClipboardList,
-  ArrowRightLeft,
-  Eye,
   Loader2,
   CheckCircle2,
   Share2,
-  Wrench,
-  Factory,
-  Car,
-  Flame,
-  LayoutGrid,
-  FileText,
-  RefreshCw,
   PlayCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import logo from "@/assets/jobline-logo.png";
 import { SocialShareModal } from "@/components/SocialShareModal";
+import { ShopHandoffPreview } from "@/components/ShopHandoffPreview";
+import {
+  type ShopType,
+  parseShopType,
+  SHOP_TYPE_SELECTOR,
+  SHOP_TYPE_CONTENT,
+} from "@/lib/shopTypes";
 
 const emailSchema = z.string().trim().email("Please enter a valid email").max(255);
 
 const QR_URL = "https://jobline.ai/start";
 
-type ShopType = "cnc" | "auto" | "body" | "weld" | "general";
 
-const VALID_TYPES: ShopType[] = ["cnc", "auto", "body", "weld", "general"];
-
-const SHOP_TYPES: { type: ShopType; icon: React.ElementType; label: string }[] = [
-  { type: "cnc", icon: Factory, label: "CNC & Mfg" },
-  { type: "auto", icon: Wrench, label: "Auto Repair" },
-  { type: "body", icon: Car, label: "Body Shops" },
-  { type: "weld", icon: Flame, label: "Welding / Fab" },
-  { type: "general", icon: LayoutGrid, label: "General" },
-];
-
-const DEMO_JOBS: Record<ShopType, { label: string; status: string; color: string }[]> = {
-  cnc: [
-    { label: "Lathe #1 — Part #4412", status: "In Progress", color: "text-yellow-400" },
-    { label: "Mill #2 — Rush Order", status: "Waiting on Material", color: "text-red-400" },
-    { label: "QC Station", status: "Ready for Pickup", color: "text-green-400" },
-  ],
-  auto: [
-    { label: "Bay 3 — 2019 Ford F-150", status: "In Progress", color: "text-yellow-400" },
-    { label: "Bay 1 — Honda Civic Brakes", status: "Waiting on Parts", color: "text-red-400" },
-    { label: "Bay 5 — Toyota Camry", status: "Ready for Pickup", color: "text-green-400" },
-  ],
-  body: [
-    { label: "BMW M3 — Color Match", status: "In Teardown", color: "text-yellow-400" },
-    { label: "Mustang — Panel Repair", status: "In Paint", color: "text-blue-400" },
-    { label: "Toyota Camry", status: "Ready for Delivery", color: "text-green-400" },
-  ],
-  weld: [
-    { label: "Frame Jig A — Custom Rack", status: "In Progress", color: "text-yellow-400" },
-    { label: "Pipe Spool #7", status: "Waiting on Drawing", color: "text-red-400" },
-    { label: "Finishing Station", status: "Complete", color: "text-green-400" },
-  ],
-  general: [
-    { label: "Job #18 — Cabinet Set", status: "In Progress", color: "text-yellow-400" },
-    { label: "Job #21 — Countertop", status: "On Hold", color: "text-red-400" },
-    { label: "Pickup Counter", status: "Ready", color: "text-green-400" },
-  ],
-};
-
-const SHOP_CONTENT = {
-  cnc: {
-    headline: "Still walking the shop floor to know what's running?",
-    subheadline: "See every job, machine, and handoff instantly.",
-    cta: "See CNC Shop Demo",
-    demoLabel: "Live job board — CNC shop",
-    features: [
-      { icon: ClipboardList, title: "Track Every Job", description: "See status, priority, and what is next in real time." },
-      { icon: ArrowRightLeft, title: "Better Shift Handoffs", description: "Keep operators, leads, and supervisors aligned." },
-      { icon: Eye, title: "See What's Running Now", description: "Know machine and work order status without guessing." },
-    ],
-  },
-  auto: {
-    headline: "Know every vehicle status without asking your team",
-    subheadline: "See every bay, repair, and handoff in one place.",
-    cta: "See Auto Shop Demo",
-    demoLabel: "Live job board — auto repair shop",
-    features: [
-      { icon: ClipboardList, title: "Track Every Vehicle", description: "See what is checked in, in progress, blocked, or ready." },
-      { icon: RefreshCw, title: "Service Updates", description: "Keep advisors and techs aligned without repeated questions." },
-      { icon: Eye, title: "Clear Job Status", description: "Reduce confusion on what is waiting, active, or complete." },
-    ],
-  },
-  body: {
-    headline: "Stop losing track of repairs and handoffs",
-    subheadline: "See every stage from intake to delivery — no guessing.",
-    cta: "See Body Shop Demo",
-    demoLabel: "Live job board — body shop",
-    features: [
-      { icon: ClipboardList, title: "Track Repairs by Stage", description: "Follow progress from teardown to paint to delivery." },
-      { icon: FileText, title: "No Missed Notes", description: "Keep repair notes visible across the team." },
-      { icon: ArrowRightLeft, title: "Better Team Handoffs", description: "Reduce delays between departments and touchpoints." },
-    ],
-  },
-  weld: {
-    headline: "Missed notes causing rework?",
-    subheadline: "See every job, station, and handoff before it slips through.",
-    cta: "See Fabrication Demo",
-    demoLabel: "Live job board — welding & fabrication",
-    features: [
-      { icon: ClipboardList, title: "Track Jobs Clearly", description: "Know where every job stands without chasing updates." },
-      { icon: RefreshCw, title: "Reduce Rework", description: "Keep notes visible so details do not get lost." },
-      { icon: ArrowRightLeft, title: "Improve Handoffs", description: "Make transitions between stations easier to manage." },
-    ],
-  },
-  general: {
-    headline: "Keep your shop moving with clear job visibility",
-    subheadline: "See every job, status, and handoff — all in one place.",
-    cta: "See Your Shop Live",
-    demoLabel: "Live job board — small shop",
-    features: [
-      { icon: ClipboardList, title: "Track Every Job", description: "See work status in one place." },
-      { icon: ArrowRightLeft, title: "Better Handoffs", description: "Keep your team aligned." },
-      { icon: Eye, title: "Less Guessing", description: "Know what is running and what is next." },
-    ],
-  },
-} as const;
 
 export default function Start() {
   const navigate = useNavigate();
@@ -138,9 +39,7 @@ export default function Start() {
 
   const rawType = searchParams.get("type") ?? "";
   const src = searchParams.get("src") ?? "unknown";
-  const initialType: ShopType = VALID_TYPES.includes(rawType as ShopType)
-    ? (rawType as ShopType)
-    : "cnc";
+  const initialType: ShopType = parseShopType(rawType);
 
   const [selectedType, setSelectedType] = useState<ShopType>(initialType);
   const [email, setEmail] = useState("");
@@ -224,7 +123,7 @@ export default function Start() {
     }
   };
 
-  const content = SHOP_CONTENT[selectedType];
+  const content = SHOP_TYPE_CONTENT[selectedType];
 
   return (
     <>
@@ -269,7 +168,7 @@ export default function Start() {
               What kind of shop are you running?
             </p>
             <div className="flex justify-between gap-1.5">
-              {SHOP_TYPES.map(({ type, icon: Icon, label }) => {
+              {SHOP_TYPE_SELECTOR.map(({ type, icon: Icon, label }) => {
                 const isSelected = selectedType === type;
                 return (
                   <button
@@ -344,28 +243,13 @@ export default function Start() {
             <p className="text-xs text-muted-foreground">{content.demoLabel}</p>
           </div>
 
-          {/* Demo preview cards — dynamic by shop type */}
-          <div className="rounded-xl border border-primary/20 bg-muted/30 p-4 space-y-2">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-primary/70">Live Job Board</span>
-              <span className="flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                <span className="text-[10px] text-muted-foreground">Live</span>
-              </span>
-            </div>
-            {DEMO_JOBS[selectedType].map((item) => (
-              <div
-                key={item.label}
-                className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-background/70 border border-border/40"
-              >
-                <span className="text-xs font-medium text-foreground">{item.label}</span>
-                <span className={`text-[11px] font-bold ${item.color}`}>{item.status}</span>
-              </div>
-            ))}
-            <p className="text-[10px] text-muted-foreground/60 text-center pt-1">
-              Your board looks like this — updates in real time
-            </p>
-          </div>
+          {/* Job board + handoffs — both driven by selected shop type */}
+          <ShopHandoffPreview shopType={selectedType} variant="board" />
+          <ShopHandoffPreview
+            shopType={selectedType}
+            variant="handoffs"
+            onHandoffsClick={handleDemoClick}
+          />
 
           <Button
             size="lg"

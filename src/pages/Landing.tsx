@@ -7,6 +7,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { ShiftHandoffDemo } from "@/components/landing/ShiftHandoffDemo";
+import { ShopHandoffPreview } from "@/components/ShopHandoffPreview";
 import { SupportJoblineModal } from "@/components/SupportJoblineModal";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
@@ -585,45 +586,14 @@ export default function Landing() {
             </div>
 
             {/* Handoff Preview */}
-            <div 
-              className="bg-card border border-border rounded-xl overflow-hidden cursor-pointer hover:border-primary/50 transition-all group"
-              onClick={() => { trackEvent('landing_preview_click', { preview: 'recent_handoffs' }); navigate('/features/shift-handoff-software'); }}
-            >
-              <div className="px-4 py-3 border-b border-border bg-secondary/30">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-primary" />
-                  <span className="font-medium text-sm">Recent Handoffs</span>
-                </div>
-              </div>
-              <div className="p-4 space-y-3">
-                {[
-                  { station: "CNC-01", from: "Mike R.", to: "Sarah C.", time: "2:03 PM", state: "Running", parts: "127/150" },
-                  { station: "LATHE-02", from: "James W.", to: "Tom B.", time: "2:00 PM", state: "Setup", parts: "0/75" },
-                  { station: "MILL-03", from: "Lisa M.", to: "Dave K.", time: "1:58 PM", state: "Running", parts: "45/200" },
-                ].map((handoff, i) => (
-                  <div key={i} className="p-3 rounded-lg bg-secondary/20 border border-border/50">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-mono text-xs font-medium">{handoff.station}</span>
-                      <span className="text-[10px] text-muted-foreground">{handoff.time}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm mb-2">
-                      <span className="text-muted-foreground">{handoff.from}</span>
-                      <ArrowRight className="w-3 h-3 text-primary" />
-                      <span className="font-medium">{handoff.to}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-[10px]">
-                      <Badge variant="outline" className={cn(
-                        "px-1.5 py-0",
-                        handoff.state === "Running" ? "border-green-500/50 text-green-400" : "border-amber-500/50 text-amber-400"
-                      )}>
-                        {handoff.state}
-                      </Badge>
-                      <span className="text-muted-foreground">Parts: {handoff.parts}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <ShopHandoffPreview
+              shopType="cnc"
+              variant="handoffs"
+              onHandoffsClick={() => {
+                trackEvent('landing_preview_click', { preview: 'recent_handoffs' });
+                navigate('/features/shift-handoff-software');
+              }}
+            />
           </div>
 
           {/* Routing Preview - Full Width */}
