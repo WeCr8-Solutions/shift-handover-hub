@@ -135,13 +135,18 @@ interface Medium {
 interface StopVisit {
   id: string;
   stop_key: string;
+  stop_name: string;
   zone_number: number;
-  medium_name: string | null;   // format/size
-  flyer_design: string | null;  // content/design type
+  medium_name: string | null;
+  flyer_design: string | null;
   flyer_count: number;
   interaction_flags: string[];
   contact_name: string | null;
   contact_title: string | null;
+  business_email: string | null;
+  business_phone: string | null;
+  business_address: string | null;
+  mailing_consent: boolean;
   visited_by_name: string | null;
   visited_at: string;
   notes: string | null;
@@ -227,6 +232,12 @@ function VisitHistoryItem({ v }: { v: StopVisit }) {
           <User className="w-3 h-3" />
           {[v.contact_name, v.contact_title].filter(Boolean).join(" — ")}
         </p>
+      )}
+      {v.business_email && (
+        <p className="text-muted-foreground">✉ {v.business_email}</p>
+      )}
+      {v.business_phone && (
+        <p className="text-muted-foreground">☎ {v.business_phone}</p>
       )}
       {v.notes && <p className="italic text-muted-foreground">{v.notes}</p>}
       {v.visited_by_name && (
