@@ -1,5 +1,8 @@
 # Ollama Configuration
 
+> **Scope:** Developer tooling only — code generation, code repair, compliance documentation drafting.
+> This is entirely separate from the `ai-planning-assistant` Edge Function (`supabase/functions/ai-planning-assistant/`) that serves end users inside the application.
+
 ## Runtime
 
 Ollama runs inside Docker container **`local-ollama`** on port **11434**.
@@ -24,11 +27,21 @@ No need to start Ollama separately — it starts with Docker Desktop.
 
 Default for all skills: **`qwen2.5-coder:7b`**
 
-### Model Selection for Token Savings
+### Task Routing — Model Selection
 
-- Start with `qwen2.5-coder:7b` for most tasks to maximize speed and minimize resource cost.
-- Escalate to `qwen2.5-coder:14b` only when 7b produces incomplete or low-confidence fixes.
-- De-escalate back to 7b after complex fixes to keep routine runs efficient.
+| Task | Command | Model | Notes |
+|------|---------|-------|-------|
+| Code repair (lint/types/hooks/any) | `/repair-*` | `qwen2.5-coder:7b` | Fast, handles TypeScript well |
+| General code review | `/ollama-review` | `qwen2.5-coder:7b` | Default |
+| Generate new component/hook/util | `/codegen component\|hook\|util` | `qwen2.5-coder:7b` | Good at React/TS patterns |
+| Generate Edge Function | `/codegen edge-function` | `qwen2.5-coder:7b` | Good Deno/TypeScript knowledge |
+| Generate migration SQL | `/codegen migration` | `qwen2.5-coder:7b` | SQL is low complexity |
+| Generate test file | `/codegen test` | `qwen2.5-coder:7b` | Vitest scaffold |
+| FedRAMP single control | `/fedramp-draft` | `qwen2.5-coder:7b` | Policy + implementation statements |
+| FedRAMP control family batch | `/fedramp-draft batch` | `qwen2.5-coder:14b` | Better multi-section coherence |
+| Complex type inference | `/repair-any` (hard files) | `qwen2.5-coder:14b` | Escalate when 7b is incomplete |
+
+**Escalation rule:** Start with `qwen2.5-coder:7b`. Escalate to `qwen2.5-coder:14b` only when the 7b output is incomplete or low-confidence. De-escalate back to 7b after complex work.
 
 Override with env var:
 
@@ -40,8 +53,9 @@ OLLAMA_MODEL=codellama:7b /repair-any src/components/StationCard.tsx
 
 | Model | Size | Why |
 | --- | --- | --- |
-| `qwen2.5-coder:14b` | ~9 GB | Better for Phase 4 (complex type inference) |
-| `deepseek-coder-v2:16b` | ~10 GB | Strongest code reasoning if RAM allows |
+| `qwen2.5-coder:14b` | ~9 GB | Batch FedRAMP drafts, complex multi-file codegen, hard type inference |
+| `deepseek-coder-v2:16b` | ~10 GB | Strongest code reasoning if VRAM allows |
+| `llama3:8b` | ~4.7 GB | General prose — better than llama2:7b for compliance doc narrative |
 
 ```bash
 docker exec local-ollama ollama pull qwen2.5-coder:14b

@@ -6,12 +6,32 @@ All skills enforce these rules. Every suggestion from Ollama is evaluated agains
 
 ## Local LLM Task Routing
 
+> **Scope boundary:** Ollama is used exclusively as a **developer tool** for code generation, code repair,
+> and compliance documentation drafting. It is NOT the application AI assistant. The application AI
+> assistant (`supabase/functions/ai-planning-assistant/`) is a separate production Edge Function that
+> serves end users through the UI. Never conflate or combine these two systems.
+
 Use local Ollama models first when possible to conserve hosted tokens.
 
-- Route to local model: bulk lint cleanup, repetitive type narrowing, test mock scaffolding, and file-level refactors.
-- Keep hosted model for final arbitration when output is unclear, risky, or cross-cutting.
-- Never auto-merge local model output without validation (typecheck, tests, and codacy checks).
-- Prefer deterministic settings for code tasks (low temperature).
+**Route to local Ollama model:**
+- Bulk lint/type cleanup (`/repair-*` commands)
+- Generating new components, hooks, Edge Functions, tests, migrations (`/codegen`)
+- First-pass FedRAMP control implementation statements (`/fedramp-draft`)
+- File-level code reviews (`/ollama-review`)
+
+**Keep hosted model (cloud) for:**
+- Final arbitration when local output is unclear or incomplete
+- Security-critical logic (auth, RLS, key management)
+- Cross-file architecture decisions
+- Any change that touches production data pipelines
+
+**Always validate local model output before applying:**
+- Typecheck: `npx tsc --noEmit`
+- Lint: `npx eslint <file>`
+- Codacy: `codacy_cli_analyze`
+- Tests: `npm test` (for code changes)
+
+- Prefer deterministic settings for code tasks: `temperature: 0.1` for repairs, `0.2` for generation.
 
 ---
 
