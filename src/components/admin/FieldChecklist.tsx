@@ -652,7 +652,7 @@ export function FieldChecklist({
     const [vRes, mRes] = await Promise.all([
       supabase
         .from("flyer_stop_visits" as never)
-        .select("id,stop_key,zone_number,medium_name,flyer_design,flyer_count,interaction_flags,contact_name,contact_title,visited_by_name,visited_at,notes")
+        .select("id,stop_key,stop_name,zone_number,medium_name,flyer_design,flyer_count,interaction_flags,contact_name,contact_title,business_email,business_phone,business_address,mailing_consent,visited_by_name,visited_at,notes")
         .eq("campaign_id" as never, campaignId as never)
         .order("visited_at" as never, { ascending: false }),
       supabase
