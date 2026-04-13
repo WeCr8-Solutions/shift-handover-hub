@@ -548,7 +548,43 @@ function LogSheet({
             </div>
           )}
 
-          {/* Notes */}
+          {/* Business contact info */}
+          <div className="space-y-3 rounded-lg border p-3 bg-muted/20">
+            <p className="text-xs font-medium text-muted-foreground">Business Contact Info (for mailing lists)</p>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Email</Label>
+              <Input
+                type="email"
+                placeholder="e.g. info@shopname.com"
+                value={businessEmail}
+                onChange={e => setBusinessEmail(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Phone (optional)</Label>
+              <Input
+                type="tel"
+                placeholder="e.g. (619) 555-1234"
+                value={businessPhone}
+                onChange={e => setBusinessPhone(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Mailing Address (optional)</Label>
+              <Input
+                placeholder="e.g. 123 Main St, San Diego, CA 92101"
+                value={businessAddress}
+                onChange={e => setBusinessAddress(e.target.value)}
+              />
+            </div>
+            <label className="flex items-center gap-2 cursor-pointer text-xs">
+              <Checkbox
+                checked={mailingConsent}
+                onCheckedChange={v => setMailingConsent(!!v)}
+              />
+              OK to send marketing / postcards
+            </label>
+          </div>
           <div className="space-y-1.5">
             <Label className="text-sm">Notes (optional)</Label>
             <Textarea
