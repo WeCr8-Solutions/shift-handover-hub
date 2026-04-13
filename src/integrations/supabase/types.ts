@@ -1856,6 +1856,89 @@ export type Database = {
           },
         ]
       }
+      flyer_mailing_list_entries: {
+        Row: {
+          added_by: string | null
+          created_at: string | null
+          id: string
+          mailing_list_id: string
+          notes: string | null
+          stop_visit_id: string
+        }
+        Insert: {
+          added_by?: string | null
+          created_at?: string | null
+          id?: string
+          mailing_list_id: string
+          notes?: string | null
+          stop_visit_id: string
+        }
+        Update: {
+          added_by?: string | null
+          created_at?: string | null
+          id?: string
+          mailing_list_id?: string
+          notes?: string | null
+          stop_visit_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flyer_mailing_list_entries_mailing_list_id_fkey"
+            columns: ["mailing_list_id"]
+            isOneToOne: false
+            referencedRelation: "flyer_mailing_lists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flyer_mailing_list_entries_stop_visit_id_fkey"
+            columns: ["stop_visit_id"]
+            isOneToOne: false
+            referencedRelation: "flyer_stop_visits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flyer_mailing_lists: {
+        Row: {
+          campaign_id: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          list_type: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          campaign_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          list_type?: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          campaign_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          list_type?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flyer_mailing_lists_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "flyer_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       flyer_mediums: {
         Row: {
           created_at: string
@@ -1883,6 +1966,9 @@ export type Database = {
       flyer_stop_visits: {
         Row: {
           assignment_id: string | null
+          business_address: string | null
+          business_email: string | null
+          business_phone: string | null
           campaign_id: string
           contact_name: string | null
           contact_title: string | null
@@ -1891,6 +1977,7 @@ export type Database = {
           flyer_design: string | null
           id: string
           interaction_flags: string[]
+          mailing_consent: boolean | null
           medium_id: string | null
           medium_name: string | null
           notes: string | null
@@ -1904,6 +1991,9 @@ export type Database = {
         }
         Insert: {
           assignment_id?: string | null
+          business_address?: string | null
+          business_email?: string | null
+          business_phone?: string | null
           campaign_id: string
           contact_name?: string | null
           contact_title?: string | null
@@ -1912,6 +2002,7 @@ export type Database = {
           flyer_design?: string | null
           id?: string
           interaction_flags?: string[]
+          mailing_consent?: boolean | null
           medium_id?: string | null
           medium_name?: string | null
           notes?: string | null
@@ -1925,6 +2016,9 @@ export type Database = {
         }
         Update: {
           assignment_id?: string | null
+          business_address?: string | null
+          business_email?: string | null
+          business_phone?: string | null
           campaign_id?: string
           contact_name?: string | null
           contact_title?: string | null
@@ -1933,6 +2027,7 @@ export type Database = {
           flyer_design?: string | null
           id?: string
           interaction_flags?: string[]
+          mailing_consent?: boolean | null
           medium_id?: string | null
           medium_name?: string | null
           notes?: string | null
