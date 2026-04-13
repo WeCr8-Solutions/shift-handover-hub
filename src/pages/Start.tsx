@@ -12,13 +12,12 @@ import {
   Loader2,
   CheckCircle2,
   Share2,
-  PlayCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import logo from "@/assets/jobline-logo.png";
 import { SocialShareModal } from "@/components/SocialShareModal";
-import { ShopHandoffPreview } from "@/components/ShopHandoffPreview";
+import { ShopTypeHandoffDemo } from "@/components/ShopTypeHandoffDemo";
 import {
   type ShopType,
   parseShopType,
@@ -82,11 +81,6 @@ export default function Start() {
   const handleCtaClick = () => {
     trackEvent("cta_click", { type: selectedType, src, path: "/start" });
     demoRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const handleDemoClick = () => {
-    trackEvent("demo_click", { type: selectedType, src, path: "/start" });
-    navigate("/demo");
   };
 
   const handleSignupClick = () => {
@@ -234,32 +228,9 @@ export default function Start() {
           </div>
         </section>
 
-        {/* ── Section 2: Demo Block ── */}
-        <section ref={demoRef} className="w-full max-w-md mt-12 space-y-4">
-          <div className="text-center space-y-1">
-            <h2 className="text-lg font-bold text-foreground">
-              See how it works in a real shop
-            </h2>
-            <p className="text-xs text-muted-foreground">{content.demoLabel}</p>
-          </div>
-
-          {/* Job board + handoffs — both driven by selected shop type */}
-          <ShopHandoffPreview shopType={selectedType} variant="board" />
-          <ShopHandoffPreview
-            shopType={selectedType}
-            variant="handoffs"
-            onHandoffsClick={handleDemoClick}
-          />
-
-          <Button
-            size="lg"
-            variant="outline"
-            className="w-full h-12 text-base font-semibold gap-2"
-            onClick={handleDemoClick}
-          >
-            <PlayCircle className="w-5 h-5" />
-            Try Live Demo (No Login)
-          </Button>
+        {/* ── Section 2: Interactive Demo ── */}
+        <section ref={demoRef} className="w-full max-w-md mt-12">
+          <ShopTypeHandoffDemo shopType={selectedType} />
         </section>
 
         {/* ── Section 3: Credibility ── */}

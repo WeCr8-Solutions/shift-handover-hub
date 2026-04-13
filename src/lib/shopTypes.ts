@@ -43,6 +43,41 @@ export interface ShopJobEntry {
   color: string;
 }
 
+export type DemoColorVariant = "green" | "amber" | "blue" | "red";
+export type DemoStatusIconKey = "check" | "wrench" | "package" | "alert";
+export type DemoFeedbackIconKey = "gauge" | "shield" | "timer" | "wrench";
+
+export interface ShopDemoStatusOption {
+  statusLabel: string;
+  partsCount: number;
+  detailLabel: string;
+  colorVariant: DemoColorVariant;
+  iconKey: DemoStatusIconKey;
+}
+
+export interface ShopDemoFeedbackOption {
+  type: string;
+  label: string;
+  impacts: string[];
+  note: string;
+  iconKey: DemoFeedbackIconKey;
+}
+
+export interface ShopDemoConfig {
+  stationLabel: string;
+  workOrder: string;
+  itemLabel: string;
+  itemValue: string;
+  operationLabel: string;
+  stationShortName: string;
+  operatorName: string;
+  unitLabel: string;
+  shiftHandoffLabel: string;
+  operationHandoffLabel: string;
+  statusOptions: ShopDemoStatusOption[];
+  feedbackOptions: ShopDemoFeedbackOption[];
+}
+
 export interface ShopTypeConfig {
   headline: string;
   subheadline: string;
@@ -51,6 +86,7 @@ export interface ShopTypeConfig {
   features: ShopFeature[];
   handoffs: ShopHandoffEntry[];
   jobs: ShopJobEntry[];
+  demoConfig: ShopDemoConfig;
 }
 
 export const SHOP_TYPE_SELECTOR: { type: ShopType; icon: React.ElementType; label: string }[] = [
@@ -82,6 +118,29 @@ export const SHOP_TYPE_CONTENT: Record<ShopType, ShopTypeConfig> = {
       { station: "LATHE-02", from: "James W.", to: "Tom B.", time: "2:00 PM", state: "Setup", meta: "0/75 parts" },
       { station: "MILL-03", from: "Lisa M.", to: "Dave K.", time: "1:58 PM", state: "Running", meta: "45/200 parts" },
     ],
+    demoConfig: {
+      stationLabel: "CNC-01 Station",
+      workOrder: "WO-2024-1847",
+      itemLabel: "Part Number",
+      itemValue: "PN-4521-REV-C",
+      operationLabel: "Op 20 - CNC Milling",
+      stationShortName: "CNC-01",
+      operatorName: "Mike R.",
+      unitLabel: "parts",
+      shiftHandoffLabel: "End of Shift",
+      operationHandoffLabel: "Operation Complete",
+      statusOptions: [
+        { statusLabel: "Running", partsCount: 24, detailLabel: "24 parts completed", colorVariant: "green", iconKey: "check" },
+        { statusLabel: "Running", partsCount: 36, detailLabel: "36 parts completed", colorVariant: "green", iconKey: "check" },
+        { statusLabel: "Setup Mode", partsCount: 12, detailLabel: "12 parts completed", colorVariant: "amber", iconKey: "wrench" },
+        { statusLabel: "Complete", partsCount: 48, detailLabel: "48 parts completed", colorVariant: "blue", iconKey: "package" },
+      ],
+      feedbackOptions: [
+        { type: "tool_adjustment", label: "Tool offset tweak for better finish", impacts: ["cycle_time", "quality"], note: "Offset adjustment improved surface finish", iconKey: "gauge" },
+        { type: "setup_change", label: "Fixture clamp position change", impacts: ["safety"], note: "Fixture clamp position more secure", iconKey: "shield" },
+        { type: "cycle_improvement", label: "Cycle time optimization found", impacts: ["cycle_time"], note: "Reduced rapid moves saved 8 seconds", iconKey: "timer" },
+      ],
+    },
   },
   auto: {
     headline: "Know every vehicle status without asking your team",
@@ -103,6 +162,29 @@ export const SHOP_TYPE_CONTENT: Record<ShopType, ShopTypeConfig> = {
       { station: "Bay 3", from: "Derek S.", to: "Kyle W.", time: "2:01 PM", state: "Running", meta: "Oil change + tire rotation" },
       { station: "Bay 5", from: "James P.", to: "—", time: "1:55 PM", state: "Complete", meta: "Ready for pickup" },
     ],
+    demoConfig: {
+      stationLabel: "Bay 3 — Service Bay",
+      workOrder: "RO-2024-0392",
+      itemLabel: "Vehicle",
+      itemValue: "2019 Ford F-150",
+      operationLabel: "Brake Service",
+      stationShortName: "Bay 3",
+      operatorName: "Tony M.",
+      unitLabel: "vehicles",
+      shiftHandoffLabel: "End of Shift",
+      operationHandoffLabel: "Vehicle Complete",
+      statusOptions: [
+        { statusLabel: "Diagnosis Complete", partsCount: 1, detailLabel: "Inspected & documented", colorVariant: "green", iconKey: "check" },
+        { statusLabel: "In Progress", partsCount: 1, detailLabel: "Service underway", colorVariant: "amber", iconKey: "wrench" },
+        { statusLabel: "Waiting on Parts", partsCount: 1, detailLabel: "Parts on order", colorVariant: "red", iconKey: "alert" },
+        { statusLabel: "Ready for Pickup", partsCount: 1, detailLabel: "Service complete", colorVariant: "blue", iconKey: "package" },
+      ],
+      feedbackOptions: [
+        { type: "additional_service", label: "Recommended additional service", impacts: ["quality"], note: "Brake flush recommended — customer notified", iconKey: "gauge" },
+        { type: "parts_concern", label: "Parts availability concern noted", impacts: ["productivity"], note: "Rotors needed special order — logged for future", iconKey: "shield" },
+        { type: "tech_note", label: "Tech note added for service advisor", impacts: ["quality"], note: "Alignment pulls left — customer informed", iconKey: "timer" },
+      ],
+    },
   },
   body: {
     headline: "Stop losing track of repairs and handoffs",
@@ -124,6 +206,29 @@ export const SHOP_TYPE_CONTENT: Record<ShopType, ShopTypeConfig> = {
       { station: "Paint Booth", from: "Sam T.", to: "Detail", time: "1:50 PM", state: "In Paint", meta: "Mustang — base coat" },
       { station: "Detail", from: "Lee C.", to: "—", time: "1:40 PM", state: "Complete", meta: "Camry — delivery ready" },
     ],
+    demoConfig: {
+      stationLabel: "Paint Booth — Stage 2",
+      workOrder: "CO-2024-7713",
+      itemLabel: "Repair Order",
+      itemValue: "2021 BMW M3 — Door Panels",
+      operationLabel: "Color Match & Paint",
+      stationShortName: "Paint Booth",
+      operatorName: "Sam T.",
+      unitLabel: "repairs",
+      shiftHandoffLabel: "End of Shift",
+      operationHandoffLabel: "Stage Complete",
+      statusOptions: [
+        { statusLabel: "In Teardown", partsCount: 1, detailLabel: "Disassembly in progress", colorVariant: "amber", iconKey: "wrench" },
+        { statusLabel: "In Paint", partsCount: 1, detailLabel: "Color coat applied", colorVariant: "blue", iconKey: "package" },
+        { statusLabel: "Detail Complete", partsCount: 1, detailLabel: "Ready for delivery", colorVariant: "green", iconKey: "check" },
+        { statusLabel: "On Hold", partsCount: 1, detailLabel: "Supplement needed", colorVariant: "red", iconKey: "alert" },
+      ],
+      feedbackOptions: [
+        { type: "color_match", label: "Color match needed adjustment", impacts: ["quality"], note: "Added pearl coat for better match", iconKey: "gauge" },
+        { type: "supplement", label: "Additional damage found", impacts: ["quality", "productivity"], note: "Supplement submitted for inner door panel", iconKey: "shield" },
+        { type: "customer_note", label: "Customer preference noted", impacts: ["quality"], note: "Customer requested early delivery — flagged", iconKey: "timer" },
+      ],
+    },
   },
   weld: {
     headline: "Missed notes causing rework?",
@@ -145,6 +250,29 @@ export const SHOP_TYPE_CONTENT: Record<ShopType, ShopTypeConfig> = {
       { station: "Weld Cell 1", from: "Aaron D.", to: "Grind", time: "2:00 PM", state: "Complete", meta: "Pipe spool — waiting drawing" },
       { station: "Finishing", from: "Steve R.", to: "—", time: "1:45 PM", state: "Complete", meta: "Trailer hitch — out the door" },
     ],
+    demoConfig: {
+      stationLabel: "Weld Cell 1 — Fit-Up",
+      workOrder: "WO-FAB-2244",
+      itemLabel: "Job",
+      itemValue: "Custom Rack Assembly",
+      operationLabel: "Fit-Up & Tack Weld",
+      stationShortName: "Weld Cell 1",
+      operatorName: "Brad H.",
+      unitLabel: "assemblies",
+      shiftHandoffLabel: "End of Shift",
+      operationHandoffLabel: "Operation Complete",
+      statusOptions: [
+        { statusLabel: "In Progress", partsCount: 4, detailLabel: "4 assemblies complete", colorVariant: "green", iconKey: "check" },
+        { statusLabel: "Setup", partsCount: 0, detailLabel: "Fixture staged", colorVariant: "amber", iconKey: "wrench" },
+        { statusLabel: "Complete", partsCount: 8, detailLabel: "8 assemblies done", colorVariant: "blue", iconKey: "package" },
+        { statusLabel: "Waiting on Drawing", partsCount: 2, detailLabel: "Drawing discrepancy found", colorVariant: "red", iconKey: "alert" },
+      ],
+      feedbackOptions: [
+        { type: "drawing_issue", label: "Drawing discrepancy found", impacts: ["quality"], note: "Hole pattern off — flagged for engineer", iconKey: "gauge" },
+        { type: "fit_up_note", label: "Fit-up improvement noted", impacts: ["cycle_time", "quality"], note: "Tab placement improved weld access", iconKey: "timer" },
+        { type: "safety_note", label: "PPE/safety note added", impacts: ["safety"], note: "Grinding shield needed at this station", iconKey: "shield" },
+      ],
+    },
   },
   general: {
     headline: "Keep your shop moving with clear job visibility",
@@ -166,5 +294,28 @@ export const SHOP_TYPE_CONTENT: Record<ShopType, ShopTypeConfig> = {
       { station: "Station B", from: "Phil C.", to: "Dan R.", time: "1:50 PM", state: "On Hold", meta: "Countertop — material delay" },
       { station: "Finishing", from: "Mark L.", to: "—", time: "1:30 PM", state: "Complete", meta: "Shelving unit — ready" },
     ],
+    demoConfig: {
+      stationLabel: "Station A — Assembly",
+      workOrder: "JOB-2024-0118",
+      itemLabel: "Job",
+      itemValue: "Cabinet Set — Job #18",
+      operationLabel: "Assembly",
+      stationShortName: "Station A",
+      operatorName: "Dan R.",
+      unitLabel: "units",
+      shiftHandoffLabel: "End of Shift",
+      operationHandoffLabel: "Job Complete",
+      statusOptions: [
+        { statusLabel: "In Progress", partsCount: 6, detailLabel: "6 units complete", colorVariant: "green", iconKey: "check" },
+        { statusLabel: "On Hold", partsCount: 3, detailLabel: "Material delay", colorVariant: "amber", iconKey: "wrench" },
+        { statusLabel: "Complete", partsCount: 12, detailLabel: "12 units done", colorVariant: "blue", iconKey: "package" },
+        { statusLabel: "Waiting on Material", partsCount: 0, detailLabel: "Supplier delayed", colorVariant: "red", iconKey: "alert" },
+      ],
+      feedbackOptions: [
+        { type: "process_note", label: "Process improvement found", impacts: ["cycle_time"], note: "New assembly sequence saved time", iconKey: "timer" },
+        { type: "material_note", label: "Material quality concern", impacts: ["quality"], note: "Supplier boards uneven — noted for QC", iconKey: "gauge" },
+        { type: "workflow_note", label: "Workflow note added", impacts: ["productivity"], note: "Staging area reorganized for better flow", iconKey: "shield" },
+      ],
+    },
   },
 };
