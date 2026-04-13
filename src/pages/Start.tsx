@@ -45,12 +45,40 @@ const SHOP_TYPES: { type: ShopType; icon: React.ElementType; label: string }[] =
   { type: "general", icon: LayoutGrid, label: "General" },
 ];
 
+const DEMO_JOBS: Record<ShopType, { label: string; status: string; color: string }[]> = {
+  cnc: [
+    { label: "Lathe #1 — Part #4412", status: "In Progress", color: "text-yellow-400" },
+    { label: "Mill #2 — Rush Order", status: "Waiting on Material", color: "text-red-400" },
+    { label: "QC Station", status: "Ready for Pickup", color: "text-green-400" },
+  ],
+  auto: [
+    { label: "Bay 3 — 2019 Ford F-150", status: "In Progress", color: "text-yellow-400" },
+    { label: "Bay 1 — Honda Civic Brakes", status: "Waiting on Parts", color: "text-red-400" },
+    { label: "Bay 5 — Toyota Camry", status: "Ready for Pickup", color: "text-green-400" },
+  ],
+  body: [
+    { label: "BMW M3 — Color Match", status: "In Teardown", color: "text-yellow-400" },
+    { label: "Mustang — Panel Repair", status: "In Paint", color: "text-blue-400" },
+    { label: "Toyota Camry", status: "Ready for Delivery", color: "text-green-400" },
+  ],
+  weld: [
+    { label: "Frame Jig A — Custom Rack", status: "In Progress", color: "text-yellow-400" },
+    { label: "Pipe Spool #7", status: "Waiting on Drawing", color: "text-red-400" },
+    { label: "Finishing Station", status: "Complete", color: "text-green-400" },
+  ],
+  general: [
+    { label: "Job #18 — Cabinet Set", status: "In Progress", color: "text-yellow-400" },
+    { label: "Job #21 — Countertop", status: "On Hold", color: "text-red-400" },
+    { label: "Pickup Counter", status: "Ready", color: "text-green-400" },
+  ],
+};
+
 const SHOP_CONTENT = {
   cnc: {
     headline: "Still walking the shop floor to know what's running?",
-    subheadline: "Track every job, machine status, and handoff in real time.",
+    subheadline: "See every job, machine, and handoff instantly.",
     cta: "See CNC Shop Demo",
-    demoLabel: "Example workflow for a CNC shop",
+    demoLabel: "Live job board — CNC shop",
     features: [
       { icon: ClipboardList, title: "Track Every Job", description: "See status, priority, and what is next in real time." },
       { icon: ArrowRightLeft, title: "Better Shift Handoffs", description: "Keep operators, leads, and supervisors aligned." },
@@ -59,9 +87,9 @@ const SHOP_CONTENT = {
   },
   auto: {
     headline: "Know every vehicle status without asking your team",
-    subheadline: "Track repairs, updates, and handoffs in one place.",
+    subheadline: "See every bay, repair, and handoff in one place.",
     cta: "See Auto Shop Demo",
-    demoLabel: "Example workflow for an auto repair shop",
+    demoLabel: "Live job board — auto repair shop",
     features: [
       { icon: ClipboardList, title: "Track Every Vehicle", description: "See what is checked in, in progress, blocked, or ready." },
       { icon: RefreshCw, title: "Service Updates", description: "Keep advisors and techs aligned without repeated questions." },
@@ -70,9 +98,9 @@ const SHOP_CONTENT = {
   },
   body: {
     headline: "Stop losing track of repairs and handoffs",
-    subheadline: "See every stage from intake to completion in one place.",
+    subheadline: "See every stage from intake to delivery — no guessing.",
     cta: "See Body Shop Demo",
-    demoLabel: "Example workflow for a body shop",
+    demoLabel: "Live job board — body shop",
     features: [
       { icon: ClipboardList, title: "Track Repairs by Stage", description: "Follow progress from teardown to paint to delivery." },
       { icon: FileText, title: "No Missed Notes", description: "Keep repair notes visible across the team." },
@@ -81,9 +109,9 @@ const SHOP_CONTENT = {
   },
   weld: {
     headline: "Missed notes causing rework?",
-    subheadline: "Track fabrication jobs and handoffs clearly from start to finish.",
+    subheadline: "See every job, station, and handoff before it slips through.",
     cta: "See Fabrication Demo",
-    demoLabel: "Example workflow for fabrication and welding",
+    demoLabel: "Live job board — welding & fabrication",
     features: [
       { icon: ClipboardList, title: "Track Jobs Clearly", description: "Know where every job stands without chasing updates." },
       { icon: RefreshCw, title: "Reduce Rework", description: "Keep notes visible so details do not get lost." },
@@ -92,9 +120,9 @@ const SHOP_CONTENT = {
   },
   general: {
     headline: "Keep your shop moving with clear job visibility",
-    subheadline: "Track status, handoffs, and what is next in one place.",
-    cta: "See JobLine Demo",
-    demoLabel: "Example workflow for small shops",
+    subheadline: "See every job, status, and handoff — all in one place.",
+    cta: "See Your Shop Live",
+    demoLabel: "Live job board — small shop",
     features: [
       { icon: ClipboardList, title: "Track Every Job", description: "See work status in one place." },
       { icon: ArrowRightLeft, title: "Better Handoffs", description: "Keep your team aligned." },
@@ -223,21 +251,24 @@ export default function Start() {
           </div>
 
           {/* Dynamic Headline */}
-          <div className="text-center space-y-2">
+          <div className="text-center space-y-3">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground leading-snug">
               {content.headline}
             </h1>
             <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
               {content.subheadline}
             </p>
+            <p className="text-sm font-semibold text-foreground/80">
+              No more chasing operators. No more guessing.
+            </p>
           </div>
 
           {/* Shop Type Selector */}
-          <div className="space-y-2">
-            <p className="text-xs font-medium text-muted-foreground text-center tracking-wide uppercase">
+          <div className="space-y-3">
+            <p className="text-sm font-semibold text-foreground text-center">
               What kind of shop are you running?
             </p>
-            <div className="flex justify-between gap-2">
+            <div className="flex justify-between gap-1.5">
               {SHOP_TYPES.map(({ type, icon: Icon, label }) => {
                 const isSelected = selectedType === type;
                 return (
@@ -245,24 +276,28 @@ export default function Start() {
                     key={type}
                     onClick={() => handleTypeSelect(type)}
                     className={[
-                      "flex flex-col items-center gap-1.5 flex-1 py-2.5 px-1 rounded-lg border transition-all duration-150 min-h-[60px]",
+                      "flex flex-col items-center gap-2 flex-1 py-3 px-1 rounded-xl border-2 cursor-pointer",
+                      "transition-all duration-100 min-h-[72px]",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      "active:scale-95",
                       isSelected
-                        ? "bg-primary/15 border-primary scale-[1.04] shadow-sm"
-                        : "bg-muted/40 border-border/50 hover:bg-muted/70 hover:border-border",
+                        ? "bg-primary/20 border-primary shadow-[0_0_0_1px_hsl(var(--primary)/0.3)]"
+                        : "bg-muted/40 border-border/40 hover:bg-muted/80 hover:border-border hover:scale-[1.02]",
                     ].join(" ")}
                     aria-pressed={isSelected}
                   >
                     <Icon
                       className={[
-                        "w-5 h-5 transition-colors",
-                        isSelected ? "text-primary drop-shadow-[0_0_4px_hsl(var(--primary))]" : "text-muted-foreground",
+                        "w-6 h-6 transition-all duration-100",
+                        isSelected
+                          ? "text-primary scale-110 drop-shadow-[0_0_6px_hsl(var(--primary)/0.8)]"
+                          : "text-muted-foreground",
                       ].join(" ")}
                     />
                     <span
                       className={[
-                        "text-[10px] font-semibold leading-tight text-center",
-                        isSelected ? "text-foreground" : "text-muted-foreground",
+                        "text-[10px] font-bold leading-tight text-center",
+                        isSelected ? "text-primary" : "text-muted-foreground",
                       ].join(" ")}
                     >
                       {label}
@@ -309,23 +344,26 @@ export default function Start() {
             <p className="text-xs text-muted-foreground">{content.demoLabel}</p>
           </div>
 
-          {/* Demo preview cards */}
-          <div className="rounded-xl border border-border/60 bg-muted/30 p-4 space-y-2">
-            {[
-              { label: "Lathe — Part #4412", status: "In Progress", color: "text-yellow-400" },
-              { label: "Mill #2 — Rush Order", status: "Waiting on Material", color: "text-red-400" },
-              { label: "QC Station", status: "Ready for Pickup", color: "text-green-400" },
-            ].map((item) => (
+          {/* Demo preview cards — dynamic by shop type */}
+          <div className="rounded-xl border border-primary/20 bg-muted/30 p-4 space-y-2">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-primary/70">Live Job Board</span>
+              <span className="flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                <span className="text-[10px] text-muted-foreground">Live</span>
+              </span>
+            </div>
+            {DEMO_JOBS[selectedType].map((item) => (
               <div
                 key={item.label}
-                className="flex items-center justify-between px-3 py-2 rounded-lg bg-background/60 border border-border/40"
+                className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-background/70 border border-border/40"
               >
                 <span className="text-xs font-medium text-foreground">{item.label}</span>
-                <span className={`text-[11px] font-semibold ${item.color}`}>{item.status}</span>
+                <span className={`text-[11px] font-bold ${item.color}`}>{item.status}</span>
               </div>
             ))}
-            <p className="text-[10px] text-muted-foreground text-center pt-1">
-              Sample job board — yours updates live
+            <p className="text-[10px] text-muted-foreground/60 text-center pt-1">
+              Your board looks like this — updates in real time
             </p>
           </div>
 
