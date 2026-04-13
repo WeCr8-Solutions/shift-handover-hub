@@ -51,6 +51,7 @@ import {
 } from "lucide-react";
 import { FLYER_ZONES, exportZonesToCsv, type FlyerZone } from "./flyerZoneData";
 import { FieldChecklist } from "./FieldChecklist";
+import { ContactsExportTab } from "./ContactsExportTab";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -478,6 +479,10 @@ export function FlyerCampaigns() {
             <Users className="w-3.5 h-3.5" />
             Assign
           </TabsTrigger>
+          <TabsTrigger value="contacts" className="gap-1.5">
+            <ClipboardList className="w-3.5 h-3.5" />
+            Contacts
+          </TabsTrigger>
         </TabsList>
 
         {/* ─── Campaign Overview ─── */}
@@ -853,6 +858,11 @@ ON CONFLICT (user_id, role) DO NOTHING;`}
               </pre>
             </div>
           </div>
+        </TabsContent>
+
+        {/* ─── Contacts / Export ─── */}
+        <TabsContent value="contacts">
+          <ContactsExportTab campaignId={campaignId} />
         </TabsContent>
       </Tabs>
 

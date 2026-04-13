@@ -135,13 +135,18 @@ interface Medium {
 interface StopVisit {
   id: string;
   stop_key: string;
+  stop_name: string;
   zone_number: number;
-  medium_name: string | null;   // format/size
-  flyer_design: string | null;  // content/design type
+  medium_name: string | null;
+  flyer_design: string | null;
   flyer_count: number;
   interaction_flags: string[];
   contact_name: string | null;
   contact_title: string | null;
+  business_email: string | null;
+  business_phone: string | null;
+  business_address: string | null;
+  mailing_consent: boolean;
   visited_by_name: string | null;
   visited_at: string;
   notes: string | null;
@@ -227,6 +232,12 @@ function VisitHistoryItem({ v }: { v: StopVisit }) {
           <User className="w-3 h-3" />
           {[v.contact_name, v.contact_title].filter(Boolean).join(" — ")}
         </p>
+      )}
+      {v.business_email && (
+        <p className="text-muted-foreground">✉ {v.business_email}</p>
+      )}
+      {v.business_phone && (
+        <p className="text-muted-foreground">☎ {v.business_phone}</p>
       )}
       {v.notes && <p className="italic text-muted-foreground">{v.notes}</p>}
       {v.visited_by_name && (
@@ -316,6 +327,10 @@ function LogSheet({
   const [contactName, setContactName]   = useState("");
   const [contactTitle, setContactTitle] = useState("");
   const [notes, setNotes]           = useState("");
+  const [businessEmail, setBusinessEmail] = useState("");
+  const [businessPhone, setBusinessPhone] = useState("");
+  const [businessAddress, setBusinessAddress] = useState("");
+  const [mailingConsent, setMailingConsent] = useState(false);
   const [saving, setSaving]         = useState(false);
   const [showHistory, setShowHistory] = useState(false);
 
@@ -328,6 +343,10 @@ function LogSheet({
       setContactName("");
       setContactTitle("");
       setNotes("");
+      setBusinessEmail("");
+      setBusinessPhone("");
+      setBusinessAddress("");
+      setMailingConsent(false);
       setShowHistory(false);
     }
   }, [stop, mediums]);
@@ -363,6 +382,10 @@ function LogSheet({
         interaction_flags: [...flags],
         contact_name:     contactName.trim() || null,
         contact_title:    contactTitle.trim() || null,
+        business_email:   businessEmail.trim() || null,
+        business_phone:   businessPhone.trim() || null,
+        business_address: businessAddress.trim() || null,
+        mailing_consent:  mailingConsent,
         visited_by:       currentUserId,
         visited_by_name:  displayName,
         assignment_id:    assignmentId ?? null,
@@ -525,7 +548,43 @@ function LogSheet({
             </div>
           )}
 
-          {/* Notes */}
+          {/* Business contact info */}
+          <div className="space-y-3 rounded-lg border p-3 bg-muted/20">
+            <p className="text-xs font-medium text-muted-foreground">Business Contact Info (for mailing lists)</p>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Email</Label>
+              <Input
+                type="email"
+                placeholder="e.g. info@shopname.com"
+                value={businessEmail}
+                onChange={e => setBusinessEmail(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Phone (optional)</Label>
+              <Input
+                type="tel"
+                placeholder="e.g. (619) 555-1234"
+                value={businessPhone}
+                onChange={e => setBusinessPhone(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Mailing Address (optional)</Label>
+              <Input
+                placeholder="e.g. 123 Main St, San Diego, CA 92101"
+                value={businessAddress}
+                onChange={e => setBusinessAddress(e.target.value)}
+              />
+            </div>
+            <label className="flex items-center gap-2 cursor-pointer text-xs">
+              <Checkbox
+                checked={mailingConsent}
+                onCheckedChange={v => setMailingConsent(!!v)}
+              />
+              OK to send marketing / postcards
+            </label>
+          </div>
           <div className="space-y-1.5">
             <Label className="text-sm">Notes (optional)</Label>
             <Textarea
@@ -593,7 +652,7 @@ export function FieldChecklist({
     const [vRes, mRes] = await Promise.all([
       supabase
         .from("flyer_stop_visits" as never)
-        .select("id,stop_key,zone_number,medium_name,flyer_design,flyer_count,interaction_flags,contact_name,contact_title,visited_by_name,visited_at,notes")
+        .select("id,stop_key,stop_name,zone_number,medium_name,flyer_design,flyer_count,interaction_flags,contact_name,contact_title,business_email,business_phone,business_address,mailing_consent,visited_by_name,visited_at,notes")
         .eq("campaign_id" as never, campaignId as never)
         .order("visited_at" as never, { ascending: false }),
       supabase
