@@ -478,6 +478,10 @@ export function FlyerCampaigns() {
             <Users className="w-3.5 h-3.5" />
             Assign
           </TabsTrigger>
+          <TabsTrigger value="contacts" className="gap-1.5">
+            <ClipboardList className="w-3.5 h-3.5" />
+            Contacts
+          </TabsTrigger>
         </TabsList>
 
         {/* ─── Campaign Overview ─── */}
