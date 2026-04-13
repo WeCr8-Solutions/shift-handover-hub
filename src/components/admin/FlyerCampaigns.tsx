@@ -861,7 +861,7 @@ ON CONFLICT (user_id, role) DO NOTHING;`}
 
         {/* ─── Contacts / Export ─── */}
         <TabsContent value="contacts">
-          <ContactsExportTab campaignId={activeCampaignId} />
+          <ContactsExportTab campaignId={campaignId} />
         </TabsContent>
       </Tabs>
 
