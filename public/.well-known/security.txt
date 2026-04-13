@@ -1,0 +1,10 @@
+Contact: mailto:security@jobline.ai
+Preferred-Languages: en
+Canonical: https://jobline.ai/.well-known/security.txt
+Policy: https://jobline.ai/security-policy
+Expires: 2027-04-13T23:59:59.000Z
+
+# WeCr8 Solutions - JobLine AI
+# Report security vulnerabilities to security@jobline.ai
+# We follow responsible disclosure and will acknowledge receipt within 48 hours.
+# For PGP-encrypted reports, contact us first at the email above to exchange keys.
