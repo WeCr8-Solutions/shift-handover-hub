@@ -35,6 +35,11 @@ export default function Start() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const demoRef = useRef<HTMLElement>(null);
+  const secondaryCtaRef = useRef<HTMLElement>(null);
+  const pageLoadTime = useRef<number>(Date.now());
+  const firedScrollDepths = useRef<Set<number>>(new Set());
+  const typeSwitchCount = useRef<number>(0);
+  const selectedTypeRef = useRef<ShopType>(parseShopType(searchParams.get("type") ?? ""));
 
   const rawType = searchParams.get("type") ?? "";
   const src = searchParams.get("src") ?? "unknown";
@@ -45,6 +50,11 @@ export default function Start() {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+
+  // Keep selectedTypeRef in sync so event-listener closures always read the latest type
+  useEffect(() => {
+    selectedTypeRef.current = selectedType;
+  }, [selectedType]);
 
   useEffect(() => {
     localStorage.setItem("jobline_start_type", selectedType);
@@ -69,13 +79,98 @@ export default function Start() {
       path: "/start",
       ...getUtmParams(),
     });
+
+    // ── Scroll depth milestones (25 / 50 / 75 / 90) ───────────
+    const handleScroll = () => {
+      const total = document.documentElement.scrollHeight - window.innerHeight;
+      if (total <= 0) return;
+      const pct = Math.round((window.scrollY / total) * 100);
+      ([25, 50, 75, 90] as const).forEach((depth) => {
+        if (pct >= depth && !firedScrollDepths.current.has(depth)) {
+          firedScrollDepths.current.add(depth);
+          trackEvent(`scroll_${depth}`, {
+            type: selectedTypeRef.current,
+            src,
+            path: "/start",
+          });
+        }
+      });
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    // ── Time-on-page engagement milestones (15 / 30 / 60 s) ───
+    const engagementTimeouts = ([15, 30, 60] as const).map((sec) =>
+      setTimeout(() => {
+        trackEvent(`time_on_page_${sec}s`, {
+          type: selectedTypeRef.current,
+          src,
+          path: "/start",
+        });
+      }, sec * 1000)
+    );
+
+    // ── Section visibility via IntersectionObserver ────────────
+    const sectionObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          const id = (entry.target as HTMLElement).dataset.trackSection;
+          if (id) {
+            trackEvent(`section_reached_${id}`, {
+              type: selectedTypeRef.current,
+              src,
+              path: "/start",
+            });
+            sectionObserver.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+    if (demoRef.current) sectionObserver.observe(demoRef.current);
+    if (secondaryCtaRef.current) sectionObserver.observe(secondaryCtaRef.current);
+
+    // ── Page-session end ───────────────────────────────────────
+    const handleBeforeUnload = () => {
+      const timeSpent = Math.round((Date.now() - pageLoadTime.current) / 1000);
+      const depths = Array.from(firedScrollDepths.current);
+      const maxDepth = depths.length > 0 ? Math.max(...depths) : 0;
+      trackEvent("page_session_end", {
+        time_spent_seconds: timeSpent,
+        max_scroll_depth: maxDepth,
+        type: selectedTypeRef.current,
+        src,
+        path: "/start",
+      });
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      engagementTimeouts.forEach(clearTimeout);
+      sectionObserver.disconnect();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleTypeSelect = (type: ShopType) => {
+    if (type !== selectedType) {
+      typeSwitchCount.current += 1;
+      trackEvent("type_switch", {
+        from: selectedType,
+        to: type,
+        switch_count: typeSwitchCount.current,
+        src,
+        path: "/start",
+      });
+    }
     setSelectedType(type);
+    selectedTypeRef.current = type;
     localStorage.setItem("jobline_start_type", type);
     trackEvent("type_selected", { type, src, path: "/start" });
+    // Per-type event for per-vertical funnel analysis in GA4
+    trackEvent(`type_selected_${type}`, { src, path: "/start" });
   };
 
   const handleCtaClick = () => {
@@ -86,6 +181,15 @@ export default function Start() {
   const handleSignupClick = () => {
     trackEvent("signup_click", { type: selectedType, src, path: "/start" });
     navigate("/auth");
+  };
+
+  const handleShareClick = () => {
+    trackEvent("share_button_click", { type: selectedType, src, path: "/start" });
+    setShareOpen(true);
+  };
+
+  const handleEmailFocus = () => {
+    trackEvent("email_input_focus", { type: selectedType, src, path: "/start" });
   };
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
@@ -229,7 +333,7 @@ export default function Start() {
         </section>
 
         {/* ── Section 2: Interactive Demo ── */}
-        <section ref={demoRef} className="w-full max-w-md mt-12">
+        <section ref={demoRef} data-track-section="demo" className="w-full max-w-md mt-12">
           <ShopTypeHandoffDemo shopType={selectedType} />
         </section>
 
@@ -241,7 +345,7 @@ export default function Start() {
         </section>
 
         {/* ── Section 4: Secondary Conversion ── */}
-        <section className="w-full max-w-md mt-8 space-y-4">
+        <section ref={secondaryCtaRef} data-track-section="secondary_cta" className="w-full max-w-md mt-8 space-y-4">
           <Button
             size="lg"
             className="w-full text-base font-semibold h-12"
@@ -270,6 +374,7 @@ export default function Start() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="h-10 text-sm"
+                  onFocus={handleEmailFocus}
                   required
                 />
                 <Button
@@ -291,7 +396,7 @@ export default function Start() {
             variant="ghost"
             size="sm"
             className="gap-2 text-muted-foreground"
-            onClick={() => setShareOpen(true)}
+            onClick={handleShareClick}
           >
             <Share2 className="w-4 h-4" />
             Share this page

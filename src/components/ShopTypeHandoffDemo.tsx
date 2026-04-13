@@ -187,6 +187,11 @@ export function ShopTypeHandoffDemo({
       section: "start_page_demo",
       shop_type: shopType,
     });
+    // Per-shop-type completion event for vertical funnel segmentation in GA4
+    trackEvent(`demo_completed_${shopType}`, {
+      handoff_type: handoff.handoffType ?? "unknown",
+      has_improvement: handoff.hasImprovement,
+    });
     setTimeout(() => setCurrentStep("complete"), 300);
   };
 
@@ -195,6 +200,13 @@ export function ShopTypeHandoffDemo({
       section: "start_page_demo",
       shop_type: shopType,
     });
+    if (currentStep !== "idle") {
+      trackEvent("demo_step_abandoned", {
+        abandoned_at_step: currentStep,
+        shop_type: shopType,
+        handoff_type: handoff.handoffType ?? "not_selected",
+      });
+    }
     setCurrentStep("idle");
     setHandoff(DEFAULT_HANDOFF);
   };
