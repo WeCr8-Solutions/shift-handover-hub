@@ -599,7 +599,7 @@ export function FieldChecklist({
       supabase
         .from("flyer_mediums" as never)
         .select("id,name,sort_order")
-        .eq("active" as never, true as never)
+        .eq("is_active" as never, true as never)
         .order("sort_order" as never),
     ]);
     if (vRes.data) setVisits((vRes.data as unknown) as StopVisit[]);
