@@ -858,6 +858,11 @@ ON CONFLICT (user_id, role) DO NOTHING;`}
             </div>
           </div>
         </TabsContent>
+
+        {/* ─── Contacts / Export ─── */}
+        <TabsContent value="contacts">
+          <ContactsExportTab campaignId={activeCampaignId} />
+        </TabsContent>
       </Tabs>
 
       {/* ─── QR Detail Dialog ─── */}
