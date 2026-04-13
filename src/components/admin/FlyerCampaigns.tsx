@@ -51,6 +51,7 @@ import {
 } from "lucide-react";
 import { FLYER_ZONES, exportZonesToCsv, type FlyerZone } from "./flyerZoneData";
 import { FieldChecklist } from "./FieldChecklist";
+import { ContactsExportTab } from "./ContactsExportTab";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
