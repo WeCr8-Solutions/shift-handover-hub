@@ -1856,6 +1856,125 @@ export type Database = {
           },
         ]
       }
+      flyer_mediums: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      flyer_stop_visits: {
+        Row: {
+          assignment_id: string | null
+          campaign_id: string
+          contact_name: string | null
+          contact_title: string | null
+          created_at: string
+          flyer_count: number
+          flyer_design: string | null
+          id: string
+          interaction_flags: string[]
+          medium_id: string | null
+          medium_name: string | null
+          notes: string | null
+          stop_key: string
+          stop_name: string
+          visited_at: string
+          visited_by: string
+          visited_by_name: string | null
+          zone_id: string
+          zone_number: number
+        }
+        Insert: {
+          assignment_id?: string | null
+          campaign_id: string
+          contact_name?: string | null
+          contact_title?: string | null
+          created_at?: string
+          flyer_count?: number
+          flyer_design?: string | null
+          id?: string
+          interaction_flags?: string[]
+          medium_id?: string | null
+          medium_name?: string | null
+          notes?: string | null
+          stop_key: string
+          stop_name: string
+          visited_at?: string
+          visited_by: string
+          visited_by_name?: string | null
+          zone_id: string
+          zone_number: number
+        }
+        Update: {
+          assignment_id?: string | null
+          campaign_id?: string
+          contact_name?: string | null
+          contact_title?: string | null
+          created_at?: string
+          flyer_count?: number
+          flyer_design?: string | null
+          id?: string
+          interaction_flags?: string[]
+          medium_id?: string | null
+          medium_name?: string | null
+          notes?: string | null
+          stop_key?: string
+          stop_name?: string
+          visited_at?: string
+          visited_by?: string
+          visited_by_name?: string | null
+          zone_id?: string
+          zone_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flyer_stop_visits_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "flyer_zone_assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flyer_stop_visits_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "flyer_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flyer_stop_visits_medium_id_fkey"
+            columns: ["medium_id"]
+            isOneToOne: false
+            referencedRelation: "flyer_mediums"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flyer_stop_visits_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "flyer_zones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       flyer_zone_assignments: {
         Row: {
           assigned_by: string | null
