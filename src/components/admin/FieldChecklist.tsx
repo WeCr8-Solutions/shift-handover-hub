@@ -327,6 +327,10 @@ function LogSheet({
   const [contactName, setContactName]   = useState("");
   const [contactTitle, setContactTitle] = useState("");
   const [notes, setNotes]           = useState("");
+  const [businessEmail, setBusinessEmail] = useState("");
+  const [businessPhone, setBusinessPhone] = useState("");
+  const [businessAddress, setBusinessAddress] = useState("");
+  const [mailingConsent, setMailingConsent] = useState(false);
   const [saving, setSaving]         = useState(false);
   const [showHistory, setShowHistory] = useState(false);
 
@@ -339,6 +343,10 @@ function LogSheet({
       setContactName("");
       setContactTitle("");
       setNotes("");
+      setBusinessEmail("");
+      setBusinessPhone("");
+      setBusinessAddress("");
+      setMailingConsent(false);
       setShowHistory(false);
     }
   }, [stop, mediums]);
@@ -374,6 +382,10 @@ function LogSheet({
         interaction_flags: [...flags],
         contact_name:     contactName.trim() || null,
         contact_title:    contactTitle.trim() || null,
+        business_email:   businessEmail.trim() || null,
+        business_phone:   businessPhone.trim() || null,
+        business_address: businessAddress.trim() || null,
+        mailing_consent:  mailingConsent,
         visited_by:       currentUserId,
         visited_by_name:  displayName,
         assignment_id:    assignmentId ?? null,
