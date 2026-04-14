@@ -1,12 +1,15 @@
 /**
  * Analytics & Tracking Utilities
- * Provides comprehensive tracking for page views, user actions, and performance metrics
+ * Single source of truth for all GA4 tracking.
  *
  * GA4 CONVERSION EVENTS (mark as Conversions in GA4 Admin > Events):
  *   - signup_complete
  *   - lead_captured
  *   - demo_open
  *   - cta_click (micro-conversion)
+ *
+ * IMPORTANT: trackPageView uses gtag('event','page_view') — NOT gtag('config')
+ * which would re-fire the initial config hit and double-count pageviews.
  */
 
 // Google Analytics Measurement ID
@@ -22,11 +25,8 @@ declare global {
 
 /**
  * Returns true when analytics should be suppressed.
- * Covers: server-side rendering, headless/automation, Lovable preview
- * environments, and explicitly disabled self-hosted / ITAR deployments.
- *
- * Set VITE_DISABLE_ANALYTICS=true in .env (or the build environment) to
- * suppress all telemetry — required for ITAR self-hosted deployments.
+ * Covers: SSR, headless/automation, Lovable preview, localhost dev,
+ * and explicitly disabled self-hosted / ITAR deployments.
  */
 function shouldSkipTracking(): boolean {
   if (typeof window === 'undefined') return true;
@@ -37,6 +37,8 @@ function shouldSkipTracking(): boolean {
   // Skip Lovable preview environments
   const host = window.location.hostname;
   if (host.includes('preview--') || host.includes('lovableproject.com')) return true;
+  // Skip localhost / dev servers
+  if (host === 'localhost' || host === '127.0.0.1') return true;
   return false;
 }
 
@@ -45,16 +47,19 @@ function shouldSkipTracking(): boolean {
 // ============================================
 
 /**
- * Track a page view (with optional UTM attribution)
+ * Track a page view — uses gtag('event','page_view') to avoid the
+ * duplicate hit that gtag('config') causes on every call.
  */
 export function trackPageView(path: string, title?: string, utmParams?: Record<string, string>) {
   if (shouldSkipTracking() || !window.gtag) return;
-  window.gtag('config', GA_MEASUREMENT_ID, {
+  window.gtag('event', 'page_view', {
     page_path: path,
     page_title: title || document.title,
+    page_location: window.location.origin + path,
+    send_to: GA_MEASUREMENT_ID,
     ...utmParams,
   });
-  
+
   if (import.meta.env.DEV) {
     console.log('[Analytics] Page View:', { path, title, ...utmParams });
   }
@@ -69,7 +74,7 @@ export function trackEvent(
 ) {
   if (shouldSkipTracking() || !window.gtag) return;
   window.gtag('event', eventName, params);
-  
+
   if (import.meta.env.DEV) {
     console.log('[Analytics] Event:', eventName, params);
   }
@@ -82,7 +87,7 @@ export function setUserProperties(properties: Record<string, string | number | b
   if (shouldSkipTracking()) return;
   if (typeof window !== 'undefined' && window.gtag) {
     window.gtag('set', 'user_properties', properties);
-    
+
     if (import.meta.env.DEV) {
       console.log('[Analytics] User Properties:', properties);
     }
@@ -90,15 +95,14 @@ export function setUserProperties(properties: Record<string, string | number | b
 }
 
 /**
- * Identify a user (for cross-session tracking)
+ * Identify a user — uses gtag('set') instead of gtag('config') to avoid
+ * firing a duplicate page_view hit.
  */
 export function identifyUser(userId: string) {
   if (shouldSkipTracking()) return;
   if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('config', GA_MEASUREMENT_ID, {
-      user_id: userId,
-    });
-    
+    window.gtag('set', { user_id: userId });
+
     if (import.meta.env.DEV) {
       console.log('[Analytics] User Identified:', userId);
     }
@@ -111,91 +115,91 @@ export function identifyUser(userId: string) {
 
 // Authentication Events
 export const AuthEvents = {
-  signUp: (method: 'email' | 'google' | 'github' = 'email') => 
+  signUp: (method: 'email' | 'google' | 'github' = 'email') =>
     trackEvent('sign_up', { method }),
-  
-  login: (method: 'email' | 'google' | 'github' = 'email') => 
+
+  login: (method: 'email' | 'google' | 'github' = 'email') =>
     trackEvent('login', { method }),
-  
-  logout: () => 
+
+  logout: () =>
     trackEvent('logout'),
-  
-  passwordReset: () => 
+
+  passwordReset: () =>
     trackEvent('password_reset_requested'),
 };
 
 // Organization Events
 export const OrgEvents = {
-  created: (orgName: string) => 
+  created: (orgName: string) =>
     trackEvent('organization_created', { organization_name: orgName }),
-  
-  memberInvited: (role: string) => 
+
+  memberInvited: (role: string) =>
     trackEvent('member_invited', { role }),
-  
-  memberJoined: (method: 'invite_code' | 'direct_invite') => 
+
+  memberJoined: (method: 'invite_code' | 'direct_invite') =>
     trackEvent('member_joined', { method }),
 };
 
 // Team Events
 export const TeamEvents = {
-  created: (teamName: string) => 
+  created: (teamName: string) =>
     trackEvent('team_created', { team_name: teamName }),
-  
-  memberAdded: (role: string) => 
+
+  memberAdded: (role: string) =>
     trackEvent('team_member_added', { role }),
-  
-  stationAdded: (stationType: string) => 
+
+  stationAdded: (stationType: string) =>
     trackEvent('station_added', { station_type: stationType }),
 };
 
 // Work Order Events
 export const WorkOrderEvents = {
-  created: (priority: string, itemType: string) => 
+  created: (priority: string, itemType: string) =>
     trackEvent('work_order_created', { priority, item_type: itemType }),
-  
-  statusChanged: (fromStatus: string, toStatus: string) => 
+
+  statusChanged: (fromStatus: string, toStatus: string) =>
     trackEvent('work_order_status_changed', { from_status: fromStatus, to_status: toStatus }),
-  
-  assigned: () => 
+
+  assigned: () =>
     trackEvent('work_order_assigned'),
-  
-  completed: (durationMinutes?: number) => 
+
+  completed: (durationMinutes?: number) =>
     trackEvent('work_order_completed', { duration_minutes: durationMinutes || 0 }),
 };
 
 // Handoff Events
 export const HandoffEvents = {
-  created: (shift: string, workCenter: string) => 
+  created: (shift: string, workCenter: string) =>
     trackEvent('handoff_created', { shift, work_center: workCenter }),
-  
-  viewed: () => 
+
+  viewed: () =>
     trackEvent('handoff_viewed'),
 };
 
 // Performance Update Events
 export const PerformanceUpdateEvents = {
-  submitted: (updateType: string, priority: string) => 
+  submitted: (updateType: string, priority: string) =>
     trackEvent('performance_update_submitted', { update_type: updateType, priority }),
-  
-  reviewed: (status: 'approved' | 'rejected' | 'implemented') => 
+
+  reviewed: (status: 'approved' | 'rejected' | 'implemented') =>
     trackEvent('performance_update_reviewed', { status }),
 };
 
 // Feature Usage Events
 export const FeatureEvents = {
-  featureUsed: (featureName: string) => 
+  featureUsed: (featureName: string) =>
     trackEvent('feature_used', { feature_name: featureName }),
-  
-  filterApplied: (filterType: string, filterValue: string) => 
+
+  filterApplied: (filterType: string, filterValue: string) =>
     trackEvent('filter_applied', { filter_type: filterType, filter_value: filterValue }),
-  
-  searchPerformed: (searchLocation: string, hasResults: boolean) => 
+
+  searchPerformed: (searchLocation: string, hasResults: boolean) =>
     trackEvent('search_performed', { location: searchLocation, has_results: hasResults }),
-  
-  viewChanged: (viewType: 'list' | 'kanban' | 'calendar') => 
+
+  viewChanged: (viewType: 'list' | 'kanban' | 'calendar') =>
     trackEvent('view_changed', { view_type: viewType }),
-  
-  exportPerformed: (exportType: string) => 
+
+  exportPerformed: (exportType: string) =>
     trackEvent('export_performed', { export_type: exportType }),
 };
 
@@ -208,36 +212,26 @@ export const DemoEvents = {
     trackEvent('demo_form_submit', { page_path: pagePath, ...utmParams }),
 };
 
-// ============================================
 // Standardized Conversion Events (GA4 Schema)
-// ============================================
-
 export const ConversionEvents = {
-  /** Track any CTA button click across the site */
   ctaClick: (ctaId: string, ctaText: string, pagePath: string, section: string) =>
     trackEvent('cta_click', { cta_id: ctaId, cta_text: ctaText, page_path: pagePath, section }),
 
-  /** Demo modal / video opened */
   demoOpen: (pagePath: string, trigger: string) =>
     trackEvent('demo_open', { page_path: pagePath, trigger }),
 
-  /** User submitted signup form (before API call) */
   signupStart: (pagePath: string, method: string = 'email') =>
     trackEvent('signup_start', { page_path: pagePath, method }),
 
-  /** User successfully created an account */
   signupComplete: (pagePath: string, method: string = 'email') =>
     trackEvent('signup_complete', { page_path: pagePath, method }),
 
-  /** User successfully logged in */
   login: (pagePath: string, method: string = 'email') =>
     trackEvent('login', { page_path: pagePath, method }),
 
-  /** Pricing page viewed */
   pricingView: (pagePath: string) =>
     trackEvent('pricing_view', { page_path: pagePath }),
 
-  /** Video play / complete */
   videoPlay: (pagePath: string, source: string) =>
     trackEvent('video_play', { page_path: pagePath, source }),
   videoComplete: (pagePath: string, source: string) =>
@@ -246,32 +240,33 @@ export const ConversionEvents = {
 
 // Error Tracking
 export const ErrorEvents = {
-  error: (errorType: string, errorMessage: string, componentName?: string) => 
-    trackEvent('error_occurred', { 
-      error_type: errorType, 
+  error: (errorType: string, errorMessage: string, componentName?: string) =>
+    trackEvent('error_occurred', {
+      error_type: errorType,
       error_message: errorMessage.substring(0, 100),
       component: componentName || 'unknown',
     }),
-  
-  apiError: (endpoint: string, statusCode: number) => 
+
+  apiError: (endpoint: string, statusCode: number) =>
     trackEvent('api_error', { endpoint, status_code: statusCode }),
 };
 
 // ============================================
-// Performance Monitoring
+// Performance Monitoring (fire-once)
 // ============================================
 
+let _perfTracked = false;
+
 /**
- * Track page load performance
+ * Track page load performance — safe to call multiple times, only fires once.
  */
 export function trackPagePerformance() {
-  if (shouldSkipTracking()) return;
+  if (shouldSkipTracking() || _perfTracked) return;
+  _perfTracked = true;
   if (typeof window !== 'undefined' && 'performance' in window) {
-    // Wait for page to fully load
     window.addEventListener('load', () => {
       setTimeout(() => {
         const timing = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
-        
         if (timing) {
           trackEvent('page_performance', {
             dns_lookup_ms: Math.round(timing.domainLookupEnd - timing.domainLookupStart),
@@ -287,101 +282,96 @@ export function trackPagePerformance() {
   }
 }
 
+let _webVitalsTracked = false;
+
 /**
- * Track Core Web Vitals (LCP, FID, CLS)
+ * Track Core Web Vitals — safe to call multiple times, only fires once.
  */
 export function trackWebVitals() {
-  if (shouldSkipTracking()) return;
-  if (typeof window !== 'undefined' && 'PerformanceObserver' in window) {
-    // Largest Contentful Paint (LCP)
-    try {
-      const lcpObserver = new PerformanceObserver((entryList) => {
-        const entries = entryList.getEntries();
-        const lastEntry = entries[entries.length - 1];
-        trackEvent('web_vital_lcp', { value_ms: Math.round(lastEntry.startTime) });
-      });
-      lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true });
-    } catch {
-      // LCP not supported
-    }
+  if (shouldSkipTracking() || _webVitalsTracked) return;
+  _webVitalsTracked = true;
+  if (typeof window === 'undefined' || !('PerformanceObserver' in window)) return;
 
-    // First Input Delay (FID)
-    try {
-      const fidObserver = new PerformanceObserver((entryList) => {
-        const entries = entryList.getEntries();
-        entries.forEach((entry) => {
-          const fidEntry = entry as PerformanceEventTiming;
-          trackEvent('web_vital_fid', { value_ms: Math.round(fidEntry.processingStart - fidEntry.startTime) });
-        });
-      });
-      fidObserver.observe({ type: 'first-input', buffered: true });
-    } catch {
-      // FID not supported
-    }
+  // LCP
+  try {
+    const lcpObserver = new PerformanceObserver((entryList) => {
+      const entries = entryList.getEntries();
+      const lastEntry = entries[entries.length - 1];
+      trackEvent('web_vital_lcp', { value_ms: Math.round(lastEntry.startTime) });
+      lcpObserver.disconnect();
+    });
+    lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true });
+  } catch { /* not supported */ }
 
-    // Cumulative Layout Shift (CLS)
-    try {
-      let clsValue = 0;
-      const clsObserver = new PerformanceObserver((entryList) => {
-        const entries = entryList.getEntries();
-        entries.forEach((entry) => {
-          if (!(entry as PerformanceEntry & { hadRecentInput?: boolean }).hadRecentInput) {
-            clsValue += (entry as PerformanceEntry & { value?: number }).value || 0;
-          }
-        });
-      });
-      clsObserver.observe({ type: 'layout-shift', buffered: true });
-      
-      // Report CLS on page hide
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'hidden') {
-          trackEvent('web_vital_cls', { value: Math.round(clsValue * 1000) / 1000 });
+  // FID — only first entry
+  try {
+    const fidObserver = new PerformanceObserver((entryList) => {
+      const entry = entryList.getEntries()[0] as PerformanceEventTiming;
+      if (entry) {
+        trackEvent('web_vital_fid', { value_ms: Math.round(entry.processingStart - entry.startTime) });
+      }
+      fidObserver.disconnect();
+    });
+    fidObserver.observe({ type: 'first-input', buffered: true });
+  } catch { /* not supported */ }
+
+  // CLS — report once on page hide
+  try {
+    let clsValue = 0;
+    const clsObserver = new PerformanceObserver((entryList) => {
+      entryList.getEntries().forEach((entry) => {
+        if (!(entry as PerformanceEntry & { hadRecentInput?: boolean }).hadRecentInput) {
+          clsValue += (entry as PerformanceEntry & { value?: number }).value || 0;
         }
       });
-    } catch {
-      // CLS not supported
-    }
-  }
+    });
+    clsObserver.observe({ type: 'layout-shift', buffered: true });
+
+    let clsReported = false;
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden' && !clsReported) {
+        clsReported = true;
+        trackEvent('web_vital_cls', { value: Math.round(clsValue * 1000) / 1000 });
+        clsObserver.disconnect();
+      }
+    });
+  } catch { /* not supported */ }
 }
 
+let _timeOnPageTracked = false;
+
 /**
- * Track time spent on page
+ * Track time spent on page — fires once on visibilitychange OR beforeunload,
+ * whichever comes first.
  */
 export function trackTimeOnPage() {
-  if (shouldSkipTracking()) return;
-  if (typeof window !== 'undefined') {
-    const startTime = Date.now();
-    
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') {
-        const timeSpent = Math.round((Date.now() - startTime) / 1000);
-        trackEvent('time_on_page', { 
-          seconds: timeSpent,
-          page: window.location.pathname,
-        });
-      }
-    };
-    
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    
-    // Also track on beforeunload
-    window.addEventListener('beforeunload', () => {
-      const timeSpent = Math.round((Date.now() - startTime) / 1000);
-      trackEvent('time_on_page', { 
-        seconds: timeSpent,
-        page: window.location.pathname,
-      });
+  if (shouldSkipTracking() || _timeOnPageTracked) return;
+  _timeOnPageTracked = true;
+  if (typeof window === 'undefined') return;
+
+  const startTime = Date.now();
+  let reported = false;
+
+  const report = () => {
+    if (reported) return;
+    reported = true;
+    const timeSpent = Math.round((Date.now() - startTime) / 1000);
+    trackEvent('time_on_page', {
+      seconds: timeSpent,
+      page: window.location.pathname,
     });
-  }
+  };
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') report();
+  });
+  window.addEventListener('beforeunload', report);
 }
 
 // ============================================
 // Developer Debug Mode
 // ============================================
 
-/**
- * Enable debug mode for development
- */
 export function enableDebugMode() {
   if (typeof window !== 'undefined') {
     (window as Window & { analyticsDebug?: boolean }).analyticsDebug = true;
@@ -389,9 +379,6 @@ export function enableDebugMode() {
   }
 }
 
-/**
- * Get all tracked events in debug mode
- */
 export function getDebugLog(): unknown[] {
   if (typeof window !== 'undefined') {
     return window.dataLayer || [];
