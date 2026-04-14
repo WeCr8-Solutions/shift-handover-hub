@@ -313,6 +313,101 @@ export const industries: Record<string, IndustryData> = {
       { title: "Scalable Architecture", description: "Cloud-native platform scales from pilot lines to full production without infrastructure changes." },
     ],
   },
+  "contract-manufacturer": {
+    slug: "contract-manufacturer",
+    name: "Contract Manufacturing",
+    headline: "Shop Floor Software for Contract Manufacturers",
+    description: "Manage multi-customer work orders, strict delivery windows, and customer-specific quality requirements — all in one platform built for contract shops.",
+    metaDescription: "Contract manufacturing software. Manage multi-customer work orders, on-time delivery tracking, and customer quality requirements with JobLine.ai.",
+    challenges: [
+      { title: "Multi-Customer Priority Conflicts", description: "Balancing urgent jobs from multiple customers across shared work centers without visibility leads to constant priority firefighting." },
+      { title: "Customer-Specific Quality Requirements", description: "Each customer brings their own inspection criteria, documentation packages, and approval workflows — hard to manage without a system." },
+      { title: "On-Time Delivery Pressure", description: "Contract shops live and die by OTD rates. Late shipments damage customer relationships and trigger penalty clauses." },
+      { title: "Traceability and Documentation", description: "Customers require material certs, inspection records, and job traveler documentation for every shipment." },
+    ],
+    benefits: [
+      { title: "Customer-Segregated Work Orders", description: "Work orders tagged by customer with customer-specific routing steps, quality gates, and documentation requirements." },
+      { title: "On-Time Delivery Dashboard", description: "Real-time OTD performance by customer — see which jobs are on track and which are at risk before ship date arrives." },
+      { title: "Digital Job Traveler", description: "Electronic job travelers capture operator sign-offs, inspection results, and material certifications at each routing step." },
+      { title: "Shift Handoff for Multi-Shift Shops", description: "Structured shift handoffs ensure incoming teams know exactly where customer jobs stand — no lost context between shifts." },
+    ],
+  },
+  "tool-and-die": {
+    slug: "tool-and-die",
+    name: "Tool & Die",
+    headline: "Production Tracking for Tool & Die Shops",
+    description: "Track complex, long-cycle tooling projects through design, fabrication, prove-out, and delivery — with the traceability and documentation precision tooling customers demand.",
+    metaDescription: "Tool and die shop software. Track tooling projects, manage tryouts, and document modifications with JobLine.ai.",
+    challenges: [
+      { title: "Long-Cycle Job Tracking", description: "Weeks-long tooling projects are hard to track across multiple operators and work centers without losing context." },
+      { title: "Design Change Management", description: "Engineering changes mid-build require rerouting and documenting what changed, when, and why — without paper trails." },
+      { title: "Try-Out and Prove-Out Documentation", description: "Die tryouts and mold prove-outs generate inspection results, modification notes, and customer approval records that must be preserved." },
+      { title: "Multi-Skilled Workforce Coordination", description: "Tool and die work requires highly skilled tradespeople coordinating across machining, EDM, grinding, and fitting — all on the same project." },
+    ],
+    benefits: [
+      { title: "Project-Style Work Order Tracking", description: "Track tooling projects with multi-step routings across machining, heat treat, EDM, and grinding with concurrent operation support." },
+      { title: "Modification Log", description: "Document every engineering change and field modification with date, description, operator sign-off, and revision level." },
+      { title: "Try-Out Record Keeping", description: "Capture try-out results, part samples, dimensional reports, and customer approval sign-offs linked to the tooling project." },
+      { title: "Skilled Trade Assignment", description: "Assign specific tradespeople to routing steps that require specialized skills and track actual hours per operation." },
+    ],
+  },
+  "sheet-metal": {
+    slug: "sheet-metal",
+    name: "Sheet Metal Fabrication",
+    headline: "Shop Floor Software for Sheet Metal Fabrication Shops",
+    description: "Manage nesting, laser, punch, press brake, and welding operations with the real-time tracking and routing visibility sheet metal fabricators need.",
+    metaDescription: "Sheet metal fabrication software. Track laser, punch, press brake, and welding operations with real-time job status and quality controls with JobLine.ai.",
+    challenges: [
+      { title: "High-Volume Work Order Mix", description: "Sheet metal shops run hundreds of jobs per week across shared equipment — keeping priorities straight is a constant challenge." },
+      { title: "Nesting and Material Utilization", description: "Material yield from nesting decisions directly impacts job cost — tracking actual usage vs. planned is critical." },
+      { title: "Downstream Routing Complexity", description: "From laser to deburr to bend to weld to finish — tracking parts across every operation step is difficult without a system." },
+      { title: "On-Time Delivery", description: "Fabrication customers expect tight delivery windows. Missing ship dates on standard parts damages the business relationship." },
+    ],
+    benefits: [
+      { title: "Operation-Level Routing Tracking", description: "Track parts through every fabrication step — laser, punch, bend, weld, finish — with real-time status at each work center." },
+      { title: "Material and Nest Tracking", description: "Link nest sheets to work orders to track actual material consumption and yield vs. planned material cost." },
+      { title: "Quality Hold Management", description: "Flag non-conforming parts at any routing step and route them through rework or scrap disposition without losing the record." },
+      { title: "Shift Handoff Visibility", description: "Ensure second and third shift operators know which jobs are hot, which have quality holds, and which are ready to ship." },
+    ],
+  },
+  "welding": {
+    slug: "welding",
+    name: "Welding & Fabrication",
+    headline: "Production Software for Welding and Fabrication Shops",
+    description: "Track weld procedures, welder qualifications, material traceability, and inspection requirements for structural, pressure vessel, and precision welded assemblies.",
+    metaDescription: "Welding shop software. Track weld procedures, welder certifications, material traceability, and NDE inspection with JobLine.ai.",
+    challenges: [
+      { title: "Welder Qualification Enforcement", description: "Ensuring only qualified welders perform specified weld procedures on code-controlled weldments is a certification management challenge." },
+      { title: "Weld Documentation Requirements", description: "Structural and pressure vessel work requires documented weld maps, procedure compliance records, and NDE results with every job." },
+      { title: "Base Material Traceability", description: "Code work requires heat number traceability for every piece of base material used — paper cert tracking doesn't scale." },
+      { title: "NDE and Inspection Coordination", description: "Coordinating NDE (RT, UT, MT, PT) inspections at the right routing steps, with hold gates for non-conforming results, is operationally complex." },
+    ],
+    benefits: [
+      { title: "Weld Procedure Assignment", description: "Link specified weld procedures (WPS) to routing steps. Enforce that the correct procedure is selected before welding begins." },
+      { title: "Welder Qualification Verification", description: "Track welder certifications and check qualification against the specified procedure before allowing work-order sign-off." },
+      { title: "Material Cert and Heat Number Tracking", description: "Link heat numbers and material certifications to work orders — fully traceable from incoming material to finished weldment." },
+      { title: "NDE Hold Gates", description: "Configure inspection hold gates at specified routing steps. Work cannot advance past NDE without a documented pass result." },
+    ],
+  },
+  "precision-machining": {
+    slug: "precision-machining",
+    name: "Precision Machining",
+    headline: "Production Tracking for Precision Machining Shops",
+    description: "Manage close-tolerance CNC machining jobs with the routing control, in-process inspection, and traceability required for aerospace, medical, and defense components.",
+    metaDescription: "Precision machining software. Track CNC work orders, in-process inspection, material traceability, and first article inspection with JobLine.ai.",
+    challenges: [
+      { title: "Close-Tolerance Inspection Requirements", description: "Every feature on a precision machined part needs documented measurement — not a spot check. Paper inspection sheets can't keep up." },
+      { title: "Setup Documentation", description: "CNC setups require documented tool lists, offsets, and first-piece approval before production runs. Undocumented setups cause scrap." },
+      { title: "Material Traceability", description: "Aerospace and medical customers require heat number and material certification traceability on every shipped part." },
+      { title: "First Article Requirements", description: "New and revised parts require AS9102 or PPAP first article inspection before production quantities ship." },
+    ],
+    benefits: [
+      { title: "In-Process Inspection Records", description: "Operators log actual measurements per print characteristic at each routing step — flagged automatically against tolerance limits." },
+      { title: "Setup Approval Workflow", description: "First-piece sign-off required before production run starts. Setup sheet, tool list, and first-piece results captured digitally." },
+      { title: "Material Cert and Heat Number Traceability", description: "Link material certifications and heat numbers to work orders from receiving through shipment — fully auditable." },
+      { title: "First Article Inspection", description: "AS9102-aligned FAI forms for new and revised parts, linked to work order routing with customer approval tracking." },
+    ],
+  },
 };
 
 export const industrySlugFromName = (name: string): string => {
@@ -333,6 +428,11 @@ export const industrySlugFromName = (name: string): string => {
     "Additive Manufacturing": "additive-manufacturing",
     "Semiconductor": "semiconductor",
     "EV & Battery": "ev-battery",
+    "Contract Manufacturing": "contract-manufacturer",
+    "Tool & Die": "tool-and-die",
+    "Sheet Metal Fabrication": "sheet-metal",
+    "Welding & Fabrication": "welding",
+    "Precision Machining": "precision-machining",
   };
   return map[name] || name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 };

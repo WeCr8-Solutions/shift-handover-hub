@@ -49,6 +49,30 @@ import ShiftHandoff from "./pages/features/ShiftHandoff";
 import ManufacturingVisibility from "./pages/features/ManufacturingVisibility";
 import VSCodeGCode from "./pages/features/VSCodeGCode";
 import MachineConnectPage from "./pages/features/MachineConnect";
+import JobShopSoftware from "./pages/features/JobShopSoftware";
+import JobShopERP from "./pages/features/JobShopERP";
+import CNCMachineTracking from "./pages/features/CNCMachineTracking";
+import DNCFileSoftware from "./pages/features/DNCFileSoftware";
+import ShopFloorDashboard from "./pages/features/ShopFloorDashboard";
+import MesSoftware from "./pages/features/MesSoftware";
+import ShopFloorControl from "./pages/features/ShopFloorControl";
+import ProductionTracking from "./pages/features/ProductionTracking";
+import JobCostingSoftware from "./pages/features/JobCostingSoftware";
+import OeeSoftware from "./pages/features/OeeSoftware";
+import CapacityPlanning from "./pages/features/CapacityPlanning";
+import FirstArticleInspection from "./pages/features/FirstArticleInspection";
+import NcrSoftware from "./pages/features/NcrSoftware";
+import PreventiveMaintenance from "./pages/features/PreventiveMaintenance";
+import WorkCenterScheduling from "./pages/features/WorkCenterScheduling";
+import QuotingSoftware from "./pages/features/QuotingSoftware";
+import JobBossAlternative from "./pages/compare/JobBossAlternative";
+import ProShopAlternative from "./pages/compare/ProShopAlternative";
+import E2ShopAlternative from "./pages/compare/E2ShopAlternative";
+import GlobalShopAlternative from "./pages/compare/GlobalShopAlternative";
+import EpicorAlternative from "./pages/compare/EpicorAlternative";
+import SpreadsheetAlternative from "./pages/compare/SpreadsheetAlternative";
+import MesVsErp from "./pages/resources/MesVsErp";
+import ShopFloorBuyersGuide from "./pages/resources/ShopFloorBuyersGuide";
 import Updates from "./pages/Updates";
 import Start from "./pages/Start";
 import ResourcesIndex from "./pages/resources/ResourcesIndex";
@@ -154,6 +178,28 @@ const App = () => (
                     <Route path="/manufacturing-visibility" element={<ManufacturingVisibility />} />
                     <Route path="/features/vscode-gcode" element={<VSCodeGCode />} />
                     <Route path="/features/machine-connect" element={<MachineConnectPage />} />
+                    <Route path="/features/job-shop-software" element={<JobShopSoftware />} />
+                    <Route path="/features/job-shop-erp" element={<JobShopERP />} />
+                    <Route path="/features/cnc-machine-tracking" element={<CNCMachineTracking />} />
+                    <Route path="/features/dnc-software" element={<DNCFileSoftware />} />
+                    <Route path="/features/shop-floor-dashboard" element={<ShopFloorDashboard />} />
+                    <Route path="/features/mes-software" element={<MesSoftware />} />
+                    <Route path="/features/shop-floor-control" element={<ShopFloorControl />} />
+                    <Route path="/features/production-tracking" element={<ProductionTracking />} />
+                    <Route path="/features/job-costing-software" element={<JobCostingSoftware />} />
+                    <Route path="/features/oee-software" element={<OeeSoftware />} />
+                    <Route path="/features/capacity-planning" element={<CapacityPlanning />} />
+                    <Route path="/features/first-article-inspection" element={<FirstArticleInspection />} />
+                    <Route path="/features/ncr-software" element={<NcrSoftware />} />
+                    <Route path="/features/preventive-maintenance" element={<PreventiveMaintenance />} />
+                    <Route path="/features/work-center-scheduling" element={<WorkCenterScheduling />} />
+                    <Route path="/features/quoting-software" element={<QuotingSoftware />} />
+                    <Route path="/compare/jobboss-alternative" element={<JobBossAlternative />} />
+                    <Route path="/compare/proshop-alternative" element={<ProShopAlternative />} />
+                    <Route path="/compare/e2-shop-alternative" element={<E2ShopAlternative />} />
+                    <Route path="/compare/global-shop-alternative" element={<GlobalShopAlternative />} />
+                    <Route path="/compare/epicor-alternative" element={<EpicorAlternative />} />
+                    <Route path="/compare/spreadsheet-alternative" element={<SpreadsheetAlternative />} />
                     <Route path="/resources" element={<ResourcesIndex />} />
                     <Route path="/resources/guides" element={<ManufacturingGuides />} />
                     <Route path="/resources/gcode" element={<GCodeReference />} />
@@ -168,6 +214,8 @@ const App = () => (
                     <Route path="/resources/pioneers" element={<ManufacturingPioneers />} />
                     <Route path="/resources/comparisons" element={<ToolComparisons />} />
                     <Route path="/resources/erp-guide" element={<ERPSelectionGuide />} />
+                    <Route path="/resources/mes-vs-erp" element={<MesVsErp />} />
+                    <Route path="/resources/buyers-guide" element={<ShopFloorBuyersGuide />} />
                     <Route path="/blog" element={<Blog />} />
                     <Route path="/blog/:slug" element={<BlogPost />} />
                     <Route path="/use-cases" element={<UseCases />} />
