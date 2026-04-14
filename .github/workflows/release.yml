@@ -58,6 +58,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
       - name: Run Trivy vulnerability scan (release gate)
         # FedRAMP requirement: No Critical/High CVEs in a release (SI-2, RA-5)
         uses: aquasecurity/trivy-action@0.30.0
