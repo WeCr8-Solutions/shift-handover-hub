@@ -1,7 +1,7 @@
 Contact: mailto:security@jobline.ai
 Preferred-Languages: en
-Canonical: https://jobline.ai/.well-known/security.txt
-Policy: https://jobline.ai/security-policy
+Canonical: https://app.jobline.ai/.well-known/security.txt
+Policy: https://github.com/WeCr8-Solutions/shift-handover-hub/blob/main/SECURITY.md
 Expires: 2027-04-13T23:59:59.000Z
 
 # WeCr8 Solutions - JobLine AI

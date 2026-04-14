@@ -1,0 +1,64 @@
+name: CodeQL SAST
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - '.skills/**'
+      - 'public/**'
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - '.skills/**'
+      - 'public/**'
+  schedule:
+    # Weekly on Monday at 07:00 UTC — before security-scan (08:00) and ZAP (09:00)
+    - cron: '0 7 * * 1'
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  analyze:
+    name: CodeQL Analysis (TypeScript)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          # FedRAMP-relevant query suites:
+          # security-extended = OWASP Top 10 + CWE coverage
+          # security-and-quality = adds maintainability on top
+          queries: security-extended
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: '/language:javascript-typescript'
+          # SARIF uploaded automatically to GitHub Security tab
+          # FedRAMP controls: SA-11 (developer testing), SI-3, SI-10
+
+      - name: Write Job Summary
+        if: always()
+        run: |
+          echo "## CodeQL SAST Results" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Language: TypeScript / JavaScript" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Query suite: security-extended (OWASP Top 10 + CWE)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Results: GitHub Security → Code Scanning" >> "$GITHUB_STEP_SUMMARY"
+          echo "- FedRAMP controls: SA-11, SI-3, SI-10, RA-5" >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,86 @@
+# Dependabot configuration
+# Automatically opens PRs for dependency updates and security patches.
+# FedRAMP controls: SI-2 (flaw remediation), RA-5 (scanning), SR-3 (supply chain)
+#
+# Security PRs from Dependabot (GHSA/CVE-triggered) are opened immediately
+# regardless of the day-of-week schedule below.
+
+version: 2
+
+updates:
+  # ─── npm (main app) ───────────────────────────────────────────────────────
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: tuesday          # Tuesday = 1 day after Monday security scan results
+      time: '09:00'
+      timezone: America/Chicago
+    open-pull-requests-limit: 10
+    reviewers:
+      - WeCr8-Solutions/engineering
+    labels:
+      - dependencies
+      - security
+    commit-message:
+      prefix: 'chore(deps)'
+      prefix-development: 'chore(deps-dev)'
+      include: scope
+    # Group patch updates for non-security packages to reduce PR noise
+    groups:
+      patch-updates:
+        update-types:
+          - patch
+        exclude-patterns:
+          - 'react'
+          - 'react-dom'
+          - 'vite'
+          - '@supabase/*'
+      minor-tooling:
+        patterns:
+          - '@types/*'
+          - 'eslint*'
+          - 'prettier*'
+          - 'vitest*'
+          - '@vitejs/*'
+        update-types:
+          - minor
+          - patch
+    ignore:
+      # Major version bumps require manual review — do not auto-PR
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
+
+  # ─── npm (Electron desktop) ───────────────────────────────────────────────
+  - package-ecosystem: npm
+    directory: /desktop
+    schedule:
+      interval: weekly
+      day: tuesday
+      time: '09:00'
+      timezone: America/Chicago
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - desktop
+    commit-message:
+      prefix: 'chore(desktop-deps)'
+
+  # ─── GitHub Actions ───────────────────────────────────────────────────────
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: tuesday
+      time: '09:00'
+      timezone: America/Chicago
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - ci
+    commit-message:
+      prefix: 'chore(actions)'
+    groups:
+      actions-patch:
+        update-types:
+          - patch

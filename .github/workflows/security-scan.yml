@@ -1,9 +1,25 @@
 name: Security Scan
 
 on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - '.skills/**'
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - '.skills/**'
   schedule:
     - cron: '0 8 * * 1'  # Every Monday at 8:00 AM UTC
   workflow_dispatch:       # Manual trigger for on-demand scans
+
+permissions:
+  contents: read
+  security-events: write   # Required to upload SARIF to GitHub Security tab
 
 jobs:
   dependency-audit:
@@ -79,7 +95,16 @@ jobs:
           format: 'sarif'
           output: 'trivy-results.sarif'
 
-      - name: Upload Trivy SARIF report
+      - name: Upload Trivy SARIF to GitHub Security tab
+        # Makes findings visible in Security → Code Scanning (not just a zip artifact)
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-results.sarif
+          category: 'Trivy'
+        continue-on-error: true
+
+      - name: Upload Trivy SARIF artifact (FedRAMP evidence copy)
         if: always()
         uses: actions/upload-artifact@v4
         with:

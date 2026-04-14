@@ -8,7 +8,7 @@ If you believe you have found a security vulnerability in **JobLine AI** (`app.j
 
 ### Contact
 
-**Email:** security@wecr8solutions.com  
+**Email:** security@jobline.ai  
 **Response Time:** Acknowledgment within 5 business days; status update within 30 days.
 
 For detailed scope, researcher guidelines, and our safe harbor commitment, see the full **Vulnerability Disclosure Policy (VDP)**:  
