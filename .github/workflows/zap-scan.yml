@@ -59,6 +59,15 @@ jobs:
             report_json.json
           retention-days: 90
 
+      - name: Upload Baseline SARIF to GitHub Security
+        # Makes passive scan findings visible in Security → Code Scanning
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: report_sarif.json
+          category: 'ZAP Baseline Scan'
+        continue-on-error: true
+
   # ─────────────────────────────────────────────────────────────────
   # Full (active) scan — ONLY against dev/staging environment
   # Used on PRs to main and manual/scheduled runs
