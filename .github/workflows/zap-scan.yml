@@ -77,7 +77,7 @@ jobs:
           sparse-checkout: .zap
 
       - name: ZAP Full Scan Against Staging
-        uses: zaproxy/action-full-scan@v0.10.0
+        uses: zaproxy/action-full-scan@v0.13.0
         with:
           target: 'https://dev.jobline.ai'
           rules_file_name: '.zap/rules.tsv'
