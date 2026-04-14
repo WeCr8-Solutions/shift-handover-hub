@@ -65,7 +65,7 @@ jobs:
 
       - name: Run Trivy vulnerability scan (release gate)
         # FedRAMP requirement: No Critical/High CVEs in a release (SI-2, RA-5)
-        uses: aquasecurity/trivy-action@0.30.0
+        uses: aquasecurity/trivy-action@0.35.0
         with:
           scan-type: 'fs'
           scan-ref: '.'
@@ -75,7 +75,7 @@ jobs:
 
       - name: Run Trivy secret scan (release gate)
         # Ensure no secrets in release artifact (IA-5, SC-28)
-        uses: aquasecurity/trivy-action@0.30.0
+        uses: aquasecurity/trivy-action@0.35.0
         with:
           scan-type: 'fs'
           scan-ref: '.'
