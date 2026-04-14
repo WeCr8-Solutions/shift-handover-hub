@@ -49,15 +49,18 @@ export function useTrialStatus() {
     const daysRemaining = isExpired ? 0 : differenceInDays(trialEndsAt, now);
     const status = organization.subscription_status;
     const hasActiveSubscription = subscribed || status === "active" || status === "complimentary";
+    // past_due = immediate lockout (failed auto-charge after trial)
+    const isPaymentFailed = status === "past_due";
 
     return {
       isInTrial: !isExpired && !hasActiveSubscription && (status === "trial" || status === "free" || !status),
-      isTrialExpired: isExpired && !hasActiveSubscription,
+      isTrialExpired: (isExpired && !hasActiveSubscription) || isPaymentFailed,
       trialDaysRemaining: daysRemaining,
       trialEndsAt,
       canBypassTrial,
       isOrgOwner,
       canManageBilling,
+      isPaymentFailed,
     };
   }, [organization, organizationRole, subscribed, isDeveloper, isAdmin]);
 

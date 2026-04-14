@@ -12,7 +12,7 @@ interface ExpiredTrialGateProps {
 
 export function ExpiredTrialGate({ children }: ExpiredTrialGateProps) {
   const navigate = useNavigate();
-  const { isTrialExpired, canBypassTrial, canManageBilling, loading } = useTrialStatus();
+  const { isTrialExpired, canBypassTrial, canManageBilling, isPaymentFailed, loading } = useTrialStatus();
 
   if (loading) {
     return (
@@ -41,9 +41,13 @@ export function ExpiredTrialGate({ children }: ExpiredTrialGateProps) {
           <div className="mx-auto w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mb-4">
             <AlertTriangle className="w-8 h-8 text-destructive" />
           </div>
-          <CardTitle className="text-2xl">Free Trial Ended</CardTitle>
+          <CardTitle className="text-2xl">
+            {isPaymentFailed ? "Payment Failed" : "Free Trial Ended"}
+          </CardTitle>
           <CardDescription className="text-base mt-2">
-            Your 14-day free trial has ended. Subscribe to continue using JobLine and keep your team running smoothly.
+            {isPaymentFailed
+              ? "Your payment could not be processed. Please update your payment method to restore access."
+              : "Your 14-day free trial has ended. Subscribe to continue using JobLine and keep your team running smoothly."}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col items-center gap-4">

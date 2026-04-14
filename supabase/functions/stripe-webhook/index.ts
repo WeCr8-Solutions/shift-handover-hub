@@ -217,12 +217,14 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     metadata: { product_id: productId, plan },
   }, { onConflict: "stripe_subscription_id" });
 
-  // Update organization status
+  // Update organization status (trialing = active access with card on file)
+  const orgStatus = (subscription.status === "active" || subscription.status === "trialing") ? "active" : subscription.status;
+
   await supabaseAdmin
     .from("organizations")
     .update({
       subscription_tier: plan,
-      subscription_status: "active",
+      subscription_status: orgStatus,
     })
     .eq("id", orgId);
 
@@ -273,9 +275,10 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     .eq("stripe_subscription_id", subscription.id);
 
   // Update organization status
-  const orgStatus = subscription.status === "active" ? "active" : 
+  // trialing = card on file, auto-charges after trial → treat as active
+  const orgStatus = (subscription.status === "active" || subscription.status === "trialing") ? "active" : 
                     subscription.status === "past_due" ? "past_due" : 
-                    subscription.status === "canceled" ? "canceled" : "active";
+                    subscription.status === "canceled" ? "canceled" : subscription.status;
 
   await supabaseAdmin
     .from("organizations")

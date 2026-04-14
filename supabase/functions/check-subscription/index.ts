@@ -121,25 +121,32 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
-    const subscriptions = await stripe.subscriptions.list({
+    // Check for active OR trialing subscriptions (trialing = card on file, auto-charges)
+    const activeSubs = await stripe.subscriptions.list({
       customer: customerId,
       status: "active",
       limit: 1,
     });
+    const trialingSubs = activeSubs.data.length > 0 ? activeSubs : await stripe.subscriptions.list({
+      customer: customerId,
+      status: "trialing",
+      limit: 1,
+    });
+    const allSubs = activeSubs.data.length > 0 ? activeSubs.data : trialingSubs.data;
 
-    const hasActiveSub = subscriptions.data.length > 0;
+    const hasActiveSub = allSubs.length > 0;
     let tier: string | null = null;
     let subscriptionEnd: string | null = null;
     let productId: string | null = null;
     let cancelAtPeriodEnd = false;
 
     if (hasActiveSub) {
-      const subscription = subscriptions.data[0];
+      const subscription = allSubs[0];
       subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
       productId = subscription.items.data[0].price.product as string;
       tier = PRODUCT_TIERS[productId] || null;
       cancelAtPeriodEnd = subscription.cancel_at_period_end;
-      logStep("Active subscription found", { subscriptionId: subscription.id, tier, endDate: subscriptionEnd });
+      logStep("Active/trialing subscription found", { subscriptionId: subscription.id, tier, status: subscription.status, endDate: subscriptionEnd });
     } else {
       logStep("No active subscription found");
     }
