@@ -1,0 +1,82 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  sbom:
+    name: Generate SBOM (G-03 — SR-3, SA-12)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # Required to upload SBOM to GitHub Release
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate SBOM with Syft (CycloneDX JSON)
+        # Produces a CycloneDX 1.4 JSON SBOM listing all npm dependencies
+        # Satisfies SR-3 (Supply Chain Controls), SA-12 (Supply Chain Protection)
+        uses: anchore/sbom-action@v0
+        with:
+          path: '.'
+          format: cyclonedx-json
+          output-file: 'sbom-${{ github.ref_name }}.cyclonedx.json'
+
+      - name: Generate SBOM with Syft (SPDX JSON)
+        # Secondary format — SPDX 2.3 for broader toolchain compatibility
+        uses: anchore/sbom-action@v0
+        with:
+          path: '.'
+          format: spdx-json
+          output-file: 'sbom-${{ github.ref_name }}.spdx.json'
+
+      - name: Upload SBOMs to GitHub Release
+        # Attaches SBOM files to the GitHub Release for the tag
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            sbom-${{ github.ref_name }}.cyclonedx.json
+            sbom-${{ github.ref_name }}.spdx.json
+
+  security-gate:
+    name: Release Security Gate
+    runs-on: ubuntu-latest
+    needs: sbom
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scan (release gate)
+        # FedRAMP requirement: No Critical/High CVEs in a release (SI-2, RA-5)
+        uses: aquasecurity/trivy-action@0.30.0
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+          format: 'table'
+
+      - name: Run Trivy secret scan (release gate)
+        # Ensure no secrets in release artifact (IA-5, SC-28)
+        uses: aquasecurity/trivy-action@0.30.0
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          scanners: 'secret'
+          exit-code: '1'
+          format: 'table'
+
+      - name: Run npm audit (release gate)
+        run: npm ci && npm audit --audit-level=high
