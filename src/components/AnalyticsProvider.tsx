@@ -20,11 +20,10 @@ interface AnalyticsProviderProps {
 const ANALYTICS_ENABLED = import.meta.env.VITE_DISABLE_ANALYTICS !== 'true';
 
 /**
- * Analytics Provider Component
- * Wraps the app to provide automatic page tracking and performance monitoring.
+ * Analytics Provider Component — SINGLE source of page-view tracking,
+ * user identification, and performance monitoring.
  *
- * Set VITE_DISABLE_ANALYTICS=true to suppress all tracking — required for
- * ITAR self-hosted deployments where external telemetry is not permitted.
+ * No other component or hook should duplicate these responsibilities.
  */
 export function AnalyticsProvider({ children }: AnalyticsProviderProps) {
   const location = useLocation();
@@ -37,7 +36,7 @@ export function AnalyticsProvider({ children }: AnalyticsProviderProps) {
     }
   }, []);
 
-  // Initialize performance tracking once (no-op when analytics disabled)
+  // Initialize performance tracking once (idempotent — guarded internally)
   useEffect(() => {
     if (!ANALYTICS_ENABLED) return;
     trackPagePerformance();
@@ -45,7 +44,7 @@ export function AnalyticsProvider({ children }: AnalyticsProviderProps) {
     trackTimeOnPage();
   }, []);
 
-  // Track page views on route change (no-op when analytics disabled)
+  // Track page views on route change
   useEffect(() => {
     if (!ANALYTICS_ENABLED) return;
     const pageTitles: Record<string, string> = {
@@ -63,19 +62,18 @@ export function AnalyticsProvider({ children }: AnalyticsProviderProps) {
       '/demo': 'Book a Demo - JobLine.ai',
       '/start': 'Get Started - JobLine.ai',
     };
-    
+
     const title = pageTitles[location.pathname] || `${location.pathname} - JobLine.ai`;
     const utm = captureUtmParams();
     trackPageView(location.pathname + location.search, title, utm as Record<string, string>);
   }, [location.pathname, location.search]);
 
-  // Identify user when authenticated (no-op when analytics disabled)
+  // Identify user when authenticated
   useEffect(() => {
     if (!ANALYTICS_ENABLED) return;
     if (user?.id) {
       identifyUser(user.id);
-      
-      // Set user properties for segmentation
+
       setUserProperties({
         user_id: user.id,
         email_domain: user.email?.split('@')[1] || 'unknown',

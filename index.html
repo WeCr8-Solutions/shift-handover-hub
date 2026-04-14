@@ -35,8 +35,9 @@
         function gtag(){dataLayer.push(arguments);}
         window.gtag=gtag;
         gtag('js',new Date());
-        gtag('config','G-FDFFDKQS0Q');
-        gtag('config','AW-17425064696');
+        // send_page_view:false — React AnalyticsProvider handles pageviews
+        gtag('config','G-FDFFDKQS0Q',{send_page_view:false});
+        gtag('config','AW-17425064696',{send_page_view:false});
 
         // Google Ads conversion helper: call from CTA handlers.
         window.gtag_report_conversion = function(url) {
@@ -211,10 +212,12 @@
   </head>
 
   <body>
-    <!-- Google Tag Manager (noscript) -->
-    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MSSVTJPZ"
-    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-    <!-- End Google Tag Manager (noscript) -->
+    <!-- Google Tag Manager (noscript) — only if analytics enabled -->
+    <script>
+      if (window.__ANALYTICS_ENABLED__) {
+        document.write('<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MSSVTJPZ" height="0" width="0" style="display:none;visibility:hidden"><\/iframe><\/noscript>');
+      }
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
