@@ -1,0 +1,48 @@
+# ZAP Scanner Rules — False Positive Suppression
+# Format: Rule-ID	IGNORE|WARN|FAIL	Description
+#
+# Reference: https://www.zaproxy.org/docs/desktop/addons/alert-filters/
+# Rule IDs: https://www.zaproxy.org/docs/alerts/
+#
+# Legend:
+#   IGNORE = suppress the alert entirely
+#   WARN   = report but do not fail the CI job
+#   FAIL   = fail the CI job on this alert
+#
+# Maintain this file. Review suppressed rules quarterly and remove
+# any that no longer apply after security improvements are made.
+#
+# Last reviewed: April 2026
+
+# ─── Content Security Policy ───────────────────────────────────────────────
+# Vite SPA uses inline scripts for hydration; strict-dynamic CSP is planned
+# pending migration to GovCloud. Remove once CSP nonce headers are deployed.
+10038	WARN	Content Security Policy (CSP) Header Not Set
+10055	WARN	CSP: Wildcard Directive
+
+# ─── X-Frame-Options ───────────────────────────────────────────────────────
+# Vercel sets frame-ancestors in CSP; legacy X-Frame-Options is redundant.
+# Kept as WARN to track when visiting with older tools.
+10020	WARN	Missing Anti-clickjacking Header
+
+# ─── Cache Control ─────────────────────────────────────────────────────────
+# Static assets on Vercel CDN have immutable cache headers by design.
+# API routes set no-store. This alert fires on CDN edge responses.
+10015	IGNORE	Re-examine Cache-control Directives
+
+# ─── Information Disclosure — Informational ────────────────────────────────
+# Vercel returns Server: Vercel header; not a vulnerability.
+10036	IGNORE	Server Leaks Version Information via "Server" HTTP Response Header
+
+# ─── Alerts that should FAIL the build ─────────────────────────────────────
+# Any of these found = critical security issue, must block merge.
+40018	FAIL	SQL Injection
+40012	FAIL	Cross Site Scripting (Reflected)
+40014	FAIL	Cross Site Scripting (Persistent)
+40016	FAIL	Cross Site Scripting (Persistent) - Prime
+40017	FAIL	Cross Site Scripting (Persistent) - Spider
+90022	FAIL	Application Error Disclosure
+40003	FAIL	CRLF Injection
+40008	FAIL	Parameter Tampering
+30002	FAIL	Format String Error
+90020	FAIL	Remote OS Command Injection
