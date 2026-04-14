@@ -101,3 +101,58 @@ If `curl` returns nothing, check: `docker ps | grep local-ollama`
 | 500+ lines | 15–30 s |
 
 GPU-accelerated via `--gpus all`. `qwen2.5-coder:7b` (4.7 GB) fits entirely in VRAM with 3+ GB headroom.
+
+## OpenClaw Gateway
+
+OpenClaw is the local AI agent gateway that routes tasks to Ollama (and other providers).
+
+```text
+WebChat UI:  http://127.0.0.1:18790
+Config:      C:\Users\zach\.openclaw\openclaw.json
+Workspace:   C:\Users\zach\.openclaw\workspace
+Skills:      C:\Users\zach\.openclaw\workspace\skills\
+Port:        18790  (gateway.port in openclaw.json)
+Auth mode:   token (local only, loopback bind)
+```
+
+### Ollama Provider (in OpenClaw)
+
+OpenClaw connects to Ollama using the **native `/api/chat` endpoint** — NOT `/v1`. This is handled automatically via the bundled Ollama plugin.
+
+```json
+"models": {
+  "providers": {
+    "ollama": {
+      "baseUrl": "http://127.0.0.1:11434",
+      "api": "ollama"
+    }
+  }
+}
+```
+
+Model reference format in OpenClaw: `ollama/qwen2.5-coder:7b`
+
+### Agents
+
+| Agent ID | Model | Skills | Purpose |
+|----------|-------|--------|---------|
+| `main` | `openai-codex/gpt-5.4` | all defaults | General assistant |
+| `quinn` | `ollama/qwen2.5-coder:7b` | `quinn-fedramp` | FedRAMP compliance documentation (local, no API cost) |
+
+### Quinn in OpenClaw
+
+Message the `quinn` agent in the WebChat to generate FedRAMP documents using Ollama locally:
+
+```
+/quinn-fedramp generate G-30
+/quinn-fedramp audit
+/quinn-fedramp status
+```
+
+Or headless via CLI:
+
+```powershell
+openclaw agent --agent quinn --message "/quinn-fedramp generate G-30"
+```
+
+The Quinn skill (`~/.openclaw/workspace/skills/quinn-fedramp/SKILL.md`) carries the full JobLine project context, Supabase schema details, and correct NIST control family mappings.
