@@ -127,11 +127,29 @@ serve(async (req) => {
 
     logStep("Line item quantity", { priceId, lineQuantity });
 
+    // Check if org already has an active/trialing subscription (no double trial)
+    let trialDays: number | undefined = 14;
+    if (customerId) {
+      const existingSubs = await stripe.subscriptions.list({
+        customer: customerId,
+        status: "all",
+        limit: 5,
+      });
+      const hasHadSub = existingSubs.data.some(s => 
+        ["active", "trialing", "past_due", "canceled"].includes(s.status)
+      );
+      if (hasHadSub) {
+        trialDays = undefined; // No trial for returning customers
+        logStep("Returning customer, skipping trial", { customerId });
+      }
+    }
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : billingEmail,
       line_items: [{ price: priceId, quantity: lineQuantity }],
       mode: "subscription",
+      payment_method_collection: "always",
       success_url: `${origin}/dashboard?subscription=success`,
       cancel_url: `${origin}/pricing?subscription=cancelled`,
       metadata: {
@@ -140,6 +158,7 @@ serve(async (req) => {
         org_name: organizationName,
       },
       subscription_data: {
+        trial_period_days: trialDays,
         metadata: {
           user_id: user.id,
           org_id: organizationId || "",
