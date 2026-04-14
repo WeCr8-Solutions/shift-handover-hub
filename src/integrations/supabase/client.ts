@@ -10,7 +10,10 @@ const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
-    storage: localStorage,
+    // sessionStorage (not localStorage) prevents JWT persistence across browser
+    // sessions and limits XSS exposure window. JWTs are cleared when the tab closes.
+    // FedRAMP IA-5, SC-4: protect session credentials from unauthorized access.
+    storage: sessionStorage,
     persistSession: true,
     autoRefreshToken: true,
   }

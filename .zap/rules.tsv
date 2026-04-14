@@ -15,15 +15,17 @@
 # Last reviewed: April 2026
 
 # ─── Content Security Policy ───────────────────────────────────────────────
-# Vite SPA uses inline scripts for hydration; strict-dynamic CSP is planned
-# pending migration to GovCloud. Remove once CSP nonce headers are deployed.
-10038	WARN	Content Security Policy (CSP) Header Not Set
-10055	WARN	CSP: Wildcard Directive
+# CSP is now deployed in vercel.json. If this fires it means the header
+# regressed — treat as a build failure.
+# Note: 'unsafe-inline' will still trigger rule 10055 (Wildcard) — suppress
+# that specific sub-rule until nonce-based CSP is implemented post-migration.
+10038	FAIL	Content Security Policy (CSP) Header Not Set
+10055	WARN	CSP: Wildcard Directive (unsafe-inline; planned fix post-GovCloud migration)
 
 # ─── X-Frame-Options ───────────────────────────────────────────────────────
-# Vercel sets frame-ancestors in CSP; legacy X-Frame-Options is redundant.
-# Kept as WARN to track when visiting with older tools.
-10020	WARN	Missing Anti-clickjacking Header
+# X-Frame-Options: DENY is now deployed. Regressions should fail the build.
+# CSP frame-ancestors 'none' is the modern equivalent; both are set.
+10020	FAIL	Missing Anti-clickjacking Header
 
 # ─── Cache Control ─────────────────────────────────────────────────────────
 # Static assets on Vercel CDN have immutable cache headers by design.
