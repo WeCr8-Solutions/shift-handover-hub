@@ -222,7 +222,7 @@ const Index = () => {
   // Redirect to setup if onboarding is incomplete and user is authenticated (initial load only)
   const setupCheckDoneRef = useRef(false);
   useEffect(() => {
-    if (user && !authLoading && !onboardingLoading) {
+    if (user && isReady && !onboardingLoading) {
       const hasCompletedSetup = isStepCompleted("shop-setup") || isStepCompleted("organization-setup") || isComplete;
 
       if (hasCompletedSetup || setupWizardDismissed || hasSeenWelcome) {
@@ -236,7 +236,7 @@ const Index = () => {
     }
   }, [
     user,
-    authLoading,
+    isReady,
     onboardingLoading,
     hasSeenWelcome,
     isComplete,
