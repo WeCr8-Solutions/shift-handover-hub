@@ -43,15 +43,15 @@ export default function Setup() {
   const [showOrgSetup, setShowOrgSetup] = useState(false);
 
   useEffect(() => {
-    if (!authLoading && !user) {
+    if (isReady && !user) {
       navigate('/auth');
       return;
     }
     // Respect "Don't show again" — redirect to dashboard
-    if (!authLoading && !onboardingLoading && user && setupWizardDismissed) {
+    if (isReady && !onboardingLoading && user && setupWizardDismissed) {
       navigate('/dashboard', { replace: true });
     }
-  }, [authLoading, onboardingLoading, user, setupWizardDismissed, navigate]);
+  }, [isReady, onboardingLoading, user, setupWizardDismissed, navigate]);
 
   const fetchSetupStatus = async (showLoader = true) => {
     if (!user) return;

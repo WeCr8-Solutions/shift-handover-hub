@@ -33,10 +33,10 @@ export default function Testing() {
   } = useTestRunner();
 
   useEffect(() => {
-    if (!authLoading && !user) {
+    if (isReady && !user) {
       navigate("/auth");
     }
-  }, [authLoading, user, navigate]);
+  }, [isReady, user, navigate]);
 
   const accessConfirmedRef = useRef(false);
   useEffect(() => {

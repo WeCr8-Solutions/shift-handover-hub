@@ -54,14 +54,14 @@ export default function FieldView() {
 
   // Redirect unauthenticated users
   useEffect(() => {
-    if (authLoading) return;
+    if (!isReady) return;
     if (!user) {
       const redirect = token ? `/field/${token}` : "/field";
       navigate(`/auth?redirect=${encodeURIComponent(redirect)}`, {
         replace: true,
       });
     }
-  }, [user, authLoading, token, navigate]);
+  }, [user, isReady, token, navigate]);
 
   // Check access + load data
   useEffect(() => {

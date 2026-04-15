@@ -16,10 +16,10 @@ export default function Teams() {
   const [activeTab, setActiveTab] = useState("teams");
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (isReady && !user) {
       navigate("/auth");
     }
-  }, [user, loading, navigate]);
+  }, [isReady, user, navigate]);
 
   if (loading) {
     return (

@@ -153,10 +153,10 @@ export default function Queue() {
   });
 
   useEffect(() => {
-    if (!authLoading && !user) {
+    if (isReady && !user) {
       navigate("/auth", { replace: true });
     }
-  }, [authLoading, user, navigate]);
+  }, [isReady, user, navigate]);
 
   if (authLoading || accessLoading) {
     return (

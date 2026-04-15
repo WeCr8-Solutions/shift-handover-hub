@@ -81,10 +81,10 @@ export default function Admin() {
   const accessConfirmedRef = useRef(false);
 
   useEffect(() => {
-    if (!authLoading && !user) {
+    if (isReady && !user) {
       navigate("/auth");
     }
-  }, [authLoading, user, navigate]);
+  }, [isReady, user, navigate]);
 
   useEffect(() => {
     if (accessLoading) return;
