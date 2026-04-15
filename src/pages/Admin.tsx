@@ -1,4 +1,4 @@
-import { useEffect, useState, lazy, Suspense } from "react";
+import { useEffect, useState, useRef, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAccess, useSystemStats } from "@/hooks/useAdminData";
@@ -78,6 +78,8 @@ export default function Admin() {
     organizationId: scopedOrgId,
   };
 
+  const accessConfirmedRef = useRef(false);
+
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/auth");
@@ -85,7 +87,12 @@ export default function Admin() {
   }, [authLoading, user, navigate]);
 
   useEffect(() => {
-    if (!accessLoading && !hasAdminAccess && user) {
+    if (accessLoading) return;
+    if (hasAdminAccess && user) {
+      accessConfirmedRef.current = true;
+    }
+    // Only redirect on initial load, not on tab-refocus re-evaluations
+    if (!hasAdminAccess && user && !accessConfirmedRef.current) {
       navigate("/");
     }
   }, [accessLoading, hasAdminAccess, user, navigate]);
