@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAccess } from "@/hooks/useAdminData";
@@ -38,9 +38,13 @@ export default function Testing() {
     }
   }, [authLoading, user, navigate]);
 
-  // Only developers with the 'developer' role can access testing
+  const accessConfirmedRef = useRef(false);
   useEffect(() => {
-    if (!accessLoading && !hasTestingAccess && user) {
+    if (accessLoading) return;
+    if (hasTestingAccess && user) {
+      accessConfirmedRef.current = true;
+    }
+    if (!hasTestingAccess && user && !accessConfirmedRef.current) {
       navigate("/dashboard");
     }
   }, [accessLoading, hasTestingAccess, user, navigate]);
