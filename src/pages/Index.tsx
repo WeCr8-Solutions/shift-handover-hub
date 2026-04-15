@@ -219,12 +219,18 @@ const Index = () => {
     }
   }, []);
 
-  // Redirect to setup if onboarding is incomplete and user is authenticated
+  // Redirect to setup if onboarding is incomplete and user is authenticated (initial load only)
+  const setupCheckDoneRef = useRef(false);
   useEffect(() => {
     if (user && !authLoading && !onboardingLoading) {
       const hasCompletedSetup = isStepCompleted("shop-setup") || isStepCompleted("organization-setup") || isComplete;
 
-      if (!setupWizardDismissed && !hasSeenWelcome && !hasCompletedSetup) {
+      if (hasCompletedSetup || setupWizardDismissed || hasSeenWelcome) {
+        setupCheckDoneRef.current = true;
+      }
+
+      if (!setupCheckDoneRef.current && !setupWizardDismissed && !hasSeenWelcome && !hasCompletedSetup) {
+        setupCheckDoneRef.current = true;
         navigate("/setup", { replace: true });
       }
     }
