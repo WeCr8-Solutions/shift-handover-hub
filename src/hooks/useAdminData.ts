@@ -105,6 +105,7 @@ export function useAdminAccess() {
   useEffect(() => {
     const checkAccess = async () => {
       if (!user) {
+        setLoading(false);
         setIsAdmin(false);
         setIsSupervisor(false);
         setIsDeveloper(false);
@@ -116,6 +117,9 @@ export function useAdminAccess() {
         setLoading(false);
         return;
       }
+
+      // Mark loading during re-fetch so redirect guards don't fire prematurely
+      setLoading(true);
 
       // Fetch platform roles and org membership in parallel
       const [rolesResult, orgMembershipResult] = await Promise.all([
