@@ -51,7 +51,7 @@ type ViewScope = "organization" | "station";
 export default function Queue() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, isReady } = useAuth();
   const { hasAdminAccess, loading: accessLoading } = useAdminAccess();
   const { organization } = useOrgContext();
   const { activeSessions = [] } = useOperatorSessions();
@@ -153,10 +153,10 @@ export default function Queue() {
   });
 
   useEffect(() => {
-    if (!authLoading && !user) {
+    if (isReady && !user) {
       navigate("/auth", { replace: true });
     }
-  }, [authLoading, user, navigate]);
+  }, [isReady, user, navigate]);
 
   if (authLoading || accessLoading) {
     return (

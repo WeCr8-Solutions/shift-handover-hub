@@ -68,7 +68,7 @@ function DeveloperOnlyPlaceholder({ feature }: { feature: string }) {
 
 export default function Settings() {
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, isReady } = useAuth();
   const { isDeveloper, loading: accessLoading } = useAdminAccess();
   const { canManageBilling } = useTrialStatus();
   const { organizationRole } = useOrgContext();
@@ -83,10 +83,10 @@ export default function Settings() {
   const canEditOrgSettings = isOrgAdmin || isSupervisor || isDeveloper;
 
   useEffect(() => {
-    if (!authLoading && !user) {
+    if (isReady && !user) {
       navigate("/auth", { replace: true });
     }
-  }, [authLoading, user, navigate]);
+  }, [isReady, user, navigate]);
 
   if (authLoading || accessLoading) {
     return (

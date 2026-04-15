@@ -35,7 +35,7 @@ interface SetupStatus {
 
 export default function Setup() {
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, isReady } = useAuth();
   const { completeStep, startTour, showTour, isComplete: onboardingComplete, currentStep, dismissSetupWizard, markWelcomeSeen, setupWizardDismissed, isLoading: onboardingLoading } = useOnboardingContext();
   const [setupStatus, setSetupStatus] = useState<SetupStatus | null>(null);
   const [loading, setLoading] = useState(true);
@@ -43,15 +43,15 @@ export default function Setup() {
   const [showOrgSetup, setShowOrgSetup] = useState(false);
 
   useEffect(() => {
-    if (!authLoading && !user) {
+    if (isReady && !user) {
       navigate('/auth');
       return;
     }
     // Respect "Don't show again" — redirect to dashboard
-    if (!authLoading && !onboardingLoading && user && setupWizardDismissed) {
+    if (isReady && !onboardingLoading && user && setupWizardDismissed) {
       navigate('/dashboard', { replace: true });
     }
-  }, [authLoading, onboardingLoading, user, setupWizardDismissed, navigate]);
+  }, [isReady, onboardingLoading, user, setupWizardDismissed, navigate]);
 
   const fetchSetupStatus = async (showLoader = true) => {
     if (!user) return;

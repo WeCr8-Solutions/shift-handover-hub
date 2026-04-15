@@ -12,14 +12,14 @@ import { Users, UsersRound, QrCode } from "lucide-react";
 
 export default function Teams() {
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
+  const { user, loading, isReady } = useAuth();
   const [activeTab, setActiveTab] = useState("teams");
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (isReady && !user) {
       navigate("/auth");
     }
-  }, [user, loading, navigate]);
+  }, [isReady, user, navigate]);
 
   if (loading) {
     return (

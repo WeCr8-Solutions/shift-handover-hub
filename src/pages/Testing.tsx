@@ -19,7 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Testing() {
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, isReady } = useAuth();
   const { isDeveloper, hasTestingAccess, loading: accessLoading } = useAdminAccess();
   const {
     isRunning,
@@ -33,10 +33,10 @@ export default function Testing() {
   } = useTestRunner();
 
   useEffect(() => {
-    if (!authLoading && !user) {
+    if (isReady && !user) {
       navigate("/auth");
     }
-  }, [authLoading, user, navigate]);
+  }, [isReady, user, navigate]);
 
   const accessConfirmedRef = useRef(false);
   useEffect(() => {

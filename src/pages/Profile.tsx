@@ -18,7 +18,7 @@ import { useAdminAccess } from "@/hooks/useAdminData";
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { user, profile, loading, refreshProfile } = useAuth();
+  const { user, profile, loading, refreshProfile, isReady } = useAuth();
   const { toast } = useToast();
   const { 
     organization, 
@@ -34,10 +34,10 @@ export default function Profile() {
   const [isDirty, setIsDirty] = useState(false);
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (isReady && !user) {
       navigate("/auth");
     }
-  }, [user, loading, navigate]);
+  }, [isReady, user, navigate]);
 
   useEffect(() => {
     if (profile) {

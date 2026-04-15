@@ -12,14 +12,14 @@ import { SEOHead } from "@/components/SEOHead";
 
 export default function Updates() {
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, isReady } = useAuth();
   const { updates, loading, acknowledgedIds, acknowledgeUpdate, systemStatus } = useGlobalUpdates();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
 
   useEffect(() => {
-    if (!authLoading && !user) navigate("/auth");
-  }, [authLoading, user, navigate]);
+    if (isReady && !user) navigate("/auth");
+  }, [isReady, user, navigate]);
 
   // Only show visible, live/resolved updates to regular users
   const visibleUpdates = updates.filter((u) => u.is_visible_to_users && ["live", "resolved"].includes(u.status));
