@@ -12,7 +12,7 @@ import { Users, UsersRound, QrCode } from "lucide-react";
 
 export default function Teams() {
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
+  const { user, loading, isReady } = useAuth();
   const [activeTab, setActiveTab] = useState("teams");
 
   useEffect(() => {

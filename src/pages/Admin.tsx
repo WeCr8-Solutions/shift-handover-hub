@@ -54,7 +54,7 @@ function ScopeBadge({ scope }: { scope: "platform" | "org" }) {
 
 export default function Admin() {
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, isReady } = useAuth();
   const {
     isAdmin, isDeveloper, isSupervisor, isOrgAdmin, isOrgOwner,
     hasAdminAccess, hasTestingAccess, hasPlatformAccess, hasPlatformAdminAccess,

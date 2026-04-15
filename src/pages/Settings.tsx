@@ -68,7 +68,7 @@ function DeveloperOnlyPlaceholder({ feature }: { feature: string }) {
 
 export default function Settings() {
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, isReady } = useAuth();
   const { isDeveloper, loading: accessLoading } = useAdminAccess();
   const { canManageBilling } = useTrialStatus();
   const { organizationRole } = useOrgContext();

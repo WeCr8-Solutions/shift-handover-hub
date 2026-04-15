@@ -152,7 +152,7 @@ function toHandoffRecord(record: HandoffRecord): ShiftHandoffRecord {
 const Index = () => {
   const navigate = useNavigate();
 
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, isReady } = useAuth();
   const { currentTeam } = useCurrentTeam();
   const { organization } = useOrgContext();
   const { stations: dbStations, loading: stationsLoading } = useStations(currentTeam?.id, organization?.id);

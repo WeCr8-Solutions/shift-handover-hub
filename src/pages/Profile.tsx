@@ -18,7 +18,7 @@ import { useAdminAccess } from "@/hooks/useAdminData";
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { user, profile, loading, refreshProfile } = useAuth();
+  const { user, profile, loading, refreshProfile, isReady } = useAuth();
   const { toast } = useToast();
   const { 
     organization, 

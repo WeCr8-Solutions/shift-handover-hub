@@ -12,7 +12,7 @@ import { SEOHead } from "@/components/SEOHead";
 
 export default function Updates() {
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, isReady } = useAuth();
   const { updates, loading, acknowledgedIds, acknowledgeUpdate, systemStatus } = useGlobalUpdates();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");

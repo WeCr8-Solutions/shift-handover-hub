@@ -44,7 +44,7 @@ interface Assignment {
 export default function FieldView() {
   const { token } = useParams<{ token?: string }>();
   const navigate = useNavigate();
-  const { user, profile, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading, isReady } = useAuth();
 
   const [checking, setChecking] = useState(true);
   const [hasAccess, setHasAccess] = useState(false);

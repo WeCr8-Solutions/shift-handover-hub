@@ -19,7 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Testing() {
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, isReady } = useAuth();
   const { isDeveloper, hasTestingAccess, loading: accessLoading } = useAdminAccess();
   const {
     isRunning,
