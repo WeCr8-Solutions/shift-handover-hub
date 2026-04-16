@@ -2048,6 +2048,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "flyer_stop_visits_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "flyer_zone_assignments_safe"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "flyer_stop_visits_campaign_id_fkey"
             columns: ["campaign_id"]
             isOneToOne: false
@@ -6552,6 +6559,53 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: true
             referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flyer_zone_assignments_safe: {
+        Row: {
+          assigned_by: string | null
+          assigned_to_user_id: string | null
+          assignee_email: string | null
+          assignee_name: string | null
+          campaign_id: string | null
+          created_at: string | null
+          id: string | null
+          is_active: boolean | null
+          updated_at: string | null
+          zone_numbers: number[] | null
+        }
+        Insert: {
+          assigned_by?: string | null
+          assigned_to_user_id?: string | null
+          assignee_email?: string | null
+          assignee_name?: string | null
+          campaign_id?: string | null
+          created_at?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          updated_at?: string | null
+          zone_numbers?: number[] | null
+        }
+        Update: {
+          assigned_by?: string | null
+          assigned_to_user_id?: string | null
+          assignee_email?: string | null
+          assignee_name?: string | null
+          campaign_id?: string | null
+          created_at?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          updated_at?: string | null
+          zone_numbers?: number[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flyer_zone_assignments_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "flyer_campaigns"
             referencedColumns: ["id"]
           },
         ]
