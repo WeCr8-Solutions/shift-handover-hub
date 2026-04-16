@@ -91,7 +91,7 @@ export default function Pricing() {
             Choose Your Plan
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Start with a 14-day free trial. No credit card required. 
+            Start with a 14-day free trial 
             Cancel anytime.
           </p>
         </div>
@@ -220,7 +220,7 @@ export default function Pricing() {
               <div className="p-4 rounded-lg bg-secondary/30">
                 <h4 className="font-medium mb-1">Is there a free trial?</h4>
                 <p className="text-sm text-muted-foreground">
-                  Yes! All plans come with a 14-day free trial. No credit card required to start.
+                  Yes! All plans come with a 14-day free trial to start.
                 </p>
               </div>
             </div>

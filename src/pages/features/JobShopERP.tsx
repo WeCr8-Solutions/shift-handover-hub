@@ -115,7 +115,7 @@ export default function JobShopERP() {
 
             <div className="flex flex-wrap gap-4 mb-16">
               <Button size="lg" onClick={() => navigate("/auth")} className="gap-2">
-                Start Free — No Credit Card <ArrowRight className="w-5 h-5" />
+                Start Free —  <ArrowRight className="w-5 h-5" />
               </Button>
               <Button size="lg" variant="outline" onClick={() => navigate("/pricing")} className="gap-2">
                 <Zap className="w-5 h-5" /> See Pricing

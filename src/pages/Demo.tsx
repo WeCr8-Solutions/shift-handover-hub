@@ -154,7 +154,7 @@ export default function Demo() {
                   {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                   Request Demo
                 </Button>
-                <p className="text-xs text-muted-foreground text-center">No credit card required. Free forever plan available.</p>
+                <p className="text-xs text-muted-foreground text-center">Free forever plan available.</p>
               </form>
             )}
           </div>

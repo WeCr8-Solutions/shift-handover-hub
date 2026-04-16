@@ -107,7 +107,7 @@ export default function ManufacturingVisibility() {
 
             <div className="text-center p-8 rounded-2xl bg-primary/5 border border-primary/20">
               <h2 className="text-2xl font-bold mb-3">Ready for full floor visibility?</h2>
-              <p className="text-muted-foreground mb-6">Start your free trial today. No credit card required.</p>
+              <p className="text-muted-foreground mb-6">Start your free trial today</p>
               <Button size="lg" onClick={() => {
                 ConversionEvents.ctaClick('get_started_free', 'Get Started Free', pagePath, 'bottom_cta');
                 navigate("/auth");
