@@ -114,7 +114,7 @@ export default function ShiftHandoffSoftware() {
 
             <div className="text-center p-8 rounded-2xl bg-primary/5 border border-primary/20">
               <h2 className="text-2xl font-bold mb-3">Ready to eliminate shift handoff chaos?</h2>
-              <p className="text-muted-foreground mb-6">Start your free trial today. No credit card required.</p>
+              <p className="text-muted-foreground mb-6">Start your free trial today</p>
               <Button size="lg" onClick={() => navigate("/auth")} className="gap-2">
                 Get Started Free <ArrowRight className="w-5 h-5" />
               </Button>

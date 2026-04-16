@@ -114,7 +114,7 @@ export default function EpicorAlternative() {
             </div>
             <div className="text-center p-8 rounded-2xl bg-primary/5 border border-primary/20">
               <h2 className="text-2xl font-bold mb-3">Enterprise results — without the enterprise budget</h2>
-              <p className="text-muted-foreground mb-6">Free trial — no credit card, no consultant, no timeline.</p>
+              <p className="text-muted-foreground mb-6">Free trial — no consultant, no timeline.</p>
               <Button size="lg" onClick={() => navigate("/auth")} className="gap-2">Get Started Free <ArrowRight className="w-5 h-5" /></Button>
             </div>
           </div>

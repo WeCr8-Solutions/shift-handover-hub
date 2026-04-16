@@ -415,7 +415,7 @@ export default function AIPlanningAssistant() {
             Ready to Plan Smarter?
           </h2>
           <p className="text-muted-foreground mb-8 text-sm sm:text-base">
-            Start with 5 free AI messages a day. No credit card required.
+            Start with 5 free AI messages a day
           </p>
           <Button size="lg" onClick={() => navigate("/auth")} className="gap-2 min-w-[200px]">
             Get Started Free <ArrowRight className="w-4 h-4" />

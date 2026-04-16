@@ -1033,7 +1033,7 @@ export default function Landing() {
               </h2>
               <p className="text-muted-foreground text-sm sm:text-base md:text-lg mb-5 sm:mb-6 md:mb-8 max-w-xl mx-auto px-2">
                 Join hundreds of manufacturing teams already using JobLine.ai. 
-                Start your free trial today—no credit card required.
+                Start your free trial today— required.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
                 <Button size="lg" onClick={() => {
