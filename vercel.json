@@ -15,6 +15,16 @@
       ]
     },
     {
+      "source": "/:path*",
+      "destination": "/help/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "docs\\.jobline\\.ai"
+        }
+      ]
+    },
+    {
       "source": "/((?!.*\\.).*)",
       "destination": "/index.html"
     }
