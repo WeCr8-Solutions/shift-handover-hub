@@ -351,7 +351,7 @@ export default function Start() {
             className="w-full text-base font-semibold h-12"
             onClick={handleSignupClick}
           >
-            Start Free — 
+            Start Free 
           </Button>
 
           {/* Email Capture */}
