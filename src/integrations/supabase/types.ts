@@ -9480,6 +9480,7 @@ export type Database = {
         }
         Returns: Json
       }
+      realtime_topic_org_id: { Args: { _topic: string }; Returns: string }
       redeem_invite_code: {
         Args: { _code: string; _user_id: string }
         Returns: Json
