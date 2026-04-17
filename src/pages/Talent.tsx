@@ -155,6 +155,7 @@ export default function Talent() {
                     lists={lists}
                     onAddToList={handleAddToList}
                     onContact={() => setContactTarget(c)}
+                    onOnboard={() => setOnboardTarget(c)}
                   />
                 ))
               )}
