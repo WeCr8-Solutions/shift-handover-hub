@@ -92,8 +92,9 @@ Source of truth for the OAP build. Cross-references `docs/jobline-oap-lovable-br
 | Mentor sign-off auth (supervisor OR designated mentor) | ✅ | `can_act_as_oap_mentor()` enforced in RLS + UI gating live in `/oap/walkthrough` |
 | Employer program builder (pick courses + machines + tools per role) | ✅ | `/oap/employer` — `<OapEmployerPanel>` writes to `oap_role_programs` + `oap_role_program_courses` |
 | Employer dashboard (who's behind / completed / due for recert) | ✅ | `<OapEmployerPanel>` — enrollments list with overdue badge from `expected_completion_at` |
-| Bulk operator import (CSV) — Pro tier | 🔴 | Single-row enroll live; CSV importer pending |
-| Compliance export (audit-ready PDF per operator) | 🔴 | AS9100, ISO 9001, OSHA |
+| Bulk operator import (CSV) — Pro tier | ✅ | `<OapBulkEnrollDialog>` — paste CSV, resolves emails to org members, batch-enrolls; export CSV button on enrollment list |
+| Compliance export (audit-ready PDF per operator) | ✅ | `exportWalkthroughPdf()` — AS9100 Rev D / ISO 9001:2015 / OSHA 29 CFR 1910 styled PDF, branded header, status pills, mentor signatures, attestation footer |
+| Lesson media (image / video / audio) in player | ✅ | `<OapCoursePlayer>` embeds `<TrainingMedia entityType="oap_lesson">` above markdown |
 
 ---
 
@@ -141,15 +142,13 @@ Source of truth for the OAP build. Cross-references `docs/jobline-oap-lovable-br
 
 ---
 
-## 10. Remaining Work — Snapshot 2026-04-17 (post learner + employer surfaces)
+## 10. Remaining Work — Snapshot 2026-04-17 (v1.0 OAP feature-complete)
 
-**Roughly ~10% remaining.** OAP is now both **individual-ready** (operators can self-study via `/oap/learn`, take quizzes, and buy a $12 cert) and **employer-ready** (org admins can define role programs, enroll operators, track overdue, and have mentors sign off floor walkthroughs).
+**OAP is feature-complete for v1.0 launch.** Operators can self-study via `/oap/learn` (with images, video, and audio embedded in lessons), take scored quizzes, and buy a $12 certificate. Employers can define role programs, single-enroll or **bulk-import operators via CSV**, export enrollment rosters as CSV, track overdue status, run mentor walkthroughs, and **download an AS9100 / ISO 9001 / OSHA-styled compliance PDF** per session.
 
-### Remaining (polish only)
-1. Bulk operator import (CSV) — single-operator enroll is live.
-2. Compliance export PDF (AS9100 / ISO 9001 / OSHA-ready) per operator.
-3. Author actual lesson content + quiz Q's for the 7 sections (currently 1 starter lesson + 1 sample quiz seeded; player works for any future content).
-4. Day-10 + day-13 trial reminder emails.
-5. GCA add-on ($49/mo per location) packaging on `/pricing`.
-6. Headless PDF render pipeline for cert email attachments.
-7. Revoke / expire UI control (schema already supports it).
+### Remaining (content + polish, not blockers)
+1. Author the full lesson content + quiz banks for sections 1–7 (player and quiz engine already support unlimited content; 1 starter lesson + 1 sample quiz seeded).
+2. Day-10 + day-13 trial reminder emails.
+3. GCA add-on ($49/mo per location) packaging on `/pricing`.
+4. Headless PDF render pipeline for cert email attachments (HTML receipt sent today; PDF link via `/verify/:certId`).
+5. Revoke / expire UI control (schema already supports it).

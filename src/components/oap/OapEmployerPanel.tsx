@@ -29,8 +29,34 @@ import {
 } from "@/hooks/useOapProgram";
 import { useOrganization } from "@/hooks/useOrganization";
 import { useOrganizationMembers } from "@/hooks/useOrganizationMembers";
-import { Pencil, Plus, Trash2, Users, Briefcase, UserPlus } from "lucide-react";
+import { Pencil, Plus, Trash2, Users, Briefcase, UserPlus, Download } from "lucide-react";
 import { toast } from "sonner";
+import { OapBulkEnrollDialog } from "./OapBulkEnrollDialog";
+
+function downloadEnrollmentsCsv(enrollments: any[], members: any[], programs: any[]) {
+  const header = ["operator_name", "operator_email", "role_program", "status", "started_at", "expected_completion_at", "completed_at"];
+  const rows = enrollments.map((e) => {
+    const m = (members ?? []).find((x) => x.user_id === e.user_id);
+    const prog = programs.find((p) => p.id === e.role_program_id);
+    return [
+      m?.profile?.display_name ?? "",
+      m?.profile?.email ?? "",
+      prog?.name ?? "",
+      e.completed_at ? "completed" : e.status,
+      e.started_at ?? "",
+      e.expected_completion_at ?? "",
+      e.completed_at ?? "",
+    ].map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",");
+  });
+  const csv = [header.join(","), ...rows].join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `oap-enrollments-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 /**
  * Employer-facing role program builder + bulk enroller.
@@ -128,13 +154,26 @@ export function OapEmployerPanel() {
       </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <Users className="w-4 h-4" /> Operator Enrollments
-          </CardTitle>
-          <p className="text-xs text-muted-foreground">
-            Assign operators to a role program with an expected completion date.
-          </p>
+        <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0">
+          <div>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Users className="w-4 h-4" /> Operator Enrollments
+            </CardTitle>
+            <p className="text-xs text-muted-foreground">
+              Assign operators to a role program with an expected completion date.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <OapBulkEnrollDialog programs={programs} members={members ?? []} />
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => downloadEnrollmentsCsv(enrollments, members ?? [], programs)}
+              disabled={!enrollments.length}
+            >
+              <Download className="w-4 h-4 mr-1" /> Export CSV
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="space-y-3">
           <EnrollOperatorRow
