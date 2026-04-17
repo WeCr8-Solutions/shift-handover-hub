@@ -181,6 +181,45 @@ function isErpProduct(productId: string): boolean {
   return productId in ERP_PRODUCT_TIERS;
 }
 
+function isGcaProduct(productId: string): boolean {
+  return productId === GCA_PRODUCT_ID;
+}
+
+async function upsertGcaSubscription(subscription: Stripe.Subscription) {
+  const userId = subscription.metadata?.user_id;
+  const customerId = subscription.customer as string;
+  const priceId = subscription.items.data[0]?.price.id;
+
+  // Resolve user_id either from metadata or by looking up an existing GCA row
+  let resolvedUserId = userId;
+  if (!resolvedUserId && customerId) {
+    const { data: existing } = await supabaseAdmin
+      .from("gca_subscriptions")
+      .select("user_id")
+      .eq("stripe_customer_id", customerId)
+      .maybeSingle();
+    resolvedUserId = existing?.user_id;
+  }
+
+  if (!resolvedUserId) {
+    logStep("GCA: cannot resolve user_id, skipping", { subscriptionId: subscription.id });
+    return;
+  }
+
+  await supabaseAdmin.from("gca_subscriptions").upsert({
+    user_id: resolvedUserId,
+    stripe_customer_id: customerId,
+    stripe_subscription_id: subscription.id,
+    stripe_price_id: priceId,
+    tier: "gca_pro",
+    status: subscription.status,
+    current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+    cancel_at_period_end: subscription.cancel_at_period_end,
+  }, { onConflict: "user_id" });
+
+  logStep("GCA subscription upserted", { userId: resolvedUserId, status: subscription.status });
+}
+
 async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
   logStep("Processing checkout.session.completed", { sessionId: session.id });
   
