@@ -2198,6 +2198,171 @@ export type Database = {
           },
         ]
       }
+      gca_accomplishments: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          earned_date: string | null
+          expires_date: string | null
+          id: string
+          issuer: string | null
+          metadata: Json | null
+          reference_url: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          earned_date?: string | null
+          expires_date?: string | null
+          id?: string
+          issuer?: string | null
+          metadata?: Json | null
+          reference_url?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          earned_date?: string | null
+          expires_date?: string | null
+          id?: string
+          issuer?: string | null
+          metadata?: Json | null
+          reference_url?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      gca_machine_experience: {
+        Row: {
+          controller: string | null
+          created_at: string
+          id: string
+          machine_type: string
+          manufacturer: string | null
+          model: string | null
+          notes: string | null
+          proficiency: string
+          updated_at: string
+          user_id: string
+          years_used: number | null
+        }
+        Insert: {
+          controller?: string | null
+          created_at?: string
+          id?: string
+          machine_type: string
+          manufacturer?: string | null
+          model?: string | null
+          notes?: string | null
+          proficiency?: string
+          updated_at?: string
+          user_id: string
+          years_used?: number | null
+        }
+        Update: {
+          controller?: string | null
+          created_at?: string
+          id?: string
+          machine_type?: string
+          manufacturer?: string | null
+          model?: string | null
+          notes?: string | null
+          proficiency?: string
+          updated_at?: string
+          user_id?: string
+          years_used?: number | null
+        }
+        Relationships: []
+      }
+      gca_measurement_tools_tested: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          precision_spec: string | null
+          proficiency: string
+          tested_at: string
+          tool_category: string | null
+          tool_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          precision_spec?: string | null
+          proficiency?: string
+          tested_at?: string
+          tool_category?: string | null
+          tool_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          precision_spec?: string | null
+          proficiency?: string
+          tested_at?: string
+          tool_category?: string | null
+          tool_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      gca_professional_profiles: {
+        Row: {
+          bio: string | null
+          created_at: string
+          headline: string | null
+          id: string
+          is_public: boolean
+          location: string | null
+          specialty: string | null
+          updated_at: string
+          user_id: string
+          years_experience: number | null
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string
+          headline?: string | null
+          id?: string
+          is_public?: boolean
+          location?: string | null
+          specialty?: string | null
+          updated_at?: string
+          user_id: string
+          years_experience?: number | null
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string
+          headline?: string | null
+          id?: string
+          is_public?: boolean
+          location?: string | null
+          specialty?: string | null
+          updated_at?: string
+          user_id?: string
+          years_experience?: number | null
+        }
+        Relationships: []
+      }
       gca_subscriptions: {
         Row: {
           cancel_at_period_end: boolean
