@@ -110,8 +110,8 @@ the static site only.
 | Branded cert template | ✅ | `<CertificateTemplate>` (shared) — `program="GCA"` accent variant |
 | Cert ID generator (`GCA-XXXXXX-YYYY`) | ✅ | `src/lib/certificates.ts` (shared) |
 | Issuance edge function | ✅ | `issue-certificate` (shared) — pass `program: "GCA"` |
-| Stripe `$12` checkout (guest allowed) | 🟡 | Infra ready; cert-specific price ID + webhook glue still TODO |
-| Email delivery via Resend | ✅ | HTML receipt with cert ID + verify URL on issue |
+| Stripe `$12` checkout (guest allowed) | ✅ | Shared `create-cert-checkout` edge fn + `BuyCertificateDialog`; webhook → cert row |
+| Email delivery via Resend | ✅ | HTML receipt with cert ID + verify URL on issue (sent from webhook) |
 | PDF attachment | 🟡 | Pending headless render pipeline — `<CertificateTemplate>` already prints clean |
 
 ---
