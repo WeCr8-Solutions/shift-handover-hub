@@ -69,3 +69,8 @@ project_id = "kgrstnbxqdmadtoankqr"
   # Calls Stripe API; must handle its own auth responses.
   [functions.verify-station-context-payment]
     verify_jwt = false
+
+  # Auth: None — intentionally public. Guest-friendly $12 cert checkout for
+  # OAP/GCA. Validates input and creates a Stripe Checkout session.
+  [functions.create-cert-checkout]
+    verify_jwt = false
