@@ -23,6 +23,7 @@ import {
   Target,
   Award,
 } from "lucide-react";
+import { CertificatePreview } from "@/components/certificates/CertificatePreview";
 
 const tracks = [
   { icon: Wrench, title: "CNC Lathe", desc: "Turning, threading, boring, live tooling, sub-spindle." },
@@ -379,6 +380,41 @@ export default function GCALanding() {
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Certificate preview */}
+      <section className="py-16 md:py-24 border-b border-border">
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
+            <div className="flex justify-center md:order-1 order-2">
+              <CertificatePreview program="GCA" recipientName="Jane Operator" />
+            </div>
+            <div className="md:order-2 order-1">
+              <Badge variant="outline" className="mb-4">Earn Your Credential</Badge>
+              <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
+                Pass the tests. Get the certificate.
+              </h2>
+              <p className="text-lg text-muted-foreground leading-relaxed mb-6">
+                Complete the GCA test banks and unlock a branded, verifiable certificate for $12.
+                Lists every bank you mastered — Lathe, Mill, Fanuc, Haas, GD&T and more — with a
+                public verification URL recruiters can scan.
+              </p>
+              <ul className="space-y-3 text-sm">
+                {[
+                  "Unique cert ID — GCA-XXXXXX-2026 format",
+                  "Verifiable at jobline.ai/verify/your-id",
+                  "Print, share, attach to your LinkedIn or résumé",
+                  "Built on the same standard employers use for OAP",
+                ].map((line) => (
+                  <li key={line} className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                    <span className="text-foreground">{line}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
       </section>

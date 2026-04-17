@@ -23,6 +23,7 @@ import {
   Target,
   Sparkles,
 } from "lucide-react";
+import { CertificatePreview } from "@/components/certificates/CertificatePreview";
 
 const sevenSections = [
   { icon: ShieldCheck, title: "Safety & PPE", desc: "Lockout/tagout, machine guarding, PPE protocol, emergency stops, and shop-floor hazards." },
@@ -325,6 +326,41 @@ export default function OAPLanding() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Certificate preview */}
+      <section className="py-16 md:py-24 border-b border-border">
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
+            <div>
+              <Badge variant="outline" className="mb-4">Portable Credential</Badge>
+              <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
+                A certificate the operator owns.
+              </h2>
+              <p className="text-lg text-muted-foreground leading-relaxed mb-6">
+                Every OAP completion produces a branded, verifiable certificate with a unique ID
+                and QR code. Recruiters scan it, employers trust it, and operators carry it across
+                shops for the rest of their career.
+              </p>
+              <ul className="space-y-3 text-sm">
+                {[
+                  "Unique cert ID — verify at jobline.ai/verify/OAP-XXXXXX-2026",
+                  "Lists every machine, tool, and competency signed off",
+                  "Mentor signature + organization stamp baked in",
+                  "Print-ready PDF + LinkedIn-shareable URL",
+                ].map((line) => (
+                  <li key={line} className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                    <span className="text-foreground">{line}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="flex justify-center">
+              <CertificatePreview program="OAP" recipientName="Jane Operator" />
+            </div>
           </div>
         </div>
       </section>
