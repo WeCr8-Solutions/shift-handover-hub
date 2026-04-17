@@ -42,17 +42,16 @@ tool), and shares the same `training_media`, `inspection_tools`, and
 
 ---
 
-## 3. Backend Schema — Still Needed
+## 3. Backend Schema — Migration #2 ✅ shipped 2026-04-17
 
-| Table | Purpose |
-|---|---|
-| 🔴 `gca_question_banks` | Group questions by topic (Lathe G-codes, Mill controllers, GD&T, etc.) |
-| 🔴 `gca_questions` | Individual MCQ / fill-in / drag-and-drop with media via `training_media` |
-| 🔴 `gca_test_attempts` | Per-user attempt history with score & duration |
-| 🔴 `gca_certificates` | GCA $12 certificates (mirrors `oap_certificates` schema) |
+| Table | Purpose | Status |
+|---|---|---|
+| `gca_question_banks` | Group questions by topic (Lathe G-codes, Mill controllers, GD&T, etc.) | ✅ + Lathe Fundamentals seeded |
+| `gca_questions` | Individual MCQ / fill-in / drag-and-drop with media via `training_media` | ✅ + 3 starter questions |
+| `gca_test_attempts` | Per-user attempt history with score & duration | ✅ |
+| `gca_certificates` | GCA $12 certificates (mirrors `oap_certificates` schema) | ✅ |
 
-> Note: media is already polymorphic — `training_media_entity` enum already
-> includes `gca_question` and `gca_question_bank`. Schema-time work is small.
+> Media is polymorphic — `training_media_entity` already includes `gca_question` and `gca_question_bank`, plus the new `gca_certificate`.
 
 ---
 

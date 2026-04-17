@@ -2243,6 +2243,80 @@ export type Database = {
         }
         Relationships: []
       }
+      gca_certificates: {
+        Row: {
+          amount_cents: number
+          bank_id: string | null
+          cert_id: string
+          created_at: string
+          id: string
+          issued_at: string
+          pdf_url: string | null
+          program_name: string
+          qr_token: string
+          recipient_email: string
+          recipient_name: string
+          revoked_at: string | null
+          revoked_reason: string | null
+          status: string
+          stripe_session_id: string | null
+          updated_at: string
+          user_id: string
+          valid_from: string
+          valid_until: string | null
+        }
+        Insert: {
+          amount_cents?: number
+          bank_id?: string | null
+          cert_id: string
+          created_at?: string
+          id?: string
+          issued_at?: string
+          pdf_url?: string | null
+          program_name: string
+          qr_token?: string
+          recipient_email: string
+          recipient_name: string
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          status?: string
+          stripe_session_id?: string | null
+          updated_at?: string
+          user_id: string
+          valid_from?: string
+          valid_until?: string | null
+        }
+        Update: {
+          amount_cents?: number
+          bank_id?: string | null
+          cert_id?: string
+          created_at?: string
+          id?: string
+          issued_at?: string
+          pdf_url?: string | null
+          program_name?: string
+          qr_token?: string
+          recipient_email?: string
+          recipient_name?: string
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          status?: string
+          stripe_session_id?: string | null
+          updated_at?: string
+          user_id?: string
+          valid_from?: string
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gca_certificates_bank_id_fkey"
+            columns: ["bank_id"]
+            isOneToOne: false
+            referencedRelation: "gca_question_banks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gca_machine_experience: {
         Row: {
           controller: string | null
@@ -2363,6 +2437,101 @@ export type Database = {
         }
         Relationships: []
       }
+      gca_question_banks: {
+        Row: {
+          created_at: string
+          description: string | null
+          difficulty: string
+          id: string
+          is_pro_only: boolean
+          is_published: boolean
+          passing_score_pct: number
+          slug: string
+          sort_order: number
+          title: string
+          topic: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          difficulty?: string
+          id?: string
+          is_pro_only?: boolean
+          is_published?: boolean
+          passing_score_pct?: number
+          slug: string
+          sort_order?: number
+          title: string
+          topic: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          difficulty?: string
+          id?: string
+          is_pro_only?: boolean
+          is_published?: boolean
+          passing_score_pct?: number
+          slug?: string
+          sort_order?: number
+          title?: string
+          topic?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      gca_questions: {
+        Row: {
+          bank_id: string
+          choices: Json
+          correct_answers: Json
+          created_at: string
+          explanation: string | null
+          id: string
+          points: number
+          prompt: string
+          question_type: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          bank_id: string
+          choices?: Json
+          correct_answers?: Json
+          created_at?: string
+          explanation?: string | null
+          id?: string
+          points?: number
+          prompt: string
+          question_type?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          bank_id?: string
+          choices?: Json
+          correct_answers?: Json
+          created_at?: string
+          explanation?: string | null
+          id?: string
+          points?: number
+          prompt?: string
+          question_type?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gca_questions_bank_id_fkey"
+            columns: ["bank_id"]
+            isOneToOne: false
+            referencedRelation: "gca_question_banks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gca_subscriptions: {
         Row: {
           cancel_at_period_end: boolean
@@ -2404,6 +2573,53 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      gca_test_attempts: {
+        Row: {
+          answers: Json
+          bank_id: string
+          completed_at: string | null
+          created_at: string
+          duration_seconds: number | null
+          id: string
+          passed: boolean | null
+          score_pct: number | null
+          started_at: string
+          user_id: string
+        }
+        Insert: {
+          answers?: Json
+          bank_id: string
+          completed_at?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          passed?: boolean | null
+          score_pct?: number | null
+          started_at?: string
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          bank_id?: string
+          completed_at?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          passed?: boolean | null
+          score_pct?: number | null
+          started_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gca_test_attempts_bank_id_fkey"
+            columns: ["bank_id"]
+            isOneToOne: false
+            referencedRelation: "gca_question_banks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       global_update_acknowledgements: {
         Row: {
@@ -3725,6 +3941,174 @@ export type Database = {
           },
         ]
       }
+      oap_certificate_items: {
+        Row: {
+          certificate_id: string
+          display_label: string
+          id: string
+          item_slug: string | null
+          item_type: string
+          sort_order: number
+        }
+        Insert: {
+          certificate_id: string
+          display_label: string
+          id?: string
+          item_slug?: string | null
+          item_type: string
+          sort_order?: number
+        }
+        Update: {
+          certificate_id?: string
+          display_label?: string
+          id?: string
+          item_slug?: string | null
+          item_type?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oap_certificate_items_certificate_id_fkey"
+            columns: ["certificate_id"]
+            isOneToOne: false
+            referencedRelation: "oap_certificates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      oap_certificates: {
+        Row: {
+          amount_cents: number
+          cert_id: string
+          created_at: string
+          id: string
+          issued_at: string
+          organization_id: string | null
+          pdf_url: string | null
+          program_name: string
+          qr_token: string
+          recipient_email: string
+          recipient_name: string
+          revoked_at: string | null
+          revoked_reason: string | null
+          role_program_id: string | null
+          status: string
+          stripe_session_id: string | null
+          updated_at: string
+          user_id: string
+          valid_from: string
+          valid_until: string | null
+        }
+        Insert: {
+          amount_cents?: number
+          cert_id: string
+          created_at?: string
+          id?: string
+          issued_at?: string
+          organization_id?: string | null
+          pdf_url?: string | null
+          program_name: string
+          qr_token?: string
+          recipient_email: string
+          recipient_name: string
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          role_program_id?: string | null
+          status?: string
+          stripe_session_id?: string | null
+          updated_at?: string
+          user_id: string
+          valid_from?: string
+          valid_until?: string | null
+        }
+        Update: {
+          amount_cents?: number
+          cert_id?: string
+          created_at?: string
+          id?: string
+          issued_at?: string
+          organization_id?: string | null
+          pdf_url?: string | null
+          program_name?: string
+          qr_token?: string
+          recipient_email?: string
+          recipient_name?: string
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          role_program_id?: string | null
+          status?: string
+          stripe_session_id?: string | null
+          updated_at?: string
+          user_id?: string
+          valid_from?: string
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oap_certificates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oap_certificates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oap_certificates_role_program_id_fkey"
+            columns: ["role_program_id"]
+            isOneToOne: false
+            referencedRelation: "oap_role_programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      oap_courses: {
+        Row: {
+          created_at: string
+          description: string | null
+          estimated_minutes: number | null
+          id: string
+          is_published: boolean
+          section_number: number
+          slug: string
+          sort_order: number
+          summary: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          estimated_minutes?: number | null
+          id?: string
+          is_published?: boolean
+          section_number: number
+          slug: string
+          sort_order?: number
+          summary?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          estimated_minutes?: number | null
+          id?: string
+          is_published?: boolean
+          section_number?: number
+          slug?: string
+          sort_order?: number
+          summary?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       oap_designated_mentors: {
         Row: {
           designated_at: string
@@ -3766,6 +4150,371 @@ export type Database = {
           },
           {
             foreignKeyName: "oap_designated_mentors_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      oap_enrollments: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          expected_completion_at: string | null
+          id: string
+          organization_id: string
+          role_program_id: string
+          started_at: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          expected_completion_at?: string | null
+          id?: string
+          organization_id: string
+          role_program_id: string
+          started_at?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          expected_completion_at?: string | null
+          id?: string
+          organization_id?: string
+          role_program_id?: string
+          started_at?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oap_enrollments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oap_enrollments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oap_enrollments_role_program_id_fkey"
+            columns: ["role_program_id"]
+            isOneToOne: false
+            referencedRelation: "oap_role_programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      oap_lessons: {
+        Row: {
+          body_markdown: string
+          course_id: string
+          created_at: string
+          estimated_minutes: number | null
+          id: string
+          is_published: boolean
+          slug: string
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body_markdown?: string
+          course_id: string
+          created_at?: string
+          estimated_minutes?: number | null
+          id?: string
+          is_published?: boolean
+          slug: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body_markdown?: string
+          course_id?: string
+          created_at?: string
+          estimated_minutes?: number | null
+          id?: string
+          is_published?: boolean
+          slug?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oap_lessons_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "oap_courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      oap_quiz_attempts: {
+        Row: {
+          answers: Json
+          completed_at: string | null
+          created_at: string
+          duration_seconds: number | null
+          id: string
+          organization_id: string | null
+          passed: boolean | null
+          quiz_id: string
+          score_pct: number | null
+          started_at: string
+          user_id: string
+        }
+        Insert: {
+          answers?: Json
+          completed_at?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          organization_id?: string | null
+          passed?: boolean | null
+          quiz_id: string
+          score_pct?: number | null
+          started_at?: string
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          completed_at?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          organization_id?: string | null
+          passed?: boolean | null
+          quiz_id?: string
+          score_pct?: number | null
+          started_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oap_quiz_attempts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oap_quiz_attempts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oap_quiz_attempts_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "oap_quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      oap_quiz_questions: {
+        Row: {
+          choices: Json
+          correct_answers: Json
+          created_at: string
+          explanation: string | null
+          id: string
+          points: number
+          prompt: string
+          question_type: string
+          quiz_id: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          choices?: Json
+          correct_answers?: Json
+          created_at?: string
+          explanation?: string | null
+          id?: string
+          points?: number
+          prompt: string
+          question_type?: string
+          quiz_id: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          choices?: Json
+          correct_answers?: Json
+          created_at?: string
+          explanation?: string | null
+          id?: string
+          points?: number
+          prompt?: string
+          question_type?: string
+          quiz_id?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oap_quiz_questions_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "oap_quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      oap_quizzes: {
+        Row: {
+          course_id: string
+          created_at: string
+          description: string | null
+          id: string
+          is_published: boolean
+          max_attempts: number | null
+          passing_score_pct: number
+          time_limit_minutes: number | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_published?: boolean
+          max_attempts?: number | null
+          passing_score_pct?: number
+          time_limit_minutes?: number | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_published?: boolean
+          max_attempts?: number | null
+          passing_score_pct?: number
+          time_limit_minutes?: number | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oap_quizzes_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "oap_courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      oap_role_program_courses: {
+        Row: {
+          course_id: string
+          id: string
+          is_required: boolean
+          role_program_id: string
+          sort_order: number
+        }
+        Insert: {
+          course_id: string
+          id?: string
+          is_required?: boolean
+          role_program_id: string
+          sort_order?: number
+        }
+        Update: {
+          course_id?: string
+          id?: string
+          is_required?: boolean
+          role_program_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oap_role_program_courses_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "oap_courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oap_role_program_courses_role_program_id_fkey"
+            columns: ["role_program_id"]
+            isOneToOne: false
+            referencedRelation: "oap_role_programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      oap_role_programs: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          organization_id: string
+          required_inspection_tool_slugs: string[] | null
+          required_machine_tags: string[] | null
+          required_machining_operation_slugs: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          organization_id: string
+          required_inspection_tool_slugs?: string[] | null
+          required_machine_tags?: string[] | null
+          required_machining_operation_slugs?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          organization_id?: string
+          required_inspection_tool_slugs?: string[] | null
+          required_machine_tags?: string[] | null
+          required_machining_operation_slugs?: string[] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oap_role_programs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oap_role_programs_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations_member_view"
@@ -8014,6 +8763,8 @@ export type Database = {
         | "gca_question_bank"
         | "machining_operation"
         | "machining_operation_category"
+        | "oap_certificate"
+        | "gca_certificate"
       training_media_program: "gca" | "oap" | "both"
       training_media_type: "image" | "video" | "audio"
       training_media_visibility: "public" | "private"
@@ -8252,6 +9003,8 @@ export const Constants = {
         "gca_question_bank",
         "machining_operation",
         "machining_operation_category",
+        "oap_certificate",
+        "gca_certificate",
       ],
       training_media_program: ["gca", "oap", "both"],
       training_media_type: ["image", "video", "audio"],
