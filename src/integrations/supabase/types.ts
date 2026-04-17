@@ -6425,6 +6425,102 @@ export type Database = {
           },
         ]
       }
+      training_media: {
+        Row: {
+          alt_text: string | null
+          caption: string | null
+          created_at: string
+          duration_ms: number | null
+          entity_id: string
+          entity_type: Database["public"]["Enums"]["training_media_entity"]
+          file_name: string | null
+          file_size_bytes: number | null
+          height: number | null
+          id: string
+          is_canonical: boolean
+          is_primary: boolean
+          media_type: Database["public"]["Enums"]["training_media_type"]
+          mime_type: string
+          organization_id: string | null
+          program: Database["public"]["Enums"]["training_media_program"]
+          sort_order: number
+          storage_bucket: string
+          storage_path: string
+          transcript: string | null
+          updated_at: string
+          uploaded_by: string | null
+          visibility: Database["public"]["Enums"]["training_media_visibility"]
+          width: number | null
+        }
+        Insert: {
+          alt_text?: string | null
+          caption?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          entity_id: string
+          entity_type: Database["public"]["Enums"]["training_media_entity"]
+          file_name?: string | null
+          file_size_bytes?: number | null
+          height?: number | null
+          id?: string
+          is_canonical?: boolean
+          is_primary?: boolean
+          media_type: Database["public"]["Enums"]["training_media_type"]
+          mime_type: string
+          organization_id?: string | null
+          program?: Database["public"]["Enums"]["training_media_program"]
+          sort_order?: number
+          storage_bucket: string
+          storage_path: string
+          transcript?: string | null
+          updated_at?: string
+          uploaded_by?: string | null
+          visibility?: Database["public"]["Enums"]["training_media_visibility"]
+          width?: number | null
+        }
+        Update: {
+          alt_text?: string | null
+          caption?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          entity_id?: string
+          entity_type?: Database["public"]["Enums"]["training_media_entity"]
+          file_name?: string | null
+          file_size_bytes?: number | null
+          height?: number | null
+          id?: string
+          is_canonical?: boolean
+          is_primary?: boolean
+          media_type?: Database["public"]["Enums"]["training_media_type"]
+          mime_type?: string
+          organization_id?: string | null
+          program?: Database["public"]["Enums"]["training_media_program"]
+          sort_order?: number
+          storage_bucket?: string
+          storage_path?: string
+          transcript?: string | null
+          updated_at?: string
+          uploaded_by?: string | null
+          visibility?: Database["public"]["Enums"]["training_media_visibility"]
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_media_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_media_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_certifications: {
         Row: {
           certificate_number: string | null
@@ -7706,6 +7802,19 @@ export type Database = {
         | "completed"
         | "cancelled"
       team_role: "owner" | "admin" | "member"
+      training_media_entity:
+        | "inspection_tool"
+        | "inspection_tool_category"
+        | "oap_lesson"
+        | "oap_course"
+        | "oap_quiz_question"
+        | "oap_walkthrough_item"
+        | "oap_walkthrough_section"
+        | "gca_question"
+        | "gca_question_bank"
+      training_media_program: "gca" | "oap" | "both"
+      training_media_type: "image" | "video" | "audio"
+      training_media_visibility: "public" | "private"
       update_category:
         | "feature"
         | "improvement"
@@ -7929,6 +8038,20 @@ export const Constants = {
         "cancelled",
       ],
       team_role: ["owner", "admin", "member"],
+      training_media_entity: [
+        "inspection_tool",
+        "inspection_tool_category",
+        "oap_lesson",
+        "oap_course",
+        "oap_quiz_question",
+        "oap_walkthrough_item",
+        "oap_walkthrough_section",
+        "gca_question",
+        "gca_question_bank",
+      ],
+      training_media_program: ["gca", "oap", "both"],
+      training_media_type: ["image", "video", "audio"],
+      training_media_visibility: ["public", "private"],
       update_category: [
         "feature",
         "improvement",
