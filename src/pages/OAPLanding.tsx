@@ -136,6 +136,7 @@ const jsonLd = [
 ];
 
 export default function OAPLanding() {
+  const [buyOpen, setBuyOpen] = useState(false);
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
