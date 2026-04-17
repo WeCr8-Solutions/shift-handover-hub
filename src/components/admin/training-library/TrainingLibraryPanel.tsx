@@ -4,6 +4,7 @@ import { InspectionToolsCatalog } from "./InspectionToolsCatalog";
 import { MachiningOperationsCatalog } from "./MachiningOperationsCatalog";
 import { OrgOverridesPanel } from "./OrgOverridesPanel";
 import { BulkTagPanel } from "./BulkTagPanel";
+import { CertificateIssuancePanel } from "@/components/certificates/CertificateIssuancePanel";
 import {
   Library,
   Wrench,
@@ -12,6 +13,7 @@ import {
   Cog,
   Settings2,
   Tags,
+  Award,
 } from "lucide-react";
 import type { AdminComponentAccess } from "@/types/admin";
 
