@@ -2691,6 +2691,151 @@ export type Database = {
           },
         ]
       }
+      inspection_tool_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          is_canonical: boolean
+          name: string
+          organization_id: string | null
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_canonical?: boolean
+          name: string
+          organization_id?: string | null
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_canonical?: boolean
+          name?: string
+          organization_id?: string | null
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inspection_tool_categories_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspection_tool_categories_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inspection_tools: {
+        Row: {
+          category_id: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          difficulty: string
+          id: string
+          is_active: boolean
+          is_canonical: boolean
+          manufacturer_examples: string[] | null
+          measurement_range: string | null
+          name: string
+          organization_id: string | null
+          precision_spec: string | null
+          profession_tags: Database["public"]["Enums"]["inspection_profession_tag"][]
+          role_tags: Database["public"]["Enums"]["inspection_role_tag"][]
+          safety_notes: string | null
+          slug: string
+          sort_order: number
+          typical_use: string | null
+          updated_at: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          difficulty?: string
+          id?: string
+          is_active?: boolean
+          is_canonical?: boolean
+          manufacturer_examples?: string[] | null
+          measurement_range?: string | null
+          name: string
+          organization_id?: string | null
+          precision_spec?: string | null
+          profession_tags?: Database["public"]["Enums"]["inspection_profession_tag"][]
+          role_tags?: Database["public"]["Enums"]["inspection_role_tag"][]
+          safety_notes?: string | null
+          slug: string
+          sort_order?: number
+          typical_use?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          difficulty?: string
+          id?: string
+          is_active?: boolean
+          is_canonical?: boolean
+          manufacturer_examples?: string[] | null
+          measurement_range?: string | null
+          name?: string
+          organization_id?: string | null
+          precision_spec?: string | null
+          profession_tags?: Database["public"]["Enums"]["inspection_profession_tag"][]
+          role_tags?: Database["public"]["Enums"]["inspection_role_tag"][]
+          safety_notes?: string | null
+          slug?: string
+          sort_order?: number
+          typical_use?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inspection_tools_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "inspection_tool_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspection_tools_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspection_tools_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invite_redemptions: {
         Row: {
           id: string
@@ -3772,6 +3917,64 @@ export type Database = {
             columns: ["station_id"]
             isOneToOne: false
             referencedRelation: "stations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_inspection_tool_overrides: {
+        Row: {
+          created_at: string
+          custom_notes: string | null
+          custom_precision_spec: string | null
+          id: string
+          is_hidden: boolean
+          organization_id: string
+          required_for_roles: Database["public"]["Enums"]["inspection_role_tag"][]
+          tool_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          custom_notes?: string | null
+          custom_precision_spec?: string | null
+          id?: string
+          is_hidden?: boolean
+          organization_id: string
+          required_for_roles?: Database["public"]["Enums"]["inspection_role_tag"][]
+          tool_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          custom_notes?: string | null
+          custom_precision_spec?: string | null
+          id?: string
+          is_hidden?: boolean
+          organization_id?: string
+          required_for_roles?: Database["public"]["Enums"]["inspection_role_tag"][]
+          tool_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_inspection_tool_overrides_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_inspection_tool_overrides_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_inspection_tool_overrides_tool_id_fkey"
+            columns: ["tool_id"]
+            isOneToOne: false
+            referencedRelation: "inspection_tools"
             referencedColumns: ["id"]
           },
         ]
@@ -7459,6 +7662,26 @@ export type Database = {
         | "programming"
         | "flyer_worker"
       impact_level: "low" | "medium" | "high" | "critical"
+      inspection_profession_tag:
+        | "machinist"
+        | "qc_inspector"
+        | "welder"
+        | "fabricator"
+        | "assembler"
+        | "op_lead"
+        | "programmer"
+        | "toolmaker"
+        | "grinder"
+        | "edm_operator"
+        | "cmm_operator"
+        | "maintenance"
+      inspection_role_tag:
+        | "operator"
+        | "supervisor"
+        | "qc"
+        | "mentor"
+        | "trainee"
+        | "admin"
       issue_severity: "low" | "medium" | "high" | "critical"
       issue_status:
         | "open"
@@ -7657,6 +7880,28 @@ export const Constants = {
         "flyer_worker",
       ],
       impact_level: ["low", "medium", "high", "critical"],
+      inspection_profession_tag: [
+        "machinist",
+        "qc_inspector",
+        "welder",
+        "fabricator",
+        "assembler",
+        "op_lead",
+        "programmer",
+        "toolmaker",
+        "grinder",
+        "edm_operator",
+        "cmm_operator",
+        "maintenance",
+      ],
+      inspection_role_tag: [
+        "operator",
+        "supervisor",
+        "qc",
+        "mentor",
+        "trainee",
+        "admin",
+      ],
       issue_severity: ["low", "medium", "high", "critical"],
       issue_status: [
         "open",
