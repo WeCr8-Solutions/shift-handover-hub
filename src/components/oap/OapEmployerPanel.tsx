@@ -350,6 +350,20 @@ function RoleProgramForm({
           <Input value={ops} onChange={(e) => setOps(e.target.value)} placeholder="face-milling, drilling" />
         </div>
       </div>
+      <div className="space-y-1 max-w-xs">
+        <Label className="text-xs">Recert cadence (months)</Label>
+        <Input
+          type="number"
+          min={0}
+          value={recertMonths}
+          onChange={(e) => setRecertMonths(e.target.value)}
+          placeholder="e.g. 12 — leave blank for no recert"
+        />
+        <p className="text-[10px] text-muted-foreground">
+          Operators on this role will get a next-recert due date this many months after completion.
+          Per-operator overrides are still allowed from the recert manager.
+        </p>
+      </div>
       <div className="flex justify-end">
         <Button onClick={submit}>Save role program</Button>
       </div>
