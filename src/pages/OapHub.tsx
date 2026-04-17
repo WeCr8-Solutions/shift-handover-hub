@@ -88,33 +88,34 @@ export default function OapHub() {
           {isLoading && (
             <p className="text-sm text-muted-foreground">Loading sections…</p>
           )}
-          {courses.map((c) => {
-            const passed = attempts.some((a) => a.passed && a.quiz_id && false); // quiz-to-course join can be added; UI shows via player
-            return (
-              <Card key={c.id} className="hover:border-primary transition">
-                <CardHeader>
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Badge variant="outline" className="text-xs">{c.section_number}</Badge>
-                    {c.title}
-                  </CardTitle>
-                  {c.summary && (
-                    <p className="text-xs text-muted-foreground">{c.summary}</p>
-                  )}
-                </CardHeader>
-                <CardContent className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Clock className="w-3 h-3" /> ~{c.estimated_minutes ?? 30} min
-                    {passed && <Badge variant="default" className="ml-2">Passed</Badge>}
-                  </div>
-                  <Button asChild size="sm">
-                    <Link to={`/oap/learn/${c.slug}`}>
-                      Open <ArrowRight className="w-3 h-3 ml-1" />
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            );
-          })}
+          {courses.map((c) => (
+            <Card key={c.id} className="hover:border-primary transition">
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Badge variant="outline" className="text-xs">{c.section_number}</Badge>
+                  {c.title}
+                </CardTitle>
+                {c.summary && (
+                  <p className="text-xs text-muted-foreground">{c.summary}</p>
+                )}
+              </CardHeader>
+              <CardContent className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Clock className="w-3 h-3" /> ~{c.estimated_minutes ?? 30} min
+                </div>
+                <Button asChild size="sm">
+                  <Link to={`/oap/learn/${c.slug}`}>
+                    Open <ArrowRight className="w-3 h-3 ml-1" />
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+          {!isLoading && courses.length === 0 && (
+            <p className="text-sm text-muted-foreground col-span-full">
+              No sections published yet — check back soon.
+            </p>
+          )}
         </div>
 
         <Card>
