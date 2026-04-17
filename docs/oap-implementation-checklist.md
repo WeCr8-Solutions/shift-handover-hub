@@ -54,17 +54,19 @@ Source of truth for the OAP build. Cross-references `docs/jobline-oap-lovable-br
 
 ---
 
-## 4. Backend Schema — Still Needed
+## 4. Backend Schema — Migration #2 ✅ shipped 2026-04-17
 
-| Table | Purpose |
-|---|---|
-| 🔴 `oap_courses` | The 7 OAP sections as authored courses (Orientation / Safety / Material / Measure / Tool / Machine / Floor) |
-| 🔴 `oap_lessons` | Lesson content within a course (markdown body + media via `training_media`) |
-| 🔴 `oap_quizzes` + `oap_quiz_questions` + `oap_quiz_attempts` | Pass/fail comprehension testing |
-| 🔴 `oap_role_programs` | Employer-defined OAP curriculum per role (e.g. "Lathe Op = these courses + these machines") |
-| 🔴 `oap_enrollments` | Operator → role program assignment + start/expected/completed dates |
-| 🔴 `oap_certificates` | Issued certs with cert_id, qr token, valid_from / valid_until, status |
-| 🔴 `oap_certificate_items` | Machines / tools / safety creds listed on each cert |
+| Table | Purpose | Status |
+|---|---|---|
+| `oap_courses` | The 7 OAP sections as authored courses | ✅ + 7 seeded |
+| `oap_lessons` | Lesson content within a course (markdown + media via `training_media`) | ✅ + 1 starter lesson per course |
+| `oap_quizzes` + `oap_quiz_questions` + `oap_quiz_attempts` | Pass/fail comprehension testing | ✅ + sample Safety quiz (3 Q) |
+| `oap_role_programs` + `oap_role_program_courses` | Employer-defined OAP curriculum per role | ✅ |
+| `oap_enrollments` | Operator → role program assignment + start/expected/completed dates | ✅ |
+| `oap_certificates` | Issued certs with cert_id, qr token, valid_from / valid_until, status | ✅ |
+| `oap_certificate_items` | Machines / tools / safety creds listed on each cert | ✅ |
+
+`training_media_entity` enum extended with `oap_course`, `oap_lesson`, `oap_quiz_question`, `oap_certificate`, `gca_certificate`.
 
 ---
 
