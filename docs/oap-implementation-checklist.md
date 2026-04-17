@@ -78,7 +78,7 @@ Source of truth for the OAP build. Cross-references `docs/jobline-oap-lovable-br
 | Course catalog page (free, no auth) | 🔴 | Must show all 7 sections + sample lessons |
 | Lesson player (markdown + embedded `<TrainingMedia>` / `<MachiningOperationReference>`) | 🔴 | Wire via the existing media layer once `oap_lessons` exists |
 | Quiz player with immediate feedback | 🔴 | |
-| Walkthrough check-off screen (mentor view) | 🔴 | Backend tables exist; UI not built — top priority for employer demo |
+| Walkthrough check-off screen (mentor view) | ✅ | `/oap/walkthrough` — section-by-section pass/needs-practice/fail with typed mentor signature, idempotent upsert per item |
 | Operator self-progress dashboard | 🔴 | |
 | Sticky "Get my certificate ($12)" CTA after threshold | 🔴 | |
 
@@ -88,8 +88,8 @@ Source of truth for the OAP build. Cross-references `docs/jobline-oap-lovable-br
 
 | Item | Status | Notes |
 |---|---|---|
-| Designated mentor registry | 🟡 | Table exists; admin UI to add/revoke not built |
-| Mentor sign-off auth (supervisor OR designated mentor) | 🟡 | RLS in place; UI gating still TODO |
+| Designated mentor registry | ✅ | `<OapMentorAdminPanel>` in Training Library admin → OAP Mentors tab |
+| Mentor sign-off auth (supervisor OR designated mentor) | ✅ | `can_act_as_oap_mentor()` enforced in RLS + UI gating live in `/oap/walkthrough` |
 | Employer program builder (pick courses + machines + tools per role) | 🔴 | Depends on §4 tables |
 | Employer dashboard (who's behind / completed / due for recert) | 🔴 | |
 | Bulk operator import (CSV) — Pro tier | 🔴 | |
@@ -141,27 +141,25 @@ Source of truth for the OAP build. Cross-references `docs/jobline-oap-lovable-br
 
 ---
 
-## 10. Remaining Work — Snapshot 2026-04-17
+## 10. Remaining Work — Snapshot 2026-04-17 (post mentor walkthrough)
 
-**Roughly ~35% remaining** to ship a complete employer-ready OAP. Everything backend, certs, marketing, and shared catalogs is done. What remains is mostly **UI surface area** for learners, mentors, and employers, plus Stripe glue for the $12 cert.
+**Roughly ~25% remaining** to ship a complete employer-ready OAP. Mentor walkthrough check-off is now live, removing the top employer-demo blocker.
 
-### High-priority (blocks employer demo)
-1. **Mentor walkthrough check-off UI** against existing `oap_walkthrough_*` tables — fastest path to demo.
-2. **Lesson player** (markdown + `<TrainingMedia>` / `<MachiningOperationReference>` / `<InspectionToolReference>`) reading from `oap_lessons`.
-3. **Quiz player** with immediate feedback against `oap_quizzes` / `oap_quiz_questions`.
-4. **Designated mentor admin UI** in org settings (table & RLS done).
-5. **Employer program builder** — pick courses + machines + tools per role (writes to `oap_role_programs`).
+### High-priority (ship next)
+1. **Lesson player** (markdown + `<TrainingMedia>` / `<MachiningOperationReference>` / `<InspectionToolReference>`) reading from `oap_lessons`.
+2. **Quiz player** with immediate feedback against `oap_quizzes` / `oap_quiz_questions`.
+3. **Employer program builder** — pick courses + machines + tools per role (writes to `oap_role_programs`).
+4. **Operator self-progress dashboard** + sticky "Get my certificate ($12)" CTA.
 
 ### Medium-priority
-6. **Operator self-progress dashboard** + sticky "Get my certificate ($12)" CTA.
-7. **Employer dashboard** — who's behind, completed, due for recert.
-8. **Stripe $12 cert checkout** — guest-allowed, webhook → `issue-certificate`.
-9. **Bulk operator import (CSV)** for Pro tier.
-10. **Compliance export PDF** (AS9100 / ISO 9001 / OSHA-ready) per operator.
+5. **Employer dashboard** — who's behind, completed, due for recert.
+6. **Bulk operator import (CSV)** for Pro tier.
+7. **Compliance export PDF** (AS9100 / ISO 9001 / OSHA-ready) per operator.
+8. **Author actual lesson content + quiz Q's** for the 7 sections (currently 1 starter lesson + 1 sample quiz seeded).
 
 ### Nice-to-have / polish
 - Day-10 + day-13 trial reminder emails.
 - GCA add-on ($49/mo per location) packaging on `/pricing`.
 - Headless PDF render pipeline for cert email attachments.
 - Revoke / expire UI control (schema already supports it).
-- Author the actual lesson content + quiz Q's for the 7 sections (currently 1 starter lesson + 1 sample quiz seeded).
+- Course catalog page (free, no auth) — surface 7 sections + sample lessons.
