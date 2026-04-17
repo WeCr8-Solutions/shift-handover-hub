@@ -55,11 +55,18 @@
           return false;
         };
 
-        // Google AdSense
-        var as=document.createElement('script');as.async=true;
-        as.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3639153716376265';
-        as.crossOrigin='anonymous';
-        document.head.appendChild(as);
+        // Google AdSense — defer until idle to avoid forced reflows during initial paint
+        var loadAdsense = function() {
+          var as=document.createElement('script');as.async=true;
+          as.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3639153716376265';
+          as.crossOrigin='anonymous';
+          document.head.appendChild(as);
+        };
+        if ('requestIdleCallback' in window) {
+          requestIdleCallback(loadAdsense, { timeout: 4000 });
+        } else {
+          setTimeout(loadAdsense, 2500);
+        }
       });
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
