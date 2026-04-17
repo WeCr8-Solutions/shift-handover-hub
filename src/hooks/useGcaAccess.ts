@@ -11,17 +11,17 @@ import { supabase } from '@/integrations/supabase/client';
 //   supabase/functions/stripe-webhook/index.ts
 export const GCA_PRICES = {
   monthly: {
-    priceId: '',          // TODO: 'price_xxxx' — $19/seat/month
+    priceId: 'price_1TN4g9CyekafHX788v10vyWz', // $19/month
     price: 19,
     label: '$19 / month',
   },
   annual: {
-    priceId: '',          // TODO: 'price_xxxx' — $149/seat/year
+    priceId: 'price_1TN4jwCyekafHX785ZAg0oue', // $149/year
     price: 149,
     label: '$149 / year',
     savings: 'Save $79',
   },
-  productId: '',          // TODO: 'prod_xxxx' — GCA standalone product
+  productId: 'prod_ULmEqvUEDTTrpp',
 } as const;
 
 export type GcaTier = 'free' | 'pro';
@@ -55,10 +55,12 @@ export interface GcaAccessState {
  */
 export function useGcaAccess(): GcaAccessState {
   const { user, session } = useAuth();
-  const { subscribed, isLoading } = useSubscription();
+  const { subscribed, tier, isLoading } = useSubscription();
 
-  // Platform subscribers get GCA Pro included at no extra charge.
-  const hasProAccess = subscribed;
+  // Pro access if either:
+  //   1. Active platform subscription (single/team/enterprise), OR
+  //   2. Standalone GCA subscription (tier === 'gca_pro')
+  const hasProAccess = subscribed || tier === 'gca_pro';
   const gcaTier: GcaTier = hasProAccess ? 'pro' : 'free';
   const isDefinitelyFree = !isLoading && !hasProAccess;
 

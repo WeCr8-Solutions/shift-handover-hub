@@ -17,9 +17,11 @@ const PRODUCT_TIERS: Record<string, string> = {
   "prod_TrQ3QqbNqlmDiS": "single",
   "prod_TrQ3SzBnvfW4yA": "team",
   "prod_TrQ3Y4BKSsc591": "enterprise",
-  // TODO: Replace with real GCA Stripe product ID once created in dashboard
-  // "prod_GCA_PLACEHOLDER": "gca_pro",
+  "prod_ULmEqvUEDTTrpp": "gca_pro",
 };
+
+// Standalone GCA product (per-user, not org-scoped)
+const GCA_PRODUCT_ID = "prod_ULmEqvUEDTTrpp";
 
 // ERP add-on product ID to tier mapping
 const ERP_PRODUCT_TIERS: Record<string, string> = {
@@ -45,6 +47,12 @@ const PLAN_ENTITLEMENTS: Record<string, { features: Record<string, boolean>; lim
   enterprise: {
     features: { handoff_hub: true, work_orders: true, analytics: true, api_access: true, bulk_upload: true },
     limits: { users: 100, work_orders_per_month: 10000, stations: 200 },
+  },
+  gca_pro: {
+    // Standalone GCA — does NOT grant org-level platform access.
+    // Stored only on gca_subscriptions, not on entitlements.
+    features: { gca_pro: true },
+    limits: {},
   },
 };
 
@@ -173,15 +181,71 @@ function isErpProduct(productId: string): boolean {
   return productId in ERP_PRODUCT_TIERS;
 }
 
+function isGcaProduct(productId: string): boolean {
+  return productId === GCA_PRODUCT_ID;
+}
+
+async function upsertGcaSubscription(subscription: Stripe.Subscription) {
+  const userId = subscription.metadata?.user_id;
+  const customerId = subscription.customer as string;
+  const priceId = subscription.items.data[0]?.price.id;
+
+  // Resolve user_id either from metadata or by looking up an existing GCA row
+  let resolvedUserId = userId;
+  if (!resolvedUserId && customerId) {
+    const { data: existing } = await supabaseAdmin
+      .from("gca_subscriptions")
+      .select("user_id")
+      .eq("stripe_customer_id", customerId)
+      .maybeSingle();
+    resolvedUserId = existing?.user_id;
+  }
+
+  if (!resolvedUserId) {
+    logStep("GCA: cannot resolve user_id, skipping", { subscriptionId: subscription.id });
+    return;
+  }
+
+  await supabaseAdmin.from("gca_subscriptions").upsert({
+    user_id: resolvedUserId,
+    stripe_customer_id: customerId,
+    stripe_subscription_id: subscription.id,
+    stripe_price_id: priceId,
+    tier: "gca_pro",
+    status: subscription.status,
+    current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+    cancel_at_period_end: subscription.cancel_at_period_end,
+  }, { onConflict: "user_id" });
+
+  logStep("GCA subscription upserted", { userId: resolvedUserId, status: subscription.status });
+}
+
 async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
   logStep("Processing checkout.session.completed", { sessionId: session.id });
   
   const orgId = session.metadata?.org_id;
+  const productType = session.metadata?.product_type;
   const customerId = session.customer as string;
   const subscriptionId = session.subscription as string;
 
-  if (!orgId || !subscriptionId) {
-    logStep("Missing org_id or subscription in session metadata");
+  if (!subscriptionId) {
+    logStep("Missing subscription in session");
+    return;
+  }
+
+  // ── GCA standalone (per-user, no org) ──
+  if (productType === "gca" || (!orgId && session.metadata?.user_id)) {
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+    const productId = subscription.items.data[0]?.price.product as string;
+    if (isGcaProduct(productId)) {
+      await upsertGcaSubscription(subscription);
+      logStep("GCA standalone checkout processed");
+      return;
+    }
+  }
+
+  if (!orgId) {
+    logStep("Missing org_id in session metadata, skipping org-scoped flow");
     return;
   }
 
@@ -194,6 +258,13 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
   // Fetch full subscription details
   const subscription = await stripe.subscriptions.retrieve(subscriptionId);
   const productId = subscription.items.data[0]?.price.product as string;
+
+  // GCA product purchased via org checkout? Treat as standalone GCA.
+  if (isGcaProduct(productId)) {
+    await upsertGcaSubscription(subscription);
+    logStep("GCA product detected on org checkout — recorded as standalone");
+    return;
+  }
 
   // Check if this is an ERP add-on checkout
   if (isErpProduct(productId)) {
@@ -241,6 +312,12 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   logStep("Processing customer.subscription.updated", { subscriptionId: subscription.id });
 
   const productId = subscription.items.data[0]?.price.product as string;
+
+  // Handle GCA standalone subscription
+  if (isGcaProduct(productId)) {
+    await upsertGcaSubscription(subscription);
+    return;
+  }
 
   // Handle ERP add-on subscription separately
   if (isErpProduct(productId)) {
@@ -338,6 +415,19 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   logStep("Processing customer.subscription.deleted", { subscriptionId: subscription.id });
 
   const productId = subscription.items.data[0]?.price.product as string;
+
+  // Handle GCA standalone cancellation
+  if (isGcaProduct(productId)) {
+    await supabaseAdmin
+      .from("gca_subscriptions")
+      .update({
+        status: "canceled",
+        cancel_at_period_end: false,
+      })
+      .eq("stripe_subscription_id", subscription.id);
+    logStep("GCA subscription canceled", { subscriptionId: subscription.id });
+    return;
+  }
 
   // Handle ERP add-on cancellation
   if (isErpProduct(productId)) {

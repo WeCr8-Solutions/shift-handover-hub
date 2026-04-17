@@ -13,8 +13,7 @@ const PRODUCT_TIERS: Record<string, string> = {
   "prod_TrQ3QqbNqlmDiS": "single",
   "prod_TrQ3SzBnvfW4yA": "team",
   "prod_TrQ3Y4BKSsc591": "enterprise",
-  // TODO: Replace with real GCA Stripe product ID once created in dashboard
-  // "prod_GCA_PLACEHOLDER": "gca_pro",
+  "prod_ULmEqvUEDTTrpp": "gca_pro",
 };
 
 serve(async (req) => {
@@ -50,6 +49,29 @@ serve(async (req) => {
     const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
+
+    // Check standalone GCA subscription first (per-user, not org-scoped)
+    const { data: gcaSub } = await supabaseClient
+      .from("gca_subscriptions")
+      .select("*")
+      .eq("user_id", user.id)
+      .in("status", ["active", "trialing"])
+      .maybeSingle();
+
+    if (gcaSub) {
+      logStep("Found GCA standalone subscription", { subscriptionId: gcaSub.stripe_subscription_id });
+      return new Response(JSON.stringify({
+        subscribed: true,
+        tier: "gca_pro",
+        product_id: "prod_ULmEqvUEDTTrpp",
+        subscription_end: gcaSub.current_period_end,
+        cancel_at_period_end: gcaSub.cancel_at_period_end,
+        status: gcaSub.status,
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
 
     // First, try to get subscription from local DB (via org membership)
     const { data: orgMember } = await supabaseClient

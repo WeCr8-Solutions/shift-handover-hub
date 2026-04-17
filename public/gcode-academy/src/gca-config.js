@@ -165,13 +165,14 @@ const GCA_CONFIG = {
 
   // ── STRIPE INTEGRATION ───────────────────────────────────────────
   stripe: {
-    enabled: false,           // Set true when Stripe is live
-    publishableKey: '',       // 'pk_live_...'
-    // Price IDs (from Stripe dashboard)
+    enabled: true,
+    publishableKey: '',       // not needed — checkout via edge function
+    // Price IDs (from Stripe dashboard) — G-Code Academy product
     prices: {
-      monthly: '',            // 'price_xxxx'
-      annual:  '',            // 'price_xxxx'
+      monthly: 'price_1TN4g9CyekafHX788v10vyWz', // $19/mo
+      annual:  'price_1TN4jwCyekafHX785ZAg0oue', // $149/yr
     },
+    productId: 'prod_ULmEqvUEDTTrpp',
     checkoutEndpoint: '/api/stripe/create-checkout',
     portalEndpoint:   '/api/stripe/portal',
   },
