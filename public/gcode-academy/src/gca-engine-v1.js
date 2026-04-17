@@ -353,25 +353,25 @@ function buildTestCard(key, ct, category) {
 
 function startLessonQuiz(lessonId) {
   var ls = findLesson(lessonId);
-  if (!ls || !ls.quiz) return;
-  var q = ls.quiz;
-  // Build a synthetic 1-question test
-  var syntheticTest = {
-    label: ls.gcode + ' — ' + ls.title,
-    desc: 'Lesson comprehension check',
-    icon: '📝',
-    passMark: 100,
-    questions: [{ q: q.q, opts: q.opts, ans: q.ans, exp: q.fb || '', diff: 1 }],
-    timeLimit: null,
-  };
+  if (!ls || (!ls.quiz && !(ls.quizPool && ls.quizPool.length))) return;
+  // Prefer the larger quizPool (random subset of up to 10) if available; fall back to the single legacy quiz.
+  var pool = (ls.quizPool && ls.quizPool.length)
+    ? ls.quizPool.slice()
+    : [{ q: ls.quiz.q, opts: ls.quiz.opts, ans: ls.quiz.ans, fb: ls.quiz.fb || '' }];
+  pool.sort(function(){ return Math.random() - 0.5; });
+  var subset = pool.slice(0, Math.min(10, pool.length));
+  var questions = subset.map(function(q){
+    return { q: q.q, opts: q.opts, ans: q.ans, exp: q.fb || '', diff: q.diff || 1 };
+  });
+  var passMark = pool.length > 1 ? 80 : 100;
   STATE.activeTest = { cat: 'lesson', key: lessonId };
   STATE.testState  = {
-    questions: syntheticTest.questions,
+    questions: questions,
     current: 0, answers: [],
     startTime: Date.now(),
     timerLimit: null, timerInterval: null,
-    label: syntheticTest.label,
-    passMark: syntheticTest.passMark,
+    label: ls.gcode + ' — ' + ls.title,
+    passMark: passMark,
   };
   renderTestRunner();
 }
