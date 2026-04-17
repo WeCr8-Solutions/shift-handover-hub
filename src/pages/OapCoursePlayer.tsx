@@ -12,6 +12,7 @@ import {
 import { OapMarkdown } from "@/components/oap/OapMarkdown";
 import { QuizPlayer } from "@/components/oap/QuizPlayer";
 import { Header } from "@/components/Header";
+import { TrainingMedia } from "@/components/training/TrainingMedia";
 import { BookOpen, ArrowLeft, ArrowRight, Clock, CheckCircle2 } from "lucide-react";
 
 export default function OapCoursePlayer() {
@@ -120,16 +121,25 @@ export default function OapCoursePlayer() {
                 <h1 className="text-2xl font-semibold">{currentLesson.title}</h1>
               </div>
               <Card>
-                <CardContent className="py-6">
+                <CardContent className="py-6 space-y-4">
+                  <TrainingMedia
+                    entityType="oap_lesson"
+                    entityId={currentLesson.id}
+                  />
                   {currentLesson.body_markdown ? (
                     <OapMarkdown source={currentLesson.body_markdown} />
                   ) : (
                     <p className="text-sm text-muted-foreground italic">
-                      No content for this lesson yet.
+                      No written content for this lesson yet.
                     </p>
                   )}
                 </CardContent>
               </Card>
+              <TrainingMedia
+                entityType="oap_course"
+                entityId={course.id}
+                emptyHint=""
+              />
               <div className="flex justify-between gap-2">
                 <Button
                   variant="outline"

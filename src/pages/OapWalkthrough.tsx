@@ -29,8 +29,10 @@ import {
   XCircle,
   PlayCircle,
   Flag,
+  FileDown,
 } from "lucide-react";
 import { Header } from "@/components/Header";
+import { exportWalkthroughPdf } from "@/lib/oapWalkthroughPdf";
 
 const RESULT_META: Record<CheckoffResult, { label: string; icon: any; tone: string }> = {
   pass: { label: "Pass", icon: CheckCircle2, tone: "text-success" },
@@ -187,6 +189,20 @@ export default function OapWalkthrough() {
                     <Flag className="w-4 h-4 mr-1" /> Mark walkthrough complete
                   </Button>
                 )}
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    exportWalkthroughPdf({
+                      organizationName: organization?.name ?? "Organization",
+                      session: activeSession,
+                      sections,
+                      items,
+                      checkoffs,
+                    })
+                  }
+                >
+                  <FileDown className="w-4 h-4 mr-1" /> Export compliance PDF
+                </Button>
               </CardContent>
             </Card>
 
