@@ -32,6 +32,7 @@ export default function Talent() {
   const [contactSubject, setContactSubject] = useState("");
   const [contactMessage, setContactMessage] = useState("");
   const [newListName, setNewListName] = useState("");
+  const [onboardTarget, setOnboardTarget] = useState<TalentCandidate | null>(null);
 
   const isAuthorized =
     organizationRole === "owner" || organizationRole === "admin" || organizationRole === "supervisor";
