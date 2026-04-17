@@ -222,11 +222,17 @@ async function upsertGcaSubscription(subscription: Stripe.Subscription) {
 
 async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
   logStep("Processing checkout.session.completed", { sessionId: session.id });
-  
+
   const orgId = session.metadata?.org_id;
   const productType = session.metadata?.product_type;
   const customerId = session.customer as string;
   const subscriptionId = session.subscription as string;
+
+  // ── $12 OAP/GCA certificate (one-time, guest-allowed) ──
+  if (productType === "cert") {
+    await handleCertCheckout(session);
+    return;
+  }
 
   if (!subscriptionId) {
     logStep("Missing subscription in session");
