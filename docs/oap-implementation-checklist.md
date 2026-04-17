@@ -100,13 +100,16 @@ Source of truth for the OAP build. Cross-references `docs/jobline-oap-lovable-br
 
 | Item | Status | Notes |
 |---|---|---|
-| Cert template (PDF, portrait 8.5x11, dark pro aesthetic) | 🔴 | |
-| Cert ID generator (`CERT-XXXXXX-YYYY` + QR token) | 🔴 | |
-| `/verify/:certId` page (public, no auth) | ✅ | Live placeholder; binds to cert tables next |
-| Stripe `$12` one-time checkout (guest allowed) | 🟡 | Stripe infra in place; specific OAP cert price ID not wired |
-| Email delivery with PDF attachment | 🔴 | Use existing `send-email` Resend infra |
-| Shareable link + LinkedIn-ready URL | 🔴 | |
-| Revoke / expire flow | 🔴 | |
+| Branded cert template (8.5x11 portrait, gradient accent, QR) | ✅ | `<CertificateTemplate>` — single source of truth for OAP & GCA, print-ready |
+| Cert ID generator (`OAP-XXXXXX-YYYY` + QR token) | ✅ | `src/lib/certificates.ts` — Crockford-style alphabet, no ambiguous chars |
+| `/verify/:certId` page (public, no auth) | ✅ | Live + bound to `oap_certificates` / `gca_certificates`, prints the full cert |
+| Issuance edge function | ✅ | `supabase/functions/issue-certificate` — auth-gated, inserts row, emails recipient |
+| Admin issuance UI | ✅ | `<CertificateIssuancePanel>` in Training Library admin → Certificates tab |
+| Public storage bucket for cert PDFs | ✅ | `oap-gca-certificates` — PDF-only public read, admin write |
+| Stripe `$12` one-time checkout (guest allowed) | 🟡 | Stripe infra in place; specific OAP cert price ID + webhook → issue-certificate still TODO |
+| Email delivery with PDF attachment | 🟡 | HTML receipt sent on issue; PDF attachment pending headless-render pipeline |
+| Shareable link + LinkedIn-ready URL | ✅ | `/verify/:certId` is the share URL |
+| Revoke / expire flow | 🟡 | Schema supports it (`status`, `revoked_at`); UI control pending |
 
 ---
 
