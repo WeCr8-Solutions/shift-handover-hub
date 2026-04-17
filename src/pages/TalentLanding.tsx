@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Search,
   ShieldCheck,
@@ -72,9 +73,15 @@ const HOW_EMPLOYER = [
 
 export default function TalentLanding() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [search, setSearch] = useState("");
   const [profiles, setProfiles] = useState<PublicProfileSummary[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const profileCtaHref = user
+    ? "/profile/operator"
+    : "/auth?signup=1&redirect=/profile/operator";
+  const profileCtaLabel = user ? "Complete my talent profile" : "Build my profile (free)";
 
   useEffect(() => {
     let cancelled = false;
@@ -154,8 +161,8 @@ export default function TalentLanding() {
 
           <div className="mt-6 flex flex-wrap gap-3 text-sm">
             <Button asChild variant="outline">
-              <Link to="/auth?signup=1" className="gap-2">
-                <Users className="w-4 h-4" /> Build my profile (free)
+              <Link to={profileCtaHref} className="gap-2">
+                <Users className="w-4 h-4" /> {profileCtaLabel}
               </Link>
             </Button>
             <Button asChild variant="ghost">
@@ -211,7 +218,7 @@ export default function TalentLanding() {
                 No public profiles yet — be the first.
                 <div className="mt-4">
                   <Button asChild>
-                    <Link to="/auth?signup=1">Create your profile</Link>
+                    <Link to={profileCtaHref}>{profileCtaLabel}</Link>
                   </Button>
                 </div>
               </CardContent>
@@ -286,8 +293,8 @@ export default function TalentLanding() {
               ))}
             </ul>
             <Button asChild size="lg" className="mt-8 gap-2">
-              <Link to="/auth?signup=1">
-                Create my profile <ArrowRight className="w-4 h-4" />
+              <Link to={profileCtaHref}>
+                {profileCtaLabel} <ArrowRight className="w-4 h-4" />
               </Link>
             </Button>
           </div>
@@ -370,7 +377,7 @@ export default function TalentLanding() {
         </p>
         <div className="mt-8 flex flex-wrap gap-3 justify-center">
           <Button asChild size="lg">
-            <Link to="/auth?signup=1">Create free profile</Link>
+            <Link to={profileCtaHref}>{user ? "Complete my profile" : "Create free profile"}</Link>
           </Button>
           <Button asChild size="lg" variant="outline">
             <Link to="/oap">Learn about OAP</Link>

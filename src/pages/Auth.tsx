@@ -79,6 +79,13 @@ export default function Auth() {
         setShowInviteRedemption(true);
         return;
       }
+
+      // Honor explicit ?redirect= deep link (e.g. from /talent CTAs)
+      const redirectTo = searchParams.get("redirect");
+      if (redirectTo && redirectTo.startsWith("/") && !redirectTo.startsWith("//")) {
+        navigate(redirectTo, { replace: true });
+        return;
+      }
       
       // Check if user has completed onboarding
       const { data: onboarding } = await supabase
@@ -97,7 +104,7 @@ export default function Auth() {
     };
 
     checkOnboardingAndRedirect();
-  }, [user, loading, navigate, inviteCode]);
+  }, [user, loading, navigate, inviteCode, searchParams]);
 
   const validateLogin = () => {
     const newErrors: Record<string, string> = {};
