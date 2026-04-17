@@ -19,6 +19,8 @@ export interface OperatorProfileRow {
   open_to_work: boolean;
   is_discoverable: boolean;
   profile_visibility: "private" | "employers_only" | "public";
+  public_username: string | null;
+  public_published_at: string | null;
   preferred_employment_types: string[] | null;
   desired_salary_min: number | null;
   desired_salary_max: number | null;
