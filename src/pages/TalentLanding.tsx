@@ -218,7 +218,7 @@ export default function TalentLanding() {
                 No public profiles yet — be the first.
                 <div className="mt-4">
                   <Button asChild>
-                    <Link to="/auth?signup=1">Create your profile</Link>
+                    <Link to={profileCtaHref}>{profileCtaLabel}</Link>
                   </Button>
                 </div>
               </CardContent>
