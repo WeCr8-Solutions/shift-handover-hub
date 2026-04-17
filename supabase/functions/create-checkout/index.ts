@@ -37,6 +37,52 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
+    // ── GCA BRANCH: standalone per-user subscription, no org ──
+    const GCA_PRICE_IDS = new Set([
+      "price_1TN4g9CyekafHX788v10vyWz", // monthly
+      "price_1TN4jwCyekafHX785ZAg0oue", // annual
+    ]);
+
+    if (!orgId && GCA_PRICE_IDS.has(priceId)) {
+      logStep("GCA standalone checkout flow");
+      const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+        apiVersion: "2025-08-27.basil",
+      });
+
+      // Find existing customer by email (don't require an org)
+      let gcaCustomerId: string | undefined;
+      const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+      if (customers.data.length > 0) gcaCustomerId = customers.data[0].id;
+
+      const origin = req.headers.get("origin") || "https://jobline.ai";
+
+      const session = await stripe.checkout.sessions.create({
+        customer: gcaCustomerId,
+        customer_email: gcaCustomerId ? undefined : user.email,
+        line_items: [{ price: priceId, quantity: 1 }],
+        mode: "subscription",
+        payment_method_collection: "always",
+        success_url: `${origin}/resources/gcode-academy?subscribed=true`,
+        cancel_url: `${origin}/resources/gcode-academy?checkout=cancelled`,
+        metadata: {
+          user_id: user.id,
+          product_type: "gca",
+        },
+        subscription_data: {
+          metadata: {
+            user_id: user.id,
+            product_type: "gca",
+          },
+        },
+      });
+
+      logStep("GCA checkout session created", { sessionId: session.id });
+      return new Response(JSON.stringify({ url: session.url }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
     // Get user's organization
     let organizationId = orgId;
     let organizationName = "";
