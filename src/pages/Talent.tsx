@@ -273,12 +273,13 @@ export default function Talent() {
 }
 
 function CandidateCard({
-  candidate, lists, onAddToList, onContact,
+  candidate, lists, onAddToList, onContact, onOnboard,
 }: {
   candidate: TalentCandidate;
   lists: { id: string; name: string }[];
   onAddToList: (listId: string, candidateUserId: string) => void;
   onContact: () => void;
+  onOnboard: () => void;
 }) {
   const initials = (candidate.display_name ?? "?").charAt(0).toUpperCase();
   return (
