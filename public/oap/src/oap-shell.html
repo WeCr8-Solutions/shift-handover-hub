@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="description" content="JobLine OAP — Operator Acceptance Program by WeCr8 Solutions">
+<title>JobLine OAP | Operator Acceptance Program</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;700;900&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ── OAP DESIGN TOKENS ── */
+:root {
+  --oap-bg:      #080a0e;
+  --oap-surface: #0d1018;
+  --oap-card:    #111520;
+  --oap-border:  #1c2330;
+  --oap-border2: #232d3d;
+  --oap-text:    #ccd6ea;
+  --oap-muted:   #566070;
+  --oap-muted2:  #7888a0;
+  --oap-accent:  #00e5b0;
+  --oap-gold:    #f5c518;
+  --oap-blue:    #4a9eff;
+  --oap-red:     #ff4757;
+  --oap-orange:  #ff6b35;
+  --oap-purple:  #a78bfa;
+  --oap-head:    'Barlow Condensed', sans-serif;
+  --oap-body:    'Barlow', sans-serif;
+  --oap-mono:    'Share Tech Mono', monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--oap-bg);color:var(--oap-text);font-family:var(--oap-body);min-height:100vh;overflow-x:hidden}
+
+/* ── HEADER ── */
+.oap-header{background:var(--oap-surface);border-bottom:1px solid var(--oap-border);padding:0 16px;display:flex;align-items:center;justify-content:space-between;min-height:54px;position:sticky;top:0;z-index:300;gap:8px;flex-wrap:wrap}
+.oap-header-logo{font-family:var(--oap-head);font-weight:900;font-size:20px;letter-spacing:1px;cursor:pointer}
+.oap-header-logo span{color:var(--oap-accent)}
+.oap-header-logo small{display:block;font-size:9px;letter-spacing:2px;color:var(--oap-muted);font-weight:400}
+.oap-nav{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.oap-nav-btn{font-family:var(--oap-head);font-weight:700;font-size:10px;letter-spacing:1px;padding:4px 10px;border-radius:4px;cursor:pointer;border:1px solid var(--oap-border2);background:transparent;color:var(--oap-muted2);white-space:nowrap;transition:.12s}
+.oap-nav-btn:hover{color:var(--oap-text)}
+.oap-nav-btn.active{background:rgba(0,229,176,.1);border-color:rgba(0,229,176,.3);color:var(--oap-accent)}
+.oap-nav-btn.gold{background:linear-gradient(135deg,#f5c518,#ff6b35);color:#000;border:none}
+
+/* ── MAIN ── */
+.oap-main{max-width:960px;margin:0 auto;padding:18px 14px}
+@media(max-width:600px){.oap-main{padding:12px}}
+
+/* ── HERO ── */
+.oap-hero{padding:20px 0 14px}
+.oap-logo-row{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.oap-badge{font-family:var(--oap-mono);font-size:10px;letter-spacing:2px;padding:3px 9px;background:rgba(0,229,176,.08);color:var(--oap-accent);border:1px solid rgba(0,229,176,.2);border-radius:3px}
+.oap-title{font-family:var(--oap-head);font-weight:900;font-size:24px}
+.oap-hero-desc{font-size:13px;color:var(--oap-muted2);line-height:1.65;max-width:600px}
+
+/* ── CARDS ── */
+.oap-card{background:var(--oap-surface);border:1px solid var(--oap-border);border-radius:8px;padding:18px;margin-bottom:14px}
+.oap-card-title{font-family:var(--oap-head);font-weight:900;font-size:15px;margin-bottom:12px;letter-spacing:.5px}
+.oap-hint{font-size:11px;color:var(--oap-muted);line-height:1.5}
+.oap-hint-inline{font-size:11px;color:var(--oap-muted)}
+.oap-empty{font-size:12px;color:var(--oap-muted);padding:8px 0}
+.oap-link{color:var(--oap-accent);cursor:pointer}
+.oap-link:hover{text-decoration:underline}
+
+/* ── SETUP CTA ── */
+.oap-setup-cta{background:var(--oap-surface);border:1px solid var(--oap-border);border-radius:10px;padding:40px 24px;text-align:center;margin-bottom:16px}
+.oap-setup-icon{font-size:48px;margin-bottom:12px}
+.oap-setup-cta h2{font-family:var(--oap-head);font-weight:900;font-size:24px;margin-bottom:8px}
+.oap-setup-cta p{font-size:13px;color:var(--oap-muted2);max-width:480px;margin:0 auto 18px;line-height:1.65}
+
+/* ── STATS GRID ── */
+.oap-dash-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+@media(max-width:600px){.oap-dash-grid{grid-template-columns:1fr 1fr}}
+.oap-stat-card{background:var(--oap-surface);border:1px solid var(--oap-border);border-radius:8px;padding:14px;text-align:center}
+.oap-stat-val{font-family:var(--oap-mono);font-size:26px;color:var(--oap-accent);line-height:1}
+.oap-stat-label{font-family:var(--oap-head);font-weight:700;font-size:12px;margin-top:4px}
+.oap-stat-sub{font-size:10px;color:var(--oap-muted)}
+
+/* ── SECTION GRID ── */
+.oap-section-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:640px){.oap-section-grid{grid-template-columns:1fr}}
+
+/* ── ACTIONS LIST ── */
+.oap-action-list{display:flex;flex-direction:column;gap:7px}
+.oap-action-btn{background:var(--oap-card);border:1px solid var(--oap-border);border-radius:5px;padding:10px 13px;font-family:var(--oap-head);font-weight:700;font-size:12px;color:var(--oap-text);cursor:pointer;text-align:left;transition:.12s;letter-spacing:.3px}
+.oap-action-btn:hover{border-color:var(--oap-accent);color:var(--oap-accent)}
+
+/* ── MENTEE ROWS ── */
+.oap-mentee-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--oap-border);cursor:pointer}
+.oap-mentee-row:last-child{border-bottom:none}
+.oap-mentee-row:hover{opacity:.85}
+.oap-mentor-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--oap-border)}
+.oap-prog-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--oap-border)}
+.oap-course-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--oap-border);cursor:pointer}
+.oap-course-row:hover{opacity:.85}
+.oap-avatar{width:36px;height:36px;border-radius:50%;background:var(--oap-accent);color:#000;font-family:var(--oap-head);font-weight:900;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.oap-avatar-lg{width:48px;height:48px;font-size:22px}
+.oap-mentee-name{font-family:var(--oap-head);font-weight:700;font-size:14px}
+.oap-mentee-role{font-size:11px;color:var(--oap-muted)}
+.oap-prog-name{font-family:var(--oap-head);font-weight:700;font-size:14px}
+.oap-prog-icon{font-size:22px;width:32px;flex-shrink:0}
+.oap-pct{font-family:var(--oap-mono);font-size:13px;color:var(--oap-accent);flex-shrink:0}
+
+/* ── PROGRESS BAR ── */
+.oap-prog-bar{background:var(--oap-border);height:3px;border-radius:2px;overflow:hidden;margin-top:4px}
+.oap-prog-fill{height:100%;background:var(--oap-accent);border-radius:2px;transition:width .4s}
+.oap-course-prog{background:var(--oap-border);height:4px;border-radius:2px;margin-bottom:12px}
+.oap-course-fill{height:100%;background:var(--oap-accent);border-radius:2px;transition:width .3s}
+
+/* ── BUTTONS ── */
+.oap-btn-primary{background:var(--oap-accent);color:#000;border:none;border-radius:5px;padding:10px 20px;font-family:var(--oap-head);font-weight:700;font-size:13px;letter-spacing:1px;cursor:pointer;transition:.12s;white-space:nowrap}
+.oap-btn-primary:hover{opacity:.85}
+.oap-btn-ghost{background:transparent;color:var(--oap-muted2);border:1px solid var(--oap-border2);border-radius:5px;padding:10px 16px;font-family:var(--oap-head);font-weight:700;font-size:12px;cursor:pointer;transition:.12s;white-space:nowrap}
+.oap-btn-ghost:hover{color:var(--oap-text);border-color:var(--oap-text)}
+.oap-btn-sm{background:var(--oap-card);border:1px solid var(--oap-border2);color:var(--oap-muted2);border-radius:4px;padding:5px 11px;font-family:var(--oap-head);font-weight:700;font-size:11px;cursor:pointer;white-space:nowrap}
+.oap-btn-sm:hover{color:var(--oap-text)}
+.oap-btn-xs{background:var(--oap-card);border:1px solid var(--oap-border2);color:var(--oap-accent);border-radius:3px;padding:3px 8px;font-family:var(--oap-head);font-weight:700;font-size:10px;cursor:pointer;letter-spacing:.5px;white-space:nowrap;flex-shrink:0}
+.oap-btn-undo{color:var(--oap-muted)}
+
+/* ── TABS ── */
+.oap-tabs{display:flex;border-bottom:1px solid var(--oap-border);margin-bottom:14px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.oap-tab{padding:8px 14px;font-family:var(--oap-head);font-weight:700;font-size:11px;letter-spacing:1.2px;text-transform:uppercase;cursor:pointer;color:var(--oap-muted);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:.12s;flex-shrink:0}
+.oap-tab:hover{color:var(--oap-text)}
+.oap-tab.active{color:var(--oap-accent);border-bottom-color:var(--oap-accent)}
+
+/* ── PAGE HEADER ── */
+.oap-page-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.oap-page-header h1{font-family:var(--oap-head);font-weight:900;font-size:22px}
+.oap-back{background:transparent;border:1px solid var(--oap-border2);color:var(--oap-muted2);border-radius:4px;padding:6px 12px;font-family:var(--oap-head);font-weight:700;font-size:11px;cursor:pointer;letter-spacing:.5px}
+.oap-back:hover{color:var(--oap-text)}
+
+/* ── FORMS ── */
+.oap-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:540px){.oap-form-grid{grid-template-columns:1fr}}
+.oap-form-section{margin-top:16px}
+.oap-form-label{font-family:var(--oap-head);font-weight:700;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--oap-muted);margin-bottom:8px}
+.oap-field{display:flex;flex-direction:column;gap:4px}
+.oap-label{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--oap-muted)}
+.oap-input,.oap-select{background:var(--oap-card);border:1px solid var(--oap-border);border-radius:4px;padding:8px 11px;color:var(--oap-text);font-family:var(--oap-body);font-size:13px;outline:none;width:100%;transition:.12s}
+.oap-input:focus,.oap-select:focus{border-color:var(--oap-accent)}
+.oap-select option{background:var(--oap-surface)}
+.oap-check-row{display:flex;align-items:flex-start;gap:8px;padding:6px 0;font-size:12px;cursor:pointer;border-bottom:1px solid var(--oap-border)}
+.oap-check-row:last-child{border-bottom:none}
+.oap-check-row input{flex-shrink:0;margin-top:2px}
+.oap-check-sm{display:flex;align-items:center;gap:6px;padding:4px 0;font-size:11px;cursor:pointer}
+.oap-check-sm input{flex-shrink:0}
+.oap-req-badge{font-size:8px;background:rgba(255,71,87,.1);color:#ff7a87;border:1px solid rgba(255,71,87,.2);border-radius:2px;padding:1px 5px;letter-spacing:.5px}
+.oap-precision{font-size:9px;color:var(--oap-muted);font-family:var(--oap-mono)}
+
+/* ── ROLE GRID ── */
+.oap-role-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-top:8px}
+@media(max-width:480px){.oap-role-grid{grid-template-columns:1fr 1fr}}
+.oap-role-card{background:var(--oap-card);border:1px solid var(--oap-border);border-radius:6px;padding:11px 12px;font-family:var(--oap-head);font-weight:700;font-size:12px;cursor:pointer;transition:.12s;line-height:1.4}
+.oap-role-card:hover{border-color:var(--oap-accent)}
+.oap-role-card.selected{background:rgba(0,229,176,.07);border-color:var(--oap-accent);color:var(--oap-accent)}
+
+/* ── EQUIPMENT GRID ── */
+.oap-equip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;max-height:260px;overflow-y:auto;padding:4px;border:1px solid var(--oap-border);border-radius:5px}
+@media(max-width:480px){.oap-equip-grid{grid-template-columns:1fr}}
+.oap-equip-cat-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--oap-muted);margin-bottom:4px;font-weight:700}
+.oap-equip-cat{margin-bottom:8px}
+
+/* ── SCHEDULE ── */
+.oap-sched-select{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.oap-sched-opt{background:var(--oap-card);border:1px solid var(--oap-border);border-radius:6px;padding:12px;cursor:pointer;transition:.12s}
+.oap-sched-opt:hover{border-color:var(--oap-accent)}
+.oap-sched-opt.selected{background:rgba(0,229,176,.05);border-color:var(--oap-accent)}
+.oap-sched-card{background:var(--oap-card);border:1px solid var(--oap-border);border-radius:6px;padding:14px;margin-bottom:10px}
+.oap-sched-title{font-family:var(--oap-head);font-weight:900;font-size:14px;margin-bottom:4px}
+.oap-sched-timeline{margin-top:10px}
+.oap-sched-week{display:flex;align-items:baseline;gap:8px;padding:4px 0;border-bottom:1px solid var(--oap-border);font-size:11px}
+.oap-sched-wk{font-family:var(--oap-mono);font-size:10px;color:var(--oap-muted);min-width:30px;flex-shrink:0}
+.oap-sched-sec{font-family:var(--oap-head);font-weight:700;min-width:80px;flex-shrink:0}
+.oap-sched-tasks{color:var(--oap-muted2)}
+
+/* ── SECTION FLOW (OAK tracker) ── */
+.oap-section-card{background:var(--oap-surface);border:1px solid var(--oap-border);border-radius:8px;margin-bottom:10px;overflow:hidden}
+.oap-section-card.oap-locked{opacity:.5}
+.oap-sec-header{display:flex;align-items:center;gap:10px;padding:13px 15px;cursor:pointer}
+.oap-sec-header:hover{background:rgba(255,255,255,.02)}
+.oap-sec-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.oap-sec-dot-lg{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.oap-sec-label{font-family:var(--oap-head);font-weight:700;font-size:13px}
+.oap-sec-body{padding:0 15px 14px}
+.oap-sec-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--oap-border)}
+.oap-sec-row:last-child{border-bottom:none}
+.oap-section-list{display:flex;flex-direction:column;gap:0}
+
+/* ── CHECKPOINTS ── */
+.oap-cp-row{display:flex;align-items:flex-start;gap:9px;padding:9px 0;border-bottom:1px solid var(--oap-border)}
+.oap-cp-row:last-child{border-bottom:none}
+.oap-cp-row.done .oap-cp-label{color:var(--oap-muted);text-decoration:line-through}
+.oap-cp-check{width:22px;height:22px;border-radius:50%;border:1px solid var(--oap-border2);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;cursor:pointer;transition:.12s;margin-top:1px}
+.oap-cp-row.done .oap-cp-check{background:rgba(0,229,176,.1);border-color:var(--oap-accent);color:var(--oap-accent)}
+.oap-cp-check:hover{border-color:var(--oap-accent);color:var(--oap-accent)}
+.oap-cp-label{font-size:12px;line-height:1.5;overflow-wrap:break-word}
+.oap-cp-meta{display:flex;gap:5px;flex-wrap:wrap;margin-top:3px}
+.oap-cp-type{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--oap-muted);font-family:var(--oap-mono)}
+.oap-cp-badge{font-size:8px;background:rgba(74,158,255,.07);color:var(--oap-blue);border:1px solid rgba(74,158,255,.15);border-radius:2px;padding:1px 5px;letter-spacing:.5px}
+.oap-cp-emp{background:rgba(255,107,53,.07);color:var(--oap-orange);border-color:rgba(255,107,53,.15)}
+.oap-cp-course{font-size:9px;color:var(--oap-accent);cursor:pointer;padding:1px 5px;border:1px solid rgba(0,229,176,.2);border-radius:2px}
+.oap-cp-course:hover{background:rgba(0,229,176,.07)}
+.oap-cp-signed{font-size:10px;color:var(--oap-muted);margin-top:2px;font-family:var(--oap-mono)}
+.oap-badge-sm{font-size:9px;background:rgba(0,229,176,.06);color:var(--oap-accent);border:1px solid rgba(0,229,176,.12);border-radius:3px;padding:2px 7px;font-family:var(--oap-mono);white-space:nowrap;flex-shrink:0}
+
+/* ── MENTEE NOTES ── */
+.oap-notes-block{background:var(--oap-card);border:1px solid var(--oap-border);border-radius:5px;padding:10px;margin-top:12px}
+.oap-notes-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--oap-muted);margin-bottom:6px}
+.oap-notes-ta{width:100%;background:var(--oap-surface);border:1px solid var(--oap-border);border-radius:4px;padding:8px;color:var(--oap-text);font-family:var(--oap-body);font-size:12px;min-height:60px;resize:vertical;outline:none;margin-bottom:7px}
+.oap-notes-ta:focus{border-color:var(--oap-accent)}
+
+/* ── COURSE ── */
+.oap-course-content{font-size:13px;line-height:1.75;overflow-wrap:break-word}
+.oap-quiz-q{font-size:13px;font-weight:500;margin-bottom:11px;line-height:1.65;overflow-wrap:break-word}
+.oap-quiz-opts{display:flex;flex-direction:column;gap:6px;margin-bottom:11px}
+.oap-qopt{background:var(--oap-card);border:1px solid var(--oap-border);border-radius:5px;padding:10px 12px;cursor:pointer;font-size:12px;transition:.12s;display:flex;align-items:flex-start;gap:9px;overflow-wrap:break-word}
+.oap-qopt:hover{border-color:var(--oap-accent)}
+.oap-qopt.correct{background:rgba(0,229,176,.07);border-color:#00e5b0;color:#00e5b0}
+.oap-qopt.wrong{background:rgba(255,71,87,.05);border-color:#ff4757;color:#ff7a87}
+.oap-qopt-l{font-family:var(--oap-mono);font-size:10px;width:18px;min-width:18px;height:18px;border:1px solid currentColor;border-radius:3px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.oap-quiz-fb{font-size:12px;padding:10px 12px;border-radius:5px;display:none;margin-bottom:10px;line-height:1.6;overflow-wrap:break-word}
+.oap-quiz-fb.show{display:block}
+.oap-quiz-fb.correct{background:rgba(0,229,176,.06);border:1px solid rgba(0,229,176,.15);color:#80d8b8}
+.oap-quiz-fb.wrong{background:rgba(255,71,87,.05);border:1px solid rgba(255,71,87,.12);color:#ff9aa8}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--oap-border2);border-radius:3px}
+
+/* ── FOOTER ── */
+.oap-footer{border-top:1px solid var(--oap-border);padding:16px;text-align:center;font-size:11px;color:var(--oap-muted);margin-top:20px}
+.oap-footer a{color:var(--oap-accent);text-decoration:none}
+</style>
+</head>
+<body>
+
+<header class="oap-header">
+  <div class="oap-header-logo" onclick="oapSetView('home')">
+    Job<span>Line</span>
+    <small>OPERATOR ACCEPTANCE PROGRAM</small>
+  </div>
+  <nav class="oap-nav">
+    <button class="oap-nav-btn" onclick="oapSetView('home')">🏠 Dashboard</button>
+    <button class="oap-nav-btn" onclick="oapSetView('employer')">🏢 Employer</button>
+    <button class="oap-nav-btn" onclick="oapSetView('program','list')">📋 Programs</button>
+    <button class="oap-nav-btn" onclick="oapSetView('mentor','list')">👤 Mentors</button>
+    <button class="oap-nav-btn" onclick="oapSetView('mentee','list')">🧑‍🏭 Operators</button>
+    <button class="oap-nav-btn gold" onclick="oapSetView('standalone')">🎓 Get Certified</button>
+  </nav>
+</header>
+
+<main class="oap-main">
+  <div id="oap-root"><!-- rendered by engine --></div>
+</main>
+
+<footer class="oap-footer">
+  <p><strong>JobLine OAP</strong> · Operator Acceptance Program · <a href="https://jobline.ai">jobline.ai</a> · <a href="https://wecr8.info">wecr8.info</a></p>
+  <p style="margin-top:4px;font-size:9px">© 2025 WeCr8 Solutions LLC · Certificates are portable and may be presented to any employer</p>
+</footer>
+
+<script>
+</script>
+</body>
+</html>

@@ -1,0 +1,2318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="description" content="JobLine OAP — Operator Acceptance Program by JobLine.ai">
+<title>JobLine OAP | Operator Acceptance Program</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ── OAP DESIGN TOKENS ── */
+:root {
+  --oap-bg:      #080a0e;
+  --oap-surface: #0d1018;
+  --oap-card:    #111520;
+  --oap-border:  #1c2330;
+  --oap-border2: #232d3d;
+  --oap-text:    #ccd6ea;
+  --oap-muted:   #566070;
+  --oap-muted2:  #7888a0;
+  --oap-accent:  #22b6c3;
+  --oap-gold:    #f5c518;
+  --oap-blue:    #4a9eff;
+  --oap-red:     #ff4757;
+  --oap-orange:  #ff6b35;
+  --oap-purple:  #a78bfa;
+  --oap-head:    'Inter', sans-serif;
+  --oap-body:    'Inter', sans-serif;
+  --oap-mono:    'JetBrains Mono', monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--oap-bg);color:var(--oap-text);font-family:var(--oap-body);min-height:100vh;overflow-x:hidden}
+
+/* ── HEADER ── */
+.oap-header{background:var(--oap-surface);border-bottom:1px solid var(--oap-border);padding:0 16px;display:flex;align-items:center;justify-content:space-between;min-height:54px;position:sticky;top:0;z-index:300;gap:8px;flex-wrap:wrap}
+.oap-header-logo{font-family:var(--oap-head);font-weight:900;font-size:20px;letter-spacing:1px;cursor:pointer}
+.oap-header-logo span{color:var(--oap-accent)}
+.oap-header-logo small{display:block;font-size:9px;letter-spacing:2px;color:var(--oap-muted);font-weight:400}
+.oap-nav{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.oap-nav-btn{font-family:var(--oap-head);font-weight:700;font-size:10px;letter-spacing:1px;padding:4px 10px;border-radius:4px;cursor:pointer;border:1px solid var(--oap-border2);background:transparent;color:var(--oap-muted2);white-space:nowrap;transition:.12s}
+.oap-nav-btn:hover{color:var(--oap-text)}
+.oap-nav-btn.active{background:rgba(34,182,195,.1);border-color:rgba(34,182,195,.3);color:var(--oap-accent)}
+.oap-nav-btn.gold{background:linear-gradient(135deg,#f5c518,#ff6b35);color:#000;border:none}
+
+/* ── MAIN ── */
+.oap-main{max-width:960px;margin:0 auto;padding:18px 14px}
+@media(max-width:600px){.oap-main{padding:12px}}
+
+/* ── HERO ── */
+.oap-hero{padding:20px 0 14px}
+.oap-logo-row{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.oap-badge{font-family:var(--oap-mono);font-size:10px;letter-spacing:2px;padding:3px 9px;background:rgba(34,182,195,.08);color:var(--oap-accent);border:1px solid rgba(34,182,195,.2);border-radius:3px}
+.oap-title{font-family:var(--oap-head);font-weight:900;font-size:24px}
+.oap-hero-desc{font-size:13px;color:var(--oap-muted2);line-height:1.65;max-width:600px}
+
+/* ── CARDS ── */
+.oap-card{background:var(--oap-surface);border:1px solid var(--oap-border);border-radius:8px;padding:18px;margin-bottom:14px}
+.oap-card-title{font-family:var(--oap-head);font-weight:900;font-size:15px;margin-bottom:12px;letter-spacing:.5px}
+.oap-hint{font-size:11px;color:var(--oap-muted);line-height:1.5}
+.oap-hint-inline{font-size:11px;color:var(--oap-muted)}
+.oap-empty{font-size:12px;color:var(--oap-muted);padding:8px 0}
+.oap-link{color:var(--oap-accent);cursor:pointer}
+.oap-link:hover{text-decoration:underline}
+
+/* ── SETUP CTA ── */
+.oap-setup-cta{background:var(--oap-surface);border:1px solid var(--oap-border);border-radius:10px;padding:40px 24px;text-align:center;margin-bottom:16px}
+.oap-setup-icon{font-size:48px;margin-bottom:12px}
+.oap-setup-cta h2{font-family:var(--oap-head);font-weight:900;font-size:24px;margin-bottom:8px}
+.oap-setup-cta p{font-size:13px;color:var(--oap-muted2);max-width:480px;margin:0 auto 18px;line-height:1.65}
+
+/* ── STATS GRID ── */
+.oap-dash-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+@media(max-width:600px){.oap-dash-grid{grid-template-columns:1fr 1fr}}
+.oap-stat-card{background:var(--oap-surface);border:1px solid var(--oap-border);border-radius:8px;padding:14px;text-align:center}
+.oap-stat-val{font-family:var(--oap-mono);font-size:26px;color:var(--oap-accent);line-height:1}
+.oap-stat-label{font-family:var(--oap-head);font-weight:700;font-size:12px;margin-top:4px}
+.oap-stat-sub{font-size:10px;color:var(--oap-muted)}
+
+/* ── SECTION GRID ── */
+.oap-section-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:640px){.oap-section-grid{grid-template-columns:1fr}}
+
+/* ── ACTIONS LIST ── */
+.oap-action-list{display:flex;flex-direction:column;gap:7px}
+.oap-action-btn{background:var(--oap-card);border:1px solid var(--oap-border);border-radius:5px;padding:10px 13px;font-family:var(--oap-head);font-weight:700;font-size:12px;color:var(--oap-text);cursor:pointer;text-align:left;transition:.12s;letter-spacing:.3px}
+.oap-action-btn:hover{border-color:var(--oap-accent);color:var(--oap-accent)}
+
+/* ── MENTEE ROWS ── */
+.oap-mentee-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--oap-border);cursor:pointer}
+.oap-mentee-row:last-child{border-bottom:none}
+.oap-mentee-row:hover{opacity:.85}
+.oap-mentor-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--oap-border)}
+.oap-prog-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--oap-border)}
+.oap-course-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--oap-border);cursor:pointer}
+.oap-course-row:hover{opacity:.85}
+.oap-avatar{width:36px;height:36px;border-radius:50%;background:var(--oap-accent);color:#000;font-family:var(--oap-head);font-weight:900;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.oap-avatar-lg{width:48px;height:48px;font-size:22px}
+.oap-mentee-name{font-family:var(--oap-head);font-weight:700;font-size:14px}
+.oap-mentee-role{font-size:11px;color:var(--oap-muted)}
+.oap-prog-name{font-family:var(--oap-head);font-weight:700;font-size:14px}
+.oap-prog-icon{font-size:22px;width:32px;flex-shrink:0}
+.oap-pct{font-family:var(--oap-mono);font-size:13px;color:var(--oap-accent);flex-shrink:0}
+
+/* ── PROGRESS BAR ── */
+.oap-prog-bar{background:var(--oap-border);height:3px;border-radius:2px;overflow:hidden;margin-top:4px}
+.oap-prog-fill{height:100%;background:var(--oap-accent);border-radius:2px;transition:width .4s}
+.oap-course-prog{background:var(--oap-border);height:4px;border-radius:2px;margin-bottom:12px}
+.oap-course-fill{height:100%;background:var(--oap-accent);border-radius:2px;transition:width .3s}
+
+/* ── BUTTONS ── */
+.oap-btn-primary{background:var(--oap-accent);color:#000;border:none;border-radius:5px;padding:10px 20px;font-family:var(--oap-head);font-weight:700;font-size:13px;letter-spacing:1px;cursor:pointer;transition:.12s;white-space:nowrap}
+.oap-btn-primary:hover{opacity:.85}
+.oap-btn-ghost{background:transparent;color:var(--oap-muted2);border:1px solid var(--oap-border2);border-radius:5px;padding:10px 16px;font-family:var(--oap-head);font-weight:700;font-size:12px;cursor:pointer;transition:.12s;white-space:nowrap}
+.oap-btn-ghost:hover{color:var(--oap-text);border-color:var(--oap-text)}
+.oap-btn-sm{background:var(--oap-card);border:1px solid var(--oap-border2);color:var(--oap-muted2);border-radius:4px;padding:5px 11px;font-family:var(--oap-head);font-weight:700;font-size:11px;cursor:pointer;white-space:nowrap}
+.oap-btn-sm:hover{color:var(--oap-text)}
+.oap-btn-xs{background:var(--oap-card);border:1px solid var(--oap-border2);color:var(--oap-accent);border-radius:3px;padding:3px 8px;font-family:var(--oap-head);font-weight:700;font-size:10px;cursor:pointer;letter-spacing:.5px;white-space:nowrap;flex-shrink:0}
+.oap-btn-undo{color:var(--oap-muted)}
+
+/* ── TABS ── */
+.oap-tabs{display:flex;border-bottom:1px solid var(--oap-border);margin-bottom:14px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.oap-tab{padding:8px 14px;font-family:var(--oap-head);font-weight:700;font-size:11px;letter-spacing:1.2px;text-transform:uppercase;cursor:pointer;color:var(--oap-muted);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:.12s;flex-shrink:0}
+.oap-tab:hover{color:var(--oap-text)}
+.oap-tab.active{color:var(--oap-accent);border-bottom-color:var(--oap-accent)}
+
+/* ── PAGE HEADER ── */
+.oap-page-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.oap-page-header h1{font-family:var(--oap-head);font-weight:900;font-size:22px}
+.oap-back{background:transparent;border:1px solid var(--oap-border2);color:var(--oap-muted2);border-radius:4px;padding:6px 12px;font-family:var(--oap-head);font-weight:700;font-size:11px;cursor:pointer;letter-spacing:.5px}
+.oap-back:hover{color:var(--oap-text)}
+
+/* ── FORMS ── */
+.oap-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:540px){.oap-form-grid{grid-template-columns:1fr}}
+.oap-form-section{margin-top:16px}
+.oap-form-label{font-family:var(--oap-head);font-weight:700;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--oap-muted);margin-bottom:8px}
+.oap-field{display:flex;flex-direction:column;gap:4px}
+.oap-label{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--oap-muted)}
+.oap-input,.oap-select{background:var(--oap-card);border:1px solid var(--oap-border);border-radius:4px;padding:8px 11px;color:var(--oap-text);font-family:var(--oap-body);font-size:13px;outline:none;width:100%;transition:.12s}
+.oap-input:focus,.oap-select:focus{border-color:var(--oap-accent)}
+.oap-select option{background:var(--oap-surface)}
+.oap-check-row{display:flex;align-items:flex-start;gap:8px;padding:6px 0;font-size:12px;cursor:pointer;border-bottom:1px solid var(--oap-border)}
+.oap-check-row:last-child{border-bottom:none}
+.oap-check-row input{flex-shrink:0;margin-top:2px}
+.oap-check-sm{display:flex;align-items:center;gap:6px;padding:4px 0;font-size:11px;cursor:pointer}
+.oap-check-sm input{flex-shrink:0}
+.oap-req-badge{font-size:8px;background:rgba(255,71,87,.1);color:#ff7a87;border:1px solid rgba(255,71,87,.2);border-radius:2px;padding:1px 5px;letter-spacing:.5px}
+.oap-precision{font-size:9px;color:var(--oap-muted);font-family:var(--oap-mono)}
+
+/* ── ROLE GRID ── */
+.oap-role-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-top:8px}
+@media(max-width:480px){.oap-role-grid{grid-template-columns:1fr 1fr}}
+.oap-role-card{background:var(--oap-card);border:1px solid var(--oap-border);border-radius:6px;padding:11px 12px;font-family:var(--oap-head);font-weight:700;font-size:12px;cursor:pointer;transition:.12s;line-height:1.4}
+.oap-role-card:hover{border-color:var(--oap-accent)}
+.oap-role-card.selected{background:rgba(34,182,195,.07);border-color:var(--oap-accent);color:var(--oap-accent)}
+
+/* ── EQUIPMENT GRID ── */
+.oap-equip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;max-height:260px;overflow-y:auto;padding:4px;border:1px solid var(--oap-border);border-radius:5px}
+@media(max-width:480px){.oap-equip-grid{grid-template-columns:1fr}}
+.oap-equip-cat-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--oap-muted);margin-bottom:4px;font-weight:700}
+.oap-equip-cat{margin-bottom:8px}
+
+/* ── SCHEDULE ── */
+.oap-sched-select{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.oap-sched-opt{background:var(--oap-card);border:1px solid var(--oap-border);border-radius:6px;padding:12px;cursor:pointer;transition:.12s}
+.oap-sched-opt:hover{border-color:var(--oap-accent)}
+.oap-sched-opt.selected{background:rgba(34,182,195,.05);border-color:var(--oap-accent)}
+.oap-sched-card{background:var(--oap-card);border:1px solid var(--oap-border);border-radius:6px;padding:14px;margin-bottom:10px}
+.oap-sched-title{font-family:var(--oap-head);font-weight:900;font-size:14px;margin-bottom:4px}
+.oap-sched-timeline{margin-top:10px}
+.oap-sched-week{display:flex;align-items:baseline;gap:8px;padding:4px 0;border-bottom:1px solid var(--oap-border);font-size:11px}
+.oap-sched-wk{font-family:var(--oap-mono);font-size:10px;color:var(--oap-muted);min-width:30px;flex-shrink:0}
+.oap-sched-sec{font-family:var(--oap-head);font-weight:700;min-width:80px;flex-shrink:0}
+.oap-sched-tasks{color:var(--oap-muted2)}
+
+/* ── SECTION FLOW (OAK tracker) ── */
+.oap-section-card{background:var(--oap-surface);border:1px solid var(--oap-border);border-radius:8px;margin-bottom:10px;overflow:hidden}
+.oap-section-card.oap-locked{opacity:.5}
+.oap-sec-header{display:flex;align-items:center;gap:10px;padding:13px 15px;cursor:pointer}
+.oap-sec-header:hover{background:rgba(255,255,255,.02)}
+.oap-sec-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.oap-sec-dot-lg{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.oap-sec-label{font-family:var(--oap-head);font-weight:700;font-size:13px}
+.oap-sec-body{padding:0 15px 14px}
+.oap-sec-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--oap-border)}
+.oap-sec-row:last-child{border-bottom:none}
+.oap-section-list{display:flex;flex-direction:column;gap:0}
+
+/* ── CHECKPOINTS ── */
+.oap-cp-row{display:flex;align-items:flex-start;gap:9px;padding:9px 0;border-bottom:1px solid var(--oap-border)}
+.oap-cp-row:last-child{border-bottom:none}
+.oap-cp-row.done .oap-cp-label{color:var(--oap-muted);text-decoration:line-through}
+.oap-cp-check{width:22px;height:22px;border-radius:50%;border:1px solid var(--oap-border2);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;cursor:pointer;transition:.12s;margin-top:1px}
+.oap-cp-row.done .oap-cp-check{background:rgba(34,182,195,.1);border-color:var(--oap-accent);color:var(--oap-accent)}
+.oap-cp-check:hover{border-color:var(--oap-accent);color:var(--oap-accent)}
+.oap-cp-label{font-size:12px;line-height:1.5;overflow-wrap:break-word}
+.oap-cp-meta{display:flex;gap:5px;flex-wrap:wrap;margin-top:3px}
+.oap-cp-type{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--oap-muted);font-family:var(--oap-mono)}
+.oap-cp-badge{font-size:8px;background:rgba(74,158,255,.07);color:var(--oap-blue);border:1px solid rgba(74,158,255,.15);border-radius:2px;padding:1px 5px;letter-spacing:.5px}
+.oap-cp-emp{background:rgba(255,107,53,.07);color:var(--oap-orange);border-color:rgba(255,107,53,.15)}
+.oap-cp-course{font-size:9px;color:var(--oap-accent);cursor:pointer;padding:1px 5px;border:1px solid rgba(34,182,195,.2);border-radius:2px}
+.oap-cp-course:hover{background:rgba(34,182,195,.07)}
+.oap-cp-signed{font-size:10px;color:var(--oap-muted);margin-top:2px;font-family:var(--oap-mono)}
+.oap-badge-sm{font-size:9px;background:rgba(34,182,195,.06);color:var(--oap-accent);border:1px solid rgba(34,182,195,.12);border-radius:3px;padding:2px 7px;font-family:var(--oap-mono);white-space:nowrap;flex-shrink:0}
+
+/* ── MENTEE NOTES ── */
+.oap-notes-block{background:var(--oap-card);border:1px solid var(--oap-border);border-radius:5px;padding:10px;margin-top:12px}
+.oap-notes-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--oap-muted);margin-bottom:6px}
+.oap-notes-ta{width:100%;background:var(--oap-surface);border:1px solid var(--oap-border);border-radius:4px;padding:8px;color:var(--oap-text);font-family:var(--oap-body);font-size:12px;min-height:60px;resize:vertical;outline:none;margin-bottom:7px}
+.oap-notes-ta:focus{border-color:var(--oap-accent)}
+
+/* ── COURSE ── */
+.oap-course-content{font-size:13px;line-height:1.75;overflow-wrap:break-word}
+.oap-quiz-q{font-size:13px;font-weight:500;margin-bottom:11px;line-height:1.65;overflow-wrap:break-word}
+.oap-quiz-opts{display:flex;flex-direction:column;gap:6px;margin-bottom:11px}
+.oap-qopt{background:var(--oap-card);border:1px solid var(--oap-border);border-radius:5px;padding:10px 12px;cursor:pointer;font-size:12px;transition:.12s;display:flex;align-items:flex-start;gap:9px;overflow-wrap:break-word}
+.oap-qopt:hover{border-color:var(--oap-accent)}
+.oap-qopt.correct{background:rgba(34,182,195,.07);border-color:#22b6c3;color:#22b6c3}
+.oap-qopt.wrong{background:rgba(255,71,87,.05);border-color:#ff4757;color:#ff7a87}
+.oap-qopt-l{font-family:var(--oap-mono);font-size:10px;width:18px;min-width:18px;height:18px;border:1px solid currentColor;border-radius:3px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.oap-quiz-fb{font-size:12px;padding:10px 12px;border-radius:5px;display:none;margin-bottom:10px;line-height:1.6;overflow-wrap:break-word}
+.oap-quiz-fb.show{display:block}
+.oap-quiz-fb.correct{background:rgba(34,182,195,.06);border:1px solid rgba(34,182,195,.15);color:#80d8b8}
+.oap-quiz-fb.wrong{background:rgba(255,71,87,.05);border:1px solid rgba(255,71,87,.12);color:#ff9aa8}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--oap-border2);border-radius:3px}
+
+/* ── FOOTER ── */
+.oap-footer{border-top:1px solid var(--oap-border);padding:16px;text-align:center;font-size:11px;color:var(--oap-muted);margin-top:20px}
+.oap-footer a{color:var(--oap-accent);text-decoration:none}
+</style>
+</head>
+<body>
+
+<header class="oap-header">
+  <div class="oap-header-logo" onclick="oapSetView('home')">
+    Job<span>Line</span>
+    <small>OPERATOR ACCEPTANCE PROGRAM</small>
+  </div>
+  <nav class="oap-nav">
+    <button class="oap-nav-btn" onclick="oapSetView('home')">🏠 Dashboard</button>
+    <button class="oap-nav-btn" onclick="oapSetView('employer')">🏢 Employer</button>
+    <button class="oap-nav-btn" onclick="oapSetView('program','list')">📋 Programs</button>
+    <button class="oap-nav-btn" onclick="oapSetView('mentor','list')">👤 Mentors</button>
+    <button class="oap-nav-btn" onclick="oapSetView('mentee','list')">🧑‍🏭 Operators</button>
+    <button class="oap-nav-btn gold" onclick="oapSetView('standalone')">🎓 Get Certified</button>
+  </nav>
+</header>
+
+<main class="oap-main">
+  <div id="oap-root"><!-- rendered by engine --></div>
+</main>
+
+<footer class="oap-footer">
+  <p><strong>JobLine OAP</strong> · Operator Acceptance Program · <a href="https://jobline.ai">jobline.ai</a> · <a href="https://jobline.ai">jobline.ai</a></p>
+  <p style="margin-top:4px;font-size:9px">© 2026 JobLine.ai · Certificates are portable and may be presented to any employer</p>
+</footer>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// OAP-TYPES.JS — JobLine Operator Acceptance Program
+// Typed constants, enums, and schema definitions
+// All equipment, tools, roles, and checkpoints live here —
+// referenced by employer config, course data, and cert engine.
+// JobLine.ai | JobLine.ai | v1.0.0
+// ═══════════════════════════════════════════════════════════════════
+
+'use strict';
+
+// ── ROLE DEFINITIONS ─────────────────────────────────────────────
+const OAP_ROLES = {
+  lathe_op:    { id:'lathe_op',    label:'CNC Lathe Operator',           icon:'⚙',  track:'lathe', level:'operator'  },
+  mill_op:     { id:'mill_op',     label:'CNC Mill Operator',            icon:'🔩', track:'mill',  level:'operator'  },
+  lathe_setup: { id:'lathe_setup', label:'Lathe Setup Technician',       icon:'⚙',  track:'lathe', level:'setup'     },
+  mill_setup:  { id:'mill_setup',  label:'Mill Setup Technician',        icon:'🔩', track:'mill',  level:'setup'     },
+  grinder:     { id:'grinder',     label:'Surface / CNC Grinder Op.',    icon:'💠', track:'grind', level:'operator'  },
+  saw_op:      { id:'saw_op',      label:'Saw / Material Handler',       icon:'🪚', track:'mat',   level:'operator'  },
+  inspector:   { id:'inspector',   label:'Quality / CMM Inspector',      icon:'📐', track:'qc',    level:'tech'      },
+  multi_op:    { id:'multi_op',    label:'Multi-Machine Operator',       icon:'🏭', track:'multi', level:'operator'  },
+  swiss_op:    { id:'swiss_op',    label:'Swiss-Type CNC Operator',      icon:'🔬', track:'swiss', level:'operator'  },
+  edm_op:      { id:'edm_op',      label:'EDM Operator',                 icon:'⚡', track:'edm',   level:'operator'  },
+  custom:      { id:'custom',      label:'Custom Role',                  icon:'✏️', track:'any',   level:'custom'    },
+};
+
+// ── MEASURING EQUIPMENT ──────────────────────────────────────────
+const OAP_MEASURING = {
+  // Hand measuring
+  tape_25:      { id:'tape_25',      label:'25ft Tape Measure',          category:'linear', icon:'📏', unit:'in/ft',  precision:'1/16"' },
+  tape_16:      { id:'tape_16',      label:'16ft Tape Measure',          category:'linear', icon:'📏', unit:'in/ft',  precision:'1/16"' },
+  steel_rule:   { id:'steel_rule',   label:'6" Steel Rule',              category:'linear', icon:'📏', unit:'in/mm',  precision:'1/64"' },
+  caliper_6:    { id:'caliper_6',    label:'6" Digital Caliper',         category:'linear', icon:'🔧', unit:'in/mm',  precision:'0.0005"' },
+  caliper_12:   { id:'caliper_12',   label:'12" Digital Caliper',        category:'linear', icon:'🔧', unit:'in/mm',  precision:'0.0005"' },
+  caliper_vernier: { id:'caliper_vernier', label:'Vernier Caliper',      category:'linear', icon:'🔧', unit:'in/mm',  precision:'0.001"' },
+  mic_outside:  { id:'mic_outside',  label:'Outside Micrometer (0-1")',  category:'linear', icon:'🎯', unit:'in/mm',  precision:'0.0001"' },
+  mic_outside_set: { id:'mic_outside_set', label:'Outside Mic Set (0-6")', category:'linear', icon:'🎯', unit:'in/mm', precision:'0.0001"' },
+  mic_inside:   { id:'mic_inside',   label:'Inside Micrometer',          category:'linear', icon:'🎯', unit:'in/mm',  precision:'0.0001"' },
+  mic_depth:    { id:'mic_depth',    label:'Depth Micrometer',           category:'linear', icon:'🎯', unit:'in/mm',  precision:'0.0001"' },
+  mic_thread:   { id:'mic_thread',   label:'Thread Micrometer',          category:'linear', icon:'🎯', unit:'in/mm',  precision:'0.0001"' },
+  // Gauges
+  bore_gauge:   { id:'bore_gauge',   label:'Bore Gauge / Telescoping',   category:'gauge',  icon:'⭕', unit:'in/mm',  precision:'0.0001"' },
+  pin_gauges:   { id:'pin_gauges',   label:'Pin Gauge Set',              category:'gauge',  icon:'📌', unit:'in/mm',  precision:'0.0001"' },
+  thread_ring:  { id:'thread_ring',  label:'Thread Ring Gauges (GO/NOGO)', category:'gauge', icon:'🔘', unit:'class', precision:'thread class' },
+  thread_plug:  { id:'thread_plug',  label:'Thread Plug Gauges (GO/NOGO)', category:'gauge', icon:'🔘', unit:'class', precision:'thread class' },
+  radius_gauge: { id:'radius_gauge', label:'Radius / Fillet Gauge',      category:'gauge',  icon:'🌊', unit:'in/mm',  precision:'0.005"' },
+  feeler_gauge: { id:'feeler_gauge', label:'Feeler / Thickness Gauge',   category:'gauge',  icon:'📄', unit:'in/mm',  precision:'0.001"' },
+  height_gauge: { id:'height_gauge', label:'Digital Height Gauge',       category:'linear', icon:'📐', unit:'in/mm',  precision:'0.0001"' },
+  surface_plate: { id:'surface_plate', label:'Surface Plate / Granite', category:'reference', icon:'⬜', unit:'class', precision:'Grade A/B' },
+  // Angle
+  protractor:   { id:'protractor',   label:'Bevel Protractor',           category:'angle',  icon:'📐', unit:'deg',    precision:'5 min' },
+  angle_blocks: { id:'angle_blocks', label:'Angle Block Set',            category:'angle',  icon:'📐', unit:'deg',    precision:'1 min' },
+  // Pipe / specialty
+  pipe_tape:    { id:'pipe_tape',    label:'Pi Tape (Circumference)',     category:'linear', icon:'⭕', unit:'in/mm',  precision:'0.001"' },
+  od_tape:      { id:'od_tape',      label:'OD Tape Measure',            category:'linear', icon:'📏', unit:'in/mm',  precision:'0.001"' },
+  // CMM / Inspection
+  cmm:          { id:'cmm',          label:'CMM (Coordinate Measuring)', category:'cmm',    icon:'🤖', unit:'in/mm',  precision:'0.00005"' },
+  surface_rough: { id:'surface_rough', label:'Surface Roughness Tester', category:'surface', icon:'〰️', unit:'Ra/Rz', precision:'0.01μin' },
+};
+
+// ── CUTTING TOOLS & TOOLING ──────────────────────────────────────
+const OAP_TOOLING = {
+  // Holders
+  tool_holder_ext: { id:'tool_holder_ext', label:'External Tool Holder (CNMG/WNMG)', category:'holder', icon:'🔩' },
+  tool_holder_bor: { id:'tool_holder_bor', label:'Boring Bar / Internal Holder',     category:'holder', icon:'🔩' },
+  vdi_holder:      { id:'vdi_holder',      label:'VDI Tool Holder',                  category:'holder', icon:'🔩' },
+  capto_holder:    { id:'capto_holder',    label:'Capto / HSK Holder',               category:'holder', icon:'🔩' },
+  collet_er:       { id:'collet_er',       label:'ER Collet Chuck & Collets',         category:'holder', icon:'⭕' },
+  endmill_holder:  { id:'endmill_holder',  label:'End Mill Holder',                  category:'holder', icon:'🔩' },
+  drill_chuck:     { id:'drill_chuck',     label:'Drill Chuck (Jacobs / Keyless)',    category:'holder', icon:'⭕' },
+  shrink_fit:      { id:'shrink_fit',      label:'Shrink Fit Holder',                category:'holder', icon:'🔥' },
+  // Inserts / cutting
+  insert_turning:  { id:'insert_turning',  label:'Turning Inserts (CNMG/WNMG/DNMG)', category:'insert', icon:'💎' },
+  insert_milling:  { id:'insert_milling',  label:'Milling Inserts / Face Mill',      category:'insert', icon:'💎' },
+  insert_grooving: { id:'insert_grooving', label:'Grooving / Parting Insert',        category:'insert', icon:'💎' },
+  insert_threading: { id:'insert_threading', label:'Threading Insert',               category:'insert', icon:'💎' },
+  // Endmills
+  endmill_flat:    { id:'endmill_flat',    label:'Flat End Mill (2/4 flute)',         category:'endmill', icon:'🔄' },
+  endmill_ball:    { id:'endmill_ball',    label:'Ball Nose End Mill',               category:'endmill', icon:'⚽' },
+  endmill_bull:    { id:'endmill_bull',    label:'Bull Nose / Corner Radius',        category:'endmill', icon:'🔄' },
+  endmill_rough:   { id:'endmill_rough',   label:'Roughing / Corn Cob End Mill',     category:'endmill', icon:'🌽' },
+  endmill_carbide: { id:'endmill_carbide', label:'Solid Carbide End Mill',           category:'endmill', icon:'🔄' },
+  // Drills
+  drill_hss:       { id:'drill_hss',       label:'HSS Drill Bit',                   category:'drill', icon:'🔩' },
+  drill_carbide:   { id:'drill_carbide',   label:'Carbide Drill / Indexable Drill',  category:'drill', icon:'🔩' },
+  drill_spot:      { id:'drill_spot',      label:'Spot Drill / Center Drill',        category:'drill', icon:'🔩' },
+  drill_spade:     { id:'drill_spade',     label:'Spade / Insert Drill',             category:'drill', icon:'🔩' },
+  // Taps & threading
+  tap_hss:         { id:'tap_hss',         label:'HSS Tap (Hand / Machine)',         category:'tap', icon:'🔀' },
+  tap_spiral:      { id:'tap_spiral',      label:'Spiral Flute Tap',                category:'tap', icon:'🔀' },
+  tap_forming:     { id:'tap_forming',     label:'Roll Form / Thread Forming Tap',  category:'tap', icon:'🔀' },
+  tap_carbide:     { id:'tap_carbide',     label:'Carbide Tap',                     category:'tap', icon:'🔀' },
+  thread_mill:     { id:'thread_mill',     label:'Thread Mill',                     category:'tap', icon:'🔀' },
+  die_ext:         { id:'die_ext',         label:'Die (External Threading)',         category:'tap', icon:'⭕' },
+  // Reamers & boring
+  reamer_hss:      { id:'reamer_hss',      label:'HSS Reamer',                      category:'reamer', icon:'🎯' },
+  reamer_carbide:  { id:'reamer_carbide',  label:'Carbide Reamer',                  category:'reamer', icon:'🎯' },
+  boring_head:     { id:'boring_head',     label:'Boring Head / Fine Bore',          category:'reamer', icon:'🎯' },
+  // Workholding
+  chuck_3jaw:      { id:'chuck_3jaw',      label:'3-Jaw Chuck',                     category:'workhold', icon:'🔒' },
+  chuck_4jaw:      { id:'chuck_4jaw',      label:'4-Jaw Independent Chuck',         category:'workhold', icon:'🔒' },
+  collet_closer:   { id:'collet_closer',   label:'Collet Chuck / Bar Closer',       category:'workhold', icon:'🔒' },
+  vise_kurt:       { id:'vise_kurt',       label:'Kurt Vise / Mill Vise',           category:'workhold', icon:'🔒' },
+  vise_5axis:      { id:'vise_5axis',      label:'5-Axis / Modular Vise',           category:'workhold', icon:'🔒' },
+  fixture_plate:   { id:'fixture_plate',   label:'Fixture Plate / T-Slot Table',    category:'workhold', icon:'⬜' },
+  soft_jaws:       { id:'soft_jaws',       label:'Soft Jaw (custom machined)',       category:'workhold', icon:'🔒' },
+  live_center:     { id:'live_center',     label:'Live / Dead Center (tailstock)',   category:'workhold', icon:'🎯' },
+};
+
+// ── MACHINES / EQUIPMENT ─────────────────────────────────────────
+const OAP_MACHINES = {
+  // Lathes
+  cnc_lathe:       { id:'cnc_lathe',       label:'CNC Turning Center (2-axis)',     category:'lathe',  icon:'⚙' },
+  cnc_lathe_live:  { id:'cnc_lathe_live',  label:'CNC Lathe w/ Live Tooling',      category:'lathe',  icon:'⚙' },
+  cnc_lathe_sub:   { id:'cnc_lathe_sub',   label:'CNC Lathe w/ Sub-Spindle',       category:'lathe',  icon:'⚙' },
+  swiss_cnc:       { id:'swiss_cnc',       label:'Swiss-Type CNC (Sliding Head)',   category:'lathe',  icon:'🔬' },
+  manual_lathe:    { id:'manual_lathe',    label:'Manual Engine Lathe',             category:'lathe',  icon:'⚙' },
+  // Mills
+  cnc_vmc:         { id:'cnc_vmc',         label:'CNC Vertical Machining Center',  category:'mill',   icon:'🔩' },
+  cnc_hmc:         { id:'cnc_hmc',         label:'CNC Horizontal Machining Center', category:'mill',  icon:'🔩' },
+  cnc_5axis:       { id:'cnc_5axis',       label:'5-Axis CNC Machining Center',    category:'mill',   icon:'🔩' },
+  manual_mill:     { id:'manual_mill',     label:'Manual Knee Mill / Bridgeport',  category:'mill',   icon:'🔩' },
+  // Grinders
+  surface_grinder: { id:'surface_grinder', label:'Surface Grinder',                category:'grind',  icon:'💠' },
+  cnc_grinder:     { id:'cnc_grinder',     label:'CNC Cylindrical Grinder',        category:'grind',  icon:'💠' },
+  id_grinder:      { id:'id_grinder',      label:'ID / Jig Grinder',               category:'grind',  icon:'💠' },
+  // Saws & material
+  bandsaw_vert:    { id:'bandsaw_vert',    label:'Vertical Band Saw',              category:'saw',    icon:'🪚' },
+  bandsaw_horiz:   { id:'bandsaw_horiz',   label:'Horizontal Band Saw / Cutoff',   category:'saw',    icon:'🪚' },
+  cold_saw:        { id:'cold_saw',        label:'Cold Saw',                       category:'saw',    icon:'🪚' },
+  chop_saw:        { id:'chop_saw',        label:'Abrasive Chop Saw',              category:'saw',    icon:'🪚' },
+  circular_saw:    { id:'circular_saw',    label:'Circular / Panel Saw',           category:'saw',    icon:'🪚' },
+  // Other shop
+  drill_press:     { id:'drill_press',     label:'Drill Press',                    category:'press',  icon:'🔩' },
+  tap_machine:     { id:'tap_machine',     label:'Tapping Machine / Arm Tapper',   category:'press',  icon:'🔀' },
+  surface_grind_m: { id:'surface_grind_m', label:'Manual Surface Grinder',         category:'grind',  icon:'💠' },
+  deburr_machine:  { id:'deburr_machine',  label:'Deburr / Tumble Machine',        category:'finish', icon:'🔄' },
+  wash_station:    { id:'wash_station',    label:'Parts Washer',                   category:'finish', icon:'💧' },
+  // Inspection
+  cmm_machine:     { id:'cmm_machine',     label:'CMM Machine (Zeiss/Hexagon)',    category:'inspect', icon:'🤖' },
+  vision_system:   { id:'vision_system',   label:'Vision Inspection System',       category:'inspect', icon:'👁'  },
+  // EDM
+  edm_wire:        { id:'edm_wire',        label:'Wire EDM',                       category:'edm',    icon:'⚡' },
+  edm_sinker:      { id:'edm_sinker',      label:'Sinker / Ram EDM',               category:'edm',    icon:'⚡' },
+  // Safety / support
+  overhead_crane:  { id:'overhead_crane',  label:'Overhead Crane / Hoist',         category:'material', icon:'🏗' },
+  forklift:        { id:'forklift',        label:'Forklift / Pallet Jack',         category:'material', icon:'🚜' },
+  die_grinder:     { id:'die_grinder',     label:'Die Grinder / Angle Grinder',    category:'hand',   icon:'🔄' },
+};
+
+// ── SAFETY CERTIFICATIONS ────────────────────────────────────────
+const OAP_SAFETY = {
+  shop_safety:    { id:'shop_safety',    label:'General Shop Safety',            icon:'🦺', required:true,  renewYears:1 },
+  ppe_cert:       { id:'ppe_cert',       label:'PPE / Personal Protective Equipment', icon:'🥽', required:true, renewYears:1 },
+  lockout_tagout: { id:'lockout_tagout', label:'Lockout / Tagout (LOTO)',         icon:'🔐', required:true,  renewYears:1 },
+  fire_ext:       { id:'fire_ext',       label:'Fire Extinguisher Operation',     icon:'🧯', required:true,  renewYears:1 },
+  hazcom:         { id:'hazcom',         label:'HazCom / GHS / SDS Awareness',   icon:'⚗️', required:true,  renewYears:1 },
+  forklift_cert:  { id:'forklift_cert',  label:'Forklift / Powered Industrial Truck', icon:'🚜', required:false, renewYears:3 },
+  crane_signal:   { id:'crane_signal',   label:'Crane Signaling & Rigging',       icon:'🏗', required:false, renewYears:3 },
+  first_aid:      { id:'first_aid',      label:'First Aid / CPR',                 icon:'🩺', required:false, renewYears:2 },
+  hearing_cons:   { id:'hearing_cons',   label:'Hearing Conservation',            icon:'👂', required:false, renewYears:1 },
+  respiratory:    { id:'respiratory',    label:'Respiratory Protection',          icon:'😷', required:false, renewYears:1 },
+  ehs_env:        { id:'ehs_env',        label:'Environmental Health & Safety',   icon:'🌿', required:true,  renewYears:1 },
+  ergonomics:     { id:'ergonomics',     label:'Ergonomics & Lifting Safety',     icon:'💪', required:false, renewYears:2 },
+};
+
+// ── OAP SECTION FLOW ─────────────────────────────────────────────
+// Ordered sections every mentee moves through
+const OAP_SECTIONS = [
+  {
+    id: 'orientation',
+    label: 'Company Orientation',
+    icon: '🏢',
+    color: '#a78bfa',
+    desc: 'HR onboarding, company policies, facility tour, emergency procedures',
+    requiredBefore: [],
+  },
+  {
+    id: 'safety',
+    label: 'Safety & EHS',
+    icon: '🦺',
+    color: '#ff4757',
+    desc: 'PPE, LOTO, HazCom, fire extinguisher, emergency exits, first aid',
+    requiredBefore: ['orientation'],
+  },
+  {
+    id: 'materials',
+    label: 'Material Handling',
+    icon: '📦',
+    color: '#f5c518',
+    desc: 'Raw material ID, storage, handling, saw operation, basic measuring',
+    requiredBefore: ['safety'],
+  },
+  {
+    id: 'measuring',
+    label: 'Measurement & Inspection',
+    icon: '📐',
+    color: '#4a9eff',
+    desc: 'Tape, rule, caliper, micrometer, gauges, pi tape, reading prints',
+    requiredBefore: ['materials'],
+  },
+  {
+    id: 'tooling',
+    label: 'Tooling & Preset',
+    icon: '🔧',
+    color: '#22b6c3',
+    desc: 'Tool identification, holders, inserts, end mills, drills, taps, preset station',
+    requiredBefore: ['measuring'],
+  },
+  {
+    id: 'machine',
+    label: 'Machine Qualification',
+    icon: '🏭',
+    color: '#ff6b35',
+    desc: 'Machine-specific OAK checklist, supervised operation, buy-off sign-off',
+    requiredBefore: ['tooling'],
+  },
+  {
+    id: 'floor',
+    label: 'Floor Certification',
+    icon: '✅',
+    color: '#22b6c3',
+    desc: 'Final process checklists, quality standards, independent operation sign-off',
+    requiredBefore: ['machine'],
+  },
+];
+
+// ── OAP CHECKPOINT SCHEMA ────────────────────────────────────────
+// Used by employer to build role-specific checklists
+// @typedef {Object} OAPCheckpoint
+// @property {string}   id
+// @property {string}   label
+// @property {string}   section   — OAP_SECTIONS id
+// @property {'demo'|'written'|'observed'|'both'} type
+// @property {boolean}  mentorSignOff
+// @property {boolean}  employerBuyOff
+// @property {string=}  linkedCourse  — oap-data course id
+// @property {string=}  linkedEquip   — OAP_MEASURING / OAP_TOOLING / OAP_MACHINES id
+// @property {string=}  notes
+
+// ── OAP STATUS ENUM ──────────────────────────────────────────────
+const OAP_STATUS = {
+  NOT_STARTED:  'not_started',
+  IN_PROGRESS:  'in_progress',
+  PENDING_SIGNOFF: 'pending_signoff',
+  COMPLETE:     'complete',
+  FAILED:       'failed',
+  RECERT_DUE:   'recert_due',
+};
+
+// ── INDUSTRY / BUSINESS TYPES ────────────────────────────────────
+const OAP_INDUSTRIES = [
+  'Aerospace & Defense',
+  'Automotive / Tier 1-3',
+  'Medical Device / Implants',
+  'Oil & Gas / Energy',
+  'General Precision Machining',
+  'Sheet Metal Fabrication',
+  'Tool & Die / Mold Making',
+  'Electronics / Semiconductor',
+  'Heavy Equipment / Agriculture',
+  'Job Shop (Mixed)',
+  'R&D / Prototype',
+  'Other',
+];
+
+// ── DEFAULT OAP SCHEDULES ────────────────────────────────────────
+const OAP_SCHEDULE_TEMPLATES = {
+  standard_90: {
+    label: '90-Day Standard',
+    desc:  'Industry standard new-hire qualification',
+    weeks: [
+      { week:1,  section:'orientation', tasks:['HR paperwork','facility tour','emergency procedures'] },
+      { week:1,  section:'safety',      tasks:['Shop safety course','PPE fitting','LOTO training','fire extinguisher'] },
+      { week:2,  section:'materials',   tasks:['Material identification','saw operation demo','receiving inspection'] },
+      { week:3,  section:'measuring',   tasks:['Tape/rule','caliper','micrometer sign-off'] },
+      { week:4,  section:'tooling',     tasks:['Tool ID quiz','holder assembly','preset station intro'] },
+      { week:5,  section:'machine',     tasks:['Machine anatomy','power-on sequence','supervised run'] },
+      { week:6,  section:'machine',     tasks:['Setup documentation','offset adjustment','first article'] },
+      { week:8,  section:'floor',       tasks:['Independent run obs.','quality audit','mentor final eval'] },
+      { week:12, section:'floor',       tasks:['Employer buy-off','certificate issuance'] },
+    ],
+  },
+  accelerated_30: {
+    label: '30-Day Accelerated',
+    desc:  'Experienced hire verification track',
+    weeks: [
+      { week:1, section:'orientation', tasks:['HR, tour, policies'] },
+      { week:1, section:'safety',      tasks:['Safety cert verification / refresher'] },
+      { week:2, section:'measuring',   tasks:['Precision measurement competency check'] },
+      { week:2, section:'tooling',     tasks:['Tooling competency check'] },
+      { week:3, section:'machine',     tasks:['Machine-specific supervised trial','first article'] },
+      { week:4, section:'floor',       tasks:['Buy-off and certificate'] },
+    ],
+  },
+  material_only: {
+    label: 'Material Handler Track',
+    desc:  'Saw operator / material prep only',
+    weeks: [
+      { week:1, section:'orientation', tasks:['HR, tour, policies'] },
+      { week:1, section:'safety',      tasks:['Shop safety, PPE, LOTO'] },
+      { week:2, section:'materials',   tasks:['Material ID, handling, saw safety, basic measuring'] },
+      { week:3, section:'floor',       tasks:['Supervisor buy-off on material ops'] },
+    ],
+  },
+};
+
+// ── CERT SCHEMA ──────────────────────────────────────────────────
+// @typedef {Object} OAPCertificate
+// @property {string}   certId          — UUID
+// @property {string}   menteeId
+// @property {string}   menteeName
+// @property {string}   menteeEmail
+// @property {string}   employerId
+// @property {string}   employerName
+// @property {string}   employerCity
+// @property {string}   roleId          — OAP_ROLES key
+// @property {string}   roleLabel
+// @property {string[]} machinesPassed  — OAP_MACHINES keys
+// @property {string[]} toolingPassed   — OAP_TOOLING keys
+// @property {string[]} measuringPassed — OAP_MEASURING keys
+// @property {string[]} safetyCerts     — OAP_SAFETY keys
+// @property {string}   mentorName
+// @property {string}   mentorSignature — base64 or typed name
+// @property {string}   employerSignature
+// @property {string}   issuedDate      — ISO
+// @property {string}   expiresDate     — ISO (null if no expiry)
+// @property {'initial'|'recert'} certType
+// @property {Object}   checkpoints     — { checkpointId: { status, signedBy, signedAt, notes } }
+// @property {string}   qrPayload       — portable verification string
+
+
+// ═══════════════════════════════════════════════════════════════════
+// OAP-DATA.JS — Course Content & Checkpoint Definitions
+// Safety courses, measuring training, tooling training,
+// machine-specific OAK checklists
+// JobLine.ai | JobLine.ai | v1.0.0
+// ═══════════════════════════════════════════════════════════════════
+
+'use strict';
+
+const OAP_COURSES = {
+
+  // ── SAFETY COURSES ───────────────────────────────────────────────
+  safety_general: {
+    id: 'safety_general', label: 'General Shop Safety', icon: '🦺',
+    section: 'safety', linkedSafety: 'shop_safety', duration: '45 min',
+    passMark: 80, required: true,
+    desc: 'Foundational shop safety for all manufacturing environments.',
+    topics: [
+      { id:'sg1', title:'PPE Requirements',
+        content:`<strong>Required PPE in a manufacturing environment:</strong><br><br>
+<strong style="color:var(--accent)">Eyes:</strong> ANSI Z87.1 safety glasses at minimum. Full face shield when grinding, using coolant, or handling chemicals.<br><br>
+<strong style="color:var(--accent)">Feet:</strong> Steel or composite toe boots are mandatory on the shop floor. No exceptions — ever.<br><br>
+<strong style="color:var(--accent)">Hearing:</strong> Foam earplugs (NRR 29+) or earmuffs when in high-noise areas. Prolonged exposure above 85 dB causes permanent hearing loss.<br><br>
+<strong style="color:var(--accent)">Hands:</strong> Never wear gloves near rotating machinery (lathes, mills, drill presses). Gloves can catch and pull a hand into the machine. Gloves ARE required for handling sheet metal, chemicals, and raw stock edges.<br><br>
+<strong style="color:var(--accent)">Hair & clothing:</strong> Long hair must be tied back or netted. No loose sleeves, jewelry, or dangling items near moving equipment.`,
+        quiz: { q:'When is it UNSAFE to wear gloves?', opts:['When handling sheet metal edges','Near rotating machinery (lathes, mills, drill presses)','When using chemicals','When handling sharp tooling'], ans:1, fb:'Gloves near rotating spindles or chucks can catch and pull your hand into the machine — a fraction of a second, no recovery.' }
+      },
+      { id:'sg2', title:'Emergency Stop & Procedures',
+        content:`<strong>Know before you press Cycle Start:</strong><br><br>
+<strong style="color:var(--red)">Emergency Stop (E-Stop):</strong> The large red mushroom button. Cuts all power to axes and spindle instantly. Know its location before anything moves.<br><br>
+<strong style="color:var(--accent)">Fire:</strong> Know the nearest fire extinguisher location and the nearest exit. RACE: Rescue, Alarm, Contain, Extinguish/Evacuate.<br><br>
+<strong style="color:var(--accent)">Medical emergency:</strong> Know the location of the first aid kit, AED, and eyewash station. Know who the trained first responders are.<br><br>
+<strong style="color:var(--accent)">Chemical spill:</strong> SDS (Safety Data Sheet) binder location. Spill kit location. Ventilation procedure.`,
+        quiz: { q:'What does pressing the E-Stop button do?', opts:['Pauses the program at the next line','Cuts all power to axes and spindle immediately','Retracts the tool to home position','Opens the machine door'], ans:1, fb:'E-Stop immediately kills all powered motion — spindle, axes, coolant. It is the universal emergency cut-off on all CNC equipment.' }
+      },
+      { id:'sg3', title:'Housekeeping & Machine Guarding',
+        content:`<strong>A clean shop is a safe shop:</strong><br><br>
+<strong style="color:var(--accent)">Machine guards:</strong> NEVER remove or bypass a machine guard. Guards are required by OSHA and are there to prevent contact with hazardous moving parts. If a guard is missing or damaged, red-tag the machine and report it immediately.<br><br>
+<strong style="color:var(--accent)">Floor cleanliness:</strong> Oil or coolant on floors causes slips that send people into machines. Report spills immediately. Use absorbent materials. Chip conveyors must be kept clear.<br><br>
+<strong style="color:var(--accent)">Aisle clearance:</strong> Fire exits, electrical panels, and emergency equipment must be accessible at all times. Minimum 36" aisle clearance required by code.`,
+        quiz: { q:'You notice the door guard on a lathe is cracked and partially blocked. What is the correct action?', opts:['Continue using the machine carefully','Remove the guard so it does not interfere','Red-tag the machine, do not operate it, report to supervisor immediately','Tape the crack and continue'], ans:2, fb:'A damaged guard must be reported and the machine taken out of service until repaired. Operating without proper guarding violates OSHA 1910.212 and puts lives at risk.' }
+      },
+    ],
+  },
+
+  safety_loto: {
+    id: 'safety_loto', label: 'Lockout / Tagout (LOTO)', icon: '🔐',
+    section: 'safety', linkedSafety: 'lockout_tagout', duration: '30 min',
+    passMark: 90, required: true,
+    desc: 'OSHA 29 CFR 1910.147 — control of hazardous energy.',
+    topics: [
+      { id:'loto1', title:'What is LOTO and When is it Required?',
+        content:`<strong>LOTO (Lockout/Tagout)</strong> is required any time you:<br><br>
+• Perform maintenance, repair, or adjustment on equipment<br>
+• Clear jams or blockages<br>
+• Change tooling when a power source is involved<br>
+• Service electrical, hydraulic, pneumatic, or mechanical systems<br><br>
+<strong style="color:var(--red)">The hazard:</strong> Unexpected energization or startup of equipment causes approximately 50,000 injuries and 120 deaths per year in the US (OSHA data). CNC machines store multiple energy sources: electrical, hydraulic (clamping), pneumatic, gravity (axes that can drop).<br><br>
+<strong style="color:var(--accent)">OSHA Standard:</strong> 29 CFR 1910.147 mandates written procedures, trained personnel, and proper equipment for all lockout operations.`,
+        quiz: { q:'You need to clear a chip jam inside the machine. The E-Stop is pressed. Is this sufficient before reaching inside?', opts:['Yes — E-Stop cuts all power','No — you must follow full LOTO procedure including mechanical lockout of all energy sources','Yes — if the spindle is stopped','Only if a supervisor is present'], ans:1, fb:'E-Stop alone is not LOTO. Hydraulic clamping, pneumatic systems, and stored mechanical energy (axes under gravity) can still be active. Full LOTO procedure is required.' }
+      },
+      { id:'loto2', title:'LOTO Procedure Steps',
+        content:`<strong>OSHA-compliant LOTO sequence:</strong><br><br>
+<strong style="color:var(--accent)">1. Notify</strong> — Tell all affected employees the machine is being locked out.<br>
+<strong style="color:var(--accent)">2. Identify energy sources</strong> — Electrical, hydraulic, pneumatic, gravity, thermal.<br>
+<strong style="color:var(--accent)">3. Shut down</strong> — Use normal stopping procedures.<br>
+<strong style="color:var(--accent)">4. Isolate</strong> — Turn off / disconnect all energy isolation devices (main disconnect, air valve, hydraulic shutoff).<br>
+<strong style="color:var(--accent)">5. Apply lockout device</strong> — Your personal padlock goes on EVERY isolation point.<br>
+<strong style="color:var(--accent)">6. Release / restrain stored energy</strong> — Bleed pneumatics, block axes, discharge capacitors.<br>
+<strong style="color:var(--accent)">7. Verify</strong> — Try to start the machine. Verify it will NOT energize before reaching in.<br><br>
+<strong style="color:var(--red)">ONE person = ONE lock. Only you remove your lock. Never remove another person's lock.</strong>`,
+        quiz: { q:'You applied your lock to the main disconnect. A co-worker needs to also work on the same machine. What must happen?', opts:['Your lock covers both workers — one lock is fine','The co-worker must apply THEIR OWN padlock to the same isolation point using a hasp','Only the supervisor needs a lock','A tagout alone is sufficient for the second person'], ans:1, fb:'Each authorized employee who is working on the equipment must apply their own personal padlock. This ensures the machine cannot be re-energized until every worker has cleared and removed their own lock.' }
+      },
+    ],
+  },
+
+  safety_fire: {
+    id: 'safety_fire', label: 'Fire Extinguisher Operation', icon: '🧯',
+    section: 'safety', linkedSafety: 'fire_ext', duration: '20 min',
+    passMark: 90, required: true,
+    desc: 'PASS method, extinguisher types, fire classes, when NOT to fight.',
+    topics: [
+      { id:'fire1', title:'Fire Classes & Extinguisher Types',
+        content:`<strong>Know your fire class before reaching for an extinguisher:</strong><br><br>
+<strong style="color:var(--accent)">Class A:</strong> Ordinary combustibles — wood, paper, cardboard, cloth. Water or ABC extinguisher.<br>
+<strong style="color:var(--accent)">Class B:</strong> Flammable liquids — oil, grease, coolant, hydraulic fluid, solvents. CO₂, dry chemical, or ABC.<br>
+<strong style="color:var(--accent)">Class C:</strong> Electrical fires — live electrical equipment, control panels, motors. CO₂ or dry chemical ONLY. Never water.<br>
+<strong style="color:var(--accent)">Class D:</strong> Combustible metals — magnesium chips, titanium, aluminum swarf. Class D extinguisher ONLY. Standard extinguishers can make it worse.<br>
+<strong style="color:var(--accent)">Class K:</strong> Cooking oils/fats — not common in machining.<br><br>
+<strong style="color:var(--gold)">Most common in machining shops:</strong> ABC dry chemical (multipurpose) and CO₂. Always verify rating before fire breaks out — not during.`,
+        quiz: { q:'A CNC machine control panel is smoking and flames are visible. Which extinguisher type should you use?', opts:['Water extinguisher — fastest knockdown','Class A dry chemical','CO₂ or ABC dry chemical — never water on electrical','Class D metal fire extinguisher'], ans:2, fb:'Electrical fires (Class C) require CO₂ or dry chemical. Water conducts electricity and will electrocute the person using it and spread the fire. Never use water on live electrical fires.' }
+      },
+      { id:'fire2', title:'PASS Method & When to Evacuate',
+        content:`<strong>The PASS Method — the only way to use a fire extinguisher:</strong><br><br>
+<strong style="color:var(--red)">P</strong> — <strong>Pull</strong> the pin (breaks the tamper seal)<br>
+<strong style="color:var(--red)">A</strong> — <strong>Aim</strong> at the BASE of the fire, not the flames<br>
+<strong style="color:var(--red)">S</strong> — <strong>Squeeze</strong> the handle<br>
+<strong style="color:var(--red)">S</strong> — <strong>Sweep</strong> side to side across the base<br><br>
+<strong style="color:var(--gold)">When NOT to fight a fire (evacuate immediately):</strong><br>
+• The fire is larger than a wastebasket<br>
+• You don't know what's burning<br>
+• The fire is spreading rapidly<br>
+• You don't have the right extinguisher type<br>
+• There is smoke obscuring your exit path<br>
+• Your instinct says GET OUT — trust it<br><br>
+<strong>Your safety is more important than the equipment.</strong>`,
+        quiz: { q:'Using the PASS method, where do you aim the extinguisher?', opts:['At the flames to knock them down','At the top of the fire','At the base of the fire','At the fuel source above the fire line'], ans:2, fb:'Always aim at the BASE of the fire — the fuel/heat interface. Aiming at flames just pushes them around without eliminating the heat source. Sweep side to side at the base.' }
+      },
+    ],
+  },
+
+  safety_hazcom: {
+    id: 'safety_hazcom', label: 'HazCom / GHS / SDS', icon: '⚗️',
+    section: 'safety', linkedSafety: 'hazcom', duration: '25 min',
+    passMark: 80, required: true,
+    desc: 'OSHA Hazard Communication Standard — SDS sheets, GHS labels, chemical handling.',
+    topics: [
+      { id:'haz1', title:'GHS Labels & Pictograms',
+        content:`<strong>Every chemical container must have a GHS-compliant label:</strong><br><br>
+<strong style="color:var(--accent)">Product identifier</strong> — Name or code on the SDS<br>
+<strong style="color:var(--accent)">Signal word</strong> — "DANGER" (severe) or "WARNING" (moderate)<br>
+<strong style="color:var(--accent)">Hazard statements</strong> — Specific nature of the hazard<br>
+<strong style="color:var(--accent)">Precautionary statements</strong> — PPE and handling instructions<br>
+<strong style="color:var(--accent)">Supplier info</strong> — Name, address, phone<br>
+<strong style="color:var(--accent)">Pictograms</strong> — 9 standardized GHS symbols (flame, skull & crossbones, corrosion, etc.)<br><br>
+In a machining shop you regularly encounter: cutting fluids (coolant), lubricants, parts washer solvents, rust preventives, thread-cutting oils, and grinding compounds — all require SDS sheets.`,
+        quiz: { q:'A container of coolant concentrate has no label. What should you do?', opts:['Use it — coolant is generally safe','Smell it to identify it','Do not use it. Label it as unknown, remove from service, contact supervisor','Ask a coworker if they know what it is'], ans:2, fb:'An unlabeled chemical must NEVER be used. OSHA HazCom requires proper labeling on all hazardous chemicals. Remove from service and contact a supervisor for identification.' }
+      },
+    ],
+  },
+
+  // ── MATERIAL HANDLING COURSES ─────────────────────────────────
+  material_handling: {
+    id: 'material_handling', label: 'Raw Material Handling & Saw Operation', icon: '📦',
+    section: 'materials', duration: '45 min',
+    passMark: 80, required: true,
+    desc: 'Material identification, storage, handling procedures, bandsaw/cold saw operation.',
+    topics: [
+      { id:'mat1', title:'Raw Material Identification',
+        content:`<strong>Every material in the shop has specific handling requirements:</strong><br><br>
+<strong style="color:var(--accent)">Aluminum (6061, 7075, 2024):</strong> Lightweight, soft, sharp burrs. Cuts easily. Chips are stringy and can be sharp. Handle with leather gloves at edges.<br><br>
+<strong style="color:var(--accent)">Steel (1018, 4140, 4340, 17-4 SS):</strong> Heavy — get help or use a hoist for anything over 50 lbs. Mill scale on hot-rolled is rough and abrasive. Stainless work-hardens — handle edges carefully.<br><br>
+<strong style="color:var(--accent)">Titanium:</strong> Looks like steel but weighs ~60% as much. Combustible chips — DO NOT grind without proper precautions. Very heat-sensitive when cutting.<br><br>
+<strong style="color:var(--accent)">Brass / Copper:</strong> Dense, heavy. Chips are curly and sharp. Can tarnish tooling quickly.<br><br>
+<strong style="color:var(--accent)">Material tags / certs:</strong> Every piece of raw material should have a tag (heat number, alloy, spec). Never remove tags until the job is complete. In aerospace and medical, lost certs = scrap.`,
+        quiz: { q:'You receive a bar of material with no identifying tag. What is the correct action?', opts:['Assume it is 6061 aluminum since most jobs use it','Test it with a magnet to figure it out','Quarantine the material, do not use it, notify your supervisor to verify the material cert','Use it for a practice piece first'], ans:2, fb:'Unidentified material must never be used in production. In regulated industries (aerospace, medical), material traceability is mandatory. An unlabeled bar could be the wrong alloy entirely.' }
+      },
+      { id:'mat2', title:'Bandsaw & Cold Saw Safety',
+        content:`<strong>Saw operation is one of the highest injury-risk operations in a job shop:</strong><br><br>
+<strong style="color:var(--accent)">Before cutting:</strong><br>
+• Verify blade condition — check for missing teeth, cracks, proper tension<br>
+• Set the blade guide to within ¼" of the material<br>
+• Confirm vise/clamp is fully secured — material must not shift during cut<br>
+• Clear chips from the previous cut and verify coolant flow (cold saw)<br><br>
+<strong style="color:var(--accent)">During cutting:</strong><br>
+• Never put your hands in the blade path<br>
+• Use push sticks or clamps for small pieces<br>
+• Let the saw do the work — do not force feed<br>
+• Keep eyes on the cut — watch for blade wandering<br><br>
+<strong style="color:var(--accent)">After cutting:</strong><br>
+• Let the blade fully stop before reaching near it<br>
+• Deburr cut ends before handling — freshly cut metal is razor sharp<br>
+• Tag the cut piece immediately with job/material info`,
+        quiz: { q:'You are about to cut a small 3" piece of round stock on the bandsaw. The piece is too short to hold safely by hand. What do you do?', opts:['Hold it as carefully as possible — it will be quick','Use the vise/clamp to secure it — never hold small pieces by hand near the blade','Ask someone to hold it steady while you cut','Skip the cut and order the right size'], ans:1, fb:'Small pieces must always be clamped. Hands near the blade is never acceptable regardless of how short the cut will be. The vise exists for exactly this situation.' }
+      },
+    ],
+  },
+
+  // ── MEASURING COURSES ─────────────────────────────────────────
+  measuring_basic: {
+    id: 'measuring_basic', label: 'Basic Measurement — Tape, Rule & Caliper', icon: '📏',
+    section: 'measuring', duration: '40 min',
+    passMark: 85, required: true,
+    linkedEquip: ['tape_25','steel_rule','caliper_6','caliper_vernier'],
+    desc: 'Tape measure, steel rule, digital caliper, vernier caliper — read and use correctly.',
+    topics: [
+      { id:'meas1', title:'Tape Measure & Steel Rule',
+        content:`<strong>The starting point of all dimensional awareness:</strong><br><br>
+<strong style="color:var(--accent)">Tape measure hook:</strong> The hook at the end floats by exactly 1/16" — this is intentional. It accounts for hook thickness in inside vs outside measurements. Never force it tight for an inside measurement.<br><br>
+<strong style="color:var(--accent)">Reading fractions:</strong> Most tapes read to 1/16". Count tick marks from the last inch. The longest mark = 1/2". Medium marks = 1/4" and 3/4". Shorter = 1/8" increments. Shortest = 1/16".<br><br>
+<strong style="color:var(--accent)">Steel rule:</strong> Reads to 1/64" or 1/100" (decimal). For precision layout and short measurements. Never use as a straightedge for scribing unless it is a true straight rule.`,
+        quiz: { q:'A tape measure reads 4 full inches plus 3 marks past the 1/2" line (counting by 1/8" increments). What is the measurement?', opts:['4-3/4"','4-7/8"','4-5/8"','4-1/2"'], ans:1, fb:'1/2" + 3 × 1/8" = 4/8" + 3/8" = 7/8". Answer: 4-7/8". Always count from the last inch, not from zero.' }
+      },
+      { id:'meas2', title:'Digital Caliper Use & Care',
+        content:`<strong>The caliper is the most-used precision tool in a machine shop:</strong><br><br>
+<strong style="color:var(--accent)">Four ways to measure:</strong><br>
+1. <strong>Outside jaws (bottom)</strong> — OD, thickness, length<br>
+2. <strong>Inside jaws (top small jaws)</strong> — ID, slot width<br>
+3. <strong>Depth rod</strong> — hole depth, shoulder depth<br>
+4. <strong>Step measurement</strong> — shoulder height<br><br>
+<strong style="color:var(--accent)">Zero/calibrate:</strong> Always close and zero before measuring. With inch/mm calipers, verify the display is in the correct unit.<br><br>
+<strong style="color:var(--accent)">Care:</strong> Never drop. Keep clean — chips in the rail cause inaccurate readings. Store in case. Check calibration annually or after drops. Resolution: 0.0005" (digital). Do not use as a scribe or pry tool.`,
+        quiz: { q:'You are measuring a bore with a caliper. The display reads 1.2530" but the drawing calls for 1.253±0.002". Is this part in spec?', opts:['Yes — 1.2530" is within ±0.002" of 1.253"','No — the measurement is over by 0.003"','Cannot determine from caliper reading alone','Yes — all caliper readings are within spec by default'], ans:0, fb:'1.253" ± 0.002" = 1.251" to 1.255". The reading 1.2530" falls within that range. Part is in spec.' }
+      },
+    ],
+  },
+
+  measuring_precision: {
+    id: 'measuring_precision', label: 'Precision Measurement — Micrometer & Gauges', icon: '🎯',
+    section: 'measuring', duration: '45 min',
+    passMark: 85, required: true,
+    linkedEquip: ['mic_outside','mic_inside','mic_depth','bore_gauge','thread_ring','thread_plug'],
+    desc: 'Outside/inside/depth micrometers, bore gauges, thread gauges — read to 0.0001".',
+    topics: [
+      { id:'mic1', title:'Outside Micrometer Reading',
+        content:`<strong>The micrometer reads to 0.0001" — 10x finer than a caliper:</strong><br><br>
+<strong style="color:var(--accent)">The thimble:</strong> One full turn = 0.025". The sleeve has marks at 0.025" intervals. The thimble has 25 divisions (each = 0.001").<br><br>
+<strong style="color:var(--accent)">Reading steps:</strong><br>
+1. Read the whole + quarter-turn marks visible on the sleeve (e.g., 0.275")<br>
+2. Add the thimble line reading (e.g., 18 = 0.018")<br>
+3. Add vernier line if present (e.g., 2 = 0.0002")<br>
+Total: 0.2932"<br><br>
+<strong style="color:var(--accent)">Ratchet / friction thimble:</strong> Always use the ratchet stop for consistent gaging force. Never overtighten — it distorts the part and the measurement.<br><br>
+<strong style="color:var(--accent)">Zeroing:</strong> Clean faces, close on setting standard or direct zero contact, adjust sleeve index to 0.`,
+        quiz: { q:'A micrometer sleeve shows 0.250" visible plus the thimble reads 14.5. What is the measurement?', opts:['0.2645"','0.2645"','0.2645"','0.2650"'], ans:0, fb:'0.250" + (14.5 × 0.001") = 0.250" + 0.0145" = 0.2645". Always: sleeve + thimble + vernier (if equipped).' }
+      },
+      { id:'mic2', title:'Bore Gauge & Thread Gauges',
+        content:`<strong>Measuring inside diameters and thread acceptance:</strong><br><br>
+<strong style="color:var(--accent)">Bore gauge:</strong> A telescoping or dial bore gauge measures IDs that a caliper can't reliably reach. Set the gauge in the bore, rock to find minimum reading, then measure the set dimension with an outside mic. The bore gauge + micrometer combination gives you true bore size to 0.0001".<br><br>
+<strong style="color:var(--accent)">Thread plug gauges (GO/NOGO):</strong><br>
+• GO gauge must enter freely — thread is not undersized<br>
+• NOGO gauge must NOT enter — thread is not oversized<br>
+• If NOGO enters: the thread is out of tolerance. Reject the part.<br><br>
+<strong style="color:var(--accent)">Pi tape / OD tape:</strong> Wraps around a cylinder to read the circumference as a diameter. Used for large ODs that won't fit in a mic. Accurate to 0.001".`,
+        quiz: { q:'You check a threaded hole with a 1/2-13 UNC thread plug gauge. The GO gauge enters. The NOGO gauge also enters. What does this mean?', opts:['The thread is perfect — both gauges should enter','The thread is acceptable — NOGO just means optional check','The thread is OUT OF TOLERANCE — too large. Reject the part.','Re-tap the thread and check again before deciding'], ans:2, fb:'NOGO entering means the thread is oversized (pitch diameter too large). The part must be rejected. Re-tapping will only make it worse. The hole may be reworkable by inserts in some cases — but it is definitely out of tolerance as-is.' }
+      },
+    ],
+  },
+
+  // ── TOOLING COURSES ───────────────────────────────────────────
+  tooling_id: {
+    id: 'tooling_id', label: 'Tool Identification & Holders', icon: '🔧',
+    section: 'tooling', duration: '50 min',
+    passMark: 80, required: true,
+    linkedEquip: ['endmill_flat','endmill_ball','drill_hss','drill_carbide','tap_hss','tap_spiral','collet_er','tool_holder_ext','insert_turning'],
+    desc: 'End mills, drills, taps, turning inserts, tool holders — identify, select, and handle correctly.',
+    topics: [
+      { id:'tool1', title:'End Mills — Types & Selection',
+        content:`<strong>End mills are the backbone of milling operations:</strong><br><br>
+<strong style="color:var(--accent)">Flat (Square) End Mill:</strong> General purpose — slots, pockets, contouring, facing. 2-flute for aluminum (chip evacuation), 4-flute for steel (strength, finish).<br><br>
+<strong style="color:var(--accent)">Ball Nose End Mill:</strong> Produces 3D contoured surfaces. Radius on tip = half the tool diameter. Used for mold work, sculpted surfaces, ramp-ins.<br><br>
+<strong style="color:var(--accent)">Bull Nose (Corner Radius):</strong> Flat floor with a radius corner. More rigid than ball nose. Used for floor finishing and mold cavities where a corner break is needed.<br><br>
+<strong style="color:var(--accent)">Key markings:</strong> Diameter is stamped on shank (e.g., "1/2" or "12mm"). Number of flutes usually visible. Length of cut (LOC) and overall length (OAL) matter for reach.`,
+        quiz: { q:'You need to rough out a large aluminum pocket. Which end mill geometry and flute count is most appropriate?', opts:['4-flute carbide ball nose','2-flute flat end mill — better chip evacuation in aluminum','4-flute flat end mill — more flutes = faster material removal in aluminum','Single-flute insert mill'], ans:1, fb:'Aluminum produces long, stringy chips that need room to escape. 2-flute end mills have larger flute valleys for chip evacuation, preventing re-cutting and built-up edge. 4-flute mills work in aluminum only with aggressive chip thinning or peck strategies.' }
+      },
+      { id:'tool2', title:'Drills & Taps',
+        content:`<strong>Hole-making is the most common operation in a machine shop:</strong><br><br>
+<strong style="color:var(--accent)">HSS vs Carbide drills:</strong> HSS is flexible (forgiving of runout), carbide is faster and holds size better but is brittle. Always start with a spot drill or center drill to prevent walking.<br><br>
+<strong style="color:var(--accent)">Tap selection:</strong><br>
+• <strong>Spiral point (gun tap):</strong> Pushes chips forward — for through holes<br>
+• <strong>Spiral flute:</strong> Pulls chips upward — for blind holes<br>
+• <strong>Form/roll tap:</strong> Displaces material (no chips) — strongest thread, for ductile materials<br><br>
+<strong style="color:var(--accent)">Tap drill size:</strong> Tap drill = major diameter − (1/number of threads per inch). Example: 1/4-20 UNC → 0.250 − 0.050 = 0.200" ≈ #7 drill (0.201"). Always verify with a tap drill chart — memorizing is not enough.`,
+        quiz: { q:'You are tapping a blind hole in aluminum. Which tap type should you select?', opts:['Spiral point (gun tap) — chips go forward','Spiral flute tap — pulls chips out of the blind hole','Straight flute tap — neutral chip direction','Form tap — no chips at all is always best'], ans:1, fb:'Spiral flute taps pull chips upward and out of the blind hole. A gun tap would pack chips at the bottom, cause tap breakage, and potentially destroy the part. Form taps are a valid alternative for aluminum but require correct drill size for proper thread form.' }
+      },
+    ],
+  },
+};
+
+// ── OAK CHECKLISTS (Machine Floor Qualification) ──────────────
+// Default checkpoints employers can select from or copy
+const OAP_OAK_TEMPLATES = {
+  cnc_lathe: {
+    label: 'CNC Lathe OAK Checklist',
+    machine: 'cnc_lathe',
+    checkpoints: [
+      { id:'ltoak01', label:'Identify and locate all E-Stop buttons on machine and control',                    type:'observed', section:'machine', mentorSignOff:true, employerBuyOff:false },
+      { id:'ltoak02', label:'Complete power-on and machine reference/homing procedure',                        type:'demo',     section:'machine', mentorSignOff:true, employerBuyOff:false },
+      { id:'ltoak03', label:'Identify machine zones and explain no-entry conditions',                          type:'observed', section:'machine', mentorSignOff:true, employerBuyOff:false },
+      { id:'ltoak04', label:'Load and index a tool in the turret — verify position',                           type:'demo',     section:'machine', mentorSignOff:true, employerBuyOff:false },
+      { id:'ltoak05', label:'Set a tool length offset using machine probing or touch-off method',             type:'demo',     section:'machine', mentorSignOff:true, employerBuyOff:true  },
+      { id:'ltoak06', label:'Locate and load a program from memory or USB',                                    type:'demo',     section:'machine', mentorSignOff:true, employerBuyOff:false },
+      { id:'ltoak07', label:'Perform a dry run / single-block first pass correctly',                           type:'observed', section:'machine', mentorSignOff:true, employerBuyOff:true  },
+      { id:'ltoak08', label:'Measure a first article part and compare to print — pass/fail decision',          type:'observed', section:'machine', mentorSignOff:true, employerBuyOff:true  },
+      { id:'ltoak09', label:'Make a wear offset adjustment based on measurement result',                       type:'demo',     section:'machine', mentorSignOff:true, employerBuyOff:true  },
+      { id:'ltoak10', label:'Explain and demonstrate proper chip management and coolant operation',             type:'observed', section:'machine', mentorSignOff:true, employerBuyOff:false },
+      { id:'ltoak11', label:'Demonstrate correct alarm acknowledgment and recovery for at least 2 alarms',    type:'demo',     section:'machine', mentorSignOff:true, employerBuyOff:false },
+      { id:'ltoak12', label:'Power-down machine following end-of-shift procedure',                             type:'demo',     section:'machine', mentorSignOff:true, employerBuyOff:false },
+      { id:'ltoak13', label:'EMPLOYER FINAL BUY-OFF: Unsupervised first production run observed',             type:'observed', section:'floor',   mentorSignOff:true, employerBuyOff:true  },
+    ],
+  },
+  cnc_vmc: {
+    label: 'CNC VMC OAK Checklist',
+    machine: 'cnc_vmc',
+    checkpoints: [
+      { id:'vmoak01', label:'Locate all E-Stops, identify operator panel layout',                              type:'observed', section:'machine', mentorSignOff:true, employerBuyOff:false },
+      { id:'vmoak02', label:'Power-on, home axes in correct Z-first sequence',                                 type:'demo',     section:'machine', mentorSignOff:true, employerBuyOff:false },
+      { id:'vmoak03', label:'Load a tool into the spindle — verify pull stud and retention',                   type:'demo',     section:'machine', mentorSignOff:true, employerBuyOff:false },
+      { id:'vmoak04', label:'Set tool length offset (G43) using probe or gage block method',                   type:'demo',     section:'machine', mentorSignOff:true, employerBuyOff:true  },
+      { id:'vmoak05', label:'Edge-find a workpiece and set G54 work offset (X, Y, Z)',                         type:'demo',     section:'machine', mentorSignOff:true, employerBuyOff:true  },
+      { id:'vmoak06', label:'Load and verify a program — check safe state line (G90 G17 G40 G80 G49)',         type:'demo',     section:'machine', mentorSignOff:true, employerBuyOff:false },
+      { id:'vmoak07', label:'Run first part in single-block mode at reduced feedrate — explain each move',     type:'observed', section:'machine', mentorSignOff:true, employerBuyOff:true  },
+      { id:'vmoak08', label:'Measure first article — in-process inspection to print',                          type:'observed', section:'machine', mentorSignOff:true, employerBuyOff:true  },
+      { id:'vmoak09', label:'Demonstrate cutter compensation awareness (G41/G42) — explain purpose',           type:'both',     section:'machine', mentorSignOff:true, employerBuyOff:false },
+      { id:'vmoak10', label:'Toolchange — add/replace a tool and verify offset in ATC',                        type:'demo',     section:'machine', mentorSignOff:true, employerBuyOff:false },
+      { id:'vmoak11', label:'EMPLOYER FINAL BUY-OFF: Independent production run observed',                    type:'observed', section:'floor',   mentorSignOff:true, employerBuyOff:true  },
+    ],
+  },
+  saw_bandsaw: {
+    label: 'Horizontal Bandsaw OAK Checklist',
+    machine: 'bandsaw_horiz',
+    checkpoints: [
+      { id:'sawoak01', label:'Inspect blade condition, tension, and guide clearance before use',               type:'demo',     section:'machine', mentorSignOff:true, employerBuyOff:false },
+      { id:'sawoak02', label:'Set and secure vise to material — no freehand cutting',                          type:'observed', section:'machine', mentorSignOff:true, employerBuyOff:false },
+      { id:'sawoak03', label:'Set blade speed (if variable) appropriate to material type',                     type:'demo',     section:'machine', mentorSignOff:true, employerBuyOff:false },
+      { id:'sawoak04', label:'Demonstrate feed rate control — do not force the blade',                         type:'observed', section:'machine', mentorSignOff:true, employerBuyOff:false },
+      { id:'sawoak05', label:'Coolant flow verification and chip brush use',                                   type:'observed', section:'machine', mentorSignOff:true, employerBuyOff:false },
+      { id:'sawoak06', label:'Full stop verification before handling material after cut',                       type:'observed', section:'machine', mentorSignOff:true, employerBuyOff:true  },
+      { id:'sawoak07', label:'EMPLOYER FINAL BUY-OFF: Unsupervised cut of production material',               type:'observed', section:'floor',   mentorSignOff:true, employerBuyOff:true  },
+    ],
+  },
+};
+
+// ── SECTION CHECKPOINT LIBRARY ────────────────────────────────
+// Standard checkpoints employers can drag into any role
+const OAP_CHECKPOINT_LIBRARY = {
+  orientation: [
+    { id:'or01', label:'Complete new hire HR paperwork',                          type:'written',  mentorSignOff:false, employerBuyOff:false },
+    { id:'or02', label:'Facility tour — all departments, exits, restrooms',        type:'observed', mentorSignOff:true,  employerBuyOff:false },
+    { id:'or03', label:'Emergency exits and muster point identified',              type:'observed', mentorSignOff:true,  employerBuyOff:false },
+    { id:'or04', label:'Company quality policy review',                            type:'written',  mentorSignOff:false, employerBuyOff:false },
+    { id:'or05', label:'Attendance, break, and cell phone policy acknowledgment',  type:'written',  mentorSignOff:false, employerBuyOff:false },
+  ],
+  safety: [
+    { id:'sf01', label:'General shop safety course — pass quiz at 80%+',           type:'written',  mentorSignOff:true,  employerBuyOff:false, linkedCourse:'safety_general' },
+    { id:'sf02', label:'PPE fitted and verified — glasses, boots, hearing',         type:'observed', mentorSignOff:true,  employerBuyOff:false },
+    { id:'sf03', label:'LOTO training — pass quiz at 90%+',                        type:'written',  mentorSignOff:true,  employerBuyOff:false, linkedCourse:'safety_loto' },
+    { id:'sf04', label:'Fire extinguisher training — location, type, PASS method', type:'both',     mentorSignOff:true,  employerBuyOff:false, linkedCourse:'safety_fire' },
+    { id:'sf05', label:'HazCom / SDS review for shop chemicals in use',            type:'written',  mentorSignOff:true,  employerBuyOff:false, linkedCourse:'safety_hazcom' },
+    { id:'sf06', label:'Eyewash station and first aid kit locations verified',      type:'observed', mentorSignOff:true,  employerBuyOff:false },
+    { id:'sf07', label:'Emergency evacuation drill participation',                  type:'observed', mentorSignOff:false, employerBuyOff:false },
+  ],
+  materials: [
+    { id:'mt01', label:'Material identification quiz — alloys and handling',       type:'written',  mentorSignOff:true,  employerBuyOff:false, linkedCourse:'material_handling' },
+    { id:'mt02', label:'Demonstrate safe bar/billet handling with correct PPE',    type:'observed', mentorSignOff:true,  employerBuyOff:false },
+    { id:'mt03', label:'Read and verify a material cert / tag',                    type:'demo',     mentorSignOff:true,  employerBuyOff:false },
+    { id:'mt04', label:'Saw setup and safe cut demonstration',                     type:'observed', mentorSignOff:true,  employerBuyOff:true  },
+    { id:'mt05', label:'Deburr a cut piece safely',                                type:'observed', mentorSignOff:true,  employerBuyOff:false },
+  ],
+  measuring: [
+    { id:'meas01', label:'Read a tape measure to 1/16" — 3 sample readings',       type:'demo',     mentorSignOff:true,  employerBuyOff:false, linkedCourse:'measuring_basic'     },
+    { id:'meas02', label:'Read a steel rule to 1/64"',                             type:'demo',     mentorSignOff:true,  employerBuyOff:false, linkedCourse:'measuring_basic'     },
+    { id:'meas03', label:'Use digital caliper — OD, ID, depth — 5 sample readings', type:'demo',   mentorSignOff:true,  employerBuyOff:false, linkedCourse:'measuring_basic'     },
+    { id:'meas04', label:'Use outside micrometer — read to 0.0001"',               type:'demo',     mentorSignOff:true,  employerBuyOff:true,  linkedCourse:'measuring_precision'  },
+    { id:'meas05', label:'Set a bore gauge and transfer to micrometer',            type:'demo',     mentorSignOff:true,  employerBuyOff:false, linkedCourse:'measuring_precision'  },
+    { id:'meas06', label:'Use thread GO/NOGO gauges — make accept/reject decision', type:'demo',   mentorSignOff:true,  employerBuyOff:false, linkedCourse:'measuring_precision'  },
+    { id:'meas07', label:'Read and interpret a 2D engineering drawing (tolerances, GD&T basics)', type:'written', mentorSignOff:true, employerBuyOff:false },
+  ],
+  tooling: [
+    { id:'tl01', label:'Identify 10 common end mills by geometry and flute count', type:'both',     mentorSignOff:true,  employerBuyOff:false, linkedCourse:'tooling_id' },
+    { id:'tl02', label:'Identify common drill types — HSS, carbide, spot drill',   type:'both',     mentorSignOff:true,  employerBuyOff:false, linkedCourse:'tooling_id' },
+    { id:'tl03', label:'Select correct tap type for a given hole condition',        type:'written',  mentorSignOff:true,  employerBuyOff:false, linkedCourse:'tooling_id' },
+    { id:'tl04', label:'Assemble ER collet chuck to correct torque spec',           type:'demo',     mentorSignOff:true,  employerBuyOff:false },
+    { id:'tl05', label:'Identify turning insert grades and geometry (CNMG/WNMG)',  type:'both',     mentorSignOff:true,  employerBuyOff:false },
+    { id:'tl06', label:'Operate preset station — set tool length and diameter',    type:'demo',     mentorSignOff:true,  employerBuyOff:true  },
+    { id:'tl07', label:'Identify worn/damaged tooling — make replace/use decision', type:'observed', mentorSignOff:true,  employerBuyOff:false },
+  ],
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// OAP-EMPLOYER.JS — Employer Center
+// Business profile, OAP configuration, role setup, schedule,
+// mentor management
+// JobLine.ai | JobLine.ai | v1.0.0
+// ═══════════════════════════════════════════════════════════════════
+
+'use strict';
+
+const OAP_EMPLOYER = {
+
+  // ── STORAGE KEYS ────────────────────────────────────────────────
+  _keys: {
+    profile:   'oap-employer-profile',
+    programs:  'oap-employer-programs',
+    mentors:   'oap-employer-mentors',
+    mentees:   'oap-employer-mentees',
+    certs:     'oap-certs',
+  },
+
+  // ── LOAD / SAVE ──────────────────────────────────────────────────
+  getProfile()           { return this._load(this._keys.profile)   || null; },
+  getPrograms()          { return this._load(this._keys.programs)  || {}; },
+  getMentors()           { return this._load(this._keys.mentors)   || {}; },
+  getMentees()           { return this._load(this._keys.mentees)   || {}; },
+  getCerts()             { return this._load(this._keys.certs)     || {}; },
+  saveProfile(p)         { this._save(this._keys.profile,  p); },
+  savePrograms(p)        { this._save(this._keys.programs, p); },
+  saveMentors(m)         { this._save(this._keys.mentors,  m); },
+  saveMentees(m)         { this._save(this._keys.mentees,  m); },
+  saveCerts(c)           { this._save(this._keys.certs,    c); },
+
+  // ── EMPLOYER PROFILE ────────────────────────────────────────────
+  // @returns {Object} employer business profile
+  createProfile(data) {
+    var p = {
+      id:           'emp-' + Date.now(),
+      companyName:  data.companyName   || '',
+      industry:     data.industry      || '',
+      address:      data.address       || '',
+      city:         data.city          || '',
+      state:        data.state         || '',
+      zip:          data.zip           || '',
+      phone:        data.phone         || '',
+      email:        data.email         || '',
+      website:      data.website       || '',
+      contactName:  data.contactName   || '',
+      contactTitle: data.contactTitle  || '',
+      // OAP program settings
+      oapEnabled:   true,
+      certValidYears: data.certValidYears || 2,
+      recertWeeks:  data.recertWeeks   || 104, // 2 years
+      requireEmployerBuyOff: data.requireEmployerBuyOff !== false,
+      allowPortableCert: data.allowPortableCert !== false,
+      logoData:     data.logoData      || null, // base64 for cert
+      createdAt:    new Date().toISOString(),
+      updatedAt:    new Date().toISOString(),
+    };
+    this.saveProfile(p);
+    return p;
+  },
+
+  updateProfile(data) {
+    var p = Object.assign(this.getProfile() || {}, data, { updatedAt: new Date().toISOString() });
+    this.saveProfile(p);
+    return p;
+  },
+
+  // ── OAP PROGRAM CREATION ─────────────────────────────────────────
+  // An employer creates a "program" for each role they hire for.
+  // @param {string} roleId   — OAP_ROLES key
+  // @param {Object} config   — sections, checkpoints, schedule, required equipment
+  createProgram(roleId, config) {
+    var programs = this.getPrograms();
+    var progId = 'prog-' + roleId + '-' + Date.now();
+    programs[progId] = {
+      id:          progId,
+      roleId:      roleId,
+      roleLabel:   OAP_ROLES[roleId] ? OAP_ROLES[roleId].label : config.roleLabel || roleId,
+      // Which sections are active for this role
+      sections:    config.sections    || ['orientation','safety','materials','measuring','tooling','machine','floor'],
+      // Employer-selected checkpoints per section
+      checkpoints: config.checkpoints || this._defaultCheckpoints(roleId),
+      // Which machines this role will be qualified on
+      machines:    config.machines    || [],
+      // Which measuring tools required
+      measuring:   config.measuring   || [],
+      // Which tooling to be familiar with
+      tooling:     config.tooling     || [],
+      // Which safety certs required
+      safetyCerts: config.safetyCerts || ['shop_safety','ppe_cert','lockout_tagout','fire_ext','hazcom'],
+      // Which OAK template to use
+      oakTemplate: config.oakTemplate || null,
+      // Custom OAK checkpoints (employer-added)
+      oakCustom:   config.oakCustom   || [],
+      // Schedule template
+      scheduleTemplate: config.scheduleTemplate || 'standard_90',
+      customSchedule:   config.customSchedule   || null,
+      passMark:    config.passMark    || 80,
+      active:      true,
+      createdAt:   new Date().toISOString(),
+      updatedAt:   new Date().toISOString(),
+    };
+    this.savePrograms(programs);
+    return programs[progId];
+  },
+
+  updateProgram(progId, data) {
+    var programs = this.getPrograms();
+    if (!programs[progId]) return null;
+    programs[progId] = Object.assign(programs[progId], data, { updatedAt: new Date().toISOString() });
+    this.savePrograms(programs);
+    return programs[progId];
+  },
+
+  _defaultCheckpoints(roleId) {
+    var role = OAP_ROLES[roleId];
+    var track = role ? role.track : 'lathe';
+    var base = {};
+    // Always include all orientation + safety checkpoints
+    base.orientation = (OAP_CHECKPOINT_LIBRARY.orientation || []).map(function(c){ return c.id; });
+    base.safety      = (OAP_CHECKPOINT_LIBRARY.safety      || []).map(function(c){ return c.id; });
+    base.materials   = (OAP_CHECKPOINT_LIBRARY.materials   || []).map(function(c){ return c.id; });
+    base.measuring   = (OAP_CHECKPOINT_LIBRARY.measuring   || []).map(function(c){ return c.id; });
+    base.tooling     = (OAP_CHECKPOINT_LIBRARY.tooling     || []).map(function(c){ return c.id; });
+    return base;
+  },
+
+  // ── MENTOR MANAGEMENT ────────────────────────────────────────────
+  addMentor(data) {
+    var mentors = this.getMentors();
+    var mentorId = 'mentor-' + Date.now();
+    mentors[mentorId] = {
+      id:        mentorId,
+      name:      data.name      || '',
+      title:     data.title     || '',
+      email:     data.email     || '',
+      phone:     data.phone     || '',
+      roles:     data.roles     || [],   // which OAP_ROLES they can mentor
+      machines:  data.machines  || [],   // which machines they are certified to sign off
+      // Mentor credentials
+      certifiedBy: data.certifiedBy || '',
+      certDate:    data.certDate    || '',
+      active:    true,
+      createdAt: new Date().toISOString(),
+    };
+    this.saveMentors(mentors);
+    return mentors[mentorId];
+  },
+
+  // ── MENTEE ENROLLMENT ────────────────────────────────────────────
+  enrollMentee(data) {
+    var mentees = this.getMentees();
+    var menteeId = 'mentee-' + Date.now();
+    var prog = data.programId ? this.getPrograms()[data.programId] : null;
+    mentees[menteeId] = {
+      id:         menteeId,
+      name:       data.name       || '',
+      email:      data.email      || '',
+      phone:      data.phone      || '',
+      hireDate:   data.hireDate   || new Date().toISOString().slice(0,10),
+      roleId:     data.roleId     || '',
+      programId:  data.programId  || '',
+      mentorId:   data.mentorId   || '',
+      employerId: (this.getProfile() || {}).id || '',
+      // Progress tracking
+      status:     OAP_STATUS.IN_PROGRESS,
+      currentSection: 'orientation',
+      // Checkpoint completion: { checkpointId: { status, signedBy, signedAt, menteeNotes, mentorNotes } }
+      checkpoints: {},
+      // Section completion dates
+      sectionDates: {},
+      // Test scores
+      courseScores: {},
+      // Equipment sign-offs: { equipId: { signedBy, signedAt, notes } }
+      equipSignOffs: {},
+      // Machine buy-offs: { machineId: { mentorSignOff, employerBuyOff, date, notes } }
+      machineBuyOffs: {},
+      // Mentee notes (free form per section)
+      menteeNotes: {},
+      // Final cert
+      certId: null,
+      enrolledAt: new Date().toISOString(),
+      updatedAt:  new Date().toISOString(),
+    };
+    this.saveMentees(mentees);
+    return mentees[menteeId];
+  },
+
+  getMentee(menteeId) {
+    return (this.getMentees())[menteeId] || null;
+  },
+
+  updateMentee(menteeId, data) {
+    var mentees = this.getMentees();
+    if (!mentees[menteeId]) return null;
+    mentees[menteeId] = Object.assign(mentees[menteeId], data, { updatedAt: new Date().toISOString() });
+    this.saveMentees(mentees);
+    return mentees[menteeId];
+  },
+
+  // Sign off a checkpoint (mentor action)
+  signCheckpoint(menteeId, checkpointId, signedBy, passed, notes) {
+    var mentee = this.getMentee(menteeId);
+    if (!mentee) return false;
+    mentee.checkpoints[checkpointId] = {
+      status:    passed ? OAP_STATUS.COMPLETE : OAP_STATUS.FAILED,
+      signedBy:  signedBy,
+      signedAt:  new Date().toISOString(),
+      passed:    passed,
+      notes:     notes || '',
+    };
+    mentee.updatedAt = new Date().toISOString();
+    var mentees = this.getMentees();
+    mentees[menteeId] = mentee;
+    this.saveMentees(mentees);
+    return mentee;
+  },
+
+  // Buy-off a machine (employer final action)
+  buyOffMachine(menteeId, machineId, employerName, notes) {
+    var mentee = this.getMentee(menteeId);
+    if (!mentee) return false;
+    mentee.machineBuyOffs[machineId] = {
+      mentorSignOff:   true,
+      employerBuyOff:  true,
+      employerName:    employerName,
+      date:            new Date().toISOString(),
+      notes:           notes || '',
+    };
+    mentee.updatedAt = new Date().toISOString();
+    var mentees = this.getMentees();
+    mentees[menteeId] = mentee;
+    this.saveMentees(mentees);
+    return mentee;
+  },
+
+  // Add mentee equipment sign-off
+  signEquipment(menteeId, equipId, signedBy, notes) {
+    var mentee = this.getMentee(menteeId);
+    if (!mentee) return false;
+    mentee.equipSignOffs[equipId] = { signedBy, signedAt: new Date().toISOString(), notes: notes||'' };
+    var mentees = this.getMentees();
+    mentees[menteeId] = mentee;
+    this.saveMentees(mentees);
+    return mentee;
+  },
+
+  // Record a course score
+  recordCourseScore(menteeId, courseId, score, passed) {
+    var mentee = this.getMentee(menteeId);
+    if (!mentee) return false;
+    var existing = mentee.courseScores[courseId] || {};
+    mentee.courseScores[courseId] = {
+      score, passed,
+      attempts:  (existing.attempts || 0) + 1,
+      bestScore: Math.max(existing.bestScore || 0, score),
+      lastAt:    new Date().toISOString(),
+      passedAt:  (passed && !existing.passedAt) ? new Date().toISOString() : existing.passedAt,
+    };
+    var mentees = this.getMentees();
+    mentees[menteeId] = mentee;
+    this.saveMentees(mentees);
+    return mentee;
+  },
+
+  // Compute section completion % for a mentee
+  getSectionProgress(menteeId) {
+    var mentee = this.getMentee(menteeId);
+    if (!mentee) return {};
+    var prog = this.getPrograms()[mentee.programId];
+    if (!prog) return {};
+    var result = {};
+    OAP_SECTIONS.forEach(function(sec) {
+      var cpIds = prog.checkpoints[sec.id] || [];
+      if (!cpIds.length) { result[sec.id] = { pct:0, done:0, total:0, unlocked:false }; return; }
+      var done = cpIds.filter(function(id){ return mentee.checkpoints[id] && mentee.checkpoints[id].passed; }).length;
+      // Section is unlocked if all required-before sections are 100%
+      var unlocked = (sec.requiredBefore || []).every(function(req){
+        return result[req] && result[req].pct === 100;
+      }) || sec.requiredBefore.length === 0;
+      result[sec.id] = { pct: Math.round(done/cpIds.length*100), done, total: cpIds.length, unlocked };
+    });
+    return result;
+  },
+
+  // ── CERTIFICATE ISSUANCE ─────────────────────────────────────────
+  issueCertificate(menteeId, employerSignature) {
+    var mentee = this.getMentee(menteeId);
+    var profile = this.getProfile();
+    var programs = this.getPrograms();
+    var mentors  = this.getMentors();
+    if (!mentee || !profile) return null;
+
+    var prog   = programs[mentee.programId] || {};
+    var mentor = mentors[mentee.mentorId]   || {};
+
+    var certId = 'CERT-' + Math.random().toString(36).slice(2,8).toUpperCase() + '-' + new Date().getFullYear();
+    var issued = new Date().toISOString();
+    var expires = new Date(Date.now() + (profile.certValidYears||2) * 365.25*24*3600*1000).toISOString();
+
+    // Collect what was passed
+    var machinesPassed  = Object.keys(mentee.machineBuyOffs).filter(function(k){ return mentee.machineBuyOffs[k].employerBuyOff; });
+    var equipPassed     = Object.keys(mentee.equipSignOffs);
+    var safetyCertsDone = (prog.safetyCerts||[]).filter(function(sc){ return mentee.courseScores['safety_'+sc] && mentee.courseScores['safety_'+sc].passed; });
+
+    var cert = {
+      certId,
+      certType:    'initial',
+      menteeId,
+      menteeName:  mentee.name,
+      menteeEmail: mentee.email,
+      employerId:  profile.id,
+      employerName: profile.companyName,
+      employerCity: profile.city + ', ' + profile.state,
+      roleId:      mentee.roleId,
+      roleLabel:   prog.roleLabel || (OAP_ROLES[mentee.roleId]||{}).label || '',
+      machinesPassed,
+      toolingPassed:   equipPassed.filter(function(id){ return OAP_TOOLING[id]; }),
+      measuringPassed: equipPassed.filter(function(id){ return OAP_MEASURING[id]; }),
+      safetyCerts:     safetyCertsDone,
+      mentorName:      mentor.name || '',
+      mentorTitle:     mentor.title || '',
+      employerSignature: employerSignature || profile.contactName,
+      issuedDate:   issued,
+      expiresDate:  expires,
+      checkpoints:  mentee.checkpoints,
+      // Portable verification string
+      qrPayload:    JSON.stringify({ certId, menteeName: mentee.name, employerName: profile.companyName, roleLabel: prog.roleLabel, issuedDate: issued, machinesPassed }),
+      issuedAt:     issued,
+    };
+
+    var certs = this.getCerts();
+    certs[certId] = cert;
+    this.saveCerts(certs);
+
+    // Update mentee record
+    this.updateMentee(menteeId, { certId, status: OAP_STATUS.COMPLETE });
+
+    return cert;
+  },
+
+  // ── RECERTIFICATION ──────────────────────────────────────────────
+  issueRecert(originalCertId, employerSignature) {
+    var certs  = this.getCerts();
+    var orig   = certs[originalCertId];
+    if (!orig) return null;
+    var recert = Object.assign({}, orig, {
+      certId:   'RECERT-' + Math.random().toString(36).slice(2,8).toUpperCase() + '-' + new Date().getFullYear(),
+      certType: 'recert',
+      originalCertId: originalCertId,
+      issuedDate:  new Date().toISOString(),
+      expiresDate: new Date(Date.now() + 2*365.25*24*3600*1000).toISOString(),
+      employerSignature: employerSignature,
+      issuedAt: new Date().toISOString(),
+    });
+    certs[recert.certId] = recert;
+    this.saveCerts(certs);
+    return recert;
+  },
+
+  // ── PERSISTENCE ──────────────────────────────────────────────────
+  _load(key) { try { var r=localStorage.getItem(key); return r?JSON.parse(r):null; } catch(e){ return null; } },
+  _save(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){} },
+
+  // Export mentee portable record (for resume/job change)
+  exportPortableRecord(menteeId) {
+    var mentee = this.getMentee(menteeId);
+    var certs  = this.getCerts();
+    if (!mentee) return null;
+    var cert = mentee.certId ? certs[mentee.certId] : null;
+    return {
+      exportedAt:  new Date().toISOString(),
+      version:     '1.0',
+      mentee:      { name: mentee.name, email: mentee.email },
+      certificates: cert ? [cert] : [],
+      machinesPassed: cert ? cert.machinesPassed : [],
+      measuringPassed: cert ? cert.measuringPassed : [],
+      toolingPassed:  cert ? cert.toolingPassed   : [],
+      safetyCerts:    cert ? cert.safetyCerts      : [],
+      courseScores:   mentee.courseScores,
+    };
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// OAP-CERT.JS — Certificate Generator (Printable HTML)
+// Produces a self-contained printable certificate with:
+// - employer stamp and logo area
+// - mentee info, role, date
+// - full equipment and machine list
+// - portability note for job changes
+// JobLine.ai | JobLine.ai | v1.0.0
+// ═══════════════════════════════════════════════════════════════════
+
+'use strict';
+
+const OAP_CERT = {
+
+  // Generate printable HTML certificate string
+  generate(cert) {
+    var issued  = new Date(cert.issuedDate).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+    var expires = new Date(cert.expiresDate).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+    var isRecert = cert.certType === 'recert';
+
+    // Build equipment lists
+    var machineList = (cert.machinesPassed||[]).map(function(id){
+      var m = OAP_MACHINES[id]; return m ? m.label : id;
+    });
+    var measList = (cert.measuringPassed||[]).map(function(id){
+      var m = OAP_MEASURING[id]; return m ? m.label : id;
+    });
+    var toolList = (cert.toolingPassed||[]).map(function(id){
+      var m = OAP_TOOLING[id]; return m ? m.label : id;
+    });
+    var safetyList = (cert.safetyCerts||[]).map(function(id){
+      var m = OAP_SAFETY[id]; return m ? m.label : id;
+    });
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>OAP Certificate — ${cert.menteeName}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#f5f5f0; font-family:'Inter',sans-serif; color:#1a1a2e; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+  .cert { background:#fff; width:850px; max-width:100%; border:3px solid #1a1a2e; position:relative; overflow:hidden; }
+  /* Border decoration */
+  .cert::before { content:''; position:absolute; inset:8px; border:1px solid #c8a96e; pointer-events:none; z-index:0; }
+  .cert-inner { position:relative; z-index:1; padding:40px 50px; }
+  /* Header */
+  .cert-header { text-align:center; border-bottom:2px solid #1a1a2e; padding-bottom:22px; margin-bottom:22px; }
+  .cert-program { font-family:'Inter',sans-serif; font-weight:900; font-size:11px; letter-spacing:4px; text-transform:uppercase; color:#c8a96e; margin-bottom:6px; }
+  .cert-title { font-family:'Inter',sans-serif; font-weight:900; font-size:38px; line-height:1; color:#1a1a2e; margin-bottom:4px; }
+  .cert-sub { font-family:'Inter',sans-serif; font-size:16px; font-weight:400; color:#555; letter-spacing:2px; }
+  ${isRecert ? '.cert-recert-badge { display:inline-block; background:#c8a96e; color:#fff; font-family:"Barlow Condensed",sans-serif; font-weight:700; font-size:10px; letter-spacing:2px; padding:3px 10px; border-radius:3px; margin-top:6px; }' : ''}
+  /* Body */
+  .cert-body { text-align:center; margin-bottom:22px; }
+  .cert-presented { font-size:12px; color:#888; letter-spacing:2px; text-transform:uppercase; margin-bottom:8px; }
+  .cert-name { font-family:'Inter',sans-serif; font-weight:900; font-size:42px; color:#1a1a2e; margin-bottom:4px; border-bottom:2px solid #c8a96e; display:inline-block; padding:0 20px; }
+  .cert-role-line { font-size:13px; color:#444; margin-top:8px; line-height:1.6; }
+  .cert-role { font-weight:600; color:#1a1a2e; }
+  /* Equipment grid */
+  .cert-section { margin-bottom:18px; }
+  .cert-sec-title { font-family:'Inter',sans-serif; font-weight:700; font-size:10px; letter-spacing:2.5px; text-transform:uppercase; color:#c8a96e; border-bottom:1px solid #e0e0d8; margin-bottom:8px; padding-bottom:4px; }
+  .cert-pills { display:flex; flex-wrap:wrap; gap:5px; }
+  .cert-pill { background:#f0efe8; border:1px solid #d8d6c8; font-family:'Inter',sans-serif; font-size:11px; font-weight:600; padding:3px 10px; border-radius:3px; color:#333; }
+  /* Signoff row */
+  .cert-sigs { display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; margin-top:24px; border-top:1px solid #ddd; padding-top:20px; }
+  .sig-block { text-align:center; }
+  .sig-line { border-bottom:1px solid #1a1a2e; margin-bottom:5px; height:32px; display:flex; align-items:flex-end; justify-content:center; }
+  .sig-name { font-family:'Inter',sans-serif; font-weight:700; font-size:13px; color:#1a1a2e; }
+  .sig-title { font-size:10px; color:#888; letter-spacing:1px; text-transform:uppercase; }
+  /* Cert ID / portability */
+  .cert-footer { background:#f8f7f0; border-top:2px solid #1a1a2e; padding:14px 40px; display:flex; align-items:center; justify-content:space-between; }
+  .cert-id { font-family:'JetBrains Mono',monospace; font-size:11px; color:#666; }
+  .cert-dates { font-size:10px; color:#888; text-align:right; line-height:1.6; }
+  .cert-portable { font-size:9px; color:#c8a96e; font-weight:600; letter-spacing:1px; text-transform:uppercase; margin-top:3px; }
+  /* Employer block */
+  .cert-employer { background:#f8f7f0; border:1px solid #e0dfd0; border-radius:4px; padding:12px 16px; margin-bottom:18px; display:flex; align-items:center; justify-content:space-between; }
+  .emp-label { font-size:9px; color:#888; letter-spacing:2px; text-transform:uppercase; margin-bottom:2px; }
+  .emp-name { font-family:'Inter',sans-serif; font-weight:900; font-size:16px; color:#1a1a2e; }
+  .emp-loc { font-size:11px; color:#666; }
+  .emp-logo { width:60px; height:40px; border:1px dashed #ccc; display:flex; align-items:center; justify-content:center; font-size:9px; color:#bbb; border-radius:3px; }
+  @media print {
+    body { background:#fff; padding:0; }
+    .cert { border:3px solid #1a1a2e; width:100%; max-width:none; }
+    .no-print { display:none !important; }
+  }
+</style>
+</head>
+<body>
+<div>
+  <!-- Print / Save actions (no-print) -->
+  <div class="no-print" style="text-align:center;margin-bottom:16px">
+    <button onclick="window.print()" style="background:#1a1a2e;color:#fff;border:none;padding:10px 24px;font-family:'Inter',sans-serif;font-weight:700;font-size:14px;letter-spacing:1px;cursor:pointer;border-radius:4px;margin-right:8px">🖨 Print / Save PDF</button>
+    <button onclick="window.close()" style="background:#e0e0d8;color:#333;border:none;padding:10px 18px;font-family:'Inter',sans-serif;font-weight:700;font-size:13px;cursor:pointer;border-radius:4px">Close</button>
+  </div>
+
+  <div class="cert">
+    <div class="cert-inner">
+
+      <!-- Header -->
+      <div class="cert-header">
+        <div class="cert-program">JobLine OAP Program · Operator Acceptance Certification</div>
+        <div class="cert-title">CERTIFICATE OF QUALIFICATION</div>
+        <div class="cert-sub">Issued upon successful completion of all OAP requirements</div>
+        ${isRecert ? '<div><span class="cert-recert-badge">RECERTIFICATION</span></div>' : ''}
+      </div>
+
+      <!-- Employer block -->
+      <div class="cert-employer">
+        <div>
+          <div class="emp-label">Issuing Employer</div>
+          <div class="emp-name">${cert.employerName || 'Self-Certified'}</div>
+          <div class="emp-loc">${cert.employerCity || ''}</div>
+        </div>
+        <div class="emp-logo">LOGO</div>
+      </div>
+
+      <!-- Name -->
+      <div class="cert-body">
+        <div class="cert-presented">This certifies that</div>
+        <div class="cert-name">${cert.menteeName}</div>
+        <div class="cert-role-line">
+          has successfully completed the <span class="cert-role">${cert.roleLabel}</span>
+          Operator Acceptance Program and demonstrated competency in all required
+          areas as specified by ${cert.employerName || 'the certifying authority'}.
+        </div>
+      </div>
+
+      <!-- Machines passed -->
+      ${machineList.length ? `<div class="cert-section">
+        <div class="cert-sec-title">🏭 Qualified to Operate</div>
+        <div class="cert-pills">${machineList.map(function(m){ return '<span class="cert-pill">'+m+'</span>'; }).join('')}</div>
+      </div>` : ''}
+
+      <!-- Measuring equipment -->
+      ${measList.length ? `<div class="cert-section">
+        <div class="cert-sec-title">📐 Measurement Equipment Sign-Off</div>
+        <div class="cert-pills">${measList.map(function(m){ return '<span class="cert-pill">'+m+'</span>'; }).join('')}</div>
+      </div>` : ''}
+
+      <!-- Tooling -->
+      ${toolList.length ? `<div class="cert-section">
+        <div class="cert-sec-title">🔧 Tooling Competency</div>
+        <div class="cert-pills">${toolList.map(function(m){ return '<span class="cert-pill">'+m+'</span>'; }).join('')}</div>
+      </div>` : ''}
+
+      <!-- Safety -->
+      ${safetyList.length ? `<div class="cert-section">
+        <div class="cert-sec-title">🦺 Safety Certifications Completed</div>
+        <div class="cert-pills">${safetyList.map(function(m){ return '<span class="cert-pill">'+m+'</span>'; }).join('')}</div>
+      </div>` : ''}
+
+      <!-- Signatures -->
+      <div class="cert-sigs">
+        <div class="sig-block">
+          <div class="sig-line"><span style="font-family:'Inter',sans-serif;font-size:18px;color:#1a1a2e">${cert.mentorName}</span></div>
+          <div class="sig-name">${cert.mentorName || '_______________'}</div>
+          <div class="sig-title">Mentor / Trainer</div>
+        </div>
+        <div class="sig-block">
+          <div class="sig-line"><span style="font-family:'Inter',sans-serif;font-size:18px;color:#1a1a2e">${cert.employerSignature}</span></div>
+          <div class="sig-name">${cert.employerSignature || '_______________'}</div>
+          <div class="sig-title">Employer / Authorized Sign-Off</div>
+        </div>
+        <div class="sig-block">
+          <div class="sig-line"><span style="font-family:'Inter',sans-serif;font-size:18px;color:#1a1a2e">${cert.menteeName}</span></div>
+          <div class="sig-name">${cert.menteeName}</div>
+          <div class="sig-title">Candidate</div>
+        </div>
+      </div>
+
+    </div><!-- cert-inner -->
+
+    <!-- Footer -->
+    <div class="cert-footer">
+      <div>
+        <div class="cert-id">Cert ID: ${cert.certId}</div>
+        <div class="cert-portable">✓ Portable — present to any employer</div>
+      </div>
+      <div class="cert-dates">
+        <div>Issued: ${issued}</div>
+        <div>Expires: ${expires}</div>
+      </div>
+    </div>
+
+  </div><!-- cert -->
+</div>
+</body></html>`;
+  },
+
+  // Open certificate in new window for print
+  openPrintWindow(cert) {
+    var html = this.generate(cert);
+    var w = window.open('', '_blank', 'width=900,height=700');
+    if (w) { w.document.write(html); w.document.close(); }
+  },
+
+  // Generate a compact portable record card HTML
+  generatePortableCard(exportRecord) {
+    var r = exportRecord;
+    var cert = r.certificates[0];
+    if (!cert) return '<p>No certificate available.</p>';
+    var issued = new Date(cert.issuedDate).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'});
+    return `<div style="background:#fff;border:2px solid #1a1a2e;border-radius:8px;padding:20px;max-width:480px;font-family:'Inter',sans-serif">
+      <div style="font-family:'Inter',sans-serif;font-weight:900;font-size:11px;letter-spacing:3px;color:#c8a96e;margin-bottom:4px">PORTABLE OAP RECORD</div>
+      <div style="font-family:'Inter',sans-serif;font-weight:900;font-size:24px;color:#1a1a2e;margin-bottom:2px">${r.mentee.name}</div>
+      <div style="font-size:12px;color:#666;margin-bottom:14px">${cert.roleLabel} · ${cert.employerName} · ${issued}</div>
+      ${cert.machinesPassed.length ? '<div style="font-size:10px;color:#888;letter-spacing:1px;margin-bottom:5px">QUALIFIED MACHINES</div><div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px">' + cert.machinesPassed.map(function(id){ var m=OAP_MACHINES[id]; return '<span style="background:#f0efe8;border:1px solid #ddd;font-size:10px;padding:2px 8px;border-radius:3px">'+(m?m.label:id)+'</span>'; }).join('') + '</div>' : ''}
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#aaa;border-top:1px solid #eee;padding-top:8px;margin-top:8px">ID: ${cert.certId} · Expires: ${new Date(cert.expiresDate).toLocaleDateString()}</div>
+    </div>`;
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// OAP-ENGINE.JS — Full UI Engine for JobLine OAP Program
+// Depends on: OAP_TYPES, OAP_DATA, OAP_EMPLOYER, OAP_CERT
+// JobLine.ai | JobLine.ai | v1.0.0
+// ═══════════════════════════════════════════════════════════════════
+
+'use strict';
+
+var OAP_STATE = {
+  view: 'home',           // home | employer | program | mentor | mentee | course | cert | standalone
+  subView: null,
+  activeMentee: null,
+  activeMentor: null,
+  activeProgram: null,
+  activeCourse: null,
+  activeCert: null,
+  courseState: null,      // running test state
+};
+
+// ── INIT ──────────────────────────────────────────────────────────
+function oapInit() {
+  oapRender();
+}
+
+function oapSetView(v, sub) {
+  OAP_STATE.view = v;
+  OAP_STATE.subView = sub || null;
+  oapRender();
+}
+
+function oapRender() {
+  var el = document.getElementById('oap-root');
+  if (!el) return;
+  var profile = OAP_EMPLOYER.getProfile();
+  switch(OAP_STATE.view) {
+    case 'home':       el.innerHTML = oapHome(profile);      break;
+    case 'employer':   el.innerHTML = oapEmployerCenter();   break;
+    case 'program':    el.innerHTML = oapProgramBuilder();   break;
+    case 'mentor':     el.innerHTML = oapMentorPanel();      break;
+    case 'mentee':     el.innerHTML = oapMenteePanel();      break;
+    case 'course':     el.innerHTML = oapCourseRunner();     break;
+    case 'standalone': el.innerHTML = oapStandalone();       break;
+    default:           el.innerHTML = oapHome(profile);
+  }
+}
+
+// ── SECTION COLOR MAP ─────────────────────────────────────────────
+var SEC_COLOR = { orientation:'#a78bfa', safety:'#ff4757', materials:'#f5c518', measuring:'#4a9eff', tooling:'#22b6c3', machine:'#ff6b35', floor:'#22b6c3' };
+var SEC_ICON  = { orientation:'🏢', safety:'🦺', materials:'📦', measuring:'📐', tooling:'🔧', machine:'🏭', floor:'✅' };
+
+// ── HOME / DASHBOARD ──────────────────────────────────────────────
+function oapHome(profile) {
+  var mentees  = OAP_EMPLOYER.getMentees();
+  var programs = OAP_EMPLOYER.getPrograms();
+  var menteeCount = Object.keys(mentees).length;
+  var activeCount = Object.values(mentees).filter(function(m){ return m.status===OAP_STATUS.IN_PROGRESS; }).length;
+  var certCount   = Object.values(mentees).filter(function(m){ return m.status===OAP_STATUS.COMPLETE; }).length;
+
+  var h = '<div class="oap-hero">';
+  h += '<div class="oap-logo-row"><span class="oap-badge">JobLine</span> <span class="oap-title">Operator Acceptance Program</span></div>';
+  h += '<p class="oap-hero-desc">Structured onboarding, skill verification, and portable certification for manufacturing operators.</p>';
+  h += '</div>';
+
+  if (!profile) {
+    h += '<div class="oap-setup-cta">';
+    h += '<div class="oap-setup-icon">🏢</div>';
+    h += '<h2>Set Up Your Employer Center</h2>';
+    h += '<p>Configure your company profile, define role-specific OAP programs, and start enrolling operators.</p>';
+    h += '<button class="oap-btn-primary" onclick="oapSetView(\'employer\',\'setup\')">Set Up Employer Profile →</button>';
+    h += '<div style="margin-top:14px"><button class="oap-btn-ghost" onclick="oapSetView(\'standalone\')">📋 Take a Standalone OAP Test (No employer)</button></div>';
+    h += '</div>';
+    return h;
+  }
+
+  // Employer dashboard
+  h += '<div class="oap-dash-grid">';
+  h += oapStatCard('🧑‍🏭 Enrolled', menteeCount, 'Total mentees');
+  h += oapStatCard('📋 In Progress', activeCount, 'Currently training');
+  h += oapStatCard('✅ Certified', certCount, 'Completed OAP');
+  h += oapStatCard('📝 Programs', Object.keys(programs).length, 'Active role programs');
+  h += '</div>';
+
+  h += '<div class="oap-section-grid">';
+  // Quick actions
+  h += '<div class="oap-card"><div class="oap-card-title">Quick Actions</div>';
+  h += '<div class="oap-action-list">';
+  h += '<button class="oap-action-btn" onclick="oapSetView(\'mentee\',\'enroll\')">➕ Enroll New Operator</button>';
+  h += '<button class="oap-action-btn" onclick="oapSetView(\'mentor\',\'list\')">👤 Manage Mentors</button>';
+  h += '<button class="oap-action-btn" onclick="oapSetView(\'program\',\'list\')">📋 Manage Programs</button>';
+  h += '<button class="oap-action-btn" onclick="oapSetView(\'employer\',\'profile\')">🏢 Edit Company Profile</button>';
+  h += '<button class="oap-action-btn" onclick="oapSetView(\'standalone\')">🎓 Standalone Certification</button>';
+  h += '</div></div>';
+
+  // Recent mentees
+  h += '<div class="oap-card"><div class="oap-card-title">Active Operators</div>';
+  var recent = Object.values(mentees).filter(function(m){ return m.status===OAP_STATUS.IN_PROGRESS; }).slice(0,5);
+  if (!recent.length) {
+    h += '<p class="oap-empty">No operators currently in training. <span class="oap-link" onclick="oapSetView(\'mentee\',\'enroll\')">Enroll one →</span></p>';
+  } else {
+    recent.forEach(function(m) {
+      var prog = OAP_EMPLOYER.getSectionProgress(m.id);
+      var totalSec = Object.keys(prog).length || 1;
+      var doneSec  = Object.values(prog).filter(function(p){ return p.pct===100; }).length;
+      var pct = Math.round(doneSec/totalSec*100);
+      h += '<div class="oap-mentee-row" onclick="oapOpenMentee(\'' + m.id + '\')">';
+      h += '<div class="oap-avatar">' + (m.name||'?')[0].toUpperCase() + '</div>';
+      h += '<div style="flex:1;min-width:0"><div class="oap-mentee-name">' + m.name + '</div>';
+      h += '<div class="oap-mentee-role">' + ((OAP_ROLES[m.roleId]||{}).label||m.roleId) + '</div>';
+      h += '<div class="oap-prog-bar"><div class="oap-prog-fill" style="width:' + pct + '%"></div></div></div>';
+      h += '<div class="oap-pct">' + pct + '%</div></div>';
+    });
+  }
+  h += '</div>';
+  h += '</div>'; // section-grid
+
+  return h;
+}
+
+function oapStatCard(label, val, sub) {
+  return '<div class="oap-stat-card"><div class="oap-stat-val">' + val + '</div><div class="oap-stat-label">' + label + '</div><div class="oap-stat-sub">' + sub + '</div></div>';
+}
+
+// ── EMPLOYER CENTER ───────────────────────────────────────────────
+function oapEmployerCenter() {
+  var profile = OAP_EMPLOYER.getProfile() || {};
+  var sub = OAP_STATE.subView || (profile.id ? 'profile' : 'setup');
+
+  var h = '<div class="oap-page-header"><button class="oap-back" onclick="oapSetView(\'home\')">← Dashboard</button><h1>🏢 Employer Center</h1></div>';
+  h += '<div class="oap-tabs"><span class="oap-tab' + (sub==='profile'?' active':'') + '" onclick="oapSetView(\'employer\',\'profile\')">Profile</span>';
+  h += '<span class="oap-tab' + (sub==='requirements'?' active':'') + '" onclick="oapSetView(\'employer\',\'requirements\')">OAP Requirements</span>';
+  h += '<span class="oap-tab' + (sub==='schedule'?' active':'') + '" onclick="oapSetView(\'employer\',\'schedule\')">Schedule</span></div>';
+
+  if (sub === 'setup' || sub === 'profile') {
+    h += '<div class="oap-card"><div class="oap-card-title">Company Information</div>';
+    h += '<div class="oap-form-grid">';
+    h += oapField('Company Name','text','emp-companyName',profile.companyName||'','Your legal business name');
+    h += oapField('Industry','select','emp-industry',profile.industry||'',OAP_INDUSTRIES.map(function(i){ return {val:i,label:i}; }));
+    h += oapField('Contact Name','text','emp-contactName',profile.contactName||'','Primary OAP administrator');
+    h += oapField('Contact Title','text','emp-contactTitle',profile.contactTitle||'','e.g. Quality Manager');
+    h += oapField('Email','email','emp-email',profile.email||'','');
+    h += oapField('Phone','tel','emp-phone',profile.phone||'','');
+    h += oapField('City','text','emp-city',profile.city||'','');
+    h += oapField('State','text','emp-state',profile.state||'','');
+    h += '</div>';
+    h += '<div class="oap-form-grid" style="margin-top:12px">';
+    h += oapField('Cert Valid (years)','number','emp-certYears',profile.certValidYears||2,'2 = standard');
+    h += oapField('Recert Interval','select','emp-recert',profile.recertWeeks||104,[{val:52,label:'1 Year'},{val:104,label:'2 Years'},{val:156,label:'3 Years'}]);
+    h += '</div>';
+    h += '<div style="margin-top:12px"><label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" id="emp-buyoff"' + (profile.requireEmployerBuyOff!==false?' checked':'') + '> Require employer final buy-off for certification</label></div>';
+    h += '<div style="margin-top:6px"><label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer"><input type="checkbox" id="emp-portable"' + (profile.allowPortableCert!==false?' checked':'') + '> Issue portable certificates (operator can use at other employers)</label></div>';
+    h += '<button class="oap-btn-primary" style="margin-top:16px" onclick="oapSaveProfile()">Save Company Profile</button></div>';
+  }
+
+  if (sub === 'requirements') {
+    h += '<div class="oap-card"><div class="oap-card-title">Default OAP Requirements</div>';
+    h += '<p class="oap-hint">These defaults apply to all programs unless overridden per role. Configure per-role requirements in Program Builder.</p>';
+    h += '<div class="oap-section-list">';
+    OAP_SECTIONS.forEach(function(sec) {
+      h += '<div class="oap-sec-row"><div class="oap-sec-dot" style="background:' + SEC_COLOR[sec.id] + '"></div>';
+      h += '<div style="flex:1"><strong>' + sec.label + '</strong><div class="oap-hint">' + sec.desc + '</div></div>';
+      h += '<span class="oap-badge-sm">' + (OAP_CHECKPOINT_LIBRARY[sec.id]||[]).length + ' checkpoints</span></div>';
+    });
+    h += '</div>';
+    h += '<button class="oap-btn-primary" style="margin-top:14px" onclick="oapSetView(\'program\',\'new\')">Build Role-Specific Program →</button></div>';
+  }
+
+  if (sub === 'schedule') {
+    h += '<div class="oap-card"><div class="oap-card-title">Schedule Templates</div>';
+    Object.entries(OAP_SCHEDULE_TEMPLATES).forEach(function(entry) {
+      var k=entry[0], t=entry[1];
+      h += '<div class="oap-sched-card"><div class="oap-sched-title">' + t.label + '</div>';
+      h += '<div class="oap-hint">' + t.desc + '</div>';
+      h += '<div class="oap-sched-timeline">';
+      t.weeks.forEach(function(w) {
+        h += '<div class="oap-sched-week"><span class="oap-sched-wk">Wk ' + w.week + '</span>';
+        h += '<span class="oap-sched-sec" style="color:' + SEC_COLOR[w.section] + '">' + SEC_ICON[w.section] + ' ' + w.section + '</span>';
+        h += '<span class="oap-sched-tasks">' + w.tasks.join(' · ') + '</span></div>';
+      });
+      h += '</div></div>';
+    });
+  }
+
+  return h;
+}
+
+// ── PROGRAM BUILDER ───────────────────────────────────────────────
+function oapProgramBuilder() {
+  var programs = OAP_EMPLOYER.getPrograms();
+  var sub = OAP_STATE.subView || 'list';
+
+  var h = '<div class="oap-page-header"><button class="oap-back" onclick="oapSetView(\'home\')">← Dashboard</button><h1>📋 Program Builder</h1></div>';
+
+  if (sub === 'list') {
+    h += '<div class="oap-card"><div class="oap-card-title" style="display:flex;justify-content:space-between;align-items:center">Role Programs <button class="oap-btn-sm" onclick="oapSetView(\'program\',\'new\')">+ New Program</button></div>';
+    var progs = Object.values(programs);
+    if (!progs.length) {
+      h += '<p class="oap-empty">No programs yet. Create one for each role you hire for.</p>';
+    } else {
+      progs.forEach(function(p) {
+        var role = OAP_ROLES[p.roleId] || {};
+        h += '<div class="oap-prog-row"><div class="oap-prog-icon">' + (role.icon||'📋') + '</div>';
+        h += '<div style="flex:1"><div class="oap-prog-name">' + p.roleLabel + '</div>';
+        h += '<div class="oap-hint">' + (p.machines||[]).length + ' machines · ' + (p.safetyCerts||[]).length + ' safety certs</div></div>';
+        h += '<button class="oap-btn-sm" onclick="oapEditProgram(\'' + p.id + '\')">Edit</button></div>';
+      });
+    }
+    h += '</div>';
+    return h;
+  }
+
+  if (sub === 'new' || sub === 'edit') {
+    var prog = OAP_STATE.activeProgram ? programs[OAP_STATE.activeProgram] : null;
+    h += '<div class="oap-card"><div class="oap-card-title">' + (prog ? 'Edit Program' : 'New OAP Program') + '</div>';
+
+    // Role selection
+    h += '<div class="oap-form-section"><div class="oap-form-label">Role</div>';
+    h += '<div class="oap-role-grid">';
+    Object.entries(OAP_ROLES).forEach(function(entry) {
+      var k=entry[0], r=entry[1];
+      var sel = prog && prog.roleId===k;
+      h += '<div class="oap-role-card' + (sel?' selected':'') + '" onclick="oapSelectRole(\'' + k + '\')" id="role-card-' + k + '">';
+      h += r.icon + ' ' + r.label + '</div>';
+    });
+    h += '</div></div>';
+
+    // Sections to include
+    h += '<div class="oap-form-section"><div class="oap-form-label">Sections to Include</div>';
+    OAP_SECTIONS.forEach(function(sec) {
+      var checked = !prog || (prog.sections||[]).includes(sec.id);
+      h += '<label class="oap-check-row"><input type="checkbox" id="sec-' + sec.id + '"' + (checked?' checked':'') + '>';
+      h += '<span class="oap-sec-dot" style="background:' + SEC_COLOR[sec.id] + '"></span>' + SEC_ICON[sec.id] + ' <strong>' + sec.label + '</strong> — <span class="oap-hint-inline">' + sec.desc + '</span></label>';
+    });
+    h += '</div>';
+
+    // Machine selection
+    h += '<div class="oap-form-section"><div class="oap-form-label">Machines This Role Operates</div>';
+    h += '<div class="oap-equip-grid">';
+    var machCats = {};
+    Object.entries(OAP_MACHINES).forEach(function(e){ var m=e[1]; (machCats[m.category]=machCats[m.category]||[]).push(e); });
+    Object.entries(machCats).forEach(function(ce) {
+      var cat=ce[0], items=ce[1];
+      h += '<div class="oap-equip-cat"><div class="oap-equip-cat-label">' + cat.toUpperCase() + '</div>';
+      items.forEach(function(e) {
+        var k=e[0], m=e[1];
+        var checked = prog && (prog.machines||[]).includes(k);
+        h += '<label class="oap-check-sm"><input type="checkbox" class="prog-machine" value="' + k + '"' + (checked?' checked':'') + '>' + m.icon + ' ' + m.label + '</label>';
+      });
+      h += '</div>';
+    });
+    h += '</div></div>';
+
+    // Measuring equipment
+    h += '<div class="oap-form-section"><div class="oap-form-label">Required Measuring Equipment</div>';
+    h += '<div class="oap-equip-grid">';
+    var measCats = {};
+    Object.entries(OAP_MEASURING).forEach(function(e){ var m=e[1]; (measCats[m.category]=measCats[m.category]||[]).push(e); });
+    Object.entries(measCats).forEach(function(ce) {
+      var cat=ce[0], items=ce[1];
+      h += '<div class="oap-equip-cat"><div class="oap-equip-cat-label">' + cat.toUpperCase() + '</div>';
+      items.forEach(function(e) {
+        var k=e[0], m=e[1];
+        var checked = prog && (prog.measuring||[]).includes(k);
+        h += '<label class="oap-check-sm"><input type="checkbox" class="prog-measuring" value="' + k + '"' + (checked?' checked':'') + '>' + m.icon + ' ' + m.label + ' <span class="oap-precision">' + m.precision + '</span></label>';
+      });
+      h += '</div>';
+    });
+    h += '</div></div>';
+
+    // Safety certs
+    h += '<div class="oap-form-section"><div class="oap-form-label">Required Safety Certifications</div>';
+    Object.entries(OAP_SAFETY).forEach(function(e) {
+      var k=e[0], s=e[1];
+      var checked = !prog || (prog.safetyCerts||['shop_safety','ppe_cert','lockout_tagout','fire_ext','hazcom']).includes(k);
+      h += '<label class="oap-check-row"><input type="checkbox" class="prog-safety" value="' + k + '"' + (checked?' checked':'') + '>';
+      h += s.icon + ' ' + s.label;
+      if (s.required) h += ' <span class="oap-req-badge">Required</span>';
+      h += ' <span class="oap-hint-inline">Renew every ' + s.renewYears + ' yr</span></label>';
+    });
+    h += '</div>';
+
+    // Schedule
+    h += '<div class="oap-form-section"><div class="oap-form-label">Schedule Template</div>';
+    h += '<div class="oap-sched-select">';
+    Object.entries(OAP_SCHEDULE_TEMPLATES).forEach(function(e) {
+      var k=e[0], t=e[1];
+      var sel = prog ? prog.scheduleTemplate===k : k==='standard_90';
+      h += '<div class="oap-sched-opt' + (sel?' selected':'') + '" onclick="oapSelectSched(\'' + k + '\')" id="sched-' + k + '">';
+      h += '<strong>' + t.label + '</strong><div class="oap-hint">' + t.desc + '</div></div>';
+    });
+    h += '</div></div>';
+
+    h += '<button class="oap-btn-primary" onclick="oapSaveProgram()">Save Program</button>';
+    if (prog) h += ' <button class="oap-btn-ghost" style="margin-left:8px" onclick="oapSetView(\'program\',\'list\')">Cancel</button>';
+    h += '</div>';
+  }
+
+  return h;
+}
+
+// ── MENTOR PANEL ──────────────────────────────────────────────────
+function oapMentorPanel() {
+  var mentors = OAP_EMPLOYER.getMentors();
+  var sub = OAP_STATE.subView || 'list';
+
+  var h = '<div class="oap-page-header"><button class="oap-back" onclick="oapSetView(\'home\')">← Dashboard</button><h1>👤 Mentor Management</h1></div>';
+
+  if (sub === 'list') {
+    h += '<div class="oap-card"><div class="oap-card-title" style="display:flex;justify-content:space-between;align-items:center">Mentors <button class="oap-btn-sm" onclick="oapSetView(\'mentor\',\'add\')">+ Add Mentor</button></div>';
+    var mlist = Object.values(mentors);
+    if (!mlist.length) {
+      h += '<p class="oap-empty">No mentors registered. Add one to begin enrolling operators.</p>';
+    } else {
+      mlist.forEach(function(m) {
+        h += '<div class="oap-mentor-row"><div class="oap-avatar" style="background:#4a9eff">' + (m.name||'?')[0].toUpperCase() + '</div>';
+        h += '<div style="flex:1"><div class="oap-prog-name">' + m.name + '</div>';
+        h += '<div class="oap-hint">' + m.title + ' · ' + (m.roles||[]).map(function(r){ return (OAP_ROLES[r]||{}).label||r; }).join(', ') + '</div></div>';
+        h += '<span class="oap-badge-sm">' + (m.machines||[]).length + ' machines</span></div>';
+      });
+    }
+    h += '</div>';
+    return h;
+  }
+
+  if (sub === 'add') {
+    h += '<div class="oap-card"><div class="oap-card-title">Add Mentor</div>';
+    h += '<div class="oap-form-grid">';
+    h += oapField('Full Name','text','mentor-name','','');
+    h += oapField('Title / Position','text','mentor-title','','e.g. Lead Machinist, Setup Tech');
+    h += oapField('Email','email','mentor-email','','');
+    h += oapField('Phone','tel','mentor-phone','','');
+    h += '</div>';
+    h += '<div class="oap-form-section"><div class="oap-form-label">Can Mentor These Roles</div>';
+    Object.entries(OAP_ROLES).forEach(function(e) {
+      var k=e[0], r=e[1];
+      h += '<label class="oap-check-sm"><input type="checkbox" class="mentor-role" value="' + k + '">' + r.icon + ' ' + r.label + '</label>';
+    });
+    h += '</div>';
+    h += '<div class="oap-form-section"><div class="oap-form-label">Qualified to Sign Off These Machines</div>';
+    Object.entries(OAP_MACHINES).forEach(function(e) {
+      var k=e[0], m=e[1];
+      h += '<label class="oap-check-sm"><input type="checkbox" class="mentor-machine" value="' + k + '">' + m.icon + ' ' + m.label + '</label>';
+    });
+    h += '</div>';
+    h += '<button class="oap-btn-primary" onclick="oapSaveMentor()">Add Mentor</button>';
+    h += ' <button class="oap-btn-ghost" onclick="oapSetView(\'mentor\',\'list\')">Cancel</button></div>';
+  }
+
+  return h;
+}
+
+// ── MENTEE PANEL ──────────────────────────────────────────────────
+function oapMenteePanel() {
+  var sub = OAP_STATE.subView || 'list';
+  var mentees  = OAP_EMPLOYER.getMentees();
+  var programs = OAP_EMPLOYER.getPrograms();
+  var mentors  = OAP_EMPLOYER.getMentors();
+
+  var h = '<div class="oap-page-header"><button class="oap-back" onclick="oapSetView(\'home\')">← Dashboard</button><h1>🧑‍🏭 Operator Dashboard</h1></div>';
+
+  if (sub === 'enroll') {
+    h += '<div class="oap-card"><div class="oap-card-title">Enroll New Operator</div>';
+    h += '<div class="oap-form-grid">';
+    h += oapField('Full Name','text','ment-name','','');
+    h += oapField('Email','email','ment-email','','');
+    h += oapField('Phone','tel','ment-phone','','');
+    h += oapField('Hire Date','date','ment-hire',new Date().toISOString().slice(0,10),'');
+    h += '</div>';
+    h += '<div class="oap-form-section"><div class="oap-form-label">OAP Program (Role)</div>';
+    h += '<div class="oap-role-grid">';
+    Object.values(programs).forEach(function(p) {
+      var role = OAP_ROLES[p.roleId]||{};
+      h += '<div class="oap-role-card" onclick="oapSelectMenteeProg(\'' + p.id + '\')" id="mp-' + p.id + '">';
+      h += (role.icon||'📋') + ' ' + p.roleLabel + '</div>';
+    });
+    h += '</div><input type="hidden" id="ment-progId" value=""></div>';
+    h += '<div class="oap-form-section"><div class="oap-form-label">Assign Mentor</div>';
+    h += '<select id="ment-mentorId" class="oap-select">';
+    h += '<option value="">— Select mentor —</option>';
+    Object.values(mentors).forEach(function(m){ h += '<option value="' + m.id + '">' + m.name + ' (' + m.title + ')</option>'; });
+    h += '</select></div>';
+    h += '<button class="oap-btn-primary" onclick="oapEnrollMentee()">Enroll Operator</button>';
+    h += ' <button class="oap-btn-ghost" onclick="oapSetView(\'home\')">Cancel</button></div>';
+    return h;
+  }
+
+  if (sub === 'detail' && OAP_STATE.activeMentee) {
+    return oapMenteeDetail(OAP_STATE.activeMentee);
+  }
+
+  // List
+  h += '<div class="oap-card"><div class="oap-card-title" style="display:flex;justify-content:space-between;align-items:center">All Operators <button class="oap-btn-sm" onclick="oapSetView(\'mentee\',\'enroll\')">+ Enroll</button></div>';
+  var mlist = Object.values(mentees);
+  if (!mlist.length) {
+    h += '<p class="oap-empty">No operators enrolled yet.</p>';
+  } else {
+    mlist.forEach(function(m) {
+      var prog = OAP_EMPLOYER.getSectionProgress(m.id);
+      var totalSec = Object.keys(prog).length || 1;
+      var doneSec  = Object.values(prog).filter(function(p){ return p.pct===100; }).length;
+      var pct = Math.round(doneSec/totalSec*100);
+      var statusColor = {in_progress:'#f5c518',complete:'#22b6c3',not_started:'#566070'}[m.status]||'#566070';
+      h += '<div class="oap-mentee-row" onclick="oapOpenMentee(\'' + m.id + '\')">';
+      h += '<div class="oap-avatar">' + (m.name||'?')[0].toUpperCase() + '</div>';
+      h += '<div style="flex:1;min-width:0"><div class="oap-mentee-name">' + m.name + '</div>';
+      h += '<div class="oap-mentee-role">' + ((OAP_ROLES[m.roleId]||{}).label||m.roleId) + ' · ' + m.hireDate + '</div>';
+      h += '<div class="oap-prog-bar"><div class="oap-prog-fill" style="width:' + pct + '%"></div></div></div>';
+      h += '<div style="text-align:right"><div class="oap-pct">' + pct + '%</div>';
+      h += '<div style="font-size:9px;color:' + statusColor + ';text-transform:uppercase;letter-spacing:1px">' + m.status.replace('_',' ') + '</div></div></div>';
+    });
+  }
+  h += '</div>';
+  return h;
+}
+
+// ── MENTEE DETAIL / OAK TRACKER ──────────────────────────────────
+function oapMenteeDetail(menteeId) {
+  var mentee   = OAP_EMPLOYER.getMentee(menteeId);
+  if (!mentee) return '<p>Operator not found.</p>';
+  var programs = OAP_EMPLOYER.getPrograms();
+  var prog     = programs[mentee.programId]||{};
+  var progress = OAP_EMPLOYER.getSectionProgress(menteeId);
+  var mentors  = OAP_EMPLOYER.getMentors();
+  var mentor   = mentors[mentee.mentorId]||{};
+
+  var h = '<div class="oap-page-header"><button class="oap-back" onclick="oapSetView(\'mentee\',\'list\')">← All Operators</button><h1>' + mentee.name + '</h1></div>';
+
+  // Header card
+  h += '<div class="oap-card" style="margin-bottom:14px">';
+  h += '<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">';
+  h += '<div class="oap-avatar oap-avatar-lg">' + mentee.name[0].toUpperCase() + '</div>';
+  h += '<div style="flex:1;min-width:0"><div style="font-family:var(--oap-head);font-weight:900;font-size:20px">' + mentee.name + '</div>';
+  h += '<div style="font-size:12px;color:var(--oap-muted)">' + ((OAP_ROLES[mentee.roleId]||{}).label||mentee.roleId) + ' · Hired: ' + mentee.hireDate + '</div>';
+  h += '<div style="font-size:12px;color:var(--oap-muted)">Mentor: ' + (mentor.name||'Unassigned') + '</div></div>';
+  if (mentee.status !== OAP_STATUS.COMPLETE) {
+    h += '<button class="oap-btn-primary" onclick="oapIssueCert(\'' + menteeId + '\')">Issue Certificate ✓</button>';
+  } else {
+    h += '<button class="oap-btn-sm" onclick="oapPrintCert(\'' + mentee.certId + '\')">🖨 Print Cert</button>';
+  }
+  h += '</div></div>';
+
+  // Section flow with checkpoints
+  OAP_SECTIONS.forEach(function(sec) {
+    var sp = progress[sec.id] || { pct:0, done:0, total:0, unlocked:false };
+    var cpIds = prog.checkpoints ? (prog.checkpoints[sec.id]||[]) : (OAP_CHECKPOINT_LIBRARY[sec.id]||[]).map(function(c){ return c.id; });
+    var locked = !sp.unlocked && sec.requiredBefore && sec.requiredBefore.length > 0;
+    h += '<div class="oap-section-card' + (locked?' oap-locked':'') + '">';
+    h += '<div class="oap-sec-header" onclick="oapToggleSec(\'' + sec.id + '\')">';
+    h += '<div class="oap-sec-dot-lg" style="background:' + SEC_COLOR[sec.id] + '"></div>';
+    h += '<div style="flex:1"><div class="oap-sec-label">' + SEC_ICON[sec.id] + ' ' + sec.label + '</div>';
+    h += '<div class="oap-prog-bar" style="max-width:200px;margin-top:4px"><div class="oap-prog-fill" style="width:' + sp.pct + '%;background:' + SEC_COLOR[sec.id] + '"></div></div></div>';
+    h += '<div style="font-family:var(--oap-mono);font-size:12px;color:' + SEC_COLOR[sec.id] + '">' + sp.pct + '%</div>';
+    h += (locked ? '<span style="color:#f5c518;font-size:12px">🔒</span>' : '<span style="font-size:12px">▼</span>');
+    h += '</div>';
+
+    // Checkpoints
+    h += '<div class="oap-sec-body" id="sec-body-' + sec.id + '" style="display:' + (sp.pct<100?'block':'none') + '">';
+    // Lookup actual checkpoint objects
+    var libAll = Object.values(OAP_CHECKPOINT_LIBRARY).flat();
+    // Also include OAK checkpoints
+    var oakTpl = null;
+    if (sec.id==='machine'||sec.id==='floor') {
+      Object.entries(OAP_OAK_TEMPLATES).forEach(function(e){ if((prog.machines||[]).includes(e[1].machine)) oakTpl=e[1]; });
+    }
+    var checkpointsToShow = libAll.filter(function(cp){ return cpIds.includes(cp.id); });
+    if (oakTpl && (sec.id==='machine'||sec.id==='floor')) {
+      checkpointsToShow = checkpointsToShow.concat(oakTpl.checkpoints.filter(function(cp){ return cp.section===sec.id; }));
+    }
+    checkpointsToShow.forEach(function(cp) {
+      var status = mentee.checkpoints[cp.id] || {};
+      var done = status.passed;
+      h += '<div class="oap-cp-row' + (done?' done':'') + '">';
+      h += '<div class="oap-cp-check" onclick="oapSignCP(\'' + menteeId + '\',\'' + cp.id + '\',true)" title="Sign Off">' + (done?'✓':'○') + '</div>';
+      h += '<div style="flex:1;min-width:0">';
+      h += '<div class="oap-cp-label">' + cp.label + '</div>';
+      h += '<div class="oap-cp-meta">';
+      h += '<span class="oap-cp-type">' + cp.type + '</span>';
+      if (cp.mentorSignOff) h += ' <span class="oap-cp-badge">Mentor</span>';
+      if (cp.employerBuyOff) h += ' <span class="oap-cp-badge oap-cp-emp">Buy-Off</span>';
+      if (cp.linkedCourse) h += ' <span class="oap-cp-course" onclick="oapRunCourse(\'' + cp.linkedCourse + '\',\'' + menteeId + '\')" title="Take course">📚 Course</span>';
+      h += '</div>';
+      if (done && status.signedBy) h += '<div class="oap-cp-signed">✓ ' + status.signedBy + ' · ' + new Date(status.signedAt).toLocaleDateString() + '</div>';
+      h += '</div>';
+      if (!done) h += '<button class="oap-btn-xs" onclick="oapSignCP(\'' + menteeId + '\',\'' + cp.id + '\',true)">Sign</button>';
+      else h += '<button class="oap-btn-xs oap-btn-undo" onclick="oapSignCP(\'' + menteeId + '\',\'' + cp.id + '\',false)">Undo</button>';
+      h += '</div>';
+    });
+
+    // Mentee notes
+    h += '<div class="oap-notes-block">';
+    h += '<div class="oap-notes-label">Mentee Notes — ' + sec.label + '</div>';
+    h += '<textarea class="oap-notes-ta" id="notes-' + menteeId + '-' + sec.id + '" placeholder="Notes, observations, equipment encountered...">' + ((mentee.menteeNotes||{})[sec.id]||'') + '</textarea>';
+    h += '<button class="oap-btn-xs" onclick="oapSaveNotes(\'' + menteeId + '\',\'' + sec.id + '\')">Save Notes</button>';
+    h += '</div>';
+
+    h += '</div>'; // sec-body
+    h += '</div>'; // section-card
+  });
+
+  // Machine buy-offs
+  if (prog.machines && prog.machines.length) {
+    h += '<div class="oap-card"><div class="oap-card-title">🏭 Machine Buy-Offs</div>';
+    prog.machines.forEach(function(machId) {
+      var mach = OAP_MACHINES[machId] || { label:machId, icon:'🏭' };
+      var buyoff = mentee.machineBuyOffs[machId];
+      h += '<div class="oap-cp-row' + (buyoff?' done':'') + '">';
+      h += '<div class="oap-cp-check">' + (buyoff?'✓':'○') + '</div>';
+      h += '<div style="flex:1"><div class="oap-cp-label">' + mach.icon + ' ' + mach.label + '</div>';
+      if (buyoff) h += '<div class="oap-cp-signed">Employer buy-off: ' + buyoff.employerName + ' · ' + new Date(buyoff.date).toLocaleDateString() + '</div>';
+      h += '</div>';
+      if (!buyoff) h += '<button class="oap-btn-sm" onclick="oapBuyOffMachine(\'' + menteeId + '\',\'' + machId + '\')">Buy Off</button>';
+      h += '</div>';
+    });
+    h += '</div>';
+  }
+
+  return h;
+}
+
+// ── COURSE RUNNER ─────────────────────────────────────────────────
+function oapCourseRunner() {
+  var courseId  = OAP_STATE.activeCourse;
+  var menteeId  = OAP_STATE.activeMentee;
+  var course    = OAP_COURSES[courseId];
+  if (!course) return '<p>Course not found.</p>';
+
+  var cs = OAP_STATE.courseState;
+  if (!cs) {
+    // Start
+    OAP_STATE.courseState = { topicIdx:0, quizMode:false, score:0, total:0, answers:[] };
+    cs = OAP_STATE.courseState;
+  }
+
+  var h = '<div class="oap-page-header"><button class="oap-back" onclick="oapExitCourse()">← Exit Course</button><h1>' + course.icon + ' ' + course.label + '</h1></div>';
+
+  var topic = course.topics[cs.topicIdx];
+  if (!topic) {
+    // All topics done — show score
+    return oapCourseComplete(course, menteeId);
+  }
+
+  var pct = Math.round(cs.topicIdx / course.topics.length * 100);
+  h += '<div class="oap-course-prog"><div class="oap-course-fill" style="width:' + pct + '%"></div></div>';
+  h += '<div class="oap-hint" style="margin-bottom:8px">Topic ' + (cs.topicIdx+1) + ' of ' + course.topics.length + ' · Pass mark: ' + course.passMark + '%</div>';
+
+  h += '<div class="oap-card">';
+  h += '<div class="oap-card-title">' + topic.title + '</div>';
+  h += '<div class="oap-course-content">' + topic.content + '</div>';
+  h += '</div>';
+
+  // Quiz for this topic
+  if (!cs.quizMode) {
+    h += '<div style="margin-top:12px"><button class="oap-btn-primary" onclick="oapStartTopicQuiz()">Take Quiz →</button></div>';
+  } else {
+    var q = topic.quiz;
+    var letters = ['A','B','C','D'];
+    h += '<div class="oap-card" style="margin-top:12px"><div class="oap-card-title">Quiz</div>';
+    h += '<div class="oap-quiz-q">' + q.q + '</div>';
+    h += '<div class="oap-quiz-opts">';
+    q.opts.forEach(function(opt, i) {
+      h += '<div class="oap-qopt" onclick="oapAnswerCourse(' + i + ',' + q.ans + ',\'' + encodeURIComponent(q.fb) + '\')" id="copt-' + i + '">';
+      h += '<span class="oap-qopt-l">' + letters[i] + '</span>' + opt + '</div>';
+    });
+    h += '</div><div class="oap-quiz-fb" id="course-fb"></div>';
+    h += '<button class="oap-btn-primary" id="course-next-btn" style="display:none" onclick="oapNextTopic()">Next →</button>';
+    h += '</div>';
+  }
+
+  return h;
+}
+
+function oapStartTopicQuiz() { OAP_STATE.courseState.quizMode = true; oapRender(); }
+
+function oapAnswerCourse(idx, ans, fbEnc) {
+  var correct = idx === ans;
+  var cs = OAP_STATE.courseState;
+  cs.answers.push({ idx, ans, correct });
+  cs.total++;
+  if (correct) cs.score++;
+  document.querySelectorAll('.oap-qopt').forEach(function(el){ el.style.pointerEvents='none'; });
+  var el = document.getElementById('copt-' + idx); if(el) el.classList.add(correct?'correct':'wrong');
+  if (!correct) { var ca = document.getElementById('copt-' + ans); if(ca) ca.classList.add('correct'); }
+  var fb = document.getElementById('course-fb');
+  if (fb) { fb.textContent = (correct?'✓ ':'✗ ') + decodeURIComponent(fbEnc); fb.className = 'oap-quiz-fb show ' + (correct?'correct':'wrong'); }
+  var nb = document.getElementById('course-next-btn'); if(nb) nb.style.display='';
+}
+
+function oapNextTopic() {
+  OAP_STATE.courseState.topicIdx++;
+  OAP_STATE.courseState.quizMode = false;
+  oapRender();
+}
+
+function oapCourseComplete(course, menteeId) {
+  var cs = OAP_STATE.courseState;
+  var score = cs.total ? Math.round(cs.score/cs.total*100) : 100;
+  var passed = score >= course.passMark;
+  if (menteeId) OAP_EMPLOYER.recordCourseScore(menteeId, course.id, score, passed);
+
+  var h = '<div class="oap-page-header"><button class="oap-back" onclick="oapExitCourse()">← Done</button><h1>' + course.icon + ' ' + course.label + '</h1></div>';
+  h += '<div class="oap-card" style="text-align:center;padding:32px 20px">';
+  h += '<div style="font-family:var(--oap-head);font-size:60px;font-weight:900;color:' + (passed?'#22b6c3':'#ff4757') + '">' + score + '%</div>';
+  h += '<div style="font-size:16px;margin-bottom:16px">' + (passed?'✓ PASSED':'✗ Did Not Pass') + ' · Pass mark ' + course.passMark + '%</div>';
+  if (!passed) h += '<div style="font-size:13px;color:#888;margin-bottom:16px">Review the course material and retake to continue.</div>';
+  h += '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">';
+  if (!passed) h += '<button class="oap-btn-primary" onclick="oapRestartCourse()">Retake Course</button>';
+  h += '<button class="oap-btn-ghost" onclick="oapExitCourse()">Back to Operator</button>';
+  h += '</div></div>';
+  return h;
+}
+
+function oapExitCourse() {
+  OAP_STATE.courseState = null;
+  OAP_STATE.activeCourse = null;
+  if (OAP_STATE.activeMentee) { OAP_STATE.subView = 'detail'; OAP_STATE.view = 'mentee'; oapRender(); }
+  else { oapSetView('standalone'); }
+}
+
+function oapRestartCourse() { OAP_STATE.courseState = null; oapRender(); }
+
+// ── STANDALONE MODE ───────────────────────────────────────────────
+function oapStandalone() {
+  var h = '<div class="oap-page-header"><button class="oap-back" onclick="oapSetView(\'home\')">← Home</button><h1>🎓 Standalone OAP Certification</h1></div>';
+  h += '<div class="oap-card"><p class="oap-hint" style="margin-bottom:14px">Complete all sections independently. Pass all quizzes to earn a portable certificate you can present to any employer. Your scores are saved locally.</p>';
+
+  Object.entries(OAP_COURSES).forEach(function(e) {
+    var k=e[0], course=e[1];
+    var scores = JSON.parse(localStorage.getItem('oap-standalone-scores')||'{}');
+    var score = scores[k];
+    var passed = score && score.passed;
+    h += '<div class="oap-course-row" onclick="oapRunStandaloneCourse(\'' + k + '\')">';
+    h += '<div style="font-size:22px">' + course.icon + '</div>';
+    h += '<div style="flex:1"><div class="oap-prog-name">' + course.label + '</div>';
+    h += '<div class="oap-hint">' + course.duration + ' · Pass ' + course.passMark + '%</div></div>';
+    if (passed) h += '<span style="color:#22b6c3;font-weight:700">✓ ' + score.score + '%</span>';
+    else if (score) h += '<span style="color:#ff4757">' + score.score + '%</span>';
+    else h += '<span style="color:#566070;font-size:12px">Not started</span>';
+    h += '</div>';
+  });
+
+  h += '<button class="oap-btn-primary" style="margin-top:14px" onclick="oapGenerateStandaloneCert()">Generate Portable Certificate</button>';
+  h += '</div>';
+  return h;
+}
+
+// ── FORM HELPERS ─────────────────────────────────────────────────
+function oapField(label, type, id, val, hintOrOpts) {
+  var h = '<div class="oap-field"><label class="oap-label">' + label + '</label>';
+  if (type === 'select') {
+    h += '<select id="' + id + '" class="oap-select">';
+    if (Array.isArray(hintOrOpts)) hintOrOpts.forEach(function(o){ h += '<option value="' + (o.val||o) + '"' + ((o.val||o)===val?' selected':'') + '>' + (o.label||o) + '</option>'; });
+    else if (typeof hintOrOpts==='string') h += '<option value="">' + hintOrOpts + '</option>';
+    h += '</select>';
+  } else {
+    h += '<input type="' + type + '" id="' + id + '" class="oap-input" value="' + (val||'') + '"' + (typeof hintOrOpts==='string' && hintOrOpts ? ' placeholder="' + hintOrOpts + '"' : '') + '>';
+  }
+  h += '</div>';
+  return h;
+}
+
+// ── ACTIONS ──────────────────────────────────────────────────────
+function oapSaveProfile() {
+  var data = {
+    companyName:  _val('emp-companyName'),
+    industry:     _val('emp-industry'),
+    contactName:  _val('emp-contactName'),
+    contactTitle: _val('emp-contactTitle'),
+    email:        _val('emp-email'),
+    phone:        _val('emp-phone'),
+    city:         _val('emp-city'),
+    state:        _val('emp-state'),
+    certValidYears: parseInt(_val('emp-certYears'))||2,
+    recertWeeks:  parseInt(_val('emp-recert'))||104,
+    requireEmployerBuyOff: document.getElementById('emp-buyoff') && document.getElementById('emp-buyoff').checked,
+    allowPortableCert:     document.getElementById('emp-portable') && document.getElementById('emp-portable').checked,
+  };
+  OAP_EMPLOYER.createProfile(data);
+  oapSetView('home');
+}
+
+function oapSaveProgram() {
+  var selectedRole = document.querySelector('.oap-role-card.selected');
+  if (!selectedRole) { alert('Please select a role.'); return; }
+  var roleId = selectedRole.getAttribute('data-role');
+  var sections = OAP_SECTIONS.filter(function(s){ var el=document.getElementById('sec-'+s.id); return el&&el.checked; }).map(function(s){ return s.id; });
+  var machines  = _checked('prog-machine');
+  var measuring = _checked('prog-measuring');
+  var safety    = _checked('prog-safety');
+  var schedEl   = document.querySelector('.oap-sched-opt.selected');
+  var sched     = schedEl ? schedEl.getAttribute('data-sched') : 'standard_90';
+  var checkpoints = {};
+  sections.forEach(function(sid){ checkpoints[sid] = (OAP_CHECKPOINT_LIBRARY[sid]||[]).map(function(c){ return c.id; }); });
+  if (OAP_STATE.activeProgram) {
+    OAP_EMPLOYER.updateProgram(OAP_STATE.activeProgram, { sections, machines, measuring, safetyCerts:safety, scheduleTemplate:sched, checkpoints });
+  } else {
+    OAP_EMPLOYER.createProgram(roleId, { sections, machines, measuring, safetyCerts:safety, scheduleTemplate:sched, checkpoints });
+  }
+  OAP_STATE.activeProgram = null;
+  oapSetView('program','list');
+}
+
+function oapSaveMentor() {
+  var data = {
+    name:   _val('mentor-name'), title:  _val('mentor-title'),
+    email:  _val('mentor-email'), phone: _val('mentor-phone'),
+    roles:    _checked('mentor-role'),
+    machines: _checked('mentor-machine'),
+  };
+  if (!data.name) { alert('Name required'); return; }
+  OAP_EMPLOYER.addMentor(data);
+  oapSetView('mentor','list');
+}
+
+function oapEnrollMentee() {
+  var progId = _val('ment-progId');
+  if (!progId) { alert('Select a program/role.'); return; }
+  var prog = OAP_EMPLOYER.getPrograms()[progId];
+  var data = {
+    name: _val('ment-name'), email: _val('ment-email'), phone: _val('ment-phone'),
+    hireDate: _val('ment-hire'), roleId: prog ? prog.roleId : '',
+    programId: progId, mentorId: _val('ment-mentorId'),
+  };
+  if (!data.name) { alert('Name required.'); return; }
+  OAP_EMPLOYER.enrollMentee(data);
+  oapSetView('home');
+}
+
+function oapOpenMentee(id) { OAP_STATE.activeMentee=id; OAP_STATE.subView='detail'; OAP_STATE.view='mentee'; oapRender(); }
+function oapEditProgram(id) { OAP_STATE.activeProgram=id; oapSetView('program','edit'); }
+function oapSelectRole(k) { document.querySelectorAll('.oap-role-card').forEach(function(el){ el.classList.remove('selected'); el.removeAttribute('data-role'); }); var el=document.getElementById('role-card-'+k); if(el){ el.classList.add('selected'); el.setAttribute('data-role',k); } }
+function oapSelectSched(k) { document.querySelectorAll('.oap-sched-opt').forEach(function(el){ el.classList.remove('selected'); el.removeAttribute('data-sched'); }); var el=document.getElementById('sched-'+k); if(el){ el.classList.add('selected'); el.setAttribute('data-sched',k); } }
+function oapSelectMenteeProg(id) { document.querySelectorAll('.oap-role-card').forEach(function(el){ el.classList.remove('selected'); }); var el=document.getElementById('mp-'+id); if(el) el.classList.add('selected'); var inp=document.getElementById('ment-progId'); if(inp) inp.value=id; }
+function oapToggleSec(id) { var el=document.getElementById('sec-body-'+id); if(el) el.style.display=el.style.display==='none'?'block':'none'; }
+function oapSignCP(menteeId,cpId,passed) { OAP_EMPLOYER.signCheckpoint(menteeId,cpId,'Mentor',passed,''); oapMenteeDetail(menteeId); var el=document.getElementById('oap-root'); if(el) el.innerHTML=oapMenteeDetail(menteeId); }
+function oapSaveNotes(menteeId,secId) { var ta=document.getElementById('notes-'+menteeId+'-'+secId); if(!ta) return; var mentee=OAP_EMPLOYER.getMentee(menteeId); if(!mentee) return; mentee.menteeNotes=mentee.menteeNotes||{}; mentee.menteeNotes[secId]=ta.value; var mentees=OAP_EMPLOYER.getMentees(); mentees[menteeId]=mentee; OAP_EMPLOYER.saveMentees(mentees); }
+function oapBuyOffMachine(menteeId,machId) { var name=prompt('Employer sign-off name:'); if(name) OAP_EMPLOYER.buyOffMachine(menteeId,machId,name,''); oapOpenMentee(menteeId); }
+function oapIssueCert(menteeId) { var sig=prompt('Employer authorizing signature (type name):'); if(!sig) return; var cert=OAP_EMPLOYER.issueCertificate(menteeId,sig); if(cert) OAP_CERT.openPrintWindow(cert); oapRender(); }
+function oapPrintCert(certId) { var certs=OAP_EMPLOYER.getCerts(); var cert=certs[certId]; if(cert) OAP_CERT.openPrintWindow(cert); }
+function oapRunCourse(courseId,menteeId) { OAP_STATE.activeCourse=courseId; OAP_STATE.activeMentee=menteeId||null; OAP_STATE.courseState=null; oapSetView('course'); }
+function oapRunStandaloneCourse(courseId) { OAP_STATE.activeCourse=courseId; OAP_STATE.activeMentee=null; OAP_STATE.courseState=null; oapSetView('course'); }
+function oapGenerateStandaloneCert() {
+  var scores=JSON.parse(localStorage.getItem('oap-standalone-scores')||'{}');
+  var passed=Object.values(scores).filter(function(s){ return s.passed; });
+  if (!passed.length) { alert('Complete at least one course to generate a certificate.'); return; }
+  var name=prompt('Your full name:'); if(!name) return;
+  var cert={
+    certId:'SA-'+Math.random().toString(36).slice(2,8).toUpperCase(),
+    certType:'initial', menteeName:name, menteeEmail:'',
+    employerName:'Self-Certified / JobLine OAP',
+    employerCity:'Independent',
+    roleLabel:'Manufacturing Operator (Self-Certified)',
+    machinesPassed:[], toolingPassed:[], measuringPassed:[],
+    safetyCerts:Object.keys(scores).filter(function(k){ return scores[k].passed; }),
+    mentorName:'Self-Directed',
+    employerSignature:'JobLine OAP Platform',
+    issuedDate:new Date().toISOString(),
+    expiresDate:new Date(Date.now()+2*365.25*24*3600*1000).toISOString(),
+    checkpoints:{},
+  };
+  OAP_CERT.openPrintWindow(cert);
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────
+function _val(id) { var el=document.getElementById(id); return el?(el.value||''):''; }
+function _checked(cls) { return [].slice.call(document.querySelectorAll('.'+cls+':checked')).map(function(el){ return el.value; }); }
+
+window.addEventListener('DOMContentLoaded', function(){ oapInit(); });
+</script></body></html>
