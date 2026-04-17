@@ -167,7 +167,10 @@ export function OapEmployerPanel() {
               Assign operators to a role program with an expected completion date.
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            <Button size="sm" variant="outline" onClick={() => setImportOpen(true)}>
+              <ArrowDownToLine className="w-4 h-4 mr-1" /> Import transcript
+            </Button>
             <OapBulkEnrollDialog programs={programs} members={members ?? []} />
             <Button
               size="sm"
