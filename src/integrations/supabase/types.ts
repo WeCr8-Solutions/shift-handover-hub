@@ -5124,6 +5124,8 @@ export type Database = {
           portfolio_url: string | null
           preferred_employment_types: string[] | null
           profile_visibility: Database["public"]["Enums"]["operator_profile_visibility"]
+          public_published_at: string | null
+          public_username: string | null
           resume_pdf_url: string | null
           updated_at: string
           user_id: string
@@ -5149,6 +5151,8 @@ export type Database = {
           portfolio_url?: string | null
           preferred_employment_types?: string[] | null
           profile_visibility?: Database["public"]["Enums"]["operator_profile_visibility"]
+          public_published_at?: string | null
+          public_username?: string | null
           resume_pdf_url?: string | null
           updated_at?: string
           user_id: string
@@ -5174,6 +5178,8 @@ export type Database = {
           portfolio_url?: string | null
           preferred_employment_types?: string[] | null
           profile_visibility?: Database["public"]["Enums"]["operator_profile_visibility"]
+          public_published_at?: string | null
+          public_username?: string | null
           resume_pdf_url?: string | null
           updated_at?: string
           user_id?: string
@@ -9363,6 +9369,27 @@ export type Database = {
         Returns: Json
       }
       fetch_display_data: { Args: { _token: string }; Returns: Json }
+      get_public_operator_profile: {
+        Args: { _username: string }
+        Returns: {
+          avatar_url: string
+          bio: string
+          display_name: string
+          headline: string
+          linkedin_url: string
+          location_city: string
+          location_country: string
+          location_region: string
+          open_to_work: boolean
+          portfolio_url: string
+          preferred_employment_types: string[]
+          public_published_at: string
+          public_username: string
+          user_id: string
+          willing_to_relocate: boolean
+          years_experience: number
+        }[]
+      }
       get_user_org_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
@@ -9427,6 +9454,22 @@ export type Database = {
         Returns: boolean
       }
       is_verified_employer: { Args: { _user_id: string }; Returns: boolean }
+      list_public_operator_profiles: {
+        Args: { _limit?: number; _search?: string }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          headline: string
+          location_city: string
+          location_region: string
+          open_to_work: boolean
+          public_published_at: string
+          public_username: string
+          user_id: string
+          willing_to_relocate: boolean
+          years_experience: number
+        }[]
+      }
       pass_work_order_to_next_step: {
         Args: {
           _actor_id: string
