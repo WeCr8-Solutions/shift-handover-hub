@@ -325,6 +325,9 @@ function CandidateCard({
           </div>
           <div className="flex items-center gap-2 pt-2">
             <Button size="sm" onClick={onContact} className="gap-2"><Send className="w-3 h-3" /> Message</Button>
+            <Button size="sm" variant="secondary" onClick={onOnboard} className="gap-2">
+              <UserPlus className="w-3 h-3" /> Onboard
+            </Button>
             {lists.length > 0 && (
               <select
                 className="text-sm border rounded px-2 py-1 bg-background"
