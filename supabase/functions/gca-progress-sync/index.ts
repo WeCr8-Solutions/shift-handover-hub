@@ -88,7 +88,7 @@ serve(async (req) => {
 
     if (upsertErr) {
       log("Upsert error", upsertErr);
-      return new Response(JSON.stringify({ error: upsertErr.message }), {
+      return new Response(JSON.stringify({ error: "Failed to sync progress" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -102,7 +102,7 @@ serve(async (req) => {
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     log("ERROR", { msg });
-    return new Response(JSON.stringify({ error: msg }), {
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
