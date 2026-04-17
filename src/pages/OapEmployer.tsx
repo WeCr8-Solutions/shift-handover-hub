@@ -1,14 +1,14 @@
 import { Helmet } from "react-helmet-async";
 import { Header } from "@/components/Header";
 import { OapEmployerPanel } from "@/components/oap/OapEmployerPanel";
+import { useAdminAccess } from "@/hooks/useAdminData";
 import { useOrganization } from "@/hooks/useOrganization";
-import { useRoleArchitecture } from "@/hooks/useRoleArchitecture";
 import { Card, CardContent } from "@/components/ui/card";
 import { Briefcase, ShieldAlert } from "lucide-react";
 
 export default function OapEmployer() {
   const { organization } = useOrganization();
-  const { hasOrgAdminAccess, hasOrgSupervisorAccess } = useRoleArchitecture();
+  const { hasOrgAdminAccess, hasOrgSupervisorAccess } = useAdminAccess();
   const allowed = hasOrgAdminAccess || hasOrgSupervisorAccess;
 
   return (

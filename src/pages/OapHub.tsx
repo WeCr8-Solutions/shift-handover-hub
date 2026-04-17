@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,10 +18,11 @@ import {
 import { BuyCertificateDialog } from "@/components/certificates/BuyCertificateDialog";
 
 export default function OapHub() {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const { data: courses = [], isLoading } = useOapCourses();
   const { data: enrollments = [] } = useMyOapEnrollments(user?.id ?? null);
   const { data: attempts = [] } = useMyOapQuizAttempts(user?.id ?? null);
+  const [certOpen, setCertOpen] = useState(false);
 
   const passedQuizzes = attempts.filter((a) => a.passed).length;
   const totalQuizzes = attempts.length;
@@ -67,15 +69,14 @@ export default function OapHub() {
                   Lock it in with a verifiable, shareable certificate — $12 one-time.
                 </p>
               </div>
+              <Button onClick={() => setCertOpen(true)}>
+                Get my certificate — $12 <ArrowRight className="w-4 h-4 ml-1" />
+              </Button>
               <BuyCertificateDialog
+                open={certOpen}
+                onOpenChange={setCertOpen}
                 program="OAP"
-                programName="Operator Acceptance Program — Floor Certified"
-                defaultEmail={profile?.email ?? user?.email ?? ""}
-                trigger={
-                  <Button>
-                    Get my certificate — $12 <ArrowRight className="w-4 h-4 ml-1" />
-                  </Button>
-                }
+                defaultProgramName="Operator Acceptance Program — Floor Certified"
               />
             </CardContent>
           </Card>
