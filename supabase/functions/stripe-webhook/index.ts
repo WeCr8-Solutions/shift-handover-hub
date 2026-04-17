@@ -224,11 +224,28 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
   logStep("Processing checkout.session.completed", { sessionId: session.id });
   
   const orgId = session.metadata?.org_id;
+  const productType = session.metadata?.product_type;
   const customerId = session.customer as string;
   const subscriptionId = session.subscription as string;
 
-  if (!orgId || !subscriptionId) {
-    logStep("Missing org_id or subscription in session metadata");
+  if (!subscriptionId) {
+    logStep("Missing subscription in session");
+    return;
+  }
+
+  // ── GCA standalone (per-user, no org) ──
+  if (productType === "gca" || (!orgId && session.metadata?.user_id)) {
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+    const productId = subscription.items.data[0]?.price.product as string;
+    if (isGcaProduct(productId)) {
+      await upsertGcaSubscription(subscription);
+      logStep("GCA standalone checkout processed");
+      return;
+    }
+  }
+
+  if (!orgId) {
+    logStep("Missing org_id in session metadata, skipping org-scoped flow");
     return;
   }
 
@@ -241,6 +258,13 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
   // Fetch full subscription details
   const subscription = await stripe.subscriptions.retrieve(subscriptionId);
   const productId = subscription.items.data[0]?.price.product as string;
+
+  // GCA product purchased via org checkout? Treat as standalone GCA.
+  if (isGcaProduct(productId)) {
+    await upsertGcaSubscription(subscription);
+    logStep("GCA product detected on org checkout — recorded as standalone");
+    return;
+  }
 
   // Check if this is an ERP add-on checkout
   if (isErpProduct(productId)) {
