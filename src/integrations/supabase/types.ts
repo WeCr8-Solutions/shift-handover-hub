@@ -3127,6 +3127,151 @@ export type Database = {
           },
         ]
       }
+      machining_operation_categories: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_canonical: boolean
+          name: string
+          organization_id: string | null
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_canonical?: boolean
+          name: string
+          organization_id?: string | null
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_canonical?: boolean
+          name?: string
+          organization_id?: string | null
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "machining_operation_categories_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "machining_operation_categories_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      machining_operations: {
+        Row: {
+          category_id: string
+          common_pitfalls: string | null
+          created_at: string
+          created_by: string | null
+          difficulty: string | null
+          id: string
+          is_canonical: boolean
+          long_description: string | null
+          machine_tags: string[]
+          name: string
+          organization_id: string | null
+          profession_tags: string[]
+          reference_links: Json
+          role_tags: string[]
+          safety_notes: string | null
+          short_description: string | null
+          slug: string
+          sort_order: number
+          typical_tooling: string[]
+          updated_at: string
+        }
+        Insert: {
+          category_id: string
+          common_pitfalls?: string | null
+          created_at?: string
+          created_by?: string | null
+          difficulty?: string | null
+          id?: string
+          is_canonical?: boolean
+          long_description?: string | null
+          machine_tags?: string[]
+          name: string
+          organization_id?: string | null
+          profession_tags?: string[]
+          reference_links?: Json
+          role_tags?: string[]
+          safety_notes?: string | null
+          short_description?: string | null
+          slug: string
+          sort_order?: number
+          typical_tooling?: string[]
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string
+          common_pitfalls?: string | null
+          created_at?: string
+          created_by?: string | null
+          difficulty?: string | null
+          id?: string
+          is_canonical?: boolean
+          long_description?: string | null
+          machine_tags?: string[]
+          name?: string
+          organization_id?: string | null
+          profession_tags?: string[]
+          reference_links?: Json
+          role_tags?: string[]
+          safety_notes?: string | null
+          short_description?: string | null
+          slug?: string
+          sort_order?: number
+          typical_tooling?: string[]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "machining_operations_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "machining_operation_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "machining_operations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "machining_operations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       maintenance_records: {
         Row: {
           completed_date: string | null
@@ -3975,6 +4120,61 @@ export type Database = {
             columns: ["tool_id"]
             isOneToOne: false
             referencedRelation: "inspection_tools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_machining_operation_overrides: {
+        Row: {
+          created_at: string
+          id: string
+          is_hidden: boolean
+          notes: string | null
+          operation_id: string
+          organization_id: string
+          required_for_roles: string[]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_hidden?: boolean
+          notes?: string | null
+          operation_id: string
+          organization_id: string
+          required_for_roles?: string[]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_hidden?: boolean
+          notes?: string | null
+          operation_id?: string
+          organization_id?: string
+          required_for_roles?: string[]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_machining_operation_overrides_operation_id_fkey"
+            columns: ["operation_id"]
+            isOneToOne: false
+            referencedRelation: "machining_operations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_machining_operation_overrides_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_machining_operation_overrides_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
             referencedColumns: ["id"]
           },
         ]
@@ -7812,6 +8012,8 @@ export type Database = {
         | "oap_walkthrough_section"
         | "gca_question"
         | "gca_question_bank"
+        | "machining_operation"
+        | "machining_operation_category"
       training_media_program: "gca" | "oap" | "both"
       training_media_type: "image" | "video" | "audio"
       training_media_visibility: "public" | "private"
@@ -8048,6 +8250,8 @@ export const Constants = {
         "oap_walkthrough_section",
         "gca_question",
         "gca_question_bank",
+        "machining_operation",
+        "machining_operation_category",
       ],
       training_media_program: ["gca", "oap", "both"],
       training_media_type: ["image", "video", "audio"],
