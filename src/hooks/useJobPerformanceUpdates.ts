@@ -167,22 +167,15 @@ export function useJobPerformanceUpdates(teamId?: string | null) {
     if (!user) {
       return { url: null, error: new Error("User not authenticated") };
     }
-
-    if (organization?.id) {
-      const { path, error } = await uploadOrgScopedFile(
-        "performance-updates", file, organization.id, user.id
-      );
-      return { url: path, error };
+    if (!organization?.id) {
+      // ITAR / multi-tenant guard: refuse uploads without an explicit org context.
+      // Storage policies require the path prefix to be an org_id the user belongs to.
+      return { url: null, error: new Error("No organization context — cannot upload") };
     }
-
-    // Legacy fallback (no org)
-    const fileExt = file.name.split(".").pop();
-    const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
-    const { error: uploadError } = await supabase.storage
-      .from("performance-updates")
-      .upload(fileName, file);
-    if (uploadError) return { url: null, error: uploadError };
-    return { url: fileName, error: null };
+    const { path, error } = await uploadOrgScopedFile(
+      "performance-updates", file, organization.id, user.id
+    );
+    return { url: path, error };
   };
 
   const getSignedImageUrls = async (filePaths: string[]): Promise<string[]> => {
