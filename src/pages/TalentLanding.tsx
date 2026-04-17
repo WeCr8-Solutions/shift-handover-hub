@@ -161,8 +161,8 @@ export default function TalentLanding() {
 
           <div className="mt-6 flex flex-wrap gap-3 text-sm">
             <Button asChild variant="outline">
-              <Link to="/auth?signup=1" className="gap-2">
-                <Users className="w-4 h-4" /> Build my profile (free)
+              <Link to={profileCtaHref} className="gap-2">
+                <Users className="w-4 h-4" /> {profileCtaLabel}
               </Link>
             </Button>
             <Button asChild variant="ghost">
