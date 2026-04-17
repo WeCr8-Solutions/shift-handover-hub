@@ -163,22 +163,55 @@ export default function OperatorProfile() {
           </p>
         </div>
 
-        {/* Discoverability banner */}
-        <Card className={form.is_discoverable ? "border-primary bg-primary/5" : "border-dashed"}>
-          <CardContent className="pt-6 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <Globe className={`w-6 h-6 ${form.is_discoverable ? "text-primary" : "text-muted-foreground"}`} />
-              <div>
-                <p className="font-medium">{form.is_discoverable ? "Discoverable by verified employers" : "Profile is private"}</p>
-                <p className="text-sm text-muted-foreground">
-                  Only orgs on a paid OAP/Team subscription can browse opted-in profiles.
-                </p>
-              </div>
-            </div>
-            <Switch
-              checked={form.is_discoverable}
-              onCheckedChange={(v) => setForm((f) => ({ ...f, is_discoverable: v }))}
-            />
+        {/* Visibility selector */}
+        <Card className={form.profile_visibility !== "private" ? "border-primary bg-primary/5" : "border-dashed"}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Globe className="w-5 h-5" />
+              Profile visibility
+            </CardTitle>
+            <CardDescription>
+              Choose who can see your profile. You can change this anytime.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {([
+              {
+                value: "private",
+                title: "Private",
+                desc: "Only you can see your profile. Hidden from all employers and the public talent directory.",
+              },
+              {
+                value: "employers_only",
+                title: "Verified employers only",
+                desc: "Hiring orgs on a paid OAP/Team subscription can find and contact you. Not listed publicly.",
+              },
+              {
+                value: "public",
+                title: "Public",
+                desc: "Anyone can view your profile (including signed-out visitors and the public talent directory). Contact info still hidden from non-employers.",
+              },
+            ] as const).map((opt) => {
+              const selected = form.profile_visibility === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setForm((f) => ({ ...f, profile_visibility: opt.value }))}
+                  className={`w-full text-left rounded-md border p-3 transition-colors ${
+                    selected
+                      ? "border-primary bg-primary/10"
+                      : "border-border hover:bg-accent"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <p className="font-medium">{opt.title}</p>
+                    {selected && <Badge variant="default">Active</Badge>}
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1">{opt.desc}</p>
+                </button>
+              );
+            })}
           </CardContent>
         </Card>
 
