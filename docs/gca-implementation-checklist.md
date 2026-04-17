@@ -24,7 +24,7 @@ tool), and shares the same `training_media`, `inspection_tools`, and
 | `/g-code-academy` resource page | ✅ | `src/pages/resources/GCodeAcademy.tsx` — uses `useGcaAccess` |
 | `/gca` landing page | ✅ | `src/pages/GCALanding.tsx` |
 | Static study site (`public/gcode-academy/index.html`) | ✅ | Standalone HTML curriculum mirror — kept in sync via GCA_CONFIG |
-| `/verify/:certId` public verification page | 🔴 | Required for portable certs (shared with OAP) |
+| `/verify/:certId` public verification page | ✅ | Shared route — `src/pages/VerifyCertificate.tsx` |
 | Comparison page vs. NIMS / Tooling U | 🔴 | |
 
 ---
@@ -98,7 +98,7 @@ the static site only.
 | In-app test player with immediate feedback | 🔴 | |
 | Progress dashboard (lesson + test history) | 🟡 | `gca_progress` syncs; no UI surface |
 | Embed `<MachiningOperationReference>` in lessons | 🔴 | Component exists; need lesson schema |
-| Embed `<InspectionToolReference>` in lessons | 🔴 | Component still TODO |
+| Embed `<InspectionToolReference>` in lessons | ✅ | Component shipped — wire once lesson schema lands |
 
 ---
 
@@ -106,7 +106,7 @@ the static site only.
 
 | Item | Status | Notes |
 |---|---|---|
-| `/verify/:certId` public page | 🔴 | Shared with OAP — build once |
+| `/verify/:certId` public page | ✅ | Shared with OAP — placeholder live, binds to cert tables next |
 | GCA $12 cert PDF template | 🔴 | Same template engine as OAP |
 | Cert ID + QR generation | 🔴 | Shared util |
 | Stripe checkout — guest allowed | 🟡 | Infra ready; price ID needed |

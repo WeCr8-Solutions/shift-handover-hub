@@ -22,7 +22,7 @@ Source of truth for the OAP build. Cross-references `docs/jobline-oap-lovable-br
 | `/oap` landing page | ✅ | `src/pages/OAPLanding.tsx` — hero, value props, FAQ, JSON-LD `Course` schema |
 | OG image / SEO meta | ✅ | `oap-og.jpg`, canonical, keywords |
 | Pricing card on `/pricing` | 🟡 | Tier copy present; verify $99 / $299 / $599 / Enterprise rows match brief |
-| `/verify/:certId` public verification page | 🔴 | Not built — required before issuing certs |
+| `/verify/:certId` public verification page | ✅ | `src/pages/VerifyCertificate.tsx` — placeholder UI live; wires to cert tables in next migration |
 | "Why OAP" comparison vs. NIMS / paper binders | 🟡 | Copy on landing; could promote to `/compare/oap-vs-nims` |
 
 ---
@@ -37,7 +37,7 @@ Source of truth for the OAP build. Cross-references `docs/jobline-oap-lovable-br
 | Org overrides (hide / required-for-roles) | ✅ | `<OrgOverridesPanel>` covers tools + ops |
 | Bulk tag editor (platform admin) | ✅ | `<BulkTagPanel>` |
 | `<MachiningOperationReference>` embed | ✅ | `src/components/training/MachiningOperationReference.tsx` |
-| `<InspectionToolReference>` embed | 🔴 | Mirror of MachiningOperationReference — needed for lesson embedding |
+| `<InspectionToolReference>` embed | ✅ | `src/components/training/InspectionToolReference.tsx` |
 
 ---
 
@@ -100,7 +100,7 @@ Source of truth for the OAP build. Cross-references `docs/jobline-oap-lovable-br
 |---|---|---|
 | Cert template (PDF, portrait 8.5x11, dark pro aesthetic) | 🔴 | |
 | Cert ID generator (`CERT-XXXXXX-YYYY` + QR token) | 🔴 | |
-| `/verify/:certId` page (public, no auth) | 🔴 | Required by brief |
+| `/verify/:certId` page (public, no auth) | ✅ | Live placeholder; binds to cert tables next |
 | Stripe `$12` one-time checkout (guest allowed) | 🟡 | Stripe infra in place; specific OAP cert price ID not wired |
 | Email delivery with PDF attachment | 🔴 | Use existing `send-email` Resend infra |
 | Shareable link + LinkedIn-ready URL | 🔴 | |
