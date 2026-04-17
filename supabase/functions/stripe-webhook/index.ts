@@ -17,6 +17,8 @@ const PRODUCT_TIERS: Record<string, string> = {
   "prod_TrQ3QqbNqlmDiS": "single",
   "prod_TrQ3SzBnvfW4yA": "team",
   "prod_TrQ3Y4BKSsc591": "enterprise",
+  // TODO: Replace with real GCA Stripe product ID once created in dashboard
+  // "prod_GCA_PLACEHOLDER": "gca_pro",
 };
 
 // ERP add-on product ID to tier mapping

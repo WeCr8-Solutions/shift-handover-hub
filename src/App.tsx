@@ -78,6 +78,7 @@ import Start from "./pages/Start";
 import ResourcesIndex from "./pages/resources/ResourcesIndex";
 import ManufacturingGuides from "./pages/resources/ManufacturingGuides";
 import GCodeReference from "./pages/resources/GCodeReference";
+import GCodeAcademy from "./pages/resources/GCodeAcademy";
 import IndustryGlossary from "./pages/resources/IndustryGlossary";
 import BeginnersGuide from "./pages/resources/BeginnersGuide";
 import ManufacturingCareers from "./pages/resources/ManufacturingCareers";
@@ -203,6 +204,7 @@ const App = () => (
                     <Route path="/resources" element={<ResourcesIndex />} />
                     <Route path="/resources/guides" element={<ManufacturingGuides />} />
                     <Route path="/resources/gcode" element={<GCodeReference />} />
+                    <Route path="/resources/gcode-academy" element={<GCodeAcademy />} />
                     <Route path="/resources/glossary" element={<IndustryGlossary />} />
                     <Route path="/resources/beginners" element={<BeginnersGuide />} />
                     <Route path="/resources/careers" element={<ManufacturingCareers />} />

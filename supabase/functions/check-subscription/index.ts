@@ -1,11 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { buildCorsHeaders, corsPreflight } from "../_shared/cors.ts";
 
 const logStep = (step: string, details?: unknown) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
@@ -17,11 +13,19 @@ const PRODUCT_TIERS: Record<string, string> = {
   "prod_TrQ3QqbNqlmDiS": "single",
   "prod_TrQ3SzBnvfW4yA": "team",
   "prod_TrQ3Y4BKSsc591": "enterprise",
+  // TODO: Replace with real GCA Stripe product ID once created in dashboard
+  // "prod_GCA_PLACEHOLDER": "gca_pro",
 };
 
 serve(async (req) => {
+  const corsHeaders = buildCorsHeaders(req, {
+    allowHeaders: "authorization, x-client-info, apikey, content-type",
+  });
+
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return corsPreflight(req, {
+      allowHeaders: "authorization, x-client-info, apikey, content-type",
+    });
   }
 
   const supabaseClient = createClient(

@@ -5,7 +5,7 @@ import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
-import { BookOpen, Code, BookA, ArrowRight, GitCompare, GraduationCap, Briefcase, ShieldAlert, ClipboardCheck, TrendingUp, LayoutGrid, Kanban, Users, FileText } from "lucide-react";
+import { BookOpen, Code, BookA, ArrowRight, GitCompare, GraduationCap, Briefcase, ShieldAlert, ClipboardCheck, TrendingUp, LayoutGrid, Kanban, Users, FileText, School } from "lucide-react";
 
 const sections = [
   {
@@ -21,6 +21,13 @@ const sections = [
     icon: Code,
     href: "/resources/gcode",
     count: "180+ codes",
+  },
+  {
+    title: "G-Code Academy",
+    description: "Interactive CNC operator training — lathe and mill lesson tracks across four skill levels (Beginner to Automation), controller-specific tests for Fanuc, Haas, Siemens, and Heidenhain, GD&T certification practice, and a timed interview simulator. Built by machinists, for machinists.",
+    icon: School,
+    href: "/resources/gcode-academy",
+    count: "10 test banks · 4 levels",
   },
   {
     title: "Industry Glossary",

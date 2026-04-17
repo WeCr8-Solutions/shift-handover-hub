@@ -23,6 +23,7 @@ import {
   HelpCircle,
   Building2,
   Newspaper,
+  School,
   type LucideIcon,
 } from "lucide-react";
 
@@ -122,6 +123,7 @@ export const learnCategories: LearnCategory[] = [
   {
     heading: "Training",
     items: [
+      { label: "G-Code Academy", href: "/resources/gcode-academy", icon: School, desc: "Interactive CNC training, tests & GD&T" },
       { label: "Beginner's Guide", href: "/resources/beginners", icon: GraduationCap, desc: "Get started with manufacturing basics" },
       { label: "Safety & Compliance", href: "/resources/safety", icon: ShieldAlert, desc: "OSHA, lockout/tagout & PPE" },
       { label: "Lean Manufacturing", href: "/resources/lean", icon: TrendingUp, desc: "Eliminate waste & improve flow" },

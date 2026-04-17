@@ -447,6 +447,12 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://jobline.ai/resources/gcode-academy</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://jobline.ai/resources/glossary</loc>
     <lastmod>2026-04-09</lastmod>
     <changefreq>monthly</changefreq>
