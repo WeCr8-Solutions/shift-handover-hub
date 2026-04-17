@@ -5123,6 +5123,7 @@ export type Database = {
           open_to_work: boolean
           portfolio_url: string | null
           preferred_employment_types: string[] | null
+          profile_visibility: Database["public"]["Enums"]["operator_profile_visibility"]
           resume_pdf_url: string | null
           updated_at: string
           user_id: string
@@ -5147,6 +5148,7 @@ export type Database = {
           open_to_work?: boolean
           portfolio_url?: string | null
           preferred_employment_types?: string[] | null
+          profile_visibility?: Database["public"]["Enums"]["operator_profile_visibility"]
           resume_pdf_url?: string | null
           updated_at?: string
           user_id: string
@@ -5171,6 +5173,7 @@ export type Database = {
           open_to_work?: boolean
           portfolio_url?: string | null
           preferred_employment_types?: string[] | null
+          profile_visibility?: Database["public"]["Enums"]["operator_profile_visibility"]
           resume_pdf_url?: string | null
           updated_at?: string
           user_id?: string
@@ -9056,6 +9059,90 @@ export type Database = {
           },
         ]
       }
+      operator_profiles_public: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string | null
+          desired_salary_max: number | null
+          desired_salary_min: number | null
+          headline: string | null
+          id: string | null
+          is_discoverable: boolean | null
+          linkedin_url: string | null
+          location_city: string | null
+          location_country: string | null
+          location_region: string | null
+          open_to_work: boolean | null
+          portfolio_url: string | null
+          preferred_employment_types: string[] | null
+          profile_visibility:
+            | Database["public"]["Enums"]["operator_profile_visibility"]
+            | null
+          resume_pdf_url: string | null
+          updated_at: string | null
+          user_id: string | null
+          willing_to_relocate: boolean | null
+          years_experience: number | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          contact_email?: never
+          contact_phone?: never
+          created_at?: string | null
+          desired_salary_max?: never
+          desired_salary_min?: never
+          headline?: string | null
+          id?: string | null
+          is_discoverable?: boolean | null
+          linkedin_url?: string | null
+          location_city?: string | null
+          location_country?: string | null
+          location_region?: string | null
+          open_to_work?: boolean | null
+          portfolio_url?: string | null
+          preferred_employment_types?: string[] | null
+          profile_visibility?:
+            | Database["public"]["Enums"]["operator_profile_visibility"]
+            | null
+          resume_pdf_url?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          willing_to_relocate?: boolean | null
+          years_experience?: number | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          contact_email?: never
+          contact_phone?: never
+          created_at?: string | null
+          desired_salary_max?: never
+          desired_salary_min?: never
+          headline?: string | null
+          id?: string | null
+          is_discoverable?: boolean | null
+          linkedin_url?: string | null
+          location_city?: string | null
+          location_country?: string | null
+          location_region?: string | null
+          open_to_work?: boolean | null
+          portfolio_url?: string | null
+          preferred_employment_types?: string[] | null
+          profile_visibility?:
+            | Database["public"]["Enums"]["operator_profile_visibility"]
+            | null
+          resume_pdf_url?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          willing_to_relocate?: boolean | null
+          years_experience?: number | null
+        }
+        Relationships: []
+      }
       organization_webhooks_safe: {
         Row: {
           created_at: string | null
@@ -9460,6 +9547,7 @@ export type Database = {
         | "closed"
         | "wont_fix"
       oap_checkoff_result: "pass" | "needs_practice" | "fail"
+      operator_profile_visibility: "private" | "employers_only" | "public"
       queue_item_type:
         | "work_order"
         | "station_task"
@@ -9698,6 +9786,7 @@ export const Constants = {
         "wont_fix",
       ],
       oap_checkoff_result: ["pass", "needs_practice", "fail"],
+      operator_profile_visibility: ["private", "employers_only", "public"],
       queue_item_type: [
         "work_order",
         "station_task",
