@@ -250,18 +250,23 @@ export function useContactRequests() {
       return;
     }
     setLoading(true);
-    const queries: Promise<unknown>[] = [];
-    queries.push(
-      supabase.from("talent_contact_requests").select("*").eq("candidate_user_id", user.id).order("created_at", { ascending: false }),
-    );
+    const inRes = await supabase
+      .from("talent_contact_requests")
+      .select("*")
+      .eq("candidate_user_id", user.id)
+      .order("created_at", { ascending: false });
+    setInbound((inRes.data as ContactRequest[] | null) ?? []);
+
     if (organization?.id) {
-      queries.push(
-        supabase.from("talent_contact_requests").select("*").eq("organization_id", organization.id).order("created_at", { ascending: false }),
-      );
+      const outRes = await supabase
+        .from("talent_contact_requests")
+        .select("*")
+        .eq("organization_id", organization.id)
+        .order("created_at", { ascending: false });
+      setOutbound((outRes.data as ContactRequest[] | null) ?? []);
+    } else {
+      setOutbound([]);
     }
-    const [inRes, outRes] = (await Promise.all(queries)) as Array<{ data: ContactRequest[] | null }>;
-    setInbound(inRes?.data ?? []);
-    setOutbound(outRes?.data ?? []);
     setLoading(false);
   }, [user?.id, organization?.id]);
 
