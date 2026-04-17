@@ -1,10 +1,11 @@
 import { useState } from "react";
+import { QRCodeSVG } from "qrcode.react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Copy, UserPlus, CheckCircle2 } from "lucide-react";
+import { Copy, UserPlus, CheckCircle2, QrCode } from "lucide-react";
 import { useOrganizationInvites } from "@/hooks/useOrganizationInvites";
 import { useTeams } from "@/hooks/useTeams";
 import { useOrgContext } from "@/contexts/OrgContext";
@@ -19,10 +20,9 @@ interface OnboardCandidateDialogProps {
 }
 
 /**
- * Onboard a Talent candidate into the employer's org.
- * Generates a single-use, email-bound invite (optionally team-scoped).
- * Once redeemed, the operator's existing global profile/certs become
- * visible to org members via standard RLS — no manual import needed.
+ * Onboard a Talent candidate into the employer's org by issuing a single-use,
+ * team-scoped invite from the existing org invite system. Shows the standard
+ * QR + join link the rest of the platform uses.
  */
 export function OnboardCandidateDialog({
   open,
@@ -63,13 +63,12 @@ export function OnboardCandidateDialog({
       return;
     }
     setGeneratedCode(data.invite_code);
-    toast({ title: "Invite ready", description: "Share the link or code with the candidate." });
+    toast({ title: "Invite ready", description: "Share the QR or link with the candidate." });
   };
 
-  const copyLink = async () => {
-    if (!inviteUrl) return;
-    await navigator.clipboard.writeText(inviteUrl);
-    toast({ title: "Link copied" });
+  const copy = async (text: string, label: string) => {
+    await navigator.clipboard.writeText(text);
+    toast({ title: `${label} copied` });
   };
 
   const reset = () => {
@@ -93,9 +92,9 @@ export function OnboardCandidateDialog({
             <UserPlus className="w-5 h-5" /> Onboard {candidateName ?? "candidate"}
           </DialogTitle>
           <DialogDescription>
-            Generate a single-use invite. When the operator redeems it, their
-            verified OAP/GCA credentials and resume profile auto-import into
-            your team's roster.
+            Generate a single-use QR/invite from your existing org invite
+            system. When the operator joins, their verified OAP/GCA credentials
+            and resume profile auto-import into your team's roster.
           </DialogDescription>
         </DialogHeader>
 
@@ -146,8 +145,8 @@ export function OnboardCandidateDialog({
               </div>
             </div>
             <p className="text-[11px] text-muted-foreground">
-              Invite expires in 15 days. Single use. Existing operator profile,
-              skills, and verified certifications carry over automatically — no
+              Expires in 15 days. Single use. Existing operator profile, skills,
+              and verified certifications carry over automatically — no
               proprietary employer data is shared.
             </p>
           </div>
@@ -156,23 +155,29 @@ export function OnboardCandidateDialog({
             <div className="flex items-center gap-2 text-sm text-primary">
               <CheckCircle2 className="w-4 h-4" /> Invite generated
             </div>
+            <div className="flex justify-center bg-card border rounded-md p-4">
+              <QRCodeSVG value={inviteUrl ?? ""} size={180} />
+            </div>
             <div>
               <Label className="text-xs">Invite link</Label>
               <div className="flex gap-2">
                 <Input readOnly value={inviteUrl ?? ""} />
-                <Button size="icon" variant="outline" onClick={copyLink}>
+                <Button size="icon" variant="outline" onClick={() => copy(inviteUrl ?? "", "Link")}>
                   <Copy className="w-4 h-4" />
                 </Button>
               </div>
             </div>
             <div>
               <Label className="text-xs">Code</Label>
-              <Input readOnly value={generatedCode} className="font-mono" />
+              <div className="flex gap-2">
+                <Input readOnly value={generatedCode} className="font-mono" />
+                <Button size="icon" variant="outline" onClick={() => copy(generatedCode, "Code")}>
+                  <Copy className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
-            <p className="text-[11px] text-muted-foreground">
-              Once they join, you'll see them in your team roster and their
-              transferable credentials in the OAP employer console. Candidate
-              ID: <code>{candidateUserId.slice(0, 8)}…</code>
+            <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+              <QrCode className="w-3 h-3" /> Candidate ID: <code>{candidateUserId.slice(0, 8)}…</code>
             </p>
           </div>
         )}
