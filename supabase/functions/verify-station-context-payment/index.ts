@@ -92,11 +92,15 @@ serve(async (req: Request): Promise<Response> => {
       console.error("Membership check error:", membershipError);
     }
 
-    if (!membership) {
-      return new Response(JSON.stringify({ error: "Access denied: not an org member" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    const adminRoles = new Set(["owner", "admin", "org_admin", "super_admin"]);
+    if (!membership || !adminRoles.has(String(membership.role))) {
+      return new Response(
+        JSON.stringify({ error: "Access denied: only org admins can activate machine profiles" }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
 
     // Check if already purchased
