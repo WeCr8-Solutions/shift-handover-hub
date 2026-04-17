@@ -467,6 +467,8 @@ export default function OAPLanding() {
       </section>
 
       <MarketingFooter />
+
+      <BuyCertificateDialog open={buyOpen} onOpenChange={setBuyOpen} program="OAP" />
     </div>
   );
 }
