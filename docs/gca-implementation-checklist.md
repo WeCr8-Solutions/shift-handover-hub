@@ -105,11 +105,13 @@ the static site only.
 
 | Item | Status | Notes |
 |---|---|---|
-| `/verify/:certId` public page | ✅ | Shared with OAP — placeholder live, binds to cert tables next |
-| GCA $12 cert PDF template | 🔴 | Same template engine as OAP |
-| Cert ID + QR generation | 🔴 | Shared util |
-| Stripe checkout — guest allowed | 🟡 | Infra ready; price ID needed |
-| Email delivery via Resend | 🔴 | |
+| `/verify/:certId` public page | ✅ | Shared with OAP — bound to live `gca_certificates` table |
+| Branded cert template | ✅ | `<CertificateTemplate>` (shared) — `program="GCA"` accent variant |
+| Cert ID generator (`GCA-XXXXXX-YYYY`) | ✅ | `src/lib/certificates.ts` (shared) |
+| Issuance edge function | ✅ | `issue-certificate` (shared) — pass `program: "GCA"` |
+| Stripe `$12` checkout (guest allowed) | 🟡 | Infra ready; cert-specific price ID + webhook glue still TODO |
+| Email delivery via Resend | ✅ | HTML receipt with cert ID + verify URL on issue |
+| PDF attachment | 🟡 | Pending headless render pipeline — `<CertificateTemplate>` already prints clean |
 
 ---
 

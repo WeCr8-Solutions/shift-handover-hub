@@ -4,6 +4,7 @@ import { InspectionToolsCatalog } from "./InspectionToolsCatalog";
 import { MachiningOperationsCatalog } from "./MachiningOperationsCatalog";
 import { OrgOverridesPanel } from "./OrgOverridesPanel";
 import { BulkTagPanel } from "./BulkTagPanel";
+import { CertificateIssuancePanel } from "@/components/certificates/CertificateIssuancePanel";
 import {
   Library,
   Wrench,
@@ -12,6 +13,7 @@ import {
   Cog,
   Settings2,
   Tags,
+  Award,
 } from "lucide-react";
 import type { AdminComponentAccess } from "@/types/admin";
 
@@ -51,6 +53,9 @@ export function TrainingLibraryPanel({ access }: Props) {
           </TabsTrigger>
           <TabsTrigger value="overrides" className="gap-1">
             <Settings2 className="w-3.5 h-3.5" /> Org Overrides
+          </TabsTrigger>
+          <TabsTrigger value="certs" className="gap-1">
+            <Award className="w-3.5 h-3.5" /> Certificates
           </TabsTrigger>
           {access.isPlatformAdmin && (
             <TabsTrigger value="bulk" className="gap-1">
@@ -94,6 +99,10 @@ export function TrainingLibraryPanel({ access }: Props) {
 
         <TabsContent value="overrides">
           <OrgOverridesPanel />
+        </TabsContent>
+
+        <TabsContent value="certs">
+          <CertificateIssuancePanel />
         </TabsContent>
 
         {access.isPlatformAdmin && (
