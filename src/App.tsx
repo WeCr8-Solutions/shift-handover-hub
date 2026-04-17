@@ -114,7 +114,9 @@ import DevDocArticle from "./pages/DevDocArticle";
 import WorkOrderHistoryPage from "./pages/WorkOrderHistoryPage";
 import QuoteHistoryPage from "./pages/QuoteHistoryPage";
 import OperatorProfile from "./pages/OperatorProfile";
-import Talent from "./pages/Talent";
+import TalentLanding from "./pages/TalentLanding";
+import TalentSearch from "./pages/TalentSearch";
+import PublicOperatorProfile from "./pages/PublicOperatorProfile";
 import OperatorInbox from "./pages/OperatorInbox";
 import { lazy, Suspense } from "react";
 
@@ -229,6 +231,9 @@ const App = () => (
                     <Route path="/oap/learn/:courseSlug/:lessonSlug" element={<OapCoursePlayer />} />
                     <Route path="/oap/employer" element={<OapEmployer />} />
                     <Route path="/oap/my-transcript" element={<OapMyTranscript />} />
+                    <Route path="/talent" element={<TalentLanding />} />
+                    <Route path="/talent/search" element={<TalentSearch />} />
+                    <Route path="/talent/:username" element={<PublicOperatorProfile />} />
                     <Route path="/resources/oap" element={<OperatorAcceptanceProgram />} />
                     <Route path="/resources/glossary" element={<IndustryGlossary />} />
                     <Route path="/resources/beginners" element={<BeginnersGuide />} />

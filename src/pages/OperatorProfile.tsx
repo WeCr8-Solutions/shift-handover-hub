@@ -51,6 +51,7 @@ export default function OperatorProfile() {
     open_to_work: false,
     willing_to_relocate: false,
     profile_visibility: "private" as "private" | "employers_only" | "public",
+    public_username: "",
   });
   const [saving, setSaving] = useState(false);
   const [uploadingResume, setUploadingResume] = useState(false);
@@ -76,6 +77,7 @@ export default function OperatorProfile() {
         open_to_work: profile.open_to_work,
         willing_to_relocate: profile.willing_to_relocate,
         profile_visibility: profile.profile_visibility ?? "private",
+        public_username: profile.public_username ?? "",
       });
     } else if (user) {
       setForm((f) => ({ ...f, contact_email: user.email ?? "" }));
@@ -99,7 +101,8 @@ export default function OperatorProfile() {
         open_to_work: form.open_to_work,
         willing_to_relocate: form.willing_to_relocate,
         profile_visibility: form.profile_visibility,
-      });
+        public_username: form.public_username.trim().toLowerCase() || null,
+      } as any);
       toast({ title: "Profile saved", description: "Your operator profile has been updated." });
     } catch (err) {
       toast({ title: "Save failed", description: err instanceof Error ? err.message : String(err), variant: "destructive" });
@@ -212,6 +215,36 @@ export default function OperatorProfile() {
                 </button>
               );
             })}
+
+            {form.profile_visibility === "public" && (
+              <div className="mt-4 space-y-2 rounded-md border bg-background p-3">
+                <Label htmlFor="public_username" className="text-sm font-medium">
+                  Public username
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Your profile will live at <span className="font-mono">jobline.ai/talent/{form.public_username || "your-name"}</span>.
+                  Lowercase letters, numbers, hyphens, underscores. 3–30 characters.
+                </p>
+                <Input
+                  id="public_username"
+                  value={form.public_username}
+                  onChange={(e) => setForm((f) => ({ ...f, public_username: e.target.value.toLowerCase() }))}
+                  placeholder="e.g. zach-machinist"
+                  pattern="^[a-z0-9][a-z0-9_-]{2,29}$"
+                  maxLength={30}
+                />
+                {profile?.public_username && (
+                  <a
+                    href={`/talent/${profile.public_username}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-primary hover:underline inline-flex items-center gap-1"
+                  >
+                    View public profile →
+                  </a>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
 

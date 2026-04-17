@@ -20,11 +20,27 @@ Source of truth for the OAP build. Cross-references `docs/jobline-oap-lovable-br
 | Item | Status | Notes |
 |---|---|---|
 | `/oap` landing page | ✅ | `src/pages/OAPLanding.tsx` — hero, value props, FAQ, JSON-LD `Course` schema |
+| `/talent` public landing | ✅ | `src/pages/TalentLanding.tsx` — operator + employer dual-audience landing for the public profile network |
+| `/talent/:username` public profile | ✅ | `src/pages/PublicOperatorProfile.tsx` — JSON-LD `Person` schema, OG profile tags, indexed |
+| `/talent/search` employer console | ✅ | `src/pages/TalentSearch.tsx` — authenticated, paid-tier-gated; `noindex` |
 | OG image / SEO meta | ✅ | `oap-og.jpg`, canonical, keywords |
 | Pricing card on `/pricing` | 🟡 | Tier copy present; verify $99 / $299 / $599 / Enterprise rows match brief |
 | `/verify/:certId` public verification page | ✅ | `src/pages/VerifyCertificate.tsx` — bound to live `oap_certificates` |
 | Sample certificate preview on landing | ✅ | `<CertificatePreview program="OAP">` in OAPLanding |
 | "Why OAP" comparison vs. NIMS / paper binders | 🟡 | Copy on landing; could promote to `/compare/oap-vs-nims` |
+
+### Portable Credentials & Talent Network (NEW — dual-audience)
+
+| Item | Status | Notes |
+|---|---|---|
+| Operator-owned, portable certs | ✅ | `oap_operator_credentials` table with `is_portable` toggle |
+| Recert lifecycle audit trail | ✅ | `oap_recert_events` — scheduled/reminded/recertified/suspended/revoked/transferred |
+| Transfer tokens (employer→employer) | ✅ | `oap_transfer_tokens` + `redeem_oap_transfer_token` RPC |
+| Operator transcript page | ✅ | `/oap/my-transcript` (`OapMyTranscript.tsx`) |
+| Employer audit dashboard | ✅ | `/oap/employer` (`OapEmployer.tsx`) — recert queue + ITAR audit feed |
+| Auto-sync to operator profile | ✅ | `syncIssuedCertificatesToProfile()` upserts `verification_source: 'verified_oap'` rows |
+| Public profile visibility tiers | ✅ | Private / Employers-only / Public — see `docs/operator-profile-scope.md` §4 |
+| Cross-org cert verification (anon) | ✅ | `/verify/:certId` and embedded "Verified" badges on `/talent/:username` |
 
 ---
 
