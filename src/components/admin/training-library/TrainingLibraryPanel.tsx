@@ -2,7 +2,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InspectionToolsCatalog } from "./InspectionToolsCatalog";
 import { MachiningOperationsCatalog } from "./MachiningOperationsCatalog";
-import { Library, Wrench, GraduationCap, ClipboardCheck, Cog } from "lucide-react";
+import { OrgOverridesPanel } from "./OrgOverridesPanel";
+import { BulkTagPanel } from "./BulkTagPanel";
+import {
+  Library,
+  Wrench,
+  GraduationCap,
+  ClipboardCheck,
+  Cog,
+  Settings2,
+  Tags,
+} from "lucide-react";
 import type { AdminComponentAccess } from "@/types/admin";
 
 interface Props {
@@ -39,6 +49,14 @@ export function TrainingLibraryPanel({ access }: Props) {
           <TabsTrigger value="oap" className="gap-1">
             <ClipboardCheck className="w-3.5 h-3.5" /> OAP Mapping
           </TabsTrigger>
+          <TabsTrigger value="overrides" className="gap-1">
+            <Settings2 className="w-3.5 h-3.5" /> Org Overrides
+          </TabsTrigger>
+          {access.isPlatformAdmin && (
+            <TabsTrigger value="bulk" className="gap-1">
+              <Tags className="w-3.5 h-3.5" /> Bulk Tags
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="tools">
@@ -67,10 +85,22 @@ export function TrainingLibraryPanel({ access }: Props) {
               next. Backend already supports <code>oap_lesson</code>,{" "}
               <code>oap_course</code>, <code>oap_quiz_question</code>,{" "}
               <code>oap_walkthrough_item</code>, and{" "}
-              <code>oap_walkthrough_section</code>.
+              <code>oap_walkthrough_section</code>. Embed any machining op into
+              a lesson with{" "}
+              <code>{`<MachiningOperationReference reference="pocketing" />`}</code>.
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="overrides">
+          <OrgOverridesPanel />
+        </TabsContent>
+
+        {access.isPlatformAdmin && (
+          <TabsContent value="bulk">
+            <BulkTagPanel isPlatformAdmin={access.isPlatformAdmin} />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );
