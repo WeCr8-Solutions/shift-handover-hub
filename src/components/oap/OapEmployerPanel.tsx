@@ -266,6 +266,7 @@ function RoleProgramForm({
     required_inspection_tool_slugs?: string[];
     required_machining_operation_slugs?: string[];
     course_ids: string[];
+    recert_interval_months?: number | null;
   }) => void;
 }) {
   const { data: courses = [] } = useOapCourses();
