@@ -1,10 +1,13 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import { InspectionToolsCatalog } from "./InspectionToolsCatalog";
 import { MachiningOperationsCatalog } from "./MachiningOperationsCatalog";
 import { OrgOverridesPanel } from "./OrgOverridesPanel";
 import { BulkTagPanel } from "./BulkTagPanel";
 import { CertificateIssuancePanel } from "@/components/certificates/CertificateIssuancePanel";
+import { OapMentorAdminPanel } from "@/components/oap/OapMentorAdminPanel";
 import {
   Library,
   Wrench,
@@ -14,6 +17,7 @@ import {
   Settings2,
   Tags,
   Award,
+  ShieldCheck,
 } from "lucide-react";
 import type { AdminComponentAccess } from "@/types/admin";
 
@@ -54,6 +58,9 @@ export function TrainingLibraryPanel({ access }: Props) {
           <TabsTrigger value="overrides" className="gap-1">
             <Settings2 className="w-3.5 h-3.5" /> Org Overrides
           </TabsTrigger>
+          <TabsTrigger value="mentors" className="gap-1">
+            <ShieldCheck className="w-3.5 h-3.5" /> OAP Mentors
+          </TabsTrigger>
           <TabsTrigger value="certs" className="gap-1">
             <Award className="w-3.5 h-3.5" /> Certificates
           </TabsTrigger>
@@ -85,16 +92,28 @@ export function TrainingLibraryPanel({ access }: Props) {
 
         <TabsContent value="oap">
           <Card>
-            <CardContent className="py-6 text-sm text-muted-foreground">
-              OAP lesson, course, quiz, and walkthrough media mapping UI ships
-              next. Backend already supports <code>oap_lesson</code>,{" "}
-              <code>oap_course</code>, <code>oap_quiz_question</code>,{" "}
-              <code>oap_walkthrough_item</code>, and{" "}
-              <code>oap_walkthrough_section</code>. Embed any machining op into
-              a lesson with{" "}
-              <code>{`<MachiningOperationReference reference="pocketing" />`}</code>.
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <ClipboardCheck className="w-4 h-4" /> OAP Mentor Walkthrough
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm text-muted-foreground">
+              <p>
+                The mentor check-off screen lives at{" "}
+                <code>/oap/walkthrough</code>. Designated mentors and supervisors
+                can start a session for any operator and sign off the 7 OAP
+                sections (Safety, Material Handling, Measurement, Tooling,
+                Machine Qualification, Floor Certification).
+              </p>
+              <Button asChild size="sm">
+                <Link to="/oap/walkthrough">Open Mentor Walkthrough →</Link>
+              </Button>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="mentors">
+          <OapMentorAdminPanel />
         </TabsContent>
 
         <TabsContent value="overrides">

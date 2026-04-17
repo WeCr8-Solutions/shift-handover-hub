@@ -1,0 +1,135 @@
+%% Payments, Products & Programs Map — JobLine.ai
+%% Type: flowchart LR
+%% Covers Stripe SKUs, OAP, GCA, machine marketplace, and donation flows
+%% Updated: 2026-04-17
+
+flowchart LR
+    subgraph Personas
+        VISITOR[Anonymous Visitor]
+        OPERATOR[Operator]
+        ORG_ADMIN[Org Admin / Supervisor]
+        MENTOR[OAP Designated Mentor]
+    end
+
+    subgraph PublicPages["Public / Marketing Pages"]
+        P_PRICING[/pricing/]
+        P_OAP[/oap/]
+        P_GCA[/gca/]
+        P_MARKETPLACE[/marketplace/]
+        P_DONATE[/donate/]
+        P_VERIFY[/verify/:certId/]
+        P_SUCCESS[/cert/success/]
+    end
+
+    subgraph CheckoutFns["Checkout Edge Functions"]
+        FN_SUB[create-checkout]
+        FN_CERT[create-cert-checkout]
+        FN_DONATE[create-donation]
+        FN_PORTAL[customer-portal]
+        FN_ACTIVATE[activate-station-context]
+        FN_VERIFY_PAY[verify-station-context-payment]
+    end
+
+    subgraph IssuanceFns["Issuance & Webhook Fns"]
+        FN_WEBHOOK[stripe-webhook]
+        FN_ISSUE[issue-certificate]
+        FN_EMAIL[send-email]
+    end
+
+    subgraph StripeCatalog["Stripe Product Catalog"]
+        SKU_SINGLE["Single User<br/>$8.99/mo"]
+        SKU_TEAM["Team<br/>$24.99/mo<br/>1 admin + 3 seats"]
+        SKU_ENT["Enterprise<br/>custom"]
+        SKU_GCA_MO["GCA Pro<br/>$19/mo"]
+        SKU_GCA_YR["GCA Pro<br/>annual"]
+        SKU_CERT["OAP/GCA Cert<br/>$12 one-time"]
+        SKU_MACHINE["Machine Profile<br/>$0.99 one-time"]
+        SKU_DONATE["Donation<br/>variable"]
+    end
+
+    subgraph Programs["Programs / Catalogs"]
+        OAP_PROG[OAP — Operator Acceptance Program<br/>7 sections, mentor walkthrough,<br/>employer-defined role programs]
+        GCA_PROG[GCA — G-Code Academy<br/>10 question banks,<br/>pre-hire study + portfolio]
+        MACHINE_CAT[Machine Marketplace<br/>79+ pre-configured profiles<br/>Fanuc / Haas / Mazak / Okuma / Siemens]
+    end
+
+    subgraph DataLayer["Database — Issued Records"]
+        DB_SUBS[(subscriptions)]
+        DB_ENT[(entitlements)]
+        DB_OAP_CERT[(oap_certificates<br/>+ items)]
+        DB_GCA_CERT[(gca_certificates)]
+        DB_PURCHASES[(org_machine_purchases)]
+        DB_STRIPE_EVT[(stripe_events)]
+        DB_GCA_SUB[(gca_subscriptions)]
+    end
+
+    %% Subscription path
+    VISITOR --> P_PRICING
+    ORG_ADMIN --> P_PRICING
+    P_PRICING --> FN_SUB
+    FN_SUB --> SKU_SINGLE
+    FN_SUB --> SKU_TEAM
+    FN_SUB --> SKU_ENT
+    FN_SUB --> SKU_GCA_MO
+    FN_SUB --> SKU_GCA_YR
+
+    %% $12 Cert path (guest)
+    VISITOR --> P_OAP
+    VISITOR --> P_GCA
+    P_OAP --> FN_CERT
+    P_GCA --> FN_CERT
+    FN_CERT --> SKU_CERT
+
+    %% Marketplace path
+    ORG_ADMIN --> P_MARKETPLACE
+    P_MARKETPLACE --> FN_ACTIVATE
+    FN_ACTIVATE --> SKU_MACHINE
+    FN_ACTIVATE --> FN_VERIFY_PAY
+
+    %% Donations
+    VISITOR --> P_DONATE
+    P_DONATE --> FN_DONATE
+    FN_DONATE --> SKU_DONATE
+
+    %% Stripe webhook fan-out
+    SKU_SINGLE -- payment_intent.succeeded --> FN_WEBHOOK
+    SKU_TEAM -- subscription.updated --> FN_WEBHOOK
+    SKU_ENT -- subscription.updated --> FN_WEBHOOK
+    SKU_GCA_MO -- subscription.updated --> FN_WEBHOOK
+    SKU_GCA_YR -- subscription.updated --> FN_WEBHOOK
+    SKU_CERT -- checkout.completed --> FN_WEBHOOK
+    SKU_MACHINE -- checkout.completed --> FN_WEBHOOK
+    SKU_DONATE -- checkout.completed --> FN_WEBHOOK
+
+    FN_WEBHOOK --> DB_STRIPE_EVT
+    FN_WEBHOOK --> DB_SUBS
+    FN_WEBHOOK --> DB_ENT
+    FN_WEBHOOK --> DB_GCA_SUB
+    FN_WEBHOOK --> DB_PURCHASES
+    FN_WEBHOOK -- product_type: cert --> DB_OAP_CERT
+    FN_WEBHOOK -- product_type: cert --> DB_GCA_CERT
+
+    %% Admin issuance (no payment, mentor or admin issues)
+    ORG_ADMIN --> FN_ISSUE
+    MENTOR --> FN_ISSUE
+    FN_ISSUE --> DB_OAP_CERT
+    FN_ISSUE --> DB_GCA_CERT
+    FN_ISSUE --> FN_EMAIL
+    FN_WEBHOOK --> FN_EMAIL
+
+    %% Programs power what is sold
+    OAP_PROG -.fulfills.-> SKU_CERT
+    GCA_PROG -.fulfills.-> SKU_CERT
+    GCA_PROG -.fulfills.-> SKU_GCA_MO
+    MACHINE_CAT -.fulfills.-> SKU_MACHINE
+
+    %% Verify is the public artifact users share
+    OPERATOR --> P_VERIFY
+    P_SUCCESS -.poll.-> DB_OAP_CERT
+    P_SUCCESS -.poll.-> DB_GCA_CERT
+    P_VERIFY -.lookup.-> DB_OAP_CERT
+    P_VERIFY -.lookup.-> DB_GCA_CERT
+
+    %% Self-serve billing
+    ORG_ADMIN --> FN_PORTAL
+    FN_PORTAL --> DB_SUBS
