@@ -25,6 +25,7 @@ tool), and shares the same `training_media`, `inspection_tools`, and
 | `/gca` landing page | ✅ | `src/pages/GCALanding.tsx` |
 | Static study site (`public/gcode-academy/index.html`) | ✅ | Standalone HTML curriculum mirror — kept in sync via GCA_CONFIG |
 | `/verify/:certId` public verification page | ✅ | Shared route — `src/pages/VerifyCertificate.tsx` |
+| Sample certificate preview on landing | ✅ | `<CertificatePreview program="GCA">` in GCALanding |
 | Comparison page vs. NIMS / Tooling U | 🔴 | |
 
 ---
@@ -127,10 +128,23 @@ the static site only.
 
 ---
 
-## 9. Top 5 Next Actions
+## 9. Remaining Work — Snapshot 2026-04-17
 
-1. **Schema migration**: `gca_question_banks`, `gca_questions`, `gca_test_attempts` with RLS + canonical seed of 1 starter bank.
-2. **Build `<InspectionToolReference>`** for lesson/question embeds (needed by both OAP & GCA).
-3. **`/verify/:certId` page** — single public route shared by both programs.
-4. **GCA in-app test player** — frees us from depending on the static site for assessments.
-5. **Operator profile editor** — wire CRUD UI on top of existing `gca_*` profile tables.
+**Roughly ~45% remaining** to fully replace the static site with an in-app GCA experience. Auth, subscriptions, schema, certs, and marketing are done. What remains is **content + in-app learner UI + portfolio surface**.
+
+### High-priority
+1. **Seed 10 question banks** (Lathe, Mill, Fanuc, Haas, Mazak, Okuma, Siemens, GD&T, Speeds & Feeds, Inspection) into `gca_question_banks` / `gca_questions` — currently only Lathe Fundamentals (3 Q) is seeded.
+2. **In-app test player** with immediate feedback against `gca_test_attempts`.
+3. **In-app lesson reader** (markdown + media) so we no longer depend on the static site.
+4. **Stripe $12 cert checkout** (guest-allowed) → `issue-certificate` with `program: "GCA"`.
+
+### Medium-priority
+5. **Operator profile editor** — CRUD UI on `gca_professional_profiles`, `gca_machine_experience`, `gca_measurement_tools_tested`, `gca_accomplishments`.
+6. **Public shareable profile URL** ("LinkedIn for machinists").
+7. **Progress dashboard** surfacing `gca_progress` data.
+8. **Embed `<MachiningOperationReference>`** in lesson schema once authored.
+
+### Nice-to-have / polish
+- GCA add-on ($49/mo per location) packaging on `/pricing`.
+- Comparison page vs. NIMS / Tooling U.
+- PDF attachment in cert email (shared headless-render pipeline with OAP).
