@@ -416,6 +416,19 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
 
   const productId = subscription.items.data[0]?.price.product as string;
 
+  // Handle GCA standalone cancellation
+  if (isGcaProduct(productId)) {
+    await supabaseAdmin
+      .from("gca_subscriptions")
+      .update({
+        status: "canceled",
+        cancel_at_period_end: false,
+      })
+      .eq("stripe_subscription_id", subscription.id);
+    logStep("GCA subscription canceled", { subscriptionId: subscription.id });
+    return;
+  }
+
   // Handle ERP add-on cancellation
   if (isErpProduct(productId)) {
     await handleErpAddonSubscription(subscription, productId);
