@@ -54,6 +54,9 @@ export function TrainingLibraryPanel({ access }: Props) {
           <TabsTrigger value="overrides" className="gap-1">
             <Settings2 className="w-3.5 h-3.5" /> Org Overrides
           </TabsTrigger>
+          <TabsTrigger value="certs" className="gap-1">
+            <Award className="w-3.5 h-3.5" /> Certificates
+          </TabsTrigger>
           {access.isPlatformAdmin && (
             <TabsTrigger value="bulk" className="gap-1">
               <Tags className="w-3.5 h-3.5" /> Bulk Tags
