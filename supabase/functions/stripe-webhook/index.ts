@@ -48,6 +48,12 @@ const PLAN_ENTITLEMENTS: Record<string, { features: Record<string, boolean>; lim
     features: { handoff_hub: true, work_orders: true, analytics: true, api_access: true, bulk_upload: true },
     limits: { users: 100, work_orders_per_month: 10000, stations: 200 },
   },
+  gca_pro: {
+    // Standalone GCA — does NOT grant org-level platform access.
+    // Stored only on gca_subscriptions, not on entitlements.
+    features: { gca_pro: true },
+    limits: {},
+  },
 };
 
 const logStep = (step: string, details?: unknown) => {
