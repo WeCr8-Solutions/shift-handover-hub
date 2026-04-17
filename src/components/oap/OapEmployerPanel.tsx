@@ -276,6 +276,9 @@ function RoleProgramForm({
   const [machineTags, setMachineTags] = useState((existing?.required_machine_tags ?? []).join(", "));
   const [tools, setTools] = useState((existing?.required_inspection_tool_slugs ?? []).join(", "));
   const [ops, setOps] = useState((existing?.required_machining_operation_slugs ?? []).join(", "));
+  const [recertMonths, setRecertMonths] = useState<string>(
+    (existing as any)?.recert_interval_months != null ? String((existing as any).recert_interval_months) : "12"
+  );
   const [courseIds, setCourseIds] = useState<Set<string>>(
     new Set(existingCourses.map((c) => c.course_id)),
   );
