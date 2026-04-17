@@ -81,6 +81,7 @@ import GCodeReference from "./pages/resources/GCodeReference";
 import GCodeAcademy from "./pages/resources/GCodeAcademy";
 import OperatorAcceptanceProgram from "./pages/resources/OperatorAcceptanceProgram";
 import OAPLanding from "./pages/OAPLanding";
+import GCALanding from "./pages/GCALanding";
 import IndustryGlossary from "./pages/resources/IndustryGlossary";
 import BeginnersGuide from "./pages/resources/BeginnersGuide";
 import ManufacturingCareers from "./pages/resources/ManufacturingCareers";
@@ -206,6 +207,7 @@ const App = () => (
                     <Route path="/resources" element={<ResourcesIndex />} />
                     <Route path="/resources/guides" element={<ManufacturingGuides />} />
                     <Route path="/resources/gcode" element={<GCodeReference />} />
+                    <Route path="/gcode-academy" element={<GCALanding />} />
                     <Route path="/resources/gcode-academy" element={<GCodeAcademy />} />
                     <Route path="/oap" element={<OAPLanding />} />
                     <Route path="/resources/oap" element={<OperatorAcceptanceProgram />} />
