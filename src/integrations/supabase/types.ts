@@ -3435,6 +3435,289 @@ export type Database = {
           },
         ]
       }
+      oap_designated_mentors: {
+        Row: {
+          designated_at: string
+          designated_by: string
+          id: string
+          is_active: boolean
+          notes: string | null
+          organization_id: string
+          user_id: string
+          user_name: string | null
+        }
+        Insert: {
+          designated_at?: string
+          designated_by: string
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          organization_id: string
+          user_id: string
+          user_name?: string | null
+        }
+        Update: {
+          designated_at?: string
+          designated_by?: string
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          organization_id?: string
+          user_id?: string
+          user_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oap_designated_mentors_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oap_designated_mentors_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      oap_walkthrough_checkoffs: {
+        Row: {
+          created_at: string
+          id: string
+          item_id: string
+          mentor_id: string
+          mentor_name: string
+          mentor_signature: string
+          notes: string | null
+          organization_id: string
+          result: Database["public"]["Enums"]["oap_checkoff_result"]
+          section_id: string
+          session_id: string
+          signed_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_id: string
+          mentor_id: string
+          mentor_name: string
+          mentor_signature: string
+          notes?: string | null
+          organization_id: string
+          result: Database["public"]["Enums"]["oap_checkoff_result"]
+          section_id: string
+          session_id: string
+          signed_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_id?: string
+          mentor_id?: string
+          mentor_name?: string
+          mentor_signature?: string
+          notes?: string | null
+          organization_id?: string
+          result?: Database["public"]["Enums"]["oap_checkoff_result"]
+          section_id?: string
+          session_id?: string
+          signed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oap_walkthrough_checkoffs_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "oap_walkthrough_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oap_walkthrough_checkoffs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oap_walkthrough_checkoffs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oap_walkthrough_checkoffs_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "oap_walkthrough_sections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oap_walkthrough_checkoffs_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "oap_walkthrough_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      oap_walkthrough_items: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          instructions: string | null
+          is_active: boolean
+          is_required: boolean
+          item_order: number
+          organization_id: string | null
+          section_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          instructions?: string | null
+          is_active?: boolean
+          is_required?: boolean
+          item_order: number
+          organization_id?: string | null
+          section_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          instructions?: string | null
+          is_active?: boolean
+          is_required?: boolean
+          item_order?: number
+          organization_id?: string | null
+          section_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oap_walkthrough_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oap_walkthrough_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oap_walkthrough_items_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "oap_walkthrough_sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      oap_walkthrough_sections: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          section_key: string
+          section_order: number
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          section_key: string
+          section_order: number
+          title: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          section_key?: string
+          section_order?: number
+          title?: string
+        }
+        Relationships: []
+      }
+      oap_walkthrough_sessions: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          current_section_order: number
+          id: string
+          notes: string | null
+          operator_id: string
+          operator_name: string | null
+          organization_id: string
+          primary_mentor_id: string | null
+          primary_mentor_name: string | null
+          started_at: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          current_section_order?: number
+          id?: string
+          notes?: string | null
+          operator_id: string
+          operator_name?: string | null
+          organization_id: string
+          primary_mentor_id?: string | null
+          primary_mentor_name?: string | null
+          started_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          current_section_order?: number
+          id?: string
+          notes?: string | null
+          operator_id?: string
+          operator_name?: string | null
+          organization_id?: string
+          primary_mentor_id?: string | null
+          primary_mentor_name?: string | null
+          started_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oap_walkthrough_sessions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oap_walkthrough_sessions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       operator_station_sessions: {
         Row: {
           checked_in_at: string
@@ -6959,6 +7242,10 @@ export type Database = {
         Args: { _actor_id: string; _target_user_id: string }
         Returns: boolean
       }
+      can_act_as_oap_mentor: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
       can_adjust_wo_quantity: {
         Args: { _org_id: string; _user_id: string }
         Returns: boolean
@@ -7180,6 +7467,7 @@ export type Database = {
         | "resolved"
         | "closed"
         | "wont_fix"
+      oap_checkoff_result: "pass" | "needs_practice" | "fail"
       queue_item_type:
         | "work_order"
         | "station_task"
@@ -7378,6 +7666,7 @@ export const Constants = {
         "closed",
         "wont_fix",
       ],
+      oap_checkoff_result: ["pass", "needs_practice", "fail"],
       queue_item_type: [
         "work_order",
         "station_task",
