@@ -73,9 +73,15 @@ const HOW_EMPLOYER = [
 
 export default function TalentLanding() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [search, setSearch] = useState("");
   const [profiles, setProfiles] = useState<PublicProfileSummary[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const profileCtaHref = user
+    ? "/profile/operator"
+    : "/auth?signup=1&redirect=/profile/operator";
+  const profileCtaLabel = user ? "Complete my talent profile" : "Build my profile (free)";
 
   useEffect(() => {
     let cancelled = false;
