@@ -20,7 +20,7 @@ export default function VerifyCertificate() {
   const { certId } = useParams<{ certId: string }>();
 
   // TODO: replace with real lookup once oap_certificates / gca_certificates land
-  const status: "valid" | "expired" | "revoked" | "unknown" = "unknown";
+  const status = "unknown" as "valid" | "expired" | "revoked" | "unknown";
 
   const StatusIcon =
     status === "valid"
