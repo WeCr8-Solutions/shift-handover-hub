@@ -113,6 +113,9 @@ import DevPortal from "./pages/DevPortal";
 import DevDocArticle from "./pages/DevDocArticle";
 import WorkOrderHistoryPage from "./pages/WorkOrderHistoryPage";
 import QuoteHistoryPage from "./pages/QuoteHistoryPage";
+import OperatorProfile from "./pages/OperatorProfile";
+import Talent from "./pages/Talent";
+import OperatorInbox from "./pages/OperatorInbox";
 import { lazy, Suspense } from "react";
 
 const ShopFloorDisplay = lazy(() => import("./pages/ShopFloorDisplay"));
