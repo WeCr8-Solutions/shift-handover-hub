@@ -79,7 +79,7 @@ export function useCertificates() {
       recipientName: data.recipient_name,
       recipientEmail: data.recipient_email,
       organizationName: null,
-      status: data.status,
+      status: data.status as CertificateRecord["status"],
       validFrom: data.valid_from,
       validUntil: data.valid_until,
       issuedAt: data.issued_at,
