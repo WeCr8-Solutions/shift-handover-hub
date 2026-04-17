@@ -88,6 +88,7 @@ import OapWalkthrough from "./pages/OapWalkthrough";
 import OapHub from "./pages/OapHub";
 import OapCoursePlayer from "./pages/OapCoursePlayer";
 import OapEmployer from "./pages/OapEmployer";
+import OapMyTranscript from "./pages/OapMyTranscript";
 import IndustryGlossary from "./pages/resources/IndustryGlossary";
 import BeginnersGuide from "./pages/resources/BeginnersGuide";
 import ManufacturingCareers from "./pages/resources/ManufacturingCareers";
