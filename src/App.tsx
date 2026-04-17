@@ -114,7 +114,9 @@ import DevDocArticle from "./pages/DevDocArticle";
 import WorkOrderHistoryPage from "./pages/WorkOrderHistoryPage";
 import QuoteHistoryPage from "./pages/QuoteHistoryPage";
 import OperatorProfile from "./pages/OperatorProfile";
-import Talent from "./pages/Talent";
+import TalentLanding from "./pages/TalentLanding";
+import TalentSearch from "./pages/TalentSearch";
+import PublicOperatorProfile from "./pages/PublicOperatorProfile";
 import OperatorInbox from "./pages/OperatorInbox";
 import { lazy, Suspense } from "react";
 
