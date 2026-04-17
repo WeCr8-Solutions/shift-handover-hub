@@ -75,12 +75,12 @@ Source of truth for the OAP build. Cross-references `docs/jobline-oap-lovable-br
 
 | Item | Status | Notes |
 |---|---|---|
-| Course catalog page (free, no auth) | 🔴 | Must show all 7 sections + sample lessons |
-| Lesson player (markdown + embedded `<TrainingMedia>` / `<MachiningOperationReference>`) | 🔴 | Wire via the existing media layer once `oap_lessons` exists |
-| Quiz player with immediate feedback | 🔴 | |
-| Walkthrough check-off screen (mentor view) | ✅ | `/oap/walkthrough` — section-by-section pass/needs-practice/fail with typed mentor signature, idempotent upsert per item |
-| Operator self-progress dashboard | 🔴 | |
-| Sticky "Get my certificate ($12)" CTA after threshold | 🔴 | |
+| Course catalog page (free, no auth) | ✅ | `/oap/learn` — `<OapHub>` lists all 7 sections + progress + cert CTA |
+| Lesson player (markdown + embedded `<TrainingMedia>` / `<MachiningOperationReference>`) | ✅ | `/oap/learn/:courseSlug/:lessonSlug` — `<OapCoursePlayer>` with `<OapMarkdown>` |
+| Quiz player with immediate feedback | ✅ | `<QuizPlayer>` — single/multi/true-false, scored client-side, persisted to `oap_quiz_attempts` |
+| Walkthrough check-off screen (mentor view) | ✅ | `/oap/walkthrough` — section-by-section pass/needs-practice/fail with typed mentor signature |
+| Operator self-progress dashboard | ✅ | `<OapHub>` — quizzes passed, attempts, enrollments, est. time |
+| Sticky "Get my certificate ($12)" CTA after threshold | ✅ | `<OapHub>` shows CTA at ≥50% completion |
 
 ---
 
@@ -90,9 +90,9 @@ Source of truth for the OAP build. Cross-references `docs/jobline-oap-lovable-br
 |---|---|---|
 | Designated mentor registry | ✅ | `<OapMentorAdminPanel>` in Training Library admin → OAP Mentors tab |
 | Mentor sign-off auth (supervisor OR designated mentor) | ✅ | `can_act_as_oap_mentor()` enforced in RLS + UI gating live in `/oap/walkthrough` |
-| Employer program builder (pick courses + machines + tools per role) | 🔴 | Depends on §4 tables |
-| Employer dashboard (who's behind / completed / due for recert) | 🔴 | |
-| Bulk operator import (CSV) — Pro tier | 🔴 | |
+| Employer program builder (pick courses + machines + tools per role) | ✅ | `/oap/employer` — `<OapEmployerPanel>` writes to `oap_role_programs` + `oap_role_program_courses` |
+| Employer dashboard (who's behind / completed / due for recert) | ✅ | `<OapEmployerPanel>` — enrollments list with overdue badge from `expected_completion_at` |
+| Bulk operator import (CSV) — Pro tier | 🔴 | Single-row enroll live; CSV importer pending |
 | Compliance export (audit-ready PDF per operator) | 🔴 | AS9100, ISO 9001, OSHA |
 
 ---
@@ -141,25 +141,15 @@ Source of truth for the OAP build. Cross-references `docs/jobline-oap-lovable-br
 
 ---
 
-## 10. Remaining Work — Snapshot 2026-04-17 (post mentor walkthrough)
+## 10. Remaining Work — Snapshot 2026-04-17 (post learner + employer surfaces)
 
-**Roughly ~25% remaining** to ship a complete employer-ready OAP. Mentor walkthrough check-off is now live, removing the top employer-demo blocker.
+**Roughly ~10% remaining.** OAP is now both **individual-ready** (operators can self-study via `/oap/learn`, take quizzes, and buy a $12 cert) and **employer-ready** (org admins can define role programs, enroll operators, track overdue, and have mentors sign off floor walkthroughs).
 
-### High-priority (ship next)
-1. **Lesson player** (markdown + `<TrainingMedia>` / `<MachiningOperationReference>` / `<InspectionToolReference>`) reading from `oap_lessons`.
-2. **Quiz player** with immediate feedback against `oap_quizzes` / `oap_quiz_questions`.
-3. **Employer program builder** — pick courses + machines + tools per role (writes to `oap_role_programs`).
-4. **Operator self-progress dashboard** + sticky "Get my certificate ($12)" CTA.
-
-### Medium-priority
-5. **Employer dashboard** — who's behind, completed, due for recert.
-6. **Bulk operator import (CSV)** for Pro tier.
-7. **Compliance export PDF** (AS9100 / ISO 9001 / OSHA-ready) per operator.
-8. **Author actual lesson content + quiz Q's** for the 7 sections (currently 1 starter lesson + 1 sample quiz seeded).
-
-### Nice-to-have / polish
-- Day-10 + day-13 trial reminder emails.
-- GCA add-on ($49/mo per location) packaging on `/pricing`.
-- Headless PDF render pipeline for cert email attachments.
-- Revoke / expire UI control (schema already supports it).
-- Course catalog page (free, no auth) — surface 7 sections + sample lessons.
+### Remaining (polish only)
+1. Bulk operator import (CSV) — single-operator enroll is live.
+2. Compliance export PDF (AS9100 / ISO 9001 / OSHA-ready) per operator.
+3. Author actual lesson content + quiz Q's for the 7 sections (currently 1 starter lesson + 1 sample quiz seeded; player works for any future content).
+4. Day-10 + day-13 trial reminder emails.
+5. GCA add-on ($49/mo per location) packaging on `/pricing`.
+6. Headless PDF render pipeline for cert email attachments.
+7. Revoke / expire UI control (schema already supports it).
