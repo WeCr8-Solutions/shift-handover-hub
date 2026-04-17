@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Shield, LayoutDashboard, Users, Wrench, Briefcase, Activity, FileSpreadsheet, Package, Route, Lightbulb, History, Bug, ShieldCheck, ListTodo, Settings2, Map, BookOpen, Cpu, MessageSquare, BellRing, Tv, Globe, Building, FileText, Megaphone } from "lucide-react";
+import { Shield, LayoutDashboard, Users, Wrench, Briefcase, Activity, FileSpreadsheet, Package, Route, Lightbulb, History, Bug, ShieldCheck, ListTodo, Settings2, Map, BookOpen, Cpu, MessageSquare, BellRing, Tv, Globe, Building, FileText, Megaphone, Library } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { AdminComponentAccess } from "@/types/admin";
@@ -41,6 +41,7 @@ const NotificationQueueStatus = lazy(() => import("@/components/admin/Notificati
 const PlatformOverviewTab = lazy(() => import("@/components/admin/PlatformOverviewTab").then(m => ({ default: m.PlatformOverviewTab })));
 const BlogAdmin = lazy(() => import("@/components/admin/BlogAdmin").then(m => ({ default: m.BlogAdmin })));
 const FlyerCampaigns = lazy(() => import("@/components/admin/FlyerCampaigns").then(m => ({ default: m.FlyerCampaigns })));
+const TrainingLibraryPanel = lazy(() => import("@/components/admin/training-library/TrainingLibraryPanel").then(m => ({ default: m.TrainingLibraryPanel })));
 
 const AdminTabFallback = () => <div className="p-6"><Skeleton className="h-64 w-full rounded-lg" /></div>;
 
@@ -195,6 +196,10 @@ export default function Admin() {
                   <SelectItem value="smart-alerts">Alerts</SelectItem>
                   <SelectItem value="displays">Displays</SelectItem>
                 </SelectGroup>
+                <SelectGroup>
+                  <SelectLabel>Training</SelectLabel>
+                  <SelectItem value="training-library">Training Library</SelectItem>
+                </SelectGroup>
                 {hasPlatformAccess && (
                   <SelectGroup>
                     <SelectLabel>Activity</SelectLabel>
@@ -277,6 +282,14 @@ export default function Admin() {
                 <TabsTrigger value="displays" className="gap-2">
                   <Tv className="w-4 h-4" />
                   Displays
+                </TabsTrigger>
+              </div>
+              <div className="w-px h-6 bg-border mx-1" />
+              <div className="flex items-center gap-1 px-1 py-0.5 rounded bg-muted/50">
+                <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider hidden lg:inline">Training</span>
+                <TabsTrigger value="training-library" className="gap-2">
+                  <Library className="w-4 h-4" />
+                  Library
                 </TabsTrigger>
               </div>
               {hasPlatformAccess && (
@@ -400,6 +413,10 @@ export default function Admin() {
 
           <TabsContent value="displays">
             <Suspense fallback={<AdminTabFallback />}><ShopFloorDisplayManagement /></Suspense>
+          </TabsContent>
+
+          <TabsContent value="training-library">
+            <Suspense fallback={<AdminTabFallback />}><TrainingLibraryPanel access={access} /></Suspense>
           </TabsContent>
 
           {hasPlatformAccess && (
