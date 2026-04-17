@@ -268,6 +268,15 @@ export default function Talent() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {onboardTarget && (
+        <OnboardCandidateDialog
+          open={!!onboardTarget}
+          onOpenChange={(o) => !o && setOnboardTarget(null)}
+          candidateUserId={onboardTarget.user_id}
+          candidateName={onboardTarget.display_name}
+        />
+      )}
     </div>
   );
 }
