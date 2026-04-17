@@ -202,28 +202,54 @@ export function OapEmployerPanel() {
                 new Date(e.expected_completion_at) < new Date();
               return (
                 <div key={e.id} className="p-3 flex items-center justify-between gap-3">
-                  <div>
-                    <div className="text-sm font-medium">
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-medium truncate">
                       {m?.profile?.display_name || m?.profile?.email || e.user_id.slice(0, 8)}
                     </div>
                     <div className="text-xs text-muted-foreground">
                       {prog?.name ?? "—"} · started{" "}
                       {e.started_at ? new Date(e.started_at).toLocaleDateString() : "—"}
+                      {(e as any).next_recert_due && (
+                        <> · recert due {new Date((e as any).next_recert_due).toLocaleDateString()}</>
+                      )}
                     </div>
                   </div>
-                  <Badge
-                    variant={
-                      e.completed_at ? "default" : overdue ? "destructive" : "secondary"
-                    }
-                  >
-                    {e.completed_at ? "Completed" : overdue ? "Overdue" : e.status}
-                  </Badge>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Badge
+                      variant={
+                        e.completed_at ? "default" : overdue ? "destructive" : "secondary"
+                      }
+                    >
+                      {e.completed_at ? "Completed" : overdue ? "Overdue" : ((e as any).lifecycle_status ?? e.status)}
+                    </Badge>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setRecertEnrollment({
+                        ...e,
+                        operator_name: m?.profile?.display_name || m?.profile?.email,
+                        role_program_name: prog?.name,
+                      })}
+                      title="Manage recertification"
+                    >
+                      <CalendarClock className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
               );
             })}
           </div>
         </CardContent>
       </Card>
+
+      {recertEnrollment && (
+        <OapRecertManager
+          open={!!recertEnrollment}
+          onOpenChange={(o) => !o && setRecertEnrollment(null)}
+          enrollment={recertEnrollment}
+        />
+      )}
+      <OapRedeemTransferDialog open={importOpen} onOpenChange={setImportOpen} />
     </div>
   );
 }
