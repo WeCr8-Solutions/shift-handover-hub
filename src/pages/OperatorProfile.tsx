@@ -50,7 +50,7 @@ export default function OperatorProfile() {
     contact_phone: "",
     open_to_work: false,
     willing_to_relocate: false,
-    is_discoverable: false,
+    profile_visibility: "private" as "private" | "employers_only" | "public",
   });
   const [saving, setSaving] = useState(false);
   const [uploadingResume, setUploadingResume] = useState(false);
@@ -75,7 +75,7 @@ export default function OperatorProfile() {
         contact_phone: profile.contact_phone ?? "",
         open_to_work: profile.open_to_work,
         willing_to_relocate: profile.willing_to_relocate,
-        is_discoverable: profile.is_discoverable,
+        profile_visibility: profile.profile_visibility ?? "private",
       });
     } else if (user) {
       setForm((f) => ({ ...f, contact_email: user.email ?? "" }));
@@ -98,7 +98,7 @@ export default function OperatorProfile() {
         contact_phone: form.contact_phone.trim() || null,
         open_to_work: form.open_to_work,
         willing_to_relocate: form.willing_to_relocate,
-        is_discoverable: form.is_discoverable,
+        profile_visibility: form.profile_visibility,
       });
       toast({ title: "Profile saved", description: "Your operator profile has been updated." });
     } catch (err) {
