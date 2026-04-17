@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useOapMentors } from "@/hooks/useOapMentors";
 import { useOrganizationMembers } from "@/hooks/useOrganizationMembers";
+import { useOrganization } from "@/hooks/useOrganization";
 import { ShieldCheck, UserPlus, Power } from "lucide-react";
 import {
   Select,
@@ -20,8 +21,9 @@ import {
  * (sign off walkthrough check-offs). Backed by `oap_designated_mentors`.
  */
 export function OapMentorAdminPanel() {
+  const { organization } = useOrganization();
   const { mentors, isLoading, designate, setActive } = useOapMentors();
-  const { members } = useOrganizationMembers();
+  const { members } = useOrganizationMembers(organization?.id ?? null);
   const [selected, setSelected] = useState<string>("");
   const [notes, setNotes] = useState("");
 
