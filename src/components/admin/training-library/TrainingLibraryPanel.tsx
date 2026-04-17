@@ -101,6 +101,10 @@ export function TrainingLibraryPanel({ access }: Props) {
           <OrgOverridesPanel />
         </TabsContent>
 
+        <TabsContent value="certs">
+          <CertificateIssuancePanel />
+        </TabsContent>
+
         {access.isPlatformAdmin && (
           <TabsContent value="bulk">
             <BulkTagPanel isPlatformAdmin={access.isPlatformAdmin} />
