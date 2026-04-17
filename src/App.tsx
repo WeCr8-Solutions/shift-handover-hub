@@ -84,6 +84,7 @@ import OAPLanding from "./pages/OAPLanding";
 import GCALanding from "./pages/GCALanding";
 import VerifyCertificate from "./pages/VerifyCertificate";
 import CertSuccess from "./pages/CertSuccess";
+import OapWalkthrough from "./pages/OapWalkthrough";
 import IndustryGlossary from "./pages/resources/IndustryGlossary";
 import BeginnersGuide from "./pages/resources/BeginnersGuide";
 import ManufacturingCareers from "./pages/resources/ManufacturingCareers";
@@ -214,6 +215,8 @@ const App = () => (
                     <Route path="/oap" element={<OAPLanding />} />
                     <Route path="/verify/:certId" element={<VerifyCertificate />} />
                     <Route path="/cert/success" element={<CertSuccess />} />
+                    <Route path="/oap/walkthrough" element={<OapWalkthrough />} />
+                    <Route path="/oap/walkthrough/:sessionId" element={<OapWalkthrough />} />
                     <Route path="/resources/oap" element={<OperatorAcceptanceProgram />} />
                     <Route path="/resources/glossary" element={<IndustryGlossary />} />
                     <Route path="/resources/beginners" element={<BeginnersGuide />} />

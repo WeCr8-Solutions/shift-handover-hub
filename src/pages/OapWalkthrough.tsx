@@ -33,9 +33,9 @@ import {
 import { Header } from "@/components/Header";
 
 const RESULT_META: Record<CheckoffResult, { label: string; icon: any; tone: string }> = {
-  pass: { label: "Pass", icon: CheckCircle2, tone: "text-green-600" },
-  needs_practice: { label: "Needs Practice", icon: AlertCircle, tone: "text-yellow-600" },
-  fail: { label: "Fail", icon: XCircle, tone: "text-red-600" },
+  pass: { label: "Pass", icon: CheckCircle2, tone: "text-success" },
+  needs_practice: { label: "Needs Practice", icon: AlertCircle, tone: "text-warning" },
+  fail: { label: "Fail", icon: XCircle, tone: "text-destructive" },
 };
 
 export default function OapWalkthrough() {
@@ -73,9 +73,10 @@ export default function OapWalkthrough() {
 
   const handleStart = () => {
     if (!pickedOperator) return;
-    const m = members.find((x: any) => x.user_id === pickedOperator);
+    const m = members.find((x) => x.user_id === pickedOperator);
+    const name = m?.profile?.display_name ?? m?.profile?.email ?? null;
     start.mutate(
-      { operator_id: pickedOperator, operator_name: m?.display_name ?? m?.email ?? null },
+      { operator_id: pickedOperator, operator_name: name },
       {
         onSuccess: (s) => navigate(`/oap/walkthrough/${s.id}`),
       },
@@ -109,9 +110,9 @@ export default function OapWalkthrough() {
                       <SelectValue placeholder="Pick an operator to evaluate" />
                     </SelectTrigger>
                     <SelectContent>
-                      {(members ?? []).map((m: any) => (
+                      {(members ?? []).map((m) => (
                         <SelectItem key={m.user_id} value={m.user_id}>
-                          {m.display_name || m.email || m.user_id.slice(0, 8)}
+                          {m.profile?.display_name || m.profile?.email || m.user_id.slice(0, 8)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -320,15 +321,10 @@ function CheckoffRow({
             />
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button size="sm" onClick={() => submit("pass")} className="bg-green-600 hover:bg-green-700">
+            <Button size="sm" onClick={() => submit("pass")} variant="default">
               <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Pass
             </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => submit("needs_practice")}
-              className="border-yellow-500 text-yellow-700 hover:bg-yellow-50"
-            >
+            <Button size="sm" variant="outline" onClick={() => submit("needs_practice")}>
               <AlertCircle className="w-3.5 h-3.5 mr-1" /> Needs Practice
             </Button>
             <Button size="sm" variant="destructive" onClick={() => submit("fail")}>
