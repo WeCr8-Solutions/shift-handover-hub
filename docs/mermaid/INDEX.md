@@ -8,6 +8,7 @@ Updated: 2026-03-08
 | (system) | `system__domain_taxonomy__v01.mmd` | mindmap | Domain glossary & concept taxonomy | Platform |
 | src/App.tsx, src/pages/ | `fe__sitemap__v01.mmd` | flowchart TD | All 41 routes, auth gates, role gates, nav edges | Frontend |
 | supabase/functions/ | `be__api_map__v01.mmd` | flowchart LR | Edge functions, callers, DB tables touched | Backend |
+| Stripe + Programs | `payments__products__v01.mmd` | flowchart LR | All SKUs (subs, $12 cert, $0.99 machine, donations), edge fns, webhook fan-out, OAP/GCA programs | Revenue |
 | src/hooks/, src/contexts/ | `be__service_arch__v01.mmd` | classDiagram | Hooks, contexts, providers, React Query cache, data flow | Frontend |
 | Database schema | `data__erd__v01.mmd` | erDiagram | All 80 tables, FK relationships, org tenancy | Data |
 | RLS policies | `data__rls_matrix__v01.mmd` | flowchart TD | Role → table → allowed operations | Security |
