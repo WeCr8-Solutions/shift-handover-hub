@@ -225,6 +225,7 @@ const App = () => (
                     <Route path="/oap/learn/:courseSlug" element={<OapCoursePlayer />} />
                     <Route path="/oap/learn/:courseSlug/:lessonSlug" element={<OapCoursePlayer />} />
                     <Route path="/oap/employer" element={<OapEmployer />} />
+                    <Route path="/oap/my-transcript" element={<OapMyTranscript />} />
                     <Route path="/resources/oap" element={<OperatorAcceptanceProgram />} />
                     <Route path="/resources/glossary" element={<IndustryGlossary />} />
                     <Route path="/resources/beginners" element={<BeginnersGuide />} />
