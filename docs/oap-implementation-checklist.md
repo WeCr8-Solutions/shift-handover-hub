@@ -22,7 +22,8 @@ Source of truth for the OAP build. Cross-references `docs/jobline-oap-lovable-br
 | `/oap` landing page | ✅ | `src/pages/OAPLanding.tsx` — hero, value props, FAQ, JSON-LD `Course` schema |
 | OG image / SEO meta | ✅ | `oap-og.jpg`, canonical, keywords |
 | Pricing card on `/pricing` | 🟡 | Tier copy present; verify $99 / $299 / $599 / Enterprise rows match brief |
-| `/verify/:certId` public verification page | ✅ | `src/pages/VerifyCertificate.tsx` — placeholder UI live; wires to cert tables in next migration |
+| `/verify/:certId` public verification page | ✅ | `src/pages/VerifyCertificate.tsx` — bound to live `oap_certificates` |
+| Sample certificate preview on landing | ✅ | `<CertificatePreview program="OAP">` in OAPLanding |
 | "Why OAP" comparison vs. NIMS / paper binders | 🟡 | Copy on landing; could promote to `/compare/oap-vs-nims` |
 
 ---
@@ -140,10 +141,27 @@ Source of truth for the OAP build. Cross-references `docs/jobline-oap-lovable-br
 
 ---
 
-## 10. Top 5 Next Actions
+## 10. Remaining Work — Snapshot 2026-04-17
 
-1. **Build `<InspectionToolReference>`** (mirror of `<MachiningOperationReference>`) so OAP lessons can embed any tool by slug.
-2. **Build the mentor walkthrough check-off UI** against the existing `oap_walkthrough_*` tables — fastest path to an employer demo.
-3. **Schema migration #2**: `oap_courses`, `oap_lessons`, `oap_quizzes`, `oap_quiz_questions` with RLS + canonical seed.
-4. **Cert system MVP**: `oap_certificates` table + `/verify/:certId` public page + Stripe $12 product wired.
-5. **Designated mentor admin UI** in the org settings panel.
+**Roughly ~35% remaining** to ship a complete employer-ready OAP. Everything backend, certs, marketing, and shared catalogs is done. What remains is mostly **UI surface area** for learners, mentors, and employers, plus Stripe glue for the $12 cert.
+
+### High-priority (blocks employer demo)
+1. **Mentor walkthrough check-off UI** against existing `oap_walkthrough_*` tables — fastest path to demo.
+2. **Lesson player** (markdown + `<TrainingMedia>` / `<MachiningOperationReference>` / `<InspectionToolReference>`) reading from `oap_lessons`.
+3. **Quiz player** with immediate feedback against `oap_quizzes` / `oap_quiz_questions`.
+4. **Designated mentor admin UI** in org settings (table & RLS done).
+5. **Employer program builder** — pick courses + machines + tools per role (writes to `oap_role_programs`).
+
+### Medium-priority
+6. **Operator self-progress dashboard** + sticky "Get my certificate ($12)" CTA.
+7. **Employer dashboard** — who's behind, completed, due for recert.
+8. **Stripe $12 cert checkout** — guest-allowed, webhook → `issue-certificate`.
+9. **Bulk operator import (CSV)** for Pro tier.
+10. **Compliance export PDF** (AS9100 / ISO 9001 / OSHA-ready) per operator.
+
+### Nice-to-have / polish
+- Day-10 + day-13 trial reminder emails.
+- GCA add-on ($49/mo per location) packaging on `/pricing`.
+- Headless PDF render pipeline for cert email attachments.
+- Revoke / expire UI control (schema already supports it).
+- Author the actual lesson content + quiz Q's for the 7 sections (currently 1 starter lesson + 1 sample quiz seeded).
