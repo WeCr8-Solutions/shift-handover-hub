@@ -71,6 +71,8 @@ export function OapEmployerPanel() {
   const { enrollments, enroll } = useOapEnrollments();
   const [editing, setEditing] = useState<OapRoleProgram | null>(null);
   const [creating, setCreating] = useState(false);
+  const [recertEnrollment, setRecertEnrollment] = useState<any | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
 
   return (
     <div className="space-y-4">
