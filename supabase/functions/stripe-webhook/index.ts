@@ -313,6 +313,12 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
 
   const productId = subscription.items.data[0]?.price.product as string;
 
+  // Handle GCA standalone subscription
+  if (isGcaProduct(productId)) {
+    await upsertGcaSubscription(subscription);
+    return;
+  }
+
   // Handle ERP add-on subscription separately
   if (isErpProduct(productId)) {
     await handleErpAddonSubscription(subscription, productId);
