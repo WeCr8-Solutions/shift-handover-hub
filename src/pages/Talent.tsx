@@ -10,8 +10,9 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Search, MapPin, Linkedin, ShieldCheck, Award, BookmarkPlus, Send, Globe } from "lucide-react";
+import { Search, MapPin, Linkedin, ShieldCheck, Award, BookmarkPlus, Send, Globe, UserPlus } from "lucide-react";
 import { useTalentSearch, useSavedLists, useContactRequests, type TalentSearchFilters, type TalentCandidate } from "@/hooks/useTalent";
+import { OnboardCandidateDialog } from "@/components/talent/OnboardCandidateDialog";
 import { useOrgContext } from "@/contexts/OrgContext";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
@@ -31,6 +32,7 @@ export default function Talent() {
   const [contactSubject, setContactSubject] = useState("");
   const [contactMessage, setContactMessage] = useState("");
   const [newListName, setNewListName] = useState("");
+  const [onboardTarget, setOnboardTarget] = useState<TalentCandidate | null>(null);
 
   const isAuthorized =
     organizationRole === "owner" || organizationRole === "admin" || organizationRole === "supervisor";
@@ -153,6 +155,7 @@ export default function Talent() {
                     lists={lists}
                     onAddToList={handleAddToList}
                     onContact={() => setContactTarget(c)}
+                    onOnboard={() => setOnboardTarget(c)}
                   />
                 ))
               )}
@@ -265,17 +268,27 @@ export default function Talent() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {onboardTarget && (
+        <OnboardCandidateDialog
+          open={!!onboardTarget}
+          onOpenChange={(o) => !o && setOnboardTarget(null)}
+          candidateUserId={onboardTarget.user_id}
+          candidateName={onboardTarget.display_name}
+        />
+      )}
     </div>
   );
 }
 
 function CandidateCard({
-  candidate, lists, onAddToList, onContact,
+  candidate, lists, onAddToList, onContact, onOnboard,
 }: {
   candidate: TalentCandidate;
   lists: { id: string; name: string }[];
   onAddToList: (listId: string, candidateUserId: string) => void;
   onContact: () => void;
+  onOnboard: () => void;
 }) {
   const initials = (candidate.display_name ?? "?").charAt(0).toUpperCase();
   return (
@@ -312,6 +325,9 @@ function CandidateCard({
           </div>
           <div className="flex items-center gap-2 pt-2">
             <Button size="sm" onClick={onContact} className="gap-2"><Send className="w-3 h-3" /> Message</Button>
+            <Button size="sm" variant="secondary" onClick={onOnboard} className="gap-2">
+              <UserPlus className="w-3 h-3" /> Onboard
+            </Button>
             {lists.length > 0 && (
               <select
                 className="text-sm border rounded px-2 py-1 bg-background"
