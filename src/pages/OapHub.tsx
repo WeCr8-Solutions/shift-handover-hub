@@ -118,6 +118,23 @@ export default function OapHub() {
           )}
         </div>
 
+        {user && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Your portable transcript</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+              <p className="text-sm text-muted-foreground">
+                See every credential you've earned across employers and generate a one-time
+                transfer code to share with a prospective employer.
+              </p>
+              <Button asChild variant="outline">
+                <Link to="/oap/my-transcript">Open my transcript →</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Already studying with a mentor?</CardTitle>
