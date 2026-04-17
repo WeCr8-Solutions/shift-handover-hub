@@ -1,0 +1,2 @@
+[functions.create-cert-checkout]
+verify_jwt = false
