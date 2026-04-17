@@ -60,27 +60,29 @@ export default function OapHub() {
           </div>
         )}
 
-        {user && completionPct >= 50 && (
-          <Card className="border-primary bg-primary/5">
-            <CardContent className="py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
-              <div>
-                <p className="font-medium text-sm">You're {completionPct}% through OAP study.</p>
-                <p className="text-xs text-muted-foreground">
-                  Lock it in with a verifiable, shareable certificate — $12 one-time.
-                </p>
-              </div>
-              <Button onClick={() => setCertOpen(true)}>
-                Get my certificate — $12 <ArrowRight className="w-4 h-4 ml-1" />
-              </Button>
-              <BuyCertificateDialog
-                open={certOpen}
-                onOpenChange={setCertOpen}
-                program="OAP"
-                defaultProgramName="Operator Acceptance Program — Floor Certified"
-              />
-            </CardContent>
-          </Card>
-        )}
+        <Card className="border-primary bg-primary/5">
+          <CardContent className="py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+            <div>
+              <p className="font-medium text-sm">
+                {user && completionPct >= 50
+                  ? `You're ${completionPct}% through OAP study — lock it in.`
+                  : "Earn your verifiable OAP certificate"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                $12 one-time · branded PDF · public verification URL · no account required.
+              </p>
+            </div>
+            <Button onClick={() => setCertOpen(true)}>
+              Get my certificate — $12 <ArrowRight className="w-4 h-4 ml-1" />
+            </Button>
+            <BuyCertificateDialog
+              open={certOpen}
+              onOpenChange={setCertOpen}
+              program="OAP"
+              defaultProgramName="Operator Acceptance Program — Floor Certified"
+            />
+          </CardContent>
+        </Card>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {isLoading && (
