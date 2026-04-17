@@ -198,7 +198,7 @@ describe("OperatorStationPanel", () => {
     const { supabase } = await import("@/integrations/supabase/client");
     vi.mocked(supabase.rpc).mockResolvedValueOnce({
       data: null,
-      error: { message: "Database error" },
+      error: { message: "Database error", details: "", hint: "", code: "", name: "PostgrestError" } as any,
     });
 
     renderPanel();
