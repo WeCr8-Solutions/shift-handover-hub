@@ -24,12 +24,13 @@ Shared catalog of cutting/forming operations used by both **GCA** and **OAP** pr
 - [x] `<MachiningOperationsCatalog>` in Training Library tab
 - [x] Filters: search, category, profession, role, machine
 - [x] Per-operation drill-in dialog with spec + media gallery + uploader
-- [ ] Org-override UI (hide / required-for-roles)
-- [ ] Bulk-tag UI
+- [x] Org-override UI (hide / required-for-roles) — `<OrgOverridesPanel>` covers ops + tools
+- [x] Bulk-tag UI — `<BulkTagPanel>` (platform admin only)
 
 ### Phase 4 — Learner-Facing Rendering
-- [ ] GCA test screens render media for `machining_operation` references
-- [ ] OAP lessons can attach a `machining_operation` reference and render its media inline
+- [x] Reusable `<MachiningOperationReference reference="slug-or-id" />` embed for OAP lessons & GCA test screens
+- [ ] Wire embed into OAP lesson renderer (pending OAP lesson tables)
+- [ ] Wire embed into GCA question renderer (pending GCA test player hook-in)
 - [ ] OAP walkthrough items can reference a machining operation as a check-off subject
 
 ---
