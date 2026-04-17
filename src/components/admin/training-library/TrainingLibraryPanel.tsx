@@ -1,7 +1,8 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InspectionToolsCatalog } from "./InspectionToolsCatalog";
-import { Library, Wrench, GraduationCap, ClipboardCheck } from "lucide-react";
+import { MachiningOperationsCatalog } from "./MachiningOperationsCatalog";
+import { Library, Wrench, GraduationCap, ClipboardCheck, Cog } from "lucide-react";
 import type { AdminComponentAccess } from "@/types/admin";
 
 interface Props {
@@ -29,6 +30,9 @@ export function TrainingLibraryPanel({ access }: Props) {
           <TabsTrigger value="tools" className="gap-1">
             <Wrench className="w-3.5 h-3.5" /> Tools Catalog
           </TabsTrigger>
+          <TabsTrigger value="ops" className="gap-1">
+            <Cog className="w-3.5 h-3.5" /> Machining Ops
+          </TabsTrigger>
           <TabsTrigger value="gca" className="gap-1">
             <GraduationCap className="w-3.5 h-3.5" /> GCA Mapping
           </TabsTrigger>
@@ -39,6 +43,10 @@ export function TrainingLibraryPanel({ access }: Props) {
 
         <TabsContent value="tools">
           <InspectionToolsCatalog isPlatformAdmin={access.isPlatformAdmin} />
+        </TabsContent>
+
+        <TabsContent value="ops">
+          <MachiningOperationsCatalog isPlatformAdmin={access.isPlatformAdmin} />
         </TabsContent>
 
         <TabsContent value="gca">
