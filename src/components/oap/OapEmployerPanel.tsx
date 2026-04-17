@@ -309,6 +309,7 @@ function RoleProgramForm({
       required_inspection_tool_slugs: tools.split(",").map((t) => t.trim()).filter(Boolean),
       required_machining_operation_slugs: ops.split(",").map((t) => t.trim()).filter(Boolean),
       course_ids: Array.from(courseIds),
+      recert_interval_months: recertMonths.trim() ? Number(recertMonths) : null,
     });
   };
 
