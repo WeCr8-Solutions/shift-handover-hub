@@ -4978,6 +4978,270 @@ export type Database = {
           },
         ]
       }
+      operator_certifications: {
+        Row: {
+          attachment_url: string | null
+          created_at: string
+          credential_id: string | null
+          credential_url: string | null
+          description: string | null
+          expires_date: string | null
+          id: string
+          issued_date: string | null
+          issuer: string | null
+          linked_cert_id: string | null
+          name: string
+          updated_at: string
+          user_id: string
+          verification_source: string
+        }
+        Insert: {
+          attachment_url?: string | null
+          created_at?: string
+          credential_id?: string | null
+          credential_url?: string | null
+          description?: string | null
+          expires_date?: string | null
+          id?: string
+          issued_date?: string | null
+          issuer?: string | null
+          linked_cert_id?: string | null
+          name: string
+          updated_at?: string
+          user_id: string
+          verification_source?: string
+        }
+        Update: {
+          attachment_url?: string | null
+          created_at?: string
+          credential_id?: string | null
+          credential_url?: string | null
+          description?: string | null
+          expires_date?: string | null
+          id?: string
+          issued_date?: string | null
+          issuer?: string | null
+          linked_cert_id?: string | null
+          name?: string
+          updated_at?: string
+          user_id?: string
+          verification_source?: string
+        }
+        Relationships: []
+      }
+      operator_education: {
+        Row: {
+          created_at: string
+          degree: string | null
+          description: string | null
+          end_date: string | null
+          field_of_study: string | null
+          id: string
+          school_name: string
+          start_date: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          degree?: string | null
+          description?: string | null
+          end_date?: string | null
+          field_of_study?: string | null
+          id?: string
+          school_name: string
+          start_date?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          degree?: string | null
+          description?: string | null
+          end_date?: string | null
+          field_of_study?: string | null
+          id?: string
+          school_name?: string
+          start_date?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      operator_machine_proficiencies: {
+        Row: {
+          control_type: string | null
+          created_at: string
+          id: string
+          machine_category: string
+          machine_make: string | null
+          machine_model: string | null
+          notes: string | null
+          proficiency: string
+          user_id: string
+          years_experience: number | null
+        }
+        Insert: {
+          control_type?: string | null
+          created_at?: string
+          id?: string
+          machine_category: string
+          machine_make?: string | null
+          machine_model?: string | null
+          notes?: string | null
+          proficiency?: string
+          user_id: string
+          years_experience?: number | null
+        }
+        Update: {
+          control_type?: string | null
+          created_at?: string
+          id?: string
+          machine_category?: string
+          machine_make?: string | null
+          machine_model?: string | null
+          notes?: string | null
+          proficiency?: string
+          user_id?: string
+          years_experience?: number | null
+        }
+        Relationships: []
+      }
+      operator_profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          desired_salary_max: number | null
+          desired_salary_min: number | null
+          headline: string | null
+          id: string
+          is_discoverable: boolean
+          linkedin_url: string | null
+          location_city: string | null
+          location_country: string | null
+          location_region: string | null
+          open_to_work: boolean
+          portfolio_url: string | null
+          preferred_employment_types: string[] | null
+          resume_pdf_url: string | null
+          updated_at: string
+          user_id: string
+          willing_to_relocate: boolean
+          years_experience: number | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          desired_salary_max?: number | null
+          desired_salary_min?: number | null
+          headline?: string | null
+          id?: string
+          is_discoverable?: boolean
+          linkedin_url?: string | null
+          location_city?: string | null
+          location_country?: string | null
+          location_region?: string | null
+          open_to_work?: boolean
+          portfolio_url?: string | null
+          preferred_employment_types?: string[] | null
+          resume_pdf_url?: string | null
+          updated_at?: string
+          user_id: string
+          willing_to_relocate?: boolean
+          years_experience?: number | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          desired_salary_max?: number | null
+          desired_salary_min?: number | null
+          headline?: string | null
+          id?: string
+          is_discoverable?: boolean
+          linkedin_url?: string | null
+          location_city?: string | null
+          location_country?: string | null
+          location_region?: string | null
+          open_to_work?: boolean
+          portfolio_url?: string | null
+          preferred_employment_types?: string[] | null
+          resume_pdf_url?: string | null
+          updated_at?: string
+          user_id?: string
+          willing_to_relocate?: boolean
+          years_experience?: number | null
+        }
+        Relationships: []
+      }
+      operator_references: {
+        Row: {
+          company: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          reference_name: string
+          relationship: string | null
+          user_id: string
+        }
+        Insert: {
+          company?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          reference_name: string
+          relationship?: string | null
+          user_id: string
+        }
+        Update: {
+          company?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          reference_name?: string
+          relationship?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      operator_skills: {
+        Row: {
+          created_at: string
+          id: string
+          proficiency: string
+          skill: string
+          user_id: string
+          years_used: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          proficiency?: string
+          skill: string
+          user_id: string
+          years_used?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          proficiency?: string
+          skill?: string
+          user_id?: string
+          years_used?: number | null
+        }
+        Relationships: []
+      }
       operator_station_sessions: {
         Row: {
           checked_in_at: string
@@ -5032,6 +5296,66 @@ export type Database = {
             columns: ["station_id"]
             isOneToOne: false
             referencedRelation: "stations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      operator_work_history: {
+        Row: {
+          created_at: string
+          description: string | null
+          employer_name: string
+          end_date: string | null
+          id: string
+          is_current: boolean
+          job_title: string
+          location: string | null
+          organization_id: string | null
+          start_date: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          employer_name: string
+          end_date?: string | null
+          id?: string
+          is_current?: boolean
+          job_title: string
+          location?: string | null
+          organization_id?: string | null
+          start_date?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          employer_name?: string
+          end_date?: string | null
+          id?: string
+          is_current?: boolean
+          job_title?: string
+          location?: string | null
+          organization_id?: string | null
+          start_date?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operator_work_history_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operator_work_history_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
             referencedColumns: ["id"]
           },
         ]
@@ -7453,6 +7777,169 @@ export type Database = {
           },
         ]
       }
+      talent_contact_requests: {
+        Row: {
+          candidate_response: string
+          candidate_response_message: string | null
+          candidate_user_id: string
+          created_at: string
+          id: string
+          message: string
+          organization_id: string
+          organization_name: string | null
+          responded_at: string | null
+          sender_display_name: string | null
+          sender_user_id: string
+          subject: string
+        }
+        Insert: {
+          candidate_response?: string
+          candidate_response_message?: string | null
+          candidate_user_id: string
+          created_at?: string
+          id?: string
+          message: string
+          organization_id: string
+          organization_name?: string | null
+          responded_at?: string | null
+          sender_display_name?: string | null
+          sender_user_id: string
+          subject: string
+        }
+        Update: {
+          candidate_response?: string
+          candidate_response_message?: string | null
+          candidate_user_id?: string
+          created_at?: string
+          id?: string
+          message?: string
+          organization_id?: string
+          organization_name?: string | null
+          responded_at?: string | null
+          sender_display_name?: string | null
+          sender_user_id?: string
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "talent_contact_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "talent_contact_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      talent_saved_candidates: {
+        Row: {
+          added_by: string | null
+          candidate_user_id: string
+          created_at: string
+          id: string
+          list_id: string
+          notes: string | null
+          organization_id: string
+          stage: string
+          updated_at: string
+        }
+        Insert: {
+          added_by?: string | null
+          candidate_user_id: string
+          created_at?: string
+          id?: string
+          list_id: string
+          notes?: string | null
+          organization_id: string
+          stage?: string
+          updated_at?: string
+        }
+        Update: {
+          added_by?: string | null
+          candidate_user_id?: string
+          created_at?: string
+          id?: string
+          list_id?: string
+          notes?: string | null
+          organization_id?: string
+          stage?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "talent_saved_candidates_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "talent_saved_lists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "talent_saved_candidates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "talent_saved_candidates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      talent_saved_lists: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          name: string
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          name: string
+          organization_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          name?: string
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "talent_saved_lists_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "talent_saved_lists_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_members: {
         Row: {
           id: string
@@ -8852,6 +9339,7 @@ export type Database = {
         Args: { _team_id: string; _user_id: string }
         Returns: boolean
       }
+      is_verified_employer: { Args: { _user_id: string }; Returns: boolean }
       pass_work_order_to_next_step: {
         Args: {
           _actor_id: string
