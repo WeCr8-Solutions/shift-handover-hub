@@ -4163,7 +4163,13 @@ export type Database = {
           created_at: string
           expected_completion_at: string | null
           id: string
+          lifecycle_changed_at: string | null
+          lifecycle_changed_by: string | null
+          lifecycle_reason: string | null
+          lifecycle_status: string
+          next_recert_due: string | null
           organization_id: string
+          recert_interval_months_override: number | null
           role_program_id: string
           started_at: string
           status: string
@@ -4175,7 +4181,13 @@ export type Database = {
           created_at?: string
           expected_completion_at?: string | null
           id?: string
+          lifecycle_changed_at?: string | null
+          lifecycle_changed_by?: string | null
+          lifecycle_reason?: string | null
+          lifecycle_status?: string
+          next_recert_due?: string | null
           organization_id: string
+          recert_interval_months_override?: number | null
           role_program_id: string
           started_at?: string
           status?: string
@@ -4187,7 +4199,13 @@ export type Database = {
           created_at?: string
           expected_completion_at?: string | null
           id?: string
+          lifecycle_changed_at?: string | null
+          lifecycle_changed_by?: string | null
+          lifecycle_reason?: string | null
+          lifecycle_status?: string
+          next_recert_due?: string | null
           organization_id?: string
+          recert_interval_months_override?: number | null
           role_program_id?: string
           started_at?: string
           status?: string
@@ -4261,6 +4279,88 @@ export type Database = {
             columns: ["course_id"]
             isOneToOne: false
             referencedRelation: "oap_courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      oap_operator_credentials: {
+        Row: {
+          approved_operations: string[]
+          cert_id: string | null
+          created_at: string
+          enrollment_id: string | null
+          expires_at: string | null
+          id: string
+          is_portable: boolean
+          issued_at: string
+          issuing_organization_id: string | null
+          issuing_organization_name: string
+          machine_tags: string[]
+          notes: string | null
+          operator_user_id: string
+          revoked_at: string | null
+          role_program_name: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          approved_operations?: string[]
+          cert_id?: string | null
+          created_at?: string
+          enrollment_id?: string | null
+          expires_at?: string | null
+          id?: string
+          is_portable?: boolean
+          issued_at?: string
+          issuing_organization_id?: string | null
+          issuing_organization_name: string
+          machine_tags?: string[]
+          notes?: string | null
+          operator_user_id: string
+          revoked_at?: string | null
+          role_program_name?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          approved_operations?: string[]
+          cert_id?: string | null
+          created_at?: string
+          enrollment_id?: string | null
+          expires_at?: string | null
+          id?: string
+          is_portable?: boolean
+          issued_at?: string
+          issuing_organization_id?: string | null
+          issuing_organization_name?: string
+          machine_tags?: string[]
+          notes?: string | null
+          operator_user_id?: string
+          revoked_at?: string | null
+          role_program_name?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oap_operator_credentials_enrollment_id_fkey"
+            columns: ["enrollment_id"]
+            isOneToOne: false
+            referencedRelation: "oap_enrollments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oap_operator_credentials_issuing_organization_id_fkey"
+            columns: ["issuing_organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oap_operator_credentials_issuing_organization_id_fkey"
+            columns: ["issuing_organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
             referencedColumns: ["id"]
           },
         ]
@@ -4426,6 +4526,73 @@ export type Database = {
           },
         ]
       }
+      oap_recert_events: {
+        Row: {
+          acted_by: string | null
+          acted_by_name: string | null
+          created_at: string
+          enrollment_id: string
+          event_type: string
+          id: string
+          metadata: Json
+          new_due: string | null
+          operator_user_id: string
+          organization_id: string
+          previous_due: string | null
+          reason: string | null
+        }
+        Insert: {
+          acted_by?: string | null
+          acted_by_name?: string | null
+          created_at?: string
+          enrollment_id: string
+          event_type: string
+          id?: string
+          metadata?: Json
+          new_due?: string | null
+          operator_user_id: string
+          organization_id: string
+          previous_due?: string | null
+          reason?: string | null
+        }
+        Update: {
+          acted_by?: string | null
+          acted_by_name?: string | null
+          created_at?: string
+          enrollment_id?: string
+          event_type?: string
+          id?: string
+          metadata?: Json
+          new_due?: string | null
+          operator_user_id?: string
+          organization_id?: string
+          previous_due?: string | null
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oap_recert_events_enrollment_id_fkey"
+            columns: ["enrollment_id"]
+            isOneToOne: false
+            referencedRelation: "oap_enrollments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oap_recert_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oap_recert_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       oap_role_program_courses: {
         Row: {
           course_id: string
@@ -4474,6 +4641,8 @@ export type Database = {
           is_active: boolean
           name: string
           organization_id: string
+          recert_grace_days: number
+          recert_interval_months: number | null
           required_inspection_tool_slugs: string[] | null
           required_machine_tags: string[] | null
           required_machining_operation_slugs: string[] | null
@@ -4487,6 +4656,8 @@ export type Database = {
           is_active?: boolean
           name: string
           organization_id: string
+          recert_grace_days?: number
+          recert_interval_months?: number | null
           required_inspection_tool_slugs?: string[] | null
           required_machine_tags?: string[] | null
           required_machining_operation_slugs?: string[] | null
@@ -4500,6 +4671,8 @@ export type Database = {
           is_active?: boolean
           name?: string
           organization_id?: string
+          recert_grace_days?: number
+          recert_interval_months?: number | null
           required_inspection_tool_slugs?: string[] | null
           required_machine_tags?: string[] | null
           required_machining_operation_slugs?: string[] | null
@@ -4516,6 +4689,54 @@ export type Database = {
           {
             foreignKeyName: "oap_role_programs_organization_id_fkey"
             columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      oap_transfer_tokens: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          operator_user_id: string
+          redeemed_at: string | null
+          redeemed_by_org_id: string | null
+          redeemed_by_user_id: string | null
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          operator_user_id: string
+          redeemed_at?: string | null
+          redeemed_by_org_id?: string | null
+          redeemed_by_user_id?: string | null
+          token?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          operator_user_id?: string
+          redeemed_at?: string | null
+          redeemed_by_org_id?: string | null
+          redeemed_by_user_id?: string | null
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oap_transfer_tokens_redeemed_by_org_id_fkey"
+            columns: ["redeemed_by_org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oap_transfer_tokens_redeemed_by_org_id_fkey"
+            columns: ["redeemed_by_org_id"]
             isOneToOne: false
             referencedRelation: "organizations_member_view"
             referencedColumns: ["id"]
@@ -8644,6 +8865,21 @@ export type Database = {
       redeem_invite_code: {
         Args: { _code: string; _user_id: string }
         Returns: Json
+      }
+      redeem_oap_transfer_token: {
+        Args: { _redeeming_org_id: string; _token: string }
+        Returns: {
+          approved_operations: string[]
+          cert_id: string
+          credential_id: string
+          expires_at: string
+          issued_at: string
+          issuing_organization_name: string
+          machine_tags: string[]
+          operator_user_id: string
+          role_program_name: string
+          status: string
+        }[]
       }
       reject_ncr: {
         Args: { _ncr_id: string; _reason: string; _rejector_id: string }

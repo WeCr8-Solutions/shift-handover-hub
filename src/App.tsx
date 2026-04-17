@@ -88,6 +88,7 @@ import OapWalkthrough from "./pages/OapWalkthrough";
 import OapHub from "./pages/OapHub";
 import OapCoursePlayer from "./pages/OapCoursePlayer";
 import OapEmployer from "./pages/OapEmployer";
+import OapMyTranscript from "./pages/OapMyTranscript";
 import IndustryGlossary from "./pages/resources/IndustryGlossary";
 import BeginnersGuide from "./pages/resources/BeginnersGuide";
 import ManufacturingCareers from "./pages/resources/ManufacturingCareers";
@@ -224,6 +225,7 @@ const App = () => (
                     <Route path="/oap/learn/:courseSlug" element={<OapCoursePlayer />} />
                     <Route path="/oap/learn/:courseSlug/:lessonSlug" element={<OapCoursePlayer />} />
                     <Route path="/oap/employer" element={<OapEmployer />} />
+                    <Route path="/oap/my-transcript" element={<OapMyTranscript />} />
                     <Route path="/resources/oap" element={<OperatorAcceptanceProgram />} />
                     <Route path="/resources/glossary" element={<IndustryGlossary />} />
                     <Route path="/resources/beginners" element={<BeginnersGuide />} />

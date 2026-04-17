@@ -248,12 +248,14 @@ export function useOapRolePrograms() {
       required_inspection_tool_slugs?: string[];
       required_machining_operation_slugs?: string[];
       course_ids: string[];
+      recert_interval_months?: number | null;
+      recert_grace_days?: number | null;
     }) => {
       if (!orgId) throw new Error("No organization");
       const { data: auth } = await supabase.auth.getUser();
       if (!auth.user) throw new Error("Not authenticated");
 
-      const payload = {
+      const payload: Record<string, unknown> = {
         id: input.id,
         organization_id: orgId,
         name: input.name,
@@ -264,7 +266,9 @@ export function useOapRolePrograms() {
         is_active: true,
         created_by: auth.user.id,
       };
-      const { data, error } = await supabase
+      if (input.recert_interval_months !== undefined) payload.recert_interval_months = input.recert_interval_months;
+      if (input.recert_grace_days !== undefined) payload.recert_grace_days = input.recert_grace_days;
+      const { data, error } = await (supabase as any)
         .from("oap_role_programs")
         .upsert(payload)
         .select()

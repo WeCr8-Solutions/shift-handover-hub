@@ -29,9 +29,11 @@ import {
 } from "@/hooks/useOapProgram";
 import { useOrganization } from "@/hooks/useOrganization";
 import { useOrganizationMembers } from "@/hooks/useOrganizationMembers";
-import { Pencil, Plus, Trash2, Users, Briefcase, UserPlus, Download } from "lucide-react";
+import { Pencil, Plus, Trash2, Users, Briefcase, UserPlus, Download, CalendarClock, ArrowDownToLine } from "lucide-react";
 import { toast } from "sonner";
 import { OapBulkEnrollDialog } from "./OapBulkEnrollDialog";
+import { OapRecertManager } from "./OapRecertManager";
+import { OapRedeemTransferDialog } from "./OapRedeemTransferDialog";
 
 function downloadEnrollmentsCsv(enrollments: any[], members: any[], programs: any[]) {
   const header = ["operator_name", "operator_email", "role_program", "status", "started_at", "expected_completion_at", "completed_at"];
@@ -69,6 +71,8 @@ export function OapEmployerPanel() {
   const { enrollments, enroll } = useOapEnrollments();
   const [editing, setEditing] = useState<OapRoleProgram | null>(null);
   const [creating, setCreating] = useState(false);
+  const [recertEnrollment, setRecertEnrollment] = useState<any | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
 
   return (
     <div className="space-y-4">
@@ -163,7 +167,10 @@ export function OapEmployerPanel() {
               Assign operators to a role program with an expected completion date.
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            <Button size="sm" variant="outline" onClick={() => setImportOpen(true)}>
+              <ArrowDownToLine className="w-4 h-4 mr-1" /> Import transcript
+            </Button>
             <OapBulkEnrollDialog programs={programs} members={members ?? []} />
             <Button
               size="sm"
@@ -195,28 +202,54 @@ export function OapEmployerPanel() {
                 new Date(e.expected_completion_at) < new Date();
               return (
                 <div key={e.id} className="p-3 flex items-center justify-between gap-3">
-                  <div>
-                    <div className="text-sm font-medium">
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-medium truncate">
                       {m?.profile?.display_name || m?.profile?.email || e.user_id.slice(0, 8)}
                     </div>
                     <div className="text-xs text-muted-foreground">
                       {prog?.name ?? "—"} · started{" "}
                       {e.started_at ? new Date(e.started_at).toLocaleDateString() : "—"}
+                      {(e as any).next_recert_due && (
+                        <> · recert due {new Date((e as any).next_recert_due).toLocaleDateString()}</>
+                      )}
                     </div>
                   </div>
-                  <Badge
-                    variant={
-                      e.completed_at ? "default" : overdue ? "destructive" : "secondary"
-                    }
-                  >
-                    {e.completed_at ? "Completed" : overdue ? "Overdue" : e.status}
-                  </Badge>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Badge
+                      variant={
+                        e.completed_at ? "default" : overdue ? "destructive" : "secondary"
+                      }
+                    >
+                      {e.completed_at ? "Completed" : overdue ? "Overdue" : ((e as any).lifecycle_status ?? e.status)}
+                    </Badge>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setRecertEnrollment({
+                        ...e,
+                        operator_name: m?.profile?.display_name || m?.profile?.email,
+                        role_program_name: prog?.name,
+                      })}
+                      title="Manage recertification"
+                    >
+                      <CalendarClock className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
               );
             })}
           </div>
         </CardContent>
       </Card>
+
+      {recertEnrollment && (
+        <OapRecertManager
+          open={!!recertEnrollment}
+          onOpenChange={(o) => !o && setRecertEnrollment(null)}
+          enrollment={recertEnrollment}
+        />
+      )}
+      <OapRedeemTransferDialog open={importOpen} onOpenChange={setImportOpen} />
     </div>
   );
 }
@@ -233,6 +266,7 @@ function RoleProgramForm({
     required_inspection_tool_slugs?: string[];
     required_machining_operation_slugs?: string[];
     course_ids: string[];
+    recert_interval_months?: number | null;
   }) => void;
 }) {
   const { data: courses = [] } = useOapCourses();
@@ -242,6 +276,9 @@ function RoleProgramForm({
   const [machineTags, setMachineTags] = useState((existing?.required_machine_tags ?? []).join(", "));
   const [tools, setTools] = useState((existing?.required_inspection_tool_slugs ?? []).join(", "));
   const [ops, setOps] = useState((existing?.required_machining_operation_slugs ?? []).join(", "));
+  const [recertMonths, setRecertMonths] = useState<string>(
+    (existing as any)?.recert_interval_months != null ? String((existing as any).recert_interval_months) : "12"
+  );
   const [courseIds, setCourseIds] = useState<Set<string>>(
     new Set(existingCourses.map((c) => c.course_id)),
   );
@@ -272,6 +309,7 @@ function RoleProgramForm({
       required_inspection_tool_slugs: tools.split(",").map((t) => t.trim()).filter(Boolean),
       required_machining_operation_slugs: ops.split(",").map((t) => t.trim()).filter(Boolean),
       course_ids: Array.from(courseIds),
+      recert_interval_months: recertMonths.trim() ? Number(recertMonths) : null,
     });
   };
 
@@ -311,6 +349,20 @@ function RoleProgramForm({
           <Label className="text-xs">Op slugs (CSV)</Label>
           <Input value={ops} onChange={(e) => setOps(e.target.value)} placeholder="face-milling, drilling" />
         </div>
+      </div>
+      <div className="space-y-1 max-w-xs">
+        <Label className="text-xs">Recert cadence (months)</Label>
+        <Input
+          type="number"
+          min={0}
+          value={recertMonths}
+          onChange={(e) => setRecertMonths(e.target.value)}
+          placeholder="e.g. 12 — leave blank for no recert"
+        />
+        <p className="text-[10px] text-muted-foreground">
+          Operators on this role will get a next-recert due date this many months after completion.
+          Per-operator overrides are still allowed from the recert manager.
+        </p>
       </div>
       <div className="flex justify-end">
         <Button onClick={submit}>Save role program</Button>
