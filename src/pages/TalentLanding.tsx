@@ -293,8 +293,8 @@ export default function TalentLanding() {
               ))}
             </ul>
             <Button asChild size="lg" className="mt-8 gap-2">
-              <Link to="/auth?signup=1">
-                Create my profile <ArrowRight className="w-4 h-4" />
+              <Link to={profileCtaHref}>
+                {profileCtaLabel} <ArrowRight className="w-4 h-4" />
               </Link>
             </Button>
           </div>
