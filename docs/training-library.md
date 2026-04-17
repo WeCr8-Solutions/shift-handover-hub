@@ -4,6 +4,8 @@ A shared backend powering both the **GCA (Gold Class Apprentice)** assessment pr
 
 > Goal: every measuring tool, hand tool, machine concept, lesson, quiz question, and walkthrough item can be illustrated with photos, animated GIFs, audio explanations, or video — uploaded once, surfaced everywhere.
 
+> See also: [`machining-operations.md`](./machining-operations.md) for the matching cutting/forming operations catalog (milling, turning, grinding, EDM, finishing, specialty) — same media + RLS patterns.
+
 ---
 
 ## 1. Master checklist
