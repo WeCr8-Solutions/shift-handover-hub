@@ -24,6 +24,8 @@ import {
   Sparkles,
 } from "lucide-react";
 import { CertificatePreview } from "@/components/certificates/CertificatePreview";
+import { BuyCertificateDialog } from "@/components/certificates/BuyCertificateDialog";
+import { useState } from "react";
 
 const sevenSections = [
   { icon: ShieldCheck, title: "Safety & PPE", desc: "Lockout/tagout, machine guarding, PPE protocol, emergency stops, and shop-floor hazards." },
@@ -134,6 +136,7 @@ const jsonLd = [
 ];
 
 export default function OAPLanding() {
+  const [buyOpen, setBuyOpen] = useState(false);
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
@@ -357,6 +360,12 @@ export default function OAPLanding() {
                   </li>
                 ))}
               </ul>
+              <div className="mt-6">
+                <Button size="lg" onClick={() => setBuyOpen(true)} className="gap-2">
+                  <Award className="w-4 h-4" />
+                  Get my certificate — $12
+                </Button>
+              </div>
             </div>
             <div className="flex justify-center">
               <CertificatePreview program="OAP" recipientName="Jane Operator" />
@@ -458,6 +467,8 @@ export default function OAPLanding() {
       </section>
 
       <MarketingFooter />
+
+      <BuyCertificateDialog open={buyOpen} onOpenChange={setBuyOpen} program="OAP" />
     </div>
   );
 }

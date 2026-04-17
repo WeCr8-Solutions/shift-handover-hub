@@ -83,6 +83,7 @@ import OperatorAcceptanceProgram from "./pages/resources/OperatorAcceptanceProgr
 import OAPLanding from "./pages/OAPLanding";
 import GCALanding from "./pages/GCALanding";
 import VerifyCertificate from "./pages/VerifyCertificate";
+import CertSuccess from "./pages/CertSuccess";
 import IndustryGlossary from "./pages/resources/IndustryGlossary";
 import BeginnersGuide from "./pages/resources/BeginnersGuide";
 import ManufacturingCareers from "./pages/resources/ManufacturingCareers";
@@ -212,6 +213,7 @@ const App = () => (
                     <Route path="/resources/gcode-academy" element={<GCodeAcademy />} />
                     <Route path="/oap" element={<OAPLanding />} />
                     <Route path="/verify/:certId" element={<VerifyCertificate />} />
+                    <Route path="/cert/success" element={<CertSuccess />} />
                     <Route path="/resources/oap" element={<OperatorAcceptanceProgram />} />
                     <Route path="/resources/glossary" element={<IndustryGlossary />} />
                     <Route path="/resources/beginners" element={<BeginnersGuide />} />

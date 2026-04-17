@@ -220,13 +220,124 @@ async function upsertGcaSubscription(subscription: Stripe.Subscription) {
   logStep("GCA subscription upserted", { userId: resolvedUserId, status: subscription.status });
 }
 
+const CERT_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+function generateCertId(program: "OAP" | "GCA"): string {
+  const bytes = new Uint8Array(6);
+  crypto.getRandomValues(bytes);
+  let body = "";
+  for (const b of bytes) body += CERT_ALPHABET[b % CERT_ALPHABET.length];
+  return `${program}-${body}-${new Date().getFullYear()}`;
+}
+
+async function handleCertCheckout(session: Stripe.Checkout.Session) {
+  const meta = session.metadata ?? {};
+  const program = (meta.program === "OAP" || meta.program === "GCA") ? meta.program : null;
+  const recipientName = meta.recipient_name?.trim();
+  const recipientEmail = meta.recipient_email?.trim().toLowerCase();
+  const programName = meta.program_name?.trim();
+
+  if (!program || !recipientName || !recipientEmail || !programName) {
+    logStep("CERT: missing required metadata, skipping", { sessionId: session.id, meta });
+    return;
+  }
+  if (session.payment_status !== "paid") {
+    logStep("CERT: payment not settled, skipping", { sessionId: session.id, payment_status: session.payment_status });
+    return;
+  }
+
+  // Idempotency: don't issue twice for the same Stripe session
+  const table = program === "OAP" ? "oap_certificates" : "gca_certificates";
+  const { data: existing } = await supabaseAdmin
+    .from(table)
+    .select("id, cert_id")
+    .eq("stripe_session_id", session.id)
+    .maybeSingle();
+  if (existing) {
+    logStep("CERT: already issued for this session", { certId: existing.cert_id });
+    return;
+  }
+
+  // Try to resolve a Supabase user from the email (so the cert links to their account if they sign up later)
+  let userId: string | null = null;
+  try {
+    const { data: usersList } = await supabaseAdmin.auth.admin.listUsers();
+    const match = usersList?.users?.find((u) => u.email?.toLowerCase() === recipientEmail);
+    userId = match?.id ?? null;
+  } catch (e) {
+    logStep("CERT: user lookup failed (non-fatal)", { error: String(e) });
+  }
+
+  const certId = generateCertId(program);
+  const validFrom = new Date().toISOString().slice(0, 10);
+  const amountCents = session.amount_total ?? 1200;
+
+  const insertPayload: Record<string, unknown> = {
+    cert_id: certId,
+    user_id: userId,
+    recipient_name: recipientName,
+    recipient_email: recipientEmail,
+    program_name: programName,
+    valid_from: validFrom,
+    valid_until: null,
+    amount_cents: amountCents,
+    stripe_session_id: session.id,
+  };
+  if (program === "GCA" && meta.bank_id) {
+    insertPayload.bank_id = meta.bank_id;
+  }
+
+  const { data: inserted, error } = await supabaseAdmin
+    .from(table)
+    .insert(insertPayload)
+    .select("id, cert_id")
+    .single();
+  if (error) {
+    logStep("CERT: insert failed", { error: error.message });
+    throw error;
+  }
+
+  logStep("CERT: issued", { program, certId: inserted.cert_id, recipientEmail });
+
+  // Email the recipient
+  try {
+    const verifyUrl = `https://jobline.ai/verify/${certId}`;
+    const programLabel = program === "OAP" ? "Operator Acceptance Program" : "G-Code Academy";
+    await supabaseAdmin.functions.invoke("send-email", {
+      body: {
+        to: recipientEmail,
+        subject: `Your ${program} certificate — ${programName}`,
+        html: `
+          <div style="font-family:-apple-system,Inter,sans-serif;max-width:560px;margin:auto;padding:24px;color:#0F172A">
+            <h2 style="margin:0 0 8px">Congratulations, ${recipientName}!</h2>
+            <p>Your <strong>${programLabel}</strong> certificate for <strong>${programName}</strong> has been issued.</p>
+            <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:16px;margin:16px 0">
+              <div style="font-size:11px;color:#64748B;letter-spacing:.08em;text-transform:uppercase">Certificate ID</div>
+              <div style="font-family:ui-monospace,monospace;font-size:18px;font-weight:600">${certId}</div>
+            </div>
+            <p>Verify or share at:<br/><a href="${verifyUrl}">${verifyUrl}</a></p>
+            <p style="font-size:12px;color:#64748B">JobLine.ai — ${programLabel}</p>
+          </div>
+        `,
+      },
+    });
+  } catch (e) {
+    logStep("CERT: email send failed (non-fatal)", { error: String(e) });
+  }
+}
+
 async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
   logStep("Processing checkout.session.completed", { sessionId: session.id });
-  
+
   const orgId = session.metadata?.org_id;
   const productType = session.metadata?.product_type;
   const customerId = session.customer as string;
   const subscriptionId = session.subscription as string;
+
+  // ── $12 OAP/GCA certificate (one-time, guest-allowed) ──
+  if (productType === "cert") {
+    await handleCertCheckout(session);
+    return;
+  }
 
   if (!subscriptionId) {
     logStep("Missing subscription in session");

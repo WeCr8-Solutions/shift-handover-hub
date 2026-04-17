@@ -24,6 +24,8 @@ import {
   Award,
 } from "lucide-react";
 import { CertificatePreview } from "@/components/certificates/CertificatePreview";
+import { BuyCertificateDialog } from "@/components/certificates/BuyCertificateDialog";
+import { useState } from "react";
 
 const tracks = [
   { icon: Wrench, title: "CNC Lathe", desc: "Turning, threading, boring, live tooling, sub-spindle." },
@@ -144,6 +146,7 @@ const jsonLd = [
 ];
 
 export default function GCALanding() {
+  const [buyOpen, setBuyOpen] = useState(false);
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
@@ -414,6 +417,12 @@ export default function GCALanding() {
                   </li>
                 ))}
               </ul>
+              <div className="mt-6">
+                <Button size="lg" onClick={() => setBuyOpen(true)} className="gap-2">
+                  <Award className="w-4 h-4" />
+                  Get my certificate — $12
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -471,6 +480,8 @@ export default function GCALanding() {
       </section>
 
       <MarketingFooter />
+
+      <BuyCertificateDialog open={buyOpen} onOpenChange={setBuyOpen} program="GCA" />
     </div>
   );
 }

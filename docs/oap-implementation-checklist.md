@@ -107,8 +107,8 @@ Source of truth for the OAP build. Cross-references `docs/jobline-oap-lovable-br
 | Issuance edge function | ✅ | `supabase/functions/issue-certificate` — auth-gated, inserts row, emails recipient |
 | Admin issuance UI | ✅ | `<CertificateIssuancePanel>` in Training Library admin → Certificates tab |
 | Public storage bucket for cert PDFs | ✅ | `oap-gca-certificates` — PDF-only public read, admin write |
-| Stripe `$12` one-time checkout (guest allowed) | 🟡 | Stripe infra in place; specific OAP cert price ID + webhook → issue-certificate still TODO |
-| Email delivery with PDF attachment | 🟡 | HTML receipt sent on issue; PDF attachment pending headless-render pipeline |
+| Stripe `$12` one-time checkout (guest allowed) | ✅ | `create-cert-checkout` edge fn + `BuyCertificateDialog` UI; webhook handles `product_type: "cert"` and inserts the cert row idempotently |
+| Email delivery with PDF attachment | 🟡 | HTML receipt sent on issue from webhook; PDF attachment pending headless-render pipeline |
 | Shareable link + LinkedIn-ready URL | ✅ | `/verify/:certId` is the share URL |
 | Revoke / expire flow | 🟡 | Schema supports it (`status`, `revoked_at`); UI control pending |
 
