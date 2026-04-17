@@ -30,6 +30,13 @@ const sections = [
     count: "10 test banks · 4 levels",
   },
   {
+    title: "Operator Acceptance Program (OAP)",
+    description: "Employer-driven onboarding and certification for CNC operators. Build role-specific programs, assign mentors, run safety + measuring + tooling courses, and issue portable operator certificates. Standalone mode lets anyone earn a self-certified record for interviews.",
+    icon: ClipboardCheck,
+    href: "/resources/oap",
+    count: "7-section flow · portable cert",
+  },
+  {
     title: "Industry Glossary",
     description: "90+ manufacturing terms defined in detail — CNC machining, quality management (ISO 9001, AS9100), lean manufacturing, GD&T, tooling, materials, and production planning. Written for machinists and engineers.",
     icon: BookA,
