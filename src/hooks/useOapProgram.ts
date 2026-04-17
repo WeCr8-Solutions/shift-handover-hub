@@ -268,7 +268,7 @@ export function useOapRolePrograms() {
       };
       if (input.recert_interval_months !== undefined) payload.recert_interval_months = input.recert_interval_months;
       if (input.recert_grace_days !== undefined) payload.recert_grace_days = input.recert_grace_days;
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("oap_role_programs")
         .upsert(payload)
         .select()
