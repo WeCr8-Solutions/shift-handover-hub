@@ -36,6 +36,7 @@ import {
   Users,
   UserCheck,
   Quote,
+  FileText,
 } from "lucide-react";
 
 interface PublicProfile {
@@ -64,6 +65,7 @@ interface CertRow {
   issued_date: string | null;
   expires_date: string | null;
   credential_url: string | null;
+  attachment_url: string | null;
   verification_source: string;
   linked_cert_id: string | null;
 }
@@ -136,7 +138,7 @@ export default function PublicOperatorProfile() {
       const [c, s, m, w, e] = await Promise.all([
         supabase
           .from("operator_certifications")
-          .select("id, name, issuer, issued_date, expires_date, credential_url, verification_source, linked_cert_id")
+          .select("id, name, issuer, issued_date, expires_date, credential_url, attachment_url, verification_source, linked_cert_id")
           .eq("user_id", row.user_id)
           .order("issued_date", { ascending: false, nullsFirst: false }),
         supabase
@@ -473,16 +475,28 @@ export default function PublicOperatorProfile() {
                         {c.expires_date ? ` · Expires ${formatDateRange(c.expires_date, null).split(" – ")[0]}` : ""}
                       </p>
                     </div>
-                    {c.credential_url && (
-                      <a
-                        href={c.credential_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline text-sm flex items-center gap-1 shrink-0"
-                      >
-                        Verify <ExternalLink className="w-3 h-3" />
-                      </a>
-                    )}
+                    <div className="flex items-center gap-3 shrink-0">
+                      {c.attachment_url && (
+                        <a
+                          href={c.attachment_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline text-sm flex items-center gap-1"
+                        >
+                          Open <FileText className="w-3 h-3" />
+                        </a>
+                      )}
+                      {c.credential_url && (
+                        <a
+                          href={c.credential_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline text-sm flex items-center gap-1"
+                        >
+                          Verify <ExternalLink className="w-3 h-3" />
+                        </a>
+                      )}
+                    </div>
                   </div>
                 );
               })}

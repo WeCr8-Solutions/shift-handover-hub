@@ -139,12 +139,137 @@ export default function OperatorProfile() {
     try {
       const url = await uploadFile(file, "resume");
       await saveProfile({ resume_pdf_url: url });
-      toast({ title: "Resume uploaded", description: file.name });
+      toast({ title: "Resume uploaded", description: "Parsing for autofill…" });
+
+      // Autofill empty fields via AI
+      try {
+        const { data, error } = await supabase.functions.invoke("parse-resume", {
+          body: { resumeUrl: url },
+        });
+        if (error) throw error;
+        if (!data?.ok) throw new Error(data?.error ?? "Parse failed");
+        const added = await applyResumeAutofill(data.data);
+        toast({
+          title: "Autofill complete",
+          description:
+            added.fields + added.skills + added.work + added.education + added.machines === 0
+              ? "All fields already filled in — nothing to add."
+              : `Filled ${added.fields} field(s), added ${added.skills} skill(s), ${added.work} job(s), ${added.education} education, ${added.machines} machine(s).`,
+        });
+        await refresh();
+      } catch (parseErr) {
+        console.error("[OperatorProfile] autofill failed", parseErr);
+        toast({
+          title: "Autofill skipped",
+          description: extractErrorMessage(parseErr),
+          variant: "destructive",
+        });
+      }
     } catch (err) {
-      toast({ title: "Upload failed", description: err instanceof Error ? err.message : String(err), variant: "destructive" });
+      toast({ title: "Upload failed", description: extractErrorMessage(err), variant: "destructive" });
     } finally {
       setUploadingResume(false);
     }
+  };
+
+  /** Fills only empty profile fields and inserts new skill/work/education/machine rows. */
+  const applyResumeAutofill = async (parsed: any) => {
+    if (!user?.id) return { fields: 0, skills: 0, work: 0, education: 0, machines: 0 };
+    const counts = { fields: 0, skills: 0, work: 0, education: 0, machines: 0 };
+
+    // 1) Top-level profile fields — only fill if currently empty
+    const profilePatch: Record<string, unknown> = {};
+    const candidates: Array<[keyof typeof form, string | undefined]> = [
+      ["headline", parsed.headline],
+      ["bio", parsed.bio],
+      ["location_city", parsed.location_city],
+      ["location_region", parsed.location_region],
+      ["location_country", parsed.location_country],
+      ["linkedin_url", parsed.linkedin_url],
+      ["portfolio_url", parsed.portfolio_url],
+      ["contact_email", parsed.contact_email],
+      ["contact_phone", parsed.contact_phone],
+    ];
+    for (const [key, val] of candidates) {
+      if (val && !profile?.[key as keyof typeof profile]) {
+        profilePatch[key as string] = val;
+        counts.fields += 1;
+      }
+    }
+    if (parsed.years_experience && !profile?.years_experience) {
+      profilePatch.years_experience = Math.round(parsed.years_experience);
+      counts.fields += 1;
+    }
+    if (Object.keys(profilePatch).length) {
+      await saveProfile(profilePatch as any);
+    }
+
+    // 2) Skills — skip duplicates (case-insensitive)
+    const existingSkills = new Set(skills.map((s) => s.skill.trim().toLowerCase()));
+    for (const s of (parsed.skills ?? []) as Array<{ skill: string; proficiency?: string; years_used?: number }>) {
+      const name = s.skill?.trim();
+      if (!name || existingSkills.has(name.toLowerCase())) continue;
+      const { error } = await supabase.from("operator_skills").insert({
+        user_id: user.id,
+        skill: name,
+        proficiency: s.proficiency ?? "intermediate",
+        years_used: s.years_used ?? null,
+      });
+      if (!error) counts.skills += 1;
+    }
+
+    // 3) Work history — dedupe by employer+title
+    const existingWork = new Set(workHistory.map((w) => `${w.employer_name}|${w.job_title}`.toLowerCase()));
+    for (const w of (parsed.work_history ?? []) as any[]) {
+      const key = `${w.employer_name}|${w.job_title}`.toLowerCase();
+      if (existingWork.has(key)) continue;
+      const { error } = await supabase.from("operator_work_history").insert({
+        user_id: user.id,
+        employer_name: w.employer_name,
+        job_title: w.job_title,
+        start_date: w.start_date ?? null,
+        end_date: w.is_current ? null : (w.end_date ?? null),
+        is_current: !!w.is_current,
+        location: w.location ?? null,
+        description: w.description ?? null,
+      });
+      if (!error) counts.work += 1;
+    }
+
+    // 4) Education
+    const existingEdu = new Set(education.map((e) => `${e.school_name}|${e.degree ?? ""}`.toLowerCase()));
+    for (const ed of (parsed.education ?? []) as any[]) {
+      const key = `${ed.school_name}|${ed.degree ?? ""}`.toLowerCase();
+      if (existingEdu.has(key)) continue;
+      const { error } = await supabase.from("operator_education").insert({
+        user_id: user.id,
+        school_name: ed.school_name,
+        degree: ed.degree ?? null,
+        field_of_study: ed.field_of_study ?? null,
+        start_date: ed.start_date ?? null,
+        end_date: ed.end_date ?? null,
+      });
+      if (!error) counts.education += 1;
+    }
+
+    // 5) Machines
+    const existingMach = new Set(machines.map((m) => `${m.machine_category}|${m.machine_make ?? ""}|${m.machine_model ?? ""}`.toLowerCase()));
+    for (const m of (parsed.machines ?? []) as any[]) {
+      const key = `${m.machine_category}|${m.machine_make ?? ""}|${m.machine_model ?? ""}`.toLowerCase();
+      if (existingMach.has(key)) continue;
+      const { error } = await supabase.from("operator_machine_proficiencies").insert({
+        user_id: user.id,
+        machine_category: m.machine_category,
+        machine_make: m.machine_make ?? null,
+        machine_model: m.machine_model ?? null,
+        control_type: m.control_type ?? null,
+        proficiency: m.proficiency ?? "intermediate",
+        years_experience: m.years_experience ?? null,
+      });
+      if (!error) counts.machines += 1;
+    }
+
+    return counts;
   };
 
   const handleSyncCerts = async () => {
@@ -414,16 +539,24 @@ export default function OperatorProfile() {
 
                 <Separator />
                 <div>
-                  <Label className="flex items-center gap-2"><FileText className="w-4 h-4" /> Resume PDF</Label>
+                  <Label className="flex items-center gap-2"><FileText className="w-4 h-4" /> Resume (PDF or DOCX)</Label>
                   <div className="flex items-center gap-2 mt-1">
-                    <Input type="file" accept="application/pdf" onChange={handleResumeUpload} disabled={uploadingResume} />
+                    <Input
+                      type="file"
+                      accept="application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.pdf,.docx"
+                      onChange={handleResumeUpload}
+                      disabled={uploadingResume}
+                    />
                     {profile?.resume_pdf_url && (
                       <Button variant="outline" size="sm" asChild>
                         <a href={profile.resume_pdf_url} target="_blank" rel="noopener noreferrer">View</a>
                       </Button>
                     )}
                   </div>
-                  {uploadingResume && <p className="text-sm text-muted-foreground mt-1">Uploading…</p>}
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Empty profile fields, skills, work history, education and machines will be auto-filled from your resume. Existing data is never overwritten.
+                  </p>
+                  {uploadingResume && <p className="text-sm text-muted-foreground mt-1">Uploading and parsing…</p>}
                 </div>
 
                 <Button onClick={handleSave} disabled={saving} className="gap-2">
