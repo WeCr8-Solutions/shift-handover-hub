@@ -2256,8 +2256,13 @@ export type Database = {
           qr_token: string
           recipient_email: string
           recipient_name: string
+          recipient_username: string | null
           revoked_at: string | null
           revoked_reason: string | null
+          signed_by_name: string | null
+          signed_by_signature_url: string | null
+          signed_by_title: string | null
+          signed_by_user_id: string | null
           status: string
           stripe_session_id: string | null
           updated_at: string
@@ -2277,8 +2282,13 @@ export type Database = {
           qr_token?: string
           recipient_email: string
           recipient_name: string
+          recipient_username?: string | null
           revoked_at?: string | null
           revoked_reason?: string | null
+          signed_by_name?: string | null
+          signed_by_signature_url?: string | null
+          signed_by_title?: string | null
+          signed_by_user_id?: string | null
           status?: string
           stripe_session_id?: string | null
           updated_at?: string
@@ -2298,8 +2308,13 @@ export type Database = {
           qr_token?: string
           recipient_email?: string
           recipient_name?: string
+          recipient_username?: string | null
           revoked_at?: string | null
           revoked_reason?: string | null
+          signed_by_name?: string | null
+          signed_by_signature_url?: string | null
+          signed_by_title?: string | null
+          signed_by_user_id?: string | null
           status?: string
           stripe_session_id?: string | null
           updated_at?: string
@@ -3989,9 +4004,14 @@ export type Database = {
           qr_token: string
           recipient_email: string
           recipient_name: string
+          recipient_username: string | null
           revoked_at: string | null
           revoked_reason: string | null
           role_program_id: string | null
+          signed_by_name: string | null
+          signed_by_signature_url: string | null
+          signed_by_title: string | null
+          signed_by_user_id: string | null
           status: string
           stripe_session_id: string | null
           updated_at: string
@@ -4012,9 +4032,14 @@ export type Database = {
           qr_token?: string
           recipient_email: string
           recipient_name: string
+          recipient_username?: string | null
           revoked_at?: string | null
           revoked_reason?: string | null
           role_program_id?: string | null
+          signed_by_name?: string | null
+          signed_by_signature_url?: string | null
+          signed_by_title?: string | null
+          signed_by_user_id?: string | null
           status?: string
           stripe_session_id?: string | null
           updated_at?: string
@@ -4035,9 +4060,14 @@ export type Database = {
           qr_token?: string
           recipient_email?: string
           recipient_name?: string
+          recipient_username?: string | null
           revoked_at?: string | null
           revoked_reason?: string | null
           role_program_id?: string | null
+          signed_by_name?: string | null
+          signed_by_signature_url?: string | null
+          signed_by_title?: string | null
+          signed_by_user_id?: string | null
           status?: string
           stripe_session_id?: string | null
           updated_at?: string
@@ -6300,6 +6330,7 @@ export type Database = {
           created_at: string
           created_by: string
           description: string | null
+          designated_oap_mentor_user_id: string | null
           id: string
           logo_url: string | null
           mfa_required: boolean
@@ -6317,6 +6348,7 @@ export type Database = {
           created_at?: string
           created_by: string
           description?: string | null
+          designated_oap_mentor_user_id?: string | null
           id?: string
           logo_url?: string | null
           mfa_required?: boolean
@@ -6334,6 +6366,7 @@ export type Database = {
           created_at?: string
           created_by?: string
           description?: string | null
+          designated_oap_mentor_user_id?: string | null
           id?: string
           logo_url?: string | null
           mfa_required?: boolean
@@ -9731,65 +9764,73 @@ export type Database = {
       validate_display_token: { Args: { _token: string }; Returns: Json }
       validate_invite_code: { Args: { _code: string }; Returns: Json }
       verify_gca_certificate: {
-        Args: { _cert_id: string }
+        Args: { p_cert_id: string }
         Returns: {
           cert_id: string
           issued_at: string
-          pdf_url: string
           program_name: string
-          qr_token: string
           recipient_name: string
-          revoked_at: string
+          recipient_username: string
+          signed_by_name: string
+          signed_by_signature_url: string
+          signed_by_title: string
           status: string
           valid_from: string
           valid_until: string
         }[]
       }
       verify_gca_certificate_by_qr: {
-        Args: { _qr_token: string }
+        Args: { p_qr_token: string }
         Returns: {
           cert_id: string
           issued_at: string
-          pdf_url: string
           program_name: string
-          qr_token: string
           recipient_name: string
-          revoked_at: string
+          recipient_username: string
+          signed_by_name: string
+          signed_by_signature_url: string
+          signed_by_title: string
           status: string
           valid_from: string
           valid_until: string
         }[]
       }
       verify_oap_certificate: {
-        Args: { _cert_id: string }
+        Args: { p_cert_id: string }
         Returns: {
           cert_id: string
           issued_at: string
-          pdf_url: string
+          organization_id: string
+          organization_name: string
           program_name: string
-          qr_token: string
           recipient_name: string
-          revoked_at: string
+          recipient_username: string
+          signed_by_name: string
+          signed_by_signature_url: string
+          signed_by_title: string
           status: string
           valid_from: string
           valid_until: string
-          vertical: Database["public"]["Enums"]["oap_vertical"]
+          vertical: string
         }[]
       }
       verify_oap_certificate_by_qr: {
-        Args: { _qr_token: string }
+        Args: { p_qr_token: string }
         Returns: {
           cert_id: string
           issued_at: string
-          pdf_url: string
+          organization_id: string
+          organization_name: string
           program_name: string
-          qr_token: string
           recipient_name: string
-          revoked_at: string
+          recipient_username: string
+          signed_by_name: string
+          signed_by_signature_url: string
+          signed_by_title: string
           status: string
           valid_from: string
           valid_until: string
-          vertical: Database["public"]["Enums"]["oap_vertical"]
+          vertical: string
         }[]
       }
     }
