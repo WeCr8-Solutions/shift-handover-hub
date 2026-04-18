@@ -5119,6 +5119,36 @@ export type Database = {
         }
         Relationships: []
       }
+      operator_connections: {
+        Row: {
+          addressee_id: string
+          created_at: string
+          id: string
+          requester_id: string
+          responded_at: string | null
+          shared_org_id: string | null
+          status: string
+        }
+        Insert: {
+          addressee_id: string
+          created_at?: string
+          id?: string
+          requester_id: string
+          responded_at?: string | null
+          shared_org_id?: string | null
+          status?: string
+        }
+        Update: {
+          addressee_id?: string
+          created_at?: string
+          id?: string
+          requester_id?: string
+          responded_at?: string | null
+          shared_org_id?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       operator_education: {
         Row: {
           created_at: string
@@ -5152,6 +5182,27 @@ export type Database = {
           school_name?: string
           start_date?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      operator_follows: {
+        Row: {
+          created_at: string
+          followed_id: string
+          follower_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          followed_id: string
+          follower_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          followed_id?: string
+          follower_id?: string
+          id?: string
         }
         Relationships: []
       }
@@ -5275,6 +5326,39 @@ export type Database = {
           user_id?: string
           willing_to_relocate?: boolean
           years_experience?: number | null
+        }
+        Relationships: []
+      }
+      operator_recommendations: {
+        Row: {
+          author_id: string
+          body: string
+          created_at: string
+          id: string
+          is_hidden_by_recipient: boolean
+          recipient_id: string
+          relationship: string | null
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          created_at?: string
+          id?: string
+          is_hidden_by_recipient?: boolean
+          recipient_id: string
+          relationship?: string | null
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          created_at?: string
+          id?: string
+          is_hidden_by_recipient?: boolean
+          recipient_id?: string
+          relationship?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -9480,6 +9564,13 @@ export type Database = {
           years_experience: number
         }[]
       }
+      get_public_operator_social_counts: {
+        Args: { _username: string }
+        Returns: {
+          follower_count: number
+          recommendation_count: number
+        }[]
+      }
       get_user_org_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
@@ -9558,6 +9649,19 @@ export type Database = {
           user_id: string
           willing_to_relocate: boolean
           years_experience: number
+        }[]
+      }
+      list_public_operator_recommendations: {
+        Args: { _username: string }
+        Returns: {
+          author_avatar_url: string
+          author_display_name: string
+          author_id: string
+          author_public_username: string
+          body: string
+          created_at: string
+          id: string
+          relationship: string
         }[]
       }
       pass_work_order_to_next_step: {

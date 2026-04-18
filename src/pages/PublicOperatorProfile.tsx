@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
+import { TalentSocialPanel } from "@/components/talent/TalentSocialPanel";
 import {
   MapPin,
   Linkedin,
@@ -319,6 +320,13 @@ export default function PublicOperatorProfile() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Coworker social: connect, follow, recommendations */}
+        <TalentSocialPanel
+          username={profile.public_username}
+          recipientUserId={profile.user_id}
+          recipientName={fullName}
+        />
 
         {/* About */}
         {profile.bio && (
