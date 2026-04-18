@@ -393,8 +393,8 @@ export default function PublicOperatorProfile() {
                       </div>
                       {c.issuer && <p className="text-sm text-muted-foreground">{c.issuer}</p>}
                       <p className="text-xs text-muted-foreground">
-                        {c.issued_date ? `Issued ${c.issued_date}` : ""}
-                        {c.expires_date ? ` · Expires ${c.expires_date}` : ""}
+                        {c.issued_date ? `Issued ${formatDateRange(c.issued_date, null).split(" – ")[0]}` : ""}
+                        {c.expires_date ? ` · Expires ${formatDateRange(c.expires_date, null).split(" – ")[0]}` : ""}
                       </p>
                     </div>
                     {c.credential_url && (
@@ -473,7 +473,7 @@ export default function PublicOperatorProfile() {
                   <p className="font-medium">{w.job_title}</p>
                   <p className="text-sm text-muted-foreground">{w.employer_name}{w.location ? ` · ${w.location}` : ""}</p>
                   <p className="text-xs text-muted-foreground">
-                    {w.start_date ?? "—"} – {w.is_current ? "Present" : w.end_date ?? "—"}
+                    {formatDateRange(w.start_date, w.end_date, w.is_current)}
                   </p>
                   {w.description && (
                     <p className="mt-1 text-sm whitespace-pre-line">{w.description}</p>
@@ -501,7 +501,7 @@ export default function PublicOperatorProfile() {
                     {[e.degree, e.field_of_study].filter(Boolean).join(", ")}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {e.start_date ?? "—"} – {e.end_date ?? "—"}
+                    {formatDateRange(e.start_date, e.end_date)}
                   </p>
                 </div>
               ))}
