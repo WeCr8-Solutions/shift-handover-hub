@@ -36,6 +36,7 @@ import {
   Users,
   UserCheck,
   Quote,
+  FileText,
 } from "lucide-react";
 
 interface PublicProfile {
