@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { User, LogOut, Users, Settings } from "lucide-react";
+import { User, LogOut, Users, Settings, IdCard, Globe } from "lucide-react";
 
 export function UserMenu() {
   const navigate = useNavigate();
@@ -57,6 +57,14 @@ export function UserMenu() {
         <DropdownMenuItem onClick={() => navigate("/profile")}>
           <User className="mr-2 h-4 w-4" />
           <span>Profile</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => navigate("/operator/profile")}>
+          <IdCard className="mr-2 h-4 w-4" />
+          <span>Talent Profile</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => navigate("/talent")}>
+          <Globe className="mr-2 h-4 w-4" />
+          <span>Talent Network</span>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => navigate("/teams")}>
           <Users className="mr-2 h-4 w-4" />

@@ -244,6 +244,7 @@ const App = () => (
                     <Route path="/talent" element={<TalentLanding />} />
                     <Route path="/talent/search" element={<TalentSearch />} />
                     <Route path="/talent/:username" element={<PublicOperatorProfile />} />
+                    <Route path="/operator/profile" element={<OperatorProfile />} />
                     <Route path="/resources/oap" element={<OperatorAcceptanceProgram />} />
                     <Route path="/resources/glossary" element={<IndustryGlossary />} />
                     <Route path="/resources/beginners" element={<BeginnersGuide />} />
