@@ -357,6 +357,8 @@ export function OrganizationSettings({ isDeveloper = false }: OrganizationSettin
         canEdit={isAdmin}
       />
 
+      {isAdmin && (
+         <Card className="border-warning/30">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-warning">
               <Shield className="h-5 w-5" />
