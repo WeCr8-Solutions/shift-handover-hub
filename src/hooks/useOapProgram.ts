@@ -314,6 +314,52 @@ export function useOapRolePrograms() {
   return { programs: list.data ?? [], isLoading: list.isLoading, upsert, remove };
 }
 
+/**
+ * Canonical OAP role-program templates seeded by the platform.
+ * Readable by any authenticated user. Org admins clone them via RPC.
+ */
+export function useCanonicalRolePrograms() {
+  return useQuery({
+    queryKey: ["oap-canonical-role-programs"],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("oap_role_programs")
+        .select("*")
+        .eq("is_canonical", true)
+        .eq("is_active", true)
+        .order("vertical")
+        .order("name");
+      if (error) throw error;
+      return (data ?? []) as OapRoleProgram[];
+    },
+  });
+}
+
+export function useCloneRoleProgramTemplate() {
+  const { organization } = useOrganization();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: { template_id: string; override_name?: string }) => {
+      if (!organization?.id) throw new Error("No organization selected");
+      const { data, error } = await (supabase as any).rpc(
+        "clone_oap_role_program_to_org",
+        {
+          _template_id: params.template_id,
+          _organization_id: organization.id,
+          _override_name: params.override_name ?? null,
+        },
+      );
+      if (error) throw error;
+      return data as string;
+    },
+    onSuccess: () => {
+      toast.success("Template added to your shop");
+      qc.invalidateQueries({ queryKey: ["oap-role-programs"] });
+    },
+    onError: (e: any) => toast.error(e.message ?? "Clone failed"),
+  });
+}
+
 export function useRoleProgramCourses(roleProgramId: string | null) {
   return useQuery({
     queryKey: ["oap-role-program-courses", roleProgramId],
