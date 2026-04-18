@@ -201,9 +201,12 @@ export function TalentSocialPanel({ username, recipientUserId, recipientName }: 
               </DialogContent>
             </Dialog>
 
-            <div className="ml-auto flex items-center gap-3 text-xs text-muted-foreground">
+            <div className="ml-auto flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
               <span className="flex items-center gap-1">
                 <Users className="w-3 h-3" /> {counts.follower_count} follower{counts.follower_count === 1 ? "" : "s"}
+              </span>
+              <span className="flex items-center gap-1">
+                <UserCheck className="w-3 h-3" /> {counts.following_count} following
               </span>
               <span className="flex items-center gap-1">
                 <Quote className="w-3 h-3" /> {counts.recommendation_count} recommendation{counts.recommendation_count === 1 ? "" : "s"}

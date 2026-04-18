@@ -15,6 +15,7 @@ export interface PublicRecommendation {
 
 export interface SocialCounts {
   follower_count: number;
+  following_count: number;
   recommendation_count: number;
 }
 
@@ -23,7 +24,7 @@ export type ConnectionStatus = "none" | "pending_outgoing" | "pending_incoming" 
 /** Public, anon-friendly: load recommendations + counts for a username. */
 export function usePublicOperatorSocial(username: string | undefined) {
   const [recommendations, setRecommendations] = useState<PublicRecommendation[]>([]);
-  const [counts, setCounts] = useState<SocialCounts>({ follower_count: 0, recommendation_count: 0 });
+  const [counts, setCounts] = useState<SocialCounts>({ follower_count: 0, following_count: 0, recommendation_count: 0 });
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
@@ -37,6 +38,7 @@ export function usePublicOperatorSocial(username: string | undefined) {
     const c = (cnt.data as SocialCounts[] | null)?.[0];
     setCounts({
       follower_count: Number(c?.follower_count ?? 0),
+      following_count: Number(c?.following_count ?? 0),
       recommendation_count: Number(c?.recommendation_count ?? 0),
     });
     setLoading(false);
