@@ -190,6 +190,11 @@ export default function TalentLanding() {
         </div>
       </section>
 
+      {/* OAP × GCA × Talent flow */}
+      <section className="border-t bg-muted/20">
+        <OapGcaTalentFlow />
+      </section>
+
       {/* Recent public profiles */}
       <section className="border-y bg-muted/30">
         <div className="container py-16 max-w-6xl">
