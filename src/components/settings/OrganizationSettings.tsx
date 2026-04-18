@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useOrgContext } from "@/contexts/OrgContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { DesignatedOapMentorCard } from "./DesignatedOapMentorCard";
 
 interface OrganizationSettingsProps {
   isDeveloper?: boolean;
@@ -349,8 +350,13 @@ export function OrganizationSettings({ isDeveloper = false }: OrganizationSettin
         </div>
       )}
 
-      {isAdmin && (
-         <Card className="border-warning/30">
+      {/* Designated OAP Mentor (signer for all OAP certificates this org issues) */}
+      <DesignatedOapMentorCard
+        organizationId={organization.id}
+        organizationName={organization.name}
+        canEdit={isAdmin}
+      />
+
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-warning">
               <Shield className="h-5 w-5" />
