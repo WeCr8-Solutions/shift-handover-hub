@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" font-family="system-ui,sans-serif">
+  <rect width="800" height="500" fill="#0f172a"/>
+  <text x="400" y="32" text-anchor="middle" fill="#f8fafc" font-size="17" font-weight="700">Fanuc Canned Drilling Cycles — G81 · G83 · G84 · G73</text>
+
+  <!-- Shared part surface -->
+  <rect x="40" y="60" width="720" height="18" fill="#334155" rx="3"/>
+  <text x="400" y="73" text-anchor="middle" fill="#94a3b8" font-size="10">Part Surface (Z0.0)</text>
+
+  <!-- ── G81 Simple Drill ── -->
+  <g transform="translate(40,90)">
+    <rect width="165" height="295" rx="6" fill="#1e293b" stroke="#3b82f6" stroke-width="1.5"/>
+    <text x="83" y="18" text-anchor="middle" fill="#60a5fa" font-size="13" font-weight="700">G81 — Simple Drill</text>
+    <!-- R plane -->
+    <line x1="15" y1="45" x2="150" y2="45" stroke="#22d3ee" stroke-width="1" stroke-dasharray="4,3"/>
+    <text x="155" y="48" fill="#22d3ee" font-size="9">R plane</text>
+    <!-- drill path -->
+    <line x1="83" y1="45" x2="83" y2="145" stroke="#60a5fa" stroke-width="2.5"/>
+    <!-- drill tip -->
+    <polygon points="73,145 93,145 83,165" fill="#60a5fa"/>
+    <!-- retract arrow -->
+    <line x1="100" y1="165" x2="100" y2="45" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#uarr)"/>
+    <!-- Z depth -->
+    <line x1="15" y1="165" x2="150" y2="165" stroke="#f59e0b" stroke-width="1" stroke-dasharray="4,3"/>
+    <text x="155" y="168" fill="#f59e0b" font-size="9">Z depth</text>
+    <text x="83" y="195" text-anchor="middle" fill="#94a3b8" font-size="10">Rapid to R, feed to Z,</text>
+    <text x="83" y="208" text-anchor="middle" fill="#94a3b8" font-size="10">rapid retract to R/initial.</text>
+    <text x="15" y="230" fill="#f8fafc" font-family="monospace" font-size="10">G81 X__ Y__ Z-0.75</text>
+    <text x="15" y="244" fill="#f8fafc" font-family="monospace" font-size="10">     R0.1 F8.</text>
+    <text x="15" y="265" fill="#64748b" font-size="9">No peck. Use for</text>
+    <text x="15" y="278" fill="#64748b" font-size="9">shallow holes or</text>
+    <text x="15" y="291" fill="#64748b" font-size="9">spot drilling.</text>
+  </g>
+
+  <!-- ── G83 Peck Drill ── -->
+  <g transform="translate(220,90)">
+    <rect width="165" height="295" rx="6" fill="#1e293b" stroke="#a855f7" stroke-width="1.5"/>
+    <text x="83" y="18" text-anchor="middle" fill="#c4b5fd" font-size="13" font-weight="700">G83 — Peck Drill</text>
+    <!-- R plane -->
+    <line x1="15" y1="45" x2="150" y2="45" stroke="#22d3ee" stroke-width="1" stroke-dasharray="4,3"/>
+    <text x="155" y="48" fill="#22d3ee" font-size="9">R plane</text>
+    <!-- peck steps -->
+    <line x1="83" y1="45" x2="83" y2="80" stroke="#a855f7" stroke-width="2"/>
+    <line x1="83" y1="80" x2="83" y2="45" stroke="#22c55e" stroke-width="1" stroke-dasharray="2,2"/>
+    <line x1="83" y1="45" x2="83" y2="110" stroke="#a855f7" stroke-width="2"/>
+    <line x1="83" y1="110" x2="83" y2="45" stroke="#22c55e" stroke-width="1" stroke-dasharray="2,2"/>
+    <line x1="83" y1="45" x2="83" y2="145" stroke="#a855f7" stroke-width="2"/>
+    <polygon points="73,145 93,145 83,163" fill="#a855f7"/>
+    <line x1="83" y1="163" x2="83" y2="45" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#uarr2)"/>
+    <!-- depth labels -->
+    <line x1="15" y1="80" x2="70" y2="80" stroke="#f59e0b" stroke-width="1" stroke-dasharray="3,3"/>
+    <text x="5" y="83" fill="#f59e0b" font-size="8">Q peck</text>
+    <text x="83" y="195" text-anchor="middle" fill="#94a3b8" font-size="10">Full retract to R each peck.</text>
+    <text x="83" y="208" text-anchor="middle" fill="#94a3b8" font-size="10">Best chip clearance.</text>
+    <text x="15" y="230" fill="#f8fafc" font-family="monospace" font-size="10">G83 X__ Y__ Z-1.25</text>
+    <text x="15" y="244" fill="#f8fafc" font-family="monospace" font-size="10">     R0.1 Q0.25 F6.</text>
+    <text x="15" y="265" fill="#64748b" font-size="9">Q = peck depth (always</text>
+    <text x="15" y="278" fill="#64748b" font-size="9">positive). Use for deep</text>
+    <text x="15" y="291" fill="#64748b" font-size="9">holes, stringy chips.</text>
+  </g>
+
+  <!-- ── G73 Chip-Break Peck ── -->
+  <g transform="translate(400,90)">
+    <rect width="165" height="295" rx="6" fill="#1e293b" stroke="#f97316" stroke-width="1.5"/>
+    <text x="83" y="18" text-anchor="middle" fill="#fdba74" font-size="13" font-weight="700">G73 — Chip Break</text>
+    <!-- R plane -->
+    <line x1="15" y1="45" x2="150" y2="45" stroke="#22d3ee" stroke-width="1" stroke-dasharray="4,3"/>
+    <text x="155" y="48" fill="#22d3ee" font-size="9">R plane</text>
+    <!-- chip-break pecks (small retract) -->
+    <line x1="83" y1="45" x2="83" y2="80" stroke="#f97316" stroke-width="2"/>
+    <line x1="83" y1="80" x2="83" y2="74" stroke="#22c55e" stroke-width="1.5"/>
+    <line x1="83" y1="74" x2="83" y2="110" stroke="#f97316" stroke-width="2"/>
+    <line x1="83" y1="110" x2="83" y2="104" stroke="#22c55e" stroke-width="1.5"/>
+    <line x1="83" y1="104" x2="83" y2="145" stroke="#f97316" stroke-width="2"/>
+    <polygon points="73,145 93,145 83,163" fill="#f97316"/>
+    <line x1="83" y1="163" x2="83" y2="45" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#uarr3)"/>
+    <text x="5" y="78" fill="#22c55e" font-size="8">d retract</text>
+    <text x="83" y="195" text-anchor="middle" fill="#94a3b8" font-size="10">Small retract breaks chip.</text>
+    <text x="83" y="208" text-anchor="middle" fill="#94a3b8" font-size="10">Faster than G83.</text>
+    <text x="15" y="230" fill="#f8fafc" font-family="monospace" font-size="10">G73 X__ Y__ Z-1.0</text>
+    <text x="15" y="244" fill="#f8fafc" font-family="monospace" font-size="10">     R0.1 Q0.2 F8.</text>
+    <text x="15" y="265" fill="#64748b" font-size="9">d = retract amount set</text>
+    <text x="15" y="278" fill="#64748b" font-size="9">in parameter (typically</text>
+    <text x="15" y="291" fill="#64748b" font-size="9">0.020–0.050").</text>
+  </g>
+
+  <!-- ── G84 Tapping ── -->
+  <g transform="translate(580,90)">
+    <rect width="180" height="295" rx="6" fill="#1e293b" stroke="#22c55e" stroke-width="1.5"/>
+    <text x="90" y="18" text-anchor="middle" fill="#86efac" font-size="13" font-weight="700">G84 — Rigid Tapping</text>
+    <!-- R plane -->
+    <line x1="15" y1="45" x2="165" y2="45" stroke="#22d3ee" stroke-width="1" stroke-dasharray="4,3"/>
+    <text x="168" y="48" fill="#22d3ee" font-size="9">R</text>
+    <!-- tap path down -->
+    <line x1="90" y1="45" x2="90" y2="155" stroke="#22c55e" stroke-width="3"/>
+    <polygon points="80,155 100,155 90,172" fill="#22c55e"/>
+    <!-- reversing arrow up -->
+    <line x1="107" y1="172" x2="107" y2="45" stroke="#ef4444" stroke-width="2" stroke-dasharray="3,3" marker-end="url(#uarr4)"/>
+    <text x="112" y="110" fill="#ef4444" font-size="9">M04 reverse</text>
+    <text x="112" y="122" fill="#ef4444" font-size="9">→ extract tap</text>
+    <text x="90" y="195" text-anchor="middle" fill="#94a3b8" font-size="10">Spindle synced to feed.</text>
+    <text x="90" y="208" text-anchor="middle" fill="#94a3b8" font-size="10">F = pitch (1/TPI for inch).</text>
+    <text x="15" y="230" fill="#f8fafc" font-family="monospace" font-size="10">M29 S800   ← rigid mode</text>
+    <text x="15" y="244" fill="#f8fafc" font-family="monospace" font-size="10">G84 X__ Y__ Z-0.6</text>
+    <text x="15" y="258" fill="#f8fafc" font-family="monospace" font-size="10">     R0.1 F0.0625</text>
+    <text x="15" y="276" fill="#64748b" font-size="9">F = 1/TPI → 1/16=0.0625</text>
+    <text x="15" y="289" fill="#64748b" font-size="9">for 1/4-16 UNC tap.</text>
+  </g>
+
+  <!-- G80 cancel -->
+  <rect x="40" y="400" width="720" height="42" rx="5" fill="#1e293b" stroke="#334155"/>
+  <text x="400" y="418" text-anchor="middle" fill="#f8fafc" font-size="12" font-weight="700">G80 — Cancel Canned Cycle (always add after last hole)</text>
+  <text x="400" y="434" text-anchor="middle" fill="#64748b" font-size="10">G98 = retract to initial Z after each hole | G99 = retract to R plane after each hole (default). Use G98 over clamps.</text>
+
+  <!-- defs -->
+  <defs>
+    <marker id="uarr" markerWidth="6" markerHeight="6" refX="3" refY="6" orient="auto">
+      <path d="M0,6 L3,0 L6,6 z" fill="#22c55e"/>
+    </marker>
+    <marker id="uarr2" markerWidth="6" markerHeight="6" refX="3" refY="6" orient="auto">
+      <path d="M0,6 L3,0 L6,6 z" fill="#22c55e"/>
+    </marker>
+    <marker id="uarr3" markerWidth="6" markerHeight="6" refX="3" refY="6" orient="auto">
+      <path d="M0,6 L3,0 L6,6 z" fill="#22c55e"/>
+    </marker>
+    <marker id="uarr4" markerWidth="6" markerHeight="6" refX="3" refY="6" orient="auto">
+      <path d="M0,6 L3,0 L6,6 z" fill="#ef4444"/>
+    </marker>
+  </defs>
+
+  <!-- Footer -->
+  <rect x="40" y="455" width="720" height="30" rx="5" fill="#1e293b" stroke="#334155"/>
+  <text x="400" y="474" text-anchor="middle" fill="#94a3b8" font-size="11">All canned cycles repeat at each X Y position until G80 cancels. L__ repeats cycle at same position (Haas only for G83).</text>
+</svg>

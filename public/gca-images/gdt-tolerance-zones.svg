@@ -1,0 +1,146 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" font-family="system-ui,sans-serif">
+  <rect width="800" height="500" fill="#0f172a"/>
+  <text x="400" y="30" text-anchor="middle" fill="#f8fafc" font-size="16" font-weight="700">GD&amp;T — Tolerance Zone Types: Flatness · Perpendicularity · Cylindricity · True Position</text>
+
+  <!-- ── FLATNESS ── -->
+  <g transform="translate(20,45)">
+    <rect width="178" height="250" rx="6" fill="#1e293b" stroke="#3b82f6" stroke-width="1.5"/>
+    <text x="89" y="20" text-anchor="middle" fill="#60a5fa" font-size="12" font-weight="700">⏥  Flatness</text>
+    <!-- FCF -->
+    <rect x="20" y="28" width="80" height="18" rx="2" fill="#0f172a" stroke="#475569"/>
+    <text x="60" y="41" text-anchor="middle" font-family="monospace" font-size="11" fill="#f8fafc">⏥ 0.002</text>
+    <!-- flat surface -->
+    <rect x="20" y="58" width="138" height="30" rx="3" fill="#475569"/>
+    <!-- tolerance zone lines -->
+    <line x1="20" y1="55" x2="158" y2="55" stroke="#22c55e" stroke-width="1.5"/>
+    <line x1="20" y1="91" x2="158" y2="91" stroke="#22c55e" stroke-width="1.5"/>
+    <!-- label -->
+    <line x1="162" y1="55" x2="162" y2="91" stroke="#22c55e" stroke-width="1" marker-end="url(#flat_a)" marker-start="url(#flat_b)"/>
+    <text x="168" y="76" fill="#22c55e" font-size="10">0.002</text>
+    <text x="25" y="115" fill="#94a3b8" font-size="10">All points on surface</text>
+    <text x="25" y="128" fill="#94a3b8" font-size="10">must lie between two</text>
+    <text x="25" y="141" fill="#94a3b8" font-size="10">parallel planes 0.002</text>
+    <text x="25" y="154" fill="#94a3b8" font-size="10">apart.</text>
+    <text x="25" y="172" fill="#f8fafc" font-size="10">• No datum reference</text>
+    <text x="25" y="186" fill="#f8fafc" font-size="10">• Controls only the</text>
+    <text x="25" y="199" fill="#f8fafc" font-size="10">  surface itself</text>
+    <text x="25" y="213" fill="#64748b" font-size="10">Measured: test indicator</text>
+    <text x="25" y="226" fill="#64748b" font-size="10">swept across surface.</text>
+    <text x="25" y="239" fill="#64748b" font-size="10">Total indicator run = tol.</text>
+  </g>
+
+  <!-- ── PERPENDICULARITY ── -->
+  <g transform="translate(213,45)">
+    <rect width="178" height="250" rx="6" fill="#1e293b" stroke="#22c55e" stroke-width="1.5"/>
+    <text x="89" y="20" text-anchor="middle" fill="#86efac" font-size="12" font-weight="700">⊥  Perpendicularity</text>
+    <rect x="20" y="28" width="100" height="18" rx="2" fill="#0f172a" stroke="#475569"/>
+    <text x="70" y="41" text-anchor="middle" font-family="monospace" font-size="11" fill="#f8fafc">⊥ 0.003 | A</text>
+    <!-- datum surface A -->
+    <rect x="20" y="165" width="138" height="14" rx="2" fill="#3b82f6"/>
+    <text x="89" y="193" text-anchor="middle" fill="#60a5fa" font-size="10">Datum A</text>
+    <!-- wall (the feature) -->
+    <rect x="75" y="75" width="28" height="90" rx="2" fill="#475569"/>
+    <!-- tolerance zone planes -->
+    <line x1="72" y1="75" x2="72" y2="165" stroke="#22c55e" stroke-width="1.5"/>
+    <line x1="106" y1="75" x2="106" y2="165" stroke="#22c55e" stroke-width="1.5"/>
+    <!-- zone label -->
+    <line x1="108" y1="110" x2="130" y2="110" stroke="#22c55e" stroke-width="1"/>
+    <text x="133" y="113" fill="#22c55e" font-size="10">0.003</text>
+    <text x="22" y="210" fill="#94a3b8" font-size="10">Surface must fall</text>
+    <text x="22" y="224" fill="#94a3b8" font-size="10">between two planes</text>
+    <text x="22" y="238" fill="#94a3b8" font-size="10">⊥ to datum A.</text>
+  </g>
+
+  <!-- ── CYLINDRICITY ── -->
+  <g transform="translate(406,45)">
+    <rect width="178" height="250" rx="6" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5"/>
+    <text x="89" y="20" text-anchor="middle" fill="#fbbf24" font-size="12" font-weight="700">⌭  Cylindricity</text>
+    <rect x="20" y="28" width="90" height="18" rx="2" fill="#0f172a" stroke="#475569"/>
+    <text x="65" y="41" text-anchor="middle" font-family="monospace" font-size="11" fill="#f8fafc">⌭ 0.005</text>
+    <!-- cylinder cross-section (ellipses) -->
+    <ellipse cx="89" cy="90" rx="50" ry="18" fill="none" stroke="#f59e0b" stroke-width="1.5"/>
+    <ellipse cx="89" cy="150" rx="50" ry="18" fill="none" stroke="#f59e0b" stroke-width="1.5"/>
+    <line x1="39" y1="90" x2="39" y2="150" stroke="#f59e0b" stroke-width="1.5"/>
+    <line x1="139" y1="90" x2="139" y2="150" stroke="#f59e0b" stroke-width="1.5"/>
+    <!-- inner cylinder -->
+    <ellipse cx="89" cy="90" rx="44" ry="15" fill="none" stroke="#475569" stroke-width="1" stroke-dasharray="3,2"/>
+    <ellipse cx="89" cy="150" rx="44" ry="15" fill="none" stroke="#475569" stroke-width="1" stroke-dasharray="3,2"/>
+    <!-- zone label -->
+    <line x1="139" y1="120" x2="158" y2="120" stroke="#f59e0b" stroke-width="1"/>
+    <text x="160" y="123" fill="#f59e0b" font-size="10">0.005</text>
+    <text x="22" y="190" fill="#94a3b8" font-size="10">All surface points must</text>
+    <text x="22" y="203" fill="#94a3b8" font-size="10">lie between two coaxial</text>
+    <text x="22" y="216" fill="#94a3b8" font-size="10">cylinders Δ=0.005.</text>
+    <text x="22" y="232" fill="#f8fafc" font-size="10">Controls roundness +</text>
+    <text x="22" y="245" fill="#f8fafc" font-size="10">straightness + taper.</text>
+  </g>
+
+  <!-- ── TRUE POSITION (diametral) ── -->
+  <g transform="translate(599,45)">
+    <rect width="181" height="250" rx="6" fill="#1e293b" stroke="#a855f7" stroke-width="1.5"/>
+    <text x="90" y="20" text-anchor="middle" fill="#c4b5fd" font-size="12" font-weight="700">⊕  True Position</text>
+    <rect x="20" y="28" width="130" height="18" rx="2" fill="#0f172a" stroke="#475569"/>
+    <text x="85" y="41" text-anchor="middle" font-family="monospace" font-size="11" fill="#f8fafc">⊕ Ø0.010 Ⓜ | A|B|C</text>
+    <!-- nominal target -->
+    <circle cx="89" cy="115" r="4" fill="#a855f7"/>
+    <!-- actual hole center -->
+    <circle cx="98" cy="122" r="4" fill="#f8fafc"/>
+    <!-- cylindrical tolerance zone -->
+    <circle cx="89" cy="115" r="26" fill="none" stroke="#a855f7" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <text x="118" y="112" fill="#a855f7" font-size="9">Ø0.010 zone</text>
+    <!-- deviation arrow -->
+    <line x1="89" y1="115" x2="98" y2="122" stroke="#ef4444" stroke-width="1.5"/>
+    <text x="100" y="138" fill="#ef4444" font-size="9">actual Δ</text>
+    <text x="22" y="165" fill="#94a3b8" font-size="10">Hole axis must fall</text>
+    <text x="22" y="178" fill="#94a3b8" font-size="10">inside Ø zone centered</text>
+    <text x="22" y="191" fill="#94a3b8" font-size="10">on true position.</text>
+    <text x="22" y="208" fill="#f8fafc" font-size="10">Ø = diametral zone.</text>
+    <text x="22" y="222" fill="#f8fafc" font-size="10">Ⓜ MMC allows bonus.</text>
+    <text x="22" y="238" fill="#64748b" font-size="10">Dev = 2√(Δx²+Δy²)</text>
+  </g>
+
+  <!-- Tolerance zone summary table -->
+  <rect x="20" y="308" width="760" height="172" rx="6" fill="#1e293b" stroke="#334155"/>
+  <text x="400" y="327" text-anchor="middle" fill="#f8fafc" font-size="12" font-weight="700">Tolerance Zone Shape Reference</text>
+  <line x1="20" y1="333" x2="780" y2="333" stroke="#334155" stroke-width="1"/>
+  <!-- header row -->
+  <text x="38" y="349" fill="#94a3b8" font-size="11" font-weight="600">Characteristic</text>
+  <text x="200" y="349" fill="#94a3b8" font-size="11" font-weight="600">Zone Shape</text>
+  <text x="370" y="349" fill="#94a3b8" font-size="11" font-weight="600">Datum Req?</text>
+  <text x="510" y="349" fill="#94a3b8" font-size="11" font-weight="600">Measured by</text>
+  <!-- rows -->
+  <text x="38" y="367" fill="#60a5fa" font-size="11">Flatness ⏥</text>
+  <text x="200" y="367" fill="#f8fafc" font-size="11">Two parallel planes</text>
+  <text x="370" y="367" fill="#f8fafc" font-size="11">No</text>
+  <text x="510" y="367" fill="#f8fafc" font-size="11">Surface plate + indicator</text>
+
+  <text x="38" y="384" fill="#86efac" font-size="11">Straightness ↔</text>
+  <text x="200" y="384" fill="#f8fafc" font-size="11">Two parallel lines / cylinder</text>
+  <text x="370" y="384" fill="#f8fafc" font-size="11">No (surface) / No</text>
+  <text x="510" y="384" fill="#f8fafc" font-size="11">Indicator along axis</text>
+
+  <text x="38" y="401" fill="#fbbf24" font-size="11">Cylindricity ⌭</text>
+  <text x="200" y="401" fill="#f8fafc" font-size="11">Two coaxial cylinders</text>
+  <text x="370" y="401" fill="#f8fafc" font-size="11">No</text>
+  <text x="510" y="401" fill="#f8fafc" font-size="11">CMM or V-block + indicator</text>
+
+  <text x="38" y="418" fill="#86efac" font-size="11">Perpendicularity ⊥</text>
+  <text x="200" y="418" fill="#f8fafc" font-size="11">Two parallel planes / cylinder</text>
+  <text x="370" y="418" fill="#f8fafc" font-size="11">Yes</text>
+  <text x="510" y="418" fill="#f8fafc" font-size="11">Square + feeler or CMM</text>
+
+  <text x="38" y="435" fill="#c4b5fd" font-size="11">True Position ⊕</text>
+  <text x="200" y="435" fill="#f8fafc" font-size="11">Cylinder (Ø prefix) or zone</text>
+  <text x="370" y="435" fill="#f8fafc" font-size="11">Yes (A|B|C)</text>
+  <text x="510" y="435" fill="#f8fafc" font-size="11">CMM — compare to nominal</text>
+
+  <text x="38" y="452" fill="#f97316" font-size="11">Runout (circular) ↗</text>
+  <text x="200" y="452" fill="#f8fafc" font-size="11">Cylindrical surface band</text>
+  <text x="370" y="452" fill="#f8fafc" font-size="11">Yes (axis datum)</text>
+  <text x="510" y="452" fill="#f8fafc" font-size="11">Indicator on rotating part</text>
+  <!-- defs -->
+  <defs>
+    <marker id="flat_a" markerWidth="5" markerHeight="5" refX="3" refY="3" orient="auto"><path d="M0,0 L0,6 L5,3 z" fill="#22c55e"/></marker>
+    <marker id="flat_b" markerWidth="5" markerHeight="5" refX="2" refY="3" orient="auto-start-reverse"><path d="M0,3 L5,0 L5,6 z" fill="#22c55e"/></marker>
+  </defs>
+</svg>

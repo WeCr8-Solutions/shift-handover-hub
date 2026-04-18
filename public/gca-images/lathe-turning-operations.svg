@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 520" font-family="system-ui,sans-serif">
+  <rect width="800" height="520" fill="#0f172a"/>
+  <text x="400" y="34" text-anchor="middle" fill="#f8fafc" font-size="17" font-weight="700">Lathe Turning Operations — G-code Reference</text>
+
+  <!-- ── OD TURNING ── -->
+  <g transform="translate(40,55)">
+    <rect width="165" height="140" rx="6" fill="#1e293b" stroke="#334155"/>
+    <text x="83" y="18" text-anchor="middle" fill="#60a5fa" font-size="12" font-weight="700">OD Turning (G01)</text>
+    <!-- stock -->
+    <rect x="20" y="30" width="110" height="60" rx="4" fill="#475569"/>
+    <!-- finished diameter -->
+    <rect x="20" y="42" width="110" height="36" rx="2" fill="#94a3b8"/>
+    <!-- tool -->
+    <polygon points="132,55 148,60 132,65" fill="#fbbf24"/>
+    <!-- depth arrow -->
+    <line x1="130" y1="30" x2="130" y2="42" stroke="#ef4444" stroke-width="1.5" marker-end="url(#da)"/>
+    <text x="132" y="40" fill="#ef4444" font-size="9">DOC</text>
+    <text x="83" y="110" text-anchor="middle" fill="#94a3b8" font-size="10">Reduces OD diameter</text>
+    <text x="83" y="124" text-anchor="middle" fill="#64748b" font-size="9">G00 X__ Z__  (rapid)</text>
+    <text x="83" y="136" text-anchor="middle" fill="#64748b" font-size="9">G01 Z__ F__  (feed)</text>
+  </g>
+
+  <!-- ── FACING ── -->
+  <g transform="translate(218,55)">
+    <rect width="165" height="140" rx="6" fill="#1e293b" stroke="#334155"/>
+    <text x="83" y="18" text-anchor="middle" fill="#22d3ee" font-size="12" font-weight="700">Facing (G01)</text>
+    <!-- face stock end -->
+    <rect x="55" y="28" width="75" height="70" rx="2" fill="#475569"/>
+    <rect x="55" y="28" width="8" height="70" rx="1" fill="#64748b"/>
+    <!-- tool moving in X -->
+    <polygon points="45,60 28,57 28,63" fill="#fbbf24"/>
+    <line x1="45" y1="60" x2="65" y2="60" stroke="#fbbf24" stroke-width="1.5"/>
+    <text x="83" y="112" text-anchor="middle" fill="#94a3b8" font-size="10">Machines face flat / to length</text>
+    <text x="83" y="124" text-anchor="middle" fill="#64748b" font-size="9">G00 X(OD+) Z0.050</text>
+    <text x="83" y="136" text-anchor="middle" fill="#64748b" font-size="9">G01 X-0.100 F0.008</text>
+  </g>
+
+  <!-- ── BORING ── -->
+  <g transform="translate(396,55)">
+    <rect width="165" height="140" rx="6" fill="#1e293b" stroke="#334155"/>
+    <text x="83" y="18" text-anchor="middle" fill="#a78bfa" font-size="12" font-weight="700">Boring (G01)</text>
+    <!-- tube stock -->
+    <rect x="30" y="28" width="100" height="70" rx="2" fill="#475569"/>
+    <rect x="48" y="28" width="64" height="70" fill="#0f172a"/>
+    <!-- boring bar -->
+    <rect x="28" y="57" width="80" height="7" rx="2" fill="#78716c"/>
+    <polygon points="108,57 122,60 108,63" fill="#fbbf24"/>
+    <text x="83" y="112" text-anchor="middle" fill="#94a3b8" font-size="10">Enlarges existing bore (ID)</text>
+    <text x="83" y="124" text-anchor="middle" fill="#64748b" font-size="9">G00 X(ID-) Z5.0</text>
+    <text x="83" y="136" text-anchor="middle" fill="#64748b" font-size="9">G01 Z0.1 F0.005</text>
+  </g>
+
+  <!-- ── GROOVING ── -->
+  <g transform="translate(574,55)">
+    <rect width="165" height="140" rx="6" fill="#1e293b" stroke="#334155"/>
+    <text x="83" y="18" text-anchor="middle" fill="#f97316" font-size="12" font-weight="700">Grooving (G01)</text>
+    <!-- stock with groove -->
+    <rect x="25" y="30" width="120" height="65" rx="3" fill="#475569"/>
+    <rect x="75" y="30" width="22" height="45" rx="1" fill="#0f172a"/>
+    <!-- tool -->
+    <polygon points="75,30 97,18 97,30" fill="#fbbf24"/>
+    <text x="83" y="110" text-anchor="middle" fill="#94a3b8" font-size="10">Part-off or O-ring groove</text>
+    <text x="83" y="124" text-anchor="middle" fill="#64748b" font-size="9">G00 X(OD+0.1) Z(groove Z)</text>
+    <text x="83" y="136" text-anchor="middle" fill="#64748b" font-size="9">G01 X(groove depth) F0.004</text>
+  </g>
+
+  <!-- ── THREADING G32/G92/G76 ── -->
+  <g transform="translate(40,218)">
+    <rect width="345" height="155" rx="6" fill="#1e293b" stroke="#334155"/>
+    <text x="173" y="18" text-anchor="middle" fill="#fbbf24" font-size="13" font-weight="700">Threading — G76 Two-Call Cycle</text>
+    <!-- thread diagram -->
+    <path d="M 30 50 L 40 35 L 50 50 L 60 35 L 70 50 L 80 35 L 90 50 L 100 35 L 110 50 L 120 35 L 130 50 L 140 35 L 150 50" stroke="#fbbf24" stroke-width="2" fill="none"/>
+    <path d="M 30 75 L 40 60 L 50 75 L 60 60 L 70 75 L 80 60 L 90 75 L 100 60 L 110 75 L 120 60 L 130 75 L 140 60 L 150 75" stroke="#94a3b8" stroke-width="1" fill="none"/>
+    <!-- pitch label -->
+    <line x1="40" y1="88" x2="60" y2="88" stroke="#22d3ee" stroke-width="1"/>
+    <text x="50" y="100" text-anchor="middle" fill="#22d3ee" font-size="10">pitch</text>
+    <!-- infeed angle -->
+    <line x1="160" y1="40" x2="185" y2="75" stroke="#a78bfa" stroke-width="1.5"/>
+    <text x="190" y="52" fill="#a78bfa" font-size="10">29.5°</text>
+    <text x="190" y="64" fill="#64748b" font-size="9">infeed</text>
+    <!-- G76 code -->
+    <text x="30" y="118" fill="#f8fafc" font-size="10">G76 P010060 Q0050 R0.002  ← 1 pass, 60° thread, min cut 0.005, finish 0.002</text>
+    <text x="30" y="133" fill="#f8fafc" font-size="10">G76 X(minor) Z(end) P(depth×1000) Q(1st cut×1000) F(pitch)</text>
+    <text x="30" y="148" fill="#64748b" font-size="9">Example 1"-8 UNC:  G76 X0.8376 Z-1.2 P0812 Q0200 F0.125</text>
+  </g>
+
+  <!-- ── TAPER / RADIUS ── -->
+  <g transform="translate(398,218)">
+    <rect width="165" height="155" rx="6" fill="#1e293b" stroke="#334155"/>
+    <text x="83" y="18" text-anchor="middle" fill="#22c55e" font-size="12" font-weight="700">Taper &amp; Radius (G01/G02/G03)</text>
+    <!-- taper -->
+    <polygon points="20,60 120,40 120,85 20,100" fill="#475569" stroke="#94a3b8"/>
+    <!-- arc -->
+    <path d="M 30 110 Q 82 90 135 110" stroke="#22c55e" stroke-width="2" fill="none"/>
+    <text x="83" y="80" text-anchor="middle" fill="#64748b" font-size="9">G01 X__ Z__  taper</text>
+    <text x="83" y="128" text-anchor="middle" fill="#64748b" font-size="9">G02/G03 X__ Z__ R__  arc</text>
+    <text x="83" y="142" text-anchor="middle" fill="#64748b" font-size="9">I = Δ from start to center</text>
+  </g>
+
+  <!-- ── CANNED ROUGHING ── -->
+  <g transform="translate(574,218)">
+    <rect width="165" height="155" rx="6" fill="#1e293b" stroke="#334155"/>
+    <text x="83" y="18" text-anchor="middle" fill="#f43f5e" font-size="12" font-weight="700">Canned Roughing</text>
+    <text x="83" y="32" text-anchor="middle" fill="#94a3b8" font-size="10">G71 / G72 / G73</text>
+    <text x="15" y="52" fill="#f8fafc" font-size="10">G71 — OD/ID longitudinal rough</text>
+    <text x="15" y="66" fill="#f8fafc" font-size="10">G72 — facing rough cycle</text>
+    <text x="15" y="80" fill="#f8fafc" font-size="10">G73 — pattern repeat (castings)</text>
+    <text x="15" y="98" fill="#64748b" font-size="9">G71 U(DOC) R(retract)</text>
+    <text x="15" y="112" fill="#64748b" font-size="9">G71 P(ns) Q(nf) U(X finish) W(Z finish) F__</text>
+    <text x="15" y="130" fill="#f8fafc" font-size="10">G70 — finish pass after G71/72/73</text>
+    <text x="15" y="144" fill="#64748b" font-size="9">G70 P(ns) Q(nf)</text>
+  </g>
+
+  <!-- defs for arrowheads used above -->
+  <defs>
+    <marker id="da" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L6,3 z" fill="#ef4444"/>
+    </marker>
+  </defs>
+
+  <!-- Footer note -->
+  <rect x="40" y="390" width="720" height="30" rx="5" fill="#1e293b" stroke="#334155"/>
+  <text x="400" y="410" text-anchor="middle" fill="#94a3b8" font-size="11">All X values in diameter mode (default). Feed F in IPR for turning/threading, IPM for drilling. G96/G97 controls surface speed vs RPM.</text>
+</svg>

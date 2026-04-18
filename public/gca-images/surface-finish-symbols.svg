@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" font-family="system-ui,sans-serif">
+  <rect width="800" height="500" fill="#0f172a"/>
+  <text x="400" y="30" text-anchor="middle" fill="#f8fafc" font-size="17" font-weight="700">Surface Finish — Ra Values, Symbols &amp; Machining Processes</text>
+
+  <!-- Surface texture symbol anatomy -->
+  <rect x="20" y="44" width="350" height="200" rx="7" fill="#1e293b" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="195" y="64" text-anchor="middle" fill="#60a5fa" font-size="13" font-weight="700">Surface Texture Symbol Anatomy</text>
+  <!-- Main check-mark symbol -->
+  <polyline points="80,160 100,185 140,140" stroke="#f8fafc" stroke-width="2.5" fill="none"/>
+  <line x1="140" y1="140" x2="210" y2="140" stroke="#f8fafc" stroke-width="2.5"/>
+  <!-- Ra value -->
+  <text x="148" y="135" fill="#f59e0b" font-size="16" font-weight="700">63</text>
+  <!-- Lay symbol -->
+  <text x="148" y="165" fill="#22d3ee" font-size="14">⊥</text>
+  <!-- Machining allowed indicator (small horizontal bar) -->
+  <line x1="100" y1="185" x2="120" y2="185" stroke="#a855f7" stroke-width="2"/>
+  <!-- Callout lines to labels -->
+  <line x1="155" y1="130" x2="230" y2="105" stroke="#f59e0b" stroke-width="1"/>
+  <text x="235" y="104" fill="#f59e0b" font-size="11">Ra value (µin or µm)</text>
+  <line x1="155" y1="162" x2="230" y2="152" stroke="#22d3ee" stroke-width="1"/>
+  <text x="235" y="151" fill="#22d3ee" font-size="11">Lay symbol</text>
+  <line x1="110" y1="185" x2="230" y2="180" stroke="#a855f7" stroke-width="1"/>
+  <text x="235" y="179" fill="#a855f7" font-size="11">Machining required</text>
+  <text x="235" y="192" fill="#64748b" font-size="10">(bar = material must be removed)</text>
+  <text x="30" y="218" fill="#64748b" font-size="10">No bar = any process allowed.  Circle in V = no removal (as-cast/forged).</text>
+  <text x="30" y="232" fill="#64748b" font-size="10">Ra = arithmetic average roughness height (ASME B46.1 / ISO 4287).</text>
+
+  <!-- Ra conversion -->
+  <rect x="20" y="254" width="350" height="55" rx="5" fill="#111827" stroke="#334155"/>
+  <text x="30" y="272" fill="#f8fafc" font-size="11" font-weight="700">Conversion: 1 µm Ra = 39.37 µin Ra</text>
+  <text x="30" y="289" fill="#94a3b8" font-size="11">Common: 63 µin = 1.6 µm | 125 µin = 3.2 µm | 32 µin = 0.8 µm</text>
+
+  <!-- Lay symbols table -->
+  <rect x="20" y="318" width="350" height="162" rx="7" fill="#1e293b" stroke="#334155"/>
+  <text x="195" y="337" text-anchor="middle" fill="#f8fafc" font-size="12" font-weight="700">Lay Symbol Reference</text>
+  <text x="35" y="356" fill="#22d3ee" font-size="13" font-weight="700">=</text>  <text x="55" y="356" fill="#f8fafc" font-size="11">Parallel to projection plane (lay horizontal)</text>
+  <text x="35" y="373" fill="#22d3ee" font-size="13" font-weight="700">⊥</text>  <text x="55" y="373" fill="#f8fafc" font-size="11">Perpendicular to projection plane (lay vertical)</text>
+  <text x="35" y="390" fill="#22d3ee" font-size="13" font-weight="700">X</text>  <text x="55" y="390" fill="#f8fafc" font-size="11">Both directions, angular crosshatch</text>
+  <text x="35" y="407" fill="#22d3ee" font-size="13" font-weight="700">M</text>  <text x="55" y="407" fill="#f8fafc" font-size="11">Multi-directional (random) — honing, lapping</text>
+  <text x="35" y="424" fill="#22d3ee" font-size="13" font-weight="700">C</text>  <text x="55" y="424" fill="#f8fafc" font-size="11">Approximately circular (turned OD, boring)</text>
+  <text x="35" y="441" fill="#22d3ee" font-size="13" font-weight="700">R</text>  <text x="55" y="441" fill="#f8fafc" font-size="11">Approximately radial (face milling)</text>
+  <text x="35" y="458" fill="#22d3ee" font-size="13" font-weight="700">P</text>  <text x="55" y="458" fill="#f8fafc" font-size="11">Non-directional / particulate (EDM, blasting)</text>
+  <text x="35" y="472" fill="#64748b" font-size="10">Lay direction matters for sealing surfaces and bearing fits.</text>
+
+  <!-- Ra table by process -->
+  <rect x="385" y="44" width="395" height="440" rx="7" fill="#1e293b" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="582" y="64" text-anchor="middle" fill="#86efac" font-size="13" font-weight="700">Typical Ra by Process</text>
+  <!-- header -->
+  <text x="400" y="82" fill="#94a3b8" font-size="11" font-weight="600">Process</text>
+  <text x="570" y="82" fill="#94a3b8" font-size="11" font-weight="600">Ra (µin)</text>
+  <text x="660" y="82" fill="#94a3b8" font-size="11" font-weight="600">Ra (µm)</text>
+  <line x1="385" y1="87" x2="780" y2="87" stroke="#334155" stroke-width="1"/>
+
+  <!-- process rows -->
+  <text x="400" y="103" fill="#ef4444" font-size="11">Flame/plasma cut (raw)</text>
+  <text x="570" y="103" fill="#ef4444" font-size="11">1000–2000</text>
+  <text x="660" y="103" fill="#ef4444" font-size="11">25–50</text>
+
+  <text x="400" y="119" fill="#f97316" font-size="11">Rough turning / rough milling</text>
+  <text x="570" y="119" fill="#f97316" font-size="11">250–500</text>
+  <text x="660" y="119" fill="#f97316" font-size="11">6.3–12.5</text>
+
+  <text x="400" y="135" fill="#fbbf24" font-size="11">Semi-finish turning</text>
+  <text x="570" y="135" fill="#fbbf24" font-size="11">125–250</text>
+  <text x="660" y="135" fill="#fbbf24" font-size="11">3.2–6.3</text>
+
+  <text x="400" y="151" fill="#f8fafc" font-size="11" font-weight="600">Finish turning / milling (★common)</text>
+  <text x="570" y="151" fill="#f8fafc" font-size="11" font-weight="600">63–125</text>
+  <text x="660" y="151" fill="#f8fafc" font-size="11" font-weight="600">1.6–3.2</text>
+
+  <text x="400" y="167" fill="#86efac" font-size="11">Fine turning (sharp insert, high SFM)</text>
+  <text x="570" y="167" fill="#86efac" font-size="11">32–63</text>
+  <text x="660" y="167" fill="#86efac" font-size="11">0.8–1.6</text>
+
+  <text x="400" y="183" fill="#22d3ee" font-size="11">Precision boring</text>
+  <text x="570" y="183" fill="#22d3ee" font-size="11">16–32</text>
+  <text x="660" y="183" fill="#22d3ee" font-size="11">0.4–0.8</text>
+
+  <text x="400" y="199" fill="#3b82f6" font-size="11">Cylindrical grinding</text>
+  <text x="570" y="199" fill="#3b82f6" font-size="11">8–32</text>
+  <text x="660" y="199" fill="#3b82f6" font-size="11">0.2–0.8</text>
+
+  <text x="400" y="215" fill="#a855f7" font-size="11">Honing (engine cylinders)</text>
+  <text x="570" y="215" fill="#a855f7" font-size="11">4–16</text>
+  <text x="660" y="215" fill="#a855f7" font-size="11">0.1–0.4</text>
+
+  <text x="400" y="231" fill="#c4b5fd" font-size="11">Lapping (gage blocks)</text>
+  <text x="570" y="231" fill="#c4b5fd" font-size="11">1–4</text>
+  <text x="660" y="231" fill="#c4b5fd" font-size="11">0.025–0.1</text>
+
+  <text x="400" y="247" fill="#f8fafc" font-size="11">Superfinishing / polishing</text>
+  <text x="570" y="247" fill="#f8fafc" font-size="11">&lt;1</text>
+  <text x="660" y="247" fill="#f8fafc" font-size="11">&lt;0.025</text>
+
+  <line x1="385" y1="255" x2="780" y2="255" stroke="#334155" stroke-width="1"/>
+
+  <!-- Application requirements -->
+  <text x="400" y="272" fill="#94a3b8" font-size="11" font-weight="600">Application → Typical Ra Call</text>
+  <text x="400" y="289" fill="#f8fafc" font-size="11">Rough stock reference surfaces</text>
+  <text x="660" y="289" fill="#f8fafc" font-size="11">250 µin</text>
+  <text x="400" y="305" fill="#f8fafc" font-size="11">General machined (non-critical)</text>
+  <text x="660" y="305" fill="#f8fafc" font-size="11">125 µin</text>
+  <text x="400" y="321" fill="#f8fafc" font-size="11">Fits, mating faces (standard)</text>
+  <text x="660" y="321" fill="#f8fafc" font-size="11">63 µin</text>
+  <text x="400" y="337" fill="#f8fafc" font-size="11">Bearing bores, precision fits</text>
+  <text x="660" y="337" fill="#f8fafc" font-size="11">32 µin</text>
+  <text x="400" y="353" fill="#f8fafc" font-size="11">O-ring grooves, sealing faces</text>
+  <text x="660" y="353" fill="#f8fafc" font-size="11">32–63 µin</text>
+  <text x="400" y="369" fill="#f8fafc" font-size="11">Hydraulic cylinder bores</text>
+  <text x="660" y="369" fill="#f8fafc" font-size="11">16–32 µin</text>
+  <text x="400" y="385" fill="#f8fafc" font-size="11">Gage surfaces, lapped flats</text>
+  <text x="660" y="385" fill="#f8fafc" font-size="11">4–8 µin</text>
+
+  <line x1="385" y1="395" x2="780" y2="395" stroke="#334155" stroke-width="1"/>
+  <text x="400" y="415" fill="#94a3b8" font-size="11" font-weight="600">Measurement tools:</text>
+  <text x="400" y="431" fill="#f8fafc" font-size="11">Contact profilometer (stylus) — reads Ra, Rz, Rmax</text>
+  <text x="400" y="447" fill="#f8fafc" font-size="11">Surface comparator (visual/tactile) — shop floor use</text>
+  <text x="400" y="463" fill="#f8fafc" font-size="11">Optical profilometer / white light interferometry</text>
+  <text x="400" y="479" fill="#64748b" font-size="10">Ra = average. Rz = avg of 5 highest peaks to 5 lowest valleys. Rmax = single highest excursion.</text>
+</svg>
