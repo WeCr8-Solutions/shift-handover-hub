@@ -187,7 +187,9 @@ function QuestionRow({
 }) {
   const choices = question.choices ?? [];
   const correct = new Set(question.correct_answers ?? []);
-  const isMulti = question.question_type === "multi_choice";
+  const isMulti =
+    question.question_type === "multi_choice" ||
+    question.question_type === "multi_select";
 
   const showFeedback = review;
   const isRight = (key: string) =>
