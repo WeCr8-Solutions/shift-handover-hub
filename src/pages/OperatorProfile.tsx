@@ -24,6 +24,20 @@ import { getPublicTalentUrl } from "@/lib/talent/publicHost";
 
 const PROFICIENCY_LEVELS = ["beginner", "intermediate", "advanced", "expert"] as const;
 
+function extractErrorMessage(err: unknown): string {
+  if (!err) return "Unknown error";
+  if (typeof err === "string") return err;
+  if (err instanceof Error) return err.message;
+  if (typeof err === "object") {
+    const e = err as Record<string, unknown>;
+    const parts = [e.message, e.details, e.hint, e.code]
+      .filter((v): v is string => typeof v === "string" && v.length > 0);
+    if (parts.length) return parts.join(" — ");
+    try { return JSON.stringify(err); } catch { return String(err); }
+  }
+  return String(err);
+}
+
 export default function OperatorProfile() {
   const navigate = useNavigate();
   const { user, profile: authProfile, isReady } = useAuth();
@@ -110,7 +124,9 @@ export default function OperatorProfile() {
       } as any);
       toast({ title: "Profile saved", description: "Your operator profile has been updated." });
     } catch (err) {
-      toast({ title: "Save failed", description: err instanceof Error ? err.message : String(err), variant: "destructive" });
+      const msg = extractErrorMessage(err);
+      console.error("[OperatorProfile] save failed", err);
+      toast({ title: "Save failed", description: msg, variant: "destructive" });
     } finally {
       setSaving(false);
     }
