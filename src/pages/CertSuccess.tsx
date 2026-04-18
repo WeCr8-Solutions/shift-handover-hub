@@ -28,22 +28,15 @@ export default function CertSuccess() {
     let attempts = 0;
     const interval = setInterval(async () => {
       attempts += 1;
-      const [oap, gca] = await Promise.all([
-        supabase
-          .from("oap_certificates")
-          .select("cert_id, recipient_email")
-          .eq("stripe_session_id", sessionId)
-          .maybeSingle(),
-        supabase
-          .from("gca_certificates")
-          .select("cert_id, recipient_email")
-          .eq("stripe_session_id", sessionId)
-          .maybeSingle(),
-      ]);
-      const found = oap.data ?? gca.data;
-      if (found) {
+      // Use SECURITY DEFINER RPC — direct table reads no longer expose
+      // recipient_email or stripe_session_id to the public.
+      const { data } = await supabase.rpc("lookup_cert_by_stripe_session", {
+        _session_id: sessionId,
+      });
+      const found = Array.isArray(data) ? data[0] : null;
+      if (found?.cert_id) {
         setCertId(found.cert_id);
-        setRecipientEmail(found.recipient_email);
+        setRecipientEmail(found.recipient_email_masked ?? null);
         setPolling(false);
         clearInterval(interval);
       } else if (attempts >= 20) {

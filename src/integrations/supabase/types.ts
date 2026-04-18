@@ -9664,6 +9664,14 @@ export type Database = {
           relationship: string
         }[]
       }
+      lookup_cert_by_stripe_session: {
+        Args: { _session_id: string }
+        Returns: {
+          cert_id: string
+          program: string
+          recipient_email_masked: string
+        }[]
+      }
       pass_work_order_to_next_step: {
         Args: {
           _actor_id: string
@@ -9722,6 +9730,68 @@ export type Database = {
       }
       validate_display_token: { Args: { _token: string }; Returns: Json }
       validate_invite_code: { Args: { _code: string }; Returns: Json }
+      verify_gca_certificate: {
+        Args: { _cert_id: string }
+        Returns: {
+          cert_id: string
+          issued_at: string
+          pdf_url: string
+          program_name: string
+          qr_token: string
+          recipient_name: string
+          revoked_at: string
+          status: string
+          valid_from: string
+          valid_until: string
+        }[]
+      }
+      verify_gca_certificate_by_qr: {
+        Args: { _qr_token: string }
+        Returns: {
+          cert_id: string
+          issued_at: string
+          pdf_url: string
+          program_name: string
+          qr_token: string
+          recipient_name: string
+          revoked_at: string
+          status: string
+          valid_from: string
+          valid_until: string
+        }[]
+      }
+      verify_oap_certificate: {
+        Args: { _cert_id: string }
+        Returns: {
+          cert_id: string
+          issued_at: string
+          pdf_url: string
+          program_name: string
+          qr_token: string
+          recipient_name: string
+          revoked_at: string
+          status: string
+          valid_from: string
+          valid_until: string
+          vertical: Database["public"]["Enums"]["oap_vertical"]
+        }[]
+      }
+      verify_oap_certificate_by_qr: {
+        Args: { _qr_token: string }
+        Returns: {
+          cert_id: string
+          issued_at: string
+          pdf_url: string
+          program_name: string
+          qr_token: string
+          recipient_name: string
+          revoked_at: string
+          status: string
+          valid_from: string
+          valid_until: string
+          vertical: Database["public"]["Enums"]["oap_vertical"]
+        }[]
+      }
     }
     Enums: {
       activity_type:
