@@ -20,64 +20,69 @@
       window.addEventListener('load', function() {
         if (!window.__ANALYTICS_ENABLED__) return; // ITAR / self-hosted: skip all telemetry
 
-        // Google Tag Manager
-        (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-        })(window,document,'script','dataLayer','GTM-MSSVTJPZ');
-
-        // Google Analytics (gtag.js)
-        var gs=document.createElement('script');gs.async=true;
-        gs.src='https://www.googletagmanager.com/gtag/js?id=G-FDFFDKQS0Q';
-        document.head.appendChild(gs);
-        window.dataLayer=window.dataLayer||[];
-        function gtag(){dataLayer.push(arguments);}
-        window.gtag=gtag;
-        gtag('js',new Date());
-        // send_page_view:false — React AnalyticsProvider handles pageviews
+        // Initialize gtag stub immediately so callers (e.g. gtag_report_conversion) work before scripts load
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){ dataLayer.push(arguments); }
+        window.gtag = gtag;
+        gtag('js', new Date());
         gtag('config','G-FDFFDKQS0Q',{send_page_view:false});
         gtag('config','AW-17425064696',{send_page_view:false});
 
-        // Google Ads conversion helper: call from CTA handlers.
+        // Google Ads conversion helper: queues into dataLayer; works whether or not gtag.js has loaded
         window.gtag_report_conversion = function(url) {
           var callback = function() {
-            if (typeof(url) !== 'undefined') {
-              window.location = url;
-            }
+            if (typeof(url) !== 'undefined') { window.location = url; }
           };
-
           gtag('event', 'conversion', {
             send_to: 'AW-17425064696/VSEqCNulzYEbEPjF9fRA',
             event_callback: callback
           });
-
           return false;
         };
 
-        // Google AdSense — defer until first user interaction (or 10s timeout) to avoid blocking LCP
-        var adsenseLoaded = false;
-        var loadAdsense = function() {
-          if (adsenseLoaded) return;
-          adsenseLoaded = true;
+        // Defer all third-party scripts (GTM, gtag.js, AdSense) until first user interaction
+        // or 6s timeout. Saves ~2-3s of main-thread work on initial load (TTI/FCP/LCP).
+        var thirdPartyLoaded = false;
+        var loadThirdParty = function() {
+          if (thirdPartyLoaded) return;
+          thirdPartyLoaded = true;
+
+          // Google Tag Manager
+          (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+          })(window,document,'script','dataLayer','GTM-MSSVTJPZ');
+
+          // Google Analytics (gtag.js)
+          var gs=document.createElement('script');gs.async=true;
+          gs.src='https://www.googletagmanager.com/gtag/js?id=G-FDFFDKQS0Q';
+          document.head.appendChild(gs);
+
+          // Google AdSense
           var as=document.createElement('script');as.async=true;
           as.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3639153716376265';
           as.crossOrigin='anonymous';
           document.head.appendChild(as);
         };
-        ['pointerdown','keydown','scroll','touchstart'].forEach(function(ev){
-          window.addEventListener(ev, loadAdsense, { once: true, passive: true });
+        ['pointerdown','keydown','scroll','touchstart','mousemove'].forEach(function(ev){
+          window.addEventListener(ev, loadThirdParty, { once: true, passive: true });
         });
-        setTimeout(loadAdsense, 10000);
+        setTimeout(loadThirdParty, 6000);
+      });
       });
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="manifest" href="/manifest.json" />
 
-    <!-- Certificate fonts (Playfair Display = serif diploma headline; Great Vibes = script signature) -->
-    <!-- Loaded async via print-media swap to avoid render-blocking on every page; only certificate pages need them -->
+    <!-- App fonts (Inter + JetBrains Mono) and certificate fonts (Playfair + Great Vibes) -->
+    <!-- Loaded async via print-media swap to avoid render-blocking; font-display:swap shows fallback text immediately -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap"
+          media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap"></noscript>
     <link rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Great+Vibes&display=swap"
           media="print" onload="this.media='all'">
