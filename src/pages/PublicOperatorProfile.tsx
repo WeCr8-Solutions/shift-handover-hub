@@ -523,7 +523,52 @@ export default function PublicOperatorProfile() {
         </Card>
       </main>
 
+      {/* Sticky mobile action bar — primary employer/share CTAs always reachable */}
+      <div className="sm:hidden fixed bottom-0 inset-x-0 z-40 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 no-print">
+        <div className="container max-w-4xl px-3 py-2 flex items-center gap-2">
+          <Button asChild size="sm" className="flex-1">
+            <Link to="/talent/search">
+              <Mail className="w-4 h-4 mr-1.5" /> Contact
+            </Link>
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="flex-1"
+            onClick={async () => {
+              const url = getPublicTalentUrl(profile.public_username);
+              const shareData = {
+                title: `${fullName} · JobLine Talent`,
+                text: profile.headline ?? `${fullName} on JobLine`,
+                url,
+              };
+              try {
+                if (navigator.share) await navigator.share(shareData);
+                else await navigator.clipboard.writeText(url);
+              } catch {
+                /* dismissed */
+              }
+            }}
+          >
+            <Share2 className="w-4 h-4 mr-1.5" /> Share
+          </Button>
+        </div>
+      </div>
+
       <MarketingFooter />
+    </div>
+  );
+}
+
+/** Compact stat tile used in the mobile-friendly snapshot strip. */
+function Stat({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="min-w-0">
+      <div className="text-lg sm:text-xl font-semibold leading-none">{value}</div>
+      <div className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide mt-1">
+        {label}
+      </div>
     </div>
   );
 }
