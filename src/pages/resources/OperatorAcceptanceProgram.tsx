@@ -84,7 +84,7 @@ export default function OperatorAcceptanceProgram() {
             <ClipboardCheck className="w-4 h-4 text-primary" />
           </div>
           <h1 className="text-sm font-semibold text-foreground truncate">Operator Acceptance Program</h1>
-          <Badge variant="secondary" className="text-[10px] shrink-0">v1.0.0</Badge>
+          <Badge variant="secondary" className="text-[10px] shrink-0">v1.1.0</Badge>
           {hasProAccess ? (
             <Badge className="text-[10px] bg-primary/10 text-primary border-primary/20 shrink-0 hidden sm:inline-flex">
               Pro
