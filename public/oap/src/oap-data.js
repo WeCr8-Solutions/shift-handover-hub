@@ -244,7 +244,12 @@ In a machining shop you regularly encounter: cutting fluids (coolant), lubricant
 <strong style="color:var(--accent)">Tape measure hook:</strong> The hook at the end floats by exactly 1/16" — this is intentional. It accounts for hook thickness in inside vs outside measurements. Never force it tight for an inside measurement.<br><br>
 <strong style="color:var(--accent)">Reading fractions:</strong> Most tapes read to 1/16". Count tick marks from the last inch. The longest mark = 1/2". Medium marks = 1/4" and 3/4". Shorter = 1/8" increments. Shortest = 1/16".<br><br>
 <strong style="color:var(--accent)">Steel rule:</strong> Reads to 1/64" or 1/100" (decimal). For precision layout and short measurements. Never use as a straightedge for scribing unless it is a true straight rule.`,
-        quiz: { q:'A tape measure reads 4 full inches plus 3 marks past the 1/2" line (counting by 1/8" increments). What is the measurement?', opts:['4-3/4"','4-7/8"','4-5/8"','4-1/2"'], ans:1, fb:'1/2" + 3 × 1/8" = 4/8" + 3/8" = 7/8". Answer: 4-7/8". Always count from the last inch, not from zero.' }
+        quizPool: [
+          { q:'A tape measure reads 4 full inches plus 3 marks past the 1/2" line (counting by 1/8" increments). What is the measurement?', opts:['4-3/4"','4-7/8"','4-5/8"','4-1/2"'], ans:1, fb:'1/2" + 3 × 1/8" = 4/8" + 3/8" = 7/8". Answer: 4-7/8". Always count from the last inch, not from zero.' },
+          { q:'Why does the metal hook on a tape measure slide loosely by about 1/16"?', opts:['It is defective and should be replaced','It compensates for hook thickness so inside and outside readings are both accurate','To make the tape easier to retract','Because of manufacturing tolerance only — ignore it'], ans:1, fb:'The float exactly equals the hook thickness so pushing for an inside measurement subtracts the hook, and pulling for an outside measurement adds it. Never bend or force the hook.' },
+          { q:'A steel rule is graduated in 1/64" increments. The reading is 1-3/8" plus 5 of the smallest marks. What is the measurement?', opts:['1-3/8" + 5/64" = 1-29/64"','1-3/8" + 5/16" = 1-11/16"','1-43/64"','1-13/32"'], ans:0, fb:'3/8" = 24/64". Add 5/64" to get 29/64". Total = 1-29/64".' },
+          { q:'When should you NOT use a steel rule as a straightedge to scribe a line?', opts:['Never — it is always acceptable','When the rule has rounded edges or is not designated as a straight rule','Only when scribing aluminum','Only on parts longer than 12"'], ans:1, fb:'Many flexible rules have slightly rounded or worn edges. Use a hardened straight edge or a designated straight rule for scribing layout lines.' }
+        ]
       },
       { id:'meas2', title:'Digital Caliper Use & Care',
         content:`<strong>The caliper is the most-used precision tool in a machine shop:</strong><br><br>
@@ -255,7 +260,12 @@ In a machining shop you regularly encounter: cutting fluids (coolant), lubricant
 4. <strong>Step measurement</strong> — shoulder height<br><br>
 <strong style="color:var(--accent)">Zero/calibrate:</strong> Always close and zero before measuring. With inch/mm calipers, verify the display is in the correct unit.<br><br>
 <strong style="color:var(--accent)">Care:</strong> Never drop. Keep clean — chips in the rail cause inaccurate readings. Store in case. Check calibration annually or after drops. Resolution: 0.0005" (digital). Do not use as a scribe or pry tool.`,
-        quiz: { q:'You are measuring a bore with a caliper. The display reads 1.2530" but the drawing calls for 1.253±0.002". Is this part in spec?', opts:['Yes — 1.2530" is within ±0.002" of 1.253"','No — the measurement is over by 0.003"','Cannot determine from caliper reading alone','Yes — all caliper readings are within spec by default'], ans:0, fb:'1.253" ± 0.002" = 1.251" to 1.255". The reading 1.2530" falls within that range. Part is in spec.' }
+        quizPool: [
+          { q:'You are measuring a bore with a caliper. The display reads 1.2530" but the drawing calls for 1.253±0.002". Is this part in spec?', opts:['Yes — 1.2530" is within ±0.002" of 1.253"','No — the measurement is over by 0.003"','Cannot determine from caliper reading alone','Yes — all caliper readings are within spec by default'], ans:0, fb:'1.253" ± 0.002" = 1.251" to 1.255". 1.2530" is in range. Part is in spec.' },
+          { q:'Which caliper feature should you use to measure the depth of a blind hole?', opts:['Outside jaws','Inside jaws','Depth rod','Step (back of fixed jaw)'], ans:2, fb:'The thin depth rod extends from the rear of the caliper. Set the body flat across the hole and read directly.' },
+          { q:'You drop a digital caliper. It still powers on and zeroes correctly. The next part requires ±0.001". What should you do?', opts:['Use it — zero is fine','Tag it OUT and submit for calibration; zero accuracy does not guarantee linearity','Use it but only on the outside jaws','Re-zero a second time and use it'], ans:1, fb:'A drop can shift accuracy across the range while zero still reads correct. Tag, document the drop, and submit for verification before tight-tolerance work.' },
+          { q:'Typical resolution of a quality 6" digital caliper is closest to:', opts:['0.0001"','0.0005"','0.005"','0.001 mm'], ans:1, fb:'Most digital calipers display to 0.0005" (0.01 mm). True 0.0001" measurement requires a micrometer.' }
+        ]
       },
       { id:'meas3', title:'Vernier Caliper — Reading Without Batteries',
         content:`<strong>The vernier caliper still matters — when batteries die or precision counts:</strong><br><br>
@@ -263,7 +273,12 @@ In a machining shop you regularly encounter: cutting fluids (coolant), lubricant
 <strong style="color:var(--accent)">Vernier scale:</strong> Find the ONE line on the vernier scale that aligns perfectly with a line on the main scale. That number = thousandths (0.001"). On metric verniers it equals 0.02 mm.<br><br>
 <strong style="color:var(--accent)">Reading example:</strong> Main scale reads 1.225" + 0.000–0.025" range. Vernier line 18 aligns. Total = 1.225" + 0.018" = 1.243".<br><br>
 <strong style="color:var(--accent)">Why learn it?</strong> Digital calipers fail (dead batteries, water damage, drift). A vernier never fails. In aerospace QC and many ISO certs, a backup mechanical instrument is mandatory.`,
-        quiz: { q:'A vernier caliper main scale shows 0.500" + 0.025" line passed. The vernier line 7 aligns with a main scale tick. What is the reading?', opts:['0.5025"','0.5320"','0.5257"','0.5070"'], ans:2, fb:'0.500" + 0.025" + 0.007" = 0.5320". Wait — 0.500 + 0.025 + 0.007 = 0.532". Common error: forgetting the 0.025" increment. Always: main scale + 0.025 increment + vernier 0.001 reading.' }
+        quizPool: [
+          { q:'A vernier caliper main scale shows 0.500" + 0.025" line passed. The vernier line 7 aligns with a main scale tick. What is the reading?', opts:['0.5025"','0.5320"','0.5257"','0.5070"'], ans:1, fb:'0.500" + 0.025" + 0.007" = 0.532".' },
+          { q:'On a vernier scale, you correctly read the 0.001" value by:', opts:['Reading the longest line on the vernier','Reading whichever vernier line aligns exactly with any line on the main scale','Counting from zero on the main scale','Multiplying the main scale by 10'], ans:1, fb:'The single coincident line on the vernier indicates thousandths past the last main-scale mark.' },
+          { q:'Why keep a vernier (non-electronic) caliper available even when digital ones are present?', opts:['It is more accurate than digital','Mechanical reading does not fail from dead batteries, water, or electronic drift — required by many QC plans','It is faster than digital','It uses metric only'], ans:1, fb:'Mechanical backups are required in many AS9100/ISO QC plans precisely because they cannot fail electronically.' },
+          { q:'Metric vernier scales typically resolve to:', opts:['0.001 mm','0.01 mm','0.02 mm','0.1 mm'], ans:2, fb:'Standard metric verniers read to 0.02 mm. Higher resolution requires a micrometer or a digital instrument.' }
+        ]
       },
       { id:'meas4', title:'Measurement Best Practices',
         content:`<strong>The same instrument can read differently depending on technique:</strong><br><br>
@@ -272,7 +287,12 @@ In a machining shop you regularly encounter: cutting fluids (coolant), lubricant
 <strong style="color:var(--accent)">Gaging force:</strong> A caliper can deflect a thin part if you squeeze. A mic with a ratchet stop gives consistent gaging force. For OD mics, the ratchet should click 2–3 times.<br><br>
 <strong style="color:var(--accent)">Three-point rule:</strong> Take 3 readings at different points (or rotate the part) and use the average — single readings can hide taper, ovality, or burrs.<br><br>
 <strong style="color:var(--accent)">Documenting:</strong> Record the reading exactly as displayed. Do NOT round mid-process. Do NOT erase a measurement on a traveler — line through, write the new value, initial.`,
-        quiz: { q:'You measure a hot part right after machining: 1.0023". The print is 1.000" ± 0.001". The part has just cooled and now reads 1.0010". What was happening?', opts:['The first reading was wrong','Thermal expansion — the hot part was larger. Always measure at room temp for final QC.','The mic is broken','The part contracted abnormally'], ans:1, fb:'Steel expands roughly 6 millionths per inch per °F. A part 100°F hotter than ambient can read several thou oversize. Always cool to room temp (68°F standard) before final inspection.' }
+        quizPool: [
+          { q:'You measure a hot part right after machining: 1.0023". The print is 1.000" ± 0.001". The part has just cooled and now reads 1.0010". What was happening?', opts:['The first reading was wrong','Thermal expansion — the hot part was larger. Always measure at room temp for final QC.','The mic is broken','The part contracted abnormally'], ans:1, fb:'Steel expands ~6 millionths per inch per °F. Cool to 68°F before final inspection.' },
+          { q:'A single chip stuck on a micrometer anvil can change a 0.0001"-resolution reading by approximately:', opts:['0.000005"','0.0001"','0.005" or more','It will not affect the reading'], ans:2, fb:'Even a tiny chip can shift readings several thou. Always wipe both faces and the part before measuring.' },
+          { q:'Three-point rule means:', opts:['Measure once and trust the value','Take three readings (or rotate the part) and average — single readings hide taper, ovality, and burrs','Always measure on a granite plate','Always measure with three different instruments'], ans:1, fb:'Multiple readings reveal form errors that a single measurement cannot.' },
+          { q:'If you record a value on a paper traveler and discover the next minute it is wrong, you should:', opts:['Erase the value and write the new one','Use white-out and rewrite','Line through the original, write the corrected value next to it, and initial it','Tear off and start a new traveler'], ans:2, fb:'Travelers are quality records. Single line-through, new value, initial — never erase or obliterate.' }
+        ]
       },
     ],
   },
