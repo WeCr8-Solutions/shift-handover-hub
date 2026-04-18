@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Copy, Printer, Check, ShieldCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { getPublicTalentUrl } from "@/lib/talent/publicHost";
 
 interface Props {
   username: string;
@@ -25,11 +26,7 @@ export function PublicProfileQrCard({ username, fullName, latestCertId }: Props)
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
 
-  const profileUrl = useMemo(() => {
-    const origin =
-      typeof window !== "undefined" ? window.location.origin : "https://jobline.ai";
-    return `${origin}/talent/${username}`;
-  }, [username]);
+  const profileUrl = useMemo(() => getPublicTalentUrl(username), [username]);
 
   const onCopy = async () => {
     try {
