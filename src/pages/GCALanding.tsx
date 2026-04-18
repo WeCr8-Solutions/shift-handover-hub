@@ -22,10 +22,13 @@ import {
   BookOpen,
   Target,
   Award,
+  Lock,
 } from "lucide-react";
 import { CertificatePreview } from "@/components/certificates/CertificatePreview";
 import { BuyCertificateDialog } from "@/components/certificates/BuyCertificateDialog";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const tracks = [
   { icon: Wrench, title: "CNC Lathe", desc: "Turning, threading, boring, live tooling, sub-spindle." },
@@ -145,8 +148,32 @@ const jsonLd = [
   },
 ];
 
+function useGcaBanksWithPro() {
+  return useQuery({
+    queryKey: ["gca-banks-landing"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("gca_question_banks")
+        .select("id, slug, title, topic, difficulty, is_pro_only, is_published")
+        .eq("is_published", true)
+        .order("sort_order", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as {
+        id: string;
+        slug: string;
+        title: string;
+        topic: string;
+        difficulty: string;
+        is_pro_only: boolean;
+        is_published: boolean;
+      }[];
+    },
+  });
+}
+
 export default function GCALanding() {
   const [buyOpen, setBuyOpen] = useState(false);
+  const { data: banks = [] } = useGcaBanksWithPro();
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
@@ -323,6 +350,51 @@ export default function GCALanding() {
           </div>
         </div>
       </section>
+
+      {/* Study — Test Banks */}
+      {banks.length > 0 && (
+        <section className="py-16 md:py-24 border-b border-border">
+          <div className="container mx-auto px-4">
+            <div className="max-w-3xl mx-auto text-center mb-12">
+              <Badge variant="outline" className="mb-4">Practice Tests</Badge>
+              <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
+                Test your knowledge.
+              </h2>
+              <p className="text-lg text-muted-foreground">
+                10 question banks covering lathe, mill, controllers, GD&T, speeds &amp; feeds, and metrology.
+                Free banks are open to all. Pro banks require a GCA Pro subscription.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto">
+              {banks.map((b) => (
+                <Card key={b.id} className="border-border hover:border-primary/40 transition-colors flex flex-col">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <Badge variant="outline" className="capitalize text-xs">{b.difficulty}</Badge>
+                      {b.is_pro_only && (
+                        <Badge variant="secondary" className="gap-1 text-xs">
+                          <Lock className="w-3 h-3" />
+                          Pro
+                        </Badge>
+                      )}
+                    </div>
+                    <CardTitle className="text-base mt-2">{b.title}</CardTitle>
+                    <CardDescription className="text-xs">{b.topic}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex-1 flex items-end pt-0">
+                    <Button asChild size="sm" variant="outline" className="gap-1 w-full">
+                      <Link to={`/gca/test/${b.slug}`}>
+                        Take test
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Audiences */}
       <section className="py-16 md:py-24 border-b border-border">

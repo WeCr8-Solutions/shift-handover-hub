@@ -94,6 +94,7 @@ const OapHub = lazy(() => import("./pages/OapHub"));
 const OapCoursePlayer = lazy(() => import("./pages/OapCoursePlayer"));
 const OapEmployer = lazy(() => import("./pages/OapEmployer"));
 const GcaEmployer = lazy(() => import("./pages/GcaEmployer"));
+const GcaTestPage = lazy(() => import("./pages/GcaTestPage"));
 const OapMyTranscript = lazy(() => import("./pages/OapMyTranscript"));
 const IndustryGlossary = lazy(() => import("./pages/resources/IndustryGlossary"));
 const BeginnersGuide = lazy(() => import("./pages/resources/BeginnersGuide"));
@@ -238,6 +239,7 @@ const App = () => (
                     <Route path="/oap/learn/:courseSlug/:lessonSlug" element={<OapCoursePlayer />} />
                     <Route path="/oap/employer" element={<OapEmployer />} />
                     <Route path="/gca/employer" element={<GcaEmployer />} />
+                    <Route path="/gca/test/:bankSlug" element={<GcaTestPage />} />
                     <Route path="/oap/my-transcript" element={<OapMyTranscript />} />
                     <Route path="/talent" element={<TalentLanding />} />
                     <Route path="/talent/search" element={<TalentSearch />} />
