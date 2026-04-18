@@ -795,10 +795,12 @@ function oapStandalone() {
     var scores = JSON.parse(localStorage.getItem('oap-standalone-scores')||'{}');
     var score = scores[k];
     var passed = score && score.passed;
-    h += '<div class="oap-course-row" onclick="oapRunStandaloneCourse(\'' + k + '\')">';
-    h += '<div style="font-size:22px">' + course.icon + '</div>';
-    h += '<div style="flex:1"><div class="oap-prog-name">' + course.label + '</div>';
+    h += '<div class="oap-course-row">';
+    h += '<div style="font-size:22px;cursor:pointer" onclick="oapRunStandaloneCourse(\'' + k + '\')">' + course.icon + '</div>';
+    h += '<div style="flex:1;cursor:pointer" onclick="oapRunStandaloneCourse(\'' + k + '\')"><div class="oap-prog-name">' + course.label + '</div>';
     h += '<div class="oap-hint">' + course.duration + ' · Pass ' + course.passMark + '%</div></div>';
+    h += '<button class="oap-btn-xs" style="margin-right:6px" onclick="event.stopPropagation();oapRunCourseExam(\'' + k + '\',null,\'random\')" title="' + OAP_MIN_EXAM_QUESTIONS + '-question random certification exam">🎲 Exam</button>';
+    h += '<button class="oap-btn-xs" style="margin-right:8px" onclick="event.stopPropagation();oapRunCourseExam(\'' + k + '\',null,\'directed\')" title="Directed exam — covers every topic">🎯 Directed</button>';
     if (passed) h += '<span style="color:#00e5b0;font-weight:700">✓ ' + score.score + '%</span>';
     else if (score) h += '<span style="color:#ff4757">' + score.score + '%</span>';
     else h += '<span style="color:#566070;font-size:12px">Not started</span>';
