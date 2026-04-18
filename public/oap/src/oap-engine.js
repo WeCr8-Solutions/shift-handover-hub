@@ -526,7 +526,7 @@ function oapCourseRunner() {
   var cs = OAP_STATE.courseState;
   if (!cs) {
     // Start
-    OAP_STATE.courseState = { topicIdx:0, quizMode:false, score:0, total:0, answers:[] };
+    OAP_STATE.courseState = { topicIdx:0, quizMode:false, score:0, total:0, answers:[], qIdx:0, currentPool:null };
     cs = OAP_STATE.courseState;
   }
 
@@ -547,13 +547,28 @@ function oapCourseRunner() {
   h += '<div class="oap-course-content">' + topic.content + '</div>';
   h += '</div>';
 
-  // Quiz for this topic
+  // Quiz for this topic — supports topic.quizPool (array, randomized subset) or topic.quiz (single)
   if (!cs.quizMode) {
-    h += '<div style="margin-top:12px"><button class="oap-btn-primary" onclick="oapStartTopicQuiz()">Take Quiz →</button></div>';
+    var poolSize = (topic.quizPool && topic.quizPool.length) || (topic.quiz ? 1 : 0);
+    var askCount = Math.min(poolSize, topic.quizCount || (topic.quizPool ? Math.min(3, poolSize) : 1));
+    var label = askCount > 1 ? ('Take Quiz (' + askCount + ' questions) →') : 'Take Quiz →';
+    h += '<div style="margin-top:12px"><button class="oap-btn-primary" onclick="oapStartTopicQuiz()">' + label + '</button></div>';
   } else {
-    var q = topic.quiz;
+    if (!cs.currentPool) {
+      // build randomized question list for this topic
+      var pool = topic.quizPool ? topic.quizPool.slice() : (topic.quiz ? [topic.quiz] : []);
+      // Fisher-Yates shuffle
+      for (var s = pool.length - 1; s > 0; s--) {
+        var r = Math.floor(Math.random() * (s + 1));
+        var tmp = pool[s]; pool[s] = pool[r]; pool[r] = tmp;
+      }
+      var ask = topic.quizCount || (topic.quizPool ? Math.min(3, pool.length) : 1);
+      cs.currentPool = pool.slice(0, ask);
+      cs.qIdx = 0;
+    }
+    var q = cs.currentPool[cs.qIdx];
     var letters = ['A','B','C','D'];
-    h += '<div class="oap-card" style="margin-top:12px"><div class="oap-card-title">Quiz</div>';
+    h += '<div class="oap-card" style="margin-top:12px"><div class="oap-card-title">Quiz · Question ' + (cs.qIdx+1) + ' of ' + cs.currentPool.length + '</div>';
     h += '<div class="oap-quiz-q">' + q.q + '</div>';
     h += '<div class="oap-quiz-opts">';
     q.opts.forEach(function(opt, i) {
@@ -561,14 +576,31 @@ function oapCourseRunner() {
       h += '<span class="oap-qopt-l">' + letters[i] + '</span>' + opt + '</div>';
     });
     h += '</div><div class="oap-quiz-fb" id="course-fb"></div>';
-    h += '<button class="oap-btn-primary" id="course-next-btn" style="display:none" onclick="oapNextTopic()">Next →</button>';
+    var isLast = cs.qIdx >= cs.currentPool.length - 1;
+    var nextLabel = isLast ? 'Next Topic →' : 'Next Question →';
+    h += '<button class="oap-btn-primary" id="course-next-btn" style="display:none" onclick="oapNextQuizQuestion()">' + nextLabel + '</button>';
     h += '</div>';
   }
 
   return h;
 }
 
-function oapStartTopicQuiz() { OAP_STATE.courseState.quizMode = true; oapRender(); }
+function oapStartTopicQuiz() {
+  OAP_STATE.courseState.quizMode = true;
+  OAP_STATE.courseState.currentPool = null;
+  OAP_STATE.courseState.qIdx = 0;
+  oapRender();
+}
+
+function oapNextQuizQuestion() {
+  var cs = OAP_STATE.courseState;
+  if (cs.currentPool && cs.qIdx < cs.currentPool.length - 1) {
+    cs.qIdx++;
+    oapRender();
+  } else {
+    oapNextTopic();
+  }
+}
 
 function oapAnswerCourse(idx, ans, fbEnc) {
   var correct = idx === ans;
@@ -587,6 +619,8 @@ function oapAnswerCourse(idx, ans, fbEnc) {
 function oapNextTopic() {
   OAP_STATE.courseState.topicIdx++;
   OAP_STATE.courseState.quizMode = false;
+  OAP_STATE.courseState.currentPool = null;
+  OAP_STATE.courseState.qIdx = 0;
   oapRender();
 }
 
