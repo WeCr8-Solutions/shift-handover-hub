@@ -280,6 +280,21 @@ export default function TalentLanding() {
                   </Card>
                 </Link>
               ))}
+
+              {/* Browse all card */}
+              <Link to="/talent/browse" className="block group">
+                <Card className="h-full border-dashed border-2 transition-all group-hover:border-primary group-hover:shadow-md">
+                  <CardContent className="pt-6 h-full flex flex-col items-center justify-center gap-3 text-center min-h-[11rem]">
+                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                      <ArrowRight className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-semibold">Browse all profiles</p>
+                      <p className="text-xs text-muted-foreground mt-1">Search, filter, and explore every public operator profile</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
             </div>
           )}
         </div>
