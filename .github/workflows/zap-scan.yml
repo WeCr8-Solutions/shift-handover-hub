@@ -9,7 +9,7 @@ on:
       target:
         description: 'Override scan target URL'
         required: false
-        default: 'https://app.jobline.ai'
+        default: 'https://jobline.ai'
   pull_request:
     branches: [main]
     paths-ignore:
@@ -42,7 +42,7 @@ jobs:
       - name: ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.12.0
         with:
-          target: ${{ github.event.inputs.target || 'https://app.jobline.ai' }}
+          target: ${{ github.event.inputs.target || 'https://jobline.ai' }}
           rules_file_name: '.zap/rules.tsv'
           cmd_options: '-a -j'
           issue_title: 'ZAP Baseline Scan — ${{ github.run_id }}'
@@ -135,7 +135,7 @@ jobs:
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "| Scan | Target | Status |" >> "$GITHUB_STEP_SUMMARY"
           echo "|------|--------|--------|" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Baseline (passive) | https://app.jobline.ai | ${{ needs.zap-baseline.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Baseline (passive) | https://jobline.ai | ${{ needs.zap-baseline.result }} |" >> "$GITHUB_STEP_SUMMARY"
           echo "| Full scan (active) | https://dev.jobline.ai | ${{ needs.zap-full-scan.result }} |" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "Artifacts retained for 90 days. See Security → Code scanning for SARIF findings." >> "$GITHUB_STEP_SUMMARY"

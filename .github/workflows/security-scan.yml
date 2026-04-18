@@ -152,6 +152,7 @@ jobs:
         # but job-level continue-on-error prevents blocking unrelated branches.
         run: |
           HEADERS=$(curl -sI https://app.jobline.ai)
+            HEADERS=$(curl -sI https://jobline.ai)
           echo "$HEADERS"
           FAILED=0
 
@@ -172,7 +173,7 @@ jobs:
           check_header "permissions-policy"
 
           echo "## HTTP Security Headers (SC-8 Evidence)" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Target:** https://app.jobline.ai" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Target:** https://jobline.ai" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           if [ "$FAILED" -eq 0 ]; then
             echo "All 6 required security headers are present." >> "$GITHUB_STEP_SUMMARY"
@@ -196,7 +197,7 @@ jobs:
       - name: Nuclei passive scan
         uses: projectdiscovery/nuclei-action@v2
         with:
-          target: https://app.jobline.ai
+          target: https://jobline.ai
           # technologies/ — fingerprinting only (completely passive)
           # exposures/    — detect information disclosure without exploiting
           # Severity cap at medium avoids any active/exploit-class templates
