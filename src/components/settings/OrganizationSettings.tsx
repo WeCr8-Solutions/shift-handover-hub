@@ -12,6 +12,8 @@ import { useOrgContext } from "@/contexts/OrgContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { DesignatedOapMentorCard } from "./DesignatedOapMentorCard";
+import { SSOSettingsCard } from "./SSOSettingsCard";
+import { SIEMSettingsCard } from "./SIEMSettingsCard";
 
 interface OrganizationSettingsProps {
   isDeveloper?: boolean;
@@ -438,6 +440,12 @@ export function OrganizationSettings({ isDeveloper = false }: OrganizationSettin
           </CardContent>
         </Card>
       )}
+
+      {/* FedRAMP G-06: SAML 2.0 SSO */}
+      {isAdmin && <SSOSettingsCard organizationId={organization.id} />}
+
+      {/* FedRAMP G-07: SIEM log export */}
+      {isAdmin && <SIEMSettingsCard organizationId={organization.id} />}
     </div>
   );
 }

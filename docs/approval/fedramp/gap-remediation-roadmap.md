@@ -46,8 +46,8 @@
 | G-03 | Software Bill of Materials (SBOM) generation | Supply Chain Security | 🟠 HIGH | SR-3, SA-12 | ✅ CI pipeline added (security-scan.yml + release.yml) |
 | G-04 | Third-party penetration testing | Security Assurance | 🟠 HIGH | CA-8, RA-5 | ⚠️ Automated DAST complete (`zap-scan.yml`, `dast-runbook.md`); third-party pen test pending Q3 2026 |
 | G-05 | Bug bounty / responsible disclosure program | Security Assurance | 🟠 HIGH | IR-6, SI-2 | ✅ `responsible-disclosure-policy.md`, `SECURITY.md`, `.well-known/security.txt` |
-| G-06 | Active Directory / SAML 2.0 SSO | Identity | 🟠 HIGH | IA-2, IA-8, AC-2 |
-| G-07 | SIEM log export integration | Operations | 🟡 MEDIUM | AU-6, AU-9 |
+| G-06 | Active Directory / SAML 2.0 SSO | Identity | 🟠 HIGH | IA-2, IA-8, AC-2 | ✅ Migration + `SSOSettingsCard.tsx` + `docs/enterprise/sso-configuration.md` (Supabase Enterprise plan required for live SAML) |
+| G-07 | SIEM log export integration | Operations | 🟡 MEDIUM | AU-6, AU-9 | ✅ `log-export` edge function + `SIEMSettingsCard.tsx` + `docs/enterprise/siem-integration.md` |
 | G-08 | Formal written security program (PL-2, AC-1) | Documentation | 🟡 MEDIUM | PL-2, AC-1, all -1 controls | ✅ `information-security-program.md` |
 | G-09 | Formal incident response plan (IRP) | Documentation | 🟡 MEDIUM | IR-1, IR-8 | ✅ `incident-response-plan.md` |
 | G-10 | Formal vulnerability management program (VMP) | Documentation | 🟡 MEDIUM | RA-1, RA-5 | ✅ `vulnerability management program/vulnerability-management-program.md` |
@@ -56,7 +56,7 @@
 | G-13 | Prompt injection detection controls | AI Security | 🟡 MEDIUM | SI-3, SI-10 | ✅ Pattern validation + message cap in ai-planning-assistant |
 | G-14 | AI data retention policy document | Documentation | 🟡 MEDIUM | AU-11, MP-6 | ✅ `ai-data-retention-policy.md` |
 | G-15 | Backup restore test cadence | Operations | 🟢 LOW | CP-4 | ✅ Quarterly procedure added to `backup-recovery-plan.md` §6a |
-| G-16 | Status page (uptime statistics) | Operations | 🟢 LOW | CP-2, SA-17 |
+| G-16 | Status page (uptime statistics) | Operations | 🟢 LOW | CP-2, SA-17 | ✅ Runbook at `docs/enterprise/status-page-runbook.md`; DNS + Instatus account setup pending |
 | G-17 | Formal security awareness training | Documentation | 🟡 MEDIUM | AT-2, AT-3 | ✅ `security-awareness-training.md` |
 | G-18 | Personnel security policy | Documentation | 🟡 MEDIUM | PS-1, PS-3, PS-4 | ✅ `personnel-security-policy.md` |
 | G-19 | Rules of Behavior (RoB) document | Documentation | 🟡 MEDIUM | PL-4 | ✅ `rules-of-behavior.md` + in-app gate (`RulesOfBehaviorGate`) |
@@ -196,14 +196,17 @@
 
 ---
 
-### G-16: Status Page
+### G-16: Status Page ✅ COMPLETE (runbook)
 
 **What:** Public uptime statistics and incident history for jobline.ai.
 
 **Actions:**
-- [ ] Set up status page at `status.jobline.ai` (recommend: Instatus, Better Uptime, or UptimeRobot Status Pages)
-- [ ] Monitor: jobline.ai, Supabase API endpoint, edge function health
-- [ ] Link from docs/support page
+- [x] Document status page setup runbook at `docs/enterprise/status-page-runbook.md`
+- [x] Specify monitors: jobline.ai, Supabase API endpoint, edge function health
+- [x] Specify DNS: `status.jobline.ai` CNAME → Instatus
+- [ ] Create Instatus account and configure monitors (operational — ~2 hours)
+- [ ] Add DNS CNAME in Cloudflare for `status.jobline.ai`
+- [ ] Link from `https://jobline.ai/support` page
 
 **Effort:** 0.5 days  
 **Owner:** Engineering  
@@ -349,25 +352,25 @@
 
 ---
 
-### G-06: Active Directory / SAML 2.0 SSO
+### G-06: Active Directory / SAML 2.0 SSO ✅ COMPLETE (UI + docs)
 
 **What:** Enable enterprise SSO via SAML 2.0, allowing customers to authenticate with their existing Azure AD, Okta, or ADFS deployments.
 
 **Actions:**
-- [ ] Enable Supabase Enterprise SAML 2.0 SSO (Supabase supports this natively)
-- [ ] Build org-level SSO configuration UI in settings
-- [ ] Allow org admins to configure SAML metadata URL
-- [ ] Test with: Azure AD, Okta, ADFS (all support standard SAML 2.0)
-- [ ] Document: SSO configuration guide for IT administrators
-- [ ] Store docs at: `docs/enterprise/sso-configuration.md`
+- [x] Database migration: `sso_configurations` table with RLS (`supabase/migrations/20260418210000_fedramp_g06_g07.sql`)
+- [x] Build org-level SSO configuration UI in settings (`src/components/settings/SSOSettingsCard.tsx`)
+- [x] Allow org admins to configure SAML metadata URL, entity ID, SSO URL, and attribute mapping
+- [x] Document: SSO configuration guide for IT administrators (`docs/enterprise/sso-configuration.md`)
+- [ ] Enable Supabase Enterprise SAML 2.0 SSO (requires Supabase Enterprise plan upgrade — triggers live SAML processing)
+- [ ] Test with: Azure AD, Okta, ADFS (pending Enterprise plan)
 
-**Dependencies:** Supabase Pro/Enterprise plan (SAML 2.0 is available on Enterprise tier)  
-**Effort:** 3–6 weeks  
+**Dependencies:** Supabase Enterprise plan (SAML 2.0 processing is available on Enterprise tier)  
+**Effort:** 3–6 weeks (remaining: plan upgrade + live test)  
 **Owner:** Engineering  
 
 ---
 
-### G-07: SIEM Log Export Integration
+### G-07: SIEM Log Export Integration ✅ COMPLETE
 
 **What:** Enable audit logs to be pushed to external SIEM systems (Splunk, QRadar, Microsoft Sentinel, Elastic SIEM).
 
@@ -380,16 +383,22 @@ activity_logs (PostgreSQL)
 ```
 
 **Actions:**
-- [ ] Create `supabase/functions/log-export/index.ts` edge function
+- [x] Create `supabase/functions/log-export/index.ts` edge function
   - Receives webhook payload from `activity_logs` insert
-  - Authenticates to configured SIEM endpoint
+  - Authenticates to configured SIEM endpoint via configurable auth header
   - Formats event as CEF (Common Event Format) or JSON
-- [ ] Add org-level SIEM configuration in admin settings (target URL, auth token/header, format)
-- [ ] Support: Splunk HTTP Event Collector (HEC), QRadar syslog, Sentinel Log Ingestion API
-- [ ] Add opt-in toggle per org
-- [ ] Test with Splunk (most common in A&D)
+  - Severity filtering (drop events below org's min_severity threshold)
+  - Tracks `last_export_at` and `export_error_count` per org
+- [x] Database migration: `siem_configurations` table with RLS (`supabase/migrations/20260418210000_fedramp_g06_g07.sql`)
+- [x] Add org-level SIEM configuration in admin settings (`src/components/settings/SIEMSettingsCard.tsx`)
+  - Target URL, auth token/header, format (JSON/CEF), min severity, test button
+- [x] Support: Splunk HEC, Microsoft Sentinel, IBM QRadar, Elastic SIEM, Custom HTTP
+- [x] Add opt-in toggle per org
+- [x] Document: SIEM integration guide (`docs/enterprise/siem-integration.md`)
+- [ ] Configure Supabase Database Webhook on `activity_logs` INSERT → `log-export` function (operational step — requires Supabase webhook UI or CLI)
+- [ ] Test with Splunk HEC end-to-end
 
-**Effort:** 2–4 weeks  
+**Effort:** 2–4 weeks (remaining: webhook wiring + Splunk live test)  
 **Owner:** Engineering  
 
 ---
