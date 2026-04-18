@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useOrganizationMembers, OrganizationMember } from "@/hooks/useOrganizationMembers";
+import { useOapMentors } from "@/hooks/useOapMentors";
 import { useOrgContext } from "@/contexts/OrgContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEmail } from "@/hooks/useEmail";
@@ -46,6 +47,7 @@ import {
   MoreHorizontal,
   Crown,
   Shield,
+  ShieldCheck,
   UserCog,
   Loader2,
   Trash2,
@@ -130,6 +132,11 @@ export function OrganizationMemberManager({ onNavigateToInvites }: OrganizationM
     removeAppRole,
   } = useOrganizationMembers(organization?.id || null);
   const { sendTeamInviteEmail } = useEmail();
+  const { mentors } = useOapMentors();
+  const mentorUserIds = useMemo(
+    () => new Set(mentors.filter((m) => m.is_active).map((m) => m.user_id)),
+    [mentors],
+  );
   const { limits, loading: entitlementsLoading } = useEntitlements();
   const seatLimit = limits?.users ?? 1;
   const seatsUsed = members.length;
@@ -585,9 +592,19 @@ export function OrganizationMemberManager({ onNavigateToInvites }: OrganizationM
                             </AvatarFallback>
                           </Avatar>
                           <div className="min-w-0">
-                            <p className="font-medium truncate">
+                            <p className="font-medium truncate flex items-center gap-1.5">
                               {member.profile?.display_name || "Unknown"}
                               {isSelf && <span className="text-muted-foreground font-normal ml-1">(You)</span>}
+                              {mentorUserIds.has(member.user_id) && (
+                                <Badge
+                                  variant="outline"
+                                  className="gap-1 text-[10px] py-0 px-1.5 border-primary/40 text-primary bg-primary/5"
+                                  title="Designated OAP Mentor — can sign off operator walkthroughs"
+                                >
+                                  <ShieldCheck className="w-3 h-3" />
+                                  Mentor
+                                </Badge>
+                              )}
                             </p>
                             <p className="text-xs text-muted-foreground truncate">{member.profile?.email}</p>
                           </div>
