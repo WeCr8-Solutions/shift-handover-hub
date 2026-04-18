@@ -88,23 +88,26 @@ export function OapEmployerPanel() {
               operations.
             </p>
           </div>
-          <Dialog open={creating} onOpenChange={setCreating}>
-            <DialogTrigger asChild>
-              <Button size="sm">
-                <Plus className="w-4 h-4 mr-1" /> New role program
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>Create role program</DialogTitle>
-              </DialogHeader>
-              <RoleProgramForm
-                onSave={(input) => {
-                  upsert.mutate(input, { onSuccess: () => setCreating(false) });
-                }}
-              />
-            </DialogContent>
-          </Dialog>
+          <div className="flex items-center gap-2">
+            <OapBrowseTemplatesDialog />
+            <Dialog open={creating} onOpenChange={setCreating}>
+              <DialogTrigger asChild>
+                <Button size="sm">
+                  <Plus className="w-4 h-4 mr-1" /> New role program
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Create role program</DialogTitle>
+                </DialogHeader>
+                <RoleProgramForm
+                  onSave={(input) => {
+                    upsert.mutate(input, { onSuccess: () => setCreating(false) });
+                  }}
+                />
+              </DialogContent>
+            </Dialog>
+          </div>
         </CardHeader>
         <CardContent className="space-y-2">
           {programs.length === 0 && (
