@@ -86,6 +86,37 @@ WeCr8 Solutions employs a risk-based continuous monitoring strategy aligned with
 **Storage:** `docs/releases/sbom/` directory; also uploaded as GitHub Releases artifact  
 **Purpose:** Supports supply chain risk management (G-22 SCRMP) and vulnerability triage
 
+### 3.5 Dynamic Application Security Testing — DAST (CA-8, RA-5, SI-4)
+
+**Tool:** OWASP ZAP (via GitHub Actions `zap-scan.yml` workflow)  
+**Frequency:** Weekly scheduled scan (Monday 09:00 UTC) + triggered on every pull request to `main`  
+**Operational guide:** `docs/approval/fedramp/dast-runbook.md`  
+**Rules of engagement:** `docs/approval/fedramp/pentest-rules-of-engagement.md` §5.1
+
+**Scan tiers:**
+
+| Scan | Target | Type | Trigger |
+|------|--------|------|---------|
+| Baseline (passive) | `https://app.jobline.ai` | Passive crawl — no attack payloads | Weekly + every PR |
+| Full (active) | `https://dev.jobline.ai` | Active attack scan — SQLi, XSS, injection | Weekly + every PR + manual dispatch |
+
+**Output:** HTML and JSON reports uploaded as GitHub Actions artifacts (90-day retention); SARIF reports uploaded to GitHub Security → Code Scanning for continuous visibility.
+
+**Alert disposition model:** Findings are classified as FAIL (blocks CI), WARN (logged, tracked), or IGNORE (documented false positive) via `.zap/rules.tsv`. FAIL-rule findings block PR merges and must be remediated before deployment.
+
+**SLA for DAST findings (per VMP):**
+
+| Severity | CVSS Score | SLA |
+|----------|-----------|-----|
+| Critical (FAIL) | 9.0–10.0 | Remediate before next deploy, max 24 hours; open P1 Incident |
+| High (FAIL) | 7.0–8.9 | 7 calendar days; POA&M item required |
+| Medium (WARN) | 4.0–6.9 | 30 calendar days; POA&M item required |
+| Low (WARN) | < 4.0 | 90 calendar days; tracked in POA&M |
+
+**Evidence retention:** Monthly, HTML reports are archived to `docs/approval/fedramp/evidence/zap-baseline-YYYY-MM-DD.html` and `zap-full-scan-YYYY-MM-DD.html` for 3PAO and audit review.
+
+**Quarterly rules review:** `.zap/rules.tsv` suppression entries are reviewed each quarter (January, April, July, October) per the DAST runbook §8. Suppressions that are no longer valid are removed; new false positives are documented with rationale.
+
 ---
 
 ## 4. Security Log Collection and Review (AU-6, AU-12, SI-4)

@@ -44,7 +44,7 @@
 | G-01 | FedRAMP Moderate authorization | Compliance | 🔴 CRITICAL (long-term) | CA-6, CA-9 |
 | G-02 | FedRAMP Moderate equivalency (3PAO) | Compliance | 🔴 CRITICAL (mid-term) | CA-2, CA-8 |
 | G-03 | Software Bill of Materials (SBOM) generation | Supply Chain Security | 🟠 HIGH | SR-3, SA-12 | ✅ CI pipeline added (security-scan.yml + release.yml) |
-| G-04 | Third-party penetration testing | Security Assurance | 🟠 HIGH | CA-8, RA-5 |
+| G-04 | Third-party penetration testing | Security Assurance | 🟠 HIGH | CA-8, RA-5 | ⚠️ Automated DAST complete (`zap-scan.yml`, `dast-runbook.md`); third-party pen test pending Q3 2026 |
 | G-05 | Bug bounty / responsible disclosure program | Security Assurance | 🟠 HIGH | IR-6, SI-2 | ✅ `responsible-disclosure-policy.md`, `SECURITY.md`, `.well-known/security.txt` |
 | G-06 | Active Directory / SAML 2.0 SSO | Identity | 🟠 HIGH | IA-2, IA-8, AC-2 |
 | G-07 | SIEM log export integration | Operations | 🟡 MEDIUM | AU-6, AU-9 |
@@ -318,11 +318,21 @@
 ## Phase 2 — Security Hardening (4–12 weeks)
 *Requires engineering effort or vendor engagement. Directly addresses the most common enterprise objections.*
 
-### G-04: Third-Party Penetration Testing
+### G-04: Third-Party Penetration Testing ⚠️ AUTOMATED DAST COMPLETE — THIRD-PARTY PENDING
 
 **What:** Hire a CREST/OSCP-certified penetration testing firm to perform a black-box and gray-box application assessment.
 
-**Actions:**
+**Automated DAST (Complete):**
+- [x] OWASP ZAP baseline (passive) scan — weekly + every PR to `main` via `.github/workflows/zap-scan.yml`
+- [x] OWASP ZAP full (active) scan — staging environment on every PR and weekly schedule
+- [x] Alert suppression rules — `.zap/rules.tsv` with FAIL/WARN/IGNORE classification
+- [x] SARIF upload to GitHub Security → Code Scanning
+- [x] 90-day artifact retention for HTML/JSON reports
+- [x] DAST operational runbook — `docs/approval/fedramp/dast-runbook.md`
+- [x] Pentest Rules of Engagement — `docs/approval/fedramp/pentest-rules-of-engagement.md`
+- [x] DAST section added to Continuous Monitoring Plan (§3.5)
+
+**Third-Party Pen Test (Pending — Q3 2026):**
 - [ ] Select qualified pen test vendor (Cobalt.io, Bishop Fox, NetSPI, or similar)
 - [ ] Define scope:
   - Web app (jobline.ai): all authenticated endpoints, auth flows, session management
