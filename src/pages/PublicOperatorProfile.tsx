@@ -112,6 +112,7 @@ export default function PublicOperatorProfile() {
   const [education, setEducation] = useState<EducationRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const { counts: socialCounts } = usePublicOperatorSocial(username);
 
   useEffect(() => {
     if (!username) return;
@@ -330,11 +331,13 @@ export default function PublicOperatorProfile() {
             </div>
 
             {/* Snapshot stats strip */}
-            <div className="mt-5 grid grid-cols-4 gap-2 rounded-lg border bg-muted/30 p-3 text-center">
+            <div className="mt-5 grid grid-cols-3 sm:grid-cols-6 gap-2 rounded-lg border bg-muted/30 p-3 text-center">
               <Stat label="Verified" value={verifiedCount} />
               <Stat label="Machines" value={machines.length} />
               <Stat label="Skills" value={skills.length} />
               <Stat label="Roles" value={work.length} />
+              <Stat label="Followers" value={socialCounts.follower_count} />
+              <Stat label="Following" value={socialCounts.following_count} />
             </div>
 
             {/* Desktop CTAs (mobile uses sticky bar below) */}
