@@ -110,7 +110,9 @@ export default function OperatorProfile() {
       } as any);
       toast({ title: "Profile saved", description: "Your operator profile has been updated." });
     } catch (err) {
-      toast({ title: "Save failed", description: err instanceof Error ? err.message : String(err), variant: "destructive" });
+      const msg = extractErrorMessage(err);
+      console.error("[OperatorProfile] save failed", err);
+      toast({ title: "Save failed", description: msg, variant: "destructive" });
     } finally {
       setSaving(false);
     }
