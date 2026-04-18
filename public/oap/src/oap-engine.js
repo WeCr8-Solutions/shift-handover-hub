@@ -577,16 +577,20 @@ function oapCourseRunner() {
 
   var cs = OAP_STATE.courseState;
   if (!cs) {
-    // Start
-    OAP_STATE.courseState = { topicIdx:0, quizMode:false, score:0, total:0, answers:[], qIdx:0, currentPool:null };
+    OAP_STATE.courseState = { topicIdx:0, quizMode:false, score:0, total:0, answers:[], qIdx:0, currentPool:null, examMode:null, examQs:null };
     cs = OAP_STATE.courseState;
+  }
+
+  // ── EXAM MODE ──────────────────────────────────────────────────
+  if (cs.examMode) {
+    return oapExamRunner(course, menteeId, cs);
   }
 
   var h = '<div class="oap-page-header"><button class="oap-back" onclick="oapExitCourse()">← Exit Course</button><h1>' + course.icon + ' ' + course.label + '</h1></div>';
 
   var topic = course.topics[cs.topicIdx];
   if (!topic) {
-    // All topics done — show score
+    // All topics done — show score summary + exam launchers
     return oapCourseComplete(course, menteeId);
   }
 
@@ -599,7 +603,7 @@ function oapCourseRunner() {
   h += '<div class="oap-course-content">' + topic.content + '</div>';
   h += '</div>';
 
-  // Quiz for this topic — supports topic.quizPool (array, randomized subset) or topic.quiz (single)
+  // Per-topic mini quiz (learning flow). Final certification uses the exam runner below.
   if (!cs.quizMode) {
     var poolSize = (topic.quizPool && topic.quizPool.length) || (topic.quiz ? 1 : 0);
     var askCount = Math.min(poolSize, topic.quizCount || (topic.quizPool ? Math.min(3, poolSize) : 1));
@@ -607,13 +611,8 @@ function oapCourseRunner() {
     h += '<div style="margin-top:12px"><button class="oap-btn-primary" onclick="oapStartTopicQuiz()">' + label + '</button></div>';
   } else {
     if (!cs.currentPool) {
-      // build randomized question list for this topic
       var pool = topic.quizPool ? topic.quizPool.slice() : (topic.quiz ? [topic.quiz] : []);
-      // Fisher-Yates shuffle
-      for (var s = pool.length - 1; s > 0; s--) {
-        var r = Math.floor(Math.random() * (s + 1));
-        var tmp = pool[s]; pool[s] = pool[r]; pool[r] = tmp;
-      }
+      _oapShuffle(pool);
       var ask = topic.quizCount || (topic.quizPool ? Math.min(3, pool.length) : 1);
       cs.currentPool = pool.slice(0, ask);
       cs.qIdx = 0;
@@ -657,7 +656,7 @@ function oapNextQuizQuestion() {
 function oapAnswerCourse(idx, ans, fbEnc) {
   var correct = idx === ans;
   var cs = OAP_STATE.courseState;
-  cs.answers.push({ idx, ans, correct });
+  cs.answers.push({ idx: idx, ans: ans, correct: correct });
   cs.total++;
   if (correct) cs.score++;
   document.querySelectorAll('.oap-qopt').forEach(function(el){ el.style.pointerEvents='none'; });
@@ -676,20 +675,100 @@ function oapNextTopic() {
   oapRender();
 }
 
+// ── EXAM RUNNER (≥15 random or directed) ──────────────────────────
+function oapExamRunner(course, menteeId, cs) {
+  // Build exam pool once
+  if (!cs.examQs) {
+    cs.examQs = oapBuildExamQuestions(course, cs.examMode);
+    cs.qIdx = 0; cs.score = 0; cs.total = 0; cs.answers = [];
+  }
+  if (!cs.examQs.length) {
+    return '<div class="oap-page-header"><button class="oap-back" onclick="oapExitCourse()">← Exit</button><h1>' + course.icon + ' ' + course.label + ' — Exam</h1></div>'
+      + '<div class="oap-card"><p>No exam questions available for this course yet.</p></div>';
+  }
+
+  var modeLabel = cs.examMode === 'directed' ? 'Directed Exam (covers every topic)' : 'Random Exam';
+  var h = '<div class="oap-page-header"><button class="oap-back" onclick="oapExitCourse()">← Exit Exam</button><h1>' + course.icon + ' ' + course.label + ' — ' + modeLabel + '</h1></div>';
+
+  // Exam complete
+  if (cs.qIdx >= cs.examQs.length) {
+    var score = cs.total ? Math.round(cs.score / cs.total * 100) : 0;
+    var passed = score >= course.passMark;
+    if (menteeId) {
+      OAP_EMPLOYER.recordCourseScore(menteeId, course.id, score, passed);
+    } else {
+      var scores = JSON.parse(localStorage.getItem('oap-standalone-scores') || '{}');
+      scores[course.id] = { score: score, passed: passed, mode: cs.examMode, when: Date.now() };
+      localStorage.setItem('oap-standalone-scores', JSON.stringify(scores));
+    }
+    h += '<div class="oap-card" style="text-align:center;padding:32px 20px">';
+    h += '<div style="font-family:var(--oap-head);font-size:60px;font-weight:900;color:' + (passed?'#00e5b0':'#ff4757') + '">' + score + '%</div>';
+    h += '<div style="font-size:16px;margin-bottom:6px">' + (passed?'✓ PASSED':'✗ Did Not Pass') + ' · ' + cs.score + ' / ' + cs.total + ' correct · Pass mark ' + course.passMark + '%</div>';
+    h += '<div class="oap-hint" style="margin-bottom:16px">' + modeLabel + ' · ' + cs.examQs.length + ' questions</div>';
+    h += '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">';
+    h += '<button class="oap-btn-primary" onclick="oapRunCourseExam(\'' + course.id + '\',' + (menteeId?('\''+menteeId+'\''):'null') + ',\'' + cs.examMode + '\')">Retake Exam</button>';
+    h += '<button class="oap-btn-ghost" onclick="oapExitCourse()">Done</button>';
+    h += '</div></div>';
+    return h;
+  }
+
+  var q = cs.examQs[cs.qIdx];
+  var pct = Math.round(cs.qIdx / cs.examQs.length * 100);
+  h += '<div class="oap-course-prog"><div class="oap-course-fill" style="width:' + pct + '%"></div></div>';
+  h += '<div class="oap-hint" style="margin-bottom:8px">Question ' + (cs.qIdx+1) + ' of ' + cs.examQs.length + ' · Pass mark: ' + course.passMark + '%</div>';
+  var letters = ['A','B','C','D'];
+  h += '<div class="oap-card"><div class="oap-card-title">' + q.topicTitle + '</div>';
+  h += '<div class="oap-quiz-q">' + q.q + '</div>';
+  h += '<div class="oap-quiz-opts">';
+  q.opts.forEach(function(opt, i) {
+    h += '<div class="oap-qopt" onclick="oapAnswerExam(' + i + ',' + q.ans + ',\'' + encodeURIComponent(q.fb) + '\')" id="copt-' + i + '">';
+    h += '<span class="oap-qopt-l">' + letters[i] + '</span>' + opt + '</div>';
+  });
+  h += '</div><div class="oap-quiz-fb" id="course-fb"></div>';
+  h += '<button class="oap-btn-primary" id="course-next-btn" style="display:none" onclick="oapNextExamQuestion()">' + (cs.qIdx >= cs.examQs.length - 1 ? 'Finish Exam →' : 'Next Question →') + '</button>';
+  h += '</div>';
+  return h;
+}
+
+function oapAnswerExam(idx, ans, fbEnc) {
+  var correct = idx === ans;
+  var cs = OAP_STATE.courseState;
+  cs.answers.push({ idx: idx, ans: ans, correct: correct });
+  cs.total++;
+  if (correct) cs.score++;
+  document.querySelectorAll('.oap-qopt').forEach(function(el){ el.style.pointerEvents='none'; });
+  var el = document.getElementById('copt-' + idx); if(el) el.classList.add(correct?'correct':'wrong');
+  if (!correct) { var ca = document.getElementById('copt-' + ans); if(ca) ca.classList.add('correct'); }
+  var fb = document.getElementById('course-fb');
+  if (fb) { fb.textContent = (correct?'✓ ':'✗ ') + decodeURIComponent(fbEnc); fb.className = 'oap-quiz-fb show ' + (correct?'correct':'wrong'); }
+  var nb = document.getElementById('course-next-btn'); if(nb) nb.style.display='';
+}
+
+function oapNextExamQuestion() {
+  OAP_STATE.courseState.qIdx++;
+  oapRender();
+}
+
 function oapCourseComplete(course, menteeId) {
   var cs = OAP_STATE.courseState;
   var score = cs.total ? Math.round(cs.score/cs.total*100) : 100;
   var passed = score >= course.passMark;
   if (menteeId) OAP_EMPLOYER.recordCourseScore(menteeId, course.id, score, passed);
 
+  var totalAvailable = 0;
+  (course.topics||[]).forEach(function(t){ totalAvailable += (t.quizPool||[]).length || (t.quiz?1:0); });
+  var examSize = Math.min(OAP_MIN_EXAM_QUESTIONS, totalAvailable);
+
   var h = '<div class="oap-page-header"><button class="oap-back" onclick="oapExitCourse()">← Done</button><h1>' + course.icon + ' ' + course.label + '</h1></div>';
   h += '<div class="oap-card" style="text-align:center;padding:32px 20px">';
   h += '<div style="font-family:var(--oap-head);font-size:60px;font-weight:900;color:' + (passed?'#00e5b0':'#ff4757') + '">' + score + '%</div>';
-  h += '<div style="font-size:16px;margin-bottom:16px">' + (passed?'✓ PASSED':'✗ Did Not Pass') + ' · Pass mark ' + course.passMark + '%</div>';
-  if (!passed) h += '<div style="font-size:13px;color:#888;margin-bottom:16px">Review the course material and retake to continue.</div>';
+  h += '<div style="font-size:16px;margin-bottom:6px">' + (passed?'✓ Topic mini-quizzes passed':'✗ Did Not Pass') + ' · Pass mark ' + course.passMark + '%</div>';
+  h += '<div class="oap-hint" style="margin-bottom:16px">Ready for the certification exam? ' + examSize + ' questions · pulled from the full course question bank.</div>';
   h += '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">';
-  if (!passed) h += '<button class="oap-btn-primary" onclick="oapRestartCourse()">Retake Course</button>';
-  h += '<button class="oap-btn-ghost" onclick="oapExitCourse()">Back to Operator</button>';
+  h += '<button class="oap-btn-primary" onclick="oapRunCourseExam(\'' + course.id + '\',' + (menteeId?('\''+menteeId+'\''):'null') + ',\'random\')">🎲 Take Random Exam (' + examSize + ' Q)</button>';
+  h += '<button class="oap-btn-primary" onclick="oapRunCourseExam(\'' + course.id + '\',' + (menteeId?('\''+menteeId+'\''):'null') + ',\'directed\')">🎯 Directed Exam (every topic)</button>';
+  if (!passed) h += '<button class="oap-btn-ghost" onclick="oapRestartCourse()">Retake Course</button>';
+  h += '<button class="oap-btn-ghost" onclick="oapExitCourse()">Back</button>';
   h += '</div></div>';
   return h;
 }
