@@ -59,6 +59,10 @@ export default function Talent() {
   if (!isAuthorized) {
     return (
       <div className="min-h-screen bg-background">
+        <Helmet>
+          <title>Talent Search — JobLine.ai</title>
+          <meta name="robots" content="noindex" />
+        </Helmet>
         <Header />
         <main className="container py-12 max-w-2xl text-center space-y-4">
           <h1 className="text-2xl font-bold">Verified employer access required</h1>
@@ -92,6 +96,10 @@ export default function Talent() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Talent Database — JobLine.ai</title>
+        <meta name="robots" content="noindex" />
+      </Helmet>
       <Header />
       <main className="container py-6 max-w-7xl space-y-6">
         <div>
