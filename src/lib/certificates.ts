@@ -47,7 +47,7 @@ export interface CertificateRecord {
   program: CertificateProgram;
   programName: string;
   recipientName: string;
-  recipientEmail: string;
+  recipientEmail: string | null;
   organizationName?: string | null;
   status: "active" | "revoked" | "expired";
   validFrom: string; // ISO date
