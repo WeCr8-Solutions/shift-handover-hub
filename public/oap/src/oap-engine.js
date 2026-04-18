@@ -619,6 +619,8 @@ function oapAnswerCourse(idx, ans, fbEnc) {
 function oapNextTopic() {
   OAP_STATE.courseState.topicIdx++;
   OAP_STATE.courseState.quizMode = false;
+  OAP_STATE.courseState.currentPool = null;
+  OAP_STATE.courseState.qIdx = 0;
   oapRender();
 }
 
