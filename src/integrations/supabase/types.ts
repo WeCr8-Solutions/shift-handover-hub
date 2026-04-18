@@ -4742,15 +4742,19 @@ export type Database = {
           description: string | null
           id: string
           is_active: boolean
+          is_canonical: boolean
           name: string
-          organization_id: string
+          organization_id: string | null
           recert_grace_days: number
           recert_interval_months: number | null
           required_inspection_tool_slugs: string[] | null
           required_machine_tags: string[] | null
           required_machining_operation_slugs: string[] | null
+          source_template_id: string | null
+          template_slug: string | null
           updated_at: string
           vertical: Database["public"]["Enums"]["oap_vertical"]
+          vertical_role_slug: string | null
         }
         Insert: {
           created_at?: string
@@ -4758,15 +4762,19 @@ export type Database = {
           description?: string | null
           id?: string
           is_active?: boolean
+          is_canonical?: boolean
           name: string
-          organization_id: string
+          organization_id?: string | null
           recert_grace_days?: number
           recert_interval_months?: number | null
           required_inspection_tool_slugs?: string[] | null
           required_machine_tags?: string[] | null
           required_machining_operation_slugs?: string[] | null
+          source_template_id?: string | null
+          template_slug?: string | null
           updated_at?: string
           vertical?: Database["public"]["Enums"]["oap_vertical"]
+          vertical_role_slug?: string | null
         }
         Update: {
           created_at?: string
@@ -4774,15 +4782,19 @@ export type Database = {
           description?: string | null
           id?: string
           is_active?: boolean
+          is_canonical?: boolean
           name?: string
-          organization_id?: string
+          organization_id?: string | null
           recert_grace_days?: number
           recert_interval_months?: number | null
           required_inspection_tool_slugs?: string[] | null
           required_machine_tags?: string[] | null
           required_machining_operation_slugs?: string[] | null
+          source_template_id?: string | null
+          template_slug?: string | null
           updated_at?: string
           vertical?: Database["public"]["Enums"]["oap_vertical"]
+          vertical_role_slug?: string | null
         }
         Relationships: [
           {
@@ -4797,6 +4809,13 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oap_role_programs_source_template_id_fkey"
+            columns: ["source_template_id"]
+            isOneToOne: false
+            referencedRelation: "oap_role_programs"
             referencedColumns: ["id"]
           },
         ]
@@ -9620,6 +9639,14 @@ export type Database = {
       check_limit_access: {
         Args: { _increment?: number; _limit_key: string; _org_id: string }
         Returns: boolean
+      }
+      clone_oap_role_program_to_org: {
+        Args: {
+          _organization_id: string
+          _override_name?: string
+          _template_id: string
+        }
+        Returns: string
       }
       compute_smart_alerts: {
         Args: {

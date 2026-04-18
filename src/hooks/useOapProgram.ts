@@ -64,13 +64,18 @@ export interface OapQuizAttempt {
 
 export interface OapRoleProgram {
   id: string;
-  organization_id: string;
+  organization_id: string | null;
   name: string;
   description: string | null;
   required_machine_tags: string[] | null;
   required_inspection_tool_slugs: string[] | null;
   required_machining_operation_slugs: string[] | null;
   is_active: boolean;
+  is_canonical?: boolean;
+  template_slug?: string | null;
+  vertical?: string | null;
+  vertical_role_slug?: string | null;
+  source_template_id?: string | null;
 }
 
 export interface OapEnrollment {
@@ -307,6 +312,52 @@ export function useOapRolePrograms() {
   });
 
   return { programs: list.data ?? [], isLoading: list.isLoading, upsert, remove };
+}
+
+/**
+ * Canonical OAP role-program templates seeded by the platform.
+ * Readable by any authenticated user. Org admins clone them via RPC.
+ */
+export function useCanonicalRolePrograms() {
+  return useQuery({
+    queryKey: ["oap-canonical-role-programs"],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("oap_role_programs")
+        .select("*")
+        .eq("is_canonical", true)
+        .eq("is_active", true)
+        .order("vertical")
+        .order("name");
+      if (error) throw error;
+      return (data ?? []) as OapRoleProgram[];
+    },
+  });
+}
+
+export function useCloneRoleProgramTemplate() {
+  const { organization } = useOrganization();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: { template_id: string; override_name?: string }) => {
+      if (!organization?.id) throw new Error("No organization selected");
+      const { data, error } = await (supabase as any).rpc(
+        "clone_oap_role_program_to_org",
+        {
+          _template_id: params.template_id,
+          _organization_id: organization.id,
+          _override_name: params.override_name ?? null,
+        },
+      );
+      if (error) throw error;
+      return data as string;
+    },
+    onSuccess: () => {
+      toast.success("Template added to your shop");
+      qc.invalidateQueries({ queryKey: ["oap-role-programs"] });
+    },
+    onError: (e: any) => toast.error(e.message ?? "Clone failed"),
+  });
 }
 
 export function useRoleProgramCourses(roleProgramId: string | null) {

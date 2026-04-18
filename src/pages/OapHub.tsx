@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Header } from "@/components/Header";
-import { useOapCourses, useMyOapEnrollments, useMyOapQuizAttempts } from "@/hooks/useOapProgram";
+import { useOapCourses, useMyOapEnrollments, useMyOapQuizAttempts, useCanonicalRolePrograms } from "@/hooks/useOapProgram";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   ClipboardCheck,
@@ -22,7 +22,9 @@ export default function OapHub() {
   const { data: courses = [], isLoading } = useOapCourses();
   const { data: enrollments = [] } = useMyOapEnrollments(user?.id ?? null);
   const { data: attempts = [] } = useMyOapQuizAttempts(user?.id ?? null);
+  const { data: presetPrograms = [] } = useCanonicalRolePrograms();
   const [certOpen, setCertOpen] = useState(false);
+  const verticals = Array.from(new Set(presetPrograms.map((p) => p.vertical ?? "machining")));
 
   const passedQuizzes = attempts.filter((a) => a.passed).length;
   const totalQuizzes = attempts.length;
@@ -117,6 +119,46 @@ export default function OapHub() {
             </p>
           )}
         </div>
+
+        {presetPrograms.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Award className="w-4 h-4 text-primary" /> Preset profession programs
+              </CardTitle>
+              <p className="text-xs text-muted-foreground">
+                {presetPrograms.length} ready-made certification tracks across {verticals.length} trade verticals — CNC machining, cabinetry, automotive, welding, construction, electrical, plumbing, and HVAC. Org admins can clone any of these into their shop in one click from the Employer panel.
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-1.5">
+                {verticals.map((v) => {
+                  const count = presetPrograms.filter((p) => (p.vertical ?? "machining") === v).length;
+                  return (
+                    <Badge key={v} variant="secondary" className="text-[11px] capitalize">
+                      {v} · {count}
+                    </Badge>
+                  );
+                })}
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
+                {presetPrograms.slice(0, 6).map((p) => (
+                  <div key={p.id} className="text-xs border rounded p-2">
+                    <div className="font-medium truncate">{p.name}</div>
+                    {p.description && (
+                      <div className="text-muted-foreground line-clamp-2 mt-0.5">{p.description}</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {presetPrograms.length > 6 && (
+                <p className="text-[11px] text-muted-foreground mt-2">
+                  +{presetPrograms.length - 6} more available in the Employer panel.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {user && (
           <Card>
