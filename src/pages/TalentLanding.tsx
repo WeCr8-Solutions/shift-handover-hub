@@ -4,6 +4,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { OapGcaTalentFlow } from "@/components/marketing/OapGcaTalentFlow";
+import { VerticalsShowcase } from "@/components/marketing/VerticalsShowcase";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -195,7 +196,10 @@ export default function TalentLanding() {
         <OapGcaTalentFlow />
       </section>
 
-      {/* Recent public profiles */}
+      {/* Multi-vertical OAP showcase */}
+      <VerticalsShowcase />
+
+
       <section className="border-y bg-muted/30">
         <div className="container py-16 max-w-6xl">
           <div className="flex items-end justify-between mb-8 gap-4 flex-wrap">

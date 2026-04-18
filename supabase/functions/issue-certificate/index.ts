@@ -22,16 +22,30 @@ const corsHeaders = {
 };
 
 const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-function generateCertId(program: "OAP" | "GCA"): string {
+
+type OapVertical =
+  | "machining" | "cabinetry" | "automotive" | "welding"
+  | "construction" | "electrical" | "plumbing" | "hvac" | "general";
+
+const VERTICAL_CODES: Record<OapVertical, string> = {
+  machining: "MAC", cabinetry: "CAB", automotive: "AUTO", welding: "WELD",
+  construction: "CON", electrical: "ELEC", plumbing: "PLM", hvac: "HVAC", general: "GEN",
+};
+
+function generateCertId(program: "OAP" | "GCA", vertical: OapVertical = "machining"): string {
   const bytes = new Uint8Array(6);
   crypto.getRandomValues(bytes);
   let body = "";
   for (const b of bytes) body += ALPHABET[b % ALPHABET.length];
-  return `${program}-${body}-${new Date().getFullYear()}`;
+  const year = new Date().getFullYear();
+  // GCA stays single-segment; OAP machining stays single-segment for back-compat.
+  if (program === "GCA" || vertical === "machining") return `${program}-${body}-${year}`;
+  return `${program}-${VERTICAL_CODES[vertical]}-${body}-${year}`;
 }
 
 interface IssueRequest {
   program: "OAP" | "GCA";
+  vertical?: OapVertical;
   recipientName: string;
   recipientEmail: string;
   programName: string;
@@ -42,12 +56,15 @@ interface IssueRequest {
   amountCents?: number;
   stripeSessionId?: string | null;
   items?: Array<{
-    item_type: "machine" | "inspection_tool" | "machining_operation" | "safety_credential" | "course";
+    item_type:
+      | "machine" | "inspection_tool" | "machining_operation"
+      | "safety_credential" | "course"
+      | "vertical_role" | "trade_tool" | "license";
     item_slug?: string | null;
     display_label: string;
   }>;
   sendEmail?: boolean;
-  userId?: string; // optional override (when called from webhook with service role)
+  userId?: string;
 }
 
 serve(async (req) => {
@@ -103,7 +120,8 @@ serve(async (req) => {
       }
     }
 
-    const certId = generateCertId(body.program);
+    const vertical: OapVertical = body.vertical ?? "machining";
+    const certId = generateCertId(body.program, vertical);
     const userId = body.userId ?? caller.id;
     const validFrom = new Date().toISOString().slice(0, 10);
 
@@ -122,6 +140,7 @@ serve(async (req) => {
     if (body.program === "OAP") {
       insertPayload.organization_id = body.organizationId ?? null;
       insertPayload.role_program_id = body.rolePragramId ?? null;
+      insertPayload.vertical = vertical;
     } else {
       insertPayload.bank_id = body.bankId ?? null;
     }
