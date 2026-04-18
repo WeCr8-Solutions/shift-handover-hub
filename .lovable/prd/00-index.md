@@ -25,6 +25,8 @@
 | 15 | [Hooks Reference](./15-hooks-reference.md) | ✅ Active | Complete catalog of all 47 custom React hooks |
 | 16 | [Component Reference](./16-component-reference.md) | ✅ Active | Complete catalog of all 110+ custom components |
 | 17 | [Operator & Manufacturing Tools](./17-operator-tools.md) | ✅ Active | Calculators, converters, and reference tools |
+| 24 | [Certificate System (OAP & GCA)](./24-certificate-system.md) | ✅ Active | Verifiable certs, diploma/digital variants, designated mentor signing |
+| 25 | [Talent Profile System](./25-talent-profile-system.md) | ✅ Active | Public `/talent/:username` profiles, visibility tiers, cert QR target |
 
 ---
 
