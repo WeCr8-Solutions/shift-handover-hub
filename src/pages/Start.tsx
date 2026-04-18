@@ -237,8 +237,8 @@ export default function Start() {
         {/* ── Section 1: Top Conversion Block ── */}
         <section className="w-full max-w-md space-y-5">
 
-          {/* Logo — links back to home so visitors aren't trapped on /start */}
-          <div className="text-center">
+          {/* Logo + home button — gives visitors a clear way back to the main site */}
+          <div className="text-center space-y-3">
             <Link
               to="/"
               aria-label="JobLine.ai home"
@@ -251,6 +251,11 @@ export default function Start() {
                 loading="eager"
               />
             </Link>
+            <div>
+              <Button asChild variant="outline" size="sm">
+                <Link to="/">← Back to JobLine.ai</Link>
+              </Button>
+            </div>
           </div>
 
           {/* Dynamic Headline */}
