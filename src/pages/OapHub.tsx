@@ -160,6 +160,7 @@ export default function OapHub() {
           </Card>
         )}
 
+        {user && (
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Your portable transcript</CardTitle>
