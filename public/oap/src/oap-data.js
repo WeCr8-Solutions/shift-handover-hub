@@ -2,7 +2,7 @@
 // OAP-DATA.JS — Course Content & Checkpoint Definitions
 // Safety courses, measuring training, tooling training,
 // machine-specific OAK checklists
-// WeCr8 Solutions LLC | JobLine.ai | v1.0.0
+// WeCr8 Solutions LLC | JobLine.ai | v1.1.0
 // ═══════════════════════════════════════════════════════════════════
 
 'use strict';
@@ -587,15 +587,24 @@ const OAP_CHECKPOINT_LIBRARY = {
     { id:'meas04', label:'Use outside micrometer — read to 0.0001"',               type:'demo',     mentorSignOff:true,  employerBuyOff:true,  linkedCourse:'measuring_precision'  },
     { id:'meas05', label:'Set a bore gauge and transfer to micrometer',            type:'demo',     mentorSignOff:true,  employerBuyOff:false, linkedCourse:'measuring_precision'  },
     { id:'meas06', label:'Use thread GO/NOGO gauges — make accept/reject decision', type:'demo',   mentorSignOff:true,  employerBuyOff:false, linkedCourse:'measuring_precision'  },
-    { id:'meas07', label:'Read and interpret a 2D engineering drawing (tolerances, GD&T basics)', type:'written', mentorSignOff:true, employerBuyOff:false },
+    { id:'meas07', label:'Read and interpret a 2D engineering drawing (tolerances, GD&T basics)', type:'written', mentorSignOff:true, employerBuyOff:false, linkedCourse:'measuring_gdt' },
   ],
   tooling: [
     { id:'tl01', label:'Identify 10 common end mills by geometry and flute count', type:'both',     mentorSignOff:true,  employerBuyOff:false, linkedCourse:'tooling_id' },
     { id:'tl02', label:'Identify common drill types — HSS, carbide, spot drill',   type:'both',     mentorSignOff:true,  employerBuyOff:false, linkedCourse:'tooling_id' },
     { id:'tl03', label:'Select correct tap type for a given hole condition',        type:'written',  mentorSignOff:true,  employerBuyOff:false, linkedCourse:'tooling_id' },
-    { id:'tl04', label:'Assemble ER collet chuck to correct torque spec',           type:'demo',     mentorSignOff:true,  employerBuyOff:false },
-    { id:'tl05', label:'Identify turning insert grades and geometry (CNMG/WNMG)',  type:'both',     mentorSignOff:true,  employerBuyOff:false },
+    { id:'tl04', label:'Assemble ER collet chuck to correct torque spec',           type:'demo',     mentorSignOff:true,  employerBuyOff:false, linkedCourse:'tooling_id' },
+    { id:'tl05', label:'Identify turning insert grades and geometry (CNMG/WNMG)',  type:'both',     mentorSignOff:true,  employerBuyOff:false, linkedCourse:'tooling_id' },
     { id:'tl06', label:'Operate preset station — set tool length and diameter',    type:'demo',     mentorSignOff:true,  employerBuyOff:true  },
     { id:'tl07', label:'Identify worn/damaged tooling — make replace/use decision', type:'observed', mentorSignOff:true,  employerBuyOff:false },
+  ],
+  machine: [
+    { id:'mc01', label:'Pass Machine Basics course — power-on, offsets, dry run', type:'written', mentorSignOff:true, employerBuyOff:false, linkedCourse:'machine_basics' },
+    { id:'mc02', label:'Demonstrate correct power-on and homing sequence',         type:'demo',    mentorSignOff:true, employerBuyOff:false, linkedCourse:'machine_basics' },
+    { id:'mc03', label:'Set a G54 work offset (X, Y, Z) and verify in air',        type:'demo',    mentorSignOff:true, employerBuyOff:true,  linkedCourse:'machine_basics' },
+    { id:'mc04', label:'Set tool length offset (G43) for at least 3 tools',         type:'demo',    mentorSignOff:true, employerBuyOff:false, linkedCourse:'machine_basics' },
+    { id:'mc05', label:'Run first part in single-block at reduced rapid override',  type:'observed', mentorSignOff:true, employerBuyOff:true,  linkedCourse:'machine_basics' },
+    { id:'mc06', label:'Acknowledge and recover from at least 2 alarms',           type:'demo',    mentorSignOff:true, employerBuyOff:false, linkedCourse:'machine_basics' },
+    { id:'mc07', label:'Complete end-of-shift parking and handoff log entry',      type:'observed', mentorSignOff:true, employerBuyOff:false },
   ],
 };
