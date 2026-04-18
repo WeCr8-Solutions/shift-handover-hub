@@ -60,7 +60,7 @@ export function VisitorSurveyModal() {
         sessionStorage.setItem(SURVEY_MODAL_ACTIVE_KEY, "1");
         trackEvent("survey_shown", { source_page: window.location.pathname });
       }
-    }, 8000);
+    }, 20000);
     return () => clearTimeout(timer);
   }, [shouldShow]);
 
