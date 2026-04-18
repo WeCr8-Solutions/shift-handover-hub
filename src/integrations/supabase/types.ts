@@ -3998,6 +3998,7 @@ export type Database = {
           user_id: string
           valid_from: string
           valid_until: string | null
+          vertical: Database["public"]["Enums"]["oap_vertical"]
         }
         Insert: {
           amount_cents?: number
@@ -4020,6 +4021,7 @@ export type Database = {
           user_id: string
           valid_from?: string
           valid_until?: string | null
+          vertical?: Database["public"]["Enums"]["oap_vertical"]
         }
         Update: {
           amount_cents?: number
@@ -4042,6 +4044,7 @@ export type Database = {
           user_id?: string
           valid_from?: string
           valid_until?: string | null
+          vertical?: Database["public"]["Enums"]["oap_vertical"]
         }
         Relationships: [
           {
@@ -4302,6 +4305,7 @@ export type Database = {
           role_program_name: string | null
           status: string
           updated_at: string
+          vertical: Database["public"]["Enums"]["oap_vertical"]
         }
         Insert: {
           approved_operations?: string[]
@@ -4321,6 +4325,7 @@ export type Database = {
           role_program_name?: string | null
           status?: string
           updated_at?: string
+          vertical?: Database["public"]["Enums"]["oap_vertical"]
         }
         Update: {
           approved_operations?: string[]
@@ -4340,6 +4345,7 @@ export type Database = {
           role_program_name?: string | null
           status?: string
           updated_at?: string
+          vertical?: Database["public"]["Enums"]["oap_vertical"]
         }
         Relationships: [
           {
@@ -4647,6 +4653,7 @@ export type Database = {
           required_machine_tags: string[] | null
           required_machining_operation_slugs: string[] | null
           updated_at: string
+          vertical: Database["public"]["Enums"]["oap_vertical"]
         }
         Insert: {
           created_at?: string
@@ -4662,6 +4669,7 @@ export type Database = {
           required_machine_tags?: string[] | null
           required_machining_operation_slugs?: string[] | null
           updated_at?: string
+          vertical?: Database["public"]["Enums"]["oap_vertical"]
         }
         Update: {
           created_at?: string
@@ -4677,6 +4685,7 @@ export type Database = {
           required_machine_tags?: string[] | null
           required_machining_operation_slugs?: string[] | null
           updated_at?: string
+          vertical?: Database["public"]["Enums"]["oap_vertical"]
         }
         Relationships: [
           {
@@ -4694,6 +4703,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      oap_safety_credentials: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          issuing_body: string | null
+          name: string
+          slug: string
+          updated_at: string
+          validity_months: number | null
+          vertical: Database["public"]["Enums"]["oap_vertical"]
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          issuing_body?: string | null
+          name: string
+          slug: string
+          updated_at?: string
+          validity_months?: number | null
+          vertical: Database["public"]["Enums"]["oap_vertical"]
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          issuing_body?: string | null
+          name?: string
+          slug?: string
+          updated_at?: string
+          validity_months?: number | null
+          vertical?: Database["public"]["Enums"]["oap_vertical"]
+        }
+        Relationships: []
       }
       oap_transfer_tokens: {
         Row: {
@@ -4742,6 +4790,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      oap_vertical_roles: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          prerequisites: string[] | null
+          slug: string
+          tier: number
+          typical_duties: string[] | null
+          updated_at: string
+          vertical: Database["public"]["Enums"]["oap_vertical"]
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          prerequisites?: string[] | null
+          slug: string
+          tier?: number
+          typical_duties?: string[] | null
+          updated_at?: string
+          vertical: Database["public"]["Enums"]["oap_vertical"]
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          prerequisites?: string[] | null
+          slug?: string
+          tier?: number
+          typical_duties?: string[] | null
+          updated_at?: string
+          vertical?: Database["public"]["Enums"]["oap_vertical"]
+        }
+        Relationships: []
       }
       oap_walkthrough_checkoffs: {
         Row: {
@@ -9591,6 +9681,16 @@ export type Database = {
         | "closed"
         | "wont_fix"
       oap_checkoff_result: "pass" | "needs_practice" | "fail"
+      oap_vertical:
+        | "machining"
+        | "cabinetry"
+        | "automotive"
+        | "welding"
+        | "construction"
+        | "electrical"
+        | "plumbing"
+        | "hvac"
+        | "general"
       operator_profile_visibility: "private" | "employers_only" | "public"
       queue_item_type:
         | "work_order"
@@ -9830,6 +9930,17 @@ export const Constants = {
         "wont_fix",
       ],
       oap_checkoff_result: ["pass", "needs_practice", "fail"],
+      oap_vertical: [
+        "machining",
+        "cabinetry",
+        "automotive",
+        "welding",
+        "construction",
+        "electrical",
+        "plumbing",
+        "hvac",
+        "general",
+      ],
       operator_profile_visibility: ["private", "employers_only", "public"],
       queue_item_type: [
         "work_order",
