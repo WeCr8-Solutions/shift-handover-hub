@@ -221,33 +221,14 @@ export default function OperatorProfile() {
             })}
 
             {form.profile_visibility === "public" && (
-              <div className="mt-4 space-y-2 rounded-md border bg-background p-3">
-                <Label htmlFor="public_username" className="text-sm font-medium">
-                  Public username
-                </Label>
-                <p className="text-xs text-muted-foreground">
-                  Your profile will live at <span className="font-mono">jobline.ai/talent/{form.public_username || "your-name"}</span>.
-                  Lowercase letters, numbers, hyphens, underscores. 3–30 characters.
-                </p>
-                <Input
-                  id="public_username"
-                  value={form.public_username}
-                  onChange={(e) => setForm((f) => ({ ...f, public_username: e.target.value.toLowerCase() }))}
-                  placeholder="e.g. zach-machinist"
-                  pattern="^[a-z0-9][a-z0-9_-]{2,29}$"
-                  maxLength={30}
-                />
-                {profile?.public_username && (
-                  <a
-                    href={`/talent/${profile.public_username}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-primary hover:underline inline-flex items-center gap-1"
-                  >
-                    View public profile →
-                  </a>
-                )}
-              </div>
+              <UsernamePicker
+                value={form.public_username}
+                onChange={(v) => setForm((f) => ({ ...f, public_username: v }))}
+                userId={user?.id}
+                currentUsername={profile?.public_username ?? null}
+                seedName={authProfile?.display_name ?? user?.email?.split("@")[0] ?? ""}
+                publishedUsername={profile?.public_username ?? null}
+              />
             )}
           </CardContent>
         </Card>
@@ -270,13 +251,21 @@ export default function OperatorProfile() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label>Professional headline</Label>
+                  <Label htmlFor="headline">Professional headline</Label>
                   <Input
+                    id="headline"
+                    list="headline-suggestions"
                     value={form.headline}
                     onChange={(e) => setForm((f) => ({ ...f, headline: e.target.value }))}
                     placeholder="e.g. Senior CNC Machinist · Mazak / Haas / Doosan"
                     maxLength={150}
                   />
+                  <datalist id="headline-suggestions">
+                    {SUGGESTED_HEADLINES.map((h) => <option key={h} value={h} />)}
+                  </datalist>
+                  <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                    <Sparkles className="w-3 h-3" /> Type to see suggestions
+                  </p>
                 </div>
                 <div>
                   <Label>Bio</Label>
@@ -287,19 +276,63 @@ export default function OperatorProfile() {
                     rows={5}
                     maxLength={2000}
                   />
+                  <p className="text-xs text-muted-foreground mt-1 text-right">{form.bio.length}/2000</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <Label>City</Label>
-                    <Input value={form.location_city} onChange={(e) => setForm((f) => ({ ...f, location_city: e.target.value }))} />
+                    <Label htmlFor="city">City</Label>
+                    <Input
+                      id="city"
+                      list="city-suggestions"
+                      value={form.location_city}
+                      onChange={(e) => setForm((f) => ({ ...f, location_city: e.target.value }))}
+                      placeholder="e.g. Rockford"
+                    />
+                    <datalist id="city-suggestions">
+                      {SUGGESTED_CITIES.map((c) => <option key={c} value={c} />)}
+                    </datalist>
                   </div>
                   <div>
                     <Label>State / Region</Label>
-                    <Input value={form.location_region} onChange={(e) => setForm((f) => ({ ...f, location_region: e.target.value }))} />
+                    {(() => {
+                      const regions = getRegionsForCountry(form.location_country);
+                      if (regions) {
+                        return (
+                          <Select
+                            value={form.location_region}
+                            onValueChange={(v) => setForm((f) => ({ ...f, location_region: v }))}
+                          >
+                            <SelectTrigger><SelectValue placeholder="Select state" /></SelectTrigger>
+                            <SelectContent className="max-h-72">
+                              {regions.map((r) => (
+                                <SelectItem key={r.code} value={r.name}>{r.name}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        );
+                      }
+                      return (
+                        <Input
+                          value={form.location_region}
+                          onChange={(e) => setForm((f) => ({ ...f, location_region: e.target.value }))}
+                          placeholder="State or region"
+                        />
+                      );
+                    })()}
                   </div>
                   <div>
                     <Label>Country</Label>
-                    <Input value={form.location_country} onChange={(e) => setForm((f) => ({ ...f, location_country: e.target.value }))} />
+                    <Select
+                      value={form.location_country}
+                      onValueChange={(v) => setForm((f) => ({ ...f, location_country: v, location_region: "" }))}
+                    >
+                      <SelectTrigger><SelectValue placeholder="Select country" /></SelectTrigger>
+                      <SelectContent className="max-h-72">
+                        {COUNTRIES.map((c) => (
+                          <SelectItem key={c.code} value={c.code}>{c.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
