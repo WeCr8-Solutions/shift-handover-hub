@@ -9695,6 +9695,7 @@ export type Database = {
         Args: { _username: string }
         Returns: {
           follower_count: number
+          following_count: number
           recommendation_count: number
         }[]
       }
