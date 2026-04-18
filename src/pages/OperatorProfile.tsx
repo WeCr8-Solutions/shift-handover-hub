@@ -12,16 +12,20 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Loader2, Save, Linkedin, FileText, Award, Briefcase, GraduationCap, Wrench, Star, Plus, Trash2, ShieldCheck, Upload, Globe, RefreshCw } from "lucide-react";
+import { Loader2, Save, Linkedin, FileText, Award, Briefcase, GraduationCap, Wrench, Star, Plus, Trash2, ShieldCheck, Upload, Globe, RefreshCw, Check, X as XIcon, Sparkles } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useOperatorProfile, syncIssuedCertificatesToProfile } from "@/hooks/useOperatorProfile";
 import { supabase } from "@/integrations/supabase/client";
+import { COUNTRIES, getRegionsForCountry, SUGGESTED_CITIES, SUGGESTED_HEADLINES } from "@/lib/talent/locations";
+import { useUsernameAvailability, suggestUsernames } from "@/hooks/useUsernameAvailability";
+
 
 const PROFICIENCY_LEVELS = ["beginner", "intermediate", "advanced", "expert"] as const;
 
 export default function OperatorProfile() {
   const navigate = useNavigate();
-  const { user, isReady } = useAuth();
+  const { user, profile: authProfile, isReady } = useAuth();
   const { toast } = useToast();
   const {
     profile,
@@ -217,33 +221,14 @@ export default function OperatorProfile() {
             })}
 
             {form.profile_visibility === "public" && (
-              <div className="mt-4 space-y-2 rounded-md border bg-background p-3">
-                <Label htmlFor="public_username" className="text-sm font-medium">
-                  Public username
-                </Label>
-                <p className="text-xs text-muted-foreground">
-                  Your profile will live at <span className="font-mono">jobline.ai/talent/{form.public_username || "your-name"}</span>.
-                  Lowercase letters, numbers, hyphens, underscores. 3–30 characters.
-                </p>
-                <Input
-                  id="public_username"
-                  value={form.public_username}
-                  onChange={(e) => setForm((f) => ({ ...f, public_username: e.target.value.toLowerCase() }))}
-                  placeholder="e.g. zach-machinist"
-                  pattern="^[a-z0-9][a-z0-9_-]{2,29}$"
-                  maxLength={30}
-                />
-                {profile?.public_username && (
-                  <a
-                    href={`/talent/${profile.public_username}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-primary hover:underline inline-flex items-center gap-1"
-                  >
-                    View public profile →
-                  </a>
-                )}
-              </div>
+              <UsernamePicker
+                value={form.public_username}
+                onChange={(v) => setForm((f) => ({ ...f, public_username: v }))}
+                userId={user?.id}
+                currentUsername={profile?.public_username ?? null}
+                seedName={authProfile?.display_name ?? user?.email?.split("@")[0] ?? ""}
+                publishedUsername={profile?.public_username ?? null}
+              />
             )}
           </CardContent>
         </Card>
@@ -266,13 +251,21 @@ export default function OperatorProfile() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label>Professional headline</Label>
+                  <Label htmlFor="headline">Professional headline</Label>
                   <Input
+                    id="headline"
+                    list="headline-suggestions"
                     value={form.headline}
                     onChange={(e) => setForm((f) => ({ ...f, headline: e.target.value }))}
                     placeholder="e.g. Senior CNC Machinist · Mazak / Haas / Doosan"
                     maxLength={150}
                   />
+                  <datalist id="headline-suggestions">
+                    {SUGGESTED_HEADLINES.map((h) => <option key={h} value={h} />)}
+                  </datalist>
+                  <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                    <Sparkles className="w-3 h-3" /> Type to see suggestions
+                  </p>
                 </div>
                 <div>
                   <Label>Bio</Label>
@@ -283,19 +276,63 @@ export default function OperatorProfile() {
                     rows={5}
                     maxLength={2000}
                   />
+                  <p className="text-xs text-muted-foreground mt-1 text-right">{form.bio.length}/2000</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <Label>City</Label>
-                    <Input value={form.location_city} onChange={(e) => setForm((f) => ({ ...f, location_city: e.target.value }))} />
+                    <Label htmlFor="city">City</Label>
+                    <Input
+                      id="city"
+                      list="city-suggestions"
+                      value={form.location_city}
+                      onChange={(e) => setForm((f) => ({ ...f, location_city: e.target.value }))}
+                      placeholder="e.g. Rockford"
+                    />
+                    <datalist id="city-suggestions">
+                      {SUGGESTED_CITIES.map((c) => <option key={c} value={c} />)}
+                    </datalist>
                   </div>
                   <div>
                     <Label>State / Region</Label>
-                    <Input value={form.location_region} onChange={(e) => setForm((f) => ({ ...f, location_region: e.target.value }))} />
+                    {(() => {
+                      const regions = getRegionsForCountry(form.location_country);
+                      if (regions) {
+                        return (
+                          <Select
+                            value={form.location_region}
+                            onValueChange={(v) => setForm((f) => ({ ...f, location_region: v }))}
+                          >
+                            <SelectTrigger><SelectValue placeholder="Select state" /></SelectTrigger>
+                            <SelectContent className="max-h-72">
+                              {regions.map((r) => (
+                                <SelectItem key={r.code} value={r.name}>{r.name}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        );
+                      }
+                      return (
+                        <Input
+                          value={form.location_region}
+                          onChange={(e) => setForm((f) => ({ ...f, location_region: e.target.value }))}
+                          placeholder="State or region"
+                        />
+                      );
+                    })()}
                   </div>
                   <div>
                     <Label>Country</Label>
-                    <Input value={form.location_country} onChange={(e) => setForm((f) => ({ ...f, location_country: e.target.value }))} />
+                    <Select
+                      value={form.location_country}
+                      onValueChange={(v) => setForm((f) => ({ ...f, location_country: v, location_region: "" }))}
+                    >
+                      <SelectTrigger><SelectValue placeholder="Select country" /></SelectTrigger>
+                      <SelectContent className="max-h-72">
+                        {COUNTRIES.map((c) => (
+                          <SelectItem key={c.code} value={c.code}>{c.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -453,6 +490,113 @@ export default function OperatorProfile() {
 }
 
 // ============= Inline managers =============
+
+function UsernamePicker({
+  value,
+  onChange,
+  userId,
+  currentUsername,
+  seedName,
+  publishedUsername,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  userId: string | undefined;
+  currentUsername: string | null;
+  seedName: string;
+  publishedUsername: string | null;
+}) {
+  const { status, message } = useUsernameAvailability(value, userId, currentUsername);
+  const suggestions = suggestUsernames(seedName).filter((s) => s !== value);
+
+  const statusColor =
+    status === "available" || status === "self"
+      ? "text-green-600"
+      : status === "checking"
+      ? "text-muted-foreground"
+      : status === "idle"
+      ? "text-muted-foreground"
+      : "text-destructive";
+
+  const StatusIcon =
+    status === "available" || status === "self"
+      ? Check
+      : status === "checking"
+      ? Loader2
+      : status === "idle"
+      ? null
+      : XIcon;
+
+  return (
+    <div className="mt-4 space-y-3 rounded-md border bg-background p-3">
+      <div>
+        <Label htmlFor="public_username" className="text-sm font-medium">
+          Public username
+        </Label>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          Your profile will live at{" "}
+          <span className="font-mono">jobline.ai/talent/{value || "your-name"}</span>
+        </p>
+      </div>
+
+      <div className="relative">
+        <Input
+          id="public_username"
+          value={value}
+          onChange={(e) => onChange(e.target.value.toLowerCase().replace(/\s+/g, "-"))}
+          placeholder="e.g. zach-machinist"
+          maxLength={30}
+          className="pr-10"
+          autoComplete="off"
+        />
+        {StatusIcon && (
+          <StatusIcon
+            className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 ${statusColor} ${
+              status === "checking" ? "animate-spin" : ""
+            }`}
+          />
+        )}
+      </div>
+
+      {message && (
+        <p className={`text-xs ${statusColor}`}>{message}</p>
+      )}
+
+      {suggestions.length > 0 && status !== "available" && status !== "self" && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
+            <Sparkles className="w-3 h-3" /> Try:
+          </span>
+          {suggestions.map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => onChange(s)}
+              className="text-xs rounded-full border border-border bg-muted/40 px-2 py-0.5 hover:border-primary hover:text-primary transition-colors"
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {publishedUsername && (
+        <a
+          href={`/talent/${publishedUsername}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs text-primary hover:underline inline-flex items-center gap-1"
+        >
+          View public profile →
+        </a>
+      )}
+
+      <p className="text-[10px] text-muted-foreground">
+        3–30 characters. Lowercase letters, numbers, hyphens, underscores. Must start with letter or number.
+      </p>
+    </div>
+  );
+}
 
 function CertificationsManager({
   certs, onChange, uploadFile, userId,
