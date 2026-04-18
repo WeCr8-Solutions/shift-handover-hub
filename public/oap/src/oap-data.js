@@ -355,7 +355,7 @@ Specific callouts override the default block.<br><br>
 <strong style="color:var(--accent)">⊥ Perpendicularity:</strong> Surface must be 90° to a datum within a specified tolerance.<br>
 <strong style="color:var(--accent)">↗ Total Runout:</strong> Surface must stay within a tolerance band when rotated about a datum axis.<br><br>
 <strong style="color:var(--accent)">Datums:</strong> Letters in boxes (A, B, C) define the inspection reference. Always set the part on the datum reference frame BEFORE measuring GD&T tolerances.`,
-        quiz: { q:'A drawing shows "⊕ ⌀0.010 (M) | A | B | C" on a hole. What does this control?', opts:['The diameter of the hole','The position of the hole within a 0.010" cylindrical zone, relative to datums A, B, and C, with material condition modifier','The flatness of the surface around the hole','The depth of the hole'], ans:1, fb:'⊕ is True Position. The hole''s axis must lie within a 0.010" diameter cylinder centered on its theoretical location, measured from datums A, B, C. The (M) means at Maximum Material Condition — bonus tolerance available as the hole gets larger.' }
+        quiz: { q:'A drawing shows "⊕ ⌀0.010 (M) | A | B | C" on a hole. What does this control?', opts:['The diameter of the hole','The position of the hole within a 0.010" cylindrical zone, relative to datums A, B, and C, with material condition modifier','The flatness of the surface around the hole','The depth of the hole'], ans:1, fb:'⊕ is True Position. The hole\'s axis must lie within a 0.010" diameter cylinder centered on its theoretical location, measured from datums A, B, C. The (M) means at Maximum Material Condition — bonus tolerance available as the hole gets larger.' }
       },
       { id:'gdt3', title:'Surface Finish & Common Notes',
         content:`<strong>Surface finish callouts:</strong><br><br>
@@ -494,7 +494,7 @@ Specific callouts override the default block.<br><br>
 • Clear chips from way covers, table, and chip conveyor<br>
 • Wipe down any way oil pooling<br>
 • Hand off via the digital handoff log: condition, parts complete, in-progress notes`,
-        quiz: { q:'During a cycle, the machine alarms with "OVERTRAVEL Y AXIS". What is the correct first response?', opts:['Press Reset and run again','Note the alarm, jog Y in the OPPOSITE direction (away from the limit), then reset and continue','Power-cycle the machine','Manually push the Y axis back'], ans:1, fb:'Overtravel means an axis hit its soft/hard limit. Reset alone won''t clear it — you must JOG the axis away from the limit first, then reset. Pressing Reset without backing off can cause repeated alarms or damage.' }
+        quiz: { q:'During a cycle, the machine alarms with "OVERTRAVEL Y AXIS". What is the correct first response?', opts:['Press Reset and run again','Note the alarm, jog Y in the OPPOSITE direction (away from the limit), then reset and continue','Power-cycle the machine','Manually push the Y axis back'], ans:1, fb:'Overtravel means an axis hit its soft/hard limit. Reset alone won\'t clear it — you must JOG the axis away from the limit first, then reset. Pressing Reset without backing off can cause repeated alarms or damage.' }
       },
     ],
   },
