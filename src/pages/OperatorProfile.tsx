@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Loader2, Save, Linkedin, FileText, Award, Briefcase, GraduationCap, Wrench, Star, Plus, Trash2, ShieldCheck, Upload, Globe, RefreshCw, Check, X as XIcon, Sparkles } from "lucide-react";
+import { Loader2, Save, Linkedin, FileText, Award, Briefcase, GraduationCap, Wrench, Star, Plus, Trash2, ShieldCheck, Upload, Globe, RefreshCw, Check, X as XIcon, Sparkles, Share2, Copy, ExternalLink, QrCode } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useOperatorProfile, syncIssuedCertificatesToProfile } from "@/hooks/useOperatorProfile";
