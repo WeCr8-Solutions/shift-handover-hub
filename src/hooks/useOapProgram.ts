@@ -64,13 +64,18 @@ export interface OapQuizAttempt {
 
 export interface OapRoleProgram {
   id: string;
-  organization_id: string;
+  organization_id: string | null;
   name: string;
   description: string | null;
   required_machine_tags: string[] | null;
   required_inspection_tool_slugs: string[] | null;
   required_machining_operation_slugs: string[] | null;
   is_active: boolean;
+  is_canonical?: boolean;
+  template_slug?: string | null;
+  vertical?: string | null;
+  vertical_role_slug?: string | null;
+  source_template_id?: string | null;
 }
 
 export interface OapEnrollment {
