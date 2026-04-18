@@ -4,6 +4,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { OapGcaTalentFlow } from "@/components/marketing/OapGcaTalentFlow";
+import { VerticalsShowcase } from "@/components/marketing/VerticalsShowcase";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
