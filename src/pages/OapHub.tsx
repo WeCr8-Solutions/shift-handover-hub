@@ -22,7 +22,9 @@ export default function OapHub() {
   const { data: courses = [], isLoading } = useOapCourses();
   const { data: enrollments = [] } = useMyOapEnrollments(user?.id ?? null);
   const { data: attempts = [] } = useMyOapQuizAttempts(user?.id ?? null);
+  const { data: presetPrograms = [] } = useCanonicalRolePrograms();
   const [certOpen, setCertOpen] = useState(false);
+  const verticals = Array.from(new Set(presetPrograms.map((p) => p.vertical ?? "machining")));
 
   const passedQuizzes = attempts.filter((a) => a.passed).length;
   const totalQuizzes = attempts.length;
