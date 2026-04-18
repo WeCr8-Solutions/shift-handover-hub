@@ -54,8 +54,17 @@ export interface CertificateRecord {
   validUntil: string | null; // ISO date or null = lifetime
   issuedAt: string;
   pdfUrl: string | null;
+  vertical?: OapVertical;
   items?: Array<{
-    type: "machine" | "inspection_tool" | "machining_operation" | "safety_credential" | "course";
+    type:
+      | "machine"
+      | "inspection_tool"
+      | "machining_operation"
+      | "safety_credential"
+      | "course"
+      | "vertical_role"
+      | "trade_tool"
+      | "license";
     label: string;
   }>;
 }

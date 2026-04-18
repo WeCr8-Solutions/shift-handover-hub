@@ -1,10 +1,11 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import type { CertificateProgram, CertificateRecord } from "@/lib/certificates";
+import type { CertificateProgram, CertificateRecord, OapVertical } from "@/lib/certificates";
 
 interface IssueArgs {
   program: CertificateProgram;
+  vertical?: OapVertical;
   recipientName: string;
   recipientEmail: string;
   programName: string;
@@ -14,7 +15,15 @@ interface IssueArgs {
   validUntil?: string | null;
   amountCents?: number;
   items?: Array<{
-    item_type: "machine" | "inspection_tool" | "machining_operation" | "safety_credential" | "course";
+    item_type:
+      | "machine"
+      | "inspection_tool"
+      | "machining_operation"
+      | "safety_credential"
+      | "course"
+      | "vertical_role"
+      | "trade_tool"
+      | "license";
     item_slug?: string | null;
     display_label: string;
   }>;
