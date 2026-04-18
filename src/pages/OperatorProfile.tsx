@@ -170,6 +170,13 @@ export default function OperatorProfile() {
           </p>
         </div>
 
+        <ShareProfileCard
+          username={profile?.public_username ?? null}
+          visibility={profile?.profile_visibility ?? "private"}
+          displayName={authProfile?.display_name ?? user?.email ?? "Operator"}
+          headline={profile?.headline ?? null}
+        />
+
         {/* Visibility selector */}
         <Card className={form.profile_visibility !== "private" ? "border-primary bg-primary/5" : "border-dashed"}>
           <CardHeader>
