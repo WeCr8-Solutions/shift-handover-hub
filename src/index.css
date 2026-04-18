@@ -1,10 +1,10 @@
 /* Font loading:
-   - Cloud (default): loaded from Google Fonts CDN below.
-   - Self-hosted ITAR (VITE_DISABLE_ANALYTICS=true): comment out the @import
-     and ensure src/styles/fonts-local.css is imported instead (see vite.config.ts).
-     Font files must be placed in src/assets/fonts/ — see README there.
+   - Cloud (default): Inter + JetBrains Mono are loaded async via index.html
+     (print-media swap) to avoid render-blocking. font-display:swap from Google
+     Fonts ensures text shows immediately with fallback during load.
+   - Self-hosted ITAR (VITE_DISABLE_ANALYTICS=true): see src/styles/fonts-local.css
+     and ensure font files are placed in src/assets/fonts/ — see README there.
 */
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
