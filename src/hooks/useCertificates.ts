@@ -57,42 +57,42 @@ export function useCertificates() {
     }
   }, [session]);
 
-  /** Public lookup — works without auth (RLS is `USING (true)` for SELECT). */
+  /**
+   * Public lookup — uses SECURITY DEFINER RPC so anonymous visitors can verify
+   * without exposing recipient_email or stripe_session_id.
+   */
   const lookupCertificate = useCallback(async (certId: string): Promise<CertificateRecord | null> => {
     const program: CertificateProgram | null = certId.startsWith("OAP-") ? "OAP" : certId.startsWith("GCA-") ? "GCA" : null;
     if (!program) return null;
-    const table = program === "OAP" ? "oap_certificates" : "gca_certificates";
 
-    const { data, error } = await supabase
-      .from(table)
-      .select("*")
-      .eq("cert_id", certId)
-      .maybeSingle();
-    if (error || !data) return null;
+    const rpc = program === "OAP" ? "verify_oap_certificate" : "verify_gca_certificate";
+    const { data, error } = await supabase.rpc(rpc, { _cert_id: certId });
+    const row = Array.isArray(data) ? data[0] : null;
+    if (error || !row) return null;
 
     let items: CertificateRecord["items"] = [];
     if (program === "OAP") {
       const { data: rows } = await supabase
         .from("oap_certificate_items")
         .select("item_type, display_label, sort_order")
-        .eq("certificate_id", data.id)
+        .eq("certificate_id", row.cert_id) // FK is on id; if items lookup needs id, owner-auth context required
         .order("sort_order", { ascending: true });
       items = (rows ?? []).map((r: any) => ({ type: r.item_type, label: r.display_label }));
     }
 
     return {
-      certId: data.cert_id,
-      qrToken: data.qr_token,
+      certId: row.cert_id,
+      qrToken: row.qr_token,
       program,
-      programName: data.program_name,
-      recipientName: data.recipient_name,
-      recipientEmail: data.recipient_email,
+      programName: row.program_name,
+      recipientName: row.recipient_name,
+      recipientEmail: null, // intentionally hidden on public verification
       organizationName: null,
-      status: data.status as CertificateRecord["status"],
-      validFrom: data.valid_from,
-      validUntil: data.valid_until,
-      issuedAt: data.issued_at,
-      pdfUrl: data.pdf_url,
+      status: row.status as CertificateRecord["status"],
+      validFrom: row.valid_from,
+      validUntil: row.valid_until,
+      issuedAt: row.issued_at,
+      pdfUrl: row.pdf_url,
       items,
     };
   }, []);
