@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { QRCodeSVG } from "qrcode.react";
 import { SEOHead } from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
@@ -237,14 +237,20 @@ export default function Start() {
         {/* ── Section 1: Top Conversion Block ── */}
         <section className="w-full max-w-md space-y-5">
 
-          {/* Logo */}
+          {/* Logo — links back to home so visitors aren't trapped on /start */}
           <div className="text-center">
-            <img
-              src={logo}
-              alt="JobLine.ai logo"
-              className="h-12 sm:h-14 mx-auto"
-              loading="eager"
-            />
+            <Link
+              to="/"
+              aria-label="JobLine.ai home"
+              className="inline-block rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <img
+                src={logo}
+                alt="JobLine.ai logo"
+                className="h-12 sm:h-14 mx-auto"
+                loading="eager"
+              />
+            </Link>
           </div>
 
           {/* Dynamic Headline */}
