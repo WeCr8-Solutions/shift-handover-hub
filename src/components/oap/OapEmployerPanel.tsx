@@ -34,6 +34,7 @@ import { toast } from "sonner";
 import { OapBulkEnrollDialog } from "./OapBulkEnrollDialog";
 import { OapRecertManager } from "./OapRecertManager";
 import { OapRedeemTransferDialog } from "./OapRedeemTransferDialog";
+import { OapBrowseTemplatesDialog } from "./OapBrowseTemplatesDialog";
 
 function downloadEnrollmentsCsv(enrollments: any[], members: any[], programs: any[]) {
   const header = ["operator_name", "operator_email", "role_program", "status", "started_at", "expected_completion_at", "completed_at"];
