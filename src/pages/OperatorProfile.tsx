@@ -19,6 +19,7 @@ import { useOperatorProfile, syncIssuedCertificatesToProfile } from "@/hooks/use
 import { supabase } from "@/integrations/supabase/client";
 import { COUNTRIES, getRegionsForCountry, SUGGESTED_CITIES, SUGGESTED_HEADLINES } from "@/lib/talent/locations";
 import { useUsernameAvailability, suggestUsernames } from "@/hooks/useUsernameAvailability";
+import { getPublicTalentUrl } from "@/lib/talent/publicHost";
 
 
 const PROFICIENCY_LEVELS = ["beginner", "intermediate", "advanced", "expert"] as const;
@@ -997,8 +998,7 @@ function ShareProfileCard({
 }) {
   const { toast } = useToast();
   const isLive = !!username && visibility === "public";
-  const origin = typeof window !== "undefined" ? window.location.origin : "https://jobline.ai";
-  const publicUrl = username ? `${origin}/talent/${username}` : null;
+  const publicUrl = username ? getPublicTalentUrl(username) : null;
 
   const shareText = headline
     ? `${displayName} — ${headline} · JobLine Talent Profile`
