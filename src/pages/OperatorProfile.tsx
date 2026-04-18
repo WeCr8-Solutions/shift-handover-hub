@@ -491,6 +491,113 @@ export default function OperatorProfile() {
 
 // ============= Inline managers =============
 
+function UsernamePicker({
+  value,
+  onChange,
+  userId,
+  currentUsername,
+  seedName,
+  publishedUsername,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  userId: string | undefined;
+  currentUsername: string | null;
+  seedName: string;
+  publishedUsername: string | null;
+}) {
+  const { status, message } = useUsernameAvailability(value, userId, currentUsername);
+  const suggestions = suggestUsernames(seedName).filter((s) => s !== value);
+
+  const statusColor =
+    status === "available" || status === "self"
+      ? "text-green-600"
+      : status === "checking"
+      ? "text-muted-foreground"
+      : status === "idle"
+      ? "text-muted-foreground"
+      : "text-destructive";
+
+  const StatusIcon =
+    status === "available" || status === "self"
+      ? Check
+      : status === "checking"
+      ? Loader2
+      : status === "idle"
+      ? null
+      : XIcon;
+
+  return (
+    <div className="mt-4 space-y-3 rounded-md border bg-background p-3">
+      <div>
+        <Label htmlFor="public_username" className="text-sm font-medium">
+          Public username
+        </Label>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          Your profile will live at{" "}
+          <span className="font-mono">jobline.ai/talent/{value || "your-name"}</span>
+        </p>
+      </div>
+
+      <div className="relative">
+        <Input
+          id="public_username"
+          value={value}
+          onChange={(e) => onChange(e.target.value.toLowerCase().replace(/\s+/g, "-"))}
+          placeholder="e.g. zach-machinist"
+          maxLength={30}
+          className="pr-10"
+          autoComplete="off"
+        />
+        {StatusIcon && (
+          <StatusIcon
+            className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 ${statusColor} ${
+              status === "checking" ? "animate-spin" : ""
+            }`}
+          />
+        )}
+      </div>
+
+      {message && (
+        <p className={`text-xs ${statusColor}`}>{message}</p>
+      )}
+
+      {suggestions.length > 0 && status !== "available" && status !== "self" && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
+            <Sparkles className="w-3 h-3" /> Try:
+          </span>
+          {suggestions.map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => onChange(s)}
+              className="text-xs rounded-full border border-border bg-muted/40 px-2 py-0.5 hover:border-primary hover:text-primary transition-colors"
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {publishedUsername && (
+        <a
+          href={`/talent/${publishedUsername}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs text-primary hover:underline inline-flex items-center gap-1"
+        >
+          View public profile →
+        </a>
+      )}
+
+      <p className="text-[10px] text-muted-foreground">
+        3–30 characters. Lowercase letters, numbers, hyphens, underscores. Must start with letter or number.
+      </p>
+    </div>
+  );
+}
+
 function CertificationsManager({
   certs, onChange, uploadFile, userId,
 }: {
