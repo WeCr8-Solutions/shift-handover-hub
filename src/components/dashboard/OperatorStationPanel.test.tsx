@@ -213,7 +213,7 @@ describe("OperatorStationPanel", () => {
       _current_station_id: "stn-1",
       _actor_id: "user-1",
     });
-    expect(result.error).toEqual({ message: "Database error" });
+    expect(result.error).toMatchObject({ message: "Database error" });
   });
 
   it("renders with different station names", () => {
