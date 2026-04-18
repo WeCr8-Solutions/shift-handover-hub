@@ -539,16 +539,24 @@ export default function OperatorProfile() {
 
                 <Separator />
                 <div>
-                  <Label className="flex items-center gap-2"><FileText className="w-4 h-4" /> Resume PDF</Label>
+                  <Label className="flex items-center gap-2"><FileText className="w-4 h-4" /> Resume (PDF or DOCX)</Label>
                   <div className="flex items-center gap-2 mt-1">
-                    <Input type="file" accept="application/pdf" onChange={handleResumeUpload} disabled={uploadingResume} />
+                    <Input
+                      type="file"
+                      accept="application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.pdf,.docx"
+                      onChange={handleResumeUpload}
+                      disabled={uploadingResume}
+                    />
                     {profile?.resume_pdf_url && (
                       <Button variant="outline" size="sm" asChild>
                         <a href={profile.resume_pdf_url} target="_blank" rel="noopener noreferrer">View</a>
                       </Button>
                     )}
                   </div>
-                  {uploadingResume && <p className="text-sm text-muted-foreground mt-1">Uploading…</p>}
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Empty profile fields, skills, work history, education and machines will be auto-filled from your resume. Existing data is never overwritten.
+                  </p>
+                  {uploadingResume && <p className="text-sm text-muted-foreground mt-1">Uploading and parsing…</p>}
                 </div>
 
                 <Button onClick={handleSave} disabled={saving} className="gap-2">
