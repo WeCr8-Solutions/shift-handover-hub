@@ -11,6 +11,8 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { TalentSocialPanel } from "@/components/talent/TalentSocialPanel";
+import { PublicProfileQrCard } from "@/components/talent/PublicProfileQrCard";
+import "@/styles/print-talent.css";
 import {
   MapPin,
   Linkedin,
@@ -308,11 +310,11 @@ export default function PublicOperatorProfile() {
                   )}
                 </div>
 
-                <div className="pt-2 flex flex-wrap gap-2">
-                  <Button asChild size="sm">
-                    <Link to="/talent/search">Employer? Contact via Talent Search</Link>
-                  </Button>
+                <div className="pt-2 flex flex-wrap gap-2 no-print">
                   <Button asChild size="sm" variant="outline">
+                    <Link to="/talent/search">Employers: contact via Talent Search</Link>
+                  </Button>
+                  <Button asChild size="sm" variant="ghost">
                     <Link to="/auth?signup=1">Build your own profile</Link>
                   </Button>
                 </div>
@@ -320,6 +322,16 @@ export default function PublicOperatorProfile() {
             </div>
           </CardContent>
         </Card>
+
+        {/* QR + Share/Print + verified-on-JobLine strip */}
+        <PublicProfileQrCard
+          username={profile.public_username}
+          fullName={fullName}
+          latestCertId={
+            certs.find((c) => c.linked_cert_id && c.verification_source.startsWith("verified_"))
+              ?.linked_cert_id ?? null
+          }
+        />
 
         {/* Coworker social: connect, follow, recommendations */}
         <TalentSocialPanel
