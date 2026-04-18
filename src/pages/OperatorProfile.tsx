@@ -12,10 +12,14 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Loader2, Save, Linkedin, FileText, Award, Briefcase, GraduationCap, Wrench, Star, Plus, Trash2, ShieldCheck, Upload, Globe, RefreshCw } from "lucide-react";
+import { Loader2, Save, Linkedin, FileText, Award, Briefcase, GraduationCap, Wrench, Star, Plus, Trash2, ShieldCheck, Upload, Globe, RefreshCw, Check, X as XIcon, Sparkles } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useOperatorProfile, syncIssuedCertificatesToProfile } from "@/hooks/useOperatorProfile";
 import { supabase } from "@/integrations/supabase/client";
+import { COUNTRIES, getRegionsForCountry, SUGGESTED_CITIES, SUGGESTED_HEADLINES } from "@/lib/talent/locations";
+import { useUsernameAvailability, suggestUsernames } from "@/hooks/useUsernameAvailability";
+import { useAuth as useAuthForName } from "@/contexts/AuthContext";
 
 const PROFICIENCY_LEVELS = ["beginner", "intermediate", "advanced", "expert"] as const;
 
