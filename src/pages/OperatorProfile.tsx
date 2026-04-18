@@ -19,7 +19,7 @@ import { useOperatorProfile, syncIssuedCertificatesToProfile } from "@/hooks/use
 import { supabase } from "@/integrations/supabase/client";
 import { COUNTRIES, getRegionsForCountry, SUGGESTED_CITIES, SUGGESTED_HEADLINES } from "@/lib/talent/locations";
 import { useUsernameAvailability, suggestUsernames } from "@/hooks/useUsernameAvailability";
-import { useAuth as useAuthForName } from "@/contexts/AuthContext";
+
 
 const PROFICIENCY_LEVELS = ["beginner", "intermediate", "advanced", "expert"] as const;
 
