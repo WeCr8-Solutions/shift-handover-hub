@@ -16,110 +16,113 @@ import { MFAEnrollmentGate } from "@/components/compliance/MFAEnrollmentGate";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { USPersonDeclarationGate } from "@/components/compliance/USPersonDeclarationGate";
 import { ReleaseBadge } from "@/components/ReleaseBadge";
-import Landing from "./pages/Landing";
-import Index from "./pages/Index";
-import Auth from "./pages/Auth";
-import Teams from "./pages/Teams";
-import Profile from "./pages/Profile";
-import Admin from "./pages/Admin";
-import FieldView from "./pages/FieldView";
-import Testing from "./pages/Testing";
-import Queue from "./pages/Queue";
-import Setup from "./pages/Setup";
-import Pricing from "./pages/Pricing";
-import Settings from "./pages/Settings";
-import DonationSuccess from "./pages/DonationSuccess";
-import Demo from "./pages/Demo";
-import FounderRedirect from "./pages/FounderRedirect";
-import NotFound from "./pages/NotFound";
-import ShiftHandoffSoftware from "./pages/features/ShiftHandoffSoftware";
-import WorkOrderTracking from "./pages/features/WorkOrderTracking";
-import ProductionScheduling from "./pages/features/ProductionScheduling";
-import MachineShopSoftware from "./pages/features/MachineShopSoftware";
-import ProductionControl from "./pages/features/ProductionControl";
-import DigitalExpeditor from "./pages/features/DigitalExpeditor";
-import ManufacturingOversight from "./pages/features/ManufacturingOversight";
-import QualityManagement from "./pages/features/QualityManagement";
-import CNCOperatorTools from "./pages/features/CNCOperatorTools";
-import TeamCollaboration from "./pages/features/TeamCollaboration";
-import DowntimeTracking from "./pages/features/DowntimeTracking";
-import AIPlanningAssistant from "./pages/features/AIPlanningAssistant";
-import MachineTimeTracking from "./pages/features/MachineTimeTracking";
-import ShiftHandoff from "./pages/features/ShiftHandoff";
-import ManufacturingVisibility from "./pages/features/ManufacturingVisibility";
-import VSCodeGCode from "./pages/features/VSCodeGCode";
-import MachineConnectPage from "./pages/features/MachineConnect";
-import JobShopSoftware from "./pages/features/JobShopSoftware";
-import JobShopERP from "./pages/features/JobShopERP";
-import CNCMachineTracking from "./pages/features/CNCMachineTracking";
-import DNCFileSoftware from "./pages/features/DNCFileSoftware";
-import ShopFloorDashboard from "./pages/features/ShopFloorDashboard";
-import MesSoftware from "./pages/features/MesSoftware";
-import ShopFloorControl from "./pages/features/ShopFloorControl";
-import ProductionTracking from "./pages/features/ProductionTracking";
-import JobCostingSoftware from "./pages/features/JobCostingSoftware";
-import OeeSoftware from "./pages/features/OeeSoftware";
-import CapacityPlanning from "./pages/features/CapacityPlanning";
-import FirstArticleInspection from "./pages/features/FirstArticleInspection";
-import NcrSoftware from "./pages/features/NcrSoftware";
-import PreventiveMaintenance from "./pages/features/PreventiveMaintenance";
-import WorkCenterScheduling from "./pages/features/WorkCenterScheduling";
-import QuotingSoftware from "./pages/features/QuotingSoftware";
-import JobBossAlternative from "./pages/compare/JobBossAlternative";
-import ProShopAlternative from "./pages/compare/ProShopAlternative";
-import E2ShopAlternative from "./pages/compare/E2ShopAlternative";
-import GlobalShopAlternative from "./pages/compare/GlobalShopAlternative";
-import EpicorAlternative from "./pages/compare/EpicorAlternative";
-import SpreadsheetAlternative from "./pages/compare/SpreadsheetAlternative";
-import MesVsErp from "./pages/resources/MesVsErp";
-import ShopFloorBuyersGuide from "./pages/resources/ShopFloorBuyersGuide";
-import Updates from "./pages/Updates";
-import Start from "./pages/Start";
-import ResourcesIndex from "./pages/resources/ResourcesIndex";
-import ManufacturingGuides from "./pages/resources/ManufacturingGuides";
-import GCodeReference from "./pages/resources/GCodeReference";
-import GCodeAcademy from "./pages/resources/GCodeAcademy";
-import OperatorAcceptanceProgram from "./pages/resources/OperatorAcceptanceProgram";
-import OAPLanding from "./pages/OAPLanding";
-import GCALanding from "./pages/GCALanding";
-import VerifyCertificate from "./pages/VerifyCertificate";
-import CertSuccess from "./pages/CertSuccess";
-import OapWalkthrough from "./pages/OapWalkthrough";
-import OapHub from "./pages/OapHub";
-import OapCoursePlayer from "./pages/OapCoursePlayer";
-import OapEmployer from "./pages/OapEmployer";
-import OapMyTranscript from "./pages/OapMyTranscript";
-import IndustryGlossary from "./pages/resources/IndustryGlossary";
-import BeginnersGuide from "./pages/resources/BeginnersGuide";
-import ManufacturingCareers from "./pages/resources/ManufacturingCareers";
-import SafetyCompliance from "./pages/resources/SafetyCompliance";
-import QualityInspection from "./pages/resources/QualityInspection";
-import LeanManufacturing from "./pages/resources/LeanManufacturing";
-import FiveSMethodology from "./pages/resources/FiveSMethodology";
-import KanbanSortingTechniques from "./pages/resources/KanbanSortingTechniques";
-import ManufacturingPioneers from "./pages/resources/ManufacturingPioneers";
-import ToolComparisons from "./pages/resources/ToolComparisons";
-import ERPSelectionGuide from "./pages/resources/ERPSelectionGuide";
-import ResetPassword from "./pages/ResetPassword";
-import Blog from "./pages/Blog";
-import BlogPost from "./pages/BlogPost";
-import Help from "./pages/Help";
-import UseCases from "./pages/UseCases";
-import HelpArticle from "./pages/HelpArticle";
-import Tools from "./pages/Tools";
-import IndustryPage from "./pages/industries/IndustryPage";
-import ERPGuidePart from "./pages/resources/ERPGuidePart";
-import DevPortal from "./pages/DevPortal";
-import DevDocArticle from "./pages/DevDocArticle";
-import WorkOrderHistoryPage from "./pages/WorkOrderHistoryPage";
-import QuoteHistoryPage from "./pages/QuoteHistoryPage";
-import OperatorProfile from "./pages/OperatorProfile";
-import TalentLanding from "./pages/TalentLanding";
-import TalentSearch from "./pages/TalentSearch";
-import PublicOperatorProfile from "./pages/PublicOperatorProfile";
-import OperatorInbox from "./pages/OperatorInbox";
 import { lazy, Suspense } from "react";
 
+// Eager: landing page (LCP-critical, most-visited route)
+import Landing from "./pages/Landing";
+
+// All other pages: lazy-loaded for route-based code splitting
+const Index = lazy(() => import("./pages/Index"));
+const Auth = lazy(() => import("./pages/Auth"));
+const Teams = lazy(() => import("./pages/Teams"));
+const Profile = lazy(() => import("./pages/Profile"));
+const Admin = lazy(() => import("./pages/Admin"));
+const FieldView = lazy(() => import("./pages/FieldView"));
+const Testing = lazy(() => import("./pages/Testing"));
+const Queue = lazy(() => import("./pages/Queue"));
+const Setup = lazy(() => import("./pages/Setup"));
+const Pricing = lazy(() => import("./pages/Pricing"));
+const Settings = lazy(() => import("./pages/Settings"));
+const DonationSuccess = lazy(() => import("./pages/DonationSuccess"));
+const Demo = lazy(() => import("./pages/Demo"));
+const FounderRedirect = lazy(() => import("./pages/FounderRedirect"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const ShiftHandoffSoftware = lazy(() => import("./pages/features/ShiftHandoffSoftware"));
+const WorkOrderTracking = lazy(() => import("./pages/features/WorkOrderTracking"));
+const ProductionScheduling = lazy(() => import("./pages/features/ProductionScheduling"));
+const MachineShopSoftware = lazy(() => import("./pages/features/MachineShopSoftware"));
+const ProductionControl = lazy(() => import("./pages/features/ProductionControl"));
+const DigitalExpeditor = lazy(() => import("./pages/features/DigitalExpeditor"));
+const ManufacturingOversight = lazy(() => import("./pages/features/ManufacturingOversight"));
+const QualityManagement = lazy(() => import("./pages/features/QualityManagement"));
+const CNCOperatorTools = lazy(() => import("./pages/features/CNCOperatorTools"));
+const TeamCollaboration = lazy(() => import("./pages/features/TeamCollaboration"));
+const DowntimeTracking = lazy(() => import("./pages/features/DowntimeTracking"));
+const AIPlanningAssistant = lazy(() => import("./pages/features/AIPlanningAssistant"));
+const MachineTimeTracking = lazy(() => import("./pages/features/MachineTimeTracking"));
+const ShiftHandoff = lazy(() => import("./pages/features/ShiftHandoff"));
+const ManufacturingVisibility = lazy(() => import("./pages/features/ManufacturingVisibility"));
+const VSCodeGCode = lazy(() => import("./pages/features/VSCodeGCode"));
+const MachineConnectPage = lazy(() => import("./pages/features/MachineConnect"));
+const JobShopSoftware = lazy(() => import("./pages/features/JobShopSoftware"));
+const JobShopERP = lazy(() => import("./pages/features/JobShopERP"));
+const CNCMachineTracking = lazy(() => import("./pages/features/CNCMachineTracking"));
+const DNCFileSoftware = lazy(() => import("./pages/features/DNCFileSoftware"));
+const ShopFloorDashboard = lazy(() => import("./pages/features/ShopFloorDashboard"));
+const MesSoftware = lazy(() => import("./pages/features/MesSoftware"));
+const ShopFloorControl = lazy(() => import("./pages/features/ShopFloorControl"));
+const ProductionTracking = lazy(() => import("./pages/features/ProductionTracking"));
+const JobCostingSoftware = lazy(() => import("./pages/features/JobCostingSoftware"));
+const OeeSoftware = lazy(() => import("./pages/features/OeeSoftware"));
+const CapacityPlanning = lazy(() => import("./pages/features/CapacityPlanning"));
+const FirstArticleInspection = lazy(() => import("./pages/features/FirstArticleInspection"));
+const NcrSoftware = lazy(() => import("./pages/features/NcrSoftware"));
+const PreventiveMaintenance = lazy(() => import("./pages/features/PreventiveMaintenance"));
+const WorkCenterScheduling = lazy(() => import("./pages/features/WorkCenterScheduling"));
+const QuotingSoftware = lazy(() => import("./pages/features/QuotingSoftware"));
+const JobBossAlternative = lazy(() => import("./pages/compare/JobBossAlternative"));
+const ProShopAlternative = lazy(() => import("./pages/compare/ProShopAlternative"));
+const E2ShopAlternative = lazy(() => import("./pages/compare/E2ShopAlternative"));
+const GlobalShopAlternative = lazy(() => import("./pages/compare/GlobalShopAlternative"));
+const EpicorAlternative = lazy(() => import("./pages/compare/EpicorAlternative"));
+const SpreadsheetAlternative = lazy(() => import("./pages/compare/SpreadsheetAlternative"));
+const MesVsErp = lazy(() => import("./pages/resources/MesVsErp"));
+const ShopFloorBuyersGuide = lazy(() => import("./pages/resources/ShopFloorBuyersGuide"));
+const Updates = lazy(() => import("./pages/Updates"));
+const Start = lazy(() => import("./pages/Start"));
+const ResourcesIndex = lazy(() => import("./pages/resources/ResourcesIndex"));
+const ManufacturingGuides = lazy(() => import("./pages/resources/ManufacturingGuides"));
+const GCodeReference = lazy(() => import("./pages/resources/GCodeReference"));
+const GCodeAcademy = lazy(() => import("./pages/resources/GCodeAcademy"));
+const OperatorAcceptanceProgram = lazy(() => import("./pages/resources/OperatorAcceptanceProgram"));
+const OAPLanding = lazy(() => import("./pages/OAPLanding"));
+const GCALanding = lazy(() => import("./pages/GCALanding"));
+const VerifyCertificate = lazy(() => import("./pages/VerifyCertificate"));
+const CertSuccess = lazy(() => import("./pages/CertSuccess"));
+const OapWalkthrough = lazy(() => import("./pages/OapWalkthrough"));
+const OapHub = lazy(() => import("./pages/OapHub"));
+const OapCoursePlayer = lazy(() => import("./pages/OapCoursePlayer"));
+const OapEmployer = lazy(() => import("./pages/OapEmployer"));
+const OapMyTranscript = lazy(() => import("./pages/OapMyTranscript"));
+const IndustryGlossary = lazy(() => import("./pages/resources/IndustryGlossary"));
+const BeginnersGuide = lazy(() => import("./pages/resources/BeginnersGuide"));
+const ManufacturingCareers = lazy(() => import("./pages/resources/ManufacturingCareers"));
+const SafetyCompliance = lazy(() => import("./pages/resources/SafetyCompliance"));
+const QualityInspection = lazy(() => import("./pages/resources/QualityInspection"));
+const LeanManufacturing = lazy(() => import("./pages/resources/LeanManufacturing"));
+const FiveSMethodology = lazy(() => import("./pages/resources/FiveSMethodology"));
+const KanbanSortingTechniques = lazy(() => import("./pages/resources/KanbanSortingTechniques"));
+const ManufacturingPioneers = lazy(() => import("./pages/resources/ManufacturingPioneers"));
+const ToolComparisons = lazy(() => import("./pages/resources/ToolComparisons"));
+const ERPSelectionGuide = lazy(() => import("./pages/resources/ERPSelectionGuide"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const Blog = lazy(() => import("./pages/Blog"));
+const BlogPost = lazy(() => import("./pages/BlogPost"));
+const Help = lazy(() => import("./pages/Help"));
+const UseCases = lazy(() => import("./pages/UseCases"));
+const HelpArticle = lazy(() => import("./pages/HelpArticle"));
+const Tools = lazy(() => import("./pages/Tools"));
+const IndustryPage = lazy(() => import("./pages/industries/IndustryPage"));
+const ERPGuidePart = lazy(() => import("./pages/resources/ERPGuidePart"));
+const DevPortal = lazy(() => import("./pages/DevPortal"));
+const DevDocArticle = lazy(() => import("./pages/DevDocArticle"));
+const WorkOrderHistoryPage = lazy(() => import("./pages/WorkOrderHistoryPage"));
+const QuoteHistoryPage = lazy(() => import("./pages/QuoteHistoryPage"));
+const OperatorProfile = lazy(() => import("./pages/OperatorProfile"));
+const TalentLanding = lazy(() => import("./pages/TalentLanding"));
+const TalentSearch = lazy(() => import("./pages/TalentSearch"));
+const PublicOperatorProfile = lazy(() => import("./pages/PublicOperatorProfile"));
+const OperatorInbox = lazy(() => import("./pages/OperatorInbox"));
 const ShopFloorDisplay = lazy(() => import("./pages/ShopFloorDisplay"));
 
 const queryClient = new QueryClient({
@@ -132,6 +135,8 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+const RouteFallback = () => <div className="min-h-screen bg-background" />;
 
 const App = () => (
   <HelmetProvider>
@@ -155,6 +160,7 @@ const App = () => (
                   <ReleaseBadge />
                   <GuidedTour />
                   <WelcomeModal />
+                  <Suspense fallback={<RouteFallback />}>
                   <Routes>
                     <Route path="/" element={<Landing />} />
                     <Route path="/dashboard" element={<Index />} />
@@ -258,10 +264,11 @@ const App = () => (
                     <Route path="/resources/erp-guide/:partSlug" element={<ERPGuidePart />} />
                     <Route path="/dev" element={<DevPortal />} />
                     <Route path="/dev/:category/:slug" element={<DevDocArticle />} />
-                    <Route path="/display/:displayId" element={<Suspense fallback={<div className="min-h-screen bg-background" />}><ShopFloorDisplay /></Suspense>} />
+                    <Route path="/display/:displayId" element={<ShopFloorDisplay />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
+                  </Suspense>
                   </JobLineProvider>
                   </USPersonDeclarationGate>
                   </MFAEnrollmentGate>
