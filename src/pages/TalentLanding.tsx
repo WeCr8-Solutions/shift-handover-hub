@@ -106,7 +106,8 @@ export default function TalentLanding() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const q = search.trim();
-    navigate(q ? `/talent/search?q=${encodeURIComponent(q)}` : "/talent/search");
+    // Public browse page — works for signed-out visitors and employers.
+    navigate(q ? `/talent/browse?q=${encodeURIComponent(q)}` : "/talent/browse");
   };
 
   const jsonLd = {
@@ -209,11 +210,18 @@ export default function TalentLanding() {
                 Operators who've made their profile public. Click through to see their verified record.
               </p>
             </div>
-            <Button asChild variant="outline">
-              <Link to="/talent/search" className="gap-2">
-                Employer search <ArrowRight className="w-4 h-4" />
-              </Link>
-            </Button>
+            <div className="flex gap-2 flex-wrap">
+              <Button asChild variant="default">
+                <Link to="/talent/browse" className="gap-2">
+                  Browse all profiles <ArrowRight className="w-4 h-4" />
+                </Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link to="/talent/search" className="gap-2">
+                  Employer search <ArrowRight className="w-4 h-4" />
+                </Link>
+              </Button>
+            </div>
           </div>
 
           {loading ? (
