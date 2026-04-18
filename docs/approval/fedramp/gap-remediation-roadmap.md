@@ -52,14 +52,14 @@
 | G-09 | Formal incident response plan (IRP) | Documentation | 🟡 MEDIUM | IR-1, IR-8 | ✅ `incident-response-plan.md` |
 | G-10 | Formal vulnerability management program (VMP) | Documentation | 🟡 MEDIUM | RA-1, RA-5 | ✅ `vulnerability management program/vulnerability-management-program.md` |
 | G-11 | Formal backup and recovery plan | Documentation | 🟡 MEDIUM | CP-9, CP-10 | ✅ `backup-recovery-plan.md` |
-| G-12 | AI opt-out UX (explicit org-level toggle) | Product | 🟡 MEDIUM | AC-20, SA-9 |
-| G-13 | Prompt injection detection controls | AI Security | 🟡 MEDIUM | SI-3, SI-10 |
+| G-12 | AI opt-out UX (explicit org-level toggle) | Product | 🟡 MEDIUM | AC-20, SA-9 | ✅ migration + edge fn guard + OrganizationSettings UI |
+| G-13 | Prompt injection detection controls | AI Security | 🟡 MEDIUM | SI-3, SI-10 | ✅ Pattern validation + message cap in ai-planning-assistant |
 | G-14 | AI data retention policy document | Documentation | 🟡 MEDIUM | AU-11, MP-6 | ✅ `ai-data-retention-policy.md` |
-| G-15 | Backup restore test cadence | Operations | 🟢 LOW | CP-4 |
+| G-15 | Backup restore test cadence | Operations | 🟢 LOW | CP-4 | ✅ Quarterly procedure added to `backup-recovery-plan.md` §6a |
 | G-16 | Status page (uptime statistics) | Operations | 🟢 LOW | CP-2, SA-17 |
 | G-17 | Formal security awareness training | Documentation | 🟡 MEDIUM | AT-2, AT-3 | ✅ `security-awareness-training.md` |
 | G-18 | Personnel security policy | Documentation | 🟡 MEDIUM | PS-1, PS-3, PS-4 | ✅ `personnel-security-policy.md` |
-| G-19 | Rules of Behavior (RoB) document | Documentation | 🟡 MEDIUM | PL-4 | ✅ `rules-of-behavior.md` |
+| G-19 | Rules of Behavior (RoB) document | Documentation | 🟡 MEDIUM | PL-4 | ✅ `rules-of-behavior.md` + in-app gate (`RulesOfBehaviorGate`) |
 | G-20 | Configuration Management Plan (CMP) | Documentation | 🟡 MEDIUM | CM-1, CM-2, CM-9 | ✅ `configuration-management-plan.md` |
 | G-21 | Information System Contingency Plan (ISCP) | Documentation | 🟡 MEDIUM | CP-2, CP-7 | ✅ `iscp.md` |
 | G-22 | Supply Chain Risk Management Plan (SCRMP) | Documentation | 🟠 HIGH | SR-1, SR-2, SR-3 | ✅ `supply-chain-risk-management-plan.md` |
@@ -255,11 +255,10 @@
 **Actions:**
 - [x] Draft RoB document covering: acceptable use, data handling, password requirements, MFA requirement, incident reporting responsibilities
 - [x] Store template at: `docs/approval/fedramp/rules-of-behavior.md`
-- [ ] Integrate into the account creation / onboarding flow (checkbox acceptance + timestamp stored)
-- [ ] For federal agency customers: ensure RoB is reviewed and signed at org-admin level
+- [x] Integrate into the account creation / onboarding flow: `RulesOfBehaviorGate` component blocks access until user accepts; acceptance timestamp + version stored in `profiles.rob_accepted_at` / `profiles.rob_version` (`supabase/migrations/20260418200000_fedramp_g12_g19.sql`)
+- [ ] For federal agency customers: ensure RoB is reviewed and signed at org-admin level (deferred — enterprise contract requirement)
 
-**Effort:** 1–2 days  
-**Owner:** Legal / Engineering (for in-app integration)  
+**Evidence:** `docs/approval/fedramp/rules-of-behavior.md`, `src/components/compliance/RulesOfBehaviorGate.tsx`, `src/hooks/useRulesOfBehavior.ts`, `supabase/migrations/20260418200000_fedramp_g12_g19.sql`
 
 ---
 
@@ -395,36 +394,35 @@ activity_logs (PostgreSQL)
 
 ---
 
-### G-12: AI Opt-Out UX (Explicit Toggle)
+### G-12: AI Opt-Out UX (Explicit Toggle) ✅ COMPLETE
 
 **What:** An explicit UI control for org admins to disable AI features, rather than just "not enabling" the entitlement.
 
 **Actions:**
-- [ ] Add `ai_enabled` boolean to `organization_settings` table (migration)
-- [ ] Add toggle to org admin settings UI
-- [ ] When `ai_enabled = false`, `ai-planning-assistant` edge function returns 403 for requests from that org
-- [ ] Default: `false` for new organizations (opt-in model)
+- [x] Add `ai_enabled` boolean to `organizations` table (`supabase/migrations/20260418200000_fedramp_g12_g19.sql`)
+- [x] Add toggle to org admin settings UI (`OrganizationSettings.tsx` — Enable AI Features switch)
+- [x] When `ai_enabled = false`, `ai-planning-assistant` edge function returns 403 for requests from that org
+- [x] Default: `false` for new organizations (opt-in model)
 
-**Effort:** 1–2 weeks  
-**Owner:** Engineering  
+**Evidence:** `supabase/migrations/20260418200000_fedramp_g12_g19.sql`, `supabase/functions/ai-planning-assistant/index.ts`, `src/components/settings/OrganizationSettings.tsx`
 
 ---
 
-### G-13: Prompt Injection Detection Controls
+### G-13: Prompt Injection Detection Controls ✅ COMPLETE
 
 **What:** Add controls in the AI planning assistant to detect and reject potentially malicious prompt content.
 
 **Actions:**
-- [ ] Add input validation layer before prompt assembly:
-  - Strip HTML/markdown injection attempts from user-controlled fields
-  - Implement max token cap on user-supplied context
-  - Add blocklist for known prompt injection patterns
-- [ ] Log all AI request inputs/outputs in `ai_request_logs` table for audit (org-scoped, admin-readable)
-- [ ] Add output validation: check LLM response for signs of jailbreak or unexpected content before returning to client
-- [ ] Review: https://owasp.org/www-project-top-10-for-large-language-model-applications/ (LLM01, LLM02)
+- [x] Add input validation layer before prompt assembly:
+  - HTML/script tag injection blocked via regex patterns
+  - Max 50 messages per request (`MAX_MESSAGES`)
+  - Max 8,000 characters per message (`MAX_CONTENT_LENGTH`)
+  - Blocklist for known prompt injection phrases (ignore previous instructions, jailbreak, DAN mode, system prompt override, hex/unicode escapes)
+- [x] Suspicious requests logged with `[SECURITY]` prefix including `user_id` and `org_id` for audit
+- [ ] AI request log table in DB for persistent audit trail (deferred — POA&M item, low priority)
+- [ ] Output validation for LLM response jailbreak detection (deferred — POA&M item)
 
-**Effort:** 1–2 weeks  
-**Owner:** Engineering  
+**Evidence:** `supabase/functions/ai-planning-assistant/index.ts` (INJECTION_PATTERNS + MAX_MESSAGES + MAX_CONTENT_LENGTH guards)
 
 ---
 

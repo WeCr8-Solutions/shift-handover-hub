@@ -138,9 +138,94 @@ Backup restores must be tested on the following schedule:
 | Full system recovery drill | Annually | Simulate full recovery to new project; measure actual RTO | Engineering Lead + CEO |
 | Source code verify | On every backup | Git history integrity — automatic via GitHub | Automatic |
 
-Test results are documented in a restore test log committed to `docs/approval/fedramp/restore-test-log.md`.
+Test results are documented in restore test evidence files at `docs/approval/fedramp/evidence/backup-restore-test-YYYY-QN.md`.
 
 **Next scheduled test:** Q3 2026
+
+---
+
+## 6a. Quarterly Backup Restore Test Procedure (CP-4)
+
+This procedure satisfies CP-4 (Testing of Contingency Plan) by ensuring that JobLine AI's backup and restore capabilities are verified on a quarterly basis. Each completed test produces an evidence file referenced in the POA&M.
+
+### Pre-Test Checklist
+
+Before conducting the test, confirm:
+
+- [ ] Supabase PITR is active on the project (Settings → Database → Point in Time Recovery)
+- [ ] Staging environment (`dev.jobline.ai` or a dedicated restore project) is available and isolated from production data
+- [ ] You have Supabase project owner access (required to initiate a restore)
+- [ ] Lead Engineer is available for the full test window (allow 2 hours)
+- [ ] Incident Response team is notified that a scheduled restore test is in progress
+- [ ] No production deployments are scheduled during the test window
+- [ ] Evidence template is ready: `docs/approval/fedramp/evidence/backup-restore-test-YYYY-QN.md`
+
+### Procedure — Table-Level PITR Restore to Staging
+
+1. **Log in to Supabase dashboard** → select the production project → navigate to **Settings → Backups**.
+2. **Select restore point:** Choose a timestamp from 24–72 hours prior to confirm the backup window covers the RPO target (24 hours).
+3. **Initiate restore to staging project:**
+   - Click **Restore to new project** (or use the Supabase CLI: `supabase db restore --target <staging-project-ref> --timestamp <ISO8601>`)
+   - Do NOT restore to the production project ref.
+4. **Wait for restore completion** — typically 10–30 minutes depending on database size. Monitor the restore status in the Supabase dashboard.
+5. **Validate data integrity:**
+   ```sql
+   -- Run against the restored staging project
+   SELECT table_name, COUNT(*) FROM information_schema.tables
+     WHERE table_schema = 'public' GROUP BY table_name ORDER BY table_name;
+
+   -- Spot-check row counts on critical tables
+   SELECT COUNT(*) FROM handoff_records;
+   SELECT COUNT(*) FROM queue_items;
+   SELECT COUNT(*) FROM organizations;
+   SELECT COUNT(*) FROM profiles;
+   ```
+6. **Record actual RTO:** Note the elapsed time from restore initiation to confirmed data access.
+7. **Verify RLS policies are intact** — connect as a test user and confirm org-scoped data isolation.
+8. **Tear down the restore project** after validation is complete to avoid cost accumulation.
+
+### Pass / Fail Criteria
+
+| Criterion | Pass | Fail |
+|-----------|------|------|
+| Restore completes without error | Supabase reports success | Restore fails or times out |
+| Row counts match pre-restore baseline (within 1%) | ✅ | > 1% discrepancy |
+| RLS policies enforced on restored data | ✅ | Cross-org data visible |
+| Actual RTO ≤ 4 hours | ✅ | Exceeds 4-hour RTO target |
+| Restore point was within 24-hour RPO window | ✅ | Earliest available backup > 24h old |
+
+If any **Fail** criterion is hit, open a P2 Incident per the IRP and create a POA&M item for CP-4.
+
+### Post-Test Documentation
+
+After each test, create an evidence file:
+
+```
+docs/approval/fedramp/evidence/backup-restore-test-YYYY-QN.md
+```
+
+The file must include:
+- Date and time of test
+- Restore point timestamp selected
+- Tester name and role
+- Actual elapsed time (RTO measurement)
+- Row count comparison table (before vs after)
+- Pass/Fail result per criterion above
+- Any findings or anomalies
+- Signature (or Git commit) of Engineering Lead
+
+Commit the evidence file to the repository with message: `evidence: backup restore test YYYY-QN — pass/fail`
+
+### Quarterly Schedule
+
+| Quarter | Target Month | Due Date |
+|---------|-------------|----------|
+| Q1 | March | March 31 |
+| Q2 | June | June 30 |
+| Q3 | September | September 30 |
+| Q4 | December | December 31 |
+
+The Engineering Lead is responsible for scheduling and executing each test. Results are reviewed annually as part of the FedRAMP ConMon review cycle.
 
 ---
 

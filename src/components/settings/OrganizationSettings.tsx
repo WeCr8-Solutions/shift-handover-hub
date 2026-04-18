@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Loader2, Save, Building2, Users, Crown, Mail, Shield, Flag } from "lucide-react";
+import { Loader2, Save, Building2, Users, Crown, Mail, Shield, Flag, Bot } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useOrgContext } from "@/contexts/OrgContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -39,6 +39,7 @@ export function OrganizationSettings({ isDeveloper = false }: OrganizationSettin
 
   const [mfaRequired, setMfaRequired] = useState(false);
   const [requiresUsPerson, setRequiresUsPerson] = useState(false);
+  const [aiEnabled, setAiEnabled] = useState(false);
 
   useEffect(() => {
     if (!organization) return;
@@ -71,7 +72,7 @@ export function OrganizationSettings({ isDeveloper = false }: OrganizationSettin
 
       const { data, error } = await supabase
         .from("organizations")
-        .select("mfa_required, requires_us_person_declaration")
+        .select("mfa_required, requires_us_person_declaration, ai_enabled")
         .eq("id", organization.id)
         .maybeSingle();
 
@@ -89,6 +90,7 @@ export function OrganizationSettings({ isDeveloper = false }: OrganizationSettin
       if (data) {
         setMfaRequired(data.mfa_required ?? false);
         setRequiresUsPerson(data.requires_us_person_declaration ?? false);
+        setAiEnabled((data as any).ai_enabled ?? false);
       }
     };
 
@@ -110,7 +112,8 @@ export function OrganizationSettings({ isDeveloper = false }: OrganizationSettin
         .update({
           mfa_required: mfaRequired,
           requires_us_person_declaration: requiresUsPerson,
-        })
+          ai_enabled: aiEnabled,
+        } as any)
         .eq("id", organization.id);
 
       if (error) {
@@ -400,6 +403,24 @@ export function OrganizationSettings({ isDeveloper = false }: OrganizationSettin
                 checked={requiresUsPerson}
                 onCheckedChange={setRequiresUsPerson}
                 aria-label="Require US Person declaration"
+              />
+            </div>
+
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1 space-y-1">
+                <Label className="flex items-center gap-2">
+                  <Bot className="h-4 w-4" />
+                  Enable AI Features
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  When disabled, the AI Planning Assistant is blocked for all members of this organization.
+                  FedRAMP G-12 (AC-20, SA-9): AI features default to off — an org admin must explicitly enable them.
+                </p>
+              </div>
+              <Switch
+                checked={aiEnabled}
+                onCheckedChange={setAiEnabled}
+                aria-label="Enable AI features"
               />
             </div>
 

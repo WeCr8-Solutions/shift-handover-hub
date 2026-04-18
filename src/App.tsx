@@ -15,6 +15,7 @@ import { JobLineProvider } from "@/components/providers/JobLineProvider";
 import { MFAEnrollmentGate } from "@/components/compliance/MFAEnrollmentGate";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { USPersonDeclarationGate } from "@/components/compliance/USPersonDeclarationGate";
+import { RulesOfBehaviorGate } from "@/components/compliance/RulesOfBehaviorGate";
 import { ReleaseBadge } from "@/components/ReleaseBadge";
 import { lazy, Suspense } from "react";
 
@@ -155,7 +156,8 @@ const App = () => (
               <BrowserRouter>
                 <AnalyticsProvider>
                   <ScrollToTop />
-                  {/* ITAR compliance gates — both are no-ops when not required by the org */}
+                  {/* Compliance gates — no-ops when the condition is not met */}
+                  <RulesOfBehaviorGate>
                   <MFAEnrollmentGate>
                   <USPersonDeclarationGate>
                   <JobLineProvider>
@@ -279,6 +281,7 @@ const App = () => (
                   </JobLineProvider>
                   </USPersonDeclarationGate>
                   </MFAEnrollmentGate>
+                  </RulesOfBehaviorGate>
                 </AnalyticsProvider>
               </BrowserRouter>
             </TooltipProvider>

@@ -86,6 +86,70 @@ serve(async (req) => {
       );
     }
 
+    // --- FedRAMP G-12 (AC-20, SA-9): AI opt-out check ---
+    // If the org has opted out of AI features, return 403 immediately.
+    const { data: orgSettings } = await supabase
+      .from("organizations")
+      .select("ai_enabled")
+      .eq("id", organization_id)
+      .single();
+
+    if (!orgSettings?.ai_enabled) {
+      return new Response(
+        JSON.stringify({
+          error: "ai_disabled",
+          message: "AI features are disabled for your organization. An admin can enable them in Organization Settings.",
+        }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // --- FedRAMP G-13 (SI-3, SI-10): Prompt injection validation ---
+    // Validate messages before forwarding to the LLM.
+    const MAX_MESSAGES = 50;
+    const MAX_CONTENT_LENGTH = 8000; // characters per message
+    const INJECTION_PATTERNS = [
+      /ignore\s+(all\s+)?previous\s+instructions/i,
+      /you\s+are\s+now\s+(a\s+)?(?:different|new|another|evil|unrestricted)/i,
+      /system\s*:\s*you\s+(are|must|should|will)/i,
+      /jailbreak|dan\s+mode|developer\s+mode|unrestricted\s+mode/i,
+      /<\s*script\s*>/i,
+      /\\x[0-9a-f]{2}|\\u[0-9a-f]{4}/i, // hex/unicode escape injection
+    ];
+
+    if (!Array.isArray(messages) || messages.length === 0) {
+      return new Response(
+        JSON.stringify({ error: "messages must be a non-empty array" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    if (messages.length > MAX_MESSAGES) {
+      return new Response(
+        JSON.stringify({ error: `Conversation too long. Maximum ${MAX_MESSAGES} messages allowed.` }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    for (const msg of messages) {
+      if (typeof msg.content !== "string") continue;
+      if (msg.content.length > MAX_CONTENT_LENGTH) {
+        return new Response(
+          JSON.stringify({ error: `Message content exceeds maximum length of ${MAX_CONTENT_LENGTH} characters.` }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      for (const pattern of INJECTION_PATTERNS) {
+        if (pattern.test(msg.content)) {
+          console.warn("Prompt injection attempt detected", { user_id: user.id, organization_id, pattern: pattern.source });
+          return new Response(
+            JSON.stringify({ error: "Message content was rejected by the security filter." }),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          );
+        }
+      }
+    }
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       console.error("LOVABLE_API_KEY is not configured");
