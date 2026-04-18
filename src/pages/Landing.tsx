@@ -14,6 +14,7 @@ import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 import { VisitorSurveyModal } from "@/components/marketing/VisitorSurveyModal";
+import { RotatingHeroBadge } from "@/components/marketing/RotatingHeroBadge";
 import { trackEvent, ConversionEvents } from "@/lib/analytics";
 import { getUtmParams } from "@/lib/utm";
 const demoVideo = "/jobline-demo-video.mp4";
