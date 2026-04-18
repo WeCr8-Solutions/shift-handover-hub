@@ -125,20 +125,21 @@ serve(async (req) => {
     const userId = body.userId ?? caller.id;
     const validFrom = new Date().toISOString().slice(0, 10);
 
-    // Snapshot recipient username so QR keeps working even if username later changes.
+    // Snapshot recipient public username (from operator_profiles) so the QR keeps
+    // working even if the username later changes.
     const { data: recipientProfile } = await supabaseAdmin
-      .from("profiles")
-      .select("username")
+      .from("operator_profiles")
+      .select("public_username")
       .eq("user_id", userId)
       .maybeSingle();
-    const recipientUsername = (recipientProfile as any)?.username ?? null;
+    const recipientUsername = (recipientProfile as any)?.public_username ?? null;
 
     // Resolve signer. For OAP issued by an org, the org's designated mentor signs.
     // jobline.ai certifier path is intentionally NOT implemented yet (no testing stations).
     let signedByUserId: string | null = null;
     let signedByName: string | null = null;
     let signedByTitle: string | null = null;
-    let signedBySignatureUrl: string | null = null;
+    const signedBySignatureUrl: string | null = null; // Upload UI deferred — column reserved.
 
     if (body.program === "OAP" && body.organizationId) {
       const { data: org } = await supabaseAdmin
@@ -154,14 +155,12 @@ serve(async (req) => {
       }
       const { data: mentor } = await supabaseAdmin
         .from("profiles")
-        .select("display_name, title, signature_url")
+        .select("display_name")
         .eq("user_id", mentorId)
         .maybeSingle();
       signedByUserId = mentorId;
       signedByName = (mentor as any)?.display_name ?? "Designated OAP Mentor";
-      signedByTitle =
-        (mentor as any)?.title ?? `Designated OAP Mentor, ${(org as any)?.name ?? "Organization"}`;
-      signedBySignatureUrl = (mentor as any)?.signature_url ?? null;
+      signedByTitle = `Designated OAP Mentor, ${(org as any)?.name ?? "Organization"}`;
     }
 
     const table = body.program === "OAP" ? "oap_certificates" : "gca_certificates";
