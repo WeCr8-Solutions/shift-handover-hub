@@ -62,7 +62,7 @@ export function MarketingFooter() {
 
         <div className="border-t border-border pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <img src={joblineLogo} alt="JobLine.ai" className="h-8 sm:h-10 w-auto" />
+            <img src={joblineLogo} alt="JobLine.ai" width={40} height={40} loading="lazy" decoding="async" className="h-8 sm:h-10 w-auto" />
           </div>
           <div className="text-xs text-muted-foreground text-center sm:text-right">
             <p>© 2026 JobLine.ai. All rights reserved.</p>
