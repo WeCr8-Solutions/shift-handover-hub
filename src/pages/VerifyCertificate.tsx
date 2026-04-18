@@ -3,10 +3,10 @@ import { useParams, Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, ShieldAlert, ShieldX, ArrowRight, Loader2, Printer } from "lucide-react";
+import { ShieldCheck, ShieldAlert, ShieldX, ArrowRight, Loader2, Printer, ScrollText, LayoutGrid } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
 import { useCertificates } from "@/hooks/useCertificates";
-import { CertificateTemplate } from "@/components/certificates/CertificateTemplate";
+import { CertificateTemplate, type CertificateVariant } from "@/components/certificates/CertificateTemplate";
 import type { CertificateRecord } from "@/lib/certificates";
 
 /**
@@ -18,6 +18,9 @@ export default function VerifyCertificate() {
   const { lookupCertificate } = useCertificates();
   const [loading, setLoading] = useState(true);
   const [cert, setCert] = useState<CertificateRecord | null>(null);
+  // Default to diploma — that's the formal "shareable" view recipients want to print.
+  // Digital is available as a quick toggle for the accomplishments-focused look.
+  const [variant, setVariant] = useState<CertificateVariant>("diploma");
 
   useEffect(() => {
     if (!certId) return;
@@ -124,11 +127,31 @@ export default function VerifyCertificate() {
               </div>
             )}
 
-            <div className="flex flex-wrap gap-2 pt-2 border-t">
+            <div className="flex flex-wrap items-center gap-2 pt-2 border-t">
               {cert && (
-                <Button size="sm" onClick={() => window.print()}>
-                  <Printer className="w-3.5 h-3.5 mr-1.5" /> Print certificate
-                </Button>
+                <>
+                  <Button size="sm" onClick={() => window.print()}>
+                    <Printer className="w-3.5 h-3.5 mr-1.5" /> Print certificate
+                  </Button>
+                  <div className="inline-flex rounded-md border bg-muted/40 p-0.5">
+                    <Button
+                      size="sm"
+                      variant={variant === "diploma" ? "default" : "ghost"}
+                      onClick={() => setVariant("diploma")}
+                      className="h-7 px-2.5 text-xs"
+                    >
+                      <ScrollText className="w-3.5 h-3.5 mr-1" /> Diploma
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={variant === "digital" ? "default" : "ghost"}
+                      onClick={() => setVariant("digital")}
+                      className="h-7 px-2.5 text-xs"
+                    >
+                      <LayoutGrid className="w-3.5 h-3.5 mr-1" /> Digital
+                    </Button>
+                  </div>
+                </>
               )}
               <Button asChild variant="outline" size="sm">
                 <Link to="/oap">About OAP</Link>
@@ -142,7 +165,13 @@ export default function VerifyCertificate() {
 
         {cert && (
           <div className="mt-8 flex justify-center print:mt-0">
-            <CertificateTemplate cert={cert} printMode />
+            {/* Print always uses diploma (formal); on-screen respects the toggle */}
+            <div className="hidden print:block">
+              <CertificateTemplate cert={cert} variant="diploma" printMode />
+            </div>
+            <div className="print:hidden">
+              <CertificateTemplate cert={cert} variant={variant} />
+            </div>
           </div>
         )}
 
