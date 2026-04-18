@@ -977,3 +977,130 @@ function ReferencesManager({
     </div>
   );
 }
+
+/* ─────────────────────────────────────────────────────────────
+ * ShareProfileCard — share / view your public talent profile.
+ * Only fully active when the profile has a public_username
+ * AND visibility is "public". Otherwise prompts the user to
+ * configure those fields first.
+ * ───────────────────────────────────────────────────────────── */
+function ShareProfileCard({
+  username,
+  visibility,
+  displayName,
+  headline,
+}: {
+  username: string | null;
+  visibility: "private" | "employers_only" | "public";
+  displayName: string;
+  headline: string | null;
+}) {
+  const { toast } = useToast();
+  const isLive = !!username && visibility === "public";
+  const origin = typeof window !== "undefined" ? window.location.origin : "https://jobline.ai";
+  const publicUrl = username ? `${origin}/talent/${username}` : null;
+
+  const shareText = headline
+    ? `${displayName} — ${headline} · JobLine Talent Profile`
+    : `${displayName} · JobLine Talent Profile`;
+
+  const copy = async () => {
+    if (!publicUrl) return;
+    try {
+      await navigator.clipboard.writeText(publicUrl);
+      toast({ title: "Link copied", description: publicUrl });
+    } catch {
+      toast({ title: "Copy failed", variant: "destructive" });
+    }
+  };
+
+  const nativeShare = async () => {
+    if (!publicUrl) return;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: shareText, text: shareText, url: publicUrl });
+      } catch {
+        /* user cancelled */
+      }
+    } else {
+      copy();
+    }
+  };
+
+  if (!isLive) {
+    return (
+      <Card className="border-dashed">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Share2 className="w-5 h-5" /> Share your profile
+          </CardTitle>
+          <CardDescription>
+            {visibility !== "public"
+              ? "Set visibility to Public below to generate a shareable link."
+              : "Pick a public username below to generate a shareable link."}
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
+  const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(publicUrl!)}`;
+  const xShare = `https://twitter.com/intent/tweet?url=${encodeURIComponent(publicUrl!)}&text=${encodeURIComponent(shareText)}`;
+  const emailShare = `mailto:?subject=${encodeURIComponent(shareText)}&body=${encodeURIComponent(`${shareText}\n\n${publicUrl}`)}`;
+
+  return (
+    <Card className="border-primary bg-primary/5">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Share2 className="w-5 h-5" /> Share your public profile
+        </CardTitle>
+        <CardDescription>
+          Your profile is live. Share this link with employers, on social, or in your email signature.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="flex gap-2">
+          <Input readOnly value={publicUrl!} onFocus={(e) => e.currentTarget.select()} className="font-mono text-sm" />
+          <Button type="button" variant="secondary" onClick={copy} className="gap-2 shrink-0">
+            <Copy className="w-4 h-4" /> Copy
+          </Button>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild size="sm" variant="outline" className="gap-2">
+            <a href={publicUrl!} target="_blank" rel="noopener noreferrer">
+              <ExternalLink className="w-4 h-4" /> View public profile
+            </a>
+          </Button>
+          <Button type="button" size="sm" variant="outline" onClick={nativeShare} className="gap-2">
+            <Share2 className="w-4 h-4" /> Share
+          </Button>
+          <Button asChild size="sm" variant="outline" className="gap-2">
+            <a href={linkedinShare} target="_blank" rel="noopener noreferrer">
+              <Linkedin className="w-4 h-4" /> LinkedIn
+            </a>
+          </Button>
+          <Button asChild size="sm" variant="outline" className="gap-2">
+            <a href={xShare} target="_blank" rel="noopener noreferrer">
+              <Sparkles className="w-4 h-4" /> X / Twitter
+            </a>
+          </Button>
+          <Button asChild size="sm" variant="outline" className="gap-2">
+            <a href={emailShare}>
+              <FileText className="w-4 h-4" /> Email
+            </a>
+          </Button>
+          <Button asChild size="sm" variant="ghost" className="gap-2">
+            <a
+              href={`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(publicUrl!)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <QrCode className="w-4 h-4" /> QR code
+            </a>
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
