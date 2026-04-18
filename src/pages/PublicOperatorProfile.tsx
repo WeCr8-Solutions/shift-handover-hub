@@ -277,7 +277,7 @@ export default function PublicOperatorProfile() {
 
                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
                   {profile.open_to_work && (
-                    <Badge className="bg-emerald-500/10 text-emerald-700 border-emerald-500/30 dark:text-emerald-400">
+                    <Badge className="bg-success/10 text-success border-success/30">
                       <Briefcase className="w-3 h-3 mr-1" /> Open to work
                     </Badge>
                   )}
