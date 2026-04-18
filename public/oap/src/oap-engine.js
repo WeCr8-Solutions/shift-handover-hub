@@ -907,6 +907,18 @@ function oapIssueCert(menteeId) { var sig=prompt('Employer authorizing signature
 function oapPrintCert(certId) { var certs=OAP_EMPLOYER.getCerts(); var cert=certs[certId]; if(cert) OAP_CERT.openPrintWindow(cert); }
 function oapRunCourse(courseId,menteeId) { OAP_STATE.activeCourse=courseId; OAP_STATE.activeMentee=menteeId||null; OAP_STATE.courseState=null; oapSetView('course'); }
 function oapRunStandaloneCourse(courseId) { OAP_STATE.activeCourse=courseId; OAP_STATE.activeMentee=null; OAP_STATE.courseState=null; oapSetView('course'); }
+// Launch the certification exam for a course in either 'random' or 'directed' mode.
+// menteeId is optional — if provided the score is recorded against the mentee's
+// employer record; otherwise it is saved to localStorage as a standalone score.
+function oapRunCourseExam(courseId, menteeId, mode) {
+  OAP_STATE.activeCourse = courseId;
+  OAP_STATE.activeMentee = menteeId || null;
+  OAP_STATE.courseState = {
+    topicIdx: 0, quizMode: false, score: 0, total: 0, answers: [], qIdx: 0,
+    currentPool: null, examMode: (mode === 'directed' ? 'directed' : 'random'), examQs: null
+  };
+  oapSetView('course');
+}
 function oapGenerateStandaloneCert() {
   var scores=JSON.parse(localStorage.getItem('oap-standalone-scores')||'{}');
   var passed=Object.values(scores).filter(function(s){ return s.passed; });
