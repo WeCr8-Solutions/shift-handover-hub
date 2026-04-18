@@ -122,6 +122,7 @@ const WorkOrderHistoryPage = lazy(() => import("./pages/WorkOrderHistoryPage"));
 const QuoteHistoryPage = lazy(() => import("./pages/QuoteHistoryPage"));
 const OperatorProfile = lazy(() => import("./pages/OperatorProfile"));
 const TalentLanding = lazy(() => import("./pages/TalentLanding"));
+const TalentBrowse = lazy(() => import("./pages/TalentBrowse"));
 const TalentSearch = lazy(() => import("./pages/TalentSearch"));
 const PublicOperatorProfile = lazy(() => import("./pages/PublicOperatorProfile"));
 const OperatorInbox = lazy(() => import("./pages/OperatorInbox"));
@@ -242,6 +243,7 @@ const App = () => (
                     <Route path="/gca/test/:bankSlug" element={<GcaTestPage />} />
                     <Route path="/oap/my-transcript" element={<OapMyTranscript />} />
                     <Route path="/talent" element={<TalentLanding />} />
+                    <Route path="/talent/browse" element={<TalentBrowse />} />
                     <Route path="/talent/search" element={<TalentSearch />} />
                     <Route path="/talent/:username" element={<PublicOperatorProfile />} />
                     <Route path="/operator/profile" element={<OperatorProfile />} />
