@@ -196,7 +196,10 @@ export default function TalentLanding() {
         <OapGcaTalentFlow />
       </section>
 
-      {/* Recent public profiles */}
+      {/* Multi-vertical OAP showcase */}
+      <VerticalsShowcase />
+
+
       <section className="border-y bg-muted/30">
         <div className="container py-16 max-w-6xl">
           <div className="flex items-end justify-between mb-8 gap-4 flex-wrap">
