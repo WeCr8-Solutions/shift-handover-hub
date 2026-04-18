@@ -19,7 +19,7 @@ export interface TrainingMedia {
   entity_id: string;
   media_type: TrainingMediaType;
   mime_type: string;
-  storage_bucket: "training-media-public" | "training-media-private";
+  storage_bucket: "training-media-public" | "training-media-private" | "external";
   storage_path: string;
   file_name: string | null;
   file_size_bytes: number | null;
@@ -62,6 +62,10 @@ export const ACCEPTED_FILE_ACCEPT =
 async function attachSignedUrls(rows: TrainingMedia[]): Promise<TrainingMedia[]> {
   return Promise.all(
     rows.map(async (m) => {
+      // External rows (YouTube URLs, etc.) store the URL directly in storage_path
+      if (m.storage_bucket === "external") {
+        return { ...m, signed_url: m.storage_path };
+      }
       const { data } = await supabase.storage
         .from(m.storage_bucket)
         .createSignedUrl(m.storage_path, 60 * 60);
