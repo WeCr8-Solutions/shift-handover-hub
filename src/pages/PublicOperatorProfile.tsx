@@ -377,7 +377,75 @@ export default function PublicOperatorProfile() {
           </Card>
         )}
 
-        {/* Certifications */}
+        {/* Accomplishments — highlight reel for employers */}
+        {(() => {
+          const expertMachines = machines.filter((m) => m.proficiency?.toLowerCase() === "expert").length;
+          const items: { icon: typeof Trophy; label: string; sub?: string }[] = [];
+          if (verifiedCount > 0) {
+            items.push({
+              icon: ShieldCheck,
+              label: `${verifiedCount} verified credential${verifiedCount === 1 ? "" : "s"}`,
+              sub: "Issued & verified through JobLine",
+            });
+          }
+          if (profile.years_experience && profile.years_experience >= 5) {
+            items.push({
+              icon: Trophy,
+              label: `${profile.years_experience}+ years on the floor`,
+              sub: "Sustained manufacturing experience",
+            });
+          }
+          if (expertMachines > 0) {
+            items.push({
+              icon: Wrench,
+              label: `${expertMachines} expert-level machine${expertMachines === 1 ? "" : "s"}`,
+              sub: "Self-attested expert proficiency",
+            });
+          }
+          if (socialCounts.recommendation_count > 0) {
+            items.push({
+              icon: Quote,
+              label: `${socialCounts.recommendation_count} peer recommendation${socialCounts.recommendation_count === 1 ? "" : "s"}`,
+              sub: "From coworkers & supervisors",
+            });
+          }
+          if (socialCounts.follower_count >= 5) {
+            items.push({
+              icon: Users,
+              label: `${socialCounts.follower_count} followers`,
+              sub: "Trusted by the community",
+            });
+          }
+          if (!items.length) return null;
+          return (
+            <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Trophy className="w-5 h-5 text-primary" /> Accomplishments
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {items.map((it, i) => {
+                    const Icon = it.icon;
+                    return (
+                      <div key={i} className="flex items-start gap-3 rounded-lg border bg-card p-3">
+                        <div className="shrink-0 rounded-md bg-primary/10 text-primary p-2">
+                          <Icon className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-medium text-sm leading-tight">{it.label}</p>
+                          {it.sub && <p className="text-xs text-muted-foreground mt-0.5">{it.sub}</p>}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })()}
+
         {certs.length > 0 && (
           <Card>
             <CardHeader>
