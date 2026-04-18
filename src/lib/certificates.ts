@@ -7,6 +7,40 @@
 
 export type CertificateProgram = "OAP" | "GCA";
 
+/**
+ * OAP supports trade verticals beyond machining. Each vertical has a short
+ * cert-ID code that lives between the program prefix and the random body:
+ *   OAP-CAB-XXXXXX-2026   (Cabinetry)
+ *   OAP-AUTO-XXXXXX-2026  (Automotive)
+ * Legacy `OAP-XXXXXX-YYYY` (no code) is treated as Machining for back-compat.
+ */
+export type OapVertical =
+  | "machining"
+  | "cabinetry"
+  | "automotive"
+  | "welding"
+  | "construction"
+  | "electrical"
+  | "plumbing"
+  | "hvac"
+  | "general";
+
+export const VERTICAL_CODES: Record<OapVertical, string> = {
+  machining: "MAC",
+  cabinetry: "CAB",
+  automotive: "AUTO",
+  welding: "WELD",
+  construction: "CON",
+  electrical: "ELEC",
+  plumbing: "PLM",
+  hvac: "HVAC",
+  general: "GEN",
+};
+
+const VERTICAL_FROM_CODE: Record<string, OapVertical> = Object.fromEntries(
+  Object.entries(VERTICAL_CODES).map(([k, v]) => [v, k as OapVertical])
+);
+
 export interface CertificateRecord {
   certId: string;
   qrToken: string;
@@ -34,22 +68,42 @@ export interface CertificateRecord {
  */
 const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // skip 0,O,1,I,L
 
-export function generateCertId(program: CertificateProgram, year = new Date().getFullYear()): string {
+export function generateCertId(
+  program: CertificateProgram,
+  vertical: OapVertical = "machining",
+  year = new Date().getFullYear()
+): string {
   let body = "";
   const bytes = new Uint8Array(6);
   crypto.getRandomValues(bytes);
   for (const b of bytes) body += ALPHABET[b % ALPHABET.length];
-  return `${program}-${body}-${year}`;
+  // GCA stays single-segment; OAP machining stays single-segment for back-compat.
+  if (program === "GCA" || vertical === "machining") {
+    return `${program}-${body}-${year}`;
+  }
+  return `${program}-${VERTICAL_CODES[vertical]}-${body}-${year}`;
 }
 
+/** Accepts both legacy 3-segment and new 4-segment (vertical-prefixed) cert IDs. */
 export function isCertIdValid(id: string): boolean {
-  return /^(OAP|GCA)-[A-Z0-9]{6}-\d{4}$/.test(id);
+  return /^(OAP|GCA)(-[A-Z]{2,4})?-[A-Z0-9]{6}-\d{4}$/.test(id);
 }
 
 export function programFromCertId(id: string): CertificateProgram | null {
   if (id.startsWith("OAP-")) return "OAP";
   if (id.startsWith("GCA-")) return "GCA";
   return null;
+}
+
+/** Returns the vertical encoded in a cert ID, defaulting to `machining` for legacy IDs. */
+export function verticalFromCertId(id: string): OapVertical {
+  const parts = id.split("-");
+  // 4 segments = PROGRAM-CODE-BODY-YEAR
+  if (parts.length === 4) {
+    const code = parts[1];
+    return VERTICAL_FROM_CODE[code] ?? "general";
+  }
+  return "machining";
 }
 
 export function verificationUrl(certId: string, origin?: string): string {
