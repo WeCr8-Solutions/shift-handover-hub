@@ -112,7 +112,7 @@ export function Header() {
         <div className="flex items-center justify-between gap-2">
           {/* Logo */}
           <Link to="/dashboard" className="flex items-center gap-3 hover:opacity-80 transition-opacity shrink-0">
-            <img src={joblineLogo} alt="JobLine.ai" className="h-8 lg:h-10 w-auto" />
+            <img src={joblineLogo} alt="JobLine.ai" width={40} height={40} decoding="async" className="h-8 lg:h-10 w-auto" />
           </Link>
 
           {/* Desktop nav — flex-1 so it never pushes the right-side off screen */}

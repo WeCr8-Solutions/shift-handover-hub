@@ -1070,7 +1070,7 @@ export default function Landing() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
             {/* Brand */}
             <div>
-              <img src={joblineLogo} alt="JobLine.ai" className="h-8 sm:h-10 w-auto mb-3" />
+              <img src={joblineLogo} alt="JobLine.ai" width={40} height={40} loading="lazy" decoding="async" className="h-8 sm:h-10 w-auto mb-3" />
               <p className="text-xs text-muted-foreground">Digital expeditor & smart shift handoff system for manufacturing.</p>
             </div>
 

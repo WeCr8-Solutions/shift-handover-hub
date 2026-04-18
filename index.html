@@ -55,18 +55,20 @@
           return false;
         };
 
-        // Google AdSense — defer until idle to avoid forced reflows during initial paint
+        // Google AdSense — defer until first user interaction (or 10s timeout) to avoid blocking LCP
+        var adsenseLoaded = false;
         var loadAdsense = function() {
+          if (adsenseLoaded) return;
+          adsenseLoaded = true;
           var as=document.createElement('script');as.async=true;
           as.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3639153716376265';
           as.crossOrigin='anonymous';
           document.head.appendChild(as);
         };
-        if ('requestIdleCallback' in window) {
-          requestIdleCallback(loadAdsense, { timeout: 4000 });
-        } else {
-          setTimeout(loadAdsense, 2500);
-        }
+        ['pointerdown','keydown','scroll','touchstart'].forEach(function(ev){
+          window.addEventListener(ev, loadAdsense, { once: true, passive: true });
+        });
+        setTimeout(loadAdsense, 10000);
       });
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />

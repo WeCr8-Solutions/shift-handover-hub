@@ -80,7 +80,7 @@ export function MarketingNav({ showPricing = true }: MarketingNavProps) {
     <nav ref={navRef} className="border-b border-border bg-background/90 backdrop-blur-xl sticky top-0 z-50">
       <div className="container mx-auto px-4 h-14 flex items-center justify-between">
         <button onClick={() => go("/")} className="flex items-center gap-2 shrink-0">
-          <img src={joblineLogo} alt="JobLine.ai" className="h-7 sm:h-8 w-auto" />
+          <img src={joblineLogo} alt="JobLine.ai" width={32} height={32} decoding="async" className="h-7 sm:h-8 w-auto" />
         </button>
 
         {isResourcesRoute && (
