@@ -54,14 +54,31 @@ export function VisitorSurveyModal() {
 
   useEffect(() => {
     if (!shouldShow()) return;
-    const timer = setTimeout(() => {
-      if (shouldShow()) {
-        setOpen(true);
-        sessionStorage.setItem(SURVEY_MODAL_ACTIVE_KEY, "1");
-        trackEvent("survey_shown", { source_page: window.location.pathname });
-      }
-    }, 20000);
-    return () => clearTimeout(timer);
+
+    let fired = false;
+    const fire = () => {
+      if (fired || !shouldShow()) return;
+      fired = true;
+      setOpen(true);
+      sessionStorage.setItem(SURVEY_MODAL_ACTIVE_KEY, "1");
+      trackEvent("survey_shown", { source_page: window.location.pathname });
+    };
+
+    const timer = setTimeout(fire, 15000);
+    const onScroll = () => {
+      if (window.scrollY > 400) fire();
+    };
+    const onExitIntent = (e: MouseEvent) => {
+      if (e.clientY <= 0) fire();
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    document.addEventListener("mouseleave", onExitIntent);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("scroll", onScroll);
+      document.removeEventListener("mouseleave", onExitIntent);
+    };
   }, [shouldShow]);
 
   const handleDismiss = () => {

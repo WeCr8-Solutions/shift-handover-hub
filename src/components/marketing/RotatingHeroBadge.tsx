@@ -28,7 +28,7 @@ export function RotatingHeroBadge() {
   useEffect(() => {
     const id = setInterval(() => {
       setIndex((i) => (i + 1) % items.length);
-    }, 2800);
+    }, 5000);
     return () => clearInterval(id);
   }, []);
 
