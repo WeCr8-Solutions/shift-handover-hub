@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { TalentSocialPanel } from "@/components/talent/TalentSocialPanel";
+import { usePublicOperatorSocial } from "@/hooks/useOperatorSocial";
 import { PublicProfileQrCard } from "@/components/talent/PublicProfileQrCard";
 import { withJoblineUtm } from "@/lib/talent/outboundLinks";
 import { getPublicTalentUrl } from "@/lib/talent/publicHost";
@@ -31,6 +32,10 @@ import {
   Share2,
   Mail,
   Calendar,
+  Trophy,
+  Users,
+  UserCheck,
+  Quote,
 } from "lucide-react";
 
 interface PublicProfile {
