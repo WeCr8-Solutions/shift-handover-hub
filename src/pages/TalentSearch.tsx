@@ -190,6 +190,9 @@ export default function Talent() {
                 { key: "hired", label: "Hired" },
                 { key: "rejected", label: "Rejected" },
               ];
+              // Resolve real names from the current search results so list cards
+              // don't show raw UUID slices.
+              const nameById = new Map(results.map((r) => [r.user_id, r.display_name]));
               return (
                 <Card key={list.id}>
                   <CardHeader>
@@ -204,19 +207,24 @@ export default function Talent() {
                         {stages.map((s) => (
                           <div key={s.key} className="border rounded p-2 min-h-[120px]">
                             <p className="text-xs font-medium text-muted-foreground mb-2">{s.label}</p>
-                            {items.filter((i) => i.stage === s.key).map((i) => (
-                              <div key={i.id} className="text-xs border rounded p-2 mb-1 bg-card">
-                                <p className="truncate">{i.candidate_user_id.slice(0, 8)}…</p>
-                                <select
-                                  value={i.stage}
-                                  onChange={(e) => updateCandidateStage(i.id, e.target.value)}
-                                  className="text-xs mt-1 bg-background border rounded w-full"
-                                >
-                                  {stages.map((st) => <option key={st.key} value={st.key}>{st.label}</option>)}
-                                </select>
-                                <Button variant="ghost" size="sm" onClick={() => removeCandidate(i.id)} className="text-xs h-6 px-2">Remove</Button>
-                              </div>
-                            ))}
+                            {items.filter((i) => i.stage === s.key).map((i) => {
+                              const name = nameById.get(i.candidate_user_id) ?? null;
+                              return (
+                                <div key={i.id} className="text-xs border rounded p-2 mb-1 bg-card">
+                                  <p className="truncate font-medium">
+                                    {name ?? `Candidate ${i.candidate_user_id.slice(0, 6)}`}
+                                  </p>
+                                  <select
+                                    value={i.stage}
+                                    onChange={(e) => updateCandidateStage(i.id, e.target.value)}
+                                    className="text-xs mt-1 bg-background border rounded w-full"
+                                  >
+                                    {stages.map((st) => <option key={st.key} value={st.key}>{st.label}</option>)}
+                                  </select>
+                                  <Button variant="ghost" size="sm" onClick={() => removeCandidate(i.id)} className="text-xs h-6 px-2">Remove</Button>
+                                </div>
+                              );
+                            })}
                           </div>
                         ))}
                       </div>
