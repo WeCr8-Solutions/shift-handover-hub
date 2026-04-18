@@ -2243,6 +2243,73 @@ export type Database = {
         }
         Relationships: []
       }
+      gca_assignments: {
+        Row: {
+          assigned_by: string
+          assigned_by_name: string | null
+          bank_id: string
+          completed_at: string | null
+          created_at: string
+          due_at: string | null
+          id: string
+          notes: string | null
+          organization_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assigned_by: string
+          assigned_by_name?: string | null
+          bank_id: string
+          completed_at?: string | null
+          created_at?: string
+          due_at?: string | null
+          id?: string
+          notes?: string | null
+          organization_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assigned_by?: string
+          assigned_by_name?: string | null
+          bank_id?: string
+          completed_at?: string | null
+          created_at?: string
+          due_at?: string | null
+          id?: string
+          notes?: string | null
+          organization_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gca_assignments_bank_id_fkey"
+            columns: ["bank_id"]
+            isOneToOne: false
+            referencedRelation: "gca_question_banks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gca_assignments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gca_assignments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gca_certificates: {
         Row: {
           amount_cents: number

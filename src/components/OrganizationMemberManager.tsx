@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useOrganizationMembers, OrganizationMember } from "@/hooks/useOrganizationMembers";
+import { useOapMentors } from "@/hooks/useOapMentors";
 import { useOrgContext } from "@/contexts/OrgContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEmail } from "@/hooks/useEmail";
@@ -46,6 +47,7 @@ import {
   MoreHorizontal,
   Crown,
   Shield,
+  ShieldCheck,
   UserCog,
   Loader2,
   Trash2,
@@ -130,6 +132,16 @@ export function OrganizationMemberManager({ onNavigateToInvites }: OrganizationM
     removeAppRole,
   } = useOrganizationMembers(organization?.id || null);
   const { sendTeamInviteEmail } = useEmail();
+  const { mentors, designate, setActive } = useOapMentors();
+  const mentorUserIds = useMemo(
+    () => new Set(mentors.filter((m) => m.is_active).map((m) => m.user_id)),
+    [mentors],
+  );
+  const mentorRecordByUser = useMemo(() => {
+    const map = new Map<string, { id: string; is_active: boolean }>();
+    mentors.forEach((m) => map.set(m.user_id, { id: m.id, is_active: m.is_active }));
+    return map;
+  }, [mentors]);
   const { limits, loading: entitlementsLoading } = useEntitlements();
   const seatLimit = limits?.users ?? 1;
   const seatsUsed = members.length;
@@ -585,9 +597,19 @@ export function OrganizationMemberManager({ onNavigateToInvites }: OrganizationM
                             </AvatarFallback>
                           </Avatar>
                           <div className="min-w-0">
-                            <p className="font-medium truncate">
+                            <p className="font-medium truncate flex items-center gap-1.5">
                               {member.profile?.display_name || "Unknown"}
                               {isSelf && <span className="text-muted-foreground font-normal ml-1">(You)</span>}
+                              {mentorUserIds.has(member.user_id) && (
+                                <Badge
+                                  variant="outline"
+                                  className="gap-1 text-[10px] py-0 px-1.5 border-primary/40 text-primary bg-primary/5"
+                                  title="Designated OAP Mentor — can sign off operator walkthroughs"
+                                >
+                                  <ShieldCheck className="w-3 h-3" />
+                                  Mentor
+                                </Badge>
+                              )}
                             </p>
                             <p className="text-xs text-muted-foreground truncate">{member.profile?.email}</p>
                           </div>
@@ -695,6 +717,24 @@ export function OrganizationMemberManager({ onNavigateToInvites }: OrganizationM
                                 <DropdownMenuItem onClick={() => handleToggleAppRole(member, "operator")}>
                                   <Users className="w-4 h-4 mr-2 text-role-operator" />
                                   {member.app_roles?.includes("operator") ? "Remove Operator" : "Assign Operator"}
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuLabel>OAP Mentor</DropdownMenuLabel>
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    const existing = mentorRecordByUser.get(member.user_id);
+                                    if (existing) {
+                                      setActive.mutate({ id: existing.id, is_active: !existing.is_active });
+                                    } else {
+                                      designate.mutate({
+                                        user_id: member.user_id,
+                                        user_name: member.profile?.display_name ?? member.profile?.email ?? null,
+                                      });
+                                    }
+                                  }}
+                                >
+                                  <ShieldCheck className="w-4 h-4 mr-2 text-primary" />
+                                  {mentorUserIds.has(member.user_id) ? "Remove Mentor" : "Designate as Mentor"}
                                 </DropdownMenuItem>
                                 {!isOwner && !isSelf && (
                                   <>
