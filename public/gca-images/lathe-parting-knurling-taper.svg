@@ -1,0 +1,151 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" font-family="system-ui,sans-serif">
+  <rect width="800" height="500" fill="#0f172a"/>
+  <text x="400" y="28" text-anchor="middle" fill="#f8fafc" font-size="16" font-weight="700">Lathe — Parting/Cutoff · Knurling · Taper Turning · Form Turning · Thread Relief</text>
+
+  <!-- ── PARTING / CUTOFF ── -->
+  <g transform="translate(20,40)">
+    <rect width="148" height="255" rx="6" fill="#1e293b" stroke="#ef4444" stroke-width="1.5"/>
+    <text x="74" y="18" text-anchor="middle" fill="#fca5a5" font-size="12" font-weight="700">Parting / Cutoff (G01)</text>
+    <rect x="18" y="28" width="112" height="50" rx="3" fill="#475569"/>
+    <!-- parting slot -->
+    <rect x="72" y="28" width="12" height="50" fill="#0f172a"/>
+    <!-- parting tool -->
+    <rect x="62" y="12" width="32" height="18" rx="2" fill="#78716c"/>
+    <rect x="72" y="12" width="12" height="18" rx="1" fill="#fbbf24"/>
+    <!-- X arrow in -->
+    <line x1="74" y1="8" x2="74" y2="15" stroke="#ef4444" stroke-width="2" marker-end="url(#dax)"/>
+    <text x="74" y="100" text-anchor="middle" fill="#94a3b8" font-size="9">Feed X- to centerline</text>
+    <text x="74" y="112" text-anchor="middle" fill="#94a3b8" font-size="9">Narrow blade insert</text>
+    <text x="12" y="130" fill="#f8fafc" font-family="monospace" font-size="9">G00 X(OD+0.1) Z(pos)</text>
+    <text x="12" y="143" fill="#f8fafc" font-family="monospace" font-size="9">G01 X-0.060 F0.003</text>
+    <text x="12" y="158" fill="#64748b" font-size="9">X-0.060 = past center</text>
+    <text x="12" y="170" fill="#64748b" font-size="9">(prevents pip/nub)</text>
+    <text x="12" y="185" fill="#f59e0b" font-size="9">Tips: use CSS G96,</text>
+    <text x="12" y="197" fill="#f59e0b" font-size="9">flood coolant, slow</text>
+    <text x="12" y="209" fill="#f59e0b" font-size="9">feed near center,</text>
+    <text x="12" y="221" fill="#f59e0b" font-size="9">sub-spindle catch</text>
+    <text x="12" y="236" fill="#64748b" font-size="9">G74 X0 Z— = face</text>
+    <text x="12" y="249" fill="#64748b" font-size="9">groove / cutoff cycle</text>
+  </g>
+
+  <!-- ── KNURLING ── -->
+  <g transform="translate(180,40)">
+    <rect width="148" height="255" rx="6" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5"/>
+    <text x="74" y="18" text-anchor="middle" fill="#fbbf24" font-size="12" font-weight="700">Knurling (G01)</text>
+    <!-- knurled part -->
+    <rect x="18" y="28" width="112" height="50" rx="3" fill="#475569"/>
+    <!-- knurl pattern lines -->
+    <line x1="25" y1="28" x2="35" y2="78" stroke="#94a3b8" stroke-width="1"/>
+    <line x1="40" y1="28" x2="50" y2="78" stroke="#94a3b8" stroke-width="1"/>
+    <line x1="55" y1="28" x2="65" y2="78" stroke="#94a3b8" stroke-width="1"/>
+    <line x1="70" y1="28" x2="80" y2="78" stroke="#94a3b8" stroke-width="1"/>
+    <line x1="85" y1="28" x2="95" y2="78" stroke="#94a3b8" stroke-width="1"/>
+    <line x1="100" y1="28" x2="110" y2="78" stroke="#94a3b8" stroke-width="1"/>
+    <line x1="35" y1="28" x2="25" y2="78" stroke="#94a3b8" stroke-width="1"/>
+    <line x1="50" y1="28" x2="40" y2="78" stroke="#94a3b8" stroke-width="1"/>
+    <line x1="65" y1="28" x2="55" y2="78" stroke="#94a3b8" stroke-width="1"/>
+    <line x1="80" y1="28" x2="70" y2="78" stroke="#94a3b8" stroke-width="1"/>
+    <line x1="95" y1="28" x2="85" y2="78" stroke="#94a3b8" stroke-width="1"/>
+    <line x1="110" y1="28" x2="100" y2="78" stroke="#94a3b8" stroke-width="1"/>
+    <!-- knurling tool -->
+    <rect x="60" y="8" width="28" height="20" rx="2" fill="#78716c"/>
+    <text x="74" y="100" text-anchor="middle" fill="#94a3b8" font-size="9">Diamond or straight pattern</text>
+    <text x="74" y="113" text-anchor="middle" fill="#94a3b8" font-size="9">increases OD ~0.015–0.030"</text>
+    <text x="12" y="133" fill="#f8fafc" font-family="monospace" font-size="9">G96 S200 M03  (low SFM)</text>
+    <text x="12" y="146" fill="#f8fafc" font-family="monospace" font-size="9">G00 X(OD) Z(start+0.1)</text>
+    <text x="12" y="159" fill="#f8fafc" font-family="monospace" font-size="9">G01 Z(end) F0.050</text>
+    <text x="12" y="172" fill="#f8fafc" font-family="monospace" font-size="9">(multiple passes if needed)</text>
+    <text x="12" y="190" fill="#64748b" font-size="9">Knurl tool presses pattern.</text>
+    <text x="12" y="202" fill="#64748b" font-size="9">High radial force — use</text>
+    <text x="12" y="214" fill="#64748b" font-size="9">steady rest on long parts.</text>
+    <text x="12" y="228" fill="#64748b" font-size="9">Pitch: 14–33 TPI typical.</text>
+    <text x="12" y="241" fill="#64748b" font-size="9">Stagger passes to track.</text>
+  </g>
+
+  <!-- ── TAPER TURNING ── -->
+  <g transform="translate(340,40)">
+    <rect width="148" height="255" rx="6" fill="#1e293b" stroke="#22c55e" stroke-width="1.5"/>
+    <text x="74" y="18" text-anchor="middle" fill="#86efac" font-size="12" font-weight="700">Taper Turning (G01)</text>
+    <!-- taper stock -->
+    <polygon points="18,35 130,55 130,73 18,53" fill="#475569"/>
+    <!-- tool -->
+    <polygon points="132,60 148,64 132,68" fill="#fbbf24"/>
+    <text x="74" y="100" text-anchor="middle" fill="#94a3b8" font-size="9">Simultaneous X+Z move</text>
+    <text x="74" y="112" text-anchor="middle" fill="#94a3b8" font-size="9">gives any angle</text>
+    <text x="12" y="132" fill="#f8fafc" font-family="monospace" font-size="9">G01 X2.000 Z-2.000 F0.010</text>
+    <text x="12" y="145" fill="#f8fafc" font-family="monospace" font-size="9">(1:1 taper = 45°)</text>
+    <text x="12" y="162" fill="#94a3b8" font-size="9">Morse taper formula:</text>
+    <text x="12" y="175" fill="#f8fafc" font-family="monospace" font-size="9">ΔX = (D_large - D_small)</text>
+    <text x="12" y="188" fill="#f8fafc" font-family="monospace" font-size="9">ΔZ = taper length</text>
+    <text x="12" y="201" fill="#f8fafc" font-family="monospace" font-size="9">Angle = atan(ΔX/(2×ΔZ))</text>
+    <text x="12" y="220" fill="#64748b" font-size="9">G01 Z(end) (no X) = parallel</text>
+    <text x="12" y="232" fill="#64748b" font-size="9">Chamfer: G01 X(+2×ch) Z(-ch)</text>
+    <text x="12" y="245" fill="#64748b" font-size="9">then G01 Z(final) F0.008</text>
+  </g>
+
+  <!-- ── THREAD RELIEF / UNDERCUT ── -->
+  <g transform="translate(500,40)">
+    <rect width="148" height="255" rx="6" fill="#1e293b" stroke="#a855f7" stroke-width="1.5"/>
+    <text x="74" y="18" text-anchor="middle" fill="#c4b5fd" font-size="12" font-weight="700">Thread Relief / Undercut</text>
+    <!-- part with relief groove at thread runout -->
+    <rect x="18" y="35" width="112" height="40" rx="3" fill="#475569"/>
+    <!-- relief groove -->
+    <rect x="105" y="35" width="12" height="40" fill="#0f172a"/>
+    <!-- thread -->
+    <path d="M18,38 L28,28 L38,38 L48,28 L58,38 L68,28 L78,38 L88,28 L98,38 L106,28" stroke="#fbbf24" stroke-width="1.5" fill="none"/>
+    <!-- tool -->
+    <rect x="95" y="18" width="28" height="16" rx="2" fill="#78716c"/>
+    <text x="74" y="100" text-anchor="middle" fill="#94a3b8" font-size="9">Groove cut before threading</text>
+    <text x="74" y="113" text-anchor="middle" fill="#94a3b8" font-size="9">allows die/nut runout</text>
+    <text x="12" y="133" fill="#94a3b8" font-size="10" font-weight="600">Relief width ≥ 2 × pitch</text>
+    <text x="12" y="147" fill="#94a3b8" font-size="10" font-weight="600">Relief depth = below minor dia</text>
+    <text x="12" y="163" fill="#f8fafc" font-family="monospace" font-size="9">G00 X(OD+0.1) Z(relief Z)</text>
+    <text x="12" y="176" fill="#f8fafc" font-family="monospace" font-size="9">G01 X(minor-0.010) F0.003</text>
+    <text x="12" y="189" fill="#f8fafc" font-family="monospace" font-size="9">G04 P300</text>
+    <text x="12" y="202" fill="#f8fafc" font-family="monospace" font-size="9">G01 X(OD+0.1) F0.015</text>
+    <text x="12" y="222" fill="#64748b" font-size="9">Always cut relief BEFORE</text>
+    <text x="12" y="234" fill="#64748b" font-size="9">threading. G76 runout needs</text>
+    <text x="12" y="246" fill="#64748b" font-size="9">clearance or use G76 Z(relief)</text>
+  </g>
+
+  <!-- ── FACE GROOVING ── -->
+  <g transform="translate(660,40)">
+    <rect width="120" height="255" rx="6" fill="#1e293b" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="60" y="18" text-anchor="middle" fill="#67e8f9" font-size="12" font-weight="700">Face Grooving (G74)</text>
+    <!-- face view -->
+    <circle cx="60" cy="64" r="50" fill="#475569" stroke="#334155"/>
+    <circle cx="60" cy="64" r="30" fill="#0f172a"/>
+    <circle cx="60" cy="64" r="38" fill="none" stroke="#22d3ee" stroke-width="3"/>
+    <!-- groove line -->
+    <circle cx="60" cy="64" r="20" fill="#475569"/>
+    <!-- tool from top -->
+    <rect x="55" y="5" width="10" height="28" rx="2" fill="#fbbf24"/>
+    <text x="60" y="128" text-anchor="middle" fill="#94a3b8" font-size="9">Groove cut on face</text>
+    <text x="60" y="140" text-anchor="middle" fill="#94a3b8" font-size="9">O-ring / seal groove</text>
+    <text x="10" y="158" fill="#f8fafc" font-family="monospace" font-size="9">G74 R0.050</text>
+    <text x="10" y="171" fill="#f8fafc" font-family="monospace" font-size="9">G74 X(dia) Z-dep</text>
+    <text x="10" y="184" fill="#f8fafc" font-family="monospace" font-size="9">   Q(step) F0.003</text>
+    <text x="10" y="200" fill="#64748b" font-size="9">G74 = peck facing/</text>
+    <text x="10" y="213" fill="#64748b" font-size="9">face groove cycle</text>
+    <text x="10" y="226" fill="#64748b" font-size="9">X = outer dia</text>
+    <text x="10" y="239" fill="#64748b" font-size="9">Q = step width (µm)</text>
+  </g>
+
+  <!-- Bottom reference strip -->
+  <rect x="20" y="307" width="760" height="178" rx="6" fill="#1e293b" stroke="#334155"/>
+  <text x="400" y="325" text-anchor="middle" fill="#f8fafc" font-size="12" font-weight="700">Lathe Canned Cycle Quick Reference — G74 / G75 / G76</text>
+  <line x1="20" y1="330" x2="780" y2="330" stroke="#334155"/>
+  <text x="35" y="347" fill="#94a3b8" font-size="11" font-weight="600">Cycle</text>  <text x="120" y="347" fill="#94a3b8" font-size="11" font-weight="600">Purpose</text>  <text x="340" y="347" fill="#94a3b8" font-size="11" font-weight="600">Key params</text>
+  <text x="35" y="365" fill="#22d3ee" font-size="11">G74</text><text x="120" y="365" fill="#f8fafc" font-size="11">Peck facing / face groove / cutoff</text><text x="340" y="365" fill="#f8fafc" font-size="11">X=dia, Z=depth, Q=step(µm), F=feed</text>
+  <text x="35" y="382" fill="#fdba74" font-size="11">G75</text><text x="120" y="382" fill="#f8fafc" font-size="11">OD/ID peck grooving (multiple grooves)</text><text x="340" y="382" fill="#f8fafc" font-size="11">X=depth, Z=end, P=groove spacing(µm), Q=peck(µm)</text>
+  <text x="35" y="399" fill="#86efac" font-size="11">G76</text><text x="120" y="399" fill="#f8fafc" font-size="11">Threading (OD and ID)</text><text x="340" y="399" fill="#f8fafc" font-size="11">P=passes/angle, Q=min cut, R=finish, X=minor, F=pitch</text>
+  <text x="35" y="416" fill="#60a5fa" font-size="11">G71/G72</text><text x="120" y="416" fill="#f8fafc" font-size="11">OD rough / face rough stock removal</text><text x="340" y="416" fill="#f8fafc" font-size="11">U=DOC, R=retract, P/Q=start-end blocks, F=feed</text>
+  <text x="35" y="433" fill="#c4b5fd" font-size="11">G70</text><text x="120" y="433" fill="#f8fafc" font-size="11">Finish pass after G71/G72/G73</text><text x="340" y="433" fill="#f8fafc" font-size="11">P=start block, Q=end block (uses F from finish blocks)</text>
+  <text x="35" y="450" fill="#f97316" font-size="11">G92</text><text x="120" y="450" fill="#f8fafc" font-size="11">Simple threading cycle (single call)</text><text x="340" y="450" fill="#f8fafc" font-size="11">X=minor, Z=end, F=pitch — less control than G76</text>
+  <text x="35" y="468" fill="#64748b" font-size="10">All canned cycles cancel with the next non-canned move. CSS (G96) recommended for all turning ops — let controller manage RPM as diameter changes.</text>
+  <text x="35" y="482" fill="#64748b" font-size="10">Parting: switch to G97 constant RPM near center (small dia = runaway RPM with G96). Set G50 S1200 clamp before parting.</text>
+
+  <defs>
+    <marker id="dax" markerWidth="5" markerHeight="5" refX="3" refY="5" orient="auto"><path d="M0,0 L5,0 L2.5,5 z" fill="#ef4444"/></marker>
+  </defs>
+</svg>

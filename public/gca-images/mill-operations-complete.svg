@@ -1,0 +1,158 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 520" font-family="system-ui,sans-serif">
+  <rect width="800" height="520" fill="#0f172a"/>
+  <text x="400" y="28" text-anchor="middle" fill="#f8fafc" font-size="16" font-weight="700">Mill Operations — Face · Shoulder · Slot · Boring · Reaming · Thread Mill · T-Slot</text>
+
+  <!-- FACE MILLING -->
+  <g transform="translate(20,40)">
+    <rect width="160" height="220" rx="6" fill="#1e293b" stroke="#3b82f6" stroke-width="1.5"/>
+    <text x="80" y="18" text-anchor="middle" fill="#60a5fa" font-size="11" font-weight="700">Face Milling (G01)</text>
+    <!-- part top -->
+    <rect x="15" y="55" width="130" height="40" rx="3" fill="#475569"/>
+    <!-- face mill cutter (circle top view) -->
+    <circle cx="80" cy="35" r="22" fill="none" stroke="#3b82f6" stroke-width="2"/>
+    <line x1="80" y1="13" x2="80" y2="57" stroke="#3b82f6" stroke-width="1" stroke-dasharray="3,2"/>
+    <line x1="58" y1="35" x2="102" y2="35" stroke="#3b82f6" stroke-width="1" stroke-dasharray="3,2"/>
+    <!-- inserts on cutter -->
+    <rect x="77" y="13" width="6" height="8" rx="1" fill="#fbbf24" transform="rotate(0,80,17)"/>
+    <rect x="96" y="32" width="6" height="8" rx="1" fill="#fbbf24" transform="rotate(90,99,36)"/>
+    <rect x="77" y="50" width="6" height="8" rx="1" fill="#fbbf24" transform="rotate(180,80,54)"/>
+    <rect x="58" y="32" width="6" height="8" rx="1" fill="#fbbf24" transform="rotate(270,61,36)"/>
+    <!-- feed direction -->
+    <line x1="20" y1="75" x2="140" y2="75" stroke="#22c55e" stroke-width="1.5" marker-end="url(#ma1)"/>
+    <text x="80" y="115" text-anchor="middle" fill="#94a3b8" font-size="9">Stepover: 60–80% Ø</text>
+    <text x="80" y="127" text-anchor="middle" fill="#94a3b8" font-size="9">Lead angle lowers impact</text>
+    <text x="15" y="147" fill="#f8fafc" font-family="monospace" font-size="9">G01 Y__ F(chip×Z×RPM)</text>
+    <text x="15" y="160" fill="#64748b" font-size="9">Use 45° lead angle insert</text>
+    <text x="15" y="173" fill="#64748b" font-size="9">to reduce edge chipping.</text>
+    <text x="15" y="188" fill="#64748b" font-size="9">Climb mill for finish pass.</text>
+    <text x="15" y="203" fill="#64748b" font-size="9">DOC: 0.050–0.200" rough</text>
+    <text x="15" y="216" fill="#64748b" font-size="9">     0.005–0.015" finish</text>
+  </g>
+
+  <!-- SHOULDER MILLING -->
+  <g transform="translate(194,40)">
+    <rect width="148" height="220" rx="6" fill="#1e293b" stroke="#22c55e" stroke-width="1.5"/>
+    <text x="74" y="18" text-anchor="middle" fill="#86efac" font-size="11" font-weight="700">Shoulder Milling (G01)</text>
+    <!-- side view showing step -->
+    <rect x="15" y="40" width="118" height="60" rx="3" fill="#475569"/>
+    <rect x="15" y="80" width="60" height="20" rx="2" fill="#0f172a"/>
+    <!-- end mill side view -->
+    <rect x="60" y="15" width="18" height="66" rx="3" fill="#78716c"/>
+    <rect x="58" y="80" width="22" height="8" rx="1" fill="#fbbf24"/>
+    <text x="74" y="115" text-anchor="middle" fill="#94a3b8" font-size="9">Full-depth side cut</text>
+    <text x="74" y="127" text-anchor="middle" fill="#94a3b8" font-size="9">RDOC = 10–30% Ø</text>
+    <text x="15" y="147" fill="#f8fafc" font-family="monospace" font-size="9">G41 D01  (cutter comp)</text>
+    <text x="15" y="160" fill="#f8fafc" font-family="monospace" font-size="9">G01 X__ F__</text>
+    <text x="15" y="173" fill="#f8fafc" font-family="monospace" font-size="9">G40  (cancel comp)</text>
+    <text x="15" y="190" fill="#64748b" font-size="9">G41 = climb (left comp)</text>
+    <text x="15" y="203" fill="#64748b" font-size="9">G42 = conventional</text>
+    <text x="15" y="216" fill="#64748b" font-size="9">Cutter comp = adjust D offset</text>
+  </g>
+
+  <!-- SLOTTING -->
+  <g transform="translate(354,40)">
+    <rect width="148" height="220" rx="6" fill="#1e293b" stroke="#f97316" stroke-width="1.5"/>
+    <text x="74" y="18" text-anchor="middle" fill="#fdba74" font-size="11" font-weight="700">Slotting (G01)</text>
+    <rect x="15" y="35" width="118" height="60" rx="3" fill="#475569"/>
+    <!-- slot -->
+    <rect x="56" y="35" width="24" height="60" fill="#0f172a"/>
+    <!-- end mill in slot -->
+    <rect x="58" y="5" width="20" height="56" rx="3" fill="#78716c"/>
+    <rect x="56" y="60" width="24" height="12" rx="1" fill="#fbbf24"/>
+    <text x="74" y="115" text-anchor="middle" fill="#94a3b8" font-size="9">Full-width: hardest op</text>
+    <text x="74" y="127" text-anchor="middle" fill="#94a3b8" font-size="9">Reduce feed 40%</text>
+    <text x="15" y="147" fill="#f8fafc" font-family="monospace" font-size="9">G00 X__ Y(slot ctr)</text>
+    <text x="15" y="160" fill="#f8fafc" font-family="monospace" font-size="9">G01 Z-depth F(slow)</text>
+    <text x="15" y="173" fill="#f8fafc" font-family="monospace" font-size="9">G01 X(end) F(feed)</text>
+    <text x="15" y="190" fill="#64748b" font-size="9">Chip packing: peck slot,</text>
+    <text x="15" y="203" fill="#64748b" font-size="9">use 3-flute, air blast.</text>
+    <text x="15" y="216" fill="#64748b" font-size="9">Max ADOC = 1×D per pass</text>
+  </g>
+
+  <!-- BORING (MILL) -->
+  <g transform="translate(514,40)">
+    <rect width="130" height="220" rx="6" fill="#1e293b" stroke="#a855f7" stroke-width="1.5"/>
+    <text x="65" y="18" text-anchor="middle" fill="#c4b5fd" font-size="11" font-weight="700">Boring (G76/G85)</text>
+    <!-- hole -->
+    <rect x="15" y="35" width="100" height="80" rx="3" fill="#475569"/>
+    <ellipse cx="65" cy="75" rx="28" ry="28" fill="#0f172a"/>
+    <!-- boring bar -->
+    <rect x="60" y="5" width="10" height="72" rx="2" fill="#78716c"/>
+    <polygon points="55,77 75,77 65,90" fill="#a855f7"/>
+    <text x="65" y="135" text-anchor="middle" fill="#94a3b8" font-size="9">Single-point precision bore</text>
+    <text x="15" y="155" fill="#f8fafc" font-family="monospace" font-size="9">G76 X__ Y__ Z-dep</text>
+    <text x="15" y="168" fill="#f8fafc" font-family="monospace" font-size="9">   R0.1 Q0.005 P0</text>
+    <text x="15" y="184" fill="#64748b" font-size="9">G76: bore + orient retract</text>
+    <text x="15" y="197" fill="#64748b" font-size="9">G85: bore in+out (ream)</text>
+    <text x="15" y="210" fill="#64748b" font-size="9">Better finish than G81</text>
+  </g>
+
+  <!-- THREAD MILLING -->
+  <g transform="translate(656,40)">
+    <rect width="124" height="220" rx="6" fill="#1e293b" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="62" y="18" text-anchor="middle" fill="#67e8f9" font-size="11" font-weight="700">Thread Milling (G02/G03)</text>
+    <rect x="12" y="35" width="100" height="80" rx="3" fill="#475569"/>
+    <ellipse cx="62" cy="75" rx="30" ry="30" fill="#0f172a"/>
+    <!-- helical path arrows -->
+    <ellipse cx="62" cy="60" rx="22" ry="8" fill="none" stroke="#22d3ee" stroke-width="1.5" stroke-dasharray="3,2"/>
+    <ellipse cx="62" cy="75" rx="22" ry="8" fill="none" stroke="#22d3ee" stroke-width="1.5"/>
+    <ellipse cx="62" cy="90" rx="22" ry="8" fill="none" stroke="#22d3ee" stroke-width="1.5" stroke-dasharray="3,2"/>
+    <text x="62" y="132" text-anchor="middle" fill="#94a3b8" font-size="9">Helical interpolation</text>
+    <text x="12" y="152" fill="#f8fafc" font-family="monospace" font-size="8">G03 X__ Y__ Z(−1pitch)</text>
+    <text x="12" y="165" fill="#f8fafc" font-family="monospace" font-size="8">   I__ J__ F__</text>
+    <text x="12" y="180" fill="#64748b" font-size="9">One 360° helix = one pitch</text>
+    <text x="12" y="193" fill="#64748b" font-size="9">Can cut any thread size</text>
+    <text x="12" y="206" fill="#64748b" font-size="9">with one cutter.</text>
+  </g>
+
+  <!-- Bottom T-slot + key operations table -->
+  <rect x="20" y="272" width="760" height="230" rx="6" fill="#1e293b" stroke="#334155"/>
+  <text x="400" y="290" text-anchor="middle" fill="#f8fafc" font-size="12" font-weight="700">T-Slot, Dovetail, Keyway, Reaming — + Cutter Comp Quick Reference</text>
+  <line x1="20" y1="295" x2="780" y2="295" stroke="#334155"/>
+
+  <!-- T-slot and dovetail sketches inline -->
+  <!-- T-slot profile -->
+  <rect x="35" y="305" width="60" height="25" rx="2" fill="#475569"/>
+  <rect x="45" y="330" width="40" height="20" rx="2" fill="#475569"/>
+  <text x="65" y="368" text-anchor="middle" fill="#22d3ee" font-size="10">T-Slot</text>
+  <text x="65" y="380" text-anchor="middle" fill="#64748b" font-size="9">G01 slot first,</text>
+  <text x="65" y="392" text-anchor="middle" fill="#64748b" font-size="9">then T-slot cutter</text>
+  <text x="65" y="404" text-anchor="middle" fill="#64748b" font-size="9">at full depth</text>
+  <text x="65" y="416" text-anchor="middle" fill="#64748b" font-size="9">Low RPM, high flood</text>
+
+  <!-- Dovetail profile -->
+  <polygon points="155,305 225,305 235,330 145,330" fill="#475569"/>
+  <text x="190" y="350" text-anchor="middle" fill="#f97316" font-size="10">Dovetail</text>
+  <text x="190" y="363" text-anchor="middle" fill="#64748b" font-size="9">Slot first to depth,</text>
+  <text x="190" y="375" text-anchor="middle" fill="#64748b" font-size="9">then angled cutter</text>
+  <text x="190" y="387" text-anchor="middle" fill="#64748b" font-size="9">in multiple passes</text>
+  <text x="190" y="399" text-anchor="middle" fill="#64748b" font-size="9">Measure angle with</text>
+  <text x="190" y="411" text-anchor="middle" fill="#64748b" font-size="9">ball-on-gauge method</text>
+
+  <!-- Keyway -->
+  <rect x="280" y="310" width="100" height="35" rx="2" fill="#475569"/>
+  <rect x="325" y="310" width="12" height="35" fill="#0f172a"/>
+  <text x="330" y="362" text-anchor="middle" fill="#a855f7" font-size="10">Keyway</text>
+  <text x="330" y="375" text-anchor="middle" fill="#64748b" font-size="9">Plunge + slot in</text>
+  <text x="330" y="387" text-anchor="middle" fill="#64748b" font-size="9">passes. Use keyseat</text>
+  <text x="330" y="399" text-anchor="middle" fill="#64748b" font-size="9">cutter for radius ends.</text>
+  <text x="330" y="411" text-anchor="middle" fill="#64748b" font-size="9">Width tol: H9 fit</text>
+
+  <!-- Cutter comp table -->
+  <text x="440" y="310" fill="#f8fafc" font-size="11" font-weight="700">Cutter Comp (G41/G42) Rules</text>
+  <text x="440" y="326" fill="#f8fafc" font-size="11">G41 — cutter LEFT of programmed path (climb)</text>
+  <text x="440" y="341" fill="#f8fafc" font-size="11">G42 — cutter RIGHT of path (conventional)</text>
+  <text x="440" y="356" fill="#64748b" font-size="10">Must have a lead-in move ≥ tool radius before engaging.</text>
+  <text x="440" y="370" fill="#64748b" font-size="10">Cancel (G40) on a straight move away from part.</text>
+  <text x="440" y="384" fill="#64748b" font-size="10">D offset = tool radius (geometry). Wear adjusts size.</text>
+  <text x="440" y="398" fill="#f59e0b" font-size="10">Never activate G41/G42 while at depth — gouging risk.</text>
+  <text x="440" y="416" fill="#f8fafc" font-size="11" font-weight="700">Reaming Selection</text>
+  <text x="440" y="431" fill="#f8fafc" font-size="11">Pre-drill: nominal −0.010/+0.005"</text>
+  <text x="440" y="446" fill="#f8fafc" font-size="11">Ream feed: 2–3× drill feed | G85 (feeds in+out)</text>
+  <text x="440" y="461" fill="#64748b" font-size="10">Floating holder absorbs misalignment. No peck.</text>
+  <text x="440" y="475" fill="#64748b" font-size="10">Achieves H7 (±0.0005") vs drill alone (±0.005").</text>
+
+  <defs>
+    <marker id="ma1" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#22c55e"/></marker>
+  </defs>
+</svg>
