@@ -66,34 +66,28 @@ export function useCertificates() {
     if (!program) return null;
 
     const rpc = program === "OAP" ? "verify_oap_certificate" : "verify_gca_certificate";
-    const { data, error } = await supabase.rpc(rpc, { _cert_id: certId });
-    const row = Array.isArray(data) ? data[0] : null;
+    const { data, error } = await supabase.rpc(rpc, { p_cert_id: certId });
+    const row = Array.isArray(data) ? (data[0] as any) : null;
     if (error || !row) return null;
-
-    let items: CertificateRecord["items"] = [];
-    if (program === "OAP") {
-      const { data: rows } = await supabase
-        .from("oap_certificate_items")
-        .select("item_type, display_label, sort_order")
-        .eq("certificate_id", row.cert_id) // FK is on id; if items lookup needs id, owner-auth context required
-        .order("sort_order", { ascending: true });
-      items = (rows ?? []).map((r: any) => ({ type: r.item_type, label: r.display_label }));
-    }
 
     return {
       certId: row.cert_id,
-      qrToken: row.qr_token,
+      qrToken: "", // not exposed via public verification (anti-forgery)
       program,
       programName: row.program_name,
       recipientName: row.recipient_name,
+      recipientUsername: row.recipient_username ?? null,
       recipientEmail: null, // intentionally hidden on public verification
-      organizationName: null,
+      organizationName: row.organization_name ?? null,
       status: row.status as CertificateRecord["status"],
       validFrom: row.valid_from,
       validUntil: row.valid_until,
       issuedAt: row.issued_at,
-      pdfUrl: row.pdf_url,
-      items,
+      pdfUrl: null,
+      signedByName: row.signed_by_name ?? null,
+      signedByTitle: row.signed_by_title ?? null,
+      signedBySignatureUrl: row.signed_by_signature_url ?? null,
+      items: [], // public verification does not enumerate items; owner view loads them separately
     };
   }, []);
 

@@ -1,4 +1,4 @@
-import { CertificateTemplate } from "./CertificateTemplate";
+import { CertificateTemplate, type CertificateVariant } from "./CertificateTemplate";
 import type { CertificateRecord, CertificateProgram } from "@/lib/certificates";
 
 interface CertificatePreviewProps {
@@ -6,6 +6,8 @@ interface CertificatePreviewProps {
   recipientName?: string;
   programName?: string;
   organizationName?: string | null;
+  /** "diploma" or "digital". Defaults to "digital" for marketing pages. */
+  variant?: CertificateVariant;
   /** Visual scale (1 = full 8.5x11). Default 0.42 fits nicely in marketing sections. */
   scale?: number;
   className?: string;
@@ -21,6 +23,7 @@ export function CertificatePreview({
   recipientName = "Jane Operator",
   programName,
   organizationName = "Precision Parts Inc.",
+  variant = "digital",
   scale = 0.42,
   className = "",
 }: CertificatePreviewProps) {
@@ -34,13 +37,17 @@ export function CertificatePreview({
         ? "CNC Operator — Floor Certified"
         : "G-Code Academy — Lathe & Mill Fundamentals"),
     recipientName,
-    recipientEmail: "preview@jobline.ai",
+    recipientUsername: "jane.operator",
+    recipientEmail: null,
     organizationName,
     status: "active",
     validFrom: new Date().toISOString(),
     validUntil: null,
     issuedAt: new Date().toISOString(),
     pdfUrl: null,
+    signedByName: "Marcus Chen",
+    signedByTitle: `Designated OAP Mentor, ${organizationName ?? "Precision Parts Inc."}`,
+    signedBySignatureUrl: null,
     items:
       program === "OAP"
         ? [
@@ -59,7 +66,6 @@ export function CertificatePreview({
           ],
   };
 
-  // 8.5in x 11in at 96dpi ≈ 816 x 1056 px
   const w = 816 * scale;
   const h = 1056 * scale;
 
@@ -67,7 +73,7 @@ export function CertificatePreview({
     <div
       className={`relative mx-auto ${className}`}
       style={{ width: w, height: h }}
-      aria-label={`Sample ${program} certificate preview`}
+      aria-label={`Sample ${program} ${variant} certificate preview`}
     >
       <div
         style={{
@@ -77,7 +83,7 @@ export function CertificatePreview({
           height: 1056,
         }}
       >
-        <CertificateTemplate cert={sample} />
+        <CertificateTemplate cert={sample} variant={variant} />
       </div>
     </div>
   );

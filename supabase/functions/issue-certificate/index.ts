@@ -125,17 +125,60 @@ serve(async (req) => {
     const userId = body.userId ?? caller.id;
     const validFrom = new Date().toISOString().slice(0, 10);
 
+    // Snapshot recipient public username (from operator_profiles) so the QR keeps
+    // working even if the username later changes.
+    const { data: recipientProfile } = await supabaseAdmin
+      .from("operator_profiles")
+      .select("public_username")
+      .eq("user_id", userId)
+      .maybeSingle();
+    const recipientUsername = (recipientProfile as any)?.public_username ?? null;
+
+    // Resolve signer. For OAP issued by an org, the org's designated mentor signs.
+    // jobline.ai certifier path is intentionally NOT implemented yet (no testing stations).
+    let signedByUserId: string | null = null;
+    let signedByName: string | null = null;
+    let signedByTitle: string | null = null;
+    const signedBySignatureUrl: string | null = null; // Upload UI deferred — column reserved.
+
+    if (body.program === "OAP" && body.organizationId) {
+      const { data: org } = await supabaseAdmin
+        .from("organizations")
+        .select("designated_oap_mentor_user_id, name")
+        .eq("id", body.organizationId)
+        .maybeSingle();
+      const mentorId = (org as any)?.designated_oap_mentor_user_id;
+      if (!mentorId) {
+        throw new Error(
+          "This organization has no designated OAP mentor set. An admin must assign one in Organization Settings before issuing OAP certificates."
+        );
+      }
+      const { data: mentor } = await supabaseAdmin
+        .from("profiles")
+        .select("display_name")
+        .eq("user_id", mentorId)
+        .maybeSingle();
+      signedByUserId = mentorId;
+      signedByName = (mentor as any)?.display_name ?? "Designated OAP Mentor";
+      signedByTitle = `Designated OAP Mentor, ${(org as any)?.name ?? "Organization"}`;
+    }
+
     const table = body.program === "OAP" ? "oap_certificates" : "gca_certificates";
     const insertPayload: Record<string, unknown> = {
       cert_id: certId,
       user_id: userId,
       recipient_name: body.recipientName,
       recipient_email: body.recipientEmail,
+      recipient_username: recipientUsername,
       program_name: body.programName,
       valid_from: validFrom,
       valid_until: body.validUntil ?? null,
       amount_cents: body.amountCents ?? 1200,
       stripe_session_id: body.stripeSessionId ?? null,
+      signed_by_user_id: signedByUserId,
+      signed_by_name: signedByName,
+      signed_by_title: signedByTitle,
+      signed_by_signature_url: signedBySignatureUrl,
     };
     if (body.program === "OAP") {
       insertPayload.organization_id = body.organizationId ?? null;
