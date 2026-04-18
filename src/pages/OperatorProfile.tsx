@@ -24,6 +24,20 @@ import { getPublicTalentUrl } from "@/lib/talent/publicHost";
 
 const PROFICIENCY_LEVELS = ["beginner", "intermediate", "advanced", "expert"] as const;
 
+function extractErrorMessage(err: unknown): string {
+  if (!err) return "Unknown error";
+  if (typeof err === "string") return err;
+  if (err instanceof Error) return err.message;
+  if (typeof err === "object") {
+    const e = err as Record<string, unknown>;
+    const parts = [e.message, e.details, e.hint, e.code]
+      .filter((v): v is string => typeof v === "string" && v.length > 0);
+    if (parts.length) return parts.join(" — ");
+    try { return JSON.stringify(err); } catch { return String(err); }
+  }
+  return String(err);
+}
+
 export default function OperatorProfile() {
   const navigate = useNavigate();
   const { user, profile: authProfile, isReady } = useAuth();
