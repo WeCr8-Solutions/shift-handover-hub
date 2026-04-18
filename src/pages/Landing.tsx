@@ -14,6 +14,7 @@ import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 import { VisitorSurveyModal } from "@/components/marketing/VisitorSurveyModal";
+import { RotatingHeroBadge } from "@/components/marketing/RotatingHeroBadge";
 import { trackEvent, ConversionEvents } from "@/lib/analytics";
 import { getUtmParams } from "@/lib/utm";
 const demoVideo = "/jobline-demo-video.mp4";
@@ -318,10 +319,8 @@ export default function Landing() {
               />
             </div>
             
-            <Badge variant="outline" className="mb-3 sm:mb-4 px-3 sm:px-4 py-1 sm:py-1.5 text-xs sm:text-sm border-primary/30 bg-primary/5">
-              <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1.5 sm:mr-2 text-primary" />
-              Built for Manufacturing Teams
-            </Badge>
+            <RotatingHeroBadge />
+
             
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight mb-3 sm:mb-4 leading-tight">
               Shift Handoffs.
