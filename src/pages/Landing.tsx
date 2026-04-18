@@ -307,7 +307,15 @@ export default function Landing() {
           <div className="max-w-4xl mx-auto text-center">
             {/* Logo above hero text */}
             <div className="flex justify-center mb-4 sm:mb-5">
-              <img src={joblineLogo} alt="JobLine.ai" className="h-20 sm:h-28 md:h-36 lg:h-44 w-auto" />
+              <img
+                src={joblineLogo}
+                alt="JobLine.ai"
+                width={176}
+                height={176}
+                fetchPriority="high"
+                decoding="async"
+                className="h-20 sm:h-28 md:h-36 lg:h-44 w-auto"
+              />
             </div>
             
             <Badge variant="outline" className="mb-3 sm:mb-4 px-3 sm:px-4 py-1 sm:py-1.5 text-xs sm:text-sm border-primary/30 bg-primary/5">
