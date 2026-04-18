@@ -528,7 +528,10 @@ function oapMenteeDetail(menteeId) {
       h += '<span class="oap-cp-type">' + cp.type + '</span>';
       if (cp.mentorSignOff) h += ' <span class="oap-cp-badge">Mentor</span>';
       if (cp.employerBuyOff) h += ' <span class="oap-cp-badge oap-cp-emp">Buy-Off</span>';
-      if (cp.linkedCourse) h += ' <span class="oap-cp-course" onclick="oapRunCourse(\'' + cp.linkedCourse + '\',\'' + menteeId + '\')" title="Take course">📚 Course</span>';
+      if (cp.linkedCourse) {
+        h += ' <span class="oap-cp-course" onclick="oapRunCourse(\'' + cp.linkedCourse + '\',\'' + menteeId + '\')" title="Take course">📚 Course</span>';
+        h += ' <span class="oap-cp-course" style="background:#1a3a52;color:#4a9eff" onclick="oapRunCourseExam(\'' + cp.linkedCourse + '\',\'' + menteeId + '\',\'directed\')" title="Assign directed certification exam — covers every topic, ' + OAP_MIN_EXAM_QUESTIONS + ' questions">🎯 Directed Exam</span>';
+      }
       h += '</div>';
       if (done && status.signedBy) h += '<div class="oap-cp-signed">✓ ' + status.signedBy + ' · ' + new Date(status.signedAt).toLocaleDateString() + '</div>';
       h += '</div>';
