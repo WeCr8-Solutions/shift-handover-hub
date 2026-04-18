@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { TalentSocialPanel } from "@/components/talent/TalentSocialPanel";
 import { PublicProfileQrCard } from "@/components/talent/PublicProfileQrCard";
+import { withJoblineUtm } from "@/lib/talent/outboundLinks";
 import "@/styles/print-talent.css";
 import {
   MapPin,
@@ -290,9 +291,9 @@ export default function PublicOperatorProfile() {
                   )}
                   {profile.linkedin_url && (
                     <a
-                      href={profile.linkedin_url}
+                      href={withJoblineUtm(profile.linkedin_url, "talent_profile")}
                       target="_blank"
-                      rel="noopener noreferrer"
+                      rel="noopener noreferrer nofollow"
                       className="flex items-center gap-1 text-primary hover:underline"
                     >
                       <Linkedin className="w-4 h-4" /> LinkedIn
@@ -300,7 +301,7 @@ export default function PublicOperatorProfile() {
                   )}
                   {profile.portfolio_url && (
                     <a
-                      href={profile.portfolio_url}
+                      href={withJoblineUtm(profile.portfolio_url, "talent_profile")}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-1 text-primary hover:underline"

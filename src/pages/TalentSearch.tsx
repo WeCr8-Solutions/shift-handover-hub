@@ -18,6 +18,7 @@ import { useOrgContext } from "@/contexts/OrgContext";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { withJoblineUtm } from "@/lib/talent/outboundLinks";
 
 export default function Talent() {
   const navigate = useNavigate();
@@ -339,7 +340,7 @@ function CandidateCard({
             )}
             {candidate.cert_count > 0 && <span className="flex items-center gap-1"><Award className="w-3 h-3" /> {candidate.cert_count} cert{candidate.cert_count !== 1 && "s"}</span>}
             {candidate.linkedin_url && (
-              <a href={candidate.linkedin_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-primary hover:underline">
+              <a href={withJoblineUtm(candidate.linkedin_url, "talent_search")} target="_blank" rel="noopener noreferrer nofollow" className="flex items-center gap-1 text-primary hover:underline">
                 <Linkedin className="w-3 h-3" /> LinkedIn
               </a>
             )}
