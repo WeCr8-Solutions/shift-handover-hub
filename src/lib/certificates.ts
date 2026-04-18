@@ -47,6 +47,7 @@ export interface CertificateRecord {
   program: CertificateProgram;
   programName: string;
   recipientName: string;
+  recipientUsername?: string | null;
   recipientEmail: string | null;
   organizationName?: string | null;
   status: "active" | "revoked" | "expired";
@@ -55,6 +56,10 @@ export interface CertificateRecord {
   issuedAt: string;
   pdfUrl: string | null;
   vertical?: OapVertical;
+  /** Snapshot of the signer at time of issue (mentor or certifier). */
+  signedByName?: string | null;
+  signedByTitle?: string | null;
+  signedBySignatureUrl?: string | null;
   items?: Array<{
     type:
       | "machine"
