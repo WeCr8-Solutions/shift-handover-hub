@@ -25,7 +25,7 @@ const PROFICIENCY_LEVELS = ["beginner", "intermediate", "advanced", "expert"] as
 
 export default function OperatorProfile() {
   const navigate = useNavigate();
-  const { user, isReady } = useAuth();
+  const { user, profile: authProfile, isReady } = useAuth();
   const { toast } = useToast();
   const {
     profile,
