@@ -249,31 +249,35 @@ export default function PublicOperatorProfile() {
       />
       <MarketingNav />
 
-      <main className="container max-w-4xl py-8 space-y-6">
-        <Button variant="ghost" size="sm" onClick={() => navigate("/talent")} className="gap-2">
+      <main className="container max-w-4xl py-4 sm:py-8 space-y-4 sm:space-y-6 pb-24 sm:pb-8">
+        <Button variant="ghost" size="sm" onClick={() => navigate("/talent")} className="gap-2 -ml-2 no-print">
           <ArrowLeft className="w-4 h-4" /> All profiles
         </Button>
 
-        {/* Header card */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex flex-col md:flex-row gap-6">
-              <Avatar className="h-24 w-24 md:h-32 md:w-32">
+        {/* Header card — mobile-first */}
+        <Card className="overflow-hidden">
+          <CardContent className="p-5 sm:p-6">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
+              <Avatar className="h-20 w-20 sm:h-28 sm:w-28 md:h-32 md:w-32 mx-auto sm:mx-0 ring-2 ring-primary/15">
                 {profile.avatar_url && <AvatarImage src={profile.avatar_url} alt={fullName} />}
-                <AvatarFallback className="bg-primary/10 text-primary text-3xl">
+                <AvatarFallback className="bg-primary/10 text-primary text-2xl sm:text-3xl font-semibold">
                   {fullName.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex-1 space-y-3">
+              <div className="flex-1 min-w-0 space-y-3 text-center sm:text-left">
                 <div>
-                  <h1 className="text-3xl font-bold">{fullName}</h1>
-                  <p className="text-sm text-muted-foreground">@{profile.public_username}</p>
+                  <h1 className="text-2xl sm:text-3xl font-bold leading-tight break-words">{fullName}</h1>
+                  <p className="text-xs sm:text-sm text-muted-foreground">@{profile.public_username}</p>
                 </div>
-                {profile.headline && <p className="text-lg text-muted-foreground">{profile.headline}</p>}
+                {profile.headline && (
+                  <p className="text-base sm:text-lg text-foreground/90 leading-snug">
+                    {profile.headline}
+                  </p>
+                )}
 
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
                   {profile.open_to_work && (
-                    <Badge className="bg-green-500/10 text-green-700 border-green-500/30">
+                    <Badge className="bg-emerald-500/10 text-emerald-700 border-emerald-500/30 dark:text-emerald-400">
                       <Briefcase className="w-3 h-3 mr-1" /> Open to work
                     </Badge>
                   )}
@@ -285,14 +289,16 @@ export default function PublicOperatorProfile() {
                   )}
                 </div>
 
-                <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-4 gap-y-1.5 text-sm text-muted-foreground">
                   {location && (
                     <span className="flex items-center gap-1">
                       <MapPin className="w-4 h-4" /> {location}
                     </span>
                   )}
                   {profile.years_experience != null && (
-                    <span>{profile.years_experience} years experience</span>
+                    <span className="flex items-center gap-1">
+                      <Calendar className="w-4 h-4" /> {profile.years_experience} yrs
+                    </span>
                   )}
                   {profile.linkedin_url && (
                     <a
@@ -315,16 +321,25 @@ export default function PublicOperatorProfile() {
                     </a>
                   )}
                 </div>
-
-                <div className="pt-2 flex flex-wrap gap-2 no-print">
-                  <Button asChild size="sm" variant="outline">
-                    <Link to="/talent/search">Employers: contact via Talent Search</Link>
-                  </Button>
-                  <Button asChild size="sm" variant="ghost">
-                    <Link to="/auth?signup=1">Build your own profile</Link>
-                  </Button>
-                </div>
               </div>
+            </div>
+
+            {/* Snapshot stats strip */}
+            <div className="mt-5 grid grid-cols-4 gap-2 rounded-lg border bg-muted/30 p-3 text-center">
+              <Stat label="Verified" value={verifiedCount} />
+              <Stat label="Machines" value={machines.length} />
+              <Stat label="Skills" value={skills.length} />
+              <Stat label="Roles" value={work.length} />
+            </div>
+
+            {/* Desktop CTAs (mobile uses sticky bar below) */}
+            <div className="mt-5 hidden sm:flex flex-wrap gap-2 no-print">
+              <Button asChild size="sm">
+                <Link to="/talent/search">Employers: contact via Talent Search</Link>
+              </Button>
+              <Button asChild size="sm" variant="outline">
+                <Link to="/auth?signup=1">Build your own profile</Link>
+              </Button>
             </div>
           </CardContent>
         </Card>
