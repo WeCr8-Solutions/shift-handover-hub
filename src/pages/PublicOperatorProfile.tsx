@@ -13,6 +13,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { TalentSocialPanel } from "@/components/talent/TalentSocialPanel";
 import { PublicProfileQrCard } from "@/components/talent/PublicProfileQrCard";
 import { withJoblineUtm } from "@/lib/talent/outboundLinks";
+import { getPublicTalentUrl } from "@/lib/talent/publicHost";
+import { formatDateRange } from "@/lib/talent/format";
 import "@/styles/print-talent.css";
 import {
   MapPin,
@@ -26,6 +28,9 @@ import {
   ArrowLeft,
   ExternalLink,
   CheckCircle2,
+  Share2,
+  Mail,
+  Calendar,
 } from "lucide-react";
 
 interface PublicProfile {
