@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500" font-family="system-ui, -apple-system, sans-serif">
+  <rect width="800" height="500" fill="#f8f9fa" rx="8"/>
+  <rect x="1" y="1" width="798" height="498" fill="none" stroke="#dee2e6" stroke-width="1.5" rx="8"/>
+
+  <text x="400" y="34" text-anchor="middle" font-size="18" font-weight="700" fill="#1a1a2e">Speeds &amp; Feeds — Key Formulas</text>
+  <text x="400" y="52" text-anchor="middle" font-size="12" fill="#6c757d">RPM, IPM, chip load, and SFM — imperial and metric</text>
+
+  <!-- ═══════════════════════════════ -->
+  <!-- FORMULA BOXES                  -->
+  <!-- ═══════════════════════════════ -->
+
+  <!-- RPM Formula -->
+  <rect x="40" y="70" width="340" height="90" fill="#e3f2fd" stroke="#1565c0" stroke-width="2" rx="6"/>
+  <text x="210" y="92" text-anchor="middle" font-size="13" font-weight="700" fill="#1565c0">Spindle Speed (RPM)</text>
+  <text x="210" y="118" text-anchor="middle" font-size="20" font-weight="700" fill="#1a1a2e">RPM = (SFM × 12) / (π × D)</text>
+  <text x="210" y="148" text-anchor="middle" font-size="11" fill="#555">SFM = surface feet/min | D = cutter diameter (inches)</text>
+
+  <!-- IPM Formula -->
+  <rect x="420" y="70" width="340" height="90" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2" rx="6"/>
+  <text x="590" y="92" text-anchor="middle" font-size="13" font-weight="700" fill="#2e7d32">Table Feedrate (IPM)</text>
+  <text x="590" y="118" text-anchor="middle" font-size="20" font-weight="700" fill="#1a1a2e">IPM = RPM × f_z × Z</text>
+  <text x="590" y="148" text-anchor="middle" font-size="11" fill="#555">f_z = chip load per tooth (in) | Z = number of flutes</text>
+
+  <!-- IPR Formula -->
+  <rect x="40" y="175" width="340" height="80" fill="#fff3e0" stroke="#ef6c00" stroke-width="2" rx="6"/>
+  <text x="210" y="196" text-anchor="middle" font-size="13" font-weight="700" fill="#e65100">Feed per Rev — Turning / Drilling</text>
+  <text x="210" y="224" text-anchor="middle" font-size="20" font-weight="700" fill="#1a1a2e">IPM = IPR × RPM</text>
+  <text x="210" y="244" text-anchor="middle" font-size="11" fill="#555">IPR = inches per revolution (chip load for turning)</text>
+
+  <!-- Metric RPM -->
+  <rect x="420" y="175" width="340" height="80" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="2" rx="6"/>
+  <text x="590" y="196" text-anchor="middle" font-size="13" font-weight="700" fill="#6a1b9a">Metric — Spindle Speed</text>
+  <text x="590" y="224" text-anchor="middle" font-size="18" font-weight="700" fill="#1a1a2e">n = (Vc × 1000) / (π × D)</text>
+  <text x="590" y="244" text-anchor="middle" font-size="11" fill="#555">Vc = cutting speed (m/min) | D = diameter (mm)</text>
+
+  <!-- ═══════════════════════════════ -->
+  <!-- WORKED EXAMPLE                 -->
+  <!-- ═══════════════════════════════ -->
+  <rect x="40" y="272" width="720" height="110" fill="white" stroke="#37474f" stroke-width="1.5" rx="6"/>
+  <text x="400" y="292" text-anchor="middle" font-size="13" font-weight="700" fill="#37474f">Worked Example: 0.500" 4-flute end mill, 6061 Aluminum, Roughing</text>
+
+  <!-- Step 1 -->
+  <rect x="56" y="302" width="200" height="68" fill="#e3f2fd" stroke="#90caf9" stroke-width="1" rx="4"/>
+  <text x="156" y="318" text-anchor="middle" font-size="11" font-weight="600" fill="#1565c0">Step 1: Choose SFM</text>
+  <text x="156" y="334" text-anchor="middle" font-size="11" fill="#333">6061-T6 aluminum</text>
+  <text x="156" y="348" text-anchor="middle" font-size="13" font-weight="700" fill="#1565c0">SFM = 800</text>
+  <text x="156" y="362" text-anchor="middle" font-size="10" fill="#555">(carbide, coated)</text>
+
+  <!-- Step 2 -->
+  <rect x="270" y="302" width="200" height="68" fill="#e8f5e9" stroke="#a5d6a7" stroke-width="1" rx="4"/>
+  <text x="370" y="318" text-anchor="middle" font-size="11" font-weight="600" fill="#2e7d32">Step 2: Calculate RPM</text>
+  <text x="370" y="334" text-anchor="middle" font-size="11" fill="#333">(800×12) / (π×0.5)</text>
+  <text x="370" y="352" text-anchor="middle" font-size="14" font-weight="700" fill="#2e7d32">RPM ≈ 6,112</text>
+  <text x="370" y="366" text-anchor="middle" font-size="10" fill="#555">Round to 6,000 RPM</text>
+
+  <!-- Step 3 -->
+  <rect x="484" y="302" width="260" height="68" fill="#fff3e0" stroke="#ffcc80" stroke-width="1" rx="4"/>
+  <text x="614" y="318" text-anchor="middle" font-size="11" font-weight="600" fill="#e65100">Step 3: Calculate IPM</text>
+  <text x="614" y="334" text-anchor="middle" font-size="11" fill="#333">f_z = 0.004" | Z = 4 flutes</text>
+  <text x="614" y="352" text-anchor="middle" font-size="14" font-weight="700" fill="#e65100">IPM = 6,000 × 0.004 × 4 = 96 IPM</text>
+  <text x="614" y="366" text-anchor="middle" font-size="10" fill="#555">RDOC = 40% D = 0.200" | ADOC = 1× D = 0.500"</text>
+
+  <!-- ═══════════════════════════════ -->
+  <!-- MATERIAL SFM REFERENCE TABLE   -->
+  <!-- ═══════════════════════════════ -->
+  <rect x="40" y="396" width="720" height="90" fill="white" stroke="#dee2e6" stroke-width="1" rx="5"/>
+  <text x="400" y="414" text-anchor="middle" font-size="12" font-weight="700" fill="#37474f">Typical Carbide End Mill SFM by Material (Starting Point)</text>
+  <line x1="40" y1="420" x2="760" y2="420" stroke="#dee2e6" stroke-width="1"/>
+
+  <!-- Material columns -->
+  <text x="110" y="435" text-anchor="middle" font-size="11" font-weight="600" fill="#555">6061 Aluminum</text>
+  <text x="110" y="450" text-anchor="middle" font-size="14" font-weight="700" fill="#1565c0">600–1200</text>
+  <text x="110" y="465" text-anchor="middle" font-size="9" fill="#888">SFM</text>
+  <line x1="200" y1="420" x2="200" y2="486" stroke="#f0f0f0" stroke-width="1"/>
+
+  <text x="260" y="435" text-anchor="middle" font-size="11" font-weight="600" fill="#555">1018 Mild Steel</text>
+  <text x="260" y="450" text-anchor="middle" font-size="14" font-weight="700" fill="#1565c0">300–500</text>
+  <text x="260" y="465" text-anchor="middle" font-size="9" fill="#888">SFM</text>
+  <line x1="330" y1="420" x2="330" y2="486" stroke="#f0f0f0" stroke-width="1"/>
+
+  <text x="410" y="435" text-anchor="middle" font-size="11" font-weight="600" fill="#555">4140 Steel (HT)</text>
+  <text x="410" y="450" text-anchor="middle" font-size="14" font-weight="700" fill="#1565c0">200–350</text>
+  <text x="410" y="465" text-anchor="middle" font-size="9" fill="#888">SFM</text>
+  <line x1="490" y1="420" x2="490" y2="486" stroke="#f0f0f0" stroke-width="1"/>
+
+  <text x="570" y="435" text-anchor="middle" font-size="11" font-weight="600" fill="#555">304 Stainless</text>
+  <text x="570" y="450" text-anchor="middle" font-size="14" font-weight="700" fill="#c62828">150–250</text>
+  <text x="570" y="465" text-anchor="middle" font-size="9" fill="#888">SFM — run wet!</text>
+  <line x1="650" y1="420" x2="650" y2="486" stroke="#f0f0f0" stroke-width="1"/>
+
+  <text x="705" y="435" text-anchor="middle" font-size="11" font-weight="600" fill="#555">Ti-6Al-4V</text>
+  <text x="705" y="450" text-anchor="middle" font-size="14" font-weight="700" fill="#c62828">60–100</text>
+  <text x="705" y="465" text-anchor="middle" font-size="9" fill="#888">SFM — high flood</text>
+</svg>

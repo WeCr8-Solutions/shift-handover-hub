@@ -1,0 +1,178 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" width="800" height="560" font-family="system-ui, -apple-system, sans-serif">
+  <rect width="800" height="560" fill="#f8f9fa" rx="8"/>
+  <rect x="1" y="1" width="798" height="558" fill="none" stroke="#dee2e6" stroke-width="1.5" rx="8"/>
+
+  <!-- Title -->
+  <text x="400" y="34" text-anchor="middle" font-size="18" font-weight="700" fill="#1a1a2e">Pocket Milling Strategies</text>
+  <text x="400" y="52" text-anchor="middle" font-size="12" fill="#6c757d">Conventional raster vs. contour (HSM) vs. trochoidal — entry methods compared</text>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- STRATEGY A: Conventional Raster (zigzag)                  -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <rect x="40" y="70" width="220" height="200" fill="#e8edf2" stroke="#90a4ae" stroke-width="2" rx="4"/>
+  <rect x="50" y="80" width="200" height="180" fill="#f5f5f5" stroke="#bdbdbd" stroke-width="1" rx="2"/>
+
+  <!-- Raster path lines -->
+  <line x1="60" y1="98" x2="240" y2="98" stroke="#1565c0" stroke-width="1.8"/>
+  <line x1="240" y1="98" x2="240" y2="114" stroke="#1565c0" stroke-width="1.8"/>
+  <line x1="240" y1="114" x2="60" y2="114" stroke="#1565c0" stroke-width="1.8"/>
+  <line x1="60" y1="114" x2="60" y2="130" stroke="#1565c0" stroke-width="1.8"/>
+  <line x1="60" y1="130" x2="240" y2="130" stroke="#1565c0" stroke-width="1.8"/>
+  <line x1="240" y1="130" x2="240" y2="146" stroke="#1565c0" stroke-width="1.8"/>
+  <line x1="240" y1="146" x2="60" y2="146" stroke="#1565c0" stroke-width="1.8"/>
+  <line x1="60" y1="146" x2="60" y2="162" stroke="#1565c0" stroke-width="1.8"/>
+  <line x1="60" y1="162" x2="240" y2="162" stroke="#1565c0" stroke-width="1.8"/>
+  <line x1="240" y1="162" x2="240" y2="178" stroke="#1565c0" stroke-width="1.8"/>
+  <line x1="240" y1="178" x2="60" y2="178" stroke="#1565c0" stroke-width="1.8"/>
+  <line x1="60" y1="178" x2="60" y2="194" stroke="#1565c0" stroke-width="1.8"/>
+  <line x1="60" y1="194" x2="240" y2="194" stroke="#1565c0" stroke-width="1.8"/>
+  <line x1="240" y1="194" x2="240" y2="210" stroke="#1565c0" stroke-width="1.8"/>
+  <line x1="240" y1="210" x2="60" y2="210" stroke="#1565c0" stroke-width="1.8"/>
+  <line x1="60" y1="210" x2="60" y2="226" stroke="#1565c0" stroke-width="1.8"/>
+  <line x1="60" y1="226" x2="240" y2="226" stroke="#1565c0" stroke-width="1.8"/>
+  <line x1="240" y1="226" x2="240" y2="242" stroke="#1565c0" stroke-width="1.8"/>
+  <line x1="240" y1="242" x2="60" y2="242" stroke="#1565c0" stroke-width="1.8"/>
+
+  <!-- Direction arrows on raster -->
+  <polygon points="150,94 144,100 156,100" fill="#1565c0"/>
+  <polygon points="150,118 156,112 144,112" fill="#1565c0"/>
+
+  <!-- RDOC indicator -->
+  <line x1="246" y1="98" x2="246" y2="114" stroke="#9c27b0" stroke-width="2"/>
+  <line x1="242" y1="98" x2="250" y2="98" stroke="#9c27b0" stroke-width="1"/>
+  <line x1="242" y1="114" x2="250" y2="114" stroke="#9c27b0" stroke-width="1"/>
+  <text x="254" y="109" font-size="9" fill="#9c27b0">ae</text>
+
+  <text x="150" y="290" text-anchor="middle" font-size="12" font-weight="700" fill="#1565c0">A. Raster (Zigzag)</text>
+  <text x="150" y="305" text-anchor="middle" font-size="10" fill="#444">High RDOC (~80–100% D)</text>
+  <text x="150" y="318" text-anchor="middle" font-size="10" fill="#444">Alternates climb/conventional</text>
+  <text x="150" y="331" text-anchor="middle" font-size="10" fill="#c62828">✗ Variable tool load | Marks at reversal</text>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- STRATEGY B: Contour (HSM / Adaptive offset)               -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <rect x="290" y="70" width="220" height="200" fill="#e8edf2" stroke="#90a4ae" stroke-width="2" rx="4"/>
+  <rect x="300" y="80" width="200" height="180" fill="#f5f5f5" stroke="#bdbdbd" stroke-width="1" rx="2"/>
+
+  <!-- Contour offset paths (nested rectangles/contours) -->
+  <!-- Outermost pass -->
+  <rect x="308" y="88" width="184" height="164" fill="none" stroke="#2e7d32" stroke-width="1.8" rx="2"/>
+  <!-- Second pass -->
+  <rect x="322" y="102" width="156" height="136" fill="none" stroke="#2e7d32" stroke-width="1.8" rx="2"/>
+  <!-- Third pass -->
+  <rect x="336" y="116" width="128" height="108" fill="none" stroke="#2e7d32" stroke-width="1.8" rx="2"/>
+  <!-- Fourth pass -->
+  <rect x="350" y="130" width="100" height="80" fill="none" stroke="#2e7d32" stroke-width="1.8" rx="2"/>
+  <!-- Fifth pass -->
+  <rect x="364" y="144" width="72" height="52" fill="none" stroke="#2e7d32" stroke-width="1.8" rx="2"/>
+  <!-- Core / finish pass -->
+  <rect x="378" y="158" width="44" height="24" fill="#c8e6c9" stroke="#2e7d32" stroke-width="1.5" rx="1"/>
+
+  <!-- Entry ramp indicator -->
+  <path d="M 400 88 L 400 102" stroke="#ff6f00" stroke-width="2" stroke-dasharray="4,3"/>
+  <circle cx="400" cy="88" r="4" fill="#ff6f00"/>
+  <text x="412" y="91" font-size="9" fill="#ff6f00">Entry ramp</text>
+
+  <!-- Direction arrow on contour -->
+  <polygon points="400,88 395,96 405,96" fill="#2e7d32"/>
+
+  <text x="400" y="290" text-anchor="middle" font-size="12" font-weight="700" fill="#2e7d32">B. Contour Offset (HSM)</text>
+  <text x="400" y="305" text-anchor="middle" font-size="10" fill="#444">Low RDOC (~10–30% D)</text>
+  <text x="400" y="318" text-anchor="middle" font-size="10" fill="#444">Consistent climb milling</text>
+  <text x="400" y="331" text-anchor="middle" font-size="10" fill="#1b5e20">✓ Constant load | Long tool life | Fast</text>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- STRATEGY C: Trochoidal                                     -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <rect x="540" y="70" width="220" height="200" fill="#e8edf2" stroke="#90a4ae" stroke-width="2" rx="4"/>
+  <rect x="550" y="80" width="200" height="180" fill="#f5f5f5" stroke="#bdbdbd" stroke-width="1" rx="2"/>
+
+  <!-- Trochoidal path: series of loops advancing along the pocket -->
+  <!-- Row 1 loops -->
+  <path d="M 560 170 A 16 16 0 1 1 560 170.01 M 560 170 L 590 170 A 16 16 0 1 1 590 170.01 M 590 170 L 620 170 A 16 16 0 1 1 620 170.01 M 620 170 L 650 170 A 16 16 0 1 1 650 170.01 M 650 170 L 680 170 A 16 16 0 1 1 680 170.01 M 680 170 L 710 170 A 16 16 0 1 1 710 170.01 M 710 170 L 736 170"
+        fill="none" stroke="#6a1b9a" stroke-width="1.8"/>
+
+  <!-- Simplified trochoidal visualization: circles with path lines -->
+  <circle cx="578" cy="155" r="12" fill="none" stroke="#6a1b9a" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <circle cx="608" cy="155" r="12" fill="none" stroke="#6a1b9a" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <circle cx="638" cy="155" r="12" fill="none" stroke="#6a1b9a" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <circle cx="668" cy="155" r="12" fill="none" stroke="#6a1b9a" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <circle cx="698" cy="155" r="12" fill="none" stroke="#6a1b9a" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <!-- Advance line -->
+  <line x1="560" y1="155" x2="736" y2="155" stroke="#6a1b9a" stroke-width="1.2" stroke-dasharray="1,4"/>
+
+  <!-- Second row shifted -->
+  <circle cx="578" cy="195" r="12" fill="none" stroke="#6a1b9a" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <circle cx="608" cy="195" r="12" fill="none" stroke="#6a1b9a" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <circle cx="638" cy="195" r="12" fill="none" stroke="#6a1b9a" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <circle cx="668" cy="195" r="12" fill="none" stroke="#6a1b9a" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <circle cx="698" cy="195" r="12" fill="none" stroke="#6a1b9a" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <line x1="560" y1="195" x2="736" y2="195" stroke="#6a1b9a" stroke-width="1.2" stroke-dasharray="1,4"/>
+
+  <!-- Third row -->
+  <circle cx="578" cy="235" r="12" fill="none" stroke="#6a1b9a" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <circle cx="608" cy="235" r="12" fill="none" stroke="#6a1b9a" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <circle cx="638" cy="235" r="12" fill="none" stroke="#6a1b9a" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <circle cx="668" cy="235" r="12" fill="none" stroke="#6a1b9a" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <circle cx="698" cy="235" r="12" fill="none" stroke="#6a1b9a" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <line x1="560" y1="235" x2="736" y2="235" stroke="#6a1b9a" stroke-width="1.2" stroke-dasharray="1,4"/>
+
+  <!-- RDOC for trochoidal -->
+  <line x1="578" y1="143" x2="578" y2="143" stroke="none"/>
+  <line x1="740" y1="143" x2="740" y2="167" stroke="#9c27b0" stroke-width="1.5"/>
+  <text x="744" y="158" font-size="9" fill="#9c27b0">ae</text>
+
+  <text x="650" y="290" text-anchor="middle" font-size="12" font-weight="700" fill="#6a1b9a">C. Trochoidal</text>
+  <text x="650" y="305" text-anchor="middle" font-size="10" fill="#444">Circular micro-loops along path</text>
+  <text x="650" y="318" text-anchor="middle" font-size="10" fill="#444">Very low RDOC (~5–15% D)</text>
+  <text x="650" y="331" text-anchor="middle" font-size="10" fill="#4a148c">✓ Ideal for hard / exotic alloys</text>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- ENTRY METHODS (bottom section)                            -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <text x="400" y="370" text-anchor="middle" font-size="14" font-weight="700" fill="#37474f">Pocket Entry Methods</text>
+
+  <!-- Helical Entry -->
+  <rect x="40" y="385" width="220" height="130" fill="#fff3e0" stroke="#ff8f00" stroke-width="1.5" rx="5"/>
+  <text x="150" y="403" text-anchor="middle" font-size="12" font-weight="700" fill="#e65100">1. Helical Entry</text>
+  <!-- Helix spiral illustration -->
+  <ellipse cx="150" cy="455" rx="60" ry="20" fill="none" stroke="#ff8f00" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <path d="M 90 455 Q 120 430 150 435 Q 180 440 210 455" fill="none" stroke="#ff8f00" stroke-width="2"/>
+  <path d="M 90 455 Q 100 465 150 468 Q 200 472 210 455" fill="none" stroke="#e65100" stroke-width="1" stroke-dasharray="4,2"/>
+  <!-- Z-axis arrow going down through helix -->
+  <line x1="150" y1="430" x2="150" y2="475" stroke="#c62828" stroke-width="2"/>
+  <polygon points="150,478 145,468 155,468" fill="#c62828"/>
+  <text x="158" y="454" font-size="9" fill="#c62828">Z feed</text>
+  <text x="150" y="498" text-anchor="middle" font-size="10" fill="#444">Circular arc while feeding down</text>
+  <text x="150" y="511" text-anchor="middle" font-size="10" fill="#1b5e20">✓ Best for flat end mills</text>
+
+  <!-- Ramp Entry -->
+  <rect x="290" y="385" width="220" height="130" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="1.5" rx="5"/>
+  <text x="400" y="403" text-anchor="middle" font-size="12" font-weight="700" fill="#6a1b9a">2. Ramp Entry</text>
+  <!-- Ramp path illustration -->
+  <line x1="310" y1="440" x2="480" y2="468" stroke="#7b1fa2" stroke-width="2.5"/>
+  <line x1="480" y1="468" x2="310" y2="468" stroke="#7b1fa2" stroke-width="1.5"/>
+  <polygon points="476,468 466,462 466,474" fill="#7b1fa2"/>
+  <!-- Angle indicator -->
+  <path d="M 330 440 A 20 20 0 0 1 350 444" fill="none" stroke="#9c27b0" stroke-width="1.5"/>
+  <text x="352" y="444" font-size="9" fill="#9c27b0">θ 2–5°</text>
+  <!-- Ground plane -->
+  <line x1="305" y1="472" x2="485" y2="472" stroke="#37474f" stroke-width="2"/>
+  <text x="400" y="498" text-anchor="middle" font-size="10" fill="#444">Linear diagonal plunge on XZ or YZ</text>
+  <text x="400" y="511" text-anchor="middle" font-size="10" fill="#1b5e20">✓ Simple | Needs lead-in space</text>
+
+  <!-- Pre-drilled Entry -->
+  <rect x="540" y="385" width="220" height="130" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.5" rx="5"/>
+  <text x="650" y="403" text-anchor="middle" font-size="12" font-weight="700" fill="#1b5e20">3. Pre-drilled Entry</text>
+  <!-- Drill hole -->
+  <ellipse cx="650" cy="435" rx="18" ry="6" fill="#b2dfdb" stroke="#00897b" stroke-width="1.5"/>
+  <rect x="632" y="435" width="36" height="30" fill="#b2dfdb" stroke="none"/>
+  <ellipse cx="650" cy="465" rx="18" ry="6" fill="#80cbc4" stroke="#00897b" stroke-width="1.5"/>
+  <!-- End mill entering hole -->
+  <rect x="643" y="408" width="14" height="30" fill="#78909c" stroke="#546e7a" stroke-width="1.2" rx="2"/>
+  <line x1="643" y1="420" x2="657" y2="420" stroke="#ffc107" stroke-width="2"/>
+  <!-- Arrow down -->
+  <polygon points="650,438 645,428 655,428" fill="#c62828"/>
+  <text x="650" y="498" text-anchor="middle" font-size="10" fill="#444">Drill pilot hole → end mill enters</text>
+  <text x="650" y="511" text-anchor="middle" font-size="10" fill="#1b5e20">✓ Best entry | Extra tool change</text>
+</svg>

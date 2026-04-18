@@ -1,0 +1,154 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480" width="800" height="480" font-family="system-ui, -apple-system, sans-serif">
+  <rect width="800" height="480" fill="#f8f9fa" rx="8"/>
+  <rect x="1" y="1" width="798" height="478" fill="none" stroke="#dee2e6" stroke-width="1.5" rx="8"/>
+
+  <text x="400" y="34" text-anchor="middle" font-size="18" font-weight="700" fill="#1a1a2e">Climb vs. Conventional Milling</text>
+  <text x="400" y="52" text-anchor="middle" font-size="12" fill="#6c757d">Chip formation, cutting forces, and when to use each method</text>
+
+  <defs>
+    <marker id="arrowR" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#c62828"/>
+    </marker>
+    <marker id="arrowB" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#1565c0"/>
+    </marker>
+    <marker id="arrowG" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#2e7d32"/>
+    </marker>
+    <marker id="arrowDk" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#37474f"/>
+    </marker>
+  </defs>
+
+  <!-- ══════════════════════════════════ -->
+  <!-- LEFT: CLIMB MILLING               -->
+  <!-- ══════════════════════════════════ -->
+  <rect x="40" y="66" width="340" height="320" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2" rx="6"/>
+  <text x="210" y="90" text-anchor="middle" font-size="15" font-weight="700" fill="#1b5e20">CLIMB MILLING</text>
+  <text x="210" y="106" text-anchor="middle" font-size="11" fill="#2e7d32">(Down milling — preferred on CNC)</text>
+
+  <!-- Workpiece block -->
+  <rect x="70" y="130" width="280" height="80" fill="#c8e6c9" stroke="#66bb6a" stroke-width="1.5" rx="3"/>
+  <!-- Chip detail area -->
+  <rect x="70" y="130" width="80" height="80" fill="#a5d6a7" stroke="none"/>
+  <text x="210" y="228" text-anchor="middle" font-size="10" fill="#555">Workpiece</text>
+
+  <!-- Cutter circle (left side, climb) -->
+  <circle cx="150" cy="130" r="42" fill="#fff9c4" stroke="#f57f17" stroke-width="2"/>
+  <!-- Cutter flutes (4 flute) -->
+  <line x1="150" y1="88" x2="150" y2="172" stroke="#f57f17" stroke-width="1.5" opacity="0.5"/>
+  <line x1="108" y1="130" x2="192" y2="130" stroke="#f57f17" stroke-width="1.5" opacity="0.5"/>
+  <line x1="121" y1="101" x2="179" y2="159" stroke="#f57f17" stroke-width="1.5" opacity="0.5"/>
+  <line x1="179" y1="101" x2="121" y2="159" stroke="#f57f17" stroke-width="1.5" opacity="0.5"/>
+  <!-- Rotation arrow (CW when viewed from above, goes left on contact) -->
+  <path d="M 175 100 A 30 30 0 0 0 125 100" fill="none" stroke="#e65100" stroke-width="2.5" marker-end="url(#arrowR)"/>
+  <text x="150" y="82" text-anchor="middle" font-size="10" fill="#e65100">↺ Rotation</text>
+
+  <!-- Chip shape (thick at entry, thin at exit) — left side engagement -->
+  <path d="M 108 130 Q 112 122 118 130 Q 124 140 130 148 Q 136 156 140 162 L 108 162 Z" fill="#ff8f00" opacity="0.7"/>
+  <text x="95" y="180" text-anchor="middle" font-size="9" fill="#e65100">Chip</text>
+  <text x="95" y="191" text-anchor="middle" font-size="9" fill="#e65100">entry</text>
+
+  <!-- Chip thickness arrows -->
+  <!-- Thick at start -->
+  <line x1="108" y1="148" x2="118" y2="148" stroke="#c62828" stroke-width="2.5"/>
+  <text x="106" y="152" text-anchor="end" font-size="9" fill="#c62828">Thick</text>
+  <!-- Thin at end -->
+  <line x1="135" y1="162" x2="140" y2="162" stroke="#2e7d32" stroke-width="1"/>
+  <text x="148" y="166" text-anchor="start" font-size="9" fill="#2e7d32">Thin</text>
+
+  <!-- Feed direction arrow -->
+  <line x1="220" y1="170" x2="300" y2="170" stroke="#1565c0" stroke-width="3" marker-end="url(#arrowB)"/>
+  <text x="260" y="164" text-anchor="middle" font-size="11" font-weight="600" fill="#1565c0">Feed →</text>
+
+  <!-- Force vectors -->
+  <text x="210" y="248" text-anchor="middle" font-size="11" font-weight="700" fill="#37474f">Cutting Forces:</text>
+  <!-- Downward force (into table) -->
+  <line x1="210" y1="258" x2="210" y2="285" stroke="#2e7d32" stroke-width="2.5" marker-end="url(#arrowG)"/>
+  <text x="220" y="275" font-size="10" fill="#2e7d32">↓ Into table</text>
+  <text x="220" y="286" font-size="9" fill="#555">(holds part down)</text>
+
+  <!-- Pros list -->
+  <text x="70" y="312" font-size="11" font-weight="700" fill="#1b5e20">Advantages:</text>
+  <text x="70" y="328" font-size="10" fill="#333">✓ Better surface finish</text>
+  <text x="70" y="342" font-size="10" fill="#333">✓ Longer tool life</text>
+  <text x="70" y="356" font-size="10" fill="#333">✓ Lower cutting temperature</text>
+  <text x="70" y="370" font-size="10" fill="#c62828">✗ Risk of table backlash chatter on worn machines</text>
+
+  <!-- ══════════════════════════════════ -->
+  <!-- RIGHT: CONVENTIONAL MILLING       -->
+  <!-- ══════════════════════════════════ -->
+  <rect x="420" y="66" width="340" height="320" fill="#fff3e0" stroke="#ef6c00" stroke-width="2" rx="6"/>
+  <text x="590" y="90" text-anchor="middle" font-size="15" font-weight="700" fill="#bf360c">CONVENTIONAL MILLING</text>
+  <text x="590" y="106" text-anchor="middle" font-size="11" fill="#e65100">(Up milling — use on old/worn machines)</text>
+
+  <!-- Workpiece block -->
+  <rect x="450" y="130" width="280" height="80" fill="#ffe0b2" stroke="#ffa726" stroke-width="1.5" rx="3"/>
+  <!-- Chip detail area -->
+  <rect x="650" y="130" width="80" height="80" fill="#ffcc80" stroke="none"/>
+  <text x="590" y="228" text-anchor="middle" font-size="10" fill="#555">Workpiece</text>
+
+  <!-- Cutter circle (right side, conventional) -->
+  <circle cx="730" cy="130" r="42" fill="#fff9c4" stroke="#f57f17" stroke-width="2"/>
+  <line x1="730" y1="88" x2="730" y2="172" stroke="#f57f17" stroke-width="1.5" opacity="0.5"/>
+  <line x1="688" y1="130" x2="772" y2="130" stroke="#f57f17" stroke-width="1.5" opacity="0.5"/>
+  <line x1="701" y1="101" x2="759" y2="159" stroke="#f57f17" stroke-width="1.5" opacity="0.5"/>
+  <line x1="759" y1="101" x2="701" y2="159" stroke="#f57f17" stroke-width="1.5" opacity="0.5"/>
+  <!-- Rotation arrow (CW — goes right on contact at right side) -->
+  <path d="M 755 100 A 30 30 0 0 0 705 100" fill="none" stroke="#e65100" stroke-width="2.5" marker-end="url(#arrowR)"/>
+  <text x="730" y="82" text-anchor="middle" font-size="10" fill="#e65100">↺ Rotation</text>
+
+  <!-- Chip shape conventional: thin at entry, thick at exit -->
+  <path d="M 772 130 Q 768 122 762 128 Q 756 136 750 145 Q 744 155 740 165 L 772 165 Z" fill="#ff8f00" opacity="0.7"/>
+  <text x="785" y="145" text-anchor="start" font-size="9" fill="#e65100">Chip</text>
+  <text x="785" y="156" text-anchor="start" font-size="9" fill="#e65100">exit</text>
+
+  <!-- Thin at entry -->
+  <line x1="768" y1="143" x2="772" y2="143" stroke="#2e7d32" stroke-width="1"/>
+  <text x="762" y="140" text-anchor="end" font-size="9" fill="#2e7d32">Thin</text>
+  <!-- Thick at end -->
+  <line x1="745" y1="163" x2="755" y2="163" stroke="#c62828" stroke-width="2.5"/>
+  <text x="740" y="176" text-anchor="middle" font-size="9" fill="#c62828">Thick</text>
+
+  <!-- Feed direction arrow -->
+  <line x1="620" y1="170" x2="540" y2="170" stroke="#c62828" stroke-width="3" marker-end="url(#arrowR)"/>
+  <text x="580" y="164" text-anchor="middle" font-size="11" font-weight="600" fill="#c62828">← Feed</text>
+
+  <!-- Force vectors -->
+  <text x="590" y="248" text-anchor="middle" font-size="11" font-weight="700" fill="#37474f">Cutting Forces:</text>
+  <!-- Upward force (away from table) -->
+  <line x1="590" y1="285" x2="590" y2="258" stroke="#c62828" stroke-width="2.5" marker-end="url(#arrowR)"/>
+  <text x="600" y="270" font-size="10" fill="#c62828">↑ Away from table</text>
+  <text x="600" y="281" font-size="9" fill="#555">(lifts part — needs clamping)</text>
+
+  <!-- Pros list -->
+  <text x="450" y="312" font-size="11" font-weight="700" fill="#bf360c">Use When:</text>
+  <text x="450" y="328" font-size="10" fill="#333">✓ Machine has excessive backlash</text>
+  <text x="450" y="342" font-size="10" fill="#333">✓ Manual milling on worn knee mills</text>
+  <text x="450" y="356" font-size="10" fill="#333">✓ Hard scale on castings/forgings</text>
+  <text x="450" y="370" font-size="10" fill="#c62828">✗ Shorter tool life / higher temps</text>
+
+  <!-- ══════════════════════════════════ -->
+  <!-- BOTTOM COMPARISON TABLE           -->
+  <!-- ══════════════════════════════════ -->
+  <rect x="40" y="400" width="720" height="62" fill="white" stroke="#dee2e6" stroke-width="1" rx="4"/>
+  <!-- Headers -->
+  <line x1="40" y1="418" x2="760" y2="418" stroke="#dee2e6" stroke-width="1"/>
+  <line x1="220" y1="400" x2="220" y2="462" stroke="#dee2e6" stroke-width="1"/>
+  <line x1="380" y1="400" x2="380" y2="462" stroke="#dee2e6" stroke-width="1"/>
+  <line x1="580" y1="400" x2="580" y2="462" stroke="#dee2e6" stroke-width="1"/>
+  <text x="130" y="413" text-anchor="middle" font-size="10" fill="#666" font-weight="600">Property</text>
+  <text x="300" y="413" text-anchor="middle" font-size="10" fill="#1b5e20" font-weight="600">Climb</text>
+  <text x="480" y="413" text-anchor="middle" font-size="10" fill="#bf360c" font-weight="600">Conventional</text>
+  <text x="670" y="413" text-anchor="middle" font-size="10" fill="#555" font-weight="600">Note</text>
+  <!-- Row 1 -->
+  <text x="50" y="432" font-size="10" fill="#333">Chip thickness</text>
+  <text x="300" y="432" text-anchor="middle" font-size="10" fill="#1b5e20">Thick→thin</text>
+  <text x="480" y="432" text-anchor="middle" font-size="10" fill="#bf360c">Thin→thick (rubbing)</text>
+  <text x="590" y="432" font-size="9" fill="#555">Rubbing causes BUE</text>
+  <!-- Row 2 -->
+  <text x="50" y="450" font-size="10" fill="#333">Table force</text>
+  <text x="300" y="450" text-anchor="middle" font-size="10" fill="#1b5e20">Into table ↓</text>
+  <text x="480" y="450" text-anchor="middle" font-size="10" fill="#bf360c">Away from table ↑</text>
+  <text x="590" y="450" font-size="9" fill="#555">Conventional needs tighter clamping</text>
+</svg>

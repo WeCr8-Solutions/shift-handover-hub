@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500" font-family="system-ui, -apple-system, sans-serif">
+  <rect width="800" height="500" fill="#f8f9fa" rx="8"/>
+  <rect x="1" y="1" width="798" height="498" fill="none" stroke="#dee2e6" stroke-width="1.5" rx="8"/>
+
+  <text x="400" y="34" text-anchor="middle" font-size="18" font-weight="700" fill="#1a1a2e">Tool Offsets: Geometry vs. Wear</text>
+  <text x="400" y="52" text-anchor="middle" font-size="12" fill="#6c757d">How geometry and wear offsets work together to position the tool correctly</text>
+
+  <defs>
+    <marker id="arrowOff" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#1565c0"/>
+    </marker>
+    <marker id="arrowWear" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#c62828"/>
+    </marker>
+    <marker id="arrowNom" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#2e7d32"/>
+    </marker>
+  </defs>
+
+  <!-- ═══════════════════════════════════ -->
+  <!-- LATHE TURNING DIAGRAM              -->
+  <!-- ═══════════════════════════════════ -->
+  <text x="200" y="82" text-anchor="middle" font-size="14" font-weight="700" fill="#37474f">Turning — Z axis (length)</text>
+
+  <!-- Machine home / reference line -->
+  <line x1="60" y1="100" x2="60" y2="350" stroke="#78909c" stroke-width="2" stroke-dasharray="6,3"/>
+  <text x="55" y="96" text-anchor="end" font-size="10" fill="#78909c">Machine</text>
+  <text x="55" y="108" text-anchor="end" font-size="10" fill="#78909c">home (Z=0)</text>
+
+  <!-- Part face (program zero) -->
+  <line x1="340" y1="100" x2="340" y2="350" stroke="#2e7d32" stroke-width="2" stroke-dasharray="4,3"/>
+  <text x="345" y="96" font-size="10" fill="#2e7d32">Program</text>
+  <text x="345" y="108" font-size="10" fill="#2e7d32">zero (W0)</text>
+
+  <!-- Part body -->
+  <rect x="340" y="150" width="150" height="120" fill="#cfd8dc" stroke="#90a4ae" stroke-width="2"/>
+  <!-- Hatch -->
+  <line x1="340" y1="150" x2="490" y2="270" stroke="#b0bec5" stroke-width="0.8"/>
+  <line x1="360" y1="150" x2="490" y2="280" stroke="#b0bec5" stroke-width="0.8"/>
+  <line x1="380" y1="150" x2="490" y2="260" stroke="#b0bec5" stroke-width="0.8"/>
+  <line x1="400" y1="150" x2="490" y2="250" stroke="#b0bec5" stroke-width="0.8"/>
+  <line x1="420" y1="150" x2="490" y2="240" stroke="#b0bec5" stroke-width="0.8"/>
+  <line x1="340" y1="170" x2="480" y2="270" stroke="#b0bec5" stroke-width="0.8"/>
+  <line x1="340" y1="190" x2="470" y2="270" stroke="#b0bec5" stroke-width="0.8"/>
+  <line x1="340" y1="210" x2="460" y2="270" stroke="#b0bec5" stroke-width="0.8"/>
+
+  <!-- Tool nose (at correct position) -->
+  <g transform="translate(200,210)">
+    <!-- Tool body -->
+    <polygon points="-60,-30 60,-30 60,30 0,30 -30,10 -60,30" fill="#90a4ae" stroke="#546e7a" stroke-width="1.5"/>
+    <!-- Insert -->
+    <polygon points="55,-15 75,0 55,15" fill="#ffc107" stroke="#ff8f00" stroke-width="1.5"/>
+    <!-- Tool nose tip -->
+    <circle cx="72" cy="0" r="5" fill="#ff8f00" stroke="#e65100" stroke-width="1.5"/>
+    <text x="85" y="4" font-size="9" fill="#e65100">Nose tip</text>
+  </g>
+
+  <!-- Geometry offset arrow (from machine home to nominal tool tip) -->
+  <line x1="60" y1="210" x2="266" y2="210" stroke="#1565c0" stroke-width="2.5" marker-end="url(#arrowOff)"/>
+  <text x="163" y="204" text-anchor="middle" font-size="11" font-weight="600" fill="#1565c0">Geometry Offset (Z)</text>
+  <text x="163" y="216" text-anchor="middle" font-size="9" fill="#1565c0">Tool length from machine home → nominal tip</text>
+
+  <!-- Nominal cutting position -->
+  <line x1="273" y1="180" x2="273" y2="240" stroke="#2e7d32" stroke-width="1.5" stroke-dasharray="4,2"/>
+  <text x="278" y="196" font-size="9" fill="#2e7d32">Nominal</text>
+  <text x="278" y="208" font-size="9" fill="#2e7d32">position</text>
+
+  <!-- Wear offset (small correction) -->
+  <line x1="273" y1="230" x2="290" y2="230" stroke="#c62828" stroke-width="2" marker-end="url(#arrowWear)"/>
+  <text x="282" y="248" text-anchor="middle" font-size="10" fill="#c62828">Wear Δ</text>
+  <text x="282" y="260" text-anchor="middle" font-size="9" fill="#c62828">(±0.010" max)</text>
+
+  <!-- Actual tip position after wear offset -->
+  <circle cx="293" cy="210" r="5" fill="#c62828" opacity="0.7"/>
+  <text x="302" y="213" font-size="9" fill="#c62828">Actual</text>
+
+  <!-- Program zero dimension line -->
+  <line x1="60" y1="340" x2="340" y2="340" stroke="#555" stroke-width="1.5"/>
+  <line x1="60" y1="334" x2="60" y2="346" stroke="#555" stroke-width="1.5"/>
+  <line x1="340" y1="334" x2="340" y2="346" stroke="#555" stroke-width="1.5"/>
+  <text x="200" y="360" text-anchor="middle" font-size="10" fill="#555">Work Coordinate Offset (G54 Z value)</text>
+  <text x="200" y="372" text-anchor="middle" font-size="9" fill="#777">= Machine Z at part face - Geometry Z</text>
+
+  <!-- ═══════════════════════════════════ -->
+  <!-- RIGHT: MILLING TOOL LENGTH         -->
+  <!-- ═══════════════════════════════════ -->
+  <text x="620" y="82" text-anchor="middle" font-size="14" font-weight="700" fill="#37474f">Milling — Z axis (length)</text>
+
+  <!-- Spindle nose reference -->
+  <rect x="580" y="100" width="80" height="20" fill="#78909c" stroke="#546e7a" stroke-width="1.5" rx="3"/>
+  <text x="620" y="113" text-anchor="middle" font-size="9" fill="white">Spindle nose</text>
+  <!-- Spindle nose line -->
+  <line x1="500" y1="110" x2="580" y2="110" stroke="#78909c" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <text x="495" y="113" text-anchor="end" font-size="9" fill="#78909c">H ref</text>
+
+  <!-- Tool (end mill) -->
+  <rect x="610" y="120" width="20" height="30" fill="#90a4ae" stroke="#546e7a" stroke-width="1.2" rx="2"/>
+  <!-- Flute body -->
+  <rect x="610" y="150" width="20" height="80" fill="#b0bec5" stroke="#546e7a" stroke-width="1.2"/>
+  <!-- Cutting edge -->
+  <rect x="610" y="228" width="20" height="4" fill="#ffc107" stroke="#ff8f00" stroke-width="1.2"/>
+
+  <!-- Tool length (geometry offset H) -->
+  <line x1="640" y1="110" x2="640" y2="228" stroke="#1565c0" stroke-width="2" marker-end="url(#arrowOff)"/>
+  <line x1="636" y1="110" x2="644" y2="110" stroke="#1565c0" stroke-width="1"/>
+  <text x="648" y="175" font-size="11" font-weight="600" fill="#1565c0">H offset</text>
+  <text x="648" y="189" font-size="10" fill="#1565c0">(geometry)</text>
+
+  <!-- Part surface -->
+  <rect x="500" y="290" width="240" height="40" fill="#cfd8dc" stroke="#90a4ae" stroke-width="2"/>
+  <line x1="500" y1="290" x2="740" y2="290" stroke="#2e7d32" stroke-width="2"/>
+  <text x="620" y="283" text-anchor="middle" font-size="10" fill="#2e7d32">Part surface (Z=0 in G54)</text>
+
+  <!-- Nominal cutting depth -->
+  <line x1="620" y1="232" x2="620" y2="290" stroke="#2e7d32" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="628" y="262" font-size="9" fill="#2e7d32">Z move</text>
+  <text x="628" y="272" font-size="9" fill="#2e7d32">to depth</text>
+
+  <!-- Wear offset effect on Z -->
+  <line x1="510" y1="232" x2="510" y2="245" stroke="#c62828" stroke-width="2"/>
+  <text x="515" y="243" font-size="9" fill="#c62828">±wear Z</text>
+  <text x="515" y="254" font-size="9" fill="#c62828">adjusts depth</text>
+
+  <!-- FAI workflow box -->
+  <rect x="500" y="345" width="240" height="120" fill="#fff8e1" stroke="#f57f17" stroke-width="1.5" rx="5"/>
+  <text x="620" y="363" text-anchor="middle" font-size="12" font-weight="700" fill="#e65100">FAI Offset Workflow</text>
+  <text x="510" y="380" font-size="10" fill="#333">1. Run FAI part at nominal offsets</text>
+  <text x="510" y="395" font-size="10" fill="#333">2. Measure critical features</text>
+  <text x="510" y="410" font-size="10" fill="#c62828" font-weight="600">3. Adjust wear offset NOW — not "next part"</text>
+  <text x="510" y="425" font-size="10" fill="#333">4. Re-measure (re-run if needed)</text>
+  <text x="510" y="440" font-size="10" fill="#1b5e20" font-weight="600">5. Only then approve for production</text>
+
+  <!-- Separator line -->
+  <line x1="400" y1="66" x2="400" y2="480" stroke="#dee2e6" stroke-width="1.5" stroke-dasharray="6,3"/>
+</svg>
