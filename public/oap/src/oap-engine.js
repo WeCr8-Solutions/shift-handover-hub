@@ -6,6 +6,10 @@
 
 'use strict';
 
+// Minimum number of questions per certification/exam run.
+// Applies to both random and directed (employer-led) exam modes.
+var OAP_MIN_EXAM_QUESTIONS = 15;
+
 var OAP_STATE = {
   view: 'home',           // home | employer | program | mentor | mentee | course | cert | standalone
   subView: null,
@@ -14,8 +18,56 @@ var OAP_STATE = {
   activeProgram: null,
   activeCourse: null,
   activeCert: null,
-  courseState: null,      // running test state
+  courseState: null,      // running test state (topic-by-topic learning OR exam run)
 };
+
+// Fisher-Yates shuffle (in place).
+function _oapShuffle(arr) {
+  for (var i = arr.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+  }
+  return arr;
+}
+
+// Build an exam question list for a course.
+//   mode = 'random'   → shuffle the full pool, take >= OAP_MIN_EXAM_QUESTIONS
+//   mode = 'directed' → guarantee >=1 question from EVERY topic, then fill
+//                       up to OAP_MIN_EXAM_QUESTIONS with random extras.
+// Each returned item is enriched with topicTitle/topicId for review context.
+function oapBuildExamQuestions(course, mode) {
+  var topics = (course && course.topics) || [];
+  var allQs = [];
+  topics.forEach(function(t) {
+    var pool = t.quizPool ? t.quizPool.slice() : (t.quiz ? [t.quiz] : []);
+    pool.forEach(function(q) {
+      allQs.push({ q: q.q, opts: q.opts, ans: q.ans, fb: q.fb, topicId: t.id, topicTitle: t.title });
+    });
+  });
+  if (!allQs.length) return [];
+  var target = Math.min(OAP_MIN_EXAM_QUESTIONS, allQs.length);
+  // If pool is small but we have at least one topic, still ask everything available.
+  if (allQs.length < OAP_MIN_EXAM_QUESTIONS) target = allQs.length;
+
+  if (mode === 'directed') {
+    // Pick one random question from each topic first.
+    var result = [];
+    var used = new Set();
+    topics.forEach(function(t) {
+      var tq = allQs.filter(function(q){ return q.topicId === t.id; });
+      if (!tq.length) return;
+      _oapShuffle(tq);
+      var pick = tq[0];
+      result.push(pick); used.add(pick);
+    });
+    // Fill with extras until we reach the target.
+    var rest = _oapShuffle(allQs.filter(function(q){ return !used.has(q); }));
+    while (result.length < target && rest.length) result.push(rest.shift());
+    return _oapShuffle(result);
+  }
+  // Random mode: just shuffle and slice.
+  return _oapShuffle(allQs.slice()).slice(0, target);
+}
 
 // ── INIT ──────────────────────────────────────────────────────────
 function oapInit() {
