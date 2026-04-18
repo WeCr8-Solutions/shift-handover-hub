@@ -57,6 +57,33 @@ flowchart TD
         UPDATES["/updates"]
     end
 
+    subgraph OAP["OAP — Operator Acceptance Program"]
+        OAP_LAND["/oap  Landing (public)"]
+        OAP_HUB["/oap/learn  Course Hub (auth)"]
+        OAP_PLAYER["/oap/course/:slug  Course Player (auth)"]
+        OAP_WALK["/oap/walkthrough  Mentor Walkthrough (auth)"]
+        OAP_TRANS["/oap/my-transcript  Transcript (auth, noindex)"]
+        OAP_EMP["/oap/employer  Employer Console (auth, noindex, paid)"]
+    end
+
+    subgraph GCA["GCA — G-Code Academy"]
+        GCA_LAND["/gcode-academy  Landing (public)"]
+        GCA_TEST["/gca/test/:bankSlug  Test Player (public)"]
+        GCA_EMP["/gca/employer  Employer Console (auth, noindex, paid)"]
+    end
+
+    subgraph Certs["Certificates & Talent"]
+        CERT_VERIFY["/verify/:certId  Public Cert Verify"]
+        TAL_LAND["/talent  Public Landing"]
+        TAL_PROFILE["/talent/:username  Public Profile"]
+        TAL_SEARCH["/talent/search  Employer Search (auth, noindex)"]
+    end
+
+    subgraph Media["External Training Media"]
+        YT["YouTube embeds<br/>storage_bucket=external<br/>iframe via TrainingMedia"]
+        SVG["SVG diagrams<br/>storage_bucket=external<br/>img via TrainingMedia"]
+    end
+
     subgraph Gated["Role-Gated Pages"]
         ADMIN["/admin<br/>admin only"]
         TESTING["/testing<br/>admin + developer"]

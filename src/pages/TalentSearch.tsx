@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { Header } from "@/components/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -40,6 +41,10 @@ export default function Talent() {
   if (!organization) {
     return (
       <div className="min-h-screen bg-background">
+        <Helmet>
+          <title>Talent Search — JobLine.ai</title>
+          <meta name="robots" content="noindex" />
+        </Helmet>
         <Header />
         <main className="container py-12 max-w-2xl text-center space-y-4">
           <Globe className="w-12 h-12 text-muted-foreground mx-auto" />
@@ -54,6 +59,10 @@ export default function Talent() {
   if (!isAuthorized) {
     return (
       <div className="min-h-screen bg-background">
+        <Helmet>
+          <title>Talent Search — JobLine.ai</title>
+          <meta name="robots" content="noindex" />
+        </Helmet>
         <Header />
         <main className="container py-12 max-w-2xl text-center space-y-4">
           <h1 className="text-2xl font-bold">Verified employer access required</h1>
@@ -87,6 +96,10 @@ export default function Talent() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Talent Database — JobLine.ai</title>
+        <meta name="robots" content="noindex" />
+      </Helmet>
       <Header />
       <main className="container py-6 max-w-7xl space-y-6">
         <div>
