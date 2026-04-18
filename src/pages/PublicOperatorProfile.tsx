@@ -136,7 +136,7 @@ export default function PublicOperatorProfile() {
       const [c, s, m, w, e] = await Promise.all([
         supabase
           .from("operator_certifications")
-          .select("id, name, issuer, issued_date, expires_date, credential_url, verification_source, linked_cert_id")
+          .select("id, name, issuer, issued_date, expires_date, credential_url, attachment_url, verification_source, linked_cert_id")
           .eq("user_id", row.user_id)
           .order("issued_date", { ascending: false, nullsFirst: false }),
         supabase
