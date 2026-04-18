@@ -1,0 +1,67 @@
+/**
+ * Print stylesheet for /talent/:username.
+ *
+ * Goal: turn the public profile into a clean, single-column resume on paper
+ * while preserving the rich web layout on screen.
+ */
+@media print {
+  /* Hide marketing nav, footer, and any element opted-out via .no-print */
+  nav,
+  footer,
+  .no-print,
+  .talent-qr-card .no-print {
+    display: none !important;
+  }
+
+  /* Strip background colors / shadows for ink savings */
+  body,
+  .bg-background,
+  .bg-muted\/30,
+  .bg-muted\/20,
+  .bg-primary\/5,
+  .bg-primary\/10 {
+    background: white !important;
+  }
+
+  .shadow,
+  .shadow-sm,
+  .shadow-md,
+  .shadow-lg,
+  .border,
+  .border-2,
+  [class*="border-"] {
+    box-shadow: none !important;
+  }
+
+  /* Cards become flat sections */
+  [class*="rounded-lg"],
+  [class*="rounded-md"] {
+    border-radius: 0 !important;
+  }
+
+  /* Single column, full bleed */
+  main {
+    max-width: 100% !important;
+    padding: 0.5in !important;
+  }
+
+  /* Prevent awkward page breaks inside cards/sections */
+  .card,
+  section,
+  [data-print-keep-together] {
+    page-break-inside: avoid;
+  }
+
+  /* Make all anchors show their URL after the link text */
+  a[href^="http"]:not(.no-print-url)::after {
+    content: " (" attr(href) ")";
+    font-size: 0.7em;
+    color: #555;
+  }
+
+  /* Avatars and QR remain visible */
+  img,
+  svg {
+    max-width: 100% !important;
+  }
+}
