@@ -2436,6 +2436,97 @@ const GCA_TESTS = {
           exp: '#5041 is the Fanuc system variable for the current X-axis machine position. #5041-#5048 cover the 8 axes. These are read-only variables used in macro programs for in-process measurement and adaptive control.',
           tags: ['macro','system-variables','automation']
         },
+        {
+          q: 'On a Fanuc lathe, you program G50 S2500. What is the effect when G96 is later activated?',
+          opts: ['Spindle is forced to run at 2500 RPM constantly','2500 becomes the SFM target','2500 RPM is the maximum RPM the spindle is allowed to reach during constant surface speed','Cancels constant surface speed mode'],
+          ans: 2, diff: 1,
+          exp: 'G50 Sxxxx sets the maximum RPM clamp for the spindle when G96 (constant surface speed) is active. As the tool approaches centerline under G96, RPM would otherwise climb to infinity — G50 caps it.',
+          tags: ['G50','G96','lathe','safety']
+        },
+        {
+          q: 'A Fanuc mill program calls T01 M06 in a single block. On most Fanuc controls, what is required for this to execute correctly?',
+          opts: ['Nothing — T and M06 always combine','The Fanuc parameter for T-code-with-M06 must be enabled, otherwise T01 must be on a previous line','M06 must come before T01','The tool number must be in the offset register'],
+          ans: 1, diff: 2,
+          exp: 'Classic Fanuc behavior treats T-selection and M06 (tool change) as separate events. Many shops program T01 on one line to pre-position the carousel, then M06 alone on the next. Combining requires a parameter setting.',
+          tags: ['M06','tool-change','mill','parameters']
+        },
+        {
+          q: 'In Fanuc Macro B, what does IF [#1 GT 0] GOTO 100 do?',
+          opts: ['Defines local variable #1 as 100','If macro variable #1 is greater than zero, jump to the line labeled N100','Sets #1 equal to 100','Loops 100 times'],
+          ans: 1, diff: 2,
+          exp: 'IF/GOTO is conditional branching in Macro B. When the bracketed condition is true, execution jumps to the matching N-number label. Used heavily for in-process gauging, conditional tool changes, and probing logic.',
+          tags: ['macro','branching','advanced']
+        },
+        {
+          q: 'A Fanuc operator wants to skip a single block during prove-out without modifying the program. Which feature is used?',
+          opts: ['M01 Optional Stop','Block Delete (slash code "/") with the BLOCK DELETE switch ON','Single Block mode','Dry Run'],
+          ans: 1, diff: 1,
+          exp: 'Block Delete uses a leading slash "/" on a program line. With the BLOCK DELETE switch ON, all "/"-prefixed lines are skipped at runtime. Useful for optional probing cycles, alternate part counters, or in-process measurement.',
+          tags: ['block-delete','operator','prove-out']
+        },
+        {
+          q: 'What does Fanuc M19 typically command?',
+          opts: ['Spindle CCW','Spindle orient (stop spindle at a defined angular position)','Coolant through spindle ON','Tool unclamp'],
+          ans: 1, diff: 2,
+          exp: 'M19 is spindle orient — it stops the spindle at a precise angular position. Required before tool changes on most BT/CAT machines, before back-boring tools retract through bores, and for manual indexing operations.',
+          tags: ['M19','spindle','tool-change']
+        },
+        {
+          q: 'On Fanuc, what is the difference between G54 and G54.1 P1?',
+          opts: ['Both are the same offset','G54 is the standard work offset; G54.1 P1 (also called G54 P1) is the first of an extended additional 48-300 work offsets via a separately-licensed option','G54.1 cancels G54','G54.1 is metric, G54 is inch'],
+          ans: 1, diff: 2,
+          exp: 'G54 through G59 are the six standard work offsets. G54.1 P1...P48 (or P300) adds extended work offsets, useful for fixtures with many parts, pallet systems, and tombstones. Requires the additional work offset option.',
+          tags: ['work-offsets','G54','fixtures']
+        },
+        {
+          q: 'A Fanuc mill is in G91 (incremental) mode. The program reads X1.0. What happens?',
+          opts: ['Tool moves to the absolute X=1.0 position','Tool moves 1.0 inch in the positive X direction from its current position','Tool moves to X=1.0 in the work coordinate system','Error — G91 requires G90 first'],
+          ans: 1, diff: 1,
+          exp: 'In G91 (incremental), all axis values are distances from the current position, not absolute coordinates. X1.0 means "move +1.0 inch in X from where I am right now." A common source of crashes when operators forget the modal state.',
+          tags: ['G91','incremental','modal']
+        },
+        {
+          q: 'On Fanuc, what is the function of M98 P1000?',
+          opts: ['Run macro 1000','Call subprogram O1000 once','Stop and wait 1000 ms','Set spindle to 1000 RPM'],
+          ans: 1, diff: 1,
+          exp: 'M98 calls a subprogram. P1000 means call program O1000. M98 P21000 means call O1000 twice (the leading "2" is the repeat count). M99 returns from the subprogram to the calling line.',
+          tags: ['M98','subprograms','modal']
+        },
+        {
+          q: 'A Fanuc lathe operator is asked to face a part with a 4" diameter at 400 SFM. What spindle command starts constant surface speed correctly?',
+          opts: ['G97 S400','G96 S400 M03','G50 S400','M03 S400'],
+          ans: 1, diff: 1,
+          exp: 'G96 activates constant surface speed; the S-word becomes SFM (or m/min in G21). G96 S400 M03 = "maintain 400 SFM, spindle forward." Always pair with G50 Sxxxx beforehand to cap maximum RPM.',
+          tags: ['G96','SFM','lathe']
+        },
+        {
+          q: 'On Fanuc, what does the alarm "ER PS0010 IMPROPER G CODE" indicate?',
+          opts: ['A G-code is missing required modal partner','A G-code was used that is not valid in the current state, group, or controller (e.g., G84 on a controller without rigid tap option)','The program file is corrupted','Spindle is in the wrong gear range'],
+          ans: 1, diff: 2,
+          exp: 'PS0010 means an "improper G-code" was encountered — usually because the G-code is unsupported on this machine, requires an option that is not enabled, or is being used in an invalid modal context (e.g., G33 in G96 mode).',
+          tags: ['alarms','PS0010','operator']
+        },
+        {
+          q: 'What is the recommended Fanuc safe-start block at the top of a mill program?',
+          opts: ['G00 G90','G90 G17 G20 G40 G49 G80 G54','M30','G91 G28 Z0'],
+          ans: 1, diff: 1,
+          exp: 'Industry-standard safe start: G90 (absolute), G17 (XY plane), G20 (inch — or G21 metric), G40 (cancel cutter comp), G49 (cancel tool length), G80 (cancel canned cycle), G54 (work offset). Establishes a known modal state regardless of how the previous program ended.',
+          tags: ['safety','modal','mill','best-practice']
+        },
+        {
+          q: 'On Fanuc, in a G83 peck drill cycle (G83 X_ Y_ Z_ R_ Q_ F_), what does Q control?',
+          opts: ['Total depth','Peck depth per increment (the depth of each in-and-out cycle)','Retract amount','Feed override'],
+          ans: 1, diff: 2,
+          exp: 'In G83 deep-hole peck drilling, Q is the depth of each peck. The drill plunges by Q, retracts fully to R-plane to clear chips, then plunges again by Q deeper than before. Critical for breaking chips in deep holes.',
+          tags: ['G83','peck-drill','canned-cycle']
+        },
+        {
+          q: 'On Fanuc, what is the correct way to comment out a single line in a part program?',
+          opts: ['// this is a comment','# this is a comment','(this is a comment) — parentheses mark a comment','REM this is a comment'],
+          ans: 2, diff: 1,
+          exp: 'Fanuc and most ISO-style controllers use parentheses ( ) for comments. The parser ignores everything inside. Example: (TOOL 1 - 0.500 EM ROUGH). Some controllers also support semicolon ; — but parentheses are universally portable.',
+          tags: ['comments','syntax','operator']
+        },
       ]
     },
 
