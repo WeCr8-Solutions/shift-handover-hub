@@ -208,22 +208,22 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
       </div>
 
       <Tabs defaultValue={messagesTotal > 0 ? "messages" : "alerts"} className="w-full">
-        <TabsList className="w-full h-8 mx-3" style={{ width: "calc(100% - 1.5rem)" }}>
-          <TabsTrigger value="alerts" className="text-[10px] flex-1 h-6 px-1">
-            Alerts {alerts.length > 0 && `(${alerts.length})`}
-          </TabsTrigger>
-          <TabsTrigger value="messages" className="text-[10px] flex-1 h-6 px-1">
-            Messages {messagesTotal > 0 && `(${messagesTotal})`}
-          </TabsTrigger>
-          <TabsTrigger value="updates" className="text-[10px] flex-1 h-6 px-1">
-            Updates {unreadCount > 0 && `(${unreadCount})`}
-          </TabsTrigger>
-          {announcementCount > 0 && (
-            <TabsTrigger value="announcements" className="text-[10px] flex-1 h-6 px-1">
-              Awards
+        <div className="px-3">
+          <TabsList className="w-full h-8 grid grid-cols-4 gap-0.5">
+            <TabsTrigger value="alerts" className="text-[10px] h-6 px-1 min-w-0 truncate">
+              <span className="truncate">Alerts{alerts.length > 0 ? ` ${alerts.length > 99 ? "99+" : alerts.length}` : ""}</span>
             </TabsTrigger>
-          )}
-        </TabsList>
+            <TabsTrigger value="messages" className="text-[10px] h-6 px-1 min-w-0 truncate">
+              <span className="truncate">Msgs{messagesTotal > 0 ? ` ${messagesTotal > 99 ? "99+" : messagesTotal}` : ""}</span>
+            </TabsTrigger>
+            <TabsTrigger value="updates" className="text-[10px] h-6 px-1 min-w-0 truncate">
+              <span className="truncate">Updates{unreadCount > 0 ? ` ${unreadCount > 99 ? "99+" : unreadCount}` : ""}</span>
+            </TabsTrigger>
+            <TabsTrigger value="announcements" className="text-[10px] h-6 px-1 min-w-0 truncate" disabled={announcementCount === 0}>
+              <span className="truncate">Awards{announcementCount > 0 ? ` ${announcementCount}` : ""}</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <ScrollArea className="h-[320px]">
           <TabsContent value="alerts" className="px-3 pb-3 mt-0">
@@ -243,15 +243,17 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
 
           <TabsContent value="messages" className="px-3 pb-3 mt-0">
             {messagesTotal === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+              <div className="flex flex-col items-center justify-center py-6 text-muted-foreground">
                 <MessagesSquare className="w-8 h-8 mb-2 opacity-40" />
                 <p className="text-xs">No new messages</p>
-                <div className="flex gap-2 mt-3">
-                  <Button variant="outline" size="sm" className="h-7 text-[10px]" onClick={() => goTo("/messages")}>
-                    <Building2 className="w-3 h-3 mr-1" /> Org Chat
+                <div className="flex flex-col w-full gap-1.5 mt-3 px-2">
+                  <Button variant="outline" size="sm" className="h-7 text-[10px] justify-start w-full" onClick={() => goTo("/messages")}>
+                    <Building2 className="w-3 h-3 mr-1.5 shrink-0" />
+                    <span className="truncate">Open Org Chat</span>
                   </Button>
-                  <Button variant="outline" size="sm" className="h-7 text-[10px]" onClick={() => goTo("/operator/inbox")}>
-                    <Briefcase className="w-3 h-3 mr-1" /> Recruiter Inbox
+                  <Button variant="outline" size="sm" className="h-7 text-[10px] justify-start w-full" onClick={() => goTo("/operator/inbox")}>
+                    <Briefcase className="w-3 h-3 mr-1.5 shrink-0" />
+                    <span className="truncate">Open Recruiter Inbox</span>
                   </Button>
                 </div>
               </div>
@@ -263,9 +265,9 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
                 >
                   <Building2 className="w-4 h-4 mt-0.5 shrink-0 text-primary" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium leading-tight">Organization Messages</p>
-                    <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
-                      Direct messages from connected teammates in {organization?.name ?? "your org"}
+                    <p className="text-xs font-medium leading-tight truncate">Organization Messages</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2 break-words">
+                      DMs from connected teammates in {organization?.name ?? "your org"}
                     </p>
                   </div>
                   {orgMessagesUnread > 0 ? (
