@@ -191,7 +191,7 @@ export function BlogAdmin() {
       cover_image_url: editingPost.cover_image_url || null,
       video_url: editingPost.video_url || null,
       video_provider: editingPost.video_provider || null,
-      gallery: editingPost.gallery || [],
+      gallery: (editingPost.gallery || []) as unknown as never,
       tags: editingPost.tags || [],
       seo_title: editingPost.seo_title || null,
       seo_description: editingPost.seo_description || null,
