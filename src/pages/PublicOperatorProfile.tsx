@@ -407,14 +407,7 @@ export default function PublicOperatorProfile() {
                     </span>
                   )}
                   {profile.linkedin_url && (
-                    <a
-                      href={withJoblineUtm(profile.linkedin_url, "talent_profile")}
-                      target="_blank"
-                      rel="noopener noreferrer nofollow"
-                      className="flex items-center gap-1 text-primary hover:underline"
-                    >
-                      <Linkedin className="w-4 h-4" /> LinkedIn
-                    </a>
+                    <SocialLink href={profile.linkedin_url} icon={Linkedin} label="LinkedIn" track nofollow />
                   )}
                   {profile.portfolio_url && (
                     <SocialLink href={profile.portfolio_url} icon={Globe} label="Portfolio" track />
