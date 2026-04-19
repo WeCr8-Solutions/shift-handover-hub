@@ -13,9 +13,11 @@ interface MessageThreadProps {
   requestId: string;
   /** Role of the *current viewer* relative to the request. */
   viewerRole: "employer" | "candidate";
+  /** When false, disables the reply box and shows a gating note. */
+  canReply?: boolean;
 }
 
-export function MessageThread({ requestId, viewerRole }: MessageThreadProps) {
+export function MessageThread({ requestId, viewerRole, canReply = true }: MessageThreadProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const { replies, loading, sending, sendReply } = useMessageThread(requestId, viewerRole);
