@@ -56,6 +56,7 @@ export interface OperatorCertRow {
   description: string | null;
   /** Whether this cert is shown on the public profile. Defaults to true. */
   is_public: boolean;
+  created_at?: string;
 }
 
 // Helper type for inserts where DB defaults supply some fields.
