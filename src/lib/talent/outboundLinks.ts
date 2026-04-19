@@ -11,7 +11,9 @@
 export type OutboundSurface =
   | "talent_profile"   // public /talent/:username profile page
   | "talent_search"    // /talent search results
-  | "talent_directory";
+  | "talent_directory"
+  | "business_card"    // /card/:slug digital business card
+  | "employer_page";   // /employers/:slug public employer page
 
 const DEFAULTS = {
   utm_source: "jobline.ai",

@@ -13,6 +13,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { TalentSocialPanel } from "@/components/talent/TalentSocialPanel";
 import { usePublicOperatorSocial } from "@/hooks/useOperatorSocial";
 import { PublicProfileQrCard } from "@/components/talent/PublicProfileQrCard";
+import {
+  ServicesSection,
+  GallerySection,
+  TestimonialsSection,
+  BusinessHoursSection,
+  LocationMapSection,
+  SaveContactButton,
+} from "@/components/talent/MiniSiteSections";
+import { useProfileViewTracker } from "@/hooks/useProfileViewTracker";
+import type { ServiceItem, GalleryItem, TestimonialItem, BusinessHours } from "@/lib/talent/miniSiteTypes";
 import { withJoblineUtm } from "@/lib/talent/outboundLinks";
 import { getPublicTalentUrl } from "@/lib/talent/publicHost";
 import { formatDateRange } from "@/lib/talent/format";
@@ -114,7 +124,25 @@ export default function PublicOperatorProfile() {
   const [education, setEducation] = useState<EducationRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [miniSite, setMiniSite] = useState<{
+    services: ServiceItem[];
+    gallery: GalleryItem[];
+    testimonials: TestimonialItem[];
+    business_hours: BusinessHours | null;
+    latitude: number | null;
+    longitude: number | null;
+    contact_email: string | null;
+    contact_phone: string | null;
+    vcard_full_name: string | null;
+    vcard_title: string | null;
+    vcard_company: string | null;
+    card_slug: string | null;
+    cta_label: string | null;
+    cta_url: string | null;
+  } | null>(null);
   const { counts: socialCounts } = usePublicOperatorSocial(username);
+
+  useProfileViewTracker("talent", username ?? null);
 
   useEffect(() => {
     if (!username) return;
@@ -163,12 +191,42 @@ export default function PublicOperatorProfile() {
           .order("end_date", { ascending: false, nullsFirst: false }),
       ]);
 
+      // Mini-site fields — RLS allows public read when profile_visibility = 'public'
+      const { data: ms } = await supabase
+        .from("operator_profiles")
+        .select(
+          `services, gallery, testimonials, business_hours, latitude, longitude,
+           contact_email, contact_phone, vcard_full_name, vcard_title, vcard_company,
+           card_slug, cta_label, cta_url`
+        )
+        .eq("user_id", row.user_id)
+        .maybeSingle();
+
       if (cancelled) return;
       setCerts((c.data as CertRow[] | null) ?? []);
       setSkills((s.data as SkillRow[] | null) ?? []);
       setMachines((m.data as MachineRow[] | null) ?? []);
       setWork((w.data as WorkRow[] | null) ?? []);
       setEducation((e.data as EducationRow[] | null) ?? []);
+      if (ms) {
+        const r = ms as Record<string, unknown>;
+        setMiniSite({
+          services: (r.services as ServiceItem[]) ?? [],
+          gallery: (r.gallery as GalleryItem[]) ?? [],
+          testimonials: (r.testimonials as TestimonialItem[]) ?? [],
+          business_hours: (r.business_hours as BusinessHours | null) ?? null,
+          latitude: (r.latitude as number | null) ?? null,
+          longitude: (r.longitude as number | null) ?? null,
+          contact_email: (r.contact_email as string | null) ?? null,
+          contact_phone: (r.contact_phone as string | null) ?? null,
+          vcard_full_name: (r.vcard_full_name as string | null) ?? null,
+          vcard_title: (r.vcard_title as string | null) ?? null,
+          vcard_company: (r.vcard_company as string | null) ?? null,
+          card_slug: (r.card_slug as string | null) ?? null,
+          cta_label: (r.cta_label as string | null) ?? null,
+          cta_url: (r.cta_url as string | null) ?? null,
+        });
+      }
       setLoading(false);
     })();
     return () => {
@@ -347,6 +405,28 @@ export default function PublicOperatorProfile() {
               <Button asChild size="sm">
                 <Link to="/talent/search">Employers: contact via Talent Search</Link>
               </Button>
+              {miniSite && (
+                <SaveContactButton
+                  vcard={{
+                    fullName: miniSite.vcard_full_name ?? fullName,
+                    title: miniSite.vcard_title ?? profile.headline,
+                    company: miniSite.vcard_company,
+                    email: miniSite.contact_email,
+                    phone: miniSite.contact_phone,
+                    website: profile.portfolio_url,
+                    addressCity: profile.location_city,
+                    addressRegion: profile.location_region,
+                    addressCountry: profile.location_country,
+                    profileUrl: getPublicTalentUrl(profile.public_username),
+                  }}
+                  label="Save contact (.vcf)"
+                />
+              )}
+              {miniSite?.card_slug && (
+                <Button asChild size="sm" variant="outline">
+                  <Link to={`/card/${miniSite.card_slug}`}>Open business card</Link>
+                </Button>
+              )}
               <Button asChild size="sm" variant="outline">
                 <Link to="/auth?signup=1">Build your own profile</Link>
               </Button>
@@ -377,6 +457,23 @@ export default function PublicOperatorProfile() {
             <CardHeader><CardTitle>About</CardTitle></CardHeader>
             <CardContent className="whitespace-pre-line text-sm leading-relaxed">{profile.bio}</CardContent>
           </Card>
+        )}
+
+        {/* Mini-site: services, gallery, testimonials, hours, location */}
+        {miniSite && (
+          <>
+            <ServicesSection services={miniSite.services} />
+            <GallerySection items={miniSite.gallery} />
+            <TestimonialsSection items={miniSite.testimonials} />
+            <BusinessHoursSection hours={miniSite.business_hours} />
+            <LocationMapSection
+              city={profile.location_city}
+              region={profile.location_region}
+              country={profile.location_country}
+              latitude={miniSite.latitude}
+              longitude={miniSite.longitude}
+            />
+          </>
         )}
 
         {/* Accomplishments — highlight reel for employers */}
