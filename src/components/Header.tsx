@@ -85,6 +85,7 @@ export function Header() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { hasAdminAccess, hasOrgAdminAccess, hasOrgSupervisorAccess, hasTestingAccess } = useAdminAccess();
+  const { hasProfile: hasTalentProfile } = useHasOperatorProfile();
   const { unreadCount, systemStatus, unacknowledgedRequired, acknowledgeUpdate } = useGlobalUpdates();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [issueDialogOpen, setIssueDialogOpen] = useState(false);
