@@ -166,7 +166,7 @@ export default function BlogPost() {
         if (data) {
           setDbPost({
             ...data,
-            gallery: (Array.isArray(data.gallery) ? data.gallery : []) as GalleryItem[],
+            gallery: (Array.isArray(data.gallery) ? data.gallery : []) as unknown as GalleryItem[],
             tags: Array.isArray(data.tags) ? data.tags : [],
           });
         }
