@@ -5830,6 +5830,57 @@ export type Database = {
           },
         ]
       }
+      org_connections: {
+        Row: {
+          created_at: string
+          id: string
+          message: string | null
+          organization_id: string
+          recipient_id: string
+          requester_id: string
+          responded_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          organization_id: string
+          recipient_id: string
+          requester_id: string
+          responded_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          organization_id?: string
+          recipient_id?: string
+          requester_id?: string
+          responded_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_connections_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_connections_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       org_inspection_tool_overrides: {
         Row: {
           created_at: string
@@ -5936,6 +5987,51 @@ export type Database = {
           },
           {
             foreignKeyName: "org_machining_operation_overrides_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          organization_id: string
+          read_at: string | null
+          recipient_id: string
+          sender_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          organization_id: string
+          read_at?: string | null
+          recipient_id: string
+          sender_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          organization_id?: string
+          read_at?: string | null
+          recipient_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_messages_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_messages_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations_member_view"
@@ -10414,6 +10510,10 @@ export type Database = {
           _title: string
         }
         Returns: string
+      }
+      users_are_connected: {
+        Args: { _a: string; _b: string; _org_id: string }
+        Returns: boolean
       }
       validate_display_token: { Args: { _token: string }; Returns: Json }
       validate_invite_code: { Args: { _code: string }; Returns: Json }
