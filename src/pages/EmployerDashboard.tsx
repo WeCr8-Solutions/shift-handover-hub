@@ -17,10 +17,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { SafeDeleteDialog } from "@/components/SafeDeleteDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Header } from "@/components/Header";
 import { Briefcase, Users, ExternalLink, Plus, Pencil, Trash2, Eye, MapPin, Building2, Loader2, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
@@ -245,7 +254,7 @@ export default function EmployerDashboard() {
         </div>
 
         {!isPublicEmployer && (
-          <Card className="mb-6 border-amber-500/50 bg-amber-500/5">
+          <Card className="mb-6 border-warning/50 bg-warning/5">
             <CardContent className="pt-6">
               <p className="text-sm">
                 Your organization is not yet a <strong>public employer</strong>. Enable it in
@@ -518,15 +527,25 @@ export default function EmployerDashboard() {
       </Dialog>
 
       {/* Delete confirm */}
-      {deleteTarget && (
-        <SafeDeleteDialog
-          open={!!deleteTarget}
-          onOpenChange={(o) => !o && setDeleteTarget(null)}
-          itemName={deleteTarget.title}
-          onConfirm={() => deleteMutation.mutate(deleteTarget.id)}
-          loading={deleteMutation.isPending}
-        />
-      )}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this job posting?</AlertDialogTitle>
+            <AlertDialogDescription>
+              "{deleteTarget?.title}" will be permanently removed. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
