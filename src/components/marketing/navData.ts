@@ -144,9 +144,11 @@ export const learnCategories: LearnCategory[] = [
 /* ── Talent ── */
 
 export const talentItems: NavLinkItem[] = [
-  { label: "Talent Network", href: "/talent", icon: Users, desc: "Browse certified CNC operators & machinists" },
-  { label: "Find Talent", href: "/talent/search", icon: Briefcase, desc: "Search verified operators by skill & cert" },
-  { label: "Employers Hiring", href: "/employers", icon: Building2, desc: "Browse manufacturers & shops hiring on JobLine" },
+  { label: "Talent Network", href: "/talent", icon: Users, desc: "Browse certified operators, machinists & tradespeople" },
+  { label: "Browse Talent", href: "/talent/browse", icon: Briefcase, desc: "Search verified talent by skill, machine & cert" },
+  { label: "Find Talent (Employers)", href: "/talent/search", icon: Briefcase, desc: "Advanced search for hiring teams" },
+  { label: "Employers Hiring", href: "/employers", icon: Building2, desc: "Manufacturers & shops hiring on JobLine" },
+  { label: "Browse Employers", href: "/employers/browse", icon: Building2, desc: "Discover shops by industry, location & openings" },
 ];
 
 /* ── Flat learnItems for backward compat ── */
