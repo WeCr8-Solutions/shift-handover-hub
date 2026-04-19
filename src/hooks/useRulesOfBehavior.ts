@@ -100,8 +100,9 @@ export function useRulesOfBehavior(): RulesOfBehaviorStatus {
     }
   }, [user]);
 
-  // Only required when the user is authenticated (unauthenticated visitors are never blocked)
-  const robRequired = !!user;
+  // Only required for authenticated users who belong to an organization.
+  // Public visitors and signed-in users without an org (e.g. talent profile browsers) are never gated.
+  const robRequired = !!user && !!organization;
   const robBlockingAccess = robRequired && checkComplete && !robAccepted;
 
   return { robRequired, robAccepted, checkComplete, robBlockingAccess, acceptRob };
