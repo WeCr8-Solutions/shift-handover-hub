@@ -320,23 +320,43 @@ export default function PublicOperatorProfile() {
           <ArrowLeft className="w-4 h-4" /> All profiles
         </Button>
 
-        {/* Header card — mobile-first */}
-        <Card className="overflow-hidden">
-          <CardContent className="p-5 sm:p-6">
-            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
-              <Avatar className="h-20 w-20 sm:h-28 sm:w-28 md:h-32 md:w-32 mx-auto sm:mx-0 ring-2 ring-primary/15">
+        {/* Hero header — gradient cover + overlapping avatar for share-worthy first impression */}
+        <Card className="overflow-hidden border-0 shadow-xl ring-1 ring-border/60 animate-fade-in">
+          {/* Cover gradient with subtle radial accents */}
+          <div
+            className="relative h-28 sm:h-40 w-full"
+            aria-hidden
+            style={{
+              background:
+                "radial-gradient(120% 140% at 0% 0%, hsl(var(--primary)/0.35) 0%, transparent 55%), radial-gradient(120% 140% at 100% 0%, hsl(var(--primary)/0.18) 0%, transparent 60%), linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary)/0.7) 100%)",
+            }}
+          >
+            <div
+              className="absolute inset-0 opacity-[0.12] mix-blend-overlay"
+              style={{
+                backgroundImage:
+                  "repeating-linear-gradient(45deg, transparent 0 14px, hsl(var(--primary-foreground)) 14px 15px)",
+              }}
+            />
+          </div>
+
+          <CardContent className="relative p-5 sm:p-6 pt-0">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 -mt-12 sm:-mt-16">
+              <Avatar className="h-24 w-24 sm:h-32 sm:w-32 md:h-36 md:w-36 mx-auto sm:mx-0 ring-4 ring-background shadow-xl">
                 {profile.avatar_url && <AvatarImage src={profile.avatar_url} alt={fullName} />}
-                <AvatarFallback className="bg-primary/10 text-primary text-2xl sm:text-3xl font-semibold">
+                <AvatarFallback className="bg-primary text-primary-foreground text-3xl sm:text-4xl font-semibold">
                   {fullName.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex-1 min-w-0 space-y-3 text-center sm:text-left">
+              <div className="flex-1 min-w-0 space-y-3 text-center sm:text-left sm:pt-16">
                 <div>
-                  <h1 className="text-2xl sm:text-3xl font-bold leading-tight break-words">{fullName}</h1>
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-tight break-words tracking-tight">
+                    {fullName}
+                  </h1>
                   <p className="text-xs sm:text-sm text-muted-foreground">@{profile.public_username}</p>
                 </div>
                 {profile.headline && (
-                  <p className="text-base sm:text-lg text-foreground/90 leading-snug">
+                  <p className="text-base sm:text-lg text-foreground/90 leading-snug font-medium">
                     {profile.headline}
                   </p>
                 )}
