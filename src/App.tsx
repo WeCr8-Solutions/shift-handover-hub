@@ -18,6 +18,7 @@ import { USPersonDeclarationGate } from "@/components/compliance/USPersonDeclara
 import { RulesOfBehaviorGate } from "@/components/compliance/RulesOfBehaviorGate";
 import { ReleaseBadge } from "@/components/ReleaseBadge";
 import { IssueReporterBoot } from "@/components/IssueReporterBoot";
+import { FreeTalentProfileRibbon } from "@/components/marketing/FreeTalentProfileRibbon";
 import { lazy, Suspense } from "react";
 
 // Eager: landing page (LCP-critical, most-visited route)
