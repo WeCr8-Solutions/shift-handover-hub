@@ -222,7 +222,7 @@ export async function syncIssuedCertificatesToProfile(userId: string, email: str
     .eq("recipient_email", email)
     .eq("status", "active");
 
-  const rows: Array<Omit<OperatorCertRow, "id">> = [];
+  const rows: OperatorCertInsert[] = [];
   for (const c of oap ?? []) {
     rows.push({
       user_id: userId,
