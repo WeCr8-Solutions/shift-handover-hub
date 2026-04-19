@@ -120,6 +120,7 @@ export function Header() {
 
   return (
     <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+      {user && <DeviceNotificationDispatcher />}
       <div className="container py-3">
         <div className="flex items-center justify-between gap-2">
           {/* Logo */}
