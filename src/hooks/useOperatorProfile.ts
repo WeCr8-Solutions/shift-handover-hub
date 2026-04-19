@@ -58,6 +58,9 @@ export interface OperatorCertRow {
   is_public: boolean;
 }
 
+// Helper type for inserts where DB defaults supply some fields.
+type OperatorCertInsert = Omit<OperatorCertRow, "id" | "is_public"> & { is_public?: boolean };
+
 export interface OperatorSkillRow {
   id: string;
   user_id: string;
