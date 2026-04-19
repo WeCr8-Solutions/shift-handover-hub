@@ -559,9 +559,9 @@ export default function OperatorProfile() {
                   {uploadingResume && <p className="text-sm text-muted-foreground mt-1">Uploading and parsing…</p>}
                 </div>
 
-                <Button onClick={handleSave} disabled={saving} className="gap-2">
-                  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                  Save profile
+                <Button onClick={handleSave} disabled={saving || uploadingResume} className="gap-2">
+                  {saving || uploadingResume ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                  {uploadingResume ? "Parsing resume…" : "Save profile"}
                 </Button>
               </CardContent>
             </Card>
