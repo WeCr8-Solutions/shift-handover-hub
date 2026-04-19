@@ -602,8 +602,8 @@ export default function OperatorProfile() {
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Wrench className="w-5 h-5" /> Machine proficiencies</CardTitle>
-                <CardDescription>Equipment you've operated.</CardDescription>
+                <CardTitle className="flex items-center gap-2"><Wrench className="w-5 h-5" /> Equipment & machine proficiencies</CardTitle>
+                <CardDescription>Any equipment, tools, or systems you operate — CNC, waterjet, diesel, welding, hydraulics, lab gear, etc.</CardDescription>
               </CardHeader>
               <CardContent>
                 <MachinesManager machines={machines} onChange={refresh} userId={user!.id} />
