@@ -10,11 +10,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Loader2, Save, Building2, Users, Shield, Briefcase } from "lucide-react";
+import { Loader2, Save, Building2, Users, Shield, Briefcase, Sparkles, ExternalLink, Globe, Lock, ShieldCheck, ArrowRight, UserCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { OnboardingProgress } from "@/components/onboarding";
 import { useOrgContext } from "@/contexts/OrgContext";
 import { useAdminAccess } from "@/hooks/useAdminData";
+import { useOperatorProfile } from "@/hooks/useOperatorProfile";
+import { getPublicTalentUrl } from "@/lib/talent/publicHost";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -28,7 +30,8 @@ export default function Profile() {
     loading: orgLoading 
   } = useOrgContext();
   const { isDeveloper, loading: accessLoading } = useAdminAccess();
-  
+  const { profile: talentProfile, certifications, skills, machines, workHistory } = useOperatorProfile();
+
   const [displayName, setDisplayName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
@@ -273,6 +276,92 @@ export default function Profile() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Talent Profile Card — entry point to public talent presence */}
+        {(() => {
+          const visibility = talentProfile?.profile_visibility ?? "private";
+          const VisIcon = visibility === "public" ? Globe : visibility === "employers_only" ? ShieldCheck : Lock;
+          const visLabel = visibility === "public" ? "Public" : visibility === "employers_only" ? "Employers only" : "Private";
+          const publicUrl = talentProfile?.public_username ? getPublicTalentUrl(talentProfile.public_username) : null;
+          const checks = talentProfile ? [
+            !!talentProfile.headline,
+            !!talentProfile.bio,
+            !!talentProfile.location_city,
+            (talentProfile.years_experience ?? 0) > 0,
+            certifications.length > 0,
+            skills.length > 0,
+            machines.length > 0,
+            workHistory.length > 0,
+          ] : [];
+          const completeness = checks.length ? Math.round((checks.filter(Boolean).length / checks.length) * 100) : 0;
+
+          return (
+            <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <UserCircle2 className="w-5 h-5 text-primary" />
+                  Talent Network Profile
+                </CardTitle>
+                <CardDescription>
+                  Your portable, employer-facing operator profile. Lives with you across every shop.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {!talentProfile ? (
+                  <div className="rounded-lg border border-dashed bg-muted/30 p-4 text-center space-y-3">
+                    <Sparkles className="w-8 h-8 text-primary mx-auto" />
+                    <div>
+                      <p className="font-medium text-sm">You haven't built your talent profile yet</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Showcase verified certs, machines, and experience. Upload a resume for instant autofill.
+                      </p>
+                    </div>
+                    <Button onClick={() => navigate("/operator/profile")} size="sm" className="gap-2">
+                      <Sparkles className="w-4 h-4" /> Build Talent Profile
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="rounded-lg border bg-card p-3">
+                        <p className="text-xs text-muted-foreground">Strength</p>
+                        <p className="text-2xl font-bold leading-none mt-1">{completeness}%</p>
+                      </div>
+                      <div className="rounded-lg border bg-card p-3">
+                        <p className="text-xs text-muted-foreground">Verified</p>
+                        <p className="text-2xl font-bold leading-none mt-1">
+                          {certifications.filter((c) => c.verification_source.startsWith("verified_")).length}
+                        </p>
+                      </div>
+                      <div className="rounded-lg border bg-card p-3">
+                        <p className="text-xs text-muted-foreground">Visibility</p>
+                        <Badge variant="outline" className="mt-1 gap-1">
+                          <VisIcon className="w-3 h-3" /> {visLabel}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      <Button onClick={() => navigate("/talent/dashboard")} size="sm" variant="default" className="gap-2">
+                        Talent Dashboard <ArrowRight className="w-4 h-4" />
+                      </Button>
+                      <Button onClick={() => navigate("/operator/profile")} size="sm" variant="outline" className="gap-2">
+                        Edit Profile
+                      </Button>
+                      {publicUrl && (
+                        <Button asChild size="sm" variant="outline" className="gap-2">
+                          <a href={publicUrl} target="_blank" rel="noopener noreferrer">
+                            View Public <ExternalLink className="w-4 h-4" />
+                          </a>
+                        </Button>
+                      )}
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })()}
 
         {/* Onboarding Progress Card */}
         <OnboardingProgress showRestart />
