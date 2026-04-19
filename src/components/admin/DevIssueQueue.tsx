@@ -52,6 +52,8 @@ import {
   ExternalLink,
   Timer,
   Loader2,
+  Terminal,
+  FileWarning,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ConsoleLogViewer } from "./ConsoleLogViewer";
@@ -483,7 +485,21 @@ export function DevIssueQueue() {
 
                     <TableCell>
                       <div className="space-y-1">
-                        <div className="font-medium line-clamp-1">{item.issue.title}</div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-medium line-clamp-1">{item.issue.title}</span>
+                          {item.issue.error_stack && (
+                            <FileWarning
+                              className="w-3.5 h-3.5 shrink-0 text-destructive"
+                              aria-label="Has stack trace"
+                            />
+                          )}
+                          {Array.isArray(item.issue.console_logs) && item.issue.console_logs.length > 0 && (
+                            <Terminal
+                              className="w-3.5 h-3.5 shrink-0 text-primary"
+                              aria-label={`${item.issue.console_logs.length} console logs captured`}
+                            />
+                          )}
+                        </div>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <Badge variant="outline" className="text-xs">
                             {item.issue.severity}
