@@ -106,6 +106,8 @@ export function NotificationSettings() {
         </CardContent>
       </Card>
 
+      <DeviceAlertsCard />
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
