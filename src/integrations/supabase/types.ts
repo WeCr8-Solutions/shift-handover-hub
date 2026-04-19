@@ -9957,6 +9957,36 @@ export type Database = {
         }
         Relationships: []
       }
+      operator_references_safe: {
+        Row: {
+          company: string | null
+          created_at: string | null
+          id: string | null
+          notes: string | null
+          reference_name: string | null
+          relationship: string | null
+          user_id: string | null
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string | null
+          id?: string | null
+          notes?: string | null
+          reference_name?: string | null
+          relationship?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          company?: string | null
+          created_at?: string | null
+          id?: string | null
+          notes?: string | null
+          reference_name?: string | null
+          relationship?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       organization_webhooks_safe: {
         Row: {
           created_at: string | null
