@@ -17,6 +17,7 @@ import { ScrollToTop } from "@/components/ScrollToTop";
 import { USPersonDeclarationGate } from "@/components/compliance/USPersonDeclarationGate";
 import { RulesOfBehaviorGate } from "@/components/compliance/RulesOfBehaviorGate";
 import { ReleaseBadge } from "@/components/ReleaseBadge";
+import { IssueReporterBoot } from "@/components/IssueReporterBoot";
 import { lazy, Suspense } from "react";
 
 // Eager: landing page (LCP-critical, most-visited route)
@@ -163,6 +164,7 @@ const App = () => (
               <BrowserRouter>
                 <AnalyticsProvider>
                   <ScrollToTop />
+                  <IssueReporterBoot />
                   {/* Compliance gates — no-ops when the condition is not met */}
                   <RulesOfBehaviorGate>
                   <MFAEnrollmentGate>
