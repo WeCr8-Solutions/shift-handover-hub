@@ -28,7 +28,7 @@ interface MarketingNavProps {
   showPricing?: boolean;
 }
 
-type MenuKey = "products" | "industries" | "learn" | "company" | null;
+type MenuKey = "products" | "industries" | "learn" | "talent" | "company" | null;
 
 export function MarketingNav({ showPricing = true }: MarketingNavProps) {
   const navigate = useNavigate();
