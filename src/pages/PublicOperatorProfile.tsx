@@ -24,6 +24,7 @@ import {
 import { useProfileViewTracker } from "@/hooks/useProfileViewTracker";
 import type { ServiceItem, GalleryItem, TestimonialItem, BusinessHours } from "@/lib/talent/miniSiteTypes";
 import { withJoblineUtm } from "@/lib/talent/outboundLinks";
+import { getSocialHref, getSocialLinkTarget } from "@/lib/talent/socialDeepLinks";
 import { getPublicTalentUrl } from "@/lib/talent/publicHost";
 import { formatDateRange } from "@/lib/talent/format";
 import "@/styles/print-talent.css";
@@ -948,11 +949,17 @@ function SocialLink({
   track?: boolean;
   nofollow?: boolean;
 }) {
-  const finalHref = track ? withJoblineUtm(href, "talent_profile") : href;
+  // Normalize to canonical https form so iOS Universal Links /
+  // Android App Links can hand off to the installed native app.
+  const normalized = getSocialHref(href);
+  const finalHref = track ? (withJoblineUtm(normalized, "talent_profile") ?? normalized) : normalized;
+  // On mobile, use _self so the OS can intercept and open the app.
+  // On desktop, open in a new tab (standard external link behavior).
+  const target = getSocialLinkTarget();
   return (
     <a
       href={finalHref}
-      target="_blank"
+      target={target}
       rel={`noopener noreferrer${nofollow ? " nofollow" : ""}`}
       className="flex items-center gap-1 text-primary hover:underline"
       aria-label={label}
