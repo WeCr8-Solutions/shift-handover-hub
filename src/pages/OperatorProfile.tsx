@@ -778,10 +778,53 @@ export default function OperatorProfile() {
                 <SkillsManager skills={skills} onChange={refresh} userId={user!.id} />
               </CardContent>
             </Card>
+
+            {/* JobLine-verified equipment summary (derived from OAP/GCA certs) */}
+            <Card className="border-primary/40 bg-primary/5">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-primary" /> JobLine-verified equipment & controls
+                </CardTitle>
+                <CardDescription>
+                  Pulled from your active OAP / GCA certifications. Pass an OAP module or GCA test to add more — these can't be edited here.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {(() => {
+                  const verified = certifications.filter((c) => c.verification_source.startsWith("verified_"));
+                  if (verified.length === 0) {
+                    return (
+                      <p className="text-sm text-muted-foreground">
+                        No verified equipment yet.{" "}
+                        <a href="/oap" className="text-primary hover:underline">Browse OAP programs →</a>
+                      </p>
+                    );
+                  }
+                  return (
+                    <div className="flex flex-wrap gap-2">
+                      {verified.map((c) => (
+                        <Badge
+                          key={c.id}
+                          className="gap-1 bg-primary/15 text-primary border-primary/30"
+                          variant="outline"
+                        >
+                          <ShieldCheck className="w-3 h-3" />
+                          {c.name}
+                          <span className="opacity-70 ml-1">· {c.issuer ?? "JobLine"}</span>
+                        </Badge>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Wrench className="w-5 h-5" /> Equipment & machine proficiencies</CardTitle>
-                <CardDescription>Any equipment, tools, or systems you operate — CNC, waterjet, diesel, welding, hydraulics, lab gear, etc.</CardDescription>
+                <CardTitle className="flex items-center gap-2"><Wrench className="w-5 h-5" /> Self-reported equipment & machine proficiencies</CardTitle>
+                <CardDescription>
+                  Anything you operate but haven't been formally tested on through JobLine — CNC, waterjet, diesel, welding, hydraulics, lab gear, etc. Employers will see these marked <em>self-reported</em>.
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <MachinesManager machines={machines} onChange={refresh} userId={user!.id} />
