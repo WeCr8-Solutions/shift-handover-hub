@@ -170,6 +170,13 @@ const Index = () => {
   } = useOnboardingContext();
   const { hasOrgSupervisorAccess, loading: roleLoading } = useAdminAccess();
 
+  // Talent-only users (signed-in, no organization) → redirect to talent dashboard
+  useEffect(() => {
+    if (isReady && user && !organization && !onboardingLoading) {
+      navigate("/talent/dashboard", { replace: true });
+    }
+  }, [isReady, user, organization, onboardingLoading, navigate]);
+
   // Supervisors, org admins, and platform admins get the production overview dashboard
   const showSupervisorView = !!user && hasOrgSupervisorAccess;
 
