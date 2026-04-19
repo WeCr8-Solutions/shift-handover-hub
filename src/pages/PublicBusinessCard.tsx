@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Mail,
-  Phone,
   Globe,
   Linkedin,
   MapPin,
@@ -32,8 +31,7 @@ interface CardRow {
   location_city: string | null;
   location_region: string | null;
   location_country: string | null;
-  contact_email: string | null;
-  contact_phone: string | null;
+  // contact_email & contact_phone intentionally absent — never exposed publicly.
   linkedin_url: string | null;
   portfolio_url: string | null;
   vcard_full_name: string | null;
