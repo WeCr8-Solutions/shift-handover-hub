@@ -37,14 +37,16 @@ export interface RulesOfBehaviorStatus {
 
 export function useRulesOfBehavior(): RulesOfBehaviorStatus {
   const { user } = useAuth();
+  const { organization, loading: orgLoading } = useOrgContext();
 
   const [robAccepted, setRobAccepted] = useState(false);
   const [checkComplete, setCheckComplete] = useState(false);
 
   const checkStatus = useCallback(async () => {
-    if (!user) {
+    // Only org members are subject to FedRAMP RoB. Public/talent visitors are not.
+    if (!user || orgLoading || !organization) {
       setRobAccepted(false);
-      setCheckComplete(true);
+      setCheckComplete(!orgLoading);
       return;
     }
 
