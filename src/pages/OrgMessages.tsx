@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { MessagesSquare, Search, Send, UserPlus, Check, X, ShieldOff } from "lucide-react";
+import { MessagesSquare, Search, Send, UserPlus, Check, X, ShieldOff, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgConnections, useOrgMessages, type OrgConnection } from "@/hooks/useOrgMessaging";
 import { useToast } from "@/hooks/use-toast";
@@ -198,19 +198,20 @@ export default function OrgMessages() {
         <meta name="robots" content="noindex" />
       </Helmet>
       <Header />
-      <main className="container py-6 max-w-6xl">
-        <div className="mb-4">
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <MessagesSquare className="w-7 h-7" /> Messages
+      <main className="container py-4 sm:py-6 max-w-6xl px-3 sm:px-4">
+        <div className="mb-3 sm:mb-4">
+          <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
+            <MessagesSquare className="w-6 h-6 sm:w-7 sm:h-7 shrink-0" />
+            <span className="truncate">Messages</span>
           </h1>
-          <p className="text-muted-foreground text-sm">
+          <p className="text-muted-foreground text-xs sm:text-sm break-words">
             Direct messaging within {organization.name}. You can only message users you've connected with.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[320px,1fr] gap-4">
-          {/* Left pane — connections + directory */}
-          <Card>
+        <div className="grid grid-cols-1 lg:grid-cols-[320px,1fr] gap-3 sm:gap-4">
+          {/* Left pane — connections + directory (hidden on mobile when a conversation is active) */}
+          <Card className={activePartnerId ? "hidden lg:block" : ""}>
             <CardHeader className="pb-2">
               <Tabs defaultValue="conversations">
                 <TabsList className="w-full grid grid-cols-3">
@@ -383,7 +384,7 @@ export default function OrgMessages() {
           </Card>
 
           {/* Right pane — active conversation */}
-          <Card className="flex flex-col min-h-[60vh]">
+          <Card className={`flex flex-col min-h-[60vh] min-w-0 ${!activePartnerId ? "hidden lg:flex" : ""}`}>
             {!activePartner ? (
               <CardContent className="flex-1 flex items-center justify-center text-center text-muted-foreground">
                 <div>
@@ -394,17 +395,30 @@ export default function OrgMessages() {
             ) : (
               <>
                 <CardHeader className="pb-3 border-b">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Avatar className="h-8 w-8">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="lg:hidden h-8 w-8 shrink-0"
+                      onClick={() => setActivePartnerId(null)}
+                      aria-label="Back to conversations"
+                    >
+                      <ArrowLeft className="w-4 h-4" />
+                    </Button>
+                    <Avatar className="h-8 w-8 shrink-0">
                       <AvatarFallback className="bg-primary/10 text-primary text-xs">
                         {initials(activePartner.display_name)}
                       </AvatarFallback>
                     </Avatar>
-                    {activePartner.display_name ?? "Unknown"}
-                  </CardTitle>
-                  <CardDescription className="text-xs capitalize">
-                    {activePartner.role ?? "Member"} · {organization.name}
-                  </CardDescription>
+                    <div className="min-w-0 flex-1">
+                      <CardTitle className="text-base truncate">
+                        {activePartner.display_name ?? "Unknown"}
+                      </CardTitle>
+                      <CardDescription className="text-xs capitalize truncate">
+                        {activePartner.role ?? "Member"} · {organization.name}
+                      </CardDescription>
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent className="flex-1 flex flex-col p-3 gap-2">
                   <div className="flex-1 overflow-y-auto space-y-2 pr-1 max-h-[50vh]">
@@ -435,16 +449,21 @@ export default function OrgMessages() {
                   </div>
 
                   {canSend ? (
-                    <div className="flex gap-2 pt-2 border-t">
+                    <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t">
                       <Textarea
                         placeholder="Type a message…"
                         value={draft}
                         onChange={(e) => setDraft(e.target.value)}
                         rows={2}
                         maxLength={4000}
-                        className="resize-none"
+                        className="resize-none flex-1 min-w-0"
                       />
-                      <Button onClick={handleSend} disabled={!draft.trim()} size="sm" className="self-end gap-1">
+                      <Button
+                        onClick={handleSend}
+                        disabled={!draft.trim()}
+                        size="sm"
+                        className="sm:self-end gap-1 w-full sm:w-auto"
+                      >
                         <Send className="w-3 h-3" /> Send
                       </Button>
                     </div>
