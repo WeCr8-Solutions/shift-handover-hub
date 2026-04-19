@@ -131,6 +131,7 @@ const TalentDashboard = lazy(() => import("./pages/TalentDashboard"));
 const ShopFloorDisplay = lazy(() => import("./pages/ShopFloorDisplay"));
 const PublicBusinessCard = lazy(() => import("./pages/PublicBusinessCard"));
 const EmployersIndex = lazy(() => import("./pages/EmployersIndex"));
+const EmployerBrowse = lazy(() => import("./pages/EmployerBrowse"));
 const PublicEmployerProfile = lazy(() => import("./pages/PublicEmployerProfile"));
 const EmployerDashboard = lazy(() => import("./pages/EmployerDashboard"));
 
@@ -256,6 +257,7 @@ const App = () => (
                     <Route path="/talent/:username" element={<PublicOperatorProfile />} />
                     <Route path="/card/:slug" element={<PublicBusinessCard />} />
                     <Route path="/employers" element={<EmployersIndex />} />
+                    <Route path="/employers/browse" element={<EmployerBrowse />} />
                     <Route path="/employers/dashboard" element={<EmployerDashboard />} />
                     <Route path="/employers/:slug" element={<PublicEmployerProfile />} />
                     <Route path="/operator/profile" element={<OperatorProfile />} />
