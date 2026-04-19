@@ -21,6 +21,7 @@ import {
   industryCategories,
   learnCategories,
   companyItems,
+  talentItems,
 } from "./navData";
 
 interface MarketingNavProps {
