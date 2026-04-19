@@ -196,7 +196,7 @@ export default function Settings() {
   useModuleContext({
     id: "settings",
     label: `Settings · ${activeTab}`,
-    data: { activeTab, organizationId: organization?.id ?? null },
+    data: { activeTab },
   });
 
   return (
