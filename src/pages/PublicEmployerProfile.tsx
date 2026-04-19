@@ -353,3 +353,38 @@ export default function PublicEmployerProfile() {
     </div>
   );
 }
+
+/** Compact tag-list group used inside the "Ideal candidates" card. */
+function IdealGroup({
+  icon: Icon,
+  label,
+  tags,
+  variant = "default",
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  tags: string[];
+  variant?: "default" | "primary";
+}) {
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-2">
+        <Icon className="w-4 h-4 text-primary" />
+        <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          {label}
+        </h3>
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {tags.map((t) => (
+          <Badge
+            key={t}
+            variant={variant === "primary" ? "default" : "secondary"}
+            className={variant === "primary" ? "bg-primary/15 text-primary border-primary/30 hover:bg-primary/20" : ""}
+          >
+            {t}
+          </Badge>
+        ))}
+      </div>
+    </div>
+  );
+}
