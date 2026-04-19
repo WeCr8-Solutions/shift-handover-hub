@@ -1,16 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ArrowRight, Sparkles, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowRight, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const STORAGE_KEY = "jl_free_talent_ribbon_dismissed_v1";
 
 /**
- * News-style sticky bottom ribbon for marketing pages.
+ * Breaking-news style overlay ribbon — fixed to viewport bottom, narrow height.
  * - Dismissible (persisted in localStorage)
- * - Hidden for authenticated users
- * - Hidden on /auth and dashboard-style routes
+ * - Hidden for authenticated users and on /auth
  */
 export function FreeTalentProfileRibbon() {
   const { user } = useAuth();
@@ -19,20 +17,14 @@ export function FreeTalentProfileRibbon() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const dismissed = window.localStorage.getItem(STORAGE_KEY) === "1";
-    setVisible(!dismissed);
+    setVisible(window.localStorage.getItem(STORAGE_KEY) !== "1");
   }, []);
 
   const dismiss = () => {
     setVisible(false);
-    try {
-      window.localStorage.setItem(STORAGE_KEY, "1");
-    } catch {
-      // ignore
-    }
+    try { window.localStorage.setItem(STORAGE_KEY, "1"); } catch {}
   };
 
-  // Don't show to logged-in users or on auth pages
   if (user) return null;
   if (location.pathname.startsWith("/auth")) return null;
   if (!visible) return null;
@@ -40,34 +32,44 @@ export function FreeTalentProfileRibbon() {
   return (
     <div
       role="region"
-      aria-label="Promotion: Talent profiles are always free"
-      className="fixed inset-x-0 bottom-0 z-[60] border-t border-primary/30 bg-gradient-to-r from-primary/15 via-background/95 to-primary/10 backdrop-blur-md shadow-[0_-4px_20px_-8px_hsl(var(--primary)/0.25)]"
+      aria-label="Breaking: Talent profiles are always free"
+      className="fixed inset-x-0 bottom-0 z-[60] h-8 sm:h-9 flex items-stretch bg-foreground text-background shadow-[0_-2px_12px_-4px_hsl(var(--foreground)/0.4)]"
     >
-      <div className="container mx-auto px-3 py-2.5 flex items-center gap-2 sm:gap-3">
-        <div className="hidden sm:flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
-          <Sparkles className="h-4 w-4" aria-hidden />
-        </div>
-        <p className="flex-1 text-xs sm:text-sm leading-snug text-foreground">
-          <span className="font-semibold text-primary">New ·</span>{" "}
-          <span className="font-medium">Talent profiles are always free</span>
-          <span className="hidden sm:inline text-muted-foreground">
-            {" "}— show off your machines, GD&T skills & OAP/GCA badges to hiring shops.
+      {/* Red "BREAKING" tag */}
+      <div className="flex items-center px-2.5 sm:px-3 bg-destructive text-destructive-foreground font-bold text-[10px] sm:text-xs uppercase tracking-wider shrink-0">
+        Free
+      </div>
+
+      {/* Scrolling / static headline */}
+      <div className="flex-1 min-w-0 flex items-center overflow-hidden px-3">
+        <p className="text-xs sm:text-sm font-medium truncate">
+          Talent profiles are{" "}
+          <span className="font-bold text-primary-foreground bg-primary px-1.5 py-0.5 rounded-sm">
+            always free
+          </span>
+          <span className="hidden sm:inline text-background/80">
+            {" "}— get found by hiring shops with OAP &amp; GCA badges.
           </span>
         </p>
-        <Button asChild size="sm" className="h-8 gap-1 text-xs shrink-0">
-          <Link to="/auth">
-            Claim free <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-        </Button>
-        <button
-          type="button"
-          onClick={dismiss}
-          aria-label="Dismiss"
-          className="shrink-0 rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-        >
-          <X className="h-4 w-4" />
-        </button>
       </div>
+
+      {/* CTA */}
+      <Link
+        to="/auth"
+        className="flex items-center gap-1 px-3 sm:px-4 bg-primary text-primary-foreground text-xs sm:text-sm font-semibold hover:bg-primary/90 transition-colors shrink-0"
+      >
+        Claim <ArrowRight className="h-3.5 w-3.5" />
+      </Link>
+
+      {/* Dismiss */}
+      <button
+        type="button"
+        onClick={dismiss}
+        aria-label="Dismiss"
+        className="flex items-center justify-center px-2 hover:bg-background/10 transition-colors shrink-0"
+      >
+        <X className="h-4 w-4" />
+      </button>
     </div>
   );
 }
