@@ -5,7 +5,8 @@
  * derives the sidebar nav, gating, lazy-loading, and content rendering
  * automatically from this list.
  */
-import { lazy, Suspense, type ComponentType, type LazyExoticComponent } from "react";
+import { lazy, Suspense } from "react";
+import type { SmartAlertThresholds } from "@/hooks/useSmartAlerts";
 import {
   Settings2,
   Factory,
@@ -76,8 +77,8 @@ export interface ModuleAccess {
 }
 
 export interface ModuleContext extends ModuleAccess {
-  thresholds: any;
-  saveThresholds: (t: any) => void;
+  thresholds: SmartAlertThresholds;
+  saveThresholds: (next: Partial<SmartAlertThresholds>) => Promise<void>;
 }
 
 export type GroupId = "personal" | "organization" | "production" | "platform";
