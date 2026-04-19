@@ -75,10 +75,13 @@ interface PublicProfile {
   website_url: string | null;
   avatar_url: string | null;
   banner_url: string | null;
+  resume_pdf_url: string | null;
   willing_to_relocate: boolean;
   open_to_work: boolean;
   preferred_employment_types: string[] | null;
   public_published_at: string | null;
+  show_only_verified_certs: boolean | null;
+  social_visibility: Record<string, boolean> | null;
 }
 
 interface CertRow {
@@ -91,6 +94,7 @@ interface CertRow {
   attachment_url: string | null;
   verification_source: string;
   linked_cert_id: string | null;
+  is_public: boolean;
 }
 interface SkillRow {
   id: string;
@@ -179,8 +183,9 @@ export default function PublicOperatorProfile() {
       const [c, s, m, w, e] = await Promise.all([
         supabase
           .from("operator_certifications")
-          .select("id, name, issuer, issued_date, expires_date, credential_url, attachment_url, verification_source, linked_cert_id")
+          .select("id, name, issuer, issued_date, expires_date, credential_url, attachment_url, verification_source, linked_cert_id, is_public")
           .eq("user_id", row.user_id)
+          .eq("is_public", true)
           .order("issued_date", { ascending: false, nullsFirst: false }),
         supabase
           .from("operator_skills")
@@ -420,30 +425,48 @@ export default function PublicOperatorProfile() {
                       <Calendar className="w-4 h-4" /> {profile.years_experience} yrs
                     </span>
                   )}
-                  {profile.linkedin_url && (
-                    <SocialLink href={profile.linkedin_url} icon={Linkedin} label="LinkedIn" track nofollow />
-                  )}
-                  {profile.portfolio_url && (
-                    <SocialLink href={profile.portfolio_url} icon={Globe} label="Portfolio" track />
-                  )}
-                  {profile.website_url && (
-                    <SocialLink href={profile.website_url} icon={Globe} label="Website" track />
-                  )}
-                  {profile.twitter_url && (
-                    <SocialLink href={profile.twitter_url} icon={Twitter} label="X / Twitter" />
-                  )}
-                  {profile.instagram_url && (
-                    <SocialLink href={profile.instagram_url} icon={Instagram} label="Instagram" />
-                  )}
-                  {profile.facebook_url && (
-                    <SocialLink href={profile.facebook_url} icon={Facebook} label="Facebook" />
-                  )}
-                  {profile.youtube_url && (
-                    <SocialLink href={profile.youtube_url} icon={Youtube} label="YouTube" />
-                  )}
-                  {profile.github_url && (
-                    <SocialLink href={profile.github_url} icon={Github} label="GitHub" />
-                  )}
+                  {(() => {
+                    const sv = profile.social_visibility ?? {};
+                    const show = (k: string) => sv[k] !== false; // default visible
+                    return (
+                      <>
+                        {profile.linkedin_url && show("linkedin") && (
+                          <SocialLink href={profile.linkedin_url} icon={Linkedin} label="LinkedIn" track nofollow />
+                        )}
+                        {profile.portfolio_url && show("portfolio") && (
+                          <SocialLink href={profile.portfolio_url} icon={Globe} label="Portfolio" track />
+                        )}
+                        {profile.website_url && show("website") && (
+                          <SocialLink href={profile.website_url} icon={Globe} label="Website" track />
+                        )}
+                        {profile.twitter_url && show("twitter") && (
+                          <SocialLink href={profile.twitter_url} icon={Twitter} label="X / Twitter" />
+                        )}
+                        {profile.instagram_url && show("instagram") && (
+                          <SocialLink href={profile.instagram_url} icon={Instagram} label="Instagram" />
+                        )}
+                        {profile.facebook_url && show("facebook") && (
+                          <SocialLink href={profile.facebook_url} icon={Facebook} label="Facebook" />
+                        )}
+                        {profile.youtube_url && show("youtube") && (
+                          <SocialLink href={profile.youtube_url} icon={Youtube} label="YouTube" />
+                        )}
+                        {profile.github_url && show("github") && (
+                          <SocialLink href={profile.github_url} icon={Github} label="GitHub" />
+                        )}
+                        {profile.resume_pdf_url && (
+                          <a
+                            href={profile.resume_pdf_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+                          >
+                            <FileText className="w-4 h-4" /> Resume
+                          </a>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
             </div>
@@ -604,12 +627,16 @@ export default function PublicOperatorProfile() {
         })()}
 
         {certs.length > 0 && (() => {
-          const oapCerts = certs.filter((c) => c.verification_source === "verified_oap");
-          const gcaCerts = certs.filter((c) => c.verification_source === "verified_gca");
-          const externalVerified = certs.filter(
+          // If user has enabled "verified only" mode, drop self-reported entries.
+          const visible = profile.show_only_verified_certs
+            ? certs.filter((c) => c.verification_source.startsWith("verified_"))
+            : certs;
+          const oapCerts = visible.filter((c) => c.verification_source === "verified_oap");
+          const gcaCerts = visible.filter((c) => c.verification_source === "verified_gca");
+          const externalVerified = visible.filter(
             (c) => c.verification_source.startsWith("verified_") && c.verification_source !== "verified_oap" && c.verification_source !== "verified_gca",
           );
-          const selfReported = certs.filter((c) => !c.verification_source.startsWith("verified_"));
+          const selfReported = visible.filter((c) => !c.verification_source.startsWith("verified_"));
 
           return (
             <>
