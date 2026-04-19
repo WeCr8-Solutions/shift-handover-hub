@@ -417,14 +417,25 @@ export default function PublicOperatorProfile() {
                     </a>
                   )}
                   {profile.portfolio_url && (
-                    <a
-                      href={withJoblineUtm(profile.portfolio_url, "talent_profile")}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-primary hover:underline"
-                    >
-                      <Globe className="w-4 h-4" /> Portfolio
-                    </a>
+                    <SocialLink href={profile.portfolio_url} icon={Globe} label="Portfolio" track />
+                  )}
+                  {profile.website_url && (
+                    <SocialLink href={profile.website_url} icon={Globe} label="Website" track />
+                  )}
+                  {profile.twitter_url && (
+                    <SocialLink href={profile.twitter_url} icon={Twitter} label="X / Twitter" />
+                  )}
+                  {profile.instagram_url && (
+                    <SocialLink href={profile.instagram_url} icon={Instagram} label="Instagram" />
+                  )}
+                  {profile.facebook_url && (
+                    <SocialLink href={profile.facebook_url} icon={Facebook} label="Facebook" />
+                  )}
+                  {profile.youtube_url && (
+                    <SocialLink href={profile.youtube_url} icon={Youtube} label="YouTube" />
+                  )}
+                  {profile.github_url && (
+                    <SocialLink href={profile.github_url} icon={Github} label="GitHub" />
                   )}
                 </div>
               </div>
