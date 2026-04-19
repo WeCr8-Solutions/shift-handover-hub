@@ -60,27 +60,26 @@ export function FreeTalentProfileRibbon() {
     <div
       role="region"
       aria-label="Breaking: Talent profiles are always free"
-      className="fixed inset-x-0 bottom-0 z-[100] h-9 flex items-stretch bg-card text-card-foreground border-t border-border shadow-[0_-2px_12px_-4px_hsl(var(--foreground)/0.3)]"
+      className="fixed inset-x-2 sm:inset-x-4 bottom-2 sm:bottom-3 z-[100] h-10 flex items-stretch gap-1.5 px-1.5 rounded-full bg-card text-card-foreground border border-border shadow-lg overflow-hidden"
     >
-      <div className="flex items-center px-2.5 sm:px-3 bg-destructive/80 text-destructive-foreground font-bold text-[10px] sm:text-xs uppercase tracking-wider shrink-0">
+      <div className="flex items-center px-2.5 my-1 rounded-full bg-primary text-primary-foreground font-bold text-[10px] uppercase tracking-wider shrink-0">
         Free
       </div>
 
-      <div className="flex-1 min-w-0 flex items-center overflow-hidden px-3">
+      <div className="flex-1 min-w-0 flex items-center overflow-hidden">
         <p className="text-xs sm:text-sm font-medium truncate">
-          Talent profiles are{" "}
-          <span className="font-bold bg-primary text-primary-foreground px-1.5 py-0.5 rounded-sm">
-            always free
-          </span>
-          <span className="hidden sm:inline text-muted-foreground">
-            {" "}— get found by hiring shops with OAP &amp; GCA badges.
+          <span className="hidden xs:inline">Talent profiles are </span>
+          <span className="sm:hidden">Profiles </span>
+          <span className="font-semibold text-primary">always free</span>
+          <span className="hidden md:inline text-muted-foreground">
+            {" "}— get hired with OAP &amp; GCA badges.
           </span>
         </p>
       </div>
 
       <Link
         to="/auth"
-        className="flex items-center gap-1 px-3 sm:px-4 bg-primary text-primary-foreground text-xs sm:text-sm font-semibold hover:bg-primary/90 transition-colors shrink-0"
+        className="flex items-center gap-1 px-3 my-1 rounded-full bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors shrink-0"
       >
         Claim <ArrowRight className="h-3.5 w-3.5" />
       </Link>
@@ -89,7 +88,7 @@ export function FreeTalentProfileRibbon() {
         type="button"
         onClick={dismiss}
         aria-label="Dismiss"
-        className="flex items-center justify-center px-2 hover:bg-accent transition-colors shrink-0 text-muted-foreground hover:text-foreground"
+        className="flex items-center justify-center w-8 my-1 rounded-full hover:bg-accent transition-colors shrink-0 text-muted-foreground hover:text-foreground"
       >
         <X className="h-4 w-4" />
       </button>
