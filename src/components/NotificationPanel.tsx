@@ -209,6 +209,38 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
         </Button>
       </div>
 
+      {deviceNotif.canPrompt && (
+        <div className="mx-3 mb-2 flex items-start gap-2 rounded-md border border-primary/30 bg-primary/5 p-2.5">
+          <BellRing className="w-4 h-4 mt-0.5 shrink-0 text-primary" />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-medium leading-tight">Enable device alerts</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
+              Get notified on this device when teammates DM you or recruiters reach out.
+            </p>
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              <Button
+                size="sm"
+                className="h-6 text-[10px] px-2"
+                onClick={async () => {
+                  const r = await deviceNotif.requestPermission();
+                  if (r !== "default") deviceNotif.dismissPrompt();
+                }}
+              >
+                Enable
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 text-[10px] px-2"
+                onClick={deviceNotif.dismissPrompt}
+              >
+                Not now
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Tabs defaultValue={messagesTotal > 0 ? "messages" : "alerts"} className="w-full">
         <div className="px-3">
           <TabsList className="w-full h-8 grid grid-cols-4 gap-0.5">
