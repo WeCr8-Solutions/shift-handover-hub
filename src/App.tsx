@@ -130,6 +130,8 @@ const OperatorInbox = lazy(() => import("./pages/OperatorInbox"));
 const TalentDashboard = lazy(() => import("./pages/TalentDashboard"));
 const ShopFloorDisplay = lazy(() => import("./pages/ShopFloorDisplay"));
 const PublicBusinessCard = lazy(() => import("./pages/PublicBusinessCard"));
+const EmployersIndex = lazy(() => import("./pages/EmployersIndex"));
+const PublicEmployerProfile = lazy(() => import("./pages/PublicEmployerProfile"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
