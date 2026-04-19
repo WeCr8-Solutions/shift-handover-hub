@@ -265,9 +265,9 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
                 >
                   <Building2 className="w-4 h-4 mt-0.5 shrink-0 text-primary" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium leading-tight">Organization Messages</p>
-                    <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
-                      Direct messages from connected teammates in {organization?.name ?? "your org"}
+                    <p className="text-xs font-medium leading-tight truncate">Organization Messages</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2 break-words">
+                      DMs from connected teammates in {organization?.name ?? "your org"}
                     </p>
                   </div>
                   {orgMessagesUnread > 0 ? (
