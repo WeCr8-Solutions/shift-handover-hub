@@ -188,6 +188,9 @@ export function Header() {
               {hasOrgSupervisorAccess && <NavIconButton to="/teams" icon={Users} label="Team Management" />}
               {(hasOrgAdminAccess || hasOrgSupervisorAccess) && <NavIconButton to="/oap/employer" icon={ClipboardCheck} label="OAP Employer Console" />}
               {(hasOrgAdminAccess || hasOrgSupervisorAccess) && <NavIconButton to="/gca/employer" icon={GraduationCap} label="GCA Employer Console" />}
+              {user && (
+                <NavIconButton to="/messages" icon={MessagesSquare} label="Messages" badgeCount={orgMessagesUnread} />
+              )}
               {user && hasTalentProfile && (
                 <NavIconButton to="/operator/inbox" icon={Inbox} label="Recruiter Inbox" badgeCount={talentInboxUnread} />
               )}
