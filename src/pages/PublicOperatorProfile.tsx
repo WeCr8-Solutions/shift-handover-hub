@@ -209,12 +209,14 @@ export default function PublicOperatorProfile() {
           .order("end_date", { ascending: false, nullsFirst: false }),
       ]);
 
-      // Mini-site fields — RLS allows public read when profile_visibility = 'public'
+      // Mini-site fields — RLS allows public read when profile_visibility = 'public'.
+      // NOTE: contact_email / contact_phone are NEVER selected on the public surface.
+      // All outreach must go through in-app messaging (`/talent/search` → talent_contact_requests).
       const { data: ms } = await supabase
         .from("operator_profiles")
         .select(
           `services, gallery, testimonials, business_hours, latitude, longitude,
-           contact_email, contact_phone, vcard_full_name, vcard_title, vcard_company,
+           vcard_full_name, vcard_title, vcard_company,
            card_slug, cta_label, cta_url`
         )
         .eq("user_id", row.user_id)
@@ -235,8 +237,8 @@ export default function PublicOperatorProfile() {
           business_hours: (r.business_hours as BusinessHours | null) ?? null,
           latitude: (r.latitude as number | null) ?? null,
           longitude: (r.longitude as number | null) ?? null,
-          contact_email: (r.contact_email as string | null) ?? null,
-          contact_phone: (r.contact_phone as string | null) ?? null,
+          contact_email: null,
+          contact_phone: null,
           vcard_full_name: (r.vcard_full_name as string | null) ?? null,
           vcard_title: (r.vcard_title as string | null) ?? null,
           vcard_company: (r.vcard_company as string | null) ?? null,
@@ -492,8 +494,10 @@ export default function PublicOperatorProfile() {
                     fullName: miniSite.vcard_full_name ?? fullName,
                     title: miniSite.vcard_title ?? profile.headline,
                     company: miniSite.vcard_company,
-                    email: miniSite.contact_email,
-                    phone: miniSite.contact_phone,
+                    // Personal email/phone are intentionally omitted — outreach happens
+                    // through JobLine in-app messaging only.
+                    email: null,
+                    phone: null,
                     website: profile.portfolio_url,
                     addressCity: profile.location_city,
                     addressRegion: profile.location_region,
