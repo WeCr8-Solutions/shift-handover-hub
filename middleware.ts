@@ -187,7 +187,7 @@ export default async function middleware(req: NextRequest) {
       meta = (await fetchTalentMeta(username)) ?? {
         ...DEFAULT_META,
         title: `@${username} — JobLine.ai Talent`,
-        description: "Verified CNC operator profile on JobLine.ai.",
+        description: "Verified talent profile on JobLine.ai.",
         image: `${BASE}/profile-og.jpg`,
         url: `${BASE}/talent/${username}`,
         type: "profile",
