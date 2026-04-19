@@ -13,9 +13,11 @@ interface MessageThreadProps {
   requestId: string;
   /** Role of the *current viewer* relative to the request. */
   viewerRole: "employer" | "candidate";
+  /** When false, disables the reply box and shows a gating note. */
+  canReply?: boolean;
 }
 
-export function MessageThread({ requestId, viewerRole }: MessageThreadProps) {
+export function MessageThread({ requestId, viewerRole, canReply = true }: MessageThreadProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const { replies, loading, sending, sendReply } = useMessageThread(requestId, viewerRole);
@@ -79,19 +81,25 @@ export function MessageThread({ requestId, viewerRole }: MessageThreadProps) {
         </div>
       )}
 
-      <div className="flex gap-2">
-        <Textarea
-          placeholder="Type a reply…"
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          rows={2}
-          maxLength={2000}
-          className="resize-none"
-        />
-        <Button onClick={handleSend} disabled={!draft.trim() || sending} size="sm" className="gap-1 self-end">
-          <Send className="w-3 h-3" /> Send
-        </Button>
-      </div>
+      {canReply ? (
+        <div className="flex gap-2">
+          <Textarea
+            placeholder="Type a reply…"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            rows={2}
+            maxLength={2000}
+            className="resize-none"
+          />
+          <Button onClick={handleSend} disabled={!draft.trim() || sending} size="sm" className="gap-1 self-end">
+            <Send className="w-3 h-3" /> Send
+          </Button>
+        </div>
+      ) : (
+        <p className="text-xs text-muted-foreground italic border rounded p-2 bg-muted/30">
+          Replies open once the candidate accepts the initial message.
+        </p>
+      )}
     </div>
   );
 }

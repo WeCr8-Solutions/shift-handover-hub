@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Clock, Bell, Shield, ListTodo, Settings, Users, FlaskConical, Bug, Megaphone, Menu, Wrench, ChevronDown, LayoutDashboard, Monitor, Factory, Eye, History, FileQuestion, ClipboardCheck, GraduationCap, IdCard, Globe, Inbox } from "lucide-react";
+import { Clock, Bell, Shield, ListTodo, Settings, Users, FlaskConical, Bug, Megaphone, Menu, Wrench, ChevronDown, LayoutDashboard, Monitor, Factory, Eye, History, FileQuestion, ClipboardCheck, GraduationCap, IdCard, Globe, Inbox, MessagesSquare } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { getCurrentShift } from "@/lib/mockData";
 import { StatusBadge } from "./StatusBadge";
@@ -14,6 +14,7 @@ import { SystemStatusIndicator } from "@/components/updates/SystemStatusIndicato
 import { UpdateAcknowledgeModal } from "@/components/updates/UpdateAcknowledgeModal";
 import { NotificationPanel, useNotificationBadgeCount } from "@/components/NotificationPanel";
 import { useTalentInboxUnread } from "@/hooks/useTalentInboxUnread";
+import { useOrgMessagesUnread } from "@/hooks/useOrgMessaging";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -99,6 +100,7 @@ export function Header() {
   const [notifOpen, setNotifOpen] = useState(false);
   const notifBadgeCount = useNotificationBadgeCount();
   const talentInboxUnread = useTalentInboxUnread();
+  const orgMessagesUnread = useOrgMessagesUnread();
   const isMobile = useIsMobile();
   const shift = getCurrentShift();
 
@@ -186,6 +188,9 @@ export function Header() {
               {hasOrgSupervisorAccess && <NavIconButton to="/teams" icon={Users} label="Team Management" />}
               {(hasOrgAdminAccess || hasOrgSupervisorAccess) && <NavIconButton to="/oap/employer" icon={ClipboardCheck} label="OAP Employer Console" />}
               {(hasOrgAdminAccess || hasOrgSupervisorAccess) && <NavIconButton to="/gca/employer" icon={GraduationCap} label="GCA Employer Console" />}
+              {user && (
+                <NavIconButton to="/messages" icon={MessagesSquare} label="Messages" badgeCount={orgMessagesUnread} />
+              )}
               {user && hasTalentProfile && (
                 <NavIconButton to="/operator/inbox" icon={Inbox} label="Recruiter Inbox" badgeCount={talentInboxUnread} />
               )}
@@ -388,6 +393,7 @@ export function Header() {
                           {hasOrgSupervisorAccess && <MobileNavLink to="/teams" icon={Users} label="Team Management" onClose={() => setMobileMenuOpen(false)} />}
                           {(hasOrgAdminAccess || hasOrgSupervisorAccess) && <MobileNavLink to="/oap/employer" icon={ClipboardCheck} label="OAP Employer Console" onClose={() => setMobileMenuOpen(false)} />}
                           {(hasOrgAdminAccess || hasOrgSupervisorAccess) && <MobileNavLink to="/gca/employer" icon={GraduationCap} label="GCA Employer Console" onClose={() => setMobileMenuOpen(false)} />}
+                          <MobileNavLink to="/messages" icon={MessagesSquare} label={`Messages${orgMessagesUnread > 0 ? ` (${orgMessagesUnread})` : ""}`} onClose={() => setMobileMenuOpen(false)} />
                           {hasTalentProfile && (
                             <MobileNavLink to="/operator/inbox" icon={Inbox} label={`Recruiter Inbox${talentInboxUnread > 0 ? ` (${talentInboxUnread})` : ""}`} onClose={() => setMobileMenuOpen(false)} />
                           )}
