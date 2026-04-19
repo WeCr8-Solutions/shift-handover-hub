@@ -24,6 +24,7 @@ import {
 import { useProfileViewTracker } from "@/hooks/useProfileViewTracker";
 import type { ServiceItem, GalleryItem, TestimonialItem, BusinessHours } from "@/lib/talent/miniSiteTypes";
 import { withJoblineUtm } from "@/lib/talent/outboundLinks";
+import { getSocialHref, getSocialLinkTarget } from "@/lib/talent/socialDeepLinks";
 import { getPublicTalentUrl } from "@/lib/talent/publicHost";
 import { formatDateRange } from "@/lib/talent/format";
 import "@/styles/print-talent.css";
