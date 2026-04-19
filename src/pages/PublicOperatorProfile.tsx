@@ -459,6 +459,23 @@ export default function PublicOperatorProfile() {
           </Card>
         )}
 
+        {/* Mini-site: services, gallery, testimonials, hours, location */}
+        {miniSite && (
+          <>
+            <ServicesSection services={miniSite.services} />
+            <GallerySection items={miniSite.gallery} />
+            <TestimonialsSection items={miniSite.testimonials} />
+            <BusinessHoursSection hours={miniSite.business_hours} />
+            <LocationMapSection
+              city={profile.location_city}
+              region={profile.location_region}
+              country={profile.location_country}
+              latitude={miniSite.latitude}
+              longitude={miniSite.longitude}
+            />
+          </>
+        )}
+
         {/* Accomplishments — highlight reel for employers */}
         {(() => {
           const expertMachines = machines.filter((m) => m.proficiency?.toLowerCase() === "expert").length;
