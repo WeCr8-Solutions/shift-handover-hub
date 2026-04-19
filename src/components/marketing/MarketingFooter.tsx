@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import joblineLogo from "@/assets/jobline-logo.png";
+import { FreeTalentProfileRibbon } from "./FreeTalentProfileRibbon";
 
 const footerLinks = {
   Operations: [
@@ -70,6 +71,7 @@ export function MarketingFooter() {
           </div>
         </div>
       </div>
+      <FreeTalentProfileRibbon />
     </footer>
   );
 }
