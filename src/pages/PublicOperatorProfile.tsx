@@ -479,11 +479,11 @@ export default function PublicOperatorProfile() {
 
               {/* GCA badges */}
               {gcaCerts.length > 0 && (
-                <Card className="border-amber-500/30 bg-gradient-to-br from-amber-500/5 to-transparent">
+                <Card className="border-warning/30 bg-gradient-to-br from-warning/5 to-transparent">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Trophy className="w-5 h-5 text-amber-500" /> G-Code Academy badges
-                      <Badge className="ml-1 bg-amber-500 text-white">{gcaCerts.length}</Badge>
+                      <Trophy className="w-5 h-5 text-warning" /> G-Code Academy badges
+                      <Badge className="ml-1 bg-warning text-warning-foreground">{gcaCerts.length}</Badge>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
