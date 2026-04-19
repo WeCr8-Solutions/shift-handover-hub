@@ -10113,6 +10113,41 @@ export type Database = {
               years_experience: number
             }[]
           }
+        | {
+            Args: {
+              _certification?: string
+              _city?: string
+              _country?: string
+              _limit?: number
+              _machine?: string
+              _min_years?: number
+              _open_to_work?: boolean
+              _region?: string
+              _relocate?: boolean
+              _search?: string
+              _skill?: string
+              _sort?: string
+              _verified_only?: boolean
+            }
+            Returns: {
+              avatar_url: string
+              cert_count: number
+              display_name: string
+              headline: string
+              location_city: string
+              location_country: string
+              location_region: string
+              open_to_work: boolean
+              public_published_at: string
+              public_username: string
+              top_machines: string[]
+              top_skills: string[]
+              user_id: string
+              verified_cert_count: number
+              willing_to_relocate: boolean
+              years_experience: number
+            }[]
+          }
       list_public_operator_recommendations: {
         Args: { _username: string }
         Returns: {
