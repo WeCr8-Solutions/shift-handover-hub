@@ -7,6 +7,7 @@ import { useSettingsForm } from "@/hooks/useSettingsForm";
 import { SettingsSkeleton } from "./SettingsSkeleton";
 import { SettingsFooter } from "./SettingsFooter";
 import { SettingsSwitchRow } from "./SettingsSwitchRow";
+import { SettingsErrorBanner } from "./SettingsErrorBanner";
 
 type GeneralPreferences = {
   timezone: string;
@@ -31,7 +32,7 @@ const DEFAULT_SETTINGS: GeneralPreferences = {
 };
 
 export function GeneralSettings() {
-  const { form, update, setForm, isDirty, isSaving, save, discard, loading } =
+  const { form, update, isDirty, isSaving, save, discard, loading, lastError, clearError } =
     useSettingsForm<GeneralPreferences>({
       settingKey: "general_preferences",
       defaults: DEFAULT_SETTINGS,
@@ -42,6 +43,7 @@ export function GeneralSettings() {
 
   return (
     <div className="space-y-6">
+      <SettingsErrorBanner error={lastError} onDismiss={clearError} context="General Settings" />
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
