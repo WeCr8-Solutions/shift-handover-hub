@@ -98,6 +98,7 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const notifBadgeCount = useNotificationBadgeCount();
+  const talentInboxUnread = useTalentInboxUnread();
   const isMobile = useIsMobile();
   const shift = getCurrentShift();
 
@@ -185,6 +186,9 @@ export function Header() {
               {hasOrgSupervisorAccess && <NavIconButton to="/teams" icon={Users} label="Team Management" />}
               {(hasOrgAdminAccess || hasOrgSupervisorAccess) && <NavIconButton to="/oap/employer" icon={ClipboardCheck} label="OAP Employer Console" />}
               {(hasOrgAdminAccess || hasOrgSupervisorAccess) && <NavIconButton to="/gca/employer" icon={GraduationCap} label="GCA Employer Console" />}
+              {user && hasTalentProfile && (
+                <NavIconButton to="/operator/inbox" icon={Inbox} label="Recruiter Inbox" badgeCount={talentInboxUnread} />
+              )}
               {user && <NavIconButton to="/settings" icon={Settings} label="Settings" />}
               {hasAdminAccess && (
                 <NavIconButton to="/admin" icon={Shield} label={hasOrgAdminAccess ? "Admin Dashboard" : "Supervisor Dashboard"} iconClass="text-primary" />
@@ -384,6 +388,9 @@ export function Header() {
                           {hasOrgSupervisorAccess && <MobileNavLink to="/teams" icon={Users} label="Team Management" onClose={() => setMobileMenuOpen(false)} />}
                           {(hasOrgAdminAccess || hasOrgSupervisorAccess) && <MobileNavLink to="/oap/employer" icon={ClipboardCheck} label="OAP Employer Console" onClose={() => setMobileMenuOpen(false)} />}
                           {(hasOrgAdminAccess || hasOrgSupervisorAccess) && <MobileNavLink to="/gca/employer" icon={GraduationCap} label="GCA Employer Console" onClose={() => setMobileMenuOpen(false)} />}
+                          {hasTalentProfile && (
+                            <MobileNavLink to="/operator/inbox" icon={Inbox} label={`Recruiter Inbox${talentInboxUnread > 0 ? ` (${talentInboxUnread})` : ""}`} onClose={() => setMobileMenuOpen(false)} />
+                          )}
                           <MobileNavLink to="/settings" icon={Settings} label="Settings" onClose={() => setMobileMenuOpen(false)} />
                           {hasAdminAccess && (
                             <MobileNavLink to="/admin" icon={Shield} label={hasOrgAdminAccess ? "Admin Dashboard" : "Supervisor Dashboard"} iconClass="text-primary" onClose={() => setMobileMenuOpen(false)} />
