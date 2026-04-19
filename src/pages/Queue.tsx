@@ -10,6 +10,7 @@ import { useStations } from "@/hooks/useStations";
 import { useBackgroundRefresh } from "@/hooks/useBackgroundRefresh";
 import { useSmartAlerts } from "@/hooks/useSmartAlerts";
 import { useOrgRefreshInterval } from "@/hooks/useOrgRefreshInterval";
+import { useModuleContext } from "@/hooks/useModuleContext";
 import { RefreshIndicator } from "@/components/dashboard/RefreshIndicator";
 import { Header } from "@/components/Header";
 import { QueueKanbanBoard } from "@/components/queue/QueueKanbanBoard";

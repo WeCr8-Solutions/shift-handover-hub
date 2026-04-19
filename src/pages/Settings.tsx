@@ -13,6 +13,7 @@ import { useAdminAccess } from "@/hooks/useAdminData";
 import { useTrialStatus } from "@/hooks/useTrialStatus";
 import { useOrgContext } from "@/contexts/OrgContext";
 import { useSmartAlerts } from "@/hooks/useSmartAlerts";
+import { useModuleContext } from "@/hooks/useModuleContext";
 import { LazyTabContent } from "@/components/settings/LazyTabContent";
 import {
   SETTINGS_GROUPS,
@@ -191,6 +192,12 @@ export default function Settings() {
       )}
     </nav>
   );
+
+  useModuleContext({
+    id: "settings",
+    label: `Settings · ${activeTab}`,
+    data: { activeTab, organizationId: organization?.id ?? null },
+  });
 
   return (
     <div className="min-h-screen bg-background">
