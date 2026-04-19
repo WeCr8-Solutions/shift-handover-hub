@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Clock, Bell, Shield, ListTodo, Settings, Users, FlaskConical, Bug, Megaphone, Menu, Wrench, ChevronDown, LayoutDashboard, Monitor, Factory, Eye, History, FileQuestion, ClipboardCheck, GraduationCap, IdCard, Globe, Inbox } from "lucide-react";
+import { Clock, Bell, Shield, ListTodo, Settings, Users, FlaskConical, Bug, Megaphone, Menu, Wrench, ChevronDown, LayoutDashboard, Monitor, Factory, Eye, History, FileQuestion, ClipboardCheck, GraduationCap, IdCard, Globe, Inbox, MessagesSquare } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { getCurrentShift } from "@/lib/mockData";
 import { StatusBadge } from "./StatusBadge";
@@ -14,6 +14,7 @@ import { SystemStatusIndicator } from "@/components/updates/SystemStatusIndicato
 import { UpdateAcknowledgeModal } from "@/components/updates/UpdateAcknowledgeModal";
 import { NotificationPanel, useNotificationBadgeCount } from "@/components/NotificationPanel";
 import { useTalentInboxUnread } from "@/hooks/useTalentInboxUnread";
+import { useOrgMessagesUnread } from "@/hooks/useOrgMessaging";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
