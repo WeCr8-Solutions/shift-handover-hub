@@ -529,70 +529,45 @@ export default function OperatorProfile() {
                       onChange={(e) => setForm((f) => ({ ...f, years_experience: e.target.value }))}
                     />
                   </div>
-                  <div>
-                    <Label>LinkedIn URL</Label>
-                    <Input
-                      value={form.linkedin_url}
-                      onChange={(e) => setForm((f) => ({ ...f, linkedin_url: e.target.value }))}
-                      placeholder="https://linkedin.com/in/your-handle"
-                    />
-                  </div>
-                  <div>
-                    <Label>Portfolio URL</Label>
-                    <Input
-                      value={form.portfolio_url}
-                      onChange={(e) => setForm((f) => ({ ...f, portfolio_url: e.target.value }))}
-                      placeholder="https://your-site.com"
-                    />
-                  </div>
-                  <div>
-                    <Label>Personal website</Label>
-                    <Input
-                      value={form.website_url}
-                      onChange={(e) => setForm((f) => ({ ...f, website_url: e.target.value }))}
-                      placeholder="https://yourname.com"
-                    />
-                  </div>
-                  <div>
-                    <Label>X / Twitter</Label>
-                    <Input
-                      value={form.twitter_url}
-                      onChange={(e) => setForm((f) => ({ ...f, twitter_url: e.target.value }))}
-                      placeholder="https://x.com/your-handle"
-                    />
-                  </div>
-                  <div>
-                    <Label>Instagram</Label>
-                    <Input
-                      value={form.instagram_url}
-                      onChange={(e) => setForm((f) => ({ ...f, instagram_url: e.target.value }))}
-                      placeholder="https://instagram.com/your-handle"
-                    />
-                  </div>
-                  <div>
-                    <Label>Facebook</Label>
-                    <Input
-                      value={form.facebook_url}
-                      onChange={(e) => setForm((f) => ({ ...f, facebook_url: e.target.value }))}
-                      placeholder="https://facebook.com/your-page"
-                    />
-                  </div>
-                  <div>
-                    <Label>YouTube</Label>
-                    <Input
-                      value={form.youtube_url}
-                      onChange={(e) => setForm((f) => ({ ...f, youtube_url: e.target.value }))}
-                      placeholder="https://youtube.com/@your-channel"
-                    />
-                  </div>
-                  <div>
-                    <Label>GitHub</Label>
-                    <Input
-                      value={form.github_url}
-                      onChange={(e) => setForm((f) => ({ ...f, github_url: e.target.value }))}
-                      placeholder="https://github.com/your-handle"
-                    />
-                  </div>
+                  {([
+                    { key: "linkedin_url",  vk: "linkedin",  label: "LinkedIn URL",     ph: "https://linkedin.com/in/your-handle" },
+                    { key: "portfolio_url", vk: "portfolio", label: "Portfolio URL",    ph: "https://your-site.com" },
+                    { key: "website_url",   vk: "website",   label: "Personal website", ph: "https://yourname.com" },
+                    { key: "twitter_url",   vk: "twitter",   label: "X / Twitter",      ph: "https://x.com/your-handle" },
+                    { key: "instagram_url", vk: "instagram", label: "Instagram",        ph: "https://instagram.com/your-handle" },
+                    { key: "facebook_url",  vk: "facebook",  label: "Facebook",         ph: "https://facebook.com/your-page" },
+                    { key: "youtube_url",   vk: "youtube",   label: "YouTube",          ph: "https://youtube.com/@your-channel" },
+                    { key: "github_url",    vk: "github",    label: "GitHub",           ph: "https://github.com/your-handle" },
+                  ] as const).map(({ key, vk, label, ph }) => {
+                    const value = form[key] as string;
+                    const visible = form.social_visibility[vk] ?? true;
+                    return (
+                      <div key={key}>
+                        <div className="flex items-center justify-between gap-2">
+                          <Label className="text-sm">{label}</Label>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] text-muted-foreground">{visible ? "Public" : "Hidden"}</span>
+                            <Switch
+                              checked={visible}
+                              disabled={!value.trim()}
+                              onCheckedChange={(v) =>
+                                setForm((f) => ({
+                                  ...f,
+                                  social_visibility: { ...f.social_visibility, [vk]: v },
+                                }))
+                              }
+                            />
+                          </div>
+                        </div>
+                        <Input
+                          value={value}
+                          onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
+                          placeholder={ph}
+                          className="mt-1"
+                        />
+                      </div>
+                    );
+                  })}
                   <div>
                     <Label>Contact email</Label>
                     <Input value={form.contact_email} onChange={(e) => setForm((f) => ({ ...f, contact_email: e.target.value }))} />
