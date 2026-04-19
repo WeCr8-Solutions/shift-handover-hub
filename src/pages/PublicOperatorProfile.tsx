@@ -24,7 +24,7 @@ import {
 import { useProfileViewTracker } from "@/hooks/useProfileViewTracker";
 import type { ServiceItem, GalleryItem, TestimonialItem, BusinessHours } from "@/lib/talent/miniSiteTypes";
 import { withJoblineUtm } from "@/lib/talent/outboundLinks";
-import { getSocialHref, getSocialLinkTarget } from "@/lib/talent/socialDeepLinks";
+import { getSocialHref, openSocialLink } from "@/lib/talent/socialDeepLinks";
 import { getPublicTalentUrl } from "@/lib/talent/publicHost";
 import { formatDateRange } from "@/lib/talent/format";
 import "@/styles/print-talent.css";
@@ -949,17 +949,19 @@ function SocialLink({
   track?: boolean;
   nofollow?: boolean;
 }) {
-  // Normalize to canonical https form so iOS Universal Links /
-  // Android App Links can hand off to the installed native app.
   const normalized = getSocialHref(href);
   const finalHref = track ? (withJoblineUtm(normalized, "talent_profile") ?? normalized) : normalized;
-  // On mobile, use _self so the OS can intercept and open the app.
-  // On desktop, open in a new tab (standard external link behavior).
-  const target = getSocialLinkTarget();
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // Let users open in a new tab via modifier keys / middle click.
+    if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    e.preventDefault();
+    openSocialLink(finalHref);
+  };
   return (
     <a
       href={finalHref}
-      target={target}
+      onClick={handleClick}
+      target="_blank"
       rel={`noopener noreferrer${nofollow ? " nofollow" : ""}`}
       className="flex items-center gap-1 text-primary hover:underline"
       aria-label={label}
