@@ -83,9 +83,6 @@ const SCHEMA = {
 
 async function extractDocxText(buffer: ArrayBuffer): Promise<string> {
   // Minimal DOCX text extraction: unzip and pull <w:t> contents from word/document.xml.
-  // Use Deno's Compression Streams API via JSZip-like dynamic import.
-  const { unzip } = await import("https://deno.land/x/zipjs@v2.7.45/index.js");
-  // Fallback: use a tiny inflate via fflate
   const fflate = await import("https://esm.sh/fflate@0.8.2");
   const data = new Uint8Array(buffer);
   const unzipped = await new Promise<Record<string, Uint8Array>>((resolve, reject) => {
