@@ -17,6 +17,7 @@ import { useHasOperatorProfile } from "@/hooks/useHasOperatorProfile";
 export function UserMenu() {
   const navigate = useNavigate();
   const { user, profile, signOut } = useAuth();
+  const { hasProfile: hasTalentProfile } = useHasOperatorProfile();
 
   const handleSignOut = async () => {
     await signOut();
