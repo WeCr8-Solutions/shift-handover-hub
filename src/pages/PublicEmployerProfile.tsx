@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Building2, Globe, Linkedin, MapPin, Mail, Briefcase, ArrowLeft } from "lucide-react";
+import { Building2, Globe, Linkedin, MapPin, Mail, Briefcase, ArrowLeft, Target, Award, Wrench, Sparkles } from "lucide-react";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 
@@ -30,6 +30,12 @@ interface Employer {
   employer_locations: string[] | null;
   employer_industries: string[] | null;
   employer_paid_contact: boolean;
+  employer_ideal_roles: string[] | null;
+  employer_ideal_skills: string[] | null;
+  employer_ideal_certs: string[] | null;
+  employer_ideal_machines: string[] | null;
+  employer_ideal_experience_min: number | null;
+  employer_ideal_notes: string | null;
   logo_url: string | null;
   description: string | null;
 }
@@ -218,6 +224,60 @@ export default function PublicEmployerProfile() {
               </Card>
             )}
 
+            {/* Ideal candidates — what kind of talent this employer is looking for */}
+            {(() => {
+              const hasIdeal =
+                (employer.employer_ideal_roles?.length ?? 0) > 0 ||
+                (employer.employer_ideal_skills?.length ?? 0) > 0 ||
+                (employer.employer_ideal_certs?.length ?? 0) > 0 ||
+                (employer.employer_ideal_machines?.length ?? 0) > 0 ||
+                employer.employer_ideal_experience_min != null ||
+                !!employer.employer_ideal_notes;
+              if (!hasIdeal) return null;
+              return (
+                <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Target className="w-5 h-5 text-primary" /> Ideal candidates
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-5">
+                    {employer.employer_ideal_roles?.length ? (
+                      <IdealGroup icon={Briefcase} label="Roles we're hiring" tags={employer.employer_ideal_roles} />
+                    ) : null}
+                    {employer.employer_ideal_skills?.length ? (
+                      <IdealGroup icon={Sparkles} label="Skills we value" tags={employer.employer_ideal_skills} />
+                    ) : null}
+                    {employer.employer_ideal_certs?.length ? (
+                      <IdealGroup icon={Award} label="Certifications" tags={employer.employer_ideal_certs} variant="primary" />
+                    ) : null}
+                    {employer.employer_ideal_machines?.length ? (
+                      <IdealGroup icon={Wrench} label="Machine experience" tags={employer.employer_ideal_machines} />
+                    ) : null}
+                    {employer.employer_ideal_experience_min != null && (
+                      <p className="text-sm">
+                        <span className="font-medium">Minimum experience:</span>{" "}
+                        <span className="text-muted-foreground">
+                          {employer.employer_ideal_experience_min}+ year
+                          {employer.employer_ideal_experience_min === 1 ? "" : "s"}
+                        </span>
+                      </p>
+                    )}
+                    {employer.employer_ideal_notes && (
+                      <p className="text-sm whitespace-pre-line text-foreground/90 leading-relaxed border-l-2 border-primary/40 pl-3 italic">
+                        {employer.employer_ideal_notes}
+                      </p>
+                    )}
+                    <div className="pt-2">
+                      <Button asChild size="sm" variant="outline">
+                        <Link to="/talent">Browse matching talent →</Link>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })()}
+
             {/* Jobs */}
             <Card>
               <CardHeader>
@@ -290,6 +350,41 @@ export default function PublicEmployerProfile() {
       </div>
 
       <MarketingFooter />
+    </div>
+  );
+}
+
+/** Compact tag-list group used inside the "Ideal candidates" card. */
+function IdealGroup({
+  icon: Icon,
+  label,
+  tags,
+  variant = "default",
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  tags: string[];
+  variant?: "default" | "primary";
+}) {
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-2">
+        <Icon className="w-4 h-4 text-primary" />
+        <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          {label}
+        </h3>
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {tags.map((t) => (
+          <Badge
+            key={t}
+            variant={variant === "primary" ? "default" : "secondary"}
+            className={variant === "primary" ? "bg-primary/15 text-primary border-primary/30 hover:bg-primary/20" : ""}
+          >
+            {t}
+          </Badge>
+        ))}
+      </div>
     </div>
   );
 }

@@ -6535,6 +6535,12 @@ export type Database = {
           employer_about: string | null
           employer_cover_url: string | null
           employer_hiring_email: string | null
+          employer_ideal_certs: string[] | null
+          employer_ideal_experience_min: number | null
+          employer_ideal_machines: string[] | null
+          employer_ideal_notes: string | null
+          employer_ideal_roles: string[] | null
+          employer_ideal_skills: string[] | null
           employer_industries: string[] | null
           employer_linkedin: string | null
           employer_locations: string[] | null
@@ -6568,6 +6574,12 @@ export type Database = {
           employer_about?: string | null
           employer_cover_url?: string | null
           employer_hiring_email?: string | null
+          employer_ideal_certs?: string[] | null
+          employer_ideal_experience_min?: number | null
+          employer_ideal_machines?: string[] | null
+          employer_ideal_notes?: string | null
+          employer_ideal_roles?: string[] | null
+          employer_ideal_skills?: string[] | null
           employer_industries?: string[] | null
           employer_linkedin?: string | null
           employer_locations?: string[] | null
@@ -6601,6 +6613,12 @@ export type Database = {
           employer_about?: string | null
           employer_cover_url?: string | null
           employer_hiring_email?: string | null
+          employer_ideal_certs?: string[] | null
+          employer_ideal_experience_min?: number | null
+          employer_ideal_machines?: string[] | null
+          employer_ideal_notes?: string | null
+          employer_ideal_roles?: string[] | null
+          employer_ideal_skills?: string[] | null
           employer_industries?: string[] | null
           employer_linkedin?: string | null
           employer_locations?: string[] | null
@@ -9908,6 +9926,12 @@ export type Database = {
           employer_about: string
           employer_cover_url: string
           employer_hiring_email: string
+          employer_ideal_certs: string[]
+          employer_ideal_experience_min: number
+          employer_ideal_machines: string[]
+          employer_ideal_notes: string
+          employer_ideal_roles: string[]
+          employer_ideal_skills: string[]
           employer_industries: string[]
           employer_linkedin: string
           employer_locations: string[]
