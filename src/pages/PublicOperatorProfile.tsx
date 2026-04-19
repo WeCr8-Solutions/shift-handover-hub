@@ -191,12 +191,42 @@ export default function PublicOperatorProfile() {
           .order("end_date", { ascending: false, nullsFirst: false }),
       ]);
 
+      // Mini-site fields — RLS allows public read when profile_visibility = 'public'
+      const { data: ms } = await supabase
+        .from("operator_profiles")
+        .select(
+          `services, gallery, testimonials, business_hours, latitude, longitude,
+           contact_email, contact_phone, vcard_full_name, vcard_title, vcard_company,
+           card_slug, cta_label, cta_url`
+        )
+        .eq("user_id", row.user_id)
+        .maybeSingle();
+
       if (cancelled) return;
       setCerts((c.data as CertRow[] | null) ?? []);
       setSkills((s.data as SkillRow[] | null) ?? []);
       setMachines((m.data as MachineRow[] | null) ?? []);
       setWork((w.data as WorkRow[] | null) ?? []);
       setEducation((e.data as EducationRow[] | null) ?? []);
+      if (ms) {
+        const r = ms as Record<string, unknown>;
+        setMiniSite({
+          services: (r.services as ServiceItem[]) ?? [],
+          gallery: (r.gallery as GalleryItem[]) ?? [],
+          testimonials: (r.testimonials as TestimonialItem[]) ?? [],
+          business_hours: (r.business_hours as BusinessHours | null) ?? null,
+          latitude: (r.latitude as number | null) ?? null,
+          longitude: (r.longitude as number | null) ?? null,
+          contact_email: (r.contact_email as string | null) ?? null,
+          contact_phone: (r.contact_phone as string | null) ?? null,
+          vcard_full_name: (r.vcard_full_name as string | null) ?? null,
+          vcard_title: (r.vcard_title as string | null) ?? null,
+          vcard_company: (r.vcard_company as string | null) ?? null,
+          card_slug: (r.card_slug as string | null) ?? null,
+          cta_label: (r.cta_label as string | null) ?? null,
+          cta_url: (r.cta_url as string | null) ?? null,
+        });
+      }
       setLoading(false);
     })();
     return () => {
