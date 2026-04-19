@@ -13,6 +13,7 @@ import { useGlobalUpdates } from "@/hooks/useGlobalUpdates";
 import { SystemStatusIndicator } from "@/components/updates/SystemStatusIndicator";
 import { UpdateAcknowledgeModal } from "@/components/updates/UpdateAcknowledgeModal";
 import { NotificationPanel, useNotificationBadgeCount } from "@/components/NotificationPanel";
+import { DeviceNotificationDispatcher } from "@/components/DeviceNotificationDispatcher";
 import { useTalentInboxUnread } from "@/hooks/useTalentInboxUnread";
 import { useOrgMessagesUnread } from "@/hooks/useOrgMessaging";
 import { Button } from "@/components/ui/button";
