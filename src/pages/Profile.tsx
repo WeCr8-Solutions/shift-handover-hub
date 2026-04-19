@@ -10,11 +10,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Loader2, Save, Building2, Users, Shield, Briefcase } from "lucide-react";
+import { Loader2, Save, Building2, Users, Shield, Briefcase, Sparkles, ExternalLink, Globe, Lock, ShieldCheck, ArrowRight, UserCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { OnboardingProgress } from "@/components/onboarding";
 import { useOrgContext } from "@/contexts/OrgContext";
 import { useAdminAccess } from "@/hooks/useAdminData";
+import { useOperatorProfile } from "@/hooks/useOperatorProfile";
+import { getPublicTalentUrl } from "@/lib/talent/publicHost";
 
 export default function Profile() {
   const navigate = useNavigate();
