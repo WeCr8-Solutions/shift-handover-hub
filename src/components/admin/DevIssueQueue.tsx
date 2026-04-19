@@ -52,6 +52,8 @@ import {
   ExternalLink,
   Timer,
   Loader2,
+  Terminal,
+  FileWarning,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ConsoleLogViewer } from "./ConsoleLogViewer";
@@ -83,6 +85,8 @@ interface DevQueueItem {
     reporter_email: string | null;
     page_url: string | null;
     error_message: string | null;
+    error_stack: string | null;
+    console_logs: unknown;
     created_at: string;
   };
 }
@@ -148,6 +152,8 @@ export function DevIssueQueue() {
             reporter_email,
             page_url,
             error_message,
+            error_stack,
+            console_logs,
             created_at
           )
         `)
@@ -178,6 +184,26 @@ export function DevIssueQueue() {
 
   useEffect(() => {
     fetchQueue();
+
+    // Realtime: refresh on any insert/update to issues or dev queue
+    const channel = supabase
+      .channel("dev-issue-queue-live")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "issues" },
+        () => fetchQueue(),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "dev_issue_queue" },
+        () => fetchQueue(),
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter]);
 
   const claimIssue = async (item: DevQueueItem) => {
@@ -459,7 +485,21 @@ export function DevIssueQueue() {
 
                     <TableCell>
                       <div className="space-y-1">
-                        <div className="font-medium line-clamp-1">{item.issue.title}</div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-medium line-clamp-1">{item.issue.title}</span>
+                          {item.issue.error_stack && (
+                            <FileWarning
+                              className="w-3.5 h-3.5 shrink-0 text-destructive"
+                              aria-label="Has stack trace"
+                            />
+                          )}
+                          {Array.isArray(item.issue.console_logs) && item.issue.console_logs.length > 0 && (
+                            <Terminal
+                              className="w-3.5 h-3.5 shrink-0 text-primary"
+                              aria-label={`${item.issue.console_logs.length} console logs captured`}
+                            />
+                          )}
+                        </div>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <Badge variant="outline" className="text-xs">
                             {item.issue.severity}
