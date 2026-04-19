@@ -934,3 +934,30 @@ function CertBadgeCard({ cert, variant }: { cert: CertRow; variant: "oap" | "gca
     </div>
   );
 }
+
+function SocialLink({
+  href,
+  icon: Icon,
+  label,
+  track,
+  nofollow,
+}: {
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  track?: boolean;
+  nofollow?: boolean;
+}) {
+  const finalHref = track ? withJoblineUtm(href, "talent_profile") : href;
+  return (
+    <a
+      href={finalHref}
+      target="_blank"
+      rel={`noopener noreferrer${nofollow ? " nofollow" : ""}`}
+      className="flex items-center gap-1 text-primary hover:underline"
+      aria-label={label}
+    >
+      <Icon className="w-4 h-4" /> {label}
+    </a>
+  );
+}
