@@ -393,6 +393,7 @@ export function Header() {
                           {hasOrgSupervisorAccess && <MobileNavLink to="/teams" icon={Users} label="Team Management" onClose={() => setMobileMenuOpen(false)} />}
                           {(hasOrgAdminAccess || hasOrgSupervisorAccess) && <MobileNavLink to="/oap/employer" icon={ClipboardCheck} label="OAP Employer Console" onClose={() => setMobileMenuOpen(false)} />}
                           {(hasOrgAdminAccess || hasOrgSupervisorAccess) && <MobileNavLink to="/gca/employer" icon={GraduationCap} label="GCA Employer Console" onClose={() => setMobileMenuOpen(false)} />}
+                          <MobileNavLink to="/messages" icon={MessagesSquare} label={`Messages${orgMessagesUnread > 0 ? ` (${orgMessagesUnread})` : ""}`} onClose={() => setMobileMenuOpen(false)} />
                           {hasTalentProfile && (
                             <MobileNavLink to="/operator/inbox" icon={Inbox} label={`Recruiter Inbox${talentInboxUnread > 0 ? ` (${talentInboxUnread})` : ""}`} onClose={() => setMobileMenuOpen(false)} />
                           )}
