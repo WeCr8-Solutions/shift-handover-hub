@@ -183,13 +183,13 @@ export default function TalentDashboard() {
               </div>
               <div className="flex gap-2 flex-wrap">
                 {oapCerts.length > 0 && (
-                  <Badge className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30">
-                    <ShieldCheck className="w-3 h-3 mr-1" /> OAP Approved × {oapCerts.length}
+                  <Badge variant="secondary" className="gap-1">
+                    <ShieldCheck className="w-3 h-3" /> OAP Approved × {oapCerts.length}
                   </Badge>
                 )}
                 {gcaCerts.length > 0 && (
-                  <Badge className="bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/30">
-                    <Award className="w-3 h-3 mr-1" /> GCA × {gcaCerts.length}
+                  <Badge variant="secondary" className="gap-1">
+                    <Award className="w-3 h-3" /> GCA × {gcaCerts.length}
                   </Badge>
                 )}
               </div>
@@ -212,7 +212,7 @@ export default function TalentDashboard() {
                     <div key={c.id} className="border border-border rounded-lg p-3 space-y-1">
                       <div className="flex items-start justify-between gap-2">
                         <div className="font-medium text-sm leading-tight">{c.name}</div>
-                        {isVerified && <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />}
+                        {isVerified && <ShieldCheck className="w-4 h-4 text-primary shrink-0" />}
                       </div>
                       <div className="text-xs text-muted-foreground">{c.issuer || "Self-reported"}</div>
                       {c.issued_date && (
