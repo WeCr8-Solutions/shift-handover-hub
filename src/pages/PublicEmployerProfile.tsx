@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Building2, Globe, Linkedin, MapPin, Mail, Briefcase, ArrowLeft } from "lucide-react";
+import { Building2, Globe, Linkedin, MapPin, Mail, Briefcase, ArrowLeft, Target, Award, Wrench, Sparkles } from "lucide-react";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 
@@ -30,6 +30,12 @@ interface Employer {
   employer_locations: string[] | null;
   employer_industries: string[] | null;
   employer_paid_contact: boolean;
+  employer_ideal_roles: string[] | null;
+  employer_ideal_skills: string[] | null;
+  employer_ideal_certs: string[] | null;
+  employer_ideal_machines: string[] | null;
+  employer_ideal_experience_min: number | null;
+  employer_ideal_notes: string | null;
   logo_url: string | null;
   description: string | null;
 }
