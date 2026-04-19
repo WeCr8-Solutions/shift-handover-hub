@@ -72,7 +72,7 @@ export function useRulesOfBehavior(): RulesOfBehaviorStatus {
     } finally {
       setCheckComplete(true);
     }
-  }, [user]);
+  }, [user, organization, orgLoading]);
 
   useEffect(() => {
     void checkStatus();
