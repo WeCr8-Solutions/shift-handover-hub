@@ -47,6 +47,11 @@ import {
   UserCheck,
   Quote,
   FileText,
+  Twitter,
+  Instagram,
+  Facebook,
+  Youtube,
+  Github,
 } from "lucide-react";
 
 interface PublicProfile {
