@@ -13,6 +13,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { TalentSocialPanel } from "@/components/talent/TalentSocialPanel";
 import { usePublicOperatorSocial } from "@/hooks/useOperatorSocial";
 import { PublicProfileQrCard } from "@/components/talent/PublicProfileQrCard";
+import {
+  ServicesSection,
+  GallerySection,
+  TestimonialsSection,
+  BusinessHoursSection,
+  LocationMapSection,
+  SaveContactButton,
+} from "@/components/talent/MiniSiteSections";
+import { useProfileViewTracker } from "@/hooks/useProfileViewTracker";
+import type { ServiceItem, GalleryItem, TestimonialItem, BusinessHours } from "@/lib/talent/miniSiteTypes";
 import { withJoblineUtm } from "@/lib/talent/outboundLinks";
 import { getPublicTalentUrl } from "@/lib/talent/publicHost";
 import { formatDateRange } from "@/lib/talent/format";
@@ -114,7 +124,25 @@ export default function PublicOperatorProfile() {
   const [education, setEducation] = useState<EducationRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [miniSite, setMiniSite] = useState<{
+    services: ServiceItem[];
+    gallery: GalleryItem[];
+    testimonials: TestimonialItem[];
+    business_hours: BusinessHours | null;
+    latitude: number | null;
+    longitude: number | null;
+    contact_email: string | null;
+    contact_phone: string | null;
+    vcard_full_name: string | null;
+    vcard_title: string | null;
+    vcard_company: string | null;
+    card_slug: string | null;
+    cta_label: string | null;
+    cta_url: string | null;
+  } | null>(null);
   const { counts: socialCounts } = usePublicOperatorSocial(username);
+
+  useProfileViewTracker("talent", username ?? null);
 
   useEffect(() => {
     if (!username) return;
