@@ -21,6 +21,7 @@ export interface OperatorProfileRow {
   website_url: string | null;
   resume_pdf_url: string | null;
   avatar_url: string | null;
+  banner_url: string | null;
   willing_to_relocate: boolean;
   open_to_work: boolean;
   is_discoverable: boolean;
@@ -164,8 +165,8 @@ export function useOperatorProfile(targetUserId?: string) {
     await refresh();
   }, [user?.id, refresh]);
 
-  /** Upload a file (resume, cert attachment, avatar) to operator-profiles bucket and return public URL. */
-  const uploadFile = useCallback(async (file: File, folder: "resume" | "certs" | "avatar"): Promise<string> => {
+  /** Upload a file (resume, cert attachment, avatar, banner) to operator-profiles bucket and return public URL. */
+  const uploadFile = useCallback(async (file: File, folder: "resume" | "certs" | "avatar" | "banner"): Promise<string> => {
     if (!user?.id) throw new Error("Not authenticated");
     const ext = file.name.split(".").pop() ?? "bin";
     const path = `${user.id}/${folder}/${crypto.randomUUID()}.${ext}`;

@@ -74,6 +74,7 @@ interface PublicProfile {
   github_url: string | null;
   website_url: string | null;
   avatar_url: string | null;
+  banner_url: string | null;
   willing_to_relocate: boolean;
   open_to_work: boolean;
   preferred_employment_types: string[] | null;
@@ -343,23 +344,35 @@ export default function PublicOperatorProfile() {
 
         {/* Hero header — gradient cover + overlapping avatar for share-worthy first impression */}
         <Card className="overflow-hidden border-0 shadow-xl ring-1 ring-border/60 animate-fade-in">
-          {/* Cover gradient with subtle radial accents */}
-          <div
-            className="relative h-28 sm:h-40 w-full"
-            aria-hidden
-            style={{
-              background:
-                "radial-gradient(120% 140% at 0% 0%, hsl(var(--primary)/0.35) 0%, transparent 55%), radial-gradient(120% 140% at 100% 0%, hsl(var(--primary)/0.18) 0%, transparent 60%), linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary)/0.7) 100%)",
-            }}
-          >
+          {/* Cover: custom banner photo if uploaded, otherwise gradient */}
+          {profile.banner_url ? (
+            <div className="relative h-32 sm:h-48 md:h-56 w-full overflow-hidden bg-muted" aria-hidden>
+              <img
+                src={profile.banner_url}
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover"
+                loading="eager"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-background/40 via-transparent to-transparent" />
+            </div>
+          ) : (
             <div
-              className="absolute inset-0 opacity-[0.12] mix-blend-overlay"
+              className="relative h-28 sm:h-40 w-full"
+              aria-hidden
               style={{
-                backgroundImage:
-                  "repeating-linear-gradient(45deg, transparent 0 14px, hsl(var(--primary-foreground)) 14px 15px)",
+                background:
+                  "radial-gradient(120% 140% at 0% 0%, hsl(var(--primary)/0.35) 0%, transparent 55%), radial-gradient(120% 140% at 100% 0%, hsl(var(--primary)/0.18) 0%, transparent 60%), linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary)/0.7) 100%)",
               }}
-            />
-          </div>
+            >
+              <div
+                className="absolute inset-0 opacity-[0.12] mix-blend-overlay"
+                style={{
+                  backgroundImage:
+                    "repeating-linear-gradient(45deg, transparent 0 14px, hsl(var(--primary-foreground)) 14px 15px)",
+                }}
+              />
+            </div>
+          )}
 
           <CardContent className="relative p-5 sm:p-6 pt-0">
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 -mt-12 sm:-mt-16">
