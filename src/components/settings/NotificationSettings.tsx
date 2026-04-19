@@ -141,3 +141,97 @@ export function NotificationSettings() {
     </div>
   );
 }
+
+function DeviceAlertsCard() {
+  const { supported, permission, prefs, setPrefs, requestPermission } = useDeviceNotifications();
+  const granted = permission === "granted";
+  const denied = permission === "denied";
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <BellRing className="w-5 h-5" />
+          Device Alerts
+        </CardTitle>
+        <CardDescription>
+          Foreground browser notifications when you receive a DM, recruiter outreach, or critical alert.
+          {!supported && " Your browser does not support notifications."}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {supported && !granted && (
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border bg-muted/30 p-3">
+            <div className="flex items-start gap-2 min-w-0">
+              {denied ? (
+                <ShieldOff className="w-4 h-4 mt-0.5 shrink-0 text-destructive" />
+              ) : (
+                <BellRing className="w-4 h-4 mt-0.5 shrink-0 text-primary" />
+              )}
+              <div className="min-w-0">
+                <p className="text-sm font-medium">
+                  {denied ? "Notifications blocked" : "Permission required"}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {denied
+                    ? "Re-enable notifications for this site in your browser settings."
+                    : "Allow this site to show device notifications."}
+                </p>
+              </div>
+            </div>
+            {!denied && (
+              <Button size="sm" onClick={() => requestPermission()}>
+                Enable
+              </Button>
+            )}
+          </div>
+        )}
+
+        <SettingsSwitchRow
+          label="Enable device alerts"
+          description="Master switch for all device notifications on this browser."
+          checked={prefs.master}
+          onCheckedChange={(v) => setPrefs({ master: v })}
+          disabled={!granted}
+          bordered
+        />
+        <SettingsSwitchRow
+          label="Direct messages"
+          description="New DMs from connected teammates in your organization."
+          checked={prefs.org_dm}
+          onCheckedChange={(v) => setPrefs({ org_dm: v })}
+          disabled={!granted || !prefs.master}
+          bordered
+        />
+        <SettingsSwitchRow
+          label="Recruiter outreach"
+          description="Employer contact requests on the Talent platform."
+          checked={prefs.recruiter}
+          onCheckedChange={(v) => setPrefs({ recruiter: v })}
+          disabled={!granted || !prefs.master}
+          bordered
+        />
+        <SettingsSwitchRow
+          label="Critical smart alerts"
+          description="Overdue work orders, NCR escalations, and bottlenecks."
+          checked={prefs.smart_alert}
+          onCheckedChange={(v) => setPrefs({ smart_alert: v })}
+          disabled={!granted || !prefs.master}
+          bordered
+        />
+        <SettingsSwitchRow
+          label="System updates"
+          description="Platform announcements and changelogs."
+          checked={prefs.system_update}
+          onCheckedChange={(v) => setPrefs({ system_update: v })}
+          disabled={!granted || !prefs.master}
+          bordered
+        />
+        <p className="text-xs text-muted-foreground">
+          Preferences are stored per device. Notifications fire when the tab is open in the background;
+          background push (when the tab is closed) can be added later as an upgrade.
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
