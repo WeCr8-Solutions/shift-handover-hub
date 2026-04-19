@@ -5,6 +5,7 @@ import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { OapGcaTalentFlow } from "@/components/marketing/OapGcaTalentFlow";
 import { VerticalsShowcase } from "@/components/marketing/VerticalsShowcase";
+import { FreeTalentProfileBanner } from "@/components/marketing/FreeTalentProfileBanner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -401,6 +402,8 @@ export default function TalentLanding() {
           </div>
         </div>
       </section>
+
+      <FreeTalentProfileBanner className="max-w-5xl" />
 
       {/* CTA */}
       <section className="container py-20 max-w-4xl text-center">
