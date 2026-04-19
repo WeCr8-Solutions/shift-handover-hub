@@ -127,6 +127,7 @@ const TalentBrowse = lazy(() => import("./pages/TalentBrowse"));
 const TalentSearch = lazy(() => import("./pages/TalentSearch"));
 const PublicOperatorProfile = lazy(() => import("./pages/PublicOperatorProfile"));
 const OperatorInbox = lazy(() => import("./pages/OperatorInbox"));
+const TalentDashboard = lazy(() => import("./pages/TalentDashboard"));
 const ShopFloorDisplay = lazy(() => import("./pages/ShopFloorDisplay"));
 
 const queryClient = new QueryClient({
@@ -245,6 +246,7 @@ const App = () => (
                     <Route path="/gca/test/:bankSlug" element={<GcaTestPage />} />
                     <Route path="/oap/my-transcript" element={<OapMyTranscript />} />
                     <Route path="/talent" element={<TalentLanding />} />
+                    <Route path="/talent/dashboard" element={<TalentDashboard />} />
                     <Route path="/talent/browse" element={<TalentBrowse />} />
                     <Route path="/talent/search" element={<TalentSearch />} />
                     <Route path="/talent/:username" element={<PublicOperatorProfile />} />
