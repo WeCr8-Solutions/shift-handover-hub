@@ -719,9 +719,9 @@ export default function OperatorProfile() {
                 </div>
 
                 <Separator />
-                <div>
+                <div className="space-y-2">
                   <Label className="flex items-center gap-2"><FileText className="w-4 h-4" /> Resume (PDF or DOCX)</Label>
-                  <div className="flex items-center gap-2 mt-1">
+                  <div className="flex items-center gap-2">
                     <Input
                       type="file"
                       accept="application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.pdf,.docx"
@@ -734,10 +734,25 @@ export default function OperatorProfile() {
                       </Button>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-xs text-muted-foreground">
                     Empty profile fields, skills, work history, education and machines will be auto-filled from your resume. Existing data is never overwritten.
                   </p>
-                  {uploadingResume && <p className="text-sm text-muted-foreground mt-1">Uploading and parsing…</p>}
+                  {uploadingResume && <p className="text-sm text-muted-foreground">Uploading and parsing…</p>}
+
+                  {profile?.resume_pdf_url && (
+                    <div className="flex items-center justify-between rounded-md border bg-muted/30 px-3 py-2 mt-2">
+                      <div className="min-w-0 pr-3">
+                        <p className="text-sm font-medium">Show resume on public profile</p>
+                        <p className="text-xs text-muted-foreground">
+                          When ON, visitors of your /talent page can download your resume.
+                        </p>
+                      </div>
+                      <Switch
+                        checked={form.resume_public}
+                        onCheckedChange={(v) => setForm((f) => ({ ...f, resume_public: v }))}
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <Button onClick={handleSave} disabled={saving || uploadingResume} className="gap-2">
@@ -760,7 +775,19 @@ export default function OperatorProfile() {
                   Sync OAP/GCA
                 </Button>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between rounded-md border bg-muted/30 px-3 py-2">
+                  <div className="min-w-0 pr-3">
+                    <p className="text-sm font-medium">Show only verified certifications publicly</p>
+                    <p className="text-xs text-muted-foreground">
+                      When ON, your public profile hides self-reported certs and only shows OAP, GCA, and other verified credentials.
+                    </p>
+                  </div>
+                  <Switch
+                    checked={form.show_only_verified_certs}
+                    onCheckedChange={(v) => setForm((f) => ({ ...f, show_only_verified_certs: v }))}
+                  />
+                </div>
                 <CertificationsManager certs={certifications} onChange={refresh} uploadFile={uploadFile} userId={user!.id} />
               </CardContent>
             </Card>
