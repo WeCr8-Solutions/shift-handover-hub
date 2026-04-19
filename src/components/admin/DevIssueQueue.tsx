@@ -83,6 +83,8 @@ interface DevQueueItem {
     reporter_email: string | null;
     page_url: string | null;
     error_message: string | null;
+    error_stack: string | null;
+    console_logs: unknown;
     created_at: string;
   };
 }
@@ -148,6 +150,8 @@ export function DevIssueQueue() {
             reporter_email,
             page_url,
             error_message,
+            error_stack,
+            console_logs,
             created_at
           )
         `)
@@ -178,6 +182,26 @@ export function DevIssueQueue() {
 
   useEffect(() => {
     fetchQueue();
+
+    // Realtime: refresh on any insert/update to issues or dev queue
+    const channel = supabase
+      .channel("dev-issue-queue-live")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "issues" },
+        () => fetchQueue(),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "dev_issue_queue" },
+        () => fetchQueue(),
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter]);
 
   const claimIssue = async (item: DevQueueItem) => {
