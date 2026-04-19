@@ -30,7 +30,8 @@ export default function Profile() {
     loading: orgLoading 
   } = useOrgContext();
   const { isDeveloper, loading: accessLoading } = useAdminAccess();
-  
+  const { profile: talentProfile, certifications, skills, machines, workHistory } = useOperatorProfile();
+
   const [displayName, setDisplayName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
