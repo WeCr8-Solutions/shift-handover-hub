@@ -8,6 +8,7 @@ import { TeamSelector } from "./TeamSelector";
 import { IssueReportDialog } from "./IssueReportDialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAccess } from "@/hooks/useAdminData";
+import { useHasOperatorProfile } from "@/hooks/useHasOperatorProfile";
 import { useGlobalUpdates } from "@/hooks/useGlobalUpdates";
 import { SystemStatusIndicator } from "@/components/updates/SystemStatusIndicator";
 import { UpdateAcknowledgeModal } from "@/components/updates/UpdateAcknowledgeModal";
