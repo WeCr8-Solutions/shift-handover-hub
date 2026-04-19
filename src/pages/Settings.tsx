@@ -1,5 +1,4 @@
-import { useState, useEffect, useMemo, Suspense, lazy } from "react";
-import { MyIssuesPanel } from "@/components/settings/MyIssuesPanel";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Tabs } from "@/components/ui/tabs";
@@ -8,91 +7,22 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import {
-  Loader2,
-  Settings2,
-  Factory,
-  Bell,
-  BellRing,
-  Clock,
-  Wrench,
-  Building2,
-  CreditCard,
-  Lock,
-  Bug,
-  GraduationCap,
-  Plug,
-  Store,
-  Search,
-  Menu,
-  User,
-  Cog,
-  Globe,
-  type LucideIcon,
-} from "lucide-react";
+import { Loader2, Settings2, Lock, Search, Menu } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { useTrialStatus } from "@/hooks/useTrialStatus";
 import { useOrgContext } from "@/contexts/OrgContext";
-import { GeneralSettings } from "@/components/settings/GeneralSettings";
-import { ManufacturingSettings } from "@/components/settings/ManufacturingSettings";
-import { ShiftSettings } from "@/components/settings/ShiftSettings";
-import { NotificationSettings } from "@/components/settings/NotificationSettings";
-import { WorkCenterSettings } from "@/components/settings/WorkCenterSettings";
-import { OrganizationSettings } from "@/components/settings/OrganizationSettings";
-import { BillingSettings } from "@/components/settings/BillingSettings";
-import { OnboardingSettings } from "@/components/settings/OnboardingSettings";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { EntitlementGate } from "@/components/EntitlementGate";
-import { PartCatalogManager } from "@/components/settings/PartCatalogManager";
-import { MachineProfileMarketplace } from "@/components/station/MachineProfileMarketplace";
 import { useSmartAlerts } from "@/hooks/useSmartAlerts";
-import { SmartAlertSettings } from "@/components/alerts/SmartAlertSettings";
 import { LazyTabContent } from "@/components/settings/LazyTabContent";
-import { ReadOnlyGate } from "@/components/settings/ReadOnlyGate";
-import { SettingsSkeleton } from "@/components/settings/SettingsSkeleton";
-
-const ERPConnectorSettings = lazy(() =>
-  import("@/components/settings/ERPConnectorSettings").then((m) => ({
-    default: m.ERPConnectorSettings,
-  }))
-);
+import {
+  SETTINGS_GROUPS,
+  getVisibleModules,
+  type ModuleAccess,
+  type SettingsModule,
+  type GroupId,
+} from "@/components/settings/registry";
 
 const LAST_TAB_KEY = "settings_last_tab_v1";
-
-interface TabDef {
-  value: string;
-  label: string;
-  icon: LucideIcon;
-  show: boolean;
-  orgLevel?: boolean;
-  description?: string;
-}
-
-interface TabGroup {
-  id: string;
-  label: string;
-  icon: LucideIcon;
-  description: string;
-  items: TabDef[];
-}
-
-function DeveloperOnlyPlaceholder({ feature }: { feature: string }) {
-  return (
-    <Card className="border-dashed border-muted-foreground/30">
-      <CardHeader className="pb-2 text-center">
-        <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-          <Lock className="h-6 w-6 text-muted-foreground" />
-        </div>
-        <CardTitle className="text-lg">Developer Access Required</CardTitle>
-        <CardDescription>{feature} information is restricted to SDK developers only.</CardDescription>
-      </CardHeader>
-      <CardContent className="text-center">
-        <p className="text-sm text-muted-foreground">Contact your system administrator to request developer access.</p>
-      </CardContent>
-    </Card>
-  );
-}
 
 export default function Settings() {
   const navigate = useNavigate();
@@ -103,14 +33,18 @@ export default function Settings() {
   const { organizationRole } = useOrgContext();
   const { thresholds, saveThresholds } = useSmartAlerts();
 
-  const showBillingTab = isDeveloper || canManageBilling;
-  const showERPTab = isDeveloper || canManageBilling;
-
   const isOrgAdmin = organizationRole === "admin" || organizationRole === "owner";
   const isSupervisor = organizationRole === "supervisor";
   const canEditOrgSettings = isOrgAdmin || isSupervisor || isDeveloper;
 
-  // Hash deep-link → localStorage → default
+  const access: ModuleAccess = useMemo(
+    () => ({ isDeveloper, canManageBilling, canEditOrgSettings, organizationRole }),
+    [isDeveloper, canManageBilling, canEditOrgSettings, organizationRole],
+  );
+
+  const visibleModules = useMemo(() => getVisibleModules(access), [access]);
+
+  // Hash deep-link → localStorage → first visible
   const initialTab = (() => {
     const hash = location.hash.replace("#", "");
     if (hash) return hash;
@@ -142,84 +76,43 @@ export default function Settings() {
     }
   }, [isReady, user, navigate]);
 
-  const groups: TabGroup[] = useMemo(
-    () => [
-      {
-        id: "personal",
-        label: "Personal",
-        icon: User,
-        description: "Settings that apply to your account on this device",
-        items: [
-          { value: "general", label: "General", icon: Settings2, show: true, description: "Theme, language, timezone" },
-          { value: "notifications", label: "Notifications", icon: Bell, show: true, description: "Email, push, device alerts" },
-          { value: "onboarding", label: "Onboarding", icon: GraduationCap, show: true, description: "Tour and welcome flow" },
-          { value: "my-issues", label: "My Issues", icon: Bug, show: true, description: "Issues you've reported" },
-        ],
-      },
-      {
-        id: "organization",
-        label: "Organization",
-        icon: Building2,
-        description: "Org-wide identity, billing, and add-ons",
-        items: [
-          { value: "organization", label: "Organization", icon: Building2, show: true, description: "Profile, members, branding" },
-          { value: "billing", label: "Billing", icon: CreditCard, show: showBillingTab, description: "Subscription and payments" },
-          { value: "marketplace", label: "Marketplace", icon: Store, show: true, description: "Machine profiles & add-ons" },
-        ],
-      },
-      {
-        id: "production",
-        label: "Production",
-        icon: Cog,
-        description: "Shop floor configuration (admin/supervisor)",
-        items: [
-          { value: "manufacturing", label: "Manufacturing", icon: Factory, show: true, orgLevel: true, description: "Routing, parts, defaults" },
-          { value: "shifts", label: "Shifts", icon: Clock, show: true, orgLevel: true, description: "Shift schedules" },
-          { value: "work-centers", label: "Work Centers", icon: Wrench, show: true, orgLevel: true, description: "Stations and equipment" },
-          { value: "alerts", label: "Smart Alerts", icon: BellRing, show: true, orgLevel: true, description: "Production alert thresholds" },
-        ],
-      },
-      {
-        id: "platform",
-        label: "Platform",
-        icon: Globe,
-        description: "External integrations",
-        items: [
-          { value: "erp", label: "ERP Connector", icon: Plug, show: showERPTab, description: "Sync with external ERP" },
-        ],
-      },
-    ],
-    [showBillingTab, showERPTab]
-  );
+  // Group + filter + nest by parentId
+  type NavGroup = {
+    id: GroupId;
+    label: string;
+    icon: typeof SETTINGS_GROUPS[number]["icon"];
+    items: { module: SettingsModule; children: SettingsModule[] }[];
+  };
 
-  // Filter by search
-  const visibleGroups = useMemo(() => {
+  const navGroups: NavGroup[] = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return groups
-      .map((g) => ({
-        ...g,
-        items: g.items.filter(
-          (i) =>
-            i.show &&
-            (q === "" ||
-              i.label.toLowerCase().includes(q) ||
-              i.description?.toLowerCase().includes(q))
-        ),
-      }))
-      .filter((g) => g.items.length > 0);
-  }, [groups, search]);
+    const matches = (m: SettingsModule) =>
+      q === "" ||
+      m.label.toLowerCase().includes(q) ||
+      m.description.toLowerCase().includes(q);
 
-  // Flat list of all visible values (for fallback if activeTab is hidden)
-  const allVisibleValues = useMemo(
-    () => groups.flatMap((g) => g.items.filter((i) => i.show).map((i) => i.value)),
-    [groups]
-  );
+    return SETTINGS_GROUPS.map((g) => {
+      const groupModules = visibleModules.filter((m) => m.group === g.id);
+      const parents = groupModules.filter((m) => !m.parentId);
+      const items = parents
+        .map((p) => {
+          const children = groupModules.filter((m) => m.parentId === p.id && matches(m));
+          // Show parent if parent matches OR any child matches
+          const includeParent = matches(p) || children.length > 0;
+          return includeParent ? { module: p, children } : null;
+        })
+        .filter((x): x is { module: SettingsModule; children: SettingsModule[] } => x !== null);
+      return { id: g.id, label: g.label, icon: g.icon, items };
+    }).filter((g) => g.items.length > 0);
+  }, [visibleModules, search]);
+
+  const allVisibleIds = useMemo(() => visibleModules.map((m) => m.id), [visibleModules]);
 
   useEffect(() => {
-    if (!allVisibleValues.includes(activeTab) && allVisibleValues.length > 0) {
-      setActiveTab(allVisibleValues[0]);
+    if (!allVisibleIds.includes(activeTab) && allVisibleIds.length > 0) {
+      setActiveTab(allVisibleIds[0]);
     }
-  }, [allVisibleValues, activeTab]);
+  }, [allVisibleIds, activeTab]);
 
   if (authLoading || accessLoading) {
     return (
@@ -231,9 +124,48 @@ export default function Settings() {
 
   if (!user) return null;
 
-  const NavList = ({ onSelect }: { onSelect?: () => void }) => (
+  const ctx = { ...access, thresholds, saveThresholds };
+
+  const NavButton = ({
+    module,
+    indent,
+  }: {
+    module: SettingsModule;
+    indent?: boolean;
+  }) => {
+    const Icon = module.icon;
+    const isActive = activeTab === module.id;
+    const locked = module.orgLevel && !canEditOrgSettings;
+    return (
+      <button
+        type="button"
+        onClick={() => {
+          setActiveTab(module.id);
+          setMobileNavOpen(false);
+        }}
+        aria-current={isActive ? "page" : undefined}
+        className={cn(
+          "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          indent && "pl-7",
+          isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted text-foreground",
+        )}
+      >
+        <Icon className="h-4 w-4 shrink-0" />
+        <span className="flex-1 truncate">{module.label}</span>
+        {locked && (
+          <Lock
+            className={cn("h-3 w-3 shrink-0", isActive ? "opacity-70" : "opacity-50")}
+            aria-label="Read-only"
+          />
+        )}
+      </button>
+    );
+  };
+
+  const NavList = () => (
     <nav aria-label="Settings sections" className="space-y-5">
-      {visibleGroups.map((group) => {
+      {navGroups.map((group) => {
         const GroupIcon = group.icon;
         return (
           <div key={group.id}>
@@ -242,46 +174,19 @@ export default function Settings() {
               {group.label}
             </div>
             <div className="space-y-0.5">
-              {group.items.map((item) => {
-                const Icon = item.icon;
-                const isActive = activeTab === item.value;
-                const locked = item.orgLevel && !canEditOrgSettings;
-                return (
-                  <button
-                    key={item.value}
-                    type="button"
-                    onClick={() => {
-                      setActiveTab(item.value);
-                      onSelect?.();
-                    }}
-                    aria-current={isActive ? "page" : undefined}
-                    className={cn(
-                      "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                      isActive
-                        ? "bg-primary text-primary-foreground"
-                        : "hover:bg-muted text-foreground"
-                    )}
-                  >
-                    <Icon className="h-4 w-4 shrink-0" />
-                    <span className="flex-1 truncate">{item.label}</span>
-                    {locked && (
-                      <Lock
-                        className={cn(
-                          "h-3 w-3 shrink-0",
-                          isActive ? "opacity-70" : "opacity-50"
-                        )}
-                        aria-label="Read-only"
-                      />
-                    )}
-                  </button>
-                );
-              })}
+              {group.items.map(({ module, children }) => (
+                <div key={module.id}>
+                  <NavButton module={module} />
+                  {children.map((child) => (
+                    <NavButton key={child.id} module={child} indent />
+                  ))}
+                </div>
+              ))}
             </div>
           </div>
         );
       })}
-      {visibleGroups.length === 0 && (
+      {navGroups.length === 0 && (
         <p className="px-2 text-xs text-muted-foreground">No settings match "{search}".</p>
       )}
     </nav>
@@ -306,7 +211,7 @@ export default function Settings() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-0">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
-            {/* Mobile: search + nav trigger row */}
+            {/* Mobile: search + nav trigger */}
             <div className="flex items-center gap-2 lg:hidden">
               <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
                 <SheetTrigger asChild>
@@ -330,7 +235,7 @@ export default function Settings() {
                       />
                     </div>
                     <ScrollArea className="h-[calc(100vh-9rem)] pr-2">
-                      <NavList onSelect={() => setMobileNavOpen(false)} />
+                      <NavList />
                     </ScrollArea>
                   </div>
                 </SheetContent>
@@ -364,93 +269,13 @@ export default function Settings() {
               </div>
             </aside>
 
-            {/* Content panel */}
+            {/* Content panel — registry-driven */}
             <div className="min-w-0">
-              <LazyTabContent value="general" activeTab={activeTab}>
-                <GeneralSettings />
-              </LazyTabContent>
-
-              <LazyTabContent value="organization" activeTab={activeTab}>
-                <OrganizationSettings isDeveloper={isDeveloper} />
-              </LazyTabContent>
-
-              <LazyTabContent value="billing" activeTab={activeTab}>
-                {showBillingTab ? <BillingSettings /> : <DeveloperOnlyPlaceholder feature="Billing and subscription" />}
-              </LazyTabContent>
-
-              <LazyTabContent value="manufacturing" activeTab={activeTab}>
-                <ReadOnlyGate canEdit={canEditOrgSettings}>
-                  <div className="space-y-6">
-                    <ManufacturingSettings />
-                    <PartCatalogManager />
-                  </div>
-                </ReadOnlyGate>
-              </LazyTabContent>
-
-              <LazyTabContent value="shifts" activeTab={activeTab}>
-                <ReadOnlyGate canEdit={canEditOrgSettings}>
-                  <ShiftSettings />
-                </ReadOnlyGate>
-              </LazyTabContent>
-
-              <LazyTabContent value="work-centers" activeTab={activeTab}>
-                <ReadOnlyGate canEdit={canEditOrgSettings}>
-                  <WorkCenterSettings />
-                </ReadOnlyGate>
-              </LazyTabContent>
-
-              <LazyTabContent value="notifications" activeTab={activeTab}>
-                <NotificationSettings />
-              </LazyTabContent>
-
-              <LazyTabContent value="alerts" activeTab={activeTab}>
-                <ReadOnlyGate canEdit={canEditOrgSettings}>
-                  <SmartAlertSettings thresholds={thresholds} onSave={saveThresholds} />
-                </ReadOnlyGate>
-              </LazyTabContent>
-
-              <LazyTabContent value="onboarding" activeTab={activeTab}>
-                <OnboardingSettings />
-              </LazyTabContent>
-
-              {showERPTab && (
-                <LazyTabContent value="erp" activeTab={activeTab}>
-                  <EntitlementGate feature="erp_connector" requiredPlan="enterprise">
-                    <Suspense fallback={<SettingsSkeleton rows={3} />}>
-                      <ERPConnectorSettings />
-                    </Suspense>
-                  </EntitlementGate>
+              {visibleModules.map((module) => (
+                <LazyTabContent key={module.id} value={module.id} activeTab={activeTab}>
+                  {module.render(ctx)}
                 </LazyTabContent>
-              )}
-
-              <LazyTabContent value="marketplace" activeTab={activeTab}>
-                <div className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Store className="h-5 w-5" />
-                        Marketplace
-                      </CardTitle>
-                      <CardDescription>
-                        Browse and purchase verified machine profiles, tooling packages, and other add-ons for your stations.
-                      </CardDescription>
-                    </CardHeader>
-                  </Card>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">Machine Profiles</CardTitle>
-                      <CardDescription>Verified manufacturer specifications for your CNC machines.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <MachineProfileMarketplace stationId={null} stationName={null} />
-                    </CardContent>
-                  </Card>
-                </div>
-              </LazyTabContent>
-
-              <LazyTabContent value="my-issues" activeTab={activeTab}>
-                <MyIssuesPanel />
-              </LazyTabContent>
+              ))}
             </div>
           </div>
         </Tabs>
