@@ -947,7 +947,7 @@ function CertificationsManager({
 }: {
   certs: ReturnType<typeof useOperatorProfile>["certifications"];
   onChange: () => void;
-  uploadFile: (f: File, folder: "resume" | "certs" | "avatar") => Promise<string>;
+  uploadFile: (f: File, folder: "resume" | "certs" | "avatar" | "banner") => Promise<string>;
   userId: string;
 }) {
   const { toast } = useToast();
@@ -987,6 +987,18 @@ function CertificationsManager({
 
   const remove = async (id: string) => {
     await supabase.from("operator_certifications").delete().eq("id", id);
+    onChange();
+  };
+
+  const toggleVisibility = async (id: string, visible: boolean) => {
+    const { error } = await supabase
+      .from("operator_certifications")
+      .update({ is_public: visible } as never)
+      .eq("id", id);
+    if (error) {
+      toast({ title: "Failed to update visibility", description: error.message, variant: "destructive" });
+      return;
+    }
     onChange();
   };
 
@@ -1031,6 +1043,15 @@ function CertificationsManager({
           {c.attachment_url && (
             <a href={c.attachment_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary underline">View attachment</a>
           )}
+          <div className="flex items-center justify-between border-t pt-2 mt-1">
+            <div className="text-xs text-muted-foreground">
+              {(c as { is_public?: boolean }).is_public === false ? "Hidden from public profile" : "Visible on public profile"}
+            </div>
+            <Switch
+              checked={(c as { is_public?: boolean }).is_public !== false}
+              onCheckedChange={(v) => toggleVisibility(c.id, v)}
+            />
+          </div>
         </div>
       ))}
 
