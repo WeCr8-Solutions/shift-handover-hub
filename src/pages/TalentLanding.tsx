@@ -402,6 +402,8 @@ export default function TalentLanding() {
         </div>
       </section>
 
+      <FreeTalentProfileBanner className="max-w-5xl" />
+
       {/* CTA */}
       <section className="container py-20 max-w-4xl text-center">
         <h2 className="text-3xl md:text-4xl font-bold">Your shop-floor career, in one verified place.</h2>

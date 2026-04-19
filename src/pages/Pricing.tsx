@@ -17,6 +17,7 @@ import {
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
+import { FreeTalentProfileBanner } from "@/components/marketing/FreeTalentProfileBanner";
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { ConversionEvents } from '@/lib/analytics';
@@ -95,6 +96,7 @@ export default function Pricing() {
             Cancel anytime.
           </p>
         </div>
+        <FreeTalentProfileBanner className="max-w-5xl mx-auto" />
       </section>
 
       {/* Pricing Cards */}
@@ -221,6 +223,14 @@ export default function Pricing() {
                 <h4 className="font-medium mb-1">Is there a free trial?</h4>
                 <p className="text-sm text-muted-foreground">
                   Yes! All plans come with a 14-day free trial to start.
+                </p>
+              </div>
+              <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
+                <h4 className="font-medium mb-1">Are talent profiles really free?</h4>
+                <p className="text-sm text-muted-foreground">
+                  Yes — operator talent profiles are <strong>always free</strong>, with no
+                  trial or subscription required. Build a verified shop-floor profile,
+                  earn OAP/GCA badges, and get discovered by hiring shops at no cost.
                 </p>
               </div>
             </div>
