@@ -241,6 +241,67 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
             )}
           </TabsContent>
 
+          <TabsContent value="messages" className="px-3 pb-3 mt-0">
+            {messagesTotal === 0 ? (
+              <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+                <MessagesSquare className="w-8 h-8 mb-2 opacity-40" />
+                <p className="text-xs">No new messages</p>
+                <div className="flex gap-2 mt-3">
+                  <Button variant="outline" size="sm" className="h-7 text-[10px]" onClick={() => goTo("/messages")}>
+                    <Building2 className="w-3 h-3 mr-1" /> Org Chat
+                  </Button>
+                  <Button variant="outline" size="sm" className="h-7 text-[10px]" onClick={() => goTo("/operator/inbox")}>
+                    <Briefcase className="w-3 h-3 mr-1" /> Recruiter Inbox
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-1 mt-2">
+                <button
+                  onClick={() => goTo("/messages")}
+                  className="w-full flex items-start gap-2.5 p-2.5 rounded-md hover:bg-secondary/60 transition-colors text-left"
+                >
+                  <Building2 className="w-4 h-4 mt-0.5 shrink-0 text-primary" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium leading-tight">Organization Messages</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
+                      Direct messages from connected teammates in {organization?.name ?? "your org"}
+                    </p>
+                  </div>
+                  {orgMessagesUnread > 0 ? (
+                    <Badge variant="default" className="text-[9px] shrink-0 mt-0.5">
+                      {orgMessagesUnread} new
+                    </Badge>
+                  ) : (
+                    <span className="text-[10px] text-muted-foreground shrink-0 mt-0.5">0</span>
+                  )}
+                </button>
+
+                <Separator className="my-1" />
+
+                <button
+                  onClick={() => goTo("/operator/inbox")}
+                  className="w-full flex items-start gap-2.5 p-2.5 rounded-md hover:bg-secondary/60 transition-colors text-left"
+                >
+                  <Briefcase className="w-4 h-4 mt-0.5 shrink-0 text-accent-foreground" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium leading-tight">Recruiter Inbox</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
+                      Talent platform outreach from external employers
+                    </p>
+                  </div>
+                  {talentInboxUnread > 0 ? (
+                    <Badge variant="default" className="text-[9px] shrink-0 mt-0.5">
+                      {talentInboxUnread} pending
+                    </Badge>
+                  ) : (
+                    <span className="text-[10px] text-muted-foreground shrink-0 mt-0.5">0</span>
+                  )}
+                </button>
+              </div>
+            )}
+          </TabsContent>
+
           <TabsContent value="updates" className="px-3 pb-3 mt-0">
             {visibleUpdates.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
