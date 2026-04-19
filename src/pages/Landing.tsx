@@ -311,8 +311,8 @@ export default function Landing() {
               <img
                 src={joblineLogo}
                 alt="JobLine.ai"
-                width={176}
-                height={176}
+                width={140}
+                height={140}
                 fetchPriority="high"
                 decoding="async"
                 className="h-20 sm:h-28 md:h-36 lg:h-44 w-auto"
