@@ -82,16 +82,21 @@ export function MessageThread({ requestId, viewerRole, canReply = true }: Messag
       )}
 
       {canReply ? (
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <Textarea
             placeholder="Type a reply…"
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             rows={2}
             maxLength={2000}
-            className="resize-none"
+            className="resize-none flex-1 min-w-0"
           />
-          <Button onClick={handleSend} disabled={!draft.trim() || sending} size="sm" className="gap-1 self-end">
+          <Button
+            onClick={handleSend}
+            disabled={!draft.trim() || sending}
+            size="sm"
+            className="gap-1 sm:self-end w-full sm:w-auto"
+          >
             <Send className="w-3 h-3" /> Send
           </Button>
         </div>
