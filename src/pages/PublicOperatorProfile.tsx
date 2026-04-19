@@ -329,11 +329,11 @@ export default function PublicOperatorProfile() {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title={`${fullName} — ${profile.headline ?? "Manufacturing Operator"}`}
+        title={`${fullName} — ${profile.headline ?? "Verified Talent"}`}
         description={
           profile.bio?.slice(0, 155) ??
           profile.headline ??
-          `Verified manufacturing operator profile on JobLine — ${verifiedCount} verified credential(s).`
+          `Verified talent profile on JobLine — ${verifiedCount} verified credential(s).`
         }
         canonical={`/talent/${profile.public_username}`}
         ogType="profile"
