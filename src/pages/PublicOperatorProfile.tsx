@@ -448,89 +448,166 @@ export default function PublicOperatorProfile() {
           );
         })()}
 
-        {certs.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Award className="w-5 h-5" /> Certifications
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {certs.map((c) => {
-                const verified = c.verification_source.startsWith("verified_");
-                return (
-                  <div key={c.id} className="flex items-start justify-between gap-3 pb-3 border-b last:border-b-0 last:pb-0">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium">{c.name}</p>
-                        {verified && (
-                          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 gap-1">
-                            <CheckCircle2 className="w-3 h-3" /> Verified
-                          </Badge>
-                        )}
-                      </div>
-                      {c.issuer && <p className="text-sm text-muted-foreground">{c.issuer}</p>}
-                      <p className="text-xs text-muted-foreground">
-                        {c.issued_date ? `Issued ${formatDateRange(c.issued_date, null).split(" – ")[0]}` : ""}
-                        {c.expires_date ? ` · Expires ${formatDateRange(c.expires_date, null).split(" – ")[0]}` : ""}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3 shrink-0">
-                      {c.attachment_url && (
-                        <a
-                          href={c.attachment_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary hover:underline text-sm flex items-center gap-1"
-                        >
-                          Open <FileText className="w-3 h-3" />
-                        </a>
-                      )}
-                      {c.credential_url && (
-                        <a
-                          href={c.credential_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary hover:underline text-sm flex items-center gap-1"
-                        >
-                          Verify <ExternalLink className="w-3 h-3" />
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </CardContent>
-          </Card>
-        )}
+        {certs.length > 0 && (() => {
+          const oapCerts = certs.filter((c) => c.verification_source === "verified_oap");
+          const gcaCerts = certs.filter((c) => c.verification_source === "verified_gca");
+          const externalVerified = certs.filter(
+            (c) => c.verification_source.startsWith("verified_") && c.verification_source !== "verified_oap" && c.verification_source !== "verified_gca",
+          );
+          const selfReported = certs.filter((c) => !c.verification_source.startsWith("verified_"));
 
-        {/* Machines */}
-        {machines.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Wrench className="w-5 h-5" /> Machine proficiencies
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {machines.map((m) => (
-                  <div key={m.id} className="border rounded-lg p-3">
-                    <p className="font-medium text-sm">{m.machine_category}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {[m.machine_make, m.machine_model].filter(Boolean).join(" ")}
-                      {m.control_type ? ` · ${m.control_type}` : ""}
-                    </p>
-                    <div className="flex items-center justify-between mt-2 text-xs">
-                      <Badge variant="secondary" className="capitalize">{m.proficiency}</Badge>
-                      {m.years_experience != null && <span className="text-muted-foreground">{m.years_experience} yrs</span>}
+          return (
+            <>
+              {/* JobLine OAP — Approved badge cards */}
+              {oapCerts.length > 0 && (
+                <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <ShieldCheck className="w-5 h-5 text-primary" /> JobLine OAP — Approved
+                      <Badge className="ml-1 bg-primary text-primary-foreground">{oapCerts.length}</Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {oapCerts.map((c) => (
+                        <CertBadgeCard key={c.id} cert={c} variant="oap" />
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* GCA badges */}
+              {gcaCerts.length > 0 && (
+                <Card className="border-warning/30 bg-gradient-to-br from-warning/5 to-transparent">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Trophy className="w-5 h-5 text-warning" /> G-Code Academy badges
+                      <Badge className="ml-1 bg-warning text-warning-foreground">{gcaCerts.length}</Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {gcaCerts.map((c) => (
+                        <CertBadgeCard key={c.id} cert={c} variant="gca" />
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Other verified + self-reported */}
+              {(externalVerified.length > 0 || selfReported.length > 0) && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Award className="w-5 h-5" /> Additional certifications
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {[...externalVerified, ...selfReported].map((c) => {
+                      const verified = c.verification_source.startsWith("verified_");
+                      return (
+                        <div key={c.id} className="flex items-start justify-between gap-3 pb-3 border-b last:border-b-0 last:pb-0">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <p className="font-medium">{c.name}</p>
+                              {verified && (
+                                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 gap-1">
+                                  <CheckCircle2 className="w-3 h-3" /> Verified
+                                </Badge>
+                              )}
+                            </div>
+                            {c.issuer && <p className="text-sm text-muted-foreground">{c.issuer}</p>}
+                            <p className="text-xs text-muted-foreground">
+                              {c.issued_date ? `Issued ${formatDateRange(c.issued_date, null).split(" – ")[0]}` : ""}
+                              {c.expires_date ? ` · Expires ${formatDateRange(c.expires_date, null).split(" – ")[0]}` : ""}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-3 shrink-0">
+                            {c.attachment_url && (
+                              <a href={c.attachment_url} target="_blank" rel="noopener noreferrer"
+                                className="text-primary hover:underline text-sm flex items-center gap-1">
+                                Open <FileText className="w-3 h-3" />
+                              </a>
+                            )}
+                            {c.credential_url && (
+                              <a href={c.credential_url} target="_blank" rel="noopener noreferrer"
+                                className="text-primary hover:underline text-sm flex items-center gap-1">
+                                Verify <ExternalLink className="w-3 h-3" />
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </CardContent>
+                </Card>
+              )}
+            </>
+          );
+        })()}
+
+        {/* Machines — grouped by category */}
+        {machines.length > 0 && (() => {
+          const grouped = machines.reduce<Record<string, MachineRow[]>>((acc, m) => {
+            const key = m.machine_category || "Other";
+            (acc[key] ||= []).push(m);
+            return acc;
+          }, {});
+          const categories = Object.keys(grouped).sort();
+          return (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Wrench className="w-5 h-5" /> Machine proficiencies
+                  <Badge variant="secondary" className="ml-1">{machines.length}</Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                {categories.map((cat) => (
+                  <div key={cat}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                        {cat}
+                      </h3>
+                      <Badge variant="outline" className="text-[10px] py-0 px-1.5">
+                        {grouped[cat].length}
+                      </Badge>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {grouped[cat].map((m) => (
+                        <div key={m.id} className="border rounded-lg p-3 bg-card">
+                          <p className="font-medium text-sm">
+                            {[m.machine_make, m.machine_model].filter(Boolean).join(" ") || m.machine_category}
+                          </p>
+                          {m.control_type && (
+                            <p className="text-xs text-muted-foreground">Control: {m.control_type}</p>
+                          )}
+                          <div className="flex items-center justify-between mt-2 text-xs">
+                            <Badge
+                              variant="secondary"
+                              className={`capitalize ${
+                                m.proficiency?.toLowerCase() === "expert"
+                                  ? "bg-primary/15 text-primary border-primary/30"
+                                  : ""
+                              }`}
+                            >
+                              {m.proficiency}
+                            </Badge>
+                            {m.years_experience != null && (
+                              <span className="text-muted-foreground">{m.years_experience} yrs</span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+              </CardContent>
+            </Card>
+          );
+        })()}
 
         {/* Skills */}
         {skills.length > 0 && (
@@ -658,6 +735,60 @@ function Stat({ label, value }: { label: string; value: number }) {
       <div className="text-lg sm:text-xl font-semibold leading-none">{value}</div>
       <div className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide mt-1">
         {label}
+      </div>
+    </div>
+  );
+}
+
+/** Badge-style card for verified JobLine OAP / GCA certifications. */
+function CertBadgeCard({ cert, variant }: { cert: CertRow; variant: "oap" | "gca" }) {
+  const isOap = variant === "oap";
+  return (
+    <div
+      className={`relative rounded-lg border p-3 bg-card overflow-hidden ${
+        isOap ? "border-primary/40" : "border-warning/40"
+      }`}
+    >
+      <div className="flex items-start gap-3">
+        <div
+          className={`shrink-0 rounded-md p-2 ${
+            isOap ? "bg-primary/15 text-primary" : "bg-warning/15 text-warning"
+          }`}
+          aria-hidden
+        >
+          {isOap ? <ShieldCheck className="w-5 h-5" /> : <Trophy className="w-5 h-5" />}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="font-semibold text-sm leading-tight break-words">{cert.name}</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">
+            {isOap ? "JobLine OAP · Approved" : "G-Code Academy · Passed"}
+            {cert.issued_date
+              ? ` · ${formatDateRange(cert.issued_date, null).split(" – ")[0]}`
+              : ""}
+          </p>
+          <div className="flex flex-wrap items-center gap-3 mt-2">
+            {cert.credential_url && (
+              <a
+                href={cert.credential_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline text-xs flex items-center gap-1"
+              >
+                Verify on jobline.ai <ExternalLink className="w-3 h-3" />
+              </a>
+            )}
+            {cert.attachment_url && (
+              <a
+                href={cert.attachment_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline text-xs flex items-center gap-1"
+              >
+                Open PDF <FileText className="w-3 h-3" />
+              </a>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
