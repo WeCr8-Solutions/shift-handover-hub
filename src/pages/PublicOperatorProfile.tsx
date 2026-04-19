@@ -47,6 +47,11 @@ import {
   UserCheck,
   Quote,
   FileText,
+  Twitter,
+  Instagram,
+  Facebook,
+  Youtube,
+  Github,
 } from "lucide-react";
 
 interface PublicProfile {
@@ -61,6 +66,12 @@ interface PublicProfile {
   location_country: string | null;
   linkedin_url: string | null;
   portfolio_url: string | null;
+  twitter_url: string | null;
+  instagram_url: string | null;
+  facebook_url: string | null;
+  youtube_url: string | null;
+  github_url: string | null;
+  website_url: string | null;
   avatar_url: string | null;
   willing_to_relocate: boolean;
   open_to_work: boolean;
@@ -285,7 +296,16 @@ export default function PublicOperatorProfile() {
           addressCountry: profile.location_country ?? undefined,
         }
       : undefined,
-    sameAs: [profile.linkedin_url, profile.portfolio_url].filter(Boolean),
+    sameAs: [
+      profile.linkedin_url,
+      profile.portfolio_url,
+      profile.website_url,
+      profile.twitter_url,
+      profile.instagram_url,
+      profile.facebook_url,
+      profile.youtube_url,
+      profile.github_url,
+    ].filter(Boolean),
     hasCredential: certs.map((c) => ({
       "@type": "EducationalOccupationalCredential",
       name: c.name,
@@ -387,24 +407,28 @@ export default function PublicOperatorProfile() {
                     </span>
                   )}
                   {profile.linkedin_url && (
-                    <a
-                      href={withJoblineUtm(profile.linkedin_url, "talent_profile")}
-                      target="_blank"
-                      rel="noopener noreferrer nofollow"
-                      className="flex items-center gap-1 text-primary hover:underline"
-                    >
-                      <Linkedin className="w-4 h-4" /> LinkedIn
-                    </a>
+                    <SocialLink href={profile.linkedin_url} icon={Linkedin} label="LinkedIn" track nofollow />
                   )}
                   {profile.portfolio_url && (
-                    <a
-                      href={withJoblineUtm(profile.portfolio_url, "talent_profile")}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-primary hover:underline"
-                    >
-                      <Globe className="w-4 h-4" /> Portfolio
-                    </a>
+                    <SocialLink href={profile.portfolio_url} icon={Globe} label="Portfolio" track />
+                  )}
+                  {profile.website_url && (
+                    <SocialLink href={profile.website_url} icon={Globe} label="Website" track />
+                  )}
+                  {profile.twitter_url && (
+                    <SocialLink href={profile.twitter_url} icon={Twitter} label="X / Twitter" />
+                  )}
+                  {profile.instagram_url && (
+                    <SocialLink href={profile.instagram_url} icon={Instagram} label="Instagram" />
+                  )}
+                  {profile.facebook_url && (
+                    <SocialLink href={profile.facebook_url} icon={Facebook} label="Facebook" />
+                  )}
+                  {profile.youtube_url && (
+                    <SocialLink href={profile.youtube_url} icon={Youtube} label="YouTube" />
+                  )}
+                  {profile.github_url && (
+                    <SocialLink href={profile.github_url} icon={Github} label="GitHub" />
                   )}
                 </div>
               </div>
@@ -908,5 +932,32 @@ function CertBadgeCard({ cert, variant }: { cert: CertRow; variant: "oap" | "gca
         </div>
       </div>
     </div>
+  );
+}
+
+function SocialLink({
+  href,
+  icon: Icon,
+  label,
+  track,
+  nofollow,
+}: {
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  track?: boolean;
+  nofollow?: boolean;
+}) {
+  const finalHref = track ? withJoblineUtm(href, "talent_profile") : href;
+  return (
+    <a
+      href={finalHref}
+      target="_blank"
+      rel={`noopener noreferrer${nofollow ? " nofollow" : ""}`}
+      className="flex items-center gap-1 text-primary hover:underline"
+      aria-label={label}
+    >
+      <Icon className="w-4 h-4" /> {label}
+    </a>
   );
 }

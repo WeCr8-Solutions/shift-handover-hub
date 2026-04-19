@@ -66,6 +66,12 @@ export default function OperatorProfile() {
     location_country: "",
     linkedin_url: "",
     portfolio_url: "",
+    twitter_url: "",
+    instagram_url: "",
+    facebook_url: "",
+    youtube_url: "",
+    github_url: "",
+    website_url: "",
     contact_email: "",
     contact_phone: "",
     open_to_work: false,
@@ -92,6 +98,12 @@ export default function OperatorProfile() {
         location_country: profile.location_country ?? "",
         linkedin_url: profile.linkedin_url ?? "",
         portfolio_url: profile.portfolio_url ?? "",
+        twitter_url: (profile as any).twitter_url ?? "",
+        instagram_url: (profile as any).instagram_url ?? "",
+        facebook_url: (profile as any).facebook_url ?? "",
+        youtube_url: (profile as any).youtube_url ?? "",
+        github_url: (profile as any).github_url ?? "",
+        website_url: (profile as any).website_url ?? "",
         contact_email: profile.contact_email ?? user?.email ?? "",
         contact_phone: profile.contact_phone ?? "",
         open_to_work: profile.open_to_work,
@@ -116,6 +128,12 @@ export default function OperatorProfile() {
         location_country: form.location_country.trim() || null,
         linkedin_url: form.linkedin_url.trim() || null,
         portfolio_url: form.portfolio_url.trim() || null,
+        twitter_url: form.twitter_url.trim() || null,
+        instagram_url: form.instagram_url.trim() || null,
+        facebook_url: form.facebook_url.trim() || null,
+        youtube_url: form.youtube_url.trim() || null,
+        github_url: form.github_url.trim() || null,
+        website_url: form.website_url.trim() || null,
         contact_email: form.contact_email.trim() || null,
         contact_phone: form.contact_phone.trim() || null,
         open_to_work: form.open_to_work,
@@ -514,6 +532,54 @@ export default function OperatorProfile() {
                       value={form.portfolio_url}
                       onChange={(e) => setForm((f) => ({ ...f, portfolio_url: e.target.value }))}
                       placeholder="https://your-site.com"
+                    />
+                  </div>
+                  <div>
+                    <Label>Personal website</Label>
+                    <Input
+                      value={form.website_url}
+                      onChange={(e) => setForm((f) => ({ ...f, website_url: e.target.value }))}
+                      placeholder="https://yourname.com"
+                    />
+                  </div>
+                  <div>
+                    <Label>X / Twitter</Label>
+                    <Input
+                      value={form.twitter_url}
+                      onChange={(e) => setForm((f) => ({ ...f, twitter_url: e.target.value }))}
+                      placeholder="https://x.com/your-handle"
+                    />
+                  </div>
+                  <div>
+                    <Label>Instagram</Label>
+                    <Input
+                      value={form.instagram_url}
+                      onChange={(e) => setForm((f) => ({ ...f, instagram_url: e.target.value }))}
+                      placeholder="https://instagram.com/your-handle"
+                    />
+                  </div>
+                  <div>
+                    <Label>Facebook</Label>
+                    <Input
+                      value={form.facebook_url}
+                      onChange={(e) => setForm((f) => ({ ...f, facebook_url: e.target.value }))}
+                      placeholder="https://facebook.com/your-page"
+                    />
+                  </div>
+                  <div>
+                    <Label>YouTube</Label>
+                    <Input
+                      value={form.youtube_url}
+                      onChange={(e) => setForm((f) => ({ ...f, youtube_url: e.target.value }))}
+                      placeholder="https://youtube.com/@your-channel"
+                    />
+                  </div>
+                  <div>
+                    <Label>GitHub</Label>
+                    <Input
+                      value={form.github_url}
+                      onChange={(e) => setForm((f) => ({ ...f, github_url: e.target.value }))}
+                      placeholder="https://github.com/your-handle"
                     />
                   </div>
                   <div>

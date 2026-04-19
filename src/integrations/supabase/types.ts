@@ -5447,9 +5447,12 @@ export type Database = {
           cta_url: string | null
           desired_salary_max: number | null
           desired_salary_min: number | null
+          facebook_url: string | null
           gallery: Json
+          github_url: string | null
           headline: string | null
           id: string
+          instagram_url: string | null
           is_discoverable: boolean
           latitude: number | null
           linkedin_url: string | null
@@ -5467,13 +5470,16 @@ export type Database = {
           services: Json
           testimonials: Json
           theme_color: string | null
+          twitter_url: string | null
           updated_at: string
           user_id: string
           vcard_company: string | null
           vcard_full_name: string | null
           vcard_title: string | null
+          website_url: string | null
           willing_to_relocate: boolean
           years_experience: number | null
+          youtube_url: string | null
         }
         Insert: {
           accent_color?: string | null
@@ -5488,9 +5494,12 @@ export type Database = {
           cta_url?: string | null
           desired_salary_max?: number | null
           desired_salary_min?: number | null
+          facebook_url?: string | null
           gallery?: Json
+          github_url?: string | null
           headline?: string | null
           id?: string
+          instagram_url?: string | null
           is_discoverable?: boolean
           latitude?: number | null
           linkedin_url?: string | null
@@ -5508,13 +5517,16 @@ export type Database = {
           services?: Json
           testimonials?: Json
           theme_color?: string | null
+          twitter_url?: string | null
           updated_at?: string
           user_id: string
           vcard_company?: string | null
           vcard_full_name?: string | null
           vcard_title?: string | null
+          website_url?: string | null
           willing_to_relocate?: boolean
           years_experience?: number | null
+          youtube_url?: string | null
         }
         Update: {
           accent_color?: string | null
@@ -5529,9 +5541,12 @@ export type Database = {
           cta_url?: string | null
           desired_salary_max?: number | null
           desired_salary_min?: number | null
+          facebook_url?: string | null
           gallery?: Json
+          github_url?: string | null
           headline?: string | null
           id?: string
+          instagram_url?: string | null
           is_discoverable?: boolean
           latitude?: number | null
           linkedin_url?: string | null
@@ -5549,13 +5564,16 @@ export type Database = {
           services?: Json
           testimonials?: Json
           theme_color?: string | null
+          twitter_url?: string | null
           updated_at?: string
           user_id?: string
           vcard_company?: string | null
           vcard_full_name?: string | null
           vcard_title?: string | null
+          website_url?: string | null
           willing_to_relocate?: boolean
           years_experience?: number | null
+          youtube_url?: string | null
         }
         Relationships: []
       }
@@ -10057,7 +10075,14 @@ export type Database = {
       }
       is_verified_employer: { Args: { _user_id: string }; Returns: boolean }
       list_public_employers: {
-        Args: { _limit?: number; _search?: string }
+        Args: {
+          _hiring_only?: boolean
+          _industry?: string
+          _limit?: number
+          _location?: string
+          _search?: string
+          _sort?: string
+        }
         Returns: {
           employer_cover_url: string
           employer_industries: string[]
@@ -10066,7 +10091,9 @@ export type Database = {
           employer_tagline: string
           id: string
           name: string
+          open_jobs_count: number
           public_slug: string
+          published_at: string
         }[]
       }
       list_public_operator_profiles:
