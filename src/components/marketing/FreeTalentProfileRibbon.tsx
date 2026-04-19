@@ -60,26 +60,19 @@ export function FreeTalentProfileRibbon() {
     <div
       role="region"
       aria-label="Breaking: Talent profiles are always free"
-      className="fixed inset-x-0 bottom-0 z-[100] h-9 flex items-stretch shadow-[0_-2px_12px_-4px_rgba(0,0,0,0.4)]"
-      style={{ backgroundColor: "#0a0a0a", color: "#ffffff" }}
+      className="fixed inset-x-0 bottom-0 z-[100] h-9 flex items-stretch bg-card text-card-foreground border-t border-border shadow-[0_-2px_12px_-4px_hsl(var(--foreground)/0.3)]"
     >
-      <div
-        className="flex items-center px-2.5 sm:px-3 font-bold text-[10px] sm:text-xs uppercase tracking-wider shrink-0"
-        style={{ backgroundColor: "#dc2626", color: "#ffffff" }}
-      >
+      <div className="flex items-center px-2.5 sm:px-3 bg-destructive/80 text-destructive-foreground font-bold text-[10px] sm:text-xs uppercase tracking-wider shrink-0">
         Free
       </div>
 
       <div className="flex-1 min-w-0 flex items-center overflow-hidden px-3">
         <p className="text-xs sm:text-sm font-medium truncate">
           Talent profiles are{" "}
-          <span
-            className="font-bold px-1.5 py-0.5 rounded-sm"
-            style={{ backgroundColor: "#2563eb", color: "#ffffff" }}
-          >
+          <span className="font-bold bg-primary text-primary-foreground px-1.5 py-0.5 rounded-sm">
             always free
           </span>
-          <span className="hidden sm:inline" style={{ color: "rgba(255,255,255,0.75)" }}>
+          <span className="hidden sm:inline text-muted-foreground">
             {" "}— get found by hiring shops with OAP &amp; GCA badges.
           </span>
         </p>
@@ -87,8 +80,7 @@ export function FreeTalentProfileRibbon() {
 
       <Link
         to="/auth"
-        className="flex items-center gap-1 px-3 sm:px-4 text-xs sm:text-sm font-semibold transition-opacity hover:opacity-90 shrink-0"
-        style={{ backgroundColor: "#2563eb", color: "#ffffff" }}
+        className="flex items-center gap-1 px-3 sm:px-4 bg-primary text-primary-foreground text-xs sm:text-sm font-semibold hover:bg-primary/90 transition-colors shrink-0"
       >
         Claim <ArrowRight className="h-3.5 w-3.5" />
       </Link>
@@ -97,8 +89,7 @@ export function FreeTalentProfileRibbon() {
         type="button"
         onClick={dismiss}
         aria-label="Dismiss"
-        className="flex items-center justify-center px-2 transition-colors shrink-0 hover:bg-white/10"
-        style={{ color: "#ffffff" }}
+        className="flex items-center justify-center px-2 hover:bg-accent transition-colors shrink-0 text-muted-foreground hover:text-foreground"
       >
         <X className="h-4 w-4" />
       </button>
