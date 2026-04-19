@@ -40,7 +40,7 @@ export default function EmployersIndex() {
     queryKey: ["public-employers", debounced],
     queryFn: async () => {
       const { data, error } = await supabase.rpc("list_public_employers", {
-        _search: debounced || null,
+        _search: debounced || undefined,
         _limit: 60,
       });
       if (error) throw error;
