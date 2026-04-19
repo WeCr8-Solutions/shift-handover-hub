@@ -11,7 +11,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { User, LogOut, Users, Settings, IdCard, Globe } from "lucide-react";
+import { User, LogOut, Users, Settings, IdCard, Globe, LayoutDashboard } from "lucide-react";
+import { useHasOperatorProfile } from "@/hooks/useHasOperatorProfile";
 
 export function UserMenu() {
   const navigate = useNavigate();
