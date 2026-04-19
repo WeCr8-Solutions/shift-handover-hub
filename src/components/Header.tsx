@@ -313,13 +313,13 @@ export function Header() {
                     <Button variant="ghost" size="icon" title="Notifications" className="relative">
                       <Bell className="w-5 h-5 text-muted-foreground" />
                       {notifBadgeCount > 0 && (
-                        <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
-                          {notifBadgeCount > 9 ? "9+" : notifBadgeCount}
+                        <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full flex items-center justify-center leading-none">
+                          {notifBadgeCount > 99 ? "99+" : notifBadgeCount}
                         </span>
                       )}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent align="end" className="w-96 p-0">
+                  <PopoverContent align="end" sideOffset={8} className="w-[min(22rem,calc(100vw-1rem))] p-0 overflow-hidden">
                     <NotificationPanel onClose={() => setNotifOpen(false)} />
                   </PopoverContent>
                 </Popover>
