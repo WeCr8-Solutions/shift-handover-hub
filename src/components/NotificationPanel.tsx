@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { AlertTriangle, AlertCircle, Info, Gift, Megaphone, Bell, Check, ExternalLink, X } from "lucide-react";
+import { AlertTriangle, AlertCircle, Info, Gift, Megaphone, Bell, Check, ExternalLink, X, MessagesSquare, Inbox, Building2, Briefcase } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,8 @@ import { Separator } from "@/components/ui/separator";
 import { useSmartAlerts, type SmartAlert, type SmartAlertSeverity } from "@/hooks/useSmartAlerts";
 import { useGlobalUpdates, type GlobalUpdate } from "@/hooks/useGlobalUpdates";
 import { useOrgContext } from "@/contexts/OrgContext";
+import { useOrgMessagesUnread } from "@/hooks/useOrgMessaging";
+import { useTalentInboxUnread } from "@/hooks/useTalentInboxUnread";
 import { differenceInDays } from "date-fns";
 
 const DISMISS_KEY_PREFIX = "complimentary_award_dismissed_";
@@ -159,9 +161,12 @@ interface NotificationPanelProps {
 }
 
 export function NotificationPanel({ onClose }: NotificationPanelProps) {
+  const navigate = useNavigate();
   const { organization } = useOrgContext();
   const { alerts } = useSmartAlerts();
   const { updates, unreadCount, acknowledgedIds, acknowledgeUpdate } = useGlobalUpdates();
+  const orgMessagesUnread = useOrgMessagesUnread();
+  const talentInboxUnread = useTalentInboxUnread();
   const [complimentaryDismissed, setComplimentaryDismissed] = useState(false);
 
   const isComplimentary = organization?.subscription_status === "complimentary";
@@ -182,8 +187,13 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
 
   const visibleUpdates = updates.filter((u) => u.is_visible_to_users && u.status === "live");
   const showComplimentary = isComplimentary && !complimentaryDismissed;
-
   const announcementCount = (showComplimentary ? 1 : 0);
+  const messagesTotal = orgMessagesUnread + talentInboxUnread;
+
+  const goTo = (path: string) => {
+    navigate(path);
+    onClose();
+  };
 
   return (
     <div className="w-full">
@@ -197,16 +207,19 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
         </Button>
       </div>
 
-      <Tabs defaultValue="alerts" className="w-full">
+      <Tabs defaultValue={messagesTotal > 0 ? "messages" : "alerts"} className="w-full">
         <TabsList className="w-full h-8 mx-3" style={{ width: "calc(100% - 1.5rem)" }}>
-          <TabsTrigger value="alerts" className="text-[11px] flex-1 h-6">
+          <TabsTrigger value="alerts" className="text-[10px] flex-1 h-6 px-1">
             Alerts {alerts.length > 0 && `(${alerts.length})`}
           </TabsTrigger>
-          <TabsTrigger value="updates" className="text-[11px] flex-1 h-6">
+          <TabsTrigger value="messages" className="text-[10px] flex-1 h-6 px-1">
+            Messages {messagesTotal > 0 && `(${messagesTotal})`}
+          </TabsTrigger>
+          <TabsTrigger value="updates" className="text-[10px] flex-1 h-6 px-1">
             Updates {unreadCount > 0 && `(${unreadCount})`}
           </TabsTrigger>
           {announcementCount > 0 && (
-            <TabsTrigger value="announcements" className="text-[11px] flex-1 h-6">
+            <TabsTrigger value="announcements" className="text-[10px] flex-1 h-6 px-1">
               Awards
             </TabsTrigger>
           )}
@@ -224,6 +237,67 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
                 {alerts.map((alert) => (
                   <SmartAlertItem key={alert.id} alert={alert} onNavigate={onClose} />
                 ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="messages" className="px-3 pb-3 mt-0">
+            {messagesTotal === 0 ? (
+              <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+                <MessagesSquare className="w-8 h-8 mb-2 opacity-40" />
+                <p className="text-xs">No new messages</p>
+                <div className="flex gap-2 mt-3">
+                  <Button variant="outline" size="sm" className="h-7 text-[10px]" onClick={() => goTo("/messages")}>
+                    <Building2 className="w-3 h-3 mr-1" /> Org Chat
+                  </Button>
+                  <Button variant="outline" size="sm" className="h-7 text-[10px]" onClick={() => goTo("/operator/inbox")}>
+                    <Briefcase className="w-3 h-3 mr-1" /> Recruiter Inbox
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-1 mt-2">
+                <button
+                  onClick={() => goTo("/messages")}
+                  className="w-full flex items-start gap-2.5 p-2.5 rounded-md hover:bg-secondary/60 transition-colors text-left"
+                >
+                  <Building2 className="w-4 h-4 mt-0.5 shrink-0 text-primary" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium leading-tight">Organization Messages</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
+                      Direct messages from connected teammates in {organization?.name ?? "your org"}
+                    </p>
+                  </div>
+                  {orgMessagesUnread > 0 ? (
+                    <Badge variant="default" className="text-[9px] shrink-0 mt-0.5">
+                      {orgMessagesUnread} new
+                    </Badge>
+                  ) : (
+                    <span className="text-[10px] text-muted-foreground shrink-0 mt-0.5">0</span>
+                  )}
+                </button>
+
+                <Separator className="my-1" />
+
+                <button
+                  onClick={() => goTo("/operator/inbox")}
+                  className="w-full flex items-start gap-2.5 p-2.5 rounded-md hover:bg-secondary/60 transition-colors text-left"
+                >
+                  <Briefcase className="w-4 h-4 mt-0.5 shrink-0 text-accent-foreground" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium leading-tight">Recruiter Inbox</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
+                      Talent platform outreach from external employers
+                    </p>
+                  </div>
+                  {talentInboxUnread > 0 ? (
+                    <Badge variant="default" className="text-[9px] shrink-0 mt-0.5">
+                      {talentInboxUnread} pending
+                    </Badge>
+                  ) : (
+                    <span className="text-[10px] text-muted-foreground shrink-0 mt-0.5">0</span>
+                  )}
+                </button>
               </div>
             )}
           </TabsContent>
@@ -268,6 +342,8 @@ export function useNotificationBadgeCount() {
   const { organization } = useOrgContext();
   const { alerts } = useSmartAlerts();
   const { unreadCount } = useGlobalUpdates();
+  const orgMessagesUnread = useOrgMessagesUnread();
+  const talentInboxUnread = useTalentInboxUnread();
 
   const isComplimentary = organization?.subscription_status === "complimentary";
 
@@ -279,5 +355,11 @@ export function useNotificationBadgeCount() {
     if (localStorage.getItem(key) === "true") setComplimentaryDismissed(true);
   }, [organization]);
 
-  return alerts.length + unreadCount + (isComplimentary && !complimentaryDismissed ? 1 : 0);
+  return (
+    alerts.length +
+    unreadCount +
+    orgMessagesUnread +
+    talentInboxUnread +
+    (isComplimentary && !complimentaryDismissed ? 1 : 0)
+  );
 }
