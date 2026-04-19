@@ -602,8 +602,8 @@ export default function OperatorProfile() {
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Wrench className="w-5 h-5" /> Machine proficiencies</CardTitle>
-                <CardDescription>Equipment you've operated.</CardDescription>
+                <CardTitle className="flex items-center gap-2"><Wrench className="w-5 h-5" /> Equipment & machine proficiencies</CardTitle>
+                <CardDescription>Any equipment, tools, or systems you operate — CNC, waterjet, diesel, welding, hydraulics, lab gear, etc.</CardDescription>
               </CardHeader>
               <CardContent>
                 <MachinesManager machines={machines} onChange={refresh} userId={user!.id} />
@@ -909,12 +909,23 @@ function SkillsManager({
           </Badge>
         ))}
       </div>
-      <div className="flex gap-2">
-        <Input placeholder="Skill (e.g. Mazatrol, GD&T, Setup)" value={skill} onChange={(e) => setSkill(e.target.value)} />
-        <select className="border rounded px-2 text-sm bg-background" value={proficiency} onChange={(e) => setProficiency(e.target.value as typeof PROFICIENCY_LEVELS[number])}>
-          {PROFICIENCY_LEVELS.map((p) => <option key={p} value={p}>{p}</option>)}
-        </select>
-        <Button onClick={add}><Plus className="w-4 h-4" /></Button>
+      <div className="flex flex-col sm:flex-row gap-2">
+        <Input
+          className="flex-1 min-w-0"
+          placeholder="Skill (e.g. Welding, Hydraulics, GD&T, Diesel Diagnostics, Waterjet Setup)"
+          value={skill}
+          onChange={(e) => setSkill(e.target.value)}
+        />
+        <div className="flex gap-2">
+          <select
+            className="flex-1 sm:flex-none border rounded px-3 h-10 text-sm bg-background"
+            value={proficiency}
+            onChange={(e) => setProficiency(e.target.value as typeof PROFICIENCY_LEVELS[number])}
+          >
+            {PROFICIENCY_LEVELS.map((p) => <option key={p} value={p}>{p}</option>)}
+          </select>
+          <Button onClick={add} className="shrink-0"><Plus className="w-4 h-4" /></Button>
+        </div>
       </div>
     </div>
   );
@@ -959,18 +970,47 @@ function MachinesManager({
           <Button size="sm" variant="ghost" onClick={() => remove(m.id)}><Trash2 className="w-4 h-4" /></Button>
         </div>
       ))}
-      <div className="border rounded p-3 space-y-2 bg-secondary/30">
-        <div className="grid grid-cols-2 gap-2">
-          <Input placeholder="Category (CNC Mill, Lathe, EDM)*" value={draft.machine_category} onChange={(e) => setDraft({ ...draft, machine_category: e.target.value })} />
-          <Input placeholder="Make (Haas, Mazak)" value={draft.machine_make} onChange={(e) => setDraft({ ...draft, machine_make: e.target.value })} />
-          <Input placeholder="Model" value={draft.machine_model} onChange={(e) => setDraft({ ...draft, machine_model: e.target.value })} />
-          <Input placeholder="Control (Fanuc, Mazatrol)" value={draft.control_type} onChange={(e) => setDraft({ ...draft, control_type: e.target.value })} />
-          <select className="border rounded px-2 text-sm bg-background" value={draft.proficiency} onChange={(e) => setDraft({ ...draft, proficiency: e.target.value })}>
+      <div className="border rounded p-3 space-y-3 bg-secondary/30">
+        <p className="text-xs text-muted-foreground">
+          Add any equipment, tools, or systems you operate — CNC, waterjet, press brake, diesel engines, hydraulic systems, welders, forklifts, plasma cutters, robots, lab instruments, etc.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <Input
+            placeholder="Category * (e.g. CNC Mill, Waterjet, Diesel Engine, MIG Welder)"
+            value={draft.machine_category}
+            onChange={(e) => setDraft({ ...draft, machine_category: e.target.value })}
+          />
+          <Input
+            placeholder="Make / Brand (e.g. Haas, Flow, Cummins, Lincoln)"
+            value={draft.machine_make}
+            onChange={(e) => setDraft({ ...draft, machine_make: e.target.value })}
+          />
+          <Input
+            placeholder="Model (e.g. VF-2, Mach 500, ISX15)"
+            value={draft.machine_model}
+            onChange={(e) => setDraft({ ...draft, machine_model: e.target.value })}
+          />
+          <Input
+            placeholder="Control / System (e.g. Fanuc, Siemens, ECM, N/A)"
+            value={draft.control_type}
+            onChange={(e) => setDraft({ ...draft, control_type: e.target.value })}
+          />
+          <select
+            className="border rounded px-3 h-10 text-sm bg-background w-full"
+            value={draft.proficiency}
+            onChange={(e) => setDraft({ ...draft, proficiency: e.target.value })}
+          >
             {PROFICIENCY_LEVELS.map((p) => <option key={p} value={p}>{p}</option>)}
           </select>
-          <Input type="number" step="0.5" placeholder="Years exp." value={draft.years_experience} onChange={(e) => setDraft({ ...draft, years_experience: e.target.value })} />
+          <Input
+            type="number"
+            step="0.5"
+            placeholder="Years of experience"
+            value={draft.years_experience}
+            onChange={(e) => setDraft({ ...draft, years_experience: e.target.value })}
+          />
         </div>
-        <Button onClick={add} className="gap-2"><Plus className="w-4 h-4" /> Add machine</Button>
+        <Button onClick={add} className="gap-2 w-full sm:w-auto"><Plus className="w-4 h-4" /> Add equipment</Button>
       </div>
     </div>
   );
