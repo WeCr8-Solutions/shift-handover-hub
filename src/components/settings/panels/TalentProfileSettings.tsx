@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Globe, Lock, ShieldCheck, ExternalLink, IdCard } from "lucide-react";
 import { useOperatorProfile } from "@/hooks/useOperatorProfile";
-import { getPublicTalentUrl } from "@/lib/talent-urls";
+import { getPublicTalentUrl } from "@/lib/talent/publicHost";
 
 /**
  * Talent Profile settings module — summary + deep-link to the full editor at
