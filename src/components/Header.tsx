@@ -13,6 +13,7 @@ import { useGlobalUpdates } from "@/hooks/useGlobalUpdates";
 import { SystemStatusIndicator } from "@/components/updates/SystemStatusIndicator";
 import { UpdateAcknowledgeModal } from "@/components/updates/UpdateAcknowledgeModal";
 import { NotificationPanel, useNotificationBadgeCount } from "@/components/NotificationPanel";
+import { DeviceNotificationDispatcher } from "@/components/DeviceNotificationDispatcher";
 import { useTalentInboxUnread } from "@/hooks/useTalentInboxUnread";
 import { useOrgMessagesUnread } from "@/hooks/useOrgMessaging";
 import { Button } from "@/components/ui/button";
@@ -119,6 +120,7 @@ export function Header() {
 
   return (
     <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+      {user && <DeviceNotificationDispatcher />}
       <div className="container py-3">
         <div className="flex items-center justify-between gap-2">
           {/* Logo */}

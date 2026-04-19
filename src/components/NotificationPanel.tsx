@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { AlertTriangle, AlertCircle, Info, Gift, Megaphone, Bell, Check, ExternalLink, X, MessagesSquare, Inbox, Building2, Briefcase } from "lucide-react";
+import { AlertTriangle, AlertCircle, Info, Gift, Megaphone, Bell, BellRing, Check, ExternalLink, X, MessagesSquare, Inbox, Building2, Briefcase } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,7 @@ import { useGlobalUpdates, type GlobalUpdate } from "@/hooks/useGlobalUpdates";
 import { useOrgContext } from "@/contexts/OrgContext";
 import { useOrgMessagesUnread } from "@/hooks/useOrgMessaging";
 import { useTalentInboxUnread } from "@/hooks/useTalentInboxUnread";
+import { useDeviceNotifications } from "@/hooks/useDeviceNotifications";
 import { differenceInDays } from "date-fns";
 
 const DISMISS_KEY_PREFIX = "complimentary_award_dismissed_";
@@ -167,6 +168,7 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
   const { updates, unreadCount, acknowledgedIds, acknowledgeUpdate } = useGlobalUpdates();
   const orgMessagesUnread = useOrgMessagesUnread();
   const talentInboxUnread = useTalentInboxUnread();
+  const deviceNotif = useDeviceNotifications();
   const [complimentaryDismissed, setComplimentaryDismissed] = useState(false);
 
   const isComplimentary = organization?.subscription_status === "complimentary";
@@ -206,6 +208,38 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
           <X className="w-3.5 h-3.5" />
         </Button>
       </div>
+
+      {deviceNotif.canPrompt && (
+        <div className="mx-3 mb-2 flex items-start gap-2 rounded-md border border-primary/30 bg-primary/5 p-2.5">
+          <BellRing className="w-4 h-4 mt-0.5 shrink-0 text-primary" />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-medium leading-tight">Enable device alerts</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
+              Get notified on this device when teammates DM you or recruiters reach out.
+            </p>
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              <Button
+                size="sm"
+                className="h-6 text-[10px] px-2"
+                onClick={async () => {
+                  const r = await deviceNotif.requestPermission();
+                  if (r !== "default") deviceNotif.dismissPrompt();
+                }}
+              >
+                Enable
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 text-[10px] px-2"
+                onClick={deviceNotif.dismissPrompt}
+              >
+                Not now
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Tabs defaultValue={messagesTotal > 0 ? "messages" : "alerts"} className="w-full">
         <div className="px-3">

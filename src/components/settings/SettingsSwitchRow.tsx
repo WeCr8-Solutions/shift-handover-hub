@@ -13,6 +13,8 @@ interface SettingsSwitchRowProps {
   onCheckedChange: (checked: boolean) => void;
   /** Whether to render inside a bordered container (default: false) */
   bordered?: boolean;
+  /** Disable the switch + dim the row */
+  disabled?: boolean;
   /** Additional className for the container */
   className?: string;
 }
@@ -27,23 +29,25 @@ export function SettingsSwitchRow({
   checked,
   onCheckedChange,
   bordered = false,
+  disabled = false,
   className,
 }: SettingsSwitchRowProps) {
   return (
     <div
       className={cn(
-        "flex items-center justify-between",
+        "flex items-center justify-between gap-3",
         bordered && "rounded-lg border p-3",
+        disabled && "opacity-60",
         className,
       )}
     >
-      <div>
+      <div className="min-w-0">
         <Label>{label}</Label>
         {description && (
           <p className="text-sm text-muted-foreground">{description}</p>
         )}
       </div>
-      <Switch checked={checked} onCheckedChange={onCheckedChange} />
+      <Switch checked={checked} onCheckedChange={onCheckedChange} disabled={disabled} />
     </div>
   );
 }
