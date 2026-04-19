@@ -168,6 +168,7 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
   const { updates, unreadCount, acknowledgedIds, acknowledgeUpdate } = useGlobalUpdates();
   const orgMessagesUnread = useOrgMessagesUnread();
   const talentInboxUnread = useTalentInboxUnread();
+  const deviceNotif = useDeviceNotifications();
   const [complimentaryDismissed, setComplimentaryDismissed] = useState(false);
 
   const isComplimentary = organization?.subscription_status === "complimentary";
