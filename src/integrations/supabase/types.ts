@@ -6591,6 +6591,8 @@ export type Database = {
           display_name: string
           email: string
           id: string
+          rob_accepted_at: string | null
+          rob_version: string | null
           updated_at: string
           us_person_declaration_text: string | null
           us_person_declared: boolean
@@ -6603,6 +6605,8 @@ export type Database = {
           display_name: string
           email: string
           id?: string
+          rob_accepted_at?: string | null
+          rob_version?: string | null
           updated_at?: string
           us_person_declaration_text?: string | null
           us_person_declared?: boolean
@@ -6615,6 +6619,8 @@ export type Database = {
           display_name?: string
           email?: string
           id?: string
+          rob_accepted_at?: string | null
+          rob_version?: string | null
           updated_at?: string
           us_person_declaration_text?: string | null
           us_person_declared?: boolean
