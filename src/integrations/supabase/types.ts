@@ -403,46 +403,70 @@ export type Database = {
           author: string
           body: string
           category: string
+          cover_image_url: string | null
           created_at: string
           created_by: string | null
           excerpt: string
+          featured: boolean
+          gallery: Json
           id: string
           is_published: boolean
           published_date: string
           read_time: string
+          seo_description: string | null
+          seo_title: string | null
           slug: string
+          tags: string[]
           title: string
           updated_at: string
+          video_provider: string | null
+          video_url: string | null
         }
         Insert: {
           author?: string
           body?: string
           category?: string
+          cover_image_url?: string | null
           created_at?: string
           created_by?: string | null
           excerpt?: string
+          featured?: boolean
+          gallery?: Json
           id?: string
           is_published?: boolean
           published_date?: string
           read_time?: string
+          seo_description?: string | null
+          seo_title?: string | null
           slug: string
+          tags?: string[]
           title: string
           updated_at?: string
+          video_provider?: string | null
+          video_url?: string | null
         }
         Update: {
           author?: string
           body?: string
           category?: string
+          cover_image_url?: string | null
           created_at?: string
           created_by?: string | null
           excerpt?: string
+          featured?: boolean
+          gallery?: Json
           id?: string
           is_published?: boolean
           published_date?: string
           read_time?: string
+          seo_description?: string | null
+          seo_title?: string | null
           slug?: string
+          tags?: string[]
           title?: string
           updated_at?: string
+          video_provider?: string | null
+          video_url?: string | null
         }
         Relationships: []
       }
