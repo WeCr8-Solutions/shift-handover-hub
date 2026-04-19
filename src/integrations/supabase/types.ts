@@ -5437,6 +5437,7 @@ export type Database = {
         Row: {
           accent_color: string | null
           avatar_url: string | null
+          banner_url: string | null
           bio: string | null
           business_hours: Json | null
           card_slug: string | null
@@ -5484,6 +5485,7 @@ export type Database = {
         Insert: {
           accent_color?: string | null
           avatar_url?: string | null
+          banner_url?: string | null
           bio?: string | null
           business_hours?: Json | null
           card_slug?: string | null
@@ -5531,6 +5533,7 @@ export type Database = {
         Update: {
           accent_color?: string | null
           avatar_url?: string | null
+          banner_url?: string | null
           bio?: string | null
           business_hours?: Json | null
           card_slug?: string | null
@@ -9985,9 +9988,13 @@ export type Database = {
         Args: { _username: string }
         Returns: {
           avatar_url: string
+          banner_url: string
           bio: string
           display_name: string
+          facebook_url: string
+          github_url: string
           headline: string
+          instagram_url: string
           linkedin_url: string
           location_city: string
           location_country: string
@@ -9997,9 +10004,12 @@ export type Database = {
           preferred_employment_types: string[]
           public_published_at: string
           public_username: string
+          twitter_url: string
           user_id: string
+          website_url: string
           willing_to_relocate: boolean
           years_experience: number
+          youtube_url: string
         }[]
       }
       get_public_operator_social_counts: {
