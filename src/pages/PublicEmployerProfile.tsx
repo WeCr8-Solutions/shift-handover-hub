@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Building2, Globe, Linkedin, MapPin, Mail, Briefcase, ArrowLeft } from "lucide-react";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
-import { Footer } from "@/components/marketing/Footer";
+import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 
 interface Employer {
   id: string;
