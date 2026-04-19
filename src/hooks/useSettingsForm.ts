@@ -30,6 +30,10 @@ export interface UseSettingsFormReturn<T extends Record<string, unknown>> {
   save: () => Promise<void>;
   /** Revert form to last-saved state */
   discard: () => void;
+  /** Last save error (null when none). Survives until next save or clearError. */
+  lastError: string | null;
+  /** Manually clear the lastError (e.g. when the user dismisses the banner) */
+  clearError: () => void;
 }
 
 /**
@@ -65,6 +69,7 @@ export function useSettingsForm<T extends Record<string, unknown>>({
   const [form, setForm] = useState<T>(defaults);
   const [initial, setInitial] = useState<T>(defaults);
   const [isSaving, setIsSaving] = useState(false);
+  const [lastError, setLastError] = useState<string | null>(null);
   /**
    * Guard: only apply backend data on the *first* successful load.
    * Subsequent refetches (e.g. after save) should NOT reset the form –
@@ -101,18 +106,22 @@ export function useSettingsForm<T extends Record<string, unknown>>({
         settingType,
       );
       if (error) {
+        setLastError(error);
         toast({
           title: "Failed to save settings",
           description: error,
           variant: "destructive",
         });
       } else {
+        setLastError(null);
         // Optimistically update initial to the saved form so isDirty becomes false.
-        // The backend refetch triggered by updateSetting will keep the settings
-        // state in sync, but we don't re-apply it to the form (hasLoadedRef guard).
         setInitial(form);
         toast({ title: successMessage });
       }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Unexpected error while saving";
+      setLastError(msg);
+      toast({ title: "Failed to save settings", description: msg, variant: "destructive" });
     } finally {
       setIsSaving(false);
     }
@@ -120,7 +129,10 @@ export function useSettingsForm<T extends Record<string, unknown>>({
 
   const discard = useCallback(() => {
     setForm(initial);
+    setLastError(null);
   }, [initial]);
+
+  const clearError = useCallback(() => setLastError(null), []);
 
   return {
     form,
@@ -131,5 +143,7 @@ export function useSettingsForm<T extends Record<string, unknown>>({
     loading,
     save,
     discard,
+    lastError,
+    clearError,
   };
 }
