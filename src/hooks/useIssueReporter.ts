@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
+import { issueReporterRegistry, breadcrumbs } from "@/lib/issueReporter";
 
 interface ConsoleLog {
   level: "log" | "warn" | "error" | "info" | "debug";
@@ -149,15 +150,25 @@ export function useIssueReporter() {
       // Get the latest error if any
       const latestError = errorsRef.current[errorsRef.current.length - 1];
 
+      // Snapshot active modules from the registry (page-aware context)
+      const activeModules = issueReporterRegistry.snapshot();
+      const recentBreadcrumbs = breadcrumbs.snapshot();
+
       // Build metadata for the database function
       const metadata = {
         ...PRODUCTION_CONTEXT,
         screen_width: window.innerWidth,
         screen_height: window.innerHeight,
+        viewport: `${window.innerWidth}x${window.innerHeight}`,
+        device_pixel_ratio: window.devicePixelRatio,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         language: navigator.language,
         user_agent: navigator.userAgent,
         recent_errors_count: errorsRef.current.length,
+        // Registry-driven, page-aware context
+        active_modules: activeModules,
+        breadcrumbs: recentBreadcrumbs,
+        breadcrumb_count: recentBreadcrumbs.length,
       };
 
       // Prepare and sanitize console logs to prevent leaking secrets
