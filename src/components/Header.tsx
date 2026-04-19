@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Clock, Bell, Shield, ListTodo, Settings, Users, FlaskConical, Bug, Megaphone, Menu, Wrench, ChevronDown, LayoutDashboard, Monitor, Factory, Eye, History, FileQuestion, ClipboardCheck, GraduationCap, IdCard, Globe } from "lucide-react";
+import { Clock, Bell, Shield, ListTodo, Settings, Users, FlaskConical, Bug, Megaphone, Menu, Wrench, ChevronDown, LayoutDashboard, Monitor, Factory, Eye, History, FileQuestion, ClipboardCheck, GraduationCap, IdCard, Globe, Inbox } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { getCurrentShift } from "@/lib/mockData";
 import { StatusBadge } from "./StatusBadge";
@@ -13,6 +13,7 @@ import { useGlobalUpdates } from "@/hooks/useGlobalUpdates";
 import { SystemStatusIndicator } from "@/components/updates/SystemStatusIndicator";
 import { UpdateAcknowledgeModal } from "@/components/updates/UpdateAcknowledgeModal";
 import { NotificationPanel, useNotificationBadgeCount } from "@/components/NotificationPanel";
+import { useTalentInboxUnread } from "@/hooks/useTalentInboxUnread";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -24,13 +25,18 @@ import { platformFeatures, extensionItems, industryCategories, learnCategories, 
 import { industrySlugFromName } from "@/pages/industries/industryData";
 import joblineLogo from "@/assets/jobline-logo.png";
 
-function NavIconButton({ to, icon: Icon, label, iconClass }: { to: string; icon: React.ElementType; label: string; iconClass?: string }) {
+function NavIconButton({ to, icon: Icon, label, iconClass, badgeCount }: { to: string; icon: React.ElementType; label: string; iconClass?: string; badgeCount?: number }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Button variant="ghost" size="icon" asChild>
+        <Button variant="ghost" size="icon" asChild className="relative">
           <Link to={to}>
             <Icon className={`w-5 h-5 ${iconClass || ""}`} />
+            {badgeCount && badgeCount > 0 ? (
+              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-semibold flex items-center justify-center">
+                {badgeCount > 99 ? "99+" : badgeCount}
+              </span>
+            ) : null}
           </Link>
         </Button>
       </TooltipTrigger>
@@ -92,6 +98,7 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const notifBadgeCount = useNotificationBadgeCount();
+  const talentInboxUnread = useTalentInboxUnread();
   const isMobile = useIsMobile();
   const shift = getCurrentShift();
 
@@ -179,6 +186,9 @@ export function Header() {
               {hasOrgSupervisorAccess && <NavIconButton to="/teams" icon={Users} label="Team Management" />}
               {(hasOrgAdminAccess || hasOrgSupervisorAccess) && <NavIconButton to="/oap/employer" icon={ClipboardCheck} label="OAP Employer Console" />}
               {(hasOrgAdminAccess || hasOrgSupervisorAccess) && <NavIconButton to="/gca/employer" icon={GraduationCap} label="GCA Employer Console" />}
+              {user && hasTalentProfile && (
+                <NavIconButton to="/operator/inbox" icon={Inbox} label="Recruiter Inbox" badgeCount={talentInboxUnread} />
+              )}
               {user && <NavIconButton to="/settings" icon={Settings} label="Settings" />}
               {hasAdminAccess && (
                 <NavIconButton to="/admin" icon={Shield} label={hasOrgAdminAccess ? "Admin Dashboard" : "Supervisor Dashboard"} iconClass="text-primary" />
@@ -378,6 +388,9 @@ export function Header() {
                           {hasOrgSupervisorAccess && <MobileNavLink to="/teams" icon={Users} label="Team Management" onClose={() => setMobileMenuOpen(false)} />}
                           {(hasOrgAdminAccess || hasOrgSupervisorAccess) && <MobileNavLink to="/oap/employer" icon={ClipboardCheck} label="OAP Employer Console" onClose={() => setMobileMenuOpen(false)} />}
                           {(hasOrgAdminAccess || hasOrgSupervisorAccess) && <MobileNavLink to="/gca/employer" icon={GraduationCap} label="GCA Employer Console" onClose={() => setMobileMenuOpen(false)} />}
+                          {hasTalentProfile && (
+                            <MobileNavLink to="/operator/inbox" icon={Inbox} label={`Recruiter Inbox${talentInboxUnread > 0 ? ` (${talentInboxUnread})` : ""}`} onClose={() => setMobileMenuOpen(false)} />
+                          )}
                           <MobileNavLink to="/settings" icon={Settings} label="Settings" onClose={() => setMobileMenuOpen(false)} />
                           {hasAdminAccess && (
                             <MobileNavLink to="/admin" icon={Shield} label={hasOrgAdminAccess ? "Admin Dashboard" : "Supervisor Dashboard"} iconClass="text-primary" onClose={() => setMobileMenuOpen(false)} />

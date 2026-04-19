@@ -255,6 +255,7 @@ const App = () => (
                     <Route path="/talent/browse" element={<TalentBrowse />} />
                     <Route path="/talent/search" element={<TalentSearch />} />
                     <Route path="/talent/:username" element={<PublicOperatorProfile />} />
+                    <Route path="/operator/inbox" element={<OperatorInbox />} />
                     <Route path="/card/:slug" element={<PublicBusinessCard />} />
                     <Route path="/employers" element={<EmployersIndex />} />
                     <Route path="/employers/browse" element={<EmployerBrowse />} />

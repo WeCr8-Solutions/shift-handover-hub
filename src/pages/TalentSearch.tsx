@@ -19,6 +19,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { withJoblineUtm } from "@/lib/talent/outboundLinks";
+import { MessageThread } from "@/components/talent/MessageThread";
 
 export default function Talent() {
   const navigate = useNavigate();
@@ -255,16 +256,21 @@ export default function Talent() {
             ) : (
               outbound.map((m) => (
                 <Card key={m.id}>
-                  <CardContent className="pt-6 space-y-1">
+                  <CardContent className="pt-6 space-y-2">
                     <div className="flex items-center justify-between">
                       <p className="font-medium">{m.subject}</p>
                       <Badge variant={m.candidate_response === "accepted" ? "default" : m.candidate_response === "declined" ? "destructive" : "secondary"}>
                         {m.candidate_response}
                       </Badge>
                     </div>
-                    <p className="text-sm text-muted-foreground">{m.message}</p>
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">{m.message}</p>
                     {m.candidate_response_message && (
-                      <p className="text-sm border-l-2 border-primary pl-2 mt-2">Reply: {m.candidate_response_message}</p>
+                      <p className="text-sm border-l-2 border-primary pl-2 mt-2">
+                        <span className="font-medium">Candidate reply:</span> {m.candidate_response_message}
+                      </p>
+                    )}
+                    {m.candidate_response === "accepted" && (
+                      <MessageThread requestId={m.id} viewerRole="employer" />
                     )}
                   </CardContent>
                 </Card>
