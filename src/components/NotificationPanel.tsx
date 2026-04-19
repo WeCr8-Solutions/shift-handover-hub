@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { AlertTriangle, AlertCircle, Info, Gift, Megaphone, Bell, Check, ExternalLink, X } from "lucide-react";
+import { AlertTriangle, AlertCircle, Info, Gift, Megaphone, Bell, Check, ExternalLink, X, MessagesSquare, Inbox, Building2, Briefcase } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,8 @@ import { Separator } from "@/components/ui/separator";
 import { useSmartAlerts, type SmartAlert, type SmartAlertSeverity } from "@/hooks/useSmartAlerts";
 import { useGlobalUpdates, type GlobalUpdate } from "@/hooks/useGlobalUpdates";
 import { useOrgContext } from "@/contexts/OrgContext";
+import { useOrgMessagesUnread } from "@/hooks/useOrgMessaging";
+import { useTalentInboxUnread } from "@/hooks/useTalentInboxUnread";
 import { differenceInDays } from "date-fns";
 
 const DISMISS_KEY_PREFIX = "complimentary_award_dismissed_";
