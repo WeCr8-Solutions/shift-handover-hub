@@ -114,7 +114,7 @@ async function fetchTalentMeta(username: string): Promise<Meta | null> {
     const p = Array.isArray(rows) ? rows[0] : null;
     if (!p) return null;
     const loc = [p.location_city, p.location_region].filter(Boolean).join(", ");
-    const headline = p.headline ?? "Verified Machinist Profile";
+    const headline = p.headline ?? "Verified Talent Profile";
     const desc =
       (p.bio ?? `${headline}${loc ? ` · ${loc}` : ""} — Verified profile on JobLine.ai`).slice(
         0,
