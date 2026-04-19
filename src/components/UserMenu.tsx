@@ -11,11 +11,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { User, LogOut, Users, Settings, IdCard, Globe } from "lucide-react";
+import { User, LogOut, Users, Settings, IdCard, Globe, LayoutDashboard } from "lucide-react";
+import { useHasOperatorProfile } from "@/hooks/useHasOperatorProfile";
 
 export function UserMenu() {
   const navigate = useNavigate();
   const { user, profile, signOut } = useAuth();
+  const { hasProfile: hasTalentProfile } = useHasOperatorProfile();
 
   const handleSignOut = async () => {
     await signOut();
@@ -62,6 +64,12 @@ export function UserMenu() {
           <IdCard className="mr-2 h-4 w-4" />
           <span>Talent Profile</span>
         </DropdownMenuItem>
+        {hasTalentProfile && (
+          <DropdownMenuItem onClick={() => navigate("/talent/dashboard")}>
+            <LayoutDashboard className="mr-2 h-4 w-4" />
+            <span>Talent Dashboard</span>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem onClick={() => navigate("/talent")}>
           <Globe className="mr-2 h-4 w-4" />
           <span>Talent Network</span>

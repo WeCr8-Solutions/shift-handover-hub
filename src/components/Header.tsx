@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Clock, Bell, Shield, ListTodo, Settings, Users, FlaskConical, Bug, Megaphone, Menu, Wrench, ChevronDown, LayoutDashboard, Monitor, Factory, Eye, History, FileQuestion, ClipboardCheck, GraduationCap } from "lucide-react";
+import { Clock, Bell, Shield, ListTodo, Settings, Users, FlaskConical, Bug, Megaphone, Menu, Wrench, ChevronDown, LayoutDashboard, Monitor, Factory, Eye, History, FileQuestion, ClipboardCheck, GraduationCap, IdCard, Globe } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { getCurrentShift } from "@/lib/mockData";
 import { StatusBadge } from "./StatusBadge";
@@ -8,6 +8,7 @@ import { TeamSelector } from "./TeamSelector";
 import { IssueReportDialog } from "./IssueReportDialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAccess } from "@/hooks/useAdminData";
+import { useHasOperatorProfile } from "@/hooks/useHasOperatorProfile";
 import { useGlobalUpdates } from "@/hooks/useGlobalUpdates";
 import { SystemStatusIndicator } from "@/components/updates/SystemStatusIndicator";
 import { UpdateAcknowledgeModal } from "@/components/updates/UpdateAcknowledgeModal";
@@ -84,6 +85,7 @@ export function Header() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { hasAdminAccess, hasOrgAdminAccess, hasOrgSupervisorAccess, hasTestingAccess } = useAdminAccess();
+  const { hasProfile: hasTalentProfile } = useHasOperatorProfile();
   const { unreadCount, systemStatus, unacknowledgedRequired, acknowledgeUpdate } = useGlobalUpdates();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [issueDialogOpen, setIssueDialogOpen] = useState(false);
@@ -118,8 +120,8 @@ export function Header() {
           {/* Desktop nav — flex-1 so it never pushes the right-side off screen */}
           {!isMobile && (
             <div className="flex items-center gap-1 min-w-0 overflow-hidden flex-1">
-              {/* Dashboard button with role-aware options */}
-              {user && canViewProductionFloor ? (
+              {/* Dashboard button — context-aware: production + talent dashboards */}
+              {user && (canViewProductionFloor || hasTalentProfile) ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="default" size="sm" className="gap-1.5 shrink-0">
@@ -129,14 +131,33 @@ export function Header() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start">
-                    <DropdownMenuItem onClick={() => navigate("/dashboard")}>
-                      <Factory className="w-4 h-4 mr-2" />
-                      Production Floor
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate("/dashboard?view=operator")}>
-                      <Eye className="w-4 h-4 mr-2" />
-                      Operator View
-                    </DropdownMenuItem>
+                    {canViewProductionFloor && (
+                      <>
+                        <DropdownMenuLabel className="text-xs text-muted-foreground">Shop Floor</DropdownMenuLabel>
+                        <DropdownMenuItem onClick={() => navigate("/dashboard")}>
+                          <Factory className="w-4 h-4 mr-2" />
+                          Production Floor
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate("/dashboard?view=operator")}>
+                          <Eye className="w-4 h-4 mr-2" />
+                          Operator View
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                    {hasTalentProfile && canViewProductionFloor && <DropdownMenuSeparator />}
+                    {hasTalentProfile && (
+                      <>
+                        <DropdownMenuLabel className="text-xs text-muted-foreground">Talent Network</DropdownMenuLabel>
+                        <DropdownMenuItem onClick={() => navigate("/talent/dashboard")}>
+                          <IdCard className="w-4 h-4 mr-2" />
+                          Talent Dashboard
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate("/talent")}>
+                          <Globe className="w-4 h-4 mr-2" />
+                          Browse Talent
+                        </DropdownMenuItem>
+                      </>
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : user ? (
@@ -321,16 +342,26 @@ export function Header() {
                   </SheetHeader>
                   <div className="flex flex-col gap-4 mt-4">
                     {/* Dashboard links at top */}
-                    {user && canViewProductionFloor && (
+                    {user && (canViewProductionFloor || hasTalentProfile) && (
                       <div className="flex flex-col gap-1">
-                        <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-2 py-2.5 rounded-md bg-primary/10 hover:bg-primary/20 transition-colors">
-                          <Factory className="w-5 h-5 text-primary" />
-                          <span className="text-sm font-medium">Production Floor</span>
-                        </Link>
-                        <Link to="/dashboard?view=operator" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-2 py-2.5 rounded-md hover:bg-secondary transition-colors">
-                          <Eye className="w-5 h-5 text-muted-foreground" />
-                          <span className="text-sm font-medium">Operator View</span>
-                        </Link>
+                        {canViewProductionFloor && (
+                          <>
+                            <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-2 py-2.5 rounded-md bg-primary/10 hover:bg-primary/20 transition-colors">
+                              <Factory className="w-5 h-5 text-primary" />
+                              <span className="text-sm font-medium">Production Floor</span>
+                            </Link>
+                            <Link to="/dashboard?view=operator" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-2 py-2.5 rounded-md hover:bg-secondary transition-colors">
+                              <Eye className="w-5 h-5 text-muted-foreground" />
+                              <span className="text-sm font-medium">Operator View</span>
+                            </Link>
+                          </>
+                        )}
+                        {hasTalentProfile && (
+                          <Link to="/talent/dashboard" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-2 py-2.5 rounded-md bg-primary/10 hover:bg-primary/20 transition-colors">
+                            <IdCard className="w-5 h-5 text-primary" />
+                            <span className="text-sm font-medium">Talent Dashboard</span>
+                          </Link>
+                        )}
                       </div>
                     )}
                     {user && <TeamSelector />}
