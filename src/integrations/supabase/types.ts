@@ -6412,6 +6412,7 @@ export type Database = {
       }
       organizations: {
         Row: {
+          ai_enabled: boolean
           billing_email: string | null
           created_at: string
           created_by: string
@@ -6430,6 +6431,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          ai_enabled?: boolean
           billing_email?: string | null
           created_at?: string
           created_by: string
@@ -6448,6 +6450,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          ai_enabled?: boolean
           billing_email?: string | null
           created_at?: string
           created_by?: string
