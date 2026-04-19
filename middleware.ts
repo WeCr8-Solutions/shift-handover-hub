@@ -56,9 +56,9 @@ const DEFAULT_META: Meta = {
 function metaForPath(pathname: string): Meta | null {
   if (pathname === "/talent" || pathname === "/talent/") {
     return {
-      title: "Talent Network — Verified CNC Operators & Machinists | JobLine.ai",
+      title: "Talent Network — Verified Professionals & Credentials | JobLine.ai",
       description:
-        "Discover verified CNC operators, machinists, and shop-floor talent. Browse public profiles with skills, certifications, and work history.",
+        "Discover verified professionals across every trade and discipline. Browse public profiles with skills, certifications, accomplishments, and work history.",
       image: `${BASE}/talent-og.jpg`,
       url: `${BASE}/talent`,
     };
