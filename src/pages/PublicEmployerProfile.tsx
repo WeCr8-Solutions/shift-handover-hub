@@ -275,7 +275,7 @@ export default function PublicEmployerProfile() {
         </div>
       </div>
 
-      <Footer />
+      <MarketingFooter />
     </div>
   );
 }
