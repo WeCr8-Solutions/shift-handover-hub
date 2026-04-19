@@ -174,6 +174,7 @@ const App = () => (
                   <ReleaseBadge />
                   <GuidedTour />
                   <WelcomeModal />
+                  <FreeTalentProfileRibbon />
                   <Suspense fallback={<RouteFallback />}>
                   <Routes>
                     <Route path="/" element={<Landing />} />
