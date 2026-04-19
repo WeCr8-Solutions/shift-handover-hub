@@ -130,6 +130,8 @@ const OperatorInbox = lazy(() => import("./pages/OperatorInbox"));
 const TalentDashboard = lazy(() => import("./pages/TalentDashboard"));
 const ShopFloorDisplay = lazy(() => import("./pages/ShopFloorDisplay"));
 const PublicBusinessCard = lazy(() => import("./pages/PublicBusinessCard"));
+const EmployersIndex = lazy(() => import("./pages/EmployersIndex"));
+const PublicEmployerProfile = lazy(() => import("./pages/PublicEmployerProfile"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -252,6 +254,8 @@ const App = () => (
                     <Route path="/talent/search" element={<TalentSearch />} />
                     <Route path="/talent/:username" element={<PublicOperatorProfile />} />
                     <Route path="/card/:slug" element={<PublicBusinessCard />} />
+                    <Route path="/employers" element={<EmployersIndex />} />
+                    <Route path="/employers/:slug" element={<PublicEmployerProfile />} />
                     <Route path="/operator/profile" element={<OperatorProfile />} />
                     <Route path="/resources/oap" element={<OperatorAcceptanceProgram />} />
                     <Route path="/resources/glossary" element={<IndustryGlossary />} />

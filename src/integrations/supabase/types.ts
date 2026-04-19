@@ -9900,6 +9900,45 @@ export type Database = {
         Returns: Json
       }
       fetch_display_data: { Args: { _token: string }; Returns: Json }
+      get_public_employer: {
+        Args: { _slug: string }
+        Returns: {
+          created_at: string
+          description: string
+          employer_about: string
+          employer_cover_url: string
+          employer_hiring_email: string
+          employer_industries: string[]
+          employer_linkedin: string
+          employer_locations: string[]
+          employer_logo_url: string
+          employer_paid_contact: boolean
+          employer_tagline: string
+          employer_website: string
+          id: string
+          logo_url: string
+          name: string
+          organization_kind: Database["public"]["Enums"]["organization_kind"]
+          public_slug: string
+        }[]
+      }
+      get_public_employer_jobs: {
+        Args: { _slug: string }
+        Returns: {
+          description: string
+          employment_type: string
+          expires_at: string
+          id: string
+          location: string
+          organization_id: string
+          published_at: string
+          remote: boolean
+          required_skills: string[]
+          salary_max: number
+          salary_min: number
+          title: string
+        }[]
+      }
       get_public_operator_profile: {
         Args: { _username: string }
         Returns: {
@@ -9993,6 +10032,19 @@ export type Database = {
         Returns: boolean
       }
       is_verified_employer: { Args: { _user_id: string }; Returns: boolean }
+      list_public_employers: {
+        Args: { _limit?: number; _search?: string }
+        Returns: {
+          employer_cover_url: string
+          employer_industries: string[]
+          employer_locations: string[]
+          employer_logo_url: string
+          employer_tagline: string
+          id: string
+          name: string
+          public_slug: string
+        }[]
+      }
       list_public_operator_profiles:
         | {
             Args: { _limit?: number; _search?: string }
