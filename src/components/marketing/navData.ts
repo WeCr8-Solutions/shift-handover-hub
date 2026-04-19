@@ -134,18 +134,18 @@ export const learnCategories: LearnCategory[] = [
     ],
   },
   {
-    heading: "Talent",
-    items: [
-      { label: "Talent Network", href: "/talent", icon: Users, desc: "Browse certified CNC operators & machinists" },
-      { label: "Find Talent", href: "/talent/search", icon: Briefcase, desc: "Search verified operators by skill & cert" },
-    ],
-  },
-  {
     heading: "Blog",
     items: [
       { label: "Blog", href: "/blog", icon: Newspaper, desc: "Tips, best practices & industry news" },
     ],
   },
+];
+
+/* ── Talent ── */
+
+export const talentItems: NavLinkItem[] = [
+  { label: "Talent Network", href: "/talent", icon: Users, desc: "Browse certified CNC operators & machinists" },
+  { label: "Find Talent", href: "/talent/search", icon: Briefcase, desc: "Search verified operators by skill & cert" },
 ];
 
 /* ── Flat learnItems for backward compat ── */

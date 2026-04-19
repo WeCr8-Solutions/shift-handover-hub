@@ -21,13 +21,14 @@ import {
   industryCategories,
   learnCategories,
   companyItems,
+  talentItems,
 } from "./navData";
 
 interface MarketingNavProps {
   showPricing?: boolean;
 }
 
-type MenuKey = "products" | "industries" | "learn" | "company" | null;
+type MenuKey = "products" | "industries" | "learn" | "talent" | "company" | null;
 
 export function MarketingNav({ showPricing = true }: MarketingNavProps) {
   const navigate = useNavigate();
@@ -94,6 +95,7 @@ export function MarketingNav({ showPricing = true }: MarketingNavProps) {
           <DropdownTrigger label="Products" menuKey="products" />
           <DropdownTrigger label="Industries" menuKey="industries" />
           <DropdownTrigger label="Learn" menuKey="learn" />
+          <DropdownTrigger label="Talent" menuKey="talent" />
           <DropdownTrigger label="Company" menuKey="company" />
 
           <button onClick={() => go("/use-cases")} className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-md">
@@ -260,6 +262,26 @@ export function MarketingNav({ showPricing = true }: MarketingNavProps) {
               </div>
             )}
 
+            {/* Talent */}
+            {openMenu === "talent" && (
+              <div className="max-w-md">
+                <div className="space-y-1">
+                  {talentItems.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <button key={item.href} onClick={() => go(item.href)} className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-accent/50 transition-colors text-left w-full group">
+                        <Icon className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                        <div>
+                          <div className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">{item.label}</div>
+                          {item.desc && <div className="text-xs text-muted-foreground mt-0.5">{item.desc}</div>}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Company */}
             {openMenu === "company" && (
               <div className="max-w-md">
@@ -334,6 +356,14 @@ export function MarketingNav({ showPricing = true }: MarketingNavProps) {
                   </button>
                 ))}
               </div>
+            ))}
+          </MobileSection>
+
+          <MobileSection title="Talent">
+            {talentItems.map((item) => (
+              <button key={item.href} onClick={() => go(item.href)} className="block w-full text-left px-3 py-2 text-sm text-foreground hover:bg-accent rounded-md">
+                {item.label}
+              </button>
             ))}
           </MobileSection>
 
