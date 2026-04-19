@@ -5,10 +5,37 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const STORAGE_KEY = "jl_free_talent_ribbon_dismissed_v1";
 
+// Routes where the ribbon should NEVER show (app / authenticated / utility)
+const HIDDEN_PREFIXES = [
+  "/dashboard",
+  "/auth",
+  "/reset-password",
+  "/admin",
+  "/settings",
+  "/profile",
+  "/queue",
+  "/teams",
+  "/setup",
+  "/testing",
+  "/updates",
+  "/station",
+  "/handoff",
+  "/ncr",
+  "/quote",
+  "/history",
+  "/notifications",
+  "/onboarding",
+  "/oap/test",
+  "/gca/test",
+  "/verify",
+  "/cert/success",
+];
+
 /**
- * Breaking-news style overlay ribbon — fixed to viewport bottom, narrow height.
+ * Breaking-news style overlay ribbon — fixed to viewport bottom on marketing pages.
+ * - Globally mounted (App.tsx) so it persists while scrolling on every public page
  * - Dismissible (persisted in localStorage)
- * - Hidden for authenticated users and on /auth
+ * - Hidden for authenticated users and on app/utility routes
  */
 export function FreeTalentProfileRibbon() {
   const { user } = useAuth();
@@ -26,21 +53,19 @@ export function FreeTalentProfileRibbon() {
   };
 
   if (user) return null;
-  if (location.pathname.startsWith("/auth")) return null;
   if (!visible) return null;
+  if (HIDDEN_PREFIXES.some((p) => location.pathname.startsWith(p))) return null;
 
   return (
     <div
       role="region"
       aria-label="Breaking: Talent profiles are always free"
-      className="fixed inset-x-0 bottom-0 z-[60] h-8 sm:h-9 flex items-stretch bg-foreground text-background shadow-[0_-2px_12px_-4px_hsl(var(--foreground)/0.4)]"
+      className="fixed inset-x-0 bottom-0 z-[100] h-9 flex items-stretch bg-foreground text-background shadow-[0_-2px_12px_-4px_hsl(var(--foreground)/0.4)]"
     >
-      {/* Red "BREAKING" tag */}
       <div className="flex items-center px-2.5 sm:px-3 bg-destructive text-destructive-foreground font-bold text-[10px] sm:text-xs uppercase tracking-wider shrink-0">
         Free
       </div>
 
-      {/* Scrolling / static headline */}
       <div className="flex-1 min-w-0 flex items-center overflow-hidden px-3">
         <p className="text-xs sm:text-sm font-medium truncate">
           Talent profiles are{" "}
@@ -53,7 +78,6 @@ export function FreeTalentProfileRibbon() {
         </p>
       </div>
 
-      {/* CTA */}
       <Link
         to="/auth"
         className="flex items-center gap-1 px-3 sm:px-4 bg-primary text-primary-foreground text-xs sm:text-sm font-semibold hover:bg-primary/90 transition-colors shrink-0"
@@ -61,7 +85,6 @@ export function FreeTalentProfileRibbon() {
         Claim <ArrowRight className="h-3.5 w-3.5" />
       </Link>
 
-      {/* Dismiss */}
       <button
         type="button"
         onClick={dismiss}
