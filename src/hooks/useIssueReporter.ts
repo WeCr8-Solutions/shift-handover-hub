@@ -196,7 +196,7 @@ export function useIssueReporter() {
         _error_stack: latestError?.stack || undefined,
         _console_logs: consoleLogs,
         _page_url: report.includePage !== false ? window.location.href : undefined,
-        _metadata: metadata,
+        _metadata: metadata as unknown as Record<string, unknown>,
       });
 
       if (error) {
