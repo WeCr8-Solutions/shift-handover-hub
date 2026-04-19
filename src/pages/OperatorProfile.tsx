@@ -78,6 +78,9 @@ export default function OperatorProfile() {
     willing_to_relocate: false,
     profile_visibility: "private" as "private" | "employers_only" | "public",
     public_username: "",
+    resume_public: false,
+    show_only_verified_certs: false,
+    social_visibility: {} as Record<string, boolean>,
   });
   const [saving, setSaving] = useState(false);
   const [uploadingResume, setUploadingResume] = useState(false);
@@ -112,6 +115,9 @@ export default function OperatorProfile() {
         willing_to_relocate: profile.willing_to_relocate,
         profile_visibility: profile.profile_visibility ?? "private",
         public_username: profile.public_username ?? "",
+        resume_public: (profile as any).resume_public ?? false,
+        show_only_verified_certs: (profile as any).show_only_verified_certs ?? false,
+        social_visibility: ((profile as any).social_visibility as Record<string, boolean>) ?? {},
       });
     } else if (user) {
       setForm((f) => ({ ...f, contact_email: user.email ?? "" }));
@@ -142,6 +148,9 @@ export default function OperatorProfile() {
         willing_to_relocate: form.willing_to_relocate,
         profile_visibility: form.profile_visibility,
         public_username: form.public_username.trim().toLowerCase() || null,
+        resume_public: form.resume_public,
+        show_only_verified_certs: form.show_only_verified_certs,
+        social_visibility: form.social_visibility,
       } as any);
       toast({ title: "Profile saved", description: "Your operator profile has been updated." });
     } catch (err) {
@@ -520,70 +529,45 @@ export default function OperatorProfile() {
                       onChange={(e) => setForm((f) => ({ ...f, years_experience: e.target.value }))}
                     />
                   </div>
-                  <div>
-                    <Label>LinkedIn URL</Label>
-                    <Input
-                      value={form.linkedin_url}
-                      onChange={(e) => setForm((f) => ({ ...f, linkedin_url: e.target.value }))}
-                      placeholder="https://linkedin.com/in/your-handle"
-                    />
-                  </div>
-                  <div>
-                    <Label>Portfolio URL</Label>
-                    <Input
-                      value={form.portfolio_url}
-                      onChange={(e) => setForm((f) => ({ ...f, portfolio_url: e.target.value }))}
-                      placeholder="https://your-site.com"
-                    />
-                  </div>
-                  <div>
-                    <Label>Personal website</Label>
-                    <Input
-                      value={form.website_url}
-                      onChange={(e) => setForm((f) => ({ ...f, website_url: e.target.value }))}
-                      placeholder="https://yourname.com"
-                    />
-                  </div>
-                  <div>
-                    <Label>X / Twitter</Label>
-                    <Input
-                      value={form.twitter_url}
-                      onChange={(e) => setForm((f) => ({ ...f, twitter_url: e.target.value }))}
-                      placeholder="https://x.com/your-handle"
-                    />
-                  </div>
-                  <div>
-                    <Label>Instagram</Label>
-                    <Input
-                      value={form.instagram_url}
-                      onChange={(e) => setForm((f) => ({ ...f, instagram_url: e.target.value }))}
-                      placeholder="https://instagram.com/your-handle"
-                    />
-                  </div>
-                  <div>
-                    <Label>Facebook</Label>
-                    <Input
-                      value={form.facebook_url}
-                      onChange={(e) => setForm((f) => ({ ...f, facebook_url: e.target.value }))}
-                      placeholder="https://facebook.com/your-page"
-                    />
-                  </div>
-                  <div>
-                    <Label>YouTube</Label>
-                    <Input
-                      value={form.youtube_url}
-                      onChange={(e) => setForm((f) => ({ ...f, youtube_url: e.target.value }))}
-                      placeholder="https://youtube.com/@your-channel"
-                    />
-                  </div>
-                  <div>
-                    <Label>GitHub</Label>
-                    <Input
-                      value={form.github_url}
-                      onChange={(e) => setForm((f) => ({ ...f, github_url: e.target.value }))}
-                      placeholder="https://github.com/your-handle"
-                    />
-                  </div>
+                  {([
+                    { key: "linkedin_url",  vk: "linkedin",  label: "LinkedIn URL",     ph: "https://linkedin.com/in/your-handle" },
+                    { key: "portfolio_url", vk: "portfolio", label: "Portfolio URL",    ph: "https://your-site.com" },
+                    { key: "website_url",   vk: "website",   label: "Personal website", ph: "https://yourname.com" },
+                    { key: "twitter_url",   vk: "twitter",   label: "X / Twitter",      ph: "https://x.com/your-handle" },
+                    { key: "instagram_url", vk: "instagram", label: "Instagram",        ph: "https://instagram.com/your-handle" },
+                    { key: "facebook_url",  vk: "facebook",  label: "Facebook",         ph: "https://facebook.com/your-page" },
+                    { key: "youtube_url",   vk: "youtube",   label: "YouTube",          ph: "https://youtube.com/@your-channel" },
+                    { key: "github_url",    vk: "github",    label: "GitHub",           ph: "https://github.com/your-handle" },
+                  ] as const).map(({ key, vk, label, ph }) => {
+                    const value = form[key] as string;
+                    const visible = form.social_visibility[vk] ?? true;
+                    return (
+                      <div key={key}>
+                        <div className="flex items-center justify-between gap-2">
+                          <Label className="text-sm">{label}</Label>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] text-muted-foreground">{visible ? "Public" : "Hidden"}</span>
+                            <Switch
+                              checked={visible}
+                              disabled={!value.trim()}
+                              onCheckedChange={(v) =>
+                                setForm((f) => ({
+                                  ...f,
+                                  social_visibility: { ...f.social_visibility, [vk]: v },
+                                }))
+                              }
+                            />
+                          </div>
+                        </div>
+                        <Input
+                          value={value}
+                          onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
+                          placeholder={ph}
+                          className="mt-1"
+                        />
+                      </div>
+                    );
+                  })}
                   <div>
                     <Label>Contact email</Label>
                     <Input value={form.contact_email} onChange={(e) => setForm((f) => ({ ...f, contact_email: e.target.value }))} />
@@ -710,9 +694,9 @@ export default function OperatorProfile() {
                 </div>
 
                 <Separator />
-                <div>
+                <div className="space-y-2">
                   <Label className="flex items-center gap-2"><FileText className="w-4 h-4" /> Resume (PDF or DOCX)</Label>
-                  <div className="flex items-center gap-2 mt-1">
+                  <div className="flex items-center gap-2">
                     <Input
                       type="file"
                       accept="application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.pdf,.docx"
@@ -725,10 +709,25 @@ export default function OperatorProfile() {
                       </Button>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-xs text-muted-foreground">
                     Empty profile fields, skills, work history, education and machines will be auto-filled from your resume. Existing data is never overwritten.
                   </p>
-                  {uploadingResume && <p className="text-sm text-muted-foreground mt-1">Uploading and parsing…</p>}
+                  {uploadingResume && <p className="text-sm text-muted-foreground">Uploading and parsing…</p>}
+
+                  {profile?.resume_pdf_url && (
+                    <div className="flex items-center justify-between rounded-md border bg-muted/30 px-3 py-2 mt-2">
+                      <div className="min-w-0 pr-3">
+                        <p className="text-sm font-medium">Show resume on public profile</p>
+                        <p className="text-xs text-muted-foreground">
+                          When ON, visitors of your /talent page can download your resume.
+                        </p>
+                      </div>
+                      <Switch
+                        checked={form.resume_public}
+                        onCheckedChange={(v) => setForm((f) => ({ ...f, resume_public: v }))}
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <Button onClick={handleSave} disabled={saving || uploadingResume} className="gap-2">
@@ -751,7 +750,19 @@ export default function OperatorProfile() {
                   Sync OAP/GCA
                 </Button>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between rounded-md border bg-muted/30 px-3 py-2">
+                  <div className="min-w-0 pr-3">
+                    <p className="text-sm font-medium">Show only verified certifications publicly</p>
+                    <p className="text-xs text-muted-foreground">
+                      When ON, your public profile hides self-reported certs and only shows OAP, GCA, and other verified credentials.
+                    </p>
+                  </div>
+                  <Switch
+                    checked={form.show_only_verified_certs}
+                    onCheckedChange={(v) => setForm((f) => ({ ...f, show_only_verified_certs: v }))}
+                  />
+                </div>
                 <CertificationsManager certs={certifications} onChange={refresh} uploadFile={uploadFile} userId={user!.id} />
               </CardContent>
             </Card>
@@ -936,7 +947,7 @@ function CertificationsManager({
 }: {
   certs: ReturnType<typeof useOperatorProfile>["certifications"];
   onChange: () => void;
-  uploadFile: (f: File, folder: "resume" | "certs" | "avatar") => Promise<string>;
+  uploadFile: (f: File, folder: "resume" | "certs" | "avatar" | "banner") => Promise<string>;
   userId: string;
 }) {
   const { toast } = useToast();
@@ -976,6 +987,18 @@ function CertificationsManager({
 
   const remove = async (id: string) => {
     await supabase.from("operator_certifications").delete().eq("id", id);
+    onChange();
+  };
+
+  const toggleVisibility = async (id: string, visible: boolean) => {
+    const { error } = await supabase
+      .from("operator_certifications")
+      .update({ is_public: visible } as never)
+      .eq("id", id);
+    if (error) {
+      toast({ title: "Failed to update visibility", description: error.message, variant: "destructive" });
+      return;
+    }
     onChange();
   };
 
@@ -1020,6 +1043,15 @@ function CertificationsManager({
           {c.attachment_url && (
             <a href={c.attachment_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary underline">View attachment</a>
           )}
+          <div className="flex items-center justify-between border-t pt-2 mt-1">
+            <div className="text-xs text-muted-foreground">
+              {(c as { is_public?: boolean }).is_public === false ? "Hidden from public profile" : "Visible on public profile"}
+            </div>
+            <Switch
+              checked={(c as { is_public?: boolean }).is_public !== false}
+              onCheckedChange={(v) => toggleVisibility(c.id, v)}
+            />
+          </div>
         </div>
       ))}
 

@@ -33,6 +33,12 @@ export interface OperatorProfileRow {
   desired_salary_max: number | null;
   contact_email: string | null;
   contact_phone: string | null;
+  /** Whether the uploaded resume is shown on the public profile. */
+  resume_public: boolean;
+  /** When true, only OAP/GCA/external-verified certs render on the public profile. */
+  show_only_verified_certs: boolean;
+  /** Per-platform on/off map for socials, e.g. { linkedin: true, instagram: false }. */
+  social_visibility: Record<string, boolean>;
 }
 
 export interface OperatorCertRow {
@@ -48,7 +54,12 @@ export interface OperatorCertRow {
   verification_source: string;
   linked_cert_id: string | null;
   description: string | null;
+  /** Whether this cert is shown on the public profile. Defaults to true. */
+  is_public: boolean;
 }
+
+// Helper type for inserts where DB defaults supply some fields.
+type OperatorCertInsert = Omit<OperatorCertRow, "id" | "is_public"> & { is_public?: boolean };
 
 export interface OperatorSkillRow {
   id: string;
@@ -211,7 +222,7 @@ export async function syncIssuedCertificatesToProfile(userId: string, email: str
     .eq("recipient_email", email)
     .eq("status", "active");
 
-  const rows: Array<Omit<OperatorCertRow, "id">> = [];
+  const rows: OperatorCertInsert[] = [];
   for (const c of oap ?? []) {
     rows.push({
       user_id: userId,
