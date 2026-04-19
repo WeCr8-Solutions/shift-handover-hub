@@ -60,11 +60,11 @@ Self-reported certs use `verification_source: 'self'` and are never marked verif
 
 Stored in `operator_profiles.profile_visibility` (enum `operator_profile_visibility`).
 
-| Tier | Who can read the profile | Who can read masked contact info |
+| Tier | Who can read the profile | Personal contact info (email / phone / address) |
 |---|---|---|
-| `private` | Owner only | Owner only |
-| `employers_only` | Owner + verified employers (paid OAP/Team subscriptions; via `is_verified_employer()`) | Owner + verified employers |
-| `public` | **Anyone**, including anonymous visitors | Owner + verified employers (others see masked contact via `operator_profiles_public` view) |
+| `private` | Owner only | **Never** exposed publicly. Owner-only. |
+| `employers_only` | Owner + verified employers (paid OAP/Team subscriptions; via `is_verified_employer()`) | **Never** exposed publicly. Outreach goes through `talent_contact_requests` (in-app messaging). Verified employers can request contact, the candidate accepts/declines in-app. |
+| `public` | **Anyone**, including anonymous visitors | **Never** exposed publicly — not on `/talent/:username`, not on `/card/:slug`, not in the `.vcf` download. Public visitors are routed to in-app messaging via the "Message via JobLine" CTA. |
 
 Related sections (certs, skills, machines, work history, education) **inherit public visibility** through an `EXISTS` policy against the parent profile. References never inherit — they remain owner-private.
 

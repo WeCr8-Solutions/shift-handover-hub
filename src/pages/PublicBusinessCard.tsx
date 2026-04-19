@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Mail,
-  Phone,
   Globe,
   Linkedin,
   MapPin,
@@ -32,8 +31,7 @@ interface CardRow {
   location_city: string | null;
   location_region: string | null;
   location_country: string | null;
-  contact_email: string | null;
-  contact_phone: string | null;
+  // contact_email & contact_phone intentionally absent — never exposed publicly.
   linkedin_url: string | null;
   portfolio_url: string | null;
   vcard_full_name: string | null;
@@ -70,9 +68,11 @@ export default function PublicBusinessCard() {
       const { data } = await supabase
         .from("operator_profiles")
         .select(
+          // NOTE: contact_email / contact_phone are NEVER selected publicly.
+          // All outreach happens through JobLine in-app messaging.
           `user_id, card_slug, public_username, avatar_url, headline, bio,
            location_city, location_region, location_country,
-           contact_email, contact_phone, linkedin_url, portfolio_url,
+           linkedin_url, portfolio_url,
            vcard_full_name, vcard_title, vcard_company,
            theme_color, accent_color, cta_label, cta_url,
            open_to_work, profile_visibility`
@@ -183,22 +183,8 @@ export default function PublicBusinessCard() {
           </div>
 
           <div className="space-y-1.5 text-sm">
-            {row.contact_email && (
-              <a
-                href={`mailto:${row.contact_email}`}
-                className="flex items-center gap-2 text-foreground hover:text-primary"
-              >
-                <Mail className="w-4 h-4" /> {row.contact_email}
-              </a>
-            )}
-            {row.contact_phone && (
-              <a
-                href={`tel:${row.contact_phone}`}
-                className="flex items-center gap-2 text-foreground hover:text-primary"
-              >
-                <Phone className="w-4 h-4" /> {row.contact_phone}
-              </a>
-            )}
+            {/* Personal email + phone are intentionally NOT shown publicly.
+                Visitors are routed to JobLine in-app messaging via the CTA below. */}
             {row.portfolio_url && (
               <a
                 href={withJoblineUtm(row.portfolio_url, "business_card")}
@@ -227,13 +213,22 @@ export default function PublicBusinessCard() {
           </div>
 
           <div className="flex flex-col gap-2 pt-1">
+            {/* Primary CTA: route outreach through JobLine — preserves user privacy
+                and gives the platform analytics + abuse controls. */}
+            <Button asChild className="w-full">
+              <Link to={row.public_username ? `/talent/${row.public_username}` : "/talent"}>
+                <Mail className="w-4 h-4 mr-1.5" /> Message via JobLine
+              </Link>
+            </Button>
+
             <SaveContactButton
               vcard={{
                 fullName,
                 title: row.vcard_title ?? row.headline,
                 company: row.vcard_company,
-                email: row.contact_email,
-                phone: row.contact_phone,
+                // Personal contact info is omitted from the .vcf as well.
+                email: null,
+                phone: null,
                 website: row.portfolio_url,
                 addressCity: row.location_city,
                 addressRegion: row.location_region,
