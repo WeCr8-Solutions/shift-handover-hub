@@ -61,6 +61,12 @@ interface PublicProfile {
   location_country: string | null;
   linkedin_url: string | null;
   portfolio_url: string | null;
+  twitter_url: string | null;
+  instagram_url: string | null;
+  facebook_url: string | null;
+  youtube_url: string | null;
+  github_url: string | null;
+  website_url: string | null;
   avatar_url: string | null;
   willing_to_relocate: boolean;
   open_to_work: boolean;
@@ -285,7 +291,16 @@ export default function PublicOperatorProfile() {
           addressCountry: profile.location_country ?? undefined,
         }
       : undefined,
-    sameAs: [profile.linkedin_url, profile.portfolio_url].filter(Boolean),
+    sameAs: [
+      profile.linkedin_url,
+      profile.portfolio_url,
+      profile.website_url,
+      profile.twitter_url,
+      profile.instagram_url,
+      profile.facebook_url,
+      profile.youtube_url,
+      profile.github_url,
+    ].filter(Boolean),
     hasCredential: certs.map((c) => ({
       "@type": "EducationalOccupationalCredential",
       name: c.name,

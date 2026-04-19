@@ -13,6 +13,12 @@ export interface OperatorProfileRow {
   location_country: string | null;
   linkedin_url: string | null;
   portfolio_url: string | null;
+  twitter_url: string | null;
+  instagram_url: string | null;
+  facebook_url: string | null;
+  youtube_url: string | null;
+  github_url: string | null;
+  website_url: string | null;
   resume_pdf_url: string | null;
   avatar_url: string | null;
   willing_to_relocate: boolean;
