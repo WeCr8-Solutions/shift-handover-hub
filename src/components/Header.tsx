@@ -100,6 +100,7 @@ export function Header() {
   const [notifOpen, setNotifOpen] = useState(false);
   const notifBadgeCount = useNotificationBadgeCount();
   const talentInboxUnread = useTalentInboxUnread();
+  const orgMessagesUnread = useOrgMessagesUnread();
   const isMobile = useIsMobile();
   const shift = getCurrentShift();
 
