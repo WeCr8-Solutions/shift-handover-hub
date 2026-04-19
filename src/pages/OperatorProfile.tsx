@@ -16,6 +16,7 @@ import { Loader2, Save, Linkedin, FileText, Award, Briefcase, GraduationCap, Wre
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useOperatorProfile, syncIssuedCertificatesToProfile } from "@/hooks/useOperatorProfile";
+import { MiniSiteEditor } from "@/components/operator/MiniSiteEditor";
 import { supabase } from "@/integrations/supabase/client";
 import { COUNTRIES, getRegionsForCountry, SUGGESTED_CITIES, SUGGESTED_HEADLINES } from "@/lib/talent/locations";
 import { useUsernameAvailability, suggestUsernames } from "@/hooks/useUsernameAvailability";
@@ -643,6 +644,10 @@ export default function OperatorProfile() {
                 <ReferencesManager rows={references} onChange={refresh} userId={user!.id} />
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="minisite" className="mt-6">
+            <MiniSiteEditor />
           </TabsContent>
         </Tabs>
       </main>
