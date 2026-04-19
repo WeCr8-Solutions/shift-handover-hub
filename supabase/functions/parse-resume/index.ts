@@ -83,9 +83,6 @@ const SCHEMA = {
 
 async function extractDocxText(buffer: ArrayBuffer): Promise<string> {
   // Minimal DOCX text extraction: unzip and pull <w:t> contents from word/document.xml.
-  // Use Deno's Compression Streams API via JSZip-like dynamic import.
-  const { unzip } = await import("https://deno.land/x/zipjs@v2.7.45/index.js");
-  // Fallback: use a tiny inflate via fflate
   const fflate = await import("https://esm.sh/fflate@0.8.2");
   const data = new Uint8Array(buffer);
   const unzipped = await new Promise<Record<string, Uint8Array>>((resolve, reject) => {
@@ -123,10 +120,29 @@ Deno.serve(async (req) => {
     const isPdf = contentType.includes("pdf") || resumeUrl.toLowerCase().endsWith(".pdf");
     const isDocx = contentType.includes("officedocument") || resumeUrl.toLowerCase().endsWith(".docx");
 
+    // Hard cap at 8MB to avoid OOM in the edge runtime.
+    if (buffer.byteLength > 8 * 1024 * 1024) {
+      return new Response(
+        JSON.stringify({ error: "Resume is larger than 8MB. Please upload a smaller PDF or DOCX." }),
+        { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    /** Convert ArrayBuffer → base64 in chunks (avoids "Max call stack" on large PDFs). */
+    const toBase64 = (buf: ArrayBuffer): string => {
+      const bytes = new Uint8Array(buf);
+      const CHUNK = 0x8000; // 32KB
+      let binary = "";
+      for (let i = 0; i < bytes.length; i += CHUNK) {
+        binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + CHUNK)));
+      }
+      return btoa(binary);
+    };
+
     let userContent: any;
     if (isPdf) {
       // Gemini accepts PDFs as base64 inline data via OpenAI-compatible image_url with data URL
-      const b64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
+      const b64 = toBase64(buffer);
       userContent = [
         { type: "text", text: "Extract structured profile fields from this resume." },
         { type: "image_url", image_url: { url: `data:application/pdf;base64,${b64}` } },

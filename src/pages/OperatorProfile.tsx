@@ -778,10 +778,53 @@ export default function OperatorProfile() {
                 <SkillsManager skills={skills} onChange={refresh} userId={user!.id} />
               </CardContent>
             </Card>
+
+            {/* JobLine-verified equipment summary (derived from OAP/GCA certs) */}
+            <Card className="border-primary/40 bg-primary/5">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-primary" /> JobLine-verified equipment & controls
+                </CardTitle>
+                <CardDescription>
+                  Pulled from your active OAP / GCA certifications. Pass an OAP module or GCA test to add more — these can't be edited here.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {(() => {
+                  const verified = certifications.filter((c) => c.verification_source.startsWith("verified_"));
+                  if (verified.length === 0) {
+                    return (
+                      <p className="text-sm text-muted-foreground">
+                        No verified equipment yet.{" "}
+                        <a href="/oap" className="text-primary hover:underline">Browse OAP programs →</a>
+                      </p>
+                    );
+                  }
+                  return (
+                    <div className="flex flex-wrap gap-2">
+                      {verified.map((c) => (
+                        <Badge
+                          key={c.id}
+                          className="gap-1 bg-primary/15 text-primary border-primary/30"
+                          variant="outline"
+                        >
+                          <ShieldCheck className="w-3 h-3" />
+                          {c.name}
+                          <span className="opacity-70 ml-1">· {c.issuer ?? "JobLine"}</span>
+                        </Badge>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Wrench className="w-5 h-5" /> Equipment & machine proficiencies</CardTitle>
-                <CardDescription>Any equipment, tools, or systems you operate — CNC, waterjet, diesel, welding, hydraulics, lab gear, etc.</CardDescription>
+                <CardTitle className="flex items-center gap-2"><Wrench className="w-5 h-5" /> Self-reported equipment & machine proficiencies</CardTitle>
+                <CardDescription>
+                  Anything you operate but haven't been formally tested on through JobLine — CNC, waterjet, diesel, welding, hydraulics, lab gear, etc. Employers will see these marked <em>self-reported</em>.
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <MachinesManager machines={machines} onChange={refresh} userId={user!.id} />
@@ -1295,11 +1338,23 @@ function MachinesManager({
 
   return (
     <div className="space-y-3">
+      {machines.length === 0 && (
+        <p className="text-sm text-muted-foreground border border-dashed rounded-md p-3 text-center">
+          No self-reported equipment yet. Add anything you operate below.
+        </p>
+      )}
       {machines.map((m) => (
         <div key={m.id} className="flex items-center justify-between border rounded p-2">
-          <div>
-            <p className="font-medium text-sm">{m.machine_category} {m.machine_make && `· ${m.machine_make}`} {m.machine_model && m.machine_model}</p>
-            <p className="text-xs text-muted-foreground">{m.control_type} · {m.proficiency}{m.years_experience && ` · ${m.years_experience}y`}</p>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="font-medium text-sm truncate">
+                {m.machine_category} {m.machine_make && `· ${m.machine_make}`} {m.machine_model && m.machine_model}
+              </p>
+              <Badge variant="outline" className="text-[10px] py-0 px-1.5">Self-reported</Badge>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {m.control_type} · {m.proficiency}{m.years_experience && ` · ${m.years_experience}y`}
+            </p>
           </div>
           <Button size="sm" variant="ghost" onClick={() => remove(m.id)}><Trash2 className="w-4 h-4" /></Button>
         </div>
@@ -1377,31 +1432,80 @@ function WorkHistoryManager({
     await supabase.from("operator_work_history").delete().eq("id", id);
     onChange();
   };
+  const sorted = [...rows].sort((a, b) => {
+    if (a.is_current && !b.is_current) return -1;
+    if (!a.is_current && b.is_current) return 1;
+    const ad = a.start_date ?? "";
+    const bd = b.start_date ?? "";
+    return bd.localeCompare(ad);
+  });
+
   return (
-    <div className="space-y-3">
-      {rows.map((w) => (
-        <div key={w.id} className="border rounded p-3 flex items-start justify-between">
-          <div>
-            <p className="font-medium">{w.job_title} · {w.employer_name}</p>
-            <p className="text-xs text-muted-foreground">{w.start_date ?? "?"} – {w.is_current ? "Present" : (w.end_date ?? "?")}{w.location && ` · ${w.location}`}</p>
-            {w.description && <p className="text-sm mt-1">{w.description}</p>}
+    <div className="space-y-4">
+      {sorted.length === 0 && (
+        <p className="text-sm text-muted-foreground border border-dashed rounded-md p-4 text-center">
+          No employers added yet. Add your most recent role below — it stays with you across every shop you work for.
+        </p>
+      )}
+
+      {sorted.map((w) => (
+        <div
+          key={w.id}
+          className="border rounded-lg p-4 bg-card shadow-sm hover:shadow-md transition-shadow"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="font-semibold text-base">{w.job_title}</p>
+                {w.is_current && (
+                  <Badge className="bg-[hsl(var(--success))]/15 text-[hsl(var(--success))] border-[hsl(var(--success))]/30" variant="outline">
+                    Current
+                  </Badge>
+                )}
+              </div>
+              <p className="text-sm font-medium text-primary mt-0.5">{w.employer_name}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {w.start_date ?? "?"} – {w.is_current ? "Present" : (w.end_date ?? "?")}
+                {w.location && ` · ${w.location}`}
+              </p>
+              {w.description && (
+                <p className="text-sm mt-2 whitespace-pre-line text-foreground/90">{w.description}</p>
+              )}
+            </div>
+            <Button size="sm" variant="ghost" onClick={() => remove(w.id)} aria-label="Remove role">
+              <Trash2 className="w-4 h-4" />
+            </Button>
           </div>
-          <Button size="sm" variant="ghost" onClick={() => remove(w.id)}><Trash2 className="w-4 h-4" /></Button>
         </div>
       ))}
-      <div className="border rounded p-3 space-y-2 bg-secondary/30">
-        <div className="grid grid-cols-2 gap-2">
+
+      <div className="border-2 border-dashed rounded-lg p-4 space-y-3 bg-secondary/20">
+        <p className="text-sm font-medium flex items-center gap-2">
+          <Plus className="w-4 h-4" /> Add a previous (or current) employer
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <Input placeholder="Employer *" value={draft.employer_name} onChange={(e) => setDraft({ ...draft, employer_name: e.target.value })} />
           <Input placeholder="Job title *" value={draft.job_title} onChange={(e) => setDraft({ ...draft, job_title: e.target.value })} />
-          <Input type="date" value={draft.start_date} onChange={(e) => setDraft({ ...draft, start_date: e.target.value })} />
-          <Input type="date" value={draft.end_date} onChange={(e) => setDraft({ ...draft, end_date: e.target.value })} disabled={draft.is_current} />
-          <label className="flex items-center gap-2 text-sm col-span-2">
-            <input type="checkbox" checked={draft.is_current} onChange={(e) => setDraft({ ...draft, is_current: e.target.checked })} /> Current role
+          <div>
+            <Label className="text-xs text-muted-foreground">Start date</Label>
+            <Input type="date" value={draft.start_date} onChange={(e) => setDraft({ ...draft, start_date: e.target.value })} />
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground">End date</Label>
+            <Input type="date" value={draft.end_date} onChange={(e) => setDraft({ ...draft, end_date: e.target.value })} disabled={draft.is_current} />
+          </div>
+          <label className="flex items-center gap-2 text-sm sm:col-span-2">
+            <input type="checkbox" checked={draft.is_current} onChange={(e) => setDraft({ ...draft, is_current: e.target.checked })} /> I currently work here
           </label>
-          <Input placeholder="Location" value={draft.location} onChange={(e) => setDraft({ ...draft, location: e.target.value })} className="col-span-2" />
+          <Input placeholder="Location (city, state)" value={draft.location} onChange={(e) => setDraft({ ...draft, location: e.target.value })} className="sm:col-span-2" />
         </div>
-        <Textarea placeholder="What did you do here?" value={draft.description} onChange={(e) => setDraft({ ...draft, description: e.target.value })} rows={2} />
-        <Button onClick={add} className="gap-2"><Plus className="w-4 h-4" /> Add role</Button>
+        <Textarea
+          placeholder="What did you do here? (machines run, certifications earned on-site, achievements)"
+          value={draft.description}
+          onChange={(e) => setDraft({ ...draft, description: e.target.value })}
+          rows={3}
+        />
+        <Button onClick={add} className="gap-2"><Plus className="w-4 h-4" /> Save role</Button>
       </div>
     </div>
   );
