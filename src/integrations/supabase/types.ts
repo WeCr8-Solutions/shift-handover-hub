@@ -5265,6 +5265,7 @@ export type Database = {
           description: string | null
           expires_date: string | null
           id: string
+          is_public: boolean
           issued_date: string | null
           issuer: string | null
           linked_cert_id: string | null
@@ -5281,6 +5282,7 @@ export type Database = {
           description?: string | null
           expires_date?: string | null
           id?: string
+          is_public?: boolean
           issued_date?: string | null
           issuer?: string | null
           linked_cert_id?: string | null
@@ -5297,6 +5299,7 @@ export type Database = {
           description?: string | null
           expires_date?: string | null
           id?: string
+          is_public?: boolean
           issued_date?: string | null
           issuer?: string | null
           linked_cert_id?: string | null
@@ -5468,7 +5471,10 @@ export type Database = {
           public_published_at: string | null
           public_username: string | null
           resume_pdf_url: string | null
+          resume_public: boolean
           services: Json
+          show_only_verified_certs: boolean
+          social_visibility: Json
           testimonials: Json
           theme_color: string | null
           twitter_url: string | null
@@ -5516,7 +5522,10 @@ export type Database = {
           public_published_at?: string | null
           public_username?: string | null
           resume_pdf_url?: string | null
+          resume_public?: boolean
           services?: Json
+          show_only_verified_certs?: boolean
+          social_visibility?: Json
           testimonials?: Json
           theme_color?: string | null
           twitter_url?: string | null
@@ -5564,7 +5573,10 @@ export type Database = {
           public_published_at?: string | null
           public_username?: string | null
           resume_pdf_url?: string | null
+          resume_public?: boolean
           services?: Json
+          show_only_verified_certs?: boolean
+          social_visibility?: Json
           testimonials?: Json
           theme_color?: string | null
           twitter_url?: string | null
@@ -10004,6 +10016,9 @@ export type Database = {
           preferred_employment_types: string[]
           public_published_at: string
           public_username: string
+          resume_pdf_url: string
+          show_only_verified_certs: boolean
+          social_visibility: Json
           twitter_url: string
           user_id: string
           website_url: string
