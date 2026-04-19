@@ -337,7 +337,7 @@ export default function PublicOperatorProfile() {
         }
         canonical={`/talent/${profile.public_username}`}
         ogType="profile"
-        ogImage={profile.avatar_url ?? undefined}
+        ogImage={profile.avatar_url ?? "https://jobline.ai/profile-og.jpg"}
         jsonLd={personJsonLd}
       />
       <MarketingNav />
