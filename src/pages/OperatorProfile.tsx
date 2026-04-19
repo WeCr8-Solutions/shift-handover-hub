@@ -159,9 +159,12 @@ export default function OperatorProfile() {
         await refresh();
       } catch (parseErr) {
         console.error("[OperatorProfile] autofill failed", parseErr);
+        const msg = extractErrorMessage(parseErr);
         toast({
           title: "Autofill skipped",
-          description: extractErrorMessage(parseErr),
+          description: msg.includes("aborted")
+            ? "Resume parsing took too long. Your resume was uploaded — fill the rest manually or try again."
+            : msg,
           variant: "destructive",
         });
       }
