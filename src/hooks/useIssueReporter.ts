@@ -194,9 +194,9 @@ export function useIssueReporter() {
         _severity: report.severity || "medium",
         _error_message: latestError?.message || undefined,
         _error_stack: latestError?.stack || undefined,
-        _console_logs: consoleLogs,
+        _console_logs: JSON.parse(JSON.stringify(consoleLogs)),
         _page_url: report.includePage !== false ? window.location.href : undefined,
-        _metadata: metadata as unknown as Record<string, unknown>,
+        _metadata: JSON.parse(JSON.stringify(metadata)),
       });
 
       if (error) {
