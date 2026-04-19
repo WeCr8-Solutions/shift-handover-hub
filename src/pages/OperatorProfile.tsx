@@ -1420,31 +1420,80 @@ function WorkHistoryManager({
     await supabase.from("operator_work_history").delete().eq("id", id);
     onChange();
   };
+  const sorted = [...rows].sort((a, b) => {
+    if (a.is_current && !b.is_current) return -1;
+    if (!a.is_current && b.is_current) return 1;
+    const ad = a.start_date ?? "";
+    const bd = b.start_date ?? "";
+    return bd.localeCompare(ad);
+  });
+
   return (
-    <div className="space-y-3">
-      {rows.map((w) => (
-        <div key={w.id} className="border rounded p-3 flex items-start justify-between">
-          <div>
-            <p className="font-medium">{w.job_title} · {w.employer_name}</p>
-            <p className="text-xs text-muted-foreground">{w.start_date ?? "?"} – {w.is_current ? "Present" : (w.end_date ?? "?")}{w.location && ` · ${w.location}`}</p>
-            {w.description && <p className="text-sm mt-1">{w.description}</p>}
+    <div className="space-y-4">
+      {sorted.length === 0 && (
+        <p className="text-sm text-muted-foreground border border-dashed rounded-md p-4 text-center">
+          No employers added yet. Add your most recent role below — it stays with you across every shop you work for.
+        </p>
+      )}
+
+      {sorted.map((w) => (
+        <div
+          key={w.id}
+          className="border rounded-lg p-4 bg-card shadow-sm hover:shadow-md transition-shadow"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="font-semibold text-base">{w.job_title}</p>
+                {w.is_current && (
+                  <Badge className="bg-[hsl(var(--success))]/15 text-[hsl(var(--success))] border-[hsl(var(--success))]/30" variant="outline">
+                    Current
+                  </Badge>
+                )}
+              </div>
+              <p className="text-sm font-medium text-primary mt-0.5">{w.employer_name}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {w.start_date ?? "?"} – {w.is_current ? "Present" : (w.end_date ?? "?")}
+                {w.location && ` · ${w.location}`}
+              </p>
+              {w.description && (
+                <p className="text-sm mt-2 whitespace-pre-line text-foreground/90">{w.description}</p>
+              )}
+            </div>
+            <Button size="sm" variant="ghost" onClick={() => remove(w.id)} aria-label="Remove role">
+              <Trash2 className="w-4 h-4" />
+            </Button>
           </div>
-          <Button size="sm" variant="ghost" onClick={() => remove(w.id)}><Trash2 className="w-4 h-4" /></Button>
         </div>
       ))}
-      <div className="border rounded p-3 space-y-2 bg-secondary/30">
-        <div className="grid grid-cols-2 gap-2">
+
+      <div className="border-2 border-dashed rounded-lg p-4 space-y-3 bg-secondary/20">
+        <p className="text-sm font-medium flex items-center gap-2">
+          <Plus className="w-4 h-4" /> Add a previous (or current) employer
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <Input placeholder="Employer *" value={draft.employer_name} onChange={(e) => setDraft({ ...draft, employer_name: e.target.value })} />
           <Input placeholder="Job title *" value={draft.job_title} onChange={(e) => setDraft({ ...draft, job_title: e.target.value })} />
-          <Input type="date" value={draft.start_date} onChange={(e) => setDraft({ ...draft, start_date: e.target.value })} />
-          <Input type="date" value={draft.end_date} onChange={(e) => setDraft({ ...draft, end_date: e.target.value })} disabled={draft.is_current} />
-          <label className="flex items-center gap-2 text-sm col-span-2">
-            <input type="checkbox" checked={draft.is_current} onChange={(e) => setDraft({ ...draft, is_current: e.target.checked })} /> Current role
+          <div>
+            <Label className="text-xs text-muted-foreground">Start date</Label>
+            <Input type="date" value={draft.start_date} onChange={(e) => setDraft({ ...draft, start_date: e.target.value })} />
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground">End date</Label>
+            <Input type="date" value={draft.end_date} onChange={(e) => setDraft({ ...draft, end_date: e.target.value })} disabled={draft.is_current} />
+          </div>
+          <label className="flex items-center gap-2 text-sm sm:col-span-2">
+            <input type="checkbox" checked={draft.is_current} onChange={(e) => setDraft({ ...draft, is_current: e.target.checked })} /> I currently work here
           </label>
-          <Input placeholder="Location" value={draft.location} onChange={(e) => setDraft({ ...draft, location: e.target.value })} className="col-span-2" />
+          <Input placeholder="Location (city, state)" value={draft.location} onChange={(e) => setDraft({ ...draft, location: e.target.value })} className="sm:col-span-2" />
         </div>
-        <Textarea placeholder="What did you do here?" value={draft.description} onChange={(e) => setDraft({ ...draft, description: e.target.value })} rows={2} />
-        <Button onClick={add} className="gap-2"><Plus className="w-4 h-4" /> Add role</Button>
+        <Textarea
+          placeholder="What did you do here? (machines run, certifications earned on-site, achievements)"
+          value={draft.description}
+          onChange={(e) => setDraft({ ...draft, description: e.target.value })}
+          rows={3}
+        />
+        <Button onClick={add} className="gap-2"><Plus className="w-4 h-4" /> Save role</Button>
       </div>
     </div>
   );
