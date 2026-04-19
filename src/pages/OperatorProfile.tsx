@@ -78,6 +78,9 @@ export default function OperatorProfile() {
     willing_to_relocate: false,
     profile_visibility: "private" as "private" | "employers_only" | "public",
     public_username: "",
+    resume_public: false,
+    show_only_verified_certs: false,
+    social_visibility: {} as Record<string, boolean>,
   });
   const [saving, setSaving] = useState(false);
   const [uploadingResume, setUploadingResume] = useState(false);
@@ -112,6 +115,9 @@ export default function OperatorProfile() {
         willing_to_relocate: profile.willing_to_relocate,
         profile_visibility: profile.profile_visibility ?? "private",
         public_username: profile.public_username ?? "",
+        resume_public: (profile as any).resume_public ?? false,
+        show_only_verified_certs: (profile as any).show_only_verified_certs ?? false,
+        social_visibility: ((profile as any).social_visibility as Record<string, boolean>) ?? {},
       });
     } else if (user) {
       setForm((f) => ({ ...f, contact_email: user.email ?? "" }));
@@ -142,6 +148,9 @@ export default function OperatorProfile() {
         willing_to_relocate: form.willing_to_relocate,
         profile_visibility: form.profile_visibility,
         public_username: form.public_username.trim().toLowerCase() || null,
+        resume_public: form.resume_public,
+        show_only_verified_certs: form.show_only_verified_certs,
+        social_visibility: form.social_visibility,
       } as any);
       toast({ title: "Profile saved", description: "Your operator profile has been updated." });
     } catch (err) {
