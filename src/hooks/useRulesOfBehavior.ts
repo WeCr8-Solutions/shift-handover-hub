@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOrgContext } from "@/contexts/OrgContext";
 
 /** Version label stamped into profiles.rob_version on acceptance. */
 export const ROB_VERSION = "1.0-2026-04";
@@ -36,14 +37,16 @@ export interface RulesOfBehaviorStatus {
 
 export function useRulesOfBehavior(): RulesOfBehaviorStatus {
   const { user } = useAuth();
+  const { organization, loading: orgLoading } = useOrgContext();
 
   const [robAccepted, setRobAccepted] = useState(false);
   const [checkComplete, setCheckComplete] = useState(false);
 
   const checkStatus = useCallback(async () => {
-    if (!user) {
+    // Only org members are subject to FedRAMP RoB. Public/talent visitors are not.
+    if (!user || orgLoading || !organization) {
       setRobAccepted(false);
-      setCheckComplete(true);
+      setCheckComplete(!orgLoading);
       return;
     }
 
@@ -69,7 +72,7 @@ export function useRulesOfBehavior(): RulesOfBehaviorStatus {
     } finally {
       setCheckComplete(true);
     }
-  }, [user]);
+  }, [user, organization, orgLoading]);
 
   useEffect(() => {
     void checkStatus();
@@ -97,8 +100,9 @@ export function useRulesOfBehavior(): RulesOfBehaviorStatus {
     }
   }, [user]);
 
-  // Only required when the user is authenticated (unauthenticated visitors are never blocked)
-  const robRequired = !!user;
+  // Only required for authenticated users who belong to an organization.
+  // Public visitors and signed-in users without an org (e.g. talent profile browsers) are never gated.
+  const robRequired = !!user && !!organization;
   const robBlockingAccess = robRequired && checkComplete && !robAccepted;
 
   return { robRequired, robAccepted, checkComplete, robBlockingAccess, acceptRob };
