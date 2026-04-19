@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOrgContext } from "@/contexts/OrgContext";
 
 /** Version label stamped into profiles.rob_version on acceptance. */
 export const ROB_VERSION = "1.0-2026-04";
