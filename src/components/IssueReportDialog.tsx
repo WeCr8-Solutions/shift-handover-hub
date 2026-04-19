@@ -17,8 +17,9 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useIssueReporter } from "@/hooks/useIssueReporter";
 import { useAuth } from "@/contexts/AuthContext";
-import { Bug, AlertCircle, Terminal, Loader2, LogIn, Mail } from "lucide-react";
+import { Bug, AlertCircle, Terminal, Loader2, LogIn, Mail, Layers, Footprints } from "lucide-react";
 import { Link } from "react-router-dom";
+import { issueReporterRegistry, breadcrumbs } from "@/lib/issueReporter";
 
 interface IssueReportDialogProps {
   open: boolean;
@@ -60,6 +61,9 @@ export function IssueReportDialog({ open, onOpenChange, prefillError }: IssueRep
   const errorCount = runtimeErrors.length;
   const warningCount = consoleLogs.filter(l => l.level === "warn").length;
   const isNotAuthenticated = !user && !authLoading;
+  // Snapshot once when the dialog opens so the list is stable while editing.
+  const activeModules = open ? issueReporterRegistry.snapshot() : [];
+  const breadcrumbCount = open ? breadcrumbs.snapshot().length : 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -190,6 +194,30 @@ export function IssueReportDialog({ open, onOpenChange, prefillError }: IssueRep
               <Terminal className="w-4 h-4" />
               Diagnostic Data
             </Label>
+
+            {/* Registry-driven page context */}
+            {activeModules.length > 0 && (
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Layers className="w-3 h-3" />
+                  Active modules ({activeModules.length})
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {activeModules.slice(-4).map((m) => (
+                    <Badge key={m.id} variant="secondary" className="text-[10px] font-normal">
+                      {m.label}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {breadcrumbCount > 0 && (
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Footprints className="w-3 h-3" />
+                {breadcrumbCount} recent action{breadcrumbCount === 1 ? "" : "s"} captured
+              </div>
+            )}
             
             <div className="flex items-center space-x-2">
               <Checkbox

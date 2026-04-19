@@ -10,6 +10,7 @@ import { useStations } from "@/hooks/useStations";
 import { useBackgroundRefresh } from "@/hooks/useBackgroundRefresh";
 import { useSmartAlerts } from "@/hooks/useSmartAlerts";
 import { useOrgRefreshInterval } from "@/hooks/useOrgRefreshInterval";
+import { useModuleContext } from "@/hooks/useModuleContext";
 import { RefreshIndicator } from "@/components/dashboard/RefreshIndicator";
 import { Header } from "@/components/Header";
 import { QueueKanbanBoard } from "@/components/queue/QueueKanbanBoard";
@@ -212,6 +213,17 @@ export default function Queue() {
       setFilters((prev) => ({ ...prev, station_id: undefined }));
     }
   };
+
+  useModuleContext({
+    id: "queue",
+    label: "Production Queue",
+    data: {
+      activeTab,
+      viewScope,
+      stationFilter: filters.station_id || null,
+      organizationId: organization?.id ?? null,
+    },
+  });
 
   return (
     <div className="min-h-screen bg-background">

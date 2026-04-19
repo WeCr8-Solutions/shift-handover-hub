@@ -23,6 +23,7 @@ import { useStations, useHandoffRecords, type Station, type HandoffRecord } from
 import { useOnboardingContext } from "@/components/onboarding/OnboardingProvider";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { useOrgContext } from "@/contexts/OrgContext";
+import { useModuleContext } from "@/hooks/useModuleContext";
 
 import { mockStations, mockHandoffRecords } from "@/lib/mockData";
 import { type WorkCenterType, type StationInfo, type ShiftHandoffRecord } from "@/types/handoff";
@@ -285,6 +286,16 @@ const Index = () => {
   const isLoading = stationsLoading || recordsLoading;
   const hasData = stations.length > 0 || handoffRecords.length > 0;
   const isRoleResolving = authLoading || roleLoading || onboardingLoading;
+
+  useModuleContext({
+    id: "dashboard",
+    label: "Dashboard",
+    data: {
+      stationCount: stations.length,
+      handoffCount: handoffRecords.length,
+      isLoading,
+    },
+  });
 
   return (
     <div className="min-h-screen bg-background">
