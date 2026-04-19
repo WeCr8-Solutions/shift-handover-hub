@@ -342,16 +342,26 @@ export function Header() {
                   </SheetHeader>
                   <div className="flex flex-col gap-4 mt-4">
                     {/* Dashboard links at top */}
-                    {user && canViewProductionFloor && (
+                    {user && (canViewProductionFloor || hasTalentProfile) && (
                       <div className="flex flex-col gap-1">
-                        <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-2 py-2.5 rounded-md bg-primary/10 hover:bg-primary/20 transition-colors">
-                          <Factory className="w-5 h-5 text-primary" />
-                          <span className="text-sm font-medium">Production Floor</span>
-                        </Link>
-                        <Link to="/dashboard?view=operator" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-2 py-2.5 rounded-md hover:bg-secondary transition-colors">
-                          <Eye className="w-5 h-5 text-muted-foreground" />
-                          <span className="text-sm font-medium">Operator View</span>
-                        </Link>
+                        {canViewProductionFloor && (
+                          <>
+                            <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-2 py-2.5 rounded-md bg-primary/10 hover:bg-primary/20 transition-colors">
+                              <Factory className="w-5 h-5 text-primary" />
+                              <span className="text-sm font-medium">Production Floor</span>
+                            </Link>
+                            <Link to="/dashboard?view=operator" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-2 py-2.5 rounded-md hover:bg-secondary transition-colors">
+                              <Eye className="w-5 h-5 text-muted-foreground" />
+                              <span className="text-sm font-medium">Operator View</span>
+                            </Link>
+                          </>
+                        )}
+                        {hasTalentProfile && (
+                          <Link to="/talent/dashboard" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-2 py-2.5 rounded-md bg-primary/10 hover:bg-primary/20 transition-colors">
+                            <IdCard className="w-5 h-5 text-primary" />
+                            <span className="text-sm font-medium">Talent Dashboard</span>
+                          </Link>
+                        )}
                       </div>
                     )}
                     {user && <TeamSelector />}
