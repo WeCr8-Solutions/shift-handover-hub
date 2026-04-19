@@ -10,11 +10,13 @@ import { useDeviceNotifications } from "@/hooks/useDeviceNotifications";
 import { SettingsSkeleton } from "./SettingsSkeleton";
 import { SettingsFooter } from "./SettingsFooter";
 import { SettingsSwitchRow } from "./SettingsSwitchRow";
+import { SettingsErrorBanner } from "./SettingsErrorBanner";
 
 export function NotificationSettings() {
   const { toast } = useToast();
   const { notifications, updateNotifications, loading } = useNotificationPrefs();
   const [isSaving, setIsSaving] = useState(false);
+  const [lastError, setLastError] = useState<string | null>(null);
 
   const [settings, setSettings] = useState({
     email_handoff_alerts: true,
@@ -52,27 +54,44 @@ export function NotificationSettings() {
 
   const handleSave = async () => {
     setIsSaving(true);
-    const { error } = await updateNotifications({
-      ...settings,
-      quiet_hours_start: settings.quiet_hours_start || null,
-      quiet_hours_end: settings.quiet_hours_end || null,
-    });
-    setIsSaving(false);
+    try {
+      const { error } = await updateNotifications({
+        ...settings,
+        quiet_hours_start: settings.quiet_hours_start || null,
+        quiet_hours_end: settings.quiet_hours_end || null,
+      });
 
-    if (error) {
-      toast({ title: "Failed to save settings", description: error, variant: "destructive" });
-    } else {
-      setInitialSettings(settings);
-      toast({ title: "Settings saved", description: "Notification preferences have been updated." });
+      if (error) {
+        setLastError(error);
+        toast({ title: "Failed to save settings", description: error, variant: "destructive" });
+      } else {
+        setLastError(null);
+        setInitialSettings(settings);
+        toast({ title: "Settings saved", description: "Notification preferences have been updated." });
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Unexpected error while saving";
+      setLastError(msg);
+      toast({ title: "Failed to save settings", description: msg, variant: "destructive" });
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const handleDiscard = () => setSettings(initialSettings);
+  const handleDiscard = () => {
+    setSettings(initialSettings);
+    setLastError(null);
+  };
 
   if (loading) return <SettingsSkeleton rows={3} />;
 
   return (
     <div className="space-y-6">
+      <SettingsErrorBanner
+        error={lastError}
+        onDismiss={() => setLastError(null)}
+        context="Notification Settings"
+      />
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
