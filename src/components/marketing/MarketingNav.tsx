@@ -359,6 +359,14 @@ export function MarketingNav({ showPricing = true }: MarketingNavProps) {
             ))}
           </MobileSection>
 
+          <MobileSection title="Talent">
+            {talentItems.map((item) => (
+              <button key={item.href} onClick={() => go(item.href)} className="block w-full text-left px-3 py-2 text-sm text-foreground hover:bg-accent rounded-md">
+                {item.label}
+              </button>
+            ))}
+          </MobileSection>
+
           <MobileSection title="Company">
             {companyItems.map((item) => (
               <button key={item.href} onClick={() => go(item.href)} className="block w-full text-left px-3 py-2 text-sm text-foreground hover:bg-accent rounded-md">
