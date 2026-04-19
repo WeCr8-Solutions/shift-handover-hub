@@ -405,6 +405,28 @@ export default function PublicOperatorProfile() {
               <Button asChild size="sm">
                 <Link to="/talent/search">Employers: contact via Talent Search</Link>
               </Button>
+              {miniSite && (
+                <SaveContactButton
+                  vcard={{
+                    fullName: miniSite.vcard_full_name ?? fullName,
+                    title: miniSite.vcard_title ?? profile.headline,
+                    company: miniSite.vcard_company,
+                    email: miniSite.contact_email,
+                    phone: miniSite.contact_phone,
+                    website: profile.portfolio_url,
+                    addressCity: profile.location_city,
+                    addressRegion: profile.location_region,
+                    addressCountry: profile.location_country,
+                    profileUrl: getPublicTalentUrl(profile.public_username),
+                  }}
+                  label="Save contact (.vcf)"
+                />
+              )}
+              {miniSite?.card_slug && (
+                <Button asChild size="sm" variant="outline">
+                  <Link to={`/card/${miniSite.card_slug}`}>Open business card</Link>
+                </Button>
+              )}
               <Button asChild size="sm" variant="outline">
                 <Link to="/auth?signup=1">Build your own profile</Link>
               </Button>
