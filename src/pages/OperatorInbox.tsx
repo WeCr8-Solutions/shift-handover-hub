@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { useAuth } from "@/contexts/AuthContext";
 import { Header } from "@/components/Header";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -10,8 +11,9 @@ import { Inbox, MessageSquare } from "lucide-react";
 import { useContactRequests } from "@/hooks/useTalent";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { MessageThread } from "@/components/talent/MessageThread";
 
 export default function OperatorInbox() {
   const navigate = useNavigate();
@@ -39,6 +41,10 @@ export default function OperatorInbox() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Recruiter Inbox — JobLine.ai</title>
+        <meta name="robots" content="noindex" />
+      </Helmet>
       <Header />
       <main className="container py-6 max-w-3xl space-y-4">
         <div>
@@ -80,6 +86,9 @@ export default function OperatorInbox() {
                 {m.candidate_response_message && (
                   <p className="text-sm border-l-2 border-primary pl-2 italic">Your reply: {m.candidate_response_message}</p>
                 )}
+                {m.candidate_response === "accepted" && (
+                  <MessageThread requestId={m.id} viewerRole="candidate" />
+                )}
               </CardContent>
             </Card>
           ))
@@ -90,6 +99,11 @@ export default function OperatorInbox() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{responding?.mode === "accepted" ? "Accept message" : "Decline message"}</DialogTitle>
+            <DialogDescription>
+              {responding?.mode === "accepted"
+                ? "Accepting opens an in-app conversation with this recruiter."
+                : "Declining politely closes this thread. Your contact info stays private."}
+            </DialogDescription>
           </DialogHeader>
           <Textarea placeholder="Optional reply…" value={reply} onChange={(e) => setReply(e.target.value)} rows={4} />
           <DialogFooter>
