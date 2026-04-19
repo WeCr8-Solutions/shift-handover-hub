@@ -64,6 +64,12 @@ export function UserMenu() {
           <IdCard className="mr-2 h-4 w-4" />
           <span>Talent Profile</span>
         </DropdownMenuItem>
+        {hasTalentProfile && (
+          <DropdownMenuItem onClick={() => navigate("/talent/dashboard")}>
+            <LayoutDashboard className="mr-2 h-4 w-4" />
+            <span>Talent Dashboard</span>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem onClick={() => navigate("/talent")}>
           <Globe className="mr-2 h-4 w-4" />
           <span>Talent Network</span>
