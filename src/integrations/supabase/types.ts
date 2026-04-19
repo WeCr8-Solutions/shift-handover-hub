@@ -9747,6 +9747,120 @@ export type Database = {
         }
         Relationships: []
       }
+      operator_profiles_public_view: {
+        Row: {
+          avatar_url: string | null
+          banner_url: string | null
+          bio: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          desired_salary_max: number | null
+          desired_salary_min: number | null
+          facebook_url: string | null
+          github_url: string | null
+          headline: string | null
+          id: string | null
+          instagram_url: string | null
+          is_discoverable: boolean | null
+          linkedin_url: string | null
+          location_city: string | null
+          location_country: string | null
+          location_region: string | null
+          open_to_work: boolean | null
+          portfolio_url: string | null
+          preferred_employment_types: string[] | null
+          profile_visibility:
+            | Database["public"]["Enums"]["operator_profile_visibility"]
+            | null
+          public_published_at: string | null
+          public_username: string | null
+          resume_pdf_url: string | null
+          resume_public: boolean | null
+          show_only_verified_certs: boolean | null
+          social_visibility: Json | null
+          twitter_url: string | null
+          user_id: string | null
+          website_url: string | null
+          willing_to_relocate: boolean | null
+          years_experience: number | null
+          youtube_url: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          banner_url?: string | null
+          bio?: string | null
+          contact_email?: never
+          contact_phone?: never
+          desired_salary_max?: never
+          desired_salary_min?: never
+          facebook_url?: string | null
+          github_url?: string | null
+          headline?: string | null
+          id?: string | null
+          instagram_url?: string | null
+          is_discoverable?: boolean | null
+          linkedin_url?: string | null
+          location_city?: string | null
+          location_country?: string | null
+          location_region?: string | null
+          open_to_work?: boolean | null
+          portfolio_url?: string | null
+          preferred_employment_types?: string[] | null
+          profile_visibility?:
+            | Database["public"]["Enums"]["operator_profile_visibility"]
+            | null
+          public_published_at?: string | null
+          public_username?: string | null
+          resume_pdf_url?: string | null
+          resume_public?: boolean | null
+          show_only_verified_certs?: boolean | null
+          social_visibility?: Json | null
+          twitter_url?: string | null
+          user_id?: string | null
+          website_url?: string | null
+          willing_to_relocate?: boolean | null
+          years_experience?: number | null
+          youtube_url?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          banner_url?: string | null
+          bio?: string | null
+          contact_email?: never
+          contact_phone?: never
+          desired_salary_max?: never
+          desired_salary_min?: never
+          facebook_url?: string | null
+          github_url?: string | null
+          headline?: string | null
+          id?: string | null
+          instagram_url?: string | null
+          is_discoverable?: boolean | null
+          linkedin_url?: string | null
+          location_city?: string | null
+          location_country?: string | null
+          location_region?: string | null
+          open_to_work?: boolean | null
+          portfolio_url?: string | null
+          preferred_employment_types?: string[] | null
+          profile_visibility?:
+            | Database["public"]["Enums"]["operator_profile_visibility"]
+            | null
+          public_published_at?: string | null
+          public_username?: string | null
+          resume_pdf_url?: string | null
+          resume_public?: boolean | null
+          show_only_verified_certs?: boolean | null
+          social_visibility?: Json | null
+          twitter_url?: string | null
+          user_id?: string | null
+          website_url?: string | null
+          willing_to_relocate?: boolean | null
+          years_experience?: number | null
+          youtube_url?: string | null
+        }
+        Relationships: []
+      }
       organization_webhooks_safe: {
         Row: {
           created_at: string | null
