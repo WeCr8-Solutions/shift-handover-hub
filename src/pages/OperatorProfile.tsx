@@ -942,6 +942,18 @@ function UsernamePicker({
   );
 }
 
+const ALLOWED_CERT_MIME = ["application/pdf", "image/png", "image/jpeg", "image/jpg", "image/webp"];
+const MAX_CERT_BYTES = 10 * 1024 * 1024; // 10MB
+
+/** Extract the storage object path from a Supabase public URL for the operator-profiles bucket. */
+function pathFromOperatorProfilesUrl(url: string | null): string | null {
+  if (!url) return null;
+  const marker = "/operator-profiles/";
+  const i = url.indexOf(marker);
+  if (i === -1) return null;
+  return decodeURIComponent(url.slice(i + marker.length).split("?")[0]);
+}
+
 function CertificationsManager({
   certs, onChange, uploadFile, userId,
 }: {
@@ -952,6 +964,7 @@ function CertificationsManager({
 }) {
   const { toast } = useToast();
   const [adding, setAdding] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const [draft, setDraft] = useState({ name: "", issuer: "", issued_date: "", expires_date: "", credential_id: "", credential_url: "" });
 
   const add = async () => {
@@ -975,18 +988,60 @@ function CertificationsManager({
     onChange();
   };
 
-  const uploadAttachment = async (certId: string, file: File) => {
+  const validateFile = (file: File): string | null => {
+    if (!ALLOWED_CERT_MIME.includes(file.type)) {
+      return "Only PDF or image files (PNG, JPG, WEBP) are allowed.";
+    }
+    if (file.size > MAX_CERT_BYTES) {
+      return `File is too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Max 10MB.`;
+    }
+    return null;
+  };
+
+  const uploadAttachment = async (certId: string, file: File, currentUrl: string | null) => {
+    const err = validateFile(file);
+    if (err) {
+      toast({ title: "Invalid file", description: err, variant: "destructive" });
+      return;
+    }
     try {
       const url = await uploadFile(file, "certs");
       await supabase.from("operator_certifications").update({ attachment_url: url }).eq("id", certId);
+      // Best-effort: remove the previous attachment from storage so we don't orphan files.
+      const oldPath = pathFromOperatorProfilesUrl(currentUrl);
+      if (oldPath) await supabase.storage.from("operator-profiles").remove([oldPath]);
       onChange();
     } catch (err) {
       toast({ title: "Upload failed", description: err instanceof Error ? err.message : String(err), variant: "destructive" });
     }
   };
 
-  const remove = async (id: string) => {
-    await supabase.from("operator_certifications").delete().eq("id", id);
+  /** Hard-delete the cert row AND its storage object (if any). */
+  const remove = async (id: string, attachmentUrl: string | null) => {
+    const { error } = await supabase.from("operator_certifications").delete().eq("id", id);
+    if (error) {
+      toast({ title: "Delete failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    const path = pathFromOperatorProfilesUrl(attachmentUrl);
+    if (path) {
+      await supabase.storage.from("operator-profiles").remove([path]);
+    }
+    onChange();
+  };
+
+  /** Detach + delete just the uploaded file, keep the cert row metadata. */
+  const removeAttachment = async (id: string, attachmentUrl: string | null) => {
+    const { error } = await supabase
+      .from("operator_certifications")
+      .update({ attachment_url: null })
+      .eq("id", id);
+    if (error) {
+      toast({ title: "Failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    const path = pathFromOperatorProfilesUrl(attachmentUrl);
+    if (path) await supabase.storage.from("operator-profiles").remove([path]);
     onChange();
   };
 
@@ -1001,6 +1056,10 @@ function CertificationsManager({
     }
     onChange();
   };
+
+  const uploadedCerts = [...certs]
+    .filter((c) => !!c.attachment_url)
+    .sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
 
   return (
     <div className="space-y-3">
@@ -1032,10 +1091,15 @@ function CertificationsManager({
               {c.verification_source === "self_reported" && (
                 <>
                   <label className="cursor-pointer">
-                    <input type="file" hidden accept="image/*,application/pdf" onChange={(e) => e.target.files?.[0] && uploadAttachment(c.id, e.target.files[0])} />
+                    <input
+                      type="file"
+                      hidden
+                      accept="application/pdf,image/png,image/jpeg,image/webp"
+                      onChange={(e) => e.target.files?.[0] && uploadAttachment(c.id, e.target.files[0], c.attachment_url)}
+                    />
                     <Button size="sm" variant="ghost" asChild><span><Upload className="w-4 h-4" /></span></Button>
                   </label>
-                  <Button size="sm" variant="ghost" onClick={() => remove(c.id)}><Trash2 className="w-4 h-4" /></Button>
+                  <Button size="sm" variant="ghost" onClick={() => remove(c.id, c.attachment_url)}><Trash2 className="w-4 h-4" /></Button>
                 </>
               )}
             </div>
@@ -1065,6 +1129,9 @@ function CertificationsManager({
           </div>
           <Input placeholder="Credential ID" value={draft.credential_id} onChange={(e) => setDraft({ ...draft, credential_id: e.target.value })} />
           <Input placeholder="Credential URL" value={draft.credential_url} onChange={(e) => setDraft({ ...draft, credential_url: e.target.value })} />
+          <p className="text-[11px] text-muted-foreground">
+            After adding, use the upload icon to attach the certificate (PDF, PNG, JPG, or WEBP — max 10MB).
+          </p>
           <div className="flex gap-2">
             <Button size="sm" onClick={add}>Add</Button>
             <Button size="sm" variant="ghost" onClick={() => setAdding(false)}>Cancel</Button>
@@ -1073,6 +1140,74 @@ function CertificationsManager({
       ) : (
         <Button variant="outline" onClick={() => setAdding(true)} className="gap-2"><Plus className="w-4 h-4" /> Add certification</Button>
       )}
+
+      {/* Upload history panel */}
+      <div className="border rounded-lg bg-muted/20">
+        <button
+          type="button"
+          onClick={() => setShowHistory((v) => !v)}
+          className="w-full flex items-center justify-between px-3 py-2 text-sm font-medium hover:bg-muted/40 rounded-lg"
+        >
+          <span className="flex items-center gap-2">
+            <FileText className="w-4 h-4" /> Upload history
+            <Badge variant="secondary" className="ml-1">{uploadedCerts.length}</Badge>
+          </span>
+          <span className="text-xs text-muted-foreground">{showHistory ? "Hide" : "Show"}</span>
+        </button>
+        {showHistory && (
+          <div className="px-3 pb-3 space-y-2">
+            {uploadedCerts.length === 0 ? (
+              <p className="text-xs text-muted-foreground py-2">
+                No file attachments yet. Upload PDFs or images on a certification above.
+              </p>
+            ) : (
+              uploadedCerts.map((c) => {
+                const verified = c.verification_source.startsWith("verified_");
+                return (
+                  <div key={`hist-${c.id}`} className="flex items-center justify-between gap-3 border rounded-md bg-background px-3 py-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-sm font-medium truncate">{c.name}</p>
+                        {verified && (
+                          <Badge className="gap-1 bg-primary/15 text-primary border-primary/30 text-[10px] py-0 px-1.5">
+                            <ShieldCheck className="w-3 h-3" /> Verified
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-muted-foreground">
+                        Uploaded {c.created_at ? new Date(c.created_at).toLocaleDateString() : "—"}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <a
+                        href={c.attachment_url ?? "#"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline text-xs px-2"
+                      >
+                        Open
+                      </a>
+                      {!verified && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          title="Delete uploaded file"
+                          onClick={() => removeAttachment(c.id, c.attachment_url)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })
+            )}
+            <p className="text-[10px] text-muted-foreground">
+              Verified OAP/GCA files are managed by JobLine and can't be deleted here. Removing a self-reported file detaches it permanently.
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
