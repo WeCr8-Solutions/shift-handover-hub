@@ -120,8 +120,8 @@ export function Header() {
           {/* Desktop nav — flex-1 so it never pushes the right-side off screen */}
           {!isMobile && (
             <div className="flex items-center gap-1 min-w-0 overflow-hidden flex-1">
-              {/* Dashboard button with role-aware options */}
-              {user && canViewProductionFloor ? (
+              {/* Dashboard button — context-aware: production + talent dashboards */}
+              {user && (canViewProductionFloor || hasTalentProfile) ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="default" size="sm" className="gap-1.5 shrink-0">
@@ -131,14 +131,33 @@ export function Header() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start">
-                    <DropdownMenuItem onClick={() => navigate("/dashboard")}>
-                      <Factory className="w-4 h-4 mr-2" />
-                      Production Floor
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate("/dashboard?view=operator")}>
-                      <Eye className="w-4 h-4 mr-2" />
-                      Operator View
-                    </DropdownMenuItem>
+                    {canViewProductionFloor && (
+                      <>
+                        <DropdownMenuLabel className="text-xs text-muted-foreground">Shop Floor</DropdownMenuLabel>
+                        <DropdownMenuItem onClick={() => navigate("/dashboard")}>
+                          <Factory className="w-4 h-4 mr-2" />
+                          Production Floor
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate("/dashboard?view=operator")}>
+                          <Eye className="w-4 h-4 mr-2" />
+                          Operator View
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                    {hasTalentProfile && canViewProductionFloor && <DropdownMenuSeparator />}
+                    {hasTalentProfile && (
+                      <>
+                        <DropdownMenuLabel className="text-xs text-muted-foreground">Talent Network</DropdownMenuLabel>
+                        <DropdownMenuItem onClick={() => navigate("/talent/dashboard")}>
+                          <IdCard className="w-4 h-4 mr-2" />
+                          Talent Dashboard
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate("/talent")}>
+                          <Globe className="w-4 h-4 mr-2" />
+                          Browse Talent
+                        </DropdownMenuItem>
+                      </>
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : user ? (
