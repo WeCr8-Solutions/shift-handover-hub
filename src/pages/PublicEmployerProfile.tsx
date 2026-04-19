@@ -134,25 +134,39 @@ export default function PublicEmployerProfile() {
 
       <MarketingNav />
 
-      {/* Cover */}
-      <div
-        className="h-48 md:h-64 bg-gradient-to-br from-primary/20 via-primary/5 to-background bg-cover bg-center border-b border-border"
-        style={employer.employer_cover_url ? { backgroundImage: `url(${employer.employer_cover_url})` } : undefined}
-      />
+      {/* Hero cover — gradient overlay ensures legibility on any uploaded image */}
+      <div className="relative h-56 md:h-80 border-b border-border overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            background: employer.employer_cover_url
+              ? `url(${employer.employer_cover_url}) center/cover`
+              : "radial-gradient(120% 140% at 0% 0%, hsl(var(--primary)/0.35) 0%, transparent 55%), radial-gradient(120% 140% at 100% 0%, hsl(var(--primary)/0.18) 0%, transparent 60%), linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary)/0.6) 100%)",
+          }}
+          aria-hidden
+        />
+        {/* Bottom-fade overlay for text contrast on cover photos */}
+        <div
+          className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent"
+          aria-hidden
+        />
+      </div>
 
-      <div className="container -mt-16 md:-mt-20 relative z-10">
+      <div className="container -mt-24 md:-mt-32 relative z-10 animate-fade-in">
         <div className="flex flex-col md:flex-row gap-6 md:items-end">
-          <div className="h-28 w-28 md:h-32 md:w-32 rounded-2xl bg-card border-4 border-background shadow-lg overflow-hidden flex items-center justify-center shrink-0">
+          <div className="h-28 w-28 md:h-36 md:w-36 rounded-2xl bg-card border-4 border-background shadow-2xl overflow-hidden flex items-center justify-center shrink-0 ring-1 ring-border/60">
             {logo ? (
               <img src={logo} alt={`${employer.name} logo`} className="h-full w-full object-cover" />
             ) : (
-              <Building2 className="h-12 w-12 text-muted-foreground" />
+              <Building2 className="h-14 w-14 text-muted-foreground" />
             )}
           </div>
           <div className="flex-1 pb-2">
-            <h1 className="text-3xl md:text-4xl font-bold">{employer.name}</h1>
+            <h1 className="text-3xl md:text-5xl font-bold tracking-tight">{employer.name}</h1>
             {employer.employer_tagline && (
-              <p className="text-muted-foreground mt-1 text-lg">{employer.employer_tagline}</p>
+              <p className="text-muted-foreground mt-2 text-lg md:text-xl max-w-2xl">
+                {employer.employer_tagline}
+              </p>
             )}
             <div className="flex flex-wrap gap-2 mt-3">
               {employer.employer_locations?.map((loc) => (
