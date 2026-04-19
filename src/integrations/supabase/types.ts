@@ -3425,6 +3425,78 @@ export type Database = {
           },
         ]
       }
+      job_postings: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string
+          employment_type: string
+          expires_at: string | null
+          id: string
+          location: string | null
+          organization_id: string
+          published_at: string | null
+          remote: boolean
+          required_skills: string[] | null
+          salary_max: number | null
+          salary_min: number | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description: string
+          employment_type?: string
+          expires_at?: string | null
+          id?: string
+          location?: string | null
+          organization_id: string
+          published_at?: string | null
+          remote?: boolean
+          required_skills?: string[] | null
+          salary_max?: number | null
+          salary_min?: number | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          employment_type?: string
+          expires_at?: string | null
+          id?: string
+          location?: string | null
+          organization_id?: string
+          published_at?: string | null
+          remote?: boolean
+          required_skills?: string[] | null
+          salary_max?: number | null
+          salary_min?: number | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_postings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_postings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       machining_operation_categories: {
         Row: {
           created_at: string
@@ -5363,20 +5435,28 @@ export type Database = {
       }
       operator_profiles: {
         Row: {
+          accent_color: string | null
           avatar_url: string | null
           bio: string | null
+          business_hours: Json | null
+          card_slug: string | null
           contact_email: string | null
           contact_phone: string | null
           created_at: string
+          cta_label: string | null
+          cta_url: string | null
           desired_salary_max: number | null
           desired_salary_min: number | null
+          gallery: Json
           headline: string | null
           id: string
           is_discoverable: boolean
+          latitude: number | null
           linkedin_url: string | null
           location_city: string | null
           location_country: string | null
           location_region: string | null
+          longitude: number | null
           open_to_work: boolean
           portfolio_url: string | null
           preferred_employment_types: string[] | null
@@ -5384,26 +5464,40 @@ export type Database = {
           public_published_at: string | null
           public_username: string | null
           resume_pdf_url: string | null
+          services: Json
+          testimonials: Json
+          theme_color: string | null
           updated_at: string
           user_id: string
+          vcard_company: string | null
+          vcard_full_name: string | null
+          vcard_title: string | null
           willing_to_relocate: boolean
           years_experience: number | null
         }
         Insert: {
+          accent_color?: string | null
           avatar_url?: string | null
           bio?: string | null
+          business_hours?: Json | null
+          card_slug?: string | null
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string
+          cta_label?: string | null
+          cta_url?: string | null
           desired_salary_max?: number | null
           desired_salary_min?: number | null
+          gallery?: Json
           headline?: string | null
           id?: string
           is_discoverable?: boolean
+          latitude?: number | null
           linkedin_url?: string | null
           location_city?: string | null
           location_country?: string | null
           location_region?: string | null
+          longitude?: number | null
           open_to_work?: boolean
           portfolio_url?: string | null
           preferred_employment_types?: string[] | null
@@ -5411,26 +5505,40 @@ export type Database = {
           public_published_at?: string | null
           public_username?: string | null
           resume_pdf_url?: string | null
+          services?: Json
+          testimonials?: Json
+          theme_color?: string | null
           updated_at?: string
           user_id: string
+          vcard_company?: string | null
+          vcard_full_name?: string | null
+          vcard_title?: string | null
           willing_to_relocate?: boolean
           years_experience?: number | null
         }
         Update: {
+          accent_color?: string | null
           avatar_url?: string | null
           bio?: string | null
+          business_hours?: Json | null
+          card_slug?: string | null
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string
+          cta_label?: string | null
+          cta_url?: string | null
           desired_salary_max?: number | null
           desired_salary_min?: number | null
+          gallery?: Json
           headline?: string | null
           id?: string
           is_discoverable?: boolean
+          latitude?: number | null
           linkedin_url?: string | null
           location_city?: string | null
           location_country?: string | null
           location_region?: string | null
+          longitude?: number | null
           open_to_work?: boolean
           portfolio_url?: string | null
           preferred_employment_types?: string[] | null
@@ -5438,8 +5546,14 @@ export type Database = {
           public_published_at?: string | null
           public_username?: string | null
           resume_pdf_url?: string | null
+          services?: Json
+          testimonials?: Json
+          theme_color?: string | null
           updated_at?: string
           user_id?: string
+          vcard_company?: string | null
+          vcard_full_name?: string | null
+          vcard_title?: string | null
           willing_to_relocate?: boolean
           years_experience?: number | null
         }
@@ -6418,10 +6532,24 @@ export type Database = {
           created_by: string
           description: string | null
           designated_oap_mentor_user_id: string | null
+          employer_about: string | null
+          employer_cover_url: string | null
+          employer_hiring_email: string | null
+          employer_industries: string[] | null
+          employer_linkedin: string | null
+          employer_locations: string[] | null
+          employer_logo_url: string | null
+          employer_paid_contact: boolean
+          employer_paid_contact_until: string | null
+          employer_tagline: string | null
+          employer_website: string | null
           id: string
           logo_url: string | null
           mfa_required: boolean
           name: string
+          organization_kind: Database["public"]["Enums"]["organization_kind"]
+          public_employer: boolean
+          public_slug: string | null
           requires_us_person_declaration: boolean
           slug: string
           stripe_customer_id: string | null
@@ -6437,10 +6565,24 @@ export type Database = {
           created_by: string
           description?: string | null
           designated_oap_mentor_user_id?: string | null
+          employer_about?: string | null
+          employer_cover_url?: string | null
+          employer_hiring_email?: string | null
+          employer_industries?: string[] | null
+          employer_linkedin?: string | null
+          employer_locations?: string[] | null
+          employer_logo_url?: string | null
+          employer_paid_contact?: boolean
+          employer_paid_contact_until?: string | null
+          employer_tagline?: string | null
+          employer_website?: string | null
           id?: string
           logo_url?: string | null
           mfa_required?: boolean
           name: string
+          organization_kind?: Database["public"]["Enums"]["organization_kind"]
+          public_employer?: boolean
+          public_slug?: string | null
           requires_us_person_declaration?: boolean
           slug: string
           stripe_customer_id?: string | null
@@ -6456,10 +6598,24 @@ export type Database = {
           created_by?: string
           description?: string | null
           designated_oap_mentor_user_id?: string | null
+          employer_about?: string | null
+          employer_cover_url?: string | null
+          employer_hiring_email?: string | null
+          employer_industries?: string[] | null
+          employer_linkedin?: string | null
+          employer_locations?: string[] | null
+          employer_logo_url?: string | null
+          employer_paid_contact?: boolean
+          employer_paid_contact_until?: string | null
+          employer_tagline?: string | null
+          employer_website?: string | null
           id?: string
           logo_url?: string | null
           mfa_required?: boolean
           name?: string
+          organization_kind?: Database["public"]["Enums"]["organization_kind"]
+          public_employer?: boolean
+          public_slug?: string | null
           requires_us_person_declaration?: boolean
           slug?: string
           stripe_customer_id?: string | null
@@ -6583,6 +6739,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      profile_views: {
+        Row: {
+          created_at: string
+          id: string
+          referrer: string | null
+          subject_id: string
+          subject_type: string
+          user_agent: string | null
+          viewer_user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          referrer?: string | null
+          subject_id: string
+          subject_type: string
+          user_agent?: string | null
+          viewer_user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          referrer?: string | null
+          subject_id?: string
+          subject_type?: string
+          user_agent?: string | null
+          viewer_user_id?: string | null
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -8144,6 +8330,41 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      talent_message_replies: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          request_id: string
+          sender_role: string
+          sender_user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          request_id: string
+          sender_role: string
+          sender_user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          request_id?: string
+          sender_role?: string
+          sender_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "talent_message_replies_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "talent_contact_requests"
             referencedColumns: ["id"]
           },
         ]
@@ -10039,6 +10260,7 @@ export type Database = {
         | "hvac"
         | "general"
       operator_profile_visibility: "private" | "employers_only" | "public"
+      organization_kind: "manufacturer" | "employer" | "both"
       queue_item_type:
         | "work_order"
         | "station_task"
@@ -10289,6 +10511,7 @@ export const Constants = {
         "general",
       ],
       operator_profile_visibility: ["private", "employers_only", "public"],
+      organization_kind: ["manufacturer", "employer", "both"],
       queue_item_type: [
         "work_order",
         "station_task",
