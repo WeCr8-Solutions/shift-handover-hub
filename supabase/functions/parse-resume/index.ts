@@ -123,10 +123,29 @@ Deno.serve(async (req) => {
     const isPdf = contentType.includes("pdf") || resumeUrl.toLowerCase().endsWith(".pdf");
     const isDocx = contentType.includes("officedocument") || resumeUrl.toLowerCase().endsWith(".docx");
 
+    // Hard cap at 8MB to avoid OOM in the edge runtime.
+    if (buffer.byteLength > 8 * 1024 * 1024) {
+      return new Response(
+        JSON.stringify({ error: "Resume is larger than 8MB. Please upload a smaller PDF or DOCX." }),
+        { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    /** Convert ArrayBuffer → base64 in chunks (avoids "Max call stack" on large PDFs). */
+    const toBase64 = (buf: ArrayBuffer): string => {
+      const bytes = new Uint8Array(buf);
+      const CHUNK = 0x8000; // 32KB
+      let binary = "";
+      for (let i = 0; i < bytes.length; i += CHUNK) {
+        binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + CHUNK)));
+      }
+      return btoa(binary);
+    };
+
     let userContent: any;
     if (isPdf) {
       // Gemini accepts PDFs as base64 inline data via OpenAI-compatible image_url with data URL
-      const b64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
+      const b64 = toBase64(buffer);
       userContent = [
         { type: "text", text: "Extract structured profile fields from this resume." },
         { type: "image_url", image_url: { url: `data:application/pdf;base64,${b64}` } },
