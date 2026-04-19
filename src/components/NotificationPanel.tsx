@@ -161,9 +161,12 @@ interface NotificationPanelProps {
 }
 
 export function NotificationPanel({ onClose }: NotificationPanelProps) {
+  const navigate = useNavigate();
   const { organization } = useOrgContext();
   const { alerts } = useSmartAlerts();
   const { updates, unreadCount, acknowledgedIds, acknowledgeUpdate } = useGlobalUpdates();
+  const orgMessagesUnread = useOrgMessagesUnread();
+  const talentInboxUnread = useTalentInboxUnread();
   const [complimentaryDismissed, setComplimentaryDismissed] = useState(false);
 
   const isComplimentary = organization?.subscription_status === "complimentary";
@@ -184,8 +187,13 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
 
   const visibleUpdates = updates.filter((u) => u.is_visible_to_users && u.status === "live");
   const showComplimentary = isComplimentary && !complimentaryDismissed;
-
   const announcementCount = (showComplimentary ? 1 : 0);
+  const messagesTotal = orgMessagesUnread + talentInboxUnread;
+
+  const goTo = (path: string) => {
+    navigate(path);
+    onClose();
+  };
 
   return (
     <div className="w-full">
@@ -199,16 +207,19 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
         </Button>
       </div>
 
-      <Tabs defaultValue="alerts" className="w-full">
+      <Tabs defaultValue={messagesTotal > 0 ? "messages" : "alerts"} className="w-full">
         <TabsList className="w-full h-8 mx-3" style={{ width: "calc(100% - 1.5rem)" }}>
-          <TabsTrigger value="alerts" className="text-[11px] flex-1 h-6">
+          <TabsTrigger value="alerts" className="text-[10px] flex-1 h-6 px-1">
             Alerts {alerts.length > 0 && `(${alerts.length})`}
           </TabsTrigger>
-          <TabsTrigger value="updates" className="text-[11px] flex-1 h-6">
+          <TabsTrigger value="messages" className="text-[10px] flex-1 h-6 px-1">
+            Messages {messagesTotal > 0 && `(${messagesTotal})`}
+          </TabsTrigger>
+          <TabsTrigger value="updates" className="text-[10px] flex-1 h-6 px-1">
             Updates {unreadCount > 0 && `(${unreadCount})`}
           </TabsTrigger>
           {announcementCount > 0 && (
-            <TabsTrigger value="announcements" className="text-[11px] flex-1 h-6">
+            <TabsTrigger value="announcements" className="text-[10px] flex-1 h-6 px-1">
               Awards
             </TabsTrigger>
           )}
