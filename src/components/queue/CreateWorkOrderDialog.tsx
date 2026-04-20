@@ -557,7 +557,7 @@ export function CreateWorkOrderDialog({
               ) : (
                 <>
                   <CheckCircle className="w-4 h-4" />
-                  Create Work Order
+                  {isQuote ? "Create Quote" : "Create Work Order"}
                 </>
               )}
             </Button>
