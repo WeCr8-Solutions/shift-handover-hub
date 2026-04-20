@@ -167,6 +167,32 @@ export function WorkOrderHistory({ isAdmin = false, showQuickBooksExport = false
               </CardDescription>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
+              {isQuoteSystemEnabled ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button className="gap-2">
+                      <Plus className="w-4 h-4" />
+                      New
+                      <ChevronDown className="w-4 h-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem onClick={() => setCreateOpen(true)} className="gap-2">
+                      <Package className="w-4 h-4" />
+                      Work Order
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCreateOpen(true)} className="gap-2">
+                      <FileQuestion className="w-4 h-4" />
+                      Quote
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Button onClick={() => setCreateOpen(true)} className="gap-2">
+                  <Plus className="w-4 h-4" />
+                  New Work Order
+                </Button>
+              )}
               <Button 
                 variant="outline" 
                 onClick={handleExportExcel}
