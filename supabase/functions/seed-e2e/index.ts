@@ -75,17 +75,43 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    if (!SEED_SECRET) {
-      return json({ error: "E2E_SEED_SECRET not configured" }, 500);
-    }
-    const provided = req.headers.get("x-e2e-secret");
-    if (provided !== SEED_SECRET) {
-      return json({ error: "Unauthorized" }, 401);
-    }
-
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
+
+    // Auth: accept either the seed secret header OR a platform-admin JWT.
+    const provided = req.headers.get("x-e2e-secret");
+    let authorized = !!SEED_SECRET && provided === SEED_SECRET;
+
+    if (!authorized) {
+      const authHeader = req.headers.get("Authorization");
+      if (authHeader?.startsWith("Bearer ")) {
+        const token = authHeader.slice(7);
+        try {
+          const userClient = createClient(
+            SUPABASE_URL,
+            Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+            { global: { headers: { Authorization: authHeader } } },
+          );
+          const { data: claimsData } = await userClient.auth.getClaims(token);
+          const uid = claimsData?.claims?.sub as string | undefined;
+          if (uid) {
+            // Check platform admin role via has_role security-definer fn.
+            const { data: isAdmin } = await admin.rpc("has_role", {
+              _user_id: uid,
+              _role: "admin",
+            });
+            if (isAdmin === true) authorized = true;
+          }
+        } catch (e) {
+          console.error("seed-e2e jwt check failed", e);
+        }
+      }
+    }
+
+    if (!authorized) {
+      return json({ error: "Unauthorized" }, 401);
+    }
 
     // 1. Users
     const adminUser = await getOrCreateUser(admin, ADMIN_EMAIL, ADMIN_PASSWORD, "E2E Admin");
