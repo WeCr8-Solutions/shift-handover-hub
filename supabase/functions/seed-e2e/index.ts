@@ -23,16 +23,40 @@ const ORG_SLUG = "e2e-shop";
 const STATION_ID_CODE = "E2E-CNC-01";
 
 async function getOrCreateUser(admin: ReturnType<typeof createClient>, email: string, password: string, displayName: string) {
-  // Search across paginated admin list (only 20 users expected, but be safe)
-  for (let page = 1; page <= 20; page++) {
-    const { data: list } = await admin.auth.admin.listUsers({ page, perPage: 200 });
-    const found = list?.users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
+  // Look up by email via auth admin (Supabase v2 supports filter)
+  // First try direct admin search using listUsers (bug-tolerant: also try with email param)
+  try {
+    // @ts-ignore — newer SDKs accept { email }
+    const { data: byEmail } = await admin.auth.admin.listUsers({ email });
+    const found = byEmail?.users?.find?.((u: { email?: string }) => u.email?.toLowerCase() === email.toLowerCase());
     if (found) {
       await admin.auth.admin.updateUserById(found.id, { password });
       return found;
     }
-    if (!list || list.users.length < 200) break;
+  } catch (_) { /* ignore */ }
+
+  // Page through all users (handles paginated lists)
+  for (let page = 1; page <= 50; page++) {
+    const { data: list, error: listErr } = await admin.auth.admin.listUsers({ page, perPage: 1000 });
+    if (listErr) break;
+    const found = list?.users?.find((u) => u.email?.toLowerCase() === email.toLowerCase());
+    if (found) {
+      await admin.auth.admin.updateUserById(found.id, { password });
+      return found;
+    }
+    if (!list?.users?.length || list.users.length < 1000) break;
   }
+
+  // Create new
+  const { data, error } = await admin.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+    user_metadata: { display_name: displayName },
+  });
+  if (data?.user) return data.user;
+  throw new Error(`Failed to provision user ${email}: ${error?.message ?? "unknown"}`);
+}
 
   // Create new
   const { data, error } = await admin.auth.admin.createUser({
