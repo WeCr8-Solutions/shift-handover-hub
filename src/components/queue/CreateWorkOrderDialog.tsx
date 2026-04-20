@@ -41,10 +41,12 @@ export function CreateWorkOrderDialog({
 }: CreateWorkOrderDialogProps) {
   const { currentTeam } = useCurrentTeam();
   const { createItem } = useQueue();
+  const { isQuoteSystemEnabled } = useQuoteSystem();
   const [loading, setLoading] = useState(false);
   const [stationsLoading, setStationsLoading] = useState(true);
   const [stations, setStations] = useState<Station[]>([]);
   const [routingSteps, setRoutingSteps] = useState<RoutingStepInput[]>([]);
+  const [itemType, setItemType] = useState<QueueItemType>("work_order");
 
   const defaultFormData = useMemo(
     () => ({
