@@ -58,17 +58,6 @@ async function getOrCreateUser(admin: ReturnType<typeof createClient>, email: st
   throw new Error(`Failed to provision user ${email}: ${error?.message ?? "unknown"}`);
 }
 
-  // Create new
-  const { data, error } = await admin.auth.admin.createUser({
-    email,
-    password,
-    email_confirm: true,
-    user_metadata: { display_name: displayName },
-  });
-  if (data?.user) return data.user;
-  throw new Error(`Failed to provision user ${email}: ${error?.message ?? "unknown"}`);
-}
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
