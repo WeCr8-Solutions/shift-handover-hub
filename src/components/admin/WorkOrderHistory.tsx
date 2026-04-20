@@ -544,6 +544,12 @@ export function WorkOrderHistory({ isAdmin = false, showQuickBooksExport = false
           )}
         </DialogContent>
       </Dialog>
+
+      <CreateWorkOrderDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        initialItemType={createType}
+      />
     </div>
   );
 }
