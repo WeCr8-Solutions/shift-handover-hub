@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { useQuoteHistory, QuoteWithLinkedData } from "@/hooks/useQuoteHistory";
 import { exportQuotesToExcel, exportQuotesToQuickBooksCSV } from "@/lib/quoteExport";
 import { downloadBlob } from "@/lib/workOrderExport";
@@ -24,6 +25,7 @@ import {
   ChevronRight,
   FileQuestion,
   Filter,
+  ArrowRightLeft,
 } from "lucide-react";
 import {
   Dialog,
@@ -221,6 +223,12 @@ export function QuoteHistory() {
                             <Calendar className="w-3 h-3" />
                             {format(new Date(q.created_at), "MMM d, yyyy")}
                           </span>
+                          {q.converted_work_order_number && (
+                            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 gap-1">
+                              <ArrowRightLeft className="w-3 h-3" />
+                              Converted to WO {q.converted_work_order_number}
+                            </Badge>
+                          )}
                         </div>
                       </div>
                       <ChevronRight className="w-5 h-5 text-muted-foreground" />
@@ -295,6 +303,22 @@ export function QuoteHistory() {
                   </p>
                 </div>
               </div>
+
+              {selectedQuote.converted_work_order_number && (
+                <Link
+                  to={`/queue?item=${selectedQuote.converted_to_work_order_id}`}
+                  className="flex items-center justify-between p-3 rounded-lg border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <ArrowRightLeft className="w-4 h-4 text-primary" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">Converted to Work Order</p>
+                      <p className="font-medium text-primary">{selectedQuote.converted_work_order_number}</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-primary" />
+                </Link>
+              )}
 
               {selectedQuote.description && (
                 <div className="p-3 bg-muted rounded-lg">
