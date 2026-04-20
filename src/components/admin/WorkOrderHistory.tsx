@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useWorkOrderHistory, WorkOrderWithLinkedData, WorkOrderLinkedData } from "@/hooks/useWorkOrderHistory";
+import { useQuoteSystem } from "@/hooks/useQuoteSystem";
+import { CreateWorkOrderDialog } from "@/components/queue/CreateWorkOrderDialog";
 import { exportWorkOrdersToExcel, exportWorkOrdersToQuickBooksCSV, generateWorkOrderReport, downloadBlob, printReport } from "@/lib/workOrderExport";
 import { format } from "date-fns";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +14,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { 
   Search, 
@@ -32,7 +40,10 @@ import {
   MessageSquare,
   History,
   Filter,
-  ChevronRight
+  ChevronRight,
+  Plus,
+  ChevronDown,
+  FileQuestion,
 } from "lucide-react";
 
 interface WorkOrderHistoryProps {
@@ -50,6 +61,8 @@ export function WorkOrderHistory({ isAdmin = false, showQuickBooksExport = false
   const [loadingLinked, setLoadingLinked] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [linkedDataMap, setLinkedDataMap] = useState<Map<string, WorkOrderLinkedData>>(new Map());
+  const [createOpen, setCreateOpen] = useState(false);
+  const { isQuoteSystemEnabled } = useQuoteSystem();
 
   const { workOrders, loading, fetchLinkedData } = useWorkOrderHistory({
     search: debouncedSearch,
