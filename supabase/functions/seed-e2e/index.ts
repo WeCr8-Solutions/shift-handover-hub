@@ -23,7 +23,18 @@ const ORG_SLUG = "e2e-shop";
 const STATION_ID_CODE = "E2E-CNC-01";
 
 async function getOrCreateUser(admin: ReturnType<typeof createClient>, email: string, password: string, displayName: string) {
-  // Try fetch by listing (paged) — simpler: attempt create, handle "already registered"
+  // Search across paginated admin list (only 20 users expected, but be safe)
+  for (let page = 1; page <= 20; page++) {
+    const { data: list } = await admin.auth.admin.listUsers({ page, perPage: 200 });
+    const found = list?.users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
+    if (found) {
+      await admin.auth.admin.updateUserById(found.id, { password });
+      return found;
+    }
+    if (!list || list.users.length < 200) break;
+  }
+
+  // Create new
   const { data, error } = await admin.auth.admin.createUser({
     email,
     password,
@@ -31,22 +42,7 @@ async function getOrCreateUser(admin: ReturnType<typeof createClient>, email: st
     user_metadata: { display_name: displayName },
   });
   if (data?.user) return data.user;
-  if (error && /already|registered|exists/i.test(error.message)) {
-    // List users and find
-    let page = 1;
-    while (page < 20) {
-      const { data: list } = await admin.auth.admin.listUsers({ page, perPage: 200 });
-      const found = list?.users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
-      if (found) {
-        // Reset password to known value (idempotent)
-        await admin.auth.admin.updateUserById(found.id, { password });
-        return found;
-      }
-      if (!list || list.users.length < 200) break;
-      page++;
-    }
-  }
-  throw new Error(`Failed to provision user ${email}: ${error?.message}`);
+  throw new Error(`Failed to provision user ${email}: ${error?.message ?? "unknown"}`);
 }
 
 Deno.serve(async (req) => {
