@@ -7245,6 +7245,9 @@ export type Database = {
           assigned_by: string | null
           assigned_to: string | null
           completed_at: string | null
+          converted_at: string | null
+          converted_by: string | null
+          converted_to_work_order_id: string | null
           created_at: string
           created_by: string | null
           current_phase: string | null
@@ -7286,6 +7289,7 @@ export type Database = {
           scheduled_end: string | null
           scheduled_start: string | null
           setup_time_minutes: number | null
+          source_quote_id: string | null
           started_at: string | null
           station_id: string | null
           status: Database["public"]["Enums"]["queue_status"]
@@ -7300,6 +7304,9 @@ export type Database = {
           assigned_by?: string | null
           assigned_to?: string | null
           completed_at?: string | null
+          converted_at?: string | null
+          converted_by?: string | null
+          converted_to_work_order_id?: string | null
           created_at?: string
           created_by?: string | null
           current_phase?: string | null
@@ -7341,6 +7348,7 @@ export type Database = {
           scheduled_end?: string | null
           scheduled_start?: string | null
           setup_time_minutes?: number | null
+          source_quote_id?: string | null
           started_at?: string | null
           station_id?: string | null
           status?: Database["public"]["Enums"]["queue_status"]
@@ -7355,6 +7363,9 @@ export type Database = {
           assigned_by?: string | null
           assigned_to?: string | null
           completed_at?: string | null
+          converted_at?: string | null
+          converted_by?: string | null
+          converted_to_work_order_id?: string | null
           created_at?: string
           created_by?: string | null
           current_phase?: string | null
@@ -7396,6 +7407,7 @@ export type Database = {
           scheduled_end?: string | null
           scheduled_start?: string | null
           setup_time_minutes?: number | null
+          source_quote_id?: string | null
           started_at?: string | null
           station_id?: string | null
           status?: Database["public"]["Enums"]["queue_status"]
@@ -7407,6 +7419,13 @@ export type Database = {
           work_order?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "queue_items_converted_to_work_order_id_fkey"
+            columns: ["converted_to_work_order_id"]
+            isOneToOne: false
+            referencedRelation: "queue_items"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "queue_items_organization_id_fkey"
             columns: ["organization_id"]
@@ -7433,6 +7452,13 @@ export type Database = {
             columns: ["part_catalog_id"]
             isOneToOne: false
             referencedRelation: "part_catalog"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "queue_items_source_quote_id_fkey"
+            columns: ["source_quote_id"]
+            isOneToOne: false
+            referencedRelation: "queue_items"
             referencedColumns: ["id"]
           },
           {

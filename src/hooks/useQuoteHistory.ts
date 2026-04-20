@@ -7,6 +7,9 @@ import { QueueItem } from "@/hooks/useQueue";
 export interface QuoteWithLinkedData extends QueueItem {
   station_name?: string;
   team_name?: string;
+  converted_to_work_order_id?: string | null;
+  converted_at?: string | null;
+  converted_work_order_number?: string | null;
 }
 
 export interface QuoteHistoryFilters {
@@ -41,7 +44,8 @@ export function useQuoteHistory(filters?: QuoteHistoryFilters) {
         .select(`
           *,
           stations:station_id (name),
-          teams:team_id (name)
+          teams:team_id (name),
+          converted_wo:converted_to_work_order_id (id, work_order)
         `)
         .eq("organization_id", organization.id)
         .eq("item_type", "quote")
@@ -81,6 +85,7 @@ export function useQuoteHistory(filters?: QuoteHistoryFilters) {
         ...item,
         station_name: item.stations?.name || null,
         team_name: item.teams?.name || null,
+        converted_work_order_number: item.converted_wo?.work_order || null,
       }));
 
       setQuotes(transformed);
