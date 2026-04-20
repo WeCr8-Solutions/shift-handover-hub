@@ -23,30 +23,52 @@ const ORG_SLUG = "e2e-shop";
 const STATION_ID_CODE = "E2E-CNC-01";
 
 async function getOrCreateUser(admin: ReturnType<typeof createClient>, email: string, password: string, displayName: string) {
-  // Try fetch by listing (paged) — simpler: attempt create, handle "already registered"
-  const { data, error } = await admin.auth.admin.createUser({
-    email,
-    password,
-    email_confirm: true,
-    user_metadata: { display_name: displayName },
+  const adminUrl = `${SUPABASE_URL}/auth/v1/admin/users`;
+  const headers = {
+    "Authorization": `Bearer ${SERVICE_ROLE}`,
+    "apikey": SERVICE_ROLE,
+    "Content-Type": "application/json",
+  };
+
+  async function findByEmail(): Promise<{ id: string; email: string } | null> {
+    // Use SQL helper RPC (auth admin REST listing is unreliable)
+    const { data, error } = await admin.rpc("get_auth_user_id_by_email", { _email: email });
+    if (error) {
+      console.error("get_auth_user_id_by_email error", error);
+      return null;
+    }
+    if (data) return { id: data as string, email };
+    return null;
+  }
+
+  // 1. Try create first
+  const createRes = await fetch(adminUrl, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: { display_name: displayName },
+    }),
   });
-  if (data?.user) return data.user;
-  if (error && /already|registered|exists/i.test(error.message)) {
-    // List users and find
-    let page = 1;
-    while (page < 20) {
-      const { data: list } = await admin.auth.admin.listUsers({ page, perPage: 200 });
-      const found = list?.users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
-      if (found) {
-        // Reset password to known value (idempotent)
-        await admin.auth.admin.updateUserById(found.id, { password });
-        return found;
-      }
-      if (!list || list.users.length < 200) break;
-      page++;
+  if (createRes.ok) {
+    return (await createRes.json()) as { id: string; email: string };
+  }
+  const errText = await createRes.text();
+  // 2. If exists, find and update password
+  if (/email[_ ]?exists|already|registered/i.test(errText)) {
+    const found = await findByEmail();
+    if (found) {
+      await fetch(`${adminUrl}/${found.id}`, {
+        method: "PUT",
+        headers,
+        body: JSON.stringify({ password }),
+      });
+      return found;
     }
   }
-  throw new Error(`Failed to provision user ${email}: ${error?.message}`);
+  throw new Error(`Failed to provision user ${email}: ${errText}`);
 }
 
 Deno.serve(async (req) => {
@@ -168,7 +190,6 @@ Deno.serve(async (req) => {
           work_center: "CNC Mill",
           work_center_type: "milling",
           is_active: true,
-          created_by: adminUser.id,
         })
         .select()
         .single();

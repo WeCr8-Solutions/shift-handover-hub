@@ -10215,6 +10215,7 @@ export type Database = {
         Returns: Json
       }
       fetch_display_data: { Args: { _token: string }; Returns: Json }
+      get_auth_user_id_by_email: { Args: { _email: string }; Returns: string }
       get_public_employer: {
         Args: { _slug: string }
         Returns: {
