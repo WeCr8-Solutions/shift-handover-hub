@@ -11,6 +11,13 @@ import { JobPerformanceUpdateForm } from "@/components/JobPerformanceUpdateForm"
 import { WorkCenterFilter } from "@/components/WorkCenterFilter";
 import { OperatorWorkflowPanel } from "@/components/OperatorWorkflowPanel";
 import { CreateWorkOrderDialog } from "@/components/queue/CreateWorkOrderDialog";
+import { useQuoteSystem } from "@/hooks/useQuoteSystem";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import { PlanningAssistantModal } from "@/components/queue/PlanningAssistantModal";
 import { SupervisorDashboard } from "@/components/dashboard/SupervisorDashboard";
 import { OperatorDashboard } from "@/components/dashboard/OperatorDashboard";
@@ -40,6 +47,8 @@ import {
   Package,
   Settings,
   Users,
+  ChevronDown,
+  FileQuestion,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
@@ -184,6 +193,8 @@ const Index = () => {
   const [showNewHandoff, setShowNewHandoff] = useState(false);
   const [showPerformanceUpdate, setShowPerformanceUpdate] = useState(false);
   const [showCreateWorkOrder, setShowCreateWorkOrder] = useState(false);
+  const [createItemType, setCreateItemType] = useState<"work_order" | "quote">("work_order");
+  const { isQuoteSystemEnabled } = useQuoteSystem();
   const [selectedTypes, setSelectedTypes] = useState<WorkCenterType[]>([]);
   const [selectedStationForAction, setSelectedStationForAction] = useState<string | undefined>();
   const [viewMode, setViewMode] = useState<"supervisor" | "operator" | "station-detail">("supervisor");
@@ -393,14 +404,51 @@ const Index = () => {
                 {user && (
                   <div className="flex gap-2 flex-wrap">
                     <TourTriggerButton />
-                    <Button
-                      onClick={() => setShowCreateWorkOrder(true)}
-                      className="gap-2 bg-primary"
-                      data-tour="add-work-order"
-                    >
-                      <Package className="w-4 h-4" />
-                      Add Work Order
-                    </Button>
+                    {isQuoteSystemEnabled ? (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button className="gap-2 bg-primary" data-tour="add-work-order">
+                            <Package className="w-4 h-4" />
+                            New
+                            <ChevronDown className="w-3.5 h-3.5 opacity-80" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setCreateItemType("work_order");
+                              setShowCreateWorkOrder(true);
+                            }}
+                            className="gap-2"
+                          >
+                            <Package className="w-4 h-4" />
+                            Work Order
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setCreateItemType("quote");
+                              setShowCreateWorkOrder(true);
+                            }}
+                            className="gap-2"
+                          >
+                            <FileQuestion className="w-4 h-4" />
+                            Quote
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    ) : (
+                      <Button
+                        onClick={() => {
+                          setCreateItemType("work_order");
+                          setShowCreateWorkOrder(true);
+                        }}
+                        className="gap-2 bg-primary"
+                        data-tour="add-work-order"
+                      >
+                        <Package className="w-4 h-4" />
+                        Add Work Order
+                      </Button>
+                    )}
                     <Button variant="outline" onClick={() => navigate("/queue")} className="gap-2">
                       <ListTodo className="w-4 h-4" />
                       Queue
@@ -602,6 +650,7 @@ const Index = () => {
         open={showCreateWorkOrder}
         onOpenChange={setShowCreateWorkOrder}
         preSelectedStationId={selectedStationForAction}
+        initialItemType={createItemType}
       />
 
       {/* Handoff Detail Modal */}
