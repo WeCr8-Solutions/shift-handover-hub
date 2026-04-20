@@ -31,20 +31,13 @@ async function getOrCreateUser(admin: ReturnType<typeof createClient>, email: st
   };
 
   async function findByEmail(): Promise<{ id: string; email: string } | null> {
-    for (let page = 1; page <= 50; page++) {
-      const res = await fetch(`${adminUrl}?page=${page}&per_page=1000`, { headers });
-      if (!res.ok) {
-        console.error("listUsers failed", res.status, await res.text());
-        return null;
-      }
-      const body = await res.json();
-      const users: Array<{ id: string; email?: string }> =
-        Array.isArray(body) ? body : (body?.users ?? body?.data ?? []);
-      console.log(`[seed] page ${page} returned ${users.length} users (keys: ${Object.keys(body ?? {}).join(",")})`);
-      const found = users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
-      if (found) return found as { id: string; email: string };
-      if (users.length < 1000) return null;
+    // Use SQL helper RPC (auth admin REST listing is unreliable)
+    const { data, error } = await admin.rpc("get_auth_user_id_by_email", { _email: email });
+    if (error) {
+      console.error("get_auth_user_id_by_email error", error);
+      return null;
     }
+    if (data) return { id: data as string, email };
     return null;
   }
 
