@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Factory, Cog, AlertTriangle, Package } from "lucide-react";
+import { Factory, Cog, AlertTriangle, Package, FileQuestion } from "lucide-react";
 import { useSettingsForm } from "@/hooks/useSettingsForm";
 import { SettingsSkeleton } from "./SettingsSkeleton";
 import { SettingsFooter } from "./SettingsFooter";
@@ -26,6 +26,10 @@ type ManufacturingSettingsState = {
   partNumberFormat: string;
   autoGenerateWorkOrders: boolean;
   enableQuoteSystem: boolean;
+  quoteNumberPrefix: string;
+  quoteValidityDays: number;
+  quoteRequiresApproval: boolean;
+  quoteAutoConvertOnApproval: boolean;
   enablePerformanceUpdates: boolean;
   requireEngineeringReview: boolean;
   performanceUpdateCategories: string[];
@@ -49,6 +53,10 @@ const DEFAULT_SETTINGS: ManufacturingSettingsState = {
   partNumberFormat: "alphanumeric",
   autoGenerateWorkOrders: false,
   enableQuoteSystem: false,
+  quoteNumberPrefix: "Q",
+  quoteValidityDays: 30,
+  quoteRequiresApproval: true,
+  quoteAutoConvertOnApproval: false,
   enablePerformanceUpdates: true,
   requireEngineeringReview: false,
   performanceUpdateCategories: ["process_improvement", "safety", "quality", "tooling"],
