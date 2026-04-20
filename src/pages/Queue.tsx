@@ -159,6 +159,17 @@ export default function Queue() {
     }
   }, [isReady, user, navigate]);
 
+  useModuleContext({
+    id: "queue",
+    label: "Production Queue",
+    data: {
+      activeTab,
+      viewScope,
+      stationFilter: filters.station_id || null,
+      organizationId: organization?.id ?? null,
+    },
+  });
+
   if (authLoading || accessLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -214,16 +225,6 @@ export default function Queue() {
     }
   };
 
-  useModuleContext({
-    id: "queue",
-    label: "Production Queue",
-    data: {
-      activeTab,
-      viewScope,
-      stationFilter: filters.station_id || null,
-      organizationId: organization?.id ?? null,
-    },
-  });
 
   return (
     <div className="min-h-screen bg-background">
