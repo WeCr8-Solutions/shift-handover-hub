@@ -404,14 +404,51 @@ const Index = () => {
                 {user && (
                   <div className="flex gap-2 flex-wrap">
                     <TourTriggerButton />
-                    <Button
-                      onClick={() => setShowCreateWorkOrder(true)}
-                      className="gap-2 bg-primary"
-                      data-tour="add-work-order"
-                    >
-                      <Package className="w-4 h-4" />
-                      Add Work Order
-                    </Button>
+                    {isQuoteSystemEnabled ? (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button className="gap-2 bg-primary" data-tour="add-work-order">
+                            <Package className="w-4 h-4" />
+                            New
+                            <ChevronDown className="w-3.5 h-3.5 opacity-80" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setCreateItemType("work_order");
+                              setShowCreateWorkOrder(true);
+                            }}
+                            className="gap-2"
+                          >
+                            <Package className="w-4 h-4" />
+                            Work Order
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setCreateItemType("quote");
+                              setShowCreateWorkOrder(true);
+                            }}
+                            className="gap-2"
+                          >
+                            <FileQuestion className="w-4 h-4" />
+                            Quote
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    ) : (
+                      <Button
+                        onClick={() => {
+                          setCreateItemType("work_order");
+                          setShowCreateWorkOrder(true);
+                        }}
+                        className="gap-2 bg-primary"
+                        data-tour="add-work-order"
+                      >
+                        <Package className="w-4 h-4" />
+                        Add Work Order
+                      </Button>
+                    )}
                     <Button variant="outline" onClick={() => navigate("/queue")} className="gap-2">
                       <ListTodo className="w-4 h-4" />
                       Queue
