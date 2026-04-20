@@ -62,6 +62,7 @@ export function WorkOrderHistory({ isAdmin = false, showQuickBooksExport = false
   const [exporting, setExporting] = useState(false);
   const [linkedDataMap, setLinkedDataMap] = useState<Map<string, WorkOrderLinkedData>>(new Map());
   const [createOpen, setCreateOpen] = useState(false);
+  const [createType, setCreateType] = useState<"work_order" | "quote">("work_order");
   const { isQuoteSystemEnabled } = useQuoteSystem();
 
   const { workOrders, loading, fetchLinkedData } = useWorkOrderHistory({
@@ -177,18 +178,18 @@ export function WorkOrderHistory({ isAdmin = false, showQuickBooksExport = false
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem onClick={() => setCreateOpen(true)} className="gap-2">
+                    <DropdownMenuItem onClick={() => { setCreateType("work_order"); setCreateOpen(true); }} className="gap-2">
                       <Package className="w-4 h-4" />
                       Work Order
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setCreateOpen(true)} className="gap-2">
+                    <DropdownMenuItem onClick={() => { setCreateType("quote"); setCreateOpen(true); }} className="gap-2">
                       <FileQuestion className="w-4 h-4" />
                       Quote
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
-                <Button onClick={() => setCreateOpen(true)} className="gap-2">
+                <Button onClick={() => { setCreateType("work_order"); setCreateOpen(true); }} className="gap-2">
                   <Plus className="w-4 h-4" />
                   New Work Order
                 </Button>
