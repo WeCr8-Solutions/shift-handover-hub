@@ -188,15 +188,18 @@ export function CreateWorkOrderDialog({
 
       setLoading(true);
       try {
+        const isQuote = itemType === "quote";
+        const labelPrefix = isQuote ? "Quote" : "WO";
         const result = await createItem({
-          item_type: "work_order",
-          title: formData.title || `WO: ${formData.work_order}`,
+          item_type: itemType,
+          title: formData.title || `${labelPrefix}: ${formData.work_order}`,
           description: formData.description || undefined,
           work_order: formData.work_order,
           part_number: formData.part_number || undefined,
           operation_number: formData.operation_number || undefined,
           quantity: formData.quantity ? parseInt(formData.quantity) : undefined,
-          station_id: hasRouting ? undefined : formData.station_id || undefined,
+          // Quotes don't need a station — they go through approval first.
+          station_id: isQuote || hasRouting ? undefined : formData.station_id || undefined,
           priority: formData.priority,
           due_date: formData.due_date || undefined,
           setup_time_minutes: formData.setup_time_minutes ? parseInt(formData.setup_time_minutes) : undefined,
@@ -215,12 +218,12 @@ export function CreateWorkOrderDialog({
         });
 
         if (result?.error) {
-          console.error("Create work order error:", result.error);
+          console.error("Create item error:", result.error);
           toast.error(result.error);
           return;
         }
 
-        toast.success("Work order created successfully!");
+        toast.success(isQuote ? "Quote created — pending approval" : "Work order created successfully!");
         onOpenChange(false);
         onSuccess?.();
       } catch (error) {
