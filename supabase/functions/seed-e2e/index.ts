@@ -23,7 +23,6 @@ const ORG_SLUG = "e2e-shop";
 const STATION_ID_CODE = "E2E-CNC-01";
 
 async function getOrCreateUser(admin: ReturnType<typeof createClient>, email: string, password: string, displayName: string) {
-  // Use GoTrue admin REST directly (more reliable than supabase-js admin in edge runtime)
   const adminUrl = `${SUPABASE_URL}/auth/v1/admin/users`;
   const headers = {
     "Authorization": `Bearer ${SERVICE_ROLE}`,
@@ -31,22 +30,21 @@ async function getOrCreateUser(admin: ReturnType<typeof createClient>, email: st
     "Content-Type": "application/json",
   };
 
-  // 1. Look up existing by filter
-  const lookupRes = await fetch(`${adminUrl}?email=${encodeURIComponent(email)}`, { headers });
-  if (lookupRes.ok) {
-    const body = await lookupRes.json();
-    const found = body?.users?.find?.((u: { email?: string }) => u.email?.toLowerCase() === email.toLowerCase());
-    if (found) {
-      await fetch(`${adminUrl}/${found.id}`, {
-        method: "PUT",
-        headers,
-        body: JSON.stringify({ password }),
-      });
-      return found as { id: string; email: string };
+  async function findByEmail(): Promise<{ id: string; email: string } | null> {
+    // Page through all users (per_page max 1000)
+    for (let page = 1; page <= 50; page++) {
+      const res = await fetch(`${adminUrl}?page=${page}&per_page=1000`, { headers });
+      if (!res.ok) return null;
+      const body = await res.json();
+      const users: Array<{ id: string; email?: string }> = body?.users ?? [];
+      const found = users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
+      if (found) return found as { id: string; email: string };
+      if (users.length < 1000) return null;
     }
+    return null;
   }
 
-  // 2. Create
+  // 1. Try create first
   const createRes = await fetch(adminUrl, {
     method: "POST",
     headers,
@@ -61,6 +59,18 @@ async function getOrCreateUser(admin: ReturnType<typeof createClient>, email: st
     return (await createRes.json()) as { id: string; email: string };
   }
   const errText = await createRes.text();
+  // 2. If exists, find and update password
+  if (/email[_ ]?exists|already|registered/i.test(errText)) {
+    const found = await findByEmail();
+    if (found) {
+      await fetch(`${adminUrl}/${found.id}`, {
+        method: "PUT",
+        headers,
+        body: JSON.stringify({ password }),
+      });
+      return found;
+    }
+  }
   throw new Error(`Failed to provision user ${email}: ${errText}`);
 }
 
