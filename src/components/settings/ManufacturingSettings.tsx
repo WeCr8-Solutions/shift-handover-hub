@@ -163,14 +163,6 @@ export function ManufacturingSettings() {
           <CardDescription>Configure work order numbering, format, and quoting workflow</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <SettingsSwitchRow
-            label="Enable Quote System"
-            description="Allow creating quotes that route through approval before converting to work orders"
-            checked={form.enableQuoteSystem}
-            onCheckedChange={(v) => update("enableQuoteSystem", v)}
-            bordered
-            className="border-primary/20 bg-primary/5"
-          />
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label>Work Order Prefix</Label>
