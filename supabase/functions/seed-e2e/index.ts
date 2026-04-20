@@ -168,7 +168,6 @@ Deno.serve(async (req) => {
           work_center: "CNC Mill",
           work_center_type: "milling",
           is_active: true,
-          created_by: adminUser.id,
         })
         .select()
         .single();
