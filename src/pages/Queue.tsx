@@ -225,16 +225,6 @@ export default function Queue() {
     }
   };
 
-  useModuleContext({
-    id: "queue",
-    label: "Production Queue",
-    data: {
-      activeTab,
-      viewScope,
-      stationFilter: filters.station_id || null,
-      organizationId: organization?.id ?? null,
-    },
-  });
 
   return (
     <div className="min-h-screen bg-background">
