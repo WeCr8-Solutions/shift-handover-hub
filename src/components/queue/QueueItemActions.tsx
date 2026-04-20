@@ -198,21 +198,81 @@ export function QueueItemActions({
       return;
     }
     setConverting(true);
-    const { error } = await supabase
-      .from("queue_items")
-      .update({ item_type: "work_order" as any, work_order: convertWONumber.trim(), station_id: convertStationId || item.station_id || null })
-      .eq("id", item.id);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
 
-    if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    } else {
+      // 1) Clone the quote row into a new work_order row (preserves quote as historical record)
+      const { data: full, error: loadErr } = await supabase
+        .from("queue_items")
+        .select("*")
+        .eq("id", item.id)
+        .single();
+      if (loadErr || !full) throw loadErr || new Error("Quote not found");
+
+      // Strip identity / lifecycle fields — keep all production/spec data
+      const {
+        id: _omitId, created_at: _omitCreated, updated_at: _omitUpdated,
+        completed_at: _omitCompleted, started_at: _omitStarted,
+        converted_to_work_order_id: _omitCw, source_quote_id: _omitSq,
+        converted_at: _omitCa, converted_by: _omitCb,
+        ...cloneable
+      } = full as Record<string, unknown>;
+
+      const newStationId = convertStationId || (item.station_id as string | null) || null;
+      const { data: newWO, error: insertErr } = await supabase
+        .from("queue_items")
+        .insert({
+          ...cloneable,
+          item_type: "work_order",
+          status: "pending",
+          work_order: convertWONumber.trim(),
+          station_id: newStationId,
+          source_quote_id: item.id,
+          created_by: user?.id ?? (cloneable as { created_by?: string }).created_by,
+        } as never)
+        .select("id")
+        .single();
+      if (insertErr || !newWO) throw insertErr || new Error("Failed to create work order");
+
+      // 2) Copy routing steps from quote to new work order (estimation routing → production routing)
+      const { data: routing } = await supabase
+        .from("work_order_routing")
+        .select("*")
+        .eq("queue_item_id", item.id);
+      if (routing && routing.length > 0) {
+        const newSteps = routing.map((r: Record<string, unknown>) => {
+          const { id: _id, queue_item_id: _q, created_at: _c, updated_at: _u,
+                  started_at: _s, completed_at: _co, completed_by: _cb,
+                  ...rest } = r;
+          return { ...rest, queue_item_id: newWO.id, status: "pending" };
+        });
+        await supabase.from("work_order_routing").insert(newSteps as never);
+      }
+
+      // 3) Mark the quote as completed + linked to the new WO (preserves history)
+      const { error: updateErr } = await supabase
+        .from("queue_items")
+        .update({
+          status: "completed",
+          completed_at: new Date().toISOString(),
+          converted_to_work_order_id: newWO.id,
+          converted_at: new Date().toISOString(),
+          converted_by: user?.id ?? null,
+        } as never)
+        .eq("id", item.id);
+      if (updateErr) throw updateErr;
+
       toast({ title: "Quote Converted", description: `Now tracking as Work Order: ${convertWONumber}` });
       setConvertDialogOpen(false);
       setConvertWONumber("");
       setConvertStationId(undefined);
       onReloadHistory();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Conversion failed";
+      toast({ title: "Error", description: message, variant: "destructive" });
+    } finally {
+      setConverting(false);
     }
-    setConverting(false);
   };
 
   if (isCompleted) return null;

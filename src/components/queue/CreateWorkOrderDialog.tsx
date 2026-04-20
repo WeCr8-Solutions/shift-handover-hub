@@ -198,8 +198,8 @@ export function CreateWorkOrderDialog({
           part_number: formData.part_number || undefined,
           operation_number: formData.operation_number || undefined,
           quantity: formData.quantity ? parseInt(formData.quantity) : undefined,
-          // Quotes don't need a station — they go through approval first.
-          station_id: isQuote || hasRouting ? undefined : formData.station_id || undefined,
+          // When routing is defined the first step's station is used; otherwise the explicit selection.
+          station_id: hasRouting ? undefined : formData.station_id || undefined,
           priority: formData.priority,
           due_date: formData.due_date || undefined,
           setup_time_minutes: formData.setup_time_minutes ? parseInt(formData.setup_time_minutes) : undefined,
@@ -313,17 +313,21 @@ export function CreateWorkOrderDialog({
             />
           </div>
 
-          {/* Routing Section — replaces station selector when active. Hidden for quotes. */}
-          {!isQuote && (
-            <RoutingSection
-              steps={routingSteps}
-              onChange={setRoutingSteps}
-              stations={stations}
-            />
+          {/* Routing Section — used for both work orders (production routing) and quotes
+              (estimation routing through engineering / programming / departments for accurate cost). */}
+          {isQuote && (
+            <p className="text-xs text-muted-foreground -mb-2">
+              Optional: route the quote through engineering, programming, or other departments for cost estimation. Stations are kept on the resulting work order when converted.
+            </p>
           )}
+          <RoutingSection
+            steps={routingSteps}
+            onChange={setRoutingSteps}
+            stations={stations}
+          />
 
-          {/* Station Selection — only shown for work orders without routing */}
-          {!isQuote && !hasRouting && (
+          {/* Station Selection — shown when no routing is defined (works for both quotes and WOs) */}
+          {!hasRouting && (
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <Wrench className="w-4 h-4" />
