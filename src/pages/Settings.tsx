@@ -115,6 +115,13 @@ export default function Settings() {
     }
   }, [allVisibleIds, activeTab]);
 
+  // NOTE: must be called before any early-return to keep hook order stable
+  useModuleContext({
+    id: "settings",
+    label: `Settings · ${activeTab}`,
+    data: { activeTab },
+  });
+
   if (authLoading || accessLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
@@ -193,11 +200,6 @@ export default function Settings() {
     </nav>
   );
 
-  useModuleContext({
-    id: "settings",
-    label: `Settings · ${activeTab}`,
-    data: { activeTab },
-  });
 
   return (
     <div className="min-h-screen bg-background">
