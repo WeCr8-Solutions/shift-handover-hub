@@ -233,34 +233,81 @@ export function CreateWorkOrderDialog({
         setLoading(false);
       }
     },
-    [formData, partSpecs, routingSteps, hasRouting, createItem, isValid, onOpenChange, onSuccess],
+    [formData, partSpecs, routingSteps, hasRouting, itemType, createItem, isValid, onOpenChange, onSuccess],
   );
 
   const updateFormField = useCallback((field: keyof typeof formData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   }, []);
 
+  const isQuote = itemType === "quote";
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Package className="w-5 h-5 text-primary" />
-            Add Work Order
+            {isQuote ? <FileQuestion className="w-5 h-5 text-primary" /> : <Package className="w-5 h-5 text-primary" />}
+            {isQuote ? "Add Quote" : "Add Work Order"}
           </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 overflow-y-auto max-h-[calc(90vh-8rem)] pr-1">
-          {/* Work Order Number */}
+          {/* Quote vs Work Order toggle — only when org has the quote system enabled */}
+          {isQuoteSystemEnabled && (
+            <div className="space-y-2 p-3 rounded-lg border bg-muted/30">
+              <Label className="text-sm font-medium">Create as</Label>
+              <RadioGroup
+                value={itemType}
+                onValueChange={(v) => setItemType(v as QueueItemType)}
+                className="grid grid-cols-2 gap-2"
+              >
+                <label
+                  htmlFor="ct-wo"
+                  className={cn(
+                    "flex items-start gap-2 p-2 rounded-md border cursor-pointer transition-colors",
+                    !isQuote ? "border-primary bg-primary/5" : "border-border hover:bg-accent",
+                  )}
+                >
+                  <RadioGroupItem value="work_order" id="ct-wo" className="mt-0.5" />
+                  <div className="space-y-0.5">
+                    <div className="text-sm font-medium flex items-center gap-1.5">
+                      <Package className="w-3.5 h-3.5" />
+                      Work Order
+                    </div>
+                    <div className="text-xs text-muted-foreground">Goes straight to production queue</div>
+                  </div>
+                </label>
+                <label
+                  htmlFor="ct-quote"
+                  className={cn(
+                    "flex items-start gap-2 p-2 rounded-md border cursor-pointer transition-colors",
+                    isQuote ? "border-primary bg-primary/5" : "border-border hover:bg-accent",
+                  )}
+                >
+                  <RadioGroupItem value="quote" id="ct-quote" className="mt-0.5" />
+                  <div className="space-y-0.5">
+                    <div className="text-sm font-medium flex items-center gap-1.5">
+                      <FileQuestion className="w-3.5 h-3.5" />
+                      Quote first
+                    </div>
+                    <div className="text-xs text-muted-foreground">Estimate → approval → converts to WO</div>
+                  </div>
+                </label>
+              </RadioGroup>
+            </div>
+          )}
+
+          {/* Work Order / Quote Number */}
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
               <Hash className="w-4 h-4" />
-              Work Order # <span className="text-destructive">*</span>
+              {isQuote ? "Quote #" : "Work Order #"} <span className="text-destructive">*</span>
             </Label>
             <Input
               value={formData.work_order}
               onChange={(e) => updateFormField("work_order", e.target.value)}
-              placeholder="Enter your work order number"
+              placeholder={isQuote ? "Enter your quote number" : "Enter your work order number"}
               className={!isValid ? "ring-2 ring-destructive/20" : ""}
               required
             />
