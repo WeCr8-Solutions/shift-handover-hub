@@ -84,6 +84,7 @@ export function CreateWorkOrderDialog({
     if (open) {
       setFormData(defaultFormData);
       setRoutingSteps([]);
+      setItemType("work_order");
       setPartSpecs({
         material_type: "",
         part_length_inches: "",
