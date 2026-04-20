@@ -313,15 +313,17 @@ export function CreateWorkOrderDialog({
             />
           </div>
 
-          {/* Routing Section — replaces station selector when active */}
-          <RoutingSection
-            steps={routingSteps}
-            onChange={setRoutingSteps}
-            stations={stations}
-          />
+          {/* Routing Section — replaces station selector when active. Hidden for quotes. */}
+          {!isQuote && (
+            <RoutingSection
+              steps={routingSteps}
+              onChange={setRoutingSteps}
+              stations={stations}
+            />
+          )}
 
-          {/* Station Selection — only shown when no routing is defined */}
-          {!hasRouting && (
+          {/* Station Selection — only shown for work orders without routing */}
+          {!isQuote && !hasRouting && (
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <Wrench className="w-4 h-4" />
