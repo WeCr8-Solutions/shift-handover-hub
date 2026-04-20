@@ -650,6 +650,7 @@ const Index = () => {
         open={showCreateWorkOrder}
         onOpenChange={setShowCreateWorkOrder}
         preSelectedStationId={selectedStationForAction}
+        initialItemType={createItemType}
       />
 
       {/* Handoff Detail Modal */}
