@@ -5,12 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useQueue, QueuePriority, RoutingStepInput } from "@/hooks/useQueue";
+import { useQueue, QueuePriority, QueueItemType, RoutingStepInput } from "@/hooks/useQueue";
 import { useCurrentTeam } from "@/contexts/TeamContext";
+import { useQuoteSystem } from "@/hooks/useQuoteSystem";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Package, Wrench, Hash, Calendar as CalendarIcon, Clock, AlertTriangle, CheckCircle } from "lucide-react";
+import { Loader2, Package, Wrench, Hash, Calendar as CalendarIcon, Clock, AlertTriangle, CheckCircle, FileQuestion } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { PartSpecsSection, PartSpecsData } from "./PartSpecsSection";
@@ -39,10 +41,12 @@ export function CreateWorkOrderDialog({
 }: CreateWorkOrderDialogProps) {
   const { currentTeam } = useCurrentTeam();
   const { createItem } = useQueue();
+  const { isQuoteSystemEnabled } = useQuoteSystem();
   const [loading, setLoading] = useState(false);
   const [stationsLoading, setStationsLoading] = useState(true);
   const [stations, setStations] = useState<Station[]>([]);
   const [routingSteps, setRoutingSteps] = useState<RoutingStepInput[]>([]);
+  const [itemType, setItemType] = useState<QueueItemType>("work_order");
 
   const defaultFormData = useMemo(
     () => ({
@@ -80,6 +84,7 @@ export function CreateWorkOrderDialog({
     if (open) {
       setFormData(defaultFormData);
       setRoutingSteps([]);
+      setItemType("work_order");
       setPartSpecs({
         material_type: "",
         part_length_inches: "",
@@ -168,7 +173,7 @@ export function CreateWorkOrderDialog({
       e.preventDefault();
 
       if (!isValid) {
-        toast.error("Work order number is required");
+        toast.error(itemType === "quote" ? "Quote number is required" : "Work order number is required");
         return;
       }
 
@@ -183,15 +188,18 @@ export function CreateWorkOrderDialog({
 
       setLoading(true);
       try {
+        const isQuote = itemType === "quote";
+        const labelPrefix = isQuote ? "Quote" : "WO";
         const result = await createItem({
-          item_type: "work_order",
-          title: formData.title || `WO: ${formData.work_order}`,
+          item_type: itemType,
+          title: formData.title || `${labelPrefix}: ${formData.work_order}`,
           description: formData.description || undefined,
           work_order: formData.work_order,
           part_number: formData.part_number || undefined,
           operation_number: formData.operation_number || undefined,
           quantity: formData.quantity ? parseInt(formData.quantity) : undefined,
-          station_id: hasRouting ? undefined : formData.station_id || undefined,
+          // Quotes don't need a station — they go through approval first.
+          station_id: isQuote || hasRouting ? undefined : formData.station_id || undefined,
           priority: formData.priority,
           due_date: formData.due_date || undefined,
           setup_time_minutes: formData.setup_time_minutes ? parseInt(formData.setup_time_minutes) : undefined,
@@ -210,12 +218,12 @@ export function CreateWorkOrderDialog({
         });
 
         if (result?.error) {
-          console.error("Create work order error:", result.error);
+          console.error("Create item error:", result.error);
           toast.error(result.error);
           return;
         }
 
-        toast.success("Work order created successfully!");
+        toast.success(isQuote ? "Quote created — pending approval" : "Work order created successfully!");
         onOpenChange(false);
         onSuccess?.();
       } catch (error) {
@@ -225,48 +233,97 @@ export function CreateWorkOrderDialog({
         setLoading(false);
       }
     },
-    [formData, partSpecs, routingSteps, hasRouting, createItem, isValid, onOpenChange, onSuccess],
+    [formData, partSpecs, routingSteps, hasRouting, itemType, createItem, isValid, onOpenChange, onSuccess],
   );
 
   const updateFormField = useCallback((field: keyof typeof formData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   }, []);
 
+  const isQuote = itemType === "quote";
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Package className="w-5 h-5 text-primary" />
-            Add Work Order
+            {isQuote ? <FileQuestion className="w-5 h-5 text-primary" /> : <Package className="w-5 h-5 text-primary" />}
+            {isQuote ? "Add Quote" : "Add Work Order"}
           </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 overflow-y-auto max-h-[calc(90vh-8rem)] pr-1">
-          {/* Work Order Number */}
+          {/* Quote vs Work Order toggle — only when org has the quote system enabled */}
+          {isQuoteSystemEnabled && (
+            <div className="space-y-2 p-3 rounded-lg border bg-muted/30">
+              <Label className="text-sm font-medium">Create as</Label>
+              <RadioGroup
+                value={itemType}
+                onValueChange={(v) => setItemType(v as QueueItemType)}
+                className="grid grid-cols-2 gap-2"
+              >
+                <label
+                  htmlFor="ct-wo"
+                  className={cn(
+                    "flex items-start gap-2 p-2 rounded-md border cursor-pointer transition-colors",
+                    !isQuote ? "border-primary bg-primary/5" : "border-border hover:bg-accent",
+                  )}
+                >
+                  <RadioGroupItem value="work_order" id="ct-wo" className="mt-0.5" />
+                  <div className="space-y-0.5">
+                    <div className="text-sm font-medium flex items-center gap-1.5">
+                      <Package className="w-3.5 h-3.5" />
+                      Work Order
+                    </div>
+                    <div className="text-xs text-muted-foreground">Goes straight to production queue</div>
+                  </div>
+                </label>
+                <label
+                  htmlFor="ct-quote"
+                  className={cn(
+                    "flex items-start gap-2 p-2 rounded-md border cursor-pointer transition-colors",
+                    isQuote ? "border-primary bg-primary/5" : "border-border hover:bg-accent",
+                  )}
+                >
+                  <RadioGroupItem value="quote" id="ct-quote" className="mt-0.5" />
+                  <div className="space-y-0.5">
+                    <div className="text-sm font-medium flex items-center gap-1.5">
+                      <FileQuestion className="w-3.5 h-3.5" />
+                      Quote first
+                    </div>
+                    <div className="text-xs text-muted-foreground">Estimate → approval → converts to WO</div>
+                  </div>
+                </label>
+              </RadioGroup>
+            </div>
+          )}
+
+          {/* Work Order / Quote Number */}
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
               <Hash className="w-4 h-4" />
-              Work Order # <span className="text-destructive">*</span>
+              {isQuote ? "Quote #" : "Work Order #"} <span className="text-destructive">*</span>
             </Label>
             <Input
               value={formData.work_order}
               onChange={(e) => updateFormField("work_order", e.target.value)}
-              placeholder="Enter your work order number"
+              placeholder={isQuote ? "Enter your quote number" : "Enter your work order number"}
               className={!isValid ? "ring-2 ring-destructive/20" : ""}
               required
             />
           </div>
 
-          {/* Routing Section — replaces station selector when active */}
-          <RoutingSection
-            steps={routingSteps}
-            onChange={setRoutingSteps}
-            stations={stations}
-          />
+          {/* Routing Section — replaces station selector when active. Hidden for quotes. */}
+          {!isQuote && (
+            <RoutingSection
+              steps={routingSteps}
+              onChange={setRoutingSteps}
+              stations={stations}
+            />
+          )}
 
-          {/* Station Selection — only shown when no routing is defined */}
-          {!hasRouting && (
+          {/* Station Selection — only shown for work orders without routing */}
+          {!isQuote && !hasRouting && (
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <Wrench className="w-4 h-4" />
@@ -500,7 +557,7 @@ export function CreateWorkOrderDialog({
               ) : (
                 <>
                   <CheckCircle className="w-4 h-4" />
-                  Create Work Order
+                  {isQuote ? "Create Quote" : "Create Work Order"}
                 </>
               )}
             </Button>
