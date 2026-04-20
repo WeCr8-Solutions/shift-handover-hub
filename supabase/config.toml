@@ -74,3 +74,8 @@ project_id = "kgrstnbxqdmadtoankqr"
   # OAP/GCA. Validates input and creates a Stripe Checkout session.
   [functions.create-cert-checkout]
     verify_jwt = false
+
+  # Auth: Manual — validates X-E2E-Secret header against E2E_SEED_SECRET env var.
+  # Service-role function used only by Playwright e2e suite to provision fixtures.
+  [functions.seed-e2e]
+    verify_jwt = false
