@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useWorkOrderHistory, WorkOrderWithLinkedData, WorkOrderLinkedData } from "@/hooks/useWorkOrderHistory";
+import { useQuoteSystem } from "@/hooks/useQuoteSystem";
+import { CreateWorkOrderDialog } from "@/components/queue/CreateWorkOrderDialog";
 import { exportWorkOrdersToExcel, exportWorkOrdersToQuickBooksCSV, generateWorkOrderReport, downloadBlob, printReport } from "@/lib/workOrderExport";
 import { format } from "date-fns";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +14,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { 
   Search, 
@@ -32,7 +40,10 @@ import {
   MessageSquare,
   History,
   Filter,
-  ChevronRight
+  ChevronRight,
+  Plus,
+  ChevronDown,
+  FileQuestion,
 } from "lucide-react";
 
 interface WorkOrderHistoryProps {
@@ -50,6 +61,9 @@ export function WorkOrderHistory({ isAdmin = false, showQuickBooksExport = false
   const [loadingLinked, setLoadingLinked] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [linkedDataMap, setLinkedDataMap] = useState<Map<string, WorkOrderLinkedData>>(new Map());
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createType, setCreateType] = useState<"work_order" | "quote">("work_order");
+  const { isQuoteSystemEnabled } = useQuoteSystem();
 
   const { workOrders, loading, fetchLinkedData } = useWorkOrderHistory({
     search: debouncedSearch,
@@ -154,6 +168,32 @@ export function WorkOrderHistory({ isAdmin = false, showQuickBooksExport = false
               </CardDescription>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
+              {isQuoteSystemEnabled ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button className="gap-2">
+                      <Plus className="w-4 h-4" />
+                      New
+                      <ChevronDown className="w-4 h-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem onClick={() => { setCreateType("work_order"); setCreateOpen(true); }} className="gap-2">
+                      <Package className="w-4 h-4" />
+                      Work Order
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => { setCreateType("quote"); setCreateOpen(true); }} className="gap-2">
+                      <FileQuestion className="w-4 h-4" />
+                      Quote
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Button onClick={() => { setCreateType("work_order"); setCreateOpen(true); }} className="gap-2">
+                  <Plus className="w-4 h-4" />
+                  New Work Order
+                </Button>
+              )}
               <Button 
                 variant="outline" 
                 onClick={handleExportExcel}
@@ -504,6 +544,12 @@ export function WorkOrderHistory({ isAdmin = false, showQuickBooksExport = false
           )}
         </DialogContent>
       </Dialog>
+
+      <CreateWorkOrderDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        initialItemType={createType}
+      />
     </div>
   );
 }

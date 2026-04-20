@@ -30,6 +30,7 @@ interface CreateWorkOrderDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   preSelectedStationId?: string;
+  initialItemType?: QueueItemType;
   onSuccess?: () => void;
 }
 
@@ -37,6 +38,7 @@ export function CreateWorkOrderDialog({
   open,
   onOpenChange,
   preSelectedStationId,
+  initialItemType = "work_order",
   onSuccess,
 }: CreateWorkOrderDialogProps) {
   const { currentTeam } = useCurrentTeam();
@@ -46,7 +48,7 @@ export function CreateWorkOrderDialog({
   const [stationsLoading, setStationsLoading] = useState(true);
   const [stations, setStations] = useState<Station[]>([]);
   const [routingSteps, setRoutingSteps] = useState<RoutingStepInput[]>([]);
-  const [itemType, setItemType] = useState<QueueItemType>("work_order");
+  const [itemType, setItemType] = useState<QueueItemType>(initialItemType);
 
   const defaultFormData = useMemo(
     () => ({
@@ -84,7 +86,7 @@ export function CreateWorkOrderDialog({
     if (open) {
       setFormData(defaultFormData);
       setRoutingSteps([]);
-      setItemType("work_order");
+      setItemType(initialItemType);
       setPartSpecs({
         material_type: "",
         part_length_inches: "",
@@ -97,7 +99,7 @@ export function CreateWorkOrderDialog({
         surface_finish: "",
       });
     }
-  }, [open, defaultFormData]);
+  }, [open, defaultFormData, initialItemType]);
 
   // Fetch stations
   useEffect(() => {
