@@ -173,7 +173,7 @@ export function CreateWorkOrderDialog({
       e.preventDefault();
 
       if (!isValid) {
-        toast.error("Work order number is required");
+        toast.error(itemType === "quote" ? "Quote number is required" : "Work order number is required");
         return;
       }
 
