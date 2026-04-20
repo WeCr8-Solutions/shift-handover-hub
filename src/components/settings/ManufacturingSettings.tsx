@@ -195,6 +195,70 @@ export function ManufacturingSettings() {
         </CardContent>
       </Card>
 
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileQuestion className="w-5 h-5" />
+            Quote System
+          </CardTitle>
+          <CardDescription>
+            Enable a quote-to-work-order workflow with optional routing through engineering, programming, and other estimating departments
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <SettingsSwitchRow
+            label="Enable Quote System"
+            description="Allow creating quotes that route through approval before converting to work orders"
+            checked={form.enableQuoteSystem}
+            onCheckedChange={(v) => update("enableQuoteSystem", v)}
+            bordered
+            className="border-primary/20 bg-primary/5"
+          />
+          {form.enableQuoteSystem && (
+            <>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Quote Number Prefix</Label>
+                  <Input
+                    value={form.quoteNumberPrefix}
+                    onChange={(e) => update("quoteNumberPrefix", e.target.value)}
+                    placeholder="Q"
+                    maxLength={5}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Quote Validity (days)</Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={365}
+                    value={form.quoteValidityDays}
+                    onChange={(e) =>
+                      update(
+                        "quoteValidityDays",
+                        Math.min(365, Math.max(1, parseInt(e.target.value, 10) || 30)),
+                      )
+                    }
+                  />
+                </div>
+              </div>
+              <SettingsSwitchRow
+                label="Require Approval Before Conversion"
+                description="Quotes must be approved before being converted to work orders"
+                checked={form.quoteRequiresApproval}
+                onCheckedChange={(v) => update("quoteRequiresApproval", v)}
+              />
+              <SettingsSwitchRow
+                label="Auto-Convert on Approval"
+                description="Automatically create a work order as soon as a quote is approved"
+                checked={form.quoteAutoConvertOnApproval}
+                onCheckedChange={(v) => update("quoteAutoConvertOnApproval", v)}
+              />
+            </>
+          )}
+        </CardContent>
+      </Card>
+
       <SettingsFooter
         isDirty={isDirty}
         isSaving={isSaving}
