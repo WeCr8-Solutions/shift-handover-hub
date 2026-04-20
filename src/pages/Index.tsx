@@ -11,6 +11,13 @@ import { JobPerformanceUpdateForm } from "@/components/JobPerformanceUpdateForm"
 import { WorkCenterFilter } from "@/components/WorkCenterFilter";
 import { OperatorWorkflowPanel } from "@/components/OperatorWorkflowPanel";
 import { CreateWorkOrderDialog } from "@/components/queue/CreateWorkOrderDialog";
+import { useQuoteSystem } from "@/hooks/useQuoteSystem";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import { PlanningAssistantModal } from "@/components/queue/PlanningAssistantModal";
 import { SupervisorDashboard } from "@/components/dashboard/SupervisorDashboard";
 import { OperatorDashboard } from "@/components/dashboard/OperatorDashboard";
@@ -40,6 +47,8 @@ import {
   Package,
   Settings,
   Users,
+  ChevronDown,
+  FileQuestion,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
@@ -184,6 +193,8 @@ const Index = () => {
   const [showNewHandoff, setShowNewHandoff] = useState(false);
   const [showPerformanceUpdate, setShowPerformanceUpdate] = useState(false);
   const [showCreateWorkOrder, setShowCreateWorkOrder] = useState(false);
+  const [createItemType, setCreateItemType] = useState<"work_order" | "quote">("work_order");
+  const { isQuoteSystemEnabled } = useQuoteSystem();
   const [selectedTypes, setSelectedTypes] = useState<WorkCenterType[]>([]);
   const [selectedStationForAction, setSelectedStationForAction] = useState<string | undefined>();
   const [viewMode, setViewMode] = useState<"supervisor" | "operator" | "station-detail">("supervisor");
