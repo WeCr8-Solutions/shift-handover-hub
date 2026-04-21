@@ -29,13 +29,13 @@ export default function WorkOrdersHub() {
     {
       title: "Active Work Orders",
       description: "View jobs currently in progress across all stations.",
-      to: "/queue?type=work_order&status=in_progress",
+      to: "/queue?view=list&type=work_order&status=in_progress",
       icon: ListTodo,
     },
     {
       title: "Routing & Operations",
       description: "Inspect routing steps, outside processing, and step status.",
-      to: "/queue?type=work_order",
+      to: "/queue?view=list&type=work_order",
       icon: Workflow,
     },
     {
@@ -49,7 +49,7 @@ export default function WorkOrdersHub() {
     {
       title: "Capacity & Planning",
       description: "Daily load by station with AI planning assistant.",
-      to: "/queue?view=calendar",
+      to: "/planning-center",
       icon: ClipboardList,
     },
     {

@@ -18,7 +18,7 @@ export default function QueueHub() {
     {
       title: "Add to Queue",
       description: "Create a queue item: work order, station task, or support ticket.",
-      to: "/?new=work_order",
+      to: "/queue?action=new",
       icon: PlusCircle,
       cta: "New item",
     },
@@ -41,15 +41,15 @@ export default function QueueHub() {
       icon: Calendar,
     },
     {
-      title: "Handoffs & Deliveries",
-      description: "Active station handoffs and material delivery requests.",
-      to: "/queue?tab=handoffs",
+      title: "Outside Processing",
+      description: "Vendor PO tracking, ship-out, and return windows.",
+      to: "/queue?tab=outside-processing",
       icon: ArrowRightLeft,
     },
     {
-      title: "AI Planning Assistant",
-      description: "Get suggestions on capability, workload, and station availability.",
-      to: "/queue?assistant=open",
+      title: "Planning Center",
+      description: "Capacity, planning, processing, SOPs, and AI assistant in one place.",
+      to: "/planning-center",
       icon: Sparkles,
     },
   ];

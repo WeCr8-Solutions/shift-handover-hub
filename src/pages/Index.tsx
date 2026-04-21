@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef, lazy, Suspense } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { Header } from "@/components/Header";
 import { StationCard } from "@/components/StationCard";
@@ -209,6 +209,16 @@ const Index = () => {
     operation_number?: string;
     station_id?: string;
   } | null>(null);
+
+  // Open Create dialog from hub deep links: /?new=work_order or /?new=quote
+  const [searchParams] = useSearchParams();
+  useEffect(() => {
+    const newParam = searchParams.get("new");
+    if (newParam === "work_order" || newParam === "quote") {
+      setCreateItemType(newParam);
+      setShowCreateWorkOrder(true);
+    }
+  }, [searchParams]);
 
   // Auto-open handoff form when navigated from queue item detail
   useEffect(() => {
