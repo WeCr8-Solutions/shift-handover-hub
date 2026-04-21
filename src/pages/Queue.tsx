@@ -61,10 +61,23 @@ export default function Queue() {
   const urlStationId = searchParams.get("station");
   const urlItemId = searchParams.get("item");
   const urlWorkOrder = searchParams.get("wo");
+  const urlView = searchParams.get("view") as QueueView | null;
+  const urlTab = searchParams.get("tab") as QueueTab | null;
+  const urlType = searchParams.get("type") as QueueItemType | null;
+  const urlStatus = searchParams.get("status") as QueueStatus | null;
+  const urlAssistant = searchParams.get("assistant");
+  const urlAction = searchParams.get("action");
 
-  const [activeTab, setActiveTab] = useState<QueueTab>("queue");
-  const [view, setView] = useState<QueueView>("kanban");
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const validTabs: QueueTab[] = ["queue", "outside-processing", "ncr", "history"];
+  const validViews: QueueView[] = ["kanban", "list", "calendar"];
+
+  const [activeTab, setActiveTab] = useState<QueueTab>(
+    urlTab && validTabs.includes(urlTab) ? urlTab : "queue"
+  );
+  const [view, setView] = useState<QueueView>(
+    urlView && validViews.includes(urlView) ? urlView : "kanban"
+  );
+  const [createDialogOpen, setCreateDialogOpen] = useState(urlAction === "new");
   const [selectedItemId, setSelectedItemId] = useState<string | null>(urlItemId);
 
   // Auto-open work order detail when navigated with ?item= param
@@ -89,6 +102,8 @@ export default function Queue() {
     assigned_to?: string;
   }>({
     station_id: urlStationId || undefined,
+    item_type: urlType ? [urlType] : undefined,
+    status: urlStatus ? [urlStatus] : undefined,
   });
 
   useEffect(() => {
