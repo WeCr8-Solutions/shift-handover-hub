@@ -210,6 +210,16 @@ const Index = () => {
     station_id?: string;
   } | null>(null);
 
+  // Open Create dialog from hub deep links: /?new=work_order or /?new=quote
+  const [searchParams] = useSearchParams();
+  useEffect(() => {
+    const newParam = searchParams.get("new");
+    if (newParam === "work_order" || newParam === "quote") {
+      setCreateItemType(newParam);
+      setShowCreateWorkOrder(true);
+    }
+  }, [searchParams]);
+
   // Auto-open handoff form when navigated from queue item detail
   useEffect(() => {
     const autoOpen = sessionStorage.getItem("auto_open_handoff");

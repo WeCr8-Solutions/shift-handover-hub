@@ -51,19 +51,19 @@ export default function QuotesHub() {
     {
       title: "Active Quotes",
       description: "Quotes in draft, under review, or awaiting customer approval.",
-      to: "/queue?type=quote&status=in_progress",
+      to: "/queue?view=list&type=quote&status=in_progress",
       icon: FileQuestion,
     },
     {
       title: "Approved Quotes",
       description: "Approved quotes ready to convert into work orders.",
-      to: "/queue?type=quote&status=approved",
+      to: "/queue?view=list&type=quote&status=completed",
       icon: CheckCircle2,
     },
     {
-      title: "Quote → Work Order",
-      description: "Convert an approved quote into a tracked production job.",
-      to: "/queue?type=quote&action=convert",
+      title: "All Quotes",
+      description: "Browse every quote regardless of status.",
+      to: "/queue?view=list&type=quote",
       icon: ArrowRightLeft,
     },
     {
