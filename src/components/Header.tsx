@@ -94,6 +94,7 @@ export function Header() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { hasAdminAccess, hasOrgAdminAccess, hasOrgSupervisorAccess, hasTestingAccess } = useAdminAccess();
+  const { isQuoteSystemEnabled } = useQuoteSystem();
   const { hasProfile: hasTalentProfile } = useHasOperatorProfile();
   const { unreadCount, systemStatus, unacknowledgedRequired, acknowledgeUpdate } = useGlobalUpdates();
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -184,9 +185,9 @@ export function Header() {
               {user && <TeamSelector />}
 
               {/* App action icons — before marketing nav when logged in */}
-              {user && <NavIconButton to="/queue" icon={ListTodo} label="Queue Management" />}
-              {(hasAdminAccess || hasOrgSupervisorAccess) && <NavIconButton to="/history" icon={History} label="Work Order History" />}
-              {(hasAdminAccess || hasOrgSupervisorAccess) && <NavIconButton to="/quote-history" icon={FileQuestion} label="Quote History" />}
+              {user && <NavIconButton to="/work-orders" icon={ClipboardList} label="Work Orders" />}
+              {user && <NavIconButton to="/queue-hub" icon={ListTodo} label="Production Queue" />}
+              {user && isQuoteSystemEnabled && <NavIconButton to="/quotes" icon={FileQuestion} label="Quotes" />}
               <NavIconButton to="/tools" icon={Wrench} label="Operator Tools" />
               {hasOrgSupervisorAccess && <NavIconButton to="/teams" icon={Users} label="Team Management" />}
               {(hasOrgAdminAccess || hasOrgSupervisorAccess) && <NavIconButton to="/oap/employer" icon={ClipboardCheck} label="OAP Employer Console" />}
@@ -389,9 +390,9 @@ export function Header() {
                       <>
                         <Separator />
                         <nav className="flex flex-col gap-1">
-                          <MobileNavLink to="/queue" icon={ListTodo} label="Queue Management" onClose={() => setMobileMenuOpen(false)} />
-                          {(hasAdminAccess || hasOrgSupervisorAccess) && <MobileNavLink to="/history" icon={History} label="Work Order History" onClose={() => setMobileMenuOpen(false)} />}
-                          {(hasAdminAccess || hasOrgSupervisorAccess) && <MobileNavLink to="/quote-history" icon={FileQuestion} label="Quote History" onClose={() => setMobileMenuOpen(false)} />}
+                          <MobileNavLink to="/work-orders" icon={ClipboardList} label="Work Orders" onClose={() => setMobileMenuOpen(false)} />
+                          <MobileNavLink to="/queue-hub" icon={ListTodo} label="Production Queue" onClose={() => setMobileMenuOpen(false)} />
+                          {isQuoteSystemEnabled && <MobileNavLink to="/quotes" icon={FileQuestion} label="Quotes" onClose={() => setMobileMenuOpen(false)} />}
                           <MobileNavLink to="/tools" icon={Wrench} label="Operator Tools" onClose={() => setMobileMenuOpen(false)} />
                           {hasOrgSupervisorAccess && <MobileNavLink to="/teams" icon={Users} label="Team Management" onClose={() => setMobileMenuOpen(false)} />}
                           {(hasOrgAdminAccess || hasOrgSupervisorAccess) && <MobileNavLink to="/oap/employer" icon={ClipboardCheck} label="OAP Employer Console" onClose={() => setMobileMenuOpen(false)} />}
