@@ -33,6 +33,9 @@ const Admin = lazy(() => import("./pages/Admin"));
 const FieldView = lazy(() => import("./pages/FieldView"));
 const Testing = lazy(() => import("./pages/Testing"));
 const Queue = lazy(() => import("./pages/Queue"));
+const WorkOrdersHub = lazy(() => import("./pages/WorkOrdersHub"));
+const QueueHub = lazy(() => import("./pages/QueueHub"));
+const QuotesHub = lazy(() => import("./pages/QuotesHub"));
 const Setup = lazy(() => import("./pages/Setup"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Settings = lazy(() => import("./pages/Settings"));
@@ -189,6 +192,9 @@ const App = () => (
                     <Route path="/field/:token" element={<FieldView />} />
                     <Route path="/testing" element={<Testing />} />
                     <Route path="/queue" element={<Queue />} />
+                    <Route path="/work-orders" element={<WorkOrdersHub />} />
+                    <Route path="/queue-hub" element={<QueueHub />} />
+                    <Route path="/quotes" element={<QuotesHub />} />
                     <Route path="/history" element={<WorkOrderHistoryPage />} />
                     <Route path="/quote-history" element={<QuoteHistoryPage />} />
                     <Route path="/setup" element={<Setup />} />
