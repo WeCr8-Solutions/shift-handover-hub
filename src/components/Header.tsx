@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Clock, Bell, Shield, ListTodo, Settings, Users, FlaskConical, Bug, Megaphone, Menu, Wrench, ChevronDown, LayoutDashboard, Monitor, Factory, Eye, FileQuestion, ClipboardCheck, GraduationCap, IdCard, Globe, Inbox, MessagesSquare, ClipboardList } from "lucide-react";
+import { Clock, Bell, Shield, ListTodo, Settings, Users, FlaskConical, Bug, Megaphone, Menu, Wrench, ChevronDown, LayoutDashboard, Monitor, Factory, Eye, FileQuestion, ClipboardCheck, GraduationCap, IdCard, Globe, Inbox, MessagesSquare, ClipboardList, Sparkles } from "lucide-react";
 import { useQuoteSystem } from "@/hooks/useQuoteSystem";
 import { Link, useNavigate } from "react-router-dom";
 import { getCurrentShift } from "@/lib/mockData";
@@ -188,6 +188,7 @@ export function Header() {
               {user && <NavIconButton to="/work-orders" icon={ClipboardList} label="Work Orders" />}
               {user && <NavIconButton to="/queue-hub" icon={ListTodo} label="Production Queue" />}
               {user && isQuoteSystemEnabled && <NavIconButton to="/quotes" icon={FileQuestion} label="Quotes" />}
+              {user && <NavIconButton to="/planning-center" icon={Sparkles} label="Planning Center" />}
               <NavIconButton to="/tools" icon={Wrench} label="Operator Tools" />
               {hasOrgSupervisorAccess && <NavIconButton to="/teams" icon={Users} label="Team Management" />}
               {(hasOrgAdminAccess || hasOrgSupervisorAccess) && <NavIconButton to="/oap/employer" icon={ClipboardCheck} label="OAP Employer Console" />}
@@ -393,6 +394,7 @@ export function Header() {
                           <MobileNavLink to="/work-orders" icon={ClipboardList} label="Work Orders" onClose={() => setMobileMenuOpen(false)} />
                           <MobileNavLink to="/queue-hub" icon={ListTodo} label="Production Queue" onClose={() => setMobileMenuOpen(false)} />
                           {isQuoteSystemEnabled && <MobileNavLink to="/quotes" icon={FileQuestion} label="Quotes" onClose={() => setMobileMenuOpen(false)} />}
+                          <MobileNavLink to="/planning-center" icon={Sparkles} label="Planning Center" onClose={() => setMobileMenuOpen(false)} />
                           <MobileNavLink to="/tools" icon={Wrench} label="Operator Tools" onClose={() => setMobileMenuOpen(false)} />
                           {hasOrgSupervisorAccess && <MobileNavLink to="/teams" icon={Users} label="Team Management" onClose={() => setMobileMenuOpen(false)} />}
                           {(hasOrgAdminAccess || hasOrgSupervisorAccess) && <MobileNavLink to="/oap/employer" icon={ClipboardCheck} label="OAP Employer Console" onClose={() => setMobileMenuOpen(false)} />}
