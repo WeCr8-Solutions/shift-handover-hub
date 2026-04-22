@@ -279,7 +279,7 @@ serve(async (req) => {
         supabase
           .from("station_machine_assignments")
           .select(
-            "station_id, purchase_id, organization_machine_purchases!inner(machine_library_id, is_active, verified_machine_library!inner(manufacturer, model, machine_type, platform_category, max_x_travel, max_y_travel, max_z_travel, max_part_weight, max_part_envelope_length, max_part_envelope_width, max_part_envelope_height, five_axis_simultaneous, fourth_axis, live_tooling, y_axis_turn, sub_spindle, probing, through_spindle_coolant, pallet_pool, bar_feeder, material_capability, typical_tolerance, hard_constraints))",
+            "station_id, purchase_id, organization_machine_purchases!inner(machine_library_id, is_active, verified_machine_library!inner(manufacturer, model, machine_type, platform_category, max_x_travel, max_y_travel, max_z_travel, max_part_weight, max_part_envelope_length, max_part_envelope_width, max_part_envelope_height, five_axis_simultaneous, fourth_axis, live_tooling, y_axis_turn, sub_spindle, probing, through_spindle_coolant, pallet_pool, bar_feeder, material_capability, typical_tolerance, hard_constraints, control_type, control_model, max_spindle_rpm, spindle_taper, spindle_power_hp, tool_magazine_capacity, max_tool_diameter, max_tool_length, max_turning_diameter, max_turning_length, bar_capacity_mm))",
           )
           .eq("organization_id", organization_id)
           .limit(100),
@@ -288,7 +288,7 @@ serve(async (req) => {
         supabase
           .from("station_manual_machine_profiles")
           .select(
-            "station_id, manufacturer, model, machine_type, platform_category, max_x_travel, max_y_travel, max_z_travel, max_part_weight, max_part_envelope_length, max_part_envelope_width, max_part_envelope_height, five_axis_simultaneous, fourth_axis, live_tooling, y_axis_turn, sub_spindle, probing, through_spindle_coolant, pallet_pool, bar_feeder, material_capability, typical_tolerance, hard_constraints",
+            "station_id, manufacturer, model, machine_type, platform_category, max_x_travel, max_y_travel, max_z_travel, max_part_weight, max_part_envelope_length, max_part_envelope_width, max_part_envelope_height, five_axis_simultaneous, fourth_axis, live_tooling, y_axis_turn, sub_spindle, probing, through_spindle_coolant, pallet_pool, bar_feeder, material_capability, typical_tolerance, hard_constraints, control_type, control_model, max_spindle_rpm, spindle_taper, spindle_power_hp, tool_magazine_capacity, max_tool_diameter, max_tool_length, max_turning_diameter, max_turning_length, bar_capacity_mm",
           )
           .eq("organization_id", organization_id)
           .limit(100),
