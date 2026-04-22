@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { WorkOrderAlertTile } from "./WorkOrderAlertTile";
 import { getQueueStatusBadgeColor } from "@/lib/status-colors";
+import { CancelHoldDialog, CancelHoldMode } from "./CancelHoldDialog";
 
 // Valid state transitions matching the DB trigger
 const VALID_TRANSITIONS: Record<QueueStatus, QueueStatus[]> = {
@@ -50,6 +51,7 @@ function getStatusColor(status: QueueStatus): string {
 
 export function QueueListView({ items, onItemClick, onStatusChange, onDelete, onOpenRouting }: QueueListViewProps) {
   const [stations, setStations] = useState<Map<string, StationInfo>>(new Map());
+  const [pendingAction, setPendingAction] = useState<{ item: QueueItem; mode: CancelHoldMode } | null>(null);
 
   // Fetch station info for all items
   useEffect(() => {
