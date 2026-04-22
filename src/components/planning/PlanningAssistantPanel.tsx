@@ -2,11 +2,14 @@ import { useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import { usePlanningAssistant, ChatMessage } from "@/hooks/usePlanningAssistant";
 import { useAiChatUsage } from "@/hooks/useAiChatUsage";
+import { useAdminAccess } from "@/hooks/useAdminData";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { extractRoutingProposal } from "@/lib/routing-proposal";
+import { RoutingProposalCard } from "@/components/planning/RoutingProposalCard";
 import {
   Sparkles,
   Send,
