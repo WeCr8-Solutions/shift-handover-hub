@@ -158,7 +158,7 @@ export function QueueListView({ items, onItemClick, onStatusChange, onDelete, on
             {doneItems.length > 0 && (
               <details className="border-t border-border">
                 <summary className="px-4 py-2 text-xs text-muted-foreground cursor-pointer hover:bg-secondary/30">
-                  {doneItems.length} completed/cancelled
+                  {doneItems.length} completed
                 </summary>
                 {doneItems.map((item) => {
                   const station = item.station_id ? stations.get(item.station_id) : null;
