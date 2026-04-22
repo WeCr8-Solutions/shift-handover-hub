@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import { PlusCircle, ListTodo, History, Workflow, ClipboardList, BarChart3, XCircle } from "lucide-react";
+import { PlusCircle, ListTodo, History, Workflow, ClipboardList, BarChart3, XCircle, PauseCircle, CheckCircle2 } from "lucide-react";
 
 export default function WorkOrdersHub() {
   const { user } = useAuth();
@@ -45,6 +45,18 @@ export default function WorkOrdersHub() {
       icon: History,
       disabled: !canSeeHistory,
       disabledReason: "Supervisor or admin access required.",
+    },
+    {
+      title: "Closed / Completed",
+      description: "Filter and search completed work orders by station and date.",
+      to: "/work-orders/completed",
+      icon: CheckCircle2,
+    },
+    {
+      title: "On-Hold Work Orders",
+      description: "Review jobs paused on the floor with hold reason and station.",
+      to: "/work-orders/on-hold",
+      icon: PauseCircle,
     },
     {
       title: "Cancelled Work Orders",
