@@ -18,6 +18,8 @@ import {
   Zap,
   Gauge,
   ClipboardList,
+  Cpu,
+  Move3d,
 } from "lucide-react";
 
 interface Props {
