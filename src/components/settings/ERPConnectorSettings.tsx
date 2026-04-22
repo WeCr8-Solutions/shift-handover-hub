@@ -40,6 +40,7 @@ const ERP_VENDORS = [
   { value: "plex", label: "Plex" },
   { value: "proshop", label: "ProShop" },
   { value: "e2", label: "E2 Shop System" },
+  { value: "sap", label: "SAP S/4HANA" },
   { value: "other", label: "Other" },
 ];
 
@@ -169,6 +170,10 @@ export function ERPConnectorSettings() {
   const [syncInterval, setSyncInterval] = useState(10);
   const [isActive, setIsActive] = useState(false);
 
+  // SAP-specific fields (stored in connection.metadata)
+  const [sapInstanceType, setSapInstanceType] = useState<"sandbox" | "production">("sandbox");
+  const [sapDefaultPlant, setSapDefaultPlant] = useState("");
+
   const [newErpStatus, setNewErpStatus] = useState("");
   const [newJoblineStatus, setNewJoblineStatus] = useState("pending");
 
@@ -183,9 +188,22 @@ export function ERPConnectorSettings() {
     setTenantId(connection.tenant_identifier ?? "");
     setSyncInterval(connection.sync_interval_minutes ?? 10);
     setIsActive(connection.is_active ?? false);
+
+    const meta = (connection.metadata ?? {}) as Record<string, unknown>;
+    setSapInstanceType((meta.sap_instance_type as "sandbox" | "production") ?? "sandbox");
+    setSapDefaultPlant((meta.sap_default_plant as string) ?? "");
   }, [connection]);
 
+  const isSap = vendor === "sap";
+
   const handleSaveConnection = async () => {
+    const baseMeta = (connection?.metadata ?? {}) as Record<string, unknown>;
+    const nextMeta: Record<string, unknown> = { ...baseMeta };
+    if (isSap) {
+      nextMeta.sap_instance_type = sapInstanceType;
+      nextMeta.sap_default_plant = sapDefaultPlant || null;
+    }
+
     const result = await saveConnection({
       erp_vendor: vendor,
       api_base_url: apiBaseUrl || null,
@@ -196,6 +214,7 @@ export function ERPConnectorSettings() {
       tenant_identifier: tenantId || null,
       sync_interval_minutes: syncInterval,
       is_active: isActive,
+      metadata: nextMeta,
     });
 
     if (result.error) return;
@@ -427,6 +446,48 @@ export function ERPConnectorSettings() {
               <Input value={scopes} onChange={(e) => setScopes(e.target.value)} placeholder="read-only" />
             </div>
           </div>
+
+          {isSap && (
+            <div className="rounded-md border border-primary/20 bg-primary/5 p-4 space-y-4">
+              <div>
+                <p className="text-sm font-semibold flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  SAP S/4HANA Configuration
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Sandbox uses <code>sandbox.api.sap.com</code> with an APIKey (managed centrally). Production
+                  uses your tenant's OData endpoints with OAuth client credentials.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Instance Type</Label>
+                  <Select
+                    value={sapInstanceType}
+                    onValueChange={(v) => setSapInstanceType(v as "sandbox" | "production")}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sandbox">Sandbox (api.sap.com)</SelectItem>
+                      <SelectItem value="production">Production (your tenant)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Default Plant</Label>
+                  <Input
+                    value={sapDefaultPlant}
+                    onChange={(e) => setSapDefaultPlant(e.target.value)}
+                    placeholder="e.g. 1010"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="flex items-center gap-4 pt-2">
             <Button onClick={handleSaveConnection} disabled={!vendor}>

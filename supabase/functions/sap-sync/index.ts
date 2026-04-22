@@ -140,7 +140,36 @@ Deno.serve(async (req) => {
       return json(403, { ok: false, error: { code: "forbidden", message: "Not a member of organization" } });
     }
 
-    // === Phase 1 — sandbox wiring ===
+    // === Phase 4 — per-org connection lookup ===
+    // Resolve the org's SAP connection (vendor=sap). Determine sandbox vs prod
+    // from metadata.sap_instance_type. Sandbox = central APIKey secret. Prod
+    // path is stubbed pending OAuth/BTP work in Phase 5.
+    const { data: erpConn } = await supabase
+      .from("erp_connections_safe" as any)
+      .select("id, erp_vendor, metadata, is_active")
+      .eq("organization_id", body.organization_id)
+      .maybeSingle();
+
+    const meta = (erpConn?.metadata ?? {}) as Record<string, unknown>;
+    const instanceType = (meta.sap_instance_type as string) ?? "sandbox";
+    const defaultPlant = (meta.sap_default_plant as string) ?? body.plant ?? "";
+
+    // Phase 4: production path requires OAuth — defer
+    if (erpConn && erpConn.erp_vendor === "sap" && instanceType === "production") {
+      return json(501, {
+        ok: false,
+        resource: body.resource,
+        count: 0,
+        data: [],
+        phase: 4,
+        error: {
+          code: "production_not_implemented",
+          message:
+            "SAP production OAuth flow ships in Phase 5. Switch instance_type to 'sandbox' for now.",
+        },
+      });
+    }
+
     const apiKey = Deno.env.get("SAP_SANDBOX_API_KEY");
     if (!apiKey) {
       return json(500, {
@@ -152,20 +181,61 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Audit: open a sync log row (best-effort; do not block on failure)
+    const syncStartedAt = new Date().toISOString();
+    let syncLogId: string | null = null;
+    if (erpConn?.id) {
+      const { data: logRow } = await supabase
+        .from("erp_sync_logs")
+        .insert({
+          organization_id: body.organization_id,
+          erp_connection_id: erpConn.id,
+          sync_type: body.resource,
+          started_at: syncStartedAt,
+          status: "running",
+          triggered_by: userData.user.id,
+        } as any)
+        .select("id")
+        .maybeSingle();
+      syncLogId = (logRow as any)?.id ?? null;
+    }
+
+    const closeLog = async (
+      status: "success" | "error",
+      records: number,
+      errorMessage?: string,
+    ) => {
+      if (!syncLogId) return;
+      const completedAt = new Date().toISOString();
+      const durationMs = new Date(completedAt).getTime() - new Date(syncStartedAt).getTime();
+      await supabase
+        .from("erp_sync_logs")
+        .update({
+          status,
+          completed_at: completedAt,
+          duration_ms: durationMs,
+          records_fetched: records,
+          errors_count: status === "error" ? 1 : 0,
+          error_details: errorMessage ? { message: errorMessage } : null,
+        } as any)
+        .eq("id", syncLogId);
+    };
+
     if (body.resource === "test_connection") {
-      // Cheap probe — fetch one row from production orders.
       const probe = await callSapSandbox(
         "/API_PRODUCTION_ORDER_2_SRV/A_ProductionOrder_2",
         apiKey,
         { $top: "1" }
       );
+      await closeLog(probe.ok ? "success" : "error", 0, probe.ok ? undefined : probe.error);
       return json(probe.ok ? 200 : 502, {
         ok: probe.ok,
         resource: "test_connection",
         count: 0,
         data: [],
-        phase: 1,
+        phase: 4,
         sandbox: true,
+        instance_type: instanceType,
         latency_check: probe.status,
         error: probe.ok ? undefined : { code: "sap_sandbox_error", message: probe.error ?? "Unknown" },
       });
@@ -173,7 +243,8 @@ Deno.serve(async (req) => {
 
     if (body.resource === "production_orders") {
       const filterParts: string[] = [];
-      if (body.plant) filterParts.push(`ProductionPlant eq '${body.plant.replace(/'/g, "''")}'`);
+      const plant = defaultPlant || body.plant;
+      if (plant) filterParts.push(`ProductionPlant eq '${plant.replace(/'/g, "''")}'`);
       if (body.filter) filterParts.push(body.filter);
 
       const result = await callSapSandbox(
@@ -186,39 +257,42 @@ Deno.serve(async (req) => {
       );
 
       if (!result.ok) {
+        await closeLog("error", 0, result.error);
         return json(502, {
           ok: false,
           resource: body.resource,
           count: 0,
           data: [],
-          phase: 1,
+          phase: 4,
           sandbox: true,
           error: { code: "sap_sandbox_error", message: result.error ?? "Unknown" },
         });
       }
 
-      // OData v2 envelope: { d: { results: [...] } }
       const d = (result.data as { d?: { results?: unknown[] } })?.d;
       const rows = Array.isArray(d?.results) ? d!.results! : [];
 
+      await closeLog("success", rows.length);
       return json(200, {
         ok: true,
         resource: body.resource,
         count: rows.length,
         data: rows,
-        phase: 1,
+        phase: 4,
         sandbox: true,
+        instance_type: instanceType,
+        plant_filter: plant || null,
       });
     }
 
-    // Other resources — still Phase 0 stubs.
+    await closeLog("success", 0);
     return json(200, {
       ok: true,
       resource: body.resource,
       count: 0,
       data: [],
       phase: 0,
-      note: `${body.resource} not yet implemented — Phase 2.`,
+      note: `${body.resource} not yet implemented — Phase 5.`,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";

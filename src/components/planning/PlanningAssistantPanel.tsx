@@ -2,11 +2,14 @@ import { useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import { usePlanningAssistant, ChatMessage } from "@/hooks/usePlanningAssistant";
 import { useAiChatUsage } from "@/hooks/useAiChatUsage";
+import { useAdminAccess } from "@/hooks/useAdminData";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { extractRoutingProposal } from "@/lib/routing-proposal";
+import { RoutingProposalCard } from "@/components/planning/RoutingProposalCard";
 import {
   Sparkles,
   Send,
@@ -73,6 +76,8 @@ export function PlanningAssistantPanel({ organizationId }: Props) {
   const [input, setInput] = useState("");
   const { messages, isLoading, sendMessage, clearChat } = usePlanningAssistant(organizationId);
   const { data: usage } = useAiChatUsage(organizationId);
+  const { hasOrgSupervisorAccess, hasOrgAdminAccess, hasAdminAccess } = useAdminAccess();
+  const canApproveRouting = hasOrgSupervisorAccess || hasOrgAdminAccess || hasAdminAccess;
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const limitReached = usage?.limitReached ?? false;
@@ -136,7 +141,12 @@ export function PlanningAssistantPanel({ organizationId }: Props) {
           )}
 
           {messages.map((msg, i) => (
-            <Bubble key={i} message={msg} />
+            <Bubble
+              key={i}
+              message={msg}
+              organizationId={organizationId}
+              canApproveRouting={canApproveRouting}
+            />
           ))}
 
           {isLoading && messages[messages.length - 1]?.role !== "assistant" && (
@@ -184,8 +194,20 @@ export function PlanningAssistantPanel({ organizationId }: Props) {
   );
 }
 
-function Bubble({ message }: { message: ChatMessage }) {
+function Bubble({
+  message,
+  organizationId,
+  canApproveRouting,
+}: {
+  message: ChatMessage;
+  organizationId: string;
+  canApproveRouting: boolean;
+}) {
   const isUser = message.role === "user";
+  const { cleanedContent, proposal } = !isUser
+    ? extractRoutingProposal(message.content)
+    : { cleanedContent: message.content, proposal: null };
+
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
       <div
@@ -196,9 +218,18 @@ function Bubble({ message }: { message: ChatMessage }) {
         {isUser ? (
           <p className="whitespace-pre-wrap">{message.content}</p>
         ) : (
-          <div className="prose prose-sm dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
-            <ReactMarkdown>{message.content}</ReactMarkdown>
-          </div>
+          <>
+            <div className="prose prose-sm dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+              <ReactMarkdown>{cleanedContent}</ReactMarkdown>
+            </div>
+            {proposal && (
+              <RoutingProposalCard
+                organizationId={organizationId}
+                proposal={proposal}
+                canApprove={canApproveRouting}
+              />
+            )}
+          </>
         )}
       </div>
     </div>

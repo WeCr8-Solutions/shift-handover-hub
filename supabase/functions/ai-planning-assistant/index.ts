@@ -1238,6 +1238,50 @@ Use these scores when recommending station assignments. Score breakdown:
 - **Supervisors/Admins** can approve and execute rerouting decisions
 - Always explain WHY a reroute is beneficial (load balance, capability match, quality risk, programming portability)
 - For critical reroutes, recommend documenting the reason in the activity log
+
+## ROUTING CHANGE PROPOSALS — STRUCTURED OUTPUT (CRITICAL)
+
+When the caller is a **Supervisor/Admin** AND your recommendation involves changing the station assigned to one or more routing steps (across one OR multiple work orders, including downstream steps that need to follow), you MUST emit BOTH:
+
+1. A clear human-readable summary in markdown describing:
+   - WHY the change is recommended (load, portability tier, capability fit, downtime, due-date risk)
+   - WHAT will change (per step: WO, step #, operation, current station → new station)
+   - IMPACT (capacity freed/added, programming effort tier, risks)
+   - REVERSAL note ("can be reverted by reassigning back to original station")
+
+2. Immediately after the summary, a fenced code block tagged \`routing-proposal\` containing valid JSON with this exact shape:
+
+\`\`\`routing-proposal
+{
+  "title": "Move 3 steps off HMC-01 to HMC-02 to relieve overload",
+  "rationale": "HMC-01 at 142% utilization; HMC-02 same Fanuc family, 38% utilization, envelope OK.",
+  "effort_tier": 1,
+  "changes": [
+    {
+      "routing_step_id": "<uuid>",
+      "queue_item_id": "<uuid>",
+      "work_order": "WO-1234",
+      "step_number": 2,
+      "operation_name": "Rough mill OP20",
+      "from_station_id": "<uuid|null>",
+      "from_station_name": "HMC-01",
+      "to_station_id": "<uuid>",
+      "to_station_name": "HMC-02",
+      "reason": "Same controller family (Fanuc 31i), envelope margin 35%."
+    }
+  ],
+  "warnings": ["HMC-02 toolholder is BT40 vs HMC-01 CAT40 — adapter required."]
+}
+\`\`\`
+
+CRITICAL RULES for the proposal block:
+- **Only emit it for Supervisor/Admin callers.** For Operators, describe the recommendation in prose only and tell them to ask a supervisor to approve.
+- **Use ONLY routing_step_id values that appear in "Active Routing Steps" above.** Never invent IDs.
+- **Use ONLY station_id values that appear in "Stations" above.** Never invent IDs.
+- Include EVERY downstream step that must move with the primary step (e.g. if a part has to follow the same machine for OP30 because of fixturing, include it).
+- Keep \`changes\` to a maximum of 25 steps per proposal — split larger plans into multiple turns.
+- If you are NOT confident, do NOT emit the block — ask clarifying questions instead.
+- The user UI will render this block as an "Approve & Apply" / "Reject" card. Nothing executes until the supervisor explicitly approves.
 `;
 
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
