@@ -232,6 +232,32 @@ The following ITAR-relevant capabilities are roadmapped but not yet available:
 
 ---
 
+## 7a. ERP Persistence Mode (v1.0.0)
+
+When an organization connects JobBOSS or SAP S/4HANA, the system enforces a **persistence mode** on the connection that determines whether ERP-sourced work orders are copied into Lovable Cloud.
+
+| Mode | Behavior | Default for | Allowed for ITAR? |
+|------|----------|-------------|-------------------|
+| `read_through` | Edge functions fetch ERP data per request; **nothing is written to `queue_items`**. Dashboard renders directly from edge-function responses. | All new ERP connections | ✅ Yes (required) |
+| `write_through` | ERP rows upserted into `queue_items` with `source_system='sap'` or `'jobboss'`. Enables offline analytics & cross-org reporting. | Opt-in only | ❌ No — blocked by DB trigger |
+
+### Enforcement layers
+
+1. **Schema constraint** — `erp_connections.erp_persistence_mode CHECK IN ('read_through','write_through')`
+2. **Database trigger** — `enforce_itar_read_through()` raises if `requires_us_person_declaration = true` and mode is `write_through`
+3. **Edge function** — `sap-sync` calls `get_erp_persistence_mode()` RPC before any `upsertQueueItems` call and returns `write_through_blocked` reason if denied
+4. **Frontend** — `useDataSourceMode()` resolves the effective mode; `DataSourceBanner` surfaces it on dashboard surfaces
+
+### ITAR / FedRAMP guarantee
+
+Any organization with `requires_us_person_declaration = true`:
+- Cannot have `erp_persistence_mode = 'write_through'` (DB trigger blocks)
+- ERP data is never copied to Supabase under any circumstances
+- All ERP queries flow through the edge function and remain in-memory only
+- Satisfies the "data resides on org-controlled infrastructure" requirement when paired with self-hosted Supabase from §2.2
+
+---
+
 ## 8. Responsibility Matrix
 
 | Responsibility | JobLine AI (Vendor) | Org IT Admin | End User |
