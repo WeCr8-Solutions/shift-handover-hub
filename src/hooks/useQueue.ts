@@ -599,6 +599,24 @@ export function useQueue(filters?: {
     {} as Record<string, QueueItem[]>
   );
 
+  // Convenience wrappers for cancel / hold / resume with reason capture
+  const cancelItem = useCallback(
+    (id: string, reason: string) =>
+      updateItem(id, { status: "cancelled", cancellation_reason: reason }),
+    [updateItem]
+  );
+
+  const holdItem = useCallback(
+    (id: string, reason: string) =>
+      updateItem(id, { status: "on_hold", hold_reason: reason }),
+    [updateItem]
+  );
+
+  const resumeItem = useCallback(
+    (id: string) => updateItem(id, { status: "in_progress" }),
+    [updateItem]
+  );
+
   return {
     items,
     itemsByStatus,
@@ -613,5 +631,8 @@ export function useQueue(filters?: {
     addComment,
     getComments,
     getHistory,
+    cancelItem,
+    holdItem,
+    resumeItem,
   };
 }
