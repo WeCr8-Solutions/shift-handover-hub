@@ -996,6 +996,86 @@ serve(async (req) => {
       .sort((a, b) => b.est_hours - a.est_hours);
 
     // =========================================================================
+    // PROGRAMMING PORTABILITY MATRIX
+    // Groups stations by controller family + machine_type so the AI can answer:
+    //   "Where can I move this program with minimal re-post?"
+    //   "If I reprogram, what other machines/controls can it go to?"
+    // =========================================================================
+    const normalizeController = (ctrl?: string | null) => {
+      if (!ctrl) return "unknown";
+      const c = ctrl.toLowerCase();
+      if (c.includes("fanuc")) return "Fanuc";
+      if (c.includes("haas")) return "Haas";
+      if (c.includes("siemens") || c.includes("sinumerik")) return "Siemens";
+      if (c.includes("heidenhain")) return "Heidenhain";
+      if (c.includes("mazak") || c.includes("mazatrol")) return "Mazatrol";
+      if (c.includes("okuma") || c.includes("osp")) return "Okuma OSP";
+      if (c.includes("mitsubishi")) return "Mitsubishi";
+      if (c.includes("centroid")) return "Centroid";
+      if (c.includes("acramatic")) return "Acramatic";
+      return ctrl;
+    };
+
+    type PortStation = {
+      station: string;
+      station_id: string;
+      machine: string;
+      machine_type: string;
+      platform: string;
+      controller_family: string;
+      controller_model: string | null;
+      spindle_taper: string | null;
+      envelope_xyz: string;
+      capabilities_signature: string;
+      utilization_pct: number;
+      down: boolean;
+    };
+
+    const portStations: PortStation[] = allProfiles.map((p: any) => {
+      const load = stationLoadMap[p.station_id];
+      const avail = stationAvailabilityMap[p.station_id];
+      const caps: string[] = [];
+      if (p.five_axis_simultaneous) caps.push("5ax");
+      if (p.fourth_axis) caps.push("4ax");
+      if (p.live_tooling) caps.push("live-tool");
+      if (p.y_axis_turn) caps.push("y-axis");
+      if (p.sub_spindle) caps.push("sub-spindle");
+      if (p.probing) caps.push("probing");
+      if (p.through_spindle_coolant) caps.push("tsc");
+      if (p.bar_feeder) caps.push("bar-feed");
+      return {
+        station: stationMap[p.station_id] || p.station_id,
+        station_id: p.station_id,
+        machine: `${p.manufacturer || "?"} ${p.model || ""}`.trim(),
+        machine_type: p.machine_type || "unknown",
+        platform: p.platform_category || "unknown",
+        controller_family: normalizeController(p.control_type),
+        controller_model: p.control_model || null,
+        spindle_taper: p.spindle_taper || null,
+        envelope_xyz: [p.max_x_travel, p.max_y_travel, p.max_z_travel].filter((v) => v != null).join(" x ") || "n/a",
+        capabilities_signature: caps.sort().join(",") || "basic",
+        utilization_pct: load ? Math.min(100, Math.round((load.est_total_minutes / 480) * 100)) : 0,
+        down: avail?.has_active_downtime || false,
+      };
+    });
+
+    // Group by controller family — programs port best within the same family (no re-post needed)
+    const portabilityByController: Record<string, PortStation[]> = {};
+    for (const p of portStations) {
+      const key = `${p.controller_family} (${p.machine_type})`;
+      if (!portabilityByController[key]) portabilityByController[key] = [];
+      portabilityByController[key].push(p);
+    }
+
+    // Group by machine_type + capability signature — programs port best with same caps
+    const portabilityByCapability: Record<string, PortStation[]> = {};
+    for (const p of portStations) {
+      const key = `${p.machine_type} | caps:[${p.capabilities_signature}]`;
+      if (!portabilityByCapability[key]) portabilityByCapability[key] = [];
+      portabilityByCapability[key].push(p);
+    }
+
+    // =========================================================================
     // SYSTEM PROMPT
     // =========================================================================
     const callerRoleLabel = isSupervisorOrAbove
