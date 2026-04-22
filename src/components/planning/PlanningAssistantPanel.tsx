@@ -76,6 +76,8 @@ export function PlanningAssistantPanel({ organizationId }: Props) {
   const [input, setInput] = useState("");
   const { messages, isLoading, sendMessage, clearChat } = usePlanningAssistant(organizationId);
   const { data: usage } = useAiChatUsage(organizationId);
+  const { hasOrgSupervisorAccess, hasOrgAdminAccess, hasAdminAccess } = useAdminAccess();
+  const canApproveRouting = hasOrgSupervisorAccess || hasOrgAdminAccess || hasAdminAccess;
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const limitReached = usage?.limitReached ?? false;
