@@ -18,6 +18,8 @@ import {
   Settings,
   Rocket,
   Factory,
+  Cloud,
+  Plug,
 } from "lucide-react";
 
 // ── Module-level constants (not re-created on every render) ──────────────────
@@ -26,6 +28,7 @@ const STEP_ICONS: Record<string, React.ReactNode> = {
   welcome: <Sparkles className="w-5 h-5" />,
   "organization-setup": <Factory className="w-5 h-5" />,
   "shop-setup": <Factory className="w-5 h-5" />,
+  "data-source": <Plug className="w-5 h-5" />,
   "dashboard-overview": <LayoutDashboard className="w-5 h-5" />,
   "station-cards": <LayoutDashboard className="w-5 h-5" />,
   "handoff-submission": <FileEdit className="w-5 h-5" />,
@@ -39,6 +42,7 @@ const STEP_ROUTE_MAP: Record<string, string> = {
   welcome: "/setup",
   "organization-setup": "/setup",
   "shop-setup": "/setup",
+  "data-source": "/settings/integrations/native",
   "dashboard-overview": "/dashboard",
   "station-cards": "/dashboard",
   "handoff-submission": "/dashboard",
@@ -46,6 +50,34 @@ const STEP_ROUTE_MAP: Record<string, string> = {
   "team-management": "/teams",
   "admin-features": "/admin",
 };
+
+// Data-source paths shown on the "data-source" onboarding step
+const DATA_SOURCES = [
+  {
+    id: "native",
+    title: "Native (Lovable Cloud)",
+    description: "Run everything in Lovable Cloud — no ERP needed.",
+    icon: <Cloud className="w-5 h-5" />,
+    route: "/settings/integrations/native",
+    badge: "Default",
+  },
+  {
+    id: "jobboss",
+    title: "JobBOSS Sync",
+    description: "Pull work orders from JobBOSS into Lovable Cloud.",
+    icon: <Factory className="w-5 h-5" />,
+    route: "/settings/integrations/jobboss",
+    badge: "Read-only",
+  },
+  {
+    id: "sap",
+    title: "SAP S/4HANA Sync",
+    description: "Sync production orders from SAP sandbox or production tenants.",
+    icon: <Sparkles className="w-5 h-5" />,
+    route: "/settings/integrations/sap",
+    badge: "OAuth",
+  },
+];
 
 // ─────────────────────────────────────────────────────────────────────────────
 
