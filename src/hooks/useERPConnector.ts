@@ -179,18 +179,32 @@ export function useERPConnector() {
     return { error: null };
   };
 
+  // SAP uses its own edge function (sap-sync) because the auth model and
+  // OData entity shapes differ from the generic erp-sync (JobBOSS-shaped).
+  // Vendor dispatch keeps the UI a single "Test/Sync" button per org.
+  const isSapVendor = connection?.erp_vendor === "sap";
+
   const testConnection = async () => {
     if (!orgId) return;
     setTesting(true);
     try {
-      const { data, error } = await supabase.functions.invoke("erp-sync", {
-        body: { organization_id: orgId, sync_type: "full", test_connection: true },
-      });
+      const { data, error } = isSapVendor
+        ? await supabase.functions.invoke("sap-sync", {
+            body: { organization_id: orgId, resource: "test_connection" },
+          })
+        : await supabase.functions.invoke("erp-sync", {
+            body: { organization_id: orgId, sync_type: "full", test_connection: true },
+          });
       if (error) throw error;
+      const ok = isSapVendor ? data?.ok === true : data?.success === true;
       toast({
-        title: data.success ? "Connection Successful" : "Connection Failed",
-        description: data.message,
-        variant: data.success ? "default" : "destructive",
+        title: ok ? "Connection Successful" : "Connection Failed",
+        description: isSapVendor
+          ? ok
+            ? `SAP ${data?.instance_type ?? "sandbox"} reachable (HTTP ${data?.latency_check ?? "?"})`
+            : data?.error?.message ?? "Unknown error"
+          : data?.message,
+        variant: ok ? "default" : "destructive",
       });
       await fetchConnection();
     } catch (err: any) {
@@ -204,14 +218,36 @@ export function useERPConnector() {
     if (!orgId) return;
     setSyncing(true);
     try {
-      const { data, error } = await supabase.functions.invoke("erp-sync", {
-        body: { organization_id: orgId, sync_type: syncType },
-      });
+      const { data, error } = isSapVendor
+        ? await supabase.functions.invoke("sap-sync", {
+            body: {
+              organization_id: orgId,
+              resource: "production_orders",
+              write_through: true,
+              top: syncType === "full" ? 200 : 50,
+            },
+          })
+        : await supabase.functions.invoke("erp-sync", {
+            body: { organization_id: orgId, sync_type: syncType },
+          });
       if (error) throw error;
-      toast({
-        title: "Sync Complete",
-        description: `Fetched ${data.records_fetched}, Created ${data.records_created}, Updated ${data.records_updated}${data.errors_count > 0 ? `, ${data.errors_count} errors` : ""}`,
-      });
+
+      if (isSapVendor) {
+        const wt = data?.write_through;
+        toast({
+          title: data?.ok ? "SAP Sync Complete" : "SAP Sync Failed",
+          description: data?.ok
+            ? `Fetched ${data?.count ?? 0} production orders` +
+              (wt ? ` · ${wt.inserted} new, ${wt.updated} updated` : "")
+            : data?.error?.message ?? "Unknown error",
+          variant: data?.ok ? "default" : "destructive",
+        });
+      } else {
+        toast({
+          title: "Sync Complete",
+          description: `Fetched ${data.records_fetched}, Created ${data.records_created}, Updated ${data.records_updated}${data.errors_count > 0 ? `, ${data.errors_count} errors` : ""}`,
+        });
+      }
       await Promise.all([fetchSyncLogs(), fetchWorkCenterMappings(), fetchSyncErrors()]);
     } catch (err: any) {
       toast({ title: "Sync Failed", description: err.message, variant: "destructive" });
