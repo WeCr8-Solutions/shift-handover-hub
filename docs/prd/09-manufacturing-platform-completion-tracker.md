@@ -18,17 +18,17 @@
 
 | ID | Phase | Need | Current state | Status | Validation required | Evidence / notes |
 |---|---|---|---|---|---|---|
-| P0.1 | Runtime | Restore installed frontend dependencies | Declared in `package.json`, missing from active install tree | in_progress | `npm ls qrcode jspdf papaparse --depth=0` | Current tree returned empty for these packages |
-| P0.2 | Runtime | Boot Vite without unresolved imports | Local dev server reported unresolved imports | not_started | `npm run dev` | Must verify clean boot after install |
-| P0.3 | Runtime | Restore local build path | Not yet re-validated after dependency repair | not_started | `npm run build` | Build must complete cleanly |
-| P0.4 | Runtime | Restore Playwright execution path | Current local Playwright execution failed due to local dependency/module issues | blocked | `npx playwright test ...` | Depends on healthy local install |
-| P1.1 | Verification | Remove noisy async dashboard test warnings | OperatorStationPanel tests pass with repeated `act(...)` warnings | not_started | targeted `npm test` | Warnings reduce trust in UI timing assertions |
+| P0.1 | Runtime | Restore installed frontend dependencies | Declared dependencies now present in active install tree | validated | `npm ls qrcode jspdf papaparse --depth=0` | Runtime dependency recovery completed during Phase 0 |
+| P0.2 | Runtime | Boot Vite without unresolved imports | Local app now boots from repaired install | validated | `npm run dev` | Dev and preview paths recovered during runtime repair |
+| P0.3 | Runtime | Restore local build path | Production build and prerender are green on Windows | validated | `npm run build` | Validated repeatedly after prerender fixes |
+| P0.4 | Runtime | Restore Playwright execution path | Smoke execution path restored | validated | `npx playwright test ...` | Combined GCA/OAP smoke green after OAP spec repair |
+| P1.1 | Verification | Remove noisy async dashboard test warnings | OperatorStationPanel tests no longer emit `act(...)` warnings | validated | targeted `npm test` | `npx vitest run src/components/dashboard/OperatorStationPanel.test.tsx` passes cleanly except unrelated React Router future warnings |
 | P1.2 | Verification | Add meaningful smoke tests | Current GCA/OAP E2E mostly route-smoke | not_started | Playwright smoke suite | Must include authenticated and business-flow slices |
 | P1.3 | Verification | Add business-flow tests for critical slices | ERP, cert sync, profile portability under-covered | not_started | targeted unit + E2E | Prioritize by operational risk |
-| P2.1 | ERP | Complete JobBOSS unified read-through path | `useUnifiedQueue` still documents fallback/skipped behavior | not_started | unit + smoke | SAP stronger than JobBOSS today |
+| P2.1 | ERP | Complete JobBOSS unified read-through path | `useUnifiedQueue` now consumes live JobBOSS read-only ERP rows | validated | unit + smoke | `erp-sync` read_only path enabled; `npx vitest run src/hooks/useUnifiedQueue.test.ts` passes |
 | P2.2 | ERP | Validate native vs read-through vs write-through mode behavior | Partial evidence only | not_started | unit + E2E | Include ITAR-safe read-through assertions |
 | P2.3 | ERP | Validate ITAR persistence constraints | Logic exists, not fully proven end-to-end | not_started | edge fn + UI validation | Must prove no write-through leakage |
-| P3.1 | Documents | Define first-class manufacturing package model | Only per-step document attachments today | not_started | design review + schema | Need package, revision, approval, completeness rules |
+| P3.1 | Documents | Define first-class manufacturing package model | Phase 3 design baseline documented in `docs/prd/10-manufacturing-package-model.md` | in_progress | design review + schema | Current system still uses step-scoped `setup_sheets`; package schema implementation is next |
 | P3.2 | Documents | Implement grouped multi-document package behavior | Flat setup-sheet list only | not_started | UI + schema tests | Must support drawing, setup, instruction, inspection docs |
 | P3.3 | Documents | Surface package completeness in execution views | Missing today | not_started | routing/queue validation | Needed for production control |
 | P4.1 | GCA | Ship in-app lesson reader | Checklist still marks incomplete | not_started | unit + E2E | Static site should no longer be sole player |
@@ -60,8 +60,8 @@ For each tracker row, completion requires:
 
 Current active execution order:
 
-1. `P0.1` Restore installed frontend dependencies
-2. `P0.2` Boot Vite without unresolved imports
-3. `P0.3` Restore local build path
-4. `P0.4` Restore Playwright execution path
-5. `P1.1` Remove noisy async dashboard test warnings
+1. `P3.1` Define first-class manufacturing package model
+2. `P3.2` Implement grouped multi-document package behavior
+3. `P3.3` Surface package completeness in execution views
+4. `P1.2` Add meaningful smoke tests
+5. `P2.2` Validate native vs read-through vs write-through mode behavior
