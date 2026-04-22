@@ -1157,6 +1157,14 @@ ${cycleTimeAnalysis.length > 0 ? JSON.stringify(cycleTimeAnalysis.slice(0, 20), 
 ### 🖥️ Active G-Code / CNC Programs:
 ${gcodeSummary.length > 0 ? JSON.stringify(gcodeSummary, null, 2) : "No active G-code sessions. (G-code integration may not be configured yet.)"}
 
+### 🔁 Programming Portability Matrix — Stations grouped by CONTROLLER FAMILY (${Object.keys(portabilityByController).length} groups):
+Programs port between stations in the SAME controller family with little or no re-post. Programs porting across families require post-processor changes.
+${Object.keys(portabilityByController).length > 0 ? JSON.stringify(portabilityByController, null, 2) : "No machine profiles configured — cannot analyze controller portability."}
+
+### 🧩 Programming Portability Matrix — Stations grouped by MACHINE TYPE + CAPABILITY SIGNATURE (${Object.keys(portabilityByCapability).length} groups):
+Programs port best between stations sharing the same machine_type AND capability signature (e.g. 5-axis sim, live tooling, sub-spindle). Different signatures usually require re-programming, not just re-posting.
+${Object.keys(portabilityByCapability).length > 0 ? JSON.stringify(portabilityByCapability, null, 2) : "No capability data available."}
+
 ${loadBalancerResults.length > 0 ? `### 🔄 Load Balancer — Unassigned Work Order Recommendations (${loadBalancerResults.length}):
 ${JSON.stringify(loadBalancerResults, null, 2)}
 
