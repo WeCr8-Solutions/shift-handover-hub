@@ -9,41 +9,57 @@
 
 ## Strategy: Phased Path from Free → FedRAMP
 
-JobLine AI follows a **3-phase status page strategy** that starts free, gives us a branded URL immediately, and migrates cleanly into AWS GovCloud once FedRAMP authorization is in progress.
+JobLine AI follows a **3-phase status page strategy** that starts free, gives us a branded URL early, and migrates cleanly into AWS GovCloud once FedRAMP authorization is in progress.
 
 | Phase | Period | Engine | Public URL | Cost | FedRAMP-ready? |
 |---|---|---|---|---|---|
-| **Phase 0** (now) | Apr 2026 – ongoing | **Instatus Free** (uptime monitoring only) | `status-joblineai.instatus.com` | $0 | ⚠️ Partial — commercial only |
-| **Phase 1** (next) | Q2 2026 | **Upptime** (GitHub Actions + static site on Cloudflare Pages / Vercel) | `status.jobline.ai` ✅ branded | $0 | ⚠️ Partial — commercial OK, audit-friendly |
+| **Phase 0** (now) | Apr 2026 – ongoing | **UptimeRobot Free** (uptime monitoring + hosted public status page) | `stats.uptimerobot.com/Ac1v7E00v2` | $0 | ⚠️ Partial — commercial only |
+| **Phase 1** (next) | Q2 2026 | **Upptime** (GitHub Actions + static site on Cloudflare Pages) | `status.jobline.ai` ✅ branded | $0 | ⚠️ Partial — commercial OK, audit-friendly |
 | **Phase 2** (future) | Triggered by first federal LOI | **Statping-ng on AWS GovCloud ECS Fargate** | `status.jobline.ai` (DNS swap) | ~$15–40/mo | ✅ FedRAMP High inherited |
 
-**Why not Instatus Pro?** Instatus runs on commercial Vercel/AWS regions and is not FedRAMP-authorized. Paying $20/mo would solve branding short-term but force a complete rebuild for federal customers. Upptime is free and gives us the same branded URL today, while preserving a clean GovCloud migration.
+**Why not UptimeRobot Pro?** UptimeRobot's paid plans run on commercial AWS regions and are not FedRAMP-authorized. Paying $7+/mo would solve branding short-term but force a complete rebuild for federal customers. Upptime is free, gives us the same branded URL (`status.jobline.ai`), and preserves a clean GovCloud migration.
 
 ---
 
-## Phase 0 — Instatus Free (current state)
+## Phase 0 — UptimeRobot Free (current state)
 
-**Status:** ✅ Live and configured.
+**Status:** ✅ Live and active.
 
-- Public URL: `https://status-joblineai.instatus.com`
-- Tier: Starter (Free) — 15 monitors, 2-min check interval, email notifications, no custom domain
-- Used as: backend uptime monitoring engine + interim public status surface
-- Cloudflare CNAME: `status.jobline.ai → status.instatus.com` is provisioned but **dormant** (Instatus rejects custom hostnames on free tier — verified `curl -sI https://status.jobline.ai/` returns nothing).
+- Public status page: `https://stats.uptimerobot.com/Ac1v7E00v2`
+- Tier: Free — 50 monitors, 5-minute check interval, email/SMS alerts, no custom domain on free
+- API key stored in Lovable Cloud secrets as `UPTIMEROBOT_API_KEY` (used for any future programmatic monitor sync from edge functions)
+- Cloudflare CNAME `status.jobline.ai → status.instatus.com` is **dormant** (legacy from earlier Instatus trial — will be repointed in Phase 1 to the Upptime target, NOT to UptimeRobot since custom domains require a paid UptimeRobot plan).
+- For now, link to the UptimeRobot URL directly from `/support`.
 
-### Active monitor set (fits within Free 15-cap)
+### Free tier vs Pro — what we get / don't get
+
+| Capability | Free (current) | Pro (~$7/mo) |
+|---|---|---|
+| Monitors | 50 | 50+ |
+| Check interval | 5 min | 1 min |
+| Public status page | ✅ at `stats.uptimerobot.com/<id>` | ✅ at `status.jobline.ai` (custom domain) |
+| Custom domain | ❌ | ✅ |
+| Password-protect page | ✅ (in settings) | ✅ |
+| SMS / voice alerts | Limited | Full |
+| Status page branding (logo, colors) | ✅ basic | ✅ full |
+| FedRAMP authorized | ❌ | ❌ |
+
+**Conclusion:** Free tier is sufficient for commercial customers. We will NOT upgrade UptimeRobot Pro because it doesn't help with FedRAMP — the $7/mo is better spent on Phase 1 (Upptime) which gets us `status.jobline.ai` for free.
+
+### Active monitor set (fits within Free 50-cap, 10 in use)
 
 | # | Name | Type | Target | Expected |
 |---|---|---|---|---|
-| 1 | Marketing Site | Website | `https://jobline.ai` | 200 |
-| 2 | Web App | Website | `https://app.jobline.ai` | 200 |
-| 3 | Developer Portal | Website | `https://dev.jobline.ai/dev` | 200 |
-| 4 | Help Center | Website | `https://docs.jobline.ai/help` | 200 |
-| 5 | Supabase REST API | API | `https://kgrstnbxqdmadtoankqr.supabase.co/rest/v1/` (header `apikey: <anon>`) | 200 |
-| 6 | Supabase Auth | API | `https://kgrstnbxqdmadtoankqr.supabase.co/auth/v1/health` | 200 |
-| 7 | AI Planning Assistant | API | `https://kgrstnbxqdmadtoankqr.functions.supabase.co/ai-planning-assistant` | not 5xx (401 expected) |
-| 8 | Stripe Webhook | API | `https://kgrstnbxqdmadtoankqr.functions.supabase.co/stripe-webhook` | not 5xx (400 expected) |
+| 1 | Marketing Site | HTTPS | `https://jobline.ai` | 200 |
+| 2 | Web App | HTTPS | `https://app.jobline.ai` | 200 |
+| 3 | Developer Portal | HTTPS | `https://dev.jobline.ai/dev` | 200 |
+| 4 | Help Center | HTTPS | `https://docs.jobline.ai/help` | 200 |
+| 5 | Supabase REST API | Keyword | `https://kgrstnbxqdmadtoankqr.supabase.co/rest/v1/` (header `apikey: <anon>`) | 200 |
+| 6 | Supabase Auth | Keyword | `https://kgrstnbxqdmadtoankqr.supabase.co/auth/v1/health` | 200 |
+| 7 | AI Planning Assistant | HTTPS | `https://kgrstnbxqdmadtoankqr.functions.supabase.co/ai-planning-assistant` | not 5xx (401 expected) |
+| 8 | Stripe Webhook | HTTPS | `https://kgrstnbxqdmadtoankqr.functions.supabase.co/stripe-webhook` | not 5xx (400 expected) |
 | 9 | Email Heartbeat | Cron/Heartbeat | URL pinged daily by `send-email` health check | < 24h since last ping |
-| 10 | DNS A-record | DNS | `jobline.ai` A | `185.158.133.1` |
+| 10 | DNS A-record | Ping | `jobline.ai` | reachable |
 
 ### Component grouping (public page)
 
@@ -52,17 +68,26 @@ JobLine AI follows a **3-phase status page strategy** that starts free, gives us
 - **Background Services** — AI Planning Assistant, Stripe Webhook, Email Heartbeat
 - **Documentation** — Developer Portal, Help Center
 
+### UptimeRobot API (for future automation)
+
+The `UPTIMEROBOT_API_KEY` secret is available to edge functions. Useful endpoints:
+- `POST https://api.uptimerobot.com/v2/getMonitors` — fetch monitor status
+- `POST https://api.uptimerobot.com/v2/newMonitor` — create monitor
+- `POST https://api.uptimerobot.com/v2/getPSPs` — fetch public status page config
+
+We are NOT building an in-app status widget yet — link directly to `stats.uptimerobot.com/Ac1v7E00v2`. If we later want to embed live status on `/support`, an edge function can call `getMonitors` and cache the result.
+
 ---
 
 ## Phase 1 — Upptime (branded `status.jobline.ai`, $0)
 
-**Goal:** Get `status.jobline.ai` resolving with a clean, branded, audit-friendly status page without paying Instatus and without locking ourselves out of GovCloud migration.
+**Goal:** Get `status.jobline.ai` resolving with a clean, branded, audit-friendly status page without paying any vendor and without locking ourselves out of GovCloud migration.
 
 ### Why Upptime
 
 - **$0 forever** — runs on GitHub Actions free tier (every 5 min, well under the 2,000 min/mo limit).
 - **Markdown-based incidents** — every incident is a Git-tracked `.md` file. Auditors love this.
-- **Static site output** — deploys as a plain HTML/CSS bundle to Cloudflare Pages or Vercel. No server, no DB, no patching.
+- **Static site output** — deploys as a plain HTML/CSS bundle to Cloudflare Pages or GitHub Pages. No server, no DB, no patching.
 - **Branded custom domain** — `status.jobline.ai` works immediately via standard CNAME.
 - **Migration-friendly** — incident history is portable Markdown; trivially imports into Statping-ng later.
 - **Used by:** Cal.com, Snyk, GitGuardian, several .gov-adjacent orgs.
@@ -72,13 +97,13 @@ JobLine AI follows a **3-phase status page strategy** that starts free, gives us
 ```
 GitHub repo: jobline-ai/status (private)
    │
-   ├── .upptimerc.yml             ← monitor config (same 10 endpoints as Instatus)
+   ├── .upptimerc.yml             ← monitor config (same 10 endpoints as UptimeRobot)
    ├── history/*.yml              ← auto-generated uptime data, committed by Action
    ├── incidents/*.md             ← human-authored incident posts
    └── .github/workflows/*.yml    ← Upptime's check + site-build workflows
             │
             ▼
-     GitHub Pages OR Cloudflare Pages (static site)
+     Cloudflare Pages (static site)
             │
             ▼
    status.jobline.ai (CNAME → cloudflare-pages.dev)
@@ -87,14 +112,14 @@ GitHub repo: jobline-ai/status (private)
 ### Setup steps (1–2 hours total)
 
 1. **Create private GitHub repo** `jobline-ai/status` from the [Upptime template](https://github.com/upptime/upptime).
-2. **Configure `.upptimerc.yml`** with the 10 monitors above (same URLs/expected codes as Instatus).
+2. **Configure `.upptimerc.yml`** with the 10 monitors above (same URLs/expected codes as UptimeRobot).
 3. **Set repo secrets:**
    - `GH_PAT` — fine-grained PAT with repo + pages write
    - `SUPABASE_ANON_KEY` — for Supabase API monitor headers
 4. **Enable GitHub Actions** — Upptime's `uptime.yml` runs every 5 min and commits results.
-5. **Build the static site** — Upptime's `site.yml` builds and deploys to GitHub Pages (or Cloudflare Pages).
+5. **Build the static site** — Upptime's `site.yml` builds and deploys to Cloudflare Pages.
 6. **Connect custom domain:**
-   - Cloudflare DNS: change `status` CNAME from `status.instatus.com` → `<repo>.pages.dev` (or GitHub Pages target)
+   - Cloudflare DNS: change `status` CNAME from `status.instatus.com` → `<repo>.pages.dev`
    - Wait 5–30 min for cert issuance
    - Verify: `curl -sI https://status.jobline.ai/ | head -3` → expect `HTTP/2 200`
 7. **Brand the page:** edit `.upptimerc.yml` — set logo URL, primary color `hsl(220 90% 56%)` (matches app), name "JobLine.ai Status".
@@ -116,7 +141,7 @@ GitHub repo: jobline-ai/status (private)
 - [ ] First incident drill completed (intentional 30-sec degrade + resolve)
 - [ ] Slack incident notifications wired
 - [ ] `https://jobline.ai/support` link updated to point at `status.jobline.ai`
-- [ ] Instatus kept as **secondary** monitoring engine for 30-day overlap, then decommissioned
+- [ ] UptimeRobot kept as **secondary** monitoring engine for 30-day overlap, then optionally retained for SMS alerting (it's free)
 
 ---
 
@@ -152,7 +177,7 @@ AWS GovCloud (us-gov-west-1)
 4. Recreate the 10 monitors in Statping-ng UI (or YAML).
 5. **Cutover DNS:** change `status` CNAME from Cloudflare Pages → GovCloud ALB. Cloudflare proxy: **off** (status pages should bypass CDN for accuracy).
 6. Run Upptime + Statping-ng in parallel for 7 days; compare uptime numbers.
-7. Archive Upptime repo (keep for historical evidence).
+7. Archive Upptime repo (keep for historical evidence). Decommission UptimeRobot.
 8. Update FedRAMP SSP: add status page as inherited control under GovCloud boundary.
 
 ### Phase 2 acceptance criteria
@@ -178,7 +203,7 @@ AWS GovCloud (us-gov-west-1)
 
 ## Incident Management Workflow (engine-agnostic)
 
-1. Monitor fails → on-call paged within 60 sec (Slack/email/PagerDuty)
+1. Monitor fails → on-call paged within 60 sec (UptimeRobot email/SMS today; Slack/PagerDuty in Phase 1)
 2. On-call posts initial status update within **15 minutes** (FedRAMP IR-6 requirement)
 3. Status updates every 30 min until resolved
 4. Post-incident update within 24 hours of resolution
@@ -202,16 +227,17 @@ Store at: `docs/approval/fedramp/evidence/status-page-YYYY-QN.md`
 
 ## Current Status (April 2026)
 
-- [x] **Phase 0:** Instatus Free account created, 10 monitors planned
-- [x] Cloudflare CNAME `status.jobline.ai → status.instatus.com` provisioned (dormant)
-- [x] Public Instatus URL live: `https://status-joblineai.instatus.com`
-- [ ] **Phase 0 monitors configured** (in Instatus UI)
-- [ ] **Phase 1: Upptime repo created** ← next action
-- [ ] Phase 1: Upptime monitors mirror Instatus set
+- [x] **Phase 0:** UptimeRobot Free account created, API key stored as `UPTIMEROBOT_API_KEY`
+- [x] Public UptimeRobot URL live: `https://stats.uptimerobot.com/Ac1v7E00v2`
+- [x] Cloudflare CNAME `status.jobline.ai → status.instatus.com` exists (dormant; will repoint in Phase 1)
+- [ ] **Phase 0:** Configure all 10 monitors in UptimeRobot UI ← next action
+- [ ] **Phase 0:** Add link from `/support` page to UptimeRobot status page
+- [ ] **Phase 1: Upptime repo created**
+- [ ] Phase 1: Upptime monitors mirror UptimeRobot set
 - [ ] Phase 1: Cloudflare CNAME swap → Cloudflare Pages target
 - [ ] Phase 1: `status.jobline.ai` resolves to branded JobLine page
 - [ ] Phase 1: Incident drill completed
-- [ ] Phase 1: Instatus decommissioned after 30-day overlap
+- [ ] Phase 1: UptimeRobot retained as secondary alerting (free) or decommissioned
 - [ ] **Phase 2: AWS GovCloud account opened** (gated on federal LOI)
 - [ ] Phase 2: Statping-ng deployed in `us-gov-west-1`
 - [ ] Phase 2: DNS cutover + Upptime archived
