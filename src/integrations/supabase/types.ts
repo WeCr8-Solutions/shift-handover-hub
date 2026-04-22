@@ -1452,6 +1452,7 @@ export type Database = {
           connection_status: string
           created_at: string
           created_by: string | null
+          erp_persistence_mode: string
           erp_vendor: string
           id: string
           instance_type: string
@@ -1472,6 +1473,7 @@ export type Database = {
           connection_status?: string
           created_at?: string
           created_by?: string | null
+          erp_persistence_mode?: string
           erp_vendor: string
           id?: string
           instance_type?: string
@@ -1492,6 +1494,7 @@ export type Database = {
           connection_status?: string
           created_at?: string
           created_by?: string | null
+          erp_persistence_mode?: string
           erp_vendor?: string
           id?: string
           instance_type?: string
@@ -10272,6 +10275,7 @@ export type Database = {
       }
       fetch_display_data: { Args: { _token: string }; Returns: Json }
       get_auth_user_id_by_email: { Args: { _email: string }; Returns: string }
+      get_erp_persistence_mode: { Args: { _org_id: string }; Returns: string }
       get_public_employer: {
         Args: { _slug: string }
         Returns: {
