@@ -178,6 +178,35 @@ export function QueueListView({ items, onItemClick, onStatusChange, onDelete, on
           </div>
         )}
       </CardContent>
+
+      <CancelHoldDialog
+        open={!!pendingAction}
+        mode={pendingAction?.mode ?? "cancel"}
+        workOrderLabel={
+          pendingAction
+            ? `${pendingAction.item.work_order || pendingAction.item.title}${pendingAction.item.part_number ? ` · ${pendingAction.item.part_number}` : ""}`
+            : undefined
+        }
+        onOpenChange={(o) => { if (!o) setPendingAction(null); }}
+        onConfirm={async (reason) => {
+          if (!pendingAction) return;
+          const targetStatus: QueueStatus = pendingAction.mode === "cancel" ? "cancelled" : "on_hold";
+          // Persist reason via direct update so the trigger stamps audit fields too.
+          const { error } = await supabase
+            .from("queue_items")
+            .update(
+              pendingAction.mode === "cancel"
+                ? { status: targetStatus, cancellation_reason: reason }
+                : { status: targetStatus, hold_reason: reason }
+            )
+            .eq("id", pendingAction.item.id);
+          if (error) {
+            toast.error(error.message);
+          } else {
+            toast.success(pendingAction.mode === "cancel" ? "Work order cancelled" : "Work order placed on hold");
+          }
+        }}
+      />
     </Card>
   );
 }
