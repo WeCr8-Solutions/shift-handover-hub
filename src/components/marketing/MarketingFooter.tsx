@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import joblineLogo from "@/assets/jobline-logo.png";
+import { openCookiePreferences } from "@/lib/consent";
 
 const footerLinks = {
   Operations: [
@@ -64,9 +65,21 @@ export function MarketingFooter() {
           <div className="flex items-center gap-2">
             <img src={joblineLogo} alt="JobLine.ai" width={40} height={40} loading="lazy" decoding="async" className="h-8 sm:h-10 w-auto" />
           </div>
-          <div className="text-xs text-muted-foreground text-center sm:text-right">
+          <div className="text-xs text-muted-foreground text-center sm:text-right space-y-2">
+            <nav aria-label="Legal" className="flex flex-wrap gap-x-4 gap-y-1 justify-center sm:justify-end">
+              <Link to="/terms" className="hover:text-foreground transition-colors">Terms</Link>
+              <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
+              <Link to="/cookies" className="hover:text-foreground transition-colors">Cookies</Link>
+              <button
+                type="button"
+                onClick={openCookiePreferences}
+                className="hover:text-foreground transition-colors underline-offset-2"
+              >
+                Cookie preferences
+              </button>
+            </nav>
             <p>© 2026 JobLine.ai. All rights reserved.</p>
-            <p className="mt-1">A product of WeCr8 Solutions LLC</p>
+            <p>A product of WeCr8 Solutions LLC</p>
           </div>
         </div>
       </div>

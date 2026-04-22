@@ -1104,8 +1104,9 @@ export default function Landing() {
               <h4 className="text-sm font-semibold mb-3">Company</h4>
               <div className="flex flex-col gap-2 text-xs text-muted-foreground">
                 <button onClick={() => navigate('/pricing')} className="text-left hover:text-foreground transition-colors">Pricing</button>
-                <a href="#" onClick={() => handleFooterLinkClick('privacy')} className="hover:text-foreground transition-colors">Privacy</a>
-                <a href="#" onClick={() => handleFooterLinkClick('terms')} className="hover:text-foreground transition-colors">Terms</a>
+                <button onClick={() => { handleFooterLinkClick('privacy'); navigate('/privacy'); }} className="text-left hover:text-foreground transition-colors">Privacy</button>
+                <button onClick={() => { handleFooterLinkClick('terms'); navigate('/terms'); }} className="text-left hover:text-foreground transition-colors">Terms</button>
+                <button onClick={() => { handleFooterLinkClick('cookies'); navigate('/cookies'); }} className="text-left hover:text-foreground transition-colors">Cookies</button>
                 <a href="#" onClick={() => handleFooterLinkClick('contact')} className="hover:text-foreground transition-colors">Contact</a>
                 <SupportJoblineModal 
                   trigger={

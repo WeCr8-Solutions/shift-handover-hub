@@ -19,6 +19,7 @@ import { RulesOfBehaviorGate } from "@/components/compliance/RulesOfBehaviorGate
 import { ReleaseBadge } from "@/components/ReleaseBadge";
 import { IssueReporterBoot } from "@/components/IssueReporterBoot";
 import { FreeTalentProfileRibbon } from "@/components/marketing/FreeTalentProfileRibbon";
+import { CookieConsent } from "@/components/legal/CookieConsent";
 import { lazy, Suspense } from "react";
 
 // Eager: landing page (LCP-critical, most-visited route)
@@ -148,6 +149,9 @@ const EmployersIndex = lazy(() => import("./pages/EmployersIndex"));
 const EmployerBrowse = lazy(() => import("./pages/EmployerBrowse"));
 const PublicEmployerProfile = lazy(() => import("./pages/PublicEmployerProfile"));
 const EmployerDashboard = lazy(() => import("./pages/EmployerDashboard"));
+const Terms = lazy(() => import("./pages/legal/Terms"));
+const Privacy = lazy(() => import("./pages/legal/Privacy"));
+const Cookies = lazy(() => import("./pages/legal/Cookies"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -187,6 +191,7 @@ const App = () => (
                   <GuidedTour />
                   <WelcomeModal />
                   <FreeTalentProfileRibbon />
+                  <CookieConsent />
                   <Suspense fallback={<RouteFallback />}>
                   <Routes>
                     <Route path="/" element={<Landing />} />
@@ -315,6 +320,9 @@ const App = () => (
                     <Route path="/settings/integrations/sap" element={<SapIntegration />} />
                     <Route path="/dev/:category/:slug" element={<DevDocArticle />} />
                     <Route path="/display/:displayId" element={<ShopFloorDisplay />} />
+                    <Route path="/terms" element={<Terms />} />
+                    <Route path="/privacy" element={<Privacy />} />
+                    <Route path="/cookies" element={<Cookies />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
