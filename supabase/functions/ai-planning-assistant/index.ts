@@ -234,12 +234,12 @@ serve(async (req) => {
         supabase
           .from("queue_items")
           .select(
-            "id, title, work_order, part_number, status, priority, due_date, assigned_to, station_id, item_type, quantity, qty_completed, qty_scrap, qty_rework, qty_open, quantity_locked, operation_number, created_at, estimated_duration, material_type, part_length_inches, part_width_inches, part_height_inches, part_weight_lbs, part_shape, required_tolerance, surface_finish, part_catalog_id, setup_time_minutes, cycle_time_minutes, first_article_minutes, scheduled_start, scheduled_end, started_at",
+            "id, title, work_order, part_number, status, priority, due_date, assigned_to, station_id, item_type, quantity, qty_completed, qty_scrap, qty_rework, qty_open, quantity_locked, operation_number, created_at, estimated_duration, material_type, part_length_inches, part_width_inches, part_height_inches, part_weight_lbs, part_shape, required_tolerance, surface_finish, part_catalog_id, setup_time_minutes, cycle_time_minutes, first_article_minutes, scheduled_start, scheduled_end, started_at, cancellation_reason, hold_reason, cancelled_at, cancelled_by_name, on_hold_at, on_hold_by_name, completed_at",
           )
           .eq("organization_id", organization_id)
-          .in("status", ["pending", "queued", "in_progress", "on_hold", "blocked"])
+          .in("status", ["pending", "queued", "in_progress", "on_hold", "blocked", "cancelled"])
           .order("priority", { ascending: false })
-          .limit(200),
+          .limit(250),
       ),
       safeQuery(
         supabase
