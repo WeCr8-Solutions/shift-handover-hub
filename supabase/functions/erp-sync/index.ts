@@ -11,6 +11,7 @@ interface SyncRequest {
   sync_type: "full" | "incremental";
   test_connection?: boolean;
   retry_error_ids?: string[];
+  read_only?: boolean;
 }
 
 interface ERPWorkOrder {
@@ -81,7 +82,7 @@ Deno.serve(async (req) => {
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
     const body: SyncRequest = await req.json();
-    const { organization_id, sync_type = "incremental", test_connection = false, retry_error_ids } = body;
+    const { organization_id, sync_type = "incremental", test_connection = false, retry_error_ids, read_only = false } = body;
 
     if (!organization_id) {
       return new Response(JSON.stringify({ error: "organization_id is required" }), {
@@ -203,6 +204,22 @@ Deno.serve(async (req) => {
     // Surface a 200 success with skipped=true so the UI can render a banner
     // and the user understands the dashboard will read live from JobBOSS.
     if (persistenceMode === "read_through") {
+      if (read_only) {
+        const fieldMapping = (connection.metadata as any)?.field_mapping || {};
+        const accessToken = await fetchOAuthToken(connection, adminClient);
+        const workOrders = await fetchERPWorkOrders(connection, accessToken, fieldMapping, null);
+
+        return new Response(
+          JSON.stringify({
+            success: true,
+            read_only: true,
+            source: connection.erp_vendor,
+            data: workOrders,
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
       return new Response(
         JSON.stringify({
           success: true,

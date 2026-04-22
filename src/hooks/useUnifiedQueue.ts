@@ -95,11 +95,11 @@ export function useUnifiedQueue() {
       // so we degrade gracefully and surface zero rows.
       const rows: any[] = Array.isArray((data as any).data) ? (data as any).data : [];
       return rows.map((r) => ({
-        id: `${vendor}:${r.erp_job_id ?? r.work_order ?? crypto.randomUUID()}`,
+        id: `${vendor}:${r.erp_job_id ?? r.work_order ?? r.work_order_number ?? crypto.randomUUID()}`,
         source_system: vendor as "jobboss" | "sap",
         is_read_through: true,
-        work_order: r.work_order ?? r.erp_job_id ?? null,
-        title: r.title ?? r.part_number ?? r.erp_job_id ?? "ERP Order",
+        work_order: r.work_order ?? r.work_order_number ?? r.erp_job_id ?? null,
+        title: r.title ?? r.part_name ?? r.part_number ?? r.work_order_number ?? r.erp_job_id ?? "ERP Order",
         part_number: r.part_number ?? null,
         status: r.status ?? "queued",
         priority: r.priority ?? "normal",
@@ -107,7 +107,7 @@ export function useUnifiedQueue() {
         station_id: null,
         quantity: r.quantity_ordered ?? r.quantity ?? null,
         qty_completed: r.quantity_complete ?? r.qty_completed ?? 0,
-        erp_job_id: r.erp_job_id ?? null,
+        erp_job_id: r.erp_job_id ?? r.work_order_number ?? null,
         raw: r,
       }));
     },
