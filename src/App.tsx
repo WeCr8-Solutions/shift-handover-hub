@@ -46,6 +46,7 @@ const Pricing = lazy(() => import("./pages/Pricing"));
 const Settings = lazy(() => import("./pages/Settings"));
 const DonationSuccess = lazy(() => import("./pages/DonationSuccess"));
 const Demo = lazy(() => import("./pages/Demo"));
+const Status = lazy(() => import("./pages/Status"));
 const FounderRedirect = lazy(() => import("./pages/FounderRedirect"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const ShiftHandoffSoftware = lazy(() => import("./pages/features/ShiftHandoffSoftware"));
@@ -219,6 +220,7 @@ const App = () => (
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/donation-success" element={<DonationSuccess />} />
                     <Route path="/demo" element={<Demo />} />
+                    <Route path="/status" element={<Status />} />
                     <Route path="/updates" element={<Updates />} />
                     <Route path="/start" element={<Start />} />
                     <Route path="/zach" element={<FounderRedirect />} />

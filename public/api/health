@@ -1,0 +1,19 @@
+{
+  "status": "ok",
+  "service": "jobline-ai",
+  "checkedAt": "build-time",
+  "components": [
+    {
+      "name": "Web Application",
+      "status": "operational"
+    },
+    {
+      "name": "API & Database",
+      "status": "operational"
+    },
+    {
+      "name": "Edge Functions",
+      "status": "operational"
+    }
+  ]
+}

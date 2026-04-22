@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JobLine AI System Status | JobLine.ai</title>
+  <meta name="description" content="Monitor JobLine.ai web, API, and edge service status, incident response commitments, and deployed build provenance from the first-party status surface." />
+  <meta name="robots" content="index,follow" />
+  <link rel="icon" href="../favicon.ico" sizes="any" />
+  <link rel="shortcut icon" href="../favicon.ico" />
+  <link rel="icon" type="image/png" sizes="512x512" href="../Jobline.ai_favicon.png" />
+  <link rel="apple-touch-icon" href="../Jobline.ai_favicon.png" />
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4f1e8;
+      --panel: rgba(255, 252, 245, 0.92);
+      --ink: #1d2a22;
+      --muted: #5b6a60;
+      --line: rgba(29, 42, 34, 0.12);
+      --ok: #16794a;
+      --warn: #b87112;
+      --chip: #e8efe9;
+      --shadow: 0 24px 60px rgba(29, 42, 34, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(22, 121, 74, 0.12), transparent 32%),
+        linear-gradient(180deg, #f9f5ec 0%, var(--bg) 100%);
+      min-height: 100vh;
+    }
+
+    main {
+      width: min(1040px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 36px 0 56px;
+    }
+
+    .hero,
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+    }
+
+    .hero {
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      margin-bottom: 10px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #e5eee3;
+      color: var(--ok);
+      font: 600 12px/1.2 Arial, Helvetica, sans-serif;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(2.1rem, 4vw, 3.4rem);
+      line-height: 0.98;
+      letter-spacing: -0.04em;
+    }
+
+    p,
+    li,
+    a,
+    span,
+    strong {
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .lede {
+      margin: 0;
+      max-width: 60ch;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+
+    .hero-meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .meta-card {
+      padding: 14px 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.58);
+    }
+
+    .meta-label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .meta-value {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      gap: 20px;
+    }
+
+    .panel-stack {
+      display: grid;
+      gap: 20px;
+    }
+
+    .panel {
+      padding: 22px;
+    }
+
+    .section-title {
+      margin: 0 0 16px;
+      font-size: 1.3rem;
+    }
+
+    .summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 18px;
+      border-radius: 18px;
+      background: #edf5ef;
+      border: 1px solid rgba(22, 121, 74, 0.18);
+      margin-bottom: 18px;
+    }
+
+    .summary-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+
+    .summary-copy {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .badge.ok {
+      background: rgba(22, 121, 74, 0.12);
+      color: var(--ok);
+    }
+
+    .badge.warn {
+      background: rgba(184, 113, 18, 0.12);
+      color: var(--warn);
+    }
+
+    .badge::before {
+      content: "";
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: currentColor;
+      box-shadow: 0 0 0 5px color-mix(in srgb, currentColor 14%, transparent);
+    }
+
+    .component-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .component {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      gap: 14px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.7);
+    }
+
+    .component h3 {
+      margin: 0 0 4px;
+      font: 700 1rem/1.3 Arial, Helvetica, sans-serif;
+    }
+
+    .component p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 14px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .timeline li {
+      padding-left: 16px;
+      border-left: 2px solid rgba(22, 121, 74, 0.18);
+    }
+
+    .timeline strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--ink);
+    }
+
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .links a {
+      text-decoration: none;
+      color: var(--ink);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 10px 14px;
+      background: rgba(255,255,255,0.72);
+    }
+
+    .footnote {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .reference-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .reference-card {
+      display: block;
+      padding: 14px 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.7);
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .reference-card strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin: 18px 0 0;
+    }
+
+    .metric-card {
+      padding: 14px 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.7);
+    }
+
+    .metric-label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .metric-value {
+      font-weight: 700;
+      font-size: 0.98rem;
+      line-height: 1.4;
+    }
+
+    @media (max-width: 860px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      main {
+        width: min(100% - 20px, 1040px);
+        padding-top: 20px;
+      }
+
+      .hero,
+      .panel {
+        border-radius: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="hero">
+      <div class="eyebrow">JobLine AI System Status</div>
+      <h1>Operational visibility for web, API, and incident communications.</h1>
+      <p class="lede">
+        This first-party status surface exists to satisfy FedRAMP continuity and notification expectations while the external status provider rollout is completed. It exposes a live application health probe, current service posture, and the response commitments documented in the contingency plan.
+      </p>
+
+      <div class="hero-meta">
+        <div class="meta-card">
+          <span class="meta-label">Primary endpoint</span>
+          <span class="meta-value">/status and status.jobline.ai</span>
+        </div>
+        <div class="meta-card">
+          <span class="meta-label">Health probe</span>
+          <span class="meta-value">/api/health</span>
+        </div>
+        <div class="meta-card">
+          <span class="meta-label">Control coverage</span>
+          <span class="meta-value">FedRAMP CP-2, SA-17</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="grid">
+      <section class="panel">
+        <h2 class="section-title">Current Status</h2>
+        <div class="summary">
+          <div>
+            <div id="summary-title" class="summary-title">All monitored first-party services operational</div>
+            <div id="summary-copy" class="summary-copy">Health endpoint responding normally.</div>
+          </div>
+          <div id="summary-badge" class="badge ok">Operational</div>
+        </div>
+
+        <div class="metric-grid">
+          <div class="metric-card">
+            <span class="metric-label">Last checked</span>
+            <div class="metric-value" id="last-checked">Waiting for first probe</div>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Artifact source</span>
+            <div class="metric-value" id="artifact-source">../_api_health.json</div>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Current build</span>
+            <div class="metric-value" id="release-stamp">Loading release manifest</div>
+          </div>
+        </div>
+
+        <div id="component-list" class="component-list">
+          <div class="component">
+            <div>
+              <h3>Web Application</h3>
+              <p>Primary Vercel-hosted marketing and authenticated application surface.</p>
+            </div>
+            <div class="badge ok">Operational</div>
+          </div>
+          <div class="component">
+            <div>
+              <h3>API &amp; Database</h3>
+              <p>Supabase-backed auth, database, and realtime services used by the app.</p>
+            </div>
+            <div class="badge ok">Operational</div>
+          </div>
+          <div class="component">
+            <div>
+              <h3>Edge Functions</h3>
+              <p>Planning, ERP, and operational automation endpoints used in production flows.</p>
+            </div>
+            <div class="badge ok">Operational</div>
+          </div>
+        </div>
+
+        <div class="links">
+          <a href="../api/health">View Health JSON</a>
+          <a href="../release.json">View Release Manifest</a>
+          <a href="https://jobline.ai/help">Help Center</a>
+          <a href="mailto:support@jobline.ai">Contact Support</a>
+        </div>
+      </section>
+
+      <div class="panel-stack">
+        <section class="panel">
+          <h2 class="section-title">Incident Response Commitments</h2>
+          <ul class="timeline">
+            <li>
+              <strong>Initial customer-facing update within 15 minutes</strong>
+              Critical or widespread service disruption should be acknowledged on this status surface promptly after confirmation.
+            </li>
+            <li>
+              <strong>Federal customer notifications follow the ISCP</strong>
+              P1 and P2 disruptions are escalated and communicated under the documented contingency and incident response procedures.
+            </li>
+            <li>
+              <strong>Recovery confirmation posted after restoration</strong>
+              Once service is restored, this page should reflect normal operations and summarize the recovery state.
+            </li>
+          </ul>
+
+          <p class="footnote" id="probe-details">
+            Live probe status unknown.
+          </p>
+        </section>
+
+        <section class="panel">
+          <h2 class="section-title">Operational References</h2>
+          <div class="reference-list">
+            <a class="reference-card" href="../api/health">
+              <strong>Health Probe Payload</strong>
+              Read the machine-consumable first-party probe used for uptime visibility.
+            </a>
+            <a class="reference-card" href="../release.json">
+              <strong>Release Manifest</strong>
+              Confirm the deployed version, commit SHA, build time, and target.
+            </a>
+            <a class="reference-card" href="https://jobline.ai/help">
+              <strong>Customer Help Center</strong>
+              Reach public support instructions and escalation entry points.
+            </a>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const summaryBadge = document.getElementById("summary-badge");
+    const summaryTitle = document.getElementById("summary-title");
+    const summaryCopy = document.getElementById("summary-copy");
+    const probeDetails = document.getElementById("probe-details");
+    const componentList = document.getElementById("component-list");
+    const lastChecked = document.getElementById("last-checked");
+    const artifactSource = document.getElementById("artifact-source");
+    const releaseStamp = document.getElementById("release-stamp");
+
+    const componentDescriptions = {
+      "Web Application": "Primary public and authenticated web surface served to operators, planners, and administrators.",
+      "API & Database": "Supabase-backed auth, data, and realtime services used by production workflows.",
+      "Edge Functions": "Operational automation, planning, and integration endpoints used across the platform."
+    };
+
+    function formatTimestamp(value) {
+      if (!value) {
+        return "Unavailable";
+      }
+
+      if (value === "build-time") {
+        return "Build-time artifact";
+      }
+
+      const parsed = Date.parse(value);
+      if (Number.isNaN(parsed)) {
+        return value;
+      }
+
+      return new Intl.DateTimeFormat("en-US", {
+        dateStyle: "medium",
+        timeStyle: "short"
+      }).format(parsed);
+    }
+
+    function badge(statusText, isOperational) {
+      return '<div class="badge ' + (isOperational ? 'ok' : 'warn') + '">' + statusText + '</div>';
+    }
+
+    function renderComponents(components) {
+      componentList.innerHTML = components.map(function(component) {
+        const isOperational = component.status === "operational" || component.status === "ok";
+        return [
+          '<div class="component">',
+          '  <div>',
+          '    <h3>' + component.name + '</h3>',
+          '    <p>' + (componentDescriptions[component.name] || 'Live status reported from the first-party health endpoint.') + '</p>',
+          '  </div>',
+             badge(isOperational ? 'Operational' : 'Degraded', isOperational),
+          '</div>'
+        ].join('');
+      }).join('');
+    }
+
+    fetch('../release.json', { cache: 'no-store' })
+      .then(function(response) {
+        if (!response.ok) {
+          throw new Error('Release manifest returned ' + response.status);
+        }
+        return response.json();
+      })
+      .then(function(data) {
+        releaseStamp.textContent = data.releaseStamp + ' • ' + data.deployTarget;
+      })
+      .catch(function() {
+        releaseStamp.textContent = 'Release manifest unavailable';
+      });
+
+    fetch('../_api_health.json', { cache: 'no-store' })
+      .then(function(response) {
+        if (!response.ok) {
+          throw new Error('Health probe returned ' + response.status);
+        }
+        return response.json();
+      })
+      .then(function(data) {
+        const operational = data.status === 'ok';
+        summaryBadge.className = 'badge ' + (operational ? 'ok' : 'warn');
+        summaryBadge.textContent = operational ? 'Operational' : 'Degraded';
+        summaryTitle.textContent = operational
+          ? 'All monitored first-party services operational'
+          : 'One or more monitored first-party services degraded';
+        summaryCopy.textContent = operational
+          ? 'Health endpoint responding normally.'
+          : 'Health endpoint indicates degraded service. Review current incidents and support channels.';
+
+        const checkedAt = new Date();
+        lastChecked.textContent = formatTimestamp(checkedAt.toISOString());
+        artifactSource.textContent = formatTimestamp(data.checkedAt);
+        probeDetails.textContent = 'Live health probe checked at ' + formatTimestamp(checkedAt.toISOString()) + '. Health endpoint service state: ' + (data.status || 'unknown') + '.';
+
+        if (Array.isArray(data.components) && data.components.length > 0) {
+          renderComponents(data.components);
+        }
+      })
+      .catch(function(error) {
+        summaryBadge.className = 'badge warn';
+        summaryBadge.textContent = 'Probe Error';
+        summaryTitle.textContent = 'Health probe unavailable';
+        summaryCopy.textContent = 'The first-party health endpoint could not be reached from the status page.';
+        lastChecked.textContent = formatTimestamp(new Date().toISOString());
+        artifactSource.textContent = 'Probe read failed';
+        probeDetails.textContent = 'Probe failure: ' + error.message + '. Treat this as degraded visibility until corrected.';
+      });
+  </script>
+</body>
+</html>

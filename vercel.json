@@ -5,6 +5,24 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
+      "source": "/api/health",
+      "destination": "/_api_health.json"
+    },
+    {
+      "source": "/status",
+      "destination": "/status/index.html"
+    },
+    {
+      "source": "/",
+      "destination": "/status/index.html",
+      "has": [
+        {
+          "type": "host",
+          "value": "status\.jobline\.ai"
+        }
+      ]
+    },
+    {
       "source": "/:path*",
       "destination": "/dev/:path*",
       "has": [
