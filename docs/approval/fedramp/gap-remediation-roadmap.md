@@ -44,7 +44,7 @@
 | G-01 | FedRAMP Moderate authorization | Compliance | 🔴 CRITICAL (long-term) | CA-6, CA-9 |
 | G-02 | FedRAMP Moderate equivalency (3PAO) | Compliance | 🔴 CRITICAL (mid-term) | CA-2, CA-8 |
 | G-03 | Software Bill of Materials (SBOM) generation | Supply Chain Security | 🟠 HIGH | SR-3, SA-12 | ✅ CI pipeline added (security-scan.yml + release.yml) |
-| G-04 | Third-party penetration testing | Security Assurance | 🟠 HIGH | CA-8, RA-5 | ⚠️ Automated DAST complete (`zap-scan.yml`, `dast-runbook.md`); third-party pen test pending Q3 2026 |
+| G-04 | Third-party penetration testing | Security Assurance | 🟠 HIGH | CA-8, RA-5 | ⚠️ Automated DAST workflow and FedRAMP review checklist complete (`zap-scan.yml`, `dast-runbook.md`); independent third-party pen test still pending Q3 2026 |
 | G-05 | Bug bounty / responsible disclosure program | Security Assurance | 🟠 HIGH | IR-6, SI-2 | ✅ `responsible-disclosure-policy.md`, `SECURITY.md`, `.well-known/security.txt` |
 | G-06 | Active Directory / SAML 2.0 SSO | Identity | 🟠 HIGH | IA-2, IA-8, AC-2 | ✅ Migration + `SSOSettingsCard.tsx` + `docs/enterprise/sso-configuration.md` (Supabase Enterprise plan required for live SAML) |
 | G-07 | SIEM log export integration | Operations | 🟡 MEDIUM | AU-6, AU-9 | ✅ `log-export` edge function + `SIEMSettingsCard.tsx` + `docs/enterprise/siem-integration.md` |

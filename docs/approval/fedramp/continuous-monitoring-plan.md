@@ -97,12 +97,12 @@ WeCr8 Solutions employs a risk-based continuous monitoring strategy aligned with
 
 | Scan | Target | Type | Trigger |
 |------|--------|------|---------|
-| Baseline (passive) | `https://app.jobline.ai` | Passive crawl — no attack payloads | Weekly + every PR |
+| Baseline (passive) | `https://jobline.ai` | Passive crawl — no attack payloads | Weekly + every PR |
 | Full (active) | `https://dev.jobline.ai` | Active attack scan — SQLi, XSS, injection | Weekly + every PR + manual dispatch |
 
 **Output:** HTML and JSON reports uploaded as GitHub Actions artifacts (90-day retention); SARIF reports uploaded to GitHub Security → Code Scanning for continuous visibility.
 
-**Alert disposition model:** Findings are classified as FAIL (blocks CI), WARN (logged, tracked), or IGNORE (documented false positive) via `.zap/rules.tsv`. FAIL-rule findings block PR merges and must be remediated before deployment.
+**Alert disposition model:** Findings are classified as FAIL (release-blocking and tracked), WARN (logged, tracked), or IGNORE (documented false positive) via `.zap/rules.tsv`. The current workflow surfaces findings through artifacts, SARIF uploads, and GitHub issues rather than hard-failing the job, so Engineering Lead review is required before deployment whenever a FAIL-rule finding appears.
 
 **SLA for DAST findings (per VMP):**
 
@@ -113,7 +113,7 @@ WeCr8 Solutions employs a risk-based continuous monitoring strategy aligned with
 | Medium (WARN) | 4.0–6.9 | 30 calendar days; POA&M item required |
 | Low (WARN) | < 4.0 | 90 calendar days; tracked in POA&M |
 
-**Evidence retention:** Monthly, HTML reports are archived to `docs/approval/fedramp/evidence/zap-baseline-YYYY-MM-DD.html` and `zap-full-scan-YYYY-MM-DD.html` for 3PAO and audit review.
+**Evidence retention:** Monthly, HTML reports are archived to `docs/approval/fedramp/evidence/zap-baseline-YYYY-MM-DD.html` and `zap-full-scan-YYYY-MM-DD.html` for 3PAO and audit review. Review readiness is determined using the checklist in `docs/approval/fedramp/dast-runbook.md` §7.2.
 
 **Quarterly rules review:** `.zap/rules.tsv` suppression entries are reviewed each quarter (January, April, July, October) per the DAST runbook §8. Suppressions that are no longer valid are removed; new false positives are documented with rationale.
 

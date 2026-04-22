@@ -30,14 +30,16 @@ DAST differs from static analysis (SAST/CodeQL/Codacy) in that it actively sends
 
 ### 2.1 Two-Tier Scanning Model
 
-| Scan Type | Target | Trigger | Fail Condition | FedRAMP Mapping |
-|-----------|--------|---------|---------------|----------------|
-| **Baseline (passive)** | `https://app.jobline.ai` | Weekly (Mon 09:00 UTC) + every PR to `main` | FAIL-rule alerts found | RA-5, CA-8 passive |
-| **Full (active)** | `https://dev.jobline.ai` | Every PR + weekly + `workflow_dispatch` | FAIL-rule alerts found | CA-8 active |
+| Scan Type | Target | Trigger | Review Outcome | FedRAMP Mapping |
+|-----------|--------|---------|----------------|----------------|
+| **Baseline (passive)** | `https://jobline.ai` | Weekly (Mon 09:00 UTC) + every PR to `main` | Findings are uploaded to artifacts, SARIF, and GitHub issues for triage | RA-5, CA-8 passive |
+| **Full (active)** | `https://dev.jobline.ai` | Every PR + weekly + `workflow_dispatch` | Findings are uploaded to artifacts and SARIF for triage | CA-8 active |
 
 **Passive scan** (baseline): ZAP crawls the app and records observations — no attack payloads sent. Safe against production.
 
 **Active scan** (full): ZAP sends targeted attack payloads (SQLi, XSS, injection variants, etc.) to the staging environment only. **Never run against `app.jobline.ai`.**
+
+**Important implementation note:** The current GitHub Actions workflow sets `fail_action: false` for both ZAP jobs. That means ZAP findings are surfaced through artifacts, SARIF uploads, and GitHub issues rather than failing the workflow step directly. For FedRAMP review and internal change control, any finding mapped to `FAIL` in `.zap/rules.tsv` is still treated as a release blocker until triaged and resolved.
 
 ### 2.2 Workflow Location
 
@@ -61,7 +63,7 @@ Three jobs run in sequence:
 | Pull request opened/updated targeting `main` | Baseline + Full |
 | Weekly schedule (Monday 09:00 UTC) | Baseline + Full |
 
-Note: PRs that modify only `docs/**` or `*.md` files are excluded from triggering ZAP scans.
+Note: PRs that modify only `docs/**`, `*.md`, or `.skills/**` paths are excluded from triggering ZAP scans.
 
 ### 3.2 Manual Trigger (Workflow Dispatch)
 
@@ -69,7 +71,7 @@ Use this to run an on-demand scan — for example, after a security-relevant dep
 
 **Via GitHub UI:**
 1. Navigate to: `Actions → OWASP ZAP DAST Scan → Run workflow`
-2. Leave "Override scan target URL" blank to use `https://app.jobline.ai` (default)
+2. Leave "Override scan target URL" blank to use `https://jobline.ai` (default)
 3. Enter a custom URL only if testing a specific environment (e.g., a branch preview URL)
 4. Click `Run workflow`
 
@@ -126,7 +128,7 @@ After each run, the `scan-summary` job posts a summary table to the workflow run
 ```
 | Scan             | Target                     | Status  |
 |------------------|----------------------------|---------|
-| Baseline (passive) | https://app.jobline.ai   | success |
+| Baseline (passive) | https://jobline.ai       | success |
 | Full scan (active) | https://dev.jobline.ai   | success |
 ```
 
@@ -136,24 +138,24 @@ After each run, the `scan-summary` job posts a summary table to the workflow run
 
 ### 5.1 Alert Severity Levels
 
-ZAP classifies findings by risk level (High, Medium, Low, Informational). Our `rules.tsv` maps these to build outcomes:
+ZAP classifies findings by risk level (High, Medium, Low, Informational). Our `rules.tsv` maps these to review outcomes:
 
 | `rules.tsv` Disposition | Meaning | Build Impact |
 |------------------------|---------|-------------|
-| `FAIL` | Critical finding — must fix before merge | CI job fails; PR cannot be merged |
-| `WARN` | Known issue; tracked for remediation | CI job passes; finding logged |
+| `FAIL` | Critical finding — must fix before release approval | Workflow may still succeed; reviewer must treat as release blocker |
+| `WARN` | Known issue; tracked for remediation | Workflow may still succeed; finding logged and reviewed |
 | `IGNORE` | Acknowledged false positive | Alert suppressed entirely |
 
 ### 5.2 Alert Triage Decision Tree
 
-When a new alert appears in GitHub Security or a build fails:
+When a new alert appears in GitHub Security, a GitHub issue is created, or a reviewer sees a new finding in the artifact reports:
 
 ```
 New ZAP Alert
     │
-    ├─ Is it in rules.tsv as IGNORE or WARN?
-    │       └─ YES → False positive already acknowledged. If build still failing,
-    │                 check rules.tsv rule ID matches exactly.
+   ├─ Is it in rules.tsv as IGNORE or WARN?
+   │       └─ YES → False positive or accepted risk already classified.
+   │                 Confirm the rule ID matches exactly and update review notes if needed.
     │
     ├─ Is it a genuine vulnerability in our code?
     │       └─ YES → See §6 (Finding Remediation Lifecycle)
@@ -192,7 +194,7 @@ Only add suppressions for **confirmed false positives with documented rationale*
 | 10015 | IGNORE | Vercel CDN immutable cache headers — by design | Q3 2026 |
 | 10036 | IGNORE | Vercel `Server: Vercel` header — not actionable | Q3 2026 |
 
-Rules that FAIL the build (confirming security controls are in place):
+Rules that are treated as release-blocking when detected (confirming security controls are in place):
 
 | Rule ID | Finding | Expectation |
 |---------|--------|-------------|
@@ -213,14 +215,14 @@ Rules that FAIL the build (confirming security controls are in place):
 
 ### 6.1 When a FAIL-Rule Alert Is Found
 
-1. **Immediately** — The CI build fails; the PR is blocked from merging
+1. **Immediately** — Treat the finding as a release blocker and record the workflow run URL
 2. **Within 4 hours** — Engineering Lead reviews the finding via GitHub Security tab and HTML report
 3. **Within 24 hours** — Severity classification confirmed:
    - **True positive, CVSS ≥ 9.0 (Critical):** Open P1 Incident per IRP; remediate before next deploy
    - **True positive, CVSS 7.0–8.9 (High):** Remediate within 7 days; open POA&M item
    - **True positive, CVSS < 7.0:** Remediate within 30 days; open POA&M item
    - **False positive:** Add IGNORE rule with rationale (see §5.3); re-run scan
-4. **After fix:** Re-run workflow manually to confirm alert is resolved before merging
+4. **After fix:** Re-run workflow manually to confirm alert is resolved before deployment or approval closure
 5. **Close POA&M item** with evidence: workflow run URL + commit SHA of fix
 
 ### 6.2 When a WARN-Rule Alert Is Found
@@ -258,7 +260,25 @@ For a FedRAMP assessment or annual review, provide:
 | This runbook | `docs/approval/fedramp/dast-runbook.md` | This document |
 | Rules of Engagement | `docs/approval/fedramp/pentest-rules-of-engagement.md` | FedRAMP docs |
 
-### 7.2 Long-Term Evidence Archive
+### 7.2 DAST Completion Checklist for Reviewer Sign-Off
+
+The DAST package is considered review-ready only when all items below are complete for the current review period:
+
+- [ ] `.github/workflows/zap-scan.yml` matches the approved scan design: passive scan against `https://jobline.ai`, active scan against `https://dev.jobline.ai`, and SARIF upload enabled
+- [ ] `.zap/rules.tsv` has a documented quarterly review date in the header and every `IGNORE` or `WARN` entry has current rationale
+- [ ] The most recent baseline HTML report has been downloaded from GitHub Actions and archived to `docs/approval/fedramp/evidence/`
+- [ ] The most recent full-scan HTML report has been downloaded from GitHub Actions and archived to `docs/approval/fedramp/evidence/`
+- [ ] GitHub Security → Code Scanning shows current ZAP findings reviewed for the period under assessment
+- [ ] Any confirmed findings are reflected in `docs/approval/fedramp/poam.md` with owner, status, and planned completion date
+- [ ] `docs/approval/fedramp/continuous-monitoring-plan.md` references the same scan cadence and evidence-retention process
+- [ ] `docs/approval/fedramp/pentest-rules-of-engagement.md` is signed or otherwise approved for the active assessment window
+- [ ] A monthly archive or assessment memo records the workflow run IDs used as evidence for the review package
+
+### 7.3 FedRAMP Completion Statement
+
+For JobLine AI, automated ZAP DAST is considered complete for continuous-monitoring evidence when the checklist in §7.2 is satisfied. It is not sufficient by itself to close the broader CA-8 penetration-testing requirement for initial authorization. Independent third-party penetration testing remains separately required and is tracked in the POA&M as G-04.
+
+### 7.4 Long-Term Evidence Archive
 
 GitHub Actions artifacts expire after 90 days. For audits and 3PAO reviews, download and archive reports:
 
@@ -270,7 +290,7 @@ docs/approval/fedramp/evidence/
 
 **Archive frequency:** Monthly (on the first Monday of each month, download the most recent run's HTML reports and save to the evidence directory).
 
-### 7.3 Annual Summary for ConMon Reporting
+### 7.5 Annual Summary for ConMon Reporting
 
 At the end of each year, prepare a DAST summary memo covering:
 
@@ -311,7 +331,7 @@ File as: `docs/approval/fedramp/evidence/dast-annual-summary-YYYY.md`
 | Role | Responsibility |
 |------|---------------|
 | Engineering Lead | Primary triage; POA&M updates; quarterly review; evidence archive |
-| All engineers | Monitor PR build failures; do not merge with active FAIL alerts |
+| All engineers | Monitor ZAP findings and do not release changes with active FAIL alerts |
 | ISSO (when designated) | Annual DAST summary review; 3PAO evidence coordination |
 | CEO | Sign off on any decision to suppress a FAIL-class rule permanently |
 
