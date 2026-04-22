@@ -438,39 +438,71 @@ serve(async (req) => {
     // Build summaries for system prompt
     // =========================================================================
 
-    const queueSummary = queueItems.map((q: any) => ({
-      id: q.id?.slice(0, 8),
-      title: q.title,
-      wo: q.work_order,
-      part: q.part_number,
-      op: q.operation_number,
-      status: q.status,
-      priority: q.priority,
-      due: q.due_date,
-      station: q.station_id ? stationMap[q.station_id] || q.station_id : "unassigned",
-      qty: q.quantity,
-      completed: q.qty_completed,
-      open: q.qty_open,
-      locked: q.quantity_locked,
-      scheduled_start: q.scheduled_start,
-      scheduled_end: q.scheduled_end,
-      started_at: q.started_at,
-      ...(q.material_type || q.part_length_inches || q.part_shape || q.required_tolerance
-        ? {
-            part_specs: {
-              material: q.material_type,
-              length: q.part_length_inches,
-              width: q.part_width_inches,
-              height: q.part_height_inches,
-              weight: q.part_weight_lbs,
-              shape: q.part_shape,
-              tolerance: q.required_tolerance,
-              surface_finish: q.surface_finish,
-            },
-          }
-        : {}),
-      ...(q.part_catalog_id ? { catalog_ref: q.part_catalog_id.slice(0, 8) } : {}),
-    }));
+    const queueSummary = queueItems
+      .filter((q: any) => q.status !== "cancelled")
+      .map((q: any) => ({
+        id: q.id?.slice(0, 8),
+        title: q.title,
+        wo: q.work_order,
+        part: q.part_number,
+        op: q.operation_number,
+        status: q.status,
+        priority: q.priority,
+        due: q.due_date,
+        station: q.station_id ? stationMap[q.station_id] || q.station_id : "unassigned",
+        qty: q.quantity,
+        completed: q.qty_completed,
+        open: q.qty_open,
+        locked: q.quantity_locked,
+        scheduled_start: q.scheduled_start,
+        scheduled_end: q.scheduled_end,
+        started_at: q.started_at,
+        ...(q.status === "on_hold" && q.hold_reason
+          ? { hold: { reason: q.hold_reason, since: q.on_hold_at, by: q.on_hold_by_name } }
+          : {}),
+        ...(q.material_type || q.part_length_inches || q.part_shape || q.required_tolerance
+          ? {
+              part_specs: {
+                material: q.material_type,
+                length: q.part_length_inches,
+                width: q.part_width_inches,
+                height: q.part_height_inches,
+                weight: q.part_weight_lbs,
+                shape: q.part_shape,
+                tolerance: q.required_tolerance,
+                surface_finish: q.surface_finish,
+              },
+            }
+          : {}),
+        ...(q.part_catalog_id ? { catalog_ref: q.part_catalog_id.slice(0, 8) } : {}),
+      }));
+
+    // Lifecycle audit summaries (NEW — supports "what got cancelled and why" questions)
+    const cancelledSummary = (queueItems as any[])
+      .filter((q: any) => q.status === "cancelled")
+      .slice(0, 30)
+      .map((q: any) => ({
+        wo: q.work_order,
+        part: q.part_number,
+        last_station: q.station_id ? stationMap[q.station_id] || q.station_id : "unassigned",
+        cancelled_at: q.cancelled_at,
+        cancelled_by: q.cancelled_by_name,
+        reason: q.cancellation_reason,
+        qty_completed_before_cancel: q.qty_completed,
+      }));
+
+    const onHoldSummary = (queueItems as any[])
+      .filter((q: any) => q.status === "on_hold")
+      .slice(0, 30)
+      .map((q: any) => ({
+        wo: q.work_order,
+        part: q.part_number,
+        station: q.station_id ? stationMap[q.station_id] || q.station_id : "unassigned",
+        on_hold_since: q.on_hold_at,
+        held_by: q.on_hold_by_name,
+        reason: q.hold_reason,
+        priority: q.priority,
+      }));
 
     const stationSummary = stations.map((s: any) => ({
       name: s.name,
