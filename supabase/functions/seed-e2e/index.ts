@@ -22,7 +22,7 @@ const OPERATOR_PASSWORD = Deno.env.get("E2E_OPERATOR_PASSWORD") ?? "E2eOperator!
 const ORG_SLUG = "e2e-shop";
 const STATION_ID_CODE = "E2E-CNC-01";
 
-async function getOrCreateUser(admin: ReturnType<typeof createClient>, email: string, password: string, displayName: string) {
+async function getOrCreateUser(admin: any, email: string, password: string, displayName: string) {
   const adminUrl = `${SUPABASE_URL}/auth/v1/admin/users`;
   const headers = {
     "Authorization": `Bearer ${SERVICE_ROLE}`,
@@ -93,8 +93,8 @@ Deno.serve(async (req) => {
             Deno.env.get("SUPABASE_ANON_KEY") ?? "",
             { global: { headers: { Authorization: authHeader } } },
           );
-          const { data: claimsData } = await userClient.auth.getClaims(token);
-          const uid = claimsData?.claims?.sub as string | undefined;
+          const { data: userData } = await userClient.auth.getUser(token);
+          const uid = userData?.user?.id as string | undefined;
           if (uid) {
             // Check platform admin role via has_role security-definer fn.
             const { data: isAdmin } = await admin.rpc("has_role", {
