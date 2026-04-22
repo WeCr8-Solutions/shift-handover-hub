@@ -128,6 +128,7 @@ const IndustryPage = lazy(() => import("./pages/industries/IndustryPage"));
 const ERPGuidePart = lazy(() => import("./pages/resources/ERPGuidePart"));
 const DevPortal = lazy(() => import("./pages/DevPortal"));
 const DevDocArticle = lazy(() => import("./pages/DevDocArticle"));
+const SapSandboxTest = lazy(() => import("./pages/dev/SapSandboxTest"));
 const WorkOrderHistoryPage = lazy(() => import("./pages/WorkOrderHistoryPage"));
 const QuoteHistoryPage = lazy(() => import("./pages/QuoteHistoryPage"));
 const OperatorProfile = lazy(() => import("./pages/OperatorProfile"));
@@ -305,6 +306,7 @@ const App = () => (
                     <Route path="/industries/:slug" element={<IndustryPage />} />
                     <Route path="/resources/erp-guide/:partSlug" element={<ERPGuidePart />} />
                     <Route path="/dev" element={<DevPortal />} />
+                    <Route path="/dev/sap-test" element={<SapSandboxTest />} />
                     <Route path="/dev/:category/:slug" element={<DevDocArticle />} />
                     <Route path="/display/:displayId" element={<ShopFloorDisplay />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
