@@ -36,9 +36,32 @@ Locations: US East, US West, Europe (for geographic coverage)
 
 ## Recommended Provider: Instatus
 
-Instatus is the recommended provider for its simplicity, FedRAMP-appropriate uptime SLA, and custom domain support.
+Instatus is the recommended provider for its simplicity and custom domain support.
 
 **Alternative:** Better Uptime, UptimeRobot Status Pages, Atlassian Statuspage, or Freshstatus.
+
+---
+
+## Instatus Tier Comparison
+
+JobLine AI's status page setup is designed to be **operational on the Free (Starter) tier** and **upgraded to Pro when custom domain + faster checks are required for FedRAMP / enterprise sales**.
+
+| Capability | **Starter (Free)** — current | **Pro (Paid)** — required for FedRAMP |
+|---|---|---|
+| Monitors | 15 | 50 |
+| Check frequency | 2 minutes | 30 seconds |
+| Alert channels | Email only | Email + SMS |
+| Team members | 5 | 50 |
+| On-call members | 2 | 20 |
+| Status page type | Public only | Public |
+| **Custom domain (`status.jobline.ai`)** | ❌ Not supported | ✅ 1 included |
+| Subscribers | 200 | 5,000 |
+| Public URL | `status-joblineai.instatus.com` | `status.jobline.ai` |
+| FedRAMP-suitable? | ⚠️ Partial — works for ConMon evidence, but lacks branded URL agencies expect | ✅ Yes (custom domain + SLA-aligned 30-sec checks) |
+
+**Current state (April 2026):** Operating on **Starter (Free)**. Public URL is `https://status-joblineai.instatus.com`. The `status.jobline.ai` Cloudflare CNAME is provisioned and ready, but **will not resolve until upgrade to Pro**.
+
+**Trigger to upgrade to Pro:** First federal customer prospect requests status-page URL on `jobline.ai` domain, OR when ConMon package requires the branded URL as evidence.
 
 ---
 
@@ -47,19 +70,29 @@ Instatus is the recommended provider for its simplicity, FedRAMP-appropriate upt
 ### 1. Create Account and Site
 
 1. Sign up at [instatus.com](https://instatus.com).
-2. Create a new page named `JobLine AI Status`.
-3. Set the subdomain to `jobline` (results in `jobline.instatus.com` initially).
+2. Create a new page named `JobLine.ai Monitor`.
+3. **Free tier:** Subdomain auto-assigned as `status-joblineai` → page lives at `https://status-joblineai.instatus.com`.
+4. **Pro tier:** After upgrade, bind `status.jobline.ai` (see Step 4).
 
 ### 2. Add Monitors
 
-Add the following monitors (each with 1-minute check interval):
+**Free tier limit:** 15 monitors max, 2-minute check interval.
+**Pro tier:** 50 monitors max, 30-second check interval.
+
+JobLine's monitor set fits comfortably under the Free 15-monitor cap (currently uses ~10):
 
 | Name | URL | Type | Alert on |
 |------|-----|------|----------|
-| JobLine Web App | `https://jobline.ai` | HTTP(S) GET | Status ≠ 200 |
-| API Health | `https://jobline.ai/api/health` | HTTP(S) GET | Status ≠ 200 |
-| Auth Service | `https://<supabase-project>.supabase.co/auth/v1/health` | HTTP(S) GET | Status ≠ 200 |
-| Edge Functions | `https://<supabase-project>.supabase.co/functions/v1/rls-health` | HTTP(S) GET | Status ≠ 200 |
+| Marketing Site | `https://jobline.ai` | Website | Status ≠ 200 |
+| Web App | `https://app.jobline.ai` | Website | Status ≠ 200 |
+| Developer Portal | `https://dev.jobline.ai/dev` | Website | Status ≠ 200 |
+| Help Center | `https://docs.jobline.ai/help` | Website | Status ≠ 200 |
+| Supabase REST API | `https://kgrstnbxqdmadtoankqr.supabase.co/rest/v1/` (header `apikey: <anon>`) | API | Status ≠ 200 |
+| Supabase Auth | `https://kgrstnbxqdmadtoankqr.supabase.co/auth/v1/health` | API | Status ≠ 200 |
+| Edge: AI Planning | `https://kgrstnbxqdmadtoankqr.functions.supabase.co/ai-planning-assistant` | API | Status = 5xx (401 expected) |
+| Edge: Stripe Webhook | `https://kgrstnbxqdmadtoankqr.functions.supabase.co/stripe-webhook` | API | Status = 5xx (400 expected) |
+| Email Heartbeat | (cron URL pinged by `send-email` health) | Cron/Heartbeat | No ping in 24h |
+| DNS A-record | `jobline.ai` | DNS | A record drift from `185.158.133.1` |
 
 ### 3. Add Components
 
@@ -71,25 +104,36 @@ Add components matching the monitored services:
 - **SIEM Log Export** — Edge function (log-export)
 - **Electron Desktop App** — Distribution and update server
 
-### 4. Configure Custom Domain
+### 4. Configure Custom Domain (⚠️ Pro tier only)
 
-1. In Instatus site settings, go to **Custom Domain** and enter `status.jobline.ai`.
-2. In Cloudflare DNS (or your DNS provider), add:
+**Custom domains are NOT available on the Free Starter tier.** This step requires upgrading to **Pro** ($/month, 1 custom domain included).
+
+Once upgraded:
+
+1. In Instatus, go to **Settings → Page settings → Custom Domain** and enter `status.jobline.ai`.
+2. In Cloudflare DNS, confirm the CNAME (already provisioned):
    ```
    Type: CNAME
    Name: status
-   Target: jobline.instatus.com
+   Target: status.instatus.com
    Proxy: DNS only (gray cloud) — Instatus requires direct CNAME
    ```
-3. Wait for DNS propagation (typically 5–30 minutes).
-4. Verify by visiting `https://status.jobline.ai`.
+3. Wait for DNS verification + Let's Encrypt cert issuance (typically 5–30 minutes).
+4. Verify:
+   ```bash
+   curl -sI https://status.jobline.ai/ | head -3
+   # Expect: HTTP/2 200, server: instatus / vercel
+   ```
+
+**Until upgraded:** Customers and FedRAMP evidence must reference `https://status-joblineai.instatus.com`.
 
 ### 5. Configure Incident Notifications
 
 In Instatus settings:
-- **Email subscribers:** Allow customers and agencies to subscribe to email notifications.
-- **Slack webhook:** Optional — point to `#incidents` or `#ops` channel.
-- **Webhook:** Configure to POST incident events to the `report-issue` edge function or an internal PagerDuty/OpsGenie integration.
+- **Email subscribers (Free):** Up to 200 subscribers can opt-in to incident emails. ✅ Available now.
+- **SMS / Phone alerts (Pro+):** Required for on-call paging. ❌ Not on Free.
+- **Slack webhook:** Available on all tiers — point to `#incidents` or `#ops`.
+- **Webhook:** Configure to POST incident events to the `report-issue` edge function or PagerDuty/OpsGenie.
 
 ### 6. SLA Targets to Publish
 
@@ -142,14 +186,18 @@ Store at: `docs/approval/fedramp/evidence/status-page-YYYY-QN.md`
 
 ## Current Status
 
-- [ ] Instatus account created
-- [ ] Monitors configured
-- [ ] Custom domain `status.jobline.ai` DNS configured and verified
-- [ ] Subscriber notifications enabled
-- [ ] Link added to `https://jobline.ai/support` page
+- [x] Instatus account created (Starter / Free tier)
+- [x] Page named `JobLine.ai Monitor` at `https://status-joblineai.instatus.com`
+- [x] Cloudflare CNAME `status.jobline.ai → status.instatus.com` provisioned (dormant until Pro upgrade)
+- [ ] Monitors configured (target: 10 monitors — fits Free 15-cap)
+- [ ] Components grouped (Web App / API & Database / Background Services / Documentation)
+- [ ] Email subscriber notifications enabled
+- [ ] Link added to `https://jobline.ai/support` page (use `status-joblineai.instatus.com` until upgrade)
 - [ ] 30-day baseline uptime data collected
+- [ ] **Pro upgrade** — triggered by first federal prospect or ConMon evidence request
+- [ ] Bind `status.jobline.ai` (post-upgrade)
 
-**Status:** Pending DNS setup and Instatus account creation. Configuration guide is complete (this document).
+**Status:** Operating on Free Starter tier. Sufficient for commercial customers and partial FedRAMP evidence (component grid + uptime history). **Pro upgrade required** before custom domain `status.jobline.ai` will resolve and before 30-second checks satisfy strict 99.9% SLA monitoring.
 
 ---
 
