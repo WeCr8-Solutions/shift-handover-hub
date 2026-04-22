@@ -9,7 +9,7 @@
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useOrganization } from "@/hooks/useOrganization";
-import { useAdminAccess } from "@/hooks/useAdminAccess";
+import { useAdminAccess } from "@/hooks/useAdminData";
 import { useSapTestConnection, useSapProductionOrders } from "@/hooks/useSapSandbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,14 +19,14 @@ import { Loader2, PlugZap, RefreshCw, ShieldAlert } from "lucide-react";
 
 export default function SapSandboxTest() {
   const { organization } = useOrganization();
-  const { hasOrgAdminAccess, hasOrgSuperAccess } = useAdminAccess();
+  const { hasAdminAccess, hasOrgAdminAccess } = useAdminAccess();
   const [plant, setPlant] = useState("");
   const [fetchEnabled, setFetchEnabled] = useState(false);
 
   const test = useSapTestConnection(organization?.id);
   const orders = useSapProductionOrders(organization?.id, plant || undefined, fetchEnabled);
 
-  const allowed = hasOrgAdminAccess || hasOrgSuperAccess;
+  const allowed = hasAdminAccess || hasOrgAdminAccess;
 
   if (!allowed) {
     return (
