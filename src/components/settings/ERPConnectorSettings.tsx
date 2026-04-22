@@ -447,6 +447,48 @@ export function ERPConnectorSettings() {
             </div>
           </div>
 
+          {isSap && (
+            <div className="rounded-md border border-primary/20 bg-primary/5 p-4 space-y-4">
+              <div>
+                <p className="text-sm font-semibold flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  SAP S/4HANA Configuration
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Sandbox uses <code>sandbox.api.sap.com</code> with an APIKey (managed centrally). Production
+                  uses your tenant's OData endpoints with OAuth client credentials.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Instance Type</Label>
+                  <Select
+                    value={sapInstanceType}
+                    onValueChange={(v) => setSapInstanceType(v as "sandbox" | "production")}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sandbox">Sandbox (api.sap.com)</SelectItem>
+                      <SelectItem value="production">Production (your tenant)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Default Plant</Label>
+                  <Input
+                    value={sapDefaultPlant}
+                    onChange={(e) => setSapDefaultPlant(e.target.value)}
+                    placeholder="e.g. 1010"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="flex items-center gap-4 pt-2">
             <Button onClick={handleSaveConnection} disabled={!vendor}>
               Save Connection
