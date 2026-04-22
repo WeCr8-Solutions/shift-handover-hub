@@ -40,6 +40,7 @@ const ERP_VENDORS = [
   { value: "plex", label: "Plex" },
   { value: "proshop", label: "ProShop" },
   { value: "e2", label: "E2 Shop System" },
+  { value: "sap", label: "SAP S/4HANA" },
   { value: "other", label: "Other" },
 ];
 
