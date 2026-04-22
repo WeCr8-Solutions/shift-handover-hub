@@ -279,7 +279,7 @@ serve(async (req) => {
         supabase
           .from("station_machine_assignments")
           .select(
-            "station_id, purchase_id, organization_machine_purchases!inner(machine_library_id, is_active, verified_machine_library!inner(manufacturer, model, machine_type, platform_category, max_x_travel, max_y_travel, max_z_travel, max_part_weight, max_part_envelope_length, max_part_envelope_width, max_part_envelope_height, five_axis_simultaneous, fourth_axis, live_tooling, y_axis_turn, sub_spindle, probing, through_spindle_coolant, pallet_pool, bar_feeder, material_capability, typical_tolerance, hard_constraints))",
+            "station_id, purchase_id, organization_machine_purchases!inner(machine_library_id, is_active, verified_machine_library!inner(manufacturer, model, machine_type, platform_category, max_x_travel, max_y_travel, max_z_travel, max_part_weight, max_part_envelope_length, max_part_envelope_width, max_part_envelope_height, five_axis_simultaneous, fourth_axis, live_tooling, y_axis_turn, sub_spindle, probing, through_spindle_coolant, pallet_pool, bar_feeder, material_capability, typical_tolerance, hard_constraints, control_type, control_model, max_spindle_rpm, spindle_taper, spindle_power_hp, tool_magazine_capacity, max_tool_diameter, max_tool_length, max_turning_diameter, max_turning_length, bar_capacity_mm))",
           )
           .eq("organization_id", organization_id)
           .limit(100),
@@ -288,7 +288,7 @@ serve(async (req) => {
         supabase
           .from("station_manual_machine_profiles")
           .select(
-            "station_id, manufacturer, model, machine_type, platform_category, max_x_travel, max_y_travel, max_z_travel, max_part_weight, max_part_envelope_length, max_part_envelope_width, max_part_envelope_height, five_axis_simultaneous, fourth_axis, live_tooling, y_axis_turn, sub_spindle, probing, through_spindle_coolant, pallet_pool, bar_feeder, material_capability, typical_tolerance, hard_constraints",
+            "station_id, manufacturer, model, machine_type, platform_category, max_x_travel, max_y_travel, max_z_travel, max_part_weight, max_part_envelope_length, max_part_envelope_width, max_part_envelope_height, five_axis_simultaneous, fourth_axis, live_tooling, y_axis_turn, sub_spindle, probing, through_spindle_coolant, pallet_pool, bar_feeder, material_capability, typical_tolerance, hard_constraints, control_type, control_model, max_spindle_rpm, spindle_taper, spindle_power_hp, tool_magazine_capacity, max_tool_diameter, max_tool_length, max_turning_diameter, max_turning_length, bar_capacity_mm",
           )
           .eq("organization_id", organization_id)
           .limit(100),
@@ -543,7 +543,7 @@ serve(async (req) => {
       expected_return: r.expected_return_date,
     }));
 
-    // Machine profiles summary
+    // Machine profiles summary — includes controller & spindle/tooling for programming-portability analysis
     const buildProfileSummary = (ml: any, stationId: string, source: string) => ({
       station: stationMap[stationId] || stationId,
       source,
@@ -551,12 +551,29 @@ serve(async (req) => {
       model: ml.model,
       machine_type: ml.machine_type,
       platform: ml.platform_category,
+      controller: {
+        type: ml.control_type,        // e.g. "Fanuc", "Haas", "Siemens", "Heidenhain", "Mazak"
+        model: ml.control_model,      // e.g. "31i-B", "NGC", "840D sl"
+      },
       envelope: {
         x: ml.max_x_travel, y: ml.max_y_travel, z: ml.max_z_travel,
         max_weight: ml.max_part_weight,
         max_length: ml.max_part_envelope_length,
         max_width: ml.max_part_envelope_width,
         max_height: ml.max_part_envelope_height,
+        max_turning_diameter: ml.max_turning_diameter,
+        max_turning_length: ml.max_turning_length,
+        bar_capacity_mm: ml.bar_capacity_mm,
+      },
+      spindle: {
+        max_rpm: ml.max_spindle_rpm,
+        taper: ml.spindle_taper,      // e.g. "CAT40", "BT40", "HSK63A" — drives toolholder compatibility
+        power_hp: ml.spindle_power_hp,
+      },
+      tooling: {
+        magazine_capacity: ml.tool_magazine_capacity,
+        max_tool_diameter: ml.max_tool_diameter,
+        max_tool_length: ml.max_tool_length,
       },
       capabilities: {
         five_axis: ml.five_axis_simultaneous, fourth_axis: ml.fourth_axis,
@@ -979,6 +996,86 @@ serve(async (req) => {
       .sort((a, b) => b.est_hours - a.est_hours);
 
     // =========================================================================
+    // PROGRAMMING PORTABILITY MATRIX
+    // Groups stations by controller family + machine_type so the AI can answer:
+    //   "Where can I move this program with minimal re-post?"
+    //   "If I reprogram, what other machines/controls can it go to?"
+    // =========================================================================
+    const normalizeController = (ctrl?: string | null) => {
+      if (!ctrl) return "unknown";
+      const c = ctrl.toLowerCase();
+      if (c.includes("fanuc")) return "Fanuc";
+      if (c.includes("haas")) return "Haas";
+      if (c.includes("siemens") || c.includes("sinumerik")) return "Siemens";
+      if (c.includes("heidenhain")) return "Heidenhain";
+      if (c.includes("mazak") || c.includes("mazatrol")) return "Mazatrol";
+      if (c.includes("okuma") || c.includes("osp")) return "Okuma OSP";
+      if (c.includes("mitsubishi")) return "Mitsubishi";
+      if (c.includes("centroid")) return "Centroid";
+      if (c.includes("acramatic")) return "Acramatic";
+      return ctrl;
+    };
+
+    type PortStation = {
+      station: string;
+      station_id: string;
+      machine: string;
+      machine_type: string;
+      platform: string;
+      controller_family: string;
+      controller_model: string | null;
+      spindle_taper: string | null;
+      envelope_xyz: string;
+      capabilities_signature: string;
+      utilization_pct: number;
+      down: boolean;
+    };
+
+    const portStations: PortStation[] = allProfiles.map((p: any) => {
+      const load = stationLoadMap[p.station_id];
+      const avail = stationAvailabilityMap[p.station_id];
+      const caps: string[] = [];
+      if (p.five_axis_simultaneous) caps.push("5ax");
+      if (p.fourth_axis) caps.push("4ax");
+      if (p.live_tooling) caps.push("live-tool");
+      if (p.y_axis_turn) caps.push("y-axis");
+      if (p.sub_spindle) caps.push("sub-spindle");
+      if (p.probing) caps.push("probing");
+      if (p.through_spindle_coolant) caps.push("tsc");
+      if (p.bar_feeder) caps.push("bar-feed");
+      return {
+        station: stationMap[p.station_id] || p.station_id,
+        station_id: p.station_id,
+        machine: `${p.manufacturer || "?"} ${p.model || ""}`.trim(),
+        machine_type: p.machine_type || "unknown",
+        platform: p.platform_category || "unknown",
+        controller_family: normalizeController(p.control_type),
+        controller_model: p.control_model || null,
+        spindle_taper: p.spindle_taper || null,
+        envelope_xyz: [p.max_x_travel, p.max_y_travel, p.max_z_travel].filter((v) => v != null).join(" x ") || "n/a",
+        capabilities_signature: caps.sort().join(",") || "basic",
+        utilization_pct: load ? Math.min(100, Math.round((load.est_total_minutes / 480) * 100)) : 0,
+        down: avail?.has_active_downtime || false,
+      };
+    });
+
+    // Group by controller family — programs port best within the same family (no re-post needed)
+    const portabilityByController: Record<string, PortStation[]> = {};
+    for (const p of portStations) {
+      const key = `${p.controller_family} (${p.machine_type})`;
+      if (!portabilityByController[key]) portabilityByController[key] = [];
+      portabilityByController[key].push(p);
+    }
+
+    // Group by machine_type + capability signature — programs port best with same caps
+    const portabilityByCapability: Record<string, PortStation[]> = {};
+    for (const p of portStations) {
+      const key = `${p.machine_type} | caps:[${p.capabilities_signature}]`;
+      if (!portabilityByCapability[key]) portabilityByCapability[key] = [];
+      portabilityByCapability[key].push(p);
+    }
+
+    // =========================================================================
     // SYSTEM PROMPT
     // =========================================================================
     const callerRoleLabel = isSupervisorOrAbove
@@ -1060,6 +1157,14 @@ ${cycleTimeAnalysis.length > 0 ? JSON.stringify(cycleTimeAnalysis.slice(0, 20), 
 ### 🖥️ Active G-Code / CNC Programs:
 ${gcodeSummary.length > 0 ? JSON.stringify(gcodeSummary, null, 2) : "No active G-code sessions. (G-code integration may not be configured yet.)"}
 
+### 🔁 Programming Portability Matrix — Stations grouped by CONTROLLER FAMILY (${Object.keys(portabilityByController).length} groups):
+Programs port between stations in the SAME controller family with little or no re-post. Programs porting across families require post-processor changes.
+${Object.keys(portabilityByController).length > 0 ? JSON.stringify(portabilityByController, null, 2) : "No machine profiles configured — cannot analyze controller portability."}
+
+### 🧩 Programming Portability Matrix — Stations grouped by MACHINE TYPE + CAPABILITY SIGNATURE (${Object.keys(portabilityByCapability).length} groups):
+Programs port best between stations sharing the same machine_type AND capability signature (e.g. 5-axis sim, live tooling, sub-spindle). Different signatures usually require re-programming, not just re-posting.
+${Object.keys(portabilityByCapability).length > 0 ? JSON.stringify(portabilityByCapability, null, 2) : "No capability data available."}
+
 ${loadBalancerResults.length > 0 ? `### 🔄 Load Balancer — Unassigned Work Order Recommendations (${loadBalancerResults.length}):
 ${JSON.stringify(loadBalancerResults, null, 2)}
 
@@ -1114,11 +1219,24 @@ Use these scores when recommending station assignments. Score breakdown:
 25. **Flag stale on-hold items** (>3 days) — suggest review or status change
 26. **When asked about a specific WO**, check both active queue AND cancelled list before saying "not found"
 
+### Programming Portability & Re-Post Awareness (NEW — CRITICAL)
+27. **For "where can I move this program with minimal re-post" questions**: cross-reference the source station's controller_family, machine_type, spindle_taper, and capability signature against the **Programming Portability Matrix**. Recommend stations in the SAME controller family first (no post change), then SAME machine_type + capabilities (re-post but no re-program), then different families (full re-program).
+28. **For "if I reprogram, what controls/platforms can it go to" questions**: list ALL stations whose machine_type matches AND envelope ≥ part dimensions AND material is supported, grouped by controller_family. Note required toolholder taper compatibility (e.g. CAT40 ↔ BT40 = adapter; HSK ↔ CAT = full re-tooling).
+29. **Always cite specifics when recommending a move**: source machine, source controller, target machine, target controller, envelope fit (margin %), capability deltas (what's gained/lost), and an estimated programming effort tier:
+    - **Tier 1 (no change):** same controller family + same machine_type + same capability signature
+    - **Tier 2 (re-post only):** same machine_type + same capabilities + different controller family
+    - **Tier 3 (re-program):** different machine_type or missing capabilities (e.g. losing 5-axis simultaneous → must re-strategy)
+    - **Tier 4 (not portable):** envelope too small, missing required capability (live tooling, sub-spindle), or material unsupported
+30. **For workload-driven move questions** ("we're slammed at HMC-01, where else can this run?"): combine the portability matrix with current utilization_pct from shopLoadBalance — recommend the lowest-utilized station in the highest portability tier.
+31. **Surface controller specifics**: when answering, name the actual control_type and control_model (e.g. "Fanuc 31i-B → Fanuc 0i-MF: same family, post-processor compatible"). Don't say "compatible controller" without naming it.
+32. **Spindle/toolholder compatibility**: when recommending a move, check spindle_taper match. CAT40↔BT40 share geometry but pull-stud differs; HSK is incompatible with CAT/BT. Flag this in the recommendation.
+33. **Envelope safety margin**: prefer stations where part dimensions are ≤ 80% of envelope on each axis (gives clamp/fixture room). Flag <10% margin as risky.
+
 ## WORK ORDER REROUTING & APPROVAL RULES
 
 - **Operators** can suggest rerouting but cannot execute it
 - **Supervisors/Admins** can approve and execute rerouting decisions
-- Always explain WHY a reroute is beneficial (load balance, capability match, quality risk)
+- Always explain WHY a reroute is beneficial (load balance, capability match, quality risk, programming portability)
 - For critical reroutes, recommend documenting the reason in the activity log
 `;
 

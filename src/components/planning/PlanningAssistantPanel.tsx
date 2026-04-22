@@ -18,6 +18,8 @@ import {
   Zap,
   Gauge,
   ClipboardList,
+  Cpu,
+  Move3d,
 } from "lucide-react";
 
 interface Props {
@@ -52,6 +54,18 @@ const quickPrompts = [
     icon: ClipboardList,
     prompt:
       "Which active jobs lack documented setup sheets or routing steps? Suggest SOPs that should be standardized.",
+  },
+  {
+    label: "Move Program",
+    icon: Move3d,
+    prompt:
+      "I need to free up my busiest CNC. For the top in-progress jobs, which other stations could run them with minimal re-post? List by controller family and capability match, with effort tier.",
+  },
+  {
+    label: "Control Compatibility",
+    icon: Cpu,
+    prompt:
+      "Show me a controller-family compatibility map of all my CNC stations. For each family, list the machines, envelope sizes, and capabilities so I know where programs port natively.",
   },
 ];
 
