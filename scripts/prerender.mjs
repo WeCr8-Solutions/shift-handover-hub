@@ -13,14 +13,19 @@
 
 import { spawn } from "node:child_process";
 import { mkdir, writeFile, readFile, access } from "node:fs/promises";
+import { createServer } from "node:net";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
 const DIST = join(ROOT, "dist");
-const PORT = 4173;
-const ORIGIN = `http://127.0.0.1:${PORT}`;
+const DEFAULT_PORT = Number(process.env.PRERENDER_PORT ?? 4173);
+let previewPort = DEFAULT_PORT;
+
+function getOrigin() {
+  return `http://127.0.0.1:${previewPort}`;
+}
 
 // Routes to prerender — keep in sync with sitemap.xml priority list.
 const ROUTES = [
@@ -86,46 +91,83 @@ async function loadPuppeteer() {
   }
 }
 
-function startPreview() {
-  return new Promise((resolveStart, rejectStart) => {
-    const proc = spawn(
-      process.platform === "win32" ? "npx.cmd" : "npx",
-      ["vite", "preview", "--port", String(PORT), "--strictPort", "--host", "127.0.0.1"],
-      { cwd: ROOT, stdio: ["ignore", "pipe", "pipe"] },
-    );
-    let started = false;
-    const timer = setTimeout(() => {
-      if (!started) {
-        proc.kill();
-        rejectStart(new Error("vite preview failed to start within 20s"));
-      }
-    }, 20_000);
-    proc.stdout.on("data", (chunk) => {
-      const txt = chunk.toString();
-      if (!started && /Local:\s+http/i.test(txt)) {
-        started = true;
-        clearTimeout(timer);
-        resolveStart(proc);
-      }
-    });
-    proc.stderr.on("data", (chunk) => {
-      const txt = chunk.toString();
-      if (/EADDRINUSE/i.test(txt)) {
-        clearTimeout(timer);
-        rejectStart(new Error("Port in use"));
-      }
-    });
-    proc.on("exit", (code) => {
-      if (!started) {
-        clearTimeout(timer);
-        rejectStart(new Error(`vite preview exited early (code ${code})`));
-      }
+function reservePort(port) {
+  return new Promise((resolvePort, rejectPort) => {
+    const server = createServer();
+    server.unref();
+    server.once("error", rejectPort);
+    server.listen(port, "127.0.0.1", () => {
+      const address = server.address();
+      const resolvedPort = typeof address === "object" && address ? address.port : port;
+      server.close((closeError) => {
+        if (closeError) {
+          rejectPort(closeError);
+          return;
+        }
+        resolvePort(resolvedPort);
+      });
     });
   });
 }
 
+async function findAvailablePort() {
+  try {
+    return await reservePort(DEFAULT_PORT);
+  } catch {
+    return reservePort(0);
+  }
+}
+
+async function waitForPreview(port, proc) {
+  const deadline = Date.now() + 20_000;
+
+  while (Date.now() < deadline) {
+    if (proc.exitCode !== null) {
+      throw new Error(`vite preview exited early (code ${proc.exitCode})`);
+    }
+
+    try {
+      const response = await fetch(`http://127.0.0.1:${port}/`);
+      if (response.ok) {
+        return;
+      }
+    } catch {
+      // Preview is still starting.
+    }
+
+    await new Promise((resolveDelay) => setTimeout(resolveDelay, 250));
+  }
+
+  proc.kill();
+  throw new Error("vite preview failed to start within 20s");
+}
+
+function startPreview(port) {
+  return new Promise((resolveStart, rejectStart) => {
+    const command = process.platform === "win32" ? "npx.cmd" : "npx";
+    const args = ["vite", "preview", "--port", String(port), "--strictPort", "--host", "127.0.0.1"];
+    const proc = spawn(
+      command,
+      args,
+      {
+        cwd: ROOT,
+        shell: process.platform === "win32",
+        stdio: ["ignore", "pipe", "pipe"],
+        windowsHide: true,
+      },
+    );
+    proc.stderr.on("data", (chunk) => {
+      const txt = chunk.toString();
+      if (/EADDRINUSE/i.test(txt)) {
+        rejectStart(new Error("Port in use"));
+      }
+    });
+    waitForPreview(port, proc).then(() => resolveStart(proc)).catch(rejectStart);
+  });
+}
+
 async function prerenderRoute(browser, route, shellHtml) {
-  const url = ORIGIN + route;
+  const url = getOrigin() + route;
   const page = await browser.newPage();
   try {
     await page.setUserAgent(
@@ -163,7 +205,8 @@ async function main() {
 
   let preview;
   try {
-    preview = await startPreview();
+    previewPort = await findAvailablePort();
+    preview = await startPreview(previewPort);
   } catch (err) {
     warn("Could not start vite preview:", err.message);
     return;

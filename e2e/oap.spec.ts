@@ -12,30 +12,37 @@ async function gotoLearn(page: Page) {
   await page.waitForLoadState("networkidle");
 }
 
+async function getRobotsMetaContents(page: Page) {
+  return page.locator('meta[name="robots"]').evaluateAll((elements) =>
+    elements
+      .map((element) => element.getAttribute("content") ?? "")
+      .filter(Boolean)
+  );
+}
+
 // ─── OAP Landing ────────────────────────────────────────────────────────────
 
 test.describe("OAP Landing (/oap)", () => {
   test("renders hero heading and key CTAs", async ({ page }) => {
     await gotoOap(page);
     await expect(page.getByRole("heading", { name: /Operator Acceptance Program/i }).first()).toBeVisible();
-    await expect(page.getByRole("link", { name: /Start Learning/i }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: /Launch the Program/i }).first()).toBeVisible();
   });
 
   test("has noindex meta tag", async ({ page }) => {
     await gotoOap(page);
-    const robots = page.locator('meta[name="robots"]');
+    const robots = await getRobotsMetaContents(page);
     // OAP landing is indexed (marketing page) — confirm meta present and not noindex
     // If tag exists check it doesn't say noindex on the public landing
-    const content = await robots.getAttribute("content").catch(() => null);
     // Landing is a public marketing page — either no robots tag or not noindex
-    if (content) {
-      expect(content).not.toBe("noindex");
+    if (robots.length > 0) {
+      expect(robots.some((content) => content.includes("noindex"))).toBe(false);
     }
   });
 
   test("FAQ section renders", async ({ page }) => {
     await gotoOap(page);
-    await expect(page.getByText(/What is the OAP/i).or(page.getByText(/frequently asked/i)).first()).toBeVisible();
+    await expect(page.getByRole("heading", { name: /^FAQ$/i })).toBeVisible();
   });
 
   test("certificate preview section visible", async ({ page }) => {
@@ -177,11 +184,9 @@ test.describe("ITAR security: noindex on authenticated pages", () => {
       await page.goto(route);
       await page.waitForLoadState("networkidle");
       // May redirect to /auth — check current page OR original
-      const robots = page.locator('meta[name="robots"]');
-      const count = await robots.count();
-      if (count > 0) {
-        const content = await robots.first().getAttribute("content");
-        expect(content).toContain("noindex");
+      const robots = await getRobotsMetaContents(page);
+      if (robots.length > 0) {
+        expect(robots.some((content) => content.includes("noindex"))).toBe(true);
       }
       // If redirected to /auth, the page is already protected — pass
     });
