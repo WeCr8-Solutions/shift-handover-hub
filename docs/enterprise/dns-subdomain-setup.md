@@ -176,8 +176,33 @@ If you see `ns1071.ui-dns.com` or similar (IONOS), the domain is still on IONOS 
 
 ---
 
+---
+
+## 9. Subdomain content routing (in-app)
+
+All `*.jobline.ai` hosts serve the same Lovable SPA. Without an in-app
+rewrite, every subdomain lands on the marketing homepage. This is handled by
+`src/lib/subdomainRouting.ts`, called from `src/main.tsx` before the React
+root mounts:
+
+| Host | Rewrites root `/` to | Notes |
+|---|---|---|
+| `jobline.ai`, `www.jobline.ai` | (no rewrite) | Marketing home |
+| `app.jobline.ai` | `/` | Placeholder; app shell not bound yet |
+| `dev.jobline.ai` | `/dev` | Developer Portal |
+| `docs.jobline.ai` | `/help` | Help Center / Docs |
+| `status.jobline.ai` | external `https://jobline.instatus.com` | DNS should already point at Instatus; this is a safety net |
+
+The rewrite ONLY fires when `window.location.pathname === "/"`, so deep
+links like `dev.jobline.ai/dev/sap/overview` are preserved untouched. To add
+a new subdomain: add a `HOST_MAP` entry in `subdomainRouting.ts` AND
+register the Cloudflare CNAME + Lovable custom domain.
+
+---
+
 **Owner:** Platform / Infra  
 **Related docs:**  
 - `docs/enterprise/status-page-runbook.md`  
 - `mem://technical/infrastructure/email-configuration`  
-- `mem://technical/deployment/vercel-routing-spa`
+- `mem://technical/deployment/vercel-routing-spa`  
+- `mem://technical/routing/subdomain-routing`
