@@ -194,8 +194,20 @@ export function PlanningAssistantPanel({ organizationId }: Props) {
   );
 }
 
-function Bubble({ message }: { message: ChatMessage }) {
+function Bubble({
+  message,
+  organizationId,
+  canApproveRouting,
+}: {
+  message: ChatMessage;
+  organizationId: string;
+  canApproveRouting: boolean;
+}) {
   const isUser = message.role === "user";
+  const { cleanedContent, proposal } = !isUser
+    ? extractRoutingProposal(message.content)
+    : { cleanedContent: message.content, proposal: null };
+
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
       <div
@@ -206,11 +218,21 @@ function Bubble({ message }: { message: ChatMessage }) {
         {isUser ? (
           <p className="whitespace-pre-wrap">{message.content}</p>
         ) : (
-          <div className="prose prose-sm dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
-            <ReactMarkdown>{message.content}</ReactMarkdown>
-          </div>
+          <>
+            <div className="prose prose-sm dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+              <ReactMarkdown>{cleanedContent}</ReactMarkdown>
+            </div>
+            {proposal && (
+              <RoutingProposalCard
+                organizationId={organizationId}
+                proposal={proposal}
+                canApprove={canApproveRouting}
+              />
+            )}
+          </>
         )}
       </div>
     </div>
   );
+}
 }
