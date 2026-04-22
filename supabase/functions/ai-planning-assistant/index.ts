@@ -1027,6 +1027,12 @@ ${machineContextSummary.length > 0 ? JSON.stringify(machineContextSummary, null,
 ### Active Downtime Events (${downtimeSummary.length} stations currently down):
 ${downtimeSummary.length > 0 ? JSON.stringify(downtimeSummary, null, 2) : "No active downtime events."}
 
+### 🛑 Work Orders On Hold (${onHoldSummary.length}):
+${onHoldSummary.length > 0 ? JSON.stringify(onHoldSummary, null, 2) : "No work orders currently on hold."}
+
+### ❌ Recently Cancelled Work Orders (${cancelledSummary.length}, audit trail):
+${cancelledSummary.length > 0 ? JSON.stringify(cancelledSummary, null, 2) : "No cancelled work orders in current window."}
+
 ### 📋 Part Catalog (${partCatalogSummary.length} recurring parts with known specs):
 ${partCatalogSummary.length > 0 ? JSON.stringify(partCatalogSummary, null, 2) : "No parts in catalog yet. Specs come from individual work orders only."}
 
@@ -1100,6 +1106,13 @@ Use these scores when recommending station assignments. Score breakdown:
 ### G-Code Context (NEW)
 20. **Reference active programs** — if a station has a G-code program loaded, mention it
 21. **Check program/tool conflicts** — if a new job needs different tooling than what's currently loaded, note setup time impact
+
+### Work Order Lifecycle Audit (NEW)
+22. **For "what's on hold" questions**, list each on-hold WO with reason, station, time held, and impact on dependent operations
+23. **For "what got cancelled" or "why was X cancelled" questions**, cite the audit trail (cancelled_by, reason, timestamp) and any partial completion (qty_completed_before_cancel)
+24. **Never recommend re-routing or scheduling a cancelled WO** — they are archived for audit only
+25. **Flag stale on-hold items** (>3 days) — suggest review or status change
+26. **When asked about a specific WO**, check both active queue AND cancelled list before saying "not found"
 
 ## WORK ORDER REROUTING & APPROVAL RULES
 
