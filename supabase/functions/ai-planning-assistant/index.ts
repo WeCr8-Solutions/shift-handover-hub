@@ -543,7 +543,7 @@ serve(async (req) => {
       expected_return: r.expected_return_date,
     }));
 
-    // Machine profiles summary
+    // Machine profiles summary — includes controller & spindle/tooling for programming-portability analysis
     const buildProfileSummary = (ml: any, stationId: string, source: string) => ({
       station: stationMap[stationId] || stationId,
       source,
@@ -551,12 +551,29 @@ serve(async (req) => {
       model: ml.model,
       machine_type: ml.machine_type,
       platform: ml.platform_category,
+      controller: {
+        type: ml.control_type,        // e.g. "Fanuc", "Haas", "Siemens", "Heidenhain", "Mazak"
+        model: ml.control_model,      // e.g. "31i-B", "NGC", "840D sl"
+      },
       envelope: {
         x: ml.max_x_travel, y: ml.max_y_travel, z: ml.max_z_travel,
         max_weight: ml.max_part_weight,
         max_length: ml.max_part_envelope_length,
         max_width: ml.max_part_envelope_width,
         max_height: ml.max_part_envelope_height,
+        max_turning_diameter: ml.max_turning_diameter,
+        max_turning_length: ml.max_turning_length,
+        bar_capacity_mm: ml.bar_capacity_mm,
+      },
+      spindle: {
+        max_rpm: ml.max_spindle_rpm,
+        taper: ml.spindle_taper,      // e.g. "CAT40", "BT40", "HSK63A" — drives toolholder compatibility
+        power_hp: ml.spindle_power_hp,
+      },
+      tooling: {
+        magazine_capacity: ml.tool_magazine_capacity,
+        max_tool_diameter: ml.max_tool_diameter,
+        max_tool_length: ml.max_tool_length,
       },
       capabilities: {
         five_axis: ml.five_axis_simultaneous, fourth_axis: ml.fourth_axis,
