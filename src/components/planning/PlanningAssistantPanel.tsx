@@ -141,7 +141,12 @@ export function PlanningAssistantPanel({ organizationId }: Props) {
           )}
 
           {messages.map((msg, i) => (
-            <Bubble key={i} message={msg} />
+            <Bubble
+              key={i}
+              message={msg}
+              organizationId={organizationId}
+              canApproveRouting={canApproveRouting}
+            />
           ))}
 
           {isLoading && messages[messages.length - 1]?.role !== "assistant" && (
