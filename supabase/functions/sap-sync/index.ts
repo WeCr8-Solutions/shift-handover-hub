@@ -415,10 +415,22 @@ Deno.serve(async (req) => {
       const d = (result.data as { d?: { results?: Array<Record<string, unknown>> } })?.d;
       const rows = Array.isArray(d?.results) ? d!.results! : [];
 
-      // Optional write-through to queue_items
+      // Optional write-through to queue_items.
+      // ITAR/FedRAMP guard: only allowed when erp_persistence_mode='write_through'.
+      // get_erp_persistence_mode() already enforces ITAR=read_through via trigger.
       let writeThroughResult: { inserted: number; updated: number; errors: string[] } | null = null;
+      let writeThroughBlockedReason: string | null = null;
       if (body.write_through) {
-        writeThroughResult = await upsertQueueItems(admin, body.organization_id, rows);
+        const { data: modeData } = await admin.rpc("get_erp_persistence_mode", {
+          _org_id: body.organization_id,
+        });
+        const mode = (modeData as string) ?? "read_through";
+        if (mode === "write_through") {
+          writeThroughResult = await upsertQueueItems(admin, body.organization_id, rows);
+        } else {
+          writeThroughBlockedReason =
+            "Organization is in read_through mode (default for ITAR/FedRAMP). Data not persisted to Lovable Cloud.";
+        }
       }
 
       await closeLog(
@@ -437,6 +449,7 @@ Deno.serve(async (req) => {
         instance_type: instanceType,
         plant_filter: plant || null,
         write_through: writeThroughResult,
+        write_through_blocked: writeThroughBlockedReason,
       });
     }
 

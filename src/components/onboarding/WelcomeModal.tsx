@@ -197,7 +197,7 @@ export function WelcomeModal() {
                 }`}
               >
                 {completed ? (
-                  <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
                 ) : (
                   <div
                     className={`w-4 h-4 rounded-full border-2 shrink-0 ${
