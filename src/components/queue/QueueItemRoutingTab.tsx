@@ -18,11 +18,13 @@ import { RequestDimensionCheckButton } from "@/components/dimensions/RequestDime
 import { DimensionRequestsPanel } from "@/components/dimensions/DimensionRequestsPanel";
 import { SetupSheetsPanel } from "@/components/queue/SetupSheetsPanel";
 import { useDimensionRequests } from "@/hooks/useDimensionRequests";
+import { evaluateLegacySetupSheetPackageReadiness } from "@/lib/legacyPackageReadiness";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import {
   GitBranch, Circle, CircleDot, CheckCircle, Timer, Truck,
   Wrench, User, Loader2, Save, Ruler, Plus, ChevronDown, ChevronUp, FileText,
+  AlertTriangle, ShieldCheck,
 } from "lucide-react";
 
 interface RoutingStepRow {
@@ -53,6 +55,29 @@ interface QueueItemRoutingTabProps {
   onReloadRouting: () => void;
   onOpenRouting?: (item: { id: string; work_order?: string | null; part_number?: string | null }) => void;
 }
+
+const documentTypeLabel = (documentType: string) => {
+  switch (documentType) {
+    case "setup_sheet":
+      return "Setup Sheet";
+    case "instruction_set":
+      return "Instruction Set";
+    case "inspection_plan":
+      return "Inspection Plan";
+    case "drawing":
+      return "Drawing";
+    default:
+      return documentType.split("_").join(" ");
+  }
+};
+
+const packageStatusCopy: Record<string, string> = {
+  ready: "Package ready",
+  missing_documents: "Missing required documents",
+  draft_documents_present: "Package not fully released",
+  mismatched_revision: "Revision mismatch",
+  superseded_package: "Package superseded",
+};
 
 export function QueueItemRoutingTab({
   item,
@@ -184,6 +209,10 @@ export function QueueItemRoutingTab({
           const isActive = step.status === 'in_progress';
           const isPending = step.status === 'pending';
           const isOutside = step.operation_type === 'outside_processing';
+          const isExpanded = expandedStep === step.id;
+          const legacyPackageSummary = isExpanded
+            ? evaluateLegacySetupSheetPackageReadiness(setupSheets.sheets, step.operation_type)
+            : null;
 
           return (
             <div key={step.id} className="relative">
@@ -266,9 +295,9 @@ export function QueueItemRoutingTab({
                   <button
                     className="flex items-center gap-1 text-xs text-primary hover:underline mt-1"
                     onClick={() => {
-                      const isExpanding = expandedStep !== step.id;
-                      setExpandedStep(isExpanding ? step.id : null);
-                      if (isExpanding) {
+                      const shouldExpand = expandedStep !== step.id;
+                      setExpandedStep(shouldExpand ? step.id : null);
+                      if (shouldExpand) {
                         dimensions.loadAll(step.id, item.id);
                         dimRequests.fetchRequests(step.id);
                         setupSheets.fetchSheets(step.id);
@@ -277,11 +306,11 @@ export function QueueItemRoutingTab({
                   >
                     <Ruler className="w-3 h-3" />
                     Dimensions & Setup Sheets
-                    {expandedStep === step.id ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                    {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                   </button>
 
                   {/* Expanded dimension section */}
-                  {expandedStep === step.id && (
+                  {isExpanded && (
                     <div className="mt-2 space-y-2">
                       {dimensions.loading ? (
                         <Skeleton className="h-16 w-full" />
@@ -349,6 +378,42 @@ export function QueueItemRoutingTab({
                               <FileText className="w-3 h-3 text-primary" />
                               <span className="text-xs font-medium">Setup Sheets & Instructions</span>
                             </div>
+                            {legacyPackageSummary && (
+                              <div className="mb-2 rounded-md border bg-muted/30 p-2 text-xs">
+                                <div className="flex items-center justify-between gap-2 flex-wrap">
+                                  <div className="flex items-center gap-1.5">
+                                    {legacyPackageSummary.readiness.isReady ? (
+                                      <ShieldCheck className="h-3.5 w-3.5 text-green-600" />
+                                    ) : (
+                                      <AlertTriangle className="h-3.5 w-3.5 text-amber-600" />
+                                    )}
+                                    <span className="font-medium">
+                                      {packageStatusCopy[legacyPackageSummary.readiness.status]}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <Badge variant={legacyPackageSummary.readiness.isReady ? "default" : "secondary"} className="text-[10px]">
+                                      {legacyPackageSummary.packageRevision ? `Rev ${legacyPackageSummary.packageRevision}` : "Unversioned"}
+                                    </Badge>
+                                    <Badge variant="outline" className="text-[10px]">
+                                      {legacyPackageSummary.requiredDocumentTypes.length} required type{legacyPackageSummary.requiredDocumentTypes.length === 1 ? "" : "s"}
+                                    </Badge>
+                                  </div>
+                                </div>
+
+                                {legacyPackageSummary.readiness.missingRequirements.length > 0 && (
+                                  <p className="mt-1 text-muted-foreground">
+                                    Missing: {legacyPackageSummary.readiness.missingRequirements.map(documentTypeLabel).join(", ")}
+                                  </p>
+                                )}
+
+                                {legacyPackageSummary.readiness.status === "mismatched_revision" && (
+                                  <p className="mt-1 text-muted-foreground">
+                                    Attached legacy documents are mixed across revisions. Align all routing docs to one released revision.
+                                  </p>
+                                )}
+                              </div>
+                            )}
                             <SetupSheetsPanel
                               routingStepId={step.id}
                               queueItemId={item.id}

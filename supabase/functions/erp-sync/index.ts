@@ -1,4 +1,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  getErpReadThroughSkipMessage,
+  resolveErpSyncPersistenceDecision,
+} from "../_shared/erpPersistence.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -203,8 +207,9 @@ Deno.serve(async (req) => {
     // ITAR / FedRAMP: read_through orgs cannot copy ERP data into queue_items.
     // Surface a 200 success with skipped=true so the UI can render a banner
     // and the user understands the dashboard will read live from JobBOSS.
-    if (persistenceMode === "read_through") {
-      if (read_only) {
+    const persistenceDecision = resolveErpSyncPersistenceDecision(persistenceMode, read_only);
+    if (!persistenceDecision.allowWriteThrough) {
+      if (persistenceDecision.allowReadOnlyFetch) {
         const fieldMapping = (connection.metadata as any)?.field_mapping || {};
         const accessToken = await fetchOAuthToken(connection, adminClient);
         const workOrders = await fetchERPWorkOrders(connection, accessToken, fieldMapping, null);
@@ -223,12 +228,9 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({
           success: true,
-          skipped: true,
+          skipped: persistenceDecision.shouldSkipPersistence,
           reason: "read_through_persistence_mode",
-          message:
-            "Organization is in read_through mode (default for ITAR/FedRAMP). " +
-            "JobBOSS work orders are not copied into Lovable Cloud — the dashboard reads them live. " +
-            "Set erp_persistence_mode='write_through' on a non-ITAR org to enable sync.",
+          message: getErpReadThroughSkipMessage(),
           records_fetched: 0,
           records_created: 0,
           records_updated: 0,

@@ -26,6 +26,7 @@
  */
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getSapWriteThroughBlockedMessage } from "../_shared/erpPersistence.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -428,8 +429,7 @@ Deno.serve(async (req) => {
         if (mode === "write_through") {
           writeThroughResult = await upsertQueueItems(admin, body.organization_id, rows);
         } else {
-          writeThroughBlockedReason =
-            "Organization is in read_through mode (default for ITAR/FedRAMP). Data not persisted to Lovable Cloud.";
+          writeThroughBlockedReason = getSapWriteThroughBlockedMessage();
         }
       }
 

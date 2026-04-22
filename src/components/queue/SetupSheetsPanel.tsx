@@ -21,6 +21,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { SetupSheet, useSetupSheets } from "@/hooks/useSetupSheets";
+import { groupSetupSheetsForPackageView } from "@/lib/setupSheetPackages";
 import {
   FileText,
   Upload,
@@ -161,61 +162,75 @@ export function SetupSheetsPanel({
   const typeLabel = (type: string) =>
     SHEET_TYPES.find((t) => t.value === type)?.label || type;
 
+  const groupedSheets = groupSetupSheetsForPackageView(sheets);
+
   if (loading) return <Skeleton className="h-12 w-full" />;
 
   return (
     <div className="space-y-2">
       {/* Sheet list */}
-      {sheets.length > 0 && (
-        <div className="space-y-1">
-          {sheets.map((sheet) => (
-            <div
-              key={sheet.id}
-              className="flex items-center gap-2 p-2 rounded-md border bg-card text-card-foreground text-xs"
-            >
-              <FileText className="w-3.5 h-3.5 text-primary shrink-0" />
-              <div className="flex-1 min-w-0">
+      {groupedSheets.length > 0 && (
+        <div className="space-y-2">
+          {groupedSheets.map((group) => (
+            <div key={group.key} className="rounded-md border bg-muted/20">
+              <div className="flex items-center justify-between gap-2 border-b px-2 py-1.5 text-[11px]">
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="font-medium truncate">{sheet.title}</span>
                   <Badge variant="secondary" className="text-[9px] px-1 py-0">
-                    {typeLabel(sheet.sheet_type)}
+                    {typeLabel(group.sheetType)}
                   </Badge>
-                  {sheet.revision && (
-                    <Badge variant="outline" className="text-[9px] px-1 py-0">
-                      Rev {sheet.revision}
-                    </Badge>
-                  )}
+                  <Badge variant="outline" className="text-[9px] px-1 py-0">
+                    {group.revision ? `Rev ${group.revision}` : "Unversioned"}
+                  </Badge>
                 </div>
-                {sheet.description && (
-                  <p className="text-muted-foreground truncate mt-0.5">{sheet.description}</p>
-                )}
+                <span className="text-muted-foreground">
+                  {group.count} document{group.count === 1 ? "" : "s"}
+                </span>
               </div>
-              <div className="flex items-center gap-1 shrink-0">
-                {(sheet.file_url || sheet.external_link) && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6"
-                    onClick={() => handleView(sheet)}
-                    disabled={loadingView}
+
+              <div className="space-y-1 p-1.5">
+                {group.items.map((sheet) => (
+                  <div
+                    key={sheet.id}
+                    className="flex items-center gap-2 rounded-md border bg-card p-2 text-card-foreground text-xs"
                   >
-                    {sheet.external_link ? (
-                      <ExternalLink className="w-3 h-3" />
-                    ) : (
-                      <Eye className="w-3 h-3" />
-                    )}
-                  </Button>
-                )}
-                {canEdit && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 text-destructive hover:text-destructive"
-                    onClick={() => handleDelete(sheet)}
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </Button>
-                )}
+                    <FileText className="w-3.5 h-3.5 text-primary shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-medium truncate">{sheet.title}</span>
+                      </div>
+                      {sheet.description && (
+                        <p className="text-muted-foreground truncate mt-0.5">{sheet.description}</p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      {(sheet.file_url || sheet.external_link) && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() => handleView(sheet)}
+                          disabled={loadingView}
+                        >
+                          {sheet.external_link ? (
+                            <ExternalLink className="w-3 h-3" />
+                          ) : (
+                            <Eye className="w-3 h-3" />
+                          )}
+                        </Button>
+                      )}
+                      {canEdit && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 text-destructive hover:text-destructive"
+                          onClick={() => handleDelete(sheet)}
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           ))}
