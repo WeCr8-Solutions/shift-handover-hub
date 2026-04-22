@@ -235,4 +235,3 @@ function Bubble({
     </div>
   );
 }
-}
