@@ -431,6 +431,56 @@ serve(async (req) => {
       ),
     ]);
 
+    // =========================================================================
+    // ERP read-through enrichment (ITAR/FedRAMP-safe)
+    // ─────────────────────────────────────────────────────────────────────────
+    // For orgs whose system-of-record is JobBOSS or SAP and persistence is
+    // 'read_through', queue_items will be empty or stale. Pull live work
+    // orders from the vendor edge function and merge them in-memory so the
+    // assistant has real context. Nothing is written back to Supabase.
+    try {
+      const { data: connRow } = await supabase
+        .from("erp_connections")
+        .select("erp_vendor, is_active, erp_persistence_mode")
+        .eq("organization_id", organization_id)
+        .maybeSingle();
+
+      const vendor = connRow?.erp_vendor as "jobboss" | "sap" | undefined;
+      const isReadThrough =
+        connRow?.is_active && vendor && (connRow.erp_persistence_mode ?? "read_through") === "read_through";
+
+      if (isReadThrough) {
+        const fnName = vendor === "sap" ? "sap-sync" : "erp-sync";
+        const fnBody =
+          vendor === "sap"
+            ? { organization_id, resource: "production_orders", top: 100 }
+            : { organization_id, sync_type: "incremental", read_only: true };
+
+        const erpResp = await supabase.functions.invoke(fnName, { body: fnBody });
+        const erpRows: any[] = Array.isArray((erpResp.data as any)?.data) ? (erpResp.data as any).data : [];
+
+        for (const r of erpRows) {
+          queueItems.push({
+            id: `${vendor}:${r.erp_job_id ?? r.work_order ?? crypto.randomUUID()}`,
+            title: r.title ?? r.part_number ?? r.erp_job_id ?? "ERP Order",
+            work_order: r.work_order ?? r.erp_job_id ?? null,
+            part_number: r.part_number ?? null,
+            status: r.status ?? "queued",
+            priority: r.priority ?? "normal",
+            due_date: r.due_date ?? null,
+            station_id: null,
+            quantity: r.quantity_ordered ?? r.quantity ?? null,
+            qty_completed: r.quantity_complete ?? 0,
+            erp_source: vendor,
+            is_read_through: true,
+          });
+        }
+        console.log(`[ai-planning-assistant] Enriched ${erpRows.length} ${vendor} read-through orders`);
+      }
+    } catch (e) {
+      console.warn("[ai-planning-assistant] ERP read-through enrichment failed:", e);
+    }
+
     const now = new Date().toISOString();
     const stationMap: Record<string, string> = Object.fromEntries(stations.map((s: any) => [s.id, s.name]));
 
