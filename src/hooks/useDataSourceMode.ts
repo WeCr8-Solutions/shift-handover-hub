@@ -64,7 +64,7 @@ export function useDataSourceMode(): State {
           .maybeSingle(),
         supabase
           .from("organizations")
-          .select("metadata")
+          .select("requires_us_person_declaration")
           .eq("id", orgId)
           .maybeSingle(),
       ]);
@@ -72,7 +72,7 @@ export function useDataSourceMode(): State {
       if (cancelled) return;
 
       const c = conn as { erp_vendor?: string; is_active?: boolean; erp_persistence_mode?: string } | null;
-      const isItar = Boolean(((org?.metadata as any)?.itar_controlled));
+      const isItar = Boolean((org as any)?.requires_us_person_declaration);
 
       let mode: DataSourceMode = "native";
       let vendor: State["vendor"] = "native";
