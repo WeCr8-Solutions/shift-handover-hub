@@ -28,7 +28,7 @@
 | P2.1 | ERP | Complete JobBOSS unified read-through path | `useUnifiedQueue` now consumes live JobBOSS read-only ERP rows | validated | unit + smoke | `erp-sync` read_only path enabled; `npx vitest run src/hooks/useUnifiedQueue.test.ts` passes |
 | P2.2 | ERP | Validate native vs read-through vs write-through mode behavior | Partial evidence only | not_started | unit + E2E | Include ITAR-safe read-through assertions |
 | P2.3 | ERP | Validate ITAR persistence constraints | Logic exists, not fully proven end-to-end | not_started | edge fn + UI validation | Must prove no write-through leakage |
-| P3.1 | Documents | Define first-class manufacturing package model | Phase 3 design baseline documented in `docs/prd/10-manufacturing-package-model.md` | in_progress | design review + schema | Current system still uses step-scoped `setup_sheets`; package schema implementation is next |
+| P3.1 | Documents | Define first-class manufacturing package model | Design baseline, additive schema, and readiness rules are now in place | validated | design review + schema | `docs/prd/10-manufacturing-package-model.md` added; migration `20260422030000_manufacturing_document_packages.sql` created; `npx vitest run src/lib/manufacturingPackage.test.ts` passes |
 | P3.2 | Documents | Implement grouped multi-document package behavior | Flat setup-sheet list only | not_started | UI + schema tests | Must support drawing, setup, instruction, inspection docs |
 | P3.3 | Documents | Surface package completeness in execution views | Missing today | not_started | routing/queue validation | Needed for production control |
 | P4.1 | GCA | Ship in-app lesson reader | Checklist still marks incomplete | not_started | unit + E2E | Static site should no longer be sole player |
@@ -60,8 +60,8 @@ For each tracker row, completion requires:
 
 Current active execution order:
 
-1. `P3.1` Define first-class manufacturing package model
-2. `P3.2` Implement grouped multi-document package behavior
-3. `P3.3` Surface package completeness in execution views
-4. `P1.2` Add meaningful smoke tests
-5. `P2.2` Validate native vs read-through vs write-through mode behavior
+1. `P3.2` Implement grouped multi-document package behavior
+2. `P3.3` Surface package completeness in execution views
+3. `P1.2` Add meaningful smoke tests
+4. `P2.2` Validate native vs read-through vs write-through mode behavior
+5. `P2.3` Validate ITAR persistence constraints
