@@ -138,6 +138,17 @@ Deno.serve(async (req) => {
       return await handleRetryErrors(adminClient, connection, organization_id, retry_error_ids, userId);
     }
 
+    // ---- ITAR/FedRAMP persistence-mode gate ─────────────────────────────────
+    // For read_through orgs (default for ITAR), JobBOSS data must NEVER be
+    // copied into queue_items. Test connection is allowed; sync is rejected.
+    // Mirrors sap-sync gate. get_erp_persistence_mode() falls back to
+    // 'read_through' which is the safe default.
+    const { data: persistenceModeData } = await adminClient.rpc(
+      "get_erp_persistence_mode",
+      { _org_id: organization_id },
+    );
+    const persistenceMode = (persistenceModeData as string) ?? "read_through";
+
     // Test connection mode
     if (test_connection) {
       try {
