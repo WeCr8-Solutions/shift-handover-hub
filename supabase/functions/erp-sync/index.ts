@@ -198,7 +198,30 @@ Deno.serve(async (req) => {
       }
     }
 
-    // ---- Full sync flow ----
+    // ---- Persistence-mode short-circuit ─────────────────────────────────────
+    // ITAR / FedRAMP: read_through orgs cannot copy ERP data into queue_items.
+    // Surface a 200 success with skipped=true so the UI can render a banner
+    // and the user understands the dashboard will read live from JobBOSS.
+    if (persistenceMode === "read_through") {
+      return new Response(
+        JSON.stringify({
+          success: true,
+          skipped: true,
+          reason: "read_through_persistence_mode",
+          message:
+            "Organization is in read_through mode (default for ITAR/FedRAMP). " +
+            "JobBOSS work orders are not copied into Lovable Cloud — the dashboard reads them live. " +
+            "Set erp_persistence_mode='write_through' on a non-ITAR org to enable sync.",
+          records_fetched: 0,
+          records_created: 0,
+          records_updated: 0,
+          errors_count: 0,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // ---- Full sync flow (write_through only) ────────────────────────────────
     const startTime = Date.now();
 
     // Check ERP usage metering
