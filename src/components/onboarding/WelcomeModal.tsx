@@ -211,8 +211,8 @@ export function WelcomeModal() {
           })}
         </div>
 
-        {/* Current step highlight (hidden on the very first welcome step) */}
-        {currentStepData && currentStep !== "welcome" && (
+        {/* Current step highlight (hidden on welcome and data-source steps) */}
+        {currentStepData && currentStep !== "welcome" && currentStep !== "data-source" && (
           <div className="bg-secondary/50 rounded-lg p-4 mt-2">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
@@ -223,6 +223,43 @@ export function WelcomeModal() {
                 <p className="text-sm text-muted-foreground truncate">{currentStepData.description}</p>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Data-source picker — shown on the data-source step */}
+        {currentStep === "data-source" && (
+          <div className="space-y-2 mt-2">
+            <p className="text-sm font-medium">Pick where your work orders come from:</p>
+            <div className="grid gap-2">
+              {DATA_SOURCES.map((src) => (
+                <button
+                  key={src.id}
+                  onClick={async () => {
+                    setIsOpen(false);
+                    await markWelcomeSeen();
+                    await completeStep("data-source");
+                    navigate(src.route);
+                  }}
+                  className="flex items-start gap-3 p-3 rounded-lg border bg-card text-left hover:border-primary hover:bg-accent transition-colors"
+                >
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                    {src.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium">{src.title}</p>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground">
+                        {src.badge}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{src.description}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+            <p className="text-[11px] text-muted-foreground pt-1">
+              You can switch or add sources anytime from Settings → Integrations.
+            </p>
           </div>
         )}
 
