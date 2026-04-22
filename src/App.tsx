@@ -34,6 +34,7 @@ const FieldView = lazy(() => import("./pages/FieldView"));
 const Testing = lazy(() => import("./pages/Testing"));
 const Queue = lazy(() => import("./pages/Queue"));
 const WorkOrdersHub = lazy(() => import("./pages/WorkOrdersHub"));
+const CancelledWorkOrders = lazy(() => import("./pages/CancelledWorkOrders"));
 const QueueHub = lazy(() => import("./pages/QueueHub"));
 const QuotesHub = lazy(() => import("./pages/QuotesHub"));
 const PlanningCenter = lazy(() => import("./pages/PlanningCenter"));
@@ -194,6 +195,7 @@ const App = () => (
                     <Route path="/testing" element={<Testing />} />
                     <Route path="/queue" element={<Queue />} />
                     <Route path="/work-orders" element={<WorkOrdersHub />} />
+                    <Route path="/work-orders/cancelled" element={<CancelledWorkOrders />} />
                     <Route path="/queue-hub" element={<QueueHub />} />
                     <Route path="/quotes" element={<QuotesHub />} />
                     <Route path="/planning-center" element={<PlanningCenter />} />

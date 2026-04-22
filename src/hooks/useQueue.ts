@@ -66,6 +66,15 @@ export interface QueueItem {
   required_tolerance?: string | null;
   surface_finish?: string | null;
   part_image_url?: string | null;
+  // Cancellation / hold audit
+  cancelled_at?: string | null;
+  cancelled_by?: string | null;
+  cancelled_by_name?: string | null;
+  cancellation_reason?: string | null;
+  on_hold_at?: string | null;
+  on_hold_by?: string | null;
+  on_hold_by_name?: string | null;
+  hold_reason?: string | null;
 }
 
 export interface QueueItemComment {
@@ -152,6 +161,8 @@ export interface UpdateQueueItemInput {
   started_at?: string | null;
   completed_at?: string | null;
   tags?: string[];
+  cancellation_reason?: string | null;
+  hold_reason?: string | null;
 }
 
 export function useQueue(filters?: {
@@ -588,6 +599,24 @@ export function useQueue(filters?: {
     {} as Record<string, QueueItem[]>
   );
 
+  // Convenience wrappers for cancel / hold / resume with reason capture
+  const cancelItem = useCallback(
+    (id: string, reason: string) =>
+      updateItem(id, { status: "cancelled", cancellation_reason: reason }),
+    [updateItem]
+  );
+
+  const holdItem = useCallback(
+    (id: string, reason: string) =>
+      updateItem(id, { status: "on_hold", hold_reason: reason }),
+    [updateItem]
+  );
+
+  const resumeItem = useCallback(
+    (id: string) => updateItem(id, { status: "in_progress" }),
+    [updateItem]
+  );
+
   return {
     items,
     itemsByStatus,
@@ -602,5 +631,8 @@ export function useQueue(filters?: {
     addComment,
     getComments,
     getHistory,
+    cancelItem,
+    holdItem,
+    resumeItem,
   };
 }

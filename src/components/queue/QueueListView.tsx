@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { WorkOrderAlertTile } from "./WorkOrderAlertTile";
 import { getQueueStatusBadgeColor } from "@/lib/status-colors";
+import { CancelHoldDialog, CancelHoldMode } from "./CancelHoldDialog";
 
 // Valid state transitions matching the DB trigger
 const VALID_TRANSITIONS: Record<QueueStatus, QueueStatus[]> = {
@@ -50,6 +51,7 @@ function getStatusColor(status: QueueStatus): string {
 
 export function QueueListView({ items, onItemClick, onStatusChange, onDelete, onOpenRouting }: QueueListViewProps) {
   const [stations, setStations] = useState<Map<string, StationInfo>>(new Map());
+  const [pendingAction, setPendingAction] = useState<{ item: QueueItem; mode: CancelHoldMode } | null>(null);
 
   // Fetch station info for all items
   useEffect(() => {
@@ -72,8 +74,10 @@ export function QueueListView({ items, onItemClick, onStatusChange, onDelete, on
     fetchStations();
   }, [items]);
 
-  const activeItems = items.filter(i => !["completed", "cancelled"].includes(i.status));
-  const doneItems = items.filter(i => ["completed", "cancelled"].includes(i.status));
+  // Cancelled WOs are hidden here — they live on the dedicated /work-orders/cancelled page.
+  const visibleItems = items.filter(i => i.status !== "cancelled");
+  const activeItems = visibleItems.filter(i => i.status !== "completed");
+  const doneItems = visibleItems.filter(i => i.status === "completed");
 
   return (
     <Card>
@@ -115,7 +119,12 @@ export function QueueListView({ items, onItemClick, onStatusChange, onDelete, on
                     <Select
                       value={item.status}
                       onValueChange={async (value) => {
-                        const result = await onStatusChange(item.id, value as QueueStatus);
+                        const next = value as QueueStatus;
+                        if (next === "cancelled" || next === "on_hold") {
+                          setPendingAction({ item, mode: next === "cancelled" ? "cancel" : "hold" });
+                          return;
+                        }
+                        const result = await onStatusChange(item.id, next);
                         if (result.error) toast.error(result.error);
                       }}
                     >
@@ -149,7 +158,7 @@ export function QueueListView({ items, onItemClick, onStatusChange, onDelete, on
             {doneItems.length > 0 && (
               <details className="border-t border-border">
                 <summary className="px-4 py-2 text-xs text-muted-foreground cursor-pointer hover:bg-secondary/30">
-                  {doneItems.length} completed/cancelled
+                  {doneItems.length} completed
                 </summary>
                 {doneItems.map((item) => {
                   const station = item.station_id ? stations.get(item.station_id) : null;
@@ -169,6 +178,35 @@ export function QueueListView({ items, onItemClick, onStatusChange, onDelete, on
           </div>
         )}
       </CardContent>
+
+      <CancelHoldDialog
+        open={!!pendingAction}
+        mode={pendingAction?.mode ?? "cancel"}
+        workOrderLabel={
+          pendingAction
+            ? `${pendingAction.item.work_order || pendingAction.item.title}${pendingAction.item.part_number ? ` · ${pendingAction.item.part_number}` : ""}`
+            : undefined
+        }
+        onOpenChange={(o) => { if (!o) setPendingAction(null); }}
+        onConfirm={async (reason) => {
+          if (!pendingAction) return;
+          const targetStatus: QueueStatus = pendingAction.mode === "cancel" ? "cancelled" : "on_hold";
+          // Persist reason via direct update so the trigger stamps audit fields too.
+          const { error } = await supabase
+            .from("queue_items")
+            .update(
+              pendingAction.mode === "cancel"
+                ? { status: targetStatus, cancellation_reason: reason }
+                : { status: targetStatus, hold_reason: reason }
+            )
+            .eq("id", pendingAction.item.id);
+          if (error) {
+            toast.error(error.message);
+          } else {
+            toast.success(pendingAction.mode === "cancel" ? "Work order cancelled" : "Work order placed on hold");
+          }
+        }}
+      />
     </Card>
   );
 }

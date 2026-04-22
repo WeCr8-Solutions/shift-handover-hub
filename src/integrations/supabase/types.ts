@@ -7244,6 +7244,10 @@ export type Database = {
         Row: {
           assigned_by: string | null
           assigned_to: string | null
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
+          cancelled_by_name: string | null
           completed_at: string | null
           converted_at: string | null
           converted_by: string | null
@@ -7259,11 +7263,15 @@ export type Database = {
           erp_source: string | null
           estimated_duration: number | null
           first_article_minutes: number | null
+          hold_reason: string | null
           id: string
           is_rework: boolean | null
           item_type: Database["public"]["Enums"]["queue_item_type"]
           material_type: string | null
           metadata: Json | null
+          on_hold_at: string | null
+          on_hold_by: string | null
+          on_hold_by_name: string | null
           operation_number: string | null
           organization_id: string
           parent_work_order_id: string | null
@@ -7303,6 +7311,10 @@ export type Database = {
         Insert: {
           assigned_by?: string | null
           assigned_to?: string | null
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          cancelled_by_name?: string | null
           completed_at?: string | null
           converted_at?: string | null
           converted_by?: string | null
@@ -7318,11 +7330,15 @@ export type Database = {
           erp_source?: string | null
           estimated_duration?: number | null
           first_article_minutes?: number | null
+          hold_reason?: string | null
           id?: string
           is_rework?: boolean | null
           item_type?: Database["public"]["Enums"]["queue_item_type"]
           material_type?: string | null
           metadata?: Json | null
+          on_hold_at?: string | null
+          on_hold_by?: string | null
+          on_hold_by_name?: string | null
           operation_number?: string | null
           organization_id: string
           parent_work_order_id?: string | null
@@ -7362,6 +7378,10 @@ export type Database = {
         Update: {
           assigned_by?: string | null
           assigned_to?: string | null
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          cancelled_by_name?: string | null
           completed_at?: string | null
           converted_at?: string | null
           converted_by?: string | null
@@ -7377,11 +7397,15 @@ export type Database = {
           erp_source?: string | null
           estimated_duration?: number | null
           first_article_minutes?: number | null
+          hold_reason?: string | null
           id?: string
           is_rework?: boolean | null
           item_type?: Database["public"]["Enums"]["queue_item_type"]
           material_type?: string | null
           metadata?: Json | null
+          on_hold_at?: string | null
+          on_hold_by?: string | null
+          on_hold_by_name?: string | null
           operation_number?: string | null
           organization_id?: string
           parent_work_order_id?: string | null
