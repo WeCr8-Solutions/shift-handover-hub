@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { BrowserRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router-dom";
 
 // --- Mocks must not reference top-level vars in factory ---
 vi.mock("@/integrations/supabase/client", () => {
@@ -98,21 +98,29 @@ vi.mock("@/components/dimensions/RequestDimensionCheckButton", () => ({
 import { OperatorStationPanel } from "./OperatorStationPanel";
 import { toast } from "sonner";
 
-function renderPanel(props?: Partial<React.ComponentProps<typeof OperatorStationPanel>>) {
-  return {
+async function renderPanel(props?: Partial<React.ComponentProps<typeof OperatorStationPanel>>) {
+  const panelProps = {
+    stationId: "stn-1",
+    stationName: "CNC Lathe 01",
+    onCreateHandoff: vi.fn(),
+    onPerformanceUpdate: vi.fn(),
+    ...props,
+  };
+
+  const rendered = {
     user: userEvent.setup(),
     ...render(
-      <BrowserRouter>
-        <OperatorStationPanel
-          stationId="stn-1"
-          stationName="CNC Lathe 01"
-          onCreateHandoff={vi.fn()}
-          onPerformanceUpdate={vi.fn()}
-          {...props}
-        />
-      </BrowserRouter>,
+      <MemoryRouter>
+        <OperatorStationPanel {...panelProps} />
+      </MemoryRouter>,
     ),
   };
+
+  await waitFor(() => {
+    expect(screen.getByRole("heading", { name: panelProps.stationName })).toBeInTheDocument();
+  });
+
+  return rendered;
 }
 
 describe("OperatorStationPanel", () => {
@@ -122,27 +130,19 @@ describe("OperatorStationPanel", () => {
   });
 
   it("renders station name after loading", async () => {
-    renderPanel();
-    await waitFor(() => {
-      expect(screen.queryByText(/CNC Lathe 01/i) || screen.getByRole("heading")).toBeTruthy();
-    });
+    await renderPanel();
+    expect(screen.getByRole("heading", { name: /CNC Lathe 01/i })).toBeVisible();
   });
 
-  it("does NOT show supervisor override when user lacks supervisor access", () => {
-    renderPanel();
+  it("does NOT show supervisor override when user lacks supervisor access", async () => {
+    await renderPanel();
     expect(screen.queryByText(/Supervisor Override/i)).not.toBeInTheDocument();
   });
 
   it("shows supervisor override checkbox when user has supervisor access", async () => {
     mockSupervisorAccess = true;
-    renderPanel();
-    await waitFor(() => {
-      // The supervisor override UI should be present somewhere
-      const overrideEl = screen.queryByText(/Supervisor Override/i);
-      // It may only show when there's an active delivery action,
-      // so we just verify the component renders without crashing
-      expect(screen.queryByText(/CNC Lathe 01/i) || screen.getByRole("heading")).toBeTruthy();
-    });
+    await renderPanel();
+    expect(screen.getByRole("heading", { name: /CNC Lathe 01/i })).toBeVisible();
   });
 
   it("rpc mock is set up for pass_work_order_to_next_step", async () => {
@@ -160,7 +160,7 @@ describe("OperatorStationPanel", () => {
 
   it("calls onCreateHandoff when handoff button is clicked", async () => {
     const onCreateHandoff = vi.fn();
-    const { user } = renderPanel({ onCreateHandoff });
+    const { user } = await renderPanel({ onCreateHandoff });
 
     // Find and click the handoff button if present
     const handoffButton = screen.queryByRole("button", { name: /handoff/i });
@@ -172,7 +172,7 @@ describe("OperatorStationPanel", () => {
 
   it("calls onPerformanceUpdate when performance button is clicked", async () => {
     const onPerformanceUpdate = vi.fn();
-    const { user } = renderPanel({ onPerformanceUpdate });
+    const { user } = await renderPanel({ onPerformanceUpdate });
 
     // Find and click the performance button if present
     const perfButton = screen.queryByRole("button", { name: /performance/i });
@@ -184,7 +184,7 @@ describe("OperatorStationPanel", () => {
 
   it("calls onViewWorkOrder when work order link is clicked", async () => {
     const onViewWorkOrder = vi.fn();
-    const { user } = renderPanel({ onViewWorkOrder });
+    const { user } = await renderPanel({ onViewWorkOrder });
 
     // Find and click work order link if present
     const woLink = screen.queryByRole("button", { name: /view.*order/i });
@@ -204,7 +204,7 @@ describe("OperatorStationPanel", () => {
       statusText: "Internal Server Error",
     } as any);
 
-    renderPanel();
+    await renderPanel();
 
     // The actual error handling depends on component implementation
     // This test ensures the mock is set up correctly for error cases
@@ -216,14 +216,14 @@ describe("OperatorStationPanel", () => {
     expect(result.error).toMatchObject({ message: "Database error" });
   });
 
-  it("renders with different station names", () => {
-    renderPanel({ stationName: "Assembly Line 5" });
+  it("renders with different station names", async () => {
+    await renderPanel({ stationName: "Assembly Line 5" });
     // Component should render without crashing
     expect(document.body).toBeTruthy();
   });
 
-  it("handles missing optional props gracefully", () => {
+  it("handles missing optional props gracefully", async () => {
     // Render without optional onViewWorkOrder
-    expect(() => renderPanel({ onViewWorkOrder: undefined })).not.toThrow();
+    await expect(renderPanel({ onViewWorkOrder: undefined })).resolves.toBeTruthy();
   });
 });
