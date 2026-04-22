@@ -74,8 +74,10 @@ export function QueueListView({ items, onItemClick, onStatusChange, onDelete, on
     fetchStations();
   }, [items]);
 
-  const activeItems = items.filter(i => !["completed", "cancelled"].includes(i.status));
-  const doneItems = items.filter(i => ["completed", "cancelled"].includes(i.status));
+  // Cancelled WOs are hidden here — they live on the dedicated /work-orders/cancelled page.
+  const visibleItems = items.filter(i => i.status !== "cancelled");
+  const activeItems = visibleItems.filter(i => i.status !== "completed");
+  const doneItems = visibleItems.filter(i => i.status === "completed");
 
   return (
     <Card>
@@ -117,7 +119,15 @@ export function QueueListView({ items, onItemClick, onStatusChange, onDelete, on
                     <Select
                       value={item.status}
                       onValueChange={async (value) => {
-                        const result = await onStatusChange(item.id, value as QueueStatus);
+                        const next = value as QueueStatus;
+                        if (next === "cancelled" || next === "on_hold") {
+                          setPendingAction({ item, mode: next === "cancelled" ? "cancel" : "hold" });
+                          return;
+                        }
+                        const result = await onStatusChange(item.id, next);
+                        if (result.error) toast.error(result.error);
+                      }}
+                    >
                         if (result.error) toast.error(result.error);
                       }}
                     >
