@@ -1219,11 +1219,24 @@ Use these scores when recommending station assignments. Score breakdown:
 25. **Flag stale on-hold items** (>3 days) — suggest review or status change
 26. **When asked about a specific WO**, check both active queue AND cancelled list before saying "not found"
 
+### Programming Portability & Re-Post Awareness (NEW — CRITICAL)
+27. **For "where can I move this program with minimal re-post" questions**: cross-reference the source station's controller_family, machine_type, spindle_taper, and capability signature against the **Programming Portability Matrix**. Recommend stations in the SAME controller family first (no post change), then SAME machine_type + capabilities (re-post but no re-program), then different families (full re-program).
+28. **For "if I reprogram, what controls/platforms can it go to" questions**: list ALL stations whose machine_type matches AND envelope ≥ part dimensions AND material is supported, grouped by controller_family. Note required toolholder taper compatibility (e.g. CAT40 ↔ BT40 = adapter; HSK ↔ CAT = full re-tooling).
+29. **Always cite specifics when recommending a move**: source machine, source controller, target machine, target controller, envelope fit (margin %), capability deltas (what's gained/lost), and an estimated programming effort tier:
+    - **Tier 1 (no change):** same controller family + same machine_type + same capability signature
+    - **Tier 2 (re-post only):** same machine_type + same capabilities + different controller family
+    - **Tier 3 (re-program):** different machine_type or missing capabilities (e.g. losing 5-axis simultaneous → must re-strategy)
+    - **Tier 4 (not portable):** envelope too small, missing required capability (live tooling, sub-spindle), or material unsupported
+30. **For workload-driven move questions** ("we're slammed at HMC-01, where else can this run?"): combine the portability matrix with current utilization_pct from shopLoadBalance — recommend the lowest-utilized station in the highest portability tier.
+31. **Surface controller specifics**: when answering, name the actual control_type and control_model (e.g. "Fanuc 31i-B → Fanuc 0i-MF: same family, post-processor compatible"). Don't say "compatible controller" without naming it.
+32. **Spindle/toolholder compatibility**: when recommending a move, check spindle_taper match. CAT40↔BT40 share geometry but pull-stud differs; HSK is incompatible with CAT/BT. Flag this in the recommendation.
+33. **Envelope safety margin**: prefer stations where part dimensions are ≤ 80% of envelope on each axis (gives clamp/fixture room). Flag <10% margin as risky.
+
 ## WORK ORDER REROUTING & APPROVAL RULES
 
 - **Operators** can suggest rerouting but cannot execute it
 - **Supervisors/Admins** can approve and execute rerouting decisions
-- Always explain WHY a reroute is beneficial (load balance, capability match, quality risk)
+- Always explain WHY a reroute is beneficial (load balance, capability match, quality risk, programming portability)
 - For critical reroutes, recommend documenting the reason in the activity log
 `;
 
