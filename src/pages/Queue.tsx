@@ -20,6 +20,7 @@ import { QueueFilters } from "@/components/queue/QueueFilters";
 import { CreateQueueItemDialog } from "@/components/queue/CreateQueueItemDialog";
 import { QueueItemDetailDialog } from "@/components/queue/QueueItemDetailDialog";
 import { QueueStatsCards } from "@/components/queue/QueueStatsCards";
+import { DataSourceBanner } from "@/components/dashboard/DataSourceBanner";
 import { WorkOrderRoutingEditor } from "@/components/routing/WorkOrderRoutingEditor";
 import { OutsideProcessingManager } from "@/components/routing/OutsideProcessingManager";
 import { WorkOrderHistory } from "@/components/admin/WorkOrderHistory";
@@ -354,6 +355,7 @@ export default function Queue() {
           </TabsList>
 
           <TabsContent value="queue" className="mt-6 space-y-6">
+            <DataSourceBanner />
             <QueueStatsCards stats={stats} />
 
             {smartAlerts.length > 0 && (
