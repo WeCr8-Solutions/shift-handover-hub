@@ -138,6 +138,17 @@ Deno.serve(async (req) => {
       return await handleRetryErrors(adminClient, connection, organization_id, retry_error_ids, userId);
     }
 
+    // ---- ITAR/FedRAMP persistence-mode gate ─────────────────────────────────
+    // For read_through orgs (default for ITAR), JobBOSS data must NEVER be
+    // copied into queue_items. Test connection is allowed; sync is rejected.
+    // Mirrors sap-sync gate. get_erp_persistence_mode() falls back to
+    // 'read_through' which is the safe default.
+    const { data: persistenceModeData } = await adminClient.rpc(
+      "get_erp_persistence_mode",
+      { _org_id: organization_id },
+    );
+    const persistenceMode = (persistenceModeData as string) ?? "read_through";
+
     // Test connection mode
     if (test_connection) {
       try {
@@ -187,7 +198,30 @@ Deno.serve(async (req) => {
       }
     }
 
-    // ---- Full sync flow ----
+    // ---- Persistence-mode short-circuit ─────────────────────────────────────
+    // ITAR / FedRAMP: read_through orgs cannot copy ERP data into queue_items.
+    // Surface a 200 success with skipped=true so the UI can render a banner
+    // and the user understands the dashboard will read live from JobBOSS.
+    if (persistenceMode === "read_through") {
+      return new Response(
+        JSON.stringify({
+          success: true,
+          skipped: true,
+          reason: "read_through_persistence_mode",
+          message:
+            "Organization is in read_through mode (default for ITAR/FedRAMP). " +
+            "JobBOSS work orders are not copied into Lovable Cloud — the dashboard reads them live. " +
+            "Set erp_persistence_mode='write_through' on a non-ITAR org to enable sync.",
+          records_fetched: 0,
+          records_created: 0,
+          records_updated: 0,
+          errors_count: 0,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // ---- Full sync flow (write_through only) ────────────────────────────────
     const startTime = Date.now();
 
     // Check ERP usage metering
