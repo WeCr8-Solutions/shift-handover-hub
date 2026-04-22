@@ -7267,6 +7267,7 @@ export type Database = {
           id: string
           is_rework: boolean | null
           item_type: Database["public"]["Enums"]["queue_item_type"]
+          last_synced_at: string | null
           material_type: string | null
           metadata: Json | null
           on_hold_at: string | null
@@ -7298,6 +7299,7 @@ export type Database = {
           scheduled_start: string | null
           setup_time_minutes: number | null
           source_quote_id: string | null
+          source_system: string | null
           started_at: string | null
           station_id: string | null
           status: Database["public"]["Enums"]["queue_status"]
@@ -7334,6 +7336,7 @@ export type Database = {
           id?: string
           is_rework?: boolean | null
           item_type?: Database["public"]["Enums"]["queue_item_type"]
+          last_synced_at?: string | null
           material_type?: string | null
           metadata?: Json | null
           on_hold_at?: string | null
@@ -7365,6 +7368,7 @@ export type Database = {
           scheduled_start?: string | null
           setup_time_minutes?: number | null
           source_quote_id?: string | null
+          source_system?: string | null
           started_at?: string | null
           station_id?: string | null
           status?: Database["public"]["Enums"]["queue_status"]
@@ -7401,6 +7405,7 @@ export type Database = {
           id?: string
           is_rework?: boolean | null
           item_type?: Database["public"]["Enums"]["queue_item_type"]
+          last_synced_at?: string | null
           material_type?: string | null
           metadata?: Json | null
           on_hold_at?: string | null
@@ -7432,6 +7437,7 @@ export type Database = {
           scheduled_start?: string | null
           setup_time_minutes?: number | null
           source_quote_id?: string | null
+          source_system?: string | null
           started_at?: string | null
           station_id?: string | null
           status?: Database["public"]["Enums"]["queue_status"]
