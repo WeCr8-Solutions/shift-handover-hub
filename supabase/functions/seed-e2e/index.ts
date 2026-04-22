@@ -93,8 +93,8 @@ Deno.serve(async (req) => {
             Deno.env.get("SUPABASE_ANON_KEY") ?? "",
             { global: { headers: { Authorization: authHeader } } },
           );
-          const { data: claimsData } = await userClient.auth.getClaims(token);
-          const uid = claimsData?.claims?.sub as string | undefined;
+          const { data: userData } = await userClient.auth.getUser(token);
+          const uid = userData?.user?.id as string | undefined;
           if (uid) {
             // Check platform admin role via has_role security-definer fn.
             const { data: isAdmin } = await admin.rpc("has_role", {
