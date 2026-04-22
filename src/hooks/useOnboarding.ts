@@ -7,6 +7,7 @@ export type OnboardingStep =
   | 'welcome'
   | 'organization-setup'
   | 'shop-setup'
+  | 'data-source'
   | 'dashboard-overview'
   | 'station-cards'
   | 'quote-to-workorder'
@@ -28,6 +29,7 @@ export const ONBOARDING_STEPS: OnboardingStepDef[] = [
   { id: 'welcome', title: 'Welcome to JobLine.ai', description: 'Your Digital Expeditor for manufacturing workflows' },
   { id: 'organization-setup', title: 'Create Your Organization', description: 'Set up your company workspace with secure data isolation' },
   { id: 'shop-setup', title: 'Set Up Your Shop', description: 'Configure teams, stations, routing templates, and users' },
+  { id: 'data-source', title: 'Choose Your Data Source', description: 'Run native on Lovable Cloud, or connect JobBOSS or SAP S/4HANA' },
   { id: 'dashboard-overview', title: 'Digital Expeditor Dashboard', description: 'See shift statistics, active stations, and team performance at a glance' },
   { id: 'station-cards', title: 'Select & Deliver Work Orders', description: 'Pick available jobs at your station and confirm delivery to the next operation' },
   { id: 'handoff-submission', title: 'Shift Handoffs', description: 'Document end-of-shift handoffs with machine condition, quality notes, and continuous improvement ideas' },
