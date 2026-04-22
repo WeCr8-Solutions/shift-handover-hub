@@ -170,6 +170,10 @@ export function ERPConnectorSettings() {
   const [syncInterval, setSyncInterval] = useState(10);
   const [isActive, setIsActive] = useState(false);
 
+  // SAP-specific fields (stored in connection.metadata)
+  const [sapInstanceType, setSapInstanceType] = useState<"sandbox" | "production">("sandbox");
+  const [sapDefaultPlant, setSapDefaultPlant] = useState("");
+
   const [newErpStatus, setNewErpStatus] = useState("");
   const [newJoblineStatus, setNewJoblineStatus] = useState("pending");
 
@@ -184,9 +188,22 @@ export function ERPConnectorSettings() {
     setTenantId(connection.tenant_identifier ?? "");
     setSyncInterval(connection.sync_interval_minutes ?? 10);
     setIsActive(connection.is_active ?? false);
+
+    const meta = (connection.metadata ?? {}) as Record<string, unknown>;
+    setSapInstanceType((meta.sap_instance_type as "sandbox" | "production") ?? "sandbox");
+    setSapDefaultPlant((meta.sap_default_plant as string) ?? "");
   }, [connection]);
 
+  const isSap = vendor === "sap";
+
   const handleSaveConnection = async () => {
+    const baseMeta = (connection?.metadata ?? {}) as Record<string, unknown>;
+    const nextMeta: Record<string, unknown> = { ...baseMeta };
+    if (isSap) {
+      nextMeta.sap_instance_type = sapInstanceType;
+      nextMeta.sap_default_plant = sapDefaultPlant || null;
+    }
+
     const result = await saveConnection({
       erp_vendor: vendor,
       api_base_url: apiBaseUrl || null,
@@ -197,6 +214,7 @@ export function ERPConnectorSettings() {
       tenant_identifier: tenantId || null,
       sync_interval_minutes: syncInterval,
       is_active: isActive,
+      metadata: nextMeta,
     });
 
     if (result.error) return;
