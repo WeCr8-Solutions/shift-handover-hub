@@ -9,7 +9,7 @@
  * - app.jobline.ai              → / (placeholder; app shell not bound yet)
  * - dev.jobline.ai              → /dev   (Developer Portal)
  * - docs.jobline.ai             → /help  (Help Center / Docs)
- * - status.jobline.ai           → external Instatus page; if it ever lands here, send to /updates
+ * - status.jobline.ai           → external UptimeRobot status page; if it ever lands here, send to /updates
  *
  * The rewrite only runs at the root path ("/" or "") so deep links like
  * `dev.jobline.ai/dev/sap/overview` are preserved.
@@ -26,7 +26,7 @@ const HOST_MAP: Record<string, SubdomainTarget> = {
   "docs.jobline.ai": { defaultPath: "/help" },
   "status.jobline.ai": {
     defaultPath: "/updates",
-    externalUrl: "https://jobline.instatus.com",
+    externalUrl: "https://stats.uptimerobot.com/Ac1v7E00v2",
   },
   "app.jobline.ai": { defaultPath: "/" },
 };
