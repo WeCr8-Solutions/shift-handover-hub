@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CertificateTemplate as CertPreview } from "@/components/certificates/CertificateTemplate";
+import { PublishReleaseDialog } from "./PublishReleaseDialog";
 import type { CertificateRecord, CertificateProgram } from "@/lib/certificates";
 import { Plus, Upload, CheckCircle2, Trash2, Save, Award, Image as ImageIcon } from "lucide-react";
 
