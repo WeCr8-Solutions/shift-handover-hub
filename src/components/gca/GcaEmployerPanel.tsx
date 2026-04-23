@@ -120,7 +120,7 @@ export function GcaEmployerPanel() {
             </div>
           </div>
           <div className="flex justify-end mt-3">
-            <Button onClick={submit} disabled={assign.isPending}>
+            <Button onClick={submit} disabled={assign.isPending} className="w-full sm:w-auto">
               <UserPlus className="w-4 h-4 mr-1" /> Assign
             </Button>
           </div>
