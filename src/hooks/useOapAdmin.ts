@@ -12,6 +12,14 @@ export interface OapCourse {
   estimated_minutes: number | null;
   is_published: boolean;
   sort_order: number;
+  cover_media_id?: string | null;
+  cover_overlay_text?: string | null;
+  cover_overlay_opacity?: number | null;
+  cover_overlay_position?: string | null;
+  cover_overlay_text_color?: string | null;
+  content_year?: number | null;
+  last_published_at?: string | null;
+  last_published_by?: string | null;
 }
 
 export interface OapLesson {
@@ -23,6 +31,14 @@ export interface OapLesson {
   estimated_minutes: number | null;
   sort_order: number;
   is_published: boolean;
+  cover_media_id?: string | null;
+  cover_overlay_text?: string | null;
+  cover_overlay_opacity?: number | null;
+  cover_overlay_position?: string | null;
+  cover_overlay_text_color?: string | null;
+  content_year?: number | null;
+  last_published_at?: string | null;
+  last_published_by?: string | null;
 }
 
 export interface OapQuiz {

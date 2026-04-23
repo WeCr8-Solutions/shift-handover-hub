@@ -13,6 +13,14 @@ export interface GcaBank {
   is_pro_only: boolean;
   is_published: boolean;
   sort_order: number;
+  cover_media_id?: string | null;
+  cover_overlay_text?: string | null;
+  cover_overlay_opacity?: number | null;
+  cover_overlay_position?: string | null;
+  cover_overlay_text_color?: string | null;
+  content_year?: number | null;
+  last_published_at?: string | null;
+  last_published_by?: string | null;
 }
 
 export interface GcaQuestion {

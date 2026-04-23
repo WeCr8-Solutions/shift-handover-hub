@@ -23,6 +23,9 @@ export interface CertificateTemplate {
   footer_text: string | null;
   font_family_serif: string | null;
   font_family_sans: string | null;
+  content_year?: number | null;
+  last_published_at?: string | null;
+  last_published_by?: string | null;
   created_at: string;
   updated_at: string;
 }

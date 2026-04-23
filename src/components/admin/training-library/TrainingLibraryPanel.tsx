@@ -11,6 +11,7 @@ import { OapMentorAdminPanel } from "@/components/oap/OapMentorAdminPanel";
 import { GcaProgramEditor } from "./GcaProgramEditor";
 import { OapProgramEditor } from "./OapProgramEditor";
 import { CertificateTemplateStudio } from "./CertificateTemplateStudio";
+import { ReleaseLogPanel } from "./ReleaseLogPanel";
 import {
   Library,
   Wrench,
@@ -21,6 +22,7 @@ import {
   Tags,
   Award,
   ShieldCheck,
+  History,
 } from "lucide-react";
 import type { AdminComponentAccess } from "@/types/admin";
 
