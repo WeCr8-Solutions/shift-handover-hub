@@ -199,7 +199,7 @@ function BankDetail({
 
             {!isNew && bank.id && (
               <MediaOverlayEditor
-                entityType="gca_bank"
+                entityType="gca_question_bank"
                 entityId={bank.id}
                 readOnly={readOnly}
                 isPlatformAdmin={isPlatformAdmin}
