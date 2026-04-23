@@ -16,6 +16,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { BuyCertificateDialog } from "@/components/certificates/BuyCertificateDialog";
+import { MediaOverlayDisplay } from "@/components/training/MediaOverlayDisplay";
 
 export default function OapHub() {
   const { user } = useAuth();
