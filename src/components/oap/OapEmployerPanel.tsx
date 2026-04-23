@@ -79,6 +79,15 @@ export function OapEmployerPanel() {
 
   return (
     <div className="space-y-4">
+      {/* Quick action: import a new hire's portable transcript via transfer code */}
+      <div className="flex justify-end">
+        <Button size="sm" variant="outline" onClick={() => setImportOpen(true)}>
+          <ArrowDownToLine className="w-4 h-4 mr-1" /> Redeem operator transfer code
+        </Button>
+      </div>
+
+      <OapRecertDueWidget />
+
       <Card>
         <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0">
           <div>
