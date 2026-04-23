@@ -176,8 +176,8 @@ export function OapEmployerPanel() {
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0">
-          <div>
+        <CardHeader className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 space-y-0">
+          <div className="min-w-0">
             <CardTitle className="text-base flex items-center gap-2">
               <Users className="w-4 h-4" /> Operator Enrollments
             </CardTitle>
