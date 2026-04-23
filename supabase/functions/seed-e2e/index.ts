@@ -294,6 +294,65 @@ Deno.serve(async (req) => {
         .eq("id", wo.id);
     }
 
+    // ─── Scenario extras ──────────────────────────────────────────────
+    let extras: Record<string, unknown> = {};
+
+    if (scenario === "cert_paid") {
+      // Insert a paid OAP cert directly (skips Stripe). Idempotent by cert_id.
+      const certId = "OAP-E2E-PAID-2026";
+      const { data: existing } = await admin
+        .from("oap_certificates")
+        .select("cert_id")
+        .eq("cert_id", certId)
+        .maybeSingle();
+      if (!existing) {
+        await admin.from("oap_certificates").insert({
+          cert_id: certId,
+          program_name: "OAP — E2E Paid Certificate",
+          recipient_name: "E2E Operator",
+          recipient_email: OPERATOR_EMAIL,
+          organization_id: org!.id,
+          status: "active",
+          stripe_session_id: "cs_test_e2e_paid",
+          valid_from: new Date().toISOString(),
+          issued_at: new Date().toISOString(),
+        } as any);
+      }
+      extras = { cert: { cert_id: certId } };
+    }
+
+    if (scenario === "recert_lifecycle") {
+      // Seed an active enrollment with next_recert_due in 7 days.
+      const dueDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      const { data: existing } = await admin
+        .from("oap_enrollments")
+        .select("id")
+        .eq("organization_id", org!.id)
+        .eq("operator_user_id", operatorUser.id)
+        .maybeSingle();
+      let enrollmentId = existing?.id as string | undefined;
+      if (!enrollmentId) {
+        const { data: created } = await admin
+          .from("oap_enrollments")
+          .insert({
+            organization_id: org!.id,
+            operator_user_id: operatorUser.id,
+            status: "in_progress",
+            lifecycle_status: "active",
+            next_recert_due: dueDate,
+          } as any)
+          .select()
+          .single();
+        enrollmentId = (created as any)?.id;
+      } else {
+        await admin
+          .from("oap_enrollments")
+          .update({ lifecycle_status: "active", next_recert_due: dueDate } as any)
+          .eq("id", enrollmentId);
+      }
+      extras = { enrollment: { id: enrollmentId, next_recert_due: dueDate } };
+    }
+
     return json({
       ok: true,
       scenario,
@@ -303,6 +362,7 @@ Deno.serve(async (req) => {
       team: { id: team!.id, name: team!.name },
       station: { id: station!.id, station_id: station!.station_id, name: station!.name },
       work_order: { id: wo!.id, code: woCode },
+      ...extras,
     });
   } catch (e) {
     console.error("seed-e2e error", e);
