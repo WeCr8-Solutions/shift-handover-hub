@@ -185,10 +185,20 @@ function LessonEditor({ courseId, lessonId, m, readOnly }: { courseId: string; l
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-base">Lesson</CardTitle>
+        <CardTitle className="text-base flex items-center gap-2">
+          Lesson
+          {draft.content_year && <Badge variant="outline" className="text-[10px]">Updated · {draft.content_year}</Badge>}
+        </CardTitle>
         {!readOnly && (
           <div className="flex gap-2">
             <Button size="sm" onClick={() => m.upsertLesson.mutate(draft)} disabled={m.upsertLesson.isPending} className="gap-1"><Save className="w-3.5 h-3.5" /> Save</Button>
+            <PublishReleaseDialog
+              program="OAP"
+              entityType="lesson"
+              entityId={lesson.id}
+              entityLabel={draft.title}
+              contentTable="oap_lessons"
+            />
             <Button size="sm" variant="ghost" className="text-destructive" onClick={() => m.deleteLesson.mutate({ id: lesson.id, course_id: courseId })}>
               <Trash2 className="w-3.5 h-3.5" />
             </Button>
@@ -206,6 +216,21 @@ function LessonEditor({ courseId, lessonId, m, readOnly }: { courseId: string; l
           <Label className="text-xs">Body (Markdown)</Label>
           <MarkdownEditor value={draft.body_markdown} onChange={(v) => setDraft({ ...draft, body_markdown: v })} />
         </div>
+
+        <MediaOverlayEditor
+          entityType="oap_lesson"
+          entityId={lesson.id}
+          readOnly={readOnly}
+          value={{
+            cover_media_id: draft.cover_media_id ?? null,
+            cover_overlay_text: draft.cover_overlay_text ?? null,
+            cover_overlay_opacity: draft.cover_overlay_opacity ?? null,
+            cover_overlay_position: draft.cover_overlay_position ?? null,
+            cover_overlay_text_color: draft.cover_overlay_text_color ?? null,
+          }}
+          onChange={(v) => setDraft({ ...draft, ...v })}
+        />
+
         <label className="flex items-center gap-2 text-sm">
           <Switch checked={draft.is_published} onCheckedChange={(v) => setDraft({ ...draft, is_published: v })} disabled={readOnly} /> Published
         </label>
