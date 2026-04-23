@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CertificateTemplate as CertPreview } from "@/components/certificates/CertificateTemplate";
+import { PublishReleaseDialog } from "./PublishReleaseDialog";
 import type { CertificateRecord, CertificateProgram } from "@/lib/certificates";
 import { Plus, Upload, CheckCircle2, Trash2, Save, Award, Image as ImageIcon } from "lucide-react";
 
@@ -148,7 +149,10 @@ function TemplateEditor({
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-base truncate">{draft.name}</CardTitle>
+        <CardTitle className="text-base truncate flex items-center gap-2">
+          {draft.name}
+          {draft.content_year && <Badge variant="outline" className="text-[10px]">Updated · {draft.content_year}</Badge>}
+        </CardTitle>
         {!readOnly && (
           <div className="flex gap-2">
             {!draft.is_active && (
@@ -161,6 +165,14 @@ function TemplateEditor({
             <Button size="sm" onClick={() => m.upsert.mutate(draft)} disabled={m.upsert.isPending} className="gap-1">
               <Save className="w-3.5 h-3.5" /> Save
             </Button>
+            <PublishReleaseDialog
+              program="CERT"
+              entityType="template"
+              entityId={draft.id}
+              entityLabel={`${draft.program} · ${draft.variant} · ${draft.name}`}
+              organizationId={draft.organization_id}
+              contentTable="certificate_templates"
+            />
             <Button size="sm" variant="ghost" className="text-destructive" onClick={() => m.remove.mutate(draft.id)}>
               <Trash2 className="w-3.5 h-3.5" />
             </Button>

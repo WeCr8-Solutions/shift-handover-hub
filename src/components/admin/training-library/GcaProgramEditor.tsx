@@ -196,6 +196,24 @@ function BankDetail({
               <Label className="text-xs">Description</Label>
               <Textarea value={bank.description ?? ""} onChange={(e) => onChange({ ...bank, description: e.target.value })} disabled={readOnly} rows={2} />
             </div>
+
+            {!isNew && bank.id && (
+              <MediaOverlayEditor
+                entityType="gca_question_bank"
+                entityId={bank.id}
+                readOnly={readOnly}
+                isPlatformAdmin={isPlatformAdmin}
+                value={{
+                  cover_media_id: bank.cover_media_id ?? null,
+                  cover_overlay_text: bank.cover_overlay_text ?? null,
+                  cover_overlay_opacity: bank.cover_overlay_opacity ?? null,
+                  cover_overlay_position: bank.cover_overlay_position ?? null,
+                  cover_overlay_text_color: bank.cover_overlay_text_color ?? null,
+                }}
+                onChange={(v) => onChange({ ...bank, ...v })}
+              />
+            )}
+
             <div className="flex items-center gap-6">
               <label className="flex items-center gap-2 text-sm">
                 <Switch checked={!!bank.is_published} onCheckedChange={(v) => onChange({ ...bank, is_published: v })} disabled={readOnly} /> Published

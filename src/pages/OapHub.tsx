@@ -16,6 +16,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { BuyCertificateDialog } from "@/components/certificates/BuyCertificateDialog";
+import { MediaOverlayDisplay } from "@/components/training/MediaOverlayDisplay";
 
 export default function OapHub() {
   const { user } = useAuth();
@@ -91,17 +92,31 @@ export default function OapHub() {
             <p className="text-sm text-muted-foreground">Loading sections…</p>
           )}
           {courses.map((c) => (
-            <Card key={c.id} className="hover:border-primary transition">
+            <Card key={c.id} className="hover:border-primary transition overflow-hidden flex flex-col">
+              {c.cover_media_id && (
+                <MediaOverlayDisplay
+                  mediaId={c.cover_media_id}
+                  overlayText={c.cover_overlay_text}
+                  overlayOpacity={c.cover_overlay_opacity}
+                  overlayPosition={c.cover_overlay_position}
+                  overlayTextColor={c.cover_overlay_text_color}
+                  rounded={false}
+                  aspect="16/9"
+                />
+              )}
               <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
+                <CardTitle className="text-base flex items-center gap-2 flex-wrap">
                   <Badge variant="outline" className="text-xs">{c.section_number}</Badge>
-                  {c.title}
+                  <span className="flex-1">{c.title}</span>
+                  {c.content_year && (
+                    <Badge variant="secondary" className="text-[10px]">Updated · {c.content_year}</Badge>
+                  )}
                 </CardTitle>
                 {c.summary && (
                   <p className="text-xs text-muted-foreground">{c.summary}</p>
                 )}
               </CardHeader>
-              <CardContent className="flex items-center justify-between">
+              <CardContent className="flex items-center justify-between mt-auto">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Clock className="w-3 h-3" /> ~{c.estimated_minutes ?? 30} min
                 </div>
