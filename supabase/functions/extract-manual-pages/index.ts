@@ -11,25 +11,13 @@ Deno.serve(async (req) => {
   try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return json({ error: "Unauthorized" }, 401);
     }
 
     const { manual_id } = await req.json();
     if (!manual_id || typeof manual_id !== "string") {
-      return new Response(JSON.stringify({ error: "manual_id required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return json({ error: "manual_id required" }, 400);
     }
-
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-      { global: { headers: { Authorization: authHeader } } },
-    );
 
     const userClient = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -37,16 +25,16 @@ Deno.serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } },
     );
     const { data: userData } = await userClient.auth.getUser();
-    if (!userData?.user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    if (!userData?.user) return json({ error: "Unauthorized" }, 401);
+
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    );
 
     const { data: manual, error: mErr } = await supabase
       .from("machine_manuals")
-      .select("id, storage_path, page_count")
+      .select("id, storage_path")
       .eq("id", manual_id)
       .single();
     if (mErr || !manual) throw new Error(mErr?.message || "Manual not found");
@@ -56,26 +44,21 @@ Deno.serve(async (req) => {
       .download(manual.storage_path);
     if (dlErr || !file) throw new Error(dlErr?.message || "Download failed");
 
-    // Lightweight text extraction using pdf-parse style approach (Deno-compatible).
-    // We import pdfjs to read page text without rendering.
     const buf = new Uint8Array(await file.arrayBuffer());
-    const pdfjs = await import("https://esm.sh/pdfjs-dist@4.0.379/legacy/build/pdf.mjs");
-    // Disable worker (Deno has no Workers in functions)
-    (pdfjs as any).GlobalWorkerOptions.workerSrc = "";
-
-    const loadingTask = (pdfjs as any).getDocument({ data: buf, disableWorker: true });
-    const pdf = await loadingTask.promise;
+    // Use unpdf which is a pure-JS, Deno-compatible pdfjs build (no canvas).
+    const { extractText, getDocumentProxy } = await import(
+      "https://esm.sh/unpdf@0.12.1"
+    );
+    const pdf = await getDocumentProxy(buf);
     const pageCount: number = pdf.numPages;
 
     const rows: { manual_id: string; page_number: number; text_content: string }[] = [];
     for (let i = 1; i <= pageCount; i++) {
-      const page = await pdf.getPage(i);
-      const textContent = await page.getTextContent();
-      const text = textContent.items.map((it: any) => it.str).join(" ");
-      rows.push({ manual_id, page_number: i, text_content: text });
+      const { text } = await extractText(pdf, { mergePages: false, pages: [i] });
+      const pageText = Array.isArray(text) ? (text[0] || "") : String(text || "");
+      rows.push({ manual_id, page_number: i, text_content: pageText });
     }
 
-    // Insert in chunks of 100
     for (let i = 0; i < rows.length; i += 100) {
       const chunk = rows.slice(i, i + 100);
       const { error } = await supabase
@@ -89,15 +72,16 @@ Deno.serve(async (req) => {
       .update({ page_count: pageCount })
       .eq("id", manual_id);
 
-    return new Response(
-      JSON.stringify({ pages_extracted: pageCount, ocr_pages: 0 }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
-    );
+    return json({ pages_extracted: pageCount, ocr_pages: 0 });
   } catch (e) {
     console.error("extract-manual-pages error:", e);
-    return new Response(JSON.stringify({ error: (e as Error).message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return json({ error: (e as Error).message }, 500);
   }
 });
+
+function json(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
