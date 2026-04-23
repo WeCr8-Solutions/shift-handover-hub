@@ -8,6 +8,9 @@ import { OrgOverridesPanel } from "./OrgOverridesPanel";
 import { BulkTagPanel } from "./BulkTagPanel";
 import { CertificateIssuancePanel } from "@/components/certificates/CertificateIssuancePanel";
 import { OapMentorAdminPanel } from "@/components/oap/OapMentorAdminPanel";
+import { GcaProgramEditor } from "./GcaProgramEditor";
+import { OapProgramEditor } from "./OapProgramEditor";
+import { CertificateTemplateStudio } from "./CertificateTemplateStudio";
 import {
   Library,
   Wrench,
@@ -50,10 +53,13 @@ export function TrainingLibraryPanel({ access }: Props) {
             <Cog className="w-3.5 h-3.5" /> Machining Ops
           </TabsTrigger>
           <TabsTrigger value="gca" className="gap-1">
-            <GraduationCap className="w-3.5 h-3.5" /> GCA Mapping
+            <GraduationCap className="w-3.5 h-3.5" /> GCA Editor
           </TabsTrigger>
           <TabsTrigger value="oap" className="gap-1">
-            <ClipboardCheck className="w-3.5 h-3.5" /> OAP Mapping
+            <ClipboardCheck className="w-3.5 h-3.5" /> OAP Editor
+          </TabsTrigger>
+          <TabsTrigger value="templates" className="gap-1">
+            <Award className="w-3.5 h-3.5" /> Cert Studio
           </TabsTrigger>
           <TabsTrigger value="overrides" className="gap-1">
             <Settings2 className="w-3.5 h-3.5" /> Org Overrides
@@ -80,36 +86,25 @@ export function TrainingLibraryPanel({ access }: Props) {
         </TabsContent>
 
         <TabsContent value="gca">
-          <Card>
-            <CardContent className="py-6 text-sm text-muted-foreground">
-              GCA question/bank media mapping UI ships next. Underlying tables and
-              the polymorphic media layer are already in place — you can attach
-              media to <code>gca_question</code> and <code>gca_question_bank</code>{" "}
-              entity types via the same uploader as the Tools tab.
-            </CardContent>
-          </Card>
+          <GcaProgramEditor isPlatformAdmin={access.isPlatformAdmin} />
         </TabsContent>
 
         <TabsContent value="oap">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <ClipboardCheck className="w-4 h-4" /> OAP Mentor Walkthrough
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm text-muted-foreground">
-              <p>
-                The mentor check-off screen lives at{" "}
-                <code>/oap/walkthrough</code>. Designated mentors and supervisors
-                can start a session for any operator and sign off the 7 OAP
-                sections (Safety, Material Handling, Measurement, Tooling,
-                Machine Qualification, Floor Certification).
+          <OapProgramEditor isPlatformAdmin={access.isPlatformAdmin} />
+          <Card className="mt-3">
+            <CardContent className="py-3 flex items-center justify-between">
+              <p className="text-xs text-muted-foreground">
+                Mentor check-off screen lives at <code>/oap/walkthrough</code>.
               </p>
-              <Button asChild size="sm">
+              <Button asChild size="sm" variant="outline">
                 <Link to="/oap/walkthrough">Open Mentor Walkthrough →</Link>
               </Button>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="templates">
+          <CertificateTemplateStudio isPlatformAdmin={access.isPlatformAdmin} />
         </TabsContent>
 
         <TabsContent value="mentors">
