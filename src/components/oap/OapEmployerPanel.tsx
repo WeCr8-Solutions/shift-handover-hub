@@ -35,6 +35,8 @@ import { OapBulkEnrollDialog } from "./OapBulkEnrollDialog";
 import { OapRecertManager } from "./OapRecertManager";
 import { OapRedeemTransferDialog } from "./OapRedeemTransferDialog";
 import { OapBrowseTemplatesDialog } from "./OapBrowseTemplatesDialog";
+import { OapRecertDueWidget } from "./OapRecertDueWidget";
+import { CertificateIssuancePanel } from "@/components/certificates/CertificateIssuancePanel";
 
 function downloadEnrollmentsCsv(enrollments: any[], members: any[], programs: any[]) {
   const header = ["operator_name", "operator_email", "role_program", "status", "started_at", "expected_completion_at", "completed_at"];
@@ -77,6 +79,15 @@ export function OapEmployerPanel() {
 
   return (
     <div className="space-y-4">
+      {/* Quick action: import a new hire's portable transcript via transfer code */}
+      <div className="flex justify-end">
+        <Button size="sm" variant="outline" onClick={() => setImportOpen(true)}>
+          <ArrowDownToLine className="w-4 h-4 mr-1" /> Redeem operator transfer code
+        </Button>
+      </div>
+
+      <OapRecertDueWidget />
+
       <Card>
         <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0">
           <div>
@@ -245,6 +256,11 @@ export function OapEmployerPanel() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Free issuance for org admins/supervisors — no Stripe checkout */}
+      {organization?.id && (
+        <CertificateIssuancePanel defaultOrgId={organization.id} />
+      )}
 
       {recertEnrollment && (
         <OapRecertManager

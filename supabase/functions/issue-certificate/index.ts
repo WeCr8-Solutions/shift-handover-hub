@@ -125,6 +125,23 @@ serve(async (req) => {
     const userId = body.userId ?? caller.id;
     const validFrom = new Date().toISOString().slice(0, 10);
 
+    // Default validUntil: for OAP issued by an org, use org's oap_default_recert_months
+    // (default 12). GCA stays lifetime (null) unless caller passes one.
+    let resolvedValidUntil: string | null = body.validUntil ?? null;
+    if (!resolvedValidUntil && body.program === "OAP" && body.organizationId) {
+      const { data: orgRecert } = await supabaseAdmin
+        .from("organizations")
+        .select("oap_default_recert_months")
+        .eq("id", body.organizationId)
+        .maybeSingle();
+      const months = (orgRecert as any)?.oap_default_recert_months ?? 12;
+      if (months && months > 0) {
+        const d = new Date();
+        d.setMonth(d.getMonth() + months);
+        resolvedValidUntil = d.toISOString().slice(0, 10);
+      }
+    }
+
     // Snapshot recipient public username (from operator_profiles) so the QR keeps
     // working even if the username later changes.
     const { data: recipientProfile } = await supabaseAdmin
@@ -172,7 +189,7 @@ serve(async (req) => {
       recipient_username: recipientUsername,
       program_name: body.programName,
       valid_from: validFrom,
-      valid_until: body.validUntil ?? null,
+      valid_until: resolvedValidUntil,
       amount_cents: body.amountCents ?? 1200,
       stripe_session_id: body.stripeSessionId ?? null,
       signed_by_user_id: signedByUserId,
@@ -186,6 +203,8 @@ serve(async (req) => {
       insertPayload.vertical = vertical;
     } else {
       insertPayload.bank_id = body.bankId ?? null;
+      // Track issuing org so org admins can audit GCA certs they paid to issue.
+      if (body.organizationId) insertPayload.issuing_organization_id = body.organizationId;
     }
 
     const { data: inserted, error: insErr } = await supabaseAdmin
@@ -212,6 +231,7 @@ serve(async (req) => {
       try {
         const origin = req.headers.get("origin") ?? "https://jobline.ai";
         const verifyUrl = `${origin}/verify/${certId}`;
+        const talentUrl = recipientUsername ? `https://jobline.ai/talent/${recipientUsername}` : null;
         await supabaseAdmin.functions.invoke("send-email", {
           body: {
             to: body.recipientEmail,
@@ -225,6 +245,7 @@ serve(async (req) => {
                   <div style="font-family:ui-monospace,monospace;font-size:18px;font-weight:600">${certId}</div>
                 </div>
                 <p>Verify or share at:<br/><a href="${verifyUrl}">${verifyUrl}</a></p>
+                ${talentUrl ? `<p>Your public operator profile:<br/><a href="${talentUrl}">${talentUrl}</a></p>` : ""}
                 <p style="font-size:12px;color:#64748B">JobLine.ai — Operator Acceptance Program & G-Code Academy</p>
               </div>
             `,

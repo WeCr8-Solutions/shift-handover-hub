@@ -7,6 +7,7 @@ import { ShieldCheck, ShieldAlert, ShieldX, ArrowRight, Loader2, Printer, Scroll
 import { SEOHead } from "@/components/SEOHead";
 import { useCertificates } from "@/hooks/useCertificates";
 import { CertificateTemplate, type CertificateVariant } from "@/components/certificates/CertificateTemplate";
+import { CertificatePdfDownloadButton } from "@/components/certificates/CertificatePdfDownloadButton";
 import type { CertificateRecord } from "@/lib/certificates";
 
 /**
@@ -133,6 +134,11 @@ export default function VerifyCertificate() {
                   <Button size="sm" onClick={() => window.print()}>
                     <Printer className="w-3.5 h-3.5 mr-1.5" /> Print certificate
                   </Button>
+                  <CertificatePdfDownloadButton
+                    targetElementId="cert-print-target"
+                    fileName={`${cert.certId}-${variant}.pdf`}
+                    variantLabel={variant === "diploma" ? "Diploma" : "Digital"}
+                  />
                   <div className="inline-flex rounded-md border bg-muted/40 p-0.5">
                     <Button
                       size="sm"
@@ -169,7 +175,7 @@ export default function VerifyCertificate() {
             <div className="hidden print:block">
               <CertificateTemplate cert={cert} variant="diploma" printMode />
             </div>
-            <div className="print:hidden">
+            <div className="print:hidden" id="cert-print-target">
               <CertificateTemplate cert={cert} variant={variant} />
             </div>
           </div>

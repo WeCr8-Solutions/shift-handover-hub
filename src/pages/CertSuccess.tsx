@@ -18,6 +18,8 @@ export default function CertSuccess() {
   const sessionId = params.get("session_id");
   const [certId, setCertId] = useState<string | null>(null);
   const [recipientEmail, setRecipientEmail] = useState<string | null>(null);
+  const [recipientName, setRecipientName] = useState<string | null>(null);
+  const [programName, setProgramName] = useState<string | null>(null);
   const [polling, setPolling] = useState(true);
 
   useEffect(() => {
@@ -28,8 +30,6 @@ export default function CertSuccess() {
     let attempts = 0;
     const interval = setInterval(async () => {
       attempts += 1;
-      // Use SECURITY DEFINER RPC — direct table reads no longer expose
-      // recipient_email or stripe_session_id to the public.
       const { data } = await supabase.rpc("lookup_cert_by_stripe_session", {
         _session_id: sessionId,
       });
@@ -37,10 +37,11 @@ export default function CertSuccess() {
       if (found?.cert_id) {
         setCertId(found.cert_id);
         setRecipientEmail(found.recipient_email_masked ?? null);
+        setRecipientName((found as any).recipient_name ?? null);
+        setProgramName((found as any).program_name ?? null);
         setPolling(false);
         clearInterval(interval);
       } else if (attempts >= 20) {
-        // ~60s — give up and show fallback
         setPolling(false);
         clearInterval(interval);
       }
@@ -76,7 +77,12 @@ export default function CertSuccess() {
                 <CheckCircle2 className="w-8 h-8 text-primary" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold mb-2">Your certificate is ready 🎉</h1>
+                <h1 className="text-2xl font-bold mb-2">
+                  {recipientName ? `${recipientName.split(" ")[0]}, your certificate is ready 🎉` : "Your certificate is ready 🎉"}
+                </h1>
+                {programName && (
+                  <p className="text-sm text-muted-foreground mb-1">{programName}</p>
+                )}
                 <p className="text-muted-foreground text-sm mb-6">
                   Cert ID: <span className="font-mono font-semibold text-foreground">{certId}</span>
                 </p>

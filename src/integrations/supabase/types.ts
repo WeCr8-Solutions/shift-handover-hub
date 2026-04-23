@@ -2522,6 +2522,7 @@ export type Database = {
           created_at: string
           id: string
           issued_at: string
+          issuing_organization_id: string | null
           pdf_url: string | null
           program_name: string
           qr_token: string
@@ -2548,6 +2549,7 @@ export type Database = {
           created_at?: string
           id?: string
           issued_at?: string
+          issuing_organization_id?: string | null
           pdf_url?: string | null
           program_name: string
           qr_token?: string
@@ -2574,6 +2576,7 @@ export type Database = {
           created_at?: string
           id?: string
           issued_at?: string
+          issuing_organization_id?: string | null
           pdf_url?: string | null
           program_name?: string
           qr_token?: string
@@ -6886,6 +6889,7 @@ export type Database = {
           logo_url: string | null
           mfa_required: boolean
           name: string
+          oap_default_recert_months: number | null
           organization_kind: Database["public"]["Enums"]["organization_kind"]
           public_employer: boolean
           public_slug: string | null
@@ -6925,6 +6929,7 @@ export type Database = {
           logo_url?: string | null
           mfa_required?: boolean
           name: string
+          oap_default_recert_months?: number | null
           organization_kind?: Database["public"]["Enums"]["organization_kind"]
           public_employer?: boolean
           public_slug?: string | null
@@ -6964,6 +6969,7 @@ export type Database = {
           logo_url?: string | null
           mfa_required?: boolean
           name?: string
+          oap_default_recert_months?: number | null
           organization_kind?: Database["public"]["Enums"]["organization_kind"]
           public_employer?: boolean
           public_slug?: string | null
@@ -10733,7 +10739,9 @@ export type Database = {
         Returns: {
           cert_id: string
           program: string
+          program_name: string
           recipient_email_masked: string
+          recipient_name: string
         }[]
       }
       pass_work_order_to_next_step: {
