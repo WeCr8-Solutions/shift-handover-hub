@@ -199,7 +199,7 @@ export function useSubmitQuizAttempt() {
         _quiz_id: params.quiz_id,
         _answers: params.answers as never,
         _started_at: params.started_at,
-        _organization_id: organization?.id ?? null,
+        _organization_id: organization?.id ?? undefined,
       });
       if (error) throw error;
       return data as unknown as OapGradeResult;
