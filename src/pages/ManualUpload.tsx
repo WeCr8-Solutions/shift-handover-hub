@@ -36,6 +36,7 @@ export default function ManualUpload() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !organization?.id) return toast.error("Sign in required");
+    if (!hasOrgAdminAccess) return toast.error("Admin access required");
     if (!file) return toast.error("Select a PDF file");
     if (!confirmed) return toast.error("Please confirm copyright disclosure");
     if (!form.copyright_notice.trim()) return toast.error("Copyright notice is required");
