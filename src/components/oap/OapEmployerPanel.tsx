@@ -37,6 +37,9 @@ import { OapRedeemTransferDialog } from "./OapRedeemTransferDialog";
 import { OapBrowseTemplatesDialog } from "./OapBrowseTemplatesDialog";
 import { OapRecertDueWidget } from "./OapRecertDueWidget";
 import { CertificateIssuancePanel } from "@/components/certificates/CertificateIssuancePanel";
+import { SlugMultiSelect } from "./SlugMultiSelect";
+import { useInspectionTools } from "@/hooks/useInspectionTools";
+import { useMachiningOperations } from "@/hooks/useMachiningOperations";
 
 function downloadEnrollmentsCsv(enrollments: any[], members: any[], programs: any[]) {
   const header = ["operator_name", "operator_email", "role_program", "status", "started_at", "expected_completion_at", "completed_at"];
@@ -89,8 +92,8 @@ export function OapEmployerPanel() {
       <OapRecertDueWidget />
 
       <Card>
-        <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0">
-          <div>
+        <CardHeader className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 space-y-0">
+          <div className="min-w-0">
             <CardTitle className="text-base flex items-center gap-2">
               <Briefcase className="w-4 h-4" /> OAP Role Programs
             </CardTitle>
@@ -100,7 +103,7 @@ export function OapEmployerPanel() {
               operations.
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <OapBrowseTemplatesDialog />
             <Dialog open={creating} onOpenChange={setCreating}>
               <DialogTrigger asChild>
@@ -108,7 +111,7 @@ export function OapEmployerPanel() {
                   <Plus className="w-4 h-4 mr-1" /> New role program
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl">
+              <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Create role program</DialogTitle>
                 </DialogHeader>
@@ -129,24 +132,24 @@ export function OapEmployerPanel() {
             </p>
           )}
           {programs.map((p) => (
-            <div key={p.id} className="border rounded-md p-3 flex items-start justify-between gap-3">
-              <div>
-                <div className="font-medium text-sm">{p.name}</div>
-                {p.description && <div className="text-xs text-muted-foreground">{p.description}</div>}
+            <div key={p.id} className="border rounded-md p-3 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <div className="font-medium text-sm break-words">{p.name}</div>
+                {p.description && <div className="text-xs text-muted-foreground break-words">{p.description}</div>}
                 <div className="flex flex-wrap gap-1 mt-2">
                   {(p.required_machine_tags ?? []).map((t) => (
                     <Badge key={t} variant="secondary" className="text-[10px]">{t}</Badge>
                   ))}
                 </div>
               </div>
-              <div className="flex flex-col gap-1">
+              <div className="flex sm:flex-col gap-1 shrink-0">
                 <Dialog open={editing?.id === p.id} onOpenChange={(o) => !o && setEditing(null)}>
                   <DialogTrigger asChild>
                     <Button size="sm" variant="outline" onClick={() => setEditing(p)}>
                       <Pencil className="w-3 h-3 mr-1" /> Edit
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
+                  <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                       <DialogTitle>Edit role program</DialogTitle>
                     </DialogHeader>
@@ -173,8 +176,8 @@ export function OapEmployerPanel() {
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0">
-          <div>
+        <CardHeader className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 space-y-0">
+          <div className="min-w-0">
             <CardTitle className="text-base flex items-center gap-2">
               <Users className="w-4 h-4" /> Operator Enrollments
             </CardTitle>
@@ -216,7 +219,7 @@ export function OapEmployerPanel() {
                 !e.completed_at &&
                 new Date(e.expected_completion_at) < new Date();
               return (
-                <div key={e.id} className="p-3 flex items-center justify-between gap-3">
+                <div key={e.id} className="p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium truncate">
                       {m?.profile?.display_name || m?.profile?.email || e.user_id.slice(0, 8)}
@@ -291,11 +294,13 @@ function RoleProgramForm({
 }) {
   const { data: courses = [] } = useOapCourses();
   const { data: existingCourses = [] } = useRoleProgramCourses(existing?.id ?? null);
+  const { tools: inspectionTools } = useInspectionTools();
+  const { operations: machiningOps } = useMachiningOperations();
   const [name, setName] = useState(existing?.name ?? "");
   const [description, setDescription] = useState(existing?.description ?? "");
   const [machineTags, setMachineTags] = useState((existing?.required_machine_tags ?? []).join(", "));
-  const [tools, setTools] = useState((existing?.required_inspection_tool_slugs ?? []).join(", "));
-  const [ops, setOps] = useState((existing?.required_machining_operation_slugs ?? []).join(", "));
+  const [toolSlugs, setToolSlugs] = useState<string[]>(existing?.required_inspection_tool_slugs ?? []);
+  const [opSlugs, setOpSlugs] = useState<string[]>(existing?.required_machining_operation_slugs ?? []);
   const [recertMonths, setRecertMonths] = useState<string>(
     (existing as any)?.recert_interval_months != null ? String((existing as any).recert_interval_months) : "12"
   );
@@ -326,8 +331,8 @@ function RoleProgramForm({
       name: name.trim(),
       description: description.trim() || null,
       required_machine_tags: machineTags.split(",").map((t) => t.trim()).filter(Boolean),
-      required_inspection_tool_slugs: tools.split(",").map((t) => t.trim()).filter(Boolean),
-      required_machining_operation_slugs: ops.split(",").map((t) => t.trim()).filter(Boolean),
+      required_inspection_tool_slugs: toolSlugs,
+      required_machining_operation_slugs: opSlugs,
       course_ids: Array.from(courseIds),
       recert_interval_months: recertMonths.trim() ? Number(recertMonths) : null,
     });
@@ -346,6 +351,11 @@ function RoleProgramForm({
       <div className="space-y-1">
         <Label className="text-xs">Required courses</Label>
         <div className="border rounded-md p-2 space-y-1 max-h-56 overflow-auto">
+          {courses.length === 0 && (
+            <p className="text-[11px] text-muted-foreground italic px-1 py-2">
+              No published courses yet.
+            </p>
+          )}
           {courses.map((c) => (
             <label key={c.id} className="flex items-center gap-2 text-xs cursor-pointer">
               <Checkbox checked={courseIds.has(c.id)} onCheckedChange={() => toggle(c.id)} />
@@ -356,18 +366,41 @@ function RoleProgramForm({
           ))}
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+      <div className="space-y-1">
+        <Label className="text-xs">Machine tags (comma-separated)</Label>
+        <Input value={machineTags} onChange={(e) => setMachineTags(e.target.value)} placeholder="haas-vf2, fanuc-mill" />
+        <p className="text-[10px] text-muted-foreground">
+          Free-form tags so this role can match any of your shop's machines.
+        </p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div className="space-y-1">
-          <Label className="text-xs">Machine tags (CSV)</Label>
-          <Input value={machineTags} onChange={(e) => setMachineTags(e.target.value)} placeholder="haas-vf2, fanuc-mill" />
+          <Label className="text-xs">Required inspection tools</Label>
+          <SlugMultiSelect
+            options={inspectionTools.map((t) => ({
+              slug: t.slug,
+              name: t.name,
+              category: t.difficulty,
+            }))}
+            selected={toolSlugs}
+            onChange={setToolSlugs}
+            placeholder="Search calipers, mics, gauges…"
+            emptyHint="No inspection tools in catalog."
+          />
         </div>
         <div className="space-y-1">
-          <Label className="text-xs">Tool slugs (CSV)</Label>
-          <Input value={tools} onChange={(e) => setTools(e.target.value)} placeholder="caliper-6in, mic-1in" />
-        </div>
-        <div className="space-y-1">
-          <Label className="text-xs">Op slugs (CSV)</Label>
-          <Input value={ops} onChange={(e) => setOps(e.target.value)} placeholder="face-milling, drilling" />
+          <Label className="text-xs">Required machining operations</Label>
+          <SlugMultiSelect
+            options={machiningOps.map((o) => ({
+              slug: o.slug,
+              name: o.name,
+              category: o.difficulty ?? undefined,
+            }))}
+            selected={opSlugs}
+            onChange={setOpSlugs}
+            placeholder="Search face milling, drilling, threading…"
+            emptyHint="No machining operations in catalog."
+          />
         </div>
       </div>
       <div className="space-y-1 max-w-xs">
@@ -444,7 +477,7 @@ function EnrollOperatorRow({
         <Label className="text-xs">Due (days)</Label>
         <Input value={days} onChange={(e) => setDays(e.target.value)} type="number" min="1" />
       </div>
-      <Button onClick={submit}>
+      <Button onClick={submit} className="w-full md:w-auto">
         <UserPlus className="w-4 h-4 mr-1" /> Enroll
       </Button>
     </div>

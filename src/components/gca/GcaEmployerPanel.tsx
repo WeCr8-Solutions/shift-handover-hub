@@ -120,7 +120,7 @@ export function GcaEmployerPanel() {
             </div>
           </div>
           <div className="flex justify-end mt-3">
-            <Button onClick={submit} disabled={assign.isPending}>
+            <Button onClick={submit} disabled={assign.isPending} className="w-full sm:w-auto">
               <UserPlus className="w-4 h-4 mr-1" /> Assign
             </Button>
           </div>
@@ -151,13 +151,13 @@ export function GcaEmployerPanel() {
               return (
                 <div
                   key={a.id}
-                  className="p-3 flex items-center justify-between gap-3"
+                  className="p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3"
                 >
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium truncate">
                       {m?.profile?.display_name || m?.profile?.email || a.user_id.slice(0, 8)}
                     </div>
-                    <div className="text-xs text-muted-foreground truncate">
+                    <div className="text-xs text-muted-foreground break-words">
                       {b?.title ?? "—"}
                       {a.due_at && (
                         <> · due {new Date(a.due_at).toLocaleDateString()}</>
@@ -165,7 +165,7 @@ export function GcaEmployerPanel() {
                       {a.notes && <> · {a.notes}</>}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-2 shrink-0 flex-wrap">
                     <Badge
                       variant={
                         a.status === "completed"
