@@ -125,6 +125,23 @@ serve(async (req) => {
     const userId = body.userId ?? caller.id;
     const validFrom = new Date().toISOString().slice(0, 10);
 
+    // Default validUntil: for OAP issued by an org, use org's oap_default_recert_months
+    // (default 12). GCA stays lifetime (null) unless caller passes one.
+    let resolvedValidUntil: string | null = body.validUntil ?? null;
+    if (!resolvedValidUntil && body.program === "OAP" && body.organizationId) {
+      const { data: orgRecert } = await supabaseAdmin
+        .from("organizations")
+        .select("oap_default_recert_months")
+        .eq("id", body.organizationId)
+        .maybeSingle();
+      const months = (orgRecert as any)?.oap_default_recert_months ?? 12;
+      if (months && months > 0) {
+        const d = new Date();
+        d.setMonth(d.getMonth() + months);
+        resolvedValidUntil = d.toISOString().slice(0, 10);
+      }
+    }
+
     // Snapshot recipient public username (from operator_profiles) so the QR keeps
     // working even if the username later changes.
     const { data: recipientProfile } = await supabaseAdmin
