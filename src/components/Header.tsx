@@ -15,6 +15,7 @@ import { SystemStatusIndicator } from "@/components/updates/SystemStatusIndicato
 import { UpdateAcknowledgeModal } from "@/components/updates/UpdateAcknowledgeModal";
 import { NotificationPanel, useNotificationBadgeCount } from "@/components/NotificationPanel";
 import { DeviceNotificationDispatcher } from "@/components/DeviceNotificationDispatcher";
+import { HandbookQuickSearch } from "@/components/handbook/HandbookQuickSearch";
 import { useTalentInboxUnread } from "@/hooks/useTalentInboxUnread";
 import { useOrgMessagesUnread } from "@/hooks/useOrgMessaging";
 import { Button } from "@/components/ui/button";
