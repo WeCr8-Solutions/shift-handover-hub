@@ -257,7 +257,12 @@ export function OapEmployerPanel() {
         </CardContent>
       </Card>
 
-      {recertEnrollment && (
+      {/* Free issuance for org admins/supervisors — no Stripe checkout */}
+      {organization?.id && (
+        <CertificateIssuancePanel defaultOrgId={organization.id} />
+      )}
+
+
         <OapRecertManager
           open={!!recertEnrollment}
           onOpenChange={(o) => !o && setRecertEnrollment(null)}
