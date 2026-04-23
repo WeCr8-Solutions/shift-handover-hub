@@ -39,6 +39,7 @@ Disallow: /testing
 Disallow: /teams
 Disallow: /profile
 Disallow: /queue
+Disallow: /manuals/upload
 Disallow: /setup
 Disallow: /settings
 Disallow: /updates
