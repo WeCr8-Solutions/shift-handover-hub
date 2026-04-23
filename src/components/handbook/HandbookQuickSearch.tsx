@@ -79,16 +79,20 @@ export function HandbookQuickSearch() {
               )}
             </button>
           ))}
-          <div className="border-t mt-2 pt-2">
+          <div className="border-t mt-2 pt-2 space-y-1">
             <button
               type="button"
-              onClick={() => {
-                navigate("/handbook");
-                setOpen(false);
-              }}
+              onClick={() => { navigate("/handbook"); setOpen(false); }}
               className="w-full text-left px-2 py-1 text-xs text-primary hover:underline"
             >
               Browse all handbook references →
+            </button>
+            <button
+              type="button"
+              onClick={() => { navigate("/manuals"); setOpen(false); }}
+              className="w-full text-left px-2 py-1 text-xs text-primary hover:underline"
+            >
+              Search machine & control manuals →
             </button>
           </div>
         </div>
