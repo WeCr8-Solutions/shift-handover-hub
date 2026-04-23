@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,10 +31,24 @@ interface GcaQuestion {
   question_type: string;
   prompt: string;
   choices: { key: string; label: string }[];
-  correct_answers: string[];
-  explanation: string | null;
   points: number;
   sort_order: number;
+}
+
+interface GradedQuestion {
+  question_id: string;
+  is_correct: boolean;
+  correct_answers: string[];
+  explanation: string | null;
+}
+
+interface GradeResult {
+  score_pct: number;
+  passed: boolean;
+  passing_score_pct: number;
+  earned: number;
+  total: number;
+  questions: GradedQuestion[];
 }
 
 // ─── Hooks ────────────────────────────────────────────────────────────────────
@@ -59,9 +74,11 @@ function useGcaQuestions(bankId: string | undefined) {
     queryKey: ["gca-questions", bankId],
     enabled: !!bankId,
     queryFn: async () => {
+      // correct_answers + explanation are revoked from `authenticated` at the
+      // column level — request only safe columns here.
       const { data, error } = await supabase
         .from("gca_questions")
-        .select("*")
+        .select("id, bank_id, question_type, prompt, choices, points, sort_order")
         .eq("bank_id", bankId!)
         .order("sort_order", { ascending: true });
       if (error) throw error;
@@ -93,47 +110,21 @@ function useSubmitGcaAttempt() {
   return useMutation({
     mutationFn: async (params: {
       bank_id: string;
-      questions: GcaQuestion[];
       answers: Record<string, string[]>;
       started_at: string;
-      passing_score_pct: number;
-    }) => {
-      const { data: auth } = await supabase.auth.getUser();
-      if (!auth.user) throw new Error("Not signed in");
-
-      let earned = 0;
-      let total = 0;
-      for (const q of params.questions) {
-        total += q.points;
-        const given = new Set(params.answers[q.id] ?? []);
-        const correct = new Set(q.correct_answers);
-        if (given.size === correct.size && [...given].every((k) => correct.has(k))) {
-          earned += q.points;
-        }
-      }
-      const score_pct = total > 0 ? Math.round((earned / total) * 100) : 0;
-      const passed = score_pct >= params.passing_score_pct;
-      const duration_seconds = Math.round(
-        (Date.now() - new Date(params.started_at).getTime()) / 1000,
-      );
-
-      const { error } = await supabase.from("gca_test_attempts").insert({
-        bank_id: params.bank_id,
-        user_id: auth.user.id,
-        score_pct,
-        passed,
-        duration_seconds,
-        answers: params.answers,
-        started_at: params.started_at,
-        completed_at: new Date().toISOString(),
+    }): Promise<GradeResult> => {
+      const { data, error } = await supabase.rpc("grade_gca_attempt", {
+        _bank_id: params.bank_id,
+        _answers: params.answers as unknown as Json,
+        _started_at: params.started_at,
       });
       if (error) throw error;
-      return { score_pct, passed };
+      return data as unknown as GradeResult;
     },
     onSuccess: (_, vars) => {
       qc.invalidateQueries({ queryKey: ["gca-last-attempt", vars.bank_id] });
     },
-    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Failed to save attempt"),
+    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Failed to score test"),
   });
 }
 
@@ -154,8 +145,15 @@ export function GcaTestPlayer({ bankSlug, hasProAccess, onUpgrade }: Props) {
 
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
   const [startedAt] = useState(() => new Date().toISOString());
-  const [result, setResult] = useState<{ score_pct: number; passed: boolean } | null>(null);
+  const [result, setResult] = useState<GradeResult | null>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
+
+  // Map question_id → graded info for post-submit review rendering
+  const gradedById = useMemo(() => {
+    const map: Record<string, GradedQuestion> = {};
+    result?.questions.forEach((g) => { map[g.question_id] = g; });
+    return map;
+  }, [result]);
 
   const isProOnly = bank?.is_pro_only ?? false;
   const locked = isProOnly && !hasProAccess;
@@ -259,6 +257,7 @@ export function GcaTestPlayer({ bankSlug, hasProAccess, onUpgrade }: Props) {
             value={answers[q.id] ?? []}
             onChange={(v) => setAnswers((prev) => ({ ...prev, [q.id]: v }))}
             review={reviewOpen}
+            graded={gradedById[q.id]}
           />
         ))}
 
@@ -271,10 +270,8 @@ export function GcaTestPlayer({ bankSlug, hasProAccess, onUpgrade }: Props) {
               onClick={() =>
                 submit.mutate({
                   bank_id: bank.id,
-                  questions,
                   answers,
                   started_at: startedAt,
-                  passing_score_pct: bank.passing_score_pct,
                 })
               }
               disabled={!allAnswered || submit.isPending || !user}
@@ -336,15 +333,17 @@ function GcaQuestionRow({
   value,
   onChange,
   review,
+  graded,
 }: {
   index: number;
   question: GcaQuestion;
   value: string[];
   onChange: (v: string[]) => void;
   review: boolean;
+  graded?: GradedQuestion;
 }) {
   const choices = question.choices ?? [];
-  const correct = new Set(question.correct_answers ?? []);
+  const correct = new Set(graded?.correct_answers ?? []);
   const isMulti =
     question.question_type === "multi_select" || question.question_type === "multi_choice";
 
@@ -398,9 +397,9 @@ function GcaQuestionRow({
         </RadioGroup>
       )}
 
-      {review && question.explanation && (
+      {review && graded?.explanation && (
         <p className="text-xs text-muted-foreground italic pt-1 border-t">
-          {question.explanation}
+          {graded.explanation}
         </p>
       )}
     </div>

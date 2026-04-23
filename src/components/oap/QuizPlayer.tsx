@@ -13,6 +13,7 @@ import {
   useSubmitQuizAttempt,
   type OapQuiz,
   type OapQuizQuestion,
+  type OapGradedQuestion,
 } from "@/hooks/useOapProgram";
 import { CheckCircle2, XCircle, Timer, Trophy } from "lucide-react";
 
@@ -29,6 +30,7 @@ export function QuizPlayer({ quiz, onComplete }: Props) {
   const [startedAt] = useState(() => new Date().toISOString());
   const [result, setResult] = useState<{ score: number; passed: boolean } | null>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [gradedById, setGradedById] = useState<Record<string, OapGradedQuestion>>({});
 
   const lastAttempt = useQuery({
     queryKey: ["oap-quiz-last-attempt", quiz.id, user?.id],
@@ -58,6 +60,9 @@ export function QuizPlayer({ quiz, onComplete }: Props) {
     if (submit.data) {
       setResult({ score: submit.data.score_pct, passed: submit.data.passed });
       setReviewOpen(true);
+      const map: Record<string, OapGradedQuestion> = {};
+      submit.data.questions.forEach((g) => { map[g.question_id] = g; });
+      setGradedById(map);
       onComplete?.();
     }
   }, [submit.data, onComplete]);
@@ -65,10 +70,8 @@ export function QuizPlayer({ quiz, onComplete }: Props) {
   const handleSubmit = () => {
     submit.mutate({
       quiz_id: quiz.id,
-      questions,
       answers,
       started_at: startedAt,
-      passing_score_pct: quiz.passing_score_pct,
     });
   };
 
@@ -124,6 +127,7 @@ export function QuizPlayer({ quiz, onComplete }: Props) {
             value={answers[q.id] ?? []}
             onChange={(v) => setAnswer(q, v)}
             review={reviewOpen}
+            graded={gradedById[q.id]}
           />
         ))}
 
@@ -178,15 +182,17 @@ function QuestionRow({
   value,
   onChange,
   review,
+  graded,
 }: {
   index: number;
   question: OapQuizQuestion;
   value: string[];
   onChange: (v: string[]) => void;
   review: boolean;
+  graded?: OapGradedQuestion;
 }) {
   const choices = question.choices ?? [];
-  const correct = new Set(question.correct_answers ?? []);
+  const correct = new Set(graded?.correct_answers ?? []);
   const isMulti =
     question.question_type === "multi_choice" ||
     question.question_type === "multi_select";
@@ -246,8 +252,8 @@ function QuestionRow({
         </RadioGroup>
       )}
 
-      {showFeedback && question.explanation && (
-        <p className="text-xs text-muted-foreground italic">{question.explanation}</p>
+      {showFeedback && graded?.explanation && (
+        <p className="text-xs text-muted-foreground italic">{graded.explanation}</p>
       )}
     </div>
   );
