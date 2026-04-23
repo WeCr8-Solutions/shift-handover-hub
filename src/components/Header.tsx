@@ -280,6 +280,7 @@ export function Header() {
           {/* Right-side / mobile row — ml-auto shrink-0 guarantees it is always visible */}
           {!isMobile ? (
             <div className="flex items-center gap-1 shrink-0 ml-auto">
+                <HandbookQuickSearch />
                 <SystemStatusIndicator status={systemStatus} />
                 {user && (
                   <Tooltip>

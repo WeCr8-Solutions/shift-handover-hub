@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { CheckCircle2, XCircle, Trophy, Timer, RotateCcw, Lock } from "lucide-react";
 import { toast } from "sonner";
+import { HandbookCite } from "@/components/handbook/HandbookCite";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -401,6 +402,16 @@ function GcaQuestionRow({
         <p className="text-xs text-muted-foreground italic pt-1 border-t">
           {graded.explanation}
         </p>
+      )}
+
+      {review && (
+        <div className="pt-1">
+          <HandbookCite
+            entityType="gca_question"
+            entityId={question.id}
+            variant="card"
+          />
+        </div>
       )}
     </div>
   );
