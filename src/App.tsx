@@ -34,19 +34,11 @@ const Admin = lazy(() => import("./pages/Admin"));
 const FieldView = lazy(() => import("./pages/FieldView"));
 const Testing = lazy(() => import("./pages/Testing"));
 const Queue = lazy(() => import("./pages/Queue"));
-const WorkOrdersHub = lazy(() => import("./pages/WorkOrdersHub"));
-const CancelledWorkOrders = lazy(() => import("./pages/CancelledWorkOrders"));
-const OnHoldWorkOrders = lazy(() => import("./pages/OnHoldWorkOrders"));
-const CompletedWorkOrders = lazy(() => import("./pages/CompletedWorkOrders"));
-const QueueHub = lazy(() => import("./pages/QueueHub"));
-const QuotesHub = lazy(() => import("./pages/QuotesHub"));
-const PlanningCenter = lazy(() => import("./pages/PlanningCenter"));
 const Setup = lazy(() => import("./pages/Setup"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Settings = lazy(() => import("./pages/Settings"));
 const DonationSuccess = lazy(() => import("./pages/DonationSuccess"));
 const Demo = lazy(() => import("./pages/Demo"));
-const Status = lazy(() => import("./pages/Status"));
 const FounderRedirect = lazy(() => import("./pages/FounderRedirect"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const ShiftHandoffSoftware = lazy(() => import("./pages/features/ShiftHandoffSoftware"));
@@ -126,14 +118,11 @@ const Help = lazy(() => import("./pages/Help"));
 const UseCases = lazy(() => import("./pages/UseCases"));
 const HelpArticle = lazy(() => import("./pages/HelpArticle"));
 const Tools = lazy(() => import("./pages/Tools"));
+const Status = lazy(() => import("./pages/Status"));
 const IndustryPage = lazy(() => import("./pages/industries/IndustryPage"));
 const ERPGuidePart = lazy(() => import("./pages/resources/ERPGuidePart"));
 const DevPortal = lazy(() => import("./pages/DevPortal"));
 const DevDocArticle = lazy(() => import("./pages/DevDocArticle"));
-const SapSandboxTest = lazy(() => import("./pages/dev/SapSandboxTest"));
-const NativeIntegration = lazy(() => import("./pages/integrations/NativeIntegration"));
-const JobBossIntegration = lazy(() => import("./pages/integrations/JobBossIntegration"));
-const SapIntegration = lazy(() => import("./pages/integrations/SapIntegration"));
 const WorkOrderHistoryPage = lazy(() => import("./pages/WorkOrderHistoryPage"));
 const QuoteHistoryPage = lazy(() => import("./pages/QuoteHistoryPage"));
 const OperatorProfile = lazy(() => import("./pages/OperatorProfile"));
@@ -142,8 +131,6 @@ const TalentBrowse = lazy(() => import("./pages/TalentBrowse"));
 const TalentSearch = lazy(() => import("./pages/TalentSearch"));
 const PublicOperatorProfile = lazy(() => import("./pages/PublicOperatorProfile"));
 const OperatorInbox = lazy(() => import("./pages/OperatorInbox"));
-const OrgMessages = lazy(() => import("./pages/OrgMessages"));
-const TalentDashboard = lazy(() => import("./pages/TalentDashboard"));
 const ShopFloorDisplay = lazy(() => import("./pages/ShopFloorDisplay"));
 const PublicBusinessCard = lazy(() => import("./pages/PublicBusinessCard"));
 const EmployersIndex = lazy(() => import("./pages/EmployersIndex"));
@@ -181,7 +168,6 @@ const App = () => (
               <BrowserRouter>
                 <AnalyticsProvider>
                   <ScrollToTop />
-                  <IssueReporterBoot />
                   {/* Compliance gates — no-ops when the condition is not met */}
                   <RulesOfBehaviorGate>
                   <MFAEnrollmentGate>
@@ -206,13 +192,6 @@ const App = () => (
                     <Route path="/field/:token" element={<FieldView />} />
                     <Route path="/testing" element={<Testing />} />
                     <Route path="/queue" element={<Queue />} />
-                    <Route path="/work-orders" element={<WorkOrdersHub />} />
-                    <Route path="/work-orders/cancelled" element={<CancelledWorkOrders />} />
-                    <Route path="/work-orders/on-hold" element={<OnHoldWorkOrders />} />
-                    <Route path="/work-orders/completed" element={<CompletedWorkOrders />} />
-                    <Route path="/queue-hub" element={<QueueHub />} />
-                    <Route path="/quotes" element={<QuotesHub />} />
-                    <Route path="/planning-center" element={<PlanningCenter />} />
                     <Route path="/history" element={<WorkOrderHistoryPage />} />
                     <Route path="/quote-history" element={<QuoteHistoryPage />} />
                     <Route path="/setup" element={<Setup />} />
@@ -220,7 +199,6 @@ const App = () => (
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/donation-success" element={<DonationSuccess />} />
                     <Route path="/demo" element={<Demo />} />
-                    <Route path="/status" element={<Status />} />
                     <Route path="/updates" element={<Updates />} />
                     <Route path="/start" element={<Start />} />
                     <Route path="/zach" element={<FounderRedirect />} />
@@ -281,17 +259,9 @@ const App = () => (
                     <Route path="/gca/test/:bankSlug" element={<GcaTestPage />} />
                     <Route path="/oap/my-transcript" element={<OapMyTranscript />} />
                     <Route path="/talent" element={<TalentLanding />} />
-                    <Route path="/talent/dashboard" element={<TalentDashboard />} />
                     <Route path="/talent/browse" element={<TalentBrowse />} />
                     <Route path="/talent/search" element={<TalentSearch />} />
                     <Route path="/talent/:username" element={<PublicOperatorProfile />} />
-                    <Route path="/operator/inbox" element={<OperatorInbox />} />
-                    <Route path="/messages" element={<OrgMessages />} />
-                    <Route path="/card/:slug" element={<PublicBusinessCard />} />
-                    <Route path="/employers" element={<EmployersIndex />} />
-                    <Route path="/employers/browse" element={<EmployerBrowse />} />
-                    <Route path="/employers/dashboard" element={<EmployerDashboard />} />
-                    <Route path="/employers/:slug" element={<PublicEmployerProfile />} />
                     <Route path="/operator/profile" element={<OperatorProfile />} />
                     <Route path="/resources/oap" element={<OperatorAcceptanceProgram />} />
                     <Route path="/resources/glossary" element={<IndustryGlossary />} />
@@ -313,13 +283,10 @@ const App = () => (
                     <Route path="/help" element={<Help />} />
                     <Route path="/help/:category/:slug" element={<HelpArticle />} />
                     <Route path="/tools" element={<Tools />} />
+                    <Route path="/status" element={<Status />} />
                     <Route path="/industries/:slug" element={<IndustryPage />} />
                     <Route path="/resources/erp-guide/:partSlug" element={<ERPGuidePart />} />
                     <Route path="/dev" element={<DevPortal />} />
-                    <Route path="/dev/sap-test" element={<SapSandboxTest />} />
-                    <Route path="/settings/integrations/native" element={<NativeIntegration />} />
-                    <Route path="/settings/integrations/jobboss" element={<JobBossIntegration />} />
-                    <Route path="/settings/integrations/sap" element={<SapIntegration />} />
                     <Route path="/dev/:category/:slug" element={<DevDocArticle />} />
                     <Route path="/display/:displayId" element={<ShopFloorDisplay />} />
                     <Route path="/terms" element={<Terms />} />

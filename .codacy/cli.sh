@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 set -e +o pipefail
 
 # Set up paths first
@@ -33,7 +32,6 @@ if [ -z "$CODACY_CLI_V2_TMP_FOLDER" ]; then
 fi
 
 version_file="$CODACY_CLI_V2_TMP_FOLDER/version.yaml"
-
 
 get_version_from_yaml() {
     if [ -f "$version_file" ]; then
@@ -125,7 +123,6 @@ if [ -n "$CODACY_CLI_V2_VERSION" ]; then
 else
     version=$(get_version_from_yaml)
 fi
-
 
 # Set up version-specific paths
 bin_folder="${CODACY_CLI_V2_TMP_FOLDER}/${version}"

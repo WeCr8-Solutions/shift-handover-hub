@@ -25,7 +25,7 @@
 
 | Component | Provider | Protocol | Cipher Suites Supported | FIPS 140-3 Status | Certificate |
 |-----------|----------|----------|------------------------|-------------------|-|
-| `app.jobline.ai` frontend | Vercel (Let's Encrypt / Vercel TLS) | TLS 1.2, TLS 1.3 | TLS 1.3: TLS_AES_128_GCM_SHA256, TLS_AES_256_GCM_SHA384, TLS_CHACHA20_POLY1305_SHA256; TLS 1.2: ECDHE-RSA-AES128-GCM-SHA256, ECDHE-RSA-AES256-GCM-SHA384 | ❌ Not currently FIPS validated (Vercel not FedRAMP) | Let's Encrypt with Vercel-managed auto-renewal |
+| `jobline.ai` frontend | Vercel (Let's Encrypt / Vercel TLS) | TLS 1.2, TLS 1.3 | TLS 1.3: TLS_AES_128_GCM_SHA256, TLS_AES_256_GCM_SHA384, TLS_CHACHA20_POLY1305_SHA256; TLS 1.2: ECDHE-RSA-AES128-GCM-SHA256, ECDHE-RSA-AES256-GCM-SHA384 | ❌ Not currently FIPS validated (Vercel not FedRAMP) | Let's Encrypt with Vercel-managed auto-renewal |
 | Supabase API (`*.supabase.co`) | Supabase / AWS us-east-1 | TLS 1.2, TLS 1.3 | ECDHE-RSA-AES256-GCM-SHA384, TLS_AES_256_GCM_SHA384 | ❌ Not currently FIPS validated (Supabase not FedRAMP) | AWS-issued; auto-renewed |
 | Supabase Edge Functions | Supabase / Deno runtime | TLS 1.3 | TLS_AES_256_GCM_SHA384 | ❌ Not currently FIPS validated | AWS-issued |
 | GitHub Actions CI | GitHub / Microsoft Azure | TLS 1.2, TLS 1.3 | TLS_AES_256_GCM_SHA384 | ✅ GitHub FedRAMP Moderate authorized | GitHub Enterprise Cloud |

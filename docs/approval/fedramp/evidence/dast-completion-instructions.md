@@ -23,13 +23,23 @@ Use this together with:
 
 To complete the April 2026 DAST review package, you still need to do all of the following:
 
-1. Download the latest OWASP ZAP baseline HTML artifact from GitHub Actions.
-2. Download the latest OWASP ZAP full-scan HTML artifact from GitHub Actions.
-3. Record the workflow run IDs and URLs in the April review memo.
-4. Review GitHub Security code-scanning findings for the same review window.
-5. Update the April review memo with the reviewer name and review date.
-6. Confirm whether any findings require a POA&M update.
-7. Obtain Engineering Lead approval or signature for the active Rules of Engagement review window.
+1. Restore GitHub Actions billing/spending so the ZAP workflow can actually start.
+2. Repoint `jobline.ai` to the hardened deployment path that serves the headers configured in `vercel.json`.
+3. Download the latest OWASP ZAP baseline HTML artifact from GitHub Actions.
+4. Download the latest OWASP ZAP full-scan HTML artifact from GitHub Actions.
+5. Record the workflow run IDs and URLs in the April review memo.
+6. Review GitHub Security code-scanning findings for the same review window.
+7. Update the April review memo with the reviewer name and review date.
+8. Confirm whether any findings require a POA&M update.
+9. Obtain Engineering Lead approval or signature for the active Rules of Engagement review window.
+
+## Current Verified Blockers
+
+As of 2026-04-22, these blockers are verified from the live environment and GitHub Actions:
+
+1. Latest ZAP workflow run `24758783423` produced no artifacts because GitHub Actions billing/spending blocked all jobs from starting.
+2. `https://jobline.ai` is not currently serving the hardened header set from `vercel.json`; live checks show `X-Frame-Options`, `Content-Security-Policy`, and `Permissions-Policy` are missing.
+3. `https://jobline.ai/release.json` reports `commitSha: unknown` and `deployTarget: local`, which does not match the repository release manifest.
 
 ## Step 1 - Open the Correct GitHub Workflow
 

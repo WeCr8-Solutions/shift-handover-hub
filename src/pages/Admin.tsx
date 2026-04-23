@@ -40,7 +40,7 @@ const ShopFloorDisplayManagement = lazy(() => import("@/components/admin/ShopFlo
 const NotificationQueueStatus = lazy(() => import("@/components/admin/NotificationQueueStatus").then(m => ({ default: m.NotificationQueueStatus })));
 const PlatformOverviewTab = lazy(() => import("@/components/admin/PlatformOverviewTab").then(m => ({ default: m.PlatformOverviewTab })));
 const BlogAdmin = lazy(() => import("@/components/admin/BlogAdmin").then(m => ({ default: m.BlogAdmin })));
-const FlyerCampaigns = lazy(() => import("@/components/admin/FlyerCampaigns").then(m => ({ default: m.FlyerCampaigns })));
+const PromotionsHub = lazy(() => import("@/components/admin/PromotionsHub").then(m => ({ default: m.PromotionsHub })));
 const TrainingLibraryPanel = lazy(() => import("@/components/admin/training-library/TrainingLibraryPanel").then(m => ({ default: m.TrainingLibraryPanel })));
 
 const AdminTabFallback = () => <div className="p-6"><Skeleton className="h-64 w-full rounded-lg" /></div>;
@@ -209,7 +209,7 @@ export default function Admin() {
                     <SelectItem value="system-updates">Updates</SelectItem>
                     <SelectItem value="surveys">Surveys</SelectItem>
                     <SelectItem value="blog-admin">Blog</SelectItem>
-                    <SelectItem value="flyer-campaigns">Flyer Campaigns</SelectItem>
+                    <SelectItem value="flyer-campaigns">Promotions</SelectItem>
                   </SelectGroup>
                 )}
                 {hasTestingAccess && (
@@ -323,7 +323,7 @@ export default function Admin() {
                     </TabsTrigger>
                     <TabsTrigger value="flyer-campaigns" className="gap-2">
                       <Megaphone className="w-4 h-4" />
-                      Flyers
+                      Promotions
                     </TabsTrigger>
                   </div>
                 </>
@@ -446,7 +446,7 @@ export default function Admin() {
               </TabsContent>
 
               <TabsContent value="flyer-campaigns">
-                <Suspense fallback={<AdminTabFallback />}><FlyerCampaigns /></Suspense>
+                <Suspense fallback={<AdminTabFallback />}><PromotionsHub organizationId={scopedOrgId} /></Suspense>
               </TabsContent>
             </>
           )}

@@ -5,7 +5,6 @@ import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { OapGcaTalentFlow } from "@/components/marketing/OapGcaTalentFlow";
 import { VerticalsShowcase } from "@/components/marketing/VerticalsShowcase";
-import { FreeTalentProfileBanner } from "@/components/marketing/FreeTalentProfileBanner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -127,7 +126,6 @@ export default function TalentLanding() {
         description="Find verified CNC machinists and operators with portable OAP/GCA credentials, or build your own profile to record your career history and get hired."
         keywords="cnc machinist jobs, manufacturing operators, OAP certified, machinist resume, shop floor talent, CNC operator hiring, portable certifications"
         canonical="/talent"
-        ogImage="https://jobline.ai/talent-og.jpg"
         jsonLd={jsonLd}
       />
       <MarketingNav />
@@ -402,8 +400,6 @@ export default function TalentLanding() {
           </div>
         </div>
       </section>
-
-      <FreeTalentProfileBanner className="max-w-5xl" />
 
       {/* CTA */}
       <section className="container py-20 max-w-4xl text-center">

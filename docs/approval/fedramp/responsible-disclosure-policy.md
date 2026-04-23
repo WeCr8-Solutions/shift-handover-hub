@@ -7,7 +7,7 @@ WeCr8 Solutions LLC is committed to maintaining the security and integrity of ou
 ## 2. Scope
 
 ### In-Scope Systems
-- All production endpoints at `app.jobline.ai`
+- All production endpoints at `jobline.ai`
 - All APIs
 - Supabase-backed data
 
@@ -20,7 +20,7 @@ WeCr8 Solutions LLC is committed to maintaining the security and integrity of ou
 ## 3. How to Report
 
 ### Contact Information
-Please report any vulnerabilities by contacting our security team at `security@wecr8solutions.com`.
+Please report any vulnerabilities by contacting our security team at `security@jobline.ai`.
 
 ### What to Include in Your Report
 When reporting a vulnerability, please include the following information:

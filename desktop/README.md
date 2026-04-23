@@ -4,7 +4,7 @@ Electron shell that wraps the hosted JobLine AI web application for Windows desk
 
 ## Architecture
 
-- **Mode**: Hosted Web Wrap — loads `https://app.jobline.ai` inside an Electron `BrowserWindow`
+- **Mode**: Hosted Web Wrap — loads `https://jobline.ai` inside an Electron `BrowserWindow`
 - **Security**: `contextIsolation: true`, `nodeIntegration: false`, `sandbox: true`
 - **Backend**: All backend services remain hosted (no local bundling)
 - **Auth**: Email/password works natively; OAuth opens system browser

@@ -17,7 +17,7 @@ const CONFIG_FILE = path.join(CONFIG_DIR, "config.json");
 
 const DEFAULT_CONFIG: AppConfig = {
   mode: "cloud",
-  appUrl: "https://app.jobline.ai",
+  appUrl: "https://jobline.ai",
   apiBaseUrl: "https://api.jobline.ai",
   supabaseUrl: "",
   supabaseAnonKey: "",

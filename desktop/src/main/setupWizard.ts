@@ -4,7 +4,7 @@ import * as http from "http";
 import * as https from "https";
 import { AppConfig, saveConfig } from "./config";
 
-const DEFAULT_CLOUD_URL = "https://app.jobline.ai";
+const DEFAULT_CLOUD_URL = "https://jobline.ai";
 
 /**
  * Returns true if the app is running with the default cloud URL and no
@@ -50,7 +50,7 @@ export async function validateUrl(url: string): Promise<boolean> {
  * configuration. Called before createWindow() when the config is unconfigured.
  *
  * Presents a dialog asking whether to use:
- *   (A) Cloud — connect to app.jobline.ai (default, no config needed)
+ *   (A) Cloud — connect to jobline.ai (default, no config needed)
  *   (B) Self-Hosted — prompt for custom URL and save to config.json
  */
 export async function showSetupWizard(
@@ -62,10 +62,10 @@ export async function showSetupWizard(
     title: "JobLine AI — First Launch Setup",
     message: "How do you want to connect JobLine AI?",
     detail:
-      "Cloud: Connect to app.jobline.ai (standard setup).\n\n" +
+      "Cloud: Connect to jobline.ai (standard setup).\n\n" +
       "Self-Hosted / ITAR: Connect to your organization's private JobLine AI instance. " +
       "Required for ITAR-regulated environments where data must stay on org-controlled infrastructure.",
-    buttons: ["Use Cloud (app.jobline.ai)", "Configure Self-Hosted / ITAR"],
+    buttons: ["Use Cloud (jobline.ai)", "Configure Self-Hosted / ITAR"],
     defaultId: 0,
     cancelId: 0,
   });
@@ -185,7 +185,7 @@ function buildSetupHtml(): string {
   <h1>Self-Hosted / ITAR Configuration</h1>
   <p class="sub">
     Enter the URL of your organization's private JobLine AI deployment.
-    This URL will be loaded on every launch instead of app.jobline.ai.
+    This URL will be loaded on every launch instead of jobline.ai.
   </p>
 
   <label for="appUrl">App URL *</label>
@@ -195,7 +195,7 @@ function buildSetupHtml(): string {
     <input type="checkbox" id="itarMode" />
     <div class="label-block">
       <label for="itarMode">ITAR Mode</label>
-      <p>Prevents connecting to app.jobline.ai. Enable for ITAR-regulated environments.</p>
+      <p>Prevents connecting to jobline.ai. Enable for ITAR-regulated environments.</p>
     </div>
   </div>
 

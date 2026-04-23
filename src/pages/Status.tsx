@@ -184,7 +184,7 @@ export default function Status() {
             Operational visibility for web, API, and incident communications.
           </h1>
           <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
-            This first-party status surface satisfies the documented CP-2 continuity need while the external provider rollout is completed. It exposes current service posture, a live first-party health artifact, and the response commitments documented in the contingency plan.
+            This first-party status surface satisfies the documented CP-2 continuity need while external backup monitoring is being rolled out. It exposes current service posture, a live first-party health artifact, and the response commitments documented in the contingency plan.
           </p>
 
           <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -295,7 +295,7 @@ export default function Status() {
               </div>
 
               <p className="mt-5 text-sm leading-6 text-slate-600">
-                Health artifact source: <code className="rounded bg-slate-100 px-1.5 py-0.5 text-slate-900">/_api_health.json</code>. External uptime provider onboarding and DNS delegation remain operational steps outside the repository.
+                Health artifact source: <code className="rounded bg-slate-100 px-1.5 py-0.5 text-slate-900">/_api_health.json</code>. UptimeRobot backup monitoring and any `status.jobline.ai` delegation remain operational steps outside the repository.
               </p>
             </section>
 

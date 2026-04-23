@@ -2,7 +2,7 @@
 
 ## Reporting a Vulnerability
 
-If you believe you have found a security vulnerability in **JobLine AI** (`app.jobline.ai`, the self-hosted desktop app, or any associated API), please report it responsibly.
+If you believe you have found a security vulnerability in **JobLine AI** (`jobline.ai`, the self-hosted desktop app, or any associated API), please report it responsibly.
 
 **Do NOT file a public GitHub issue for security vulnerabilities.**
 
@@ -18,7 +18,7 @@ For detailed scope, researcher guidelines, and our safe harbor commitment, see t
 
 ## In Scope
 
-- `app.jobline.ai` — SaaS web application
+- `jobline.ai` — SaaS web application
 - `*.jobline.ai` — all subdomains and APIs
 - JobLine Desktop (Electron) — local IPC, auto-update mechanism
 - Authentication flows, session management, access control

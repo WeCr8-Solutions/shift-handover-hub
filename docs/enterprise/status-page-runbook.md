@@ -1,8 +1,8 @@
 # Status Page Runbook
 
-**Service:** JobLine AI
-**FedRAMP Controls:** CP-2 (Contingency Plan), SA-17 (Developer Testing and Evaluation)
-**Gap Reference:** G-16
+**Service:** JobLine AI  
+**FedRAMP Controls:** CP-2 (Contingency Plan), SA-17 (Developer Testing and Evaluation)  
+**Gap Reference:** G-16  
 **Last Updated:** April 2026
 
 ---
@@ -182,6 +182,7 @@ AWS GovCloud (us-gov-west-1)
 
 ### Phase 2 acceptance criteria
 
+<<<<<<< HEAD
 - [ ] Statping-ng running in `us-gov-west-1` with ALB + ACM cert
 - [ ] All 10 monitors green for 7 consecutive days
 - [ ] Historical incident data imported from Upptime
@@ -190,11 +191,33 @@ AWS GovCloud (us-gov-west-1)
 - [ ] 3PAO walkthrough scheduled
 
 ---
+=======
+### 4. Configure Public Backup Status Output
+
+1. Enable UptimeRobot's public status page only if a customer-facing backup page is needed.
+2. Record the public status URL in the incident runbook and support macros.
+3. Do **not** treat the UptimeRobot page as the canonical application status page; it is a backup reference for outages affecting `jobline.ai/status` or `status.jobline.ai`.
+4. If control of `status.jobline.ai` is later transferred, decide whether that hostname should point to the first-party static page or to the UptimeRobot public page.
+>>>>>>> 1de3be6b (Add promotions hub and status-domain readiness updates)
 
 ## SLA Targets (publish on the page in all phases)
 
+<<<<<<< HEAD
 | Service | Uptime Target | RTO | RPO |
 |---|---|---|---|
+=======
+In UptimeRobot settings:
+- **Email subscribers:** Allow customers and agencies to subscribe to email notifications.
+- **Slack webhook:** Optional — point to `#incidents` or `#ops` channel.
+- **Webhook:** Configure to POST incident events to the `report-issue` edge function or an internal PagerDuty/OpsGenie integration.
+
+### 6. SLA Targets to Publish
+
+Publish the following SLA targets on the status page (matches ISCP):
+
+| Service | Uptime Target | RTO | RPO |
+|---------|--------------|-----|-----|
+>>>>>>> 1de3be6b (Add promotions hub and status-domain readiness updates)
 | Web App | 99.9% monthly | 4 hours | 1 hour |
 | API | 99.9% monthly | 4 hours | 1 hour |
 | Self-Hosted | 99.5% monthly | 24 hours | 24 hours |
@@ -203,12 +226,22 @@ AWS GovCloud (us-gov-west-1)
 
 ## Incident Management Workflow (engine-agnostic)
 
+<<<<<<< HEAD
 1. Monitor fails → on-call paged within 60 sec (UptimeRobot email/SMS today; Slack/PagerDuty in Phase 1)
 2. On-call posts initial status update within **15 minutes** (FedRAMP IR-6 requirement)
 3. Status updates every 30 min until resolved
 4. Post-incident update within 24 hours of resolution
 5. Full post-mortem within 5 business days for P1/P2 incidents
 6. For incidents affecting federal customers: notify per the IRP within the contractual SLA
+=======
+A basic health endpoint should be added to handle status page checks. The simplest implementation is a static file served by Vercel:
+
+**`public/api/health`** — Already exists as a public Vercel route. If not, create:
+- `public/_api_health.json`: `{"status": "ok", "service": "jobline-ai"}`
+- Add Vercel rewrite in `vercel.json` for `/api/health`
+
+Or use the existing `rls-health` Supabase edge function as the health probe.
+>>>>>>> 1de3be6b (Add promotions hub and status-domain readiness updates)
 
 ---
 
@@ -216,10 +249,30 @@ AWS GovCloud (us-gov-west-1)
 
 Once Phase 1 is live, capture quarterly:
 
+<<<<<<< HEAD
 - Screenshot of `status.jobline.ai` showing component grid
 - Screenshot of monitor configuration (`.upptimerc.yml` or Statping-ng UI)
 - 30/60/90-day uptime history showing ≥ 99.9%
 - Any incident post-mortems from the period
+=======
+1. **UptimeRobot** sends the alert through the configured notification channels.
+2. On-call engineer is notified via configured alert channels.
+3. Engineer updates `https://jobline.ai/status` with a status message or incident note within 15 minutes (FedRAMP IR-6 notification requirement).
+4. If the first-party page is unavailable, use the UptimeRobot public page or support broadcast channel as the fallback customer-facing update surface.
+5. Incident is resolved in UptimeRobot once the monitor returns to green.
+5. A post-incident update is posted within 24 hours of resolution.
+6. For P1/P2 incidents affecting federal customers: notify per the Incident Response Plan within the required SLA.
+
+---
+
+## Evidence for FedRAMP
+
+Once live, capture the following evidence for the ConMon package:
+
+- Screenshot of `status.jobline.ai` showing all components green
+- Screenshot of UptimeRobot monitor configuration (showing check URLs and intervals)
+- Screenshot of 30-day uptime history showing ≥ 99.9%
+>>>>>>> 1de3be6b (Add promotions hub and status-domain readiness updates)
 
 Store at: `docs/approval/fedramp/evidence/status-page-YYYY-QN.md`
 
@@ -227,6 +280,7 @@ Store at: `docs/approval/fedramp/evidence/status-page-YYYY-QN.md`
 
 ## Current Status (April 2026)
 
+<<<<<<< HEAD
 - [x] **Phase 0:** UptimeRobot Free account created, API key stored as `UPTIMEROBOT_API_KEY`
 - [x] Public UptimeRobot URL live: `https://stats.uptimerobot.com/Ac1v7E00v2`
 - [x] Cloudflare CNAME `status.jobline.ai → status.instatus.com` exists (dormant; will repoint in Phase 1)
@@ -242,6 +296,16 @@ Store at: `docs/approval/fedramp/evidence/status-page-YYYY-QN.md`
 - [ ] Phase 2: Statping-ng deployed in `us-gov-west-1`
 - [ ] Phase 2: DNS cutover + Upptime archived
 - [ ] Phase 2: FedRAMP SSP updated
+=======
+- [ ] UptimeRobot workspace created
+- [ ] Monitors configured
+- [ ] Public backup status URL recorded in incident workflow
+- [ ] Subscriber notifications enabled
+- [ ] Link added to `https://jobline.ai/support` page
+- [ ] 30-day baseline uptime data collected
+
+**Status:** `https://jobline.ai/status` remains the primary first-party surface. UptimeRobot backup monitoring is the current external-observer path while `status.jobline.ai` remains outside direct repository-controlled Vercel configuration.
+>>>>>>> 1de3be6b (Add promotions hub and status-domain readiness updates)
 
 ---
 

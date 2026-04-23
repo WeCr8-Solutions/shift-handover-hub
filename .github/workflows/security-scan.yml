@@ -151,8 +151,7 @@ jobs:
         # Exits 1 on any missing header so the failure is visible in the UI,
         # but job-level continue-on-error prevents blocking unrelated branches.
         run: |
-          HEADERS=$(curl -sI https://app.jobline.ai)
-            HEADERS=$(curl -sI https://jobline.ai)
+          HEADERS=$(curl -sI https://jobline.ai)
           echo "$HEADERS"
           FAILED=0
 

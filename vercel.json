@@ -23,12 +23,32 @@
       ]
     },
     {
+      "source": "/",
+      "destination": "/dev",
+      "has": [
+        {
+          "type": "host",
+          "value": "dev\.jobline\.ai"
+        }
+      ]
+    },
+    {
       "source": "/:path*",
       "destination": "/dev/:path*",
       "has": [
         {
           "type": "host",
           "value": "dev\\.jobline\\.ai"
+        }
+      ]
+    },
+    {
+      "source": "/",
+      "destination": "/help",
+      "has": [
+        {
+          "type": "host",
+          "value": "docs\.jobline\.ai"
         }
       ]
     },

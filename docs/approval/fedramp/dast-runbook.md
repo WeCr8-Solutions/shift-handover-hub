@@ -37,7 +37,7 @@ DAST differs from static analysis (SAST/CodeQL/Codacy) in that it actively sends
 
 **Passive scan** (baseline): ZAP crawls the app and records observations — no attack payloads sent. Safe against production.
 
-**Active scan** (full): ZAP sends targeted attack payloads (SQLi, XSS, injection variants, etc.) to the staging environment only. **Never run against `app.jobline.ai`.**
+**Active scan** (full): ZAP sends targeted attack payloads (SQLi, XSS, injection variants, etc.) to the staging environment only. **Never run against `jobline.ai`.**
 
 **Important implementation note:** The current GitHub Actions workflow sets `fail_action: false` for both ZAP jobs. That means ZAP findings are surfaced through artifacts, SARIF uploads, and GitHub issues rather than failing the workflow step directly. For FedRAMP review and internal change control, any finding mapped to `FAIL` in `.zap/rules.tsv` is still treated as a release blocker until triaged and resolved.
 

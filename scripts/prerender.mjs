@@ -15,6 +15,7 @@ import { spawn } from "node:child_process";
 import { mkdir, writeFile, readFile, access } from "node:fs/promises";
 import { createServer } from "node:net";
 import { dirname, join, resolve } from "node:path";
+import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -74,8 +75,8 @@ const ROUTES = [
   "/industries/semiconductor",
 ];
 
-const log = (...args) => console.log("[prerender]", ...args);
-const warn = (...args) => console.warn("[prerender]", ...args);
+const log = (...args) => globalThis.console.log("[prerender]", ...args);
+const warn = (...args) => globalThis.console.warn("[prerender]", ...args);
 
 async function exists(p) {
   try { await access(p); return true; } catch { return false; }
@@ -127,7 +128,7 @@ async function waitForPreview(port, proc) {
     }
 
     try {
-      const response = await fetch(`http://127.0.0.1:${port}/`);
+      const response = await globalThis.fetch(`http://127.0.0.1:${port}/`);
       if (response.ok) {
         return;
       }
@@ -135,7 +136,7 @@ async function waitForPreview(port, proc) {
       // Preview is still starting.
     }
 
-    await new Promise((resolveDelay) => setTimeout(resolveDelay, 250));
+    await new Promise((resolveDelay) => globalThis.setTimeout(resolveDelay, 250));
   }
 
   proc.kill();
@@ -175,7 +176,7 @@ async function prerenderRoute(browser, route, shellHtml) {
     );
     await page.goto(url, { waitUntil: "networkidle0", timeout: 30_000 });
     // Give react-helmet-async a tick to flush head tags
-    await new Promise((r) => setTimeout(r, 250));
+    await new Promise((r) => globalThis.setTimeout(r, 250));
     const html = await page.content();
     // Sanity check — refuse to write empty/error snapshots
     if (!html || html.length < shellHtml.length / 2) {
@@ -227,7 +228,6 @@ async function main() {
   const shellHtml = await readFile(join(DIST, "index.html"), "utf8");
   let ok = 0, fail = 0;
   for (const route of ROUTES) {
-    // eslint-disable-next-line no-await-in-loop
     const success = await prerenderRoute(browser, route, shellHtml);
     if (success) ok++; else fail++;
   }
