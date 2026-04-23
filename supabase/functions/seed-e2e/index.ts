@@ -113,6 +113,25 @@ Deno.serve(async (req) => {
       return json({ error: "Unauthorized" }, 401);
     }
 
+    // Scenario gating — extra scenarios layer additional seed data on top of the base.
+    // Supported: wo_basic (default) | wo_routed | handoff_chain | ncr_path
+    let scenario = "wo_basic";
+    try {
+      if (req.method !== "GET") {
+        const body = await req.clone().json().catch(() => ({}));
+        if (body && typeof body.scenario === "string") scenario = body.scenario;
+      }
+      const url = new URL(req.url);
+      const qsScenario = url.searchParams.get("scenario");
+      if (qsScenario) scenario = qsScenario;
+    } catch (_e) {
+      // ignore — fall back to default
+    }
+    const VALID = new Set(["wo_basic", "wo_routed", "handoff_chain", "ncr_path"]);
+    if (!VALID.has(scenario)) {
+      return json({ error: `Unknown scenario: ${scenario}` }, 400);
+    }
+
     // 1. Users
     const adminUser = await getOrCreateUser(admin, ADMIN_EMAIL, ADMIN_PASSWORD, "E2E Admin");
     const operatorUser = await getOrCreateUser(admin, OPERATOR_EMAIL, OPERATOR_PASSWORD, "E2E Operator");
