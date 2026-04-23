@@ -192,45 +192,17 @@ export function useSubmitQuizAttempt() {
   return useMutation({
     mutationFn: async (params: {
       quiz_id: string;
-      questions: OapQuizQuestion[];
       answers: Record<string, string[]>;
       started_at: string;
-      passing_score_pct: number;
-    }) => {
-      const { data: auth } = await supabase.auth.getUser();
-      if (!auth.user) throw new Error("Not authenticated");
-
-      let earned = 0;
-      let total = 0;
-      for (const q of params.questions) {
-        total += q.points || 1;
-        const correct = (q.correct_answers ?? []).slice().sort().join("|");
-        const given = (params.answers[q.id] ?? []).slice().sort().join("|");
-        if (correct === given) earned += q.points || 1;
-      }
-      const score = total > 0 ? Math.round((earned / total) * 100) : 0;
-      const passed = score >= params.passing_score_pct;
-      const duration = Math.round(
-        (Date.now() - new Date(params.started_at).getTime()) / 1000,
-      );
-
-      const { data, error } = await supabase
-        .from("oap_quiz_attempts")
-        .insert({
-          quiz_id: params.quiz_id,
-          user_id: auth.user.id,
-          organization_id: organization?.id ?? null,
-          score_pct: score,
-          passed,
-          duration_seconds: duration,
-          answers: params.answers,
-          started_at: params.started_at,
-          completed_at: new Date().toISOString(),
-        })
-        .select()
-        .single();
+    }): Promise<OapGradeResult> => {
+      const { data, error } = await supabase.rpc("grade_oap_quiz_attempt", {
+        _quiz_id: params.quiz_id,
+        _answers: params.answers as never,
+        _started_at: params.started_at,
+        _organization_id: organization?.id ?? null,
+      });
       if (error) throw error;
-      return data as OapQuizAttempt;
+      return data as unknown as OapGradeResult;
     },
     onSuccess: (a) => {
       qc.invalidateQueries({ queryKey: ["oap-quiz-attempts"] });
