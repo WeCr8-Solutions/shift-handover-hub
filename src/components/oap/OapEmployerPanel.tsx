@@ -477,7 +477,7 @@ function EnrollOperatorRow({
         <Label className="text-xs">Due (days)</Label>
         <Input value={days} onChange={(e) => setDays(e.target.value)} type="number" min="1" />
       </div>
-      <Button onClick={submit}>
+      <Button onClick={submit} className="w-full md:w-auto">
         <UserPlus className="w-4 h-4 mr-1" /> Enroll
       </Button>
     </div>
