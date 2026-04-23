@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { exportWalkthroughPdf } from "@/lib/oapWalkthroughPdf";
+import { HandbookCite } from "@/components/handbook/HandbookCite";
 
 const RESULT_META: Record<CheckoffResult, { label: string; icon: any; tone: string }> = {
   pass: { label: "Pass", icon: CheckCircle2, tone: "text-success" },
@@ -226,6 +227,11 @@ export default function OapWalkthrough() {
                   )}
                 </CardHeader>
                 <CardContent className="space-y-2">
+                  <HandbookCite
+                    entityType="oap_lesson"
+                    entityId={section.id}
+                    variant="card"
+                  />
                   {(itemsBySection[section.id] ?? []).length === 0 && (
                     <p className="text-xs text-muted-foreground italic">
                       No check-off items defined yet.

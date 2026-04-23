@@ -8,7 +8,9 @@ export type SeedScenario =
   | "wo_basic"
   | "wo_routed"
   | "handoff_chain"
-  | "ncr_path";
+  | "ncr_path"
+  | "cert_paid"
+  | "recert_lifecycle";
 
 export interface SeedFixture {
   ok: boolean;

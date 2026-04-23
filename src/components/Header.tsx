@@ -15,6 +15,7 @@ import { SystemStatusIndicator } from "@/components/updates/SystemStatusIndicato
 import { UpdateAcknowledgeModal } from "@/components/updates/UpdateAcknowledgeModal";
 import { NotificationPanel, useNotificationBadgeCount } from "@/components/NotificationPanel";
 import { DeviceNotificationDispatcher } from "@/components/DeviceNotificationDispatcher";
+import { HandbookQuickSearch } from "@/components/handbook/HandbookQuickSearch";
 import { useTalentInboxUnread } from "@/hooks/useTalentInboxUnread";
 import { useOrgMessagesUnread } from "@/hooks/useOrgMessaging";
 import { Button } from "@/components/ui/button";
@@ -280,6 +281,7 @@ export function Header() {
           {/* Right-side / mobile row — ml-auto shrink-0 guarantees it is always visible */}
           {!isMobile ? (
             <div className="flex items-center gap-1 shrink-0 ml-auto">
+                <HandbookQuickSearch />
                 <SystemStatusIndicator status={systemStatus} />
                 {user && (
                   <Tooltip>

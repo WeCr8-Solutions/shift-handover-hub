@@ -12,6 +12,7 @@ import { GcaProgramEditor } from "./GcaProgramEditor";
 import { OapProgramEditor } from "./OapProgramEditor";
 import { CertificateTemplateStudio } from "./CertificateTemplateStudio";
 import { ReleaseLogPanel } from "./ReleaseLogPanel";
+import { HandbookLinkManager } from "@/components/handbook/HandbookLinkManager";
 import {
   Library,
   Wrench,
@@ -23,6 +24,7 @@ import {
   Award,
   ShieldCheck,
   History,
+  BookOpen,
 } from "lucide-react";
 import type { AdminComponentAccess } from "@/types/admin";
 
@@ -75,6 +77,9 @@ export function TrainingLibraryPanel({ access }: Props) {
           <TabsTrigger value="releases" className="gap-1">
             <History className="w-3.5 h-3.5" /> Release Log
           </TabsTrigger>
+          <TabsTrigger value="handbook" className="gap-1">
+            <BookOpen className="w-3.5 h-3.5" /> Handbook Links
+          </TabsTrigger>
           {access.isPlatformAdmin && (
             <TabsTrigger value="bulk" className="gap-1">
               <Tags className="w-3.5 h-3.5" /> Bulk Tags
@@ -126,6 +131,10 @@ export function TrainingLibraryPanel({ access }: Props) {
 
         <TabsContent value="releases">
           <ReleaseLogPanel />
+        </TabsContent>
+
+        <TabsContent value="handbook">
+          <HandbookLinkManager />
         </TabsContent>
 
         {access.isPlatformAdmin && (
