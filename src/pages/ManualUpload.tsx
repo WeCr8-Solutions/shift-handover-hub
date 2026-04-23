@@ -16,8 +16,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 export default function ManualUpload() {
   const { user } = useAuth();
   const { organization } = useOrganization();
+  const { hasOrgAdminAccess } = useAdminAccess();
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
+
+  if (user && !hasOrgAdminAccess) {
+    return <Navigate to="/manuals" replace />;
+  }
   const [form, setForm] = useState({
     manufacturer: "",
     controller_family: "",
