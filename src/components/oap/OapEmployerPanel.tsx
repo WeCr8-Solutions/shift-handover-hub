@@ -92,8 +92,8 @@ export function OapEmployerPanel() {
       <OapRecertDueWidget />
 
       <Card>
-        <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0">
-          <div>
+        <CardHeader className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 space-y-0">
+          <div className="min-w-0">
             <CardTitle className="text-base flex items-center gap-2">
               <Briefcase className="w-4 h-4" /> OAP Role Programs
             </CardTitle>
@@ -103,7 +103,7 @@ export function OapEmployerPanel() {
               operations.
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <OapBrowseTemplatesDialog />
             <Dialog open={creating} onOpenChange={setCreating}>
               <DialogTrigger asChild>
@@ -111,7 +111,7 @@ export function OapEmployerPanel() {
                   <Plus className="w-4 h-4 mr-1" /> New role program
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl">
+              <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Create role program</DialogTitle>
                 </DialogHeader>
