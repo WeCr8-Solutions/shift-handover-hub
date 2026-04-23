@@ -127,7 +127,10 @@ Deno.serve(async (req) => {
     } catch (_e) {
       // ignore — fall back to default
     }
-    const VALID = new Set(["wo_basic", "wo_routed", "handoff_chain", "ncr_path"]);
+    const VALID = new Set([
+      "wo_basic", "wo_routed", "handoff_chain", "ncr_path",
+      "cert_paid", "recert_lifecycle",
+    ]);
     if (!VALID.has(scenario)) {
       return json({ error: `Unknown scenario: ${scenario}` }, 400);
     }
