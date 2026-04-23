@@ -145,8 +145,15 @@ export function GcaTestPlayer({ bankSlug, hasProAccess, onUpgrade }: Props) {
 
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
   const [startedAt] = useState(() => new Date().toISOString());
-  const [result, setResult] = useState<{ score_pct: number; passed: boolean } | null>(null);
+  const [result, setResult] = useState<GradeResult | null>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
+
+  // Map question_id → graded info for post-submit review rendering
+  const gradedById = useMemo(() => {
+    const map: Record<string, GradedQuestion> = {};
+    result?.questions.forEach((g) => { map[g.question_id] = g; });
+    return map;
+  }, [result]);
 
   const isProOnly = bank?.is_pro_only ?? false;
   const locked = isProOnly && !hasProAccess;
@@ -250,6 +257,7 @@ export function GcaTestPlayer({ bankSlug, hasProAccess, onUpgrade }: Props) {
             value={answers[q.id] ?? []}
             onChange={(v) => setAnswers((prev) => ({ ...prev, [q.id]: v }))}
             review={reviewOpen}
+            graded={gradedById[q.id]}
           />
         ))}
 
@@ -262,10 +270,8 @@ export function GcaTestPlayer({ bankSlug, hasProAccess, onUpgrade }: Props) {
               onClick={() =>
                 submit.mutate({
                   bank_id: bank.id,
-                  questions,
                   answers,
                   started_at: startedAt,
-                  passing_score_pct: bank.passing_score_pct,
                 })
               }
               disabled={!allAnswered || submit.isPending || !user}
@@ -327,15 +333,17 @@ function GcaQuestionRow({
   value,
   onChange,
   review,
+  graded,
 }: {
   index: number;
   question: GcaQuestion;
   value: string[];
   onChange: (v: string[]) => void;
   review: boolean;
+  graded?: GradedQuestion;
 }) {
   const choices = question.choices ?? [];
-  const correct = new Set(question.correct_answers ?? []);
+  const correct = new Set(graded?.correct_answers ?? []);
   const isMulti =
     question.question_type === "multi_select" || question.question_type === "multi_choice";
 
@@ -389,9 +397,9 @@ function GcaQuestionRow({
         </RadioGroup>
       )}
 
-      {review && question.explanation && (
+      {review && graded?.explanation && (
         <p className="text-xs text-muted-foreground italic pt-1 border-t">
-          {question.explanation}
+          {graded.explanation}
         </p>
       )}
     </div>
