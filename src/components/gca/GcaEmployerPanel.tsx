@@ -15,6 +15,7 @@ import {
 import { useOrganization } from "@/hooks/useOrganization";
 import { useOrganizationMembers } from "@/hooks/useOrganizationMembers";
 import { useGcaAssignments, useGcaBanks } from "@/hooks/useGcaAssignments";
+import { CertificateIssuancePanel } from "@/components/certificates/CertificateIssuancePanel";
 import { GraduationCap, UserPlus, Trash2, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -207,6 +208,11 @@ export function GcaEmployerPanel() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Free issuance for org admins/supervisors */}
+      {organization?.id && (
+        <CertificateIssuancePanel defaultOrgId={organization.id} />
+      )}
     </div>
   );
 }
