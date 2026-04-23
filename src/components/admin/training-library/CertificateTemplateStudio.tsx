@@ -92,7 +92,7 @@ export function CertificateTemplateStudio({ isPlatformAdmin }: Props) {
                 <div className="flex gap-1 mt-1 flex-wrap">
                   <Badge variant="outline" className="text-[10px] h-4">{t.program}</Badge>
                   <Badge variant="secondary" className="text-[10px] h-4">{t.variant}</Badge>
-                  {t.is_active && <Badge className="text-[10px] h-4 bg-green-600">active</Badge>}
+                  {t.is_active && <Badge className="text-[10px] h-4 bg-primary">active</Badge>}
                   {t.is_canonical && <Badge variant="outline" className="text-[10px] h-4">canonical</Badge>}
                 </div>
               </button>
