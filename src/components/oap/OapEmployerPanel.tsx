@@ -294,11 +294,13 @@ function RoleProgramForm({
 }) {
   const { data: courses = [] } = useOapCourses();
   const { data: existingCourses = [] } = useRoleProgramCourses(existing?.id ?? null);
+  const { tools: inspectionTools } = useInspectionTools();
+  const { operations: machiningOps } = useMachiningOperations();
   const [name, setName] = useState(existing?.name ?? "");
   const [description, setDescription] = useState(existing?.description ?? "");
   const [machineTags, setMachineTags] = useState((existing?.required_machine_tags ?? []).join(", "));
-  const [tools, setTools] = useState((existing?.required_inspection_tool_slugs ?? []).join(", "));
-  const [ops, setOps] = useState((existing?.required_machining_operation_slugs ?? []).join(", "));
+  const [toolSlugs, setToolSlugs] = useState<string[]>(existing?.required_inspection_tool_slugs ?? []);
+  const [opSlugs, setOpSlugs] = useState<string[]>(existing?.required_machining_operation_slugs ?? []);
   const [recertMonths, setRecertMonths] = useState<string>(
     (existing as any)?.recert_interval_months != null ? String((existing as any).recert_interval_months) : "12"
   );
@@ -329,8 +331,8 @@ function RoleProgramForm({
       name: name.trim(),
       description: description.trim() || null,
       required_machine_tags: machineTags.split(",").map((t) => t.trim()).filter(Boolean),
-      required_inspection_tool_slugs: tools.split(",").map((t) => t.trim()).filter(Boolean),
-      required_machining_operation_slugs: ops.split(",").map((t) => t.trim()).filter(Boolean),
+      required_inspection_tool_slugs: toolSlugs,
+      required_machining_operation_slugs: opSlugs,
       course_ids: Array.from(courseIds),
       recert_interval_months: recertMonths.trim() ? Number(recertMonths) : null,
     });
@@ -349,6 +351,11 @@ function RoleProgramForm({
       <div className="space-y-1">
         <Label className="text-xs">Required courses</Label>
         <div className="border rounded-md p-2 space-y-1 max-h-56 overflow-auto">
+          {courses.length === 0 && (
+            <p className="text-[11px] text-muted-foreground italic px-1 py-2">
+              No published courses yet.
+            </p>
+          )}
           {courses.map((c) => (
             <label key={c.id} className="flex items-center gap-2 text-xs cursor-pointer">
               <Checkbox checked={courseIds.has(c.id)} onCheckedChange={() => toggle(c.id)} />
@@ -359,18 +366,41 @@ function RoleProgramForm({
           ))}
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+      <div className="space-y-1">
+        <Label className="text-xs">Machine tags (comma-separated)</Label>
+        <Input value={machineTags} onChange={(e) => setMachineTags(e.target.value)} placeholder="haas-vf2, fanuc-mill" />
+        <p className="text-[10px] text-muted-foreground">
+          Free-form tags so this role can match any of your shop's machines.
+        </p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div className="space-y-1">
-          <Label className="text-xs">Machine tags (CSV)</Label>
-          <Input value={machineTags} onChange={(e) => setMachineTags(e.target.value)} placeholder="haas-vf2, fanuc-mill" />
+          <Label className="text-xs">Required inspection tools</Label>
+          <SlugMultiSelect
+            options={inspectionTools.map((t) => ({
+              slug: t.slug,
+              name: t.name,
+              category: t.difficulty,
+            }))}
+            selected={toolSlugs}
+            onChange={setToolSlugs}
+            placeholder="Search calipers, mics, gauges…"
+            emptyHint="No inspection tools in catalog."
+          />
         </div>
         <div className="space-y-1">
-          <Label className="text-xs">Tool slugs (CSV)</Label>
-          <Input value={tools} onChange={(e) => setTools(e.target.value)} placeholder="caliper-6in, mic-1in" />
-        </div>
-        <div className="space-y-1">
-          <Label className="text-xs">Op slugs (CSV)</Label>
-          <Input value={ops} onChange={(e) => setOps(e.target.value)} placeholder="face-milling, drilling" />
+          <Label className="text-xs">Required machining operations</Label>
+          <SlugMultiSelect
+            options={machiningOps.map((o) => ({
+              slug: o.slug,
+              name: o.name,
+              category: o.difficulty ?? undefined,
+            }))}
+            selected={opSlugs}
+            onChange={setOpSlugs}
+            placeholder="Search face milling, drilling, threading…"
+            emptyHint="No machining operations in catalog."
+          />
         </div>
       </div>
       <div className="space-y-1 max-w-xs">
