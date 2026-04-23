@@ -7,8 +7,45 @@ Three suites simulating real shop usage against a deterministic seeded fixture:
 | `operator-daily.spec.ts` | Operator | Auth, dashboard, WO start/pause/resume/complete, shift handoff, NCR + delivery request |
 | `org-admin-daily.spec.ts` | Org Admin | Org/team/station setup, work order create + routing, invite codes, member mgmt, review/approve outputs |
 | `combined-team.spec.ts` | Both | Sequential admin setup → operator lifecycle → final parallel realtime verification |
+| `smoke-wo-handoff.spec.ts` | Operator | **Portable** WO + handoff smoke. Composable flow helpers + JSON gap report. Run against any baseURL with just `E2E_SEED_SECRET`. |
 
-Plus existing `gca.spec.ts` and `oap.spec.ts`.
+Plus existing `gca.spec.ts`, `oap.spec.ts`, and `status.spec.ts`.
+
+## Portable smoke test (use anywhere)
+
+The `smoke-wo-handoff.spec.ts` spec is a self-contained smoke runner that
+exercises the full work-order + handoff lifecycle. It uses the shared flow
+helpers in `e2e/flows/` and the scenario-aware `seed-e2e` edge function as a
+"token" — point it at any deployed instance:
+
+```bash
+E2E_BASE_URL=https://app.jobline.ai \
+E2E_SEED_SECRET=<token> \
+E2E_SMOKE_SCENARIOS=wo_basic,handoff_chain \
+bunx playwright test e2e/smoke-wo-handoff.spec.ts
+```
+
+Outputs:
+- `playwright-report/` — standard Playwright HTML report (screenshots, traces)
+- `e2e-gap-report.json` — aggregate list of every missing UI element / failed assertion
+- `e2e-gap-report.ndjson` — streaming line-delimited log (CI-friendly)
+
+Override report path with `E2E_GAP_REPORT_PATH=/tmp/my-report`.
+
+### Reusable flow helpers
+
+```ts
+import { seedFixture } from "./helpers/seed";
+import { startWorkOrder, completeWorkOrder } from "./flows/workOrder";
+import { startNewHandoff } from "./flows/handoff";
+
+const fx = await seedFixture("wo_basic");
+await startWorkOrder(page, { spec: "my-test" });
+await completeWorkOrder(page, { spec: "my-test" });
+```
+
+Helpers never throw on missing UI — they record a gap and continue, so a
+single run surfaces *all* problems instead of stopping at the first.
 
 ## Setup
 

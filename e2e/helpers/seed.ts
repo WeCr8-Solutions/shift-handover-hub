@@ -4,8 +4,15 @@ const SUPABASE_URL =
   process.env.E2E_SUPABASE_URL ?? "https://kgrstnbxqdmadtoankqr.supabase.co";
 const SEED_SECRET = process.env.E2E_SEED_SECRET ?? "";
 
+export type SeedScenario =
+  | "wo_basic"
+  | "wo_routed"
+  | "handoff_chain"
+  | "ncr_path";
+
 export interface SeedFixture {
   ok: boolean;
+  scenario: SeedScenario;
   admin: { id: string; email: string; password: string };
   operator: { id: string; email: string; password: string };
   organization: { id: string; slug: string; name: string };
@@ -14,9 +21,20 @@ export interface SeedFixture {
   work_order: { id: string; code: string };
 }
 
-let cached: SeedFixture | null = null;
+const cache = new Map<SeedScenario, SeedFixture>();
 
-export async function seedFixture(api?: APIRequestContext): Promise<SeedFixture> {
+/**
+ * Fetches a deterministic seeded fixture from the `seed-e2e` edge function.
+ * The same scenario is cached per-process so multiple specs share one seed call.
+ *
+ * @param scenario  Which scenario to seed. Default: "wo_basic".
+ * @param api       Optional Playwright APIRequestContext (will create one if omitted).
+ */
+export async function seedFixture(
+  scenario: SeedScenario = "wo_basic",
+  api?: APIRequestContext,
+): Promise<SeedFixture> {
+  const cached = cache.get(scenario);
   if (cached) return cached;
   if (!SEED_SECRET) {
     throw new Error(
@@ -26,11 +44,13 @@ export async function seedFixture(api?: APIRequestContext): Promise<SeedFixture>
   const ctx = api ?? (await request.newContext());
   const res = await ctx.post(`${SUPABASE_URL}/functions/v1/seed-e2e`, {
     headers: { "x-e2e-secret": SEED_SECRET, "Content-Type": "application/json" },
-    data: {},
+    data: { scenario },
   });
   if (!res.ok()) {
     throw new Error(`seed-e2e failed: ${res.status()} ${await res.text()}`);
   }
-  cached = (await res.json()) as SeedFixture;
-  return cached;
+  const fx = (await res.json()) as SeedFixture;
+  fx.scenario = scenario;
+  cache.set(scenario, fx);
+  return fx;
 }
