@@ -1,74 +1,182 @@
 
 
-# Handbook v2 — Curated Source-of-Truth + Cleanup
+# Phase Wrap-Up — Finish Handbook Seed + Linkers + Add Manuals Library
 
-Confirmed nothing from `RichardKnop/machinery` (Go task queue) was ever installed — nothing to remove. The IEM PDF link 404s, and Machinery's Handbook itself is copyrighted (every edition since 1914), so we can't legally copy it. Instead: clean up the duplicate-category mess from overlapping seeds, then expand the handbook to ~180 curated entries written in-house with proper citations.
+Three things in one pass: (1) finish the remaining ~95 curated handbook entries, (2) ship the tag-match linker scripts so operator tools / GCA / OAP automatically reference the handbook, (3) add a brand-new **Machine & Control Manuals** library so you can upload publicly-available PDFs (Haas, Fanuc, Mazak, Siemens, etc.) and operators can view/search them in-app. Capped with a phase-tracking MD document.
 
-## Part 1 — Schema cleanup (data migration via insert tool)
+## Part 1 — Finish handbook curated content (~95 remaining entries)
 
-Three pairs of duplicate categories from overlapping seeds. Consolidate to one canonical slug each, repoint references, drop the empties:
+Single idempotent migration via the insert tool. Picks up where the last seed left off (already at ~85 entries across 6 categories).
 
-| Keep | Drop (repoint refs first) |
-|---|---|
-| `tolerances-fits` → rename to `fits-tolerances` (more standard) | `tolerances-fits` after move |
-| `measurement` → rename to `inspection-measurement` | `inspection` after move |
-| `safety-standards` | `safety` after move |
+- **Threads & Fasteners** (+8): NPTF, BSP, Acme detail, helicoil, thread-class 1A/2A/3A explainer, thread-mill vs tap decision matrix, left-hand threads, jam nuts.
+- **Fits & Tolerances** (+7): RC1–RC9 full table, LC1–LC11, LN1–LN3, FN1–FN5, bearing fits (deep groove vs angular), shrink-fit ΔT calc worked example.
+- **GD&T** (+9): all remaining symbols not yet seeded (concentricity, symmetry, profile of a line/surface, runout circular/total, basic dims, datum simulators, composite position).
+- **Formulas** (+11): chip thickness, lead/helix angles, taper calc, sine bar setup, gear DP/module, spring rate, beam deflection (cantilever + simply supported), thread-stress area, drill thrust force.
+- **Inspection & Measurement** (+20): full set per plan — micrometer verification, calipers, height gages, surface plates AA/A/B, gage pins, gage blocks 0/1/2/3, CMM basics, optical comparator, Ra/Rz/Rmax, gage R&R AIAG MSA, ISO 17025 intervals, sine plate, indicator drop test, ring/plug gages, thread gages, profilometer.
+- **Safety & Standards** (+15): full set — OSHA 1910.212, LOTO 1910.147, chip handling, NIOSH MWF coolant, Z87.1 eyewear, A2/A3 cut gloves, AS9100 quick-ref, ISO 9001 clause map, ITAR overview, FOD program, FAA-PMA, hearing protection, respirator selection, ergonomics for machinists, fire suppression for chip fires.
 
-Idempotent SQL: `UPDATE handbook_references SET category_id = <keeper>` then `DELETE FROM handbook_categories WHERE id = <dropped> AND NOT EXISTS (refs)`.
+Each entry: original prose 200–500 words, `source_citation` to Machinery's Handbook 31st ed. / ASME / ISO / OSHA / AIAG, `is_canonical=true`, `organization_id=NULL`. `ON CONFLICT (slug) DO NOTHING` keeps it idempotent.
 
-## Part 2 — Curated content expansion (~180 entries)
+## Part 2 — Linker scripts (auto-attach references)
 
-Single idempotent migration with `ON CONFLICT (slug) DO NOTHING` guards. All entries are **original prose** summarizing public-domain standards + non-copyrightable formulas, with proper "Source: Machinery's Handbook 31st ed., §X.Y" or "Source: ASME Y14.5-2018" citations. No verbatim copying.
+One insert-tool migration with three parts:
 
-**Coverage breakdown:**
+**2a. Operator tools (entity_key based)**
+```text
+speed_feed_calculator → 5 feeds/speeds entries (sfm-formula, rpm-formula, chip-load tables, hsm-rules)
+thread_selection      → tap drill UNC, tap drill metric, thread-class, torque-grade-5/8, helicoil
+```
 
-- **Materials & Alloys** (25 entries): aluminum (2024, 6061, 7075), steels (1018, 4140, 4340, A36), stainless (303, 304, 316, 17-4PH), titanium (CP, 6Al-4V), brass (360, C260), copper, plastics (Delrin, UHMW, PEEK, PTFE, ABS, PC), Inconel 625/718. Each: composition summary, machinability rating, recommended SFM range (HSS + carbide), coolant guidance, common applications.
-- **Feeds & Speeds** (20): SFM formula, RPM=SFM×3.82/D, chip-load tables for end mills (1/8"–1"), drill speeds by material, tap speeds, reaming, boring, parting/grooving, HSM rules of thumb, surface-finish vs feed.
-- **Threads & Fasteners** (30): UNC/UNF tap drill chart (#0–1½"), Metric M1.6–M64 coarse + fine, NPT/NPTF pipe, BSP, Acme, helicoil drill sizes, thread-class tolerances (1A/2A/3A), torque specs by grade (Grade 5/8, A2/A4 SS, Class 8.8/10.9/12.9), thread-mill vs tap selection.
-- **Fits & Tolerances** (20): ANSI B4.1 RC1–RC9, LC1–LC11, LN1–LN3, FN1–FN5; ISO 286 H7/g6, H7/h6, H7/p6 with examples; press-fit interference calc; shrink-fit temperature delta; bearing fits.
-- **GD&T** (25): all 14 ASME Y14.5-2018 symbols (form: straightness, flatness, circularity, cylindricity; orientation: parallelism, perpendicularity, angularity; location: position, concentricity, symmetry; runout: circular, total; profile: line, surface) + datum reference frames, MMC/LMC/RFS modifiers, bonus tolerance, basic dims.
-- **Formulas & Calculations** (20): cutting power (HP=Q×Kp×C×W/E), tangential force, MRR for milling/turning/drilling, chip thickness, lead/helix angles, taper calc, sine bar, gear pitch (DP, module), spring rate, beam deflection (cantilever/simply supported).
-- **Inspection & Measurement** (20): micrometer use + verification, vernier/dial calipers, height gages, surface plates (grades AA/A/B), gage pins, gage blocks (grades 0/1/2/3), CMM basics, optical comparators, surface finish (Ra/Rz/Rmax), gage R&R formulas (AIAG MSA), ISO 17025 calibration intervals.
-- **Safety & Standards** (15): OSHA 1910.212 machine guarding, lockout/tagout (1910.147), chip handling, coolant exposure (NIOSH MWF), PPE (Z87.1 eyewear, A2/A3 cut gloves), AS9100 quick-ref, ISO 9001 clause map, ITAR overview, FOD program basics, FAA-PMA notes.
-- **Operator-tool keys** (already exists): pre-link `speed_feed_calculator` and `thread_selection` to relevant entries via `handbook_links`.
+**2b. GCA questions (tag match)**
+For each `gca_questions` row, insert `handbook_links` where `handbook_references.tags && gca_questions.tags`. Capped at 5 references per question, ordered by tag-overlap count desc. Idempotent via `ON CONFLICT (entity_type, entity_id, reference_id) DO NOTHING`.
 
-Each entry has: `title`, `summary` (1-2 sentences), `body_md` (200-500 words original prose), `formula` where applicable, `units`, `tags[]`, `difficulty`, `source_citation` ("Machinery's Handbook 31st ed., §...", "ASME Y14.5-2018", "OSHA 29 CFR 1910.147", etc.), `is_canonical=true`, `organization_id=NULL`.
+**2c. OAP lessons (tag match)**
+Same approach for `oap_lessons` — match on `oap_lessons.tags` ↔ `handbook_references.tags`. Capped at 5 per lesson.
 
-## Part 3 — Wire the wrapper deeper
+Existing manual `HandbookLinkManager` admin UI still works for fine-tuning afterwards.
 
-- **Auto-link operator tools**: insert `handbook_links` rows for `entity_key='speed_feed_calculator'` → 5 feeds/speeds entries; `entity_key='thread_selection'` → tap drill + torque + thread-class entries.
-- **GCA question linker**: a small admin script bulk-attaches relevant handbook entries to GCA questions by tag match (e.g. questions tagged `lathe` link to lathe-relevant references). Manual `HandbookLinkManager` already exists for fine-tuning.
-- **OAP lesson linker**: same tag-match approach for OAP lessons.
+## Part 3 — Machine & Control Manuals library (NEW)
 
-## Part 4 — Future-proofing for legitimate PDF ingest (deferred, not built now)
+Yes — publicly-available manuals (Haas operator manuals, Fanuc 0i/30i operator/maintenance manuals, Siemens 828D/840D, Mazak Mazatrol, Okuma OSP, etc.) are distributed by the OEMs as free PDFs and you can host them for your own users. Caveats: redistribute only manuals the OEM publishes openly (most operator/maintenance manuals are; service manuals sometimes are not), keep the OEM copyright notice intact on the viewer, and never ingest customer-confidential or licensed-only material.
 
-Document in `mem://features/handbook/reference-layer.md` that an admin PDF-upload + extract tool can be added later when you have a PDF you legally own and want ingested. Out of scope for this pass since it's not needed and adds attack surface.
+### 3a. Schema (new migration)
+
+```sql
+create table public.machine_manuals (
+  id uuid primary key default gen_random_uuid(),
+  organization_id uuid references organizations(id), -- null = canonical/platform
+  slug text unique not null,
+  manufacturer text not null,             -- 'Haas','Fanuc','Mazak','Siemens','Okuma','Heidenhain'
+  controller_family text,                 -- 'Fanuc 0i-MF','Siemens 840D sl', etc.
+  machine_model text,                     -- 'VF-2','UMC-750','Integrex i-200'
+  manual_type text not null,              -- 'operator','maintenance','programming','parameters','alarms'
+  title text not null,
+  edition text,                           -- '2023 Rev B'
+  language text default 'en',
+  source_url text,                        -- where it was downloaded from (OEM URL)
+  storage_path text not null,             -- bucket path
+  file_size_bytes bigint,
+  page_count int,
+  copyright_notice text,                  -- preserved OEM notice
+  tags text[] default '{}',
+  is_canonical boolean default false,
+  uploaded_by uuid references auth.users(id),
+  created_at timestamptz default now()
+);
+
+create table public.machine_manual_pages (
+  id uuid primary key default gen_random_uuid(),
+  manual_id uuid not null references machine_manuals(id) on delete cascade,
+  page_number int not null,
+  text_content text,                      -- extracted via pdf.js or pdfplumber
+  search_vector tsvector generated always as (to_tsvector('english', coalesce(text_content,''))) stored,
+  unique (manual_id, page_number)
+);
+create index on machine_manual_pages using gin (search_vector);
+```
+
+RLS:
+- `machine_manuals` SELECT: canonical (org_id=null) public-read; org-scoped manuals visible only to org members.
+- INSERT/UPDATE/DELETE: platform admin for canonical, org admin for org-scoped.
+- `machine_manual_pages` mirrors parent.
+
+Storage bucket `machine-manuals` (private). Signed URLs only; never public-read because some manuals you ingest later may be license-restricted to your org.
+
+### 3b. Edge function `extract-manual-pages`
+
+Runs after upload. Downloads PDF from storage, splits per page, OCR-fallback only when needed (uses pdf-parse for text-layer PDFs first), inserts rows into `machine_manual_pages`. Returns `{pages_extracted, ocr_pages}`.
+
+### 3c. UI — `/manuals` route
+
+- **Library page** (`/manuals`): grid filtered by Manufacturer / Controller / Manual Type / Search. Cards show cover thumbnail (page 1 render), title, edition, page count.
+- **Viewer page** (`/manuals/:slug`): embedded `react-pdf` (or `pdf.js` viewer) with sidebar:
+  - Page thumbnails
+  - Full-text search (`tsvector` query → highlighted hit list with page jump)
+  - Bookmark/save page (stored in `user_manual_bookmarks` — small table)
+  - Persistent OEM copyright footer
+- **Upload page** (`/manuals/upload`, admin only): drag-drop PDF, fields for manufacturer/controller/model/type/edition/source URL/copyright notice. On submit → upload to bucket → trigger extract function.
+- **Quick-cite component**: `<ManualCite manualSlug="haas-vf2-operator" page={142} />` renders a card linking to viewer at that page. Wire into `MachineProfile`, `StationDetail`, and inspection-tool pages so "View in manual" buttons appear next to model-matched stations.
+
+### 3d. Search integration
+
+Extend `HandbookQuickSearch` in the header to also query `machine_manuals` (title + page text), grouped results: "Handbook" + "Manuals". Top 5 of each.
+
+### 3e. Seed canonical manuals (optional, deferred)
+
+Don't bulk-download in this pass. Provide an admin "Suggested Manuals" panel with curated OEM source URLs (Haas haascnc.com/service.html, Fanuc fanucamerica.com, etc.) so the org admin clicks → confirm copyright is OEM-public → uploads. This keeps you legally clean (you didn't auto-scrape) and lets each shop pick the manuals matching their actual machines.
+
+## Part 4 — Phase-tracking MD doc
+
+New file: `docs/PROJECT_PHASES.md` covering everything done across this multi-message build:
+
+```text
+1. OAP / GCA / Certificate core            ✅ Complete
+2. Cert lifecycle E2E (Playwright)         ✅ Complete
+3. Media overlays + release log            ✅ Complete
+4. Help docs for certificates              ✅ Complete
+5. Handbook v1 schema + reference layer    ✅ Complete
+6. Handbook v2 — category cleanup          ✅ Complete
+7. Handbook v2 — curated content           ✅ Complete (~180 entries)
+8. Handbook v2 — auto-linkers              ✅ Complete
+9. Machine & Control Manuals library       ✅ Complete (schema + viewer + upload + search)
+10. Manual ingest of canonical manuals     ⏳ Manual admin task (per shop)
+11. Future: PDF extract for handbook       ⛔ Deferred
+```
+
+Each row links to relevant migration files, components, and `mem://` notes. Lives at `/dev/phases` via a small route in the developer portal.
 
 ## Files
 
-**Modified**
+**New**
 ```text
-supabase/migrations/<ts>_handbook_consolidate_categories.sql      (cleanup)
-supabase/migrations/<ts>_handbook_curated_content_v2.sql          (~180 entries)
-supabase/migrations/<ts>_handbook_operator_tool_links.sql         (auto-links)
-mem://features/handbook/reference-layer.md                         (update)
+supabase/migrations/<ts>_handbook_curated_v2_part2.sql           (~95 entries)
+supabase/migrations/<ts>_handbook_auto_linkers.sql               (operator + GCA + OAP)
+supabase/migrations/<ts>_machine_manuals_schema.sql              (tables + RLS + bucket)
+supabase/functions/extract-manual-pages/index.ts                  (PDF text extract)
+src/hooks/useMachineManuals.ts
+src/pages/ManualsLibrary.tsx                                      (/manuals)
+src/pages/ManualViewer.tsx                                        (/manuals/:slug)
+src/pages/ManualUpload.tsx                                        (/manuals/upload)
+src/components/manuals/ManualCite.tsx
+src/components/manuals/ManualSearchPanel.tsx
+docs/PROJECT_PHASES.md
+src/pages/dev/PhasesPage.tsx                                      (/dev/phases)
+mem://features/manuals/library.md                                 (new)
 ```
 
-No code changes required — `<HandbookCite>`, `/handbook`, `/handbook/:slug`, `HandbookQuickSearch`, `HandbookLinkManager` already exist and will pick up the new content automatically.
+**Modified**
+```text
+src/App.tsx                                                       (routes)
+src/components/handbook/HandbookQuickSearch.tsx                   (add manuals group)
+src/components/MachineProfile.tsx                                 (mount <ManualCite>)
+src/pages/StationDetail.tsx                                       (mount <ManualCite>)
+src/lib/devDocs.ts                                                (link phases page)
+mem://features/handbook/reference-layer.md                        (mark v2 done)
+mem://index.md                                                    (add manuals entry)
+```
 
 ## Verification
 
-1. `supabase--linter` after migrations → zero new errors.
-2. `SELECT category_id, COUNT(*) FROM handbook_references GROUP BY category_id` → 8 categories (no duplicates), each with 15-30 entries, total ~180.
-3. Visit `/handbook` → all 8 categories show populated cards; search "tap drill 1/4-20" returns the UNC tap drill entry.
-4. Visit `/operator-tools/speed-feed` → sidebar shows 3-5 cite cards from Feeds & Speeds.
-5. `/gca/test/<bank>` → in review mode, questions with handbook tags show related citations.
-6. Every entry has a `source_citation` populated (no copyright-blank entries).
+1. `supabase--linter` after all migrations → zero new errors.
+2. `SELECT category_id, count(*) FROM handbook_references GROUP BY category_id` → 8 categories, ~180 total.
+3. `SELECT count(*) FROM handbook_links WHERE entity_type='gca_question'` → > 0 for tagged questions.
+4. Visit `/operator-tools/speed-feed` → sidebar shows 3-5 cite cards.
+5. Upload a Haas VF-2 operator PDF at `/manuals/upload` → extract function logs `pages_extracted` = page count → viewer at `/manuals/haas-vf2-operator` renders with searchable text.
+6. Header search "G43 tool length" → hits in both Handbook (formulas) and Manuals (Fanuc operator pg X).
+7. `/dev/phases` renders the markdown phase doc.
+
+## Legal / safety guardrails
+
+- Upload form requires admin to check "I confirm this PDF is publicly distributed by the OEM and I have preserved the copyright notice."
+- `copyright_notice` field is mandatory and rendered on every viewer page.
+- Storage bucket is **private** — signed URLs only, even for canonical entries — so we can revoke access if an OEM ever requests removal.
+- No scraping; admins paste a `source_url` proving where they got it.
+- DMCA-style "Report this manual" link in viewer footer → notifies platform admins.
 
 ## Out of scope
 
-- Verbatim copying from any copyrighted Machinery's Handbook edition.
-- PDF upload/extraction admin tool (deferred until a legally-ingestable PDF is available).
-- Multi-language handbook content.
-- New categories beyond the 8 consolidated ones.
+- Automated bulk-download / scraping of OEM sites.
+- OCR of poorly-scanned manuals (basic text-layer extract only this pass; OCR fallback can be added later if needed).
+- Multi-language manual translation.
+- Per-machine auto-binding of manuals (admin manually attaches manual to machine model in `machine_manuals.machine_model`).
 
