@@ -1,6 +1,6 @@
 # ===========================================
 # JobLine.ai Robots Configuration
-# Last Updated: 2026-04-09
+# Last Updated: 2026-04-23
 # ===========================================
 
 User-agent: *
@@ -19,6 +19,11 @@ Allow: /tools
 Allow: /machine-time-tracking
 Allow: /shift-handoff
 Allow: /manufacturing-visibility
+Allow: /handbook
+Allow: /handbook/
+Allow: /manuals
+Allow: /manuals/$
+# Note: /manuals/upload is admin-only and excluded below
 
 # --- AI & SEO discovery files ---
 Allow: /llms.txt
@@ -34,6 +39,7 @@ Disallow: /testing
 Disallow: /teams
 Disallow: /profile
 Disallow: /queue
+Disallow: /manuals/upload
 Disallow: /setup
 Disallow: /settings
 Disallow: /updates

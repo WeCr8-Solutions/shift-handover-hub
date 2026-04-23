@@ -235,6 +235,24 @@ A comprehensive guide to selecting and implementing a manufacturing ERP:
       {"name": "ERP Selection Guide", "url": "https://jobline.ai/resources/erp-guide", "count": 7}
     ]
   },
+  "handbook_reference_library": {
+    "url": "https://jobline.ai/handbook",
+    "description": "Machinery's-Handbook-style curated reference content (200 entries, all source-cited)",
+    "categories": [
+      {"name": "Materials", "url": "https://jobline.ai/handbook/materials", "count": 31},
+      {"name": "Feeds & Speeds", "url": "https://jobline.ai/handbook/feeds-speeds", "count": 23},
+      {"name": "Threads", "url": "https://jobline.ai/handbook/threads", "count": 34},
+      {"name": "Fits & Tolerances", "url": "https://jobline.ai/handbook/fits-tolerances", "count": 22},
+      {"name": "GD&T", "url": "https://jobline.ai/handbook/gdt", "count": 27},
+      {"name": "Formulas", "url": "https://jobline.ai/handbook/formulas", "count": 21},
+      {"name": "Inspection & Measurement", "url": "https://jobline.ai/handbook/inspection-measurement", "count": 24},
+      {"name": "Safety & Standards", "url": "https://jobline.ai/handbook/safety-standards", "count": 18}
+    ]
+  },
+  "machine_and_control_manuals": {
+    "url": "https://jobline.ai/manuals",
+    "description": "Searchable library of publicly-distributed OEM machine and control manuals (Haas, Fanuc, Siemens, Mazak, Okuma, Heidenhain). Per-page text indexing for fast lookup. Admin-uploaded only; signed-URL access; copyright notice on every viewer page."
+  },
   "keywords": [
     "shift handoff software", "manufacturing execution system", "MES alternative",
     "work order tracking", "CNC shop management", "production visibility",
@@ -244,7 +262,11 @@ A comprehensive guide to selecting and implementing a manufacturing ERP:
     "machine time tracking", "quality management manufacturing",
     "G-code editor", "DNC software", "VS Code CNC", "FOCAS2",
     "manufacturing ERP guide", "ERP selection", "production control",
-    "manufacturing oversight", "team collaboration manufacturing"
+    "manufacturing oversight", "team collaboration manufacturing",
+    "machinery's handbook", "feeds and speeds reference", "thread chart",
+    "fits and tolerances", "GD&T reference", "Haas operator manual",
+    "Fanuc control manual", "Siemens 840D manual", "Mazatrol manual",
+    "Okuma OSP manual", "Heidenhain TNC manual", "CNC machine manuals"
   ],
   "competitors": ["Epicor", "JobBOSS", "E2 Shop System", "ProShop", "Shoptech", "MIE Trak Pro"],
   "differentiators": [
@@ -264,4 +286,4 @@ A comprehensive guide to selecting and implementing a manufacturing ERP:
 
 ---
 
-*Last updated: April 9, 2026*
+*Last updated: April 23, 2026*
