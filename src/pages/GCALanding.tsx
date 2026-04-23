@@ -380,7 +380,12 @@ export default function GCALanding() {
                         </Badge>
                       )}
                     </div>
-                    <CardTitle className="text-base mt-2">{b.title}</CardTitle>
+                    <CardTitle className="text-base mt-2 flex items-center gap-2 flex-wrap">
+                      <span className="flex-1">{b.title}</span>
+                      {b.content_year && (
+                        <Badge variant="secondary" className="text-[10px]">Updated · {b.content_year}</Badge>
+                      )}
+                    </CardTitle>
                     <CardDescription className="text-xs">{b.topic}</CardDescription>
                   </CardHeader>
                   <CardContent className="flex-1 flex items-end pt-0">
