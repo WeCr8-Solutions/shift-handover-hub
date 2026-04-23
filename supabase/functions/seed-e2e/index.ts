@@ -2,7 +2,7 @@
 // SECURITY: Requires E2E_SEED_SECRET header. Disabled in production unless explicitly enabled.
 // Idempotent: re-running returns the same IDs.
 
-import { createClient } from "jsr:@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
