@@ -3043,6 +3043,171 @@ export type Database = {
         }
         Relationships: []
       }
+      handbook_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_canonical: boolean
+          name: string
+          organization_id: string | null
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_canonical?: boolean
+          name: string
+          organization_id?: string | null
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_canonical?: boolean
+          name?: string
+          organization_id?: string | null
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "handbook_categories_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "handbook_categories_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      handbook_links: {
+        Row: {
+          created_at: string
+          entity_id: string | null
+          entity_key: string | null
+          entity_type: string
+          id: string
+          reference_id: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          entity_id?: string | null
+          entity_key?: string | null
+          entity_type: string
+          id?: string
+          reference_id: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string | null
+          entity_key?: string | null
+          entity_type?: string
+          id?: string
+          reference_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "handbook_links_reference_id_fkey"
+            columns: ["reference_id"]
+            isOneToOne: false
+            referencedRelation: "handbook_references"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      handbook_references: {
+        Row: {
+          body_md: string
+          category_id: string
+          created_at: string
+          difficulty: string | null
+          formula: string | null
+          id: string
+          is_canonical: boolean
+          organization_id: string | null
+          slug: string
+          source_citation: string | null
+          summary: string | null
+          tags: string[]
+          title: string
+          units: string | null
+          updated_at: string
+        }
+        Insert: {
+          body_md?: string
+          category_id: string
+          created_at?: string
+          difficulty?: string | null
+          formula?: string | null
+          id?: string
+          is_canonical?: boolean
+          organization_id?: string | null
+          slug: string
+          source_citation?: string | null
+          summary?: string | null
+          tags?: string[]
+          title: string
+          units?: string | null
+          updated_at?: string
+        }
+        Update: {
+          body_md?: string
+          category_id?: string
+          created_at?: string
+          difficulty?: string | null
+          formula?: string | null
+          id?: string
+          is_canonical?: boolean
+          organization_id?: string | null
+          slug?: string
+          source_citation?: string | null
+          summary?: string | null
+          tags?: string[]
+          title?: string
+          units?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "handbook_references_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "handbook_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "handbook_references_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "handbook_references_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       handoff_records: {
         Row: {
           clamps_bolts_torqued: string | null
