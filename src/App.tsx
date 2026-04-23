@@ -91,6 +91,8 @@ const GCodeAcademy = lazy(() => import("./pages/resources/GCodeAcademy"));
 const OperatorAcceptanceProgram = lazy(() => import("./pages/resources/OperatorAcceptanceProgram"));
 const OAPLanding = lazy(() => import("./pages/OAPLanding"));
 const GCALanding = lazy(() => import("./pages/GCALanding"));
+const HandbookLibrary = lazy(() => import("./pages/HandbookLibrary"));
+const HandbookEntry = lazy(() => import("./pages/HandbookEntry"));
 const VerifyCertificate = lazy(() => import("./pages/VerifyCertificate"));
 const CertSuccess = lazy(() => import("./pages/CertSuccess"));
 const OapWalkthrough = lazy(() => import("./pages/OapWalkthrough"));
@@ -247,6 +249,8 @@ const App = () => (
                     <Route path="/gcode-academy" element={<GCALanding />} />
                     <Route path="/resources/gcode-academy" element={<GCodeAcademy />} />
                     <Route path="/oap" element={<OAPLanding />} />
+                    <Route path="/handbook" element={<HandbookLibrary />} />
+                    <Route path="/handbook/:slug" element={<HandbookEntry />} />
                     <Route path="/verify/:certId" element={<VerifyCertificate />} />
                     <Route path="/cert/success" element={<CertSuccess />} />
                     <Route path="/oap/walkthrough" element={<OapWalkthrough />} />
