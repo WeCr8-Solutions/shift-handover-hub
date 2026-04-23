@@ -219,7 +219,7 @@ export function OapEmployerPanel() {
                 !e.completed_at &&
                 new Date(e.expected_completion_at) < new Date();
               return (
-                <div key={e.id} className="p-3 flex items-center justify-between gap-3">
+                <div key={e.id} className="p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium truncate">
                       {m?.profile?.display_name || m?.profile?.email || e.user_id.slice(0, 8)}
