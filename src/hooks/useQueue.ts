@@ -34,7 +34,7 @@ export interface QueueItem {
   first_article_minutes: number | null;
   cycle_time_minutes: number | null;
   parts_completed: number;
-  current_phase: string;
+  current_phase: string | null;
   started_at: string | null;
   completed_at: string | null;
   tags: string[];

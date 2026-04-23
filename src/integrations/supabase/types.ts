@@ -566,6 +566,66 @@ export type Database = {
         }
         Relationships: []
       }
+      company_social_profiles: {
+        Row: {
+          company_name: string
+          created_at: string
+          created_by: string | null
+          handle: string | null
+          id: string
+          is_active: boolean
+          notes: string | null
+          organization_id: string | null
+          platform: string
+          profile_name: string
+          profile_url: string
+          updated_at: string
+        }
+        Insert: {
+          company_name: string
+          created_at?: string
+          created_by?: string | null
+          handle?: string | null
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          organization_id?: string | null
+          platform: string
+          profile_name: string
+          profile_url: string
+          updated_at?: string
+        }
+        Update: {
+          company_name?: string
+          created_at?: string
+          created_by?: string | null
+          handle?: string | null
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          organization_id?: string | null
+          platform?: string
+          profile_name?: string
+          profile_url?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_social_profiles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_social_profiles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       current_station_status: {
         Row: {
           condition_notes: string | null
@@ -1801,32 +1861,68 @@ export type Database = {
       }
       flyer_campaigns: {
         Row: {
+          attachment_urls: string[]
+          campaign_type: string
+          cover_image_url: string | null
           created_at: string
           created_by: string | null
+          cta_label: string | null
           description: string | null
+          ends_at: string | null
+          gallery_urls: string[]
           id: string
+          is_published: boolean
+          location_address: string | null
+          location_name: string | null
           name: string
+          promo_copy: string | null
+          qr_target_url: string | null
           slug: string
+          starts_at: string | null
           status: string
           updated_at: string
         }
         Insert: {
+          attachment_urls?: string[]
+          campaign_type?: string
+          cover_image_url?: string | null
           created_at?: string
           created_by?: string | null
+          cta_label?: string | null
           description?: string | null
+          ends_at?: string | null
+          gallery_urls?: string[]
           id?: string
+          is_published?: boolean
+          location_address?: string | null
+          location_name?: string | null
           name: string
+          promo_copy?: string | null
+          qr_target_url?: string | null
           slug: string
+          starts_at?: string | null
           status?: string
           updated_at?: string
         }
         Update: {
+          attachment_urls?: string[]
+          campaign_type?: string
+          cover_image_url?: string | null
           created_at?: string
           created_by?: string | null
+          cta_label?: string | null
           description?: string | null
+          ends_at?: string | null
+          gallery_urls?: string[]
           id?: string
+          is_published?: boolean
+          location_address?: string | null
+          location_name?: string | null
           name?: string
+          promo_copy?: string | null
+          qr_target_url?: string | null
           slug?: string
+          starts_at?: string | null
           status?: string
           updated_at?: string
         }
