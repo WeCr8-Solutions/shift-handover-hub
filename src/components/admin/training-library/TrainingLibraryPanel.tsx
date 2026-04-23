@@ -11,6 +11,7 @@ import { OapMentorAdminPanel } from "@/components/oap/OapMentorAdminPanel";
 import { GcaProgramEditor } from "./GcaProgramEditor";
 import { OapProgramEditor } from "./OapProgramEditor";
 import { CertificateTemplateStudio } from "./CertificateTemplateStudio";
+import { ReleaseLogPanel } from "./ReleaseLogPanel";
 import {
   Library,
   Wrench,
@@ -21,6 +22,7 @@ import {
   Tags,
   Award,
   ShieldCheck,
+  History,
 } from "lucide-react";
 import type { AdminComponentAccess } from "@/types/admin";
 
@@ -70,6 +72,9 @@ export function TrainingLibraryPanel({ access }: Props) {
           <TabsTrigger value="certs" className="gap-1">
             <Award className="w-3.5 h-3.5" /> Certificates
           </TabsTrigger>
+          <TabsTrigger value="releases" className="gap-1">
+            <History className="w-3.5 h-3.5" /> Release Log
+          </TabsTrigger>
           {access.isPlatformAdmin && (
             <TabsTrigger value="bulk" className="gap-1">
               <Tags className="w-3.5 h-3.5" /> Bulk Tags
@@ -117,6 +122,10 @@ export function TrainingLibraryPanel({ access }: Props) {
 
         <TabsContent value="certs">
           <CertificateIssuancePanel />
+        </TabsContent>
+
+        <TabsContent value="releases">
+          <ReleaseLogPanel />
         </TabsContent>
 
         {access.isPlatformAdmin && (

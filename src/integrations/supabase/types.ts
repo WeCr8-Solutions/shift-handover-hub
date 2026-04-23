@@ -475,6 +475,7 @@ export type Database = {
           accent_color_hex: string | null
           background_watermark_path: string | null
           border_style: string | null
+          content_year: number | null
           created_at: string
           created_by: string | null
           font_family_sans: string | null
@@ -484,6 +485,8 @@ export type Database = {
           id: string
           is_active: boolean
           is_canonical: boolean
+          last_published_at: string | null
+          last_published_by: string | null
           name: string
           organization_id: string | null
           program: string
@@ -496,6 +499,7 @@ export type Database = {
           accent_color_hex?: string | null
           background_watermark_path?: string | null
           border_style?: string | null
+          content_year?: number | null
           created_at?: string
           created_by?: string | null
           font_family_sans?: string | null
@@ -505,6 +509,8 @@ export type Database = {
           id?: string
           is_active?: boolean
           is_canonical?: boolean
+          last_published_at?: string | null
+          last_published_by?: string | null
           name: string
           organization_id?: string | null
           program: string
@@ -517,6 +523,7 @@ export type Database = {
           accent_color_hex?: string | null
           background_watermark_path?: string | null
           border_style?: string | null
+          content_year?: number | null
           created_at?: string
           created_by?: string | null
           font_family_sans?: string | null
@@ -526,6 +533,8 @@ export type Database = {
           id?: string
           is_active?: boolean
           is_canonical?: boolean
+          last_published_at?: string | null
+          last_published_by?: string | null
           name?: string
           organization_id?: string | null
           program?: string
@@ -2728,12 +2737,20 @@ export type Database = {
       }
       gca_question_banks: {
         Row: {
+          content_year: number | null
+          cover_media_id: string | null
+          cover_overlay_opacity: number | null
+          cover_overlay_position: string | null
+          cover_overlay_text: string | null
+          cover_overlay_text_color: string | null
           created_at: string
           description: string | null
           difficulty: string
           id: string
           is_pro_only: boolean
           is_published: boolean
+          last_published_at: string | null
+          last_published_by: string | null
           passing_score_pct: number
           slug: string
           sort_order: number
@@ -2742,12 +2759,20 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          content_year?: number | null
+          cover_media_id?: string | null
+          cover_overlay_opacity?: number | null
+          cover_overlay_position?: string | null
+          cover_overlay_text?: string | null
+          cover_overlay_text_color?: string | null
           created_at?: string
           description?: string | null
           difficulty?: string
           id?: string
           is_pro_only?: boolean
           is_published?: boolean
+          last_published_at?: string | null
+          last_published_by?: string | null
           passing_score_pct?: number
           slug: string
           sort_order?: number
@@ -2756,12 +2781,20 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          content_year?: number | null
+          cover_media_id?: string | null
+          cover_overlay_opacity?: number | null
+          cover_overlay_position?: string | null
+          cover_overlay_text?: string | null
+          cover_overlay_text_color?: string | null
           created_at?: string
           description?: string | null
           difficulty?: string
           id?: string
           is_pro_only?: boolean
           is_published?: boolean
+          last_published_at?: string | null
+          last_published_by?: string | null
           passing_score_pct?: number
           slug?: string
           sort_order?: number
@@ -2769,7 +2802,15 @@ export type Database = {
           topic?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "gca_question_banks_cover_media_id_fkey"
+            columns: ["cover_media_id"]
+            isOneToOne: false
+            referencedRelation: "training_media"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       gca_questions: {
         Row: {
@@ -4448,11 +4489,19 @@ export type Database = {
       }
       oap_courses: {
         Row: {
+          content_year: number | null
+          cover_media_id: string | null
+          cover_overlay_opacity: number | null
+          cover_overlay_position: string | null
+          cover_overlay_text: string | null
+          cover_overlay_text_color: string | null
           created_at: string
           description: string | null
           estimated_minutes: number | null
           id: string
           is_published: boolean
+          last_published_at: string | null
+          last_published_by: string | null
           section_number: number
           slug: string
           sort_order: number
@@ -4461,11 +4510,19 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          content_year?: number | null
+          cover_media_id?: string | null
+          cover_overlay_opacity?: number | null
+          cover_overlay_position?: string | null
+          cover_overlay_text?: string | null
+          cover_overlay_text_color?: string | null
           created_at?: string
           description?: string | null
           estimated_minutes?: number | null
           id?: string
           is_published?: boolean
+          last_published_at?: string | null
+          last_published_by?: string | null
           section_number: number
           slug: string
           sort_order?: number
@@ -4474,11 +4531,19 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          content_year?: number | null
+          cover_media_id?: string | null
+          cover_overlay_opacity?: number | null
+          cover_overlay_position?: string | null
+          cover_overlay_text?: string | null
+          cover_overlay_text_color?: string | null
           created_at?: string
           description?: string | null
           estimated_minutes?: number | null
           id?: string
           is_published?: boolean
+          last_published_at?: string | null
+          last_published_by?: string | null
           section_number?: number
           slug?: string
           sort_order?: number
@@ -4486,7 +4551,15 @@ export type Database = {
           title?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "oap_courses_cover_media_id_fkey"
+            columns: ["cover_media_id"]
+            isOneToOne: false
+            referencedRelation: "training_media"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       oap_designated_mentors: {
         Row: {
@@ -4618,11 +4691,19 @@ export type Database = {
       oap_lessons: {
         Row: {
           body_markdown: string
+          content_year: number | null
           course_id: string
+          cover_media_id: string | null
+          cover_overlay_opacity: number | null
+          cover_overlay_position: string | null
+          cover_overlay_text: string | null
+          cover_overlay_text_color: string | null
           created_at: string
           estimated_minutes: number | null
           id: string
           is_published: boolean
+          last_published_at: string | null
+          last_published_by: string | null
           slug: string
           sort_order: number
           title: string
@@ -4630,11 +4711,19 @@ export type Database = {
         }
         Insert: {
           body_markdown?: string
+          content_year?: number | null
           course_id: string
+          cover_media_id?: string | null
+          cover_overlay_opacity?: number | null
+          cover_overlay_position?: string | null
+          cover_overlay_text?: string | null
+          cover_overlay_text_color?: string | null
           created_at?: string
           estimated_minutes?: number | null
           id?: string
           is_published?: boolean
+          last_published_at?: string | null
+          last_published_by?: string | null
           slug: string
           sort_order?: number
           title: string
@@ -4642,11 +4731,19 @@ export type Database = {
         }
         Update: {
           body_markdown?: string
+          content_year?: number | null
           course_id?: string
+          cover_media_id?: string | null
+          cover_overlay_opacity?: number | null
+          cover_overlay_position?: string | null
+          cover_overlay_text?: string | null
+          cover_overlay_text_color?: string | null
           created_at?: string
           estimated_minutes?: number | null
           id?: string
           is_published?: boolean
+          last_published_at?: string | null
+          last_published_by?: string | null
           slug?: string
           sort_order?: number
           title?: string
@@ -4658,6 +4755,13 @@ export type Database = {
             columns: ["course_id"]
             isOneToOne: false
             referencedRelation: "oap_courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oap_lessons_cover_media_id_fkey"
+            columns: ["cover_media_id"]
+            isOneToOne: false
+            referencedRelation: "training_media"
             referencedColumns: ["id"]
           },
         ]
@@ -7171,6 +7275,60 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      program_release_log: {
+        Row: {
+          content_year: number
+          entity_id: string
+          entity_label: string | null
+          entity_type: string
+          id: string
+          organization_id: string | null
+          program: string
+          release_notes: string | null
+          released_at: string
+          released_by: string | null
+        }
+        Insert: {
+          content_year: number
+          entity_id: string
+          entity_label?: string | null
+          entity_type: string
+          id?: string
+          organization_id?: string | null
+          program: string
+          release_notes?: string | null
+          released_at?: string
+          released_by?: string | null
+        }
+        Update: {
+          content_year?: number
+          entity_id?: string
+          entity_label?: string | null
+          entity_type?: string
+          id?: string
+          organization_id?: string | null
+          program?: string
+          release_notes?: string | null
+          released_at?: string
+          released_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "program_release_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "program_release_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       quality_checkpoints: {
         Row: {
