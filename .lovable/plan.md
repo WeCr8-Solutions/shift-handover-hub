@@ -1,91 +1,118 @@
 
 
-## Developer Portal at `/dev` (dev.jobline.ai)
+# Unified Program Editor for GCA & OAP + Certificate Template Manager
 
-### Approach
+Build platform-admin tooling inside the existing Admin → Training Library tab so GCA question banks, OAP courses/quizzes, and certificate templates can all be edited (and uploaded) from one place — no SQL migrations required to add or improve content.
 
-Most companies (Stripe, Vercel, Supabase) host their developer docs as a section within their main app or as a subdomain pointing to the same app. Since this is a single Lovable project, the best approach is:
+## What you'll get
 
-1. Build a `/dev` route section (like `/help` already exists) with its own layout, sidebar, and MD-style content
-2. Point `dev.jobline.ai` as a custom domain that redirects to `/dev` — or handle it via a route check on the subdomain
+Three new admin sub-panels, all gated to **platform admins** (canonical content rule: `organization_id = NULL` + `is_canonical = true`):
 
-This follows the same pattern as your existing Help Center (`/help`) but targets developers and integrators.
-
-### Content Structure
+1. **GCA Program Editor** — manage all 10 question banks and their questions
+2. **OAP Program Editor** — manage the 7 OAP courses, lessons, quizzes, and quiz questions
+3. **Certificate Template Studio** — review the live diploma + digital templates, upload alternate template assets (logo seal, signature, background watermark), and preview what an issued OAP/GCA cert will look like before publishing
 
 ```text
-/dev                          → Developer Portal index (overview, quick links)
-/dev/:category/:slug          → Individual doc article
-
-Categories:
-├── getting-started/          → Auth tokens, SDK install, quickstart
-├── api/                      → REST endpoints, RPC functions, response formats
-├── extensions/               → VS Code G-Code Intelligence, Machine Connect Relay
-├── integrations/             → ERP connectors, MCP server, WebSocket relay, DNC
-├── sdk/                      → JavaScript SDK, Electron desktop app usage
-├── webhooks/                 → Event payloads, retry logic, signature verification
-└── changelog/                → Developer-facing release notes, migration guides
+Admin → Training Library
+├── Tools Catalog        (existing)
+├── Machining Ops        (existing)
+├── GCA Editor           ← REPLACES "GCA Mapping" placeholder
+├── OAP Editor           ← UPGRADES "OAP Mapping" tab
+├── Certificate Studio   ← NEW (replaces empty cert area)
+├── Certificates Issued  (existing CertificateIssuancePanel)
+├── Org Overrides        (existing)
+└── OAP Mentors          (existing)
 ```
 
-### Architecture
+## GCA Editor (sub-panel)
 
-**Data model** — reuse the same pattern as `helpArticles.ts`:
+- Two-pane layout: left = list of `gca_question_banks` (search + filter by topic/difficulty/published); right = bank detail
+- Bank detail tabs:
+  - **Settings** — title, slug, topic, difficulty, passing_score_pct, is_pro_only, is_published, sort_order
+  - **Questions** — drag-to-reorder list of `gca_questions`; inline editor for prompt, type (multiple_choice / true_false / fill_in / multi_select / drag_drop), choices (JSON array editor with add/remove rows), correct_answers, explanation, points
+  - **Media** — reuse existing polymorphic `training_media` uploader bound to `entity_type='gca_question_bank'` or `gca_question`
+- "Create new bank" + "Duplicate bank" actions
+- Bulk import: paste JSON / CSV of questions to bulk-insert into a bank (validates schema before commit)
 
-```typescript
-// src/lib/devDocs.ts
-interface DevDoc {
-  category: string;
-  categoryLabel: string;
-  slug: string;
-  title: string;
-  description: string;
-  sections: { heading: string; body: string }[];
-  tags: string[];
-  codeExamples?: { language: string; code: string }[];
-}
+## OAP Editor (sub-panel)
+
+- Three-level tree on the left: Course → Lesson → Quiz
+- Right pane forms for each level:
+  - **Course** — slug, section_number (1–7), title, summary, description, estimated_minutes, sort_order, is_published
+  - **Lesson** — title, slug, body_markdown (markdown editor with preview), estimated_minutes, sort_order
+  - **Quiz** — title, description, passing_score_pct, max_attempts, time_limit_minutes
+  - **Quiz Questions** — same inline question editor used by GCA (shared component)
+- Markdown editor uses existing shadcn Textarea + a small live-preview pane (ReactMarkdown — already a dep via blog system)
+- "Add Lesson" / "Add Quiz Question" inline actions; soft-delete with undo toast
+
+## Certificate Template Studio (sub-panel)
+
+The current `CertificateTemplate.tsx` is hard-coded. To let admins "review or upload new certificate templates" without redeploying, we add a `certificate_templates` table that stores **per-program style overrides** (the React layout itself stays code-owned for security/print fidelity, but every visual asset and label becomes editable).
+
+- New table `public.certificate_templates`:
+  - `id`, `program` (`'OAP'|'GCA'`), `variant` (`'diploma'|'digital'`), `name`, `is_active`, `is_canonical`
+  - Visual overrides: `seal_logo_path`, `background_watermark_path`, `signature_default_path`, `accent_color_hex`, `border_style` (`'ornate'|'minimal'|'modern'`), `header_text`, `footer_text`, `font_family_serif`, `font_family_sans`
+  - Storage bucket: new public `certificate-templates` bucket (PNG/SVG only, 2 MB cap), org-scoped path for non-canonical, root path for canonical
+- Studio UI:
+  - Grid of existing templates (canonical + your org's overrides) with thumbnails
+  - "Upload new template assets" form: drag-drop seal/watermark/signature, color picker, dropdowns
+  - Live side-by-side preview using `<CertificateTemplate variant="diploma">` and `variant="digital"` driven by a sample `CertificateRecord`
+  - "Set Active" toggles which template the issuer pulls; canonical templates fall back when no org override exists
+- `CertificateTemplate.tsx` reads the active template (cached via React Query) and applies overrides as CSS vars / props; default values match today's hard-coded look so nothing changes visually until an admin edits
+
+## Backend / DB changes (one migration)
+
+```text
+1. CREATE TABLE certificate_templates (...)  + RLS:
+     - SELECT: anyone (templates are referenced by public verify pages)
+     - INSERT/UPDATE/DELETE: platform admin OR (org admin AND organization_id = own org AND is_canonical = false)
+2. CREATE storage bucket 'certificate-templates' (public read)
+     + storage policies mirroring the table rules (path prefix = org_id or 'canonical/')
+3. RLS hardening for editors:
+     - gca_question_banks / gca_questions / oap_courses / oap_lessons / oap_quizzes / oap_quiz_questions
+       gain UPDATE/INSERT/DELETE policies restricted to platform admins
+       (today they're SELECT-public, write-locked — we open writes only for platform_admin)
+4. Trigger: enforce is_canonical ↔ organization_id IS NULL invariant (same pattern used by training_media)
 ```
 
-**Key difference from Help Center**: Dev docs include syntax-highlighted code blocks, copy-to-clipboard, and tabbed language examples (TypeScript, cURL, Python).
+No data migration — all existing seeded rows stay intact.
 
-### Components
+## Shared building blocks (DRY)
 
-| Component | Purpose |
-|-----------|---------|
-| `DevPortal.tsx` (page) | Index with search, category grid, hero |
-| `DevDocArticle.tsx` (page) | Article page with sidebar + TOC |
-| `DevSidebar.tsx` | Collapsible category tree (same pattern as HelpSidebar) |
-| `DevCodeBlock.tsx` | Syntax-highlighted code with copy button and language tabs |
-| `DevSearch.tsx` | Client-side doc search |
+- `QuestionEditor` — one component used by both GCA and OAP question lists (type, prompt, choices JSON rows, correct answers, explanation, points)
+- `usePlatformAdminCheck` — reuse `useAdminAccess`'s `isPlatformAdmin`; render Editor sub-panels in read-only mode for non-platform admins so org admins can preview
+- React Query mutations with optimistic updates + toast feedback
+- All forms validated with zod before insert/update
 
-### VS Code Extension Section
+## Files to add
 
-Dedicated articles pulling real data from the published extension:
-- **JobLine G-Code Intelligence** — installation, supported dialects (Fanuc, Haas, Mazak, Siemens, Heidenhain, Okuma), configuration, snippet usage, troubleshooting
-- **JobLine Machine Connect** (coming soon) — relay setup, WebSocket protocol, station binding, DNC transfer configuration
+```text
+src/components/admin/training-library/
+  GcaProgramEditor.tsx
+  OapProgramEditor.tsx
+  CertificateTemplateStudio.tsx
+  shared/
+    QuestionEditor.tsx        (reused by GCA + OAP)
+    JsonChoicesField.tsx
+    MarkdownEditor.tsx
+src/hooks/
+  useGcaAdmin.ts              (CRUD for banks + questions)
+  useOapAdmin.ts              (CRUD for courses/lessons/quizzes/questions)
+  useCertificateTemplates.ts  (active template + asset uploads)
+supabase/migrations/
+  <timestamp>_admin_program_editors.sql  (table + RLS + storage bucket)
+```
 
-### Pages & Routing
+## Files to edit
 
-| Route | Page |
-|-------|------|
-| `/dev` | `DevPortal.tsx` — index with hero, search, category cards |
-| `/dev/:category/:slug` | `DevDocArticle.tsx` — article with sidebar, TOC, code blocks |
+- `src/components/admin/training-library/TrainingLibraryPanel.tsx` — wire new tabs, drop placeholders
+- `src/components/certificates/CertificateTemplate.tsx` — accept optional `template` prop with overrides; falls back to today's hard-coded values
+- `src/pages/VerifyCertificate.tsx` — fetch active template by program before rendering
+- `src/types/admin.ts` — no change needed (already exposes `isPlatformAdmin`)
 
-### Files to Create/Edit
+## Out of scope (call-outs)
 
-1. **Create** `src/lib/devDocs.ts` — all developer documentation content (structured articles covering API, extensions, integrations, SDK, changelog)
-2. **Create** `src/pages/DevPortal.tsx` — index page with search, category grid, featured docs
-3. **Create** `src/pages/DevDocArticle.tsx` — article renderer with sidebar, TOC, code blocks
-4. **Create** `src/components/dev/DevSidebar.tsx` — collapsible category navigation
-5. **Create** `src/components/dev/DevCodeBlock.tsx` — syntax-highlighted code with copy + language tabs
-6. **Create** `src/components/dev/DevSearch.tsx` — client-side search across dev docs
-7. **Edit** `src/App.tsx` — add `/dev` and `/dev/:category/:slug` routes
-8. **Edit** `src/components/marketing/MarketingNav.tsx` — add "Developers" link under appropriate dropdown
-
-### Domain Setup
-
-After building, point `dev.jobline.ai` to this project via Lovable's custom domain settings. Add a route-level redirect so visitors hitting `dev.jobline.ai` land on `/dev` automatically.
-
-### Initial Content (Phase 1)
-
-~20 articles across 6 categories to start, expanding over time. Each article includes 4-6 sections with code examples where relevant. Extension docs will link directly to the VS Code Marketplace for installation.
+- Template **layouts** (component JSX) stay in code — only assets/colors/labels are admin-editable. This preserves print fidelity and prevents broken layouts from a bad upload.
+- Versioning/history of edited questions (mention as a future add if needed)
+- Operator-facing UX is unchanged — they continue to take tests at `/gca/test/:bankSlug` and `/oap/walkthrough`
 
