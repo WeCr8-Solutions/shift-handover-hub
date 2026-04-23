@@ -262,7 +262,7 @@ export function OapEmployerPanel() {
         <CertificateIssuancePanel defaultOrgId={organization.id} />
       )}
 
-
+      {recertEnrollment && (
         <OapRecertManager
           open={!!recertEnrollment}
           onOpenChange={(o) => !o && setRecertEnrollment(null)}
