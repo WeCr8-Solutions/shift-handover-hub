@@ -10538,6 +10538,19 @@ export type Database = {
         }[]
       }
       get_user_org_id: { Args: { _user_id: string }; Returns: string }
+      grade_gca_attempt: {
+        Args: { _answers: Json; _bank_id: string; _started_at: string }
+        Returns: Json
+      }
+      grade_oap_quiz_attempt: {
+        Args: {
+          _answers: Json
+          _organization_id?: string
+          _quiz_id: string
+          _started_at: string
+        }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
