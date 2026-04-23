@@ -154,7 +154,7 @@ function useGcaBanksWithPro() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("gca_question_banks")
-        .select("id, slug, title, topic, difficulty, is_pro_only, is_published")
+        .select("id, slug, title, topic, difficulty, is_pro_only, is_published, content_year, last_published_at")
         .eq("is_published", true)
         .order("sort_order", { ascending: true });
       if (error) throw error;
@@ -166,6 +166,8 @@ function useGcaBanksWithPro() {
         difficulty: string;
         is_pro_only: boolean;
         is_published: boolean;
+        content_year?: number | null;
+        last_published_at?: string | null;
       }[];
     },
   });
