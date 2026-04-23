@@ -132,24 +132,24 @@ export function OapEmployerPanel() {
             </p>
           )}
           {programs.map((p) => (
-            <div key={p.id} className="border rounded-md p-3 flex items-start justify-between gap-3">
-              <div>
-                <div className="font-medium text-sm">{p.name}</div>
-                {p.description && <div className="text-xs text-muted-foreground">{p.description}</div>}
+            <div key={p.id} className="border rounded-md p-3 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <div className="font-medium text-sm break-words">{p.name}</div>
+                {p.description && <div className="text-xs text-muted-foreground break-words">{p.description}</div>}
                 <div className="flex flex-wrap gap-1 mt-2">
                   {(p.required_machine_tags ?? []).map((t) => (
                     <Badge key={t} variant="secondary" className="text-[10px]">{t}</Badge>
                   ))}
                 </div>
               </div>
-              <div className="flex flex-col gap-1">
+              <div className="flex sm:flex-col gap-1 shrink-0">
                 <Dialog open={editing?.id === p.id} onOpenChange={(o) => !o && setEditing(null)}>
                   <DialogTrigger asChild>
                     <Button size="sm" variant="outline" onClick={() => setEditing(p)}>
                       <Pencil className="w-3 h-3 mr-1" /> Edit
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
+                  <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                       <DialogTitle>Edit role program</DialogTitle>
                     </DialogHeader>
