@@ -470,6 +470,87 @@ export type Database = {
         }
         Relationships: []
       }
+      certificate_templates: {
+        Row: {
+          accent_color_hex: string | null
+          background_watermark_path: string | null
+          border_style: string | null
+          created_at: string
+          created_by: string | null
+          font_family_sans: string | null
+          font_family_serif: string | null
+          footer_text: string | null
+          header_text: string | null
+          id: string
+          is_active: boolean
+          is_canonical: boolean
+          name: string
+          organization_id: string | null
+          program: string
+          seal_logo_path: string | null
+          signature_default_path: string | null
+          updated_at: string
+          variant: string
+        }
+        Insert: {
+          accent_color_hex?: string | null
+          background_watermark_path?: string | null
+          border_style?: string | null
+          created_at?: string
+          created_by?: string | null
+          font_family_sans?: string | null
+          font_family_serif?: string | null
+          footer_text?: string | null
+          header_text?: string | null
+          id?: string
+          is_active?: boolean
+          is_canonical?: boolean
+          name: string
+          organization_id?: string | null
+          program: string
+          seal_logo_path?: string | null
+          signature_default_path?: string | null
+          updated_at?: string
+          variant: string
+        }
+        Update: {
+          accent_color_hex?: string | null
+          background_watermark_path?: string | null
+          border_style?: string | null
+          created_at?: string
+          created_by?: string | null
+          font_family_sans?: string | null
+          font_family_serif?: string | null
+          footer_text?: string | null
+          header_text?: string | null
+          id?: string
+          is_active?: boolean
+          is_canonical?: boolean
+          name?: string
+          organization_id?: string | null
+          program?: string
+          seal_logo_path?: string | null
+          signature_default_path?: string | null
+          updated_at?: string
+          variant?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certificate_templates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "certificate_templates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       certifications: {
         Row: {
           category: string | null
