@@ -3910,6 +3910,125 @@ export type Database = {
           },
         ]
       }
+      machine_manual_pages: {
+        Row: {
+          created_at: string
+          id: string
+          manual_id: string
+          page_number: number
+          search_vector: unknown
+          text_content: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          manual_id: string
+          page_number: number
+          search_vector?: unknown
+          text_content?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          manual_id?: string
+          page_number?: number
+          search_vector?: unknown
+          text_content?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "machine_manual_pages_manual_id_fkey"
+            columns: ["manual_id"]
+            isOneToOne: false
+            referencedRelation: "machine_manuals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      machine_manuals: {
+        Row: {
+          controller_family: string | null
+          copyright_notice: string
+          created_at: string
+          edition: string | null
+          file_size_bytes: number | null
+          id: string
+          is_canonical: boolean
+          language: string
+          machine_model: string | null
+          manual_type: string
+          manufacturer: string
+          organization_id: string | null
+          page_count: number | null
+          slug: string
+          source_url: string | null
+          storage_path: string
+          tags: string[]
+          title: string
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          controller_family?: string | null
+          copyright_notice: string
+          created_at?: string
+          edition?: string | null
+          file_size_bytes?: number | null
+          id?: string
+          is_canonical?: boolean
+          language?: string
+          machine_model?: string | null
+          manual_type: string
+          manufacturer: string
+          organization_id?: string | null
+          page_count?: number | null
+          slug: string
+          source_url?: string | null
+          storage_path: string
+          tags?: string[]
+          title: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          controller_family?: string | null
+          copyright_notice?: string
+          created_at?: string
+          edition?: string | null
+          file_size_bytes?: number | null
+          id?: string
+          is_canonical?: boolean
+          language?: string
+          machine_model?: string | null
+          manual_type?: string
+          manufacturer?: string
+          organization_id?: string | null
+          page_count?: number | null
+          slug?: string
+          source_url?: string | null
+          storage_path?: string
+          tags?: string[]
+          title?: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "machine_manuals_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "machine_manuals_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       machining_operation_categories: {
         Row: {
           created_at: string
@@ -9515,6 +9634,41 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_manual_bookmarks: {
+        Row: {
+          created_at: string
+          id: string
+          manual_id: string
+          note: string | null
+          page_number: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          manual_id: string
+          note?: string | null
+          page_number: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          manual_id?: string
+          note?: string | null
+          page_number?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_manual_bookmarks_manual_id_fkey"
+            columns: ["manual_id"]
+            isOneToOne: false
+            referencedRelation: "machine_manuals"
             referencedColumns: ["id"]
           },
         ]
