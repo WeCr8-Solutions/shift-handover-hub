@@ -14,6 +14,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MarkdownEditor } from "./shared/MarkdownEditor";
 import { QuestionEditor, type EditableQuestion } from "./shared/QuestionEditor";
+import { MediaOverlayEditor } from "@/components/training/MediaOverlayEditor";
+import { PublishReleaseDialog } from "./PublishReleaseDialog";
 import { Plus, Save, BookOpen, FileText, ClipboardCheck, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -121,7 +123,25 @@ function CourseEditor({ course, m, readOnly }: { course: OapCourse; m: ReturnTyp
   const [draft, setDraft] = useState<OapCourse>(course);
   return (
     <Card>
-      <CardHeader><CardTitle className="text-base">Course</CardTitle></CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle className="text-base">
+          Course {course.content_year && <Badge variant="outline" className="ml-2 text-[10px]">Updated · {course.content_year}</Badge>}
+        </CardTitle>
+        {!readOnly && (
+          <div className="flex gap-2">
+            <Button size="sm" onClick={() => m.upsertCourse.mutate(draft)} disabled={m.upsertCourse.isPending} className="gap-1">
+              <Save className="w-3.5 h-3.5" /> Save
+            </Button>
+            <PublishReleaseDialog
+              program="OAP"
+              entityType="course"
+              entityId={course.id}
+              entityLabel={`§${course.section_number} · ${course.title}`}
+              contentTable="oap_courses"
+            />
+          </div>
+        )}
+      </CardHeader>
       <CardContent className="space-y-3">
         <div className="grid grid-cols-2 gap-3">
           <div><Label className="text-xs">Title</Label><Input value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} disabled={readOnly} className="h-8" /></div>
@@ -131,14 +151,24 @@ function CourseEditor({ course, m, readOnly }: { course: OapCourse; m: ReturnTyp
         </div>
         <div><Label className="text-xs">Summary</Label><Textarea value={draft.summary ?? ""} onChange={(e) => setDraft({ ...draft, summary: e.target.value })} disabled={readOnly} rows={2} /></div>
         <div><Label className="text-xs">Description</Label><Textarea value={draft.description ?? ""} onChange={(e) => setDraft({ ...draft, description: e.target.value })} disabled={readOnly} rows={3} /></div>
+
+        <MediaOverlayEditor
+          entityType="oap_course"
+          entityId={course.id}
+          readOnly={readOnly}
+          value={{
+            cover_media_id: draft.cover_media_id ?? null,
+            cover_overlay_text: draft.cover_overlay_text ?? null,
+            cover_overlay_opacity: draft.cover_overlay_opacity ?? null,
+            cover_overlay_position: draft.cover_overlay_position ?? null,
+            cover_overlay_text_color: draft.cover_overlay_text_color ?? null,
+          }}
+          onChange={(v) => setDraft({ ...draft, ...v })}
+        />
+
         <label className="flex items-center gap-2 text-sm">
           <Switch checked={draft.is_published} onCheckedChange={(v) => setDraft({ ...draft, is_published: v })} disabled={readOnly} /> Published
         </label>
-        {!readOnly && (
-          <Button size="sm" onClick={() => m.upsertCourse.mutate(draft)} disabled={m.upsertCourse.isPending} className="gap-1">
-            <Save className="w-3.5 h-3.5" /> Save Course
-          </Button>
-        )}
       </CardContent>
     </Card>
   );

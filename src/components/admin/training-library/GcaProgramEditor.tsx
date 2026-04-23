@@ -11,6 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { QuestionEditor, type EditableQuestion } from "./shared/QuestionEditor";
+import { MediaOverlayEditor } from "@/components/training/MediaOverlayEditor";
+import { PublishReleaseDialog } from "./PublishReleaseDialog";
 import { Plus, Search, Save, Upload, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
@@ -125,12 +127,26 @@ function BankDetail({
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base flex items-center justify-between">
-          <span>{isNew ? "New Bank" : bank.title}</span>
+        <CardTitle className="text-base flex items-center justify-between gap-2 flex-wrap">
+          <span className="flex items-center gap-2">
+            {isNew ? "New Bank" : bank.title}
+            {bank.content_year && <Badge variant="outline" className="text-[10px]">Updated · {bank.content_year}</Badge>}
+          </span>
           {!readOnly && (
-            <Button size="sm" onClick={handleSave} disabled={mutations.upsertBank.isPending} className="gap-1">
-              <Save className="w-3.5 h-3.5" /> Save Bank
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button size="sm" onClick={handleSave} disabled={mutations.upsertBank.isPending} className="gap-1">
+                <Save className="w-3.5 h-3.5" /> Save Bank
+              </Button>
+              {!isNew && bank.id && (
+                <PublishReleaseDialog
+                  program="GCA"
+                  entityType="bank"
+                  entityId={bank.id}
+                  entityLabel={bank.title ?? null}
+                  contentTable="gca_question_banks"
+                />
+              )}
+            </div>
           )}
         </CardTitle>
       </CardHeader>
