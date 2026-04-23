@@ -93,6 +93,10 @@ const OAPLanding = lazy(() => import("./pages/OAPLanding"));
 const GCALanding = lazy(() => import("./pages/GCALanding"));
 const HandbookLibrary = lazy(() => import("./pages/HandbookLibrary"));
 const HandbookEntry = lazy(() => import("./pages/HandbookEntry"));
+const ManualsLibrary = lazy(() => import("./pages/ManualsLibrary"));
+const ManualViewer = lazy(() => import("./pages/ManualViewer"));
+const ManualUpload = lazy(() => import("./pages/ManualUpload"));
+const PhasesPage = lazy(() => import("./pages/dev/PhasesPage"));
 const VerifyCertificate = lazy(() => import("./pages/VerifyCertificate"));
 const CertSuccess = lazy(() => import("./pages/CertSuccess"));
 const OapWalkthrough = lazy(() => import("./pages/OapWalkthrough"));
@@ -251,6 +255,10 @@ const App = () => (
                     <Route path="/oap" element={<OAPLanding />} />
                     <Route path="/handbook" element={<HandbookLibrary />} />
                     <Route path="/handbook/:slug" element={<HandbookEntry />} />
+                    <Route path="/manuals" element={<ManualsLibrary />} />
+                    <Route path="/manuals/upload" element={<ManualUpload />} />
+                    <Route path="/manuals/:slug" element={<ManualViewer />} />
+                    <Route path="/dev/phases" element={<PhasesPage />} />
                     <Route path="/verify/:certId" element={<VerifyCertificate />} />
                     <Route path="/cert/success" element={<CertSuccess />} />
                     <Route path="/oap/walkthrough" element={<OapWalkthrough />} />
