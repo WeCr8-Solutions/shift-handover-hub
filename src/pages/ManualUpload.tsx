@@ -19,10 +19,6 @@ export default function ManualUpload() {
   const { hasOrgAdminAccess } = useAdminAccess();
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
-
-  if (user && !hasOrgAdminAccess) {
-    return <Navigate to="/manuals" replace />;
-  }
   const [form, setForm] = useState({
     manufacturer: "",
     controller_family: "",
