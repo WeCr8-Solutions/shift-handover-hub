@@ -127,6 +127,7 @@ export function QuizPlayer({ quiz, onComplete }: Props) {
             value={answers[q.id] ?? []}
             onChange={(v) => setAnswer(q, v)}
             review={reviewOpen}
+            graded={gradedById[q.id]}
           />
         ))}
 
@@ -181,15 +182,17 @@ function QuestionRow({
   value,
   onChange,
   review,
+  graded,
 }: {
   index: number;
   question: OapQuizQuestion;
   value: string[];
   onChange: (v: string[]) => void;
   review: boolean;
+  graded?: OapGradedQuestion;
 }) {
   const choices = question.choices ?? [];
-  const correct = new Set(question.correct_answers ?? []);
+  const correct = new Set(graded?.correct_answers ?? []);
   const isMulti =
     question.question_type === "multi_choice" ||
     question.question_type === "multi_select";
@@ -249,8 +252,8 @@ function QuestionRow({
         </RadioGroup>
       )}
 
-      {showFeedback && question.explanation && (
-        <p className="text-xs text-muted-foreground italic">{question.explanation}</p>
+      {showFeedback && graded?.explanation && (
+        <p className="text-xs text-muted-foreground italic">{graded.explanation}</p>
       )}
     </div>
   );
