@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrganization } from "@/hooks/useOrganization";
+import { useAdminAccess } from "@/hooks/useAdminData";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,6 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 export default function ManualUpload() {
   const { user } = useAuth();
   const { organization } = useOrganization();
+  const { hasOrgAdminAccess } = useAdminAccess();
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
@@ -34,6 +36,7 @@ export default function ManualUpload() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !organization?.id) return toast.error("Sign in required");
+    if (!hasOrgAdminAccess) return toast.error("Admin access required");
     if (!file) return toast.error("Select a PDF file");
     if (!confirmed) return toast.error("Please confirm copyright disclosure");
     if (!form.copyright_notice.trim()) return toast.error("Copyright notice is required");

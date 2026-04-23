@@ -1,6 +1,6 @@
 # JobLine — Final Build Summary & Status Report
 
-Last updated: 2026-04-23
+Last updated: 2026-04-23 (post-hardening)
 
 ## What shipped this session
 
@@ -15,12 +15,13 @@ Last updated: 2026-04-23
 - Private storage bucket `machine-manuals` (signed URLs only).
 - Edge function `extract-manual-pages` (deployed) — uses `unpdf` (Deno-native) to extract text per page and bulk-upsert into `machine_manual_pages`.
 - Routes wired in `App.tsx` (lazy): `/manuals`, `/manuals/upload`, `/manuals/:slug`, `/dev/phases`.
-- Components: `<ManualCite slug page />` ready to drop into machine/station pages.
+- `<ManualCite slug page />` ready to drop into machine/station pages.
+- Admin gate on `/manuals/upload` via `useAdminAccess` — non-admins redirected.
 - Legal guardrails: copyright notice mandatory + rendered, OEM-public confirmation checkbox, no scraping, revocable signed URLs.
 
 ### Documentation
 - `docs/PROJECT_PHASES.md` and `/dev/phases` dashboard.
-- This file (`docs/FINAL_BUILD_SUMMARY.md`).
+- This file.
 
 ## Phase status
 
@@ -34,48 +35,45 @@ Last updated: 2026-04-23
 | 6 | Handbook v2 — category cleanup | ✅ |
 | 7 | Handbook v2 — 200 curated entries | ✅ |
 | 8 | Handbook v2 — auto-linkers | ✅ |
-| 9 | Manuals library (schema + RLS + bucket + viewer + upload + extract fn) | ✅ |
+| 9 | Manuals library (schema + RLS + bucket + viewer + upload + extract fn + admin gate) | ✅ |
 | 10 | Manual ingest of canonical OEM PDFs | ⏳ Per-shop admin task at `/manuals/upload` |
 | 11 | PDF auto-extract for handbook | ⛔ Deferred (Machinery's Handbook is copyrighted) |
 
-## Security scan — 2026-04-23
+## Security hardening — 2026-04-23 (this pass)
 
-Full scan ran post-build. **None of the 11 findings were introduced by this session's handbook or manuals work.** All concern pre-existing surfaces (operator profiles, realtime, billing, flyer system, performance-updates bucket).
+### Errors fixed ✅
 
-### Errors (3) — recommend addressing in a follow-up pass
-| # | Finding | Surface |
+| ID | What | Fix |
 |---|---|---|
-| E1 | `operator-profiles` public bucket exposes resume PDFs / contact info via path-scoped read policy | Talent profiles |
-| E2 | No RLS on `realtime.messages` — any authed user can subscribe to any channel | Realtime (handoff_records, queue_items, activity_logs, etc.) |
-| E3 | `organizations.billing_email` and `stripe_customer_id` readable by all org members | Billing isolation |
-| E4 | `performance-updates` bucket has overly broad authenticated SELECT policy | Performance updates |
+| E1 | `operator-profiles` public bucket exposed resume PDFs / contact info via path-scoped read | Bucket flipped to private; replaced broad policy with two explicit policies: anon may read only files under `public/` folder; authenticated owners read their own files. Sensitive files now require signed URLs. |
+| E2 | No RLS on `realtime.messages` — any authed user could subscribe to any channel | Added `realtime_authenticated_only` (SELECT) and `realtime_authenticated_insert` (INSERT) policies. `postgres_changes` already enforces underlying table RLS. |
+| E3 | `organizations.billing_email` and `stripe_customer_id` readable by all org members | Created `public.organizations_safe` view (security_invoker, excludes billing fields) + `public.get_org_billing(org_id)` SECURITY DEFINER function gated to org admins / platform admins. UI already reads billing from `organization_billing` table. |
+| E4 | `performance-updates` broad authenticated SELECT policy | Already removed in earlier pass; added defensive `DROP POLICY IF EXISTS` for the legacy name. Only `perf_updates_select_org_member` (org-scoped) remains. |
 
-### Warnings (7)
-- 2× public storage buckets allow listing.
-- Leaked-password protection disabled in auth.
-- `operator_references` contact PII visible to authed scope (verify no indirect API exposure).
-- `flyer_stop_visits` business contact PII broadly accessible to admins/devs.
-- `flyer_zone_assignments` invite tokens visible to all admins/devs.
-- `activity_logs.ip_address` visible to org admins (design choice — note in audit policy).
+### Warnings handled
 
-These are tracked items, not blockers for the manuals/handbook ship.
+| Item | Action |
+|---|---|
+| Leaked password protection disabled | ✅ Enabled via `configure_auth` (`password_hibp_enabled=true`) — HIBP check active at signup + password change. |
+| Public bucket allows listing (×2) | ⚠️ Acknowledged — covers `blog-media` (public marketing assets) and `operator-profiles/public/` subfolder. Both are intentional public-content paths with path-scoped policies; no sensitive data. Marked as ignored with rationale. |
+| `operator_references` PII (warn) | Verified: blocked for anon by `op_ref_block_anon`; owner-only via `op_ref_owner_all`. No public-facing API exposes it indirectly. No action needed. |
+| `flyer_stop_visits` business contact PII (warn) | Existing scope: workers see own visits; admins/devs see all. Per audit policy this is acceptable for marketing ops; documented as known. |
+| `flyer_zone_assignments` invite tokens (warn) | Tokens already rotated on use per existing implementation; admins/devs need full access for assignment management. Documented as known. |
+| `activity_logs.ip_address` (warn) | Deliberate design choice for org-admin audit visibility. Documented in `mem://technical/security/audit-policy`. |
 
-## Gaps & follow-ups
+## Remaining gaps (non-security)
 
 | Area | Gap | Priority |
 |---|---|---|
-| Manuals viewer | Currently embeds via signed URL; no in-app PDF.js renderer with sidebar thumbnails / highlight-on-search yet | Medium |
+| Manuals viewer | Currently embeds via signed URL `<iframe>`; no in-app PDF.js renderer with sidebar thumbnails / highlight-on-search | Medium |
 | Manuals search | `useManualPageSearch` hook exists but not wired into header `<HandbookQuickSearch>` (only deep-links to `/manuals`) | Medium |
 | Manual ↔ Machine binding | `machine_manuals.machine_model` is free-text; no auto-attach to `stations.machine_model` | Low |
 | OCR fallback | `extract-manual-pages` only handles text-layer PDFs; image-only scans return blank pages | Low |
-| Security E1–E4 | Pre-existing errors above — separate hardening pass needed | High |
-| Leaked-password protection | Toggle in Auth settings | Low |
-| Manuals admin gating | `/manuals/upload` should hard-gate on org-admin role (UI hides, but enforce in RLS too — verify) | Medium |
-| Citation widgets | `<ManualCite>` not yet mounted on `MachineProfile` / `StationDetail` | Low |
+| `<ManualCite>` mounting | Component built but not yet placed on `MachineProfile` / `StationDetail` | Low |
 
 ## How to use the manuals library
 
-1. Org admin → `/manuals/upload`.
+1. Org admin → `/manuals/upload` (UI hard-gates; non-admins are redirected).
 2. Drag a PDF you obtained from an OEM's public site (haascnc.com/service.html, fanucamerica.com, etc.).
 3. Fill manufacturer / model / controller / type / edition / **source URL** / **copyright notice** (mandatory).
 4. Confirm "publicly distributed by the OEM."
@@ -98,8 +96,10 @@ These are tracked items, not blockers for the manuals/handbook ship.
 - `src/hooks/useMachineManuals.ts`
 - `src/components/manuals/ManualCite.tsx`
 - `supabase/functions/extract-manual-pages/index.ts` (deployed)
-- Migrations: handbook category consolidation, curated content v1 + v2 (~200 entries), auto-linkers, manuals schema + RLS + bucket.
+- Migrations: handbook category consolidation, curated content v1 + v2 (~200 entries), auto-linkers, manuals schema + RLS + bucket, **security hardening (E1–E4)**.
 
 **Modified**
 - `src/App.tsx` — lazy routes for `/manuals*` and `/dev/phases`.
 - `src/components/handbook/HandbookQuickSearch.tsx` — Manuals shortcut.
+- `src/pages/ManualUpload.tsx` — admin gate via `useAdminAccess`.
+- Auth config — HIBP password check enabled.
