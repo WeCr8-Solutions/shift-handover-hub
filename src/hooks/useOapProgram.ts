@@ -43,10 +43,25 @@ export interface OapQuizQuestion {
   question_type: string; // single_choice | multi_choice | true_false
   prompt: string;
   choices: { key: string; label: string }[] | null;
-  correct_answers: string[] | null;
-  explanation: string | null;
+  // correct_answers + explanation are server-side only; revealed by grader RPC after submit
   points: number;
   sort_order: number;
+}
+
+export interface OapGradedQuestion {
+  question_id: string;
+  is_correct: boolean;
+  correct_answers: string[];
+  explanation: string | null;
+}
+
+export interface OapGradeResult {
+  score_pct: number;
+  passed: boolean;
+  passing_score_pct: number;
+  earned: number;
+  total: number;
+  questions: OapGradedQuestion[];
 }
 
 export interface OapQuizAttempt {
@@ -143,13 +158,14 @@ export function useOapQuizQuestions(quizId: string | null) {
     queryKey: ["oap-quiz-questions", quizId],
     enabled: !!quizId,
     queryFn: async () => {
+      // correct_answers + explanation are revoked at column level; only safe cols here.
       const { data, error } = await supabase
         .from("oap_quiz_questions")
-        .select("*")
+        .select("id, quiz_id, question_type, prompt, choices, points, sort_order")
         .eq("quiz_id", quizId!)
         .order("sort_order");
       if (error) throw error;
-      return (data ?? []) as OapQuizQuestion[];
+      return (data ?? []) as unknown as OapQuizQuestion[];
     },
   });
 }
