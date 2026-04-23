@@ -4,8 +4,8 @@ import { render, screen } from "@/test/test-utils";
 
 const modeState = vi.hoisted(() => ({
   loading: false,
-  mode: "jobboss_read_through",
-  vendor: "jobboss",
+  mode: "jobboss_read_through" as string,
+  vendor: "jobboss" as string | null,
   isReadThrough: true,
   isItar: true,
 }));

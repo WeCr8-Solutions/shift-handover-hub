@@ -234,8 +234,8 @@ function formatDateRange(start: string | null, end: string | null) {
 }
 
 function buildPromoShareText(campaign: PromoFormState | PromoCampaign) {
-  const startsAt = "starts_at" in campaign ? campaign.starts_at : campaign.starts_at;
-  const endsAt = "ends_at" in campaign ? campaign.ends_at : campaign.ends_at;
+  const startsAt: string | null = campaign.starts_at ?? null;
+  const endsAt: string | null = campaign.ends_at ?? null;
   return [
     campaign.name.trim(),
     (campaign.description ?? "").trim(),
