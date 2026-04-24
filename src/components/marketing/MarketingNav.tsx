@@ -30,6 +30,14 @@ interface MarketingNavProps {
 
 type MenuKey = "products" | "industries" | "learn" | "talent" | "company" | null;
 
+const menuFallbackHref: Record<Exclude<MenuKey, null>, string> = {
+  products: "/use-cases",
+  industries: "/industries",
+  learn: "/resources",
+  talent: "/talent",
+  company: "/",
+};
+
 export function MarketingNav({ showPricing = true }: MarketingNavProps) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -65,16 +73,26 @@ export function MarketingNav({ showPricing = true }: MarketingNavProps) {
     setOpenMenu(null);
   };
 
-  const DropdownTrigger = ({ label, menuKey }: { label: string; menuKey: MenuKey }) => (
-    <button
+  const DropdownTrigger = ({ label, menuKey }: { label: string; menuKey: Exclude<MenuKey, null> }) => (
+    <div
       onMouseEnter={() => handleEnter(menuKey)}
       onFocus={() => handleEnter(menuKey)}
-      onClick={() => setOpenMenu(openMenu === menuKey ? null : menuKey)}
-      className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-md"
+      className="flex items-center rounded-md"
     >
-      {label}
-      <ChevronDown className={`w-3.5 h-3.5 transition-transform ${openMenu === menuKey ? "rotate-180" : ""}`} />
-    </button>
+      <button
+        onClick={() => go(menuFallbackHref[menuKey])}
+        className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-l-md"
+      >
+        {label}
+      </button>
+      <button
+        onClick={() => setOpenMenu(openMenu === menuKey ? null : menuKey)}
+        aria-label={`Open ${label} menu`}
+        className="flex items-center px-2 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-r-md"
+      >
+        <ChevronDown className={`w-3.5 h-3.5 transition-transform ${openMenu === menuKey ? "rotate-180" : ""}`} />
+      </button>
+    </div>
   );
 
   return (
@@ -314,7 +332,7 @@ export function MarketingNav({ showPricing = true }: MarketingNavProps) {
             </button>
           )}
 
-          <MobileSection title="Products">
+          <MobileSection title="Products" href="/use-cases">
             <div className="px-3 py-1">
               <div className="text-xs font-semibold uppercase text-muted-foreground mb-1">Platform</div>
               {platformFeatures.map((p) => (
@@ -333,7 +351,7 @@ export function MarketingNav({ showPricing = true }: MarketingNavProps) {
             </div>
           </MobileSection>
 
-          <MobileSection title="Industries">
+          <MobileSection title="Industries" href="/industries">
             {industryCategories.map((cat) => (
               <div key={cat.heading} className="px-3 py-1">
                 <div className="text-xs font-semibold uppercase text-muted-foreground mb-1">{cat.heading}</div>
@@ -346,7 +364,7 @@ export function MarketingNav({ showPricing = true }: MarketingNavProps) {
             ))}
           </MobileSection>
 
-          <MobileSection title="Learn">
+          <MobileSection title="Learn" href="/resources">
             {learnCategories.map((cat) => (
               <div key={cat.heading} className="px-3 py-1">
                 <div className="text-xs font-semibold uppercase text-muted-foreground mb-1">{cat.heading}</div>
@@ -359,7 +377,7 @@ export function MarketingNav({ showPricing = true }: MarketingNavProps) {
             ))}
           </MobileSection>
 
-          <MobileSection title="Talent">
+          <MobileSection title="Talent" href="/talent">
             {talentItems.map((item) => (
               <button key={item.href} onClick={() => go(item.href)} className="block w-full text-left px-3 py-2 text-sm text-foreground hover:bg-accent rounded-md">
                 {item.label}
@@ -367,7 +385,7 @@ export function MarketingNav({ showPricing = true }: MarketingNavProps) {
             ))}
           </MobileSection>
 
-          <MobileSection title="Company">
+          <MobileSection title="Company" href="/">
             {companyItems.map((item) => (
               <button key={item.href} onClick={() => go(item.href)} className="block w-full text-left px-3 py-2 text-sm text-foreground hover:bg-accent rounded-md">
                 {item.label}
@@ -386,17 +404,26 @@ export function MarketingNav({ showPricing = true }: MarketingNavProps) {
 }
 
 /* ── Mobile collapsible section ── */
-function MobileSection({ title, children }: { title: string; children: React.ReactNode }) {
+function MobileSection({ title, href, children }: { title: string; href?: string; children: React.ReactNode }) {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   return (
     <div className="border-b border-border/50 pb-1">
-      <button
-        onClick={() => setOpen(!open)}
-        className="flex w-full items-center justify-between px-3 py-2.5 text-sm font-medium text-foreground"
-      >
-        {title}
-        <ChevronDown className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`} />
-      </button>
+      <div className="flex items-center justify-between px-3 py-2.5">
+        <button
+          onClick={() => href ? navigate(href) : setOpen(!open)}
+          className="text-sm font-medium text-foreground"
+        >
+          {title}
+        </button>
+        <button
+          onClick={() => setOpen(!open)}
+          aria-label={`Toggle ${title} menu`}
+          className="text-foreground"
+        >
+          <ChevronDown className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`} />
+        </button>
+      </div>
       {open && <div className="pl-2 pb-2">{children}</div>}
     </div>
   );

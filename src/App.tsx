@@ -283,6 +283,7 @@ const App = () => (
                     <Route path="/help/:category/:slug" element={<HelpArticle />} />
                     <Route path="/tools" element={<Tools />} />
                     <Route path="/status" element={<Status />} />
+                    <Route path="/industries" element={<Navigate to="/industries/job-shops" replace />} />
                     <Route path="/industries/:slug" element={<IndustryPage />} />
                     <Route path="/resources/erp-guide/:partSlug" element={<ERPGuidePart />} />
                     <Route path="/dev" element={<DevPortal />} />
