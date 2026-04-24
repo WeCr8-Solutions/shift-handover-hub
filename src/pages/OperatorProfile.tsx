@@ -171,6 +171,15 @@ export default function OperatorProfile() {
       await saveProfile({ resume_pdf_url: url });
       toast({ title: "Resume uploaded", description: "Parsing for autofill…" });
 
+      let importedCerts = 0;
+      if (user?.id && user.email) {
+        try {
+          importedCerts = await syncIssuedCertificatesToProfile(user.id, user.email);
+        } catch (syncErr) {
+          console.error("[OperatorProfile] cert sync failed", syncErr);
+        }
+      }
+
       // Autofill empty fields via AI
       try {
         const { data, error } = await supabase.functions.invoke("parse-resume", {
@@ -179,12 +188,15 @@ export default function OperatorProfile() {
         if (error) throw error;
         if (!data?.ok) throw new Error(data?.error ?? "Parse failed");
         const added = await applyResumeAutofill(data.data);
+        const autofillDescription =
+          added.fields + added.skills + added.work + added.education + added.machines === 0
+            ? "All fields already filled in — nothing to add."
+            : `Filled ${added.fields} field(s), added ${added.skills} skill(s), ${added.work} job(s), ${added.education} education, ${added.machines} machine(s).`;
         toast({
           title: "Autofill complete",
-          description:
-            added.fields + added.skills + added.work + added.education + added.machines === 0
-              ? "All fields already filled in — nothing to add."
-              : `Filled ${added.fields} field(s), added ${added.skills} skill(s), ${added.work} job(s), ${added.education} education, ${added.machines} machine(s).`,
+          description: importedCerts > 0
+            ? `${autofillDescription} Imported ${importedCerts} verified JobLine certificate(s).`
+            : autofillDescription,
         });
         await refresh();
       } catch (parseErr) {
@@ -197,6 +209,13 @@ export default function OperatorProfile() {
             : msg,
           variant: "destructive",
         });
+        if (importedCerts > 0) {
+          toast({
+            title: "Verified certificates synced",
+            description: `Imported ${importedCerts} verified certificate(s) from OAP/GCA.`,
+          });
+          await refresh();
+        }
       }
     } catch (err) {
       toast({ title: "Upload failed", description: extractErrorMessage(err), variant: "destructive" });

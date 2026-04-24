@@ -99,6 +99,35 @@ async function extractDocxText(buffer: ArrayBuffer): Promise<string> {
     .trim();
 }
 
+async function extractPdfText(buffer: ArrayBuffer): Promise<string> {
+  const pdfjs = await import("https://esm.sh/pdfjs-dist@4.10.38/legacy/build/pdf.mjs");
+  const loadingTask = pdfjs.getDocument({
+    data: new Uint8Array(buffer),
+    disableWorker: true,
+    disableFontFace: true,
+    isEvalSupported: false,
+    useWorkerFetch: false,
+  });
+  const pdf = await loadingTask.promise;
+  const pages: string[] = [];
+
+  for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+    const page = await pdf.getPage(pageNumber);
+    const content = await page.getTextContent();
+    const pageText = (content.items as Array<{ str?: string }>)
+      .map((item) => item.str ?? "")
+      .join(" ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    if (pageText) {
+      pages.push(pageText);
+    }
+  }
+
+  return pages.join("\n").trim();
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -128,25 +157,11 @@ Deno.serve(async (req) => {
       );
     }
 
-    /** Convert ArrayBuffer → base64 in chunks (avoids "Max call stack" on large PDFs). */
-    const toBase64 = (buf: ArrayBuffer): string => {
-      const bytes = new Uint8Array(buf);
-      const CHUNK = 0x8000; // 32KB
-      let binary = "";
-      for (let i = 0; i < bytes.length; i += CHUNK) {
-        binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + CHUNK)));
-      }
-      return btoa(binary);
-    };
-
     let userContent: any;
     if (isPdf) {
-      // Gemini accepts PDFs as base64 inline data via OpenAI-compatible image_url with data URL
-      const b64 = toBase64(buffer);
-      userContent = [
-        { type: "text", text: "Extract structured profile fields from this resume." },
-        { type: "image_url", image_url: { url: `data:application/pdf;base64,${b64}` } },
-      ];
+      const text = await extractPdfText(buffer);
+      if (!text) throw new Error("Could not extract text from PDF");
+      userContent = `Extract structured profile fields from this resume text:\n\n${text.slice(0, 30000)}`;
     } else if (isDocx) {
       const text = await extractDocxText(buffer);
       if (!text) throw new Error("Could not extract text from DOCX");
