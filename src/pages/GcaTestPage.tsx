@@ -5,15 +5,39 @@ import { GcaTestPlayer } from "@/components/gca/GcaTestPlayer";
 import { useGcaAccess } from "@/hooks/useGcaAccess";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, GraduationCap } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { ArrowLeft, BookOpen, ChevronDown, Copy, GraduationCap } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useState } from "react";
+import ReactMarkdown from "react-markdown";
+import { useAdminAccess } from "@/hooks/useAdminData";
+import { useOrgContext } from "@/contexts/OrgContext";
+
+interface BankMeta {
+  id: string;
+  title: string;
+  topic: string;
+  description: string | null;
+  difficulty: string;
+  is_pro_only: boolean;
+  learning_content: string | null;
+  organization_id: string | null;
+}
 
 export default function GcaTestPage() {
   const { bankSlug } = useParams<{ bankSlug: string }>();
   const { hasProAccess, isDefinitelyFree, isLoading, startGcaCheckout } = useGcaAccess();
+  const { isAdmin, hasOrgAdminAccess, hasOrgSupervisorAccess } = useAdminAccess();
+  const { organization } = useOrgContext();
+  const qc = useQueryClient();
+  const [learningOpen, setLearningOpen] = useState(true);
 
   const { data: bank } = useQuery({
     queryKey: ["gca-bank-meta", bankSlug],
@@ -21,11 +45,35 @@ export default function GcaTestPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("gca_question_banks")
-        .select("title, topic, description, difficulty, is_pro_only")
+        .select("id, title, topic, description, difficulty, is_pro_only, learning_content, organization_id")
         .eq("slug", bankSlug!)
         .maybeSingle();
-      return data;
+      return data as BankMeta | null;
     },
+  });
+
+  const canClone =
+    !!bank &&
+    bank.organization_id === null && // only canonical banks are cloneable
+    !!organization?.id &&
+    (isAdmin || hasOrgAdminAccess || hasOrgSupervisorAccess);
+
+  const cloneMutation = useMutation({
+    mutationFn: async () => {
+      if (!bank?.id || !organization?.id) throw new Error("Missing context");
+      const { data, error } = await (supabase as any).rpc("clone_gca_bank_to_org", {
+        _source_bank_id: bank.id,
+        _organization_id: organization.id,
+        _override_title: null,
+      });
+      if (error) throw error;
+      return data as string;
+    },
+    onSuccess: () => {
+      toast.success("Test cloned into your organization. Find it in the GCA editor.");
+      qc.invalidateQueries({ queryKey: ["gca-banks"] });
+    },
+    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Clone failed"),
   });
 
   const handleUpgrade = async () => {
@@ -54,16 +102,31 @@ export default function GcaTestPage() {
         </div>
 
         <div className="flex items-start justify-between gap-3 flex-wrap">
-          <div className="flex items-center gap-2">
-            <GraduationCap className="w-5 h-5 text-primary" />
-            <h1 className="text-2xl font-semibold">{bank?.title ?? "Loading…"}</h1>
+          <div className="flex items-center gap-2 flex-wrap min-w-0">
+            <GraduationCap className="w-5 h-5 text-primary shrink-0" />
+            <h1 className="text-2xl font-semibold break-words">{bank?.title ?? "Loading…"}</h1>
             {bank && (
               <Badge variant="outline" className="capitalize">{bank.difficulty}</Badge>
             )}
             {bank?.is_pro_only && (
               <Badge variant="secondary">Pro</Badge>
             )}
+            {bank?.organization_id && (
+              <Badge variant="outline" className="text-xs">Org copy</Badge>
+            )}
           </div>
+          {canClone && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => cloneMutation.mutate()}
+              disabled={cloneMutation.isPending}
+              className="gap-1"
+            >
+              <Copy className="w-3.5 h-3.5" />
+              {cloneMutation.isPending ? "Cloning…" : "Clone to my organization"}
+            </Button>
+          )}
         </div>
 
         {bank?.description && (
@@ -76,7 +139,7 @@ export default function GcaTestPage() {
               <p className="text-sm text-muted-foreground">
                 This test bank requires <strong>GCA Pro</strong>.
               </p>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <Button size="sm" onClick={() => handleUpgrade()}>
                   Upgrade — $19/mo
                 </Button>
@@ -85,6 +148,33 @@ export default function GcaTestPage() {
                 </Button>
               </div>
             </CardContent>
+          </Card>
+        )}
+
+        {bank?.learning_content && (
+          <Card className="border-primary/20">
+            <Collapsible open={learningOpen} onOpenChange={setLearningOpen}>
+              <CollapsibleTrigger asChild>
+                <CardHeader className="cursor-pointer hover:bg-muted/40 transition-colors py-3">
+                  <CardTitle className="flex items-center justify-between text-base">
+                    <span className="flex items-center gap-2">
+                      <BookOpen className="w-4 h-4 text-primary" />
+                      Learning Section — read this first
+                    </span>
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform ${
+                        learningOpen ? "rotate-180" : ""
+                      }`}
+                    />
+                  </CardTitle>
+                </CardHeader>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <CardContent className="prose prose-sm dark:prose-invert max-w-none pt-0">
+                  <ReactMarkdown>{bank.learning_content}</ReactMarkdown>
+                </CardContent>
+              </CollapsibleContent>
+            </Collapsible>
           </Card>
         )}
 
