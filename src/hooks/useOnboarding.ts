@@ -96,15 +96,12 @@ export function useOnboarding() {
           setupWizardDismissed: data.setup_wizard_dismissed || false,
         });
       } else {
-        // Use upsert to handle race condition with handle_new_user trigger
+        // Insert directly and tolerate duplicate rows from the new-user trigger.
         const { error: insertError } = await supabase
           .from('user_onboarding')
-          .upsert(
-            { user_id: user.id, has_seen_welcome: false },
-            { onConflict: 'user_id' }
-          );
+          .insert({ user_id: user.id, has_seen_welcome: false });
 
-        if (insertError) {
+        if (insertError && insertError.code !== '23505') {
           console.error('Error creating onboarding record:', insertError);
         }
 
@@ -165,7 +162,7 @@ export function useOnboarding() {
       }));
       toast.error('Failed to save progress. Please try again.');
     }
-  }, [user, state.completedSteps]);
+  }, [state, user]);
 
   const skipOnboarding = useCallback(async () => {
     if (!user) return;
@@ -215,6 +212,7 @@ export function useOnboarding() {
     if (!user) return;
 
     const prevState = { ...state };
+    setShowTour(false);
 
     setState({
       completedSteps: [],
@@ -243,8 +241,6 @@ export function useOnboarding() {
       toast.error('Failed to reset onboarding. Please try again.');
       return;
     }
-
-    setShowTour(true);
   }, [user, state]);
 
   const dismissSetupWizard = useCallback(async () => {

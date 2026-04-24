@@ -289,7 +289,12 @@ export default function PublicOperatorProfile() {
   const location = [profile.location_city, profile.location_region, profile.location_country]
     .filter(Boolean)
     .join(", ");
-  const verifiedCount = certs.filter((c) => c.verification_source.startsWith("verified_")).length;
+  const visibleCerts = profile.show_only_verified_certs
+    ? certs.filter((c) => c.verification_source.startsWith("verified_"))
+    : certs;
+  const visibleSkills = profile.show_only_verified_certs ? [] : skills;
+  const visibleMachines = profile.show_only_verified_certs ? [] : machines;
+  const verifiedCount = visibleCerts.filter((c) => c.verification_source.startsWith("verified_")).length;
 
   const personJsonLd = {
     "@context": "https://schema.org",
@@ -316,14 +321,14 @@ export default function PublicOperatorProfile() {
       profile.youtube_url,
       profile.github_url,
     ].filter(Boolean),
-    hasCredential: certs.map((c) => ({
+    hasCredential: visibleCerts.map((c) => ({
       "@type": "EducationalOccupationalCredential",
       name: c.name,
       credentialCategory: c.verification_source.startsWith("verified_") ? "Verified" : "Self-reported",
       recognizedBy: c.issuer ? { "@type": "Organization", name: c.issuer } : undefined,
       url: c.credential_url ?? undefined,
     })),
-    knowsAbout: skills.map((s) => s.skill),
+    knowsAbout: visibleSkills.map((s) => s.skill),
     seeks: profile.open_to_work
       ? { "@type": "Demand", name: "Open to manufacturing & CNC opportunities" }
       : undefined,
@@ -477,8 +482,8 @@ export default function PublicOperatorProfile() {
             {/* Snapshot stats strip */}
             <div className="mt-5 grid grid-cols-3 sm:grid-cols-6 gap-2 rounded-lg border bg-muted/30 p-3 text-center">
               <Stat label="Verified" value={verifiedCount} />
-              <Stat label="Machines" value={machines.length} />
-              <Stat label="Skills" value={skills.length} />
+              <Stat label="Machines" value={visibleMachines.length} />
+              <Stat label="Skills" value={visibleSkills.length} />
               <Stat label="Roles" value={work.length} />
               <Stat label="Followers" value={socialCounts.follower_count} />
               <Stat label="Following" value={socialCounts.following_count} />
@@ -564,7 +569,7 @@ export default function PublicOperatorProfile() {
 
         {/* Accomplishments — highlight reel for employers */}
         {(() => {
-          const expertMachines = machines.filter((m) => m.proficiency?.toLowerCase() === "expert").length;
+          const expertMachines = visibleMachines.filter((m) => m.proficiency?.toLowerCase() === "expert").length;
           const items: { icon: typeof Trophy; label: string; sub?: string }[] = [];
           if (verifiedCount > 0) {
             items.push({
@@ -631,17 +636,13 @@ export default function PublicOperatorProfile() {
           );
         })()}
 
-        {certs.length > 0 && (() => {
-          // If user has enabled "verified only" mode, drop self-reported entries.
-          const visible = profile.show_only_verified_certs
-            ? certs.filter((c) => c.verification_source.startsWith("verified_"))
-            : certs;
-          const oapCerts = visible.filter((c) => c.verification_source === "verified_oap");
-          const gcaCerts = visible.filter((c) => c.verification_source === "verified_gca");
-          const externalVerified = visible.filter(
+        {visibleCerts.length > 0 && (() => {
+          const oapCerts = visibleCerts.filter((c) => c.verification_source === "verified_oap");
+          const gcaCerts = visibleCerts.filter((c) => c.verification_source === "verified_gca");
+          const externalVerified = visibleCerts.filter(
             (c) => c.verification_source.startsWith("verified_") && c.verification_source !== "verified_oap" && c.verification_source !== "verified_gca",
           );
-          const selfReported = visible.filter((c) => !c.verification_source.startsWith("verified_"));
+          const selfReported = visibleCerts.filter((c) => !c.verification_source.startsWith("verified_"));
 
           return (
             <>
@@ -741,8 +742,8 @@ export default function PublicOperatorProfile() {
         })()}
 
         {/* Machines — grouped by category */}
-        {machines.length > 0 && (() => {
-          const grouped = machines.reduce<Record<string, MachineRow[]>>((acc, m) => {
+        {visibleMachines.length > 0 && (() => {
+          const grouped = visibleMachines.reduce<Record<string, MachineRow[]>>((acc, m) => {
             const key = m.machine_category || "Other";
             (acc[key] ||= []).push(m);
             return acc;
@@ -753,7 +754,7 @@ export default function PublicOperatorProfile() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Wrench className="w-5 h-5" /> Machine proficiencies
-                  <Badge variant="secondary" className="ml-1">{machines.length}</Badge>
+                  <Badge variant="secondary" className="ml-1">{visibleMachines.length}</Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-5">
@@ -802,12 +803,12 @@ export default function PublicOperatorProfile() {
         })()}
 
         {/* Skills */}
-        {skills.length > 0 && (
+        {visibleSkills.length > 0 && (
           <Card>
             <CardHeader><CardTitle>Skills</CardTitle></CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">
-                {skills.map((s) => (
+                {visibleSkills.map((s) => (
                   <Badge key={s.id} variant="secondary" className="text-sm py-1.5 px-3">
                     {s.skill}
                     <span className="ml-2 text-xs text-muted-foreground capitalize">· {s.proficiency}</span>

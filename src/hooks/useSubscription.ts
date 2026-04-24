@@ -109,7 +109,7 @@ export const ERP_ADDON_TIERS = {
 } as const;
 
 export function useSubscription() {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const [state, setState] = useState<SubscriptionState>({
     subscribed: false,
     tier: null,
@@ -133,7 +133,11 @@ export function useSubscription() {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      const { data, error } = await supabase.functions.invoke('check-subscription');
+      const { data, error } = await supabase.functions.invoke('check-subscription', {
+        headers: session?.access_token
+          ? { Authorization: `Bearer ${session.access_token}` }
+          : undefined,
+      });
 
       if (error) throw error;
 
@@ -152,7 +156,7 @@ export function useSubscription() {
         error: error instanceof Error ? error.message : 'Failed to check subscription',
       }));
     }
-  }, [user]);
+  }, [session?.access_token, user]);
 
   const createCheckout = useCallback(async (priceId: string, quantity?: number) => {
     if (!user) {

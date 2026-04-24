@@ -235,8 +235,49 @@ describe("PublicOperatorProfile", () => {
     expect(screen.getByText(/2 verified credentials/i)).toBeInTheDocument();
     expect(screen.getByText(/Open to work/i)).toBeInTheDocument();
     expect(screen.getByText(/Will relocate/i)).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /Machine proficiencies/i })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /Skills/i })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /Machine proficiencies/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /Skills/i })).not.toBeInTheDocument();
     expect(screen.getByText(/Employers: contact via Talent Search/i)).toBeInTheDocument();
+  });
+
+  it("shows self-reported skills when verified-only mode is off", async () => {
+    state.profileRow = {
+      user_id: "user-1",
+      public_username: "taylor-operator",
+      display_name: "Taylor Operator",
+      headline: "5-axis CNC Machinist",
+      bio: "Builds aerospace parts.",
+      years_experience: 8,
+      location_city: "Wichita",
+      location_region: "KS",
+      location_country: "USA",
+      linkedin_url: null,
+      portfolio_url: null,
+      twitter_url: null,
+      instagram_url: null,
+      facebook_url: null,
+      youtube_url: null,
+      github_url: null,
+      website_url: null,
+      avatar_url: null,
+      banner_url: null,
+      resume_pdf_url: null,
+      willing_to_relocate: false,
+      open_to_work: true,
+      preferred_employment_types: null,
+      public_published_at: "2026-04-01T00:00:00.000Z",
+      show_only_verified_certs: false,
+      social_visibility: null,
+    };
+    state.skills = [{ id: "skill-1", skill: "GD&T", proficiency: "advanced", years_used: 5 }];
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Taylor Operator/i })).toBeInTheDocument();
+    });
+
+    expect(screen.getByRole("heading", { name: /Skills/i })).toBeInTheDocument();
+    expect(screen.getByText(/GD&T/i)).toBeInTheDocument();
   });
 });

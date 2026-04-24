@@ -65,10 +65,9 @@ export function OnboardingSettings() {
 
   const progress = getProgress();
 
-  const handleRestart = async () => {
+  const handleShowWelcomeAgain = async () => {
     await resetOnboarding();
     navigate("/setup");
-    window.setTimeout(() => startTour(), 300);
   };
 
   const handleContinue = () => {
@@ -133,9 +132,9 @@ export function OnboardingSettings() {
               </Button>
             )}
 
-            <Button variant="outline" onClick={handleRestart}>
+            <Button variant="outline" onClick={handleShowWelcomeAgain}>
               <RotateCcw className="mr-2 h-4 w-4" />
-              Restart Tour
+              Show Welcome Again
             </Button>
           </div>
         </CardContent>

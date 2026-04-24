@@ -79,6 +79,28 @@ const DATA_SOURCES = [
   },
 ];
 
+function isPublicFacingRoute(pathname: string) {
+  return [
+    pathname === "/",
+    pathname === "/pricing",
+    pathname === "/gcode-academy",
+    pathname === "/oap",
+    pathname.startsWith("/verify"),
+    pathname.startsWith("/gcode-academy/certificates"),
+    pathname.startsWith("/oap/certificates"),
+    pathname.startsWith("/resources"),
+    pathname.startsWith("/handbook"),
+    pathname.startsWith("/talent"),
+    pathname.startsWith("/blog"),
+    pathname.startsWith("/help"),
+    pathname.startsWith("/use-cases"),
+    pathname.startsWith("/industries"),
+    pathname.startsWith("/features"),
+    pathname.startsWith("/compare"),
+    pathname.startsWith("/status"),
+  ].some(Boolean);
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function WelcomeModal() {
@@ -103,7 +125,15 @@ export function WelcomeModal() {
   const [isOpen, setIsOpen] = useState(true);
 
   // Gate: never show for unauthenticated users, on public landing page, or for returning/complete users
-  if (!user || isLoading || isComplete || showTour || currentStep === "complete" || hasSeenWelcome || location.pathname === "/") {
+  if (
+    !user ||
+    isLoading ||
+    isComplete ||
+    showTour ||
+    currentStep === "complete" ||
+    hasSeenWelcome ||
+    isPublicFacingRoute(location.pathname)
+  ) {
     return null;
   }
 

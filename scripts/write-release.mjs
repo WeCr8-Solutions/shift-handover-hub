@@ -20,29 +20,79 @@ function safeGit(command) {
   }
 }
 
+function firstNonEmpty(...values) {
+  for (const value of values) {
+    if (typeof value === "string" && value.trim()) {
+      return value.trim();
+    }
+  }
+
+  return "";
+}
+
+function calendarVersion(date) {
+  return `${date.getUTCFullYear()}.${date.getUTCMonth() + 1}.${date.getUTCDate()}`;
+}
+
+function resolveVersion(packageVersion, buildDate) {
+  const explicitVersion = firstNonEmpty(
+    process.env.RELEASE_VERSION,
+    process.env.APP_VERSION,
+    process.env.npm_package_version,
+  );
+
+  if (explicitVersion) return explicitVersion;
+  if (packageVersion && packageVersion !== "0.0.0") return packageVersion;
+
+  return calendarVersion(buildDate);
+}
+
+function resolveCommitSha() {
+  const envCommit = firstNonEmpty(
+    process.env.VERCEL_GIT_COMMIT_SHA,
+    process.env.CF_PAGES_COMMIT_SHA,
+    process.env.GITHUB_SHA,
+    process.env.CI_COMMIT_SHA,
+    process.env.COMMIT_SHA,
+    process.env.SOURCE_COMMIT,
+    process.env.LOVABLE_GIT_COMMIT_SHA,
+    process.env.LOVABLE_COMMIT_SHA,
+    process.env.LOVABLE_COMMIT_ID,
+    process.env.RAILWAY_GIT_COMMIT_SHA,
+    process.env.RENDER_GIT_COMMIT,
+  );
+
+  return (envCommit || safeGit("git rev-parse HEAD") || "unknown").slice(0, 12);
+}
+
 function detectDeployTarget() {
   if (process.env.VERCEL) return "vercel";
   if (process.env.CF_PAGES) return "cloudflare-pages";
   if (process.env.GITHUB_ACTIONS) return "github-actions";
-  if (process.env.LOVABLE_PROJECT_ID || process.env.LOVABLE_ENV) return "lovable";
+  if (
+    process.env.LOVABLE_PROJECT_ID ||
+    process.env.LOVABLE_ENV ||
+    process.env.LOVABLE ||
+    process.env.LOVABLE_GIT_COMMIT_SHA ||
+    process.env.LOVABLE_COMMIT_SHA
+  ) {
+    return "lovable";
+  }
   return "local";
 }
 
 const packageJsonPath = path.join(rootDir, "package.json");
 const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
-const commitSha = (
-  process.env.VERCEL_GIT_COMMIT_SHA ||
-  process.env.CF_PAGES_COMMIT_SHA ||
-  process.env.GITHUB_SHA ||
-  safeGit("git rev-parse HEAD")
-).slice(0, 12);
+const buildDate = new Date();
+const version = resolveVersion(packageJson.version, buildDate);
+const commitSha = resolveCommitSha();
 const shortSha = commitSha.slice(0, 7);
-const buildTime = new Date().toISOString();
+const buildTime = buildDate.toISOString();
 const deployTarget = detectDeployTarget();
-const releaseStamp = `${packageJson.version}+${shortSha}`;
+const releaseStamp = `${version}+${shortSha}`;
 
 const releaseInfo = {
-  version: packageJson.version,
+  version,
   commitSha,
   shortSha,
   releaseStamp,

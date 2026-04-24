@@ -58,7 +58,6 @@ export function OnboardingProgress({ showRestart = true, compact = false }: Onbo
   const handleRestart = async () => {
     await resetOnboarding();
     navigate("/setup");
-    setTimeout(() => startTour(), 300);
   };
 
   const handleStepClick = async (stepId: string) => {
@@ -158,7 +157,7 @@ export function OnboardingProgress({ showRestart = true, compact = false }: Onbo
           {showRestart && (
             <Button variant="outline" onClick={handleRestart}>
               <RotateCcw className="w-4 h-4 mr-2" />
-              Restart
+              Show Welcome Again
             </Button>
           )}
         </div>
