@@ -33,6 +33,8 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 .h-right{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:5px 0}
 .h-btn{font-family:var(--head);font-weight:700;font-size:10px;letter-spacing:1px;padding:4px 9px;border-radius:4px;cursor:pointer;transition:.15s;border:1px solid var(--border2);background:transparent;color:var(--muted2);white-space:nowrap}
 .h-btn:hover{color:var(--text)}
+.utility-btn{border-style:dashed}
+.utility-btn:hover{border-color:var(--accent);color:var(--accent)}
 .h-btn.sel-lathe{background:rgba(34,182,195,.1);border-color:rgba(34,182,195,.3);color:var(--accent)}
 .h-btn.sel-mill{background:rgba(74,158,255,.1);border-color:rgba(74,158,255,.3);color:var(--blue)}
 .h-btn.sel-gdnt{background:rgba(167,139,250,.1);border-color:rgba(167,139,250,.3);color:var(--purple)}
@@ -76,6 +78,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 .sb-item.act-int{border-left-color:var(--int);color:var(--int);background:rgba(74,158,255,.04)}
 .sb-item.act-adv{border-left-color:var(--adv);color:var(--adv);background:rgba(255,107,53,.04)}
 .sb-item.act-auto{border-left-color:var(--auto);color:var(--auto);background:rgba(167,139,250,.04)}
+.sb-item.act-test{border-left-color:var(--gold);color:var(--gold);background:rgba(245,197,24,.05)}
 .sb-num{font-family:var(--mono);font-size:9px;color:var(--muted);min-width:18px;flex-shrink:0}
 .sb-lock{font-size:10px;color:var(--gold);flex-shrink:0}
 .sb-check{font-size:10px;color:var(--green);flex-shrink:0}
@@ -369,6 +372,9 @@ footer .footer-inner{max-width:600px;margin:0 auto}
     <button class="h-btn" id="hb-gdnt"     onclick="setView('gdnt')">📐 GD&amp;T</button>
     <button class="h-btn" id="hb-test"     onclick="setView('test')">💼 TESTS</button>
     <button class="h-btn" id="hb-progress" onclick="setView('progress')">📊 PROGRESS</button>
+    <button class="h-btn utility-btn" onclick="openJobLinePath('/')">🏠 HOME</button>
+    <button class="h-btn utility-btn" onclick="openJobLinePath('/shift-handoff')">🔁 SHIFT HANDOFF</button>
+    <button class="h-btn utility-btn" onclick="openJobLinePath('/profile')">👤 PROFILE</button>
     <button class="pro-btn" id="pro-btn"   onclick="showModal('pro')">⚡ PRO</button>
     <button class="auth-btn" id="auth-btn" onclick="handleAuthClick()">
       <span id="auth-label">Sign In</span>
@@ -452,7 +458,12 @@ footer .footer-inner{max-width:600px;margin:0 auto}
       <input class="auth-input" type="email" id="auth-email" placeholder="Email address">
       <input class="auth-input" type="password" id="auth-password" placeholder="Password">
       <button class="auth-submit" onclick="submitAuth()">Sign In</button>
-<script>
+      <p class="auth-switch">No account? <span onclick="toggleAuthMode()">Create one free</span></p>
+    </div>
+  </div>
+</div>
+
+<script type="text/plain" data-legacy-bundle="gca-inline">
 // ═══════════════════════════════════════════════════════════════════
 // GCA.CONFIG.JS — Tenant Configuration & Design Token System
 // Swap this block to deploy on wecr8.info vs jobline.ai
@@ -3110,7 +3121,7 @@ function setView(v) {
       var el = document.getElementById('tn-' + k); if (el) el.className = 'nav-tab' + (k === 'all' ? ' a-test' : '');
     });
   }
-  if (v !== 'lathe' && v !== 'mill') document.getElementById('sidebar').innerHTML = '';
+  if (v !== 'lathe' && v !== 'mill' && v !== 'test') document.getElementById('sidebar').innerHTML = '';
   if      (v === 'lathe' || v === 'mill') renderCurriculumView();
   else if (v === 'gdnt')     renderGDnTView();
   else if (v === 'test')     renderTestCenter();
@@ -3162,6 +3173,36 @@ function renderSidebar() {
   const dc = lvL.filter(function(l) { return GCA_AUTH.isLessonComplete(l.id); }).length;
   html += '<div class="sb-prog"><div class="sb-prog-label"><span>Level Progress</span><span>' + dc + '/' + lvL.length + '</span></div>';
   html += '<div class="prog-bar"><div class="prog-fill" style="width:' + (lvL.length ? Math.round(dc/lvL.length*100) : 0) + '%;background:' + colOf(STATE.level) + '"></div></div></div>';
+  document.getElementById('sidebar').innerHTML = html;
+}
+
+function renderTestSidebar() {
+  var html = '<div class="sb-head" style="color:var(--gold)">🎯 TEST CENTER</div>';
+  var sections = [
+    { key: 'all', label: 'All Tests', meta: 'Overview' },
+    { key: 'controllers', label: 'Controller Tests', meta: Object.keys(GCA_TESTS.controllers).length + ' banks' },
+    { key: 'machines', label: 'Machine Type', meta: Object.keys(GCA_TESTS.machines).length + ' banks' },
+    { key: 'gdnt', label: 'GD&T', meta: '1 specialty test' },
+    { key: 'interview', label: 'Interview Prep', meta: '1 timed bank' },
+    { key: 'lesson', label: 'Lesson Quizzes', meta: 'Embedded checks' }
+  ];
+  html += '<div class="sb-section" style="color:var(--gold)"><span class="lvl-dot" style="background:var(--gold)"></span>Categories</div>';
+  sections.forEach(function(section) {
+    var active = (STATE.testCat || 'all') === section.key && !STATE.activeTest;
+    html += '<div class="sb-item' + (active ? ' act-test' : '') + '" onclick="setTestCat(\'' + section.key + '\')">';
+    html += '<span style="flex:1"><span style="display:block;font-size:11px;line-height:1.3">' + section.label + '</span><span style="display:block;font-size:9px;color:var(--muted);margin-top:2px">' + section.meta + '</span></span>';
+    html += '</div>';
+  });
+  if (STATE.activeTest && STATE.testState) {
+    var qs = STATE.testState.questions || [];
+    var idx = STATE.testState.current || 0;
+    var answered = STATE.testState.answers ? STATE.testState.answers.length : 0;
+    html += '<div class="sb-section" style="color:var(--gold)"><span class="lvl-dot" style="background:var(--gold)"></span>Active Test</div>';
+    html += '<div class="sb-prog"><div class="sb-prog-label"><span>' + (STATE.testState.label || 'Current Test') + '</span><span>' + Math.min(idx + 1, qs.length) + '/' + qs.length + '</span></div>';
+    html += '<div class="prog-bar"><div class="prog-fill" style="width:' + (qs.length ? Math.round((idx + 1) / qs.length * 100) : 0) + '%;background:var(--gold)"></div></div>';
+    html += '<div style="font-size:10px;color:var(--muted);margin-top:7px">Answered: ' + answered + ' · Best score saved locally</div>';
+    html += '<div style="margin-top:8px"><button class="btn-back" style="width:100%" onclick="exitTest()">← Exit Test</button></div></div>';
+  }
   document.getElementById('sidebar').innerHTML = html;
 }
 
@@ -3268,8 +3309,8 @@ function setTestCat(cat) {
 }
 
 function renderTestCenter() {
+  renderTestSidebar();
   if (STATE.activeTest && STATE.testState) { renderTestRunner(); return; }
-  document.getElementById('sidebar').innerHTML = '';
   var cat = STATE.testCat || 'all';
 
   // ── ALL TESTS OVERVIEW ──────────────────────────────────────────
@@ -3438,6 +3479,7 @@ function startTest(cat, key) {
 }
 
 function renderTestRunner() {
+  renderTestSidebar();
   var ts = STATE.testState;
   if (ts.current >= ts.questions.length) { finishTest(); return; }
   var q = ts.questions[ts.current];
@@ -3495,6 +3537,7 @@ function finishTest() {
   var retakeBtn = cat === 'lesson'
     ? '<button class="btn-next" onclick="startLessonQuiz(\'' + key + '\')">Retake</button>'
     : '<button class="btn-next" onclick="startTest(\'' + cat + '\',\'' + key + '\')">Retake Test</button>';
+  renderTestSidebar();
   document.getElementById('content').innerHTML =
     '<div class="test-runner show">' +
     '<div style="text-align:center;padding:18px 0">' +
@@ -3674,6 +3717,45 @@ window.addEventListener('message', function(event) {
   }
 });
 
+</script>
+<script src="src/gca-config.js"></script>
+<script src="src/gca-auth.js"></script>
+<script src="src/gca-symbols.js"></script>
+<script src="src/gca-meta.js"></script>
+<script src="src/gca-curriculum.js"></script>
+<script src="src/gca-tests.js"></script>
+<script src="src/gca-engine-v1.js"></script>
+<script>
+window.addEventListener('message', function(event) {
+  if (event.origin !== window.location.origin) return;
+
+  var msg = event.data;
+  if (!msg || typeof msg !== 'object') return;
+
+  if (msg.type === 'GCA_AUTH_INIT' && msg.user) {
+    var existing = GCA_AUTH._loadLocalProfile() || {};
+    var gcaUser = {
+      id: msg.user.id,
+      email: msg.user.email || '',
+      name: msg.user.name || msg.user.email || '',
+      tier: msg.user.tier || 'free',
+      tenant: 'jobline',
+      createdAt: msg.user.createdAt || null,
+      progress: existing.progress || JSON.parse(JSON.stringify(GCA_AUTH._profileSchema.progress)),
+      prefs: existing.prefs || JSON.parse(JSON.stringify(GCA_AUTH._profileSchema.prefs)),
+    };
+    GCA_AUTH._setSession(msg.token, null, gcaUser);
+    GCA_AUTH._saveLocalProfile();
+    GCA_AUTH._notify();
+    if (typeof setView === 'function') setView(STATE.view || 'lathe');
+  }
+
+  if (msg.type === 'GCA_AUTH_SIGNOUT') {
+    GCA_AUTH._clearSession();
+    GCA_AUTH._notify();
+    if (typeof setView === 'function') setView(STATE.view || 'lathe');
+  }
+});
 </script>
 </body>
 </html>

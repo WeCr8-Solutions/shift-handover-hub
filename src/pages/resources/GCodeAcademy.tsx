@@ -4,7 +4,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BookOpen, ChartColumn, ExternalLink, GraduationCap, Ruler, ShieldCheck, Sparkles } from "lucide-react";
+import { BookOpen, ChartColumn, ExternalLink, GraduationCap, Ruler, ShieldCheck, Sparkles, Wrench } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGcaAccess } from "@/hooks/useGcaAccess";
 
@@ -195,6 +195,78 @@ export default function GCodeAcademy() {
                 Verify Certificate
               </Link>
             </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="border-b border-border bg-background/95 px-4 py-4 shrink-0">
+        <div className="grid gap-4 xl:grid-cols-[1.3fr,1fr]">
+          <div className="overflow-hidden rounded-2xl border border-border bg-card">
+            <div className="grid gap-0 md:grid-cols-[1.1fr,0.9fr]">
+              <img
+                src="/gcode-academy-og.jpg"
+                alt="G-Code Academy training preview"
+                className="h-44 w-full object-cover md:h-full"
+              />
+              <div className="flex flex-col gap-3 p-5">
+                <Badge variant="outline" className="w-fit text-[10px] uppercase tracking-[0.18em]">Learning and Testing</Badge>
+                <div>
+                  <h2 className="text-lg font-semibold text-foreground">Start on the landing page, then jump straight into lessons or exams</h2>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Operators can enter the lathe or mill learning tracks, open the full test center, and keep the in-app sidebar visible for lesson navigation and test context.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Button size="sm" className="gap-2" onClick={() => queueQuickStart("lathe")}>
+                    <BookOpen className="w-3.5 h-3.5" />
+                    Open Learning Tracks
+                  </Button>
+                  <Button size="sm" variant="outline" className="gap-2" onClick={() => queueQuickStart("tests")}>
+                    <ChartColumn className="w-3.5 h-3.5" />
+                    Open Testing Area
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
+            <div className="rounded-2xl border border-border bg-card p-4">
+              <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <Ruler className="w-4 h-4 text-primary" />
+                GD&T and Metrology Helper
+              </div>
+              <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                Send learners to symbol review, metrology concepts, and refresher material before they launch certification-style tests.
+              </p>
+              <Button size="sm" variant="ghost" className="mt-3 h-8 px-0 text-xs" onClick={() => queueQuickStart("metrology")}>
+                Open Helper Review
+              </Button>
+            </div>
+            <div className="rounded-2xl border border-border bg-card p-4">
+              <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <ShieldCheck className="w-4 h-4 text-primary" />
+                Certificate Verification
+              </div>
+              <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                Give employers and operators a direct path to verify issued certificates without leaving the landing flow.
+              </p>
+              <Button asChild size="sm" variant="ghost" className="mt-3 h-8 px-0 text-xs">
+                <Link to="/gcode-academy/certificates/verify">Open Verify Page</Link>
+              </Button>
+            </div>
+            <div className="rounded-2xl border border-border bg-card p-4">
+              <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <Wrench className="w-4 h-4 text-primary" />
+                Shop Tool Helpers
+              </div>
+              <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                Use JobLine tool references and handbook content as visual support before or after lesson quizzes and controller tests.
+              </p>
+              <Button asChild size="sm" variant="ghost" className="mt-3 h-8 px-0 text-xs">
+                <Link to="/tools">Open Tool Helpers</Link>
+              </Button>
+            </div>
           </div>
         </div>
       </div>

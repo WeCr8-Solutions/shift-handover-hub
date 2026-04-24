@@ -360,8 +360,21 @@ const OAP_EMPLOYER = {
   },
 
   // ── PERSISTENCE ──────────────────────────────────────────────────
-  _load(key) { try { var r=localStorage.getItem(key); return r?JSON.parse(r):null; } catch(e){ return null; } },
-  _save(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){} },
+  _load(key) {
+    try {
+      var storageKey = (typeof OAP_AUTH !== 'undefined' && OAP_AUTH.storageKey) ? OAP_AUTH.storageKey(key) : key;
+      var raw = localStorage.getItem(storageKey);
+      return raw ? JSON.parse(raw) : null;
+    } catch(e) {
+      return null;
+    }
+  },
+  _save(key, val) {
+    try {
+      var storageKey = (typeof OAP_AUTH !== 'undefined' && OAP_AUTH.storageKey) ? OAP_AUTH.storageKey(key) : key;
+      localStorage.setItem(storageKey, JSON.stringify(val));
+    } catch(e){}
+  },
 
   // Export mentee portable record (for resume/job change)
   exportPortableRecord(menteeId) {

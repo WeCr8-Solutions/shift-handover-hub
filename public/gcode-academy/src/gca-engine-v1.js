@@ -10,6 +10,19 @@ const STATE = {
   activeTest: null, testState: null, authMode: 'login',
 };
 
+function openJobLinePath(path) {
+  var target = path || '/';
+  try {
+    if (window.top && window.top.location && window.top.location.origin === window.location.origin) {
+      window.top.location.href = target;
+      return;
+    }
+  } catch (error) {
+    // Fall back to same-frame navigation when top is unavailable.
+  }
+  window.location.href = target;
+}
+
 window.addEventListener('DOMContentLoaded', async () => {
   GCA_CONFIG.injectTokens();
   applyTenantBranding();
@@ -73,7 +86,7 @@ function setView(v) {
       var el = document.getElementById('tn-' + k); if (el) el.className = 'nav-tab' + (k === 'all' ? ' a-test' : '');
     });
   }
-  if (v !== 'lathe' && v !== 'mill') document.getElementById('sidebar').innerHTML = '';
+  if (v !== 'lathe' && v !== 'mill' && v !== 'test') document.getElementById('sidebar').innerHTML = '';
   if      (v === 'lathe' || v === 'mill') renderCurriculumView();
   else if (v === 'gdnt')     renderGDnTView();
   else if (v === 'test')     renderTestCenter();
@@ -125,6 +138,36 @@ function renderSidebar() {
   const dc = lvL.filter(function(l) { return GCA_AUTH.isLessonComplete(l.id); }).length;
   html += '<div class="sb-prog"><div class="sb-prog-label"><span>Level Progress</span><span>' + dc + '/' + lvL.length + '</span></div>';
   html += '<div class="prog-bar"><div class="prog-fill" style="width:' + (lvL.length ? Math.round(dc/lvL.length*100) : 0) + '%;background:' + colOf(STATE.level) + '"></div></div></div>';
+  document.getElementById('sidebar').innerHTML = html;
+}
+
+function renderTestSidebar() {
+  var html = '<div class="sb-head" style="color:var(--gold)">🎯 TEST CENTER</div>';
+  var sections = [
+    { key: 'all', label: 'All Tests', meta: 'Overview' },
+    { key: 'controllers', label: 'Controller Tests', meta: Object.keys(GCA_TESTS.controllers).length + ' banks' },
+    { key: 'machines', label: 'Machine Type', meta: Object.keys(GCA_TESTS.machines).length + ' banks' },
+    { key: 'gdnt', label: 'GD&T', meta: '1 specialty test' },
+    { key: 'interview', label: 'Interview Prep', meta: '1 timed bank' },
+    { key: 'lesson', label: 'Lesson Quizzes', meta: 'Embedded checks' }
+  ];
+  html += '<div class="sb-section" style="color:var(--gold)"><span class="lvl-dot" style="background:var(--gold)"></span>Categories</div>';
+  sections.forEach(function(section) {
+    var active = (STATE.testCat || 'all') === section.key && !STATE.activeTest;
+    html += '<div class="sb-item' + (active ? ' act-test' : '') + '" onclick="setTestCat(\'' + section.key + '\')">';
+    html += '<span style="flex:1"><span style="display:block;font-size:11px;line-height:1.3">' + section.label + '</span><span style="display:block;font-size:9px;color:var(--muted);margin-top:2px">' + section.meta + '</span></span>';
+    html += '</div>';
+  });
+  if (STATE.activeTest && STATE.testState) {
+    var qs = STATE.testState.questions || [];
+    var idx = STATE.testState.idx || 0;
+    var answered = STATE.testState.answers ? Object.keys(STATE.testState.answers).length : 0;
+    html += '<div class="sb-section" style="color:var(--gold)"><span class="lvl-dot" style="background:var(--gold)"></span>Active Test</div>';
+    html += '<div class="sb-prog"><div class="sb-prog-label"><span>' + (STATE.activeTest.label || 'Current Test') + '</span><span>' + Math.min(idx + 1, qs.length) + '/' + qs.length + '</span></div>';
+    html += '<div class="prog-bar"><div class="prog-fill" style="width:' + (qs.length ? Math.round((idx + 1) / qs.length * 100) : 0) + '%;background:var(--gold)"></div></div>';
+    html += '<div style="font-size:10px;color:var(--muted);margin-top:7px">Answered: ' + answered + ' · Best score saved locally</div>';
+    html += '<div style="margin-top:8px"><button class="btn-back" style="width:100%" onclick="exitTest()">← Exit Test</button></div></div>';
+  }
   document.getElementById('sidebar').innerHTML = html;
 }
 
@@ -231,8 +274,8 @@ function setTestCat(cat) {
 }
 
 function renderTestCenter() {
+  renderTestSidebar();
   if (STATE.activeTest && STATE.testState) { renderTestRunner(); return; }
-  document.getElementById('sidebar').innerHTML = '';
   var cat = STATE.testCat || 'all';
 
   // ── ALL TESTS OVERVIEW ──────────────────────────────────────────
@@ -401,6 +444,7 @@ function startTest(cat, key) {
 }
 
 function renderTestRunner() {
+  renderTestSidebar();
   var ts = STATE.testState;
   if (ts.current >= ts.questions.length) { finishTest(); return; }
   var q = ts.questions[ts.current];
@@ -458,6 +502,7 @@ function finishTest() {
   var retakeBtn = cat === 'lesson'
     ? '<button class="btn-next" onclick="startLessonQuiz(\'' + key + '\')">Retake</button>'
     : '<button class="btn-next" onclick="startTest(\'' + cat + '\',\'' + key + '\')">Retake Test</button>';
+  renderTestSidebar();
   document.getElementById('content').innerHTML =
     '<div class="test-runner show">' +
     '<div style="text-align:center;padding:18px 0">' +

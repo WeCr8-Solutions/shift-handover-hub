@@ -255,6 +255,34 @@ export async function syncIssuedCertificatesToProfile(userId: string, email: str
     });
   }
 
+  try {
+    const localEmployerCertsRaw = window.localStorage.getItem(`oap:${userId}:oap-certs`);
+    const localStandaloneCertsRaw = window.localStorage.getItem(`oap:${userId}:oap-standalone-certs`);
+    const localEmployerCerts = localEmployerCertsRaw ? Object.values(JSON.parse(localEmployerCertsRaw) as Record<string, any>) : [];
+    const localStandaloneCerts = localStandaloneCertsRaw ? (JSON.parse(localStandaloneCertsRaw) as any[]) : [];
+
+    for (const cert of [...localEmployerCerts, ...localStandaloneCerts]) {
+      if (!cert?.certId) continue;
+      const certEmail = cert.menteeEmail ?? null;
+      if (certEmail && certEmail !== email) continue;
+      rows.push({
+        user_id: userId,
+        name: cert.roleLabel ?? cert.programName ?? "OAP Local Certification",
+        issuer: cert.employerName ?? "JobLine OAP (local)",
+        issued_date: cert.issuedDate?.split("T")[0] ?? null,
+        expires_date: cert.expiresDate?.split("T")[0] ?? null,
+        credential_id: cert.certId,
+        credential_url: null,
+        attachment_url: null,
+        verification_source: "local_oap",
+        linked_cert_id: cert.certId,
+        description: "Locally issued from the embedded OAP app on this device. This record is not backed by the public certificate verification service.",
+      });
+    }
+  } catch (error) {
+    // Ignore malformed local browser records and continue with verified imports.
+  }
+
   if (!rows.length) return 0;
 
   // Upsert by linked_cert_id (avoid duplicates)

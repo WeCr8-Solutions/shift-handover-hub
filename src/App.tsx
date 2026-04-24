@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { TeamProvider } from "@/contexts/TeamContext";
@@ -235,8 +235,10 @@ const App = () => (
                     <Route path="/resources/guides" element={<ManufacturingGuides />} />
                     <Route path="/resources/gcode" element={<GCodeReference />} />
                     <Route path="/gcode-academy" element={<GCALanding />} />
+                    <Route path="/gcode-academy/app" element={<Navigate to="/resources/gcode-academy" replace />} />
                     <Route path="/resources/gcode-academy" element={<GCodeAcademy />} />
                     <Route path="/oap" element={<OAPLanding />} />
+                    <Route path="/oap/app" element={<Navigate to="/resources/oap" replace />} />
                     <Route path="/handbook" element={<HandbookLibrary />} />
                     <Route path="/handbook/:slug" element={<HandbookEntry />} />
                     <Route path="/verify" element={<CertificateLookup />} />

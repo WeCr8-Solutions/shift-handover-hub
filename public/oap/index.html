@@ -40,6 +40,8 @@ body{background:var(--oap-bg);color:var(--oap-text);font-family:var(--oap-body);
 .oap-nav{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .oap-nav-btn{font-family:var(--oap-head);font-weight:700;font-size:10px;letter-spacing:1px;padding:4px 10px;border-radius:4px;cursor:pointer;border:1px solid var(--oap-border2);background:transparent;color:var(--oap-muted2);white-space:nowrap;transition:.12s}
 .oap-nav-btn:hover{color:var(--oap-text)}
+.oap-nav-btn.utility{border-style:dashed}
+.oap-nav-btn.utility:hover{border-color:var(--oap-accent);color:var(--oap-accent)}
 .oap-nav-btn.active{background:rgba(0,229,176,.1);border-color:rgba(0,229,176,.3);color:var(--oap-accent)}
 .oap-nav-btn.gold{background:linear-gradient(135deg,#f5c518,#ff6b35);color:#000;border:none}
 
@@ -247,6 +249,9 @@ body{background:var(--oap-bg);color:var(--oap-text);font-family:var(--oap-body);
     <button class="oap-nav-btn" onclick="oapSetView('program','list')">📋 Programs</button>
     <button class="oap-nav-btn" onclick="oapSetView('mentor','list')">👤 Mentors</button>
     <button class="oap-nav-btn" onclick="oapSetView('mentee','list')">🧑‍🏭 Operators</button>
+    <button class="oap-nav-btn utility" onclick="oapOpenJobLinePath('/')">🏠 Home</button>
+    <button class="oap-nav-btn utility" onclick="oapOpenJobLinePath('/shift-handoff')">🔁 Shift Handoff</button>
+    <button class="oap-nav-btn utility" onclick="oapOpenJobLinePath('/profile')">👤 Profile</button>
     <button class="oap-nav-btn gold" onclick="oapSetView('standalone')">🎓 Get Certified</button>
   </nav>
 </header>
@@ -260,7 +265,7 @@ body{background:var(--oap-bg);color:var(--oap-text);font-family:var(--oap-body);
   <p style="margin-top:4px;font-size:9px">© 2025 WeCr8 Solutions LLC · Certificates are portable and may be presented to any employer</p>
 </footer>
 
-<script>
+<script type="text/plain" data-legacy-bundle="oap-inline">
 
 /* ===== oap-types.js ===== */
 // ═══════════════════════════════════════════════════════════════════
@@ -2933,6 +2938,17 @@ function oapGenerateStandaloneCert() {
 function _val(id) { var el=document.getElementById(id); return el?(el.value||''):''; }
 function _checked(cls) { return [].slice.call(document.querySelectorAll('.'+cls+':checked')).map(function(el){ return el.value; }); }
 
+</script>
+<script src="src/oap-types.js"></script>
+<script src="src/oap-data.js"></script>
+<script src="src/oap-auth.js"></script>
+<script src="src/oap-employer.js"></script>
+<script src="src/oap-cert.js"></script>
+<script src="src/oap-engine.js"></script>
+<script>
+window.addEventListener('DOMContentLoaded', function() {
+  if (typeof oapInit === 'function') oapInit();
+});
 </script>
 </body>
 </html>

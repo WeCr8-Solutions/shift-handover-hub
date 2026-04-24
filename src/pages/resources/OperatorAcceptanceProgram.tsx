@@ -4,7 +4,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Building2, ClipboardCheck, ExternalLink, FolderKanban, ShieldCheck, Sparkles, Users } from "lucide-react";
+import { Building2, ClipboardCheck, ExternalLink, FolderKanban, ShieldCheck, Sparkles, Users, Video, Wrench } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGcaAccess } from "@/hooks/useGcaAccess";
 
@@ -188,6 +188,78 @@ export default function OperatorAcceptanceProgram() {
                 Verify Certificate
               </Link>
             </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="border-b border-border bg-background/95 px-4 py-4 shrink-0">
+        <div className="grid gap-4 xl:grid-cols-[1.3fr,1fr]">
+          <div className="overflow-hidden rounded-2xl border border-border bg-card">
+            <div className="grid gap-0 md:grid-cols-[1.1fr,0.9fr]">
+              <img
+                src="/oap-og.jpg"
+                alt="Operator Acceptance Program onboarding preview"
+                className="h-44 w-full object-cover md:h-full"
+              />
+              <div className="flex flex-col gap-3 p-5">
+                <Badge variant="outline" className="w-fit text-[10px] uppercase tracking-[0.18em]">Onboarding and Certification</Badge>
+                <div>
+                  <h2 className="text-lg font-semibold text-foreground">Land on OAP first, then send visitors into setup, programs, or certification</h2>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Employers can move into setup and role programs, while operators can go directly to learning checkpoints and standalone certification from the same OAP landing page.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Button size="sm" className="gap-2" onClick={() => queueQuickStart("employer")}>
+                    <Building2 className="w-3.5 h-3.5" />
+                    Open Employer Setup
+                  </Button>
+                  <Button size="sm" variant="outline" className="gap-2" onClick={() => queueQuickStart("certify")}>
+                    <ClipboardCheck className="w-3.5 h-3.5" />
+                    Open Certification
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
+            <div className="rounded-2xl border border-border bg-card p-4">
+              <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <FolderKanban className="w-4 h-4 text-primary" />
+                Role Program Builder
+              </div>
+              <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                Take supervisors straight from the landing page into role-based onboarding plans and operator qualification paths.
+              </p>
+              <Button size="sm" variant="ghost" className="mt-3 h-8 px-0 text-xs" onClick={() => queueQuickStart("programs")}>
+                Open Program Builder
+              </Button>
+            </div>
+            <div className="rounded-2xl border border-border bg-card p-4">
+              <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <Video className="w-4 h-4 text-primary" />
+                Learning and Helper Media
+              </div>
+              <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                Use the embedded OAP learning flow together with helper media, measurement refreshers, and course-linked review before launching exams.
+              </p>
+              <Button asChild size="sm" variant="ghost" className="mt-3 h-8 px-0 text-xs">
+                <Link to="/handbook">Open Helper Library</Link>
+              </Button>
+            </div>
+            <div className="rounded-2xl border border-border bg-card p-4">
+              <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <Wrench className="w-4 h-4 text-primary" />
+                Certificate and Operator Support
+              </div>
+              <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                Verify portable certificates, then move back into operator dashboards and qualification checkpoints without leaving JobLine.ai.
+              </p>
+              <Button asChild size="sm" variant="ghost" className="mt-3 h-8 px-0 text-xs">
+                <Link to="/oap/certificates/verify">Verify OAP Certificate</Link>
+              </Button>
+            </div>
           </div>
         </div>
       </div>

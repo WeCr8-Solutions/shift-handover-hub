@@ -21,6 +21,43 @@ var OAP_STATE = {
   courseState: null,      // running test state (topic-by-topic learning OR exam run)
 };
 
+function oapOpenJobLinePath(path) {
+  var target = path || '/';
+  try {
+    if (window.top && window.top.location && window.top.location.origin === window.location.origin) {
+      window.top.location.href = target;
+      return;
+    }
+  } catch (error) {
+    // Fall back to same-frame navigation when top is unavailable.
+  }
+  window.location.href = target;
+}
+
+function oapGetScopedJson(key, fallbackValue) {
+  if (typeof OAP_AUTH !== 'undefined' && OAP_AUTH.getJSON) {
+    return OAP_AUTH.getJSON(key, fallbackValue);
+  }
+  try {
+    var raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallbackValue;
+  } catch (error) {
+    return fallbackValue;
+  }
+}
+
+function oapSetScopedJson(key, value) {
+  if (typeof OAP_AUTH !== 'undefined' && OAP_AUTH.setJSON) {
+    OAP_AUTH.setJSON(key, value);
+    return;
+  }
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    // Ignore storage failures.
+  }
+}
+
 // Fisher-Yates shuffle (in place).
 function _oapShuffle(arr) {
   for (var i = arr.length - 1; i > 0; i--) {
@@ -700,9 +737,9 @@ function oapExamRunner(course, menteeId, cs) {
     if (menteeId) {
       OAP_EMPLOYER.recordCourseScore(menteeId, course.id, score, passed);
     } else {
-      var scores = JSON.parse(localStorage.getItem('oap-standalone-scores') || '{}');
+      var scores = oapGetScopedJson('oap-standalone-scores', {});
       scores[course.id] = { score: score, passed: passed, mode: cs.examMode, when: Date.now() };
-      localStorage.setItem('oap-standalone-scores', JSON.stringify(scores));
+      oapSetScopedJson('oap-standalone-scores', scores);
     }
     h += '<div class="oap-card" style="text-align:center;padding:32px 20px">';
     h += '<div style="font-family:var(--oap-head);font-size:60px;font-weight:900;color:' + (passed?'#00e5b0':'#ff4757') + '">' + score + '%</div>';
@@ -788,11 +825,11 @@ function oapRestartCourse() { OAP_STATE.courseState = null; oapRender(); }
 // ── STANDALONE MODE ───────────────────────────────────────────────
 function oapStandalone() {
   var h = '<div class="oap-page-header"><button class="oap-back" onclick="oapSetView(\'home\')">← Home</button><h1>🎓 Standalone OAP Certification</h1></div>';
-  h += '<div class="oap-card"><p class="oap-hint" style="margin-bottom:14px">Complete all sections independently. Pass all quizzes to earn a portable certificate you can present to any employer. Your scores are saved locally.</p>';
+  h += '<div class="oap-card"><p class="oap-hint" style="margin-bottom:14px">Complete all sections independently. Pass all quizzes to build a local certification record on this signed-in profile or device. Verified JobLine certificates still flow through the main certificate system.</p>';
 
   Object.entries(OAP_COURSES).forEach(function(e) {
     var k=e[0], course=e[1];
-    var scores = JSON.parse(localStorage.getItem('oap-standalone-scores')||'{}');
+    var scores = oapGetScopedJson('oap-standalone-scores', {});
     var score = scores[k];
     var passed = score && score.passed;
     h += '<div class="oap-course-row">';
@@ -920,13 +957,15 @@ function oapRunCourseExam(courseId, menteeId, mode) {
   oapSetView('course');
 }
 function oapGenerateStandaloneCert() {
-  var scores=JSON.parse(localStorage.getItem('oap-standalone-scores')||'{}');
+  var scores=oapGetScopedJson('oap-standalone-scores', {});
   var passed=Object.values(scores).filter(function(s){ return s.passed; });
   if (!passed.length) { alert('Complete at least one course to generate a certificate.'); return; }
-  var name=prompt('Your full name:'); if(!name) return;
+  var authUser = (typeof OAP_AUTH !== 'undefined' && OAP_AUTH.getUser) ? OAP_AUTH.getUser() : null;
+  var defaultName = authUser && authUser.name ? authUser.name : '';
+  var name=prompt('Your full name:', defaultName); if(!name) return;
   var cert={
     certId:'SA-'+Math.random().toString(36).slice(2,8).toUpperCase(),
-    certType:'initial', menteeName:name, menteeEmail:'',
+    certType:'initial', menteeName:name, menteeEmail:(authUser && authUser.email) ? authUser.email : '',
     employerName:'Self-Certified / JobLine OAP',
     employerCity:'Independent',
     roleLabel:'Manufacturing Operator (Self-Certified)',
@@ -938,6 +977,10 @@ function oapGenerateStandaloneCert() {
     expiresDate:new Date(Date.now()+2*365.25*24*3600*1000).toISOString(),
     checkpoints:{},
   };
+  var issued = oapGetScopedJson('oap-standalone-certs', []);
+  issued = issued.filter(function(existing) { return existing.certId !== cert.certId; });
+  issued.push(cert);
+  oapSetScopedJson('oap-standalone-certs', issued);
   OAP_CERT.openPrintWindow(cert);
 }
 

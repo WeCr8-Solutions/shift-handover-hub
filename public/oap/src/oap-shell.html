@@ -30,7 +30,7 @@
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{background:var(--oap-bg);color:var(--oap-text);font-family:var(--oap-body);min-height:100vh;overflow-x:hidden}
+body{background:var(--oap-bg);color:var(--oap-text);font-family:var(--oap-body);min-height:100vh;overflow-x:hidden;width:100%;max-width:100vw}
 
 /* ── HEADER ── */
 .oap-header{background:var(--oap-surface);border-bottom:1px solid var(--oap-border);padding:0 16px;display:flex;align-items:center;justify-content:space-between;min-height:54px;position:sticky;top:0;z-index:300;gap:8px;flex-wrap:wrap}
@@ -44,7 +44,7 @@ body{background:var(--oap-bg);color:var(--oap-text);font-family:var(--oap-body);
 .oap-nav-btn.gold{background:linear-gradient(135deg,#f5c518,#ff6b35);color:#000;border:none}
 
 /* ── MAIN ── */
-.oap-main{max-width:960px;margin:0 auto;padding:18px 14px}
+.oap-main{max-width:960px;margin:0 auto;padding:18px 14px;min-width:0}
 @media(max-width:600px){.oap-main{padding:12px}}
 
 /* ── HERO ── */
@@ -55,7 +55,7 @@ body{background:var(--oap-bg);color:var(--oap-text);font-family:var(--oap-body);
 .oap-hero-desc{font-size:13px;color:var(--oap-muted2);line-height:1.65;max-width:600px}
 
 /* ── CARDS ── */
-.oap-card{background:var(--oap-surface);border:1px solid var(--oap-border);border-radius:8px;padding:18px;margin-bottom:14px}
+.oap-card{background:var(--oap-surface);border:1px solid var(--oap-border);border-radius:8px;padding:18px;margin-bottom:14px;min-width:0;max-width:100%;overflow:hidden}
 .oap-card-title{font-family:var(--oap-head);font-weight:900;font-size:15px;margin-bottom:12px;letter-spacing:.5px}
 .oap-hint{font-size:11px;color:var(--oap-muted);line-height:1.5}
 .oap-hint-inline{font-size:11px;color:var(--oap-muted)}
@@ -109,13 +109,13 @@ body{background:var(--oap-bg);color:var(--oap-text);font-family:var(--oap-body);
 .oap-course-fill{height:100%;background:var(--oap-accent);border-radius:2px;transition:width .3s}
 
 /* ── BUTTONS ── */
-.oap-btn-primary{background:var(--oap-accent);color:#000;border:none;border-radius:5px;padding:10px 20px;font-family:var(--oap-head);font-weight:700;font-size:13px;letter-spacing:1px;cursor:pointer;transition:.12s;white-space:nowrap}
+.oap-btn-primary{background:var(--oap-accent);color:#000;border:none;border-radius:5px;padding:10px 20px;font-family:var(--oap-head);font-weight:700;font-size:13px;letter-spacing:1px;cursor:pointer;transition:.12s;white-space:nowrap;max-width:100%}
 .oap-btn-primary:hover{opacity:.85}
-.oap-btn-ghost{background:transparent;color:var(--oap-muted2);border:1px solid var(--oap-border2);border-radius:5px;padding:10px 16px;font-family:var(--oap-head);font-weight:700;font-size:12px;cursor:pointer;transition:.12s;white-space:nowrap}
+.oap-btn-ghost{background:transparent;color:var(--oap-muted2);border:1px solid var(--oap-border2);border-radius:5px;padding:10px 16px;font-family:var(--oap-head);font-weight:700;font-size:12px;cursor:pointer;transition:.12s;white-space:nowrap;max-width:100%}
 .oap-btn-ghost:hover{color:var(--oap-text);border-color:var(--oap-text)}
-.oap-btn-sm{background:var(--oap-card);border:1px solid var(--oap-border2);color:var(--oap-muted2);border-radius:4px;padding:5px 11px;font-family:var(--oap-head);font-weight:700;font-size:11px;cursor:pointer;white-space:nowrap}
+.oap-btn-sm{background:var(--oap-card);border:1px solid var(--oap-border2);color:var(--oap-muted2);border-radius:4px;padding:5px 11px;font-family:var(--oap-head);font-weight:700;font-size:11px;cursor:pointer;white-space:nowrap;max-width:100%}
 .oap-btn-sm:hover{color:var(--oap-text)}
-.oap-btn-xs{background:var(--oap-card);border:1px solid var(--oap-border2);color:var(--oap-accent);border-radius:3px;padding:3px 8px;font-family:var(--oap-head);font-weight:700;font-size:10px;cursor:pointer;letter-spacing:.5px;white-space:nowrap;flex-shrink:0}
+.oap-btn-xs{background:var(--oap-card);border:1px solid var(--oap-border2);color:var(--oap-accent);border-radius:3px;padding:3px 8px;font-family:var(--oap-head);font-weight:700;font-size:10px;cursor:pointer;letter-spacing:.5px;white-space:nowrap;flex-shrink:0;max-width:100%}
 .oap-btn-undo{color:var(--oap-muted)}
 
 /* ── TABS ── */
@@ -129,6 +129,7 @@ body{background:var(--oap-bg);color:var(--oap-text);font-family:var(--oap-body);
 .oap-page-header h1{font-family:var(--oap-head);font-weight:900;font-size:22px}
 .oap-back{background:transparent;border:1px solid var(--oap-border2);color:var(--oap-muted2);border-radius:4px;padding:6px 12px;font-family:var(--oap-head);font-weight:700;font-size:11px;cursor:pointer;letter-spacing:.5px}
 .oap-back:hover{color:var(--oap-text)}
+@media(max-width:480px){.oap-page-header h1{font-size:18px;line-height:1.2}.oap-page-header > *{max-width:100%}.oap-btn-primary,.oap-btn-ghost,.oap-back{white-space:normal}}
 
 /* ── FORMS ── */
 .oap-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -214,7 +215,7 @@ body{background:var(--oap-bg);color:var(--oap-text);font-family:var(--oap-body);
 .oap-course-content{font-size:13px;line-height:1.75;overflow-wrap:break-word}
 .oap-quiz-q{font-size:13px;font-weight:500;margin-bottom:11px;line-height:1.65;overflow-wrap:break-word}
 .oap-quiz-opts{display:flex;flex-direction:column;gap:6px;margin-bottom:11px}
-.oap-qopt{background:var(--oap-card);border:1px solid var(--oap-border);border-radius:5px;padding:10px 12px;cursor:pointer;font-size:12px;transition:.12s;display:flex;align-items:flex-start;gap:9px;overflow-wrap:break-word}
+.oap-qopt{background:var(--oap-card);border:1px solid var(--oap-border);border-radius:5px;padding:10px 12px;cursor:pointer;font-size:12px;transition:.12s;display:flex;align-items:flex-start;gap:9px;overflow-wrap:break-word;word-break:break-word;min-width:0;max-width:100%}
 .oap-qopt:hover{border-color:var(--oap-accent)}
 .oap-qopt.correct{background:rgba(0,229,176,.07);border-color:#00e5b0;color:#00e5b0}
 .oap-qopt.wrong{background:rgba(255,71,87,.05);border-color:#ff4757;color:#ff7a87}
@@ -223,6 +224,7 @@ body{background:var(--oap-bg);color:var(--oap-text);font-family:var(--oap-body);
 .oap-quiz-fb.show{display:block}
 .oap-quiz-fb.correct{background:rgba(0,229,176,.06);border:1px solid rgba(0,229,176,.15);color:#80d8b8}
 .oap-quiz-fb.wrong{background:rgba(255,71,87,.05);border:1px solid rgba(255,71,87,.12);color:#ff9aa8}
+@media(max-width:480px){.oap-quiz-opts{gap:8px}.oap-qopt{padding:10px}.oap-card{padding:14px}}
 
 /* ── SCROLLBAR ── */
 ::-webkit-scrollbar{width:4px;height:4px}
