@@ -1,7 +1,7 @@
 import { useParams, Link, Navigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { ArrowLeft, BookOpen } from "lucide-react";
+import { ArrowLeft, BookOpen, ExternalLink } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +32,7 @@ export default function HandbookEntry() {
     articleSection: ref.category?.name || undefined,
     identifier: ref.slug,
     url: `/handbook/${ref.slug}`,
+    citation: ref.source_url || ref.source_citation || undefined,
   };
 
   return (
@@ -104,6 +105,22 @@ export default function HandbookEntry() {
               <p className="text-xs uppercase text-muted-foreground">Tags</p>
               <p>{ref.tags.length ? ref.tags.join(", ") : "None"}</p>
             </div>
+            <div className="sm:col-span-2">
+              <p className="text-xs uppercase text-muted-foreground">Source</p>
+              {ref.source_url ? (
+                <a
+                  href={ref.source_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-sm text-primary hover:underline break-all"
+                >
+                  {ref.source_citation || ref.source_url}
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+              ) : (
+                <p>{ref.source_citation || "Not specified"}</p>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -112,9 +129,22 @@ export default function HandbookEntry() {
         <ReactMarkdown remarkPlugins={[remarkGfm]}>{ref.body_md}</ReactMarkdown>
       </article>
 
-      {ref.source_citation && (
+      {(ref.source_citation || ref.source_url) && (
         <p className="text-xs text-muted-foreground italic border-t pt-4">
-          Source: {ref.source_citation}
+          Source:{" "}
+          {ref.source_url ? (
+            <a
+              href={ref.source_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 hover:underline"
+            >
+              {ref.source_citation || ref.source_url}
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          ) : (
+            ref.source_citation
+          )}
         </p>
       )}
     </div>

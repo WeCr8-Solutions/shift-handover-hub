@@ -1,0 +1,87 @@
+{
+  "allowedDomains": [
+    "theoreticalmachinist.com",
+    "www.theoreticalmachinist.com",
+    "haascnc.com",
+    "www.haascnc.com",
+    "weldfabworld.com",
+    "www.weldfabworld.com",
+    "mitutoyo.com",
+    "www.mitutoyo.com",
+    "nist.gov",
+    "www.nist.gov",
+    "osha.gov",
+    "www.osha.gov"
+  ],
+  "topics": [
+    {
+      "slug": "theoretical-thread-reference",
+      "categorySlug": "threads",
+      "titleHint": "Unified Thread Reference",
+      "difficulty": "intermediate",
+      "tags": ["threads", "unified", "class-of-fit", "machining"],
+      "searchQueries": [
+        "site:theoreticalmachinist.com unified imperial threads machinist",
+        "site:theoreticalmachinist.com thread classes 2A 2B machinist"
+      ]
+    },
+    {
+      "slug": "theoretical-tap-drill-reference",
+      "categorySlug": "threads",
+      "titleHint": "Tap Drill Selection",
+      "difficulty": "beginner",
+      "tags": ["threads", "tap-drill", "drilling", "setup"],
+      "searchQueries": [
+        "site:theoreticalmachinist.com tap drill chart machinist",
+        "site:theoreticalmachinist.com metric tap drill machinist"
+      ]
+    },
+    {
+      "slug": "theoretical-speeds-feeds-reference",
+      "categorySlug": "feeds-speeds",
+      "titleHint": "Speeds and Feeds Reference",
+      "difficulty": "intermediate",
+      "tags": ["feeds-speeds", "rpm", "sfm", "feedrate"],
+      "searchQueries": [
+        "site:theoreticalmachinist.com speeds feeds machinist",
+        "site:theoreticalmachinist.com rpm sfm calculator machining"
+      ]
+    },
+    {
+      "slug": "micrometer-technique-web",
+      "categorySlug": "measurement",
+      "titleHint": "Micrometer Technique",
+      "difficulty": "beginner",
+      "tags": ["micrometer", "inspection", "measurement"],
+      "sourceUrls": [
+        "https://www.weldfabworld.com/micrometer/"
+      ],
+      "searchQueries": [
+        "site:mitutoyo.com micrometer reading guide",
+        "site:haascnc.com micrometer measuring tip of the day"
+      ]
+    },
+    {
+      "slug": "caliper-technique-web",
+      "categorySlug": "measurement",
+      "titleHint": "Caliper Technique",
+      "difficulty": "beginner",
+      "tags": ["caliper", "vernier", "digital-caliper", "measurement"],
+      "searchQueries": [
+        "site:mitutoyo.com caliper measuring guide",
+        "site:haascnc.com caliper measurement cnc"
+      ]
+    },
+    {
+      "slug": "lockout-tagout-web",
+      "categorySlug": "safety-standards",
+      "titleHint": "Lockout Tagout Basics",
+      "difficulty": "beginner",
+      "tags": ["safety", "loto", "osha"],
+      "searchQueries": [
+        "site:osha.gov lockout tagout machine shop",
+        "site:osha.gov control of hazardous energy 1910.147"
+      ]
+    }
+  ]
+}

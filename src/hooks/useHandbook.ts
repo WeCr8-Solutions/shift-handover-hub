@@ -32,6 +32,7 @@ export interface HandbookReference {
   formula: string | null;
   units: string | null;
   source_citation: string | null;
+  source_url?: string | null;
   tags: string[];
   difficulty: string | null;
   is_canonical: boolean;
