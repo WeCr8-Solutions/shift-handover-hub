@@ -27,8 +27,6 @@ const OUT_DIR = join(__dirname, "qr_output");
 mkdirSync(OUT_DIR, { recursive: true });
 
 // ─── Zone data (mirrors flyerZoneData.ts) ─────────────────────────────────────
-const UTM_BASE = "https://jobline.ai/start?utm_source=flyer&utm_medium=print&utm_campaign=san_diego_drop&utm_content=";
-
 const ZONES = [
   [1,  "z01_santee_wheatlands",    "jl-z01"],
   [2,  "z02_santee_prospect",      "jl-z02"],

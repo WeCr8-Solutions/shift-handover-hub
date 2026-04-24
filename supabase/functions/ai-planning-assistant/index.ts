@@ -1,3 +1,5 @@
+/// <reference path="../deno-vscode.d.ts" />
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -8,7 +10,7 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
-serve(async (req) => {
+serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -234,12 +236,12 @@ serve(async (req) => {
         supabase
           .from("queue_items")
           .select(
-            "id, title, work_order, part_number, status, priority, due_date, assigned_to, station_id, item_type, quantity, qty_completed, qty_scrap, qty_rework, qty_open, quantity_locked, operation_number, created_at, estimated_duration, material_type, part_length_inches, part_width_inches, part_height_inches, part_weight_lbs, part_shape, required_tolerance, surface_finish, part_catalog_id, setup_time_minutes, cycle_time_minutes, first_article_minutes, scheduled_start, scheduled_end, started_at, cancellation_reason, hold_reason, cancelled_at, cancelled_by_name, on_hold_at, on_hold_by_name, completed_at",
+            "id, title, work_order, part_number, status, priority, due_date, assigned_to, station_id, item_type, quantity, qty_completed, qty_scrap, qty_rework, qty_open, quantity_locked, operation_number, created_at, estimated_duration, material_type, part_length_inches, part_width_inches, part_height_inches, part_weight_lbs, part_shape, required_tolerance, surface_finish, part_catalog_id, setup_time_minutes, cycle_time_minutes, first_article_minutes, scheduled_start, scheduled_end, started_at",
           )
           .eq("organization_id", organization_id)
-          .in("status", ["pending", "queued", "in_progress", "on_hold", "blocked", "cancelled"])
+          .in("status", ["pending", "queued", "in_progress", "on_hold", "blocked"])
           .order("priority", { ascending: false })
-          .limit(250),
+          .limit(200),
       ),
       safeQuery(
         supabase
@@ -279,7 +281,7 @@ serve(async (req) => {
         supabase
           .from("station_machine_assignments")
           .select(
-            "station_id, purchase_id, organization_machine_purchases!inner(machine_library_id, is_active, verified_machine_library!inner(manufacturer, model, machine_type, platform_category, max_x_travel, max_y_travel, max_z_travel, max_part_weight, max_part_envelope_length, max_part_envelope_width, max_part_envelope_height, five_axis_simultaneous, fourth_axis, live_tooling, y_axis_turn, sub_spindle, probing, through_spindle_coolant, pallet_pool, bar_feeder, material_capability, typical_tolerance, hard_constraints, control_type, control_model, max_spindle_rpm, spindle_taper, spindle_power_hp, tool_magazine_capacity, max_tool_diameter, max_tool_length, max_turning_diameter, max_turning_length, bar_capacity_mm))",
+            "station_id, purchase_id, organization_machine_purchases!inner(machine_library_id, is_active, verified_machine_library!inner(manufacturer, model, machine_type, platform_category, max_x_travel, max_y_travel, max_z_travel, max_part_weight, max_part_envelope_length, max_part_envelope_width, max_part_envelope_height, five_axis_simultaneous, fourth_axis, live_tooling, y_axis_turn, sub_spindle, probing, through_spindle_coolant, pallet_pool, bar_feeder, material_capability, typical_tolerance, hard_constraints))",
           )
           .eq("organization_id", organization_id)
           .limit(100),
@@ -288,7 +290,7 @@ serve(async (req) => {
         supabase
           .from("station_manual_machine_profiles")
           .select(
-            "station_id, manufacturer, model, machine_type, platform_category, max_x_travel, max_y_travel, max_z_travel, max_part_weight, max_part_envelope_length, max_part_envelope_width, max_part_envelope_height, five_axis_simultaneous, fourth_axis, live_tooling, y_axis_turn, sub_spindle, probing, through_spindle_coolant, pallet_pool, bar_feeder, material_capability, typical_tolerance, hard_constraints, control_type, control_model, max_spindle_rpm, spindle_taper, spindle_power_hp, tool_magazine_capacity, max_tool_diameter, max_tool_length, max_turning_diameter, max_turning_length, bar_capacity_mm",
+            "station_id, manufacturer, model, machine_type, platform_category, max_x_travel, max_y_travel, max_z_travel, max_part_weight, max_part_envelope_length, max_part_envelope_width, max_part_envelope_height, five_axis_simultaneous, fourth_axis, live_tooling, y_axis_turn, sub_spindle, probing, through_spindle_coolant, pallet_pool, bar_feeder, material_capability, typical_tolerance, hard_constraints",
           )
           .eq("organization_id", organization_id)
           .limit(100),
@@ -431,56 +433,6 @@ serve(async (req) => {
       ),
     ]);
 
-    // =========================================================================
-    // ERP read-through enrichment (ITAR/FedRAMP-safe)
-    // ─────────────────────────────────────────────────────────────────────────
-    // For orgs whose system-of-record is JobBOSS or SAP and persistence is
-    // 'read_through', queue_items will be empty or stale. Pull live work
-    // orders from the vendor edge function and merge them in-memory so the
-    // assistant has real context. Nothing is written back to Supabase.
-    try {
-      const { data: connRow } = await supabase
-        .from("erp_connections")
-        .select("erp_vendor, is_active, erp_persistence_mode")
-        .eq("organization_id", organization_id)
-        .maybeSingle();
-
-      const vendor = connRow?.erp_vendor as "jobboss" | "sap" | undefined;
-      const isReadThrough =
-        connRow?.is_active && vendor && (connRow.erp_persistence_mode ?? "read_through") === "read_through";
-
-      if (isReadThrough) {
-        const fnName = vendor === "sap" ? "sap-sync" : "erp-sync";
-        const fnBody =
-          vendor === "sap"
-            ? { organization_id, resource: "production_orders", top: 100 }
-            : { organization_id, sync_type: "incremental", read_only: true };
-
-        const erpResp = await supabase.functions.invoke(fnName, { body: fnBody });
-        const erpRows: any[] = Array.isArray((erpResp.data as any)?.data) ? (erpResp.data as any).data : [];
-
-        for (const r of erpRows) {
-          queueItems.push({
-            id: `${vendor}:${r.erp_job_id ?? r.work_order ?? crypto.randomUUID()}`,
-            title: r.title ?? r.part_number ?? r.erp_job_id ?? "ERP Order",
-            work_order: r.work_order ?? r.erp_job_id ?? null,
-            part_number: r.part_number ?? null,
-            status: r.status ?? "queued",
-            priority: r.priority ?? "normal",
-            due_date: r.due_date ?? null,
-            station_id: null,
-            quantity: r.quantity_ordered ?? r.quantity ?? null,
-            qty_completed: r.quantity_complete ?? 0,
-            erp_source: vendor,
-            is_read_through: true,
-          });
-        }
-        console.log(`[ai-planning-assistant] Enriched ${erpRows.length} ${vendor} read-through orders`);
-      }
-    } catch (e) {
-      console.warn("[ai-planning-assistant] ERP read-through enrichment failed:", e);
-    }
-
     const now = new Date().toISOString();
     const stationMap: Record<string, string> = Object.fromEntries(stations.map((s: any) => [s.id, s.name]));
 
@@ -488,71 +440,39 @@ serve(async (req) => {
     // Build summaries for system prompt
     // =========================================================================
 
-    const queueSummary = queueItems
-      .filter((q: any) => q.status !== "cancelled")
-      .map((q: any) => ({
-        id: q.id?.slice(0, 8),
-        title: q.title,
-        wo: q.work_order,
-        part: q.part_number,
-        op: q.operation_number,
-        status: q.status,
-        priority: q.priority,
-        due: q.due_date,
-        station: q.station_id ? stationMap[q.station_id] || q.station_id : "unassigned",
-        qty: q.quantity,
-        completed: q.qty_completed,
-        open: q.qty_open,
-        locked: q.quantity_locked,
-        scheduled_start: q.scheduled_start,
-        scheduled_end: q.scheduled_end,
-        started_at: q.started_at,
-        ...(q.status === "on_hold" && q.hold_reason
-          ? { hold: { reason: q.hold_reason, since: q.on_hold_at, by: q.on_hold_by_name } }
-          : {}),
-        ...(q.material_type || q.part_length_inches || q.part_shape || q.required_tolerance
-          ? {
-              part_specs: {
-                material: q.material_type,
-                length: q.part_length_inches,
-                width: q.part_width_inches,
-                height: q.part_height_inches,
-                weight: q.part_weight_lbs,
-                shape: q.part_shape,
-                tolerance: q.required_tolerance,
-                surface_finish: q.surface_finish,
-              },
-            }
-          : {}),
-        ...(q.part_catalog_id ? { catalog_ref: q.part_catalog_id.slice(0, 8) } : {}),
-      }));
-
-    // Lifecycle audit summaries (NEW — supports "what got cancelled and why" questions)
-    const cancelledSummary = (queueItems as any[])
-      .filter((q: any) => q.status === "cancelled")
-      .slice(0, 30)
-      .map((q: any) => ({
-        wo: q.work_order,
-        part: q.part_number,
-        last_station: q.station_id ? stationMap[q.station_id] || q.station_id : "unassigned",
-        cancelled_at: q.cancelled_at,
-        cancelled_by: q.cancelled_by_name,
-        reason: q.cancellation_reason,
-        qty_completed_before_cancel: q.qty_completed,
-      }));
-
-    const onHoldSummary = (queueItems as any[])
-      .filter((q: any) => q.status === "on_hold")
-      .slice(0, 30)
-      .map((q: any) => ({
-        wo: q.work_order,
-        part: q.part_number,
-        station: q.station_id ? stationMap[q.station_id] || q.station_id : "unassigned",
-        on_hold_since: q.on_hold_at,
-        held_by: q.on_hold_by_name,
-        reason: q.hold_reason,
-        priority: q.priority,
-      }));
+    const queueSummary = queueItems.map((q: any) => ({
+      id: q.id?.slice(0, 8),
+      title: q.title,
+      wo: q.work_order,
+      part: q.part_number,
+      op: q.operation_number,
+      status: q.status,
+      priority: q.priority,
+      due: q.due_date,
+      station: q.station_id ? stationMap[q.station_id] || q.station_id : "unassigned",
+      qty: q.quantity,
+      completed: q.qty_completed,
+      open: q.qty_open,
+      locked: q.quantity_locked,
+      scheduled_start: q.scheduled_start,
+      scheduled_end: q.scheduled_end,
+      started_at: q.started_at,
+      ...(q.material_type || q.part_length_inches || q.part_shape || q.required_tolerance
+        ? {
+            part_specs: {
+              material: q.material_type,
+              length: q.part_length_inches,
+              width: q.part_width_inches,
+              height: q.part_height_inches,
+              weight: q.part_weight_lbs,
+              shape: q.part_shape,
+              tolerance: q.required_tolerance,
+              surface_finish: q.surface_finish,
+            },
+          }
+        : {}),
+      ...(q.part_catalog_id ? { catalog_ref: q.part_catalog_id.slice(0, 8) } : {}),
+    }));
 
     const stationSummary = stations.map((s: any) => ({
       name: s.name,
@@ -593,7 +513,7 @@ serve(async (req) => {
       expected_return: r.expected_return_date,
     }));
 
-    // Machine profiles summary — includes controller & spindle/tooling for programming-portability analysis
+    // Machine profiles summary
     const buildProfileSummary = (ml: any, stationId: string, source: string) => ({
       station: stationMap[stationId] || stationId,
       source,
@@ -601,29 +521,12 @@ serve(async (req) => {
       model: ml.model,
       machine_type: ml.machine_type,
       platform: ml.platform_category,
-      controller: {
-        type: ml.control_type,        // e.g. "Fanuc", "Haas", "Siemens", "Heidenhain", "Mazak"
-        model: ml.control_model,      // e.g. "31i-B", "NGC", "840D sl"
-      },
       envelope: {
         x: ml.max_x_travel, y: ml.max_y_travel, z: ml.max_z_travel,
         max_weight: ml.max_part_weight,
         max_length: ml.max_part_envelope_length,
         max_width: ml.max_part_envelope_width,
         max_height: ml.max_part_envelope_height,
-        max_turning_diameter: ml.max_turning_diameter,
-        max_turning_length: ml.max_turning_length,
-        bar_capacity_mm: ml.bar_capacity_mm,
-      },
-      spindle: {
-        max_rpm: ml.max_spindle_rpm,
-        taper: ml.spindle_taper,      // e.g. "CAT40", "BT40", "HSK63A" — drives toolholder compatibility
-        power_hp: ml.spindle_power_hp,
-      },
-      tooling: {
-        magazine_capacity: ml.tool_magazine_capacity,
-        max_tool_diameter: ml.max_tool_diameter,
-        max_tool_length: ml.max_tool_length,
       },
       capabilities: {
         five_axis: ml.five_axis_simultaneous, fourth_axis: ml.fourth_axis,
@@ -1046,86 +949,6 @@ serve(async (req) => {
       .sort((a, b) => b.est_hours - a.est_hours);
 
     // =========================================================================
-    // PROGRAMMING PORTABILITY MATRIX
-    // Groups stations by controller family + machine_type so the AI can answer:
-    //   "Where can I move this program with minimal re-post?"
-    //   "If I reprogram, what other machines/controls can it go to?"
-    // =========================================================================
-    const normalizeController = (ctrl?: string | null) => {
-      if (!ctrl) return "unknown";
-      const c = ctrl.toLowerCase();
-      if (c.includes("fanuc")) return "Fanuc";
-      if (c.includes("haas")) return "Haas";
-      if (c.includes("siemens") || c.includes("sinumerik")) return "Siemens";
-      if (c.includes("heidenhain")) return "Heidenhain";
-      if (c.includes("mazak") || c.includes("mazatrol")) return "Mazatrol";
-      if (c.includes("okuma") || c.includes("osp")) return "Okuma OSP";
-      if (c.includes("mitsubishi")) return "Mitsubishi";
-      if (c.includes("centroid")) return "Centroid";
-      if (c.includes("acramatic")) return "Acramatic";
-      return ctrl;
-    };
-
-    type PortStation = {
-      station: string;
-      station_id: string;
-      machine: string;
-      machine_type: string;
-      platform: string;
-      controller_family: string;
-      controller_model: string | null;
-      spindle_taper: string | null;
-      envelope_xyz: string;
-      capabilities_signature: string;
-      utilization_pct: number;
-      down: boolean;
-    };
-
-    const portStations: PortStation[] = allProfiles.map((p: any) => {
-      const load = stationLoadMap[p.station_id];
-      const avail = stationAvailabilityMap[p.station_id];
-      const caps: string[] = [];
-      if (p.five_axis_simultaneous) caps.push("5ax");
-      if (p.fourth_axis) caps.push("4ax");
-      if (p.live_tooling) caps.push("live-tool");
-      if (p.y_axis_turn) caps.push("y-axis");
-      if (p.sub_spindle) caps.push("sub-spindle");
-      if (p.probing) caps.push("probing");
-      if (p.through_spindle_coolant) caps.push("tsc");
-      if (p.bar_feeder) caps.push("bar-feed");
-      return {
-        station: stationMap[p.station_id] || p.station_id,
-        station_id: p.station_id,
-        machine: `${p.manufacturer || "?"} ${p.model || ""}`.trim(),
-        machine_type: p.machine_type || "unknown",
-        platform: p.platform_category || "unknown",
-        controller_family: normalizeController(p.control_type),
-        controller_model: p.control_model || null,
-        spindle_taper: p.spindle_taper || null,
-        envelope_xyz: [p.max_x_travel, p.max_y_travel, p.max_z_travel].filter((v) => v != null).join(" x ") || "n/a",
-        capabilities_signature: caps.sort().join(",") || "basic",
-        utilization_pct: load ? Math.min(100, Math.round((load.est_total_minutes / 480) * 100)) : 0,
-        down: avail?.has_active_downtime || false,
-      };
-    });
-
-    // Group by controller family — programs port best within the same family (no re-post needed)
-    const portabilityByController: Record<string, PortStation[]> = {};
-    for (const p of portStations) {
-      const key = `${p.controller_family} (${p.machine_type})`;
-      if (!portabilityByController[key]) portabilityByController[key] = [];
-      portabilityByController[key].push(p);
-    }
-
-    // Group by machine_type + capability signature — programs port best with same caps
-    const portabilityByCapability: Record<string, PortStation[]> = {};
-    for (const p of portStations) {
-      const key = `${p.machine_type} | caps:[${p.capabilities_signature}]`;
-      if (!portabilityByCapability[key]) portabilityByCapability[key] = [];
-      portabilityByCapability[key].push(p);
-    }
-
-    // =========================================================================
     // SYSTEM PROMPT
     // =========================================================================
     const callerRoleLabel = isSupervisorOrAbove
@@ -1174,12 +997,6 @@ ${machineContextSummary.length > 0 ? JSON.stringify(machineContextSummary, null,
 ### Active Downtime Events (${downtimeSummary.length} stations currently down):
 ${downtimeSummary.length > 0 ? JSON.stringify(downtimeSummary, null, 2) : "No active downtime events."}
 
-### 🛑 Work Orders On Hold (${onHoldSummary.length}):
-${onHoldSummary.length > 0 ? JSON.stringify(onHoldSummary, null, 2) : "No work orders currently on hold."}
-
-### ❌ Recently Cancelled Work Orders (${cancelledSummary.length}, audit trail):
-${cancelledSummary.length > 0 ? JSON.stringify(cancelledSummary, null, 2) : "No cancelled work orders in current window."}
-
 ### 📋 Part Catalog (${partCatalogSummary.length} recurring parts with known specs):
 ${partCatalogSummary.length > 0 ? JSON.stringify(partCatalogSummary, null, 2) : "No parts in catalog yet. Specs come from individual work orders only."}
 
@@ -1206,14 +1023,6 @@ ${cycleTimeAnalysis.length > 0 ? JSON.stringify(cycleTimeAnalysis.slice(0, 20), 
 
 ### 🖥️ Active G-Code / CNC Programs:
 ${gcodeSummary.length > 0 ? JSON.stringify(gcodeSummary, null, 2) : "No active G-code sessions. (G-code integration may not be configured yet.)"}
-
-### 🔁 Programming Portability Matrix — Stations grouped by CONTROLLER FAMILY (${Object.keys(portabilityByController).length} groups):
-Programs port between stations in the SAME controller family with little or no re-post. Programs porting across families require post-processor changes.
-${Object.keys(portabilityByController).length > 0 ? JSON.stringify(portabilityByController, null, 2) : "No machine profiles configured — cannot analyze controller portability."}
-
-### 🧩 Programming Portability Matrix — Stations grouped by MACHINE TYPE + CAPABILITY SIGNATURE (${Object.keys(portabilityByCapability).length} groups):
-Programs port best between stations sharing the same machine_type AND capability signature (e.g. 5-axis sim, live tooling, sub-spindle). Different signatures usually require re-programming, not just re-posting.
-${Object.keys(portabilityByCapability).length > 0 ? JSON.stringify(portabilityByCapability, null, 2) : "No capability data available."}
 
 ${loadBalancerResults.length > 0 ? `### 🔄 Load Balancer — Unassigned Work Order Recommendations (${loadBalancerResults.length}):
 ${JSON.stringify(loadBalancerResults, null, 2)}
@@ -1262,76 +1071,12 @@ Use these scores when recommending station assignments. Score breakdown:
 20. **Reference active programs** — if a station has a G-code program loaded, mention it
 21. **Check program/tool conflicts** — if a new job needs different tooling than what's currently loaded, note setup time impact
 
-### Work Order Lifecycle Audit (NEW)
-22. **For "what's on hold" questions**, list each on-hold WO with reason, station, time held, and impact on dependent operations
-23. **For "what got cancelled" or "why was X cancelled" questions**, cite the audit trail (cancelled_by, reason, timestamp) and any partial completion (qty_completed_before_cancel)
-24. **Never recommend re-routing or scheduling a cancelled WO** — they are archived for audit only
-25. **Flag stale on-hold items** (>3 days) — suggest review or status change
-26. **When asked about a specific WO**, check both active queue AND cancelled list before saying "not found"
-
-### Programming Portability & Re-Post Awareness (NEW — CRITICAL)
-27. **For "where can I move this program with minimal re-post" questions**: cross-reference the source station's controller_family, machine_type, spindle_taper, and capability signature against the **Programming Portability Matrix**. Recommend stations in the SAME controller family first (no post change), then SAME machine_type + capabilities (re-post but no re-program), then different families (full re-program).
-28. **For "if I reprogram, what controls/platforms can it go to" questions**: list ALL stations whose machine_type matches AND envelope ≥ part dimensions AND material is supported, grouped by controller_family. Note required toolholder taper compatibility (e.g. CAT40 ↔ BT40 = adapter; HSK ↔ CAT = full re-tooling).
-29. **Always cite specifics when recommending a move**: source machine, source controller, target machine, target controller, envelope fit (margin %), capability deltas (what's gained/lost), and an estimated programming effort tier:
-    - **Tier 1 (no change):** same controller family + same machine_type + same capability signature
-    - **Tier 2 (re-post only):** same machine_type + same capabilities + different controller family
-    - **Tier 3 (re-program):** different machine_type or missing capabilities (e.g. losing 5-axis simultaneous → must re-strategy)
-    - **Tier 4 (not portable):** envelope too small, missing required capability (live tooling, sub-spindle), or material unsupported
-30. **For workload-driven move questions** ("we're slammed at HMC-01, where else can this run?"): combine the portability matrix with current utilization_pct from shopLoadBalance — recommend the lowest-utilized station in the highest portability tier.
-31. **Surface controller specifics**: when answering, name the actual control_type and control_model (e.g. "Fanuc 31i-B → Fanuc 0i-MF: same family, post-processor compatible"). Don't say "compatible controller" without naming it.
-32. **Spindle/toolholder compatibility**: when recommending a move, check spindle_taper match. CAT40↔BT40 share geometry but pull-stud differs; HSK is incompatible with CAT/BT. Flag this in the recommendation.
-33. **Envelope safety margin**: prefer stations where part dimensions are ≤ 80% of envelope on each axis (gives clamp/fixture room). Flag <10% margin as risky.
-
 ## WORK ORDER REROUTING & APPROVAL RULES
 
 - **Operators** can suggest rerouting but cannot execute it
 - **Supervisors/Admins** can approve and execute rerouting decisions
-- Always explain WHY a reroute is beneficial (load balance, capability match, quality risk, programming portability)
+- Always explain WHY a reroute is beneficial (load balance, capability match, quality risk)
 - For critical reroutes, recommend documenting the reason in the activity log
-
-## ROUTING CHANGE PROPOSALS — STRUCTURED OUTPUT (CRITICAL)
-
-When the caller is a **Supervisor/Admin** AND your recommendation involves changing the station assigned to one or more routing steps (across one OR multiple work orders, including downstream steps that need to follow), you MUST emit BOTH:
-
-1. A clear human-readable summary in markdown describing:
-   - WHY the change is recommended (load, portability tier, capability fit, downtime, due-date risk)
-   - WHAT will change (per step: WO, step #, operation, current station → new station)
-   - IMPACT (capacity freed/added, programming effort tier, risks)
-   - REVERSAL note ("can be reverted by reassigning back to original station")
-
-2. Immediately after the summary, a fenced code block tagged \`routing-proposal\` containing valid JSON with this exact shape:
-
-\`\`\`routing-proposal
-{
-  "title": "Move 3 steps off HMC-01 to HMC-02 to relieve overload",
-  "rationale": "HMC-01 at 142% utilization; HMC-02 same Fanuc family, 38% utilization, envelope OK.",
-  "effort_tier": 1,
-  "changes": [
-    {
-      "routing_step_id": "<uuid>",
-      "queue_item_id": "<uuid>",
-      "work_order": "WO-1234",
-      "step_number": 2,
-      "operation_name": "Rough mill OP20",
-      "from_station_id": "<uuid|null>",
-      "from_station_name": "HMC-01",
-      "to_station_id": "<uuid>",
-      "to_station_name": "HMC-02",
-      "reason": "Same controller family (Fanuc 31i), envelope margin 35%."
-    }
-  ],
-  "warnings": ["HMC-02 toolholder is BT40 vs HMC-01 CAT40 — adapter required."]
-}
-\`\`\`
-
-CRITICAL RULES for the proposal block:
-- **Only emit it for Supervisor/Admin callers.** For Operators, describe the recommendation in prose only and tell them to ask a supervisor to approve.
-- **Use ONLY routing_step_id values that appear in "Active Routing Steps" above.** Never invent IDs.
-- **Use ONLY station_id values that appear in "Stations" above.** Never invent IDs.
-- Include EVERY downstream step that must move with the primary step (e.g. if a part has to follow the same machine for OP30 because of fixturing, include it).
-- Keep \`changes\` to a maximum of 25 steps per proposal — split larger plans into multiple turns.
-- If you are NOT confident, do NOT emit the block — ask clarifying questions instead.
-- The user UI will render this block as an "Approve & Apply" / "Reject" card. Nothing executes until the supervisor explicitly approves.
 `;
 
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {

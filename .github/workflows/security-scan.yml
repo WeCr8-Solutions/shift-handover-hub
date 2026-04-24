@@ -65,7 +65,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run Trivy filesystem scan
-        uses: aquasecurity/trivy-action@0.30.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: 'fs'
           scan-ref: '.'
@@ -76,7 +76,7 @@ jobs:
 
       - name: Run Trivy secret scan
         # Detect hardcoded credentials / API keys in source (IA-5, SC-28)
-        uses: aquasecurity/trivy-action@0.30.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: 'fs'
           scan-ref: '.'
@@ -86,7 +86,7 @@ jobs:
 
       - name: Run Trivy (full SARIF report for audit log)
         if: always()
-        uses: aquasecurity/trivy-action@0.30.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: 'fs'
           scan-ref: '.'
@@ -98,7 +98,7 @@ jobs:
       - name: Upload Trivy SARIF to GitHub Security tab
         # Makes findings visible in Security → Code Scanning (not just a zip artifact)
         if: always()
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: trivy-results.sarif
           category: 'Trivy'
@@ -207,7 +207,7 @@ jobs:
 
       - name: Upload Nuclei SARIF to GitHub Security
         if: always()
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: nuclei-results.sarif
           category: 'Nuclei Passive Scan'

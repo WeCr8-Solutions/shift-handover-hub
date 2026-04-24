@@ -1,3 +1,5 @@
+/// <reference path="../deno-vscode.d.ts" />
+
 /**
  * log-export — FedRAMP G-07 SIEM Log Export Edge Function
  * Controls: AU-6 (Audit Review, Analysis, and Reporting), AU-9 (Protection of Audit Information)
@@ -54,7 +56,7 @@ function severityMeetsMinimum(eventSev: string, minSev: string): boolean {
 // ---------------------------------------------------------------------------
 // Main handler
 // ---------------------------------------------------------------------------
-serve(async (req) => {
+serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", {
       headers: {
@@ -195,13 +197,14 @@ serve(async (req) => {
       .update({ last_export_at: new Date().toISOString(), export_error_count: 0 })
       .eq("organization_id", orgId);
   } else {
-    await supabase.rpc("increment_siem_error_count", { p_org_id: orgId }).catch(() => {
+    const { error: incrementError } = await supabase.rpc("increment_siem_error_count", { p_org_id: orgId });
+    if (incrementError) {
       // Fallback if RPC not available — raw update
-      supabase
+      await supabase
         .from("siem_configurations")
         .update({ export_error_count: (config as any).export_error_count + 1 })
         .eq("organization_id", orgId);
-    });
+    }
   }
 
   return new Response(

@@ -49,7 +49,11 @@ export function FreeTalentProfileRibbon() {
 
   const dismiss = () => {
     setVisible(false);
-    try { window.localStorage.setItem(STORAGE_KEY, "1"); } catch {}
+    try {
+      window.localStorage.setItem(STORAGE_KEY, "1");
+    } catch {
+      // Ignore storage write failures.
+    }
   };
 
   if (user) return null;

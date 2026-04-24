@@ -62,7 +62,7 @@ jobs:
       - name: Upload Baseline SARIF to GitHub Security
         # Makes passive scan findings visible in Security → Code Scanning
         if: always()
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: report_sarif.json
           category: 'ZAP Baseline Scan'
@@ -107,7 +107,7 @@ jobs:
 
       - name: Upload SARIF to GitHub Security
         if: always()
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: report_sarif.json
           category: 'ZAP Full Scan'

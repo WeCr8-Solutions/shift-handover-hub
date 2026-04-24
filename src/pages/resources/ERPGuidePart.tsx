@@ -21,7 +21,9 @@ export default function ERPGuidePart() {
         const read = new Set(JSON.parse(localStorage.getItem(LOCAL_KEY) || "[]"));
         read.add(part.id);
         localStorage.setItem(LOCAL_KEY, JSON.stringify([...read]));
-      } catch {}
+      } catch {
+        // Ignore localStorage failures when tracking read progress.
+      }
     }
   }, [part]);
 
