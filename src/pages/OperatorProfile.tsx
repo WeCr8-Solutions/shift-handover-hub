@@ -221,6 +221,21 @@ export default function OperatorProfile() {
       toast({ title: "Upload failed", description: extractErrorMessage(err), variant: "destructive" });
     } finally {
       setUploadingResume(false);
+      e.target.value = "";
+    }
+  };
+
+  const handleRemoveResume = async () => {
+    if (!profile?.resume_pdf_url) return;
+    try {
+      const path = pathFromOperatorProfilesUrl(profile.resume_pdf_url);
+      await saveProfile({ resume_pdf_url: null, resume_public: false });
+      if (path) {
+        await supabase.storage.from("operator-profiles").remove([path]);
+      }
+      toast({ title: "Resume removed", description: "Your uploaded resume has been removed from your profile." });
+    } catch (err) {
+      toast({ title: "Remove failed", description: extractErrorMessage(err), variant: "destructive" });
     }
   };
 
@@ -435,8 +450,9 @@ export default function OperatorProfile() {
         </Card>
 
         <Tabs defaultValue="basics">
-          <TabsList className="grid grid-cols-3 md:grid-cols-7 w-full">
+          <TabsList className="grid grid-cols-4 md:grid-cols-8 w-full">
             <TabsTrigger value="basics">Basics</TabsTrigger>
+            <TabsTrigger value="resume">Resume</TabsTrigger>
             <TabsTrigger value="certs">Certs</TabsTrigger>
             <TabsTrigger value="skills">Skills</TabsTrigger>
             <TabsTrigger value="work">Work</TabsTrigger>
@@ -712,40 +728,76 @@ export default function OperatorProfile() {
                   </div>
                 </div>
 
-                <Separator />
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-2"><FileText className="w-4 h-4" /> Resume (PDF or DOCX)</Label>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="file"
-                      accept="application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.pdf,.docx"
-                      onChange={handleResumeUpload}
-                      disabled={uploadingResume}
-                    />
-                    {profile?.resume_pdf_url && (
-                      <Button variant="outline" size="sm" asChild>
-                        <a href={profile.resume_pdf_url} target="_blank" rel="noopener noreferrer">View</a>
-                      </Button>
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Empty profile fields, skills, work history, education and machines will be auto-filled from your resume. Existing data is never overwritten.
-                  </p>
-                  {uploadingResume && <p className="text-sm text-muted-foreground">Uploading and parsing…</p>}
+                <Button onClick={handleSave} disabled={saving || uploadingResume} className="gap-2">
+                  {saving || uploadingResume ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                  {uploadingResume ? "Parsing resume…" : "Save profile"}
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-                  {profile?.resume_pdf_url && (
-                    <div className="flex items-center justify-between rounded-md border bg-muted/30 px-3 py-2 mt-2">
-                      <div className="min-w-0 pr-3">
-                        <p className="text-sm font-medium">Show resume on public profile</p>
-                        <p className="text-xs text-muted-foreground">
-                          When ON, visitors of your /talent page can download your resume.
-                        </p>
-                      </div>
-                      <Switch
-                        checked={form.resume_public}
-                        onCheckedChange={(v) => setForm((f) => ({ ...f, resume_public: v }))}
-                      />
+          <TabsContent value="resume" className="mt-6 space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><FileText className="w-5 h-5" /> Resume</CardTitle>
+                <CardDescription>Upload, review, remove, and share your resume from one dedicated place.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="rounded-lg border bg-muted/20 p-4 space-y-3">
+                  <div>
+                    <p className="text-sm font-medium">Upload resume</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Upload a PDF or DOCX. Resume autofill only fills empty profile fields, skills, work history, education, and machines. Existing entries are not overwritten.
+                    </p>
+                  </div>
+                  <Input
+                    type="file"
+                    accept="application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.pdf,.docx"
+                    onChange={handleResumeUpload}
+                    disabled={uploadingResume}
+                  />
+                  {uploadingResume && <p className="text-sm text-muted-foreground">Uploading and parsing…</p>}
+                </div>
+
+                <div className="rounded-lg border p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-medium">Current uploaded resume</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        This profile currently supports one active resume at a time. Replace it by uploading a new file, or remove it here.
+                      </p>
                     </div>
+                    {profile?.resume_pdf_url ? <Badge variant="secondary">Uploaded</Badge> : <Badge variant="outline">None</Badge>}
+                  </div>
+
+                  {profile?.resume_pdf_url ? (
+                    <>
+                      <div className="flex items-center justify-between rounded-md border bg-muted/30 px-3 py-2">
+                        <div className="min-w-0 pr-3">
+                          <p className="text-sm font-medium">Show resume on public profile</p>
+                          <p className="text-xs text-muted-foreground">
+                            When ON, visitors of your /talent page can download your resume.
+                          </p>
+                        </div>
+                        <Switch
+                          checked={form.resume_public}
+                          onCheckedChange={(v) => setForm((f) => ({ ...f, resume_public: v }))}
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" asChild>
+                          <a href={profile.resume_pdf_url} target="_blank" rel="noopener noreferrer">View resume</a>
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={handleRemoveResume}>
+                          Remove resume
+                        </Button>
+                      </div>
+                    </>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      No resume uploaded yet.
+                    </p>
                   )}
                 </div>
 

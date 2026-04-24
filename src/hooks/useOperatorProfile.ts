@@ -237,6 +237,7 @@ export async function syncIssuedCertificatesToProfile(userId: string, email: str
       verification_source: "verified_oap",
       linked_cert_id: c.cert_id,
       description: null,
+      is_public: true,
     });
   }
   for (const c of gca ?? []) {
@@ -252,6 +253,7 @@ export async function syncIssuedCertificatesToProfile(userId: string, email: str
       verification_source: "verified_gca",
       linked_cert_id: c.cert_id,
       description: null,
+      is_public: true,
     });
   }
 
@@ -277,6 +279,7 @@ export async function syncIssuedCertificatesToProfile(userId: string, email: str
         verification_source: "local_oap",
         linked_cert_id: cert.certId,
         description: "Locally issued from the embedded OAP app on this device. This record is not backed by the public certificate verification service.",
+        is_public: true,
       });
     }
   } catch (error) {

@@ -319,7 +319,7 @@ export default function Profile() {
                         Showcase verified certs, machines, and experience. Upload a resume for instant autofill.
                       </p>
                     </div>
-                    <Button onClick={() => navigate("/operator/profile")} size="sm" className="gap-2">
+                    <Button onClick={() => navigate("/talent/profile")} size="sm" className="gap-2">
                       <Sparkles className="w-4 h-4" /> Build Talent Profile
                     </Button>
                   </div>
@@ -369,7 +369,7 @@ export default function Profile() {
                       <Button onClick={() => navigate("/talent/dashboard")} size="sm" variant="default" className="gap-2">
                         Talent Dashboard <ArrowRight className="w-4 h-4" />
                       </Button>
-                      <Button onClick={() => navigate("/operator/profile")} size="sm" variant="outline" className="gap-2">
+                      <Button onClick={() => navigate("/talent/profile")} size="sm" variant="outline" className="gap-2">
                         Edit Profile
                       </Button>
                       {publicUrl && (

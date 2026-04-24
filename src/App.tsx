@@ -129,6 +129,7 @@ const OperatorProfile = lazy(() => import("./pages/OperatorProfile"));
 const TalentLanding = lazy(() => import("./pages/TalentLanding"));
 const TalentBrowse = lazy(() => import("./pages/TalentBrowse"));
 const TalentSearch = lazy(() => import("./pages/TalentSearch"));
+const TalentDashboard = lazy(() => import("./pages/TalentDashboard"));
 const PublicOperatorProfile = lazy(() => import("./pages/PublicOperatorProfile"));
 const OperatorInbox = lazy(() => import("./pages/OperatorInbox"));
 const ShopFloorDisplay = lazy(() => import("./pages/ShopFloorDisplay"));
@@ -258,8 +259,10 @@ const App = () => (
                     <Route path="/oap/certificates" element={<CertificateLookup />} />
                     <Route path="/oap/certificates/verify" element={<CertificateLookup />} />
                     <Route path="/talent" element={<TalentLanding />} />
+                    <Route path="/talent/dashboard" element={<TalentDashboard />} />
                     <Route path="/talent/browse" element={<TalentBrowse />} />
                     <Route path="/talent/search" element={<TalentSearch />} />
+                    <Route path="/talent/profile" element={<Navigate to="/operator/profile" replace />} />
                     <Route path="/talent/:username" element={<PublicOperatorProfile />} />
                     <Route path="/operator/profile" element={<OperatorProfile />} />
                     <Route path="/resources/oap" element={<OperatorAcceptanceProgram />} />

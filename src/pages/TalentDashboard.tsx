@@ -92,7 +92,7 @@ export default function TalentDashboard() {
             </p>
           </div>
           <div className="flex gap-2 flex-wrap">
-            <Button variant="outline" onClick={() => navigate("/operator/profile")} className="gap-2">
+            <Button variant="outline" onClick={() => navigate("/talent/profile")} className="gap-2">
               <UserIcon className="w-4 h-4" /> Edit Profile
             </Button>
             {publicUrl && (
@@ -110,7 +110,7 @@ export default function TalentDashboard() {
             <Sparkles className="w-4 h-4" />
             <AlertDescription className="flex items-center justify-between gap-3 flex-wrap">
               <span>You haven't created your talent profile yet. Get discovered by employers in minutes.</span>
-              <Button size="sm" onClick={() => navigate("/operator/profile")}>Create Profile</Button>
+              <Button size="sm" onClick={() => navigate("/talent/profile")}>Create Profile</Button>
             </AlertDescription>
           </Alert>
         )}
@@ -147,7 +147,7 @@ export default function TalentDashboard() {
                 {visibility === "employers_only" && "Visible to verified employers signed in to JobLine."}
                 {visibility === "public" && "Indexed publicly with masked contact info."}
               </p>
-              <Button size="sm" variant="ghost" className="h-7 px-2 -ml-2" onClick={() => navigate("/operator/profile")}>
+              <Button size="sm" variant="ghost" className="h-7 px-2 -ml-2" onClick={() => navigate("/talent/profile")}>
                 Change <ArrowRight className="w-3 h-3 ml-1" />
               </Button>
             </CardContent>

@@ -60,7 +60,7 @@ export function UserMenu() {
           <User className="mr-2 h-4 w-4" />
           <span>Profile</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate("/operator/profile")}>
+        <DropdownMenuItem onClick={() => navigate("/talent/profile")}>
           <IdCard className="mr-2 h-4 w-4" />
           <span>Talent Profile</span>
         </DropdownMenuItem>
