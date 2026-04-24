@@ -2933,9 +2933,12 @@ export type Database = {
           is_published: boolean
           last_published_at: string | null
           last_published_by: string | null
+          learning_content: string | null
+          organization_id: string | null
           passing_score_pct: number
           slug: string
           sort_order: number
+          source_bank_id: string | null
           title: string
           topic: string
           updated_at: string
@@ -2955,9 +2958,12 @@ export type Database = {
           is_published?: boolean
           last_published_at?: string | null
           last_published_by?: string | null
+          learning_content?: string | null
+          organization_id?: string | null
           passing_score_pct?: number
           slug: string
           sort_order?: number
+          source_bank_id?: string | null
           title: string
           topic: string
           updated_at?: string
@@ -2977,9 +2983,12 @@ export type Database = {
           is_published?: boolean
           last_published_at?: string | null
           last_published_by?: string | null
+          learning_content?: string | null
+          organization_id?: string | null
           passing_score_pct?: number
           slug?: string
           sort_order?: number
+          source_bank_id?: string | null
           title?: string
           topic?: string
           updated_at?: string
@@ -2990,6 +2999,34 @@ export type Database = {
             columns: ["cover_media_id"]
             isOneToOne: false
             referencedRelation: "training_media"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gca_question_banks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gca_question_banks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gca_question_banks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gca_question_banks_source_bank_id_fkey"
+            columns: ["source_bank_id"]
+            isOneToOne: false
+            referencedRelation: "gca_question_banks"
             referencedColumns: ["id"]
           },
         ]
@@ -11754,6 +11791,14 @@ export type Database = {
       check_limit_access: {
         Args: { _increment?: number; _limit_key: string; _org_id: string }
         Returns: boolean
+      }
+      clone_gca_bank_to_org: {
+        Args: {
+          _organization_id: string
+          _override_title?: string
+          _source_bank_id: string
+        }
+        Returns: string
       }
       clone_oap_role_program_to_org: {
         Args: {
