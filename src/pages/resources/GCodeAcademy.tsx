@@ -78,7 +78,7 @@ export default function GCodeAcademy() {
     } else {
       win.postMessage({ type: "GCA_AUTH_SIGNOUT" }, window.location.origin);
     }
-  }, [session, user, profile]);
+  }, [session, user, profile, gcaTier]);
 
   // Re-sync whenever auth state changes (login / logout / token refresh)
   useEffect(() => {
