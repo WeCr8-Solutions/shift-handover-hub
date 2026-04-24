@@ -90,6 +90,7 @@ interface CertRow {
   issuer: string | null;
   issued_date: string | null;
   expires_date: string | null;
+  credential_id?: string | null;
   credential_url: string | null;
   attachment_url: string | null;
   verification_source: string;
@@ -183,7 +184,7 @@ export default function PublicOperatorProfile() {
       const [c, s, m, w, e] = await Promise.all([
         supabase
           .from("operator_certifications")
-          .select("id, name, issuer, issued_date, expires_date, credential_url, attachment_url, verification_source, linked_cert_id, is_public")
+          .select("id, name, issuer, issued_date, expires_date, credential_id, credential_url, attachment_url, verification_source, linked_cert_id, is_public")
           .eq("user_id", row.user_id)
           .eq("is_public", true)
           .order("issued_date", { ascending: false, nullsFirst: false }),
@@ -709,6 +710,11 @@ export default function PublicOperatorProfile() {
                               {c.issued_date ? `Issued ${formatDateRange(c.issued_date, null).split(" – ")[0]}` : ""}
                               {c.expires_date ? ` · Expires ${formatDateRange(c.expires_date, null).split(" – ")[0]}` : ""}
                             </p>
+                            {(c.linked_cert_id || c.credential_id) && (
+                              <p className="text-xs text-muted-foreground font-mono">
+                                Certificate #{c.linked_cert_id ?? c.credential_id}
+                              </p>
+                            )}
                           </div>
                           <div className="flex items-center gap-3 shrink-0">
                             {c.attachment_url && (
@@ -952,6 +958,11 @@ function CertBadgeCard({ cert, variant }: { cert: CertRow; variant: "oap" | "gca
               ? ` · ${formatDateRange(cert.issued_date, null).split(" – ")[0]}`
               : ""}
           </p>
+          {(cert.linked_cert_id || cert.credential_id) && (
+            <p className="text-[11px] text-muted-foreground font-mono mt-1">
+              Certificate #{cert.linked_cert_id ?? cert.credential_id}
+            </p>
+          )}
           <div className="flex flex-wrap items-center gap-3 mt-2">
             {cert.credential_url && (
               <a

@@ -83,24 +83,25 @@ export function ToleranceCalculator() {
                 </Button>
               )}
             </div>
-            <div className={cn("grid gap-2", bilateral ? "grid-cols-3" : "grid-cols-4")}>
+            <div className={cn("grid gap-2", bilateral ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1 sm:grid-cols-4")}>
               <div>
-                <Label className="text-[10px]">Nominal</Label>
-                <Input value={row.nominal} onChange={(e) => updateRow(row.id, "nominal", e.target.value)} type="number" step="0.001" className="h-8 text-xs" />
+                <Label htmlFor={`tol-nominal-${row.id}`} className="text-[10px]">Nominal</Label>
+                <Input id={`tol-nominal-${row.id}`} value={row.nominal} onChange={(e) => updateRow(row.id, "nominal", e.target.value)} type="number" step="0.001" className="h-8 text-xs" />
               </div>
               <div>
-                <Label className="text-[10px]">{bilateral ? "± Tolerance" : "Upper Tol"}</Label>
-                <Input value={row.upper} onChange={(e) => updateRow(row.id, "upper", e.target.value)} type="number" step="0.001" className="h-8 text-xs" />
+                <Label htmlFor={`tol-upper-${row.id}`} className="text-[10px]">{bilateral ? "± Tolerance" : "Upper Tol"}</Label>
+                <Input id={`tol-upper-${row.id}`} value={row.upper} onChange={(e) => updateRow(row.id, "upper", e.target.value)} type="number" step="0.001" className="h-8 text-xs" />
               </div>
               {!bilateral && (
                 <div>
-                  <Label className="text-[10px]">Lower Tol</Label>
-                  <Input value={row.lower} onChange={(e) => updateRow(row.id, "lower", e.target.value)} type="number" step="0.001" className="h-8 text-xs" />
+                  <Label htmlFor={`tol-lower-${row.id}`} className="text-[10px]">Lower Tol</Label>
+                  <Input id={`tol-lower-${row.id}`} value={row.lower} onChange={(e) => updateRow(row.id, "lower", e.target.value)} type="number" step="0.001" className="h-8 text-xs" />
                 </div>
               )}
               <div>
-                <Label className="text-[10px]">Measured</Label>
+                <Label htmlFor={`tol-measured-${row.id}`} className="text-[10px]">Measured</Label>
                 <Input
+                  id={`tol-measured-${row.id}`}
                   value={row.measured}
                   onChange={(e) => updateRow(row.id, "measured", e.target.value)}
                   type="number"

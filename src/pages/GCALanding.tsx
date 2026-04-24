@@ -208,10 +208,13 @@ export default function GCALanding() {
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Button asChild size="lg" className="gap-2">
-                <Link to="/resources/gcode-academy">
+                <Link to="/gcode-academy/app">
                   Launch the Academy
                   <ArrowRight className="w-4 h-4" />
                 </Link>
+              </Button>
+              <Button asChild size="lg" variant="outline">
+                <Link to="/gcode-academy/certificates/verify">Verify a Certificate</Link>
               </Button>
               <Button asChild size="lg" variant="outline">
                 <Link to="/auth">Create a Free Profile</Link>
@@ -545,7 +548,7 @@ export default function GCALanding() {
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Button asChild size="lg" className="gap-2">
-                <Link to="/resources/gcode-academy">
+                <Link to="/gcode-academy/app">
                   Launch the Academy
                   <ArrowRight className="w-4 h-4" />
                 </Link>

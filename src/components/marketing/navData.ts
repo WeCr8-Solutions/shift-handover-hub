@@ -13,6 +13,7 @@ import {
   GraduationCap,
   Briefcase,
   ShieldAlert,
+  ShieldCheck,
   TrendingUp,
   LayoutGrid,
   Kanban,
@@ -114,23 +115,44 @@ export const learnCategories: LearnCategory[] = [
     heading: "Resources",
     items: [
       { label: "Manufacturing Guides", href: "/resources/guides", icon: BookOpen, desc: "Expert insights & documentation" },
-      { label: "G-Code Reference", href: "/resources/gcode", icon: Code, desc: "Syntax, cycles & dialect differences" },
       { label: "Industry Glossary", href: "/resources/glossary", icon: BookA, desc: "Key terms & definitions" },
       { label: "ERP Selection Guide", href: "/resources/erp-guide", icon: FileText, desc: "Choose the right ERP for your shop" },
       { label: "Tool Comparisons", href: "/resources/comparisons", icon: GitCompare, desc: "Side-by-side software reviews" },
     ],
   },
   {
-    heading: "Training",
+    heading: "G-Code Academy",
     items: [
-      { label: "G-Code Academy", href: "/resources/gcode-academy", icon: School, desc: "Interactive CNC training, tests & GD&T" },
-      { label: "Operator Acceptance Program (OAP)", href: "/resources/oap", icon: ClipboardCheck, desc: "Employer onboarding & operator certification" },
+      { label: "GCA Overview", href: "/gcode-academy", icon: GraduationCap, desc: "Program overview, value, and academy positioning" },
+      { label: "GCA Learning & Tests", href: "/gcode-academy/app", icon: School, desc: "Interactive CNC training, controller tests, and GD&T" },
+      { label: "Verify GCA Certificate", href: "/gcode-academy/certificates/verify", icon: ShieldCheck, desc: "Public verification for portable GCA certificates" },
+      { label: "G-Code Reference", href: "/resources/gcode", icon: Code, desc: "Syntax, cycles, and dialect differences that support GCA" },
+    ],
+  },
+  {
+    heading: "Operator Acceptance Program",
+    items: [
+      { label: "OAP Overview", href: "/oap", icon: GraduationCap, desc: "Program overview, onboarding flow, and certification path" },
+      { label: "OAP Learning & Certification", href: "/oap/app", icon: ClipboardCheck, desc: "Self-paced learning, employer setup, and certification entry" },
+      { label: "Verify OAP Certificate", href: "/oap/certificates/verify", icon: ShieldCheck, desc: "Public verification for portable OAP certificates" },
+    ],
+  },
+  {
+    heading: "Training Library",
+    items: [
       { label: "Beginner's Guide", href: "/resources/beginners", icon: GraduationCap, desc: "Get started with manufacturing basics" },
       { label: "Safety & Compliance", href: "/resources/safety", icon: ShieldAlert, desc: "OSHA, lockout/tagout & PPE" },
       { label: "Lean Manufacturing", href: "/resources/lean", icon: TrendingUp, desc: "Eliminate waste & improve flow" },
       { label: "5S Methodology", href: "/resources/5s", icon: LayoutGrid, desc: "Sort, set, shine, standardize, sustain" },
       { label: "Kanban & Sorting", href: "/resources/kanban", icon: Kanban, desc: "Pull systems & visual management" },
       { label: "Quality & Inspection", href: "/resources/quality", icon: ClipboardCheck, desc: "QC processes & measurement techniques" },
+    ],
+  },
+  {
+    heading: "Talent",
+    items: [
+      { label: "Talent Network", href: "/talent", icon: Users, desc: "Browse certified CNC operators & machinists" },
+      { label: "Find Talent", href: "/talent/search", icon: Briefcase, desc: "Search verified operators by skill & cert" },
     ],
   },
   {

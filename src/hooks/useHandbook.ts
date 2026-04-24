@@ -1,6 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+const HANDBOOK_STALE_TIME = 10 * 60_000;
+const HANDBOOK_GC_TIME = 30 * 60_000;
+
+const handbookQueryOptions = {
+  staleTime: HANDBOOK_STALE_TIME,
+  gcTime: HANDBOOK_GC_TIME,
+  refetchOnWindowFocus: false as const,
+  refetchOnReconnect: false as const,
+};
+
 export interface HandbookCategory {
   id: string;
   slug: string;
@@ -14,6 +24,7 @@ export interface HandbookCategory {
 export interface HandbookReference {
   id: string;
   category_id: string;
+  created_at: string;
   slug: string;
   title: string;
   summary: string | null;
@@ -25,6 +36,7 @@ export interface HandbookReference {
   difficulty: string | null;
   is_canonical: boolean;
   organization_id: string | null;
+  updated_at: string;
   category?: HandbookCategory;
 }
 
@@ -40,6 +52,7 @@ export type HandbookEntityType =
 
 export function useHandbookCategories() {
   return useQuery({
+    ...handbookQueryOptions,
     queryKey: ["handbook_categories"],
     queryFn: async (): Promise<HandbookCategory[]> => {
       const { data, error } = await supabase
@@ -58,6 +71,8 @@ export function useHandbookReferences(filters?: {
   search?: string;
 }) {
   return useQuery({
+    ...handbookQueryOptions,
+    placeholderData: (previousData) => previousData,
     queryKey: ["handbook_references", filters],
     queryFn: async (): Promise<HandbookReference[]> => {
       let query = supabase
@@ -83,7 +98,9 @@ export function useHandbookReferences(filters?: {
 
 export function useHandbookReference(slugOrId: string | undefined) {
   return useQuery({
+    ...handbookQueryOptions,
     enabled: !!slugOrId,
+    placeholderData: (previousData) => previousData,
     queryKey: ["handbook_reference", slugOrId],
     queryFn: async (): Promise<HandbookReference | null> => {
       if (!slugOrId) return null;
@@ -107,7 +124,9 @@ export function useHandbookLinksFor(
   entityIdOrKey: string | undefined
 ) {
   return useQuery({
+    ...handbookQueryOptions,
     enabled: !!entityIdOrKey,
+    placeholderData: (previousData) => previousData,
     queryKey: ["handbook_links", entityType, entityIdOrKey],
     queryFn: async (): Promise<HandbookReference[]> => {
       if (!entityIdOrKey) return [];

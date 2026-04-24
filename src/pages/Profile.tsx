@@ -97,6 +97,9 @@ export default function Profile() {
     return null;
   }
 
+  const verifiedCerts = certifications.filter((cert) => cert.verification_source.startsWith("verified_"));
+  const latestVerifiedCerts = verifiedCerts.slice(0, 3);
+
   const initials = displayName?.charAt(0).toUpperCase() || "?";
 
   const getRoleBadgeColor = (role: string) => {
@@ -330,7 +333,7 @@ export default function Profile() {
                       <div className="rounded-lg border bg-card p-3">
                         <p className="text-xs text-muted-foreground">Verified</p>
                         <p className="text-2xl font-bold leading-none mt-1">
-                          {certifications.filter((c) => c.verification_source.startsWith("verified_")).length}
+                          {verifiedCerts.length}
                         </p>
                       </div>
                       <div className="rounded-lg border bg-card p-3">
@@ -340,6 +343,27 @@ export default function Profile() {
                         </Badge>
                       </div>
                     </div>
+
+                    {latestVerifiedCerts.length > 0 && (
+                      <div className="rounded-lg border bg-card p-3 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <ShieldCheck className="w-4 h-4 text-primary" />
+                          <p className="text-sm font-medium">Attached certificate numbers</p>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {latestVerifiedCerts.map((cert) => (
+                            <Badge key={cert.id} variant="outline" className="font-mono max-w-full truncate">
+                              {cert.linked_cert_id ?? cert.credential_id ?? cert.name}
+                            </Badge>
+                          ))}
+                        </div>
+                        {verifiedCerts.length > latestVerifiedCerts.length && (
+                          <p className="text-xs text-muted-foreground">
+                            {verifiedCerts.length - latestVerifiedCerts.length} more certificate number(s) are listed in your talent profile.
+                          </p>
+                        )}
+                      </div>
+                    )}
 
                     <div className="flex flex-wrap gap-2">
                       <Button onClick={() => navigate("/talent/dashboard")} size="sm" variant="default" className="gap-2">

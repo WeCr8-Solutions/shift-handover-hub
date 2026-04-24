@@ -55,7 +55,7 @@ export function ThreadPitchCalculator() {
         </TabsList>
 
         <TabsContent value="tpi-to-pitch" className="space-y-4 mt-3">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label className="text-xs">TPI (Threads Per Inch)</Label>
               <Input value={tpi} onChange={(e) => setTpi(e.target.value)} type="number" step="1" className="h-9" />
@@ -76,7 +76,7 @@ export function ThreadPitchCalculator() {
         </TabsContent>
 
         <TabsContent value="thread-specs" className="space-y-4 mt-3">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <Label className="text-xs">Major Diameter (in)</Label>
               <Input value={majorDia} onChange={(e) => setMajorDia(e.target.value)} type="number" step="0.001" className="h-9" />
@@ -90,7 +90,7 @@ export function ThreadPitchCalculator() {
           <Separator />
 
           {dims ? (
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 text-center">
                 <p className="text-[10px] text-muted-foreground uppercase">Major Dia</p>
                 <p className="text-lg font-bold text-primary">{majorVal.toFixed(4)}"</p>

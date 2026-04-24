@@ -1124,6 +1124,11 @@ function CertificationsManager({
               <p className="text-xs text-muted-foreground">
                 {c.issued_date && `Issued ${c.issued_date}`}{c.expires_date && ` · Expires ${c.expires_date}`}
               </p>
+              {(c.linked_cert_id || c.credential_id) && (
+                <p className="text-xs text-muted-foreground font-mono">
+                  Certificate #{c.linked_cert_id ?? c.credential_id}
+                </p>
+              )}
               {c.credential_url && (
                 <a href={c.credential_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary underline">
                   View credential
@@ -1220,6 +1225,11 @@ function CertificationsManager({
                       <p className="text-[11px] text-muted-foreground">
                         Uploaded {c.created_at ? new Date(c.created_at).toLocaleDateString() : "—"}
                       </p>
+                      {(c.linked_cert_id || c.credential_id) && (
+                        <p className="text-[11px] text-muted-foreground font-mono truncate">
+                          Certificate #{c.linked_cert_id ?? c.credential_id}
+                        </p>
+                      )}
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
                       <a

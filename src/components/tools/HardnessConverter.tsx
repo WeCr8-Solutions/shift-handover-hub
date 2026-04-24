@@ -78,7 +78,7 @@ export function HardnessConverter() {
         Approximate conversions per ASTM E140 for carbon/alloy steel.
       </p>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <Label className="text-xs">From Scale</Label>
           <Select value={fromScale} onValueChange={(v) => setFromScale(v as Scale)}>
@@ -98,7 +98,7 @@ export function HardnessConverter() {
 
       <Separator />
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {others.map((scale) => {
           const result = convertHardness(numVal, fromScale, scale);
           return (

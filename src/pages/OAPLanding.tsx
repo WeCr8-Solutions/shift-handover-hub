@@ -169,10 +169,13 @@ export default function OAPLanding() {
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Button asChild size="lg" className="gap-2">
-                <Link to="/resources/oap">
+                <Link to="/oap/app">
                   Launch the Program
                   <ArrowRight className="w-4 h-4" />
                 </Link>
+              </Button>
+              <Button asChild size="lg" variant="outline">
+                <Link to="/oap/certificates/verify">Verify a Certificate</Link>
               </Button>
               <Button asChild size="lg" variant="outline">
                 <Link to="/auth">Create a Free Operator Profile</Link>
@@ -453,7 +456,7 @@ export default function OAPLanding() {
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Button asChild size="lg" className="gap-2">
-                <Link to="/resources/oap">
+                <Link to="/oap/app">
                   Launch OAP
                   <ArrowRight className="w-4 h-4" />
                 </Link>

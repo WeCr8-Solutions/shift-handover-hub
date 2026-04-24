@@ -26,14 +26,14 @@ const sections = [
     title: "G-Code Academy",
     description: "Interactive CNC operator training — lathe and mill lesson tracks across four skill levels (Beginner to Automation), controller-specific tests for Fanuc, Haas, Siemens, and Heidenhain, GD&T certification practice, and a timed interview simulator. Built by machinists, for machinists.",
     icon: School,
-    href: "/resources/gcode-academy",
+    href: "/gcode-academy",
     count: "10 test banks · 4 levels",
   },
   {
     title: "Operator Acceptance Program (OAP)",
     description: "Employer-driven onboarding and certification for CNC operators. Build role-specific programs, assign mentors, run safety + measuring + tooling courses, and issue portable operator certificates. Standalone mode lets anyone earn a self-certified record for interviews.",
     icon: ClipboardCheck,
-    href: "/resources/oap",
+    href: "/oap",
     count: "7-section flow · portable cert",
   },
   {

@@ -102,7 +102,7 @@ export function UnitConverter() {
         </SelectContent>
       </Select>
 
-      <div className="flex items-end gap-2">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-2">
         <div className="flex-1 space-y-1">
           <Label className="text-xs">From</Label>
           <Select value={fromUnit} onValueChange={setFromUnit}>

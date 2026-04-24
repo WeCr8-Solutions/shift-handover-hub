@@ -52,29 +52,28 @@ function CiteCard({ ref, variant }: { ref: NonNullable<ReturnType<typeof useHand
     );
   }
   return (
-    <Card className="border-l-4 border-l-primary/60 bg-muted/30">
-      <CardContent className="p-3 space-y-1.5">
-        <div className="flex items-start justify-between gap-2">
-          <Link
-            to={`/handbook/${ref.slug}`}
-            className="flex items-center gap-2 font-medium text-sm hover:underline"
-          >
-            <BookOpen className="h-4 w-4 text-primary" />
-            {ref.title}
-            <ExternalLink className="h-3 w-3 opacity-60" />
-          </Link>
-          {ref.category?.name && (
-            <Badge variant="secondary" className="text-xs">{ref.category.name}</Badge>
+    <Link to={`/handbook/${ref.slug}`} className="block h-full">
+      <Card className="h-full border-l-4 border-l-primary/60 bg-muted/30 transition-colors hover:border-primary/80 hover:bg-muted/50">
+        <CardContent className="p-3 space-y-1.5">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex items-center gap-2 font-medium text-sm">
+              <BookOpen className="h-4 w-4 text-primary" />
+              {ref.title}
+              <ExternalLink className="h-3 w-3 opacity-60" />
+            </div>
+            {ref.category?.name && (
+              <Badge variant="secondary" className="text-xs">{ref.category.name}</Badge>
+            )}
+          </div>
+          {ref.summary && <p className="text-xs text-muted-foreground">{ref.summary}</p>}
+          {ref.formula && (
+            <code className="block text-xs bg-background px-2 py-1 rounded border">{ref.formula}</code>
           )}
-        </div>
-        {ref.summary && <p className="text-xs text-muted-foreground">{ref.summary}</p>}
-        {ref.formula && (
-          <code className="block text-xs bg-background px-2 py-1 rounded border">{ref.formula}</code>
-        )}
-        {ref.source_citation && (
-          <p className="text-[10px] text-muted-foreground italic">— {ref.source_citation}</p>
-        )}
-      </CardContent>
-    </Card>
+          {ref.source_citation && (
+            <p className="text-[10px] text-muted-foreground italic">— {ref.source_citation}</p>
+          )}
+        </CardContent>
+      </Card>
+    </Link>
   );
 }

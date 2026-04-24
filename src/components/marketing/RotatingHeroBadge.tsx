@@ -13,8 +13,8 @@ import {
 import { trackEvent } from "@/lib/analytics";
 
 const items = [
-  { label: "G-Code Academy", to: "/gca", Icon: GraduationCap, key: "gca" },
-  { label: "Operator Acceptance Program", to: "/resources/oap", Icon: Award, key: "oap" },
+  { label: "G-Code Academy", to: "/gcode-academy", Icon: GraduationCap, key: "gca" },
+  { label: "Operator Acceptance Program", to: "/oap", Icon: Award, key: "oap" },
   { label: "Shift Handoffs Solved", to: "/features/shift-handoff", Icon: Zap, key: "handoff" },
   { label: "Manufacturing Visibility", to: "/manufacturing-visibility", Icon: Eye, key: "visibility" },
   { label: "Speed & Feed Calculator", to: "/tools/speed-feed", Icon: Wrench, key: "speedfeed" },

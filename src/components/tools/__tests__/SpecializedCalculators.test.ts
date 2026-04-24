@@ -34,6 +34,12 @@ describe("MrrCalculator", () => {
     const result = turningMrr(0.05, 0.008, 300, 2.0);
     expect(result).toBeGreaterThan(0);
   });
+  it("turning MRR matches DOC × feed × SFM × 12 and is diameter invariant", () => {
+    const smallDiameter = turningMrr(0.05, 0.008, 300, 1.0);
+    const largeDiameter = turningMrr(0.05, 0.008, 300, 4.0);
+    expect(smallDiameter).toBeCloseTo(0.05 * 0.008 * 300 * 12, 4);
+    expect(largeDiameter).toBeCloseTo(smallDiameter, 4);
+  });
   it("turning MRR zero diameter returns 0", () => {
     expect(turningMrr(0.05, 0.008, 300, 0)).toBe(0);
   });

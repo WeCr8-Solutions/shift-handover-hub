@@ -2,6 +2,7 @@ import { useParams, Link, Navigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ArrowLeft, BookOpen } from "lucide-react";
+import { Helmet } from "react-helmet-async";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -20,8 +21,27 @@ export default function HandbookEntry() {
   }
   if (!ref) return <Navigate to="/handbook" replace />;
 
+  const machineReadable = {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    headline: ref.title,
+    description: ref.summary || undefined,
+    keywords: ref.tags,
+    dateModified: ref.updated_at,
+    datePublished: ref.created_at,
+    articleSection: ref.category?.name || undefined,
+    identifier: ref.slug,
+    url: `/handbook/${ref.slug}`,
+  };
+
   return (
     <div className="container max-w-3xl mx-auto px-4 py-8 space-y-6">
+      <Helmet>
+        <title>{`${ref.title} | Machinist's Reference | JobLine.ai`}</title>
+        <meta name="description" content={ref.summary || `${ref.title} machinist handbook reference`} />
+        <script type="application/ld+json">{JSON.stringify(machineReadable)}</script>
+      </Helmet>
+
       <Link to="/handbook" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="h-4 w-4" /> Back to Handbook
       </Link>
@@ -45,11 +65,48 @@ export default function HandbookEntry() {
         <Card className="bg-muted/40 border-primary/40">
           <CardContent className="p-4">
             <p className="text-xs uppercase text-muted-foreground mb-1">Formula</p>
-            <code className="text-base font-mono">{ref.formula}</code>
+            <code className="block whitespace-pre-wrap break-words text-base font-mono">{ref.formula}</code>
             {ref.units && <p className="text-xs text-muted-foreground mt-1">Units: {ref.units}</p>}
           </CardContent>
         </Card>
       )}
+
+      <Card className="border-dashed">
+        <CardContent className="p-4 space-y-3">
+          <div>
+            <p className="text-xs uppercase text-muted-foreground">Machine-readable reference</p>
+            <p className="text-sm text-muted-foreground">
+              Structured metadata for formulas, tags, canonical status, and future diagram support.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+            <div>
+              <p className="text-xs uppercase text-muted-foreground">Slug</p>
+              <p className="font-mono break-all">{ref.slug}</p>
+            </div>
+            <div>
+              <p className="text-xs uppercase text-muted-foreground">Category</p>
+              <p>{ref.category?.name || "Uncategorized"}</p>
+            </div>
+            <div>
+              <p className="text-xs uppercase text-muted-foreground">Canonical</p>
+              <p>{ref.is_canonical ? "Yes" : "No"}</p>
+            </div>
+            <div>
+              <p className="text-xs uppercase text-muted-foreground">Updated</p>
+              <p>{new Date(ref.updated_at).toLocaleDateString()}</p>
+            </div>
+            <div>
+              <p className="text-xs uppercase text-muted-foreground">Units</p>
+              <p>{ref.units || "Not specified"}</p>
+            </div>
+            <div>
+              <p className="text-xs uppercase text-muted-foreground">Tags</p>
+              <p>{ref.tags.length ? ref.tags.join(", ") : "None"}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <article className="prose prose-sm dark:prose-invert max-w-none">
         <ReactMarkdown remarkPlugins={[remarkGfm]}>{ref.body_md}</ReactMarkdown>

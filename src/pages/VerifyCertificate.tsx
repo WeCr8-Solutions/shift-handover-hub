@@ -23,6 +23,13 @@ export default function VerifyCertificate() {
   // Digital is available as a quick toggle for the accomplishments-focused look.
   const [variant, setVariant] = useState<CertificateVariant>("diploma");
 
+  const inferredProgram = certId?.startsWith("OAP-") ? "OAP" : certId?.startsWith("GCA-") ? "GCA" : null;
+  const program = cert?.program ?? inferredProgram;
+  const programLabel = program === "OAP" ? "Operator Acceptance Program" : program === "GCA" ? "G-Code Academy" : "Certificate";
+  const lookupRoute = program === "OAP" ? "/oap/certificates/verify" : program === "GCA" ? "/gcode-academy/certificates/verify" : "/verify";
+  const landingRoute = program === "OAP" ? "/oap" : program === "GCA" ? "/gcode-academy" : "/";
+  const learningRoute = program === "OAP" ? "/oap/app" : program === "GCA" ? "/gcode-academy/app" : "/";
+
   useEffect(() => {
     if (!certId) return;
     setLoading(true);
@@ -64,7 +71,27 @@ export default function VerifyCertificate() {
         <div className="mb-6 flex items-center gap-2 text-sm text-muted-foreground print:hidden">
           <Link to="/" className="hover:text-foreground">JobLine</Link>
           <ArrowRight className="w-3 h-3" />
+          {program && (
+            <>
+              <Link to={landingRoute} className="hover:text-foreground">{programLabel}</Link>
+              <ArrowRight className="w-3 h-3" />
+              <Link to={lookupRoute} className="hover:text-foreground">Verify</Link>
+              <ArrowRight className="w-3 h-3" />
+            </>
+          )}
           <span>Certificate Verification</span>
+        </div>
+
+        <div className="mb-4 flex flex-wrap gap-2 print:hidden">
+          <Button asChild variant="outline" size="sm">
+            <Link to={lookupRoute}>Verify another certificate</Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link to={landingRoute}>Back to {program === "OAP" ? "OAP" : program === "GCA" ? "GCA" : "program"}</Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link to={learningRoute}>Open learning page</Link>
+          </Button>
         </div>
 
         <Card className="print:hidden">
@@ -159,6 +186,12 @@ export default function VerifyCertificate() {
                   </div>
                 </>
               )}
+              <Button asChild variant="outline" size="sm">
+                <Link to="/oap/certificates/verify">OAP verification</Link>
+              </Button>
+              <Button asChild variant="outline" size="sm">
+                <Link to="/gcode-academy/certificates/verify">GCA verification</Link>
+              </Button>
               <Button asChild variant="outline" size="sm">
                 <Link to="/oap">About OAP</Link>
               </Button>

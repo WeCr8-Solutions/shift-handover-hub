@@ -43,7 +43,7 @@ export function SurfaceFinishCalculator() {
         </SelectContent>
       </Select>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <Label className="text-xs">Feed/Rev ({unit === "inch" ? "in" : "mm"})</Label>
           <Input value={feed} onChange={(e) => setFeed(e.target.value)} type="number" step="0.001" className="h-9" />
@@ -56,7 +56,7 @@ export function SurfaceFinishCalculator() {
 
       <Separator />
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 text-center">
           <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Ra (theoretical)</p>
           <p className="text-xl font-bold text-primary">{ra > 0 ? ra.toFixed(1) : "—"}</p>

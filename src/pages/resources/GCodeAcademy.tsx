@@ -4,17 +4,57 @@ import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, ExternalLink, Sparkles } from "lucide-react";
+import { BookOpen, ChartColumn, ExternalLink, GraduationCap, Ruler, ShieldCheck, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGcaAccess } from "@/hooks/useGcaAccess";
+
+type GcaQuickStart = "lathe" | "mill" | "tests" | "metrology" | "progress";
 
 export default function GCodeAcademy() {
   const barRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [iframeHeight, setIframeHeight] = useState("100dvh");
+  const [pendingQuickStart, setPendingQuickStart] = useState<GcaQuickStart | null>(null);
   const { user, session, profile } = useAuth();
   const { gcaTier, hasProAccess, isDefinitelyFree } = useGcaAccess();
+
+  const runQuickStart = useCallback((target: GcaQuickStart) => {
+    const win = iframeRef.current?.contentWindow as (Window & {
+      setView?: (view: string) => void;
+      setTestCat?: (category: string) => void;
+    }) | null;
+
+    if (!win?.setView) return false;
+
+    switch (target) {
+      case "lathe":
+        win.setView("lathe");
+        return true;
+      case "mill":
+        win.setView("mill");
+        return true;
+      case "tests":
+        win.setView("test");
+        win.setTestCat?.("all");
+        return true;
+      case "metrology":
+        win.setView("test");
+        win.setTestCat?.("gdnt");
+        return true;
+      case "progress":
+        win.setView("progress");
+        return true;
+      default:
+        return false;
+    }
+  }, []);
+
+  const queueQuickStart = useCallback((target: GcaQuickStart) => {
+    if (!runQuickStart(target)) {
+      setPendingQuickStart(target);
+    }
+  }, [runQuickStart]);
 
   // Send (or clear) the Supabase session inside the GCA iframe
   const syncAuthToGca = useCallback(() => {
@@ -46,6 +86,12 @@ export default function GCodeAcademy() {
   }, [syncAuthToGca]);
 
   useEffect(() => {
+    if (pendingQuickStart && runQuickStart(pendingQuickStart)) {
+      setPendingQuickStart(null);
+    }
+  }, [pendingQuickStart, runQuickStart]);
+
+  useEffect(() => {
     const compute = () => {
       const navH = navRef.current?.offsetHeight ?? 56;
       const barH = barRef.current?.offsetHeight ?? 44;
@@ -63,7 +109,7 @@ export default function GCodeAcademy() {
       <SEOHead
         title="G-Code Academy | CNC Operator Training | JobLine.ai"
         description="Interactive G-Code Academy — learn CNC lathe and mill programming, GD&T, controller-specific syntax (Fanuc, Haas, Siemens, Heidenhain), and pass your CNC operator certification tests."
-        canonical="https://jobline.ai/resources/gcode-academy"
+        canonical="https://jobline.ai/gcode-academy/app"
       />
 
       {/* Nav wrapper so we can measure its height */}
@@ -102,7 +148,7 @@ export default function GCodeAcademy() {
             </Button>
           )}
           <a
-            href="/gcode-academy/index.html"
+            href="/gcode-academy/app"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors whitespace-nowrap"
@@ -114,6 +160,45 @@ export default function GCodeAcademy() {
         </div>
       </div>
 
+      <div className="border-b border-border bg-muted/20 px-4 py-3 shrink-0">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-foreground">Start inside the right GCA section</p>
+            <p className="text-xs text-muted-foreground">
+              Stay on JobLine.ai and jump straight to lessons, test banks, metrology review, or your progress dashboard.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" variant="outline" className="gap-2" onClick={() => queueQuickStart("lathe")}>
+              <BookOpen className="w-3.5 h-3.5" />
+              Start Lathe
+            </Button>
+            <Button size="sm" variant="outline" className="gap-2" onClick={() => queueQuickStart("mill")}>
+              <BookOpen className="w-3.5 h-3.5" />
+              Start Mill
+            </Button>
+            <Button size="sm" variant="outline" className="gap-2" onClick={() => queueQuickStart("tests")}>
+              <ChartColumn className="w-3.5 h-3.5" />
+              Open Test Center
+            </Button>
+            <Button size="sm" variant="outline" className="gap-2" onClick={() => queueQuickStart("metrology")}>
+              <Ruler className="w-3.5 h-3.5" />
+              GD&T and Metrology
+            </Button>
+            <Button size="sm" variant="outline" className="gap-2" onClick={() => queueQuickStart("progress")}>
+              <GraduationCap className="w-3.5 h-3.5" />
+              My Progress
+            </Button>
+            <Button asChild size="sm" variant="outline" className="gap-2">
+              <Link to="/gcode-academy/certificates/verify">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                Verify Certificate
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+
       {/* Full-height iframe — fills remaining viewport exactly */}
       <iframe
         ref={iframeRef}
@@ -122,7 +207,12 @@ export default function GCodeAcademy() {
         className="w-full border-0 shrink-0"
         style={{ height: iframeHeight }}
         allow="clipboard-write"
-        onLoad={syncAuthToGca}
+        onLoad={() => {
+          syncAuthToGca();
+          if (pendingQuickStart && runQuickStart(pendingQuickStart)) {
+            setPendingQuickStart(null);
+          }
+        }}
       />
     </div>
   );

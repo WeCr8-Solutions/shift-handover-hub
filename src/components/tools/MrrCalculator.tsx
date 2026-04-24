@@ -53,7 +53,7 @@ export function MrrCalculator() {
         </TabsList>
 
         <TabsContent value="milling" className="space-y-3 mt-3">
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <Label className="text-xs">Width of Cut (in)</Label>
               <Input value={woc} onChange={(e) => setWoc(e.target.value)} type="number" step="0.01" className="h-9" />
@@ -73,7 +73,7 @@ export function MrrCalculator() {
         </TabsContent>
 
         <TabsContent value="turning" className="space-y-3 mt-3">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <Label className="text-xs">Depth of Cut (in)</Label>
               <Input value={tDoc} onChange={(e) => setTDoc(e.target.value)} type="number" step="0.001" className="h-9" />

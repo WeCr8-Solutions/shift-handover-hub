@@ -17,9 +17,6 @@ import { ScrollToTop } from "@/components/ScrollToTop";
 import { USPersonDeclarationGate } from "@/components/compliance/USPersonDeclarationGate";
 import { RulesOfBehaviorGate } from "@/components/compliance/RulesOfBehaviorGate";
 import { ReleaseBadge } from "@/components/ReleaseBadge";
-import { IssueReporterBoot } from "@/components/IssueReporterBoot";
-import { FreeTalentProfileRibbon } from "@/components/marketing/FreeTalentProfileRibbon";
-import { CookieConsent } from "@/components/legal/CookieConsent";
 import { lazy, Suspense } from "react";
 
 // Eager: landing page (LCP-critical, most-visited route)
@@ -93,10 +90,7 @@ const OAPLanding = lazy(() => import("./pages/OAPLanding"));
 const GCALanding = lazy(() => import("./pages/GCALanding"));
 const HandbookLibrary = lazy(() => import("./pages/HandbookLibrary"));
 const HandbookEntry = lazy(() => import("./pages/HandbookEntry"));
-const ManualsLibrary = lazy(() => import("./pages/ManualsLibrary"));
-const ManualViewer = lazy(() => import("./pages/ManualViewer"));
-const ManualUpload = lazy(() => import("./pages/ManualUpload"));
-const PhasesPage = lazy(() => import("./pages/dev/PhasesPage"));
+const CertificateLookup = lazy(() => import("./pages/CertificateLookup"));
 const VerifyCertificate = lazy(() => import("./pages/VerifyCertificate"));
 const CertSuccess = lazy(() => import("./pages/CertSuccess"));
 const OapWalkthrough = lazy(() => import("./pages/OapWalkthrough"));
@@ -138,14 +132,6 @@ const TalentSearch = lazy(() => import("./pages/TalentSearch"));
 const PublicOperatorProfile = lazy(() => import("./pages/PublicOperatorProfile"));
 const OperatorInbox = lazy(() => import("./pages/OperatorInbox"));
 const ShopFloorDisplay = lazy(() => import("./pages/ShopFloorDisplay"));
-const PublicBusinessCard = lazy(() => import("./pages/PublicBusinessCard"));
-const EmployersIndex = lazy(() => import("./pages/EmployersIndex"));
-const EmployerBrowse = lazy(() => import("./pages/EmployerBrowse"));
-const PublicEmployerProfile = lazy(() => import("./pages/PublicEmployerProfile"));
-const EmployerDashboard = lazy(() => import("./pages/EmployerDashboard"));
-const Terms = lazy(() => import("./pages/legal/Terms"));
-const Privacy = lazy(() => import("./pages/legal/Privacy"));
-const Cookies = lazy(() => import("./pages/legal/Cookies"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -183,8 +169,6 @@ const App = () => (
                   <ReleaseBadge />
                   <GuidedTour />
                   <WelcomeModal />
-                  <FreeTalentProfileRibbon />
-                  <CookieConsent />
                   <Suspense fallback={<RouteFallback />}>
                   <Routes>
                     <Route path="/" element={<Landing />} />
@@ -255,10 +239,7 @@ const App = () => (
                     <Route path="/oap" element={<OAPLanding />} />
                     <Route path="/handbook" element={<HandbookLibrary />} />
                     <Route path="/handbook/:slug" element={<HandbookEntry />} />
-                    <Route path="/manuals" element={<ManualsLibrary />} />
-                    <Route path="/manuals/upload" element={<ManualUpload />} />
-                    <Route path="/manuals/:slug" element={<ManualViewer />} />
-                    <Route path="/dev/phases" element={<PhasesPage />} />
+                    <Route path="/verify" element={<CertificateLookup />} />
                     <Route path="/verify/:certId" element={<VerifyCertificate />} />
                     <Route path="/cert/success" element={<CertSuccess />} />
                     <Route path="/oap/walkthrough" element={<OapWalkthrough />} />
@@ -269,7 +250,11 @@ const App = () => (
                     <Route path="/oap/employer" element={<OapEmployer />} />
                     <Route path="/gca/employer" element={<GcaEmployer />} />
                     <Route path="/gca/test/:bankSlug" element={<GcaTestPage />} />
+                    <Route path="/gcode-academy/certificates" element={<CertificateLookup />} />
+                    <Route path="/gcode-academy/certificates/verify" element={<CertificateLookup />} />
                     <Route path="/oap/my-transcript" element={<OapMyTranscript />} />
+                    <Route path="/oap/certificates" element={<CertificateLookup />} />
+                    <Route path="/oap/certificates/verify" element={<CertificateLookup />} />
                     <Route path="/talent" element={<TalentLanding />} />
                     <Route path="/talent/browse" element={<TalentBrowse />} />
                     <Route path="/talent/search" element={<TalentSearch />} />
@@ -301,9 +286,6 @@ const App = () => (
                     <Route path="/dev" element={<DevPortal />} />
                     <Route path="/dev/:category/:slug" element={<DevDocArticle />} />
                     <Route path="/display/:displayId" element={<ShopFloorDisplay />} />
-                    <Route path="/terms" element={<Terms />} />
-                    <Route path="/privacy" element={<Privacy />} />
-                    <Route path="/cookies" element={<Cookies />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>

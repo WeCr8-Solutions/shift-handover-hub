@@ -8,8 +8,9 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { SEOHead } from "@/components/SEOHead";
 import { Header } from "@/components/Header";
+import { HandbookCite } from "@/components/handbook/HandbookCite";
 import { TOOL_REGISTRY, TOOL_CATEGORIES } from "@/components/tools";
-import { Search, Wrench, Loader2, ArrowLeft } from "lucide-react";
+import { Search, Wrench, Loader2, ArrowLeft, BookOpen, ArrowRight } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const categoryColors: Record<string, string> = {
@@ -94,6 +95,42 @@ export default function Tools() {
             </Tabs>
           </div>
 
+          <Card className="mb-6 border-primary/30 bg-primary/5">
+            <CardHeader className="pb-3">
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-2">
+                  <div className="inline-flex items-center gap-2 text-sm font-medium text-primary">
+                    <BookOpen className="w-4 h-4" />
+                    Machinist's Reference Library
+                  </div>
+                  <CardTitle className="text-xl">Digital handbook for shop-floor reference</CardTitle>
+                  <CardDescription className="max-w-3xl text-sm">
+                    Browse live handbook entries for threads, feeds and speeds, GD&amp;T, fits,
+                    formulas, inspection, tooling, and safety standards. These references are also
+                    reused throughout JobLine in OAP lessons and G-Code Academy question review.
+                  </CardDescription>
+                </div>
+                <Badge variant="outline" className="shrink-0 border-primary/30 text-primary">
+                  Live reference
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                <span className="rounded-full bg-background px-2.5 py-1 border">GD&amp;T</span>
+                <span className="rounded-full bg-background px-2.5 py-1 border">Threads</span>
+                <span className="rounded-full bg-background px-2.5 py-1 border">Tooling</span>
+                <span className="rounded-full bg-background px-2.5 py-1 border">Inspection</span>
+                <span className="rounded-full bg-background px-2.5 py-1 border">Formulas</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button onClick={() => navigate("/handbook")} className="gap-2">
+                  Open handbook <ArrowRight className="w-4 h-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Tool Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filtered.map((tool) => {
@@ -147,10 +184,28 @@ export default function Tools() {
               {activeToolDef?.name}
             </SheetTitle>
             {activeToolDef && (
-              <p className="text-xs text-muted-foreground">{activeToolDef.description}</p>
+              <div className="space-y-2">
+                <p className="text-xs text-muted-foreground">{activeToolDef.description}</p>
+                <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
+                  <p className="text-xs font-medium text-primary">Handbook-backed reference</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    This tool is paired with handbook entries so operators, programmers, and machinists
+                    can move from a calculator or chart to the underlying shop-floor reference without
+                    leaving JobLine.
+                  </p>
+                </div>
+              </div>
             )}
           </SheetHeader>
           <div className="mt-4">
+            {activeToolDef && (
+              <div className="mb-4 space-y-2">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Source references
+                </p>
+                <HandbookCite entityType="operator_tool" entityId={activeToolDef.id} variant="card" />
+              </div>
+            )}
             <Suspense fallback={<div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>}>
               {ActiveComponent && <ActiveComponent />}
             </Suspense>

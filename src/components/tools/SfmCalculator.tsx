@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { turningMrr } from "./MrrCalculator";
 
 type OpMode = "milling" | "turning";
 
@@ -67,7 +68,7 @@ export function SfmCalculator() {
 
   // Turning calcs
   const feedRateTurning = rpm * fprVal; // IPR to IPM
-  const mrr = Math.PI * diaVal * sfmVal * fprVal * docVal; // rough MRR in³/min
+  const mrr = turningMrr(docVal, fprVal, sfmVal, diaVal);
 
   const handlePreset = (key: string) => {
     setMaterial(key);
@@ -142,7 +143,7 @@ export function SfmCalculator() {
       </div>
 
       {/* Inputs — differ by mode */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <Label className="text-xs">SFM (Surface Feet/Min)</Label>
           <Input value={sfm} onChange={(e) => setSfm(e.target.value)} type="number" className="h-9" />
@@ -182,7 +183,7 @@ export function SfmCalculator() {
 
       {/* Results */}
       {mode === "milling" ? (
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 text-center">
             <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Spindle RPM</p>
             <p className="text-xl font-bold text-primary">{Math.round(rpm).toLocaleString()}</p>
@@ -197,7 +198,7 @@ export function SfmCalculator() {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 text-center">
             <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Spindle RPM</p>
             <p className="text-xl font-bold text-primary">{Math.round(rpm).toLocaleString()}</p>
@@ -216,7 +217,7 @@ export function SfmCalculator() {
       <p className="text-[10px] text-muted-foreground text-center">
         {mode === "milling"
           ? "RPM = (SFM × 12) / (π × D)  |  Feed = RPM × FPT × Z"
-          : "RPM = (SFM × 12) / (π × D)  |  Feed = RPM × IPR  |  MRR ≈ π × D × SFM × IPR × DOC"}
+          : "RPM = (SFM × 12) / (π × D)  |  Feed = RPM × IPR  |  MRR = π × D × DOC × IPR × RPM"}
       </p>
 
       <Separator />

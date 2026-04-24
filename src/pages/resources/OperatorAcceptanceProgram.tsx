@@ -4,9 +4,11 @@ import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ClipboardCheck, ExternalLink, Sparkles } from "lucide-react";
+import { Building2, ClipboardCheck, ExternalLink, FolderKanban, ShieldCheck, Sparkles, Users } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGcaAccess } from "@/hooks/useGcaAccess";
+
+type OapQuickStart = "certify" | "employer" | "programs" | "operators";
 
 /**
  * Operator Acceptance Program (OAP)
@@ -20,8 +22,40 @@ export default function OperatorAcceptanceProgram() {
   const navRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [iframeHeight, setIframeHeight] = useState("100dvh");
+  const [pendingQuickStart, setPendingQuickStart] = useState<OapQuickStart | null>(null);
   const { user, session, profile } = useAuth();
   const { gcaTier, hasProAccess, isDefinitelyFree } = useGcaAccess();
+
+  const runQuickStart = useCallback((target: OapQuickStart) => {
+    const win = iframeRef.current?.contentWindow as (Window & {
+      oapSetView?: (view: string, subView?: string) => void;
+    }) | null;
+
+    if (!win?.oapSetView) return false;
+
+    switch (target) {
+      case "certify":
+        win.oapSetView("standalone");
+        return true;
+      case "employer":
+        win.oapSetView("employer", "setup");
+        return true;
+      case "programs":
+        win.oapSetView("program", "list");
+        return true;
+      case "operators":
+        win.oapSetView("mentee", "list");
+        return true;
+      default:
+        return false;
+    }
+  }, []);
+
+  const queueQuickStart = useCallback((target: OapQuickStart) => {
+    if (!runQuickStart(target)) {
+      setPendingQuickStart(target);
+    }
+  }, [runQuickStart]);
 
   const syncAuth = useCallback(() => {
     const win = iframeRef.current?.contentWindow;
@@ -51,6 +85,12 @@ export default function OperatorAcceptanceProgram() {
   }, [syncAuth]);
 
   useEffect(() => {
+    if (pendingQuickStart && runQuickStart(pendingQuickStart)) {
+      setPendingQuickStart(null);
+    }
+  }, [pendingQuickStart, runQuickStart]);
+
+  useEffect(() => {
     const compute = () => {
       const navH = navRef.current?.offsetHeight ?? 56;
       const barH = barRef.current?.offsetHeight ?? 44;
@@ -68,7 +108,7 @@ export default function OperatorAcceptanceProgram() {
       <SEOHead
         title="Operator Acceptance Program (OAP) | CNC Operator Onboarding | JobLine.ai"
         description="Operator Acceptance Program (OAP) — employer-driven CNC operator onboarding, safety, measuring, tooling, machine qualification, and certification. Standalone or employer mode."
-        canonical="https://jobline.ai/resources/oap"
+        canonical="https://jobline.ai/oap/app"
       />
 
       <div ref={navRef}>
@@ -105,7 +145,7 @@ export default function OperatorAcceptanceProgram() {
             </Button>
           )}
           <a
-            href="/oap/index.html"
+            href="/oap/app"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors whitespace-nowrap"
@@ -117,6 +157,41 @@ export default function OperatorAcceptanceProgram() {
         </div>
       </div>
 
+      <div className="border-b border-border bg-muted/20 px-4 py-3 shrink-0">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-foreground">Start with the OAP path that matches the visitor</p>
+            <p className="text-xs text-muted-foreground">
+              Keep the experience on JobLine.ai while sending employers and operators straight to setup, programs, active operators, or certification.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" variant="outline" className="gap-2" onClick={() => queueQuickStart("certify")}>
+              <ClipboardCheck className="w-3.5 h-3.5" />
+              Get Certified
+            </Button>
+            <Button size="sm" variant="outline" className="gap-2" onClick={() => queueQuickStart("employer")}>
+              <Building2 className="w-3.5 h-3.5" />
+              Employer Setup
+            </Button>
+            <Button size="sm" variant="outline" className="gap-2" onClick={() => queueQuickStart("programs")}>
+              <FolderKanban className="w-3.5 h-3.5" />
+              Role Programs
+            </Button>
+            <Button size="sm" variant="outline" className="gap-2" onClick={() => queueQuickStart("operators")}>
+              <Users className="w-3.5 h-3.5" />
+              Active Operators
+            </Button>
+            <Button asChild size="sm" variant="outline" className="gap-2">
+              <Link to="/oap/certificates/verify">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                Verify Certificate
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+
       <iframe
         ref={iframeRef}
         src="/oap/index.html"
@@ -124,7 +199,12 @@ export default function OperatorAcceptanceProgram() {
         className="w-full border-0 shrink-0"
         style={{ height: iframeHeight }}
         allow="clipboard-write"
-        onLoad={syncAuth}
+        onLoad={() => {
+          syncAuth();
+          if (pendingQuickStart && runQuickStart(pendingQuickStart)) {
+            setPendingQuickStart(null);
+          }
+        }}
       />
     </div>
   );

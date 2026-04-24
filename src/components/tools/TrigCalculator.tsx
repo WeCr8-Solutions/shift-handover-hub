@@ -63,29 +63,29 @@ export function TrigCalculator() {
     <div className="space-y-4">
       <p className="text-xs text-muted-foreground">Enter any 2 values to solve the right triangle.</p>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <Label className="text-xs">Side A (opposite)</Label>
-          <Input value={sideA} onChange={(e) => setSideA(e.target.value)} type="number" step="0.001" placeholder="—" className="h-9" />
+          <Label htmlFor="trig-side-a" className="text-xs">Side A (opposite)</Label>
+          <Input id="trig-side-a" value={sideA} onChange={(e) => setSideA(e.target.value)} type="number" step="0.001" placeholder="—" className="h-9" />
         </div>
         <div>
-          <Label className="text-xs">Side B (adjacent)</Label>
-          <Input value={sideB} onChange={(e) => setSideB(e.target.value)} type="number" step="0.001" placeholder="—" className="h-9" />
+          <Label htmlFor="trig-side-b" className="text-xs">Side B (adjacent)</Label>
+          <Input id="trig-side-b" value={sideB} onChange={(e) => setSideB(e.target.value)} type="number" step="0.001" placeholder="—" className="h-9" />
         </div>
         <div>
-          <Label className="text-xs">Hypotenuse (C)</Label>
-          <Input value={hyp} onChange={(e) => setHyp(e.target.value)} type="number" step="0.001" placeholder="—" className="h-9" />
+          <Label htmlFor="trig-hypotenuse" className="text-xs">Hypotenuse (C)</Label>
+          <Input id="trig-hypotenuse" value={hyp} onChange={(e) => setHyp(e.target.value)} type="number" step="0.001" placeholder="—" className="h-9" />
         </div>
         <div>
-          <Label className="text-xs">Angle α (degrees)</Label>
-          <Input value={angleA} onChange={(e) => setAngleA(e.target.value)} type="number" step="0.1" placeholder="—" className="h-9" />
+          <Label htmlFor="trig-angle-a" className="text-xs">Angle α (degrees)</Label>
+          <Input id="trig-angle-a" value={angleA} onChange={(e) => setAngleA(e.target.value)} type="number" step="0.1" placeholder="—" className="h-9" />
         </div>
       </div>
 
       {result && (
         <>
           <Separator />
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             {/* SVG diagram */}
             <svg viewBox={`0 0 ${svgW} ${svgH}`} className="w-40 h-32 shrink-0">
               {triPoints && (
@@ -102,7 +102,7 @@ export function TrigCalculator() {
             </svg>
 
             {/* Results */}
-            <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm flex-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 text-sm flex-1">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Side A:</span>
                 <strong>{result.a.toFixed(4)}</strong>

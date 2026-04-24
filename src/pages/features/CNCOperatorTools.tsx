@@ -18,6 +18,7 @@ const benefits = [
   "View incoming handoff notes from previous shift",
   "Station-specific handoff forms (CNC, lathe, mill, grinder)",
   "Digital sign-off for shift transitions",
+  "Live machinist handbook with GD&T, tooling, threads, formulas, and reference data",
 ];
 
 const operatorSteps = [
@@ -69,7 +70,8 @@ export default function CNCOperatorTools() {
             </h1>
             <p className="text-xl text-muted-foreground mb-8 max-w-2xl">
               Designed by machinists, for machinists. JobLine.ai gives operators the tools they need — 
-              right on their phone or shop floor tablet. No training manual required.
+              right on their phone or shop floor tablet, including a live digital handbook for GD&amp;T,
+              tooling, threads, and shop-floor reference knowledge. No training manual required.
             </p>
 
             <div className="flex flex-wrap gap-4 mb-16">

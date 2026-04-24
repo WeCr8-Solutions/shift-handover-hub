@@ -67,7 +67,7 @@ export function CycleTimeEstimator() {
               </Button>
             )}
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div>
               <Label className="text-[10px]">Cut Length (in)</Label>
               <Input value={op.length} onChange={(e) => updateOp(op.id, "length", e.target.value)} type="number" step="0.1" className="h-8 text-xs" />
@@ -84,7 +84,7 @@ export function CycleTimeEstimator() {
         <Plus className="w-3 h-3" /> Add Operation
       </Button>
 
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
         <div>
           <Label className="text-[10px]">Load/Unload (sec)</Label>
           <Input value={loadUnload} onChange={(e) => setLoadUnload(e.target.value)} type="number" className="h-8 text-xs" />
@@ -101,7 +101,7 @@ export function CycleTimeEstimator() {
 
       <Separator />
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 text-center">
           <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Cutting Time</p>
           <p className="text-lg font-bold text-primary">{result.cuttingTime.toFixed(2)} min</p>
