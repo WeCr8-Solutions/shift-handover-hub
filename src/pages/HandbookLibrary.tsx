@@ -24,7 +24,8 @@ export default function HandbookLibrary() {
     search: search || undefined,
     categorySlug: activeCat === "all" ? undefined : activeCat,
   });
-  const showLoadingGrid = refs.isLoading && !refs.data?.length;
+  const references = refs.data ?? [];
+  const showLoadingGrid = refs.isLoading && references.length === 0;
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -70,7 +71,7 @@ export default function HandbookLibrary() {
         </TabsList>
 
         <TabsContent value={activeCat} className="mt-6">
-          {refs.isFetching && refs.data?.length ? (
+          {refs.isFetching && references.length > 0 ? (
             <p className="mb-3 text-xs text-muted-foreground">Refreshing handbook references...</p>
           ) : null}
 
@@ -80,11 +81,11 @@ export default function HandbookLibrary() {
                 <Skeleton key={i} className="h-32" />
               ))}
             </div>
-          ) : refs.data?.length === 0 ? (
+          ) : references.length === 0 ? (
             <p className="text-center text-muted-foreground py-12">No references found.</p>
           ) : (
             <div className="grid sm:grid-cols-2 gap-4">
-              {refs.data?.map((r) => (
+              {references.map((r) => (
                 <Link key={r.id} to={`/handbook/${r.slug}`}>
                   <Card className="h-full hover:border-primary/60 hover:bg-muted/30 transition-colors">
                     <CardHeader className="pb-3">
