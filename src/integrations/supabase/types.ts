@@ -3370,6 +3370,7 @@ export type Database = {
           organization_id: string | null
           slug: string
           source_citation: string | null
+          source_url: string | null
           summary: string | null
           tags: string[]
           title: string
@@ -3387,6 +3388,7 @@ export type Database = {
           organization_id?: string | null
           slug: string
           source_citation?: string | null
+          source_url?: string | null
           summary?: string | null
           tags?: string[]
           title: string
@@ -3404,6 +3406,7 @@ export type Database = {
           organization_id?: string | null
           slug?: string
           source_citation?: string | null
+          source_url?: string | null
           summary?: string | null
           tags?: string[]
           title?: string
