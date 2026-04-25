@@ -8,3 +8,10 @@ import { applySubdomainRouting } from "./lib/subdomainRouting";
 applySubdomainRouting();
 
 createRoot(document.getElementById("root")!).render(<App />);
+
+const bootShell = document.getElementById("boot-shell");
+if (bootShell) {
+	window.requestAnimationFrame(() => {
+		bootShell.remove();
+	});
+}

@@ -3,6 +3,27 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+const WELCOME_SEEN_STORAGE_PREFIX = 'jobline:onboarding:welcome-seen:';
+
+function getWelcomeSeenStorageKey(userId: string) {
+  return `${WELCOME_SEEN_STORAGE_PREFIX}${userId}`;
+}
+
+function readWelcomeSeenFallback(userId: string) {
+  if (typeof window === 'undefined') return false;
+  return window.localStorage.getItem(getWelcomeSeenStorageKey(userId)) === 'true';
+}
+
+function writeWelcomeSeenFallback(userId: string, value: boolean) {
+  if (typeof window === 'undefined') return;
+  const key = getWelcomeSeenStorageKey(userId);
+  if (value) {
+    window.localStorage.setItem(key, 'true');
+    return;
+  }
+  window.localStorage.removeItem(key);
+}
+
 export type OnboardingStep = 
   | 'welcome'
   | 'organization-setup'
@@ -74,6 +95,8 @@ export function useOnboarding() {
         return;
       }
 
+      const localWelcomeSeen = readWelcomeSeenFallback(user.id);
+
       const { data, error } = await supabase
         .from('user_onboarding')
         .select('*')
@@ -87,12 +110,16 @@ export function useOnboarding() {
       }
 
       if (data) {
+        const hasSeenWelcome = Boolean(data.has_seen_welcome || localWelcomeSeen);
+        if (hasSeenWelcome) {
+          writeWelcomeSeenFallback(user.id, true);
+        }
         setState({
           completedSteps: data.completed_steps || [],
           currentStep: (data.current_step as OnboardingStep) || 'welcome',
           isComplete: data.is_complete || false,
           isLoading: false,
-          hasSeenWelcome: data.has_seen_welcome || false,
+          hasSeenWelcome,
           setupWizardDismissed: data.setup_wizard_dismissed || false,
         });
       } else {
@@ -110,7 +137,7 @@ export function useOnboarding() {
           currentStep: 'welcome',
           isComplete: false,
           isLoading: false,
-          hasSeenWelcome: false,
+          hasSeenWelcome: localWelcomeSeen,
           setupWizardDismissed: false,
         });
       }
@@ -168,6 +195,7 @@ export function useOnboarding() {
     if (!user) return;
 
     const prevState = { ...state };
+    writeWelcomeSeenFallback(user.id, true);
     setState(prev => ({ ...prev, isComplete: true, currentStep: 'complete' }));
     setShowTour(false);
 
@@ -187,13 +215,14 @@ export function useOnboarding() {
         isComplete: prevState.isComplete,
         currentStep: prevState.currentStep,
       }));
-      toast.error('Failed to save. Please try again.');
+      toast.error('Saved locally. Cloud sync will retry later.');
     }
   }, [user, state]);
 
   const markWelcomeSeen = useCallback(async () => {
     if (!user) return;
 
+    writeWelcomeSeenFallback(user.id, true);
     setState(prev => ({ ...prev, hasSeenWelcome: true }));
 
     const { error } = await supabase
@@ -213,6 +242,7 @@ export function useOnboarding() {
 
     const prevState = { ...state };
     setShowTour(false);
+    writeWelcomeSeenFallback(user.id, false);
 
     setState({
       completedSteps: [],
@@ -237,6 +267,7 @@ export function useOnboarding() {
 
     if (error) {
       console.error('Error resetting onboarding:', error);
+      writeWelcomeSeenFallback(user.id, prevState.hasSeenWelcome);
       setState({ ...prevState, isLoading: false });
       toast.error('Failed to reset onboarding. Please try again.');
       return;

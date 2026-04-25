@@ -101,6 +101,10 @@ function isPublicFacingRoute(pathname: string) {
   ].some(Boolean);
 }
 
+function isEligibleWelcomeRoute(pathname: string) {
+  return pathname === "/setup" || pathname === "/dashboard";
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function WelcomeModal() {
@@ -132,7 +136,8 @@ export function WelcomeModal() {
     showTour ||
     currentStep === "complete" ||
     hasSeenWelcome ||
-    isPublicFacingRoute(location.pathname)
+    isPublicFacingRoute(location.pathname) ||
+    !isEligibleWelcomeRoute(location.pathname)
   ) {
     return null;
   }

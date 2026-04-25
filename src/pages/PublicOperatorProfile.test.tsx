@@ -117,17 +117,17 @@ vi.mock("@/integrations/supabase/client", () => {
   };
 });
 
-import PublicOperatorProfile from "./PublicOperatorProfile";
+import PublicTalentProfile from "./PublicOperatorProfile";
 
 function renderPage() {
   return render(
     <MemoryRouter>
-      <PublicOperatorProfile />
+      <PublicTalentProfile />
     </MemoryRouter>,
   );
 }
 
-describe("PublicOperatorProfile", () => {
+describe("PublicTalentProfile", () => {
   beforeEach(() => {
     state.username = "taylor-operator";
     state.navigate.mockReset();

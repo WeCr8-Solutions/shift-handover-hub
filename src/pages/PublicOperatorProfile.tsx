@@ -131,7 +131,7 @@ interface EducationRow {
   end_date: string | null;
 }
 
-export default function PublicOperatorProfile() {
+export default function PublicTalentProfile() {
   const { username } = useParams<{ username: string }>();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<PublicProfile | null>(null);

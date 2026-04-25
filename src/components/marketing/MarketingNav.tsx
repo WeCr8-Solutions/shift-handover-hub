@@ -103,13 +103,13 @@ export function MarketingNav({ showPricing = true }: MarketingNavProps) {
         </button>
 
         {isResourcesRoute && (
-          <Button variant="ghost" size="sm" onClick={handleBack} className="hidden md:inline-flex gap-1.5 text-xs">
+          <Button variant="ghost" size="sm" onClick={handleBack} className="hidden lg:inline-flex gap-1.5 text-xs">
             <ArrowLeft className="w-3.5 h-3.5" /> Back
           </Button>
         )}
 
         {/* Desktop nav */}
-        <div className="hidden md:flex items-center gap-1" onMouseLeave={handleLeave}>
+        <div className="hidden lg:flex items-center gap-1" onMouseLeave={handleLeave}>
           <DropdownTrigger label="Products" menuKey="products" />
           <DropdownTrigger label="Industries" menuKey="industries" />
           <DropdownTrigger label="Learn" menuKey="learn" />
@@ -141,7 +141,7 @@ export function MarketingNav({ showPricing = true }: MarketingNavProps) {
         </div>
 
         {/* Mobile */}
-        <div className="flex md:hidden items-center gap-2">
+        <div className="flex lg:hidden items-center gap-2">
           {user ? (
             <Button onClick={() => go("/dashboard")} size="sm" className="gap-1 text-xs">
               <LayoutDashboard className="w-3 h-3" /> Dashboard
@@ -160,7 +160,7 @@ export function MarketingNav({ showPricing = true }: MarketingNavProps) {
       {/* ── Desktop mega-menu panels ── */}
       {openMenu && (
         <div
-          className="hidden md:block absolute left-0 right-0 border-b border-border bg-background shadow-lg z-40"
+          className="hidden lg:block absolute left-0 right-0 border-b border-border bg-background shadow-lg z-40"
           onMouseEnter={() => { clearTimeout(closeTimer.current); }}
           onMouseLeave={handleLeave}
         >
