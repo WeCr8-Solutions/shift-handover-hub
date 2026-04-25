@@ -131,6 +131,16 @@ interface EducationRow {
   end_date: string | null;
 }
 
+interface PublicTalentProfileBundle {
+  profile: PublicProfile | null;
+  certs: CertRow[] | null;
+  skills: SkillRow[] | null;
+  machines: MachineRow[] | null;
+  work: WorkRow[] | null;
+  education: EducationRow[] | null;
+  mini_site: Record<string, unknown> | null;
+}
+
 export default function PublicTalentProfile() {
   const { username } = useParams<{ username: string }>();
   const navigate = useNavigate();
@@ -168,10 +178,11 @@ export default function PublicTalentProfile() {
     (async () => {
       setLoading(true);
       setNotFound(false);
-      const { data } = await (supabase as any).rpc("get_public_operator_profile", {
+      const { data } = await (supabase as any).rpc("get_public_talent_profile_bundle", {
         _username: username,
       });
-      const row = (data ?? [])[0] as PublicProfile | undefined;
+      const bundle = (data ?? null) as PublicTalentProfileBundle | null;
+      const row = bundle?.profile ?? null;
       if (cancelled) return;
       if (!row) {
         setNotFound(true);
@@ -179,58 +190,13 @@ export default function PublicTalentProfile() {
         return;
       }
       setProfile(row);
-
-      // Related sections — public RLS via parent profile_visibility = 'public'
-      const [c, s, m, w, e] = await Promise.all([
-        supabase
-          .from("operator_certifications")
-          .select("id, name, issuer, issued_date, expires_date, credential_id, credential_url, attachment_url, verification_source, linked_cert_id, is_public")
-          .eq("user_id", row.user_id)
-          .eq("is_public", true)
-          .order("issued_date", { ascending: false, nullsFirst: false }),
-        supabase
-          .from("operator_skills")
-          .select("id, skill, proficiency, years_used")
-          .eq("user_id", row.user_id)
-          .order("skill"),
-        supabase
-          .from("operator_machine_proficiencies")
-          .select("id, machine_category, machine_make, machine_model, control_type, proficiency, years_experience")
-          .eq("user_id", row.user_id)
-          .order("machine_category"),
-        supabase
-          .from("operator_work_history")
-          .select("id, employer_name, job_title, start_date, end_date, is_current, location, description")
-          .eq("user_id", row.user_id)
-          .order("start_date", { ascending: false, nullsFirst: false }),
-        supabase
-          .from("operator_education")
-          .select("id, school_name, degree, field_of_study, start_date, end_date")
-          .eq("user_id", row.user_id)
-          .order("end_date", { ascending: false, nullsFirst: false }),
-      ]);
-
-      // Mini-site fields — RLS allows public read when profile_visibility = 'public'.
-      // NOTE: contact_email / contact_phone are NEVER selected on the public surface.
-      // All outreach must go through in-app messaging (`/talent/search` → talent_contact_requests).
-      const { data: ms } = await supabase
-        .from("operator_profiles")
-        .select(
-          `services, gallery, testimonials, business_hours, latitude, longitude,
-           vcard_full_name, vcard_title, vcard_company,
-           card_slug, cta_label, cta_url`
-        )
-        .eq("user_id", row.user_id)
-        .maybeSingle();
-
-      if (cancelled) return;
-      setCerts((c.data as CertRow[] | null) ?? []);
-      setSkills((s.data as SkillRow[] | null) ?? []);
-      setMachines((m.data as MachineRow[] | null) ?? []);
-      setWork((w.data as WorkRow[] | null) ?? []);
-      setEducation((e.data as EducationRow[] | null) ?? []);
-      if (ms) {
-        const r = ms as Record<string, unknown>;
+      setCerts(bundle?.certs ?? []);
+      setSkills(bundle?.skills ?? []);
+      setMachines(bundle?.machines ?? []);
+      setWork(bundle?.work ?? []);
+      setEducation(bundle?.education ?? []);
+      if (bundle?.mini_site) {
+        const r = bundle.mini_site;
         setMiniSite({
           services: (r.services as ServiceItem[]) ?? [],
           gallery: (r.gallery as GalleryItem[]) ?? [],
@@ -247,6 +213,8 @@ export default function PublicTalentProfile() {
           cta_label: (r.cta_label as string | null) ?? null,
           cta_url: (r.cta_url as string | null) ?? null,
         });
+      } else {
+        setMiniSite(null);
       }
       setLoading(false);
     })();

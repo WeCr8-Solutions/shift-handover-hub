@@ -77,39 +77,26 @@ vi.mock("@/lib/talent/socialDeepLinks", () => ({
 }));
 
 vi.mock("@/integrations/supabase/client", () => {
-  const buildQuery = (table: string) => {
-    const api: any = {};
-    api.select = vi.fn().mockReturnValue(api);
-    api.eq = vi.fn().mockReturnValue(api);
-    api.order = vi.fn().mockReturnValue(api);
-    api.maybeSingle = vi.fn().mockImplementation(() => {
-        if (table === "operator_profiles") {
-          return Promise.resolve({ data: state.miniSite, error: null });
-        }
-        return Promise.resolve({ data: null, error: null });
-      });
-    api.then = (resolve: (value: any) => unknown) => {
-      const dataMap: Record<string, any> = {
-        operator_certifications: state.certs,
-        operator_skills: state.skills,
-        operator_machine_proficiencies: state.machines,
-        operator_work_history: state.work,
-        operator_education: state.education,
-      };
-      return Promise.resolve(resolve({ data: dataMap[table] ?? [], error: null }));
-    };
-    return api;
-  };
-
   return {
     supabase: {
       rpc: vi.fn().mockImplementation((fnName: string) => {
-        if (fnName === "get_public_operator_profile") {
-          return Promise.resolve({ data: state.profileRow ? [state.profileRow] : [], error: null });
+        if (fnName === "get_public_talent_profile_bundle") {
+          return Promise.resolve({
+            data: state.profileRow ? {
+              profile: state.profileRow,
+              certs: state.certs,
+              skills: state.skills,
+              machines: state.machines,
+              work: state.work,
+              education: state.education,
+              mini_site: state.miniSite,
+            } : null,
+            error: null,
+          });
         }
         return Promise.resolve({ data: [], error: null });
       }),
-      from: vi.fn().mockImplementation((table: string) => buildQuery(table)),
+      from: vi.fn(),
       auth: {
         getUser: vi.fn().mockResolvedValue({ data: { user: null }, error: null }),
       },
