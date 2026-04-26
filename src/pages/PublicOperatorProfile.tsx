@@ -633,14 +633,15 @@ export default function PublicTalentProfile() {
                 const GroupIcon = group.icon;
                 return (
                   <Card key={group.key} className={group.tone}>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <GroupIcon className="w-5 h-5" /> {group.title}
-                        <Badge variant="secondary" className="ml-1">{group.items.length}</Badge>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="flex items-center gap-2 text-base sm:text-lg min-w-0">
+                        <GroupIcon className="w-5 h-5 shrink-0" />
+                        <span className="flex-1 min-w-0 break-words leading-snug">{group.title}</span>
+                        <Badge variant="secondary" className="shrink-0">{group.items.length}</Badge>
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                         {group.items.map((c) => (
                           <CertificateThumbnail
                             key={c.id}
