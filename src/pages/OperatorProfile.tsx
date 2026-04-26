@@ -547,6 +547,44 @@ export default function OperatorProfile() {
           headline={profile?.headline ?? null}
         />
 
+        {/* Nudge: encourage flipping to public after earning verified credentials */}
+        {(() => {
+          const verifiedCount = certifications.filter((c) => {
+            const s = (c.verification_source ?? "").toLowerCase();
+            return s.startsWith("verified_") || s === "jobline" || s === "partner" || s === "employer";
+          }).length;
+          const isPublic = (profile?.profile_visibility ?? "private") === "public";
+          if (verifiedCount === 0 || isPublic) return null;
+          return (
+            <Card className="border-primary/40 bg-primary/5">
+              <CardContent className="py-4 flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
+                <div className="flex items-start gap-3 min-w-0">
+                  <ShieldCheck className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold">
+                      Share your {verifiedCount} verified credential{verifiedCount === 1 ? "" : "s"} with the world
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Make your talent profile public so employers and your network can verify your achievements.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  className="shrink-0"
+                  onClick={async () => {
+                    setForm((f) => ({ ...f, profile_visibility: "public" }));
+                    await saveProfile({ profile_visibility: "public" });
+                    toast({ title: "Profile is now public", description: "Your verified achievements are visible on /talent." });
+                  }}
+                >
+                  Make profile public
+                </Button>
+              </CardContent>
+            </Card>
+          );
+        })()}
+
         {/* Visibility selector */}
         <Card className={form.profile_visibility !== "private" ? "border-primary bg-primary/5" : "border-dashed"}>
           <CardHeader>
