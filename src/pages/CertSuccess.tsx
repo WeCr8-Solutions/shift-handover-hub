@@ -17,11 +17,41 @@ import { useAuth } from "@/contexts/AuthContext";
 export default function CertSuccess() {
   const [params] = useSearchParams();
   const sessionId = params.get("session_id");
+  const { user } = useAuth();
   const [certId, setCertId] = useState<string | null>(null);
   const [recipientEmail, setRecipientEmail] = useState<string | null>(null);
   const [recipientName, setRecipientName] = useState<string | null>(null);
   const [programName, setProgramName] = useState<string | null>(null);
   const [polling, setPolling] = useState(true);
+  const [profileVisibility, setProfileVisibility] = useState<string | null>(null);
+  const [publicUsername, setPublicUsername] = useState<string | null>(null);
+  const [makingPublic, setMakingPublic] = useState(false);
+
+  // Load current visibility for the signed-in user so we can surface the
+  // "Make profile public" nudge after a successful cert purchase.
+  useEffect(() => {
+    if (!user?.id) return;
+    void supabase
+      .from("operator_profiles")
+      .select("profile_visibility, public_username")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        setProfileVisibility((data?.profile_visibility as string | undefined) ?? null);
+        setPublicUsername((data?.public_username as string | undefined) ?? null);
+      });
+  }, [user?.id]);
+
+  const makeProfilePublic = async () => {
+    if (!user?.id) return;
+    setMakingPublic(true);
+    const { error } = await supabase
+      .from("operator_profiles")
+      .update({ profile_visibility: "public" } as never)
+      .eq("user_id", user.id);
+    setMakingPublic(false);
+    if (!error) setProfileVisibility("public");
+  };
 
   useEffect(() => {
     if (!sessionId) {
