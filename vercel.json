@@ -43,6 +43,42 @@
       ]
     },
     {
+      "source": "/",
+      "destination": "/api/og?path=/"
+    },
+    {
+      "source": "/talent",
+      "destination": "/api/og?path=/talent"
+    },
+    {
+      "source": "/talent/:username",
+      "destination": "/api/og?path=/talent/:username"
+    },
+    {
+      "source": "/oap",
+      "destination": "/api/og?path=/oap"
+    },
+    {
+      "source": "/oap/:path*",
+      "destination": "/api/og?path=/oap/:path*"
+    },
+    {
+      "source": "/gca",
+      "destination": "/api/og?path=/gca"
+    },
+    {
+      "source": "/gca/:path*",
+      "destination": "/api/og?path=/gca/:path*"
+    },
+    {
+      "source": "/gcode-academy",
+      "destination": "/api/og?path=/gcode-academy"
+    },
+    {
+      "source": "/verify/:certId",
+      "destination": "/api/og?path=/verify/:certId"
+    },
+    {
       "source": "/((?!.*\\.).*)",
       "destination": "/index.html"
     }
