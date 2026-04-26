@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { Maximize2, Minus, Plus, X } from "lucide-react";
+import { Maximize2, Minus, Plus, RotateCw, Maximize, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { CertificateTemplate, type CertificateVariant } from "./CertificateTemplate";
