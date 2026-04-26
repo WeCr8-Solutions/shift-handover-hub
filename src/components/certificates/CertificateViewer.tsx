@@ -135,7 +135,7 @@ export function CertificateViewer({ cert, variant, printTargetId }: CertificateV
               variant="ghost"
               size="icon"
               className="h-8 w-8"
-              onClick={() => setModalScale((s) => Math.max(0.3, s - 0.15))}
+              onClick={() => setModalScale((s) => Math.max(0.2, s - 0.15))}
               aria-label="Zoom out"
             >
               <Minus className="w-4 h-4" />
@@ -151,6 +151,30 @@ export function CertificateViewer({ cert, variant, printTargetId }: CertificateV
               aria-label="Zoom in"
             >
               <Plus className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => fitToViewport(rotate)}
+              aria-label="Fit to screen"
+              title="Fit to screen"
+            >
+              <Maximize className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => {
+                const next = !rotate;
+                setRotate(next);
+                fitToViewport(next);
+              }}
+              aria-label="Rotate certificate"
+              title="Rotate"
+            >
+              <RotateCw className="w-4 h-4" />
             </Button>
             <Button
               variant="ghost"
