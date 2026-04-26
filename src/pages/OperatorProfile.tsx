@@ -874,73 +874,114 @@ export default function OperatorProfile() {
                 <CardDescription>Upload, review, remove, and share your resume from one dedicated place.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Step 1 — upload only */}
+                {/* One unified upload control with toggle options */}
                 <div className="rounded-lg border bg-muted/20 p-4 space-y-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-medium">Step 1 · Upload your resume</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Upload a PDF or DOCX (max 8 MB). Your resume is stored privately by default — nothing is read or shared until you choose to autofill or make it public.
-                      </p>
-                      <ul className="text-xs text-muted-foreground mt-2 list-disc pl-4 space-y-0.5">
-                        <li><span className="font-medium text-foreground">Autofill your profile</span> — skills, machines, work history & education in one click.</li>
-                        <li><span className="font-medium text-foreground">Share with employers</span> — optionally show on your public /talent page (toggle below).</li>
-                        <li><span className="font-medium text-foreground">Apply faster</span> — keep the latest version on file for job applications.</li>
-                        <li><span className="font-medium text-foreground">Verify experience</span> — back up certifications and OAP/GCA records.</li>
-                      </ul>
-                    </div>
-                    <Badge variant="outline" className="shrink-0">1</Badge>
+                  <div>
+                    <p className="text-sm font-medium">Upload your resume</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      One active resume at a time. PDF or DOCX (max 8 MB). Stored privately by default —
+                      it's only shown on your public profile when you flip the toggle below.
+                    </p>
                   </div>
+
                   <Input
                     type="file"
                     accept="application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.pdf,.docx"
                     onChange={handleResumeUpload}
-                    disabled={uploadingResume || autofilling}
+                    disabled={uploadingResume || autofilling || building}
                   />
-                  {uploadingResume && (
+                  {(uploadingResume || autofilling || building) && (
                     <p className="text-sm text-muted-foreground flex items-center gap-2">
-                      <Loader2 className="w-3 h-3 animate-spin" /> Uploading…
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      {uploadingResume ? "Uploading…" : autofilling ? "Reading your resume…" : "Building JobLine résumé…"}
                     </p>
                   )}
-                </div>
 
-                {/* Step 2 — explicit autofill */}
-                <div className="rounded-lg border bg-primary/5 p-4 space-y-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-medium">Step 2 · Autofill profile from resume</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        We'll read your uploaded resume and autofill your headline, bio, location, skills, machines, work history, and education. Email, phone, and home address are <span className="font-medium text-foreground">never</span> autofilled — add those manually under Basics so they stay private.
-                      </p>
+                  {/* Toggles that control what happens after upload */}
+                  <div className="space-y-2 pt-1">
+                    <div className="flex items-center justify-between rounded-md border bg-background px-3 py-2">
+                      <div className="min-w-0 pr-3">
+                        <p className="text-sm font-medium">Auto-fill profile from resume</p>
+                        <p className="text-xs text-muted-foreground">
+                          After upload, AI extracts your headline, bio, location, skills, machines,
+                          work history & education. Email/phone/address are never autofilled.
+                        </p>
+                      </div>
+                      <Switch
+                        checked={autoAutofillOnUpload}
+                        onCheckedChange={setAutoAutofillOnUpload}
+                        disabled={uploadingResume || autofilling}
+                      />
                     </div>
-                    <Badge variant="outline" className="shrink-0">2</Badge>
+
+                    <div className="flex items-center justify-between rounded-md border bg-background px-3 py-2">
+                      <div className="min-w-0 pr-3">
+                        <p className="text-sm font-medium">Overwrite existing fields when autofilling</p>
+                        <p className="text-xs text-muted-foreground">
+                          OFF: only fills empty fields. ON: replaces headline, bio, location & links.
+                          Skills/jobs/education/machines are always merged.
+                        </p>
+                      </div>
+                      <Switch
+                        checked={autofillOverwrite}
+                        onCheckedChange={setAutofillOverwrite}
+                        disabled={autofilling}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between rounded-md border bg-background px-3 py-2">
+                      <div className="min-w-0 pr-3">
+                        <p className="text-sm font-medium">Auto-rebuild JobLine résumé after autofill</p>
+                        <p className="text-xs text-muted-foreground">
+                          Replaces your active résumé with a freshly generated JobLine-formatted PDF
+                          built from your updated profile.
+                        </p>
+                      </div>
+                      <Switch
+                        checked={autoBuildAfterAutofill}
+                        onCheckedChange={setAutoBuildAfterAutofill}
+                        disabled={autofilling || building}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between rounded-md border bg-background px-3 py-2">
+                      <div className="min-w-0 pr-3">
+                        <p className="text-sm font-medium">Show resume on public profile</p>
+                        <p className="text-xs text-muted-foreground">
+                          When ON, visitors of your /talent page can view & download your résumé.
+                        </p>
+                      </div>
+                      <Switch
+                        checked={form.resume_public}
+                        onCheckedChange={(v) => setForm((f) => ({ ...f, resume_public: v }))}
+                      />
+                    </div>
                   </div>
 
-                  <div className="flex items-center justify-between rounded-md border bg-background px-3 py-2">
-                    <div className="min-w-0 pr-3">
-                      <p className="text-sm font-medium">Overwrite existing fields</p>
-                      <p className="text-xs text-muted-foreground">
-                        OFF (default): only fills empty fields. ON: replaces headline, bio, location, and links from your resume. New skills/jobs/education/machines are always merged — never duplicated.
-                      </p>
-                    </div>
-                    <Switch
-                      checked={autofillOverwrite}
-                      onCheckedChange={setAutofillOverwrite}
-                      disabled={autofilling}
-                    />
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2">
+                  {/* Manual actions for the resume already on file */}
+                  <div className="flex flex-wrap items-center gap-2 pt-1">
                     <Button
-                      onClick={handleAutoUpdateFromResume}
-                      disabled={!profile?.resume_pdf_url || autofilling || uploadingResume}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleAutoUpdateFromResume()}
+                      disabled={!profile?.resume_pdf_url || autofilling || uploadingResume || building}
                       className="gap-2"
                     >
                       {autofilling ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                      {autofilling ? "Reading your resume…" : lastAutofill ? "Re-run autofill" : "Autofill profile from resume"}
+                      {lastAutofill ? "Re-run autofill" : "Run autofill now"}
                     </Button>
+                    {profile?.resume_pdf_url && (
+                      <>
+                        <Button variant="outline" size="sm" asChild>
+                          <a href={profile.resume_pdf_url} target="_blank" rel="noopener noreferrer">View resume</a>
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={handleRemoveResume} disabled={autofilling || building}>
+                          Remove resume
+                        </Button>
+                      </>
+                    )}
                     {!profile?.resume_pdf_url && (
-                      <p className="text-xs text-muted-foreground">Upload a resume first.</p>
+                      <Badge variant="outline">No résumé on file yet</Badge>
                     )}
                   </div>
 
@@ -954,29 +995,26 @@ export default function OperatorProfile() {
                         <Badge variant="secondary">{lastAutofill.education} education</Badge>
                         <Badge variant="secondary">{lastAutofill.machines} machine{lastAutofill.machines === 1 ? "" : "s"}</Badge>
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        Review the other tabs (Basics, Skills, Work, Education) to fine-tune what was added.
-                      </p>
                     </div>
                   )}
                 </div>
 
-                {/* Step 3 — build a résumé from your profile */}
+                {/* In-platform résumé builder */}
                 <div className="rounded-lg border bg-accent/10 p-4 space-y-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-medium">Step 3 · Build a JobLine résumé</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Don't have a résumé? Generate a polished PDF directly from your profile (summary, work history,
-                        education, certifications, skills, and awards) using the JobLine layout. Save it as your active
-                        résumé, publish it to your public profile, or just download a copy.
-                      </p>
-                      <p className="text-[11px] text-muted-foreground mt-1.5">
-                        Tip: complete <span className="font-medium">Basics</span>, <span className="font-medium">Work</span>,
-                        and <span className="font-medium">Skills</span> first for the best result.
-                      </p>
-                    </div>
-                    <Badge variant="outline" className="shrink-0">3</Badge>
+                  <div>
+                    <p className="text-sm font-medium flex items-center gap-2">
+                      <FileText className="w-4 h-4" /> Build a JobLine résumé from your profile
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Generate a polished PDF directly from your profile (summary, work history,
+                      education, certifications, skills & awards) using the JobLine layout. Save it as
+                      your active résumé, publish to your public profile, or download a copy.
+                    </p>
+                    <p className="text-[11px] text-muted-foreground mt-1.5">
+                      Tip: complete <span className="font-medium">Basics</span>,{" "}
+                      <span className="font-medium">Work</span>, and{" "}
+                      <span className="font-medium">Skills</span> first for the best result.
+                    </p>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <Button
@@ -1005,49 +1043,6 @@ export default function OperatorProfile() {
                       Download only
                     </Button>
                   </div>
-                </div>
-
-                {/* Resume file management */}
-                <div className="rounded-lg border p-4 space-y-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-medium">Current uploaded resume</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        One active resume at a time. Replace it by uploading a new file, or remove it here.
-                      </p>
-                    </div>
-                    {profile?.resume_pdf_url ? <Badge variant="secondary">Uploaded</Badge> : <Badge variant="outline">None</Badge>}
-                  </div>
-
-                  {profile?.resume_pdf_url ? (
-                    <>
-                      <div className="flex items-center justify-between rounded-md border bg-muted/30 px-3 py-2">
-                        <div className="min-w-0 pr-3">
-                          <p className="text-sm font-medium">Show resume on public profile</p>
-                          <p className="text-xs text-muted-foreground">
-                            When ON, visitors of your /talent page can download your resume.
-                          </p>
-                        </div>
-                        <Switch
-                          checked={form.resume_public}
-                          onCheckedChange={(v) => setForm((f) => ({ ...f, resume_public: v }))}
-                        />
-                      </div>
-
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Button variant="outline" size="sm" asChild>
-                          <a href={profile.resume_pdf_url} target="_blank" rel="noopener noreferrer">View resume</a>
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={handleRemoveResume} disabled={autofilling}>
-                          Remove resume
-                        </Button>
-                      </div>
-                    </>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">
-                      No resume uploaded yet.
-                    </p>
-                  )}
                 </div>
 
                 <Button onClick={handleSave} disabled={saving || uploadingResume || autofilling} className="gap-2">
