@@ -61,13 +61,21 @@ export function CertificateThumbnail({ cert, category }: Props) {
     }
   }, [deepLinkKey, verifyRoute, navigate]);
 
+  // What can the operator open from this card?
+  // - JobLine-issued (linked_cert_id) -> /verify/:certId page (with full digital cert)
+  // - Self-uploaded with a file or external credential link -> inline fullscreen viewer
+  // - Self-uploaded with NOTHING attached -> not interactive (nothing to show)
+  const hasViewableContent = Boolean(verifyRoute || fileUrl || externalCredentialUrl);
+
   const handleClick = () => {
     if (verifyRoute) {
       const back = typeof window !== "undefined" ? window.location.pathname : "/";
       navigate(`${verifyRoute}?back=${encodeURIComponent(back)}`);
       return;
     }
-    setOpen(true);
+    if (fileUrl || externalCredentialUrl) {
+      setOpen(true);
+    }
   };
 
   const copyDeepLink = useCallback(async () => {
@@ -106,12 +114,16 @@ export function CertificateThumbnail({ cert, category }: Props) {
       <button
         type="button"
         onClick={handleClick}
+        disabled={!hasViewableContent}
         className={cn(
           "group relative w-full text-left rounded-lg border bg-card overflow-hidden ring-1",
           palette.ring,
-          "hover:shadow-md transition-shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          hasViewableContent
+            ? "hover:shadow-md cursor-pointer"
+            : "cursor-default opacity-90",
+          "transition-shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         )}
-        aria-label={`View ${cert.name} certificate`}
+        aria-label={hasViewableContent ? `View ${cert.name} certificate` : `${cert.name} (no file uploaded)`}
       >
         <div
           className={cn("relative w-full bg-gradient-to-br", palette.bg)}
@@ -150,7 +162,9 @@ export function CertificateThumbnail({ cert, category }: Props) {
         </div>
 
         <div className="px-2 py-1 border-t flex items-center justify-between gap-2">
-          <span className="text-[9px] sm:text-[10px] text-muted-foreground truncate">Tap to view</span>
+          <span className="text-[9px] sm:text-[10px] text-muted-foreground truncate">
+            {hasViewableContent ? "Tap to view" : "No file uploaded"}
+          </span>
           {category !== "self" && (
             <Badge variant="outline" className="h-4 px-1 text-[8px] sm:text-[9px] shrink-0">Verified</Badge>
           )}
