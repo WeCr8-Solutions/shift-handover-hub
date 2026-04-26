@@ -128,6 +128,7 @@ const WorkOrderHistoryPage = lazy(() => import("./pages/WorkOrderHistoryPage"));
 const QuoteHistoryPage = lazy(() => import("./pages/QuoteHistoryPage"));
 const OperatorProfile = lazy(() => import("./pages/OperatorProfile"));
 const TalentLanding = lazy(() => import("./pages/TalentLanding"));
+const ResumeBuilderLanding = lazy(() => import("./pages/ResumeBuilderLanding"));
 const TalentBrowse = lazy(() => import("./pages/TalentBrowse"));
 const TalentSearch = lazy(() => import("./pages/TalentSearch"));
 const TalentDashboard = lazy(() => import("./pages/TalentDashboard"));
@@ -262,6 +263,7 @@ const App = () => (
                     <Route path="/oap/certificates/verify" element={<CertificateLookup />} />
                     <Route path="/talent" element={<TalentLanding />} />
                     <Route path="/talent/dashboard" element={<TalentDashboard />} />
+                    <Route path="/talent/resume-builder" element={<ResumeBuilderLanding />} />
                     <Route path="/talent/browse" element={<TalentBrowse />} />
                     <Route path="/talent/search" element={<TalentSearch />} />
                     <Route path="/talent/profile" element={<Navigate to="/operator/profile" replace />} />

@@ -168,6 +168,11 @@ export default function TalentLanding() {
                 <Users className="w-4 h-4" /> {profileCtaLabel}
               </Link>
             </Button>
+            <Button asChild variant="outline">
+              <Link to="/talent/resume-builder" className="gap-2">
+                <Sparkles className="w-4 h-4" /> Résumé builder
+              </Link>
+            </Button>
             <Button asChild variant="ghost">
               <Link to="/oap" className="gap-2">
                 <GraduationCap className="w-4 h-4" /> About OAP credentials
