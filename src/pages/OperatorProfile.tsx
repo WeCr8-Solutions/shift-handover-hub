@@ -41,6 +41,15 @@ function extractErrorMessage(err: unknown): string {
 
 export default function OperatorProfile() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const VALID_TABS = ["basics", "resume", "certs", "skills", "work", "edu", "refs", "minisite"] as const;
+  const tabParam = searchParams.get("tab");
+  const activeTab = (VALID_TABS as readonly string[]).includes(tabParam ?? "") ? (tabParam as string) : "basics";
+  const handleTabChange = (value: string) => {
+    const next = new URLSearchParams(searchParams);
+    next.set("tab", value);
+    setSearchParams(next, { replace: true });
+  };
   const { user, profile: authProfile, isReady } = useAuth();
   const { toast } = useToast();
   const {
@@ -491,7 +500,7 @@ export default function OperatorProfile() {
           </CardContent>
         </Card>
 
-        <Tabs defaultValue="basics">
+        <Tabs value={activeTab} onValueChange={handleTabChange}>
           <TabsList className="grid grid-cols-4 md:grid-cols-8 w-full">
             <TabsTrigger value="basics">Basics</TabsTrigger>
             <TabsTrigger value="resume">Resume</TabsTrigger>
