@@ -547,6 +547,44 @@ export default function OperatorProfile() {
           headline={profile?.headline ?? null}
         />
 
+        {/* Nudge: encourage flipping to public after earning verified credentials */}
+        {(() => {
+          const verifiedCount = certifications.filter((c) => {
+            const s = (c.verification_source ?? "").toLowerCase();
+            return s.startsWith("verified_") || s === "jobline" || s === "partner" || s === "employer";
+          }).length;
+          const isPublic = (profile?.profile_visibility ?? "private") === "public";
+          if (verifiedCount === 0 || isPublic) return null;
+          return (
+            <Card className="border-primary/40 bg-primary/5">
+              <CardContent className="py-4 flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
+                <div className="flex items-start gap-3 min-w-0">
+                  <ShieldCheck className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold">
+                      Share your {verifiedCount} verified credential{verifiedCount === 1 ? "" : "s"} with the world
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Make your talent profile public so employers and your network can verify your achievements.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  className="shrink-0"
+                  onClick={async () => {
+                    setForm((f) => ({ ...f, profile_visibility: "public" }));
+                    await saveProfile({ profile_visibility: "public" });
+                    toast({ title: "Profile is now public", description: "Your verified achievements are visible on /talent." });
+                  }}
+                >
+                  Make profile public
+                </Button>
+              </CardContent>
+            </Card>
+          );
+        })()}
+
         {/* Visibility selector */}
         <Card className={form.profile_visibility !== "private" ? "border-primary bg-primary/5" : "border-dashed"}>
           <CardHeader>
@@ -1432,6 +1470,29 @@ function pathFromOperatorProfilesUrl(url: string | null): string | null {
   return decodeURIComponent(url.slice(i + marker.length).split("?")[0]);
 }
 
+type CertCategory = "oap" | "gca" | "partner" | "self";
+
+/**
+ * Map raw verification_source + linked_cert_id to a display category.
+ * Aligns the operator-facing manager with PublicOperatorProfile's classifier
+ * so newly issued JobLine credentials don't render as "Self-reported".
+ */
+function classifyCertSource(src: string | null | undefined, linkedId: string | null | undefined): CertCategory {
+  const s = (src ?? "").toLowerCase();
+  const linked = linkedId ?? "";
+  if (s === "verified_oap" || (s === "jobline" && linked.startsWith("OAP-"))) return "oap";
+  if (s === "verified_gca" || (s === "jobline" && linked.startsWith("GCA-"))) return "gca";
+  if (s.startsWith("verified_") || s === "jobline" || s === "partner" || s === "employer") return "partner";
+  return "self";
+}
+
+const CATEGORY_LABEL: Record<CertCategory, string> = {
+  oap: "Verified · OAP",
+  gca: "Verified · GCA",
+  partner: "Verified · Partner",
+  self: "Self-reported",
+};
+
 function CertificationsManager({
   certs, onChange, uploadFile, userId,
 }: {
@@ -1443,6 +1504,7 @@ function CertificationsManager({
   const { toast } = useToast();
   const [adding, setAdding] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [filter, setFilter] = useState<"all" | CertCategory>("all");
   const [draft, setDraft] = useState({ name: "", issuer: "", issued_date: "", expires_date: "", credential_id: "", credential_url: "" });
 
   const add = async () => {
@@ -1539,39 +1601,83 @@ function CertificationsManager({
     .filter((c) => !!c.attachment_url)
     .sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
 
+  const counts = certs.reduce<Record<"all" | CertCategory, number>>(
+    (acc, c) => {
+      const cat = classifyCertSource(c.verification_source, c.linked_cert_id);
+      acc.all += 1;
+      acc[cat] += 1;
+      return acc;
+    },
+    { all: 0, oap: 0, gca: 0, partner: 0, self: 0 },
+  );
+
+  const filteredCerts = certs.filter(
+    (c) => filter === "all" || classifyCertSource(c.verification_source, c.linked_cert_id) === filter,
+  );
+
+  const FILTER_OPTIONS: { value: "all" | CertCategory; label: string }[] = [
+    { value: "all", label: "All" },
+    { value: "oap", label: "OAP" },
+    { value: "gca", label: "GCA" },
+    { value: "partner", label: "Partner" },
+    { value: "self", label: "Self" },
+  ];
+
   return (
     <div className="space-y-3">
-      {certs.map((c) => (
-        <div key={c.id} className="border rounded-lg p-3 space-y-2">
+      {certs.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {FILTER_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => setFilter(opt.value)}
+              className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                filter === opt.value
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-background text-muted-foreground border-border hover:bg-muted"
+              }`}
+            >
+              {opt.label} <span className="opacity-70">({counts[opt.value]})</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {filteredCerts.map((c) => {
+        const cat = classifyCertSource(c.verification_source, c.linked_cert_id);
+        const isVerified = cat !== "self";
+        return (
+        <div key={c.id} className="border rounded-lg p-3 space-y-2 overflow-hidden">
           <div className="flex items-start justify-between gap-2">
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <p className="font-medium">{c.name}</p>
-                {c.verification_source.startsWith("verified_") ? (
-                  <Badge className="gap-1 bg-primary/15 text-primary border-primary/30">
-                    <ShieldCheck className="w-3 h-3" /> Verified · {c.verification_source.replace("verified_", "").toUpperCase()}
+                <p className="font-medium break-words">{c.name}</p>
+                {isVerified ? (
+                  <Badge className="gap-1 bg-primary/15 text-primary border-primary/30 shrink-0">
+                    <ShieldCheck className="w-3 h-3" /> {CATEGORY_LABEL[cat]}
                   </Badge>
                 ) : (
-                  <Badge variant="outline">Self-reported</Badge>
+                  <Badge variant="outline" className="shrink-0">Self-reported</Badge>
                 )}
               </div>
-              {c.issuer && <p className="text-sm text-muted-foreground">{c.issuer}</p>}
+              {c.issuer && <p className="text-sm text-muted-foreground break-words">{c.issuer}</p>}
               <p className="text-xs text-muted-foreground">
                 {c.issued_date && `Issued ${c.issued_date}`}{c.expires_date && ` · Expires ${c.expires_date}`}
               </p>
               {(c.linked_cert_id || c.credential_id) && (
-                <p className="text-xs text-muted-foreground font-mono">
+                <p className="text-xs text-muted-foreground font-mono break-all">
                   Certificate #{c.linked_cert_id ?? c.credential_id}
                 </p>
               )}
               {c.credential_url && (
-                <a href={c.credential_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary underline">
+                <a href={c.credential_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary underline break-all">
                   View credential
                 </a>
               )}
             </div>
-            <div className="flex items-center gap-1">
-              {c.verification_source === "self_reported" && (
+            <div className="flex items-center gap-1 shrink-0">
+              {!isVerified && (
                 <>
                   <label className="cursor-pointer">
                     <input
@@ -1588,10 +1694,10 @@ function CertificationsManager({
             </div>
           </div>
           {c.attachment_url && (
-            <a href={c.attachment_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary underline">View attachment</a>
+            <a href={c.attachment_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary underline break-all">View attachment</a>
           )}
-          <div className="flex items-center justify-between border-t pt-2 mt-1">
-            <div className="text-xs text-muted-foreground">
+          <div className="flex items-center justify-between gap-2 border-t pt-2 mt-1">
+            <div className="text-xs text-muted-foreground min-w-0 truncate">
               {(c as { is_public?: boolean }).is_public === false ? "Hidden from public profile" : "Visible on public profile"}
             </div>
             <Switch
@@ -1600,7 +1706,14 @@ function CertificationsManager({
             />
           </div>
         </div>
-      ))}
+        );
+      })}
+
+      {filteredCerts.length === 0 && certs.length > 0 && (
+        <p className="text-xs text-muted-foreground py-3 text-center">
+          No certifications in this category.
+        </p>
+      )}
 
       {adding ? (
         <div className="border rounded-lg p-3 space-y-2 bg-secondary/30">

@@ -5,8 +5,9 @@ import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { CheckCircle2, Mail, ShieldCheck, Loader2 } from "lucide-react";
+import { CheckCircle2, Mail, ShieldCheck, Loader2, Globe } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 /**
  * Post-Stripe-checkout landing page for the $12 cert. Stripe redirects here
@@ -16,11 +17,41 @@ import { supabase } from "@/integrations/supabase/client";
 export default function CertSuccess() {
   const [params] = useSearchParams();
   const sessionId = params.get("session_id");
+  const { user } = useAuth();
   const [certId, setCertId] = useState<string | null>(null);
   const [recipientEmail, setRecipientEmail] = useState<string | null>(null);
   const [recipientName, setRecipientName] = useState<string | null>(null);
   const [programName, setProgramName] = useState<string | null>(null);
   const [polling, setPolling] = useState(true);
+  const [profileVisibility, setProfileVisibility] = useState<string | null>(null);
+  const [publicUsername, setPublicUsername] = useState<string | null>(null);
+  const [makingPublic, setMakingPublic] = useState(false);
+
+  // Load current visibility for the signed-in user so we can surface the
+  // "Make profile public" nudge after a successful cert purchase.
+  useEffect(() => {
+    if (!user?.id) return;
+    void supabase
+      .from("operator_profiles")
+      .select("profile_visibility, public_username")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        setProfileVisibility((data?.profile_visibility as string | undefined) ?? null);
+        setPublicUsername((data?.public_username as string | undefined) ?? null);
+      });
+  }, [user?.id]);
+
+  const makeProfilePublic = async () => {
+    if (!user?.id) return;
+    setMakingPublic(true);
+    const { error } = await supabase
+      .from("operator_profiles")
+      .update({ profile_visibility: "public" } as never)
+      .eq("user_id", user.id);
+    setMakingPublic(false);
+    if (!error) setProfileVisibility("public");
+  };
 
   useEffect(() => {
     if (!sessionId) {
@@ -97,6 +128,43 @@ export default function CertSuccess() {
                   </div>
                 </div>
               </div>
+
+              {/* Make-public nudge for signed-in operators whose profile isn't already public */}
+              {user && profileVisibility && profileVisibility !== "public" && (
+                <div className="rounded-lg border border-primary/40 bg-primary/5 p-4 text-left space-y-3">
+                  <div className="flex items-start gap-2">
+                    <Globe className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-semibold">Share this achievement publicly</p>
+                      <p className="text-xs text-muted-foreground">
+                        Make your talent profile public so employers can see your verified credentials at
+                        {publicUsername ? ` jobline.ai/talent/${publicUsername}` : " your public talent URL"}.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Button size="sm" onClick={makeProfilePublic} disabled={makingPublic} className="flex-1">
+                      {makingPublic ? "Updating…" : "Make profile public"}
+                    </Button>
+                    <Button asChild size="sm" variant="outline" className="flex-1">
+                      <Link to="/operator/profile">Manage profile</Link>
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {user && profileVisibility === "public" && publicUsername && (
+                <div className="rounded-lg border border-primary/40 bg-primary/5 p-3 text-xs text-left flex items-center gap-2">
+                  <Globe className="w-4 h-4 text-primary shrink-0" />
+                  <span>
+                    Live on your public profile:{" "}
+                    <Link to={`/talent/${publicUsername}`} className="text-primary underline font-mono">
+                      /talent/{publicUsername}
+                    </Link>
+                  </span>
+                </div>
+              )}
+
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button asChild className="flex-1">
                   <Link to={`/verify/${certId}`}>View / print certificate</Link>
