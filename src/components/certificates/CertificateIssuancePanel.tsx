@@ -338,8 +338,8 @@ export function CertificateIssuancePanel({ defaultOrgId }: { defaultOrgId?: stri
 
         {previewOpen && (
           <div className="border rounded-md overflow-auto bg-muted/20 p-3">
-            <div className="mx-auto" style={{ width: 816 * 0.5, height: 1056 * 0.5 }}>
-              <div style={{ transform: "scale(0.5)", transformOrigin: "top left", width: 816, height: 1056 }}>
+            <div className="mx-auto" style={{ width: 1056 * 0.5, height: 816 * 0.5 }}>
+              <div style={{ transform: "scale(0.5)", transformOrigin: "top left", width: 1056, height: 816 }}>
                 <CertPreview cert={previewCert} variant="diploma" />
               </div>
             </div>
