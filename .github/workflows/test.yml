@@ -83,3 +83,29 @@ jobs:
       - name: Type check desktop
         run: npx tsc --noEmit
         working-directory: desktop
+
+  cert-verify-smoke:
+    name: Public certificate verify smoke
+    runs-on: ubuntu-latest
+    # Network-dependent (hits production Supabase + jobline.ai). Runs on main
+    # only so PRs from forks (no secrets, possibly no outbound) don't flake.
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    continue-on-error: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run cert verify smoke
+        env:
+          # Known-good cert ids sampled from production. Update if these are
+          # ever revoked. The script also verifies the RPCs are anon-callable
+          # even without these, so the gate stays meaningful.
+          SAMPLE_OAP_CERT_ID: ${{ vars.SAMPLE_OAP_CERT_ID || 'OAP-YAN6DG-2026' }}
+          SAMPLE_GCA_CERT_ID: ${{ vars.SAMPLE_GCA_CERT_ID || 'GCA-J4ZC7F-2026' }}
+        run: node scripts/cert-verify-smoke.mjs
