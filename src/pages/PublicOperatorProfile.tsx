@@ -632,12 +632,10 @@ export default function PublicTalentProfile() {
         })()}
 
         {visibleCerts.length > 0 && (() => {
-          const oapCerts = visibleCerts.filter((c) => c.verification_source === "verified_oap");
-          const gcaCerts = visibleCerts.filter((c) => c.verification_source === "verified_gca");
-          const partnerCerts = visibleCerts.filter(
-            (c) => c.verification_source.startsWith("verified_") && c.verification_source !== "verified_oap" && c.verification_source !== "verified_gca",
-          );
-          const selfCerts = visibleCerts.filter((c) => !c.verification_source.startsWith("verified_"));
+          const oapCerts = visibleCerts.filter((c) => classifyCert(c) === "oap");
+          const gcaCerts = visibleCerts.filter((c) => classifyCert(c) === "gca");
+          const partnerCerts = visibleCerts.filter((c) => classifyCert(c) === "partner");
+          const selfCerts = visibleCerts.filter((c) => classifyCert(c) === "self");
 
           const groups: Array<{
             key: CertCategory;
