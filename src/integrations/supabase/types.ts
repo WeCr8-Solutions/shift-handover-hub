@@ -11941,6 +11941,15 @@ export type Database = {
           title: string
         }[]
       }
+      get_public_operator_cert_summary: {
+        Args: { _username: string }
+        Returns: {
+          gca_count: number
+          oap_count: number
+          partner_count: number
+          verified_total: number
+        }[]
+      }
       get_public_operator_profile: {
         Args: { _username: string }
         Returns: {

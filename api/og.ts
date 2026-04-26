@@ -135,7 +135,9 @@ async function fetchTalentMeta(username: string): Promise<Meta | null> {
     return {
       title: `${headline} (@${p.public_username}) — JobLine.ai Talent`,
       description: desc,
-      image: p.avatar_url ?? `${BASE}/profile-og.jpg`,
+      // Branded, dynamically rendered share card. Renderer falls back to the
+      // generic JobLine OG image if the profile is private/missing.
+      image: `${BASE}/api/og-image?u=${encodeURIComponent(p.public_username ?? username)}`,
       url: `${BASE}/talent/${p.public_username}`,
       type: "profile",
     };
