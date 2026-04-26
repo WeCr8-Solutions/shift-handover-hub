@@ -11926,6 +11926,10 @@ export type Database = {
           recommendation_count: number
         }[]
       }
+      get_public_talent_profile_bundle: {
+        Args: { _username: string }
+        Returns: Json
+      }
       get_user_org_id: { Args: { _user_id: string }; Returns: string }
       grade_gca_attempt: {
         Args: { _answers: Json; _bank_id: string; _started_at: string }
