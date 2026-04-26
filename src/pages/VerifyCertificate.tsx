@@ -84,6 +84,27 @@ export default function VerifyCertificate() {
           <span>Certificate Verification</span>
         </div>
 
+        {(() => {
+          const backParam = searchParams.get("back");
+          const safeBack = backParam && backParam.startsWith("/") && !backParam.startsWith("//") ? backParam : null;
+          const profileBack = cert?.recipientUsername ? `/talent/${cert.recipientUsername}` : null;
+          const backHref = safeBack ?? profileBack;
+          const backLabel = safeBack?.startsWith("/talent/")
+            ? `Back to @${safeBack.split("/talent/")[1]?.split(/[?#]/)[0]}`
+            : profileBack
+            ? `Back to @${cert?.recipientUsername}`
+            : null;
+          return backHref && backLabel ? (
+            <div className="mb-3 print:hidden">
+              <Button asChild variant="ghost" size="sm" className="-ml-2">
+                <Link to={backHref}>
+                  <ArrowLeft className="w-4 h-4 mr-1.5" /> {backLabel}
+                </Link>
+              </Button>
+            </div>
+          ) : null;
+        })()}
+
         <div className="mb-4 flex flex-wrap gap-2 print:hidden">
           <Button asChild variant="outline" size="sm">
             <Link to={lookupRoute}>Verify another certificate</Link>
