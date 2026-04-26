@@ -179,18 +179,7 @@ export function CertificateThumbnail({ cert, category }: Props) {
                   <Loader2 className="w-4 h-4 animate-spin" /> Loading certificate…
                 </div>
               ) : fullCert ? (
-                <div className="min-w-full min-h-full flex items-center justify-center p-2 sm:p-6">
-                  <div
-                    className="origin-top mx-auto shadow-2xl"
-                    style={{
-                      width: 1056,
-                      transform: "scale(min(1, calc((100vw - 24px) / 1056)))",
-                      transformOrigin: "top center",
-                    }}
-                  >
-                    <CertificateTemplate cert={fullCert} variant="digital" />
-                  </div>
-                </div>
+                <ScaledCertificate cert={fullCert} />
               ) : (
                 <div className="flex flex-col items-center justify-center h-full text-sm text-muted-foreground p-6 text-center gap-3">
                   <p>Couldn't load this certificate inline.</p>
