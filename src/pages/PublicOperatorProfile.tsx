@@ -39,7 +39,6 @@ import {
   Briefcase,
   GraduationCap,
   ArrowLeft,
-  ExternalLink,
   CheckCircle2,
   Share2,
   Mail,
