@@ -21,6 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { COUNTRIES, getRegionsForCountry, SUGGESTED_CITIES, SUGGESTED_HEADLINES } from "@/lib/talent/locations";
 import { useUsernameAvailability, suggestUsernames } from "@/hooks/useUsernameAvailability";
 import { getPublicTalentUrl } from "@/lib/talent/publicHost";
+import { buildResumePdf } from "@/lib/talent/resumeBuilder";
 
 
 const PROFICIENCY_LEVELS = ["beginner", "intermediate", "advanced", "expert"] as const;
