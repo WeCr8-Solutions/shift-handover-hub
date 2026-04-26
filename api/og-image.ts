@@ -149,7 +149,7 @@ function buildBadgeText(s: CertSummary): string {
 }
 
 /** Wrap a long headline to fit in 2 lines at the given font size. */
-function clampHeadline(text: string | null, max = 130): string {
+function clampHeadline(text: string | null, max = 110): string {
   if (!text) return "";
   return text.length > max ? text.slice(0, max - 1).trimEnd() + "…" : text;
 }
