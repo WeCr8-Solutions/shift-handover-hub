@@ -36,6 +36,20 @@ interface Props {
  */
 export function CertificateThumbnail({ cert, category }: Props) {
   const [open, setOpen] = useState(false);
+  const { lookupCertificate } = useCertificates();
+  const [fullCert, setFullCert] = useState<CertificateRecord | null>(null);
+  const [loadingCert, setLoadingCert] = useState(false);
+
+  // When opened on a JobLine-issued cert (linked_cert_id), fetch the full
+  // record so we can render the digital certificate inline — avoids iframe
+  // redirects from auth gates that previously bounced users to /operator/profile.
+  useEffect(() => {
+    if (!open || !cert.linked_cert_id || fullCert) return;
+    setLoadingCert(true);
+    lookupCertificate(cert.linked_cert_id)
+      .then((c) => setFullCert(c))
+      .finally(() => setLoadingCert(false));
+  }, [open, cert.linked_cert_id, fullCert, lookupCertificate]);
 
   const palette = (() => {
     switch (category) {
