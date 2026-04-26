@@ -163,8 +163,29 @@ export function CertificateViewer({ cert, variant, printTargetId }: CertificateV
             className="w-full h-full overflow-auto overscroll-contain bg-muted/30"
             style={{ touchAction: "pinch-zoom pan-x pan-y" }}
           >
-            <div className="min-w-full min-h-full flex items-start justify-center p-4">
-              <ScaledCert cert={cert} variant={variant} scale={modalScale} />
+            <div className="min-w-full min-h-full flex items-center justify-center p-4">
+              {rotate ? (
+                <div
+                  style={{
+                    width: CERT_PX_H * modalScale,
+                    height: CERT_PX_W * modalScale,
+                  }}
+                  className="relative"
+                >
+                  <div
+                    style={{
+                      transform: `rotate(90deg) translateY(-${CERT_PX_H * modalScale}px)`,
+                      transformOrigin: "top left",
+                      width: CERT_PX_W * modalScale,
+                      height: CERT_PX_H * modalScale,
+                    }}
+                  >
+                    <ScaledCert cert={cert} variant={variant} scale={modalScale} />
+                  </div>
+                </div>
+              ) : (
+                <ScaledCert cert={cert} variant={variant} scale={modalScale} />
+              )}
             </div>
           </div>
         </DialogContent>
