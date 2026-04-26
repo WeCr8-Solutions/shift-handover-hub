@@ -1,9 +1,12 @@
-import { useState } from "react";
-import { Award, ExternalLink, FileText, Maximize2, ShieldCheck, Trophy, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Award, ExternalLink, FileText, Loader2, Maximize2, ShieldCheck, Trophy, X } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useCertificates } from "@/hooks/useCertificates";
+import { CertificateTemplate } from "./CertificateTemplate";
+import type { CertificateRecord } from "@/lib/certificates";
 
 export type CertCategory = "oap" | "gca" | "partner" | "self";
 
