@@ -316,7 +316,7 @@ export default function PublicTalentProfile() {
     hasCredential: visibleCerts.map((c) => ({
       "@type": "EducationalOccupationalCredential",
       name: c.name,
-      credentialCategory: c.verification_source.startsWith("verified_") ? "Verified" : "Self-reported",
+      credentialCategory: isVerifiedCert(c) ? "Verified" : "Self-reported",
       recognizedBy: c.issuer ? { "@type": "Organization", name: c.issuer } : undefined,
       url: c.credential_url ?? undefined,
     })),
