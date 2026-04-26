@@ -175,6 +175,11 @@ export default function OperatorProfile() {
     }
   };
 
+  /**
+   * Step 1 — upload only.
+   * The file is stored, verified JobLine certs are auto-imported, but the resume is NOT
+   * parsed yet. The user clicks "Auto-update profile from resume" to run AI extraction.
+   */
   const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -182,7 +187,6 @@ export default function OperatorProfile() {
     try {
       const url = await uploadFile(file, "resume");
       await saveProfile({ resume_pdf_url: url });
-      toast({ title: "Resume uploaded", description: "Parsing for autofill…" });
 
       let importedCerts = 0;
       if (user?.id && user.email) {
@@ -192,49 +196,65 @@ export default function OperatorProfile() {
           console.error("[OperatorProfile] cert sync failed", syncErr);
         }
       }
+      await refresh();
 
-      // Autofill empty fields via AI
-      try {
-        const { data, error } = await supabase.functions.invoke("parse-resume", {
-          body: { resumeUrl: url },
-        });
-        if (error) throw error;
-        if (!data?.ok) throw new Error(data?.error ?? "Parse failed");
-        const added = await applyResumeAutofill(data.data);
-        const autofillDescription =
-          added.fields + added.skills + added.work + added.education + added.machines === 0
-            ? "All fields already filled in — nothing to add."
-            : `Filled ${added.fields} field(s), added ${added.skills} skill(s), ${added.work} job(s), ${added.education} education, ${added.machines} machine(s).`;
-        toast({
-          title: "Autofill complete",
-          description: importedCerts > 0
-            ? `${autofillDescription} Imported ${importedCerts} verified JobLine certificate(s).`
-            : autofillDescription,
-        });
-        await refresh();
-      } catch (parseErr) {
-        console.error("[OperatorProfile] autofill failed", parseErr);
-        const msg = extractErrorMessage(parseErr);
-        toast({
-          title: "Autofill skipped",
-          description: msg.includes("aborted")
-            ? "Resume parsing took too long. Your resume was uploaded — fill the rest manually or try again."
-            : msg,
-          variant: "destructive",
-        });
-        if (importedCerts > 0) {
-          toast({
-            title: "Verified certificates synced",
-            description: `Imported ${importedCerts} verified certificate(s) from OAP/GCA.`,
-          });
-          await refresh();
-        }
-      }
+      toast({
+        title: "Resume uploaded",
+        description:
+          importedCerts > 0
+            ? `Imported ${importedCerts} verified JobLine certificate(s). Click "Auto-update profile from resume" to fill the rest.`
+            : `Click "Auto-update profile from resume" to extract your skills, work history, education, and machines.`,
+      });
     } catch (err) {
       toast({ title: "Upload failed", description: extractErrorMessage(err), variant: "destructive" });
     } finally {
       setUploadingResume(false);
       e.target.value = "";
+    }
+  };
+
+  /**
+   * Step 2 — explicit AI parse + autofill.
+   * Triggered by the "Auto-update profile from resume" button on the Resume tab.
+   * Honors the `autofillOverwrite` toggle: when true, parsed values replace existing
+   * top-level profile fields. New skill/work/edu/machine rows are always deduped.
+   */
+  const handleAutoUpdateFromResume = async () => {
+    if (!profile?.resume_pdf_url) {
+      toast({ title: "No resume uploaded", description: "Upload a PDF or DOCX first.", variant: "destructive" });
+      return;
+    }
+    setAutofilling(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("parse-resume", {
+        body: { resumeUrl: profile.resume_pdf_url },
+      });
+      if (error) throw error;
+      if (!data?.ok) throw new Error(data?.error ?? "Parse failed");
+
+      const added = await applyResumeAutofill(data.data, { overwrite: autofillOverwrite });
+      setLastAutofill({ ...added, at: Date.now() });
+      await refresh();
+
+      const total = added.fields + added.skills + added.work + added.education + added.machines;
+      toast({
+        title: total === 0 ? "Nothing new to add" : "Profile auto-updated",
+        description:
+          total === 0
+            ? "Your profile is already complete — no fields needed updating."
+            : `Filled ${added.fields} field(s), added ${added.skills} skill(s), ${added.work} job(s), ${added.education} education, ${added.machines} machine(s).`,
+      });
+    } catch (err) {
+      const msg = extractErrorMessage(err);
+      toast({
+        title: "Auto-update failed",
+        description: msg.includes("aborted")
+          ? "Resume parsing took too long. Please try again."
+          : msg,
+        variant: "destructive",
+      });
+    } finally {
+      setAutofilling(false);
     }
   };
 
@@ -246,6 +266,7 @@ export default function OperatorProfile() {
       if (path) {
         await supabase.storage.from("operator-profiles").remove([path]);
       }
+      setLastAutofill(null);
       toast({ title: "Resume removed", description: "Your uploaded resume has been removed from your profile." });
     } catch (err) {
       toast({ title: "Remove failed", description: extractErrorMessage(err), variant: "destructive" });
