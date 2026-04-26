@@ -621,10 +621,10 @@ export default function PublicTalentProfile() {
             tone: string;
             items: typeof visibleCerts;
           }> = [
-            { key: "oap", title: "JobLine OAP — Approved", icon: ShieldCheck, tone: "border-primary/30 bg-gradient-to-br from-primary/5 to-transparent", items: oapCerts },
-            { key: "gca", title: "G-Code Academy badges", icon: Trophy, tone: "border-warning/30 bg-gradient-to-br from-warning/5 to-transparent", items: gcaCerts },
-            { key: "partner", title: "Partner-verified certificates", icon: ShieldCheck, tone: "border-accent/30 bg-gradient-to-br from-accent/5 to-transparent", items: partnerCerts },
-            { key: "self", title: "Self-uploaded certificates", icon: Award, tone: "", items: selfCerts },
+            { key: "oap" as const, title: "JobLine OAP — Approved", icon: ShieldCheck, tone: "border-primary/30 bg-gradient-to-br from-primary/5 to-transparent", items: oapCerts },
+            { key: "gca" as const, title: "G-Code Academy badges", icon: Trophy, tone: "border-warning/30 bg-gradient-to-br from-warning/5 to-transparent", items: gcaCerts },
+            { key: "partner" as const, title: "Partner-verified certificates", icon: ShieldCheck, tone: "border-accent/30 bg-gradient-to-br from-accent/5 to-transparent", items: partnerCerts },
+            { key: "self" as const, title: "Self-uploaded certificates", icon: Award, tone: "", items: selfCerts },
           ].filter((g) => g.items.length > 0);
 
           return (
