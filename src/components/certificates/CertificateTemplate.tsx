@@ -312,7 +312,7 @@ function DigitalCertificate({ cert, qrDataUrl, programLabel, printMode }: InnerP
       )}
 
       {/* Footer block */}
-      <div className="absolute bottom-[0.6in] left-[0.6in] right-[0.6in]">
+      <div className="absolute bottom-[0.55in] left-[0.55in] right-[0.55in]">
         <div className="grid grid-cols-3 gap-4 items-end pt-4 border-t border-border">
           {/* Signature */}
           <div>
