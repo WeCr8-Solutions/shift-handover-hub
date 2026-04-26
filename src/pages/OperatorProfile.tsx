@@ -273,12 +273,20 @@ export default function OperatorProfile() {
     }
   };
 
-  /** Fills only empty profile fields and inserts new skill/work/education/machine rows. */
-  const applyResumeAutofill = async (parsed: any) => {
+  /**
+   * Applies parsed resume data to the profile.
+   * - `overwrite=false` (default): top-level fields only filled when currently empty.
+   * - `overwrite=true`: parsed values replace any existing top-level field that is non-empty.
+   * Skill / work / education / machine rows are always deduped — never overwritten.
+   * Sensitive contact fields (email/phone) are NEVER auto-set on the public profile;
+   * the user must add them manually under Basics.
+   */
+  const applyResumeAutofill = async (parsed: any, options: { overwrite: boolean } = { overwrite: false }) => {
     if (!user?.id) return { fields: 0, skills: 0, work: 0, education: 0, machines: 0 };
     const counts = { fields: 0, skills: 0, work: 0, education: 0, machines: 0 };
+    const overwrite = options.overwrite;
 
-    // 1) Top-level profile fields — only fill if currently empty
+    // 1) Top-level profile fields. Email + phone intentionally excluded for privacy.
     const profilePatch: Record<string, unknown> = {};
     const candidates: Array<[keyof typeof form, string | undefined]> = [
       ["headline", parsed.headline],
@@ -288,16 +296,16 @@ export default function OperatorProfile() {
       ["location_country", parsed.location_country],
       ["linkedin_url", parsed.linkedin_url],
       ["portfolio_url", parsed.portfolio_url],
-      ["contact_email", parsed.contact_email],
-      ["contact_phone", parsed.contact_phone],
     ];
     for (const [key, val] of candidates) {
-      if (val && !profile?.[key as keyof typeof profile]) {
+      if (!val) continue;
+      const current = profile?.[key as keyof typeof profile];
+      if (!current || overwrite) {
         profilePatch[key as string] = val;
         counts.fields += 1;
       }
     }
-    if (parsed.years_experience && !profile?.years_experience) {
+    if (parsed.years_experience && (overwrite || !profile?.years_experience)) {
       profilePatch.years_experience = Math.round(parsed.years_experience);
       counts.fields += 1;
     }
