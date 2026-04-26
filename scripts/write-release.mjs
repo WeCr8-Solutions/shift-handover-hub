@@ -22,7 +22,7 @@ function safeGit(command) {
 
 function firstNonEmpty(...values) {
   for (const value of values) {
-    if (typeof value === "string" && value.trim()) {
+    if (typeof value === "string" && value.trim() && value.trim() !== "0.0.0") {
       return value.trim();
     }
   }

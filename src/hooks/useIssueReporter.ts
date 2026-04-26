@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { issueReporterRegistry, breadcrumbs } from "@/lib/issueReporter";
+import { releaseInfo } from "@/generated/release";
 
 interface ConsoleLog {
   level: "log" | "warn" | "error" | "info" | "debug";
@@ -31,11 +32,15 @@ interface RuntimeError {
 const MAX_CONSOLE_LOGS = 100;
 const MAX_ERRORS = 20;
 
-// Production context (would be injected at build time in real deployment)
+// Production context — sourced from generated release manifest so bug reports
+// always carry the exact build the user is running.
 const PRODUCTION_CONTEXT = {
-  app_version: import.meta.env.VITE_APP_VERSION || "1.0.0",
-  build_id: import.meta.env.VITE_BUILD_ID || "dev",
-  commit_hash: import.meta.env.VITE_COMMIT_HASH || "local",
+  app_version: releaseInfo.version,
+  app_release_stamp: releaseInfo.releaseStamp,
+  build_id: releaseInfo.shortSha,
+  commit_hash: releaseInfo.commitSha,
+  build_time: releaseInfo.buildTime,
+  deploy_target: releaseInfo.deployTarget,
   environment: import.meta.env.MODE || "development",
 };
 
