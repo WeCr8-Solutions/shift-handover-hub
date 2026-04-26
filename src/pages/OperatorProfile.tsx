@@ -1158,6 +1158,7 @@ export default function OperatorProfile() {
                 </div>
 
                 <Button onClick={handleSave} disabled={saving || uploadingResume || autofilling} className="gap-2">
+                  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                   Save profile
                 </Button>
               </CardContent>
