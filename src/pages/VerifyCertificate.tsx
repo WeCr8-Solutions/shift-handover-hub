@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useParams, Link, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, ShieldAlert, ShieldX, ArrowRight, Loader2, Printer, ScrollText, LayoutGrid } from "lucide-react";
+import { ShieldCheck, ShieldAlert, ShieldX, ArrowRight, ArrowLeft, Loader2, Printer, ScrollText, LayoutGrid } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
 import { useCertificates } from "@/hooks/useCertificates";
 import { CertificateTemplate, type CertificateVariant } from "@/components/certificates/CertificateTemplate";
