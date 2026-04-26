@@ -54,7 +54,7 @@ const interBold = readFileSync("api/_assets/inter-bold.ttf");
 
 const name = profile?.display_name ?? `@${username}`;
 const location = [profile?.location_city, profile?.location_region].filter(Boolean).join(", ");
-const headline = (profile?.headline ?? "").length > 130
+const headline = (profile?.headline ?? "").length > 110
   ? profile.headline.slice(0, 129).trimEnd() + "…"
   : profile?.headline ?? "";
 
@@ -76,7 +76,7 @@ const tree = {
   props: {
     style: { width: "1200px", height: "630px", display: "flex", flexDirection: "column", background: "#ffffff", fontFamily: "Inter", color: "#0f172a" },
     children: [
-      { type: "div", props: { style: { height: "120px", background: "linear-gradient(135deg, #0a1628 0%, #0f1f3a 60%, #10b981 130%)", display: "flex", alignItems: "center", padding: "0 60px", gap: "14px" }, children: [
+      { type: "div", props: { style: { height: "120px", background: "linear-gradient(135deg, #0a1628 0%, #0f1f3a 60%, #10b981 110%)", display: "flex", alignItems: "center", padding: "0 60px", gap: "14px" }, children: [
         { type: "div", props: { style: { width: "44px", height: "44px", borderRadius: "10px", background: "linear-gradient(135deg, #3b82f6, #10b981)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "26px", fontWeight: 700, color: "#0a1628" }, children: "J" } },
         { type: "div", props: { style: { display: "flex", fontSize: "26px", fontWeight: 700, color: "#ffffff", letterSpacing: "-0.02em" }, children: [
           { type: "span", props: { children: "JobLine" } },
@@ -84,7 +84,7 @@ const tree = {
         ] } },
         { type: "div", props: { style: { marginLeft: "auto", fontSize: "16px", color: "#cbd5e1", display: "flex" }, children: "Verified Talent Network" } },
       ] } },
-      { type: "div", props: { style: { display: "flex", padding: "50px 60px 40px 60px", gap: "40px", flexGrow: 1, alignItems: "center" }, children: [
+      { type: "div", props: { style: { display: "flex", padding: "50px 80px 40px 60px", gap: "40px", flexGrow: 1, alignItems: "center" }, children: [
         avatarDataUrl
           ? { type: "img", props: { src: avatarDataUrl, width: 200, height: 200, style: { width: "200px", height: "200px", borderRadius: "100px", objectFit: "cover", marginTop: "-100px", border: "6px solid #ffffff", boxShadow: "0 10px 40px rgba(15,23,42,0.15)", flexShrink: 0 } } }
           : { type: "div", props: { style: { width: "200px", height: "200px", borderRadius: "100px", background: "linear-gradient(135deg, #1e40af, #10b981)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "84px", fontWeight: 700, color: "#ffffff", marginTop: "-100px", border: "6px solid #ffffff", boxShadow: "0 10px 40px rgba(15,23,42,0.15)", flexShrink: 0 }, children: initials(profile?.display_name) } },
