@@ -204,13 +204,13 @@ export default function VerifyCertificate() {
         </Card>
 
         {cert && (
-          <div className="mt-8 flex justify-center print:mt-0">
+          <div className="mt-8 print:mt-0">
             {/* Print always uses diploma (formal); on-screen respects the toggle */}
             <div className="hidden print:block">
               <CertificateTemplate cert={cert} variant="diploma" printMode />
             </div>
-            <div className="print:hidden" id="cert-print-target">
-              <CertificateTemplate cert={cert} variant={variant} />
+            <div className="print:hidden">
+              <CertificateViewer cert={cert} variant={variant} printTargetId="cert-print-target" />
             </div>
           </div>
         )}
