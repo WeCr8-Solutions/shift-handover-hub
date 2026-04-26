@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Award, ExternalLink, FileText, Loader2, Maximize2, ShieldCheck, Trophy, X } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -179,18 +179,7 @@ export function CertificateThumbnail({ cert, category }: Props) {
                   <Loader2 className="w-4 h-4 animate-spin" /> Loading certificate…
                 </div>
               ) : fullCert ? (
-                <div className="min-w-full min-h-full flex items-center justify-center p-2 sm:p-6">
-                  <div
-                    className="origin-top mx-auto shadow-2xl"
-                    style={{
-                      width: 1056,
-                      transform: "scale(min(1, calc((100vw - 24px) / 1056)))",
-                      transformOrigin: "top center",
-                    }}
-                  >
-                    <CertificateTemplate cert={fullCert} variant="digital" />
-                  </div>
-                </div>
+                <ScaledCertificate cert={fullCert} />
               ) : (
                 <div className="flex flex-col items-center justify-center h-full text-sm text-muted-foreground p-6 text-center gap-3">
                   <p>Couldn't load this certificate inline.</p>
@@ -243,5 +232,58 @@ export function CertificateThumbnail({ cert, category }: Props) {
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+/**
+ * Renders the fixed-width (1056px) CertificateTemplate scaled to fit the
+ * available container width while reserving correct layout height — prevents
+ * the cert from rendering off-screen on mobile (the previous transform-only
+ * approach left a 1056px-wide flex child that pushed the scaled visual out
+ * of view).
+ */
+function ScaledCertificate({ cert }: { cert: CertificateRecord }) {
+  const wrapRef = useRef<HTMLDivElement | null>(null);
+  const innerRef = useRef<HTMLDivElement | null>(null);
+  const [scale, setScale] = useState(1);
+  const [innerHeight, setInnerHeight] = useState<number | null>(null);
+
+  useLayoutEffect(() => {
+    const wrap = wrapRef.current;
+    const inner = innerRef.current;
+    if (!wrap || !inner) return;
+    const update = () => {
+      const w = wrap.clientWidth;
+      const s = Math.min(1, w / 1056);
+      setScale(s);
+      setInnerHeight(inner.scrollHeight * s);
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(wrap);
+    ro.observe(inner);
+    return () => ro.disconnect();
+  }, [cert]);
+
+  return (
+    <div className="w-full p-2 sm:p-6 flex justify-center">
+      <div
+        ref={wrapRef}
+        className="w-full max-w-[1056px] relative"
+        style={{ height: innerHeight ?? undefined }}
+      >
+        <div
+          ref={innerRef}
+          className="shadow-2xl absolute top-0 left-0"
+          style={{
+            width: 1056,
+            transform: `scale(${scale})`,
+            transformOrigin: "top left",
+          }}
+        >
+          <CertificateTemplate cert={cert} variant="digital" />
+        </div>
+      </div>
+    </div>
   );
 }
