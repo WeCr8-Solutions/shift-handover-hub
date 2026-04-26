@@ -200,7 +200,15 @@ export function CertificateThumbnail({ cert, category }: Props) {
                     <FileText className="w-3.5 h-3.5 mr-1" /> Open
                   </a>
                 </Button>
-              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 px-2"
+                onClick={copyDeepLink}
+                aria-label="Copy link to this certificate"
+              >
+                <Link2 className="w-3.5 h-3.5 mr-1" /> Link
+              </Button>
               <Button
                 variant="ghost"
                 size="icon"
