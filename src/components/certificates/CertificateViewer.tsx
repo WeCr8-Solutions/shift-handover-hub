@@ -87,13 +87,21 @@ export function CertificateViewer({ cert, variant, printTargetId }: CertificateV
   }, [measure]);
 
   // Initialize modal scale to fit viewport when opened.
+  // On portrait phones, rotate the cert 90° so its landscape orientation fills the screen.
+  const [rotate, setRotate] = useState(false);
   useEffect(() => {
     if (!open) return;
-    const fit = Math.min(
-      (window.innerWidth - 32) / CERT_PX_W,
-      (window.innerHeight - 120) / CERT_PX_H,
-    );
-    setModalScale(Math.max(0.3, Math.min(2, fit)));
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const portrait = vh > vw;
+    const shouldRotate = portrait && vw < 700;
+    setRotate(shouldRotate);
+    const availW = vw - 32;
+    const availH = vh - 96;
+    const fit = shouldRotate
+      ? Math.min(availW / CERT_PX_H, availH / CERT_PX_W)
+      : Math.min(availW / CERT_PX_W, availH / CERT_PX_H);
+    setModalScale(Math.max(0.3, Math.min(2.5, fit)));
   }, [open]);
 
   return (
