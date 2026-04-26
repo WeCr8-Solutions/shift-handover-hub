@@ -202,8 +202,8 @@ export default function OperatorProfile() {
         title: "Resume uploaded",
         description:
           importedCerts > 0
-            ? `Imported ${importedCerts} verified JobLine certificate(s). Click "Auto-update profile from resume" to fill the rest.`
-            : `Click "Auto-update profile from resume" to extract your skills, work history, education, and machines.`,
+            ? `Imported ${importedCerts} verified JobLine certificate(s). Click "Autofill profile from resume" to fill the rest.`
+            : `Click "Autofill profile from resume" to add your skills, work history, education, and machines.`,
       });
     } catch (err) {
       toast({ title: "Upload failed", description: extractErrorMessage(err), variant: "destructive" });
@@ -238,7 +238,7 @@ export default function OperatorProfile() {
 
       const total = added.fields + added.skills + added.work + added.education + added.machines;
       toast({
-        title: total === 0 ? "Nothing new to add" : "Profile auto-updated",
+        title: total === 0 ? "Nothing new to add" : "Profile autofilled",
         description:
           total === 0
             ? "Your profile is already complete — no fields needed updating."
@@ -247,9 +247,9 @@ export default function OperatorProfile() {
     } catch (err) {
       const msg = extractErrorMessage(err);
       toast({
-        title: "Auto-update failed",
+        title: "Autofill failed",
         description: msg.includes("aborted")
-          ? "Resume parsing took too long. Please try again."
+          ? "Reading your resume took too long. Please try again."
           : msg,
         variant: "destructive",
       });
@@ -791,8 +791,14 @@ export default function OperatorProfile() {
                     <div>
                       <p className="text-sm font-medium">Step 1 · Upload your resume</p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Upload a PDF or DOCX (max 8 MB). Your resume is stored privately. We do not extract any data until you click <span className="font-medium text-foreground">Auto-update profile from resume</span> below.
+                        Upload a PDF or DOCX (max 8 MB). Your resume is stored privately by default — nothing is read or shared until you choose to autofill or make it public.
                       </p>
+                      <ul className="text-xs text-muted-foreground mt-2 list-disc pl-4 space-y-0.5">
+                        <li><span className="font-medium text-foreground">Autofill your profile</span> — skills, machines, work history & education in one click.</li>
+                        <li><span className="font-medium text-foreground">Share with employers</span> — optionally show on your public /talent page (toggle below).</li>
+                        <li><span className="font-medium text-foreground">Apply faster</span> — keep the latest version on file for job applications.</li>
+                        <li><span className="font-medium text-foreground">Verify experience</span> — back up certifications and OAP/GCA records.</li>
+                      </ul>
                     </div>
                     <Badge variant="outline" className="shrink-0">1</Badge>
                   </div>
@@ -809,13 +815,13 @@ export default function OperatorProfile() {
                   )}
                 </div>
 
-                {/* Step 2 — explicit parse + autofill */}
+                {/* Step 2 — explicit autofill */}
                 <div className="rounded-lg border bg-primary/5 p-4 space-y-3">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-sm font-medium">Step 2 · Auto-update profile from resume</p>
+                      <p className="text-sm font-medium">Step 2 · Autofill profile from resume</p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Our AI extracts your headline, bio, location, skills, machines, work history, and education from your uploaded resume. Email, phone, and home address are <span className="font-medium text-foreground">never</span> auto-filled — add those manually under Basics.
+                        We'll read your uploaded resume and autofill your headline, bio, location, skills, machines, work history, and education. Email, phone, and home address are <span className="font-medium text-foreground">never</span> autofilled — add those manually under Basics so they stay private.
                       </p>
                     </div>
                     <Badge variant="outline" className="shrink-0">2</Badge>
@@ -842,7 +848,7 @@ export default function OperatorProfile() {
                       className="gap-2"
                     >
                       {autofilling ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                      {autofilling ? "Reading your resume…" : lastAutofill ? "Re-run auto-update" : "Auto-update profile from resume"}
+                      {autofilling ? "Reading your resume…" : lastAutofill ? "Re-run autofill" : "Autofill profile from resume"}
                     </Button>
                     {!profile?.resume_pdf_url && (
                       <p className="text-xs text-muted-foreground">Upload a resume first.</p>
@@ -851,7 +857,7 @@ export default function OperatorProfile() {
 
                   {lastAutofill && (
                     <div className="rounded-md border bg-background p-3 space-y-2">
-                      <p className="text-xs font-medium text-muted-foreground">Last auto-update</p>
+                      <p className="text-xs font-medium text-muted-foreground">Last autofill</p>
                       <div className="flex flex-wrap gap-1.5">
                         <Badge variant="secondary">{lastAutofill.fields} field{lastAutofill.fields === 1 ? "" : "s"}</Badge>
                         <Badge variant="secondary">{lastAutofill.skills} skill{lastAutofill.skills === 1 ? "" : "s"}</Badge>
