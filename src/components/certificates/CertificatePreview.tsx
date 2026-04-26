@@ -66,8 +66,8 @@ export function CertificatePreview({
           ],
   };
 
-  const w = 816 * scale;
-  const h = 1056 * scale;
+  const w = 1056 * scale;
+  const h = 816 * scale;
 
   return (
     <div
@@ -79,8 +79,8 @@ export function CertificatePreview({
         style={{
           transform: `scale(${scale})`,
           transformOrigin: "top left",
-          width: 816,
-          height: 1056,
+          width: 1056,
+          height: 816,
         }}
       >
         <CertificateTemplate cert={sample} variant={variant} />
