@@ -2,8 +2,8 @@ import satori from "satori";
 import { Resvg } from "@resvg/resvg-js";
 import { readFileSync, writeFileSync } from "node:fs";
 
-const interRegular = readFileSync("/tmp/inter-regular.woff");
-const interBold = readFileSync("/tmp/inter-bold.woff");
+const interRegular = readFileSync("/tmp/inter-regular.ttf");
+const interBold = readFileSync("/tmp/inter-bold.ttf");
 
 const profile = {
   display_name: "Zach Goodbody",
