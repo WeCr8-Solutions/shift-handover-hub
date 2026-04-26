@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { supabase } from "@/integrations/supabase/client";
 import { TalentSocialPanel } from "@/components/talent/TalentSocialPanel";
 import { usePublicOperatorSocial } from "@/hooks/useOperatorSocial";
@@ -754,20 +755,31 @@ export default function PublicTalentProfile() {
                 <Briefcase className="w-5 h-5" /> Work history
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {work.map((w, i) => (
-                <div key={w.id}>
-                  <p className="font-medium">{w.job_title}</p>
-                  <p className="text-sm text-muted-foreground">{w.employer_name}{w.location ? ` · ${w.location}` : ""}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {formatDateRange(w.start_date, w.end_date, w.is_current)}
-                  </p>
-                  {w.description && (
-                    <p className="mt-1 text-sm whitespace-pre-line">{w.description}</p>
-                  )}
-                  {i < work.length - 1 && <Separator className="mt-4" />}
-                </div>
-              ))}
+            <CardContent>
+              <Accordion type="multiple" className="w-full">
+                {work.map((w) => (
+                  <AccordionItem key={w.id} value={w.id}>
+                    <AccordionTrigger className="hover:no-underline">
+                      <div className="flex flex-col items-start text-left">
+                        <span className="font-medium">{w.job_title}</span>
+                        <span className="text-sm text-muted-foreground">
+                          {w.employer_name}{w.location ? ` · ${w.location}` : ""}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {formatDateRange(w.start_date, w.end_date, w.is_current)}
+                        </span>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      {w.description ? (
+                        <p className="text-sm whitespace-pre-line text-muted-foreground">{w.description}</p>
+                      ) : (
+                        <p className="text-sm italic text-muted-foreground">No additional details provided.</p>
+                      )}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
             </CardContent>
           </Card>
         )}
