@@ -240,15 +240,18 @@ export default function OperatorProfile() {
    * Honors the `autofillOverwrite` toggle: when true, parsed values replace existing
    * top-level profile fields. New skill/work/edu/machine rows are always deduped.
    */
-  const handleAutoUpdateFromResume = async () => {
-    if (!profile?.resume_pdf_url) {
+  const handleAutoUpdateFromResume = async (
+    opts: { resumeUrlOverride?: string; silent?: boolean } = {}
+  ) => {
+    const resumeUrl = opts.resumeUrlOverride ?? profile?.resume_pdf_url;
+    if (!resumeUrl) {
       toast({ title: "No resume uploaded", description: "Upload a PDF or DOCX first.", variant: "destructive" });
       return;
     }
     setAutofilling(true);
     try {
       const { data, error } = await supabase.functions.invoke("parse-resume", {
-        body: { resumeUrl: profile.resume_pdf_url },
+        body: { resumeUrl },
       });
       if (error) throw error;
       if (!data?.ok) throw new Error(data?.error ?? "Parse failed");
