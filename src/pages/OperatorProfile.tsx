@@ -1583,19 +1583,83 @@ function CertificationsManager({
               <p className="text-xs text-muted-foreground">
                 {c.issued_date && `Issued ${c.issued_date}`}{c.expires_date && ` · Expires ${c.expires_date}`}
               </p>
+  const counts = certs.reduce<Record<"all" | CertCategory, number>>(
+    (acc, c) => {
+      const cat = classifyCertSource(c.verification_source, c.linked_cert_id);
+      acc.all += 1;
+      acc[cat] += 1;
+      return acc;
+    },
+    { all: 0, oap: 0, gca: 0, partner: 0, self: 0 },
+  );
+
+  const filteredCerts = certs.filter(
+    (c) => filter === "all" || classifyCertSource(c.verification_source, c.linked_cert_id) === filter,
+  );
+
+  const FILTER_OPTIONS: { value: "all" | CertCategory; label: string }[] = [
+    { value: "all", label: "All" },
+    { value: "oap", label: "OAP" },
+    { value: "gca", label: "GCA" },
+    { value: "partner", label: "Partner" },
+    { value: "self", label: "Self" },
+  ];
+
+  return (
+    <div className="space-y-3">
+      {certs.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {FILTER_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => setFilter(opt.value)}
+              className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                filter === opt.value
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-background text-muted-foreground border-border hover:bg-muted"
+              }`}
+            >
+              {opt.label} <span className="opacity-70">({counts[opt.value]})</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {filteredCerts.map((c) => {
+        const cat = classifyCertSource(c.verification_source, c.linked_cert_id);
+        const isVerified = cat !== "self";
+        return (
+        <div key={c.id} className="border rounded-lg p-3 space-y-2 overflow-hidden">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="font-medium break-words">{c.name}</p>
+                {isVerified ? (
+                  <Badge className="gap-1 bg-primary/15 text-primary border-primary/30 shrink-0">
+                    <ShieldCheck className="w-3 h-3" /> {CATEGORY_LABEL[cat]}
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="shrink-0">Self-reported</Badge>
+                )}
+              </div>
+              {c.issuer && <p className="text-sm text-muted-foreground break-words">{c.issuer}</p>}
+              <p className="text-xs text-muted-foreground">
+                {c.issued_date && `Issued ${c.issued_date}`}{c.expires_date && ` · Expires ${c.expires_date}`}
+              </p>
               {(c.linked_cert_id || c.credential_id) && (
-                <p className="text-xs text-muted-foreground font-mono">
+                <p className="text-xs text-muted-foreground font-mono break-all">
                   Certificate #{c.linked_cert_id ?? c.credential_id}
                 </p>
               )}
               {c.credential_url && (
-                <a href={c.credential_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary underline">
+                <a href={c.credential_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary underline break-all">
                   View credential
                 </a>
               )}
             </div>
-            <div className="flex items-center gap-1">
-              {c.verification_source === "self_reported" && (
+            <div className="flex items-center gap-1 shrink-0">
+              {!isVerified && (
                 <>
                   <label className="cursor-pointer">
                     <input
@@ -1612,10 +1676,10 @@ function CertificationsManager({
             </div>
           </div>
           {c.attachment_url && (
-            <a href={c.attachment_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary underline">View attachment</a>
+            <a href={c.attachment_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary underline break-all">View attachment</a>
           )}
-          <div className="flex items-center justify-between border-t pt-2 mt-1">
-            <div className="text-xs text-muted-foreground">
+          <div className="flex items-center justify-between gap-2 border-t pt-2 mt-1">
+            <div className="text-xs text-muted-foreground min-w-0 truncate">
               {(c as { is_public?: boolean }).is_public === false ? "Hidden from public profile" : "Visible on public profile"}
             </div>
             <Switch
@@ -1624,7 +1688,14 @@ function CertificationsManager({
             />
           </div>
         </div>
-      ))}
+        );
+      })}
+
+      {filteredCerts.length === 0 && certs.length > 0 && (
+        <p className="text-xs text-muted-foreground py-3 text-center">
+          No certifications in this category.
+        </p>
+      )}
 
       {adding ? (
         <div className="border rounded-lg p-3 space-y-2 bg-secondary/30">
