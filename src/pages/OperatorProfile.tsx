@@ -268,6 +268,11 @@ export default function OperatorProfile() {
             ? "Your profile is already complete — no fields needed updating."
             : `Filled ${added.fields} field(s), added ${added.skills} skill(s), ${added.work} job(s), ${added.education} education, ${added.machines} machine(s).`,
       });
+
+      // Optional: regenerate the JobLine résumé PDF from the freshly-filled profile
+      if (autoBuildAfterAutofill && total > 0) {
+        await handleBuildResume("save");
+      }
     } catch (err) {
       const msg = extractErrorMessage(err);
       toast({
