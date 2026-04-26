@@ -103,6 +103,10 @@ export default function OperatorProfile() {
   const [autofilling, setAutofilling] = useState(false);
   /** When true, autofill REPLACES filled fields. When false, only empty fields are filled (skill/work/edu/machine rows always dedupe). */
   const [autofillOverwrite, setAutofillOverwrite] = useState(false);
+  /** When true, automatically run AI autofill right after a resume upload. */
+  const [autoAutofillOnUpload, setAutoAutofillOnUpload] = useState(true);
+  /** When true, automatically (re)build the JobLine résumé PDF after autofill completes. */
+  const [autoBuildAfterAutofill, setAutoBuildAfterAutofill] = useState(false);
   /** Counts from the most recent autofill run, used to render an inline summary. */
   const [lastAutofill, setLastAutofill] = useState<null | {
     fields: number;
