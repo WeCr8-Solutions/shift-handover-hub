@@ -407,9 +407,12 @@ export default function PublicTalentProfile() {
                     </Badge>
                   )}
                   {profile.willing_to_relocate && <Badge variant="outline">Will relocate</Badge>}
-                  {verifiedCount > 0 && (
-                    <Badge className="bg-primary/10 text-primary border-primary/30">
-                      <ShieldCheck className="w-3 h-3 mr-1" /> {verifiedCount} verified
+                  {isJoblineVerified && (
+                    <Badge
+                      className="bg-primary/10 text-primary border-primary/30"
+                      title="Identity & credentials verified by JobLine.ai or an approved partner network"
+                    >
+                      <ShieldCheck className="w-3 h-3 mr-1" /> JobLine Verified
                     </Badge>
                   )}
                 </div>
