@@ -43,6 +43,105 @@
       ]
     },
     {
+      "source": "/",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(facebookexternalhit|facebot|twitterbot|slackbot|linkedinbot|whatsapp|telegrambot|discordbot|skypeuripreview|applebot|pinterest|redditbot|embedly|outbrain|vkshare|bingbot|googlebot|yandexbot|duckduckbot|imessagebot|bot|crawler|spider|preview).*"
+        }
+      ],
+      "destination": "/api/og?path=/"
+    },
+    {
+      "source": "/talent",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(facebookexternalhit|facebot|twitterbot|slackbot|linkedinbot|whatsapp|telegrambot|discordbot|skypeuripreview|applebot|pinterest|redditbot|embedly|outbrain|vkshare|bingbot|googlebot|yandexbot|duckduckbot|imessagebot|bot|crawler|spider|preview).*"
+        }
+      ],
+      "destination": "/api/og?path=/talent"
+    },
+    {
+      "source": "/talent/:username",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(facebookexternalhit|facebot|twitterbot|slackbot|linkedinbot|whatsapp|telegrambot|discordbot|skypeuripreview|applebot|pinterest|redditbot|embedly|outbrain|vkshare|bingbot|googlebot|yandexbot|duckduckbot|imessagebot|bot|crawler|spider|preview).*"
+        }
+      ],
+      "destination": "/api/og?path=/talent/:username"
+    },
+    {
+      "source": "/oap",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(facebookexternalhit|facebot|twitterbot|slackbot|linkedinbot|whatsapp|telegrambot|discordbot|skypeuripreview|applebot|pinterest|redditbot|embedly|outbrain|vkshare|bingbot|googlebot|yandexbot|duckduckbot|imessagebot|bot|crawler|spider|preview).*"
+        }
+      ],
+      "destination": "/api/og?path=/oap"
+    },
+    {
+      "source": "/oap/:path*",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(facebookexternalhit|facebot|twitterbot|slackbot|linkedinbot|whatsapp|telegrambot|discordbot|skypeuripreview|applebot|pinterest|redditbot|embedly|outbrain|vkshare|bingbot|googlebot|yandexbot|duckduckbot|imessagebot|bot|crawler|spider|preview).*"
+        }
+      ],
+      "destination": "/api/og?path=/oap/:path*"
+    },
+    {
+      "source": "/gca",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(facebookexternalhit|facebot|twitterbot|slackbot|linkedinbot|whatsapp|telegrambot|discordbot|skypeuripreview|applebot|pinterest|redditbot|embedly|outbrain|vkshare|bingbot|googlebot|yandexbot|duckduckbot|imessagebot|bot|crawler|spider|preview).*"
+        }
+      ],
+      "destination": "/api/og?path=/gca"
+    },
+    {
+      "source": "/gca/:path*",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(facebookexternalhit|facebot|twitterbot|slackbot|linkedinbot|whatsapp|telegrambot|discordbot|skypeuripreview|applebot|pinterest|redditbot|embedly|outbrain|vkshare|bingbot|googlebot|yandexbot|duckduckbot|imessagebot|bot|crawler|spider|preview).*"
+        }
+      ],
+      "destination": "/api/og?path=/gca/:path*"
+    },
+    {
+      "source": "/gcode-academy",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(facebookexternalhit|facebot|twitterbot|slackbot|linkedinbot|whatsapp|telegrambot|discordbot|skypeuripreview|applebot|pinterest|redditbot|embedly|outbrain|vkshare|bingbot|googlebot|yandexbot|duckduckbot|imessagebot|bot|crawler|spider|preview).*"
+        }
+      ],
+      "destination": "/api/og?path=/gcode-academy"
+    },
+    {
+      "source": "/verify/:certId",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(facebookexternalhit|facebot|twitterbot|slackbot|linkedinbot|whatsapp|telegrambot|discordbot|skypeuripreview|applebot|pinterest|redditbot|embedly|outbrain|vkshare|bingbot|googlebot|yandexbot|duckduckbot|imessagebot|bot|crawler|spider|preview).*"
+        }
+      ],
+      "destination": "/api/og?path=/verify/:certId"
+    },
+    {
       "source": "/((?!.*\\.).*)",
       "destination": "/index.html"
     }
