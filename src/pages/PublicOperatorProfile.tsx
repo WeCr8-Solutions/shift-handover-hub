@@ -77,6 +77,7 @@ interface PublicProfile {
   avatar_url: string | null;
   banner_url: string | null;
   resume_pdf_url: string | null;
+  resume_public: boolean | null;
   willing_to_relocate: boolean;
   open_to_work: boolean;
   preferred_employment_types: string[] | null;
