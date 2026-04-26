@@ -87,6 +87,19 @@ export default function OperatorProfile() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  /** Two-step autofill state — upload first, then user clicks "Auto-update profile". */
+  const [autofilling, setAutofilling] = useState(false);
+  /** When true, autofill REPLACES filled fields. When false, only empty fields are filled (skill/work/edu/machine rows always dedupe). */
+  const [autofillOverwrite, setAutofillOverwrite] = useState(false);
+  /** Counts from the most recent autofill run, used to render an inline summary. */
+  const [lastAutofill, setLastAutofill] = useState<null | {
+    fields: number;
+    skills: number;
+    work: number;
+    education: number;
+    machines: number;
+    at: number;
+  }>(null);
 
   useEffect(() => {
     if (isReady && !user) navigate("/auth");
