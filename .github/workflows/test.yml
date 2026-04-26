@@ -84,8 +84,8 @@ jobs:
         run: npx tsc --noEmit
         working-directory: desktop
 
-  cert-verify-smoke:
-    name: Public certificate verify smoke
+  production-smoke:
+    name: Production smoke (cert verify · release manifest · bug report)
     runs-on: ubuntu-latest
     # Network-dependent (hits production Supabase + jobline.ai). Runs on main
     # only so PRs from forks (no secrets, possibly no outbound) don't flake.
@@ -101,11 +101,21 @@ jobs:
         with:
           node-version: 22
 
-      - name: Run cert verify smoke
+      - name: Public certificate verification smoke
         env:
-          # Known-good cert ids sampled from production. Update if these are
-          # ever revoked. The script also verifies the RPCs are anon-callable
-          # even without these, so the gate stays meaningful.
+          # Known-good cert ids sampled from production. Update via repo
+          # Variables if these are ever revoked. The script also verifies the
+          # RPCs are anon-callable even without these, so the gate stays meaningful.
           SAMPLE_OAP_CERT_ID: ${{ vars.SAMPLE_OAP_CERT_ID || 'OAP-YAN6DG-2026' }}
           SAMPLE_GCA_CERT_ID: ${{ vars.SAMPLE_GCA_CERT_ID || 'GCA-J4ZC7F-2026' }}
         run: node scripts/cert-verify-smoke.mjs
+
+      - name: Release manifest smoke
+        # Verifies /release.json on the live site is correct and has a real SHA.
+        # Will fail if Lovable/Vercel build env is not exposing a git commit SHA.
+        run: node scripts/release-manifest-smoke.mjs
+
+      - name: Bug-report (report-issue) edge function smoke
+        # Verifies the report-issue edge function is deployed, CORS-enabled,
+        # and rejects unauthenticated requests with 401 (not 5xx).
+        run: node scripts/bug-report-smoke.mjs
