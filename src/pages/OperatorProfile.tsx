@@ -466,6 +466,14 @@ export default function OperatorProfile() {
         resume_pdf_url: url,
         ...(mode === "publish" ? { resume_public: true } : {}),
       });
+      await recordResumeVersion({
+        file_url: url,
+        storage_path: pathFromOperatorProfilesUrl(url),
+        source: "generated",
+        file_name: file.name,
+        size_bytes: file.size,
+        note: mode === "publish" ? "Built & published from profile" : "Built from profile",
+      });
       await refresh();
       toast({
         title: mode === "publish" ? "Résumé published" : "Résumé saved",
