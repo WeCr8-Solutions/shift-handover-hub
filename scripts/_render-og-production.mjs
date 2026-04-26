@@ -91,7 +91,7 @@ const tree = {
         { type: "div", props: { style: { display: "flex", flexDirection: "column", flexGrow: 1, minWidth: 0 }, children: [
           { type: "div", props: { style: { fontSize: "52px", fontWeight: 700, letterSpacing: "-0.025em", lineHeight: 1.05, color: "#0f172a" }, children: name } },
           { type: "div", props: { style: { fontSize: "20px", color: "#64748b", marginTop: "6px" }, children: `@${username}${location ? ` · ${location}` : ""}` } },
-          headline && { type: "div", props: { style: { fontSize: "20px", color: "#334155", lineHeight: 1.4, marginTop: "16px", display: "flex" }, children: headline } },
+          headline && { type: "div", props: { style: { fontSize: "20px", color: "#334155", lineHeight: 1.4, marginTop: "16px", width: "820px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", textOverflow: "ellipsis" }, children: headline } },
         ].filter(Boolean) } },
       ] } },
       { type: "div", props: { style: { background: "#f1f5f9", padding: "20px 60px", display: "flex", alignItems: "center", gap: "14px", borderTop: "1px solid #e2e8f0" }, children: [

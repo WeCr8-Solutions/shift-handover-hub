@@ -344,7 +344,16 @@ function buildCard(
                           color: "#334155",
                           lineHeight: 1.4,
                           marginTop: "16px",
-                          display: "flex",
+                          // Constrain to 2 lines max within the available
+                          // body width (1200 - 60 - 80 padding - 200 avatar
+                          // - 40 gap = 820). Satori needs an explicit width
+                          // to wrap text reliably.
+                          width: "820px",
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
                         },
                         children: headline,
                       },
