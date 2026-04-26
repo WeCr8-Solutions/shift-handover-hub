@@ -7,6 +7,7 @@ import { ShieldCheck, ShieldAlert, ShieldX, ArrowRight, Loader2, Printer, Scroll
 import { SEOHead } from "@/components/SEOHead";
 import { useCertificates } from "@/hooks/useCertificates";
 import { CertificateTemplate, type CertificateVariant } from "@/components/certificates/CertificateTemplate";
+import { CertificateViewer } from "@/components/certificates/CertificateViewer";
 import { CertificatePdfDownloadButton } from "@/components/certificates/CertificatePdfDownloadButton";
 import type { CertificateRecord } from "@/lib/certificates";
 
