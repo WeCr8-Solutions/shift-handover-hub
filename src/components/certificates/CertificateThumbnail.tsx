@@ -1,13 +1,11 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Award, ExternalLink, FileText, Link2, Loader2, Maximize2, ShieldCheck, Trophy, X } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Award, ExternalLink, FileText, Link2, Maximize2, ShieldCheck, Trophy, X } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { useCertificates } from "@/hooks/useCertificates";
-import { CertificateTemplate } from "./CertificateTemplate";
-import type { CertificateRecord } from "@/lib/certificates";
 
 export type CertCategory = "oap" | "gca" | "partner" | "self";
 
@@ -30,70 +28,64 @@ interface Props {
 }
 
 /**
- * Landscape (11x8.5) thumbnail card for any certificate. Tap to open a
- * fullscreen viewer that fits the user's device. For uploaded files (PDF/IMG)
- * we render the file in an inline iframe/img with pinch-zoom; for verified
- * JobLine certs we link to the public verify page.
+ * Landscape (11x8.5) thumbnail card for any certificate.
+ *
+ * Behavior:
+ * - JobLine-issued certs (have `linked_cert_id`) → navigate to `/verify/:certId`
+ *   which uses the public verification RPC and renders the full certificate
+ *   (items, signer, QR). A `?back=` param lets the verify page show a
+ *   "Back to profile" button so users aren't stranded.
+ * - Self-uploaded files / external credential URLs → open the inline
+ *   fullscreen viewer (PDF/image/iframe).
  */
 export function CertificateThumbnail({ cert, category }: Props) {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const { lookupCertificate } = useCertificates();
-  const [fullCert, setFullCert] = useState<CertificateRecord | null>(null);
-  const [loadingCert, setLoadingCert] = useState(false);
 
-  // Deep-link key: prefer the verifiable JobLine cert id, otherwise the row id.
   const deepLinkKey = cert.linked_cert_id ?? cert.id;
+  const verifyRoute = cert.linked_cert_id ? `/verify/${cert.linked_cert_id}` : null;
+  const externalCredentialUrl =
+    !cert.linked_cert_id && cert.credential_url ? cert.credential_url : null;
+  const fileUrl = cert.attachment_url ?? null;
+  const isPdf = !!fileUrl && /\.pdf($|\?)/i.test(fileUrl);
+  const isImg = !!fileUrl && /\.(png|jpe?g|webp|gif|svg)($|\?)/i.test(fileUrl);
 
-  // Auto-open when the URL contains ?cert=<deepLinkKey> (and react to changes).
+  // Backward-compatible deep-link: ?cert=<id> on the talent profile redirects
+  // to the verify page so previously-shared URLs still work.
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const sync = () => {
-      const param = new URLSearchParams(window.location.search).get("cert");
-      if (param && param === deepLinkKey) setOpen(true);
-    };
-    sync();
-    window.addEventListener("popstate", sync);
-    return () => window.removeEventListener("popstate", sync);
-  }, [deepLinkKey]);
-
-  // Reflect open state in the URL so the page can be shared / refreshed.
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const url = new URL(window.location.href);
-    const current = url.searchParams.get("cert");
-    if (open) {
-      if (current !== deepLinkKey) {
-        url.searchParams.set("cert", deepLinkKey);
-        window.history.replaceState({}, "", url.toString());
-      }
-    } else if (current === deepLinkKey) {
-      url.searchParams.delete("cert");
-      window.history.replaceState({}, "", url.toString());
+    if (typeof window === "undefined" || !verifyRoute) return;
+    const param = new URLSearchParams(window.location.search).get("cert");
+    if (param && param === deepLinkKey) {
+      const back = window.location.pathname;
+      navigate(`${verifyRoute}?back=${encodeURIComponent(back)}`, { replace: true });
     }
-  }, [open, deepLinkKey]);
+  }, [deepLinkKey, verifyRoute, navigate]);
+
+  const handleClick = () => {
+    if (verifyRoute) {
+      const back = typeof window !== "undefined" ? window.location.pathname : "/";
+      navigate(`${verifyRoute}?back=${encodeURIComponent(back)}`);
+      return;
+    }
+    setOpen(true);
+  };
 
   const copyDeepLink = useCallback(async () => {
     if (typeof window === "undefined") return;
-    const url = new URL(window.location.href);
-    url.searchParams.set("cert", deepLinkKey);
+    const url = verifyRoute
+      ? `${window.location.origin}${verifyRoute}`
+      : (() => {
+          const u = new URL(window.location.href);
+          u.searchParams.set("cert", deepLinkKey);
+          return u.toString();
+        })();
     try {
-      await navigator.clipboard.writeText(url.toString());
+      await navigator.clipboard.writeText(url);
       toast.success("Certificate link copied");
     } catch {
       toast.error("Couldn't copy link");
     }
-  }, [deepLinkKey]);
-
-  // When opened on a JobLine-issued cert (linked_cert_id), fetch the full
-  // record so we can render the digital certificate inline — avoids iframe
-  // redirects from auth gates that previously bounced users to /operator/profile.
-  useEffect(() => {
-    if (!open || !cert.linked_cert_id || fullCert) return;
-    setLoadingCert(true);
-    lookupCertificate(cert.linked_cert_id)
-      .then((c) => setFullCert(c))
-      .finally(() => setLoadingCert(false));
-  }, [open, cert.linked_cert_id, fullCert, lookupCertificate]);
+  }, [deepLinkKey, verifyRoute]);
 
   const palette = (() => {
     switch (category) {
@@ -109,17 +101,11 @@ export function CertificateThumbnail({ cert, category }: Props) {
   })();
   const Icon = palette.icon;
 
-  const verifyUrl =
-    cert.linked_cert_id ? `/verify/${cert.linked_cert_id}` : cert.credential_url ?? null;
-  const fileUrl = cert.attachment_url ?? null;
-  const isPdf = !!fileUrl && /\.pdf($|\?)/i.test(fileUrl);
-  const isImg = !!fileUrl && /\.(png|jpe?g|webp|gif|svg)($|\?)/i.test(fileUrl);
-
   return (
     <>
       <button
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={handleClick}
         className={cn(
           "group relative w-full text-left rounded-lg border bg-card overflow-hidden ring-1",
           palette.ring,
@@ -127,12 +113,10 @@ export function CertificateThumbnail({ cert, category }: Props) {
         )}
         aria-label={`View ${cert.name} certificate`}
       >
-        {/* 11:8.5 aspect landscape thumbnail */}
         <div
           className={cn("relative w-full bg-gradient-to-br", palette.bg)}
           style={{ aspectRatio: "11 / 8.5" }}
         >
-          {/* Faux mini-cert layout */}
           <div className="absolute inset-0 p-2.5 sm:p-3 flex flex-col">
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-1.5 min-w-0">
@@ -173,6 +157,8 @@ export function CertificateThumbnail({ cert, category }: Props) {
         </div>
       </button>
 
+      {/* Inline viewer is only used for self-uploaded files / external links —
+          JobLine-issued certs route to /verify/:certId instead. */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
           className={cn(
@@ -187,9 +173,9 @@ export function CertificateThumbnail({ cert, category }: Props) {
               {cert.name}
             </div>
             <div className="flex items-center gap-1 rounded-md border bg-background/90 backdrop-blur p-1 shadow">
-              {verifyUrl && (
+              {externalCredentialUrl && (
                 <Button asChild variant="ghost" size="sm" className="h-8 px-2">
-                  <a href={verifyUrl} target="_blank" rel="noopener noreferrer">
+                  <a href={externalCredentialUrl} target="_blank" rel="noopener noreferrer">
                     <ExternalLink className="w-3.5 h-3.5 mr-1" /> Verify
                   </a>
                 </Button>
@@ -226,26 +212,7 @@ export function CertificateThumbnail({ cert, category }: Props) {
             className="w-full h-full overflow-auto overscroll-contain bg-muted/40 pt-14"
             style={{ touchAction: "pinch-zoom pan-x pan-y" }}
           >
-            {cert.linked_cert_id ? (
-              loadingCert && !fullCert ? (
-                <div className="flex items-center justify-center h-full text-sm text-muted-foreground gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin" /> Loading certificate…
-                </div>
-              ) : fullCert ? (
-                <ScaledCertificate cert={fullCert} />
-              ) : (
-                <div className="flex flex-col items-center justify-center h-full text-sm text-muted-foreground p-6 text-center gap-3">
-                  <p>Couldn't load this certificate inline.</p>
-                  {verifyUrl && (
-                    <Button asChild size="sm">
-                      <a href={verifyUrl} target="_blank" rel="noopener noreferrer">
-                        Open verification page
-                      </a>
-                    </Button>
-                  )}
-                </div>
-              )
-            ) : fileUrl ? (
+            {fileUrl ? (
               isImg ? (
                 <div className="min-w-full min-h-full flex items-center justify-center p-4">
                   <img
@@ -267,11 +234,11 @@ export function CertificateThumbnail({ cert, category }: Props) {
                   className="w-full h-[calc(100dvh-3.5rem)] border-0 bg-background"
                 />
               )
-            ) : verifyUrl ? (
+            ) : externalCredentialUrl ? (
               <div className="flex flex-col items-center justify-center h-full text-sm text-muted-foreground p-6 text-center gap-3">
                 <p>External credential link.</p>
                 <Button asChild size="sm">
-                  <a href={verifyUrl} target="_blank" rel="noopener noreferrer">
+                  <a href={externalCredentialUrl} target="_blank" rel="noopener noreferrer">
                     <ExternalLink className="w-3.5 h-3.5 mr-1.5" /> Open verification
                   </a>
                 </Button>
@@ -285,58 +252,5 @@ export function CertificateThumbnail({ cert, category }: Props) {
         </DialogContent>
       </Dialog>
     </>
-  );
-}
-
-/**
- * Renders the fixed-width (1056px) CertificateTemplate scaled to fit the
- * available container width while reserving correct layout height — prevents
- * the cert from rendering off-screen on mobile (the previous transform-only
- * approach left a 1056px-wide flex child that pushed the scaled visual out
- * of view).
- */
-function ScaledCertificate({ cert }: { cert: CertificateRecord }) {
-  const wrapRef = useRef<HTMLDivElement | null>(null);
-  const innerRef = useRef<HTMLDivElement | null>(null);
-  const [scale, setScale] = useState(1);
-  const [innerHeight, setInnerHeight] = useState<number | null>(null);
-
-  useLayoutEffect(() => {
-    const wrap = wrapRef.current;
-    const inner = innerRef.current;
-    if (!wrap || !inner) return;
-    const update = () => {
-      const w = wrap.clientWidth;
-      const s = Math.min(1, w / 1056);
-      setScale(s);
-      setInnerHeight(inner.scrollHeight * s);
-    };
-    update();
-    const ro = new ResizeObserver(update);
-    ro.observe(wrap);
-    ro.observe(inner);
-    return () => ro.disconnect();
-  }, [cert]);
-
-  return (
-    <div className="w-full p-2 sm:p-6 flex justify-center">
-      <div
-        ref={wrapRef}
-        className="w-full max-w-[1056px] relative"
-        style={{ height: innerHeight ?? undefined }}
-      >
-        <div
-          ref={innerRef}
-          className="shadow-2xl absolute top-0 left-0"
-          style={{
-            width: 1056,
-            transform: `scale(${scale})`,
-            transformOrigin: "top left",
-          }}
-        >
-          <CertificateTemplate cert={cert} variant="digital" />
-        </div>
-      </div>
-    </div>
   );
 }

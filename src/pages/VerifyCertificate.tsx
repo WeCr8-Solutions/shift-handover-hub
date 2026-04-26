@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, ShieldAlert, ShieldX, ArrowRight, Loader2, Printer, ScrollText, LayoutGrid } from "lucide-react";
+import { ShieldCheck, ShieldAlert, ShieldX, ArrowRight, ArrowLeft, Loader2, Printer, ScrollText, LayoutGrid } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
 import { useCertificates } from "@/hooks/useCertificates";
 import { CertificateTemplate, type CertificateVariant } from "@/components/certificates/CertificateTemplate";
@@ -17,6 +17,7 @@ import type { CertificateRecord } from "@/lib/certificates";
  */
 export default function VerifyCertificate() {
   const { certId } = useParams<{ certId: string }>();
+  const [searchParams] = useSearchParams();
   const { lookupCertificate } = useCertificates();
   const [loading, setLoading] = useState(true);
   const [cert, setCert] = useState<CertificateRecord | null>(null);
@@ -82,6 +83,27 @@ export default function VerifyCertificate() {
           )}
           <span>Certificate Verification</span>
         </div>
+
+        {(() => {
+          const backParam = searchParams.get("back");
+          const safeBack = backParam && backParam.startsWith("/") && !backParam.startsWith("//") ? backParam : null;
+          const profileBack = cert?.recipientUsername ? `/talent/${cert.recipientUsername}` : null;
+          const backHref = safeBack ?? profileBack;
+          const backLabel = safeBack?.startsWith("/talent/")
+            ? `Back to @${safeBack.split("/talent/")[1]?.split(/[?#]/)[0]}`
+            : profileBack
+            ? `Back to @${cert?.recipientUsername}`
+            : null;
+          return backHref && backLabel ? (
+            <div className="mb-3 print:hidden">
+              <Button asChild variant="ghost" size="sm" className="-ml-2">
+                <Link to={backHref}>
+                  <ArrowLeft className="w-4 h-4 mr-1.5" /> {backLabel}
+                </Link>
+              </Button>
+            </div>
+          ) : null;
+        })()}
 
         <div className="mb-4 flex flex-wrap gap-2 print:hidden">
           <Button asChild variant="outline" size="sm">
