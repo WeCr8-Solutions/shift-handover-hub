@@ -525,7 +525,7 @@ export default function PublicTalentProfile() {
           username={profile.public_username}
           fullName={fullName}
           latestCertId={
-            certs.find((c) => c.linked_cert_id && c.verification_source.startsWith("verified_"))
+            certs.find((c) => c.linked_cert_id && isVerifiedCert(c))
               ?.linked_cert_id ?? null
           }
         />
