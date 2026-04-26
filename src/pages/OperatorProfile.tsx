@@ -903,16 +903,26 @@ export default function OperatorProfile() {
                     </p>
                   </div>
 
-                  <Input
-                    type="file"
+                  <FilePicker
                     accept="application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.pdf,.docx"
-                    onChange={handleResumeUpload}
+                    onFile={handleResumeUpload}
                     disabled={uploadingResume || autofilling || building}
+                    loading={uploadingResume}
+                    label={profile?.resume_pdf_url ? "Replace résumé" : "Choose résumé file"}
+                    currentFileName={profile?.resume_pdf_url ? decodeURIComponent(profile.resume_pdf_url.split("/").pop() ?? "") : null}
+                    maxBytes={8 * 1024 * 1024}
+                    onTooLarge={(_size, max) =>
+                      toast({
+                        title: "File too large",
+                        description: `Resume must be under ${Math.round(max / (1024 * 1024))} MB.`,
+                        variant: "destructive",
+                      })
+                    }
                   />
-                  {(uploadingResume || autofilling || building) && (
+                  {(autofilling || building) && (
                     <p className="text-sm text-muted-foreground flex items-center gap-2">
                       <Loader2 className="w-3 h-3 animate-spin" />
-                      {uploadingResume ? "Uploading…" : autofilling ? "Reading your resume…" : "Building JobLine résumé…"}
+                      {autofilling ? "Reading your resume…" : "Building JobLine résumé…"}
                     </p>
                   )}
 
