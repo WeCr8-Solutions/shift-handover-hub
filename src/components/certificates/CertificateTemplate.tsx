@@ -248,10 +248,10 @@ function DigitalCertificate({ cert, qrDataUrl, programLabel, printMode }: InnerP
         printMode ? "" : "shadow-2xl rounded-xl"
       }`}
       style={{
-        width: "8.5in",
-        minHeight: "11in",
-        aspectRatio: "8.5 / 11",
-        padding: "0.6in",
+        width: "11in",
+        minHeight: "8.5in",
+        aspectRatio: "11 / 8.5",
+        padding: "0.55in",
         fontFamily: "Inter, -apple-system, sans-serif",
       }}
     >
