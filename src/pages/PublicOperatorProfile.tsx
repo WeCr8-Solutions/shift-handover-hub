@@ -27,6 +27,7 @@ import { withJoblineUtm } from "@/lib/talent/outboundLinks";
 import { getSocialHref, openSocialLink } from "@/lib/talent/socialDeepLinks";
 import { getPublicTalentUrl } from "@/lib/talent/publicHost";
 import { formatDateRange } from "@/lib/talent/format";
+import { CertificateThumbnail, type CertCategory } from "@/components/certificates/CertificateThumbnail";
 import "@/styles/print-talent.css";
 import {
   MapPin,
@@ -76,6 +77,7 @@ interface PublicProfile {
   avatar_url: string | null;
   banner_url: string | null;
   resume_pdf_url: string | null;
+  resume_public: boolean | null;
   willing_to_relocate: boolean;
   open_to_work: boolean;
   preferred_employment_types: string[] | null;
@@ -430,7 +432,7 @@ export default function PublicTalentProfile() {
                         {profile.github_url && show("github") && (
                           <SocialLink href={profile.github_url} icon={Github} label="GitHub" />
                         )}
-                        {profile.resume_pdf_url && (
+                        {profile.resume_pdf_url && profile.resume_public === true && (
                           <a
                             href={profile.resume_pdf_url}
                             target="_blank"
@@ -607,104 +609,61 @@ export default function PublicTalentProfile() {
         {visibleCerts.length > 0 && (() => {
           const oapCerts = visibleCerts.filter((c) => c.verification_source === "verified_oap");
           const gcaCerts = visibleCerts.filter((c) => c.verification_source === "verified_gca");
-          const externalVerified = visibleCerts.filter(
+          const partnerCerts = visibleCerts.filter(
             (c) => c.verification_source.startsWith("verified_") && c.verification_source !== "verified_oap" && c.verification_source !== "verified_gca",
           );
-          const selfReported = visibleCerts.filter((c) => !c.verification_source.startsWith("verified_"));
+          const selfCerts = visibleCerts.filter((c) => !c.verification_source.startsWith("verified_"));
+
+          const groups: Array<{
+            key: CertCategory;
+            title: string;
+            icon: typeof ShieldCheck;
+            tone: string;
+            items: typeof visibleCerts;
+          }> = [
+            { key: "oap" as const, title: "JobLine OAP — Approved", icon: ShieldCheck, tone: "border-primary/30 bg-gradient-to-br from-primary/5 to-transparent", items: oapCerts },
+            { key: "gca" as const, title: "G-Code Academy badges", icon: Trophy, tone: "border-warning/30 bg-gradient-to-br from-warning/5 to-transparent", items: gcaCerts },
+            { key: "partner" as const, title: "Partner-verified certificates", icon: ShieldCheck, tone: "border-accent/30 bg-gradient-to-br from-accent/5 to-transparent", items: partnerCerts },
+            { key: "self" as const, title: "Self-uploaded certificates", icon: Award, tone: "", items: selfCerts },
+          ].filter((g) => g.items.length > 0);
 
           return (
             <>
-              {/* JobLine OAP — Approved badge cards */}
-              {oapCerts.length > 0 && (
-                <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <ShieldCheck className="w-5 h-5 text-primary" /> JobLine OAP — Approved
-                      <Badge className="ml-1 bg-primary text-primary-foreground">{oapCerts.length}</Badge>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {oapCerts.map((c) => (
-                        <CertBadgeCard key={c.id} cert={c} variant="oap" />
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* GCA badges */}
-              {gcaCerts.length > 0 && (
-                <Card className="border-warning/30 bg-gradient-to-br from-warning/5 to-transparent">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Trophy className="w-5 h-5 text-warning" /> G-Code Academy badges
-                      <Badge className="ml-1 bg-warning text-warning-foreground">{gcaCerts.length}</Badge>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {gcaCerts.map((c) => (
-                        <CertBadgeCard key={c.id} cert={c} variant="gca" />
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Other verified + self-reported */}
-              {(externalVerified.length > 0 || selfReported.length > 0) && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Award className="w-5 h-5" /> Additional certifications
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {[...externalVerified, ...selfReported].map((c) => {
-                      const verified = c.verification_source.startsWith("verified_");
-                      return (
-                        <div key={c.id} className="flex items-start justify-between gap-3 pb-3 border-b last:border-b-0 last:pb-0">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <p className="font-medium">{c.name}</p>
-                              {verified && (
-                                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 gap-1">
-                                  <CheckCircle2 className="w-3 h-3" /> Verified
-                                </Badge>
-                              )}
-                            </div>
-                            {c.issuer && <p className="text-sm text-muted-foreground">{c.issuer}</p>}
-                            <p className="text-xs text-muted-foreground">
-                              {c.issued_date ? `Issued ${formatDateRange(c.issued_date, null).split(" – ")[0]}` : ""}
-                              {c.expires_date ? ` · Expires ${formatDateRange(c.expires_date, null).split(" – ")[0]}` : ""}
-                            </p>
-                            {(c.linked_cert_id || c.credential_id) && (
-                              <p className="text-xs text-muted-foreground font-mono">
-                                Certificate #{c.linked_cert_id ?? c.credential_id}
-                              </p>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-3 shrink-0">
-                            {c.attachment_url && (
-                              <a href={c.attachment_url} target="_blank" rel="noopener noreferrer"
-                                className="text-primary hover:underline text-sm flex items-center gap-1">
-                                Open <FileText className="w-3 h-3" />
-                              </a>
-                            )}
-                            {c.credential_url && (
-                              <a href={c.credential_url} target="_blank" rel="noopener noreferrer"
-                                className="text-primary hover:underline text-sm flex items-center gap-1">
-                                Verify <ExternalLink className="w-3 h-3" />
-                              </a>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </CardContent>
-                </Card>
-              )}
+              {groups.map((group) => {
+                const GroupIcon = group.icon;
+                return (
+                  <Card key={group.key} className={group.tone}>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <GroupIcon className="w-5 h-5" /> {group.title}
+                        <Badge variant="secondary" className="ml-1">{group.items.length}</Badge>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                        {group.items.map((c) => (
+                          <CertificateThumbnail
+                            key={c.id}
+                            category={group.key}
+                            cert={{
+                              id: c.id,
+                              name: c.name,
+                              issuer: c.issuer,
+                              issued_date: c.issued_date,
+                              expires_date: c.expires_date,
+                              attachment_url: c.attachment_url,
+                              credential_url: c.credential_url,
+                              credential_id: c.credential_id,
+                              linked_cert_id: c.linked_cert_id,
+                              verification_source: c.verification_source,
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </>
           );
         })()}

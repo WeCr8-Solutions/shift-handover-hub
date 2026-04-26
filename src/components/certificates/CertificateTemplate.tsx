@@ -74,10 +74,10 @@ function DiplomaCertificate({ cert, qrDataUrl, programLabel, printMode }: InnerP
     <div
       className={`relative bg-card text-card-foreground ${printMode ? "" : "shadow-2xl"}`}
       style={{
-        width: "8.5in",
-        minHeight: "11in",
-        aspectRatio: "8.5 / 11",
-        padding: "0.55in",
+        width: "11in",
+        minHeight: "8.5in",
+        aspectRatio: "11 / 8.5",
+        padding: "0.5in",
         fontFamily: "'Playfair Display', Georgia, 'Times New Roman', serif",
         background:
           "linear-gradient(180deg, hsl(var(--card)) 0%, hsl(var(--card)) 100%)",
@@ -248,10 +248,10 @@ function DigitalCertificate({ cert, qrDataUrl, programLabel, printMode }: InnerP
         printMode ? "" : "shadow-2xl rounded-xl"
       }`}
       style={{
-        width: "8.5in",
-        minHeight: "11in",
-        aspectRatio: "8.5 / 11",
-        padding: "0.6in",
+        width: "11in",
+        minHeight: "8.5in",
+        aspectRatio: "11 / 8.5",
+        padding: "0.55in",
         fontFamily: "Inter, -apple-system, sans-serif",
       }}
     >
@@ -312,7 +312,7 @@ function DigitalCertificate({ cert, qrDataUrl, programLabel, printMode }: InnerP
       )}
 
       {/* Footer block */}
-      <div className="absolute bottom-[0.6in] left-[0.6in] right-[0.6in]">
+      <div className="absolute bottom-[0.55in] left-[0.55in] right-[0.55in]">
         <div className="grid grid-cols-3 gap-4 items-end pt-4 border-t border-border">
           {/* Signature */}
           <div>

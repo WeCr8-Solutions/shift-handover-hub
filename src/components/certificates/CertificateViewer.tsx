@@ -7,9 +7,10 @@ import type { CertificateRecord } from "@/lib/certificates";
 import { cn } from "@/lib/utils";
 
 /**
- * Responsive viewer for the fixed 8.5x11in CertificateTemplate.
+ * Responsive viewer for the fixed 11x8.5in (landscape) CertificateTemplate.
  * - Inline mode: scales the certificate to fit the available width (no horizontal overflow on mobile).
- * - Fullscreen modal: pinch-zoom friendly, with +/- controls, for inspecting detail on phones.
+ * - Fullscreen modal: pinch-zoom + pan friendly, with +/- controls, for inspecting detail on phones.
+ *   On portrait phones we auto-rotate the canvas 90° so the landscape cert fills the viewport.
  */
 interface CertificateViewerProps {
   cert: CertificateRecord;
@@ -18,11 +19,11 @@ interface CertificateViewerProps {
   printTargetId?: string;
 }
 
-const CERT_WIDTH_IN = 8.5;
-const CERT_HEIGHT_IN = 11;
+const CERT_WIDTH_IN = 11;
+const CERT_HEIGHT_IN = 8.5;
 const PX_PER_IN = 96; // CSS reference DPI
-const CERT_PX_W = CERT_WIDTH_IN * PX_PER_IN; // 816
-const CERT_PX_H = CERT_HEIGHT_IN * PX_PER_IN; // 1056
+const CERT_PX_W = CERT_WIDTH_IN * PX_PER_IN; // 1056
+const CERT_PX_H = CERT_HEIGHT_IN * PX_PER_IN; // 816
 
 function ScaledCert({
   cert,
@@ -86,13 +87,21 @@ export function CertificateViewer({ cert, variant, printTargetId }: CertificateV
   }, [measure]);
 
   // Initialize modal scale to fit viewport when opened.
+  // On portrait phones, rotate the cert 90° so its landscape orientation fills the screen.
+  const [rotate, setRotate] = useState(false);
   useEffect(() => {
     if (!open) return;
-    const fit = Math.min(
-      (window.innerWidth - 32) / CERT_PX_W,
-      (window.innerHeight - 120) / CERT_PX_H,
-    );
-    setModalScale(Math.max(0.3, Math.min(2, fit)));
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const portrait = vh > vw;
+    const shouldRotate = portrait && vw < 700;
+    setRotate(shouldRotate);
+    const availW = vw - 32;
+    const availH = vh - 96;
+    const fit = shouldRotate
+      ? Math.min(availW / CERT_PX_H, availH / CERT_PX_W)
+      : Math.min(availW / CERT_PX_W, availH / CERT_PX_H);
+    setModalScale(Math.max(0.3, Math.min(2.5, fit)));
   }, [open]);
 
   return (
@@ -154,8 +163,29 @@ export function CertificateViewer({ cert, variant, printTargetId }: CertificateV
             className="w-full h-full overflow-auto overscroll-contain bg-muted/30"
             style={{ touchAction: "pinch-zoom pan-x pan-y" }}
           >
-            <div className="min-w-full min-h-full flex items-start justify-center p-4">
-              <ScaledCert cert={cert} variant={variant} scale={modalScale} />
+            <div className="min-w-full min-h-full flex items-center justify-center p-4">
+              {rotate ? (
+                <div
+                  style={{
+                    width: CERT_PX_H * modalScale,
+                    height: CERT_PX_W * modalScale,
+                  }}
+                  className="relative"
+                >
+                  <div
+                    style={{
+                      transform: `rotate(90deg) translateY(-${CERT_PX_H * modalScale}px)`,
+                      transformOrigin: "top left",
+                      width: CERT_PX_W * modalScale,
+                      height: CERT_PX_H * modalScale,
+                    }}
+                  >
+                    <ScaledCert cert={cert} variant={variant} scale={modalScale} />
+                  </div>
+                </div>
+              ) : (
+                <ScaledCert cert={cert} variant={variant} scale={modalScale} />
+              )}
             </div>
           </div>
         </DialogContent>
