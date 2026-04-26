@@ -22,6 +22,8 @@ import { COUNTRIES, getRegionsForCountry, SUGGESTED_CITIES, SUGGESTED_HEADLINES 
 import { useUsernameAvailability, suggestUsernames } from "@/hooks/useUsernameAvailability";
 import { getPublicTalentUrl } from "@/lib/talent/publicHost";
 import { buildResumePdf } from "@/lib/talent/resumeBuilder";
+import { FilePicker } from "@/components/operator/FilePicker";
+import { useResumeVersions } from "@/hooks/useResumeVersions";
 
 
 const PROFICIENCY_LEVELS = ["beginner", "intermediate", "advanced", "expert"] as const;
