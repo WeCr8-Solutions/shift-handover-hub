@@ -61,13 +61,21 @@ export function CertificateThumbnail({ cert, category }: Props) {
     }
   }, [deepLinkKey, verifyRoute, navigate]);
 
+  // What can the operator open from this card?
+  // - JobLine-issued (linked_cert_id) -> /verify/:certId page (with full digital cert)
+  // - Self-uploaded with a file or external credential link -> inline fullscreen viewer
+  // - Self-uploaded with NOTHING attached -> not interactive (nothing to show)
+  const hasViewableContent = Boolean(verifyRoute || fileUrl || externalCredentialUrl);
+
   const handleClick = () => {
     if (verifyRoute) {
       const back = typeof window !== "undefined" ? window.location.pathname : "/";
       navigate(`${verifyRoute}?back=${encodeURIComponent(back)}`);
       return;
     }
-    setOpen(true);
+    if (fileUrl || externalCredentialUrl) {
+      setOpen(true);
+    }
   };
 
   const copyDeepLink = useCallback(async () => {
