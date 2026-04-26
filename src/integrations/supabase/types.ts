@@ -6660,6 +6660,42 @@ export type Database = {
         }
         Relationships: []
       }
+      operator_resume_versions: {
+        Row: {
+          created_at: string
+          file_name: string | null
+          file_url: string
+          id: string
+          note: string | null
+          size_bytes: number | null
+          source: string
+          storage_path: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          file_name?: string | null
+          file_url: string
+          id?: string
+          note?: string | null
+          size_bytes?: number | null
+          source?: string
+          storage_path?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string | null
+          file_url?: string
+          id?: string
+          note?: string | null
+          size_bytes?: number | null
+          source?: string
+          storage_path?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       operator_skills: {
         Row: {
           created_at: string

@@ -22,6 +22,8 @@ import { COUNTRIES, getRegionsForCountry, SUGGESTED_CITIES, SUGGESTED_HEADLINES 
 import { useUsernameAvailability, suggestUsernames } from "@/hooks/useUsernameAvailability";
 import { getPublicTalentUrl } from "@/lib/talent/publicHost";
 import { buildResumePdf } from "@/lib/talent/resumeBuilder";
+import { FilePicker } from "@/components/operator/FilePicker";
+import { useResumeVersions } from "@/hooks/useResumeVersions";
 
 
 const PROFICIENCY_LEVELS = ["beginner", "intermediate", "advanced", "expert"] as const;
@@ -66,6 +68,7 @@ export default function OperatorProfile() {
     uploadFile,
     refresh,
   } = useOperatorProfile();
+  const { versions: resumeVersions, recordVersion: recordResumeVersion, deleteVersion: deleteResumeVersion } = useResumeVersions(user?.id);
 
   const [form, setForm] = useState({
     headline: "",
@@ -196,13 +199,23 @@ export default function OperatorProfile() {
    * The file is stored, verified JobLine certs are auto-imported, but the resume is NOT
    * parsed yet. The user clicks "Auto-update profile from resume" to run AI extraction.
    */
-  const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleResumeUpload = async (file: File) => {
     if (!file) return;
+    if (file.size > 8 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Resume must be under 8MB.", variant: "destructive" });
+      return;
+    }
     setUploadingResume(true);
     try {
       const url = await uploadFile(file, "resume");
       await saveProfile({ resume_pdf_url: url });
+      await recordResumeVersion({
+        file_url: url,
+        storage_path: pathFromOperatorProfilesUrl(url),
+        source: "uploaded",
+        file_name: file.name,
+        size_bytes: file.size,
+      });
 
       let importedCerts = 0;
       if (user?.id && user.email) {
@@ -222,7 +235,6 @@ export default function OperatorProfile() {
             : `Resume saved to your profile.`,
       });
 
-      // Optional: auto-run AI autofill now that the file is on file.
       if (autoAutofillOnUpload) {
         await handleAutoUpdateFromResume({ resumeUrlOverride: url, silent: false });
       }
@@ -230,7 +242,6 @@ export default function OperatorProfile() {
       toast({ title: "Upload failed", description: extractErrorMessage(err), variant: "destructive" });
     } finally {
       setUploadingResume(false);
-      e.target.value = "";
     }
   };
 
@@ -299,6 +310,17 @@ export default function OperatorProfile() {
       toast({ title: "Resume removed", description: "Your uploaded resume has been removed from your profile." });
     } catch (err) {
       toast({ title: "Remove failed", description: extractErrorMessage(err), variant: "destructive" });
+    }
+  };
+
+  /** Restore a prior résumé version as the active resume_pdf_url. Does not re-upload — just points back to it. */
+  const restoreResumeVersion = async (version: { file_url: string }) => {
+    try {
+      await saveProfile({ resume_pdf_url: version.file_url });
+      await refresh();
+      toast({ title: "Résumé restored", description: "This version is now your active résumé." });
+    } catch (err) {
+      toast({ title: "Restore failed", description: extractErrorMessage(err), variant: "destructive" });
     }
   };
 
@@ -454,6 +476,14 @@ export default function OperatorProfile() {
       await saveProfile({
         resume_pdf_url: url,
         ...(mode === "publish" ? { resume_public: true } : {}),
+      });
+      await recordResumeVersion({
+        file_url: url,
+        storage_path: pathFromOperatorProfilesUrl(url),
+        source: "generated",
+        file_name: file.name,
+        size_bytes: file.size,
+        note: mode === "publish" ? "Built & published from profile" : "Built from profile",
       });
       await refresh();
       toast({
@@ -762,27 +792,40 @@ export default function OperatorProfile() {
 
                 <Separator />
                 <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
+                  <div className="min-w-0">
                     <Label className="flex items-center gap-2"><Upload className="w-4 h-4" /> Profile photo</Label>
-                    <div className="flex items-center gap-3 mt-2">
+                    <div className="flex items-center gap-3 mt-2 min-w-0">
                       {profile?.avatar_url && (
                         <img
                           src={profile.avatar_url}
                           alt="Profile"
-                          className="h-16 w-16 rounded-full object-cover ring-2 ring-border"
+                          className="h-16 w-16 rounded-full object-cover ring-2 ring-border shrink-0"
                         />
                       )}
-                      <Input
-                        type="file"
+                      <FilePicker
                         accept="image/png,image/jpeg,image/webp,image/avif"
                         disabled={uploadingAvatar}
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          if (!file) return;
-                          if (file.size > 5 * 1024 * 1024) {
-                            toast({ title: "File too large", description: "Photo must be under 5MB.", variant: "destructive" });
-                            return;
-                          }
+                        loading={uploadingAvatar}
+                        label={profile?.avatar_url ? "Replace photo" : "Choose photo"}
+                        maxBytes={5 * 1024 * 1024}
+                        onTooLarge={() =>
+                          toast({ title: "File too large", description: "Photo must be under 5MB.", variant: "destructive" })
+                        }
+                        rightSlot={
+                          profile?.avatar_url ? (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={async () => {
+                                await saveProfile({ avatar_url: null });
+                                toast({ title: "Photo removed" });
+                              }}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          ) : undefined
+                        }
+                        onFile={async (file) => {
                           setUploadingAvatar(true);
                           try {
                             const url = await uploadFile(file, "avatar");
@@ -792,7 +835,6 @@ export default function OperatorProfile() {
                             toast({ title: "Upload failed", description: extractErrorMessage(err), variant: "destructive" });
                           } finally {
                             setUploadingAvatar(false);
-                            e.target.value = "";
                           }
                         }}
                       />
@@ -800,12 +842,11 @@ export default function OperatorProfile() {
                     <p className="text-xs text-muted-foreground mt-1">
                       Square image recommended (min 400×400). Max 5MB.
                     </p>
-                    {uploadingAvatar && <p className="text-sm text-muted-foreground mt-1">Uploading…</p>}
                   </div>
 
-                  <div>
+                  <div className="min-w-0">
                     <Label className="flex items-center gap-2"><Upload className="w-4 h-4" /> Banner image</Label>
-                    <div className="flex flex-col gap-2 mt-2">
+                    <div className="flex flex-col gap-2 mt-2 min-w-0">
                       {profile?.banner_url && (
                         <img
                           src={profile.banner_url}
@@ -813,49 +854,46 @@ export default function OperatorProfile() {
                           className="h-20 w-full rounded-md object-cover ring-1 ring-border"
                         />
                       )}
-                      <div className="flex items-center gap-2">
-                        <Input
-                          type="file"
-                          accept="image/png,image/jpeg,image/webp,image/avif"
-                          disabled={uploadingBanner}
-                          onChange={async (e) => {
-                            const file = e.target.files?.[0];
-                            if (!file) return;
-                            if (file.size > 8 * 1024 * 1024) {
-                              toast({ title: "File too large", description: "Banner must be under 8MB.", variant: "destructive" });
-                              return;
-                            }
-                            setUploadingBanner(true);
-                            try {
-                              const url = await uploadFile(file, "banner");
-                              await saveProfile({ banner_url: url });
-                              toast({ title: "Banner updated" });
-                            } catch (err) {
-                              toast({ title: "Upload failed", description: extractErrorMessage(err), variant: "destructive" });
-                            } finally {
-                              setUploadingBanner(false);
-                              e.target.value = "";
-                            }
-                          }}
-                        />
-                        {profile?.banner_url && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={async () => {
-                              await saveProfile({ banner_url: null });
-                              toast({ title: "Banner removed" });
-                            }}
-                          >
-                            Remove
-                          </Button>
-                        )}
-                      </div>
+                      <FilePicker
+                        accept="image/png,image/jpeg,image/webp,image/avif"
+                        disabled={uploadingBanner}
+                        loading={uploadingBanner}
+                        label={profile?.banner_url ? "Replace banner" : "Choose banner"}
+                        maxBytes={8 * 1024 * 1024}
+                        onTooLarge={() =>
+                          toast({ title: "File too large", description: "Banner must be under 8MB.", variant: "destructive" })
+                        }
+                        rightSlot={
+                          profile?.banner_url ? (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={async () => {
+                                await saveProfile({ banner_url: null });
+                                toast({ title: "Banner removed" });
+                              }}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          ) : undefined
+                        }
+                        onFile={async (file) => {
+                          setUploadingBanner(true);
+                          try {
+                            const url = await uploadFile(file, "banner");
+                            await saveProfile({ banner_url: url });
+                            toast({ title: "Banner updated" });
+                          } catch (err) {
+                            toast({ title: "Upload failed", description: extractErrorMessage(err), variant: "destructive" });
+                          } finally {
+                            setUploadingBanner(false);
+                          }
+                        }}
+                      />
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
                       Wide image recommended (1500×500). Max 8MB.
                     </p>
-                    {uploadingBanner && <p className="text-sm text-muted-foreground mt-1">Uploading…</p>}
                   </div>
                 </div>
 
@@ -884,16 +922,26 @@ export default function OperatorProfile() {
                     </p>
                   </div>
 
-                  <Input
-                    type="file"
+                  <FilePicker
                     accept="application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.pdf,.docx"
-                    onChange={handleResumeUpload}
+                    onFile={handleResumeUpload}
                     disabled={uploadingResume || autofilling || building}
+                    loading={uploadingResume}
+                    label={profile?.resume_pdf_url ? "Replace résumé" : "Choose résumé file"}
+                    currentFileName={profile?.resume_pdf_url ? decodeURIComponent(profile.resume_pdf_url.split("/").pop() ?? "") : null}
+                    maxBytes={8 * 1024 * 1024}
+                    onTooLarge={(_size, max) =>
+                      toast({
+                        title: "File too large",
+                        description: `Resume must be under ${Math.round(max / (1024 * 1024))} MB.`,
+                        variant: "destructive",
+                      })
+                    }
                   />
-                  {(uploadingResume || autofilling || building) && (
+                  {(autofilling || building) && (
                     <p className="text-sm text-muted-foreground flex items-center gap-2">
                       <Loader2 className="w-3 h-3 animate-spin" />
-                      {uploadingResume ? "Uploading…" : autofilling ? "Reading your resume…" : "Building JobLine résumé…"}
+                      {autofilling ? "Reading your resume…" : "Building JobLine résumé…"}
                     </p>
                   )}
 
@@ -1043,6 +1091,78 @@ export default function OperatorProfile() {
                       Download only
                     </Button>
                   </div>
+                </div>
+
+                {/* Résumé version history */}
+                <div className="rounded-lg border p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-3 flex-wrap">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium flex items-center gap-2">
+                        <RefreshCw className="w-4 h-4" /> Résumé version history
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Every résumé you upload or generate is saved here. Restore an older one as your
+                        active résumé, view it, or delete versions you no longer need.
+                      </p>
+                    </div>
+                    <Badge variant="outline" className="shrink-0">{resumeVersions.length} version{resumeVersions.length === 1 ? "" : "s"}</Badge>
+                  </div>
+
+                  {resumeVersions.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">
+                      No versions yet. Upload or build a résumé to start tracking history.
+                    </p>
+                  ) : (
+                    <ul className="divide-y rounded-md border bg-background">
+                      {resumeVersions.map((v) => {
+                        const isActive = profile?.resume_pdf_url === v.file_url;
+                        const fname = v.file_name ?? decodeURIComponent(v.file_url.split("/").pop() ?? "résumé.pdf");
+                        const sizeKb = v.size_bytes ? Math.max(1, Math.round(v.size_bytes / 1024)) : null;
+                        const when = new Date(v.created_at).toLocaleString();
+                        return (
+                          <li key={v.id} className="p-3 flex flex-wrap items-start justify-between gap-3 min-w-0">
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <p className="text-sm font-medium truncate min-w-0 max-w-full" title={fname}>
+                                  {fname}
+                                </p>
+                                {isActive && <Badge variant="secondary" className="shrink-0">Active</Badge>}
+                                <Badge variant="outline" className="shrink-0">
+                                  {v.source === "generated" ? "Built" : "Uploaded"}
+                                </Badge>
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                {when}{sizeKb ? ` · ${sizeKb} KB` : ""}{v.note ? ` · ${v.note}` : ""}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <Button variant="outline" size="sm" asChild>
+                                <a href={v.file_url} target="_blank" rel="noopener noreferrer">View</a>
+                              </Button>
+                              {!isActive && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => restoreResumeVersion(v)}
+                                >
+                                  Restore
+                                </Button>
+                              )}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => deleteResumeVersion(v.id, v.storage_path)}
+                                disabled={isActive}
+                                title={isActive ? "Active version — restore another first or remove from the upload section" : "Delete this version"}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
                 </div>
 
                 <Button onClick={handleSave} disabled={saving || uploadingResume || autofilling} className="gap-2">
