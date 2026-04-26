@@ -1432,6 +1432,29 @@ function pathFromOperatorProfilesUrl(url: string | null): string | null {
   return decodeURIComponent(url.slice(i + marker.length).split("?")[0]);
 }
 
+type CertCategory = "oap" | "gca" | "partner" | "self";
+
+/**
+ * Map raw verification_source + linked_cert_id to a display category.
+ * Aligns the operator-facing manager with PublicOperatorProfile's classifier
+ * so newly issued JobLine credentials don't render as "Self-reported".
+ */
+function classifyCertSource(src: string | null | undefined, linkedId: string | null | undefined): CertCategory {
+  const s = (src ?? "").toLowerCase();
+  const linked = linkedId ?? "";
+  if (s === "verified_oap" || (s === "jobline" && linked.startsWith("OAP-"))) return "oap";
+  if (s === "verified_gca" || (s === "jobline" && linked.startsWith("GCA-"))) return "gca";
+  if (s.startsWith("verified_") || s === "jobline" || s === "partner" || s === "employer") return "partner";
+  return "self";
+}
+
+const CATEGORY_LABEL: Record<CertCategory, string> = {
+  oap: "Verified · OAP",
+  gca: "Verified · GCA",
+  partner: "Verified · Partner",
+  self: "Self-reported",
+};
+
 function CertificationsManager({
   certs, onChange, uploadFile, userId,
 }: {
@@ -1443,6 +1466,7 @@ function CertificationsManager({
   const { toast } = useToast();
   const [adding, setAdding] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [filter, setFilter] = useState<"all" | CertCategory>("all");
   const [draft, setDraft] = useState({ name: "", issuer: "", issued_date: "", expires_date: "", credential_id: "", credential_url: "" });
 
   const add = async () => {
