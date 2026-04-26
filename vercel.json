@@ -142,7 +142,7 @@
       "destination": "/api/og?path=/verify/:certId"
     },
     {
-      "source": "/((?!.*\\.).*)",
+      "source": "/((?!api/|.*\\.).*)",
       "destination": "/index.html"
     }
   ],
