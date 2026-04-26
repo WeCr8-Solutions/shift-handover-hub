@@ -200,6 +200,7 @@ export function CertificateThumbnail({ cert, category }: Props) {
                     <FileText className="w-3.5 h-3.5 mr-1" /> Open
                   </a>
                 </Button>
+              )}
               <Button
                 variant="ghost"
                 size="sm"
