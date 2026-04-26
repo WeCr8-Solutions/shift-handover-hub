@@ -7,9 +7,10 @@ import type { CertificateRecord } from "@/lib/certificates";
 import { cn } from "@/lib/utils";
 
 /**
- * Responsive viewer for the fixed 8.5x11in CertificateTemplate.
+ * Responsive viewer for the fixed 11x8.5in (landscape) CertificateTemplate.
  * - Inline mode: scales the certificate to fit the available width (no horizontal overflow on mobile).
- * - Fullscreen modal: pinch-zoom friendly, with +/- controls, for inspecting detail on phones.
+ * - Fullscreen modal: pinch-zoom + pan friendly, with +/- controls, for inspecting detail on phones.
+ *   On portrait phones we auto-rotate the canvas 90° so the landscape cert fills the viewport.
  */
 interface CertificateViewerProps {
   cert: CertificateRecord;
@@ -18,11 +19,11 @@ interface CertificateViewerProps {
   printTargetId?: string;
 }
 
-const CERT_WIDTH_IN = 8.5;
-const CERT_HEIGHT_IN = 11;
+const CERT_WIDTH_IN = 11;
+const CERT_HEIGHT_IN = 8.5;
 const PX_PER_IN = 96; // CSS reference DPI
-const CERT_PX_W = CERT_WIDTH_IN * PX_PER_IN; // 816
-const CERT_PX_H = CERT_HEIGHT_IN * PX_PER_IN; // 1056
+const CERT_PX_W = CERT_WIDTH_IN * PX_PER_IN; // 1056
+const CERT_PX_H = CERT_HEIGHT_IN * PX_PER_IN; // 816
 
 function ScaledCert({
   cert,
