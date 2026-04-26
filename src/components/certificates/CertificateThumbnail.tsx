@@ -1,13 +1,11 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Award, ExternalLink, FileText, Link2, Loader2, Maximize2, ShieldCheck, Trophy, X } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Award, ExternalLink, FileText, Link2, Maximize2, ShieldCheck, Trophy, X } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { useCertificates } from "@/hooks/useCertificates";
-import { CertificateTemplate } from "./CertificateTemplate";
-import type { CertificateRecord } from "@/lib/certificates";
 
 export type CertCategory = "oap" | "gca" | "partner" | "self";
 
