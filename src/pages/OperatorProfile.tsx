@@ -792,27 +792,40 @@ export default function OperatorProfile() {
 
                 <Separator />
                 <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
+                  <div className="min-w-0">
                     <Label className="flex items-center gap-2"><Upload className="w-4 h-4" /> Profile photo</Label>
-                    <div className="flex items-center gap-3 mt-2">
+                    <div className="flex items-center gap-3 mt-2 min-w-0">
                       {profile?.avatar_url && (
                         <img
                           src={profile.avatar_url}
                           alt="Profile"
-                          className="h-16 w-16 rounded-full object-cover ring-2 ring-border"
+                          className="h-16 w-16 rounded-full object-cover ring-2 ring-border shrink-0"
                         />
                       )}
-                      <Input
-                        type="file"
+                      <FilePicker
                         accept="image/png,image/jpeg,image/webp,image/avif"
                         disabled={uploadingAvatar}
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          if (!file) return;
-                          if (file.size > 5 * 1024 * 1024) {
-                            toast({ title: "File too large", description: "Photo must be under 5MB.", variant: "destructive" });
-                            return;
-                          }
+                        loading={uploadingAvatar}
+                        label={profile?.avatar_url ? "Replace photo" : "Choose photo"}
+                        maxBytes={5 * 1024 * 1024}
+                        onTooLarge={() =>
+                          toast({ title: "File too large", description: "Photo must be under 5MB.", variant: "destructive" })
+                        }
+                        rightSlot={
+                          profile?.avatar_url ? (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={async () => {
+                                await saveProfile({ avatar_url: null });
+                                toast({ title: "Photo removed" });
+                              }}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          ) : undefined
+                        }
+                        onFile={async (file) => {
                           setUploadingAvatar(true);
                           try {
                             const url = await uploadFile(file, "avatar");
@@ -822,7 +835,6 @@ export default function OperatorProfile() {
                             toast({ title: "Upload failed", description: extractErrorMessage(err), variant: "destructive" });
                           } finally {
                             setUploadingAvatar(false);
-                            e.target.value = "";
                           }
                         }}
                       />
@@ -830,12 +842,11 @@ export default function OperatorProfile() {
                     <p className="text-xs text-muted-foreground mt-1">
                       Square image recommended (min 400×400). Max 5MB.
                     </p>
-                    {uploadingAvatar && <p className="text-sm text-muted-foreground mt-1">Uploading…</p>}
                   </div>
 
-                  <div>
+                  <div className="min-w-0">
                     <Label className="flex items-center gap-2"><Upload className="w-4 h-4" /> Banner image</Label>
-                    <div className="flex flex-col gap-2 mt-2">
+                    <div className="flex flex-col gap-2 mt-2 min-w-0">
                       {profile?.banner_url && (
                         <img
                           src={profile.banner_url}
@@ -843,49 +854,46 @@ export default function OperatorProfile() {
                           className="h-20 w-full rounded-md object-cover ring-1 ring-border"
                         />
                       )}
-                      <div className="flex items-center gap-2">
-                        <Input
-                          type="file"
-                          accept="image/png,image/jpeg,image/webp,image/avif"
-                          disabled={uploadingBanner}
-                          onChange={async (e) => {
-                            const file = e.target.files?.[0];
-                            if (!file) return;
-                            if (file.size > 8 * 1024 * 1024) {
-                              toast({ title: "File too large", description: "Banner must be under 8MB.", variant: "destructive" });
-                              return;
-                            }
-                            setUploadingBanner(true);
-                            try {
-                              const url = await uploadFile(file, "banner");
-                              await saveProfile({ banner_url: url });
-                              toast({ title: "Banner updated" });
-                            } catch (err) {
-                              toast({ title: "Upload failed", description: extractErrorMessage(err), variant: "destructive" });
-                            } finally {
-                              setUploadingBanner(false);
-                              e.target.value = "";
-                            }
-                          }}
-                        />
-                        {profile?.banner_url && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={async () => {
-                              await saveProfile({ banner_url: null });
-                              toast({ title: "Banner removed" });
-                            }}
-                          >
-                            Remove
-                          </Button>
-                        )}
-                      </div>
+                      <FilePicker
+                        accept="image/png,image/jpeg,image/webp,image/avif"
+                        disabled={uploadingBanner}
+                        loading={uploadingBanner}
+                        label={profile?.banner_url ? "Replace banner" : "Choose banner"}
+                        maxBytes={8 * 1024 * 1024}
+                        onTooLarge={() =>
+                          toast({ title: "File too large", description: "Banner must be under 8MB.", variant: "destructive" })
+                        }
+                        rightSlot={
+                          profile?.banner_url ? (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={async () => {
+                                await saveProfile({ banner_url: null });
+                                toast({ title: "Banner removed" });
+                              }}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          ) : undefined
+                        }
+                        onFile={async (file) => {
+                          setUploadingBanner(true);
+                          try {
+                            const url = await uploadFile(file, "banner");
+                            await saveProfile({ banner_url: url });
+                            toast({ title: "Banner updated" });
+                          } catch (err) {
+                            toast({ title: "Upload failed", description: extractErrorMessage(err), variant: "destructive" });
+                          } finally {
+                            setUploadingBanner(false);
+                          }
+                        }}
+                      />
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
                       Wide image recommended (1500×500). Max 8MB.
                     </p>
-                    {uploadingBanner && <p className="text-sm text-muted-foreground mt-1">Uploading…</p>}
                   </div>
                 </div>
 
