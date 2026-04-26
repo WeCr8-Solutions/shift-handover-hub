@@ -259,12 +259,34 @@ export default function PublicTalentProfile() {
   const location = [profile.location_city, profile.location_region, profile.location_country]
     .filter(Boolean)
     .join(", ");
+  // Classify a cert into one of the 4 display categories.
+  // DB stores verification_source as: 'jobline' | 'employer' | 'partner' | 'self' | (legacy 'verified_*')
+  // - jobline + linked_cert_id starting OAP-  -> oap
+  // - jobline + linked_cert_id starting GCA-  -> gca
+  // - jobline (no linked id) / partner / employer -> partner (verified by org/partner network)
+  // - self / anything else -> self
+  const classifyCert = (c: CertRow): CertCategory => {
+    const src = (c.verification_source ?? "").toLowerCase();
+    const linked = c.linked_cert_id ?? "";
+    if (src === "verified_oap" || (src === "jobline" && linked.startsWith("OAP-"))) return "oap";
+    if (src === "verified_gca" || (src === "jobline" && linked.startsWith("GCA-"))) return "gca";
+    if (src.startsWith("verified_") || src === "jobline" || src === "partner" || src === "employer") return "partner";
+    return "self";
+  };
+  const isVerifiedCert = (c: CertRow) => classifyCert(c) !== "self";
+
   const visibleCerts = profile.show_only_verified_certs
-    ? certs.filter((c) => c.verification_source.startsWith("verified_"))
+    ? certs.filter(isVerifiedCert)
     : certs;
   const visibleSkills = profile.show_only_verified_certs ? [] : skills;
   const visibleMachines = profile.show_only_verified_certs ? [] : machines;
-  const verifiedCount = visibleCerts.filter((c) => c.verification_source.startsWith("verified_")).length;
+  const verifiedCount = visibleCerts.filter(isVerifiedCert).length;
+  // JobLine-verified status: true if the operator has at least one cert directly issued by JobLine
+  // or one of its approved partner/network endorsers. Drives the single "Verified" identity badge.
+  const isJoblineVerified = visibleCerts.some((c) => {
+    const src = (c.verification_source ?? "").toLowerCase();
+    return src === "jobline" || src === "partner" || src.startsWith("verified_");
+  });
 
   const personJsonLd = {
     "@context": "https://schema.org",
@@ -294,7 +316,7 @@ export default function PublicTalentProfile() {
     hasCredential: visibleCerts.map((c) => ({
       "@type": "EducationalOccupationalCredential",
       name: c.name,
-      credentialCategory: c.verification_source.startsWith("verified_") ? "Verified" : "Self-reported",
+      credentialCategory: isVerifiedCert(c) ? "Verified" : "Self-reported",
       recognizedBy: c.issuer ? { "@type": "Organization", name: c.issuer } : undefined,
       url: c.credential_url ?? undefined,
     })),
@@ -385,9 +407,12 @@ export default function PublicTalentProfile() {
                     </Badge>
                   )}
                   {profile.willing_to_relocate && <Badge variant="outline">Will relocate</Badge>}
-                  {verifiedCount > 0 && (
-                    <Badge className="bg-primary/10 text-primary border-primary/30">
-                      <ShieldCheck className="w-3 h-3 mr-1" /> {verifiedCount} verified
+                  {isJoblineVerified && (
+                    <Badge
+                      className="bg-primary/10 text-primary border-primary/30"
+                      title="Identity & credentials verified by JobLine.ai or an approved partner network"
+                    >
+                      <ShieldCheck className="w-3 h-3 mr-1" /> JobLine Verified
                     </Badge>
                   )}
                 </div>
@@ -500,7 +525,7 @@ export default function PublicTalentProfile() {
           username={profile.public_username}
           fullName={fullName}
           latestCertId={
-            certs.find((c) => c.linked_cert_id && c.verification_source.startsWith("verified_"))
+            certs.find((c) => c.linked_cert_id && isVerifiedCert(c))
               ?.linked_cert_id ?? null
           }
         />
@@ -607,12 +632,10 @@ export default function PublicTalentProfile() {
         })()}
 
         {visibleCerts.length > 0 && (() => {
-          const oapCerts = visibleCerts.filter((c) => c.verification_source === "verified_oap");
-          const gcaCerts = visibleCerts.filter((c) => c.verification_source === "verified_gca");
-          const partnerCerts = visibleCerts.filter(
-            (c) => c.verification_source.startsWith("verified_") && c.verification_source !== "verified_oap" && c.verification_source !== "verified_gca",
-          );
-          const selfCerts = visibleCerts.filter((c) => !c.verification_source.startsWith("verified_"));
+          const oapCerts = visibleCerts.filter((c) => classifyCert(c) === "oap");
+          const gcaCerts = visibleCerts.filter((c) => classifyCert(c) === "gca");
+          const partnerCerts = visibleCerts.filter((c) => classifyCert(c) === "partner");
+          const selfCerts = visibleCerts.filter((c) => classifyCert(c) === "self");
 
           const groups: Array<{
             key: CertCategory;
