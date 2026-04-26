@@ -162,7 +162,9 @@ export function CertificateThumbnail({ cert, category }: Props) {
         </div>
 
         <div className="px-2 py-1 border-t flex items-center justify-between gap-2">
-          <span className="text-[9px] sm:text-[10px] text-muted-foreground truncate">Tap to view</span>
+          <span className="text-[9px] sm:text-[10px] text-muted-foreground truncate">
+            {hasViewableContent ? "Tap to view" : "No file uploaded"}
+          </span>
           {category !== "self" && (
             <Badge variant="outline" className="h-4 px-1 text-[8px] sm:text-[9px] shrink-0">Verified</Badge>
           )}
