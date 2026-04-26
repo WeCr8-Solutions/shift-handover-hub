@@ -1,5 +1,6 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Award, ExternalLink, FileText, Loader2, Maximize2, ShieldCheck, Trophy, X } from "lucide-react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Award, ExternalLink, FileText, Link2, Loader2, Maximize2, ShieldCheck, Trophy, X } from "lucide-react";
+import { toast } from "sonner";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -39,6 +40,49 @@ export function CertificateThumbnail({ cert, category }: Props) {
   const { lookupCertificate } = useCertificates();
   const [fullCert, setFullCert] = useState<CertificateRecord | null>(null);
   const [loadingCert, setLoadingCert] = useState(false);
+
+  // Deep-link key: prefer the verifiable JobLine cert id, otherwise the row id.
+  const deepLinkKey = cert.linked_cert_id ?? cert.id;
+
+  // Auto-open when the URL contains ?cert=<deepLinkKey> (and react to changes).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const sync = () => {
+      const param = new URLSearchParams(window.location.search).get("cert");
+      if (param && param === deepLinkKey) setOpen(true);
+    };
+    sync();
+    window.addEventListener("popstate", sync);
+    return () => window.removeEventListener("popstate", sync);
+  }, [deepLinkKey]);
+
+  // Reflect open state in the URL so the page can be shared / refreshed.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    const current = url.searchParams.get("cert");
+    if (open) {
+      if (current !== deepLinkKey) {
+        url.searchParams.set("cert", deepLinkKey);
+        window.history.replaceState({}, "", url.toString());
+      }
+    } else if (current === deepLinkKey) {
+      url.searchParams.delete("cert");
+      window.history.replaceState({}, "", url.toString());
+    }
+  }, [open, deepLinkKey]);
+
+  const copyDeepLink = useCallback(async () => {
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    url.searchParams.set("cert", deepLinkKey);
+    try {
+      await navigator.clipboard.writeText(url.toString());
+      toast.success("Certificate link copied");
+    } catch {
+      toast.error("Couldn't copy link");
+    }
+  }, [deepLinkKey]);
 
   // When opened on a JobLine-issued cert (linked_cert_id), fetch the full
   // record so we can render the digital certificate inline — avoids iframe
@@ -157,6 +201,15 @@ export function CertificateThumbnail({ cert, category }: Props) {
                   </a>
                 </Button>
               )}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 px-2"
+                onClick={copyDeepLink}
+                aria-label="Copy link to this certificate"
+              >
+                <Link2 className="w-3.5 h-3.5 mr-1" /> Link
+              </Button>
               <Button
                 variant="ghost"
                 size="icon"
