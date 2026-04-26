@@ -17,6 +17,7 @@ import { ScrollToTop } from "@/components/ScrollToTop";
 import { USPersonDeclarationGate } from "@/components/compliance/USPersonDeclarationGate";
 import { RulesOfBehaviorGate } from "@/components/compliance/RulesOfBehaviorGate";
 import { ReleaseBadge } from "@/components/ReleaseBadge";
+import { CookieConsent } from "@/components/legal/CookieConsent";
 import { lazy, Suspense } from "react";
 
 // Eager: landing page (LCP-critical, most-visited route)
@@ -168,6 +169,7 @@ const App = () => (
                   <JobLineProvider>
                   <ActAsBanner />
                   <ReleaseBadge />
+                  <CookieConsent />
                   <GuidedTour />
                   <WelcomeModal />
                   <Suspense fallback={<RouteFallback />}>
