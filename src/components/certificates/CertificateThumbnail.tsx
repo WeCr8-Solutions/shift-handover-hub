@@ -1,0 +1,197 @@
+import { useState } from "react";
+import { Award, ExternalLink, FileText, Maximize2, ShieldCheck, Trophy, X } from "lucide-react";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+
+export type CertCategory = "oap" | "gca" | "partner" | "self";
+
+export interface ThumbnailCert {
+  id: string;
+  name: string;
+  issuer?: string | null;
+  issued_date?: string | null;
+  expires_date?: string | null;
+  attachment_url?: string | null;
+  credential_url?: string | null;
+  credential_id?: string | null;
+  linked_cert_id?: string | null;
+  verification_source?: string | null;
+}
+
+interface Props {
+  cert: ThumbnailCert;
+  category: CertCategory;
+}
+
+/**
+ * Landscape (11x8.5) thumbnail card for any certificate. Tap to open a
+ * fullscreen viewer that fits the user's device. For uploaded files (PDF/IMG)
+ * we render the file in an inline iframe/img with pinch-zoom; for verified
+ * JobLine certs we link to the public verify page.
+ */
+export function CertificateThumbnail({ cert, category }: Props) {
+  const [open, setOpen] = useState(false);
+
+  const palette = (() => {
+    switch (category) {
+      case "oap":
+        return { ring: "ring-primary/40", bg: "from-primary/15 to-primary/5", text: "text-primary", icon: ShieldCheck, label: "JobLine OAP" };
+      case "gca":
+        return { ring: "ring-warning/40", bg: "from-warning/15 to-warning/5", text: "text-warning", icon: Trophy, label: "G-Code Academy" };
+      case "partner":
+        return { ring: "ring-accent/40", bg: "from-accent/15 to-accent/5", text: "text-accent-foreground", icon: ShieldCheck, label: cert.issuer ?? "Partner Verified" };
+      default:
+        return { ring: "ring-border", bg: "from-muted to-background", text: "text-foreground", icon: Award, label: cert.issuer ?? "Self-uploaded" };
+    }
+  })();
+  const Icon = palette.icon;
+
+  const verifyUrl =
+    cert.linked_cert_id ? `/verify/${cert.linked_cert_id}` : cert.credential_url ?? null;
+  const fileUrl = cert.attachment_url ?? null;
+  const isPdf = !!fileUrl && /\.pdf($|\?)/i.test(fileUrl);
+  const isImg = !!fileUrl && /\.(png|jpe?g|webp|gif|svg)($|\?)/i.test(fileUrl);
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className={cn(
+          "group relative w-full text-left rounded-lg border bg-card overflow-hidden ring-1",
+          palette.ring,
+          "hover:shadow-md transition-shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        )}
+        aria-label={`View ${cert.name} certificate`}
+      >
+        {/* 11:8.5 aspect landscape thumbnail */}
+        <div
+          className={cn("relative w-full bg-gradient-to-br", palette.bg)}
+          style={{ aspectRatio: "11 / 8.5" }}
+        >
+          {/* Faux mini-cert layout */}
+          <div className="absolute inset-0 p-3 flex flex-col">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <Icon className={cn("w-4 h-4 shrink-0", palette.text)} />
+                <span className="text-[9px] font-bold uppercase tracking-wider truncate">
+                  {palette.label}
+                </span>
+              </div>
+              <Maximize2 className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
+            <div className="flex-1 flex flex-col justify-center text-center px-1">
+              <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                Certificate
+              </p>
+              <p className="font-semibold text-sm leading-tight line-clamp-3 mt-0.5">
+                {cert.name}
+              </p>
+              {cert.issuer && category !== "self" && category !== "partner" && (
+                <p className="text-[10px] text-muted-foreground mt-1 truncate">{cert.issuer}</p>
+              )}
+            </div>
+            <div className="flex items-end justify-between gap-2 text-[9px] text-muted-foreground">
+              <span className="font-mono truncate">
+                {cert.linked_cert_id ?? cert.credential_id ?? ""}
+              </span>
+              <span className="shrink-0">
+                {cert.issued_date ? new Date(cert.issued_date).getFullYear() : ""}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="px-2.5 py-1.5 border-t flex items-center justify-between gap-2">
+          <span className="text-[10px] text-muted-foreground truncate">Tap to view</span>
+          {category !== "self" && (
+            <Badge variant="outline" className="h-4 px-1 text-[9px]">Verified</Badge>
+          )}
+        </div>
+      </button>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent
+          className={cn(
+            "max-w-none w-screen h-[100dvh] sm:h-screen p-0 gap-0 rounded-none border-0 bg-background",
+            "translate-x-0 translate-y-0 left-0 top-0",
+          )}
+        >
+          <DialogTitle className="sr-only">{cert.name}</DialogTitle>
+
+          <div className="absolute top-2 left-2 right-2 z-10 flex items-center justify-between gap-2">
+            <div className="rounded-md bg-background/90 backdrop-blur px-3 py-1.5 border shadow text-xs font-medium truncate max-w-[60%]">
+              {cert.name}
+            </div>
+            <div className="flex items-center gap-1 rounded-md border bg-background/90 backdrop-blur p-1 shadow">
+              {verifyUrl && (
+                <Button asChild variant="ghost" size="sm" className="h-8 px-2">
+                  <a href={verifyUrl} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="w-3.5 h-3.5 mr-1" /> Verify
+                  </a>
+                </Button>
+              )}
+              {fileUrl && (
+                <Button asChild variant="ghost" size="sm" className="h-8 px-2">
+                  <a href={fileUrl} target="_blank" rel="noopener noreferrer" download>
+                    <FileText className="w-3.5 h-3.5 mr-1" /> Open
+                  </a>
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setOpen(false)}
+                aria-label="Close"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+
+          <div
+            className="w-full h-full overflow-auto overscroll-contain bg-muted/40 pt-14"
+            style={{ touchAction: "pinch-zoom pan-x pan-y" }}
+          >
+            {fileUrl ? (
+              isImg ? (
+                <div className="min-w-full min-h-full flex items-center justify-center p-4">
+                  <img
+                    src={fileUrl}
+                    alt={cert.name}
+                    className="max-w-full max-h-[calc(100dvh-5rem)] object-contain shadow-xl"
+                  />
+                </div>
+              ) : isPdf ? (
+                <iframe
+                  src={`${fileUrl}#view=FitH`}
+                  title={cert.name}
+                  className="w-full h-[calc(100dvh-3.5rem)] border-0 bg-background"
+                />
+              ) : (
+                <iframe
+                  src={fileUrl}
+                  title={cert.name}
+                  className="w-full h-[calc(100dvh-3.5rem)] border-0 bg-background"
+                />
+              )
+            ) : verifyUrl ? (
+              <iframe
+                src={verifyUrl}
+                title={cert.name}
+                className="w-full h-[calc(100dvh-3.5rem)] border-0 bg-background"
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full text-sm text-muted-foreground p-6 text-center">
+                No file or verification link attached to this certificate.
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
