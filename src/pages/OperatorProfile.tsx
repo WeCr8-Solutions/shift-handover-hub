@@ -393,6 +393,66 @@ export default function OperatorProfile() {
     return counts;
   };
 
+  /**
+   * Generates a polished PDF résumé from the structured profile data and
+   * either downloads it locally or uploads it as the active resume (and
+   * optionally publishes it to the public profile).
+   */
+  const handleBuildResume = async (mode: "download" | "save" | "publish") => {
+    if (!user?.id) return;
+    if (!profile) {
+      toast({ title: "Profile not ready", description: "Save your profile first.", variant: "destructive" });
+      return;
+    }
+    setBuilding(true);
+    try {
+      const fullName = authProfile?.display_name?.trim() || user.email || "Operator";
+      const blob = buildResumePdf({
+        fullName,
+        profile,
+        workHistory,
+        education,
+        certifications,
+        skills,
+      });
+
+      if (mode === "download") {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${fullName.replace(/[^a-z0-9]+/gi, "_")}_Resume.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        toast({ title: "Résumé downloaded", description: "Your generated résumé PDF was downloaded." });
+        return;
+      }
+
+      // Upload as the active resume.
+      const file = new File([blob], `${fullName.replace(/[^a-z0-9]+/gi, "_")}_Resume.pdf`, {
+        type: "application/pdf",
+      });
+      const url = await uploadFile(file, "resume");
+      await saveProfile({
+        resume_pdf_url: url,
+        ...(mode === "publish" ? { resume_public: true } : {}),
+      });
+      await refresh();
+      toast({
+        title: mode === "publish" ? "Résumé published" : "Résumé saved",
+        description:
+          mode === "publish"
+            ? "Your generated résumé is now visible on your public profile."
+            : "Your generated résumé is now your active resume on file.",
+      });
+    } catch (err) {
+      toast({ title: "Build failed", description: extractErrorMessage(err), variant: "destructive" });
+    } finally {
+      setBuilding(false);
+    }
+  };
+
   const handleSyncCerts = async () => {
     if (!user?.email || !user.id) return;
     setSyncing(true);
