@@ -1085,7 +1085,78 @@ export default function OperatorProfile() {
                   </div>
                 </div>
 
-                <Button onClick={handleSave} disabled={saving || uploadingResume || autofilling} className="gap-2">
+                {/* Résumé version history */}
+                <div className="rounded-lg border p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-3 flex-wrap">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium flex items-center gap-2">
+                        <RefreshCw className="w-4 h-4" /> Résumé version history
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Every résumé you upload or generate is saved here. Restore an older one as your
+                        active résumé, view it, or delete versions you no longer need.
+                      </p>
+                    </div>
+                    <Badge variant="outline" className="shrink-0">{resumeVersions.length} version{resumeVersions.length === 1 ? "" : "s"}</Badge>
+                  </div>
+
+                  {resumeVersions.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">
+                      No versions yet. Upload or build a résumé to start tracking history.
+                    </p>
+                  ) : (
+                    <ul className="divide-y rounded-md border bg-background">
+                      {resumeVersions.map((v) => {
+                        const isActive = profile?.resume_pdf_url === v.file_url;
+                        const fname = v.file_name ?? decodeURIComponent(v.file_url.split("/").pop() ?? "résumé.pdf");
+                        const sizeKb = v.size_bytes ? Math.max(1, Math.round(v.size_bytes / 1024)) : null;
+                        const when = new Date(v.created_at).toLocaleString();
+                        return (
+                          <li key={v.id} className="p-3 flex flex-wrap items-start justify-between gap-3 min-w-0">
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <p className="text-sm font-medium truncate min-w-0 max-w-full" title={fname}>
+                                  {fname}
+                                </p>
+                                {isActive && <Badge variant="secondary" className="shrink-0">Active</Badge>}
+                                <Badge variant="outline" className="shrink-0">
+                                  {v.source === "generated" ? "Built" : "Uploaded"}
+                                </Badge>
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                {when}{sizeKb ? ` · ${sizeKb} KB` : ""}{v.note ? ` · ${v.note}` : ""}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <Button variant="outline" size="sm" asChild>
+                                <a href={v.file_url} target="_blank" rel="noopener noreferrer">View</a>
+                              </Button>
+                              {!isActive && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => restoreResumeVersion(v)}
+                                >
+                                  Restore
+                                </Button>
+                              )}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => deleteResumeVersion(v.id, v.storage_path)}
+                                disabled={isActive}
+                                title={isActive ? "Active version — restore another first or remove from the upload section" : "Delete this version"}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </div>
+
                   {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                   Save profile
                 </Button>
