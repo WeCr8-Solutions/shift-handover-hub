@@ -128,6 +128,43 @@ export default function CertSuccess() {
                   </div>
                 </div>
               </div>
+
+              {/* Make-public nudge for signed-in operators whose profile isn't already public */}
+              {user && profileVisibility && profileVisibility !== "public" && (
+                <div className="rounded-lg border border-primary/40 bg-primary/5 p-4 text-left space-y-3">
+                  <div className="flex items-start gap-2">
+                    <Globe className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-semibold">Share this achievement publicly</p>
+                      <p className="text-xs text-muted-foreground">
+                        Make your talent profile public so employers can see your verified credentials at
+                        {publicUsername ? ` jobline.ai/talent/${publicUsername}` : " your public talent URL"}.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Button size="sm" onClick={makeProfilePublic} disabled={makingPublic} className="flex-1">
+                      {makingPublic ? "Updating…" : "Make profile public"}
+                    </Button>
+                    <Button asChild size="sm" variant="outline" className="flex-1">
+                      <Link to="/operator/profile">Manage profile</Link>
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {user && profileVisibility === "public" && publicUsername && (
+                <div className="rounded-lg border border-primary/40 bg-primary/5 p-3 text-xs text-left flex items-center gap-2">
+                  <Globe className="w-4 h-4 text-primary shrink-0" />
+                  <span>
+                    Live on your public profile:{" "}
+                    <Link to={`/talent/${publicUsername}`} className="text-primary underline font-mono">
+                      /talent/{publicUsername}
+                    </Link>
+                  </span>
+                </div>
+              )}
+
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button asChild className="flex-1">
                   <Link to={`/verify/${certId}`}>View / print certificate</Link>
