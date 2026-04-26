@@ -218,9 +218,14 @@ export default function OperatorProfile() {
         title: "Resume uploaded",
         description:
           importedCerts > 0
-            ? `Imported ${importedCerts} verified JobLine certificate(s). Click "Autofill profile from resume" to fill the rest.`
-            : `Click "Autofill profile from resume" to add your skills, work history, education, and machines.`,
+            ? `Imported ${importedCerts} verified JobLine certificate(s).`
+            : `Resume saved to your profile.`,
       });
+
+      // Optional: auto-run AI autofill now that the file is on file.
+      if (autoAutofillOnUpload) {
+        await handleAutoUpdateFromResume({ resumeUrlOverride: url, silent: false });
+      }
     } catch (err) {
       toast({ title: "Upload failed", description: extractErrorMessage(err), variant: "destructive" });
     } finally {
