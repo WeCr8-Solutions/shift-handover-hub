@@ -641,7 +641,7 @@ export default function PublicTalentProfile() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                      <div className="grid grid-cols-1 [@media(min-width:420px)]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                         {group.items.map((c) => (
                           <CertificateThumbnail
                             key={c.id}
