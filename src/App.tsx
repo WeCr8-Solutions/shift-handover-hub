@@ -128,6 +128,7 @@ const WorkOrderHistoryPage = lazy(() => import("./pages/WorkOrderHistoryPage"));
 const QuoteHistoryPage = lazy(() => import("./pages/QuoteHistoryPage"));
 const OperatorProfile = lazy(() => import("./pages/OperatorProfile"));
 const TalentLanding = lazy(() => import("./pages/TalentLanding"));
+const ResumeBuilderLanding = lazy(() => import("./pages/ResumeBuilderLanding"));
 const TalentBrowse = lazy(() => import("./pages/TalentBrowse"));
 const TalentSearch = lazy(() => import("./pages/TalentSearch"));
 const TalentDashboard = lazy(() => import("./pages/TalentDashboard"));
