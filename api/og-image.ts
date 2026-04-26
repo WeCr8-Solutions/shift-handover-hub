@@ -252,7 +252,7 @@ function buildCard(
           props: {
             style: {
               display: "flex",
-              padding: "50px 60px 40px 60px",
+              padding: "50px 80px 40px 60px",
               gap: "40px",
               flexGrow: 1,
               alignItems: "center",
