@@ -944,6 +944,52 @@ export default function OperatorProfile() {
                   )}
                 </div>
 
+                {/* Step 3 — build a résumé from your profile */}
+                <div className="rounded-lg border bg-accent/10 p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-medium">Step 3 · Build a JobLine résumé</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Don't have a résumé? Generate a polished PDF directly from your profile (summary, work history,
+                        education, certifications, skills, and awards) using the JobLine layout. Save it as your active
+                        résumé, publish it to your public profile, or just download a copy.
+                      </p>
+                      <p className="text-[11px] text-muted-foreground mt-1.5">
+                        Tip: complete <span className="font-medium">Basics</span>, <span className="font-medium">Work</span>,
+                        and <span className="font-medium">Skills</span> first for the best result.
+                      </p>
+                    </div>
+                    <Badge variant="outline" className="shrink-0">3</Badge>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                      onClick={() => handleBuildResume("save")}
+                      disabled={building || uploadingResume || autofilling}
+                      className="gap-2"
+                    >
+                      {building ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
+                      {building ? "Building…" : "Build & save as my résumé"}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleBuildResume("publish")}
+                      disabled={building || uploadingResume || autofilling}
+                      className="gap-2"
+                    >
+                      <Globe className="w-4 h-4" />
+                      Build, save & publish
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      onClick={() => handleBuildResume("download")}
+                      disabled={building || uploadingResume || autofilling}
+                      className="gap-2"
+                    >
+                      Download only
+                    </Button>
+                  </div>
+                </div>
+
                 {/* Resume file management */}
                 <div className="rounded-lg border p-4 space-y-3">
                   <div className="flex items-start justify-between gap-3">
