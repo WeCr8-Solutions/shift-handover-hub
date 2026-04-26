@@ -1563,26 +1563,6 @@ function CertificationsManager({
     .filter((c) => !!c.attachment_url)
     .sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
 
-  return (
-    <div className="space-y-3">
-      {certs.map((c) => (
-        <div key={c.id} className="border rounded-lg p-3 space-y-2">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <p className="font-medium">{c.name}</p>
-                {c.verification_source.startsWith("verified_") ? (
-                  <Badge className="gap-1 bg-primary/15 text-primary border-primary/30">
-                    <ShieldCheck className="w-3 h-3" /> Verified · {c.verification_source.replace("verified_", "").toUpperCase()}
-                  </Badge>
-                ) : (
-                  <Badge variant="outline">Self-reported</Badge>
-                )}
-              </div>
-              {c.issuer && <p className="text-sm text-muted-foreground">{c.issuer}</p>}
-              <p className="text-xs text-muted-foreground">
-                {c.issued_date && `Issued ${c.issued_date}`}{c.expires_date && ` · Expires ${c.expires_date}`}
-              </p>
   const counts = certs.reduce<Record<"all" | CertCategory, number>>(
     (acc, c) => {
       const cat = classifyCertSource(c.verification_source, c.linked_cert_id);
