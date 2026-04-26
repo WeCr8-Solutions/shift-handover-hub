@@ -39,7 +39,6 @@ import {
   Briefcase,
   GraduationCap,
   ArrowLeft,
-  ExternalLink,
   CheckCircle2,
   Share2,
   Mail,
@@ -621,10 +620,10 @@ export default function PublicTalentProfile() {
             tone: string;
             items: typeof visibleCerts;
           }> = [
-            { key: "oap" as const, title: "JobLine OAP — Approved", icon: ShieldCheck, tone: "border-primary/30 bg-gradient-to-br from-primary/5 to-transparent", items: oapCerts },
-            { key: "gca" as const, title: "G-Code Academy badges", icon: Trophy, tone: "border-warning/30 bg-gradient-to-br from-warning/5 to-transparent", items: gcaCerts },
-            { key: "partner" as const, title: "Partner-verified certificates", icon: ShieldCheck, tone: "border-accent/30 bg-gradient-to-br from-accent/5 to-transparent", items: partnerCerts },
-            { key: "self" as const, title: "Self-uploaded certificates", icon: Award, tone: "", items: selfCerts },
+            { key: "oap" as const, title: "JobLine OAP", icon: ShieldCheck, tone: "border-primary/30 bg-gradient-to-br from-primary/5 to-transparent", items: oapCerts },
+            { key: "gca" as const, title: "G-Code Academy", icon: Trophy, tone: "border-warning/30 bg-gradient-to-br from-warning/5 to-transparent", items: gcaCerts },
+            { key: "partner" as const, title: "Partner Verified", icon: ShieldCheck, tone: "border-accent/30 bg-gradient-to-br from-accent/5 to-transparent", items: partnerCerts },
+            { key: "self" as const, title: "Self-Uploaded", icon: Award, tone: "", items: selfCerts },
           ].filter((g) => g.items.length > 0);
 
           return (
@@ -861,64 +860,6 @@ function Stat({ label, value }: { label: string; value: number }) {
   );
 }
 
-/** Badge-style card for verified JobLine OAP / GCA certifications. */
-function CertBadgeCard({ cert, variant }: { cert: CertRow; variant: "oap" | "gca" }) {
-  const isOap = variant === "oap";
-  return (
-    <div
-      className={`relative rounded-lg border p-3 bg-card overflow-hidden ${
-        isOap ? "border-primary/40" : "border-warning/40"
-      }`}
-    >
-      <div className="flex items-start gap-3">
-        <div
-          className={`shrink-0 rounded-md p-2 ${
-            isOap ? "bg-primary/15 text-primary" : "bg-warning/15 text-warning"
-          }`}
-          aria-hidden
-        >
-          {isOap ? <ShieldCheck className="w-5 h-5" /> : <Trophy className="w-5 h-5" />}
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="font-semibold text-sm leading-tight break-words">{cert.name}</p>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
-            {isOap ? "JobLine OAP · Approved" : "G-Code Academy · Passed"}
-            {cert.issued_date
-              ? ` · ${formatDateRange(cert.issued_date, null).split(" – ")[0]}`
-              : ""}
-          </p>
-          {(cert.linked_cert_id || cert.credential_id) && (
-            <p className="text-[11px] text-muted-foreground font-mono mt-1">
-              Certificate #{cert.linked_cert_id ?? cert.credential_id}
-            </p>
-          )}
-          <div className="flex flex-wrap items-center gap-3 mt-2">
-            {cert.credential_url && (
-              <a
-                href={cert.credential_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline text-xs flex items-center gap-1"
-              >
-                Verify on jobline.ai <ExternalLink className="w-3 h-3" />
-              </a>
-            )}
-            {cert.attachment_url && (
-              <a
-                href={cert.attachment_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline text-xs flex items-center gap-1"
-              >
-                Open PDF <FileText className="w-3 h-3" />
-              </a>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function SocialLink({
   href,
