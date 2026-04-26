@@ -785,28 +785,94 @@ export default function OperatorProfile() {
                 <CardDescription>Upload, review, remove, and share your resume from one dedicated place.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Step 1 — upload only */}
                 <div className="rounded-lg border bg-muted/20 p-4 space-y-3">
-                  <div>
-                    <p className="text-sm font-medium">Upload resume</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Upload a PDF or DOCX. Resume autofill only fills empty profile fields, skills, work history, education, and machines. Existing entries are not overwritten.
-                    </p>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-medium">Step 1 · Upload your resume</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Upload a PDF or DOCX (max 8 MB). Your resume is stored privately. We do not extract any data until you click <span className="font-medium text-foreground">Auto-update profile from resume</span> below.
+                      </p>
+                    </div>
+                    <Badge variant="outline" className="shrink-0">1</Badge>
                   </div>
                   <Input
                     type="file"
                     accept="application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.pdf,.docx"
                     onChange={handleResumeUpload}
-                    disabled={uploadingResume}
+                    disabled={uploadingResume || autofilling}
                   />
-                  {uploadingResume && <p className="text-sm text-muted-foreground">Uploading and parsing…</p>}
+                  {uploadingResume && (
+                    <p className="text-sm text-muted-foreground flex items-center gap-2">
+                      <Loader2 className="w-3 h-3 animate-spin" /> Uploading…
+                    </p>
+                  )}
                 </div>
 
+                {/* Step 2 — explicit parse + autofill */}
+                <div className="rounded-lg border bg-primary/5 p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-medium">Step 2 · Auto-update profile from resume</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Our AI extracts your headline, bio, location, skills, machines, work history, and education from your uploaded resume. Email, phone, and home address are <span className="font-medium text-foreground">never</span> auto-filled — add those manually under Basics.
+                      </p>
+                    </div>
+                    <Badge variant="outline" className="shrink-0">2</Badge>
+                  </div>
+
+                  <div className="flex items-center justify-between rounded-md border bg-background px-3 py-2">
+                    <div className="min-w-0 pr-3">
+                      <p className="text-sm font-medium">Overwrite existing fields</p>
+                      <p className="text-xs text-muted-foreground">
+                        OFF (default): only fills empty fields. ON: replaces headline, bio, location, and links from your resume. New skills/jobs/education/machines are always merged — never duplicated.
+                      </p>
+                    </div>
+                    <Switch
+                      checked={autofillOverwrite}
+                      onCheckedChange={setAutofillOverwrite}
+                      disabled={autofilling}
+                    />
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                      onClick={handleAutoUpdateFromResume}
+                      disabled={!profile?.resume_pdf_url || autofilling || uploadingResume}
+                      className="gap-2"
+                    >
+                      {autofilling ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                      {autofilling ? "Reading your resume…" : lastAutofill ? "Re-run auto-update" : "Auto-update profile from resume"}
+                    </Button>
+                    {!profile?.resume_pdf_url && (
+                      <p className="text-xs text-muted-foreground">Upload a resume first.</p>
+                    )}
+                  </div>
+
+                  {lastAutofill && (
+                    <div className="rounded-md border bg-background p-3 space-y-2">
+                      <p className="text-xs font-medium text-muted-foreground">Last auto-update</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        <Badge variant="secondary">{lastAutofill.fields} field{lastAutofill.fields === 1 ? "" : "s"}</Badge>
+                        <Badge variant="secondary">{lastAutofill.skills} skill{lastAutofill.skills === 1 ? "" : "s"}</Badge>
+                        <Badge variant="secondary">{lastAutofill.work} job{lastAutofill.work === 1 ? "" : "s"}</Badge>
+                        <Badge variant="secondary">{lastAutofill.education} education</Badge>
+                        <Badge variant="secondary">{lastAutofill.machines} machine{lastAutofill.machines === 1 ? "" : "s"}</Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Review the other tabs (Basics, Skills, Work, Education) to fine-tune what was added.
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Resume file management */}
                 <div className="rounded-lg border p-4 space-y-3">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="text-sm font-medium">Current uploaded resume</p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        This profile currently supports one active resume at a time. Replace it by uploading a new file, or remove it here.
+                        One active resume at a time. Replace it by uploading a new file, or remove it here.
                       </p>
                     </div>
                     {profile?.resume_pdf_url ? <Badge variant="secondary">Uploaded</Badge> : <Badge variant="outline">None</Badge>}
@@ -827,11 +893,11 @@ export default function OperatorProfile() {
                         />
                       </div>
 
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <Button variant="outline" size="sm" asChild>
                           <a href={profile.resume_pdf_url} target="_blank" rel="noopener noreferrer">View resume</a>
                         </Button>
-                        <Button variant="outline" size="sm" onClick={handleRemoveResume}>
+                        <Button variant="outline" size="sm" onClick={handleRemoveResume} disabled={autofilling}>
                           Remove resume
                         </Button>
                       </div>
@@ -843,9 +909,9 @@ export default function OperatorProfile() {
                   )}
                 </div>
 
-                <Button onClick={handleSave} disabled={saving || uploadingResume} className="gap-2">
-                  {saving || uploadingResume ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                  {uploadingResume ? "Parsing resume…" : "Save profile"}
+                <Button onClick={handleSave} disabled={saving || uploadingResume || autofilling} className="gap-2">
+                  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                  Save profile
                 </Button>
               </CardContent>
             </Card>
