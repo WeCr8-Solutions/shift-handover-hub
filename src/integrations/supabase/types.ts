@@ -7797,6 +7797,9 @@ export type Database = {
           employer_tagline: string | null
           employer_website: string | null
           id: string
+          is_jobline_approved_mentor: boolean
+          is_jobline_approved_vendor: boolean
+          is_jobline_approved_verifier: boolean
           logo_url: string | null
           mfa_required: boolean
           name: string
@@ -7811,6 +7814,9 @@ export type Database = {
           subscription_tier: string | null
           trial_ends_at: string
           updated_at: string
+          verifier_approved_at: string | null
+          verifier_display_name: string | null
+          verifier_tagline: string | null
         }
         Insert: {
           ai_enabled?: boolean
@@ -7837,6 +7843,9 @@ export type Database = {
           employer_tagline?: string | null
           employer_website?: string | null
           id?: string
+          is_jobline_approved_mentor?: boolean
+          is_jobline_approved_vendor?: boolean
+          is_jobline_approved_verifier?: boolean
           logo_url?: string | null
           mfa_required?: boolean
           name: string
@@ -7851,6 +7860,9 @@ export type Database = {
           subscription_tier?: string | null
           trial_ends_at?: string
           updated_at?: string
+          verifier_approved_at?: string | null
+          verifier_display_name?: string | null
+          verifier_tagline?: string | null
         }
         Update: {
           ai_enabled?: boolean
@@ -7877,6 +7889,9 @@ export type Database = {
           employer_tagline?: string | null
           employer_website?: string | null
           id?: string
+          is_jobline_approved_mentor?: boolean
+          is_jobline_approved_vendor?: boolean
+          is_jobline_approved_verifier?: boolean
           logo_url?: string | null
           mfa_required?: boolean
           name?: string
@@ -7891,6 +7906,9 @@ export type Database = {
           subscription_tier?: string | null
           trial_ends_at?: string
           updated_at?: string
+          verifier_approved_at?: string | null
+          verifier_display_name?: string | null
+          verifier_tagline?: string | null
         }
         Relationships: []
       }
