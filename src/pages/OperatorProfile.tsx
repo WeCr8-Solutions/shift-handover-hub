@@ -87,6 +87,19 @@ export default function OperatorProfile() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  /** Two-step autofill state — upload first, then user clicks "Auto-update profile". */
+  const [autofilling, setAutofilling] = useState(false);
+  /** When true, autofill REPLACES filled fields. When false, only empty fields are filled (skill/work/edu/machine rows always dedupe). */
+  const [autofillOverwrite, setAutofillOverwrite] = useState(false);
+  /** Counts from the most recent autofill run, used to render an inline summary. */
+  const [lastAutofill, setLastAutofill] = useState<null | {
+    fields: number;
+    skills: number;
+    work: number;
+    education: number;
+    machines: number;
+    at: number;
+  }>(null);
 
   useEffect(() => {
     if (isReady && !user) navigate("/auth");
@@ -162,6 +175,11 @@ export default function OperatorProfile() {
     }
   };
 
+  /**
+   * Step 1 — upload only.
+   * The file is stored, verified JobLine certs are auto-imported, but the resume is NOT
+   * parsed yet. The user clicks "Auto-update profile from resume" to run AI extraction.
+   */
   const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -169,7 +187,6 @@ export default function OperatorProfile() {
     try {
       const url = await uploadFile(file, "resume");
       await saveProfile({ resume_pdf_url: url });
-      toast({ title: "Resume uploaded", description: "Parsing for autofill…" });
 
       let importedCerts = 0;
       if (user?.id && user.email) {
@@ -179,49 +196,65 @@ export default function OperatorProfile() {
           console.error("[OperatorProfile] cert sync failed", syncErr);
         }
       }
+      await refresh();
 
-      // Autofill empty fields via AI
-      try {
-        const { data, error } = await supabase.functions.invoke("parse-resume", {
-          body: { resumeUrl: url },
-        });
-        if (error) throw error;
-        if (!data?.ok) throw new Error(data?.error ?? "Parse failed");
-        const added = await applyResumeAutofill(data.data);
-        const autofillDescription =
-          added.fields + added.skills + added.work + added.education + added.machines === 0
-            ? "All fields already filled in — nothing to add."
-            : `Filled ${added.fields} field(s), added ${added.skills} skill(s), ${added.work} job(s), ${added.education} education, ${added.machines} machine(s).`;
-        toast({
-          title: "Autofill complete",
-          description: importedCerts > 0
-            ? `${autofillDescription} Imported ${importedCerts} verified JobLine certificate(s).`
-            : autofillDescription,
-        });
-        await refresh();
-      } catch (parseErr) {
-        console.error("[OperatorProfile] autofill failed", parseErr);
-        const msg = extractErrorMessage(parseErr);
-        toast({
-          title: "Autofill skipped",
-          description: msg.includes("aborted")
-            ? "Resume parsing took too long. Your resume was uploaded — fill the rest manually or try again."
-            : msg,
-          variant: "destructive",
-        });
-        if (importedCerts > 0) {
-          toast({
-            title: "Verified certificates synced",
-            description: `Imported ${importedCerts} verified certificate(s) from OAP/GCA.`,
-          });
-          await refresh();
-        }
-      }
+      toast({
+        title: "Resume uploaded",
+        description:
+          importedCerts > 0
+            ? `Imported ${importedCerts} verified JobLine certificate(s). Click "Auto-update profile from resume" to fill the rest.`
+            : `Click "Auto-update profile from resume" to extract your skills, work history, education, and machines.`,
+      });
     } catch (err) {
       toast({ title: "Upload failed", description: extractErrorMessage(err), variant: "destructive" });
     } finally {
       setUploadingResume(false);
       e.target.value = "";
+    }
+  };
+
+  /**
+   * Step 2 — explicit AI parse + autofill.
+   * Triggered by the "Auto-update profile from resume" button on the Resume tab.
+   * Honors the `autofillOverwrite` toggle: when true, parsed values replace existing
+   * top-level profile fields. New skill/work/edu/machine rows are always deduped.
+   */
+  const handleAutoUpdateFromResume = async () => {
+    if (!profile?.resume_pdf_url) {
+      toast({ title: "No resume uploaded", description: "Upload a PDF or DOCX first.", variant: "destructive" });
+      return;
+    }
+    setAutofilling(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("parse-resume", {
+        body: { resumeUrl: profile.resume_pdf_url },
+      });
+      if (error) throw error;
+      if (!data?.ok) throw new Error(data?.error ?? "Parse failed");
+
+      const added = await applyResumeAutofill(data.data, { overwrite: autofillOverwrite });
+      setLastAutofill({ ...added, at: Date.now() });
+      await refresh();
+
+      const total = added.fields + added.skills + added.work + added.education + added.machines;
+      toast({
+        title: total === 0 ? "Nothing new to add" : "Profile auto-updated",
+        description:
+          total === 0
+            ? "Your profile is already complete — no fields needed updating."
+            : `Filled ${added.fields} field(s), added ${added.skills} skill(s), ${added.work} job(s), ${added.education} education, ${added.machines} machine(s).`,
+      });
+    } catch (err) {
+      const msg = extractErrorMessage(err);
+      toast({
+        title: "Auto-update failed",
+        description: msg.includes("aborted")
+          ? "Resume parsing took too long. Please try again."
+          : msg,
+        variant: "destructive",
+      });
+    } finally {
+      setAutofilling(false);
     }
   };
 
@@ -233,18 +266,27 @@ export default function OperatorProfile() {
       if (path) {
         await supabase.storage.from("operator-profiles").remove([path]);
       }
+      setLastAutofill(null);
       toast({ title: "Resume removed", description: "Your uploaded resume has been removed from your profile." });
     } catch (err) {
       toast({ title: "Remove failed", description: extractErrorMessage(err), variant: "destructive" });
     }
   };
 
-  /** Fills only empty profile fields and inserts new skill/work/education/machine rows. */
-  const applyResumeAutofill = async (parsed: any) => {
+  /**
+   * Applies parsed resume data to the profile.
+   * - `overwrite=false` (default): top-level fields only filled when currently empty.
+   * - `overwrite=true`: parsed values replace any existing top-level field that is non-empty.
+   * Skill / work / education / machine rows are always deduped — never overwritten.
+   * Sensitive contact fields (email/phone) are NEVER auto-set on the public profile;
+   * the user must add them manually under Basics.
+   */
+  const applyResumeAutofill = async (parsed: any, options: { overwrite: boolean } = { overwrite: false }) => {
     if (!user?.id) return { fields: 0, skills: 0, work: 0, education: 0, machines: 0 };
     const counts = { fields: 0, skills: 0, work: 0, education: 0, machines: 0 };
+    const overwrite = options.overwrite;
 
-    // 1) Top-level profile fields — only fill if currently empty
+    // 1) Top-level profile fields. Email + phone intentionally excluded for privacy.
     const profilePatch: Record<string, unknown> = {};
     const candidates: Array<[keyof typeof form, string | undefined]> = [
       ["headline", parsed.headline],
@@ -254,16 +296,16 @@ export default function OperatorProfile() {
       ["location_country", parsed.location_country],
       ["linkedin_url", parsed.linkedin_url],
       ["portfolio_url", parsed.portfolio_url],
-      ["contact_email", parsed.contact_email],
-      ["contact_phone", parsed.contact_phone],
     ];
     for (const [key, val] of candidates) {
-      if (val && !profile?.[key as keyof typeof profile]) {
+      if (!val) continue;
+      const current = profile?.[key as keyof typeof profile];
+      if (!current || overwrite) {
         profilePatch[key as string] = val;
         counts.fields += 1;
       }
     }
-    if (parsed.years_experience && !profile?.years_experience) {
+    if (parsed.years_experience && (overwrite || !profile?.years_experience)) {
       profilePatch.years_experience = Math.round(parsed.years_experience);
       counts.fields += 1;
     }
@@ -728,9 +770,9 @@ export default function OperatorProfile() {
                   </div>
                 </div>
 
-                <Button onClick={handleSave} disabled={saving || uploadingResume} className="gap-2">
-                  {saving || uploadingResume ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                  {uploadingResume ? "Parsing resume…" : "Save profile"}
+                <Button onClick={handleSave} disabled={saving} className="gap-2">
+                  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                  Save profile
                 </Button>
               </CardContent>
             </Card>
@@ -743,28 +785,94 @@ export default function OperatorProfile() {
                 <CardDescription>Upload, review, remove, and share your resume from one dedicated place.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Step 1 — upload only */}
                 <div className="rounded-lg border bg-muted/20 p-4 space-y-3">
-                  <div>
-                    <p className="text-sm font-medium">Upload resume</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Upload a PDF or DOCX. Resume autofill only fills empty profile fields, skills, work history, education, and machines. Existing entries are not overwritten.
-                    </p>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-medium">Step 1 · Upload your resume</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Upload a PDF or DOCX (max 8 MB). Your resume is stored privately. We do not extract any data until you click <span className="font-medium text-foreground">Auto-update profile from resume</span> below.
+                      </p>
+                    </div>
+                    <Badge variant="outline" className="shrink-0">1</Badge>
                   </div>
                   <Input
                     type="file"
                     accept="application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.pdf,.docx"
                     onChange={handleResumeUpload}
-                    disabled={uploadingResume}
+                    disabled={uploadingResume || autofilling}
                   />
-                  {uploadingResume && <p className="text-sm text-muted-foreground">Uploading and parsing…</p>}
+                  {uploadingResume && (
+                    <p className="text-sm text-muted-foreground flex items-center gap-2">
+                      <Loader2 className="w-3 h-3 animate-spin" /> Uploading…
+                    </p>
+                  )}
                 </div>
 
+                {/* Step 2 — explicit parse + autofill */}
+                <div className="rounded-lg border bg-primary/5 p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-medium">Step 2 · Auto-update profile from resume</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Our AI extracts your headline, bio, location, skills, machines, work history, and education from your uploaded resume. Email, phone, and home address are <span className="font-medium text-foreground">never</span> auto-filled — add those manually under Basics.
+                      </p>
+                    </div>
+                    <Badge variant="outline" className="shrink-0">2</Badge>
+                  </div>
+
+                  <div className="flex items-center justify-between rounded-md border bg-background px-3 py-2">
+                    <div className="min-w-0 pr-3">
+                      <p className="text-sm font-medium">Overwrite existing fields</p>
+                      <p className="text-xs text-muted-foreground">
+                        OFF (default): only fills empty fields. ON: replaces headline, bio, location, and links from your resume. New skills/jobs/education/machines are always merged — never duplicated.
+                      </p>
+                    </div>
+                    <Switch
+                      checked={autofillOverwrite}
+                      onCheckedChange={setAutofillOverwrite}
+                      disabled={autofilling}
+                    />
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                      onClick={handleAutoUpdateFromResume}
+                      disabled={!profile?.resume_pdf_url || autofilling || uploadingResume}
+                      className="gap-2"
+                    >
+                      {autofilling ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                      {autofilling ? "Reading your resume…" : lastAutofill ? "Re-run auto-update" : "Auto-update profile from resume"}
+                    </Button>
+                    {!profile?.resume_pdf_url && (
+                      <p className="text-xs text-muted-foreground">Upload a resume first.</p>
+                    )}
+                  </div>
+
+                  {lastAutofill && (
+                    <div className="rounded-md border bg-background p-3 space-y-2">
+                      <p className="text-xs font-medium text-muted-foreground">Last auto-update</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        <Badge variant="secondary">{lastAutofill.fields} field{lastAutofill.fields === 1 ? "" : "s"}</Badge>
+                        <Badge variant="secondary">{lastAutofill.skills} skill{lastAutofill.skills === 1 ? "" : "s"}</Badge>
+                        <Badge variant="secondary">{lastAutofill.work} job{lastAutofill.work === 1 ? "" : "s"}</Badge>
+                        <Badge variant="secondary">{lastAutofill.education} education</Badge>
+                        <Badge variant="secondary">{lastAutofill.machines} machine{lastAutofill.machines === 1 ? "" : "s"}</Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Review the other tabs (Basics, Skills, Work, Education) to fine-tune what was added.
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Resume file management */}
                 <div className="rounded-lg border p-4 space-y-3">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="text-sm font-medium">Current uploaded resume</p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        This profile currently supports one active resume at a time. Replace it by uploading a new file, or remove it here.
+                        One active resume at a time. Replace it by uploading a new file, or remove it here.
                       </p>
                     </div>
                     {profile?.resume_pdf_url ? <Badge variant="secondary">Uploaded</Badge> : <Badge variant="outline">None</Badge>}
@@ -785,11 +893,11 @@ export default function OperatorProfile() {
                         />
                       </div>
 
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <Button variant="outline" size="sm" asChild>
                           <a href={profile.resume_pdf_url} target="_blank" rel="noopener noreferrer">View resume</a>
                         </Button>
-                        <Button variant="outline" size="sm" onClick={handleRemoveResume}>
+                        <Button variant="outline" size="sm" onClick={handleRemoveResume} disabled={autofilling}>
                           Remove resume
                         </Button>
                       </div>
@@ -801,9 +909,9 @@ export default function OperatorProfile() {
                   )}
                 </div>
 
-                <Button onClick={handleSave} disabled={saving || uploadingResume} className="gap-2">
-                  {saving || uploadingResume ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                  {uploadingResume ? "Parsing resume…" : "Save profile"}
+                <Button onClick={handleSave} disabled={saving || uploadingResume || autofilling} className="gap-2">
+                  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                  Save profile
                 </Button>
               </CardContent>
             </Card>
