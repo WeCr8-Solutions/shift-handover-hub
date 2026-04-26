@@ -173,7 +173,37 @@ export function CertificateThumbnail({ cert, category }: Props) {
             className="w-full h-full overflow-auto overscroll-contain bg-muted/40 pt-14"
             style={{ touchAction: "pinch-zoom pan-x pan-y" }}
           >
-            {fileUrl ? (
+            {cert.linked_cert_id ? (
+              loadingCert && !fullCert ? (
+                <div className="flex items-center justify-center h-full text-sm text-muted-foreground gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" /> Loading certificate…
+                </div>
+              ) : fullCert ? (
+                <div className="min-w-full min-h-full flex items-center justify-center p-2 sm:p-6">
+                  <div
+                    className="origin-top mx-auto shadow-2xl"
+                    style={{
+                      width: 1056,
+                      transform: "scale(min(1, calc((100vw - 24px) / 1056)))",
+                      transformOrigin: "top center",
+                    }}
+                  >
+                    <CertificateTemplate cert={fullCert} variant="digital" />
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full text-sm text-muted-foreground p-6 text-center gap-3">
+                  <p>Couldn't load this certificate inline.</p>
+                  {verifyUrl && (
+                    <Button asChild size="sm">
+                      <a href={verifyUrl} target="_blank" rel="noopener noreferrer">
+                        Open verification page
+                      </a>
+                    </Button>
+                  )}
+                </div>
+              )
+            ) : fileUrl ? (
               isImg ? (
                 <div className="min-w-full min-h-full flex items-center justify-center p-4">
                   <img
@@ -196,11 +226,14 @@ export function CertificateThumbnail({ cert, category }: Props) {
                 />
               )
             ) : verifyUrl ? (
-              <iframe
-                src={verifyUrl}
-                title={cert.name}
-                className="w-full h-[calc(100dvh-3.5rem)] border-0 bg-background"
-              />
+              <div className="flex flex-col items-center justify-center h-full text-sm text-muted-foreground p-6 text-center gap-3">
+                <p>External credential link.</p>
+                <Button asChild size="sm">
+                  <a href={verifyUrl} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="w-3.5 h-3.5 mr-1.5" /> Open verification
+                  </a>
+                </Button>
+              </div>
             ) : (
               <div className="flex items-center justify-center h-full text-sm text-muted-foreground p-6 text-center">
                 No file or verification link attached to this certificate.
