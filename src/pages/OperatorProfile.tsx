@@ -199,13 +199,23 @@ export default function OperatorProfile() {
    * The file is stored, verified JobLine certs are auto-imported, but the resume is NOT
    * parsed yet. The user clicks "Auto-update profile from resume" to run AI extraction.
    */
-  const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleResumeUpload = async (file: File) => {
     if (!file) return;
+    if (file.size > 8 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Resume must be under 8MB.", variant: "destructive" });
+      return;
+    }
     setUploadingResume(true);
     try {
       const url = await uploadFile(file, "resume");
       await saveProfile({ resume_pdf_url: url });
+      await recordResumeVersion({
+        file_url: url,
+        storage_path: pathFromOperatorProfilesUrl(url),
+        source: "uploaded",
+        file_name: file.name,
+        size_bytes: file.size,
+      });
 
       let importedCerts = 0;
       if (user?.id && user.email) {
@@ -225,7 +235,6 @@ export default function OperatorProfile() {
             : `Resume saved to your profile.`,
       });
 
-      // Optional: auto-run AI autofill now that the file is on file.
       if (autoAutofillOnUpload) {
         await handleAutoUpdateFromResume({ resumeUrlOverride: url, silent: false });
       }
@@ -233,7 +242,6 @@ export default function OperatorProfile() {
       toast({ title: "Upload failed", description: extractErrorMessage(err), variant: "destructive" });
     } finally {
       setUploadingResume(false);
-      e.target.value = "";
     }
   };
 
