@@ -68,6 +68,7 @@ export default function OperatorProfile() {
     uploadFile,
     refresh,
   } = useOperatorProfile();
+  const { versions: resumeVersions, recordVersion: recordResumeVersion, deleteVersion: deleteResumeVersion } = useResumeVersions(user?.id);
 
   const [form, setForm] = useState({
     headline: "",
