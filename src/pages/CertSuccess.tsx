@@ -5,8 +5,9 @@ import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { CheckCircle2, Mail, ShieldCheck, Loader2 } from "lucide-react";
+import { CheckCircle2, Mail, ShieldCheck, Loader2, Globe } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 /**
  * Post-Stripe-checkout landing page for the $12 cert. Stripe redirects here
