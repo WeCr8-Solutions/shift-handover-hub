@@ -27,6 +27,7 @@ import { withJoblineUtm } from "@/lib/talent/outboundLinks";
 import { getSocialHref, openSocialLink } from "@/lib/talent/socialDeepLinks";
 import { getPublicTalentUrl } from "@/lib/talent/publicHost";
 import { formatDateRange } from "@/lib/talent/format";
+import { CertificateThumbnail, type CertCategory } from "@/components/certificates/CertificateThumbnail";
 import "@/styles/print-talent.css";
 import {
   MapPin,
