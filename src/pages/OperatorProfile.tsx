@@ -313,6 +313,17 @@ export default function OperatorProfile() {
     }
   };
 
+  /** Restore a prior résumé version as the active resume_pdf_url. Does not re-upload — just points back to it. */
+  const restoreResumeVersion = async (version: { file_url: string }) => {
+    try {
+      await saveProfile({ resume_pdf_url: version.file_url });
+      await refresh();
+      toast({ title: "Résumé restored", description: "This version is now your active résumé." });
+    } catch (err) {
+      toast({ title: "Restore failed", description: extractErrorMessage(err), variant: "destructive" });
+    }
+  };
+
   /**
    * Applies parsed resume data to the profile.
    * - `overwrite=false` (default): top-level fields only filled when currently empty.
