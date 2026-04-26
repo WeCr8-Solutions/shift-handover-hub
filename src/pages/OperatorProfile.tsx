@@ -97,6 +97,8 @@ export default function OperatorProfile() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  /** Generate-from-profile state for the "Build a JobLine résumé" feature. */
+  const [building, setBuilding] = useState(false);
   /** Two-step autofill state — upload first, then user clicks "Auto-update profile". */
   const [autofilling, setAutofilling] = useState(false);
   /** When true, autofill REPLACES filled fields. When false, only empty fields are filled (skill/work/edu/machine rows always dedupe). */
