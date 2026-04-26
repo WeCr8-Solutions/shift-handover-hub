@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { Maximize2, Minus, Plus, X } from "lucide-react";
+import { Maximize2, Minus, Plus, RotateCw, Maximize, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { CertificateTemplate, type CertificateVariant } from "./CertificateTemplate";
@@ -87,22 +87,26 @@ export function CertificateViewer({ cert, variant, printTargetId }: CertificateV
   }, [measure]);
 
   // Initialize modal scale to fit viewport when opened.
-  // On portrait phones, rotate the cert 90° so its landscape orientation fills the screen.
+  // We do NOT force rotation — the cert opens in whatever orientation the
+  // device is in. Users can tap the rotate button if they prefer the other.
   const [rotate, setRotate] = useState(false);
-  useEffect(() => {
-    if (!open) return;
+
+  const fitToViewport = useCallback((rotated: boolean) => {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-    const portrait = vh > vw;
-    const shouldRotate = portrait && vw < 700;
-    setRotate(shouldRotate);
     const availW = vw - 32;
     const availH = vh - 96;
-    const fit = shouldRotate
+    const fit = rotated
       ? Math.min(availW / CERT_PX_H, availH / CERT_PX_W)
       : Math.min(availW / CERT_PX_W, availH / CERT_PX_H);
-    setModalScale(Math.max(0.3, Math.min(2.5, fit)));
-  }, [open]);
+    setModalScale(Math.max(0.2, Math.min(3, fit)));
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    setRotate(false);
+    fitToViewport(false);
+  }, [open, fitToViewport]);
 
   return (
     <div className="w-full">
@@ -131,7 +135,7 @@ export function CertificateViewer({ cert, variant, printTargetId }: CertificateV
               variant="ghost"
               size="icon"
               className="h-8 w-8"
-              onClick={() => setModalScale((s) => Math.max(0.3, s - 0.15))}
+              onClick={() => setModalScale((s) => Math.max(0.2, s - 0.15))}
               aria-label="Zoom out"
             >
               <Minus className="w-4 h-4" />
@@ -147,6 +151,30 @@ export function CertificateViewer({ cert, variant, printTargetId }: CertificateV
               aria-label="Zoom in"
             >
               <Plus className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => fitToViewport(rotate)}
+              aria-label="Fit to screen"
+              title="Fit to screen"
+            >
+              <Maximize className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => {
+                const next = !rotate;
+                setRotate(next);
+                fitToViewport(next);
+              }}
+              aria-label="Rotate certificate"
+              title="Rotate"
+            >
+              <RotateCw className="w-4 h-4" />
             </Button>
             <Button
               variant="ghost"
