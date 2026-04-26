@@ -17,6 +17,7 @@ import type { CertificateRecord } from "@/lib/certificates";
  */
 export default function VerifyCertificate() {
   const { certId } = useParams<{ certId: string }>();
+  const [searchParams] = useSearchParams();
   const { lookupCertificate } = useCertificates();
   const [loading, setLoading] = useState(true);
   const [cert, setCert] = useState<CertificateRecord | null>(null);
