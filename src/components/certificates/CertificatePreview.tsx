@@ -8,7 +8,7 @@ interface CertificatePreviewProps {
   organizationName?: string | null;
   /** "diploma" or "digital". Defaults to "digital" for marketing pages. */
   variant?: CertificateVariant;
-  /** Visual scale (1 = full 8.5x11). Default 0.42 fits nicely in marketing sections. */
+  /** Visual scale (1 = full 11x8.5 landscape). Default 0.42 fits nicely in marketing sections. */
   scale?: number;
   className?: string;
 }
