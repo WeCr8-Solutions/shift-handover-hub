@@ -114,12 +114,16 @@ export function CertificateThumbnail({ cert, category }: Props) {
       <button
         type="button"
         onClick={handleClick}
+        disabled={!hasViewableContent}
         className={cn(
           "group relative w-full text-left rounded-lg border bg-card overflow-hidden ring-1",
           palette.ring,
-          "hover:shadow-md transition-shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          hasViewableContent
+            ? "hover:shadow-md cursor-pointer"
+            : "cursor-default opacity-90",
+          "transition-shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         )}
-        aria-label={`View ${cert.name} certificate`}
+        aria-label={hasViewableContent ? `View ${cert.name} certificate` : `${cert.name} (no file uploaded)`}
       >
         <div
           className={cn("relative w-full bg-gradient-to-br", palette.bg)}
