@@ -22,9 +22,9 @@ export default function VerifyCertificate() {
   const { lookupCertificate } = useCertificates();
   const [loading, setLoading] = useState(true);
   const [cert, setCert] = useState<CertificateRecord | null>(null);
-  // Default to diploma — that's the formal "shareable" view recipients want to print.
-  // Digital is available as a quick toggle for the accomplishments-focused look.
   const [variant, setVariant] = useState<CertificateVariant>("diploma");
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const isPaid = cert?.isPaid === true;
 
   const inferredProgram = certId?.startsWith("OAP-") ? "OAP" : certId?.startsWith("GCA-") ? "GCA" : null;
   const program = cert?.program ?? inferredProgram;
