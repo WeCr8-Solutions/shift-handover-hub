@@ -14,6 +14,8 @@ import {
   Clock,
   Award,
   ArrowRight,
+  Ruler,
+  Gauge,
 } from "lucide-react";
 import { BuyCertificateDialog } from "@/components/certificates/BuyCertificateDialog";
 import { MediaOverlayDisplay } from "@/components/training/MediaOverlayDisplay";
