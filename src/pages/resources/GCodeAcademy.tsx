@@ -119,17 +119,23 @@ export default function GCodeAcademy() {
     const compute = () => {
       const navH = navRef.current?.offsetHeight ?? 56;
       const barH = barRef.current?.offsetHeight ?? 44;
-      setIframeHeight(`calc(100dvh - ${navH + barH}px)`);
+      const minH = 480;
+      const target = Math.max(minH, window.innerHeight - (navH + barH));
+      setIframeHeight(`${target}px`);
     };
     compute();
     const ro = new ResizeObserver(compute);
     if (navRef.current) ro.observe(navRef.current);
     if (barRef.current) ro.observe(barRef.current);
-    return () => ro.disconnect();
+    window.addEventListener("resize", compute);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", compute);
+    };
   }, []);
 
   return (
-    <div className="flex flex-col overflow-hidden" style={{ height: "100dvh" }}>
+    <div className="flex flex-col min-h-screen">
       <SEOHead
         title="G-Code Academy | CNC Operator Training | JobLine.ai"
         description="Interactive G-Code Academy — learn CNC lathe and mill programming, GD&T, controller-specific syntax (Fanuc, Haas, Siemens, Heidenhain), and pass your CNC operator certification tests."
