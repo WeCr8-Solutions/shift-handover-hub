@@ -24,6 +24,13 @@ interface ReqBody {
   programName?: string;
   organizationName?: string | null;
   bankId?: string | null;
+  /**
+   * When set, the checkout is an "upgrade" — the holder of an existing
+   * (digital-only) cert is paying $12 to unlock PDF download + Print on
+   * jobline.ai/verify/:certId. The webhook will UPDATE the existing row
+   * instead of inserting a new one. Cert ID format: PROGRAM-XXXXXX-YYYY.
+   */
+  upgradeCertId?: string | null;
 }
 
 serve(async (req) => {
