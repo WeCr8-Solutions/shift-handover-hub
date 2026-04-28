@@ -247,12 +247,13 @@ function renderGDnTView() {
     html += '<div class="gdnt-group"><div class="gdnt-group-title">' + group + '</div><div class="sym-grid">';
     keys.forEach(function(key) {
       const sym = GCA_SYMBOLS[key]; if (!sym) return;
-      html += '<div class="sym-card' + (sym.deprecated ? ' deprecated' : '') + '" title="' + sym.standard + '">';
+      html += '<div class="sym-card' + (sym.deprecated ? ' deprecated' : '') + '" role="button" tabindex="0" aria-label="Learn more about ' + sym.name + '" onclick="openSymInfo(\'' + key + '\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();openSymInfo(\'' + key + '\')}" title="Tap to learn more — ' + sym.standard + '">';
       if (sym.deprecated) html += '<span class="sym-depr">\u20202009</span>';
       html += '<div class="sym-svg">' + sym.svg + '</div>';
       html += '<div class="sym-name">' + sym.name + '</div>';
       html += '<div class="sym-type">' + sym.type + '</div>';
-      html += '<div class="sym-datum-tag ' + (sym.datumReq ? 'req' : 'no') + '">' + (sym.datumReq ? '\u2713 Datum req.' : 'No datum') + '</div></div>';
+      html += '<div class="sym-datum-tag ' + (sym.datumReq ? 'req' : 'no') + '">' + (sym.datumReq ? '\u2713 Datum req.' : 'No datum') + '</div>';
+      html += '<div class="sym-learn">Tap to learn \u2192</div></div>';
     });
     html += '</div></div>';
   });
