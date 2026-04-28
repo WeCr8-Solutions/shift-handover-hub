@@ -40,7 +40,7 @@ export default function OapHub() {
         <title>OAP Learning Hub — Operator Acceptance Program</title>
         <meta
           name="description"
-          content="Self-paced OAP study: 7 sections covering safety, measurement, tooling, machine qualification, and floor certification."
+          content="Self-paced OAP study: 12 sections covering safety, measurement, tooling, machine qualification, GD&T, LOTO, and floor certification."
         />
       </Helmet>
       <Header />
@@ -51,7 +51,7 @@ export default function OapHub() {
             <h1 className="text-2xl font-semibold">OAP Learning Hub</h1>
           </div>
           <p className="text-sm text-muted-foreground">
-            7-section operator acceptance program. Study on your own, then have a
+            12-section operator acceptance program. Study on your own, then have a
             mentor sign off your floor walkthrough to earn your certificate.
           </p>
         </div>
