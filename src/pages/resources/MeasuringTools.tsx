@@ -46,7 +46,8 @@ export default function MeasuringTools() {
   }, [categories, tools, q]);
 
   return (
-    <MarketingLayout>
+    <>
+      <MarketingNav />
       <Helmet>
         <title>Measuring Tools Library — Videos & Diagrams | Jobline.ai</title>
         <meta
