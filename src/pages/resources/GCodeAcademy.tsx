@@ -171,7 +171,7 @@ export default function GCodeAcademy() {
         <div className="flex items-center gap-2 shrink-0">
           {isDefinitelyFree && (
             <Button asChild size="sm" className="h-7 text-xs px-3 gap-1">
-              <Link to="/pricing">
+              <Link to="/pricing?from=gca">
                 <Sparkles className="w-3 h-3" />
                 Unlock Pro
               </Link>
