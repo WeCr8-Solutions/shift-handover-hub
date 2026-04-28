@@ -178,6 +178,9 @@ export default function OAPLanding() {
                 <Link to="/oap/certificates/verify">Verify a Certificate</Link>
               </Button>
               <Button asChild size="lg" variant="outline">
+                <Link to="/resources/measuring-tools">Measuring Tools Library</Link>
+              </Button>
+              <Button asChild size="lg" variant="outline">
                 <Link to="/auth">Create a Free Operator Profile</Link>
               </Button>
             </div>

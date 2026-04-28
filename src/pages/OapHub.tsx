@@ -14,6 +14,8 @@ import {
   Clock,
   Award,
   ArrowRight,
+  Ruler,
+  Gauge,
 } from "lucide-react";
 import { BuyCertificateDialog } from "@/components/certificates/BuyCertificateDialog";
 import { MediaOverlayDisplay } from "@/components/training/MediaOverlayDisplay";
@@ -38,7 +40,7 @@ export default function OapHub() {
         <title>OAP Learning Hub — Operator Acceptance Program</title>
         <meta
           name="description"
-          content="Self-paced OAP study: 7 sections covering safety, measurement, tooling, machine qualification, and floor certification."
+          content="Self-paced OAP study: 12 sections covering safety, measurement, tooling, machine qualification, GD&T, LOTO, and floor certification."
         />
       </Helmet>
       <Header />
@@ -49,7 +51,7 @@ export default function OapHub() {
             <h1 className="text-2xl font-semibold">OAP Learning Hub</h1>
           </div>
           <p className="text-sm text-muted-foreground">
-            7-section operator acceptance program. Study on your own, then have a
+            12-section operator acceptance program. Study on your own, then have a
             mentor sign off your floor walkthrough to earn your certificate.
           </p>
         </div>
@@ -86,6 +88,46 @@ export default function OapHub() {
             />
           </CardContent>
         </Card>
+
+        {/* Measurement skill surfaces — separate from the 12 study sections */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <Card className="hover:border-primary transition">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Ruler className="w-4 h-4 text-primary" />
+                Measuring Tools Library
+              </CardTitle>
+              <p className="text-xs text-muted-foreground">
+                Video tutorials, diagrams, and usage notes for 60+ inspection tools across 13 categories — calipers, micrometers, indicators, CMM and more. Free reference, no test required.
+              </p>
+            </CardHeader>
+            <CardContent>
+              <Button asChild size="sm" variant="outline" className="w-full">
+                <Link to="/resources/measuring-tools">
+                  Open Library <ArrowRight className="w-3 h-3 ml-1" />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+          <Card className="hover:border-primary transition">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Gauge className="w-4 h-4 text-primary" />
+                Tool Proficiency Tests
+              </CardTitle>
+              <p className="text-xs text-muted-foreground">
+                Mentor-graded measurement tests with pass/fail tracking, retest scheduling, and printable backup forms. Satisfies AS9100 §7.1.5 inspection-equipment competence.
+              </p>
+            </CardHeader>
+            <CardContent>
+              <Button asChild size="sm" variant="outline" className="w-full">
+                <Link to="/oap/proficiency">
+                  Take a Proficiency Test <ArrowRight className="w-3 h-3 ml-1" />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {isLoading && (

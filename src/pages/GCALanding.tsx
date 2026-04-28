@@ -217,6 +217,9 @@ export default function GCALanding() {
                 <Link to="/gcode-academy/certificates/verify">Verify a Certificate</Link>
               </Button>
               <Button asChild size="lg" variant="outline">
+                <Link to="/resources/measuring-tools">Measuring Tools Library</Link>
+              </Button>
+              <Button asChild size="lg" variant="outline">
                 <Link to="/auth">Create a Free Profile</Link>
               </Button>
             </div>

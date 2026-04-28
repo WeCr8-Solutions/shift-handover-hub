@@ -5,7 +5,7 @@ import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
-import { BookOpen, Code, BookA, ArrowRight, GitCompare, GraduationCap, Briefcase, ShieldAlert, ClipboardCheck, TrendingUp, LayoutGrid, Kanban, Users, FileText, School } from "lucide-react";
+import { BookOpen, Code, BookA, ArrowRight, GitCompare, GraduationCap, Briefcase, ShieldAlert, ClipboardCheck, TrendingUp, LayoutGrid, Kanban, Users, FileText, School, Ruler, Gauge } from "lucide-react";
 
 const sections = [
   {
@@ -34,7 +34,21 @@ const sections = [
     description: "Employer-driven onboarding and certification for CNC operators. Build role-specific programs, assign mentors, run safety + measuring + tooling courses, and issue portable operator certificates. Standalone mode lets anyone earn a self-certified record for interviews.",
     icon: ClipboardCheck,
     href: "/oap",
-    count: "7-section flow · portable cert",
+    count: "12-section flow · portable cert",
+  },
+  {
+    title: "Measuring Tools Library",
+    description: "Free, mobile-friendly reference for every CNC measuring tool — calipers, micrometers, indicators, height gauges, bore gauges, gage blocks, CMM and more. Tap any tool for video tutorials, diagrams, typical use cases, and safety notes. Grouped by 13 inspection categories.",
+    icon: Ruler,
+    href: "/resources/measuring-tools",
+    count: "13 categories · 60+ tools",
+  },
+  {
+    title: "Tool Proficiency Tests",
+    description: "Mentor-graded measurement proficiency tests with pass/fail tracking, retest scheduling, and printable backup forms. Satisfies AS9100 §7.1.5 inspection-equipment competence. Canonical templates for caliper, micrometer, dial indicator, and height gauge — employers can publish org-specific tests too.",
+    icon: Gauge,
+    href: "/oap/proficiency",
+    count: "4 canonical tests · sign-off",
   },
   {
     title: "Industry Glossary",

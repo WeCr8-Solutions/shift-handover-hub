@@ -4,7 +4,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Building2, ClipboardCheck, ExternalLink, FolderKanban, ShieldCheck, Sparkles, UserCheck, Users, Video, Wrench } from "lucide-react";
+import { Building2, ClipboardCheck, ExternalLink, FolderKanban, Gauge, Ruler, ShieldCheck, Sparkles, UserCheck, Users, Video, Wrench } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGcaAccess } from "@/hooks/useGcaAccess";
@@ -220,6 +220,18 @@ export default function OperatorAcceptanceProgram() {
             <Button size="sm" variant="outline" className="gap-2" onClick={() => queueQuickStart("mentors")}>
               <UserCheck className="w-3.5 h-3.5" />
               Mentors
+            </Button>
+            <Button asChild size="sm" variant="outline" className="gap-2">
+              <Link to="/resources/measuring-tools">
+                <Ruler className="w-3.5 h-3.5" />
+                Measuring Tools
+              </Link>
+            </Button>
+            <Button asChild size="sm" variant="outline" className="gap-2">
+              <Link to="/oap/proficiency">
+                <Gauge className="w-3.5 h-3.5" />
+                Proficiency Tests
+              </Link>
             </Button>
             <Button asChild size="sm" variant="outline" className="gap-2">
               <Link to="/verify">
