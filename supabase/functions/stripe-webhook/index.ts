@@ -257,6 +257,40 @@ async function handleCertCheckout(session: Stripe.Checkout.Session) {
     return;
   }
 
+  // ── Upgrade path ──
+  // The user already holds a digital-only cert and is paying $12 to unlock
+  // PDF download + Print. Update the existing row in place (sets
+  // stripe_session_id + amount_cents) instead of inserting a new one.
+  const upgradeCertId = (meta.upgrade_cert_id ?? "").trim();
+  if (upgradeCertId) {
+    const { data: upgradeRow } = await supabaseAdmin
+      .from(table)
+      .select("id, cert_id, stripe_session_id")
+      .eq("cert_id", upgradeCertId)
+      .maybeSingle();
+    if (!upgradeRow) {
+      logStep("CERT: upgrade target not found", { upgradeCertId });
+      return;
+    }
+    if (upgradeRow.stripe_session_id) {
+      logStep("CERT: upgrade target already paid", { certId: upgradeRow.cert_id });
+      return;
+    }
+    const { error: upErr } = await supabaseAdmin
+      .from(table)
+      .update({
+        stripe_session_id: session.id,
+        amount_cents: session.amount_total ?? 1200,
+      })
+      .eq("id", upgradeRow.id);
+    if (upErr) {
+      logStep("CERT: upgrade update failed", { error: upErr.message });
+      throw upErr;
+    }
+    logStep("CERT: upgraded to printable", { certId: upgradeRow.cert_id });
+    return;
+  }
+
   // Try to resolve a Supabase user from the email (so the cert links to their account if they sign up later)
   let userId: string | null = null;
   try {
