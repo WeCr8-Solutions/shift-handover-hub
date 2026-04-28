@@ -220,7 +220,7 @@ export default function GCodeAcademy() {
               My Progress
             </Button>
             <Button asChild size="sm" variant="outline" className="gap-2">
-              <Link to="/gcode-academy/certificates/verify">
+              <Link to="/verify">
                 <ShieldCheck className="w-3.5 h-3.5" />
                 Verify Certificate
               </Link>
