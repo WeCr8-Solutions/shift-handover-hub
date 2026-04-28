@@ -4,11 +4,20 @@ import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Building2, ClipboardCheck, ExternalLink, FolderKanban, ShieldCheck, Sparkles, Users, Video, Wrench } from "lucide-react";
+import { Building2, ClipboardCheck, ExternalLink, FolderKanban, ShieldCheck, Sparkles, UserCheck, Users, Video, Wrench } from "lucide-react";
+import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGcaAccess } from "@/hooks/useGcaAccess";
 
-type OapQuickStart = "certify" | "employer" | "programs" | "operators";
+type OapQuickStart = "certify" | "employer" | "programs" | "operators" | "mentors";
+
+const OAP_QUICKSTART_LABEL: Record<OapQuickStart, string> = {
+  certify: "Get Certified",
+  employer: "Employer Setup",
+  programs: "Role Programs",
+  operators: "Active Operators",
+  mentors: "Mentors",
+};
 
 /**
  * Operator Acceptance Program (OAP)
