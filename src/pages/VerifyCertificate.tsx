@@ -182,14 +182,28 @@ export default function VerifyCertificate() {
             <div className="flex flex-wrap items-center gap-2 pt-2 border-t">
               {cert && (
                 <>
-                  <Button size="sm" onClick={() => window.print()}>
-                    <Printer className="w-3.5 h-3.5 mr-1.5" /> Print certificate
-                  </Button>
-                  <CertificatePdfDownloadButton
-                    targetElementId="cert-print-target"
-                    fileName={`${cert.certId}-${variant}.pdf`}
-                    variantLabel={variant === "diploma" ? "Diploma" : "Digital"}
-                  />
+                  {isPaid ? (
+                    <>
+                      <Button size="sm" onClick={() => window.print()}>
+                        <Printer className="w-3.5 h-3.5 mr-1.5" /> Print certificate
+                      </Button>
+                      <CertificatePdfDownloadButton
+                        targetElementId="cert-print-target"
+                        fileName={`${cert.certId}-${variant}.pdf`}
+                        variantLabel={variant === "diploma" ? "Diploma" : "Digital"}
+                      />
+                    </>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setUpgradeOpen(true)}
+                      className="gap-1.5"
+                    >
+                      <Lock className="w-3.5 h-3.5" />
+                      Unlock PDF & Print — $12
+                    </Button>
+                  )}
                   <div className="inline-flex rounded-md border bg-muted/40 p-0.5">
                     <Button
                       size="sm"
