@@ -76,7 +76,7 @@ export default function ToolProficiency() {
         .select("*")
         .order("submitted_at", { ascending: false });
       if (error) throw error;
-      return (data ?? []) as Attempt[];
+      return (data ?? []) as unknown as Attempt[];
     },
   });
 
