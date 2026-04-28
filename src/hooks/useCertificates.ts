@@ -87,6 +87,7 @@ export function useCertificates() {
       signedByName: row.signed_by_name ?? null,
       signedByTitle: row.signed_by_title ?? null,
       signedBySignatureUrl: row.signed_by_signature_url ?? null,
+      isPaid: row.is_paid === true,
       items: [], // public verification does not enumerate items; owner view loads them separately
     };
   }, []);
