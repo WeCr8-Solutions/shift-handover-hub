@@ -285,7 +285,7 @@ export default function GCodeAcademy() {
                 Give employers and operators a direct path to verify issued certificates without leaving the landing flow.
               </p>
               <Button asChild size="sm" variant="ghost" className="mt-3 h-8 px-0 text-xs">
-                <Link to="/gcode-academy/certificates/verify">Open Verify Page</Link>
+                <Link to="/verify">Open Verify Page</Link>
               </Button>
             </div>
             <div className="rounded-2xl border border-border bg-card p-4">
@@ -316,6 +316,7 @@ export default function GCodeAcademy() {
           syncAuthToGca();
           if (pendingQuickStart && runQuickStart(pendingQuickStart)) {
             setPendingQuickStart(null);
+            focusIframe();
           }
         }}
       />
