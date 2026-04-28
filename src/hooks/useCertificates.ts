@@ -66,7 +66,7 @@ export function useCertificates() {
     if (!program) return null;
 
     const rpc = program === "OAP" ? "verify_oap_certificate" : "verify_gca_certificate";
-    const { data, error } = await supabase.rpc(rpc, { p_cert_id: certId });
+    const { data, error } = await supabase.rpc(rpc, { _cert_id: certId });
     const row = Array.isArray(data) ? (data[0] as any) : null;
     if (error || !row) return null;
 
@@ -87,6 +87,7 @@ export function useCertificates() {
       signedByName: row.signed_by_name ?? null,
       signedByTitle: row.signed_by_title ?? null,
       signedBySignatureUrl: row.signed_by_signature_url ?? null,
+      isPaid: row.is_paid === true,
       items: [], // public verification does not enumerate items; owner view loads them separately
     };
   }, []);

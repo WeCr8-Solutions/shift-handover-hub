@@ -12258,9 +12258,10 @@ export type Database = {
       validate_display_token: { Args: { _token: string }; Returns: Json }
       validate_invite_code: { Args: { _code: string }; Returns: Json }
       verify_gca_certificate: {
-        Args: { p_cert_id: string }
+        Args: { _cert_id: string }
         Returns: {
           cert_id: string
+          is_paid: boolean
           issued_at: string
           program_name: string
           recipient_name: string
@@ -12274,25 +12275,10 @@ export type Database = {
         }[]
       }
       verify_gca_certificate_by_qr: {
-        Args: { p_qr_token: string }
+        Args: { _qr_token: string }
         Returns: {
           cert_id: string
-          issued_at: string
-          program_name: string
-          recipient_name: string
-          recipient_username: string
-          signed_by_name: string
-          signed_by_signature_url: string
-          signed_by_title: string
-          status: string
-          valid_from: string
-          valid_until: string
-        }[]
-      }
-      verify_oap_certificate: {
-        Args: { p_cert_id: string }
-        Returns: {
-          cert_id: string
+          is_paid: boolean
           issued_at: string
           organization_id: string
           organization_name: string
@@ -12308,10 +12294,28 @@ export type Database = {
           vertical: string
         }[]
       }
-      verify_oap_certificate_by_qr: {
-        Args: { p_qr_token: string }
+      verify_oap_certificate: {
+        Args: { _cert_id: string }
         Returns: {
           cert_id: string
+          is_paid: boolean
+          issued_at: string
+          program_name: string
+          recipient_name: string
+          recipient_username: string
+          signed_by_name: string
+          signed_by_signature_url: string
+          signed_by_title: string
+          status: string
+          valid_from: string
+          valid_until: string
+        }[]
+      }
+      verify_oap_certificate_by_qr: {
+        Args: { _qr_token: string }
+        Returns: {
+          cert_id: string
+          is_paid: boolean
           issued_at: string
           organization_id: string
           organization_name: string

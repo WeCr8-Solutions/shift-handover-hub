@@ -3,12 +3,13 @@ import { useParams, Link, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, ShieldAlert, ShieldX, ArrowRight, ArrowLeft, Loader2, Printer, ScrollText, LayoutGrid } from "lucide-react";
+import { ShieldCheck, ShieldAlert, ShieldX, ArrowRight, ArrowLeft, Loader2, Printer, ScrollText, LayoutGrid, Lock } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
 import { useCertificates } from "@/hooks/useCertificates";
 import { CertificateTemplate, type CertificateVariant } from "@/components/certificates/CertificateTemplate";
 import { CertificateViewer } from "@/components/certificates/CertificateViewer";
 import { CertificatePdfDownloadButton } from "@/components/certificates/CertificatePdfDownloadButton";
+import { BuyCertificateDialog } from "@/components/certificates/BuyCertificateDialog";
 import type { CertificateRecord } from "@/lib/certificates";
 
 /**
@@ -21,9 +22,9 @@ export default function VerifyCertificate() {
   const { lookupCertificate } = useCertificates();
   const [loading, setLoading] = useState(true);
   const [cert, setCert] = useState<CertificateRecord | null>(null);
-  // Default to diploma — that's the formal "shareable" view recipients want to print.
-  // Digital is available as a quick toggle for the accomplishments-focused look.
   const [variant, setVariant] = useState<CertificateVariant>("diploma");
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const isPaid = cert?.isPaid === true;
 
   const inferredProgram = certId?.startsWith("OAP-") ? "OAP" : certId?.startsWith("GCA-") ? "GCA" : null;
   const program = cert?.program ?? inferredProgram;
@@ -181,14 +182,28 @@ export default function VerifyCertificate() {
             <div className="flex flex-wrap items-center gap-2 pt-2 border-t">
               {cert && (
                 <>
-                  <Button size="sm" onClick={() => window.print()}>
-                    <Printer className="w-3.5 h-3.5 mr-1.5" /> Print certificate
-                  </Button>
-                  <CertificatePdfDownloadButton
-                    targetElementId="cert-print-target"
-                    fileName={`${cert.certId}-${variant}.pdf`}
-                    variantLabel={variant === "diploma" ? "Diploma" : "Digital"}
-                  />
+                  {isPaid ? (
+                    <>
+                      <Button size="sm" onClick={() => window.print()}>
+                        <Printer className="w-3.5 h-3.5 mr-1.5" /> Print certificate
+                      </Button>
+                      <CertificatePdfDownloadButton
+                        targetElementId="cert-print-target"
+                        fileName={`${cert.certId}-${variant}.pdf`}
+                        variantLabel={variant === "diploma" ? "Diploma" : "Digital"}
+                      />
+                    </>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setUpgradeOpen(true)}
+                      className="gap-1.5"
+                    >
+                      <Lock className="w-3.5 h-3.5" />
+                      Unlock PDF & Print — $12
+                    </Button>
+                  )}
                   <div className="inline-flex rounded-md border bg-muted/40 p-0.5">
                     <Button
                       size="sm"
@@ -227,14 +242,36 @@ export default function VerifyCertificate() {
 
         {cert && (
           <div className="mt-8 print:mt-0">
-            {/* Print always uses diploma (formal); on-screen respects the toggle */}
+            {/* Paid certs: full printable diploma. Unpaid: stub so Cmd+P
+                can't bypass the paywall — only a "this is digital-only" notice prints. */}
             <div className="hidden print:block">
-              <CertificateTemplate cert={cert} variant="diploma" printMode />
+              {isPaid ? (
+                <CertificateTemplate cert={cert} variant="diploma" printMode />
+              ) : (
+                <div style={{ padding: "48px", fontFamily: "system-ui", textAlign: "center" }}>
+                  <h1 style={{ fontSize: "24px", marginBottom: "16px" }}>Digital certificate</h1>
+                  <p>This certificate is verified at <strong>jobline.ai/verify/{cert.certId}</strong>.</p>
+                  <p style={{ marginTop: "16px", color: "#666" }}>
+                    Unlock printable PDF and Print for $12 at the verification page.
+                  </p>
+                </div>
+              )}
             </div>
             <div className="print:hidden">
               <CertificateViewer cert={cert} variant={variant} printTargetId="cert-print-target" />
             </div>
           </div>
+        )}
+
+        {cert && (
+          <BuyCertificateDialog
+            open={upgradeOpen}
+            onOpenChange={setUpgradeOpen}
+            program={cert.program}
+            defaultProgramName={cert.programName}
+            defaultRecipientName={cert.recipientName}
+            upgradeCertId={cert.certId}
+          />
         )}
 
         <p className="text-[11px] text-muted-foreground text-center mt-4 print:hidden">

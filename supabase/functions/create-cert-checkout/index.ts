@@ -24,6 +24,13 @@ interface ReqBody {
   programName?: string;
   organizationName?: string | null;
   bankId?: string | null;
+  /**
+   * When set, the checkout is an "upgrade" — the holder of an existing
+   * (digital-only) cert is paying $12 to unlock PDF download + Print on
+   * jobline.ai/verify/:certId. The webhook will UPDATE the existing row
+   * instead of inserting a new one. Cert ID format: PROGRAM-XXXXXX-YYYY.
+   */
+  upgradeCertId?: string | null;
 }
 
 serve(async (req) => {
@@ -53,13 +60,22 @@ serve(async (req) => {
         ? "Operator Acceptance Program — Floor Certified"
         : "G-Code Academy — Certificate of Completion");
 
+    const upgradeCertId = body.upgradeCertId?.trim() || "";
+    if (upgradeCertId && !/^(OAP|GCA)-[A-Z0-9-]+-\d{4}$/.test(upgradeCertId)) {
+      throw new Error("upgradeCertId is not a valid cert ID");
+    }
+
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       payment_method_types: ["card"],
       customer_email: body.recipientEmail,
       line_items: [{ price: CERT_PRICE_ID, quantity: 1 }],
-      success_url: `${origin}/cert/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/${body.program === "OAP" ? "oap" : "gca"}`,
+      success_url: upgradeCertId
+        ? `${origin}/verify/${upgradeCertId}?upgraded=1`
+        : `${origin}/cert/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: upgradeCertId
+        ? `${origin}/verify/${upgradeCertId}`
+        : `${origin}/${body.program === "OAP" ? "oap" : "gca"}`,
       metadata: {
         product_type: "cert",
         program: body.program,
@@ -68,6 +84,7 @@ serve(async (req) => {
         program_name: programName.slice(0, 200),
         organization_name: (body.organizationName ?? "").slice(0, 200),
         bank_id: body.bankId ?? "",
+        upgrade_cert_id: upgradeCertId,
       },
     });
 

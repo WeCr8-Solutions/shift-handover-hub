@@ -14,6 +14,12 @@ interface BuyCertificateDialogProps {
   program: CertificateProgram;
   /** Optional pre-filled program name (e.g. "Lathe Fundamentals"). */
   defaultProgramName?: string;
+  /** Optional pre-filled recipient name. Used for upgrade flow. */
+  defaultRecipientName?: string;
+  /** When provided, this is an "upgrade to printable" purchase for an
+   *  existing digital-only cert. The webhook will UPDATE that row instead
+   *  of issuing a new cert; success URL routes back to /verify/:certId. */
+  upgradeCertId?: string;
 }
 
 export function BuyCertificateDialog({
@@ -21,13 +27,16 @@ export function BuyCertificateDialog({
   onOpenChange,
   program,
   defaultProgramName,
+  defaultRecipientName,
+  upgradeCertId,
 }: BuyCertificateDialogProps) {
-  const [name, setName] = useState("");
+  const [name, setName] = useState(defaultRecipientName ?? "");
   const [email, setEmail] = useState("");
   const [organizationName, setOrganizationName] = useState("");
   const [programName, setProgramName] = useState(defaultProgramName ?? "");
   const [loading, setLoading] = useState(false);
 
+  const isUpgrade = !!upgradeCertId;
   const programLabel = program === "OAP" ? "Operator Acceptance Program" : "G-Code Academy";
 
   async function handleCheckout() {
@@ -44,6 +53,7 @@ export function BuyCertificateDialog({
           recipientEmail: email.trim(),
           programName: programName.trim() || undefined,
           organizationName: organizationName.trim() || null,
+          upgradeCertId: upgradeCertId ?? null,
         },
       });
       if (error) throw error;
@@ -62,10 +72,24 @@ export function BuyCertificateDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Get your {program} certificate — $12</DialogTitle>
+          <DialogTitle>
+            {isUpgrade
+              ? `Unlock printable ${program} certificate — $12`
+              : `Get your ${program} certificate — $12`}
+          </DialogTitle>
           <DialogDescription>
-            Branded, verifiable certificate for the {programLabel}. Includes unique cert ID,
-            QR verification, and a public verification URL.
+            {isUpgrade ? (
+              <>
+                Your digital certificate <code className="font-mono text-foreground">{upgradeCertId}</code>{" "}
+                stays free to view and verify. Unlock to enable PDF download and Print on the
+                {" "}{programLabel} verification page.
+              </>
+            ) : (
+              <>
+                Branded, verifiable certificate for the {programLabel}. Includes unique cert ID,
+                QR verification, and a public verification URL.
+              </>
+            )}
           </DialogDescription>
         </DialogHeader>
 
@@ -119,12 +143,20 @@ export function BuyCertificateDialog({
           </div>
 
           <ul className="text-xs text-muted-foreground space-y-1.5 pt-2 border-t border-border">
-            {[
-              "Unique cert ID (e.g. " + program + "-XXXXXX-2026)",
-              "Public verification at jobline.ai/verify/your-id",
-              "Print, share, attach to LinkedIn or résumé",
-              "Secure checkout via Stripe — no account required",
-            ].map((line) => (
+            {(isUpgrade
+              ? [
+                  "PDF download (Diploma + Digital variants) at any time",
+                  "Print directly from the verification page",
+                  "Same cert ID — your existing share links keep working",
+                  "Secure checkout via Stripe — no account required",
+                ]
+              : [
+                  "Unique cert ID (e.g. " + program + "-XXXXXX-2026)",
+                  "Public verification at jobline.ai/verify/your-id",
+                  "Print, share, attach to LinkedIn or résumé",
+                  "Secure checkout via Stripe — no account required",
+                ]
+            ).map((line) => (
               <li key={line} className="flex items-start gap-2">
                 <CheckCircle2 className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
                 {line}
