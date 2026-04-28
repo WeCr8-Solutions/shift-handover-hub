@@ -63,7 +63,7 @@ export default function ToolProficiency() {
       if (toolSlug) q = q.eq("tool_slug", toolSlug);
       const { data, error } = await q;
       if (error) throw error;
-      return (data ?? []) as ProficiencyTest[];
+      return (data ?? []) as unknown as ProficiencyTest[];
     },
   });
 
