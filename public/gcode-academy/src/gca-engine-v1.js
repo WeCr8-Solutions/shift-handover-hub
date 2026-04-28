@@ -644,3 +644,58 @@ function resetProgress() {
     window.location.reload();
   }
 }
+
+// ─── GD&T Symbol Learn-More Drawer ─────────────────────────────────
+function openSymInfo(key) {
+  var sym = (typeof GCA_SYMBOLS !== 'undefined') ? GCA_SYMBOLS[key] : null;
+  var info = (typeof GCA_SYM_INFO !== 'undefined') ? GCA_SYM_INFO[key] : null;
+  if (!sym) return;
+  var existing = document.getElementById('sym-info-modal');
+  if (existing) existing.remove();
+  var def = info ? info.def : 'Reference: ' + sym.standard;
+  var app = info ? info.app : '';
+  var ytLink = 'https://www.youtube.com/embed/BkvVKiNHjK4'; // GD&T crash course (canonical training_media)
+  var modal = document.createElement('div');
+  modal.id = 'sym-info-modal';
+  modal.className = 'sym-modal-back';
+  modal.setAttribute('role','dialog');
+  modal.setAttribute('aria-modal','true');
+  modal.setAttribute('aria-label', sym.name + ' — learn more');
+  modal.onclick = function(e){ if (e.target === modal) closeSymInfo(); };
+  modal.innerHTML =
+    '<div class="sym-modal">' +
+      '<button class="sym-modal-close" onclick="closeSymInfo()" aria-label="Close">\u2715</button>' +
+      '<div class="sym-modal-head">' +
+        '<div class="sym-modal-svg">' + sym.svg + '</div>' +
+        '<div>' +
+          '<div class="sym-modal-title">' + sym.name + '</div>' +
+          '<div class="sym-modal-sub">' + sym.type + ' \u00b7 ' + sym.standard + (sym.datumReq ? ' \u00b7 Datum required' : ' \u00b7 No datum') + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="sym-modal-body">' +
+        '<div class="sym-modal-section"><div class="sym-modal-h">What it controls</div><p>' + def + '</p></div>' +
+        (app ? '<div class="sym-modal-section"><div class="sym-modal-h">Machinist application</div><p>' + app + '</p></div>' : '') +
+        '<div class="sym-modal-actions">' +
+          '<a class="sym-modal-btn primary" href="' + ytLink + '" target="_blank" rel="noopener">\u25b6 Watch GD&amp;T crash course</a>' +
+          '<button class="sym-modal-btn" onclick="closeSymInfo();setView(\'test\');setTestCat(\'gdnt\')">Take the GD&amp;T test \u2192</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(modal);
+  // ESC to close
+  modal._escHandler = function(e){ if (e.key === 'Escape') closeSymInfo(); };
+  document.addEventListener('keydown', modal._escHandler);
+  // Focus the close button for screen-reader / keyboard users
+  setTimeout(function(){ var b = modal.querySelector('.sym-modal-close'); if (b) b.focus(); }, 30);
+}
+
+function closeSymInfo() {
+  var m = document.getElementById('sym-info-modal');
+  if (!m) return;
+  if (m._escHandler) document.removeEventListener('keydown', m._escHandler);
+  m.remove();
+}
+
+// Expose globally so inline onclick works
+window.openSymInfo = openSymInfo;
+window.closeSymInfo = closeSymInfo;
