@@ -106,6 +106,8 @@ const BeginnersGuide = lazy(() => import("./pages/resources/BeginnersGuide"));
 const ManufacturingCareers = lazy(() => import("./pages/resources/ManufacturingCareers"));
 const SafetyCompliance = lazy(() => import("./pages/resources/SafetyCompliance"));
 const QualityInspection = lazy(() => import("./pages/resources/QualityInspection"));
+const MeasuringTools = lazy(() => import("./pages/resources/MeasuringTools"));
+const ToolProficiency = lazy(() => import("./pages/ToolProficiency"));
 const LeanManufacturing = lazy(() => import("./pages/resources/LeanManufacturing"));
 const FiveSMethodology = lazy(() => import("./pages/resources/FiveSMethodology"));
 const KanbanSortingTechniques = lazy(() => import("./pages/resources/KanbanSortingTechniques"));
