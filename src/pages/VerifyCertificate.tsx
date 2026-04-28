@@ -242,14 +242,36 @@ export default function VerifyCertificate() {
 
         {cert && (
           <div className="mt-8 print:mt-0">
-            {/* Print always uses diploma (formal); on-screen respects the toggle */}
+            {/* Paid certs: full printable diploma. Unpaid: stub so Cmd+P
+                can't bypass the paywall — only a "this is digital-only" notice prints. */}
             <div className="hidden print:block">
-              <CertificateTemplate cert={cert} variant="diploma" printMode />
+              {isPaid ? (
+                <CertificateTemplate cert={cert} variant="diploma" printMode />
+              ) : (
+                <div style={{ padding: "48px", fontFamily: "system-ui", textAlign: "center" }}>
+                  <h1 style={{ fontSize: "24px", marginBottom: "16px" }}>Digital certificate</h1>
+                  <p>This certificate is verified at <strong>jobline.ai/verify/{cert.certId}</strong>.</p>
+                  <p style={{ marginTop: "16px", color: "#666" }}>
+                    Unlock printable PDF and Print for $12 at the verification page.
+                  </p>
+                </div>
+              )}
             </div>
             <div className="print:hidden">
               <CertificateViewer cert={cert} variant={variant} printTargetId="cert-print-target" />
             </div>
           </div>
+        )}
+
+        {cert && (
+          <BuyCertificateDialog
+            open={upgradeOpen}
+            onOpenChange={setUpgradeOpen}
+            program={cert.program}
+            defaultProgramName={cert.programName}
+            defaultRecipientName={cert.recipientName}
+            upgradeCertId={cert.certId}
+          />
         )}
 
         <p className="text-[11px] text-muted-foreground text-center mt-4 print:hidden">
