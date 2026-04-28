@@ -120,10 +120,10 @@ export default function OperatorAcceptanceProgram() {
     const compute = () => {
       const navH = navRef.current?.offsetHeight ?? 56;
       const barH = barRef.current?.offsetHeight ?? 44;
-      // Give the embedded OAP a tall workspace so its internal nav,
-      // quick-start tiles, and quiz player render without clipping. The
-      // outer page scrolls so mobile users can still reach all content.
-      const minH = 760;
+      // Match the visible viewport on mobile (still scrollable inside the iframe)
+      // and grow naturally on desktop. 480px floor keeps usable height on
+      // tiny viewports without forcing 760px on phones.
+      const minH = 480;
       const target = Math.max(minH, window.innerHeight - (navH + barH));
       setIframeHeight(`${target}px`);
     };
