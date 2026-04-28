@@ -299,7 +299,7 @@ export default function OperatorAcceptanceProgram() {
                 Verify portable certificates, then move back into operator dashboards and qualification checkpoints without leaving JobLine.ai.
               </p>
               <Button asChild size="sm" variant="ghost" className="mt-3 h-8 px-0 text-xs">
-                <Link to="/oap/certificates/verify">Verify OAP Certificate</Link>
+                <Link to="/verify">Verify OAP Certificate</Link>
               </Button>
             </div>
           </div>
@@ -317,6 +317,7 @@ export default function OperatorAcceptanceProgram() {
           syncAuth();
           if (pendingQuickStart && runQuickStart(pendingQuickStart)) {
             setPendingQuickStart(null);
+            focusIframe();
           }
         }}
       />
