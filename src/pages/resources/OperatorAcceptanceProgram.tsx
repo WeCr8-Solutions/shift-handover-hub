@@ -235,11 +235,14 @@ export default function OperatorAcceptanceProgram() {
         <div className="grid gap-4 xl:grid-cols-[1.3fr,1fr]">
           <div className="overflow-hidden rounded-2xl border border-border bg-card">
             <div className="grid gap-0 md:grid-cols-[1.1fr,0.9fr]">
-              <img
-                src="/oap-og.jpg"
-                alt="Operator Acceptance Program onboarding preview"
-                className="h-44 w-full object-cover md:h-full"
-              />
+              <div className="bg-[hsl(222_47%_8%)] flex items-center justify-center">
+                <img
+                  src="/oap-og.jpg"
+                  alt="Operator Acceptance Program onboarding preview"
+                  loading="lazy"
+                  className="w-full h-auto object-contain aspect-[1200/630]"
+                />
+              </div>
               <div className="flex flex-col gap-3 p-5">
                 <Badge variant="outline" className="w-fit text-[10px] uppercase tracking-[0.18em]">Onboarding and Certification</Badge>
                 <div>
