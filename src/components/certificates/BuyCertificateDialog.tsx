@@ -72,10 +72,24 @@ export function BuyCertificateDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Get your {program} certificate — $12</DialogTitle>
+          <DialogTitle>
+            {isUpgrade
+              ? `Unlock printable ${program} certificate — $12`
+              : `Get your ${program} certificate — $12`}
+          </DialogTitle>
           <DialogDescription>
-            Branded, verifiable certificate for the {programLabel}. Includes unique cert ID,
-            QR verification, and a public verification URL.
+            {isUpgrade ? (
+              <>
+                Your digital certificate <code className="font-mono text-foreground">{upgradeCertId}</code>{" "}
+                stays free to view and verify. Unlock to enable PDF download and Print on the
+                {" "}{programLabel} verification page.
+              </>
+            ) : (
+              <>
+                Branded, verifiable certificate for the {programLabel}. Includes unique cert ID,
+                QR verification, and a public verification URL.
+              </>
+            )}
           </DialogDescription>
         </DialogHeader>
 
