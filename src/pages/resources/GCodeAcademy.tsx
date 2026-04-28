@@ -28,6 +28,15 @@ export default function GCodeAcademy() {
   const { user, session, profile } = useAuth();
   const { gcaTier, hasProAccess, isDefinitelyFree } = useGcaAccess();
 
+  const focusIframe = useCallback(() => {
+    const el = iframeRef.current;
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+    window.setTimeout(() => {
+      try { el.focus({ preventScroll: true }); } catch { /* noop */ }
+    }, 250);
+  }, []);
+
   const runQuickStart = useCallback((target: GcaQuickStart) => {
     const win = iframeRef.current?.contentWindow as (Window & {
       setView?: (view: string) => void;
@@ -48,8 +57,9 @@ export default function GCodeAcademy() {
         win.setTestCat?.("all");
         return true;
       case "metrology":
-        win.setView("test");
-        win.setTestCat?.("gdnt");
+        // Land on the GD&T learning view, not a filtered test list — users
+        // who click "GD&T and Metrology" expect to learn before testing.
+        win.setView("gdnt");
         return true;
       case "progress":
         win.setView("progress");
@@ -60,10 +70,15 @@ export default function GCodeAcademy() {
   }, []);
 
   const queueQuickStart = useCallback((target: GcaQuickStart) => {
-    if (!runQuickStart(target)) {
+    const ok = runQuickStart(target);
+    focusIframe();
+    if (!ok) {
       setPendingQuickStart(target);
+      toast.message(`Opening ${GCA_QUICKSTART_LABEL[target]}…`, {
+        description: "Loading the G-Code Academy workspace.",
+      });
     }
-  }, [runQuickStart]);
+  }, [runQuickStart, focusIframe]);
 
   // Send (or clear) the Supabase session inside the GCA iframe
   const syncAuthToGca = useCallback(() => {
