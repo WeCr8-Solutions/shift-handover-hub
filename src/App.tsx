@@ -106,6 +106,8 @@ const BeginnersGuide = lazy(() => import("./pages/resources/BeginnersGuide"));
 const ManufacturingCareers = lazy(() => import("./pages/resources/ManufacturingCareers"));
 const SafetyCompliance = lazy(() => import("./pages/resources/SafetyCompliance"));
 const QualityInspection = lazy(() => import("./pages/resources/QualityInspection"));
+const MeasuringTools = lazy(() => import("./pages/resources/MeasuringTools"));
+const ToolProficiency = lazy(() => import("./pages/ToolProficiency"));
 const LeanManufacturing = lazy(() => import("./pages/resources/LeanManufacturing"));
 const FiveSMethodology = lazy(() => import("./pages/resources/FiveSMethodology"));
 const KanbanSortingTechniques = lazy(() => import("./pages/resources/KanbanSortingTechniques"));
@@ -275,6 +277,8 @@ const App = () => (
                     <Route path="/resources/careers" element={<ManufacturingCareers />} />
                     <Route path="/resources/safety" element={<SafetyCompliance />} />
                     <Route path="/resources/quality" element={<QualityInspection />} />
+                    <Route path="/resources/measuring-tools" element={<MeasuringTools />} />
+                    <Route path="/oap/proficiency" element={<ToolProficiency />} />
                     <Route path="/resources/lean" element={<LeanManufacturing />} />
                     <Route path="/resources/5s" element={<FiveSMethodology />} />
                     <Route path="/resources/kanban" element={<KanbanSortingTechniques />} />

@@ -243,3 +243,33 @@ GCA_SYMBOLS._groups = {
   'Modifiers':   ['diameter','mmc','lmc','projected_tolerance','free_state','all_around','independency'],
   'Reference':   ['feature_control_frame','datum_feature'],
 };
+
+// ─── Plain-English definitions + machinist application notes ────────
+// Used by the GD&T learn-more drawer in gca-engine-v1.js
+const GCA_SYM_INFO = {
+  straightness:        { def: 'Controls how straight a line element on a surface or axis must be — no datum needed.',                                  app: 'On a turned shaft, this limits axial bow. Inspect with an indicator on a surface plate or between centers.' },
+  flatness:            { def: 'Controls how flat a surface must be between two parallel planes — no datum needed.',                                   app: 'Common on mating faces. Sweep with a dial indicator on a surface plate; total reading must stay inside the zone.' },
+  circularity:         { def: 'Controls how round a single cross-section must be — no datum needed.',                                                 app: 'Use a V-block + indicator or a roundness tester. Out-of-round bores cause leakage and bearing failure.' },
+  cylindricity:        { def: 'Combines circularity, straightness, and taper into one envelope along a cylinder.',                                   app: 'Tightest single OD/ID control. Best inspected on a CMM or roundness machine — a caliper cannot verify it.' },
+  profile_line:        { def: 'Controls the form of a 2D cross-section profile (curved or complex edges).',                                           app: 'Common on cam profiles, turbine blade sections. Inspect with optical comparator or CMM scan.' },
+  profile_surface:     { def: 'Controls the entire 3D surface form within a tolerance zone — can also locate when datums are referenced.',           app: 'Use for blends, filleted regions, freeform surfaces. CMM with surface scan is standard.' },
+  angularity:          { def: 'Controls how close to a specified angle a surface, axis, or median plane must be — datum required.',                  app: 'Inspect with a sine bar set to the basic angle, then sweep with an indicator. Tolerance applies perpendicular to the surface.' },
+  perpendicularity:    { def: 'Special case of angularity at exactly 90° to a datum.',                                                                app: 'Square a face to Datum A by indicating from the surface plate. Critical for press fits and bearing seats.' },
+  parallelism:         { def: 'Controls how parallel a surface or axis is to a datum.',                                                               app: 'Sweep the controlled face with an indicator referenced from the datum. Critical for slides and shim packs.' },
+  true_position:       { def: 'Locates a feature axis (or center plane) within a cylindrical (or rectangular) tolerance zone — datum required.',     app: 'Standard hole-pattern control. Pair with MMC to gain bonus tolerance when the feature is at material condition.' },
+  concentricity:       { def: 'Median-points control between two cylindrical features sharing an axis — removed from Y14.5-2018 but still seen.',    app: 'Modern drawings use Position or Runout instead. If you see it, treat as Runout for inspection.' },
+  symmetry:            { def: 'Median-plane control about a datum plane — removed from Y14.5-2018 but still seen.',                                   app: 'Replaced by Position. Inspect with a CMM measuring median points of opposing surfaces.' },
+  circular_runout:     { def: 'Combined circularity + coaxiality at one cross-section, measured with the part rotated about a datum axis.',           app: 'Set part on V-blocks or between centers, sweep one location with an indicator — total movement is the runout.' },
+  total_runout:        { def: 'Runout taken along the full length of the surface — controls form, orientation, and location together.',               app: 'Same as circular runout but indicator traverses axially while part rotates. Tightest single-control on shafts.' },
+  diameter:             { def: 'Modifier — tolerance zone is cylindrical instead of two parallel planes.',                                            app: 'Always paired with Position on hole patterns. The Ø symbol means the hole axis must stay inside a cylinder.' },
+  mmc:                 { def: 'Maximum Material Condition: tolerance applies when the feature has the most material (smallest hole / largest pin).', app: 'Earns "bonus tolerance" — as the hole grows, allowable position error grows by the same amount. Verify with a functional gauge.' },
+  lmc:                 { def: 'Least Material Condition: tolerance applies when the feature has the least material (largest hole / smallest pin).',  app: 'Used to protect minimum wall thickness or edge distance. Less common than MMC.' },
+  projected_tolerance: { def: 'Projects the tolerance zone above the surface by a stated height — usually for threaded or press-fit holes.',          app: 'Critical for tapped holes that must accept long studs. Inspect using a gage pin extending the projected height.' },
+  free_state:          { def: 'Tolerance applies to the part in its unrestrained state — for thin or flexible parts.',                                app: 'Composite parts and sheet metal. Inspect without clamping; the part may flex into tolerance only when restrained for use.' },
+  feature_control_frame:{ def: 'The rectangular frame that contains the GD&T callout: characteristic | tolerance | datums.',                         app: 'Read left-to-right: symbol, tolerance value (with modifier), then primary/secondary/tertiary datum letters.' },
+  datum_feature:       { def: 'Identifier (A, B, C…) attached to a real surface that establishes a Datum Reference Frame.',                           app: 'On the floor, your work zero (G54) on the primary face IS Datum A. Edge-finding establishes Datums B and C.' },
+  all_around:          { def: 'Modifier on a profile callout meaning the tolerance applies to every surface in the cross-section view.',              app: 'Common on pocket profiles and ID/OD pairs. The circle on the leader line means "go all the way around".' },
+  independency:        { def: 'Form is controlled independently of size — Rule #1 (envelope principle) does NOT apply to this feature.',              app: 'ISO standard. Lets a long shaft have generous form tolerance even though size is tight.' },
+  unequal_bilateral:   { def: 'Profile tolerance with an unequal split between the two sides of true profile (uses the U modifier).',                 app: 'Cosmetic A-surfaces often need more material on the visible side and less on the back side.' },
+};
+

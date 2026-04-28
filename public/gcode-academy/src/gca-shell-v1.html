@@ -206,8 +206,9 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 .gdnt-group-title{font-family:var(--head);font-weight:900;font-size:14px;letter-spacing:1px;text-transform:uppercase;color:var(--purple);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
 .sym-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
 @media(max-width:480px){.sym-grid{grid-template-columns:repeat(3,1fr)}}
-.sym-card{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:10px 8px;text-align:center;transition:.15s;position:relative}
-.sym-card:hover{border-color:rgba(167,139,250,.35);background:rgba(167,139,250,.04)}
+.sym-card{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:10px 8px;text-align:center;transition:.15s;position:relative;cursor:pointer;-webkit-tap-highlight-color:rgba(167,139,250,.25)}
+.sym-card:hover,.sym-card:focus-visible{border-color:rgba(167,139,250,.55);background:rgba(167,139,250,.08);outline:none;transform:translateY(-1px)}
+.sym-card:active{transform:translateY(0);background:rgba(167,139,250,.14)}
 .sym-card.deprecated{opacity:.55}
 .sym-svg{width:38px;height:38px;margin:0 auto 6px;color:var(--purple);display:flex;align-items:center;justify-content:center}
 .sym-svg svg{width:38px;height:38px}
@@ -217,6 +218,27 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 .sym-datum-tag.req{color:var(--accent)}
 .sym-datum-tag.no{color:var(--muted)}
 .sym-depr{position:absolute;top:4px;right:4px;font-size:7px;color:var(--gold);font-family:var(--mono)}
+.sym-learn{font-size:8px;margin-top:4px;color:var(--purple);opacity:.7;letter-spacing:.5px}
+/* GD&T learn-more modal */
+.sym-modal-back{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;animation:symFade .15s ease-out}
+@keyframes symFade{from{opacity:0}to{opacity:1}}
+.sym-modal{background:var(--card,#13151a);color:var(--text,#e6e6e6);border:1px solid var(--border,#2a2d35);border-radius:10px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;position:relative;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.sym-modal-close{position:absolute;top:10px;right:10px;background:transparent;border:1px solid var(--border,#2a2d35);color:var(--text,#e6e6e6);width:32px;height:32px;border-radius:6px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center}
+.sym-modal-close:hover{background:rgba(255,255,255,.06)}
+.sym-modal-head{display:flex;gap:14px;align-items:center;margin-bottom:14px;padding-right:36px}
+.sym-modal-svg{width:54px;height:54px;color:var(--purple,#a78bfa);flex-shrink:0;display:flex;align-items:center;justify-content:center;background:rgba(167,139,250,.08);border-radius:8px;padding:8px}
+.sym-modal-svg svg{width:100%;height:100%}
+.sym-modal-title{font-family:var(--head);font-weight:800;font-size:18px;line-height:1.2}
+.sym-modal-sub{font-size:11px;color:var(--muted,#9ca3af);font-family:var(--mono);margin-top:4px;letter-spacing:.5px}
+.sym-modal-body{font-size:13px;line-height:1.5}
+.sym-modal-section{margin-bottom:14px}
+.sym-modal-h{font-family:var(--head);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--purple,#a78bfa);margin-bottom:6px}
+.sym-modal-section p{margin:0;color:var(--text,#e6e6e6)}
+.sym-modal-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;padding-top:14px;border-top:1px solid var(--border,#2a2d35)}
+.sym-modal-btn{flex:1;min-width:140px;padding:10px 14px;border-radius:6px;border:1px solid var(--border,#2a2d35);background:transparent;color:var(--text,#e6e6e6);font-size:12px;font-family:var(--head);font-weight:700;cursor:pointer;text-align:center;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:.15s}
+.sym-modal-btn:hover{border-color:var(--purple,#a78bfa);background:rgba(167,139,250,.08)}
+.sym-modal-btn.primary{background:var(--purple,#a78bfa);color:#000;border-color:var(--purple,#a78bfa)}
+.sym-modal-btn.primary:hover{opacity:.9}
 
 /* ── PRO GATE ── */
 .pro-gate{background:linear-gradient(135deg,rgba(245,197,24,.04),rgba(255,107,53,.04));border:1px solid rgba(245,197,24,.14);border-radius:8px;padding:22px 16px;text-align:center}

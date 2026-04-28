@@ -10221,6 +10221,168 @@ export type Database = {
           },
         ]
       }
+      tool_proficiency_attempts: {
+        Row: {
+          created_at: string
+          graded_at: string | null
+          id: string
+          mentor_id: string | null
+          mentor_notes: string | null
+          mentor_signoff_at: string | null
+          organization_id: string | null
+          recorded_measurements: Json
+          retest_due_at: string | null
+          score: number | null
+          status: string
+          submitted_at: string
+          test_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          graded_at?: string | null
+          id?: string
+          mentor_id?: string | null
+          mentor_notes?: string | null
+          mentor_signoff_at?: string | null
+          organization_id?: string | null
+          recorded_measurements?: Json
+          retest_due_at?: string | null
+          score?: number | null
+          status?: string
+          submitted_at?: string
+          test_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          graded_at?: string | null
+          id?: string
+          mentor_id?: string | null
+          mentor_notes?: string | null
+          mentor_signoff_at?: string | null
+          organization_id?: string | null
+          recorded_measurements?: Json
+          retest_due_at?: string | null
+          score?: number | null
+          status?: string
+          submitted_at?: string
+          test_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tool_proficiency_attempts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tool_proficiency_attempts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tool_proficiency_attempts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tool_proficiency_attempts_test_id_fkey"
+            columns: ["test_id"]
+            isOneToOne: false
+            referencedRelation: "tool_proficiency_tests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tool_proficiency_tests: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          instructions_md: string | null
+          is_canonical: boolean
+          measurements: Json
+          mentor_required: boolean
+          name: string
+          organization_id: string | null
+          passing_score: number
+          printable_template_md: string | null
+          retest_days: number
+          slug: string
+          tool_slug: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          instructions_md?: string | null
+          is_canonical?: boolean
+          measurements?: Json
+          mentor_required?: boolean
+          name: string
+          organization_id?: string | null
+          passing_score?: number
+          printable_template_md?: string | null
+          retest_days?: number
+          slug: string
+          tool_slug?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          instructions_md?: string | null
+          is_canonical?: boolean
+          measurements?: Json
+          mentor_required?: boolean
+          name?: string
+          organization_id?: string | null
+          passing_score?: number
+          printable_template_md?: string | null
+          retest_days?: number
+          slug?: string
+          tool_slug?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tool_proficiency_tests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tool_proficiency_tests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tool_proficiency_tests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       training_media: {
         Row: {
           alt_text: string | null
