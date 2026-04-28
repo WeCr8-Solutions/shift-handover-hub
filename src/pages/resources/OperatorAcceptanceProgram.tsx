@@ -43,6 +43,24 @@ export default function OperatorAcceptanceProgram() {
     if (!win?.oapSetView) return false;
 
     switch (target) {
+  const focusIframe = useCallback(() => {
+    const el = iframeRef.current;
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+    // Defer focus until smooth-scroll is underway so the address bar collapses on mobile
+    window.setTimeout(() => {
+      try { el.focus({ preventScroll: true }); } catch { /* noop */ }
+    }, 250);
+  }, []);
+
+  const runQuickStart = useCallback((target: OapQuickStart) => {
+    const win = iframeRef.current?.contentWindow as (Window & {
+      oapSetView?: (view: string, subView?: string) => void;
+    }) | null;
+
+    if (!win?.oapSetView) return false;
+
+    switch (target) {
       case "certify":
         win.oapSetView("standalone");
         return true;
@@ -55,18 +73,26 @@ export default function OperatorAcceptanceProgram() {
       case "operators":
         win.oapSetView("mentee", "list");
         return true;
+      case "mentors":
+        win.oapSetView("mentor", "list");
+        return true;
       default:
         return false;
     }
   }, []);
 
   const queueQuickStart = useCallback((target: OapQuickStart) => {
-    if (!runQuickStart(target)) {
+    const ok = runQuickStart(target);
+    // Always scroll to the iframe so the user can see what happened, even
+    // if it's still loading and we had to queue the call.
+    focusIframe();
+    if (!ok) {
       setPendingQuickStart(target);
+      toast.message(`Opening ${OAP_QUICKSTART_LABEL[target]}…`, {
+        description: "Loading the OAP workspace.",
+      });
     }
-  }, [runQuickStart]);
-
-  const syncAuth = useCallback(() => {
+  }, [runQuickStart, focusIframe]);
     const win = iframeRef.current?.contentWindow;
     if (!win) return;
     if (session && user) {
