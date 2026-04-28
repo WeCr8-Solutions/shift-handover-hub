@@ -127,7 +127,8 @@ export default function MeasuringTools() {
           </div>
         </section>
       </div>
-    </MarketingLayout>
+      <MarketingFooter />
+    </>
   );
 }
 
