@@ -5,10 +5,19 @@ import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { BookOpen, ChartColumn, ExternalLink, GraduationCap, Ruler, ShieldCheck, Sparkles, Wrench } from "lucide-react";
+import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGcaAccess } from "@/hooks/useGcaAccess";
 
 type GcaQuickStart = "lathe" | "mill" | "tests" | "metrology" | "progress";
+
+const GCA_QUICKSTART_LABEL: Record<GcaQuickStart, string> = {
+  lathe: "Lathe Track",
+  mill: "Mill Track",
+  tests: "Test Center",
+  metrology: "GD&T and Metrology",
+  progress: "My Progress",
+};
 
 export default function GCodeAcademy() {
   const barRef = useRef<HTMLDivElement>(null);
