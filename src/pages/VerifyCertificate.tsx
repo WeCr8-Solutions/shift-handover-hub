@@ -3,12 +3,13 @@ import { useParams, Link, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, ShieldAlert, ShieldX, ArrowRight, ArrowLeft, Loader2, Printer, ScrollText, LayoutGrid } from "lucide-react";
+import { ShieldCheck, ShieldAlert, ShieldX, ArrowRight, ArrowLeft, Loader2, Printer, ScrollText, LayoutGrid, Lock } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
 import { useCertificates } from "@/hooks/useCertificates";
 import { CertificateTemplate, type CertificateVariant } from "@/components/certificates/CertificateTemplate";
 import { CertificateViewer } from "@/components/certificates/CertificateViewer";
 import { CertificatePdfDownloadButton } from "@/components/certificates/CertificatePdfDownloadButton";
+import { BuyCertificateDialog } from "@/components/certificates/BuyCertificateDialog";
 import type { CertificateRecord } from "@/lib/certificates";
 
 /**
