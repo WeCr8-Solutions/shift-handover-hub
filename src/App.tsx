@@ -277,6 +277,8 @@ const App = () => (
                     <Route path="/resources/careers" element={<ManufacturingCareers />} />
                     <Route path="/resources/safety" element={<SafetyCompliance />} />
                     <Route path="/resources/quality" element={<QualityInspection />} />
+                    <Route path="/resources/measuring-tools" element={<MeasuringTools />} />
+                    <Route path="/oap/proficiency" element={<ToolProficiency />} />
                     <Route path="/resources/lean" element={<LeanManufacturing />} />
                     <Route path="/resources/5s" element={<FiveSMethodology />} />
                     <Route path="/resources/kanban" element={<KanbanSortingTechniques />} />
