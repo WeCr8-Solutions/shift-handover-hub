@@ -217,8 +217,12 @@ export default function OperatorAcceptanceProgram() {
               <Users className="w-3.5 h-3.5" />
               Active Operators
             </Button>
+            <Button size="sm" variant="outline" className="gap-2" onClick={() => queueQuickStart("mentors")}>
+              <UserCheck className="w-3.5 h-3.5" />
+              Mentors
+            </Button>
             <Button asChild size="sm" variant="outline" className="gap-2">
-              <Link to="/oap/certificates/verify">
+              <Link to="/verify">
                 <ShieldCheck className="w-3.5 h-3.5" />
                 Verify Certificate
               </Link>
