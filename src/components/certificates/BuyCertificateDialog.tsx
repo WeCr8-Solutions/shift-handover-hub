@@ -143,12 +143,20 @@ export function BuyCertificateDialog({
           </div>
 
           <ul className="text-xs text-muted-foreground space-y-1.5 pt-2 border-t border-border">
-            {[
-              "Unique cert ID (e.g. " + program + "-XXXXXX-2026)",
-              "Public verification at jobline.ai/verify/your-id",
-              "Print, share, attach to LinkedIn or résumé",
-              "Secure checkout via Stripe — no account required",
-            ].map((line) => (
+            {(isUpgrade
+              ? [
+                  "PDF download (Diploma + Digital variants) at any time",
+                  "Print directly from the verification page",
+                  "Same cert ID — your existing share links keep working",
+                  "Secure checkout via Stripe — no account required",
+                ]
+              : [
+                  "Unique cert ID (e.g. " + program + "-XXXXXX-2026)",
+                  "Public verification at jobline.ai/verify/your-id",
+                  "Print, share, attach to LinkedIn or résumé",
+                  "Secure checkout via Stripe — no account required",
+                ]
+            ).map((line) => (
               <li key={line} className="flex items-start gap-2">
                 <CheckCircle2 className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
                 {line}
