@@ -4,11 +4,20 @@ import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Building2, ClipboardCheck, ExternalLink, FolderKanban, ShieldCheck, Sparkles, Users, Video, Wrench } from "lucide-react";
+import { Building2, ClipboardCheck, ExternalLink, FolderKanban, ShieldCheck, Sparkles, UserCheck, Users, Video, Wrench } from "lucide-react";
+import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGcaAccess } from "@/hooks/useGcaAccess";
 
-type OapQuickStart = "certify" | "employer" | "programs" | "operators";
+type OapQuickStart = "certify" | "employer" | "programs" | "operators" | "mentors";
+
+const OAP_QUICKSTART_LABEL: Record<OapQuickStart, string> = {
+  certify: "Get Certified",
+  employer: "Employer Setup",
+  programs: "Role Programs",
+  operators: "Active Operators",
+  mentors: "Mentors",
+};
 
 /**
  * Operator Acceptance Program (OAP)
@@ -25,6 +34,15 @@ export default function OperatorAcceptanceProgram() {
   const [pendingQuickStart, setPendingQuickStart] = useState<OapQuickStart | null>(null);
   const { user, session, profile } = useAuth();
   const { gcaTier, hasProAccess, isDefinitelyFree } = useGcaAccess();
+
+  const focusIframe = useCallback(() => {
+    const el = iframeRef.current;
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+    window.setTimeout(() => {
+      try { el.focus({ preventScroll: true }); } catch { /* noop */ }
+    }, 250);
+  }, []);
 
   const runQuickStart = useCallback((target: OapQuickStart) => {
     const win = iframeRef.current?.contentWindow as (Window & {
@@ -46,16 +64,24 @@ export default function OperatorAcceptanceProgram() {
       case "operators":
         win.oapSetView("mentee", "list");
         return true;
+      case "mentors":
+        win.oapSetView("mentor", "list");
+        return true;
       default:
         return false;
     }
   }, []);
 
   const queueQuickStart = useCallback((target: OapQuickStart) => {
-    if (!runQuickStart(target)) {
+    const ok = runQuickStart(target);
+    focusIframe();
+    if (!ok) {
       setPendingQuickStart(target);
+      toast.message(`Opening ${OAP_QUICKSTART_LABEL[target]}…`, {
+        description: "Loading the OAP workspace.",
+      });
     }
-  }, [runQuickStart]);
+  }, [runQuickStart, focusIframe]);
 
   const syncAuth = useCallback(() => {
     const win = iframeRef.current?.contentWindow;
@@ -94,10 +120,10 @@ export default function OperatorAcceptanceProgram() {
     const compute = () => {
       const navH = navRef.current?.offsetHeight ?? 56;
       const barH = barRef.current?.offsetHeight ?? 44;
-      // Give the embedded OAP a tall workspace so its internal nav,
-      // quick-start tiles, and quiz player render without clipping. The
-      // outer page scrolls so mobile users can still reach all content.
-      const minH = 760;
+      // Match the visible viewport on mobile (still scrollable inside the iframe)
+      // and grow naturally on desktop. 480px floor keeps usable height on
+      // tiny viewports without forcing 760px on phones.
+      const minH = 480;
       const target = Math.max(minH, window.innerHeight - (navH + barH));
       setIframeHeight(`${target}px`);
     };
@@ -147,7 +173,7 @@ export default function OperatorAcceptanceProgram() {
         <div className="flex items-center gap-2 shrink-0">
           {isDefinitelyFree && (
             <Button asChild size="sm" className="h-7 text-xs px-3 gap-1">
-              <Link to="/pricing">
+              <Link to="/pricing?from=oap">
                 <Sparkles className="w-3 h-3" />
                 Unlock Pro
               </Link>
@@ -191,8 +217,12 @@ export default function OperatorAcceptanceProgram() {
               <Users className="w-3.5 h-3.5" />
               Active Operators
             </Button>
+            <Button size="sm" variant="outline" className="gap-2" onClick={() => queueQuickStart("mentors")}>
+              <UserCheck className="w-3.5 h-3.5" />
+              Mentors
+            </Button>
             <Button asChild size="sm" variant="outline" className="gap-2">
-              <Link to="/oap/certificates/verify">
+              <Link to="/verify">
                 <ShieldCheck className="w-3.5 h-3.5" />
                 Verify Certificate
               </Link>
@@ -205,11 +235,14 @@ export default function OperatorAcceptanceProgram() {
         <div className="grid gap-4 xl:grid-cols-[1.3fr,1fr]">
           <div className="overflow-hidden rounded-2xl border border-border bg-card">
             <div className="grid gap-0 md:grid-cols-[1.1fr,0.9fr]">
-              <img
-                src="/oap-og.jpg"
-                alt="Operator Acceptance Program onboarding preview"
-                className="h-44 w-full object-cover md:h-full"
-              />
+              <div className="bg-[hsl(222_47%_8%)] flex items-center justify-center">
+                <img
+                  src="/oap-og.jpg"
+                  alt="Operator Acceptance Program onboarding preview"
+                  loading="lazy"
+                  className="w-full h-auto object-contain aspect-[1200/630]"
+                />
+              </div>
               <div className="flex flex-col gap-3 p-5">
                 <Badge variant="outline" className="w-fit text-[10px] uppercase tracking-[0.18em]">Onboarding and Certification</Badge>
                 <div>
@@ -266,7 +299,7 @@ export default function OperatorAcceptanceProgram() {
                 Verify portable certificates, then move back into operator dashboards and qualification checkpoints without leaving JobLine.ai.
               </p>
               <Button asChild size="sm" variant="ghost" className="mt-3 h-8 px-0 text-xs">
-                <Link to="/oap/certificates/verify">Verify OAP Certificate</Link>
+                <Link to="/verify">Verify OAP Certificate</Link>
               </Button>
             </div>
           </div>
@@ -284,6 +317,7 @@ export default function OperatorAcceptanceProgram() {
           syncAuth();
           if (pendingQuickStart && runQuickStart(pendingQuickStart)) {
             setPendingQuickStart(null);
+            focusIframe();
           }
         }}
       />

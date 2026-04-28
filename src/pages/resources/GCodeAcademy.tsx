@@ -5,10 +5,19 @@ import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { BookOpen, ChartColumn, ExternalLink, GraduationCap, Ruler, ShieldCheck, Sparkles, Wrench } from "lucide-react";
+import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGcaAccess } from "@/hooks/useGcaAccess";
 
 type GcaQuickStart = "lathe" | "mill" | "tests" | "metrology" | "progress";
+
+const GCA_QUICKSTART_LABEL: Record<GcaQuickStart, string> = {
+  lathe: "Lathe Track",
+  mill: "Mill Track",
+  tests: "Test Center",
+  metrology: "GD&T and Metrology",
+  progress: "My Progress",
+};
 
 export default function GCodeAcademy() {
   const barRef = useRef<HTMLDivElement>(null);
@@ -18,6 +27,15 @@ export default function GCodeAcademy() {
   const [pendingQuickStart, setPendingQuickStart] = useState<GcaQuickStart | null>(null);
   const { user, session, profile } = useAuth();
   const { gcaTier, hasProAccess, isDefinitelyFree } = useGcaAccess();
+
+  const focusIframe = useCallback(() => {
+    const el = iframeRef.current;
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+    window.setTimeout(() => {
+      try { el.focus({ preventScroll: true }); } catch { /* noop */ }
+    }, 250);
+  }, []);
 
   const runQuickStart = useCallback((target: GcaQuickStart) => {
     const win = iframeRef.current?.contentWindow as (Window & {
@@ -39,8 +57,9 @@ export default function GCodeAcademy() {
         win.setTestCat?.("all");
         return true;
       case "metrology":
-        win.setView("test");
-        win.setTestCat?.("gdnt");
+        // Land on the GD&T learning view, not a filtered test list — users
+        // who click "GD&T and Metrology" expect to learn before testing.
+        win.setView("gdnt");
         return true;
       case "progress":
         win.setView("progress");
@@ -51,10 +70,15 @@ export default function GCodeAcademy() {
   }, []);
 
   const queueQuickStart = useCallback((target: GcaQuickStart) => {
-    if (!runQuickStart(target)) {
+    const ok = runQuickStart(target);
+    focusIframe();
+    if (!ok) {
       setPendingQuickStart(target);
+      toast.message(`Opening ${GCA_QUICKSTART_LABEL[target]}…`, {
+        description: "Loading the G-Code Academy workspace.",
+      });
     }
-  }, [runQuickStart]);
+  }, [runQuickStart, focusIframe]);
 
   // Send (or clear) the Supabase session inside the GCA iframe
   const syncAuthToGca = useCallback(() => {
@@ -95,17 +119,23 @@ export default function GCodeAcademy() {
     const compute = () => {
       const navH = navRef.current?.offsetHeight ?? 56;
       const barH = barRef.current?.offsetHeight ?? 44;
-      setIframeHeight(`calc(100dvh - ${navH + barH}px)`);
+      const minH = 480;
+      const target = Math.max(minH, window.innerHeight - (navH + barH));
+      setIframeHeight(`${target}px`);
     };
     compute();
     const ro = new ResizeObserver(compute);
     if (navRef.current) ro.observe(navRef.current);
     if (barRef.current) ro.observe(barRef.current);
-    return () => ro.disconnect();
+    window.addEventListener("resize", compute);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", compute);
+    };
   }, []);
 
   return (
-    <div className="flex flex-col overflow-hidden" style={{ height: "100dvh" }}>
+    <div className="flex flex-col min-h-screen">
       <SEOHead
         title="G-Code Academy | CNC Operator Training | JobLine.ai"
         description="Interactive G-Code Academy — learn CNC lathe and mill programming, GD&T, controller-specific syntax (Fanuc, Haas, Siemens, Heidenhain), and pass your CNC operator certification tests."
@@ -141,7 +171,7 @@ export default function GCodeAcademy() {
         <div className="flex items-center gap-2 shrink-0">
           {isDefinitelyFree && (
             <Button asChild size="sm" className="h-7 text-xs px-3 gap-1">
-              <Link to="/pricing">
+              <Link to="/pricing?from=gca">
                 <Sparkles className="w-3 h-3" />
                 Unlock Pro
               </Link>
@@ -190,7 +220,7 @@ export default function GCodeAcademy() {
               My Progress
             </Button>
             <Button asChild size="sm" variant="outline" className="gap-2">
-              <Link to="/gcode-academy/certificates/verify">
+              <Link to="/verify">
                 <ShieldCheck className="w-3.5 h-3.5" />
                 Verify Certificate
               </Link>
@@ -203,11 +233,14 @@ export default function GCodeAcademy() {
         <div className="grid gap-4 xl:grid-cols-[1.3fr,1fr]">
           <div className="overflow-hidden rounded-2xl border border-border bg-card">
             <div className="grid gap-0 md:grid-cols-[1.1fr,0.9fr]">
-              <img
-                src="/gcode-academy-og.jpg"
-                alt="G-Code Academy training preview"
-                className="h-44 w-full object-cover md:h-full"
-              />
+              <div className="bg-[hsl(222_47%_8%)] flex items-center justify-center">
+                <img
+                  src="/gcode-academy-og.jpg"
+                  alt="G-Code Academy training preview"
+                  loading="lazy"
+                  className="w-full h-auto object-contain aspect-[1200/630]"
+                />
+              </div>
               <div className="flex flex-col gap-3 p-5">
                 <Badge variant="outline" className="w-fit text-[10px] uppercase tracking-[0.18em]">Learning and Testing</Badge>
                 <div>
@@ -252,7 +285,7 @@ export default function GCodeAcademy() {
                 Give employers and operators a direct path to verify issued certificates without leaving the landing flow.
               </p>
               <Button asChild size="sm" variant="ghost" className="mt-3 h-8 px-0 text-xs">
-                <Link to="/gcode-academy/certificates/verify">Open Verify Page</Link>
+                <Link to="/verify">Open Verify Page</Link>
               </Button>
             </div>
             <div className="rounded-2xl border border-border bg-card p-4">
@@ -283,6 +316,7 @@ export default function GCodeAcademy() {
           syncAuthToGca();
           if (pendingQuickStart && runQuickStart(pendingQuickStart)) {
             setPendingQuickStart(null);
+            focusIframe();
           }
         }}
       />
