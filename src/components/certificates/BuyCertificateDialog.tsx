@@ -14,6 +14,12 @@ interface BuyCertificateDialogProps {
   program: CertificateProgram;
   /** Optional pre-filled program name (e.g. "Lathe Fundamentals"). */
   defaultProgramName?: string;
+  /** Optional pre-filled recipient name. Used for upgrade flow. */
+  defaultRecipientName?: string;
+  /** When provided, this is an "upgrade to printable" purchase for an
+   *  existing digital-only cert. The webhook will UPDATE that row instead
+   *  of issuing a new cert; success URL routes back to /verify/:certId. */
+  upgradeCertId?: string;
 }
 
 export function BuyCertificateDialog({
@@ -21,13 +27,16 @@ export function BuyCertificateDialog({
   onOpenChange,
   program,
   defaultProgramName,
+  defaultRecipientName,
+  upgradeCertId,
 }: BuyCertificateDialogProps) {
-  const [name, setName] = useState("");
+  const [name, setName] = useState(defaultRecipientName ?? "");
   const [email, setEmail] = useState("");
   const [organizationName, setOrganizationName] = useState("");
   const [programName, setProgramName] = useState(defaultProgramName ?? "");
   const [loading, setLoading] = useState(false);
 
+  const isUpgrade = !!upgradeCertId;
   const programLabel = program === "OAP" ? "Operator Acceptance Program" : "G-Code Academy";
 
   async function handleCheckout() {
@@ -44,6 +53,7 @@ export function BuyCertificateDialog({
           recipientEmail: email.trim(),
           programName: programName.trim() || undefined,
           organizationName: organizationName.trim() || null,
+          upgradeCertId: upgradeCertId ?? null,
         },
       });
       if (error) throw error;
