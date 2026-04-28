@@ -60,6 +60,9 @@ export interface CertificateRecord {
   signedByName?: string | null;
   signedByTitle?: string | null;
   signedBySignatureUrl?: string | null;
+  /** True when a Stripe checkout session paid for the certificate ($12 issuance).
+   *  Digital view is always free; PDF download + Print are gated on this. */
+  isPaid: boolean;
   items?: Array<{
     type:
       | "machine"
