@@ -16,13 +16,16 @@ import {
   type OapGradedQuestion,
 } from "@/hooks/useOapProgram";
 import { CheckCircle2, XCircle, Timer, Trophy } from "lucide-react";
+import { InspectionToolVideoCard } from "@/components/training/InspectionToolVideoCard";
 
 interface Props {
   quiz: OapQuiz;
   onComplete?: () => void;
+  /** When provided, embeds an inspection-tool video card above the questions. */
+  toolSlugs?: string[];
 }
 
-export function QuizPlayer({ quiz, onComplete }: Props) {
+export function QuizPlayer({ quiz, onComplete, toolSlugs }: Props) {
   const { user } = useAuth();
   const { data: questions = [], isLoading } = useOapQuizQuestions(quiz.id);
   const submit = useSubmitQuizAttempt();

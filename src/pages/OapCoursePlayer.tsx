@@ -170,7 +170,7 @@ export default function OapCoursePlayer() {
           {showQuiz && quizzes[0] && (
             <>
               <h1 className="text-2xl font-semibold">Quiz — {quizzes[0].title}</h1>
-              <QuizPlayer quiz={quizzes[0]} />
+              <QuizPlayer quiz={quizzes[0]} toolSlugs={toolSlugs} />
               <Button variant="outline" onClick={() => setShowQuiz(false)}>
                 <ArrowLeft className="w-4 h-4 mr-1" /> Back to lessons
               </Button>
