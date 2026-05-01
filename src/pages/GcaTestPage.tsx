@@ -11,7 +11,9 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { ArrowLeft, BookOpen, ChevronDown, Copy, Gauge, GraduationCap, Ruler } from "lucide-react";
+import { ArrowLeft, BookOpen, ChevronDown, Copy, GraduationCap } from "lucide-react";
+import { GcaToolVideos } from "@/components/gca/GcaToolVideos";
+import { getGcaToolSlugs } from "@/lib/gcaToolMap";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -134,25 +136,7 @@ export default function GcaTestPage() {
         )}
 
         {bank?.topic === "Measurement Tools" && (
-          <Card className="border-primary/30 bg-primary/5">
-            <CardContent className="py-3 flex flex-wrap items-center justify-between gap-3">
-              <div className="text-xs text-muted-foreground flex-1 min-w-[200px]">
-                Studying a measuring tool? Watch tutorials in the public library, then prove your skill in a mentor-graded proficiency test.
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <Button asChild size="sm" variant="outline" className="gap-1">
-                  <Link to="/resources/measuring-tools">
-                    <Ruler className="w-3.5 h-3.5" /> Tool Library
-                  </Link>
-                </Button>
-                <Button asChild size="sm" variant="outline" className="gap-1">
-                  <Link to="/oap/proficiency">
-                    <Gauge className="w-3.5 h-3.5" /> Proficiency Test
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <GcaToolVideos slugs={getGcaToolSlugs(bankSlug)} />
         )}
 
         {isDefinitelyFree && bank?.is_pro_only && (
