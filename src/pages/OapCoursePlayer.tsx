@@ -13,6 +13,8 @@ import { OapMarkdown } from "@/components/oap/OapMarkdown";
 import { QuizPlayer } from "@/components/oap/QuizPlayer";
 import { Header } from "@/components/Header";
 import { TrainingMedia } from "@/components/training/TrainingMedia";
+import { InspectionToolVideoCard } from "@/components/training/InspectionToolVideoCard";
+import { getOapCourseToolSlugs } from "@/lib/oapToolMap";
 import { BookOpen, ArrowLeft, ArrowRight, Clock, CheckCircle2 } from "lucide-react";
 
 export default function OapCoursePlayer() {
