@@ -1,74 +1,87 @@
-## Goals
+# Fix: GCA users can't view YouTube videos for measuring tools
 
-User report on `/resources/oap` (and the parallel `/resources/gcode-academy`):
-1. The OAP hero image still doesn't fit — it's a 1024×1024 square stretched into a wide slot, so "OAP" gets cropped.
-2. Quick-start buttons (Get Certified, Employer Setup, Role Programs, Active Operators, etc.) don't visibly take the user anywhere — when the iframe is far below the fold, the view changes inside it but the page doesn't scroll there.
-3. Some buttons map to the wrong OAP target.
-4. Other learn-flow blockers in OAP/GCA pages.
+## Problem
 
----
+When operators open a GCA Measurement Tools test (e.g. `/gca/test/tool-test-micrometer`), the page shows:
+- Bank header with topic badge
+- A small "Measurement Tools" callout that links **away** to `/resources/measuring-tools`
+- The `learning_content` markdown (text only)
+- The question list
 
-## Fixes
+There is **no embedded video player** anywhere in the GCA test flow. The YouTube tutorials seeded into `training_media` (linked to `inspection_tools` rows like `outside-micrometer`, `dial-caliper`, `dial-indicator`, etc.) are only reachable by navigating to the public Measuring Tools Library and expanding the matching tool row — most learners never realize that's where the videos live, and they lose their test progress when they leave the page.
 
-### 1. Hero image fitting (OAP + GCA)
+`GcaTestPlayer.tsx` and `GcaQuestionRow` never import `TrainingMedia` / `InspectionToolReference`, and there is no DB column linking a measurement bank or question to an `inspection_tools` row.
 
-- Replace `object-cover` with `object-contain` on a fixed dark backdrop so the square OAP art and the 1920×1080 GCA art both sit fully visible at every viewport.
-- Add explicit aspect ratios per breakpoint:
-  - Mobile: `aspect-[16/9]` capped at `max-h-56`.
-  - Desktop (`md+`): keep the side-by-side layout but use `aspect-[1.91/1]` so the image renders in social-card proportions and never overflows.
-- Re-render `public/oap-og.jpg` and `public/gcode-academy-og.jpg` at the canonical **1200×630** OG ratio using the existing `api/og-image.ts` template (Variant B / light, brand wordmark + program badge, no mascot crop). Keep the originals as `*-square.jpg` for in-app cards that still want square art.
+## Solution
 
-### 2. Quick-start buttons must actually take the user there
+Embed the existing YouTube tutorials inline inside the GCA test page for every Measurement Tools bank, and inside individual questions when they reference a specific tool — without sending the user away.
 
-Currently `runQuickStart` calls `oapSetView`/`setView` on the iframe but never scrolls. On a 360 px viewport the iframe starts ~700 px down, so the change happens off-screen.
+### 1. Bank ↔ inspection-tool mapping (no schema change)
 
-- After a successful `runQuickStart` (or after `pendingQuickStart` resolves on iframe load), call `iframeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })`.
-- If the iframe `contentWindow` has not loaded yet, queue the target (already done) **and** scroll immediately so the loading iframe is visible while the requested view materializes.
-- Add a brief focus ring + toast ("Opening Employer Setup…") so users get feedback even on slow networks.
+Add a small static map in `src/lib/gcaToolMap.ts` keyed by bank slug:
 
-### 3. Correct mismatched OAP targets
+```ts
+export const GCA_BANK_TOOL_SLUGS: Record<string, string[]> = {
+  "tool-test-micrometer":        ["outside-micrometer"],
+  "tool-test-vernier-caliper":   ["vernier-caliper", "dial-caliper", "digital-caliper"],
+  "tool-test-height-gage":       ["height-gage"], // will fall back gracefully if slug differs
+  "tool-test-dial-indicator":    ["dial-indicator", "test-indicator"],
+  "tool-test-depth-micrometer":  ["depth-micrometer", "depth-gauge"],
+  "tool-test-bore-gage":         ["dial-bore-gauge", "small-hole-gauge"],
+  "tool-test-telescoping-gage":  ["telescoping-gauge"],
+  "tool-test-gage-blocks":       ["gage-blocks"],
+};
+```
 
-Audit current map vs. `oapSetView` signatures in `public/oap/src/oap-engine.js`:
+(Static map keeps this purely a UI fix — no migration needed; existing seeded `training_media` rows are already YouTube-backed.)
 
-| Button | Current call | Correct call |
-|---|---|---|
-| Get Certified | `oapSetView("standalone")` | ✅ keep |
-| Employer Setup | `oapSetView("employer", "setup")` | ✅ keep |
-| Role Programs | `oapSetView("program", "list")` | ✅ keep |
-| Active Operators | `oapSetView("mentee", "list")` | ✅ keep |
-| (new) Mentors | — | add `oapSetView("mentor", "list")` for parity with the in-iframe nav |
+### 2. New component: `GcaToolVideos.tsx`
 
-GCA targets are correct, but `metrology` currently sets test category `gdnt` even though the in-iframe "GD&T" button uses `setView('gdnt')` directly. Switch to `setView('gdnt')` so the user lands on the GD&T learning tab, not a filtered test list (which is what surprised users who clicked "GD&T and Metrology" expecting to learn).
+`src/components/gca/GcaToolVideos.tsx` — given a list of inspection-tool slugs:
+- Resolves each slug → `inspection_tools` row via one Supabase query
+- Renders a `Card` titled "Watch the tool in action" containing one `<TrainingMedia entityType="inspection_tool" entityId={tool.id} />` per resolved tool, inside a `Tabs` (when >1 tool) or a single panel
+- Falls back to a "Tutorials coming soon" hint if none resolve
 
-### 4. Other learn-flow blockers
+`TrainingMedia` already handles YouTube embeds via `toYouTubeEmbed()` — so the videos play **inline** inside the GCA test page.
 
-- **Iframe minimum height** on OAP currently forces 760 px even on a 600 px-tall phone, pushing the bottom of the embedded UI below the fold. Switch to `Math.max(window.innerHeight - (navH + barH), 480)` so on mobile the iframe matches the visible viewport (still scrollable inside) and on desktop it grows naturally.
-- **Iframe focus loss**: when buttons run inside React, focus stays on the outer doc and Tab/Enter inside the iframe stops working. After scrolling, call `iframeRef.current?.focus()` so keyboard users can immediately operate the embedded UI.
-- **`/resources/oap` "Verify Certificate" button** currently routes to `/oap/certificates/verify` — confirm that route exists; if not, point it at `/verify` (the unified page in `VerifyCertificate.tsx`). Same audit for the GCA page button (`/gcode-academy/certificates/verify`).
-- **Mentors quick-start** is missing from the OAP bar even though it's a primary in-iframe nav item. Add it.
-- **Pricing CTA on free tier** ("Unlock Pro") should preserve return path: change the `Link to="/pricing"` to `to={"/pricing?from=oap"}` (and `from=gca`) so post-checkout we can bring users back.
+### 3. Wire it into the GCA test page
 
-### 5. Print/PDF-gating sanity check
+In `src/pages/GcaTestPage.tsx`:
+- Replace the existing "Tool Library / Proficiency Test" callout (lines 136–156) with `<GcaToolVideos slugs={GCA_BANK_TOOL_SLUGS[bankSlug] ?? []} />` rendered **above** the Learning Section when `bank.topic === "Measurement Tools"` and a mapping exists.
+- Keep the secondary "Open full library" + "Take proficiency test" buttons inside the new card's footer so the cross-links stay but no longer replace the video.
 
-While in the verify page area, confirm the previously shipped paywall still renders correctly when a cert is unpaid (no regression from this PR's iframe layout changes).
+### 4. Verify YouTube iframe permissions
 
----
+`TrainingMedia` already passes `allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"` and `allowFullScreen`. No CSP changes needed (other YouTube embeds in the same app render fine — `MediaOverlayDisplay` uses identical `youtube.com/embed/...` URLs).
 
-## Files to change
+### 5. Backfill missing tool media (data only)
 
-- `src/pages/resources/OperatorAcceptanceProgram.tsx` — hero image classes, scroll-into-view + focus on quick-start, mentors button, height calc, return-path on Unlock Pro, verify route check.
-- `src/pages/resources/GCodeAcademy.tsx` — same hero/scroll/focus fixes; `metrology` → `setView('gdnt')`; return-path on Unlock Pro.
-- `public/oap-og.jpg`, `public/gcode-academy-og.jpg` — re-render at 1200×630 via `api/og-image.ts` (script run, not committed code).
-- (If routes are wrong) `src/App.tsx` route alias for `/oap/certificates/verify` → `VerifyCertificate`.
+Two slugs that the map references show `media_count = 0`:
+- `outside-micrometer`
+- `height-gage` (verify exact canonical slug; if absent we'll insert it before linking)
 
-No DB migrations, no edge-function changes.
+Insert one canonical YouTube tutorial row per missing tool into `training_media` (`storage_bucket = 'external'`, `media_type = 'video'`, `is_canonical = true`, `organization_id = NULL`) so every Measurement Tools bank shows at least one video.
 
----
+### 6. Per-question tool tag (optional, low-risk)
+
+Allow individual questions to surface their own tool video when relevant. Add an **optional** `tool_slug` lookup: parse a leading marker `[tool:digital-caliper]` from the question prompt at render time inside `GcaQuestionRow` and, when present, render a small "Show tool video" disclosure below the choices that lazy-mounts `<TrainingMedia entityType="inspection_tool" entityId={...} />`. Zero schema change, zero impact on existing questions, opt-in per question via a markdown-style tag we can add later.
+
+## Files
+
+**New**
+- `src/lib/gcaToolMap.ts` — bank-slug → inspection-tool-slug map
+- `src/components/gca/GcaToolVideos.tsx` — inline video card
+
+**Edited**
+- `src/pages/GcaTestPage.tsx` — replace external-link callout with embedded video card
+- `src/components/gca/GcaTestPlayer.tsx` → `GcaQuestionRow` — optional `[tool:slug]` parsing + lazy `<TrainingMedia/>` disclosure
+
+**Migration** (data only)
+- `supabase/migrations/<ts>_gca_measurement_tool_videos.sql` — idempotent inserts into `training_media` for `outside-micrometer` and `height-gage` (verify slug first; insert tool row if missing)
 
 ## Verification
 
-After implementation I'll:
-1. View `/resources/oap` and `/resources/gcode-academy` at 360×640, 768×1024, and 1280×800 — confirm hero art is fully visible, no crop, buttons in tap range.
-2. Click each quick-start and confirm the page smooth-scrolls to the iframe and the iframe shows the requested view.
-3. Confirm OG meta tags render the new 1200×630 images on `/oap/app` and `/gcode-academy/app`.
-4. Confirm `/verify/:certId` print/PDF gating is unchanged for unpaid certs.
+1. Sign in, open `/gca/test/tool-test-micrometer` — the YouTube tutorial for the outside micrometer plays inline above the Learning Section.
+2. Open `/gca/test/tool-test-vernier-caliper` — tabbed videos for vernier / dial / digital calipers all play without leaving the page.
+3. Open a non-measurement bank (e.g. `/gca/test/cutting-tool-knowledge`) — no video card renders, behavior unchanged.
+4. Submit and grade a measurement test — scoring + review flow still works (no regression in `grade_gca_attempt` RPC path).
