@@ -39,6 +39,7 @@ export default function OapCoursePlayer() {
   const nextLesson = currentIndex >= 0 && currentIndex < lessons.length - 1 ? lessons[currentIndex + 1] : null;
 
   const [showQuiz, setShowQuiz] = useState(false);
+  const toolSlugs = getOapCourseToolSlugs(course?.slug);
 
   if (!course) {
     return (
@@ -142,6 +143,9 @@ export default function OapCoursePlayer() {
                 entityId={course.id}
                 emptyHint=""
               />
+              {toolSlugs.length > 0 && (
+                <InspectionToolVideoCard slugs={toolSlugs} />
+              )}
               <div className="flex justify-between gap-2">
                 <Button
                   variant="outline"
