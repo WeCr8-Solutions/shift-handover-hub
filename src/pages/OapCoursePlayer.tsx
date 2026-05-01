@@ -13,6 +13,8 @@ import { OapMarkdown } from "@/components/oap/OapMarkdown";
 import { QuizPlayer } from "@/components/oap/QuizPlayer";
 import { Header } from "@/components/Header";
 import { TrainingMedia } from "@/components/training/TrainingMedia";
+import { InspectionToolVideoCard } from "@/components/training/InspectionToolVideoCard";
+import { getOapCourseToolSlugs } from "@/lib/oapToolMap";
 import { BookOpen, ArrowLeft, ArrowRight, Clock, CheckCircle2 } from "lucide-react";
 
 export default function OapCoursePlayer() {
@@ -37,6 +39,7 @@ export default function OapCoursePlayer() {
   const nextLesson = currentIndex >= 0 && currentIndex < lessons.length - 1 ? lessons[currentIndex + 1] : null;
 
   const [showQuiz, setShowQuiz] = useState(false);
+  const toolSlugs = getOapCourseToolSlugs(course?.slug);
 
   if (!course) {
     return (
@@ -140,6 +143,9 @@ export default function OapCoursePlayer() {
                 entityId={course.id}
                 emptyHint=""
               />
+              {toolSlugs.length > 0 && (
+                <InspectionToolVideoCard slugs={toolSlugs} />
+              )}
               <div className="flex justify-between gap-2">
                 <Button
                   variant="outline"
@@ -164,7 +170,7 @@ export default function OapCoursePlayer() {
           {showQuiz && quizzes[0] && (
             <>
               <h1 className="text-2xl font-semibold">Quiz — {quizzes[0].title}</h1>
-              <QuizPlayer quiz={quizzes[0]} />
+              <QuizPlayer quiz={quizzes[0]} toolSlugs={toolSlugs} />
               <Button variant="outline" onClick={() => setShowQuiz(false)}>
                 <ArrowLeft className="w-4 h-4 mr-1" /> Back to lessons
               </Button>

@@ -1,87 +1,83 @@
-# Fix: GCA users can't view YouTube videos for measuring tools
+# Fix: OAP measurement learners can't view tool YouTube videos in lessons or quizzes
 
 ## Problem
 
-When operators open a GCA Measurement Tools test (e.g. `/gca/test/tool-test-micrometer`), the page shows:
-- Bank header with topic badge
-- A small "Measurement Tools" callout that links **away** to `/resources/measuring-tools`
-- The `learning_content` markdown (text only)
-- The question list
+The OAP "Measurement & Inspection" course (`/oap/learn/measurement-inspection/...`) and its final quiz both miss the same kind of inline tool tutorials we just embedded in GCA Measurement Tools tests:
 
-There is **no embedded video player** anywhere in the GCA test flow. The YouTube tutorials seeded into `training_media` (linked to `inspection_tools` rows like `outside-micrometer`, `dial-caliper`, `dial-indicator`, etc.) are only reachable by navigating to the public Measuring Tools Library and expanding the matching tool row — most learners never realize that's where the videos live, and they lose their test progress when they leave the page.
+- `OapCoursePlayer` only renders `TrainingMedia` rows attached directly to the lesson or course — none of the four canonical lessons currently has measurement-tool videos linked, so learners see text only.
+- `QuizPlayer` (`src/components/oap/QuizPlayer.tsx`) renders no media at all, so a learner about to take the *Measurement & Inspection — Final Quiz* has no way to re-watch how to read a micrometer / caliper / bore gage / height gage / dial indicator without leaving the page (and losing answers).
 
-`GcaTestPlayer.tsx` and `GcaQuestionRow` never import `TrainingMedia` / `InspectionToolReference`, and there is no DB column linking a measurement bank or question to an `inspection_tools` row.
+Same root cause as the GCA fix: there was no link between an OAP course/quiz and the `inspection_tools` rows whose YouTube tutorials already live in `training_media`.
 
 ## Solution
 
-Embed the existing YouTube tutorials inline inside the GCA test page for every Measurement Tools bank, and inside individual questions when they reference a specific tool — without sending the user away.
+Reuse the GCA tool-video card across OAP, then surface it in both the course player and the quiz player when the surface belongs to a measurement-related course.
 
-### 1. Bank ↔ inspection-tool mapping (no schema change)
+### 1. Refactor: extract a shared `InspectionToolVideoCard`
 
-Add a small static map in `src/lib/gcaToolMap.ts` keyed by bank slug:
+- Create `src/components/training/InspectionToolVideoCard.tsx` — generalized version of the existing `GcaToolVideos` (slugs prop, optional title/subtitle/footer-links/new-tab toggle).
+- Update `src/components/gca/GcaToolVideos.tsx` to thin-wrap the shared component (keeps the import path used by `GcaTestPage` working — no behavior change for GCA).
+
+### 2. New OAP map
+
+`src/lib/oapToolMap.ts` — keyed by `oap_courses.slug` (the only slug we have on hand inside the player without an extra fetch):
 
 ```ts
-export const GCA_BANK_TOOL_SLUGS: Record<string, string[]> = {
-  "tool-test-micrometer":        ["outside-micrometer"],
-  "tool-test-vernier-caliper":   ["vernier-caliper", "dial-caliper", "digital-caliper"],
-  "tool-test-height-gage":       ["height-gage"], // will fall back gracefully if slug differs
-  "tool-test-dial-indicator":    ["dial-indicator", "test-indicator"],
-  "tool-test-depth-micrometer":  ["depth-micrometer", "depth-gauge"],
-  "tool-test-bore-gage":         ["dial-bore-gauge", "small-hole-gauge"],
-  "tool-test-telescoping-gage":  ["telescoping-gauge"],
-  "tool-test-gage-blocks":       ["gage-blocks"],
+export const OAP_COURSE_TOOL_SLUGS: Record<string, string[]> = {
+  "measurement-inspection": [
+    "outside-micrometer",
+    "vernier-caliper",
+    "dial-caliper",
+    "digital-caliper",
+    "depth-micrometer",
+    "dial-indicator",
+    "test-indicator",
+    "dial-bore-gauge",
+    "telescoping-gauge",
+    "height-gauge-digital",
+    "height-gauge-vernier",
+  ],
 };
+
+export function getOapCourseToolSlugs(courseSlug: string | null | undefined) {
+  if (!courseSlug) return [];
+  return OAP_COURSE_TOOL_SLUGS[courseSlug] ?? [];
+}
 ```
 
-(Static map keeps this purely a UI fix — no migration needed; existing seeded `training_media` rows are already YouTube-backed.)
+### 3. Wire into `OapCoursePlayer`
 
-### 2. New component: `GcaToolVideos.tsx`
+In `src/pages/OapCoursePlayer.tsx`, render the card just below the lesson body when `getOapCourseToolSlugs(course.slug).length > 0`. This puts the videos on every lesson within the Measurement & Inspection course (overview, basic measurement, micrometers/bore gauges, GD&T) without authors needing to re-attach media per lesson.
 
-`src/components/gca/GcaToolVideos.tsx` — given a list of inspection-tool slugs:
-- Resolves each slug → `inspection_tools` row via one Supabase query
-- Renders a `Card` titled "Watch the tool in action" containing one `<TrainingMedia entityType="inspection_tool" entityId={tool.id} />` per resolved tool, inside a `Tabs` (when >1 tool) or a single panel
-- Falls back to a "Tutorials coming soon" hint if none resolve
+### 4. Wire into `QuizPlayer`
 
-`TrainingMedia` already handles YouTube embeds via `toYouTubeEmbed()` — so the videos play **inline** inside the GCA test page.
+`QuizPlayer` doesn't currently know its course slug. Two options, picking the smallest:
 
-### 3. Wire it into the GCA test page
+- Add an optional `toolSlugs?: string[]` prop and let the parent (`OapCoursePlayer`) pass `getOapCourseToolSlugs(course.slug)`. Render the card above the questions when non-empty, with `openLinksInNewTab=true` so the learner doesn't lose in-flight answers.
 
-In `src/pages/GcaTestPage.tsx`:
-- Replace the existing "Tool Library / Proficiency Test" callout (lines 136–156) with `<GcaToolVideos slugs={GCA_BANK_TOOL_SLUGS[bankSlug] ?? []} />` rendered **above** the Learning Section when `bank.topic === "Measurement Tools"` and a mapping exists.
-- Keep the secondary "Open full library" + "Take proficiency test" buttons inside the new card's footer so the cross-links stay but no longer replace the video.
+This keeps `QuizPlayer` decoupled from any course-specific logic.
 
-### 4. Verify YouTube iframe permissions
+### 5. (Optional, no new deps) per-question override
 
-`TrainingMedia` already passes `allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"` and `allowFullScreen`. No CSP changes needed (other YouTube embeds in the same app render fine — `MediaOverlayDisplay` uses identical `youtube.com/embed/...` URLs).
-
-### 5. Backfill missing tool media (data only)
-
-Two slugs that the map references show `media_count = 0`:
-- `outside-micrometer`
-- `height-gage` (verify exact canonical slug; if absent we'll insert it before linking)
-
-Insert one canonical YouTube tutorial row per missing tool into `training_media` (`storage_bucket = 'external'`, `media_type = 'video'`, `is_canonical = true`, `organization_id = NULL`) so every Measurement Tools bank shows at least one video.
-
-### 6. Per-question tool tag (optional, low-risk)
-
-Allow individual questions to surface their own tool video when relevant. Add an **optional** `tool_slug` lookup: parse a leading marker `[tool:digital-caliper]` from the question prompt at render time inside `GcaQuestionRow` and, when present, render a small "Show tool video" disclosure below the choices that lazy-mounts `<TrainingMedia entityType="inspection_tool" entityId={...} />`. Zero schema change, zero impact on existing questions, opt-in per question via a markdown-style tag we can add later.
+Same opt-in pattern as planned for GCA: parse a leading `[tool:slug]` marker out of the OAP question prompt at render time and lazy-mount a small `<TrainingMedia entityType="inspection_tool" .../>` disclosure under that question. Zero schema change, opt-in per question. Skip if not needed for this round.
 
 ## Files
 
 **New**
-- `src/lib/gcaToolMap.ts` — bank-slug → inspection-tool-slug map
-- `src/components/gca/GcaToolVideos.tsx` — inline video card
+- `src/components/training/InspectionToolVideoCard.tsx` — shared embedded video card
+- `src/lib/oapToolMap.ts` — course-slug → inspection-tool-slug map
 
 **Edited**
-- `src/pages/GcaTestPage.tsx` — replace external-link callout with embedded video card
-- `src/components/gca/GcaTestPlayer.tsx` → `GcaQuestionRow` — optional `[tool:slug]` parsing + lazy `<TrainingMedia/>` disclosure
+- `src/components/gca/GcaToolVideos.tsx` — re-export shared card (preserve API)
+- `src/pages/OapCoursePlayer.tsx` — render card under each measurement lesson and pass `toolSlugs` into `QuizPlayer`
+- `src/components/oap/QuizPlayer.tsx` — accept `toolSlugs?: string[]` prop, render card above questions when present
 
-**Migration** (data only)
-- `supabase/migrations/<ts>_gca_measurement_tool_videos.sql` — idempotent inserts into `training_media` for `outside-micrometer` and `height-gage` (verify slug first; insert tool row if missing)
+No DB migration needed — the YouTube rows for the relevant inspection tools are already in `training_media` (some backfilled in the prior GCA pass).
 
 ## Verification
 
-1. Sign in, open `/gca/test/tool-test-micrometer` — the YouTube tutorial for the outside micrometer plays inline above the Learning Section.
-2. Open `/gca/test/tool-test-vernier-caliper` — tabbed videos for vernier / dial / digital calipers all play without leaving the page.
-3. Open a non-measurement bank (e.g. `/gca/test/cutting-tool-knowledge`) — no video card renders, behavior unchanged.
-4. Submit and grade a measurement test — scoring + review flow still works (no regression in `grade_gca_attempt` RPC path).
+1. `/oap/learn/measurement-inspection/basic-measurement-tape-rule-caliper` — tabbed YouTube tutorials for vernier/dial/digital calipers play inline below the lesson body.
+2. `/oap/learn/measurement-inspection/micrometers-and-bore-gauges` — same card appears (course-level scope).
+3. Open the course's final quiz — the tool video card sits at the top of the quiz with footer links opening in new tabs; submitting answers still works (no regression in `submit-quiz-attempt` RPC path).
+4. Open a non-measurement course (e.g. `/oap/learn/safety-ehs/...`) — no card renders, behavior unchanged.
+5. GCA Measurement Tools tests still embed videos exactly as before (refactor is a no-op for that surface).
