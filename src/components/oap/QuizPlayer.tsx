@@ -122,6 +122,14 @@ export function QuizPlayer({ quiz, onComplete, toolSlugs }: Props) {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
+        {toolSlugs && toolSlugs.length > 0 && (
+          <InspectionToolVideoCard
+            slugs={toolSlugs}
+            title="Need a refresher? Watch the tool"
+            subtitle="Tutorials open here so you don't lose answers in progress."
+            openLinksInNewTab
+          />
+        )}
         {questions.map((q, idx) => (
           <QuestionRow
             key={q.id}
