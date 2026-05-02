@@ -3031,6 +3031,51 @@ export type Database = {
           },
         ]
       }
+      gca_question_repair_log: {
+        Row: {
+          bank_id: string | null
+          choices_after: Json | null
+          choices_before: Json | null
+          correct_answers_after: Json | null
+          correct_answers_before: Json | null
+          id: string
+          notes: string | null
+          prompt: string | null
+          question_id: string
+          question_type_before: string | null
+          repaired_at: string
+          unresolved: boolean
+        }
+        Insert: {
+          bank_id?: string | null
+          choices_after?: Json | null
+          choices_before?: Json | null
+          correct_answers_after?: Json | null
+          correct_answers_before?: Json | null
+          id?: string
+          notes?: string | null
+          prompt?: string | null
+          question_id: string
+          question_type_before?: string | null
+          repaired_at?: string
+          unresolved?: boolean
+        }
+        Update: {
+          bank_id?: string | null
+          choices_after?: Json | null
+          choices_before?: Json | null
+          correct_answers_after?: Json | null
+          correct_answers_before?: Json | null
+          id?: string
+          notes?: string | null
+          prompt?: string | null
+          question_id?: string
+          question_type_before?: string | null
+          repaired_at?: string
+          unresolved?: boolean
+        }
+        Relationships: []
+      }
       gca_questions: {
         Row: {
           bank_id: string
@@ -5489,6 +5534,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      oap_question_repair_log: {
+        Row: {
+          choices_after: Json | null
+          choices_before: Json | null
+          correct_answers_after: Json | null
+          correct_answers_before: Json | null
+          id: string
+          notes: string | null
+          prompt: string | null
+          question_id: string
+          question_type_before: string | null
+          quiz_id: string | null
+          repaired_at: string
+          unresolved: boolean
+        }
+        Insert: {
+          choices_after?: Json | null
+          choices_before?: Json | null
+          correct_answers_after?: Json | null
+          correct_answers_before?: Json | null
+          id?: string
+          notes?: string | null
+          prompt?: string | null
+          question_id: string
+          question_type_before?: string | null
+          quiz_id?: string | null
+          repaired_at?: string
+          unresolved?: boolean
+        }
+        Update: {
+          choices_after?: Json | null
+          choices_before?: Json | null
+          correct_answers_after?: Json | null
+          correct_answers_before?: Json | null
+          id?: string
+          notes?: string | null
+          prompt?: string | null
+          question_id?: string
+          question_type_before?: string | null
+          quiz_id?: string | null
+          repaired_at?: string
+          unresolved?: boolean
+        }
+        Relationships: []
       }
       oap_quiz_attempts: {
         Row: {
