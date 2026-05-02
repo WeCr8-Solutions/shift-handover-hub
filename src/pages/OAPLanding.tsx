@@ -26,6 +26,7 @@ import {
 import { CertificatePreview } from "@/components/certificates/CertificatePreview";
 import { BuyCertificateDialog } from "@/components/certificates/BuyCertificateDialog";
 import { useState } from "react";
+import { PresetProfessionsShowcase } from "@/components/learning/PresetProfessionsShowcase";
 
 const sevenSections = [
   { icon: ShieldCheck, title: "Safety & PPE", desc: "Lockout/tagout, machine guarding, PPE protocol, emergency stops, and shop-floor hazards." },
@@ -265,6 +266,9 @@ export default function OAPLanding() {
           </div>
         </div>
       </section>
+
+      {/* Preset profession quick-start */}
+      <PresetProfessionsShowcase />
 
       {/* Three audiences */}
       <section className="py-16 md:py-24 border-b border-border">
