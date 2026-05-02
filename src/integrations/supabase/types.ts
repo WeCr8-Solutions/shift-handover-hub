@@ -12259,6 +12259,14 @@ export type Database = {
         }
         Returns: Json
       }
+      has_passed_gca_bank: {
+        Args: { _bank_id: string; _user_id: string }
+        Returns: boolean
+      }
+      has_passed_oap_role_program: {
+        Args: { _role_program_id: string; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
