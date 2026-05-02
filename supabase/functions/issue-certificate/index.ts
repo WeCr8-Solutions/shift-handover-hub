@@ -182,34 +182,67 @@ serve(async (req) => {
       .maybeSingle();
     const recipientUsername = (recipientProfile as any)?.public_username ?? null;
 
-    // Resolve signer. For OAP issued by an org, the org's designated mentor signs.
-    // jobline.ai certifier path is intentionally NOT implemented yet (no testing stations).
+    // ── Mentor sign-off gate ──
+    // Every real GCA/OAP cert MUST be signed by an approved certifying mentor:
+    //   • Self-pay (no organizationId)  → approved platform mentor for `program`.
+    //   • Org-issued (paid employer)   → approved org mentor for `program` in
+    //     that org. The `can_certify` SQL function also enforces that the org
+    //     is on a paid subscription tier.
+    // Platform admins can bypass (legacy import / grandfather flow).
     let signedByUserId: string | null = null;
     let signedByName: string | null = null;
     let signedByTitle: string | null = null;
-    const signedBySignatureUrl: string | null = null; // Upload UI deferred — column reserved.
+    let signedBySignatureUrl: string | null = null;
 
-    if (body.program === "OAP" && body.organizationId) {
-      const { data: org } = await supabaseAdmin
-        .from("organizations")
-        .select("designated_oap_mentor_user_id, name")
-        .eq("id", body.organizationId)
-        .maybeSingle();
-      const mentorId = (org as any)?.designated_oap_mentor_user_id;
-      if (!mentorId) {
+    const mentorUserId = (body as any).mentorUserId as string | undefined;
+
+    if (!isPlatformAdmin) {
+      if (!mentorUserId) {
         throw new Error(
-          "This organization has no designated OAP mentor set. An admin must assign one in Organization Settings before issuing OAP certificates."
+          "A certifying mentor is required. Self-pay learners pick a JobLine.ai-approved mentor; employer issuance picks an approved mentor from the organization.",
         );
       }
-      const { data: mentor } = await supabaseAdmin
+      const { data: canCertify, error: canErr } = await supabaseAdmin.rpc("can_certify", {
+        _user_id: mentorUserId,
+        _org_id: body.organizationId ?? null,
+        _program: body.program,
+      });
+      if (canErr) throw new Error(`Mentor authorization check failed: ${canErr.message}`);
+      if (!canCertify) {
+        throw new Error(
+          body.organizationId
+            ? "Selected mentor is not an approved certifying mentor for this organization, or the organization is not on a paid plan."
+            : "Selected mentor is not a JobLine.ai-approved platform mentor for this program.",
+        );
+      }
+    }
+
+    if (mentorUserId) {
+      const { data: mentorRow } = await supabaseAdmin
+        .from("certifying_mentors")
+        .select("user_name, title, signature_url, scope")
+        .eq("user_id", mentorUserId)
+        .eq("approval_status", "approved")
+        .eq("is_active", true)
+        .maybeSingle();
+      const { data: mentorProfile } = await supabaseAdmin
         .from("profiles")
         .select("display_name")
-        .eq("user_id", mentorId)
+        .eq("user_id", mentorUserId)
         .maybeSingle();
-      signedByUserId = mentorId;
-      signedByName = (mentor as any)?.display_name ?? "Designated OAP Mentor";
-      signedByTitle = `Designated OAP Mentor, ${(org as any)?.name ?? "Organization"}`;
+      signedByUserId = mentorUserId;
+      signedByName =
+        (mentorRow as any)?.user_name ??
+        (mentorProfile as any)?.display_name ??
+        "Certifying Mentor";
+      signedByTitle =
+        (mentorRow as any)?.title ??
+        ((mentorRow as any)?.scope === "platform"
+          ? "JobLine.ai Certifying Mentor"
+          : `Certifying Mentor, ${body.program}`);
+      signedBySignatureUrl = (mentorRow as any)?.signature_url ?? null;
     }
+
 
     const table = body.program === "OAP" ? "oap_certificates" : "gca_certificates";
     const insertPayload: Record<string, unknown> = {
