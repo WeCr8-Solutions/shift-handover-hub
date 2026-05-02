@@ -189,6 +189,7 @@ export default function GcaTestPage() {
             bankSlug={bankSlug}
             hasProAccess={hasProAccess}
             onUpgrade={handleUpgrade}
+            mode="graded"
           />
         )}
       </main>
