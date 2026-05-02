@@ -63,7 +63,7 @@ export function useGcaQuestions(bankId: string | null) {
         .eq("bank_id", bankId)
         .order("sort_order", { ascending: true });
       if (error) throw error;
-      return (data ?? []) as GcaQuestion[];
+      return ((data ?? []) as unknown) as GcaQuestion[];
     },
     enabled: !!bankId,
   });

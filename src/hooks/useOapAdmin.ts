@@ -125,7 +125,7 @@ export function useOapQuizQuestions(quizId: string | null) {
         .eq("quiz_id", quizId)
         .order("sort_order", { ascending: true });
       if (error) throw error;
-      return (data ?? []) as OapQuizQuestion[];
+      return ((data ?? []) as unknown) as OapQuizQuestion[];
     },
     enabled: !!quizId,
   });
