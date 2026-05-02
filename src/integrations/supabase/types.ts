@@ -670,6 +670,85 @@ export type Database = {
           },
         ]
       }
+      certifying_mentors: {
+        Row: {
+          approval_status: string
+          approved_at: string | null
+          approved_by: string | null
+          credentials_url: string | null
+          designated_at: string
+          designated_by: string
+          id: string
+          is_active: boolean
+          notes: string | null
+          organization_id: string | null
+          programs: string[]
+          scope: string
+          signature_url: string | null
+          title: string | null
+          user_id: string
+          user_name: string | null
+        }
+        Insert: {
+          approval_status?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          credentials_url?: string | null
+          designated_at?: string
+          designated_by: string
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          organization_id?: string | null
+          programs?: string[]
+          scope?: string
+          signature_url?: string | null
+          title?: string | null
+          user_id: string
+          user_name?: string | null
+        }
+        Update: {
+          approval_status?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          credentials_url?: string | null
+          designated_at?: string
+          designated_by?: string
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          organization_id?: string | null
+          programs?: string[]
+          scope?: string
+          signature_url?: string | null
+          title?: string | null
+          user_id?: string
+          user_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oap_designated_mentors_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oap_designated_mentors_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oap_designated_mentors_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       changelogs: {
         Row: {
           author_id: string | null
@@ -5220,61 +5299,6 @@ export type Database = {
             columns: ["cover_media_id"]
             isOneToOne: false
             referencedRelation: "training_media"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      oap_designated_mentors: {
-        Row: {
-          designated_at: string
-          designated_by: string
-          id: string
-          is_active: boolean
-          notes: string | null
-          organization_id: string
-          user_id: string
-          user_name: string | null
-        }
-        Insert: {
-          designated_at?: string
-          designated_by: string
-          id?: string
-          is_active?: boolean
-          notes?: string | null
-          organization_id: string
-          user_id: string
-          user_name?: string | null
-        }
-        Update: {
-          designated_at?: string
-          designated_by?: string
-          id?: string
-          is_active?: boolean
-          notes?: string | null
-          organization_id?: string
-          user_id?: string
-          user_name?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "oap_designated_mentors_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "oap_designated_mentors_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations_member_view"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "oap_designated_mentors_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations_safe"
             referencedColumns: ["id"]
           },
         ]
@@ -11419,6 +11443,64 @@ export type Database = {
         }
         Relationships: []
       }
+      certifying_mentors_public: {
+        Row: {
+          approval_status: string | null
+          approved_at: string | null
+          id: string | null
+          organization_id: string | null
+          programs: string[] | null
+          scope: string | null
+          title: string | null
+          user_id: string | null
+          user_name: string | null
+        }
+        Insert: {
+          approval_status?: string | null
+          approved_at?: string | null
+          id?: string | null
+          organization_id?: string | null
+          programs?: string[] | null
+          scope?: string | null
+          title?: string | null
+          user_id?: string | null
+          user_name?: string | null
+        }
+        Update: {
+          approval_status?: string | null
+          approved_at?: string | null
+          id?: string | null
+          organization_id?: string | null
+          programs?: string[] | null
+          scope?: string | null
+          title?: string | null
+          user_id?: string | null
+          user_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oap_designated_mentors_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oap_designated_mentors_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oap_designated_mentors_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       erp_connections_safe: {
         Row: {
           api_base_url: string | null
@@ -12055,6 +12137,10 @@ export type Database = {
       }
       can_approve_ncr: {
         Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
+      can_certify: {
+        Args: { _org_id: string; _program: string; _user_id: string }
         Returns: boolean
       }
       can_insert_station: {

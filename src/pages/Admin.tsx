@@ -42,6 +42,7 @@ const PlatformOverviewTab = lazy(() => import("@/components/admin/PlatformOvervi
 const BlogAdmin = lazy(() => import("@/components/admin/BlogAdmin").then(m => ({ default: m.BlogAdmin })));
 const PromotionsHub = lazy(() => import("@/components/admin/PromotionsHub").then(m => ({ default: m.PromotionsHub })));
 const TrainingLibraryPanel = lazy(() => import("@/components/admin/training-library/TrainingLibraryPanel").then(m => ({ default: m.TrainingLibraryPanel })));
+const PlatformMentorRegistry = lazy(() => import("@/components/admin/mentors/PlatformMentorRegistry").then(m => ({ default: m.PlatformMentorRegistry })));
 
 const AdminTabFallback = () => <div className="p-6"><Skeleton className="h-64 w-full rounded-lg" /></div>;
 
@@ -291,6 +292,12 @@ export default function Admin() {
                   <Library className="w-4 h-4" />
                   Library
                 </TabsTrigger>
+                {hasPlatformAccess && (
+                  <TabsTrigger value="cert-mentors" className="gap-2">
+                    <ShieldCheck className="w-4 h-4" />
+                    Mentors
+                  </TabsTrigger>
+                )}
               </div>
               {hasPlatformAccess && (
                 <>
@@ -418,6 +425,14 @@ export default function Admin() {
           <TabsContent value="training-library">
             <Suspense fallback={<AdminTabFallback />}><TrainingLibraryPanel access={access} /></Suspense>
           </TabsContent>
+
+          {hasPlatformAccess && (
+            <TabsContent value="cert-mentors">
+              <Suspense fallback={<AdminTabFallback />}>
+                <PlatformMentorRegistry isPlatformAdmin={access.isPlatformAdmin} />
+              </Suspense>
+            </TabsContent>
+          )}
 
           {hasPlatformAccess && (
             <>

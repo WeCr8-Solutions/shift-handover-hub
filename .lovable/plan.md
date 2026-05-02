@@ -1,60 +1,130 @@
 ## Goal
 
-Tighten `public/sitemap.xml` to (a) **remove shift-handoff marketing pages** and (b) **boost talent surface visibility** for Google/Bing/social crawlers, plus add a build-time generator that appends every public talent profile so they get crawled and indexed individually.
+Make every real GCA/OAP certificate require a **mentor sign-off**, where the mentor must be either:
+1. **JobLine.ai-approved** (vetted by a platform admin) — used when the recipient is a self-paying individual learner, or
+2. An **org-designated mentor in a paid employer org** — vetted/approved by an Org Admin within an employer that holds an active paid JobLine.ai subscription.
 
-## Changes
+Self-skilling (adding machines/proficiencies to a talent profile) stays free and unmentored — but those badges are clearly marked "self-attested" and cannot become real certificates without going through the gate above.
 
-### 1. Remove shift-handoff URLs from sitemap
+## What changes
 
-This section was wrong, and we want to keep that. What I meant was the internal link structures of the shift handoff platform.
+### 1. Mentor approval data model (DB migration)
 
-### 2. Strengthen Talent section
+Extend the existing `oap_designated_mentors` table (currently org-only, no platform layer) into a unified mentor registry that covers both GCA and OAP and supports a JobLine-platform tier:
 
-Reorganize the Talent block in `public/sitemap.xml` into one contiguous, high-priority section near the top (right after Core Marketing, before Industries):
+```sql
+ALTER TABLE public.oap_designated_mentors
+  RENAME TO certifying_mentors;
 
-```text
-/talent                       priority 1.0  changefreq daily
-/talent/browse                priority 0.95 changefreq daily
-/talent/search                priority 0.8  changefreq weekly
-/talent/resume-builder        priority 0.7  changefreq monthly
+ALTER TABLE public.certifying_mentors
+  ALTER COLUMN organization_id DROP NOT NULL,           -- NULL = JobLine platform mentor
+  ADD COLUMN scope text NOT NULL DEFAULT 'org'          -- 'platform' | 'org'
+    CHECK (scope IN ('platform','org')),
+  ADD COLUMN programs text[] NOT NULL DEFAULT ARRAY['OAP'],  -- subset of {'OAP','GCA'}
+  ADD COLUMN approval_status text NOT NULL DEFAULT 'pending' -- pending | approved | revoked
+    CHECK (approval_status IN ('pending','approved','revoked')),
+  ADD COLUMN approved_by uuid,                          -- platform admin user_id
+  ADD COLUMN approved_at timestamptz,
+  ADD COLUMN credentials_url text,                      -- résumé/cert proof upload
+  ADD COLUMN signature_url text;                        -- saved e-signature image
+
+-- Platform mentors: org_id NULL, scope='platform'.
+-- Trigger enforces: scope='platform' iff org_id IS NULL.
+-- Trigger enforces: scope='platform' rows can only be inserted/approved by has_role(uid,'admin').
 ```
 
-Add `<image:image>` entries (talent OG image) and `<xhtml:link rel="alternate" hreflang="en">` on `/talent` and `/talent/browse` so Google Search, Bing, LinkedInBot, and Google-for-Jobs treat them as primary destinations.
+Replace the existing `can_act_as_oap_mentor()` helper with a new `can_certify(_user_id, _org_id, _program)` security-definer function:
 
-### 3. Generate per-profile sitemap (`sitemap-talent.xml`)
+```sql
+-- Returns TRUE only if:
+--  • user is platform admin, OR
+--  • user is an APPROVED platform-scope mentor for _program, OR
+--  • user is an APPROVED org-scope mentor in _org_id for _program
+--    AND that org has an active paid subscription (subscription_tier != 'free').
+-- Org admins/supervisors are NO LONGER auto-mentors — they must be explicitly
+-- designated and approved (matches the user's intent).
+```
 
-Add a new build script `scripts/generate-talent-sitemap.mjs` that:
+Keep a thin compat shim `can_act_as_oap_mentor()` that calls the new function with `_program='OAP'` so existing callers still work.
 
-- Calls Supabase RPC `list_public_operator_profiles(limit:=5000)` using the existing anon key from `.env`.
-- Writes `public/sitemap-talent.xml` with one `<url>` per public profile:
-  - `loc`: `https://jobline.ai/talent/<username>`
-  - `lastmod`: profile `updated_at`
-  - `changefreq`: weekly
-  - `priority`: 0.7
-- Wire it into `package.json` `prebuild` (runs before `vite build`, after `prerender`). Script is fail-safe: if Supabase is unreachable, it logs a warning and exits 0 so builds never break.
+### 2. Tighten `issue-certificate` edge function
 
-### 4. Sitemap index
+Currently the function accepts a cert request from any platform admin or org admin/supervisor and silently uses the org's `designated_oap_mentor_user_id` as signer (only for OAP, only if set). Change it to:
 
-Convert `public/sitemap.xml` to also be referenced via a new `public/sitemap-index.xml` that lists both `sitemap.xml` and `sitemap-talent.xml`. Update `public/robots.txt` line `Sitemap: https://jobline.ai/sitemap.xml` → `Sitemap: https://jobline.ai/sitemap-index.xml` (and keep the original line as a fallback for crawlers that don't follow indexes).
+- **Require an explicit `mentorUserId` in the request body** for both GCA and OAP.
+- Call `can_certify(mentorUserId, body.organizationId, body.program)` via RPC. Reject with a clear error if it returns false.
+- For GCA self-pay (no `organizationId`): require the mentor to be an **approved platform-scope mentor** for `'GCA'`.
+- For org-issued (paid employer): require the mentor to be an **approved org-scope mentor** for that org/program. Reject if the org's subscription is `'free'` (covers the user's "only paid employers can mint real certs" rule).
+- Stamp `signed_by_user_id`, `signed_by_name`, `signed_by_title`, `signed_by_signature_url` from the resolved mentor's `certifying_mentors` row.
+- Keep the existing `has_passed_*` gates — nothing weakens.
 
-### 5. Crawler hints for talent
+The Stripe webhook path (paid self-issue at $12) needs a mentor selected at checkout — see step 4.
 
-- Add `<link rel="canonical">` + JSON-LD `Person` schema confirmation on `/talent/:username` (verify `PublicTalentProfile.tsx` already emits it; add if missing).
-- Add `<meta name="googlebot" content="index,follow,max-image-preview:large">` to `TalentLanding.tsx`, `TalentBrowse.tsx`, and `PublicTalentProfile.tsx` via `SEOHead` props — this enables rich profile cards in Google results.
-- Update `public/robots.txt` to explicitly `Allow: /talent` and `Allow: /talent/` for all major bots (Googlebot, Bingbot, LinkedInBot, Twitterbot, facebookexternalhit) — currently they are only allowed via the catch-all.
+### 3. Admin dashboard UI — Platform Mentor Registry
 
-### 6. Out of scope
+New tab in `src/pages/Admin.tsx` (platform-admin-only, sits next to "Training → Library"):
 
-- No changes to talent privacy: only profiles where `profile_visibility = 'public'` are returned by the RPC, so private/employer-only profiles stay out of the sitemap automatically.
-- No changes to ITAR/auth-gated routes.
+```
+Training
+  ├─ Library          (existing)
+  └─ Certifying Mentors  (new — platform admin only)
+```
+
+New component `src/components/admin/mentors/PlatformMentorRegistry.tsx`:
+- Table of all `certifying_mentors` rows (both platform and org), filterable by status / scope / program.
+- Pending-approval queue at the top: review credentials_url, signature_url, then Approve / Reject.
+- "Add platform mentor" form: pick a JobLine user (search by email), set programs, upload credentials + signature, approve in one shot.
+- Revoke button on any row (sets `approval_status='revoked'`, preserves audit trail).
+- Per-org breakdown: shows how many approved mentors each paid employer has.
+
+### 4. Org admin UI — Designate Mentor (refactor existing panel)
+
+Update `src/components/oap/OapMentorAdminPanel.tsx` and `src/hooks/useOapMentors.ts` (rename to `useCertifyingMentors`):
+- Designation by org admin now creates an `approval_status='pending'` row.
+- Show clear status badges: **Pending platform review**, **Approved**, **Revoked**.
+- If the org is on a free tier, show a banner: *"Mentor designations require an active employer subscription before they can sign certificates."*
+- Add program checkbox group: GCA / OAP / both.
+- Surface the same panel from the OAP settings card and from the GCA admin tab.
+- Org admins can revoke their own org mentors; only platform admins can approve.
+
+### 5. Mentor selection in cert checkout / issuance UI
+
+- `src/components/certificates/BuyCertificateDialog.tsx`: add a **mentor picker** step. For self-pay (no org), only approved platform mentors are listed. For org-issued, only that org's approved mentors are listed. Selected `mentorUserId` is sent into the create-cert-checkout edge function and threaded through Stripe `metadata` so `stripe-webhook` → `issue-certificate` carries it.
+- `supabase/functions/create-cert-checkout/index.ts` and `supabase/functions/stripe-webhook/index.ts`: persist `mentor_user_id` in Stripe session metadata; `issue-certificate` reads it and validates with `can_certify` before issuing.
+
+### 6. Talent profile self-attestation labeling
+
+- On `/talent/:username` and operator-profile editor, machines/skills/inspection-tools added by the operator stay editable for free.
+- Display a small *"Self-attested"* tag next to any item that has no linked `oap_certificates.cert_id` or `gca_certificates.cert_id`. Verified items show a *"Verified"* badge plus link to the public `/verify/:certId` page.
+- No data migration required — display logic only, in `PublicTalentProfile.tsx` and the operator-profile editor.
+
+### 7. Backfill & safety
+
+- One-time SQL: existing rows in the renamed table get `scope='org'`, `programs=ARRAY['OAP']`, `approval_status='approved'`, `approved_by=<service-role placeholder>`, `approved_at=now()` so currently-working orgs aren't broken.
+- Existing OAP certs already issued keep working — only new issuance is tightened.
 
 ## Files touched
 
-- `public/sitemap.xml` — remove shift-handoff URLs, reorganize talent block, fix OG title
-- `public/sitemap-index.xml` — **new**
-- `public/sitemap-talent.xml` — **new** (generated, committed as empty placeholder; rebuilt by script)
-- `public/robots.txt` — add explicit talent allows for major crawlers; update Sitemap directive
-- `scripts/generate-talent-sitemap.mjs` — **new**
-- `package.json` — add `prebuild` step calling the generator
-- `src/pages/features/ShiftHandoff.tsx` + `ShiftHandoffSoftware.tsx` — set `noindex` via `SEOHead`
-- `src/pages/TalentLanding.tsx`, `TalentBrowse.tsx`, `PublicTalentProfile.tsx` — add `max-image-preview:large` and verify canonical/JSON-LD
+**New:**
+- `supabase/migrations/<ts>_certifying_mentors.sql`
+- `src/components/admin/mentors/PlatformMentorRegistry.tsx`
+- `src/components/admin/mentors/MentorApprovalRow.tsx`
+- `src/hooks/useCertifyingMentors.ts` (replaces useOapMentors; old file becomes a re-export shim for compat)
+
+**Edited:**
+- `supabase/functions/issue-certificate/index.ts` — require + validate `mentorUserId`
+- `supabase/functions/create-cert-checkout/index.ts` — accept + forward `mentorUserId`
+- `supabase/functions/stripe-webhook/index.ts` — read `mentorUserId` from metadata
+- `src/components/oap/OapMentorAdminPanel.tsx` — pending/approved badges, programs checkboxes, paid-tier banner
+- `src/components/settings/DesignatedOapMentorCard.tsx` — point at new fields
+- `src/components/certificates/BuyCertificateDialog.tsx` — mentor picker step
+- `src/pages/Admin.tsx` — register new "Certifying Mentors" tab (platform-admin-only)
+- `src/pages/PublicTalentProfile.tsx` + operator profile editor — Self-attested vs Verified labels
+- `src/integrations/supabase/types.ts` — auto-regenerated post-migration
+
+## Out of scope (clearly not changing)
+
+- Self-skill profile editing stays free and unrestricted.
+- GCA test player and OAP quiz player do not change.
+- No changes to ITAR/`erp_persistence_mode` rules.
+- No mentor proctoring/live-video — sign-off remains async via the existing walkthrough/checkoff system.
