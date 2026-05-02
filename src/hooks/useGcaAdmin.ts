@@ -26,7 +26,7 @@ export interface GcaBank {
 export interface GcaQuestion {
   id: string;
   bank_id: string;
-  question_type: "multiple_choice" | "true_false" | "fill_in" | "multi_select" | "drag_drop";
+  question_type: "single_choice" | "multi_choice" | "multiple_choice" | "true_false" | "fill_in" | "multi_select" | "drag_drop";
   prompt: string;
   choices: any[];
   correct_answers: any[];

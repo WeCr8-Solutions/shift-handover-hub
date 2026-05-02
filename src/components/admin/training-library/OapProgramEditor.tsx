@@ -16,7 +16,9 @@ import { MarkdownEditor } from "./shared/MarkdownEditor";
 import { QuestionEditor, type EditableQuestion } from "./shared/QuestionEditor";
 import { MediaOverlayEditor } from "@/components/training/MediaOverlayEditor";
 import { PublishReleaseDialog } from "./PublishReleaseDialog";
-import { Plus, Save, BookOpen, FileText, ClipboardCheck, Trash2 } from "lucide-react";
+import { AttemptsReviewPanel } from "./AttemptsReviewPanel";
+import { PROFESSION_PRESETS } from "@/lib/professionPresets";
+import { Plus, Save, BookOpen, FileText, ClipboardCheck, Trash2, BarChart3, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 interface Props { isPlatformAdmin: boolean }
@@ -166,6 +168,8 @@ function CourseEditor({ course, m, readOnly }: { course: OapCourse; m: ReturnTyp
           onChange={(v) => setDraft({ ...draft, ...v })}
         />
 
+        <CoursePresetLinks slug={draft.slug} />
+
         <label className="flex items-center gap-2 text-sm">
           <Switch checked={draft.is_published} onCheckedChange={(v) => setDraft({ ...draft, is_published: v })} disabled={readOnly} /> Published
         </label>
@@ -250,7 +254,7 @@ function QuizEditor({ courseId, quizId, m, readOnly }: { courseId: string; quizI
 
   const handleAddQuestion = () => {
     m.upsertQuizQuestion.mutate({
-      quiz_id: quizId, prompt: "New question", question_type: "multiple_choice",
+      quiz_id: quizId, prompt: "New question", question_type: "single_choice",
       choices: [], correct_answers: [], points: 1, sort_order: questions.length,
     });
   };
@@ -268,6 +272,9 @@ function QuizEditor({ courseId, quizId, m, readOnly }: { courseId: string; quizI
           <TabsList>
             <TabsTrigger value="settings">Settings</TabsTrigger>
             <TabsTrigger value="questions">Questions ({questions.length})</TabsTrigger>
+            <TabsTrigger value="attempts" className="gap-1">
+              <BarChart3 className="w-3 h-3" /> Attempts
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="settings" className="space-y-3 mt-3">
             <div className="grid grid-cols-2 gap-3">
@@ -292,8 +299,43 @@ function QuizEditor({ courseId, quizId, m, readOnly }: { courseId: string; quizI
             ))}
             {questions.length === 0 && <p className="text-sm text-muted-foreground text-center py-6">No questions yet</p>}
           </TabsContent>
+          <TabsContent value="attempts" className="mt-3">
+            <AttemptsReviewPanel program="oap" parentId={quizId} />
+          </TabsContent>
         </Tabs>
       </CardContent>
     </Card>
+  );
+}
+
+/**
+ * Shows which profession-preset verticals surface this course on the public
+ * GCA/OAP landing pages, so admins can see at a glance whether unpublishing
+ * the course would create empty preset cards.
+ */
+function CoursePresetLinks({ slug }: { slug: string }) {
+  const matches = PROFESSION_PRESETS.filter((p) => p.oapCourseSlugs.includes(slug));
+  if (matches.length === 0) {
+    return (
+      <div className="rounded border border-dashed border-border bg-muted/30 p-2">
+        <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+          <Sparkles className="w-3 h-3" /> Not linked from any profession preset.
+        </p>
+      </div>
+    );
+  }
+  return (
+    <div className="rounded border border-primary/30 bg-primary/5 p-2 space-y-1">
+      <p className="text-[11px] font-medium text-primary flex items-center gap-1">
+        <Sparkles className="w-3 h-3" /> Surfaced on these preset cards:
+      </p>
+      <div className="flex flex-wrap gap-1">
+        {matches.map((m) => (
+          <Badge key={m.vertical} variant="outline" className="text-[10px] h-5 capitalize">
+            {m.label}
+          </Badge>
+        ))}
+      </div>
+    </div>
   );
 }
