@@ -1,83 +1,105 @@
-# Fix: OAP measurement learners can't view tool YouTube videos in lessons or quizzes
+# GCA & OAP Audit — Findings and Fix Plan
 
-## Problem
+## Critical Findings
 
-The OAP "Measurement & Inspection" course (`/oap/learn/measurement-inspection/...`) and its final quiz both miss the same kind of inline tool tutorials we just embedded in GCA Measurement Tools tests:
+A live audit of the production database and player UIs surfaced four blocking issues. Right now, virtually every GCA test and OAP quiz is **either ungradable or visually broken** — users almost certainly see blank radio buttons and cannot pass. The YouTube embed pieces are fine; the data layer is the problem.
 
-- `OapCoursePlayer` only renders `TrainingMedia` rows attached directly to the lesson or course — none of the four canonical lessons currently has measurement-tool videos linked, so learners see text only.
-- `QuizPlayer` (`src/components/oap/QuizPlayer.tsx`) renders no media at all, so a learner about to take the *Measurement & Inspection — Final Quiz* has no way to re-watch how to read a micrometer / caliper / bore gage / height gage / dial indicator without leaving the page (and losing answers).
+### 1. `choices` are stored as bare strings, but the UI expects `{key, label}` objects
 
-Same root cause as the GCA fix: there was no link between an OAP course/quiz and the `inspection_tools` rows whose YouTube tutorials already live in `training_media`.
+- All 392 GCA questions and all 99 OAP quiz questions store `choices` like `["G00","G01","G02","G03"]`.
+- `GcaTestPlayer` and `QuizPlayer` render `choices.map(c => <RadioGroupItem value={c.key}><span>{c.label}`. With strings, both `c.key` and `c.label` are `undefined` → blank rows, no value submitted.
 
-## Solution
+### 2. `correct_answers` use 3 different, inconsistent encodings
 
-Reuse the GCA tool-video card across OAP, then surface it in both the course player and the quiz player when the surface belongs to a measurement-related course.
 
-### 1. Refactor: extract a shared `InspectionToolVideoCard`
+| Source | label-text | positional index (`"0"`,`"1"`) | matches a real key |
+| ------ | ---------- | ------------------------------ | ------------------ |
+| GCA    | 139 rows   | 253 rows                       | 0 rows             |
+| OAP    | 23 rows    | 76 rows                        | 0 rows             |
 
-- Create `src/components/training/InspectionToolVideoCard.tsx` — generalized version of the existing `GcaToolVideos` (slugs prop, optional title/subtitle/footer-links/new-tab toggle).
-- Update `src/components/gca/GcaToolVideos.tsx` to thin-wrap the shared component (keeps the import path used by `GcaTestPage` working — no behavior change for GCA).
 
-### 2. New OAP map
+The grader RPC compares `correct_answers` to whatever the user submits, so even after fixing #1 the test would mark everyone wrong.
 
-`src/lib/oapToolMap.ts` — keyed by `oap_courses.slug` (the only slug we have on hand inside the player without an extra fetch):
+### 3. `question_type` enum mismatch
 
-```ts
-export const OAP_COURSE_TOOL_SLUGS: Record<string, string[]> = {
-  "measurement-inspection": [
-    "outside-micrometer",
-    "vernier-caliper",
-    "dial-caliper",
-    "digital-caliper",
-    "depth-micrometer",
-    "dial-indicator",
-    "test-indicator",
-    "dial-bore-gauge",
-    "telescoping-gauge",
-    "height-gauge-digital",
-    "height-gauge-vernier",
-  ],
-};
+- DB uses `multiple_choice` and `true_false`.
+- Frontend checks for `single_choice`, `multi_choice`, and `multi_select` — none match.
+- Result: every question always renders as a radio group (single-select), even multi-answer ones.
+- **Note**: today no question has more than one correct answer, but the structure must still support it (user explicitly asked about multi-choice).
 
-export function getOapCourseToolSlugs(courseSlug: string | null | undefined) {
-  if (!courseSlug) return [];
-  return OAP_COURSE_TOOL_SLUGS[courseSlug] ?? [];
-}
+### 4. No choice randomization
+
+- Choices render in stored order every time. User asked for "multi-choice random answers."
+- We must shuffle per-attempt while still letting the grader compare answers reliably.
+
+YouTube playback (`TrainingMedia.tsx`, `MediaOverlayDisplay.tsx`) correctly converts `youtube.com/watch?v=` and `youtu.be/` URLs into `youtube.com/embed/` iframes — **no change needed**.
+
+---
+
+## Fix Plan
+
+### Phase 1 — Data normalization migration (one-shot)
+
+Migration converts every GCA + OAP question to a single canonical shape:
+
+```text
+choices:          [{ "key": "a", "label": "G00" },
+                   { "key": "b", "label": "G01" }, ...]
+correct_answers:  ["a"]                       -- always references key
+question_type:    'single_choice' | 'multi_choice' | 'true_false'
 ```
 
-### 3. Wire into `OapCoursePlayer`
+Conversion rules per row:
 
-In `src/pages/OapCoursePlayer.tsx`, render the card just below the lesson body when `getOapCourseToolSlugs(course.slug).length > 0`. This puts the videos on every lesson within the Measurement & Inspection course (overview, basic measurement, micrometers/bore gauges, GD&T) without authors needing to re-attach media per lesson.
+1. If `choices[0]` is a string → wrap each as `{ key: <a|b|c|d|e>, label: <string> }`.
+2. Map existing `correct_answers` to keys:
+  - If value is a positional index (`"0"`, `"1"`...) → key at that index.
+  - Else if value matches a label → key for that label.
+  - Else log to a `gca_question_repair_log` / `oap_question_repair_log` table for manual review (we do not silently drop).
+3. Rename `multiple_choice` → `single_choice` (since today none are truly multi); keep `true_false`. Add a new `multi_choice` type for future authoring — UI will already support it.
 
-### 4. Wire into `QuizPlayer`
+Verification queries run inside the same migration, raising an exception if any row ends with `correct_answers ⊄ choice_keys`.
 
-`QuizPlayer` doesn't currently know its course slug. Two options, picking the smallest:
+### Phase 2 — Player UI fixes
 
-- Add an optional `toolSlugs?: string[]` prop and let the parent (`OapCoursePlayer`) pass `getOapCourseToolSlugs(course.slug)`. Render the card above the questions when non-empty, with `openLinksInNewTab=true` so the learner doesn't lose in-flight answers.
+`**GcaTestPlayer.tsx` and `oap/QuizPlayer.tsx**`
 
-This keeps `QuizPlayer` decoupled from any course-specific logic.
+- Update `question_type` checks to `single_choice | multi_choice | true_false` (drop legacy aliases).
+- Add a small `useShuffledChoices(question.id, choices)` hook that produces a stable per-attempt random order using a seed derived from `question.id + attemptStartedAt`. Stable across re-renders within an attempt; new order on retry. Keys never change, only display order.
+- Defensive guard: if `c.key` is missing, fall back to the index — prevents future regressions from blank rows.
+- Show "Select all that apply" hint on `multi_choice`, "Select one" on `single_choice`.
 
-### 5. (Optional, no new deps) per-question override
+### Phase 3 — Grader hardening
 
-Same opt-in pattern as planned for GCA: parse a leading `[tool:slug]` marker out of the OAP question prompt at render time and lazy-mount a small `<TrainingMedia entityType="inspection_tool" .../>` disclosure under that question. Zero schema change, opt-in per question. Skip if not needed for this round.
+`grade_gca_attempt` and `grade_oap_quiz_attempt` already do set comparison correctly. We add two safety rails:
 
-## Files
+- Reject the attempt with a clear error if any submitted answer key is not a valid choice key (catches client bugs early).
+- For `single_choice` / `true_false`, enforce exactly one answer key in `_given`.
+- Return the per-question `points_earned` so future partial-credit work is unblocked (no behavior change today).
+
+### Phase 4 — Spot-check & QA
+
+- Re-run the integrity SQL from the audit; expect 0 orphan correct keys.
+- Manual click-through of one GCA bank per topic and OAP sections 1, 4 (Measurement & Inspection — has the most questions), and 12.
+- Confirm: choices render with text, order changes between attempts, correct selection passes, wrong selection shows the explanation + HandbookCite, YouTube tutorials still play inline in `InspectionToolVideoCard`.
+
+---
+
+## Files Touched
 
 **New**
-- `src/components/training/InspectionToolVideoCard.tsx` — shared embedded video card
-- `src/lib/oapToolMap.ts` — course-slug → inspection-tool-slug map
 
-**Edited**
-- `src/components/gca/GcaToolVideos.tsx` — re-export shared card (preserve API)
-- `src/pages/OapCoursePlayer.tsx` — render card under each measurement lesson and pass `toolSlugs` into `QuizPlayer`
-- `src/components/oap/QuizPlayer.tsx` — accept `toolSlugs?: string[]` prop, render card above questions when present
+- `supabase/migrations/<ts>_normalize_question_choices_and_correct_answers.sql`
 
-No DB migration needed — the YouTube rows for the relevant inspection tools are already in `training_media` (some backfilled in the prior GCA pass).
+**Modified**
 
-## Verification
+- `src/components/gca/GcaTestPlayer.tsx` — type checks, shuffle hook, defensive key fallback.
+- `src/components/oap/QuizPlayer.tsx` — same changes for parity.
+- `src/hooks/useOapProgram.ts` — extend `OapQuizQuestion.question_type` typing.
+- (No change) `src/components/training/TrainingMedia.tsx`, `InspectionToolVideoCard.tsx` — YouTube embeds verified working.
 
-1. `/oap/learn/measurement-inspection/basic-measurement-tape-rule-caliper` — tabbed YouTube tutorials for vernier/dial/digital calipers play inline below the lesson body.
-2. `/oap/learn/measurement-inspection/micrometers-and-bore-gauges` — same card appears (course-level scope).
-3. Open the course's final quiz — the tool video card sits at the top of the quiz with footer links opening in new tabs; submitting answers still works (no regression in `submit-quiz-attempt` RPC path).
-4. Open a non-measurement course (e.g. `/oap/learn/safety-ehs/...`) — no card renders, behavior unchanged.
-5. GCA Measurement Tools tests still embed videos exactly as before (refactor is a no-op for that surface).
+## Risk Notes
+
+- The migration rewrites the entire question corpus in place. We will snapshot the old `choices` / `correct_answers` into `*_repair_log` tables before the rewrite so nothing is lost and any ambiguous row can be reviewed.
+- Existing `gca_test_attempts` / `oap_quiz_attempts` rows reference question IDs (not keys) — they remain intact. Old `answers` payloads will not regrade cleanly, but past pass/fail records stay accurate as historical attempts.
+- Allow for users to select an answer and then use a submit button before they get the right or wrong answer notification. 
