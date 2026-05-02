@@ -17,6 +17,7 @@ import { QuestionEditor, type EditableQuestion } from "./shared/QuestionEditor";
 import { MediaOverlayEditor } from "@/components/training/MediaOverlayEditor";
 import { PublishReleaseDialog } from "./PublishReleaseDialog";
 import { AttemptsReviewPanel } from "./AttemptsReviewPanel";
+import { HandbookLinkInlineEditor } from "@/components/handbook/HandbookLinkInlineEditor";
 import { PROFESSION_PRESETS } from "@/lib/professionPresets";
 import { Plus, Save, BookOpen, FileText, ClipboardCheck, Trash2, BarChart3, Sparkles } from "lucide-react";
 import { toast } from "sonner";
@@ -170,6 +171,13 @@ function CourseEditor({ course, m, readOnly }: { course: OapCourse; m: ReturnTyp
 
         <CoursePresetLinks slug={draft.slug} />
 
+        <HandbookLinkInlineEditor
+          entityType="oap_course"
+          entityIdOrKey={course.id}
+          readOnly={readOnly}
+          title="Course-level handbook references"
+        />
+
         <label className="flex items-center gap-2 text-sm">
           <Switch checked={draft.is_published} onCheckedChange={(v) => setDraft({ ...draft, is_published: v })} disabled={readOnly} /> Published
         </label>
@@ -235,6 +243,13 @@ function LessonEditor({ courseId, lessonId, m, readOnly }: { courseId: string; l
           onChange={(v) => setDraft({ ...draft, ...v })}
         />
 
+        <HandbookLinkInlineEditor
+          entityType="oap_lesson"
+          entityIdOrKey={lesson.id}
+          readOnly={readOnly}
+          title="Lesson handbook references"
+        />
+
         <label className="flex items-center gap-2 text-sm">
           <Switch checked={draft.is_published} onCheckedChange={(v) => setDraft({ ...draft, is_published: v })} disabled={readOnly} /> Published
         </label>
@@ -293,6 +308,7 @@ function QuizEditor({ courseId, quizId, m, readOnly }: { courseId: string; quizI
                 initial={q as EditableQuestion}
                 readOnly={readOnly}
                 saving={m.upsertQuizQuestion.isPending}
+                handbookEntityType="oap_quiz_question"
                 onSave={(updated) => m.upsertQuizQuestion.mutate({ ...updated, id: q.id, quiz_id: q.quiz_id } as any)}
                 onDelete={() => m.deleteQuizQuestion.mutate({ id: q.id, quiz_id: q.quiz_id })}
               />

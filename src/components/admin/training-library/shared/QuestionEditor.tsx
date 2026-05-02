@@ -7,6 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { JsonChoicesField } from "./JsonChoicesField";
+import { HandbookLinkInlineEditor } from "@/components/handbook/HandbookLinkInlineEditor";
+import type { HandbookEntityType } from "@/hooks/useHandbook";
 import { Trash2, Save, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
@@ -27,6 +29,8 @@ interface Props {
   onDelete?: () => void;
   saving?: boolean;
   readOnly?: boolean;
+  /** Optional handbook attachment surface — shown only after the question is saved (id present). */
+  handbookEntityType?: HandbookEntityType;
 }
 
 /**
@@ -110,7 +114,7 @@ export function validateQuestion(q: EditableQuestion): ValidationResult {
   return { ok: errors.length === 0, errors };
 }
 
-export function QuestionEditor({ initial, onSave, onDelete, saving, readOnly }: Props) {
+export function QuestionEditor({ initial, onSave, onDelete, saving, readOnly, handbookEntityType }: Props) {
   const [q, setQ] = useState<EditableQuestion>({
     ...initial,
     question_type: canonicalType(initial.question_type),
@@ -246,6 +250,15 @@ export function QuestionEditor({ initial, onSave, onDelete, saving, readOnly }: 
             disabled={readOnly}
           />
         </div>
+
+        {handbookEntityType && q.id && (
+          <HandbookLinkInlineEditor
+            entityType={handbookEntityType}
+            entityIdOrKey={q.id}
+            readOnly={readOnly}
+            title="Handbook references for this question"
+          />
+        )}
 
         {!validation.ok && !readOnly && (
           <div className="rounded border border-destructive/40 bg-destructive/5 p-2 space-y-1">
