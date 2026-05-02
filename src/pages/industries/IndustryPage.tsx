@@ -2,6 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
+import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -121,7 +122,8 @@ export default function IndustryPage() {
           </div>
         </section>
 
-        <MarketingFooter />
+        <AdPlacement format="horizontal" slot="industry-footer" className="my-8" />
+      <MarketingFooter />
       </div>
     </>
   );

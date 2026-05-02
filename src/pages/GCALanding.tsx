@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
+import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -568,6 +569,7 @@ export default function GCALanding() {
         </div>
       </section>
 
+      <AdPlacement format="horizontal" slot="gca-landing-footer" className="my-8" />
       <MarketingFooter />
 
       <BuyCertificateDialog open={buyOpen} onOpenChange={setBuyOpen} program="GCA" />
