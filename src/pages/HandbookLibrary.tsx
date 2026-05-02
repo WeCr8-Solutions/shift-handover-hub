@@ -63,6 +63,9 @@ export default function HandbookLibrary() {
         />
       </div>
 
+      <AdPlacement format="horizontal" slot="handbook-top" className="my-2" />
+
+
       <Tabs value={activeCat} onValueChange={setActiveCat}>
         <TabsList className="flex flex-wrap h-auto">
           <TabsTrigger value="all">All</TabsTrigger>
