@@ -116,13 +116,16 @@ export function useOapQuizQuestions(quizId: string | null) {
     queryKey: ["oap-quiz-questions-admin", quizId],
     queryFn: async () => {
       if (!quizId) return [];
+      // Reads via the admin-only view that surfaces correct_answers + explanation.
+      // RLS revokes those columns from the base table for the `authenticated` role;
+      // the view filters rows to platform admins via has_role(admin).
       const { data, error } = await supabase
-        .from("oap_quiz_questions")
+        .from("oap_quiz_questions_admin" as any)
         .select("*")
         .eq("quiz_id", quizId)
         .order("sort_order", { ascending: true });
       if (error) throw error;
-      return (data ?? []) as OapQuizQuestion[];
+      return ((data ?? []) as unknown) as OapQuizQuestion[];
     },
     enabled: !!quizId,
   });
