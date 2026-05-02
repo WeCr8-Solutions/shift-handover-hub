@@ -17,6 +17,7 @@ import { QuestionEditor, type EditableQuestion } from "./shared/QuestionEditor";
 import { MediaOverlayEditor } from "@/components/training/MediaOverlayEditor";
 import { PublishReleaseDialog } from "./PublishReleaseDialog";
 import { AttemptsReviewPanel } from "./AttemptsReviewPanel";
+import { HandbookLinkInlineEditor } from "@/components/handbook/HandbookLinkInlineEditor";
 import { PROFESSION_PRESETS } from "@/lib/professionPresets";
 import { Plus, Save, BookOpen, FileText, ClipboardCheck, Trash2, BarChart3, Sparkles } from "lucide-react";
 import { toast } from "sonner";
