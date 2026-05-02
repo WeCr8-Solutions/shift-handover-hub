@@ -24,6 +24,10 @@ interface ReqBody {
   programName?: string;
   organizationName?: string | null;
   bankId?: string | null;
+  /** OAP role program the recipient passed; webhook validates passing attempts. */
+  roleProgramId?: string | null;
+  /** Authenticated user id (recipient must be signed in for paid cert). */
+  recipientUserId?: string | null;
   /**
    * When set, the checkout is an "upgrade" — the holder of an existing
    * (digital-only) cert is paying $12 to unlock PDF download + Print on
