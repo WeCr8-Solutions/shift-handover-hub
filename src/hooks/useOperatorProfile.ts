@@ -177,7 +177,15 @@ export function useOperatorProfile(targetUserId?: string) {
     await refresh();
   }, [user?.id, refresh]);
 
-  /** Upload a file (resume, cert attachment, avatar, banner) to operator-profiles bucket and return public URL. */
+  /**
+   * Upload a file (resume, cert attachment, avatar, banner) to the
+   * `operator-profiles` bucket. The bucket is **private** — we return a
+   * long-lived signed URL (7 days) instead of a public CDN URL so that
+   * unauthenticated CDN access cannot bypass profile-visibility RLS.
+   *
+   * Consumers that render these URLs after they expire should re-mint via
+   * `getOperatorProfileSignedUrl()` from `@/lib/operatorProfileFiles`.
+   */
   const uploadFile = useCallback(async (file: File, folder: "resume" | "certs" | "avatar" | "banner"): Promise<string> => {
     if (!user?.id) throw new Error("Not authenticated");
     const ext = file.name.split(".").pop() ?? "bin";
@@ -188,8 +196,13 @@ export function useOperatorProfile(targetUserId?: string) {
       contentType: file.type,
     });
     if (error) throw error;
-    const { data } = supabase.storage.from("operator-profiles").getPublicUrl(path);
-    return data.publicUrl;
+    const { data, error: signErr } = await supabase.storage
+      .from("operator-profiles")
+      .createSignedUrl(path, 60 * 60 * 24 * 7); // 7 days
+    if (signErr || !data?.signedUrl) {
+      throw signErr ?? new Error("Failed to sign uploaded file URL");
+    }
+    return data.signedUrl;
   }, [user?.id]);
 
   return {
