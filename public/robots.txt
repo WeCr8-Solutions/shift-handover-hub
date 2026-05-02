@@ -262,6 +262,8 @@ Disallow: /dev
 Disallow: /dev/
 Disallow: /index
 
+Sitemap: https://jobline.ai/sitemap-index.xml
 Sitemap: https://jobline.ai/sitemap.xml
+Sitemap: https://jobline.ai/sitemap-talent.xml
 
 Crawl-delay: 1
