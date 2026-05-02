@@ -34,20 +34,33 @@ export function BuyCertificateDialog({
   program,
   defaultProgramName,
   defaultRecipientName,
+  bankId,
+  roleProgramId,
   upgradeCertId,
 }: BuyCertificateDialogProps) {
+  const { user } = useAuth();
   const [name, setName] = useState(defaultRecipientName ?? "");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(user?.email ?? "");
   const [organizationName, setOrganizationName] = useState("");
   const [programName, setProgramName] = useState(defaultProgramName ?? "");
   const [loading, setLoading] = useState(false);
+
+  // Lock recipient email to the signed-in user's email so the cert webhook
+  // can validate the linked passing attempts against the same Supabase user.
+  useEffect(() => {
+    if (user?.email) setEmail(user.email);
+  }, [user?.email]);
 
   const isUpgrade = !!upgradeCertId;
   const programLabel = program === "OAP" ? "Operator Acceptance Program" : "G-Code Academy";
 
   async function handleCheckout() {
+    if (!user) {
+      toast.error("Please sign in before purchasing a certificate.");
+      return;
+    }
     if (!name.trim() || !email.trim()) {
-      toast.error("Please enter your name and email");
+      toast.error("Please enter your name");
       return;
     }
     setLoading(true);
@@ -57,8 +70,11 @@ export function BuyCertificateDialog({
           program,
           recipientName: name.trim(),
           recipientEmail: email.trim(),
+          recipientUserId: user.id,
           programName: programName.trim() || undefined,
           organizationName: organizationName.trim() || null,
+          bankId: bankId ?? null,
+          roleProgramId: roleProgramId ?? null,
           upgradeCertId: upgradeCertId ?? null,
         },
       });
