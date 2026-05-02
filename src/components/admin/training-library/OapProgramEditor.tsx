@@ -168,6 +168,8 @@ function CourseEditor({ course, m, readOnly }: { course: OapCourse; m: ReturnTyp
           onChange={(v) => setDraft({ ...draft, ...v })}
         />
 
+        <CoursePresetLinks slug={draft.slug} />
+
         <label className="flex items-center gap-2 text-sm">
           <Switch checked={draft.is_published} onCheckedChange={(v) => setDraft({ ...draft, is_published: v })} disabled={readOnly} /> Published
         </label>
