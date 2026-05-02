@@ -19,6 +19,8 @@ import { BookOpen, ArrowLeft, ArrowRight, Clock, CheckCircle2 } from "lucide-rea
 
 export default function OapCoursePlayer() {
   const { courseSlug, lessonSlug } = useParams<{ courseSlug: string; lessonSlug?: string }>();
+  const [searchParams] = useSearchParams();
+  const examMode = searchParams.get("exam") === "1" ? "graded" : "practice";
   const navigate = useNavigate();
   const { data: courses = [] } = useOapCourses();
   const course = useMemo(
