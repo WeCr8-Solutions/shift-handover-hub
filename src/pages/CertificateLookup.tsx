@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Search, ShieldCheck, FileBadge2, GraduationCap, ArrowRight } from "lucide-react";
+import { AdPlacement } from "@/components/marketing/AdPlacement";
 
 function normalizeCertId(raw: string): string {
   return raw.trim().toUpperCase().replace(/\s+/g, "");
@@ -204,6 +205,8 @@ export default function CertificateLookup() {
             </CardContent>
           </Card>
         </div>
+
+        <AdPlacement format="horizontal" slot="cert-lookup-footer" className="mt-8" />
       </main>
     </div>
   );

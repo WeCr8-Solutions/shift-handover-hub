@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useHandbookReference } from "@/hooks/useHandbook";
+import { AdPlacement } from "@/components/marketing/AdPlacement";
 
 export default function HandbookEntry() {
   const { slug } = useParams<{ slug: string }>();
@@ -72,6 +73,9 @@ export default function HandbookEntry() {
         </Card>
       )}
 
+      <AdPlacement format="horizontal" slot="handbook-entry-mid" className="my-2" />
+
+
       <Card className="border-dashed">
         <CardContent className="p-4 space-y-3">
           <div>
@@ -128,6 +132,8 @@ export default function HandbookEntry() {
       <article className="prose prose-sm dark:prose-invert max-w-none">
         <ReactMarkdown remarkPlugins={[remarkGfm]}>{ref.body_md}</ReactMarkdown>
       </article>
+
+      <AdPlacement format="rectangle" slot="handbook-entry-end" className="my-4" />
 
       {(ref.source_citation || ref.source_url) && (
         <p className="text-xs text-muted-foreground italic border-t pt-4">

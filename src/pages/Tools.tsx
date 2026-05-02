@@ -12,6 +12,7 @@ import { HandbookCite } from "@/components/handbook/HandbookCite";
 import { HandbookLinkInlineEditor } from "@/components/handbook/HandbookLinkInlineEditor";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { TOOL_REGISTRY, TOOL_CATEGORIES } from "@/components/tools";
+import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { Search, Wrench, Loader2, ArrowLeft, BookOpen, ArrowRight } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -172,6 +173,8 @@ export default function Tools() {
               <p className="text-sm">No tools match your search.</p>
             </div>
           )}
+
+          <AdPlacement format="rectangle" slot="tools-bottom" className="mt-10" />
         </main>
       </div>
 

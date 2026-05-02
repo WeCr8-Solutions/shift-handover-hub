@@ -1,130 +1,76 @@
-## Goal
 
-Make every real GCA/OAP certificate require a **mentor sign-off**, where the mentor must be either:
-1. **JobLine.ai-approved** (vetted by a platform admin) — used when the recipient is a self-paying individual learner, or
-2. An **org-designated mentor in a paid employer org** — vetted/approved by an Org Admin within an employer that holds an active paid JobLine.ai subscription.
+## Why AdSense rejected jobline.ai
 
-Self-skilling (adding machines/proficiencies to a talent profile) stays free and unmentored — but those badges are clearly marked "self-attested" and cannot become real certificates without going through the gate above.
+The screenshot shows two AdSense gates: site ownership is verified, but the site is flagged for **"Low value content / thin content / minimum content requirements."** This is *not* a code bug — every required pipe (script, ads.txt, AdPlacement component, publisher ID `ca-pub-3639153716376265`) is wired correctly:
 
-## What changes
+- `index.html` lazy-loads `adsbygoogle.js` after first interaction (correct)
+- `public/ads.txt` is valid (`google.com, pub-3639153716376265, DIRECT, f08c47fec0942fa0`)
+- `<meta name="google-adsense-account">` present
+- `AdPlacement.tsx` pushes `adsbygoogle` correctly with publisher ID hardcoded
+- AdPlacement is already imported in **60+ marketing pages** (Landing, Pricing, Blog, all `/features/*`, all `/compare/*`, all `/resources/*`, Help, HelpArticle)
 
-### 1. Mentor approval data model (DB migration)
+The AdSense reviewer is rejecting because the **content** doesn't yet pass their bar, not because of integration. We need to (1) plug the remaining content/UX gaps that trigger "thin content," (2) extend ads to a few surfaces still missing them, and (3) lock in a guarantee that the authenticated app stays ad-free.
 
-Extend the existing `oap_designated_mentors` table (currently org-only, no platform layer) into a unified mentor registry that covers both GCA and OAP and supports a JobLine-platform tier:
+---
 
-```sql
-ALTER TABLE public.oap_designated_mentors
-  RENAME TO certifying_mentors;
+## Plan
 
-ALTER TABLE public.certifying_mentors
-  ALTER COLUMN organization_id DROP NOT NULL,           -- NULL = JobLine platform mentor
-  ADD COLUMN scope text NOT NULL DEFAULT 'org'          -- 'platform' | 'org'
-    CHECK (scope IN ('platform','org')),
-  ADD COLUMN programs text[] NOT NULL DEFAULT ARRAY['OAP'],  -- subset of {'OAP','GCA'}
-  ADD COLUMN approval_status text NOT NULL DEFAULT 'pending' -- pending | approved | revoked
-    CHECK (approval_status IN ('pending','approved','revoked')),
-  ADD COLUMN approved_by uuid,                          -- platform admin user_id
-  ADD COLUMN approved_at timestamptz,
-  ADD COLUMN credentials_url text,                      -- résumé/cert proof upload
-  ADD COLUMN signature_url text;                        -- saved e-signature image
+### 1. Fix the AdSense policy gate (the actual blocker)
 
--- Platform mentors: org_id NULL, scope='platform'.
--- Trigger enforces: scope='platform' iff org_id IS NULL.
--- Trigger enforces: scope='platform' rows can only be inserted/approved by has_role(uid,'admin').
-```
+Audit each marketing surface against AdSense's published thin-content checklist and remediate:
 
-Replace the existing `can_act_as_oap_mentor()` helper with a new `can_certify(_user_id, _org_id, _program)` security-definer function:
+- **Add ads to public surfaces still missing them** (currently no `AdPlacement`):
+  - `src/pages/HandbookLibrary.tsx` (1 horizontal mid-content)
+  - `src/pages/HandbookEntry.tsx` (1 horizontal between sections, 1 rectangle near end)
+  - `src/pages/resources/GCodeAcademy.tsx` (public marketing variant only)
+  - `src/pages/resources/OperatorAcceptanceProgram.tsx`
+  - `src/pages/Demo.tsx`, `src/pages/Tools.tsx` (public calculator landing — 1 horizontal above-the-fold-safe)
+  - `src/pages/CertificateLookup.tsx` and `src/pages/VerifyCertificate.tsx` (public verify page — 1 horizontal in footer area only, never near the certificate itself per AdSense placement policy)
+  - All `/industries/*` pages
+- **Required policy pages** (AdSense explicitly checks for these — confirm and link from footer if missing):
+  - `/privacy`, `/terms`, `/cookies`, `/about`, `/contact`. We already have most; verify each is reachable from the public footer in **≤2 clicks** and contains real (not placeholder) content.
+- **Fix `index.html` placeholder verification meta tags** that currently say `content="YOUR_CODE"` — these flag automated reviewers as "abandoned/template" content. Either delete or fill with the real Search Console / Bing / Pinterest / Facebook IDs (we'll delete the placeholders and leave only the real `google-adsense-account` tag).
+- **Strengthen thin pages**: short feature pages get an "FAQ + related guides + author byline + last-updated date" block (reuse our existing handbook/help components). Target 800+ words of unique copy per indexed page.
+- **Author + freshness signals**: add `author` + `datePublished`/`dateModified` JSON-LD to all blog posts and feature pages (Schema.org `Article`).
+- **Navigation/UX**: ensure every public page has the marketing header + footer with working About/Contact/Privacy/Terms links (AdSense reviewers click these).
 
-```sql
--- Returns TRUE only if:
---  • user is platform admin, OR
---  • user is an APPROVED platform-scope mentor for _program, OR
---  • user is an APPROVED org-scope mentor in _org_id for _program
---    AND that org has an active paid subscription (subscription_tier != 'free').
--- Org admins/supervisors are NO LONGER auto-mentors — they must be explicitly
--- designated and approved (matches the user's intent).
-```
+### 2. Extend coverage on already-equipped marketing pages
 
-Keep a thin compat shim `can_act_as_oap_mentor()` that calls the new function with `_program='OAP'` so existing callers still work.
+- Add a second `AdPlacement` (`format="rectangle"`) near the end of long-form blog posts (`src/pages/Blog.tsx` post template + MDX layout) so per-page revenue isn't capped at one impression.
+- Add `slot` IDs per page-group (one per: landing, pricing, blog, features, resources, handbook, help) so RPM is reportable in AdSense.
 
-### 2. Tighten `issue-certificate` edge function
+### 3. Hard guarantee: app surfaces stay ad-free
 
-Currently the function accepts a cert request from any platform admin or org admin/supervisor and silently uses the org's `designated_oap_mentor_user_id` as signer (only for OAP, only if set). Change it to:
+The current "rule" lives only in a comment in `AdPlacement.tsx`. Make it enforceable:
 
-- **Require an explicit `mentorUserId` in the request body** for both GCA and OAP.
-- Call `can_certify(mentorUserId, body.organizationId, body.program)` via RPC. Reject with a clear error if it returns false.
-- For GCA self-pay (no `organizationId`): require the mentor to be an **approved platform-scope mentor** for `'GCA'`.
-- For org-issued (paid employer): require the mentor to be an **approved org-scope mentor** for that org/program. Reject if the org's subscription is `'free'` (covers the user's "only paid employers can mint real certs" rule).
-- Stamp `signed_by_user_id`, `signed_by_name`, `signed_by_title`, `signed_by_signature_url` from the resolved mentor's `certifying_mentors` row.
-- Keep the existing `has_passed_*` gates — nothing weakens.
+- Add a build-time **ESLint rule** (custom `no-restricted-imports` pattern) that forbids importing `@/components/marketing/AdPlacement` from any path under:
+  - `src/pages/Index.tsx`, `Dashboard*`, `Queue*`, `Teams*`, `Settings*`, `Admin*`, `Profile*`, `Setup*`, `Testing*`, `Updates*`, `FieldView*`, `OapHub`, `OapCoursePlayer`, `OapWalkthrough`, `OapMyTranscript`, `OapEmployer`, `GcaEmployer`, `GcaTestPage`, `CertSuccess`, `DonationSuccess`, `display/*`, `dev/*`, `handoff/*`
+  - All files under `src/components/dashboard/`, `src/components/handoff/`, `src/components/queue/`, `src/components/admin/`, `src/components/oap/` (authenticated paths)
+- Add a runtime guard in `AdPlacement` that returns `null` if `useAuth().user` is set **and** the route matches an authenticated prefix (defensive — covers cases where the same component renders in both contexts).
+- Add a Vitest snapshot test asserting `AdPlacement` is never rendered when `user` is authenticated on `/dashboard`, `/queue`, `/handoff`, `/admin`, `/settings`, `/teams`, `/profile`, `/setup`.
 
-The Stripe webhook path (paid self-issue at $12) needs a mentor selected at checkout — see step 4.
+### 4. After the fixes — request review
 
-### 3. Admin dashboard UI — Platform Mentor Registry
+Document the resubmission steps in `.lovable/prd/12-ad-placement-strategy.md`:
+1. Deploy.
+2. Crawl-check via `https://search.google.com/search-console` URL inspection on 5 sample marketing pages.
+3. In AdSense → Sites → jobline.ai → "I confirm I have fixed the issues" → Request review.
+4. Expect 2–4 week review window.
 
-New tab in `src/pages/Admin.tsx` (platform-admin-only, sits next to "Training → Library"):
+---
 
-```
-Training
-  ├─ Library          (existing)
-  └─ Certifying Mentors  (new — platform admin only)
-```
+## Technical details
 
-New component `src/components/admin/mentors/PlatformMentorRegistry.tsx`:
-- Table of all `certifying_mentors` rows (both platform and org), filterable by status / scope / program.
-- Pending-approval queue at the top: review credentials_url, signature_url, then Approve / Reject.
-- "Add platform mentor" form: pick a JobLine user (search by email), set programs, upload credentials + signature, approve in one shot.
-- Revoke button on any row (sets `approval_status='revoked'`, preserves audit trail).
-- Per-org breakdown: shows how many approved mentors each paid employer has.
+**Files to edit**
+- `index.html` — remove `YOUR_CODE` placeholder meta tags.
+- `src/components/marketing/AdPlacement.tsx` — add `useAuth` + authenticated-route guard.
+- `src/pages/HandbookLibrary.tsx`, `HandbookEntry.tsx`, `Demo.tsx`, `Tools.tsx`, `CertificateLookup.tsx`, `VerifyCertificate.tsx`, `resources/GCodeAcademy.tsx`, `resources/OperatorAcceptanceProgram.tsx` — add `AdPlacement`.
+- `src/pages/Blog.tsx` + MDX post template — add second rectangle ad slot, add Article JSON-LD.
+- `src/pages/Landing.tsx` footer — verify About/Contact/Privacy/Terms link visibility.
+- `eslint.config.js` — add `no-restricted-imports` group banning `AdPlacement` from authenticated paths.
+- `.lovable/prd/12-ad-placement-strategy.md` — document slot IDs, resubmission flow, and the new ESLint guard.
+- New: `src/components/marketing/AdPlacement.test.tsx` — guard test.
 
-### 4. Org admin UI — Designate Mentor (refactor existing panel)
+**No DB / edge function / migration changes.** ITAR build (`VITE_DISABLE_ANALYTICS=true`) continues to suppress all ad code.
 
-Update `src/components/oap/OapMentorAdminPanel.tsx` and `src/hooks/useOapMentors.ts` (rename to `useCertifyingMentors`):
-- Designation by org admin now creates an `approval_status='pending'` row.
-- Show clear status badges: **Pending platform review**, **Approved**, **Revoked**.
-- If the org is on a free tier, show a banner: *"Mentor designations require an active employer subscription before they can sign certificates."*
-- Add program checkbox group: GCA / OAP / both.
-- Surface the same panel from the OAP settings card and from the GCA admin tab.
-- Org admins can revoke their own org mentors; only platform admins can approve.
-
-### 5. Mentor selection in cert checkout / issuance UI
-
-- `src/components/certificates/BuyCertificateDialog.tsx`: add a **mentor picker** step. For self-pay (no org), only approved platform mentors are listed. For org-issued, only that org's approved mentors are listed. Selected `mentorUserId` is sent into the create-cert-checkout edge function and threaded through Stripe `metadata` so `stripe-webhook` → `issue-certificate` carries it.
-- `supabase/functions/create-cert-checkout/index.ts` and `supabase/functions/stripe-webhook/index.ts`: persist `mentor_user_id` in Stripe session metadata; `issue-certificate` reads it and validates with `can_certify` before issuing.
-
-### 6. Talent profile self-attestation labeling
-
-- On `/talent/:username` and operator-profile editor, machines/skills/inspection-tools added by the operator stay editable for free.
-- Display a small *"Self-attested"* tag next to any item that has no linked `oap_certificates.cert_id` or `gca_certificates.cert_id`. Verified items show a *"Verified"* badge plus link to the public `/verify/:certId` page.
-- No data migration required — display logic only, in `PublicTalentProfile.tsx` and the operator-profile editor.
-
-### 7. Backfill & safety
-
-- One-time SQL: existing rows in the renamed table get `scope='org'`, `programs=ARRAY['OAP']`, `approval_status='approved'`, `approved_by=<service-role placeholder>`, `approved_at=now()` so currently-working orgs aren't broken.
-- Existing OAP certs already issued keep working — only new issuance is tightened.
-
-## Files touched
-
-**New:**
-- `supabase/migrations/<ts>_certifying_mentors.sql`
-- `src/components/admin/mentors/PlatformMentorRegistry.tsx`
-- `src/components/admin/mentors/MentorApprovalRow.tsx`
-- `src/hooks/useCertifyingMentors.ts` (replaces useOapMentors; old file becomes a re-export shim for compat)
-
-**Edited:**
-- `supabase/functions/issue-certificate/index.ts` — require + validate `mentorUserId`
-- `supabase/functions/create-cert-checkout/index.ts` — accept + forward `mentorUserId`
-- `supabase/functions/stripe-webhook/index.ts` — read `mentorUserId` from metadata
-- `src/components/oap/OapMentorAdminPanel.tsx` — pending/approved badges, programs checkboxes, paid-tier banner
-- `src/components/settings/DesignatedOapMentorCard.tsx` — point at new fields
-- `src/components/certificates/BuyCertificateDialog.tsx` — mentor picker step
-- `src/pages/Admin.tsx` — register new "Certifying Mentors" tab (platform-admin-only)
-- `src/pages/PublicTalentProfile.tsx` + operator profile editor — Self-attested vs Verified labels
-- `src/integrations/supabase/types.ts` — auto-regenerated post-migration
-
-## Out of scope (clearly not changing)
-
-- Self-skill profile editing stays free and unrestricted.
-- GCA test player and OAP quiz player do not change.
-- No changes to ITAR/`erp_persistence_mode` rules.
-- No mentor proctoring/live-video — sign-off remains async via the existing walkthrough/checkoff system.
+**Out of scope** (separate work if desired): ad-personalization consent banner extensions, GDPR ad consent strings beyond the existing Consent Mode v2 setup.

@@ -3,10 +3,19 @@
  * Renders a styled container for Google AdSense.
  *
  * ⚠️  NEVER use this inside authenticated app pages (dashboard, queue, teams,
- *     settings, admin, profile, setup, etc.). Ads are restricted to:
- *     - Landing, Pricing, Blog, Demo, Start
- *     - /features/* pages
- *     - /resources/* pages
+ *     settings, admin, profile, setup, handoff, etc.). Ads are restricted to:
+ *     - Landing, Pricing, Blog, Demo, Start, Tools (public)
+ *     - /features/*, /compare/*, /industries/*, /resources/* pages
+ *     - /handbook, /handbook/:slug
+ *     - /help, /help/:slug
+ *     - /verify/:certId, /certificates (public lookup)
+ *
+ * Defense-in-depth:
+ *  1. ITAR / self-hosted builds disable ads via VITE_DISABLE_ANALYTICS.
+ *  2. Runtime guard: if the current pathname matches an authenticated app
+ *     prefix the component renders null even if accidentally imported.
+ *  3. Build-time eslint rule (see eslint.config.js) forbids importing this
+ *     module from authenticated app source paths.
  */
 
 import { useEffect, useRef } from "react";
@@ -21,6 +30,43 @@ interface AdPlacementProps {
 // Suppress ads when analytics are disabled (ITAR / self-hosted)
 const ADS_ENABLED = import.meta.env.VITE_DISABLE_ANALYTICS !== "true";
 
+// Authenticated app surfaces — never serve ads here. Match by prefix.
+const AUTHED_APP_PREFIXES = [
+  "/dashboard",
+  "/queue",
+  "/teams",
+  "/settings",
+  "/admin",
+  "/profile",
+  "/setup",
+  "/testing",
+  "/updates",
+  "/history",
+  "/quote-history",
+  "/handoff",
+  "/field",
+  "/display",
+  "/dev",
+  "/oap/hub",
+  "/oap/walkthrough",
+  "/oap/transcript",
+  "/oap/employer",
+  "/oap/proficiency",
+  "/oap/course",
+  "/gca/employer",
+  "/gca/test",
+  "/cert-success",
+  "/donation-success",
+  "/manuals/upload",
+  "/work-orders",
+];
+
+function isAuthedAppRoute(pathname: string): boolean {
+  return AUTHED_APP_PREFIXES.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`),
+  );
+}
+
 export function AdPlacement({
   slot,
   format = "horizontal",
@@ -30,8 +76,11 @@ export function AdPlacement({
   const adRef = useRef<HTMLModElement>(null);
   const pushed = useRef(false);
 
+  const blockedByRoute =
+    typeof window !== "undefined" && isAuthedAppRoute(window.location.pathname);
+
   useEffect(() => {
-    if (!ADS_ENABLED || pushed.current) return;
+    if (!ADS_ENABLED || blockedByRoute || pushed.current) return;
     try {
       const adsbygoogle = (window as any).adsbygoogle || [];
       adsbygoogle.push({});
@@ -40,9 +89,9 @@ export function AdPlacement({
       // Ad blocker or script not loaded — fail silently
       console.debug("AdSense push failed:", e);
     }
-  }, []);
+  }, [blockedByRoute]);
 
-  if (!ADS_ENABLED) return null;
+  if (!ADS_ENABLED || blockedByRoute) return null;
 
   const formatClasses = {
     horizontal: "min-h-[90px] max-h-[120px]",

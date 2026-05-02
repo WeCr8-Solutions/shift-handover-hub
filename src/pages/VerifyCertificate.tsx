@@ -11,6 +11,7 @@ import { CertificateViewer } from "@/components/certificates/CertificateViewer";
 import { CertificatePdfDownloadButton } from "@/components/certificates/CertificatePdfDownloadButton";
 import { BuyCertificateDialog } from "@/components/certificates/BuyCertificateDialog";
 import type { CertificateRecord } from "@/lib/certificates";
+import { AdPlacement } from "@/components/marketing/AdPlacement";
 
 /**
  * Public certificate verification page — shared by OAP and GCA.
@@ -278,6 +279,12 @@ export default function VerifyCertificate() {
           Certificates issued through the JobLine Operator Acceptance Program and
           G-Code Academy are portable and may be presented to any employer.
         </p>
+
+        <AdPlacement
+          format="horizontal"
+          slot="verify-cert-footer"
+          className="mt-10 print:hidden"
+        />
       </div>
     </div>
   );

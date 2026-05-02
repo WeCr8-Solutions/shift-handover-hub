@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useHandbookCategories, useHandbookReferences } from "@/hooks/useHandbook";
+import { AdPlacement } from "@/components/marketing/AdPlacement";
 
 const HANDBOOK_SEARCH_KEY = "handbook-library-search";
 const HANDBOOK_CATEGORY_KEY = "handbook-library-category";
@@ -61,6 +62,9 @@ export default function HandbookLibrary() {
           className="pl-9"
         />
       </div>
+
+      <AdPlacement format="horizontal" slot="handbook-top" className="my-2" />
+
 
       <Tabs value={activeCat} onValueChange={setActiveCat}>
         <TabsList className="flex flex-wrap h-auto">
@@ -122,6 +126,8 @@ export default function HandbookLibrary() {
           )}
         </TabsContent>
       </Tabs>
+
+      <AdPlacement format="rectangle" slot="handbook-bottom" className="my-4" />
     </div>
   );
 }
