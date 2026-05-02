@@ -41,7 +41,7 @@ export function HandbookCreateReferenceDialog({ initialTitle = "", onCreated, tr
   const [saving, setSaving] = useState(false);
 
   const { data: categories = [] } = useHandbookCategories();
-  const { activeOrgId } = useOrganization();
+  const { organizationId } = useOrganization();
   const qc = useQueryClient();
 
   // De-dupe categories by slug — DB has both canonical + org-cloned rows.
@@ -54,7 +54,7 @@ export function HandbookCreateReferenceDialog({ initialTitle = "", onCreated, tr
       toast.error("Title, slug, and category are required.");
       return;
     }
-    if (!activeOrgId) {
+    if (!organizationId) {
       toast.error("No active organization — cannot create a reference here.");
       return;
     }
@@ -69,7 +69,7 @@ export function HandbookCreateReferenceDialog({ initialTitle = "", onCreated, tr
           summary: summary.trim() || null,
           body_md: "_TODO: write reference body. This stub was created from an editor._",
           is_canonical: false,
-          organization_id: activeOrgId,
+          organization_id: organizationId,
           tags: [],
         })
         .select("*, category:handbook_categories(*)")
