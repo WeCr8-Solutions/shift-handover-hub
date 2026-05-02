@@ -13,7 +13,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { QuestionEditor, type EditableQuestion } from "./shared/QuestionEditor";
 import { MediaOverlayEditor } from "@/components/training/MediaOverlayEditor";
 import { PublishReleaseDialog } from "./PublishReleaseDialog";
-import { Plus, Search, Save, Upload, AlertCircle } from "lucide-react";
+import { AttemptsReviewPanel } from "./AttemptsReviewPanel";
+import { Plus, Search, Save, Upload, AlertCircle, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 
 interface Props { isPlatformAdmin: boolean }
@@ -155,6 +156,9 @@ function BankDetail({
           <TabsList>
             <TabsTrigger value="settings">Settings</TabsTrigger>
             <TabsTrigger value="questions" disabled={isNew}>Questions ({questions.length})</TabsTrigger>
+            <TabsTrigger value="attempts" disabled={isNew} className="gap-1">
+              <BarChart3 className="w-3 h-3" /> Attempts
+            </TabsTrigger>
             <TabsTrigger value="import" disabled={isNew || readOnly}>Bulk Import</TabsTrigger>
           </TabsList>
 
@@ -251,6 +255,10 @@ function BankDetail({
               />
             ))}
             {questions.length === 0 && <p className="text-sm text-muted-foreground text-center py-6">No questions yet</p>}
+          </TabsContent>
+
+          <TabsContent value="attempts" className="mt-3">
+            {bank.id && <AttemptsReviewPanel program="gca" parentId={bank.id} />}
           </TabsContent>
 
           <TabsContent value="import" className="mt-3 space-y-3">
