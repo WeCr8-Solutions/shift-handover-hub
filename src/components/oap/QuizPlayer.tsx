@@ -24,9 +24,16 @@ interface Props {
   onComplete?: () => void;
   /** When provided, embeds an inspection-tool video card above the questions. */
   toolSlugs?: string[];
+  /**
+   * "practice" (default) — post-submit reveals correct/incorrect choices and
+   *   the per-question explanation. Used in self-study (free OAP study).
+   * "graded" — post-submit shows ONLY the final score + pass/fail. No reveal.
+   *   Used for the certification path (paid jobline.ai exam, employer exams).
+   */
+  mode?: "practice" | "graded";
 }
 
-export function QuizPlayer({ quiz, onComplete, toolSlugs }: Props) {
+export function QuizPlayer({ quiz, onComplete, toolSlugs, mode = "practice" }: Props) {
   const { user } = useAuth();
   const { data: questions = [], isLoading } = useOapQuizQuestions(quiz.id);
   const submit = useSubmitQuizAttempt();
