@@ -11,6 +11,7 @@ import { CertificateViewer } from "@/components/certificates/CertificateViewer";
 import { CertificatePdfDownloadButton } from "@/components/certificates/CertificatePdfDownloadButton";
 import { BuyCertificateDialog } from "@/components/certificates/BuyCertificateDialog";
 import type { CertificateRecord } from "@/lib/certificates";
+import { AdPlacement } from "@/components/marketing/AdPlacement";
 
 /**
  * Public certificate verification page — shared by OAP and GCA.
