@@ -9,6 +9,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { SEOHead } from "@/components/SEOHead";
 import { Header } from "@/components/Header";
 import { HandbookCite } from "@/components/handbook/HandbookCite";
+import { HandbookLinkInlineEditor } from "@/components/handbook/HandbookLinkInlineEditor";
+import { useAdminAccess } from "@/hooks/useAdminData";
 import { TOOL_REGISTRY, TOOL_CATEGORIES } from "@/components/tools";
 import { Search, Wrench, Loader2, ArrowLeft, BookOpen, ArrowRight } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -26,6 +28,7 @@ export default function Tools() {
   const [category, setCategory] = useState("all");
   const [activeTool, setActiveTool] = useState<string | null>(null);
   const isMobile = useIsMobile();
+  const { hasPlatformAccess } = useAdminAccess();
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
