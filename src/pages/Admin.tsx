@@ -292,6 +292,12 @@ export default function Admin() {
                   <Library className="w-4 h-4" />
                   Library
                 </TabsTrigger>
+                {hasPlatformAccess && (
+                  <TabsTrigger value="cert-mentors" className="gap-2">
+                    <ShieldCheck className="w-4 h-4" />
+                    Mentors
+                  </TabsTrigger>
+                )}
               </div>
               {hasPlatformAccess && (
                 <>
