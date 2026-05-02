@@ -427,6 +427,14 @@ export default function Admin() {
           </TabsContent>
 
           {hasPlatformAccess && (
+            <TabsContent value="cert-mentors">
+              <Suspense fallback={<AdminTabFallback />}>
+                <PlatformMentorRegistry isPlatformAdmin={access.isPlatformAdmin} />
+              </Suspense>
+            </TabsContent>
+          )}
+
+          {hasPlatformAccess && (
             <>
               <TabsContent value="activity">
                 <Suspense fallback={<AdminTabFallback />}><ActivityLogs /></Suspense>
