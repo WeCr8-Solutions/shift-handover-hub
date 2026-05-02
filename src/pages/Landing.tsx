@@ -47,6 +47,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import joblineLogo from "@/assets/jobline-logo.png";
+import joblineLogoSm from "@/assets/jobline-logo-sm.png";
 
 const navLinks = [
   { href: "#features", label: "Features" },
@@ -310,7 +311,9 @@ export default function Landing() {
             {/* Logo above hero text */}
             <div className="flex justify-center mb-4 sm:mb-5">
               <img
-                src={joblineLogo}
+                src={joblineLogoSm}
+                srcSet={`${joblineLogoSm} 200w, ${joblineLogo} 280w`}
+                sizes="(min-width: 1024px) 176px, (min-width: 768px) 144px, (min-width: 640px) 112px, 80px"
                 alt="JobLine.ai"
                 width={140}
                 height={140}

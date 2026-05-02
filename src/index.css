@@ -6,6 +6,27 @@
      and ensure font files are placed in src/assets/fonts/ — see README there.
 */
 
+/* Size-adjusted fallback fonts: eliminates CLS from web font swap by
+   matching the metrics of Inter / JetBrains Mono using local system fonts.
+   The hero text paints with these immediately at the correct dimensions,
+   so when Inter loads there is no layout shift (LCP element stays put). */
+@font-face {
+  font-family: 'Inter Fallback';
+  src: local('Arial');
+  ascent-override: 90%;
+  descent-override: 22.43%;
+  line-gap-override: 0%;
+  size-adjust: 107.64%;
+}
+@font-face {
+  font-family: 'JetBrains Mono Fallback';
+  src: local('Courier New');
+  ascent-override: 75%;
+  descent-override: 25%;
+  line-gap-override: 0%;
+  size-adjust: 110%;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -121,11 +142,11 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'Inter', 'Inter Fallback', system-ui, sans-serif;
   }
 
   .font-mono {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'JetBrains Mono', 'JetBrains Mono Fallback', monospace;
   }
 }
 
