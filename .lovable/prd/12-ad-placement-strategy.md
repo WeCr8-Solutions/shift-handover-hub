@@ -1,6 +1,25 @@
 # PRD 12 — Ad Placement & Revenue Strategy
 
-> **Last updated:** 2026-03-08  
+> **Last updated:** 2026-05-02
+> **Status:** Active — AdSense review pending after thin-content remediation
+> **Owner:** Platform Admin / Developer
+
+---
+
+## AdSense Review History
+
+- **2026-05-02:** Site flagged "Low value content / thin content." Remediation:
+  removed `YOUR_CODE` placeholder verification meta tags from `index.html`,
+  extended `AdPlacement` to Handbook, Tools, Demo, Certificate Lookup,
+  Verify Certificate, OAP Landing, GCA Landing, and Industry pages, added a
+  build-time ESLint guard that blocks `AdPlacement` imports from authenticated
+  app paths, and added a runtime route guard inside `AdPlacement` itself.
+- **Resubmission steps:**
+  1. Deploy.
+  2. URL-inspect 5 sample marketing pages in Search Console.
+  3. AdSense → Sites → jobline.ai → "I confirm I have fixed the issues" → Request review.
+  4. Expect 2–4 week review window.
+
 > **Status:** Active  
 > **Owner:** Platform Admin / Developer
 
