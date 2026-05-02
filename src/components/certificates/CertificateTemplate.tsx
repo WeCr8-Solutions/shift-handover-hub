@@ -46,6 +46,19 @@ export function CertificateTemplate({
       .catch(() => {});
   }, [profileUrl]);
 
+  // Lazy-load Playfair Display + Great Vibes only when a certificate is rendered.
+  // Keeps the marketing landing FCP fast (these fonts are otherwise unused).
+  useEffect(() => {
+    const HREF =
+      "https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Great+Vibes&display=swap";
+    if (typeof document === "undefined") return;
+    if (document.querySelector(`link[href="${HREF}"]`)) return;
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = HREF;
+    document.head.appendChild(link);
+  }, []);
+
   const programLabel: Record<CertificateProgram, string> = {
     OAP: "Operator Acceptance Program",
     GCA: "G-Code Academy",
