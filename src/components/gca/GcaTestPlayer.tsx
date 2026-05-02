@@ -311,9 +311,14 @@ export function GcaTestPlayer({ bankSlug, hasProAccess, onUpgrade, mode = "pract
               <p className="text-sm font-semibold">
                 {result.passed ? "Passed" : "Did not pass"} — {result.score_pct}%
               </p>
-              {!result.passed && (
+              {!result.passed && mode === "practice" && (
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Review the explanations below, then try again.
+                </p>
+              )}
+              {!result.passed && mode === "graded" && (
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Graded exam — explanations are not shown. Study the practice bank, then retake.
                 </p>
               )}
             </div>
