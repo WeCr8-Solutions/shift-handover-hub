@@ -308,6 +308,7 @@ function QuizEditor({ courseId, quizId, m, readOnly }: { courseId: string; quizI
                 initial={q as EditableQuestion}
                 readOnly={readOnly}
                 saving={m.upsertQuizQuestion.isPending}
+                handbookEntityType="oap_quiz_question"
                 onSave={(updated) => m.upsertQuizQuestion.mutate({ ...updated, id: q.id, quiz_id: q.quiz_id } as any)}
                 onDelete={() => m.deleteQuizQuestion.mutate({ id: q.id, quiz_id: q.quiz_id })}
               />
