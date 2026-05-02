@@ -173,6 +173,8 @@ export default function Tools() {
               <p className="text-sm">No tools match your search.</p>
             </div>
           )}
+
+          <AdPlacement format="rectangle" slot="tools-bottom" className="mt-10" />
         </main>
       </div>
 
