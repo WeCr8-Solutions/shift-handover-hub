@@ -73,6 +73,9 @@ export default function HandbookEntry() {
         </Card>
       )}
 
+      <AdPlacement format="horizontal" slot="handbook-entry-mid" className="my-2" />
+
+
       <Card className="border-dashed">
         <CardContent className="p-4 space-y-3">
           <div>
