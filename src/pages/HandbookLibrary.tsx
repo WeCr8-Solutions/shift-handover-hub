@@ -126,6 +126,8 @@ export default function HandbookLibrary() {
           )}
         </TabsContent>
       </Tabs>
+
+      <AdPlacement format="rectangle" slot="handbook-bottom" className="my-4" />
     </div>
   );
 }
