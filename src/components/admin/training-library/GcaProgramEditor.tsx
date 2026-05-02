@@ -237,7 +237,7 @@ function BankDetail({
             {!readOnly && (
               <Button size="sm" variant="outline" onClick={() =>
                 bank.id && mutations.upsertQuestion.mutate({
-                  bank_id: bank.id, prompt: "New question", question_type: "multiple_choice",
+                  bank_id: bank.id, prompt: "New question", question_type: "single_choice",
                   choices: [], correct_answers: [], points: 1, sort_order: questions.length,
                 })
               } className="gap-1">
