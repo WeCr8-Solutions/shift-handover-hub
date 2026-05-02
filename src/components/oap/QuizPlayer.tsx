@@ -148,6 +148,7 @@ export function QuizPlayer({ quiz, onComplete, toolSlugs, mode = "practice" }: P
             review={reviewOpen}
             graded={gradedById[q.id]}
             attemptSeed={startedAt}
+            mode={mode}
           />
         ))}
 
