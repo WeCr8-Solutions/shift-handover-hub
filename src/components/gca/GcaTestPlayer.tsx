@@ -369,6 +369,7 @@ function GcaQuestionRow({
       <Label className="text-sm font-medium block">
         {index + 1}. {question.prompt}
       </Label>
+      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{hint}</p>
 
       {isMulti ? (
         <div className="space-y-1">
