@@ -299,6 +299,9 @@ export default function GCALanding() {
         </div>
       </section>
 
+      {/* Preset profession quick-start */}
+      <PresetProfessionsShowcase />
+
       {/* Levels */}
       <section className="py-16 md:py-24 border-b border-border">
         <div className="container mx-auto px-4">
