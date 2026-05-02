@@ -18,6 +18,7 @@ import {
   Gauge,
 } from "lucide-react";
 import { BuyCertificateDialog } from "@/components/certificates/BuyCertificateDialog";
+import { PresetProfessionsShowcase } from "@/components/learning/PresetProfessionsShowcase";
 import { MediaOverlayDisplay } from "@/components/training/MediaOverlayDisplay";
 
 export default function OapHub() {
@@ -179,40 +180,18 @@ export default function OapHub() {
 
         {presetPrograms.length > 0 && (
           <Card>
-            <CardHeader>
+            <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
                 <Award className="w-4 h-4 text-primary" /> Preset profession programs
               </CardTitle>
               <p className="text-xs text-muted-foreground">
-                {presetPrograms.length} ready-made certification tracks across {verticals.length} trade verticals — CNC machining, cabinetry, automotive, welding, construction, electrical, plumbing, and HVAC. Org admins can clone any of these into their shop in one click from the Employer panel.
+                {presetPrograms.length} ready-made certification tracks across {verticals.length} trade verticals.
+                Pick a trade to see its matched OAP sections, GCA practice tests, and inspection-tool videos.
+                Org admins can also clone any program into their shop with one click.
               </p>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-wrap gap-1.5">
-                {verticals.map((v) => {
-                  const count = presetPrograms.filter((p) => (p.vertical ?? "machining") === v).length;
-                  return (
-                    <Badge key={v} variant="secondary" className="text-[11px] capitalize">
-                      {v} · {count}
-                    </Badge>
-                  );
-                })}
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
-                {presetPrograms.slice(0, 6).map((p) => (
-                  <div key={p.id} className="text-xs border rounded p-2">
-                    <div className="font-medium truncate">{p.name}</div>
-                    {p.description && (
-                      <div className="text-muted-foreground line-clamp-2 mt-0.5">{p.description}</div>
-                    )}
-                  </div>
-                ))}
-              </div>
-              {presetPrograms.length > 6 && (
-                <p className="text-[11px] text-muted-foreground mt-2">
-                  +{presetPrograms.length - 6} more available in the Employer panel.
-                </p>
-              )}
+              <PresetProfessionsShowcase compact enableClone />
             </CardContent>
           </Card>
         )}
