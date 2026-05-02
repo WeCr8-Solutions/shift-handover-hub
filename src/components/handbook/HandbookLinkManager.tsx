@@ -148,12 +148,33 @@ export function HandbookLinkManager() {
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs">Entity key (e.g. <code>speed_feed_calculator</code>) or UUID</Label>
-            <Input
-              value={entityKey}
-              onChange={(e) => setEntityKey(e.target.value)}
-              placeholder="speed_feed_calculator"
-            />
+            <Label className="text-xs">Entity key (operator-tool key) or UUID</Label>
+            {entityType === "operator_tool" ? (
+              <div className="flex gap-1.5">
+                <Select value={entityKey} onValueChange={setEntityKey}>
+                  <SelectTrigger className="flex-1">
+                    <SelectValue placeholder="Pick a known tool key" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {KNOWN_OPERATOR_TOOL_KEYS.map((k) => (
+                      <SelectItem key={k} value={k}>{k}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Input
+                  value={entityKey}
+                  onChange={(e) => setEntityKey(e.target.value)}
+                  placeholder="or type a custom key"
+                  className="flex-1"
+                />
+              </div>
+            ) : (
+              <Input
+                value={entityKey}
+                onChange={(e) => setEntityKey(e.target.value)}
+                placeholder="UUID or key"
+              />
+            )}
           </div>
         </div>
 
@@ -193,6 +214,18 @@ export function HandbookLinkManager() {
           >
             Link reference
           </Button>
+          <div className="pt-1 border-t">
+            <p className="text-[11px] text-muted-foreground mb-1">
+              Topic missing? Create a new handbook stub and link it in one step.
+            </p>
+            <HandbookCreateReferenceDialog
+              initialTitle={refSearch}
+              onCreated={(ref) => {
+                setPickedRefId(ref.id);
+                setRefSearch(ref.title);
+              }}
+            />
+          </div>
         </div>
 
         <div className="space-y-1.5">
@@ -210,18 +243,29 @@ export function HandbookLinkManager() {
               key={l.id}
               className="flex items-center justify-between border rounded px-2 py-1.5 text-sm"
             >
-              <span className="flex items-center gap-1.5">
-                <BookOpen className="h-3.5 w-3.5 text-primary" />
-                {l.reference?.title ?? "Unknown reference"}
+              <span className="flex items-center gap-1.5 min-w-0">
+                <BookOpen className="h-3.5 w-3.5 text-primary shrink-0" />
+                <span className="truncate">{l.reference?.title ?? "Unknown reference"}</span>
               </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => removeLink.mutate(l.id)}
-                disabled={removeLink.isPending}
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </Button>
+              <div className="flex items-center gap-1 shrink-0">
+                {l.reference?.slug && (
+                  <Link
+                    to={`/handbook/${l.reference.slug}`}
+                    className="text-muted-foreground hover:text-foreground p-1"
+                    title="Open in handbook"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </Link>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeLink.mutate(l.id)}
+                  disabled={removeLink.isPending}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              </div>
             </div>
           ))}
         </div>
