@@ -279,6 +279,12 @@ export default function VerifyCertificate() {
           Certificates issued through the JobLine Operator Acceptance Program and
           G-Code Academy are portable and may be presented to any employer.
         </p>
+
+        <AdPlacement
+          format="horizontal"
+          slot="verify-cert-footer"
+          className="mt-10 print:hidden"
+        />
       </div>
     </div>
   );
