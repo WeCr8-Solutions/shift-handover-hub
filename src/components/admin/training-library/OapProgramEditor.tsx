@@ -307,3 +307,35 @@ function QuizEditor({ courseId, quizId, m, readOnly }: { courseId: string; quizI
     </Card>
   );
 }
+
+/**
+ * Shows which profession-preset verticals surface this course on the public
+ * GCA/OAP landing pages, so admins can see at a glance whether unpublishing
+ * the course would create empty preset cards.
+ */
+function CoursePresetLinks({ slug }: { slug: string }) {
+  const matches = PROFESSION_PRESETS.filter((p) => p.oapCourseSlugs.includes(slug));
+  if (matches.length === 0) {
+    return (
+      <div className="rounded border border-dashed border-border bg-muted/30 p-2">
+        <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+          <Sparkles className="w-3 h-3" /> Not linked from any profession preset.
+        </p>
+      </div>
+    );
+  }
+  return (
+    <div className="rounded border border-primary/30 bg-primary/5 p-2 space-y-1">
+      <p className="text-[11px] font-medium text-primary flex items-center gap-1">
+        <Sparkles className="w-3 h-3" /> Surfaced on these preset cards:
+      </p>
+      <div className="flex flex-wrap gap-1">
+        {matches.map((m) => (
+          <Badge key={m.vertical} variant="outline" className="text-[10px] h-5 capitalize">
+            {m.label}
+          </Badge>
+        ))}
+      </div>
+    </div>
+  );
+}
