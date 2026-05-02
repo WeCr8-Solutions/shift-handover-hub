@@ -14,8 +14,21 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useHandbookReferences, type HandbookEntityType } from "@/hooks/useHandbook";
-import { Trash2, Link2, BookOpen } from "lucide-react";
+import { Trash2, Link2, BookOpen, ExternalLink } from "lucide-react";
+import { Link } from "react-router-dom";
+import { HandbookCreateReferenceDialog } from "./HandbookCreateReferenceDialog";
 import { toast } from "sonner";
+
+const KNOWN_OPERATOR_TOOL_KEYS = [
+  "speed_feed_calculator",
+  "thread_selection",
+  "tap_drill_chart",
+  "tolerance_stackup",
+  "unit_converter",
+  "gdt_reference",
+  "material_lookup",
+  "surface_finish",
+];
 
 const ENTITY_TYPES: { value: HandbookEntityType; label: string }[] = [
   { value: "operator_tool", label: "Operator Tool (key)" },
