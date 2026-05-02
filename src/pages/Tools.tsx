@@ -207,6 +207,13 @@ export default function Tools() {
                   Source references
                 </p>
                 <HandbookCite entityType="operator_tool" entityId={activeToolDef.id} variant="card" />
+                {hasPlatformAccess && (
+                  <HandbookLinkInlineEditor
+                    entityType="operator_tool"
+                    entityIdOrKey={activeToolDef.id}
+                    title="Manage handbook links (admin)"
+                  />
+                )}
               </div>
             )}
             <Suspense fallback={<div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>}>
