@@ -162,6 +162,7 @@ export default function Demo() {
         </div>
       </main>
 
+      <AdPlacement format="horizontal" slot="demo-footer" className="mb-8" />
       <MarketingFooter />
     </div>
   );
