@@ -474,11 +474,17 @@
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
+  <!-- Talent landing entry kept here for legacy crawl path; canonical block lives in Talent Network section below. -->
   <url>
     <loc>https://jobline.ai/talent</loc>
-    <lastmod>2026-04-17</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jobline.ai/talent" />
+    <lastmod>2026-05-02</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://jobline.ai/og-image.png</image:loc>
+      <image:title>JobLine.ai Talent Network — Verified CNC Operators &amp; Machinists</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://jobline.ai/resources/glossary</loc>
