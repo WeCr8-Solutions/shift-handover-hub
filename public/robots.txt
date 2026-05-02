@@ -146,6 +146,8 @@ Disallow: /index
 
 User-agent: LinkedInBot
 Allow: /
+Allow: /talent
+Allow: /talent/
 Disallow: /dashboard
 Disallow: /admin
 Disallow: /teams
