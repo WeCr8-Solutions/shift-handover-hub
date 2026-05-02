@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, ExternalLink, CheckCircle2 } from "lucide-react";
+import { Loader2, ExternalLink, CheckCircle2, Lock } from "lucide-react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 import type { CertificateProgram } from "@/lib/certificates";
 
 interface BuyCertificateDialogProps {
@@ -16,6 +18,10 @@ interface BuyCertificateDialogProps {
   defaultProgramName?: string;
   /** Optional pre-filled recipient name. Used for upgrade flow. */
   defaultRecipientName?: string;
+  /** GCA bank the buyer passed — required to mint the cert post-payment. */
+  bankId?: string | null;
+  /** OAP role program the buyer passed — required to mint the cert post-payment. */
+  roleProgramId?: string | null;
   /** When provided, this is an "upgrade to printable" purchase for an
    *  existing digital-only cert. The webhook will UPDATE that row instead
    *  of issuing a new cert; success URL routes back to /verify/:certId. */
