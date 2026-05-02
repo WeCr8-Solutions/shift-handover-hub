@@ -24,9 +24,16 @@ interface Props {
   onComplete?: () => void;
   /** When provided, embeds an inspection-tool video card above the questions. */
   toolSlugs?: string[];
+  /**
+   * "practice" (default) — post-submit reveals correct/incorrect choices and
+   *   the per-question explanation. Used in self-study (free OAP study).
+   * "graded" — post-submit shows ONLY the final score + pass/fail. No reveal.
+   *   Used for the certification path (paid jobline.ai exam, employer exams).
+   */
+  mode?: "practice" | "graded";
 }
 
-export function QuizPlayer({ quiz, onComplete, toolSlugs }: Props) {
+export function QuizPlayer({ quiz, onComplete, toolSlugs, mode = "practice" }: Props) {
   const { user } = useAuth();
   const { data: questions = [], isLoading } = useOapQuizQuestions(quiz.id);
   const submit = useSubmitQuizAttempt();
@@ -141,6 +148,7 @@ export function QuizPlayer({ quiz, onComplete, toolSlugs }: Props) {
             review={reviewOpen}
             graded={gradedById[q.id]}
             attemptSeed={startedAt}
+            mode={mode}
           />
         ))}
 
@@ -197,6 +205,7 @@ function QuestionRow({
   review,
   graded,
   attemptSeed,
+  mode,
 }: {
   index: number;
   question: OapQuizQuestion;
@@ -205,6 +214,7 @@ function QuestionRow({
   review: boolean;
   graded?: OapGradedQuestion;
   attemptSeed: string;
+  mode: "practice" | "graded";
 }) {
   const choices = useMemo(
     () => shuffleChoices(question.choices, question.id, attemptSeed),
@@ -217,7 +227,8 @@ function QuestionRow({
   const isTrueFalse = question.question_type === "true_false";
   const hint = isMulti ? "Select all that apply" : isTrueFalse ? "True or false" : "Select one";
 
-  const showFeedback = review;
+  // In graded mode, never reveal correctness or explanations after submit.
+  const showFeedback = review && mode === "practice";
   const isRight = (key: string) =>
     showFeedback && correct.has(key)
       ? "border-primary bg-primary/5"

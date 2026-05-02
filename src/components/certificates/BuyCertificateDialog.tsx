@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, ExternalLink, CheckCircle2 } from "lucide-react";
+import { Loader2, ExternalLink, CheckCircle2, Lock } from "lucide-react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 import type { CertificateProgram } from "@/lib/certificates";
 
 interface BuyCertificateDialogProps {
@@ -16,6 +18,10 @@ interface BuyCertificateDialogProps {
   defaultProgramName?: string;
   /** Optional pre-filled recipient name. Used for upgrade flow. */
   defaultRecipientName?: string;
+  /** GCA bank the buyer passed — required to mint the cert post-payment. */
+  bankId?: string | null;
+  /** OAP role program the buyer passed — required to mint the cert post-payment. */
+  roleProgramId?: string | null;
   /** When provided, this is an "upgrade to printable" purchase for an
    *  existing digital-only cert. The webhook will UPDATE that row instead
    *  of issuing a new cert; success URL routes back to /verify/:certId. */
@@ -28,20 +34,33 @@ export function BuyCertificateDialog({
   program,
   defaultProgramName,
   defaultRecipientName,
+  bankId,
+  roleProgramId,
   upgradeCertId,
 }: BuyCertificateDialogProps) {
+  const { user } = useAuth();
   const [name, setName] = useState(defaultRecipientName ?? "");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(user?.email ?? "");
   const [organizationName, setOrganizationName] = useState("");
   const [programName, setProgramName] = useState(defaultProgramName ?? "");
   const [loading, setLoading] = useState(false);
+
+  // Lock recipient email to the signed-in user's email so the cert webhook
+  // can validate the linked passing attempts against the same Supabase user.
+  useEffect(() => {
+    if (user?.email) setEmail(user.email);
+  }, [user?.email]);
 
   const isUpgrade = !!upgradeCertId;
   const programLabel = program === "OAP" ? "Operator Acceptance Program" : "G-Code Academy";
 
   async function handleCheckout() {
+    if (!user) {
+      toast.error("Please sign in before purchasing a certificate.");
+      return;
+    }
     if (!name.trim() || !email.trim()) {
-      toast.error("Please enter your name and email");
+      toast.error("Please enter your name");
       return;
     }
     setLoading(true);
@@ -51,8 +70,11 @@ export function BuyCertificateDialog({
           program,
           recipientName: name.trim(),
           recipientEmail: email.trim(),
+          recipientUserId: user.id,
           programName: programName.trim() || undefined,
           organizationName: organizationName.trim() || null,
+          bankId: bankId ?? null,
+          roleProgramId: roleProgramId ?? null,
           upgradeCertId: upgradeCertId ?? null,
         },
       });
@@ -106,16 +128,21 @@ export function BuyCertificateDialog({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="cert-email">Email (cert + receipt sent here)</Label>
+            <Label htmlFor="cert-email" className="flex items-center gap-1.5">
+              Email <Lock className="w-3 h-3 text-muted-foreground" />
+            </Label>
             <Input
               id="cert-email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
+              readOnly
+              disabled
+              placeholder="Sign in to continue"
               autoComplete="email"
-              disabled={loading}
             />
+            <p className="text-[11px] text-muted-foreground">
+              Locked to your signed-in account so we can verify you passed the test before issuing the certificate.
+            </p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="cert-program">Certificate title</Label>
@@ -169,14 +196,22 @@ export function BuyCertificateDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
             Cancel
           </Button>
-          <Button onClick={handleCheckout} disabled={loading} className="gap-2">
-            {loading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <ExternalLink className="w-4 h-4" />
-            )}
-            Pay $12 & continue
-          </Button>
+          {!user ? (
+            <Button asChild className="gap-2">
+              <Link to={`/auth?redirect=${encodeURIComponent(window.location.pathname)}`}>
+                Sign in to continue
+              </Link>
+            </Button>
+          ) : (
+            <Button onClick={handleCheckout} disabled={loading} className="gap-2">
+              {loading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <ExternalLink className="w-4 h-4" />
+              )}
+              Pay $12 & continue
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

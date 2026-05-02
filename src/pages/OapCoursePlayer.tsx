@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,8 @@ import { BookOpen, ArrowLeft, ArrowRight, Clock, CheckCircle2 } from "lucide-rea
 
 export default function OapCoursePlayer() {
   const { courseSlug, lessonSlug } = useParams<{ courseSlug: string; lessonSlug?: string }>();
+  const [searchParams] = useSearchParams();
+  const examMode = searchParams.get("exam") === "1" ? "graded" : "practice";
   const navigate = useNavigate();
   const { data: courses = [] } = useOapCourses();
   const course = useMemo(
@@ -169,8 +171,10 @@ export default function OapCoursePlayer() {
 
           {showQuiz && quizzes[0] && (
             <>
-              <h1 className="text-2xl font-semibold">Quiz — {quizzes[0].title}</h1>
-              <QuizPlayer quiz={quizzes[0]} toolSlugs={toolSlugs} />
+              <h1 className="text-2xl font-semibold">
+                {examMode === "graded" ? "Graded Exam" : "Quiz"} — {quizzes[0].title}
+              </h1>
+              <QuizPlayer quiz={quizzes[0]} toolSlugs={examMode === "graded" ? undefined : toolSlugs} mode={examMode} />
               <Button variant="outline" onClick={() => setShowQuiz(false)}>
                 <ArrowLeft className="w-4 h-4 mr-1" /> Back to lessons
               </Button>

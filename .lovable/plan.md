@@ -1,105 +1,157 @@
-# GCA & OAP Audit — Findings and Fix Plan
+# OAP / GCA Final Audit — Exam Mode + Certificate Gating
 
-## Critical Findings
+## What I verified is already correct
 
-A live audit of the production database and player UIs surfaced four blocking issues. Right now, virtually every GCA test and OAP quiz is **either ungradable or visually broken** — users almost certainly see blank radio buttons and cannot pass. The YouTube embed pieces are fine; the data layer is the problem.
+1. **Question shuffling and grading** — `shuffleChoices()` deterministically reorders choices per attempt (seeded by `questionId + startedAt`). Grader RPCs (`grade_gca_attempt`, `grade_oap_quiz_attempt`) validate against canonical keys server-side. No false answers leak.
+2. **Answer keys hidden from clients** — `gca_questions.correct_answers` and `explanation` are revoked from `authenticated`; client only loads `id, prompt, choices, points, sort_order`. Same pattern for OAP.
+3. **YouTube video player** — `TrainingMedia` + `InspectionToolVideoCard` + `MediaOverlayDisplay` correctly render `storage_bucket='external'` URLs as `youtube.com/embed/` iframes. Verified across GCA tool videos and OAP quiz refresher cards.
+4. **Cert verification page** — `/verify/:certId` works publicly (RLS public SELECT), shows status (valid/expired/revoked), and gates printable PDF behind `isPaid`.
+5. Gate the exams for payment for [jobline.ai nit just printed version making a total package for course plus cert 24.99. Exams can be used as practice and learning  but not the full exam course](http://jobline.ai)
 
-### 1. `choices` are stored as bare strings, but the UI expects `{key, label}` objects
+## What is wrong (the actual bugs)
 
-- All 392 GCA questions and all 99 OAP quiz questions store `choices` like `["G00","G01","G02","G03"]`.
-- `GcaTestPlayer` and `QuizPlayer` render `choices.map(c => <RadioGroupItem value={c.key}><span>{c.label}`. With strings, both `c.key` and `c.label` are `undefined` → blank rows, no value submitted.
+### Bug 1 — "Hints" show during graded review even in employer/paid exams
 
-### 2. `correct_answers` use 3 different, inconsistent encodings
+The label "Select one / Select all that apply / True or false" is fine (it's a question-type cue, not an answer hint). But after submission, **both players colorize correct/incorrect choices and reveal `explanation` text**. That's appropriate for self-study practice, but the rule is **graded employer + jobline.ai paid exams must show only the final score** — no per-question right/wrong reveal, no explanation.
 
+### Bug 2 — Anyone can buy a $12 certificate without passing anything
 
-| Source | label-text | positional index (`"0"`,`"1"`) | matches a real key |
-| ------ | ---------- | ------------------------------ | ------------------ |
-| GCA    | 139 rows   | 253 rows                       | 0 rows             |
-| OAP    | 23 rows    | 76 rows                        | 0 rows             |
+- `BuyCertificateDialog` → `create-cert-checkout` → Stripe → `stripe-webhook handleCertCheckout` inserts a cert row purely from session metadata. **There is no check that the recipient ever passed an OAP quiz or GCA bank.** A visitor can land on `/oap`, click "Get my certificate — $12", pay, and receive a verifiable cert without taking a single test.
+- `CertificateIssuancePanel` (org admin path) similarly issues without verifying the recipient has passing attempts on the linked role program / bank.
 
+### Bug 3 — Self-skill free path is conflated with paid certification
 
-The grader RPC compares `correct_answers` to whatever the user submits, so even after fixing #1 the test would mark everyone wrong.
+Current OapHub copy ("$12 one-time · no account required") encourages random self-purchase. Per spec, self-skilling on a Talent profile (machines, tools added by the operator) must stay free, but a **real verifiable certificate** must require either:
 
-### 3. `question_type` enum mismatch
-
-- DB uses `multiple_choice` and `true_false`.
-- Frontend checks for `single_choice`, `multi_choice`, and `multi_select` — none match.
-- Result: every question always renders as a radio group (single-select), even multi-answer ones.
-- **Note**: today no question has more than one correct answer, but the structure must still support it (user explicitly asked about multi-choice).
-
-### 4. No choice randomization
-
-- Choices render in stored order every time. User asked for "multi-choice random answers."
-- We must shuffle per-attempt while still letting the grader compare answers reliably.
-
-YouTube playback (`TrainingMedia.tsx`, `MediaOverlayDisplay.tsx`) correctly converts `youtube.com/watch?v=` and `youtu.be/` URLs into `youtube.com/embed/` iframes — **no change needed**.
+- an **employer organization issues it** (org admin/supervisor of a paid org), OR
+- the user **paid through jobline.ai AND has a passing attempt** on the linked program / bank.
 
 ---
 
-## Fix Plan
+## Plan
 
-### Phase 1 — Data normalization migration (one-shot)
+### 1. Add an `exam_mode` flag to both players
 
-Migration converts every GCA + OAP question to a single canonical shape:
+Add prop `mode: "practice" | "graded"` (default `"practice"`) to `GcaTestPlayer` and `QuizPlayer`. In `"graded"` mode after submit:
+
+- Do NOT colorize correct/incorrect choices (`choiceClass` returns neutral border).
+- Do NOT render `graded.explanation`.
+- Do NOT render the `HandbookCite` "learn more" card.
+- Show only: final score %, pass/fail badge, and a "Try again" button (still allowed because attempts are server-graded).
+
+Pass `mode="graded"` from:
+
+- `GcaTestPage` (the public test player at `/gca/test/:bankSlug`) — this is the certification path.
+- Anywhere `QuizPlayer` is launched from inside an employer-context flow (`OapEmployerPanel`, role-program enrollment via `OapCoursePlayer` when the course belongs to an org-assigned role program).
+
+Keep `mode="practice"` (the existing rich review with explanations) for:
+
+- `OapCoursePlayer` when the user is self-studying without an org assignment.
+- Any "study mode" preview surfaces.
+
+### 2. Gate certificate issuance behind a real "passed" record
+
+Add a server-side check inside `issue-certificate` and `stripe-webhook handleCertCheckout`:
+
+- **For OAP** with `role_program_id` set: require at least one row in `oap_quiz_attempts` (joined through `oap_role_program_courses → oap_quizzes`) where `user_id = recipient` AND `passed = true` covering every required course in the role program. If `recipientEmail` does not yet map to a Supabase user (guest pre-signup), reject with a clear error: *"Sign in with the email used during your OAP attempts before purchasing the certificate."*
+- **For GCA** with `bank_id` set: require at least one `gca_test_attempts` row for the recipient with `bank_id = X` AND `passed = true`.
+- **For both** when no `role_program_id` / `bank_id` is provided (generic "OAP — Floor Certified"): require **either** (a) the caller is an org admin/supervisor (already enforced for free issuance) **or** (b) the recipient has at least one passed attempt on any canonical role program / bank within the last 12 months.
+
+Implementation:
+
+- Add a SQL helper `public.has_passed_oap_role_program(_user_id uuid, _role_program_id uuid) returns boolean` and `public.has_passed_gca_bank(_user_id uuid, _bank_id uuid) returns boolean`, both `SECURITY DEFINER set search_path = public`.
+- Call these from `issue-certificate/index.ts` (admin issuance) and `stripe-webhook handleCertCheckout` (paid path) before insert. On failure, refund-friendly behavior in the webhook: **do not insert the cert**, log the rejection, and email the buyer that no passing attempt was found and how to get a refund (or take the test). Use the existing `send-email` function.
+
+### 3. Fix the public OAP/GCA "Get certificate" CTAs
+
+Replace the "Get my certificate — $12" buttons (OapHub, OAPLanding, GCALanding) with a two-state CTA:
+
+- **If the signed-in user has a passing attempt on the linked program/bank** → opens `BuyCertificateDialog` (unchanged).
+- **Otherwise** → opens a small "Take the test first" panel that links to `/gca/test/:bankSlug` or `/oap/courses/:slug`, with copy: *"Certificates are issued only after you pass the program. Practice and study are always free."*
+
+Anonymous visitors get the second state (since we cannot prove a passed attempt). Keeps SEO/landing copy honest.
+
+### 4. Tighten `BuyCertificateDialog`
+
+- Require an authenticated user before opening (fall back to "Sign in to continue").
+- Pre-fill `recipientEmail` from `user.email` and disable the field — prevents buying a cert under a different email than the one tied to the passing attempts.
+- Pass `bank_id` (GCA) or `role_program_id` (OAP) into `create-cert-checkout` so the webhook can run the passed-attempt check.
+
+### 5. Surface employer-issued vs self-issued provenance
+
+On `/verify/:certId`, add a small badge below the cert ID:
+
+- "Issued by **{org name}**" when `organization_id` is set,
+- "Self-purchased after passing **{program/bank name}**" when no org but a linked program/bank exists,
+- (No badge if neither — but step 2 makes this case impossible going forward.)
+
+### 6. Backfill / cleanup
+
+One-time SQL audit (read-only, reported to user, no destructive action without confirmation):
+
+- Count existing `oap_certificates` / `gca_certificates` with no `organization_id`, no `role_program_id` / `bank_id`, and no matching passed attempt — these are the legacy "bought without passing" certs. Report the count and let the user decide whether to revoke (set `status = 'revoked'`) or grandfather them.
+
+---
+
+## Technical details
+
+**Files to edit**
 
 ```text
-choices:          [{ "key": "a", "label": "G00" },
-                   { "key": "b", "label": "G01" }, ...]
-correct_answers:  ["a"]                       -- always references key
-question_type:    'single_choice' | 'multi_choice' | 'true_false'
+src/components/gca/GcaTestPlayer.tsx       add `mode` prop + neutral review in graded mode
+src/components/oap/QuizPlayer.tsx          add `mode` prop + neutral review in graded mode
+src/pages/GcaTestPage.tsx                  pass mode="graded"
+src/pages/OapCoursePlayer.tsx              compute mode from enrollment context
+src/pages/OapHub.tsx                       two-state CTA + auth-gated dialog
+src/pages/OAPLanding.tsx                   two-state CTA
+src/pages/GCALanding.tsx                   two-state CTA
+src/components/certificates/BuyCertificateDialog.tsx
+                                           require auth, lock recipientEmail, forward bank_id/role_program_id
+src/pages/VerifyCertificate.tsx            add provenance badge
+supabase/functions/create-cert-checkout/index.ts
+                                           accept role_program_id, persist in metadata
+supabase/functions/issue-certificate/index.ts
+                                           call has_passed_* helpers; reject on fail
+supabase/functions/stripe-webhook/index.ts handleCertCheckout: call has_passed_* helpers; on fail, log + email buyer + skip insert
 ```
 
-Conversion rules per row:
+**New SQL (idempotent migration)**
 
-1. If `choices[0]` is a string → wrap each as `{ key: <a|b|c|d|e>, label: <string> }`.
-2. Map existing `correct_answers` to keys:
-  - If value is a positional index (`"0"`, `"1"`...) → key at that index.
-  - Else if value matches a label → key for that label.
-  - Else log to a `gca_question_repair_log` / `oap_question_repair_log` table for manual review (we do not silently drop).
-3. Rename `multiple_choice` → `single_choice` (since today none are truly multi); keep `true_false`. Add a new `multi_choice` type for future authoring — UI will already support it.
+```text
+create or replace function public.has_passed_gca_bank(_user_id uuid, _bank_id uuid)
+returns boolean language sql stable security definer set search_path = public as $$
+  select exists (
+    select 1 from public.gca_test_attempts
+    where user_id = _user_id and bank_id = _bank_id and passed = true
+  );
+$$;
 
-Verification queries run inside the same migration, raising an exception if any row ends with `correct_answers ⊄ choice_keys`.
+create or replace function public.has_passed_oap_role_program(_user_id uuid, _role_program_id uuid)
+returns boolean language sql stable security definer set search_path = public as $$
+  with required as (
+    select q.id as quiz_id
+    from public.oap_role_program_courses rpc
+    join public.oap_quizzes q on q.course_id = rpc.course_id
+    where rpc.role_program_id = _role_program_id
+  ),
+  passed as (
+    select distinct quiz_id from public.oap_quiz_attempts
+    where user_id = _user_id and passed = true and quiz_id in (select quiz_id from required)
+  )
+  select (select count(*) from required) > 0
+     and (select count(*) from required) = (select count(*) from passed);
+$$;
+```
 
-### Phase 2 — Player UI fixes
+**Stripe webhook rejection email** — new minimal HTML inviting the buyer to take the test, with a refund-request mailto.
 
-`**GcaTestPlayer.tsx` and `oap/QuizPlayer.tsx**`
-
-- Update `question_type` checks to `single_choice | multi_choice | true_false` (drop legacy aliases).
-- Add a small `useShuffledChoices(question.id, choices)` hook that produces a stable per-attempt random order using a seed derived from `question.id + attemptStartedAt`. Stable across re-renders within an attempt; new order on retry. Keys never change, only display order.
-- Defensive guard: if `c.key` is missing, fall back to the index — prevents future regressions from blank rows.
-- Show "Select all that apply" hint on `multi_choice`, "Select one" on `single_choice`.
-
-### Phase 3 — Grader hardening
-
-`grade_gca_attempt` and `grade_oap_quiz_attempt` already do set comparison correctly. We add two safety rails:
-
-- Reject the attempt with a clear error if any submitted answer key is not a valid choice key (catches client bugs early).
-- For `single_choice` / `true_false`, enforce exactly one answer key in `_given`.
-- Return the per-question `points_earned` so future partial-credit work is unblocked (no behavior change today).
-
-### Phase 4 — Spot-check & QA
-
-- Re-run the integrity SQL from the audit; expect 0 orphan correct keys.
-- Manual click-through of one GCA bank per topic and OAP sections 1, 4 (Measurement & Inspection — has the most questions), and 12.
-- Confirm: choices render with text, order changes between attempts, correct selection passes, wrong selection shows the explanation + HandbookCite, YouTube tutorials still play inline in `InspectionToolVideoCard`.
+**Backwards compatibility** — `mode` defaults to `"practice"` so existing OapCoursePlayer self-study keeps working unchanged. The grader RPCs are unchanged; only the post-submit UI varies.
 
 ---
 
-## Files Touched
+## Out of scope (intentionally not touching)
 
-**New**
-
-- `supabase/migrations/<ts>_normalize_question_choices_and_correct_answers.sql`
-
-**Modified**
-
-- `src/components/gca/GcaTestPlayer.tsx` — type checks, shuffle hook, defensive key fallback.
-- `src/components/oap/QuizPlayer.tsx` — same changes for parity.
-- `src/hooks/useOapProgram.ts` — extend `OapQuizQuestion.question_type` typing.
-- (No change) `src/components/training/TrainingMedia.tsx`, `InspectionToolVideoCard.tsx` — YouTube embeds verified working.
-
-## Risk Notes
-
-- The migration rewrites the entire question corpus in place. We will snapshot the old `choices` / `correct_answers` into `*_repair_log` tables before the rewrite so nothing is lost and any ambiguous row can be reviewed.
-- Existing `gca_test_attempts` / `oap_quiz_attempts` rows reference question IDs (not keys) — they remain intact. Old `answers` payloads will not regrade cleanly, but past pass/fail records stay accurate as historical attempts.
-- Allow for users to select an answer and then use a submit button before they get the right or wrong answer notification. 
+- The `BuyCertificateDialog` "upgrade-to-printable" path stays as-is — once a cert exists (and it now requires a passed attempt), unlocking print is just a payment.
+- Talent profile self-skilling (machines, tools, profile claims) — unchanged. Still free.
+- Question content and bank curation — already audited in prior pass.
+- PDF cert template visuals — unchanged.

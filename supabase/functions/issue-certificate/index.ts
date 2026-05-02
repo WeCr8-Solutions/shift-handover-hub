@@ -125,6 +125,37 @@ serve(async (req) => {
     const userId = body.userId ?? caller.id;
     const validFrom = new Date().toISOString().slice(0, 10);
 
+    // ── Passed-attempt gate ──
+    // Even an org admin issuing a cert for a member must be able to demonstrate
+    // the recipient passed the underlying tests. Platform admins can bypass
+    // (e.g. importing legacy training records or grandfathering).
+    if (!isPlatformAdmin) {
+      if (body.program === "GCA" && body.bankId) {
+        const { data: passedGca, error: gcaErr } = await supabaseAdmin.rpc(
+          "has_passed_gca_bank",
+          { _user_id: userId, _bank_id: body.bankId },
+        );
+        if (gcaErr) throw new Error(`Passed-attempt check failed: ${gcaErr.message}`);
+        if (!passedGca) {
+          throw new Error(
+            "This recipient has no passing attempt on the linked GCA question bank. They must pass the test before a certificate can be issued.",
+          );
+        }
+      }
+      if (body.program === "OAP" && body.rolePragramId) {
+        const { data: passedOap, error: oapErr } = await supabaseAdmin.rpc(
+          "has_passed_oap_role_program",
+          { _user_id: userId, _role_program_id: body.rolePragramId },
+        );
+        if (oapErr) throw new Error(`Passed-attempt check failed: ${oapErr.message}`);
+        if (!passedOap) {
+          throw new Error(
+            "This recipient has not passed every required quiz in the linked OAP role program. They must complete the program before a certificate can be issued.",
+          );
+        }
+      }
+    }
+
     // Default validUntil: for OAP issued by an org, use org's oap_default_recert_months
     // (default 12). GCA stays lifetime (null) unless caller passes one.
     let resolvedValidUntil: string | null = body.validUntil ?? null;

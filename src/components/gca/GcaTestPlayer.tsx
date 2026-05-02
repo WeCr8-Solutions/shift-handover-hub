@@ -136,9 +136,17 @@ interface Props {
   bankSlug: string;
   hasProAccess: boolean;
   onUpgrade?: () => void;
+  /**
+   * "practice" (default) — post-submit review reveals correct/incorrect choices,
+   *   explanations, and the Handbook reference. Used in self-study contexts.
+   * "graded" — post-submit shows ONLY the final score + pass/fail. No per-question
+   *   reveal, no explanation, no Handbook cite. Used for the certification path
+   *   (jobline.ai paid exam, employer-issued exams).
+   */
+  mode?: "practice" | "graded";
 }
 
-export function GcaTestPlayer({ bankSlug, hasProAccess, onUpgrade }: Props) {
+export function GcaTestPlayer({ bankSlug, hasProAccess, onUpgrade, mode = "practice" }: Props) {
   const { user } = useAuth();
   const { data: bank, isLoading: bankLoading } = useGcaBank(bankSlug);
   const { data: questions = [], isLoading: qLoading } = useGcaQuestions(bank?.id);
@@ -261,6 +269,7 @@ export function GcaTestPlayer({ bankSlug, hasProAccess, onUpgrade }: Props) {
             review={reviewOpen}
             graded={gradedById[q.id]}
             attemptSeed={startedAt}
+            mode={mode}
           />
         ))}
 
@@ -302,9 +311,14 @@ export function GcaTestPlayer({ bankSlug, hasProAccess, onUpgrade }: Props) {
               <p className="text-sm font-semibold">
                 {result.passed ? "Passed" : "Did not pass"} — {result.score_pct}%
               </p>
-              {!result.passed && (
+              {!result.passed && mode === "practice" && (
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Review the explanations below, then try again.
+                </p>
+              )}
+              {!result.passed && mode === "graded" && (
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Graded exam — explanations are not shown. Study the practice bank, then retake.
                 </p>
               )}
             </div>
@@ -338,6 +352,7 @@ function GcaQuestionRow({
   review,
   graded,
   attemptSeed,
+  mode,
 }: {
   index: number;
   question: GcaQuestion;
@@ -346,6 +361,7 @@ function GcaQuestionRow({
   review: boolean;
   graded?: GradedQuestion;
   attemptSeed: string;
+  mode: "practice" | "graded";
 }) {
   const choices = useMemo(
     () => shuffleChoices(question.choices, question.id, attemptSeed),
@@ -356,9 +372,10 @@ function GcaQuestionRow({
     question.question_type === "multi_select" || question.question_type === "multi_choice";
   const isTrueFalse = question.question_type === "true_false";
   const hint = isMulti ? "Select all that apply" : isTrueFalse ? "True or false" : "Select one";
+  const showReveal = review && mode === "practice";
 
   const choiceClass = (key: string) => {
-    if (!review) return "border-border";
+    if (!showReveal) return "border-border";
     if (correct.has(key)) return "border-primary bg-primary/5";
     if (value.includes(key) && !correct.has(key)) return "border-destructive bg-destructive/5";
     return "border-border";
@@ -408,13 +425,13 @@ function GcaQuestionRow({
         </RadioGroup>
       )}
 
-      {review && graded?.explanation && (
+      {showReveal && graded?.explanation && (
         <p className="text-xs text-muted-foreground italic pt-1 border-t">
           {graded.explanation}
         </p>
       )}
 
-      {review && (
+      {showReveal && (
         <div className="pt-1">
           <HandbookCite
             entityType="gca_question"
