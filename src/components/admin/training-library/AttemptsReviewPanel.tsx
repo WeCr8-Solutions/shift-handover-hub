@@ -46,7 +46,9 @@ interface QuestionRow {
 export function AttemptsReviewPanel({ program, parentId }: Props) {
   const attemptsTable = program === "gca" ? "gca_test_attempts" : "oap_quiz_attempts";
   const parentColumn = program === "gca" ? "bank_id" : "quiz_id";
-  const questionsTable = program === "gca" ? "gca_questions" : "oap_quiz_questions";
+  // Use the admin-only views — base tables no longer expose correct_answers
+  // to the `authenticated` role at the column level.
+  const questionsTable = program === "gca" ? "gca_questions_admin" : "oap_quiz_questions_admin";
   const questionParent = program === "gca" ? "bank_id" : "quiz_id";
 
   const attemptsQuery = useQuery({

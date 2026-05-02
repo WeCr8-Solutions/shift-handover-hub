@@ -54,8 +54,11 @@ export function useGcaQuestions(bankId: string | null) {
     queryKey: ["gca-questions-admin", bankId],
     queryFn: async () => {
       if (!bankId) return [];
+      // Reads via the admin-only view exposing correct_answers + explanation.
+      // Base-table column SELECT is revoked from `authenticated`; the view's
+      // has_role(admin) filter ensures only platform admins receive rows.
       const { data, error } = await supabase
-        .from("gca_questions")
+        .from("gca_questions_admin" as any)
         .select("*")
         .eq("bank_id", bankId)
         .order("sort_order", { ascending: true });
