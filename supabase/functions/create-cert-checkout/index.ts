@@ -85,9 +85,11 @@ serve(async (req) => {
         program: body.program,
         recipient_name: body.recipientName.trim().slice(0, 200),
         recipient_email: body.recipientEmail.trim().toLowerCase(),
+        recipient_user_id: (body.recipientUserId ?? "").slice(0, 64),
         program_name: programName.slice(0, 200),
         organization_name: (body.organizationName ?? "").slice(0, 200),
         bank_id: body.bankId ?? "",
+        role_program_id: body.roleProgramId ?? "",
         upgrade_cert_id: upgradeCertId,
       },
     });
