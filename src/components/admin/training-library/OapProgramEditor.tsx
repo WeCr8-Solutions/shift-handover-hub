@@ -171,6 +171,13 @@ function CourseEditor({ course, m, readOnly }: { course: OapCourse; m: ReturnTyp
 
         <CoursePresetLinks slug={draft.slug} />
 
+        <HandbookLinkInlineEditor
+          entityType="oap_course"
+          entityIdOrKey={course.id}
+          readOnly={readOnly}
+          title="Course-level handbook references"
+        />
+
         <label className="flex items-center gap-2 text-sm">
           <Switch checked={draft.is_published} onCheckedChange={(v) => setDraft({ ...draft, is_published: v })} disabled={readOnly} /> Published
         </label>
@@ -234,6 +241,13 @@ function LessonEditor({ courseId, lessonId, m, readOnly }: { courseId: string; l
             cover_overlay_text_color: draft.cover_overlay_text_color ?? null,
           }}
           onChange={(v) => setDraft({ ...draft, ...v })}
+        />
+
+        <HandbookLinkInlineEditor
+          entityType="oap_lesson"
+          entityIdOrKey={lesson.id}
+          readOnly={readOnly}
+          title="Lesson handbook references"
         />
 
         <label className="flex items-center gap-2 text-sm">
