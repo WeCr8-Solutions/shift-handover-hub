@@ -269,6 +269,7 @@ export function GcaTestPlayer({ bankSlug, hasProAccess, onUpgrade, mode = "pract
             review={reviewOpen}
             graded={gradedById[q.id]}
             attemptSeed={startedAt}
+            mode={mode}
           />
         ))}
 
