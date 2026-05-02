@@ -116,6 +116,8 @@ Disallow: /index
 
 User-agent: Twitterbot
 Allow: /
+Allow: /talent
+Allow: /talent/
 Disallow: /dashboard
 Disallow: /admin
 Disallow: /teams
