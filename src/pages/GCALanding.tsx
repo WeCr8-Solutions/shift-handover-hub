@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { CertificatePreview } from "@/components/certificates/CertificatePreview";
 import { BuyCertificateDialog } from "@/components/certificates/BuyCertificateDialog";
+import { PresetProfessionsShowcase } from "@/components/learning/PresetProfessionsShowcase";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -297,6 +298,9 @@ export default function GCALanding() {
           </div>
         </div>
       </section>
+
+      {/* Preset profession quick-start */}
+      <PresetProfessionsShowcase />
 
       {/* Levels */}
       <section className="py-16 md:py-24 border-b border-border">
