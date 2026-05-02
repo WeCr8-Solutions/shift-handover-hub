@@ -205,6 +205,7 @@ function QuestionRow({
   review,
   graded,
   attemptSeed,
+  mode,
 }: {
   index: number;
   question: OapQuizQuestion;
@@ -213,6 +214,7 @@ function QuestionRow({
   review: boolean;
   graded?: OapGradedQuestion;
   attemptSeed: string;
+  mode: "practice" | "graded";
 }) {
   const choices = useMemo(
     () => shuffleChoices(question.choices, question.id, attemptSeed),
@@ -225,7 +227,8 @@ function QuestionRow({
   const isTrueFalse = question.question_type === "true_false";
   const hint = isMulti ? "Select all that apply" : isTrueFalse ? "True or false" : "Select one";
 
-  const showFeedback = review;
+  // In graded mode, never reveal correctness or explanations after submit.
+  const showFeedback = review && mode === "practice";
   const isRight = (key: string) =>
     showFeedback && correct.has(key)
       ? "border-primary bg-primary/5"
