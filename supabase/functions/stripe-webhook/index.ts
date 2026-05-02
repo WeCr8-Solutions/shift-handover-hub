@@ -229,6 +229,39 @@ function generateCertId(program: "OAP" | "GCA"): string {
   return `${program}-${body}-${new Date().getFullYear()}`;
 }
 
+async function sendCertGateRejectionEmail(
+  recipientEmail: string,
+  recipientName: string,
+  program: "OAP" | "GCA",
+  reason: "not_passed" | "no_account",
+) {
+  try {
+    const programLabel = program === "OAP" ? "Operator Acceptance Program" : "G-Code Academy";
+    const studyUrl = program === "OAP" ? "https://jobline.ai/oap" : "https://jobline.ai/gcode-academy";
+    const reasonText =
+      reason === "no_account"
+        ? `We couldn't find a JobLine account matching <strong>${recipientEmail}</strong>. Sign in with the same email you used while practicing the ${programLabel}, then re-purchase your certificate.`
+        : `Our records show no passing attempt yet on the ${programLabel} test you selected. Take the test (free practice and study are always available), pass it, then re-purchase your certificate.`;
+    await supabaseAdmin.functions.invoke("send-email", {
+      body: {
+        to: recipientEmail,
+        subject: `Your ${program} certificate could not be issued — refund available`,
+        html: `
+          <div style="font-family:-apple-system,Inter,sans-serif;max-width:560px;margin:auto;padding:24px;color:#0F172A">
+            <h2 style="margin:0 0 8px">Hi ${recipientName},</h2>
+            <p>Thanks for your purchase. Before we mint a verifiable ${programLabel} certificate, we need to confirm you've actually passed the underlying test — that's what makes a JobLine cert trustworthy to employers.</p>
+            <p>${reasonText}</p>
+            <p><a href="${studyUrl}" style="display:inline-block;background:#0F172A;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none">Open ${programLabel}</a></p>
+            <p style="font-size:12px;color:#64748B;margin-top:24px">If you'd prefer a refund instead, reply to this email or contact <a href="mailto:support@jobline.ai">support@jobline.ai</a>. We refund every cert that wasn't issued, no questions asked.</p>
+          </div>
+        `,
+      },
+    });
+  } catch (e) {
+    console.warn("[stripe-webhook] gate rejection email failed:", e);
+  }
+}
+
 async function handleCertCheckout(session: Stripe.Checkout.Session) {
   const meta = session.metadata ?? {};
   const program = (meta.program === "OAP" || meta.program === "GCA") ? meta.program : null;
