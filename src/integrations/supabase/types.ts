@@ -11627,6 +11627,106 @@ export type Database = {
           },
         ]
       }
+      gca_questions_admin: {
+        Row: {
+          bank_id: string | null
+          choices: Json | null
+          correct_answers: Json | null
+          created_at: string | null
+          explanation: string | null
+          id: string | null
+          points: number | null
+          prompt: string | null
+          question_type: string | null
+          sort_order: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          bank_id?: string | null
+          choices?: Json | null
+          correct_answers?: Json | null
+          created_at?: string | null
+          explanation?: string | null
+          id?: string | null
+          points?: number | null
+          prompt?: string | null
+          question_type?: string | null
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          bank_id?: string | null
+          choices?: Json | null
+          correct_answers?: Json | null
+          created_at?: string | null
+          explanation?: string | null
+          id?: string | null
+          points?: number | null
+          prompt?: string | null
+          question_type?: string | null
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gca_questions_bank_id_fkey"
+            columns: ["bank_id"]
+            isOneToOne: false
+            referencedRelation: "gca_question_banks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      oap_quiz_questions_admin: {
+        Row: {
+          choices: Json | null
+          correct_answers: Json | null
+          created_at: string | null
+          explanation: string | null
+          id: string | null
+          points: number | null
+          prompt: string | null
+          question_type: string | null
+          quiz_id: string | null
+          sort_order: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          choices?: Json | null
+          correct_answers?: Json | null
+          created_at?: string | null
+          explanation?: string | null
+          id?: string | null
+          points?: number | null
+          prompt?: string | null
+          question_type?: string | null
+          quiz_id?: string | null
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          choices?: Json | null
+          correct_answers?: Json | null
+          created_at?: string | null
+          explanation?: string | null
+          id?: string | null
+          points?: number | null
+          prompt?: string | null
+          question_type?: string | null
+          quiz_id?: string | null
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oap_quiz_questions_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "oap_quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       operator_profiles_public: {
         Row: {
           avatar_url: string | null
