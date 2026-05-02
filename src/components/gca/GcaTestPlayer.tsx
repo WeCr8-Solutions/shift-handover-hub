@@ -136,9 +136,17 @@ interface Props {
   bankSlug: string;
   hasProAccess: boolean;
   onUpgrade?: () => void;
+  /**
+   * "practice" (default) — post-submit review reveals correct/incorrect choices,
+   *   explanations, and the Handbook reference. Used in self-study contexts.
+   * "graded" — post-submit shows ONLY the final score + pass/fail. No per-question
+   *   reveal, no explanation, no Handbook cite. Used for the certification path
+   *   (jobline.ai paid exam, employer-issued exams).
+   */
+  mode?: "practice" | "graded";
 }
 
-export function GcaTestPlayer({ bankSlug, hasProAccess, onUpgrade }: Props) {
+export function GcaTestPlayer({ bankSlug, hasProAccess, onUpgrade, mode = "practice" }: Props) {
   const { user } = useAuth();
   const { data: bank, isLoading: bankLoading } = useGcaBank(bankSlug);
   const { data: questions = [], isLoading: qLoading } = useGcaQuestions(bank?.id);
