@@ -17,6 +17,7 @@ import {
 } from "@/hooks/useOapProgram";
 import { CheckCircle2, XCircle, Timer, Trophy } from "lucide-react";
 import { InspectionToolVideoCard } from "@/components/training/InspectionToolVideoCard";
+import { shuffleChoices } from "@/lib/quizChoiceShuffle";
 
 interface Props {
   quiz: OapQuiz;
@@ -139,6 +140,7 @@ export function QuizPlayer({ quiz, onComplete, toolSlugs }: Props) {
             onChange={(v) => setAnswer(q, v)}
             review={reviewOpen}
             graded={gradedById[q.id]}
+            attemptSeed={startedAt}
           />
         ))}
 
@@ -194,6 +196,7 @@ function QuestionRow({
   onChange,
   review,
   graded,
+  attemptSeed,
 }: {
   index: number;
   question: OapQuizQuestion;
@@ -201,12 +204,18 @@ function QuestionRow({
   onChange: (v: string[]) => void;
   review: boolean;
   graded?: OapGradedQuestion;
+  attemptSeed: string;
 }) {
-  const choices = question.choices ?? [];
+  const choices = useMemo(
+    () => shuffleChoices(question.choices, question.id, attemptSeed),
+    [question.id, question.choices, attemptSeed],
+  );
   const correct = new Set(graded?.correct_answers ?? []);
   const isMulti =
     question.question_type === "multi_choice" ||
     question.question_type === "multi_select";
+  const isTrueFalse = question.question_type === "true_false";
+  const hint = isMulti ? "Select all that apply" : isTrueFalse ? "True or false" : "Select one";
 
   const showFeedback = review;
   const isRight = (key: string) =>
@@ -221,6 +230,7 @@ function QuestionRow({
       <Label className="text-sm font-medium block">
         {index + 1}. {question.prompt}
       </Label>
+      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{hint}</p>
 
       {isMulti ? (
         <div className="space-y-1">

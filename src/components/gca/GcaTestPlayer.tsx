@@ -12,6 +12,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { CheckCircle2, XCircle, Trophy, Timer, RotateCcw, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { HandbookCite } from "@/components/handbook/HandbookCite";
+import { shuffleChoices } from "@/lib/quizChoiceShuffle";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -259,6 +260,7 @@ export function GcaTestPlayer({ bankSlug, hasProAccess, onUpgrade }: Props) {
             onChange={(v) => setAnswers((prev) => ({ ...prev, [q.id]: v }))}
             review={reviewOpen}
             graded={gradedById[q.id]}
+            attemptSeed={startedAt}
           />
         ))}
 
@@ -335,6 +337,7 @@ function GcaQuestionRow({
   onChange,
   review,
   graded,
+  attemptSeed,
 }: {
   index: number;
   question: GcaQuestion;
@@ -342,11 +345,17 @@ function GcaQuestionRow({
   onChange: (v: string[]) => void;
   review: boolean;
   graded?: GradedQuestion;
+  attemptSeed: string;
 }) {
-  const choices = question.choices ?? [];
+  const choices = useMemo(
+    () => shuffleChoices(question.choices, question.id, attemptSeed),
+    [question.id, question.choices, attemptSeed],
+  );
   const correct = new Set(graded?.correct_answers ?? []);
   const isMulti =
     question.question_type === "multi_select" || question.question_type === "multi_choice";
+  const isTrueFalse = question.question_type === "true_false";
+  const hint = isMulti ? "Select all that apply" : isTrueFalse ? "True or false" : "Select one";
 
   const choiceClass = (key: string) => {
     if (!review) return "border-border";
@@ -360,6 +369,7 @@ function GcaQuestionRow({
       <Label className="text-sm font-medium block">
         {index + 1}. {question.prompt}
       </Label>
+      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{hint}</p>
 
       {isMulti ? (
         <div className="space-y-1">
