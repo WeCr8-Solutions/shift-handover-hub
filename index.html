@@ -77,18 +77,18 @@
     <link rel="apple-touch-icon" href="/Jobline.ai_favicon.png" />
     <link rel="manifest" href="/manifest.json" />
 
-    <!-- App fonts (Inter + JetBrains Mono) and certificate fonts (Playfair + Great Vibes) -->
-    <!-- Loaded async via preload+swap to avoid render-blocking; font-display:swap shows fallback text immediately -->
+    <!-- App fonts (Inter + JetBrains Mono).
+         Loaded with media="print" + onload swap so the request is non-render-blocking
+         (browser does not delay FCP waiting for these). font-display:swap shows the
+         system fallback immediately; size-adjust fallbacks in index.css prevent CLS.
+         Certificate-only fonts (Playfair Display, Great Vibes) are NOT loaded here —
+         CertificateTemplate.tsx loads them on demand to keep landing FCP fast. -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" as="style"
+    <link rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap"
-          onload="this.onload=null;this.rel='stylesheet'">
+          media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap"></noscript>
-    <link rel="preload" as="style"
-          href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Great+Vibes&display=swap"
-          onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Great+Vibes&display=swap"></noscript>
     
     <!-- Search engine verification tags are added once real codes are issued.
          Placeholder values were removed because AdSense reviewers flag
