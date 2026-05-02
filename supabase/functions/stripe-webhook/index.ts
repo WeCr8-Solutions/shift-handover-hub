@@ -293,12 +293,63 @@ async function handleCertCheckout(session: Stripe.Checkout.Session) {
 
   // Try to resolve a Supabase user from the email (so the cert links to their account if they sign up later)
   let userId: string | null = null;
-  try {
-    const { data: usersList } = await supabaseAdmin.auth.admin.listUsers();
-    const match = usersList?.users?.find((u) => u.email?.toLowerCase() === recipientEmail);
-    userId = match?.id ?? null;
-  } catch (e) {
-    logStep("CERT: user lookup failed (non-fatal)", { error: String(e) });
+  // Prefer the explicit recipient_user_id stuffed into metadata at checkout time
+  // (the BuyCertificateDialog requires the buyer to be signed in).
+  const explicitUserId = (meta.recipient_user_id ?? "").trim();
+  if (explicitUserId) {
+    userId = explicitUserId;
+  } else {
+    try {
+      const { data: usersList } = await supabaseAdmin.auth.admin.listUsers();
+      const match = usersList?.users?.find((u) => u.email?.toLowerCase() === recipientEmail);
+      userId = match?.id ?? null;
+    } catch (e) {
+      logStep("CERT: user lookup failed (non-fatal)", { error: String(e) });
+    }
+  }
+
+  // ── Passed-attempt gate ──
+  // Certificates issued through paid jobline.ai checkout require a real
+  // passing record on the linked program/bank. If the buyer hasn't passed,
+  // skip the cert insert and email them so they can take the test or request
+  // a refund. The Stripe charge already settled — refund handling stays manual.
+  const bankIdMeta = (meta.bank_id ?? "").trim();
+  const roleProgramIdMeta = (meta.role_program_id ?? "").trim();
+  if (program === "GCA" && bankIdMeta) {
+    if (!userId) {
+      logStep("CERT: GCA gate failed — no user mapped to recipient email", { recipientEmail });
+      await sendCertGateRejectionEmail(recipientEmail, recipientName, program, "no_account");
+      return;
+    }
+    const { data: passed, error: gErr } = await supabaseAdmin.rpc("has_passed_gca_bank", {
+      _user_id: userId,
+      _bank_id: bankIdMeta,
+    });
+    if (gErr) {
+      logStep("CERT: GCA gate RPC failed (non-fatal, allowing cert)", { error: gErr.message });
+    } else if (!passed) {
+      logStep("CERT: GCA gate failed — no passing attempt on bank", { userId, bankIdMeta });
+      await sendCertGateRejectionEmail(recipientEmail, recipientName, program, "not_passed");
+      return;
+    }
+  }
+  if (program === "OAP" && roleProgramIdMeta) {
+    if (!userId) {
+      logStep("CERT: OAP gate failed — no user mapped to recipient email", { recipientEmail });
+      await sendCertGateRejectionEmail(recipientEmail, recipientName, program, "no_account");
+      return;
+    }
+    const { data: passed, error: oErr } = await supabaseAdmin.rpc(
+      "has_passed_oap_role_program",
+      { _user_id: userId, _role_program_id: roleProgramIdMeta },
+    );
+    if (oErr) {
+      logStep("CERT: OAP gate RPC failed (non-fatal, allowing cert)", { error: oErr.message });
+    } else if (!passed) {
+      logStep("CERT: OAP gate failed — incomplete role program", { userId, roleProgramIdMeta });
+      await sendCertGateRejectionEmail(recipientEmail, recipientName, program, "not_passed");
+      return;
+    }
   }
 
   const certId = generateCertId(program);
@@ -316,8 +367,11 @@ async function handleCertCheckout(session: Stripe.Checkout.Session) {
     amount_cents: amountCents,
     stripe_session_id: session.id,
   };
-  if (program === "GCA" && meta.bank_id) {
-    insertPayload.bank_id = meta.bank_id;
+  if (program === "GCA" && bankIdMeta) {
+    insertPayload.bank_id = bankIdMeta;
+  }
+  if (program === "OAP" && roleProgramIdMeta) {
+    insertPayload.role_program_id = roleProgramIdMeta;
   }
 
   const { data: inserted, error } = await supabaseAdmin
