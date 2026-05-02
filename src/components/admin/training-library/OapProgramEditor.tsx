@@ -16,7 +16,9 @@ import { MarkdownEditor } from "./shared/MarkdownEditor";
 import { QuestionEditor, type EditableQuestion } from "./shared/QuestionEditor";
 import { MediaOverlayEditor } from "@/components/training/MediaOverlayEditor";
 import { PublishReleaseDialog } from "./PublishReleaseDialog";
-import { Plus, Save, BookOpen, FileText, ClipboardCheck, Trash2 } from "lucide-react";
+import { AttemptsReviewPanel } from "./AttemptsReviewPanel";
+import { PROFESSION_PRESETS } from "@/lib/professionPresets";
+import { Plus, Save, BookOpen, FileText, ClipboardCheck, Trash2, BarChart3, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 interface Props { isPlatformAdmin: boolean }
@@ -250,7 +252,7 @@ function QuizEditor({ courseId, quizId, m, readOnly }: { courseId: string; quizI
 
   const handleAddQuestion = () => {
     m.upsertQuizQuestion.mutate({
-      quiz_id: quizId, prompt: "New question", question_type: "multiple_choice",
+      quiz_id: quizId, prompt: "New question", question_type: "single_choice",
       choices: [], correct_answers: [], points: 1, sort_order: questions.length,
     });
   };
