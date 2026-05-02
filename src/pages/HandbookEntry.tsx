@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useHandbookReference } from "@/hooks/useHandbook";
+import { AdPlacement } from "@/components/marketing/AdPlacement";
 
 export default function HandbookEntry() {
   const { slug } = useParams<{ slug: string }>();
