@@ -205,6 +205,8 @@ export default function CertificateLookup() {
             </CardContent>
           </Card>
         </div>
+
+        <AdPlacement format="horizontal" slot="cert-lookup-footer" className="mt-8" />
       </main>
     </div>
   );
