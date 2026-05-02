@@ -270,6 +270,9 @@ function QuizEditor({ courseId, quizId, m, readOnly }: { courseId: string; quizI
           <TabsList>
             <TabsTrigger value="settings">Settings</TabsTrigger>
             <TabsTrigger value="questions">Questions ({questions.length})</TabsTrigger>
+            <TabsTrigger value="attempts" className="gap-1">
+              <BarChart3 className="w-3 h-3" /> Attempts
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="settings" className="space-y-3 mt-3">
             <div className="grid grid-cols-2 gap-3">
@@ -293,6 +296,9 @@ function QuizEditor({ courseId, quizId, m, readOnly }: { courseId: string; quizI
               />
             ))}
             {questions.length === 0 && <p className="text-sm text-muted-foreground text-center py-6">No questions yet</p>}
+          </TabsContent>
+          <TabsContent value="attempts" className="mt-3">
+            <AttemptsReviewPanel program="oap" parentId={quizId} />
           </TabsContent>
         </Tabs>
       </CardContent>
