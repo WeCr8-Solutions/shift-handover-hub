@@ -12259,6 +12259,10 @@ export type Database = {
         }
         Returns: Json
       }
+      handbook_link_target_is_my_org: {
+        Args: { _entity_id: string; _entity_type: string }
+        Returns: boolean
+      }
       has_passed_gca_bank: {
         Args: { _bank_id: string; _user_id: string }
         Returns: boolean
