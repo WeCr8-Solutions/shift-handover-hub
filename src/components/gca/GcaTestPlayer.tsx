@@ -352,6 +352,7 @@ function GcaQuestionRow({
   review,
   graded,
   attemptSeed,
+  mode,
 }: {
   index: number;
   question: GcaQuestion;
@@ -360,6 +361,7 @@ function GcaQuestionRow({
   review: boolean;
   graded?: GradedQuestion;
   attemptSeed: string;
+  mode: "practice" | "graded";
 }) {
   const choices = useMemo(
     () => shuffleChoices(question.choices, question.id, attemptSeed),
@@ -370,9 +372,10 @@ function GcaQuestionRow({
     question.question_type === "multi_select" || question.question_type === "multi_choice";
   const isTrueFalse = question.question_type === "true_false";
   const hint = isMulti ? "Select all that apply" : isTrueFalse ? "True or false" : "Select one";
+  const showReveal = review && mode === "practice";
 
   const choiceClass = (key: string) => {
-    if (!review) return "border-border";
+    if (!showReveal) return "border-border";
     if (correct.has(key)) return "border-primary bg-primary/5";
     if (value.includes(key) && !correct.has(key)) return "border-destructive bg-destructive/5";
     return "border-border";
@@ -422,13 +425,13 @@ function GcaQuestionRow({
         </RadioGroup>
       )}
 
-      {review && graded?.explanation && (
+      {showReveal && graded?.explanation && (
         <p className="text-xs text-muted-foreground italic pt-1 border-t">
           {graded.explanation}
         </p>
       )}
 
-      {review && (
+      {showReveal && (
         <div className="pt-1">
           <HandbookCite
             entityType="gca_question"
