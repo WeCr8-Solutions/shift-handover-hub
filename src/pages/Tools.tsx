@@ -12,6 +12,7 @@ import { HandbookCite } from "@/components/handbook/HandbookCite";
 import { HandbookLinkInlineEditor } from "@/components/handbook/HandbookLinkInlineEditor";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { TOOL_REGISTRY, TOOL_CATEGORIES } from "@/components/tools";
+import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { Search, Wrench, Loader2, ArrowLeft, BookOpen, ArrowRight } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
