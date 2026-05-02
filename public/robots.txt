@@ -21,6 +21,10 @@ Allow: /shift-handoff
 Allow: /manufacturing-visibility
 Allow: /handbook
 Allow: /handbook/
+Allow: /talent
+Allow: /talent/
+Allow: /employers
+Allow: /employers/
 Allow: /manuals
 Allow: /manuals/$
 # Note: /manuals/upload is admin-only and excluded below
