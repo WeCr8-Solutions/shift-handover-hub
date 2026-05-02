@@ -21,6 +21,10 @@ Allow: /shift-handoff
 Allow: /manufacturing-visibility
 Allow: /handbook
 Allow: /handbook/
+Allow: /talent
+Allow: /talent/
+Allow: /employers
+Allow: /employers/
 Allow: /manuals
 Allow: /manuals/$
 # Note: /manuals/upload is admin-only and excluded below
@@ -86,6 +90,8 @@ Disallow: /index
 
 User-agent: Bingbot
 Allow: /
+Allow: /talent
+Allow: /talent/
 Disallow: /dashboard
 Disallow: /admin
 Disallow: /testing
@@ -114,6 +120,8 @@ Disallow: /index
 
 User-agent: Twitterbot
 Allow: /
+Allow: /talent
+Allow: /talent/
 Disallow: /dashboard
 Disallow: /admin
 Disallow: /teams
@@ -127,6 +135,8 @@ Disallow: /index
 
 User-agent: facebookexternalhit
 Allow: /
+Allow: /talent
+Allow: /talent/
 Disallow: /dashboard
 Disallow: /admin
 Disallow: /teams
@@ -140,6 +150,8 @@ Disallow: /index
 
 User-agent: LinkedInBot
 Allow: /
+Allow: /talent
+Allow: /talent/
 Disallow: /dashboard
 Disallow: /admin
 Disallow: /teams
@@ -254,6 +266,8 @@ Disallow: /dev
 Disallow: /dev/
 Disallow: /index
 
+Sitemap: https://jobline.ai/sitemap-index.xml
 Sitemap: https://jobline.ai/sitemap.xml
+Sitemap: https://jobline.ai/sitemap-talent.xml
 
 Crawl-delay: 1
