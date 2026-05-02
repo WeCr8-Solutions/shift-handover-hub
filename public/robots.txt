@@ -86,6 +86,8 @@ Disallow: /index
 
 User-agent: Bingbot
 Allow: /
+Allow: /talent
+Allow: /talent/
 Disallow: /dashboard
 Disallow: /admin
 Disallow: /testing
