@@ -196,14 +196,22 @@ export function BuyCertificateDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
             Cancel
           </Button>
-          <Button onClick={handleCheckout} disabled={loading} className="gap-2">
-            {loading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <ExternalLink className="w-4 h-4" />
-            )}
-            Pay $12 & continue
-          </Button>
+          {!user ? (
+            <Button asChild className="gap-2">
+              <Link to={`/auth?redirect=${encodeURIComponent(window.location.pathname)}`}>
+                Sign in to continue
+              </Link>
+            </Button>
+          ) : (
+            <Button onClick={handleCheckout} disabled={loading} className="gap-2">
+              {loading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <ExternalLink className="w-4 h-4" />
+              )}
+              Pay $12 & continue
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
