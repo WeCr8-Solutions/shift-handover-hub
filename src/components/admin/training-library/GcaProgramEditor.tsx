@@ -14,6 +14,7 @@ import { QuestionEditor, type EditableQuestion } from "./shared/QuestionEditor";
 import { MediaOverlayEditor } from "@/components/training/MediaOverlayEditor";
 import { PublishReleaseDialog } from "./PublishReleaseDialog";
 import { AttemptsReviewPanel } from "./AttemptsReviewPanel";
+import { HandbookLinkInlineEditor } from "@/components/handbook/HandbookLinkInlineEditor";
 import { Plus, Search, Save, Upload, AlertCircle, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -218,6 +219,15 @@ function BankDetail({
               />
             )}
 
+            {!isNew && bank.id && (
+              <HandbookLinkInlineEditor
+                entityType="gca_question_bank"
+                entityIdOrKey={bank.id}
+                readOnly={readOnly}
+                title="Bank-level handbook references"
+              />
+            )}
+
             <div className="flex items-center gap-6">
               <label className="flex items-center gap-2 text-sm">
                 <Switch checked={!!bank.is_published} onCheckedChange={(v) => onChange({ ...bank, is_published: v })} disabled={readOnly} /> Published
@@ -250,6 +260,7 @@ function BankDetail({
                 initial={q as EditableQuestion}
                 readOnly={readOnly}
                 saving={mutations.upsertQuestion.isPending}
+                handbookEntityType="gca_question"
                 onSave={(updated) => mutations.upsertQuestion.mutate({ ...updated, id: q.id, bank_id: q.bank_id } as any)}
                 onDelete={() => mutations.deleteQuestion.mutate({ id: q.id, bank_id: q.bank_id })}
               />
