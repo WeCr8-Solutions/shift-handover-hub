@@ -260,7 +260,7 @@ export function QuestionEditor({ initial, onSave, onDelete, saving, readOnly, ha
           />
         )}
 
-
+        {!validation.ok && !readOnly && (
           <div className="rounded border border-destructive/40 bg-destructive/5 p-2 space-y-1">
             <div className="flex items-center gap-1 text-xs font-medium text-destructive">
               <AlertTriangle className="w-3 h-3" /> {validation.errors.length} validation issue{validation.errors.length === 1 ? "" : "s"}
