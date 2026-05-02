@@ -133,6 +133,8 @@ export default function HandbookEntry() {
         <ReactMarkdown remarkPlugins={[remarkGfm]}>{ref.body_md}</ReactMarkdown>
       </article>
 
+      <AdPlacement format="rectangle" slot="handbook-entry-end" className="my-4" />
+
       {(ref.source_citation || ref.source_url) && (
         <p className="text-xs text-muted-foreground italic border-t pt-4">
           Source:{" "}
