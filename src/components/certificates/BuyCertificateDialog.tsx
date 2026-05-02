@@ -128,16 +128,21 @@ export function BuyCertificateDialog({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="cert-email">Email (cert + receipt sent here)</Label>
+            <Label htmlFor="cert-email" className="flex items-center gap-1.5">
+              Email <Lock className="w-3 h-3 text-muted-foreground" />
+            </Label>
             <Input
               id="cert-email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
+              readOnly
+              disabled
+              placeholder="Sign in to continue"
               autoComplete="email"
-              disabled={loading}
             />
+            <p className="text-[11px] text-muted-foreground">
+              Locked to your signed-in account so we can verify you passed the test before issuing the certificate.
+            </p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="cert-program">Certificate title</Label>
