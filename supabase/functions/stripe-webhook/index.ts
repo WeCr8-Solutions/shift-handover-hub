@@ -12,6 +12,16 @@ const supabaseAdmin = createClient(
   { auth: { persistSession: false } }
 );
 
+// HTML-escape user-supplied strings before injecting into email markup.
+function esc(s: unknown): string {
+  return String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;");
+}
+
 // Product ID to tier mapping
 const PRODUCT_TIERS: Record<string, string> = {
   "prod_TrQ3QqbNqlmDiS": "single",
@@ -248,10 +258,10 @@ async function sendCertGateRejectionEmail(
         subject: `Your ${program} certificate could not be issued — refund available`,
         html: `
           <div style="font-family:-apple-system,Inter,sans-serif;max-width:560px;margin:auto;padding:24px;color:#0F172A">
-            <h2 style="margin:0 0 8px">Hi ${recipientName},</h2>
-            <p>Thanks for your purchase. Before we mint a verifiable ${programLabel} certificate, we need to confirm you've actually passed the underlying test — that's what makes a JobLine cert trustworthy to employers.</p>
+            <h2 style="margin:0 0 8px">Hi ${esc(recipientName)},</h2>
+            <p>Thanks for your purchase. Before we mint a verifiable ${esc(programLabel)} certificate, we need to confirm you've actually passed the underlying test — that's what makes a JobLine cert trustworthy to employers.</p>
             <p>${reasonText}</p>
-            <p><a href="${studyUrl}" style="display:inline-block;background:#0F172A;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none">Open ${programLabel}</a></p>
+            <p><a href="${studyUrl}" style="display:inline-block;background:#0F172A;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none">Open ${esc(programLabel)}</a></p>
             <p style="font-size:12px;color:#64748B;margin-top:24px">If you'd prefer a refund instead, reply to this email or contact <a href="mailto:support@jobline.ai">support@jobline.ai</a>. We refund every cert that wasn't issued, no questions asked.</p>
           </div>
         `,
