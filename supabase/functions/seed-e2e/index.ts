@@ -17,8 +17,8 @@ const SEED_SECRET = Deno.env.get("E2E_SEED_SECRET") ?? "";
 // Fixed fixture identifiers
 const ADMIN_EMAIL = "admin-e2e@jobline.test";
 const OPERATOR_EMAIL = "operator-e2e@jobline.test";
-const ADMIN_PASSWORD = Deno.env.get("E2E_ADMIN_PASSWORD") ?? "E2eAdmin!Pass2026";
-const OPERATOR_PASSWORD = Deno.env.get("E2E_OPERATOR_PASSWORD") ?? "E2eOperator!Pass2026";
+const ADMIN_PASSWORD = Deno.env.get("E2E_ADMIN_PASSWORD") ?? "";
+const OPERATOR_PASSWORD = Deno.env.get("E2E_OPERATOR_PASSWORD") ?? "";
 const ORG_SLUG = "e2e-shop";
 const STATION_ID_CODE = "E2E-CNC-01";
 
@@ -111,6 +111,13 @@ Deno.serve(async (req) => {
 
     if (!authorized) {
       return json({ error: "Unauthorized" }, 401);
+    }
+
+    if (!ADMIN_PASSWORD || !OPERATOR_PASSWORD) {
+      return json({
+        error:
+          "E2E_ADMIN_PASSWORD and E2E_OPERATOR_PASSWORD must be configured as edge function secrets before running seed-e2e.",
+      }, 500);
     }
 
     // Scenario gating — extra scenarios layer additional seed data on top of the base.
@@ -356,8 +363,8 @@ Deno.serve(async (req) => {
     return json({
       ok: true,
       scenario,
-      admin: { id: adminUser.id, email: ADMIN_EMAIL, password: ADMIN_PASSWORD },
-      operator: { id: operatorUser.id, email: OPERATOR_EMAIL, password: OPERATOR_PASSWORD },
+      admin: { id: adminUser.id, email: ADMIN_EMAIL },
+      operator: { id: operatorUser.id, email: OPERATOR_EMAIL },
       organization: { id: org!.id, slug: org!.slug, name: org!.name },
       team: { id: team!.id, name: team!.name },
       station: { id: station!.id, station_id: station!.station_id, name: station!.name },
