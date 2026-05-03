@@ -250,8 +250,8 @@ async function sendCertGateRejectionEmail(
     const studyUrl = program === "OAP" ? "https://jobline.ai/oap" : "https://jobline.ai/gcode-academy";
     const reasonText =
       reason === "no_account"
-        ? `We couldn't find a JobLine account matching <strong>${recipientEmail}</strong>. Sign in with the same email you used while practicing the ${programLabel}, then re-purchase your certificate.`
-        : `Our records show no passing attempt yet on the ${programLabel} test you selected. Take the test (free practice and study are always available), pass it, then re-purchase your certificate.`;
+        ? `We couldn't find a JobLine account matching <strong>${esc(recipientEmail)}</strong>. Sign in with the same email you used while practicing the ${esc(programLabel)}, then re-purchase your certificate.`
+        : `Our records show no passing attempt yet on the ${esc(programLabel)} test you selected. Take the test (free practice and study are always available), pass it, then re-purchase your certificate.`;
     await supabaseAdmin.functions.invoke("send-email", {
       body: {
         to: recipientEmail,
