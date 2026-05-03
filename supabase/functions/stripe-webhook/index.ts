@@ -439,14 +439,14 @@ async function handleCertCheckout(session: Stripe.Checkout.Session) {
         subject: `Your ${program} certificate — ${programName}`,
         html: `
           <div style="font-family:-apple-system,Inter,sans-serif;max-width:560px;margin:auto;padding:24px;color:#0F172A">
-            <h2 style="margin:0 0 8px">Congratulations, ${recipientName}!</h2>
-            <p>Your <strong>${programLabel}</strong> certificate for <strong>${programName}</strong> has been issued.</p>
+            <h2 style="margin:0 0 8px">Congratulations, ${esc(recipientName)}!</h2>
+            <p>Your <strong>${esc(programLabel)}</strong> certificate for <strong>${esc(programName)}</strong> has been issued.</p>
             <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:16px;margin:16px 0">
               <div style="font-size:11px;color:#64748B;letter-spacing:.08em;text-transform:uppercase">Certificate ID</div>
-              <div style="font-family:ui-monospace,monospace;font-size:18px;font-weight:600">${certId}</div>
+              <div style="font-family:ui-monospace,monospace;font-size:18px;font-weight:600">${esc(certId)}</div>
             </div>
-            <p>Verify or share at:<br/><a href="${verifyUrl}">${verifyUrl}</a></p>
-            <p style="font-size:12px;color:#64748B">JobLine.ai — ${programLabel}</p>
+            <p>Verify or share at:<br/><a href="${esc(verifyUrl)}">${esc(verifyUrl)}</a></p>
+            <p style="font-size:12px;color:#64748B">JobLine.ai — ${esc(programLabel)}</p>
           </div>
         `,
       },
