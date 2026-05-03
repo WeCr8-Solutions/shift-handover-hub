@@ -7,6 +7,16 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// HTML-escape user-supplied strings before injecting into email markup.
+function esc(s: unknown): string {
+  return String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;");
+}
+
 interface IssueReport {
   title: string;
   description?: string;
@@ -183,32 +193,32 @@ const handler = async (req: Request): Promise<Response> => {
                       <span style="color: ${severityColors[issue.severity]}; font-weight: 600; text-transform: uppercase; font-size: 12px;">${issue.severity}</span>
                     </div>
                     
-                    <h2 style="color: #1e293b; margin: 0 0 8px 0; font-size: 18px;">${issue.title}</h2>
-                    ${issue.description ? `<p style="color: #64748b; margin: 0 0 16px 0;">${issue.description}</p>` : ""}
+                    <h2 style="color: #1e293b; margin: 0 0 8px 0; font-size: 18px;">${esc(issue.title)}</h2>
+                    ${issue.description ? `<p style="color: #64748b; margin: 0 0 16px 0;">${esc(issue.description)}</p>` : ""}
                     
                     <table style="width: 100%; border-collapse: collapse; margin-top: 16px;">
                       <tr>
                         <td style="padding: 8px 0; color: #64748b; font-size: 13px;">Reporter</td>
-                        <td style="padding: 8px 0; color: #1e293b; font-size: 13px;">${issue.reporter_display_name} (${issue.reporter_email})</td>
+                        <td style="padding: 8px 0; color: #1e293b; font-size: 13px;">${esc(issue.reporter_display_name)} (${esc(issue.reporter_email)})</td>
                       </tr>
                       <tr>
                         <td style="padding: 8px 0; color: #64748b; font-size: 13px;">Page URL</td>
-                        <td style="padding: 8px 0; color: #1e293b; font-size: 13px;">${issue.page_url || "N/A"}</td>
+                        <td style="padding: 8px 0; color: #1e293b; font-size: 13px;">${esc(issue.page_url || "N/A")}</td>
                       </tr>
                       <tr>
                         <td style="padding: 8px 0; color: #64748b; font-size: 13px;">Environment</td>
-                        <td style="padding: 8px 0; color: #1e293b; font-size: 13px;">${issue.environment}</td>
+                        <td style="padding: 8px 0; color: #1e293b; font-size: 13px;">${esc(issue.environment)}</td>
                       </tr>
                       <tr>
                         <td style="padding: 8px 0; color: #64748b; font-size: 13px;">Build</td>
-                        <td style="padding: 8px 0; color: #1e293b; font-size: 13px;">${issue.build_id} / ${issue.commit_hash}</td>
+                        <td style="padding: 8px 0; color: #1e293b; font-size: 13px;">${esc(issue.build_id)} / ${esc(issue.commit_hash)}</td>
                       </tr>
                     </table>
 
                     ${issue.error_message ? `
                     <div style="margin-top: 16px;">
                       <h3 style="color: #dc2626; margin: 0 0 8px 0; font-size: 14px;">Error Message</h3>
-                      <pre style="background: #1e293b; color: #f1f5f9; padding: 12px; border-radius: 4px; overflow-x: auto; font-size: 12px;">${issue.error_message}</pre>
+                      <pre style="background: #1e293b; color: #f1f5f9; padding: 12px; border-radius: 4px; overflow-x: auto; font-size: 12px;">${esc(issue.error_message)}</pre>
                     </div>
                     ` : ""}
                     
