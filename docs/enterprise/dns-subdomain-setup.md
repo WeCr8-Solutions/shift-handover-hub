@@ -200,6 +200,78 @@ register the Cloudflare CNAME + Lovable custom domain.
 
 ---
 
+## 10. Security hardening per subdomain (HTTPS redirect + HSTS)
+
+Cloudflare's quarterly Security Insights flags any hostname in the zone
+that is not enforcing HTTPS redirects or HSTS. Because not every JobLine
+subdomain is proxied through Cloudflare (orange-cloud), the fix location
+depends on **who terminates TLS** for that hostname.
+
+### Decision matrix
+
+| Hostname | TLS terminator | "Always Use HTTPS" set on | "HSTS" set on |
+|---|---|---|---|
+| `jobline.ai`, `www.`, `app.`, `dev.`, `docs.` | Cloudflare proxy (🟠) | Cloudflare zone setting | Cloudflare → SSL/TLS → Edge Certificates → HSTS |
+| `status.jobline.ai` | **Instatus** (⚪ DNS-only, required) | **Instatus** dashboard | **Instatus** dashboard |
+| `*.lovable.app` (Lovable preview) | Lovable / Vercel | Already enforced by platform | Already enforced by platform |
+
+> Cloudflare cannot apply Always-Use-HTTPS or HSTS to a **gray-cloud / DNS-only** hostname because traffic never traverses its edge. Re-proxying `status.` through Cloudflare would break Instatus's Let's Encrypt renewal flow (see §3). Always fix at the TLS terminator.
+
+### 10.1 Cloudflare-proxied hostnames (default for all `jobline.ai` apex/web subdomains)
+
+1. Cloudflare → **SSL/TLS → Overview** → mode = **Full (strict)**.
+2. Cloudflare → **SSL/TLS → Edge Certificates**:
+   - **Always Use HTTPS:** ON
+   - **Automatic HTTPS Rewrites:** ON
+   - **Minimum TLS Version:** 1.2 (1.3 preferred)
+   - **HSTS:** ON with:
+     - `max-age` = `31536000` (1 year)
+     - `includeSubDomains` = ON
+     - `preload` = **OFF** unless every subdomain (`status.`, `app.`, `dev.`, `docs.`, `www.`, apex, plus any future ones) is verified HTTPS-only and you intend to submit to the [HSTS preload list](https://hstspreload.org/). Preload is irreversible in practice.
+     - `No-Sniff Header` = ON
+
+### 10.2 `status.jobline.ai` (Instatus, DNS-only)
+
+In **Instatus → Settings → Custom Domain** for `status.jobline.ai`:
+
+1. Confirm the Let's Encrypt certificate status is **Active** (green).
+2. Enable **Force HTTPS** / **Redirect HTTP → HTTPS**.
+3. Enable **HSTS** (available on Instatus Business and above). Recommended value:
+   ```
+   Strict-Transport-Security: max-age=31536000; includeSubDomains
+   ```
+   Do **NOT** enable `preload` from Instatus — preload directives apply to the entire `jobline.ai` zone, and zone-level preload must be coordinated from Cloudflare (§10.1) after every subdomain is HTTPS-only.
+4. If your Instatus plan does not expose an HSTS toggle, the only alternatives are:
+   - Upgrade the Instatus plan, **or**
+   - Move status to a self-hosted page behind Cloudflare (changes ownership model — not recommended).
+
+### 10.3 Verification
+
+```bash
+# Expect: 301/308 to https, then HSTS header on the https response
+curl -sI http://status.jobline.ai | grep -i location
+curl -sI https://status.jobline.ai | grep -i strict-transport-security
+
+# Same checks for proxied hosts
+for host in jobline.ai www.jobline.ai app.jobline.ai dev.jobline.ai docs.jobline.ai; do
+  echo "== $host =="
+  curl -sI "http://$host" | grep -i location
+  curl -sI "https://$host" | grep -i strict-transport-security
+done
+```
+
+A green run means Cloudflare's Security Insights "Domains without 'Always Use HTTPS'" and "Domains without HSTS" findings will clear on the next scan (next quarterly cycle, or trigger a manual rescan from Cloudflare's Security Center).
+
+### 10.4 Recurring-finding triage
+
+If Cloudflare re-flags `status.jobline.ai` after Instatus is configured:
+1. Re-run the `curl -sI` checks above.
+2. If `Strict-Transport-Security` is missing on HTTPS, the Instatus HSTS toggle was disabled or the plan was downgraded — re-enable per §10.2.
+3. If `Location:` is missing on HTTP, the Instatus Force HTTPS toggle is off — re-enable per §10.2.
+4. If both headers are present and Cloudflare still flags it, the finding is a stale scan — acknowledge/dismiss the insight in Cloudflare Security Center with a note pointing back to this section.
+
+---
+
 **Owner:** Platform / Infra  
 **Related docs:**  
 - `docs/enterprise/status-page-runbook.md`  
