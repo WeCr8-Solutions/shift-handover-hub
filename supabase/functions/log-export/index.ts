@@ -81,6 +81,43 @@ serve(async (req: Request) => {
 
   const supabase = createClient(supabaseUrl, serviceRoleKey);
 
+  // ── Auth gate ───────────────────────────────────────────────────────────
+  // Accept either:
+  //   (a) Supabase DB Webhook signature header `x-supabase-signature` matching SUPABASE_WEBHOOK_SECRET, or
+  //   (b) A valid JWT belonging to a platform admin / org admin / developer.
+  // Reject everyone else to prevent SIEM event forgery + rate exhaustion.
+  const webhookSecret = Deno.env.get("SUPABASE_WEBHOOK_SECRET") ?? "";
+  const sigHeader = req.headers.get("x-supabase-signature") ?? "";
+  let authorized = !!webhookSecret && sigHeader === webhookSecret;
+
+  if (!authorized) {
+    const authHeader = req.headers.get("Authorization") ?? "";
+    if (authHeader.startsWith("Bearer ")) {
+      try {
+        const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+        const userClient = createClient(supabaseUrl, anonKey, {
+          global: { headers: { Authorization: authHeader } },
+        });
+        const { data: u } = await userClient.auth.getUser();
+        const uid = u?.user?.id;
+        if (uid) {
+          const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: uid, _role: "admin" });
+          const { data: isDeveloper } = await supabase.rpc("has_role", { _user_id: uid, _role: "developer" });
+          if (isAdmin === true || isDeveloper === true) authorized = true;
+        }
+      } catch (e) {
+        console.error("[log-export] auth check failed:", e);
+      }
+    }
+  }
+
+  if (!authorized) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   let body: Record<string, unknown>;
   try {
     body = await req.json();

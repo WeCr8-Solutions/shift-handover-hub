@@ -12,6 +12,16 @@ const supabaseAdmin = createClient(
   { auth: { persistSession: false } }
 );
 
+// HTML-escape user-supplied strings before injecting into email markup.
+function esc(s: unknown): string {
+  return String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;");
+}
+
 // Product ID to tier mapping
 const PRODUCT_TIERS: Record<string, string> = {
   "prod_TrQ3QqbNqlmDiS": "single",
@@ -240,18 +250,18 @@ async function sendCertGateRejectionEmail(
     const studyUrl = program === "OAP" ? "https://jobline.ai/oap" : "https://jobline.ai/gcode-academy";
     const reasonText =
       reason === "no_account"
-        ? `We couldn't find a JobLine account matching <strong>${recipientEmail}</strong>. Sign in with the same email you used while practicing the ${programLabel}, then re-purchase your certificate.`
-        : `Our records show no passing attempt yet on the ${programLabel} test you selected. Take the test (free practice and study are always available), pass it, then re-purchase your certificate.`;
+        ? `We couldn't find a JobLine account matching <strong>${esc(recipientEmail)}</strong>. Sign in with the same email you used while practicing the ${esc(programLabel)}, then re-purchase your certificate.`
+        : `Our records show no passing attempt yet on the ${esc(programLabel)} test you selected. Take the test (free practice and study are always available), pass it, then re-purchase your certificate.`;
     await supabaseAdmin.functions.invoke("send-email", {
       body: {
         to: recipientEmail,
         subject: `Your ${program} certificate could not be issued — refund available`,
         html: `
           <div style="font-family:-apple-system,Inter,sans-serif;max-width:560px;margin:auto;padding:24px;color:#0F172A">
-            <h2 style="margin:0 0 8px">Hi ${recipientName},</h2>
-            <p>Thanks for your purchase. Before we mint a verifiable ${programLabel} certificate, we need to confirm you've actually passed the underlying test — that's what makes a JobLine cert trustworthy to employers.</p>
+            <h2 style="margin:0 0 8px">Hi ${esc(recipientName)},</h2>
+            <p>Thanks for your purchase. Before we mint a verifiable ${esc(programLabel)} certificate, we need to confirm you've actually passed the underlying test — that's what makes a JobLine cert trustworthy to employers.</p>
             <p>${reasonText}</p>
-            <p><a href="${studyUrl}" style="display:inline-block;background:#0F172A;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none">Open ${programLabel}</a></p>
+            <p><a href="${studyUrl}" style="display:inline-block;background:#0F172A;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none">Open ${esc(programLabel)}</a></p>
             <p style="font-size:12px;color:#64748B;margin-top:24px">If you'd prefer a refund instead, reply to this email or contact <a href="mailto:support@jobline.ai">support@jobline.ai</a>. We refund every cert that wasn't issued, no questions asked.</p>
           </div>
         `,
@@ -429,14 +439,14 @@ async function handleCertCheckout(session: Stripe.Checkout.Session) {
         subject: `Your ${program} certificate — ${programName}`,
         html: `
           <div style="font-family:-apple-system,Inter,sans-serif;max-width:560px;margin:auto;padding:24px;color:#0F172A">
-            <h2 style="margin:0 0 8px">Congratulations, ${recipientName}!</h2>
-            <p>Your <strong>${programLabel}</strong> certificate for <strong>${programName}</strong> has been issued.</p>
+            <h2 style="margin:0 0 8px">Congratulations, ${esc(recipientName)}!</h2>
+            <p>Your <strong>${esc(programLabel)}</strong> certificate for <strong>${esc(programName)}</strong> has been issued.</p>
             <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:16px;margin:16px 0">
               <div style="font-size:11px;color:#64748B;letter-spacing:.08em;text-transform:uppercase">Certificate ID</div>
-              <div style="font-family:ui-monospace,monospace;font-size:18px;font-weight:600">${certId}</div>
+              <div style="font-family:ui-monospace,monospace;font-size:18px;font-weight:600">${esc(certId)}</div>
             </div>
-            <p>Verify or share at:<br/><a href="${verifyUrl}">${verifyUrl}</a></p>
-            <p style="font-size:12px;color:#64748B">JobLine.ai — ${programLabel}</p>
+            <p>Verify or share at:<br/><a href="${esc(verifyUrl)}">${esc(verifyUrl)}</a></p>
+            <p style="font-size:12px;color:#64748B">JobLine.ai — ${esc(programLabel)}</p>
           </div>
         `,
       },

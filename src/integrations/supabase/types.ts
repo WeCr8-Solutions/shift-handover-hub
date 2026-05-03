@@ -50,6 +50,13 @@ export type Database = {
             foreignKeyName: "act_as_sessions_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "act_as_sessions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -114,6 +121,13 @@ export type Database = {
             foreignKeyName: "activity_logs_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "activity_logs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -166,6 +180,13 @@ export type Database = {
           usage_date?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "ai_chat_usage_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "ai_chat_usage_organization_id_fkey"
             columns: ["organization_id"]
@@ -269,6 +290,13 @@ export type Database = {
             foreignKeyName: "announcements_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "announcements_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -350,6 +378,13 @@ export type Database = {
             foreignKeyName: "api_request_logs_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "api_request_logs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -410,6 +445,13 @@ export type Database = {
           updated_by?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "app_settings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "app_settings_organization_id_fkey"
             columns: ["organization_id"]
@@ -590,6 +632,13 @@ export type Database = {
             foreignKeyName: "certificate_templates_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "certificate_templates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -647,6 +696,13 @@ export type Database = {
           validity_period_days?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "certifications_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "certifications_organization_id_fkey"
             columns: ["organization_id"]
@@ -726,6 +782,13 @@ export type Database = {
           user_name?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "oap_designated_mentors_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "oap_designated_mentors_organization_id_fkey"
             columns: ["organization_id"]
@@ -839,6 +902,13 @@ export type Database = {
             foreignKeyName: "company_social_profiles_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "company_social_profiles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -919,6 +989,13 @@ export type Database = {
             foreignKeyName: "current_station_status_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "current_station_status_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -987,6 +1064,13 @@ export type Database = {
             foreignKeyName: "data_access_logs_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "data_access_logs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -1047,6 +1131,13 @@ export type Database = {
           status?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "data_export_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "data_export_requests_organization_id_fkey"
             columns: ["organization_id"]
@@ -1152,6 +1243,13 @@ export type Database = {
             foreignKeyName: "delivery_requests_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "delivery_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -1221,6 +1319,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "departments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "departments_organization_id_fkey"
             columns: ["organization_id"]
@@ -1364,6 +1469,13 @@ export type Database = {
             foreignKeyName: "dimension_check_requests_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "dimension_check_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -1447,6 +1559,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "routing_step_dimensions"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dimension_readings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
           },
           {
             foreignKeyName: "dimension_readings_organization_id_fkey"
@@ -1556,6 +1675,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "equipment"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "downtime_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
           },
           {
             foreignKeyName: "downtime_events_organization_id_fkey"
@@ -1682,6 +1808,13 @@ export type Database = {
             foreignKeyName: "entitlements_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: true
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "entitlements_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -1769,6 +1902,13 @@ export type Database = {
           warranty_expires?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "equipment_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "equipment_organization_id_fkey"
             columns: ["organization_id"]
@@ -1875,6 +2015,13 @@ export type Database = {
             foreignKeyName: "erp_connections_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: true
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "erp_connections_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -1917,6 +2064,13 @@ export type Database = {
           organization_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "erp_status_mappings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "erp_status_mappings_organization_id_fkey"
             columns: ["organization_id"]
@@ -1975,6 +2129,13 @@ export type Database = {
           sync_log_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "erp_sync_errors_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "erp_sync_errors_organization_id_fkey"
             columns: ["organization_id"]
@@ -2073,6 +2234,13 @@ export type Database = {
             foreignKeyName: "erp_sync_logs_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "erp_sync_logs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -2121,6 +2289,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "erp_usage_metering_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "erp_usage_metering_organization_id_fkey"
             columns: ["organization_id"]
@@ -2179,6 +2354,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "stations"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_work_center_mappings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
           },
           {
             foreignKeyName: "erp_work_center_mappings_organization_id_fkey"
@@ -2765,6 +2947,13 @@ export type Database = {
             foreignKeyName: "gca_assignments_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "gca_assignments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -3079,6 +3268,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "training_media"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gca_question_banks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
           },
           {
             foreignKeyName: "gca_question_banks_organization_id_fkey"
@@ -3425,6 +3621,13 @@ export type Database = {
             foreignKeyName: "handbook_categories_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "handbook_categories_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -3544,6 +3747,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "handbook_categories"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "handbook_references_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
           },
           {
             foreignKeyName: "handbook_references_organization_id_fkey"
@@ -3736,6 +3946,13 @@ export type Database = {
             foreignKeyName: "handoff_records_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "handoff_records_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -3807,6 +4024,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "inspection_tool_categories_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "inspection_tool_categories_organization_id_fkey"
             columns: ["organization_id"]
@@ -3904,6 +4128,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "inspection_tool_categories"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspection_tools_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
           },
           {
             foreignKeyName: "inspection_tools_organization_id_fkey"
@@ -4046,6 +4277,13 @@ export type Database = {
           user_agent?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "issues_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "issues_organization_id_fkey"
             columns: ["organization_id"]
@@ -4200,6 +4438,13 @@ export type Database = {
             foreignKeyName: "job_performance_updates_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "job_performance_updates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -4289,6 +4534,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "job_postings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "job_postings_organization_id_fkey"
             columns: ["organization_id"]
@@ -4419,6 +4671,13 @@ export type Database = {
             foreignKeyName: "machine_manuals_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "machine_manuals_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -4476,6 +4735,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "machining_operation_categories_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "machining_operation_categories_organization_id_fkey"
             columns: ["organization_id"]
@@ -4578,6 +4844,13 @@ export type Database = {
             foreignKeyName: "machining_operations_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "machining_operations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -4670,6 +4943,13 @@ export type Database = {
             foreignKeyName: "maintenance_records_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "maintenance_records_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -4752,6 +5032,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "material_lots_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "material_lots_organization_id_fkey"
             columns: ["organization_id"]
@@ -4912,6 +5199,13 @@ export type Database = {
             foreignKeyName: "ncr_reports_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "ncr_reports_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -5059,6 +5353,13 @@ export type Database = {
             foreignKeyName: "notification_queue_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "notification_queue_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -5199,6 +5500,13 @@ export type Database = {
           vertical?: Database["public"]["Enums"]["oap_vertical"]
         }
         Relationships: [
+          {
+            foreignKeyName: "oap_certificates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "oap_certificates_organization_id_fkey"
             columns: ["organization_id"]
@@ -5359,6 +5667,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "oap_enrollments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "oap_enrollments_organization_id_fkey"
             columns: ["organization_id"]
@@ -5540,6 +5855,13 @@ export type Database = {
             foreignKeyName: "oap_operator_credentials_issuing_organization_id_fkey"
             columns: ["issuing_organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "oap_operator_credentials_issuing_organization_id_fkey"
+            columns: ["issuing_organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -5645,6 +5967,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "oap_quiz_attempts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "oap_quiz_attempts_organization_id_fkey"
             columns: ["organization_id"]
@@ -5827,6 +6156,13 @@ export type Database = {
             foreignKeyName: "oap_recert_events_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "oap_recert_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -5951,6 +6287,13 @@ export type Database = {
             foreignKeyName: "oap_role_programs_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "oap_role_programs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -6048,6 +6391,13 @@ export type Database = {
           token?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "oap_transfer_tokens_redeemed_by_org_id_fkey"
+            columns: ["redeemed_by_org_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "oap_transfer_tokens_redeemed_by_org_id_fkey"
             columns: ["redeemed_by_org_id"]
@@ -6168,6 +6518,13 @@ export type Database = {
             foreignKeyName: "oap_walkthrough_checkoffs_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "oap_walkthrough_checkoffs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -6242,6 +6599,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "oap_walkthrough_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "oap_walkthrough_items_organization_id_fkey"
             columns: ["organization_id"]
@@ -6346,6 +6710,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "oap_walkthrough_sessions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "oap_walkthrough_sessions_organization_id_fkey"
             columns: ["organization_id"]
@@ -6876,6 +7247,13 @@ export type Database = {
             foreignKeyName: "operator_station_sessions_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "operator_station_sessions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -6950,6 +7328,13 @@ export type Database = {
             foreignKeyName: "operator_work_history_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "operator_work_history_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -7008,6 +7393,13 @@ export type Database = {
             foreignKeyName: "org_connections_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "org_connections_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -7062,6 +7454,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "org_inspection_tool_overrides_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "org_inspection_tool_overrides_organization_id_fkey"
             columns: ["organization_id"]
@@ -7135,6 +7534,13 @@ export type Database = {
             foreignKeyName: "org_machining_operation_overrides_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "org_machining_operation_overrides_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -7183,6 +7589,13 @@ export type Database = {
           sender_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "org_messages_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "org_messages_organization_id_fkey"
             columns: ["organization_id"]
@@ -7257,6 +7670,13 @@ export type Database = {
             foreignKeyName: "organization_api_keys_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "organization_api_keys_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -7327,6 +7747,13 @@ export type Database = {
             foreignKeyName: "organization_audit_events_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "organization_audit_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -7372,6 +7799,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "organization_billing_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "organization_billing_organization_id_fkey"
             columns: ["organization_id"]
@@ -7458,6 +7892,13 @@ export type Database = {
             foreignKeyName: "organization_branding_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: true
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "organization_branding_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -7515,6 +7956,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "organization_feature_flags_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "organization_feature_flags_organization_id_fkey"
             columns: ["organization_id"]
@@ -7582,6 +8030,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "organization_integrations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "organization_integrations_organization_id_fkey"
             columns: ["organization_id"]
@@ -7659,6 +8114,13 @@ export type Database = {
             foreignKeyName: "organization_invites_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "organization_invites_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -7728,6 +8190,13 @@ export type Database = {
             foreignKeyName: "organization_machine_purchases_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "organization_machine_purchases_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -7770,6 +8239,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "organization_members_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "organization_members_organization_id_fkey"
             columns: ["organization_id"]
@@ -7831,6 +8307,13 @@ export type Database = {
           usage_limit?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "organization_usage_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "organization_usage_organization_id_fkey"
             columns: ["organization_id"]
@@ -7898,6 +8381,13 @@ export type Database = {
           url?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "organization_webhooks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "organization_webhooks_organization_id_fkey"
             columns: ["organization_id"]
@@ -8119,6 +8609,13 @@ export type Database = {
             foreignKeyName: "part_catalog_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "part_catalog_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -8167,6 +8664,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "planning_chat_sessions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "planning_chat_sessions_organization_id_fkey"
             columns: ["organization_id"]
@@ -8307,6 +8811,13 @@ export type Database = {
             foreignKeyName: "program_release_log_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "program_release_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -8364,6 +8875,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "quality_checkpoints_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "quality_checkpoints_organization_id_fkey"
             columns: ["organization_id"]
@@ -8451,6 +8969,13 @@ export type Database = {
             foreignKeyName: "quality_inspections_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "quality_inspections_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -8517,6 +9042,13 @@ export type Database = {
             foreignKeyName: "queue_item_comments_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "queue_item_comments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -8578,6 +9110,13 @@ export type Database = {
           user_name?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "queue_item_history_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "queue_item_history_organization_id_fkey"
             columns: ["organization_id"]
@@ -8828,6 +9367,13 @@ export type Database = {
             foreignKeyName: "queue_items_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "queue_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -8978,6 +9524,13 @@ export type Database = {
             foreignKeyName: "routing_step_dimensions_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "routing_step_dimensions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -9052,6 +9605,13 @@ export type Database = {
             foreignKeyName: "routing_template_steps_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "routing_template_steps_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -9113,6 +9673,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "routing_templates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "routing_templates_organization_id_fkey"
             columns: ["organization_id"]
@@ -9183,6 +9750,13 @@ export type Database = {
           view_type?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "saved_views_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "saved_views_organization_id_fkey"
             columns: ["organization_id"]
@@ -9270,6 +9844,13 @@ export type Database = {
             foreignKeyName: "setup_sheets_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "setup_sheets_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -9341,6 +9922,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "shift_assignments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "shift_assignments_organization_id_fkey"
             columns: ["organization_id"]
@@ -9422,6 +10010,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "shift_schedules_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "shift_schedules_organization_id_fkey"
             columns: ["organization_id"]
@@ -9530,6 +10125,13 @@ export type Database = {
             foreignKeyName: "shop_floor_displays_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "shop_floor_displays_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -9575,6 +10177,13 @@ export type Database = {
           station_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "station_machine_assignments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "station_machine_assignments_organization_id_fkey"
             columns: ["organization_id"]
@@ -9762,6 +10371,13 @@ export type Database = {
             foreignKeyName: "station_manual_machine_profiles_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "station_manual_machine_profiles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -9835,6 +10451,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "departments"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
           },
           {
             foreignKeyName: "stations_organization_id_fkey"
@@ -9941,6 +10564,13 @@ export type Database = {
             foreignKeyName: "subscriptions_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "subscriptions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -10004,6 +10634,13 @@ export type Database = {
           subject?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "talent_contact_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "talent_contact_requests_organization_id_fkey"
             columns: ["organization_id"]
@@ -10108,6 +10745,13 @@ export type Database = {
             foreignKeyName: "talent_saved_candidates_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "talent_saved_candidates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -10156,6 +10800,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "talent_saved_lists_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "talent_saved_lists_organization_id_fkey"
             columns: ["organization_id"]
@@ -10261,6 +10912,13 @@ export type Database = {
             foreignKeyName: "teams_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "teams_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -10312,6 +10970,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "terms_acceptance_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "terms_acceptance_organization_id_fkey"
             columns: ["organization_id"]
@@ -10388,6 +11053,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "tool_proficiency_attempts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "tool_proficiency_attempts_organization_id_fkey"
             columns: ["organization_id"]
@@ -10474,6 +11146,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "tool_proficiency_tests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "tool_proficiency_tests_organization_id_fkey"
             columns: ["organization_id"]
@@ -10581,6 +11260,13 @@ export type Database = {
             foreignKeyName: "training_media_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "training_media_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -10656,6 +11342,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "certifications"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_certifications_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
           },
           {
             foreignKeyName: "user_certifications_organization_id_fkey"
@@ -10822,6 +11515,13 @@ export type Database = {
             foreignKeyName: "user_org_preferences_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "user_org_preferences_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -10900,6 +11600,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "user_sessions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "user_sessions_organization_id_fkey"
             columns: ["organization_id"]
@@ -11130,6 +11837,13 @@ export type Database = {
             foreignKeyName: "webhook_deliveries_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "webhook_deliveries_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -11216,6 +11930,13 @@ export type Database = {
           work_center_type?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "work_center_config_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "work_center_config_organization_id_fkey"
             columns: ["organization_id"]
@@ -11323,6 +12044,13 @@ export type Database = {
             foreignKeyName: "work_order_routing_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "work_order_routing_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -11393,6 +12121,13 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "activity_logs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "activity_logs_organization_id_fkey"
             columns: ["organization_id"]
@@ -11482,6 +12217,13 @@ export type Database = {
             foreignKeyName: "oap_designated_mentors_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "oap_designated_mentors_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
@@ -11557,6 +12299,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "erp_connections_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "erp_connections_organization_id_fkey"
             columns: ["organization_id"]
@@ -11955,6 +12704,24 @@ export type Database = {
         }
         Relationships: []
       }
+      organization_billing_identifiers: {
+        Row: {
+          billing_email: string | null
+          organization_id: string | null
+          stripe_customer_id: string | null
+        }
+        Insert: {
+          billing_email?: string | null
+          organization_id?: string | null
+          stripe_customer_id?: string | null
+        }
+        Update: {
+          billing_email?: string | null
+          organization_id?: string | null
+          stripe_customer_id?: string | null
+        }
+        Relationships: []
+      }
       organization_webhooks_safe: {
         Row: {
           created_at: string | null
@@ -11996,6 +12763,13 @@ export type Database = {
           url?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "organization_webhooks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
           {
             foreignKeyName: "organization_webhooks_organization_id_fkey"
             columns: ["organization_id"]
