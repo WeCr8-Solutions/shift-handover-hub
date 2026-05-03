@@ -13,6 +13,16 @@ const logStep = (step: string, details?: unknown) => {
   console.log(`[PROCESS-NOTIFICATIONS] ${step}${detailsStr}`);
 };
 
+// HTML-escape user-supplied strings before injecting into email markup.
+function esc(s: unknown): string {
+  return String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;");
+}
+
 const BATCH_SIZE = 20;
 const MAX_ATTEMPTS = 5;
 
@@ -172,9 +182,9 @@ serve(async (req) => {
                       <span style="color: ${severityColors[severity] || '#ca8a04'}; font-weight: 600; text-transform: uppercase; font-size: 11px;">${severity}</span>
                     </div>
                   ` : ''}
-                  <p style="color: #1e293b; margin: 0; white-space: pre-line; line-height: 1.6;">${notification.content}</p>
+                  <p style="color: #1e293b; margin: 0; white-space: pre-line; line-height: 1.6;">${esc(notification.content)}</p>
                   ${metadata?.reporter_email ? `
-                    <p style="color: #64748b; font-size: 13px; margin-top: 12px;">Reporter: ${metadata.reporter_email}</p>
+                    <p style="color: #64748b; font-size: 13px; margin-top: 12px;">Reporter: ${esc(metadata.reporter_email)}</p>
                   ` : ''}
                 </div>
               </div>
