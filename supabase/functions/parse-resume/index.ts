@@ -135,11 +135,62 @@ Deno.serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
+    // ── Auth: require a valid Supabase JWT ────────────────────────────────
+    // Prevents unauthenticated SSRF + AI quota abuse against this function.
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
+    const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+    const authHeader = req.headers.get("Authorization") ?? "";
+    if (!authHeader.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    try {
+      const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2");
+      const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        global: { headers: { Authorization: authHeader } },
+      });
+      const { data: u, error: uErr } = await userClient.auth.getUser();
+      if (uErr || !u?.user?.id) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    } catch {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const { resumeUrl } = await req.json();
     if (!resumeUrl || typeof resumeUrl !== "string") {
       return new Response(JSON.stringify({ error: "resumeUrl required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    // ── SSRF guard: only allow our own Supabase Storage origin ────────────
+    let parsedUrl: URL;
+    try {
+      parsedUrl = new URL(resumeUrl);
+    } catch {
+      return new Response(JSON.stringify({ error: "Invalid resumeUrl" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const projectHost = (() => {
+      try { return new URL(SUPABASE_URL).host; } catch { return ""; }
+    })();
+    const isHttps = parsedUrl.protocol === "https:";
+    const isProjectStorage =
+      !!projectHost &&
+      parsedUrl.host === projectHost &&
+      parsedUrl.pathname.startsWith("/storage/v1/");
+    if (!isHttps || !isProjectStorage) {
+      return new Response(
+        JSON.stringify({ error: "resumeUrl must point to this project's Supabase Storage" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
     const fileResp = await fetch(resumeUrl);
