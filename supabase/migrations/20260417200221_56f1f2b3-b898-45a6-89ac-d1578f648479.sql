@@ -100,7 +100,7 @@ CREATE INDEX IF NOT EXISTS idx_oap_checkoffs_org ON public.oap_walkthrough_check
 -- ============================================================
 -- 5. MENTOR DESIGNATION (separate from supervisor role)
 -- ============================================================
-CREATE TABLE IF NOT EXISTS public.oap_designated_mentors (
+CREATE TABLE IF NOT EXISTS public.certifying_mentors (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id uuid NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
   user_id uuid NOT NULL,
@@ -112,7 +112,7 @@ CREATE TABLE IF NOT EXISTS public.oap_designated_mentors (
   UNIQUE(organization_id, user_id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_oap_mentors_org ON public.oap_designated_mentors(organization_id);
+CREATE INDEX IF NOT EXISTS idx_oap_mentors_org ON public.certifying_mentors(organization_id);
 
 -- ============================================================
 -- 6. HELPER FUNCTION: can this user act as an OAP mentor?
@@ -129,7 +129,7 @@ AS $$
     OR public.is_supervisor_in_org(_user_id, _org_id)
     OR public.has_role(_user_id, 'admin'::public.app_role)
     OR EXISTS (
-      SELECT 1 FROM public.oap_designated_mentors
+      SELECT 1 FROM public.certifying_mentors
       WHERE organization_id = _org_id
         AND user_id = _user_id
         AND is_active = true
@@ -153,13 +153,13 @@ DROP POLICY IF EXISTS "View checkoffs in own session or as mentor" ON public.oap
 DROP POLICY IF EXISTS "Only mentors create checkoffs" ON public.oap_walkthrough_checkoffs;
 DROP POLICY IF EXISTS "Mentors update own checkoffs (correction window)" ON public.oap_walkthrough_checkoffs;
 DROP POLICY IF EXISTS "Org admins delete checkoffs" ON public.oap_walkthrough_checkoffs;
-DROP POLICY IF EXISTS "Org members read mentors" ON public.oap_designated_mentors;
-DROP POLICY IF EXISTS "Org admins manage mentors" ON public.oap_designated_mentors;
+DROP POLICY IF EXISTS "Org members read mentors" ON public.certifying_mentors;
+DROP POLICY IF EXISTS "Org admins manage mentors" ON public.certifying_mentors;
 ALTER TABLE public.oap_walkthrough_sections ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.oap_walkthrough_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.oap_walkthrough_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.oap_walkthrough_checkoffs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.oap_designated_mentors ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.certifying_mentors ENABLE ROW LEVEL SECURITY;
 
 -- Sections: readable by all authenticated users, manageable only by platform admin
 CREATE POLICY "Sections readable by authenticated"
@@ -258,12 +258,12 @@ CREATE POLICY "Org admins delete checkoffs"
 
 -- Designated mentors: org members read, org admins manage
 CREATE POLICY "Org members read mentors"
-  ON public.oap_designated_mentors FOR SELECT
+  ON public.certifying_mentors FOR SELECT
   TO authenticated
   USING (public.is_org_member(auth.uid(), organization_id));
 
 CREATE POLICY "Org admins manage mentors"
-  ON public.oap_designated_mentors FOR ALL
+  ON public.certifying_mentors FOR ALL
   TO authenticated
   USING (public.is_org_admin(auth.uid(), organization_id))
   WITH CHECK (public.is_org_admin(auth.uid(), organization_id));
