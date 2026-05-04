@@ -783,28 +783,28 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "oap_designated_mentors_organization_id_fkey"
+            foreignKeyName: "certifying_mentors_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organization_billing_identifiers"
             referencedColumns: ["organization_id"]
           },
           {
-            foreignKeyName: "oap_designated_mentors_organization_id_fkey"
+            foreignKeyName: "certifying_mentors_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "oap_designated_mentors_organization_id_fkey"
+            foreignKeyName: "certifying_mentors_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations_member_view"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "oap_designated_mentors_organization_id_fkey"
+            foreignKeyName: "certifying_mentors_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations_safe"
@@ -12214,28 +12214,28 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "oap_designated_mentors_organization_id_fkey"
+            foreignKeyName: "certifying_mentors_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organization_billing_identifiers"
             referencedColumns: ["organization_id"]
           },
           {
-            foreignKeyName: "oap_designated_mentors_organization_id_fkey"
+            foreignKeyName: "certifying_mentors_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "oap_designated_mentors_organization_id_fkey"
+            foreignKeyName: "certifying_mentors_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations_member_view"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "oap_designated_mentors_organization_id_fkey"
+            foreignKeyName: "certifying_mentors_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations_safe"
