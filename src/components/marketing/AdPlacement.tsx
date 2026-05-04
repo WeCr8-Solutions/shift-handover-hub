@@ -22,10 +22,26 @@ import { useEffect, useRef } from "react";
 
 interface AdPlacementProps {
   slot?: string;
-  format?: "horizontal" | "rectangle" | "fluid";
+  /**
+   * Ad format / layout hint.
+   * - `horizontal` / `rectangle` / `fluid` map to standard responsive units
+   *   (default slot: jobline.ai-sidebar-top / sidebar-bottom).
+   * - `in-article` uses the AdSense in-article fluid layout
+   *   (default slot: jobline.ai-in-article).
+   */
+  format?: "horizontal" | "rectangle" | "fluid" | "in-article";
   className?: string;
   label?: string;
 }
+
+// Real AdSense ad unit slot IDs (publisher: ca-pub-3639153716376265).
+// Provided by AdSense dashboard 2026-05-04.
+const DEFAULT_SLOT_IDS: Record<NonNullable<AdPlacementProps["format"]>, string> = {
+  horizontal: "2284676737", // jobline.ai-sidebar-top
+  rectangle: "7622650396", // jobline.ai-sidebar-bottom
+  fluid: "2284676737",
+  "in-article": "9899353587", // jobline.ai-in-article
+};
 
 // Suppress ads when analytics are disabled (ITAR / self-hosted)
 const ADS_ENABLED = import.meta.env.VITE_DISABLE_ANALYTICS !== "true";
@@ -97,7 +113,11 @@ export function AdPlacement({
     horizontal: "min-h-[90px] max-h-[120px]",
     rectangle: "min-h-[250px] max-h-[300px]",
     fluid: "min-h-[100px]",
+    "in-article": "min-h-[200px]",
   };
+
+  const resolvedSlot = slot || DEFAULT_SLOT_IDS[format];
+  const isInArticle = format === "in-article";
 
   return (
     <div className={`w-full ${className}`}>
@@ -108,21 +128,33 @@ export function AdPlacement({
         <div
           className={`w-full rounded-lg bg-muted/30 border border-border/50 flex items-center justify-center overflow-hidden ${formatClasses[format]}`}
         >
-          <ins
-            ref={adRef}
-            className="adsbygoogle block w-full h-full"
-            style={{ display: "block" }}
-            data-ad-client="ca-pub-3639153716376265"
-            data-ad-slot={slot || "auto"}
-            data-ad-format={
-              format === "horizontal"
-                ? "horizontal"
-                : format === "rectangle"
-                  ? "rectangle"
-                  : "fluid"
-            }
-            data-full-width-responsive="true"
-          />
+          {isInArticle ? (
+            <ins
+              ref={adRef}
+              className="adsbygoogle block w-full h-full"
+              style={{ display: "block", textAlign: "center" }}
+              data-ad-layout="in-article"
+              data-ad-format="fluid"
+              data-ad-client="ca-pub-3639153716376265"
+              data-ad-slot={resolvedSlot}
+            />
+          ) : (
+            <ins
+              ref={adRef}
+              className="adsbygoogle block w-full h-full"
+              style={{ display: "block" }}
+              data-ad-client="ca-pub-3639153716376265"
+              data-ad-slot={resolvedSlot}
+              data-ad-format={
+                format === "horizontal"
+                  ? "horizontal"
+                  : format === "rectangle"
+                    ? "rectangle"
+                    : "fluid"
+              }
+              data-full-width-responsive="true"
+            />
+          )}
         </div>
       </div>
     </div>
