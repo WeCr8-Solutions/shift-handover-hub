@@ -88,6 +88,18 @@ WITH CHECK (
   )
 );
 
+-- Ensure Live environments that missed the earlier billing hardening view can still publish.
+CREATE OR REPLACE VIEW public.organization_billing_identifiers
+WITH (security_invoker = true)
+AS
+SELECT
+  id AS organization_id,
+  stripe_customer_id,
+  billing_email
+FROM public.organizations o
+WHERE public.is_org_admin(auth.uid(), o.id)
+   OR public.has_role(auth.uid(), 'admin'::public.app_role);
+
 -- Keep regular organization fields readable while denying billing-sensitive columns from direct table reads.
 REVOKE SELECT ON TABLE public.organizations FROM anon;
 REVOKE SELECT ON TABLE public.organizations FROM authenticated;
