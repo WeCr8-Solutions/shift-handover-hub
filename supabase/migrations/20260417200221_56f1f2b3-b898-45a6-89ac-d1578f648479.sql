@@ -46,6 +46,9 @@ CREATE TABLE IF NOT EXISTS public.oap_walkthrough_items (
 
 CREATE INDEX IF NOT EXISTS idx_oap_items_section ON public.oap_walkthrough_items(section_id, item_order);
 CREATE INDEX IF NOT EXISTS idx_oap_items_org ON public.oap_walkthrough_items(organization_id) WHERE organization_id IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_oap_items_canonical_section_order
+  ON public.oap_walkthrough_items(section_id, item_order)
+  WHERE organization_id IS NULL;
 
 -- ============================================================
 -- 3. WALKTHROUGH SESSIONS (one per operator)
