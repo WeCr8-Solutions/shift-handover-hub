@@ -92,7 +92,7 @@ export default function HelpArticle() {
 
               <ArticleContent article={article} />
 
-              <AdPlacement format="horizontal" className="my-8" />
+              <AdPlacement format="in-article" className="my-8" />
 
               {/* Feedback */}
               <div className="border-t border-border pt-6 mt-8">
