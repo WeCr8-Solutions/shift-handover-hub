@@ -4,7 +4,7 @@
 -- ============================================================
 -- 1. SECTIONS (canonical, fixed order — same every time)
 -- ============================================================
-CREATE TABLE public.oap_walkthrough_sections (
+CREATE TABLE IF NOT EXISTS public.oap_walkthrough_sections (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   section_key text NOT NULL UNIQUE,
   section_order integer NOT NULL UNIQUE,
@@ -21,12 +21,16 @@ INSERT INTO public.oap_walkthrough_sections (section_key, section_order, title, 
   ('tooling', 4, 'Cutting Tooling', 'Inserts, end mills, drills, taps, holders, presetting'),
   ('machine_types', 5, 'Machine Types', 'Mills, lathes, swiss, EDM, grinders — identification & operation basics'),
   ('floor_checkoffs', 6, 'Floor Check-offs', 'Walk-the-floor verifications: housekeeping, coolant, chip mgmt, tool crib'),
-  ('skills_proficiency', 7, 'Skills Proficiency', 'Self-rated skills validated by mentor');
+  ('skills_proficiency', 7, 'Skills Proficiency', 'Self-rated skills validated by mentor')
+ON CONFLICT (section_key) DO UPDATE
+SET section_order = EXCLUDED.section_order,
+    title = EXCLUDED.title,
+    description = EXCLUDED.description;
 
 -- ============================================================
 -- 2. ITEMS within each section (canonical master list, org can override later)
 -- ============================================================
-CREATE TABLE public.oap_walkthrough_items (
+CREATE TABLE IF NOT EXISTS public.oap_walkthrough_items (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   section_id uuid NOT NULL REFERENCES public.oap_walkthrough_sections(id) ON DELETE CASCADE,
   organization_id uuid REFERENCES public.organizations(id) ON DELETE CASCADE, -- NULL = canonical/global
@@ -40,13 +44,16 @@ CREATE TABLE public.oap_walkthrough_items (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_oap_items_section ON public.oap_walkthrough_items(section_id, item_order);
-CREATE INDEX idx_oap_items_org ON public.oap_walkthrough_items(organization_id) WHERE organization_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_oap_items_section ON public.oap_walkthrough_items(section_id, item_order);
+CREATE INDEX IF NOT EXISTS idx_oap_items_org ON public.oap_walkthrough_items(organization_id) WHERE organization_id IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_oap_items_canonical_section_order
+  ON public.oap_walkthrough_items(section_id, item_order)
+  WHERE organization_id IS NULL;
 
 -- ============================================================
 -- 3. WALKTHROUGH SESSIONS (one per operator)
 -- ============================================================
-CREATE TABLE public.oap_walkthrough_sessions (
+CREATE TABLE IF NOT EXISTS public.oap_walkthrough_sessions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id uuid NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
   operator_id uuid NOT NULL,
@@ -62,15 +69,19 @@ CREATE TABLE public.oap_walkthrough_sessions (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_oap_sessions_org ON public.oap_walkthrough_sessions(organization_id);
-CREATE INDEX idx_oap_sessions_operator ON public.oap_walkthrough_sessions(operator_id);
+CREATE INDEX IF NOT EXISTS idx_oap_sessions_org ON public.oap_walkthrough_sessions(organization_id);
+CREATE INDEX IF NOT EXISTS idx_oap_sessions_operator ON public.oap_walkthrough_sessions(operator_id);
 
 -- ============================================================
 -- 4. CHECK-OFF RESULTS (Pass / Needs Practice / Fail + signature + timestamp)
 -- ============================================================
-CREATE TYPE public.oap_checkoff_result AS ENUM ('pass', 'needs_practice', 'fail');
+DO $$
+BEGIN
+  CREATE TYPE public.oap_checkoff_result AS ENUM ('pass', 'needs_practice', 'fail');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TABLE public.oap_walkthrough_checkoffs (
+CREATE TABLE IF NOT EXISTS public.oap_walkthrough_checkoffs (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   session_id uuid NOT NULL REFERENCES public.oap_walkthrough_sessions(id) ON DELETE CASCADE,
   organization_id uuid NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
@@ -86,13 +97,13 @@ CREATE TABLE public.oap_walkthrough_checkoffs (
   UNIQUE(session_id, item_id)
 );
 
-CREATE INDEX idx_oap_checkoffs_session ON public.oap_walkthrough_checkoffs(session_id);
-CREATE INDEX idx_oap_checkoffs_org ON public.oap_walkthrough_checkoffs(organization_id);
+CREATE INDEX IF NOT EXISTS idx_oap_checkoffs_session ON public.oap_walkthrough_checkoffs(session_id);
+CREATE INDEX IF NOT EXISTS idx_oap_checkoffs_org ON public.oap_walkthrough_checkoffs(organization_id);
 
 -- ============================================================
 -- 5. MENTOR DESIGNATION (separate from supervisor role)
 -- ============================================================
-CREATE TABLE public.oap_designated_mentors (
+CREATE TABLE IF NOT EXISTS public.oap_designated_mentors (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id uuid NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
   user_id uuid NOT NULL,
@@ -104,7 +115,7 @@ CREATE TABLE public.oap_designated_mentors (
   UNIQUE(organization_id, user_id)
 );
 
-CREATE INDEX idx_oap_mentors_org ON public.oap_designated_mentors(organization_id);
+CREATE INDEX IF NOT EXISTS idx_oap_mentors_org ON public.oap_designated_mentors(organization_id);
 
 -- ============================================================
 -- 6. HELPER FUNCTION: can this user act as an OAP mentor?
@@ -132,6 +143,21 @@ $$;
 -- ============================================================
 -- 7. RLS POLICIES
 -- ============================================================
+DROP POLICY IF EXISTS "Sections readable by authenticated" ON public.oap_walkthrough_sections;
+DROP POLICY IF EXISTS "Sections managed by platform admin" ON public.oap_walkthrough_sections;
+DROP POLICY IF EXISTS "Canonical items readable by authenticated" ON public.oap_walkthrough_items;
+DROP POLICY IF EXISTS "Org admins manage org-specific items" ON public.oap_walkthrough_items;
+DROP POLICY IF EXISTS "Platform admin manages canonical items" ON public.oap_walkthrough_items;
+DROP POLICY IF EXISTS "Operators see own sessions" ON public.oap_walkthrough_sessions;
+DROP POLICY IF EXISTS "Mentors create sessions for org operators" ON public.oap_walkthrough_sessions;
+DROP POLICY IF EXISTS "Mentors update org sessions" ON public.oap_walkthrough_sessions;
+DROP POLICY IF EXISTS "Org admins delete sessions" ON public.oap_walkthrough_sessions;
+DROP POLICY IF EXISTS "View checkoffs in own session or as mentor" ON public.oap_walkthrough_checkoffs;
+DROP POLICY IF EXISTS "Only mentors create checkoffs" ON public.oap_walkthrough_checkoffs;
+DROP POLICY IF EXISTS "Mentors update own checkoffs (correction window)" ON public.oap_walkthrough_checkoffs;
+DROP POLICY IF EXISTS "Org admins delete checkoffs" ON public.oap_walkthrough_checkoffs;
+DROP POLICY IF EXISTS "Org members read mentors" ON public.oap_designated_mentors;
+DROP POLICY IF EXISTS "Org admins manage mentors" ON public.oap_designated_mentors;
 ALTER TABLE public.oap_walkthrough_sections ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.oap_walkthrough_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.oap_walkthrough_sessions ENABLE ROW LEVEL SECURITY;
@@ -248,6 +274,8 @@ CREATE POLICY "Org admins manage mentors"
 -- ============================================================
 -- 8. TRIGGERS
 -- ============================================================
+DROP TRIGGER IF EXISTS update_oap_items_updated_at ON public.oap_walkthrough_items;
+DROP TRIGGER IF EXISTS update_oap_sessions_updated_at ON public.oap_walkthrough_sessions;
 CREATE TRIGGER update_oap_items_updated_at
   BEFORE UPDATE ON public.oap_walkthrough_items
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
@@ -280,7 +308,8 @@ BEGIN
     (_safety, 4, 'Lockout/Tagout Basics', 'Demonstrate LOTO process on a designated machine. Operator explains back the steps.'),
     (_safety, 5, 'Fire Extinguisher & Eye Wash Locations', 'Walk to each location. Operator points out without prompting.'),
     (_safety, 6, 'Chip & Coolant Hazards', 'Explain hot chip burns, never blow chips with air, never reach into coolant reservoirs.'),
-    (_safety, 7, 'Emergency Evacuation Route', 'Walk the route. Identify primary and secondary exit.');
+    (_safety, 7, 'Emergency Evacuation Route', 'Walk the route. Identify primary and secondary exit.')
+  ON CONFLICT DO NOTHING;
 
   -- 2. MEASURING (basic → advanced)
   INSERT INTO public.oap_walkthrough_items (section_id, item_order, title, instructions) VALUES
@@ -297,7 +326,8 @@ BEGIN
     (_measuring, 11, 'Thread Gauges (ring/plug)', 'Verify a tapped hole and a threaded OD.'),
     (_measuring, 12, 'Surface Plate & Height Gauge', 'Set up a part on the surface plate, scribe a line, transfer dimension.'),
     (_measuring, 13, 'Bore Gauge / Sunnen', 'Demonstrate or describe usage on precision ID.'),
-    (_measuring, 14, 'CMM Familiarization (if equipped)', 'Identify probe, ruby, machine axes. Do NOT operate without further training.');
+    (_measuring, 14, 'CMM Familiarization (if equipped)', 'Identify probe, ruby, machine axes. Do NOT operate without further training.')
+  ON CONFLICT DO NOTHING;
 
   -- 3. HAND TOOLS
   INSERT INTO public.oap_walkthrough_items (section_id, item_order, title, instructions) VALUES
@@ -310,7 +340,8 @@ BEGIN
     (_hand, 7, 'Tap & Die Handles', 'Hand-tap a pre-drilled hole, back off every 1/2 turn to break chips.'),
     (_hand, 8, 'Dead Blow / Soft Mallet', 'Seat a vise jaw or tap a part flat without marring.'),
     (_hand, 9, 'Pliers (needle nose, channel locks, snap ring)', 'Identify each and proper application.'),
-    (_hand, 10, 'Torque Wrench', 'Set to spec, demonstrate click. Explain why never used to loosen.');
+    (_hand, 10, 'Torque Wrench', 'Set to spec, demonstrate click. Explain why never used to loosen.')
+  ON CONFLICT DO NOTHING;
 
   -- 4. CUTTING TOOLING
   INSERT INTO public.oap_walkthrough_items (section_id, item_order, title, instructions) VALUES
@@ -321,7 +352,8 @@ BEGIN
     (_tooling, 5, 'Tool Holders (ER collet, shrink fit, hydraulic, side-lock)', 'Identify each, explain runout pros/cons.'),
     (_tooling, 6, 'Tool Presetter Use', 'Measure tool length and diameter, write/transfer offset.'),
     (_tooling, 7, 'Insert Wear Identification', 'Identify normal wear, chipping, BUE, crater, thermal cracking.'),
-    (_tooling, 8, 'Coolant-Through Tooling', 'Identify and explain why through-coolant matters in deep holes.');
+    (_tooling, 8, 'Coolant-Through Tooling', 'Identify and explain why through-coolant matters in deep holes.')
+  ON CONFLICT DO NOTHING;
 
   -- 5. MACHINE TYPES
   INSERT INTO public.oap_walkthrough_items (section_id, item_order, title, instructions) VALUES
@@ -334,7 +366,8 @@ BEGIN
     (_machines, 7, '5-Axis Machining Center', 'Identify additional rotary axes (A/B/C). Explain trunnion vs head/head.'),
     (_machines, 8, 'EDM (sinker/wire)', 'Identify electrode/wire, dielectric tank, generator.'),
     (_machines, 9, 'Surface Grinder', 'Identify wheel, magnetic chuck, dressing diamond.'),
-    (_machines, 10, 'Saw (cold, band, abrasive)', 'Identify and explain material/speed selection.');
+    (_machines, 10, 'Saw (cold, band, abrasive)', 'Identify and explain material/speed selection.')
+  ON CONFLICT DO NOTHING;
 
   -- 6. FLOOR CHECK-OFFS
   INSERT INTO public.oap_walkthrough_items (section_id, item_order, title, instructions) VALUES
@@ -345,7 +378,8 @@ BEGIN
     (_floor, 5, 'Material Staging Area', 'Locate raw stock area, identify material tags / heat numbers.'),
     (_floor, 6, 'Finished Goods / Inspection Drop', 'Show where finished parts go and what tag is required.'),
     (_floor, 7, 'Air Hose / Compressed Air Use', 'Demonstrate safe blow-off (NEVER on body, NEVER toward others).'),
-    (_floor, 8, 'Spill Kit Location & Use', 'Locate kit, demonstrate containment of small coolant spill.');
+    (_floor, 8, 'Spill Kit Location & Use', 'Locate kit, demonstrate containment of small coolant spill.')
+  ON CONFLICT DO NOTHING;
 
   -- 7. SKILLS PROFICIENCY (operator self-rates, mentor validates)
   INSERT INTO public.oap_walkthrough_items (section_id, item_order, title, instructions) VALUES
@@ -360,5 +394,6 @@ BEGIN
     (_skills, 9, 'In-Process Inspection / SPC', 'Pull a part every N pieces, log measurements.'),
     (_skills, 10, 'Tool Wear Adjustment', 'Adjust offsets to bring a drifting dimension back to nominal.'),
     (_skills, 11, 'Edit a Program (offset / feedrate only)', 'Make a safe edit, save, restart at correct line.'),
-    (_skills, 12, 'Identify a Bad Part / Initiate NCR', 'Recognize out-of-tolerance, segregate, start NCR process.');
+    (_skills, 12, 'Identify a Bad Part / Initiate NCR', 'Recognize out-of-tolerance, segregate, start NCR process.')
+  ON CONFLICT DO NOTHING;
 END $$;
