@@ -3,6 +3,7 @@ import { useEffect, useState, ComponentType } from "react";
 import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
+import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Clock, User } from "lucide-react";
@@ -214,6 +215,7 @@ export default function BlogPost() {
               <div className="prose prose-neutral dark:prose-invert max-w-none prose-headings:tracking-tight prose-a:text-primary">
                 <Content />
               </div>
+              <AdPlacement format="in-article" className="my-10" />
             </div>
           </article>
           <MarketingFooter />
@@ -269,6 +271,8 @@ export default function BlogPost() {
               <div className="prose prose-neutral dark:prose-invert max-w-none prose-headings:tracking-tight prose-a:text-primary prose-img:rounded-lg prose-img:border prose-img:border-border">
                 <ReactMarkdown>{dbPost.body}</ReactMarkdown>
               </div>
+
+              <AdPlacement format="in-article" className="my-10" />
 
               <Gallery items={dbPost.gallery} />
 
