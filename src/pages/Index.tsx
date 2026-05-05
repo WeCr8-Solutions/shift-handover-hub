@@ -164,7 +164,7 @@ const Index = () => {
 
   const { user, loading: authLoading, isReady } = useAuth();
   const { currentTeam } = useCurrentTeam();
-  const { organization } = useOrgContext();
+  const { organization, loading: orgLoading } = useOrgContext();
   const { stations: dbStations, loading: stationsLoading } = useStations(currentTeam?.id, organization?.id);
   const {
     records: dbRecords,
