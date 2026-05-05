@@ -151,12 +151,18 @@ export default function Auth() {
       } else {
         ConversionEvents.signupComplete(window.location.pathname, "email");
         sendWelcomeEmail(email, displayName);
-        toast({ title: "Account created!", description: "Check your email to verify, then sign in." });
+        toast({
+          title: "Account created!",
+          description: "Check your email to verify, then sign in.",
+        });
+        // G4: Surface a persistent in-page Resend CTA in case the verification email lands in spam
+        setUnverifiedEmail(email);
         setCreateMode(false);
         setPassword("");
         setConfirmPassword("");
         setDisplayName("");
       }
+
       return;
     }
 
