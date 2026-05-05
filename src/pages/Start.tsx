@@ -182,6 +182,7 @@ export default function Start() {
 
   const handleSignupClick = () => {
     trackEvent("signup_click", { type: selectedType, src, path: "/start" });
+    trackEvent("start_click", { source: getTrafficSource() });
     navigate("/auth");
   };
 
