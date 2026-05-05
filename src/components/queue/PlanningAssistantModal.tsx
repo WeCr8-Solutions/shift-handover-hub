@@ -102,6 +102,8 @@ export function PlanningAssistantModal({ organizationId }: PlanningAssistantModa
         onClick={() => setOpen(true)}
         size="lg"
         className="fixed bottom-6 right-6 z-50 rounded-full w-14 h-14 shadow-lg hover:shadow-xl transition-shadow p-0"
+        data-tour="ai-planner"
+        aria-label="Open AI Planning Assistant"
       >
         <Sparkles className="w-6 h-6" />
       </Button>

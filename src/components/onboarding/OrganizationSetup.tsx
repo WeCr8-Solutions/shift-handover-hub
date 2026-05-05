@@ -9,7 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { validateInviteCode, redeemInviteCode } from "@/hooks/useOrganizationInvites";
 import { getSafeErrorMessage } from "@/lib/errorHandling";
-import { Building2, Plus, Users, ArrowRight, Loader2, CheckCircle2, Factory, XCircle, Ticket } from "lucide-react";
+import { Building2, Plus, Users, ArrowRight, Loader2, CheckCircle2, Factory, XCircle, Ticket, Shield } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 
 interface OrganizationSetupProps {
   onComplete: () => void;
@@ -39,6 +40,7 @@ export function OrganizationSetup({ onComplete, onSkip }: OrganizationSetupProps
   // Create form
   const [orgName, setOrgName] = useState("");
   const [orgDescription, setOrgDescription] = useState("");
+  const [itarControlled, setItarControlled] = useState(false);
 
   // Join form
   const [inviteCode, setInviteCode] = useState("");
@@ -70,6 +72,7 @@ export function OrganizationSetup({ onComplete, onSkip }: OrganizationSetupProps
           slug,
           description: orgDescription.trim() || null,
           created_by: user.id,
+          requires_us_person_declaration: itarControlled,
         })
         .select("id")
         .single();
@@ -293,6 +296,24 @@ export function OrganizationSetup({ onComplete, onSkip }: OrganizationSetupProps
                 onChange={(e) => setOrgDescription(e.target.value)}
                 disabled={isLoading}
                 rows={3}
+              />
+            </div>
+
+            <div className="rounded-lg border p-3 flex items-start justify-between gap-3">
+              <div className="space-y-0.5">
+                <Label htmlFor="itar-toggle" className="flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-primary" />
+                  ITAR / Export-Controlled Shop
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Enables US Person declaration gate and forces ERP data to read-through (no persistence). Cannot be disabled later without support.
+                </p>
+              </div>
+              <Switch
+                id="itar-toggle"
+                checked={itarControlled}
+                onCheckedChange={setItarControlled}
+                disabled={isLoading}
               />
             </div>
 

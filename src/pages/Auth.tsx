@@ -48,6 +48,23 @@ export default function Auth() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showInviteRedemption, setShowInviteRedemption] = useState(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
+  const [resendingVerification, setResendingVerification] = useState(false);
+
+  const handleResendVerification = async (targetEmail: string) => {
+    setResendingVerification(true);
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: targetEmail,
+      options: { emailRedirectTo: `${window.location.origin}/setup?verified=1` },
+    });
+    setResendingVerification(false);
+    if (error) {
+      toast({ title: "Could not resend", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Verification email sent", description: `Check ${targetEmail} for the link.` });
+    }
+  };
 
   // Single unified form
   const [email, setEmail] = useState("");
@@ -146,14 +163,25 @@ export default function Auth() {
     const { error } = await signIn(email, password);
     setIsSubmitting(false);
     if (error) {
+      const msg = (error.message || "").toLowerCase();
+      const isUnverified = msg.includes("not confirmed") || msg.includes("email not confirmed") || msg.includes("not verified");
       const isInvalid = error.message === "Invalid login credentials";
-      toast({
-        title: "Login failed",
-        description: isInvalid
-          ? "Invalid email or password. New here? Tap 'Create an account' below."
-          : error.message,
-        variant: "destructive",
-      });
+      if (isUnverified) {
+        setUnverifiedEmail(email);
+        toast({
+          title: "Email not verified",
+          description: "Confirm your email to sign in. We can resend the link.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Login failed",
+          description: isInvalid
+            ? "Invalid email or password. New here? Tap 'Create an account' below."
+            : error.message,
+          variant: "destructive",
+        });
+      }
     } else {
       ConversionEvents.login(window.location.pathname, "email");
     }
@@ -287,6 +315,28 @@ export default function Auth() {
           </CardDescription>
         </CardHeader>
         <CardContent className="p-4 sm:p-6 pt-0 space-y-3">
+          {unverifiedEmail && (
+            <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs space-y-2">
+              <p className="text-foreground">
+                <strong>Verify your email</strong> — we sent a link to{" "}
+                <span className="font-mono">{unverifiedEmail}</span>.
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="w-full h-8"
+                onClick={() => handleResendVerification(unverifiedEmail)}
+                disabled={resendingVerification}
+              >
+                {resendingVerification ? (
+                  <><Loader2 className="w-3 h-3 mr-2 animate-spin" />Resending...</>
+                ) : (
+                  "Resend verification email"
+                )}
+              </Button>
+            </div>
+          )}
           {/* SSO at top — single button works for both sign-in and sign-up */}
           <Button
             type="button"

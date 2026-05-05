@@ -18,7 +18,8 @@ import {
   CheckCircle2,
   Sparkles,
   Play,
-  LayoutDashboard
+  LayoutDashboard,
+  ClipboardList
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -27,10 +28,12 @@ interface SetupStatus {
   hasTeams: boolean;
   hasStations: boolean;
   hasTeamMembers: boolean;
+  hasWorkOrders: boolean;
   organizationName: string | null;
   teamsCount: number;
   stationsCount: number;
   membersCount: number;
+  workOrdersCount: number;
 }
 
 export default function Setup() {
@@ -67,7 +70,7 @@ export default function Setup() {
       const hasOrg = !!orgResult.data?.organization;
       const orgId = orgResult.data?.organization?.id;
 
-      const [teamsResult, stationsResult, membersResult] = await Promise.all([
+      const [teamsResult, stationsResult, membersResult, workOrdersResult] = await Promise.all([
         orgId
           ? supabase.from('teams').select('id', { count: 'exact', head: true }).eq('organization_id', orgId)
           : Promise.resolve({ count: 0 }),
@@ -77,6 +80,9 @@ export default function Setup() {
         orgId
           ? supabase.from('team_members').select('id', { count: 'exact', head: true }).eq('organization_id', orgId)
           : Promise.resolve({ count: 0 }),
+        orgId
+          ? supabase.from('queue_items').select('id', { count: 'exact', head: true }).eq('organization_id', orgId)
+          : Promise.resolve({ count: 0 }),
       ]);
 
       setSetupStatus({
@@ -85,9 +91,11 @@ export default function Setup() {
         hasTeams: (teamsResult.count || 0) > 0,
         hasStations: (stationsResult.count || 0) > 0,
         hasTeamMembers: (membersResult.count || 0) > 0,
+        hasWorkOrders: (workOrdersResult.count || 0) > 0,
         teamsCount: teamsResult.count || 0,
         stationsCount: stationsResult.count || 0,
         membersCount: membersResult.count || 0,
+        workOrdersCount: workOrdersResult.count || 0,
       });
 
       if (!hasOrg && (currentStep === 'organization-setup' || currentStep === 'welcome')) {
@@ -118,11 +126,12 @@ export default function Setup() {
     (setupStatus.hasOrganization ? 1 : 0) +
     (setupStatus.hasTeams ? 1 : 0) + 
     (setupStatus.hasStations ? 1 : 0) + 
-    (setupStatus.hasTeamMembers ? 1 : 0) : 0;
+    (setupStatus.hasTeamMembers ? 1 : 0) +
+    (setupStatus.hasWorkOrders ? 1 : 0) : 0;
 
-  const progressPercent = (completedSteps / 4) * 100;
+  const progressPercent = (completedSteps / 5) * 100;
 
-  const isSetupComplete = completedSteps === 4;
+  const isSetupComplete = completedSteps === 5;
 
   if (authLoading || loading) {
     return (
@@ -187,7 +196,7 @@ export default function Setup() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium">Setup Progress</span>
-                <span className="text-sm text-muted-foreground">{completedSteps}/4 complete</span>
+                <span className="text-sm text-muted-foreground">{completedSteps}/5 complete</span>
               </div>
               <Progress value={progressPercent} className="h-2" />
             </CardContent>
@@ -337,6 +346,43 @@ export default function Setup() {
                   {setupStatus?.hasTeamMembers ? 'Manage Members' : 'Invite Members'}
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
+              </CardContent>
+            </Card>
+
+            {/* Step 4: First Work Order */}
+            <Card className={setupStatus?.hasWorkOrders ? 'border-green-500/50' : ''}>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    {setupStatus?.hasWorkOrders ? (
+                      <CheckCircle2 className="w-5 h-5 text-green-500" />
+                    ) : (
+                      <ClipboardList className="w-5 h-5 text-muted-foreground" />
+                    )}
+                    Create First Work Order
+                  </CardTitle>
+                  {setupStatus?.hasWorkOrders && (
+                    <Badge variant="secondary">{setupStatus.workOrdersCount} active</Badge>
+                  )}
+                </div>
+                <CardDescription>
+                  Move your first job through the production line to see the Digital Expeditor in action.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button
+                  variant={setupStatus?.hasWorkOrders ? 'outline' : 'default'}
+                  onClick={() => navigate('/work-orders')}
+                  disabled={!setupStatus?.hasStations}
+                >
+                  {setupStatus?.hasWorkOrders ? 'Manage Work Orders' : 'Create First Work Order'}
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+                {!setupStatus?.hasStations && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Add a station first to enable work order creation.
+                  </p>
+                )}
               </CardContent>
             </Card>
           </div>
