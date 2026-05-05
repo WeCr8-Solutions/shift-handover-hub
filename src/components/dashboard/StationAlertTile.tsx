@@ -281,7 +281,7 @@ export function StationAlertTile({ station, onViewStation, onQuickAction }: Stat
     } finally {
       setLoading(false);
     }
-  }, [station.dbId]);
+  }, [station.dbId, organizationId]);
 
   useEffect(() => {
     if (isOpen && !alertData) fetchAlertData();
