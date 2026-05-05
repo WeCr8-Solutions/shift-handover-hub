@@ -9,7 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { validateInviteCode, redeemInviteCode } from "@/hooks/useOrganizationInvites";
 import { getSafeErrorMessage } from "@/lib/errorHandling";
-import { Building2, Plus, Users, ArrowRight, Loader2, CheckCircle2, Factory, XCircle, Ticket } from "lucide-react";
+import { Building2, Plus, Users, ArrowRight, Loader2, CheckCircle2, Factory, XCircle, Ticket, Shield } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 
 interface OrganizationSetupProps {
   onComplete: () => void;
