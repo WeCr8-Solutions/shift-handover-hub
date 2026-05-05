@@ -405,14 +405,14 @@ export default function Setup() {
               </CardHeader>
               <CardContent>
                 <Button
-                  variant={setupStatus?.hasWorkOrders ? 'outline' : 'default'}
-                  onClick={() => navigate('/work-orders')}
-                  disabled={!setupStatus?.hasStations}
+                  variant={workOrdersStepDone ? 'outline' : 'default'}
+                  onClick={() => navigate(erpReadThrough ? '/queue' : '/work-orders')}
+                  disabled={!setupStatus?.hasStations && !erpReadThrough}
                 >
-                  {setupStatus?.hasWorkOrders ? 'Manage Work Orders' : 'Create First Work Order'}
+                  {erpReadThrough ? 'View ERP Queue' : (setupStatus?.hasWorkOrders ? 'Manage Work Orders' : 'Create First Work Order')}
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
-                {!setupStatus?.hasStations && (
+                {!setupStatus?.hasStations && !erpReadThrough && (
                   <p className="text-xs text-muted-foreground mt-2">
                     Add a station first to enable work order creation.
                   </p>
