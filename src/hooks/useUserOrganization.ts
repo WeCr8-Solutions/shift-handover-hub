@@ -64,7 +64,8 @@ async function fetchUserOrgData(userId: string): Promise<UserOrgData> {
           logo_url,
           subscription_tier,
           subscription_status,
-          trial_ends_at
+          trial_ends_at,
+          requires_us_person_declaration
         )
       `)
       .eq("user_id", userId)
