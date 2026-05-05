@@ -65,63 +65,17 @@ export function OrganizationSetup({ onComplete, onSkip }: OrganizationSetupProps
     try {
       const slug = generateSlug(orgName);
 
-      const { data: org, error: orgError } = await supabase
-        .from("organizations")
-        .insert({
-          name: orgName.trim(),
-          slug,
-          description: orgDescription.trim() || null,
-          created_by: user.id,
-          requires_us_person_declaration: itarControlled,
-        })
-        .select("id")
-        .single();
+      // Atomic create: organization + owner-member + default team + team-owner + default station.
+      // If any step fails, the entire transaction rolls back so the user is never orphaned.
+      const { data: orgId, error: rpcError } = await supabase.rpc("create_org_with_owner", {
+        _name: orgName.trim(),
+        _slug: slug,
+        _description: orgDescription.trim() || "",
+        _requires_itar: itarControlled,
+      });
 
-      if (orgError) throw orgError;
-
-      // Add user as owner of the organization
-      const { error: memberError } = await supabase
-        .from("organization_members")
-        .insert({ organization_id: org.id, user_id: user.id, role: "owner" });
-
-      if (memberError) throw memberError;
-
-      // Note: The org creator gets 'owner' role in organization_members above.
-      // Platform-level admin role is NOT self-assigned here — that would be
-      // a privilege escalation. Org ownership provides sufficient access.
-
-      // Auto-create a default team so solo operators can start immediately
-      const { data: team, error: teamError } = await supabase
-        .from("teams")
-        .insert({
-          name: "Shop Floor",
-          description: "Default production team",
-          organization_id: org.id,
-          created_by: user.id,
-        })
-        .select("id")
-        .single();
-
-      if (!teamError && team) {
-        // Best-effort: failures here don't block org creation
-        await Promise.allSettled([
-          supabase.from("team_members").insert({
-            team_id: team.id,
-            user_id: user.id,
-            role: "owner",
-            organization_id: org.id,
-          }),
-          supabase.from("stations").insert({
-            name: "Station 1",
-            station_id: "Station-1",
-            work_center: "General",
-            work_center_type: "General",
-            team_id: team.id,
-            organization_id: org.id,
-            is_active: true,
-          }),
-        ]);
-      }
+      if (rpcError) throw rpcError;
+      if (!orgId) throw new Error("Organization creation returned no ID");
 
       toast({
         title: "Organization Created",
@@ -140,7 +94,6 @@ export function OrganizationSetup({ onComplete, onSkip }: OrganizationSetupProps
     }
   };
 
-  // ── Join ──────────────────────────────────────────────────────────────────
 
   const formatInviteCode = (value: string) =>
     value
