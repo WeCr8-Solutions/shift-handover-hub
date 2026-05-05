@@ -299,6 +299,24 @@ export function OrganizationSetup({ onComplete, onSkip }: OrganizationSetupProps
               />
             </div>
 
+            <div className="rounded-lg border p-3 flex items-start justify-between gap-3">
+              <div className="space-y-0.5">
+                <Label htmlFor="itar-toggle" className="flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-primary" />
+                  ITAR / Export-Controlled Shop
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Enables US Person declaration gate and forces ERP data to read-through (no persistence). Cannot be disabled later without support.
+                </p>
+              </div>
+              <Switch
+                id="itar-toggle"
+                checked={itarControlled}
+                onCheckedChange={setItarControlled}
+                disabled={isLoading}
+              />
+            </div>
+
             <div className="bg-secondary/50 rounded-lg p-4 space-y-2">
               {[
                 "All your data is isolated and secure",
