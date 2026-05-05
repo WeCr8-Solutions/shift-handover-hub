@@ -13,7 +13,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useEmail } from "@/hooks/useEmail";
 import { supabase } from "@/integrations/supabase/client";
 import { InviteCodeRedemption } from "@/components/InviteCodeRedemption";
-import { ConversionEvents } from "@/lib/analytics";
+import { ConversionEvents, trackEvent } from "@/lib/analytics";
+import { getTrafficSource } from "@/lib/utm";
 import { lovable } from "@/integrations/lovable/index";
 import { Separator } from "@/components/ui/separator";
 
