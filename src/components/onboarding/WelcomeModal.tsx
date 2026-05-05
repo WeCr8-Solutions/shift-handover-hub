@@ -127,6 +127,8 @@ export function WelcomeModal() {
   } = useOnboardingContext();
 
   const location = useLocation();
+  const { organization } = useOrganization();
+  const isItarOrg = !!organization?.requires_us_person_declaration;
   const [isOpen, setIsOpen] = useState(true);
 
   // Gate: never show for unauthenticated users, on public landing page, or for returning/complete users
