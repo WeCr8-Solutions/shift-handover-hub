@@ -48,6 +48,23 @@ export default function Auth() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showInviteRedemption, setShowInviteRedemption] = useState(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
+  const [resendingVerification, setResendingVerification] = useState(false);
+
+  const handleResendVerification = async (targetEmail: string) => {
+    setResendingVerification(true);
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: targetEmail,
+      options: { emailRedirectTo: `${window.location.origin}/setup?verified=1` },
+    });
+    setResendingVerification(false);
+    if (error) {
+      toast({ title: "Could not resend", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Verification email sent", description: `Check ${targetEmail} for the link.` });
+    }
+  };
 
   // Single unified form
   const [email, setEmail] = useState("");
