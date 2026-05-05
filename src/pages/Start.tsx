@@ -59,6 +59,8 @@ export default function Start() {
   useEffect(() => {
     localStorage.setItem("jobline_start_type", selectedType);
     localStorage.setItem("jobline_start_src", src);
+    // Persist `?src=` for site-wide attribution (flyer/QR/outreach)
+    captureTrafficSource();
 
     const captured = captureUtmParams();
     const hasAny = Object.keys(captured).length > 0;
