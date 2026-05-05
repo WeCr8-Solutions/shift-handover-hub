@@ -27,10 +27,12 @@ interface SetupStatus {
   hasTeams: boolean;
   hasStations: boolean;
   hasTeamMembers: boolean;
+  hasWorkOrders: boolean;
   organizationName: string | null;
   teamsCount: number;
   stationsCount: number;
   membersCount: number;
+  workOrdersCount: number;
 }
 
 export default function Setup() {
