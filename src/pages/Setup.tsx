@@ -195,7 +195,7 @@ export default function Setup() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium">Setup Progress</span>
-                <span className="text-sm text-muted-foreground">{completedSteps}/4 complete</span>
+                <span className="text-sm text-muted-foreground">{completedSteps}/5 complete</span>
               </div>
               <Progress value={progressPercent} className="h-2" />
             </CardContent>
