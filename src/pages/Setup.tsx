@@ -39,6 +39,9 @@ interface SetupStatus {
 
 export default function Setup() {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const verifiedToastFiredRef = useRef(false);
   const { user, loading: authLoading, isReady } = useAuth();
   const { completeStep, startTour, showTour, isComplete: onboardingComplete, currentStep, dismissSetupWizard, markWelcomeSeen, setupWizardDismissed, isLoading: onboardingLoading } = useOnboardingContext();
   const [setupStatus, setSetupStatus] = useState<SetupStatus | null>(null);
@@ -46,7 +49,25 @@ export default function Setup() {
   const [bulkUploadOpen, setBulkUploadOpen] = useState(false);
   const [showOrgSetup, setShowOrgSetup] = useState(false);
 
+  // G1: One-time "email verified" success toast when user lands from verification email
   useEffect(() => {
+    if (verifiedToastFiredRef.current) return;
+    if (searchParams.get('verified') !== '1') return;
+    if (!isReady || !user) return; // wait until session is hydrated to avoid auth-redirect race
+    verifiedToastFiredRef.current = true;
+    toast({
+      title: 'Email verified',
+      description: "Welcome aboard — let's finish setting up your shop.",
+    });
+    // Strip query param so the toast doesn't re-fire on remount
+    const next = new URLSearchParams(searchParams);
+    next.delete('verified');
+    setSearchParams(next, { replace: true });
+  }, [isReady, user, searchParams, setSearchParams, toast]);
+
+  useEffect(() => {
+    // G2: Don't redirect to /auth while session is still hydrating from a verification deep-link.
+    // `isReady` is true once initial getSession() resolves; only then is `!user` authoritative.
     if (isReady && !user) {
       navigate('/auth');
       return;
@@ -56,6 +77,7 @@ export default function Setup() {
       navigate('/dashboard', { replace: true });
     }
   }, [isReady, onboardingLoading, user, setupWizardDismissed, navigate]);
+
 
   const fetchSetupStatus = async (showLoader = true) => {
     if (!user) return;
