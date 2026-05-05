@@ -12,6 +12,7 @@ interface Organization {
   subscription_tier: string | null;
   subscription_status: string | null;
   trial_ends_at: string | null;
+  requires_us_person_declaration?: boolean | null;
 }
 
 interface OrganizationMembership {
