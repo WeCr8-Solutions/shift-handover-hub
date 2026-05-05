@@ -125,11 +125,12 @@ export default function Setup() {
     (setupStatus.hasOrganization ? 1 : 0) +
     (setupStatus.hasTeams ? 1 : 0) + 
     (setupStatus.hasStations ? 1 : 0) + 
-    (setupStatus.hasTeamMembers ? 1 : 0) : 0;
+    (setupStatus.hasTeamMembers ? 1 : 0) +
+    (setupStatus.hasWorkOrders ? 1 : 0) : 0;
 
-  const progressPercent = (completedSteps / 4) * 100;
+  const progressPercent = (completedSteps / 5) * 100;
 
-  const isSetupComplete = completedSteps === 4;
+  const isSetupComplete = completedSteps === 5;
 
   if (authLoading || loading) {
     return (
