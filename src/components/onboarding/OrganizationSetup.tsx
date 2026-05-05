@@ -40,6 +40,7 @@ export function OrganizationSetup({ onComplete, onSkip }: OrganizationSetupProps
   // Create form
   const [orgName, setOrgName] = useState("");
   const [orgDescription, setOrgDescription] = useState("");
+  const [itarControlled, setItarControlled] = useState(false);
 
   // Join form
   const [inviteCode, setInviteCode] = useState("");
