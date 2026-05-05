@@ -10,7 +10,7 @@ import {
   trackTimeOnPage,
   enableDebugMode,
 } from '@/lib/analytics';
-import { captureUtmParams } from '@/lib/utm';
+import { captureUtmParams, captureTrafficSource } from '@/lib/utm';
 
 interface AnalyticsProviderProps {
   children: ReactNode;
