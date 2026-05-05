@@ -24,8 +24,43 @@
 
 const UTM_STORAGE_KEY = 'jobline_utm';
 const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'] as const;
+const TRAFFIC_SRC_KEY = 'traffic_source';
 
 export type UtmParams = Partial<Record<(typeof UTM_KEYS)[number], string>>;
+
+/**
+ * Capture the `?src=` URL parameter (used by flyer/QR/outreach campaigns)
+ * and persist it to localStorage so it survives navigation and signup.
+ * Site-wide — call from AnalyticsProvider on every route change.
+ */
+export function captureTrafficSource(): string | null {
+  if (typeof window === 'undefined') return null;
+  const params = new URLSearchParams(window.location.search);
+  const src = params.get('src');
+  if (src) {
+    try {
+      localStorage.setItem(TRAFFIC_SRC_KEY, src);
+    } catch {
+      /* storage may be blocked — ignore */
+    }
+    return src;
+  }
+  try {
+    return localStorage.getItem(TRAFFIC_SRC_KEY);
+  } catch {
+    return null;
+  }
+}
+
+/** Read the persisted traffic source, or "unknown" if none set. */
+export function getTrafficSource(): string {
+  if (typeof window === 'undefined') return 'unknown';
+  try {
+    return localStorage.getItem(TRAFFIC_SRC_KEY) || 'unknown';
+  } catch {
+    return 'unknown';
+  }
+}
 
 /**
  * Capture UTM params from current URL. If present, store and clean URL.

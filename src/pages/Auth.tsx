@@ -13,7 +13,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useEmail } from "@/hooks/useEmail";
 import { supabase } from "@/integrations/supabase/client";
 import { InviteCodeRedemption } from "@/components/InviteCodeRedemption";
-import { ConversionEvents } from "@/lib/analytics";
+import { ConversionEvents, trackEvent } from "@/lib/analytics";
+import { getTrafficSource } from "@/lib/utm";
 import { lovable } from "@/integrations/lovable/index";
 import { Separator } from "@/components/ui/separator";
 
@@ -54,6 +55,11 @@ export default function Auth() {
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
   const [resetSent, setResetSent] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+
+  // Fire GA4 auth_visit event with traffic source attribution (flyer/QR/etc.)
+  useEffect(() => {
+    trackEvent("auth_visit", { source: getTrafficSource() });
+  }, []);
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);

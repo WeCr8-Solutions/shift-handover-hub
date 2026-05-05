@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, useRef, ReactNode, useCallback } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { getTrafficSource } from "@/lib/utm";
 
 interface Profile {
   id: string;
@@ -148,6 +149,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         (window as any).gtag("event", "sign_up", {
           method: "email",
           user_id: data.user.id,
+          source: getTrafficSource(),
         });
       }
     }

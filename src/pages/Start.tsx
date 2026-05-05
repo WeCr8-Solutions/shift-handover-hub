@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { trackEvent } from "@/lib/analytics";
-import { captureUtmParams, getUtmParams } from "@/lib/utm";
+import { captureUtmParams, getUtmParams, captureTrafficSource, getTrafficSource } from "@/lib/utm";
 import {
   Loader2,
   CheckCircle2,
@@ -59,6 +59,8 @@ export default function Start() {
   useEffect(() => {
     localStorage.setItem("jobline_start_type", selectedType);
     localStorage.setItem("jobline_start_src", src);
+    // Persist `?src=` for site-wide attribution (flyer/QR/outreach)
+    captureTrafficSource();
 
     const captured = captureUtmParams();
     const hasAny = Object.keys(captured).length > 0;
@@ -180,6 +182,7 @@ export default function Start() {
 
   const handleSignupClick = () => {
     trackEvent("signup_click", { type: selectedType, src, path: "/start" });
+    trackEvent("start_click", { source: getTrafficSource() });
     navigate("/auth");
   };
 
