@@ -163,14 +163,25 @@ export default function Auth() {
     const { error } = await signIn(email, password);
     setIsSubmitting(false);
     if (error) {
+      const msg = (error.message || "").toLowerCase();
+      const isUnverified = msg.includes("not confirmed") || msg.includes("email not confirmed") || msg.includes("not verified");
       const isInvalid = error.message === "Invalid login credentials";
-      toast({
-        title: "Login failed",
-        description: isInvalid
-          ? "Invalid email or password. New here? Tap 'Create an account' below."
-          : error.message,
-        variant: "destructive",
-      });
+      if (isUnverified) {
+        setUnverifiedEmail(email);
+        toast({
+          title: "Email not verified",
+          description: "Confirm your email to sign in. We can resend the link.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Login failed",
+          description: isInvalid
+            ? "Invalid email or password. New here? Tap 'Create an account' below."
+            : error.message,
+          variant: "destructive",
+        });
+      }
     } else {
       ConversionEvents.login(window.location.pathname, "email");
     }
