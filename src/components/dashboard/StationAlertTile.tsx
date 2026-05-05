@@ -205,6 +205,7 @@ function StatusAlert({ status, queueCount, operator }: { status: StatusLabel; qu
 // ── Main Component ──
 
 export function StationAlertTile({ station, onViewStation, onQuickAction }: StationAlertTileProps) {
+  const { organizationId } = useOrganization();
   const [isOpen, setIsOpen] = useState(false);
   const [alertData, setAlertData] = useState<StationAlertData | null>(null);
   const [loading, setLoading] = useState(false);
