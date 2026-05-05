@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOrganization } from "@/hooks/useOrganization";
 import { useOnboardingContext, ONBOARDING_STEPS } from "./OnboardingProvider";
 import type { OnboardingStep } from "./OnboardingProvider";
 import {
