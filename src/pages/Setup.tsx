@@ -379,8 +379,8 @@ export default function Setup() {
               </CardContent>
             </Card>
 
-            {/* Step 4: First Work Order */}
-            <Card className={setupStatus?.hasWorkOrders ? 'border-green-500/50' : ''}>
+            {/* Step 4: First Work Order (auto-complete for ERP read-through orgs) */}
+            <Card className={workOrdersStepDone ? 'border-green-500/50' : ''}>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2 text-base">
