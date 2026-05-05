@@ -384,19 +384,23 @@ export default function Setup() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2 text-base">
-                    {setupStatus?.hasWorkOrders ? (
+                    {workOrdersStepDone ? (
                       <CheckCircle2 className="w-5 h-5 text-green-500" />
                     ) : (
                       <ClipboardList className="w-5 h-5 text-muted-foreground" />
                     )}
-                    Create First Work Order
+                    {erpReadThrough ? 'Connect Work Orders' : 'Create First Work Order'}
                   </CardTitle>
-                  {setupStatus?.hasWorkOrders && (
+                  {erpReadThrough ? (
+                    <Badge variant="secondary">{erpVendor.toUpperCase()} managed</Badge>
+                  ) : setupStatus?.hasWorkOrders && (
                     <Badge variant="secondary">{setupStatus.workOrdersCount} active</Badge>
                   )}
                 </div>
                 <CardDescription>
-                  Move your first job through the production line to see the Digital Expeditor in action.
+                  {erpReadThrough
+                    ? `Your work orders live in ${erpVendor.toUpperCase()} and stream into JobLine in read-through mode.`
+                    : 'Move your first job through the production line to see the Digital Expeditor in action.'}
                 </CardDescription>
               </CardHeader>
               <CardContent>
