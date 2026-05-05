@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { trackEvent } from "@/lib/analytics";
-import { captureUtmParams, getUtmParams } from "@/lib/utm";
+import { captureUtmParams, getUtmParams, captureTrafficSource, getTrafficSource } from "@/lib/utm";
 import {
   Loader2,
   CheckCircle2,
