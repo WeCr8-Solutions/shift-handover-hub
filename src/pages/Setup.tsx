@@ -348,6 +348,43 @@ export default function Setup() {
                 </Button>
               </CardContent>
             </Card>
+
+            {/* Step 4: First Work Order */}
+            <Card className={setupStatus?.hasWorkOrders ? 'border-green-500/50' : ''}>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    {setupStatus?.hasWorkOrders ? (
+                      <CheckCircle2 className="w-5 h-5 text-green-500" />
+                    ) : (
+                      <ClipboardList className="w-5 h-5 text-muted-foreground" />
+                    )}
+                    Create First Work Order
+                  </CardTitle>
+                  {setupStatus?.hasWorkOrders && (
+                    <Badge variant="secondary">{setupStatus.workOrdersCount} active</Badge>
+                  )}
+                </div>
+                <CardDescription>
+                  Move your first job through the production line to see the Digital Expeditor in action.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button
+                  variant={setupStatus?.hasWorkOrders ? 'outline' : 'default'}
+                  onClick={() => navigate('/work-orders')}
+                  disabled={!setupStatus?.hasStations}
+                >
+                  {setupStatus?.hasWorkOrders ? 'Manage Work Orders' : 'Create First Work Order'}
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+                {!setupStatus?.hasStations && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Add a station first to enable work order creation.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
           </div>
 
           {/* Continue Tour / Go to Dashboard */}
