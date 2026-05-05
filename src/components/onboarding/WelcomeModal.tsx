@@ -268,32 +268,41 @@ export function WelcomeModal() {
         {currentStep === "data-source" && (
           <div className="space-y-2 mt-2">
             <p className="text-sm font-medium">Pick where your work orders come from:</p>
+            {isItarOrg && (
+              <p className="text-[11px] rounded-md border border-primary/40 bg-primary/5 text-primary px-2 py-1.5">
+                ITAR-controlled shop: ERP integrations are restricted to read-through (no data persistence).
+              </p>
+            )}
             <div className="grid gap-2">
-              {DATA_SOURCES.map((src) => (
-                <button
-                  key={src.id}
-                  onClick={async () => {
-                    setIsOpen(false);
-                    await markWelcomeSeen();
-                    await completeStep("data-source");
-                    navigate(src.route);
-                  }}
-                  className="flex items-start gap-3 p-3 rounded-lg border bg-card text-left hover:border-primary hover:bg-accent transition-colors"
-                >
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                    {src.icon}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium">{src.title}</p>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground">
-                        {src.badge}
-                      </span>
+              {DATA_SOURCES.map((src) => {
+                // ITAR orgs can use Native or read-through ERP, but write-through is hard-blocked elsewhere.
+                // The picker itself stays accessible; the integration page enforces the persistence mode.
+                return (
+                  <button
+                    key={src.id}
+                    onClick={async () => {
+                      setIsOpen(false);
+                      await markWelcomeSeen();
+                      await completeStep("data-source");
+                      navigate(src.route);
+                    }}
+                    className="flex items-start gap-3 p-3 rounded-lg border bg-card text-left hover:border-primary hover:bg-accent transition-colors"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                      {src.icon}
                     </div>
-                    <p className="text-xs text-muted-foreground">{src.description}</p>
-                  </div>
-                </button>
-              ))}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium">{src.title}</p>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground">
+                          {isItarOrg && src.id !== "native" ? "Read-through" : src.badge}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">{src.description}</p>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
             <p className="text-[11px] text-muted-foreground pt-1">
               You can switch or add sources anytime from Settings → Integrations.
