@@ -72,6 +72,7 @@ export function OrganizationSetup({ onComplete, onSkip }: OrganizationSetupProps
           slug,
           description: orgDescription.trim() || null,
           created_by: user.id,
+          requires_us_person_declaration: itarControlled,
         })
         .select("id")
         .single();
