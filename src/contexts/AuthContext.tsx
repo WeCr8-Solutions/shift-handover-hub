@@ -149,6 +149,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         (window as any).gtag("event", "sign_up", {
           method: "email",
           user_id: data.user.id,
+          source: getTrafficSource(),
         });
       }
     }
