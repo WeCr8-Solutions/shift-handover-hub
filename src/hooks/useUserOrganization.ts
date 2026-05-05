@@ -12,6 +12,7 @@ interface Organization {
   subscription_tier: string | null;
   subscription_status: string | null;
   trial_ends_at: string | null;
+  requires_us_person_declaration?: boolean | null;
 }
 
 interface OrganizationMembership {
@@ -64,7 +65,8 @@ async function fetchUserOrgData(userId: string): Promise<UserOrgData> {
           logo_url,
           subscription_tier,
           subscription_status,
-          trial_ends_at
+          trial_ends_at,
+          requires_us_person_declaration
         )
       `)
       .eq("user_id", userId)

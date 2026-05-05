@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +10,7 @@ import { Header } from '@/components/Header';
 import { BulkUploadDialog } from '@/components/BulkUploadDialog';
 import { OrganizationSetup } from '@/components/onboarding/OrganizationSetup';
 import { useOnboardingContext } from '@/components/onboarding/OnboardingProvider';
+import { useDataSourceMode } from '@/hooks/useDataSourceMode';
 import { 
   ArrowRight, 
   Building2, 
@@ -38,6 +40,9 @@ interface SetupStatus {
 
 export default function Setup() {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const verifiedToastFiredRef = useRef(false);
   const { user, loading: authLoading, isReady } = useAuth();
   const { completeStep, startTour, showTour, isComplete: onboardingComplete, currentStep, dismissSetupWizard, markWelcomeSeen, setupWizardDismissed, isLoading: onboardingLoading } = useOnboardingContext();
   const [setupStatus, setSetupStatus] = useState<SetupStatus | null>(null);
@@ -45,7 +50,25 @@ export default function Setup() {
   const [bulkUploadOpen, setBulkUploadOpen] = useState(false);
   const [showOrgSetup, setShowOrgSetup] = useState(false);
 
+  // G1: One-time "email verified" success toast when user lands from verification email
   useEffect(() => {
+    if (verifiedToastFiredRef.current) return;
+    if (searchParams.get('verified') !== '1') return;
+    if (!isReady || !user) return; // wait until session is hydrated to avoid auth-redirect race
+    verifiedToastFiredRef.current = true;
+    toast({
+      title: 'Email verified',
+      description: "Welcome aboard — let's finish setting up your shop.",
+    });
+    // Strip query param so the toast doesn't re-fire on remount
+    const next = new URLSearchParams(searchParams);
+    next.delete('verified');
+    setSearchParams(next, { replace: true });
+  }, [isReady, user, searchParams, setSearchParams, toast]);
+
+  useEffect(() => {
+    // G2: Don't redirect to /auth while session is still hydrating from a verification deep-link.
+    // `isReady` is true once initial getSession() resolves; only then is `!user` authoritative.
     if (isReady && !user) {
       navigate('/auth');
       return;
@@ -55,6 +78,7 @@ export default function Setup() {
       navigate('/dashboard', { replace: true });
     }
   }, [isReady, onboardingLoading, user, setupWizardDismissed, navigate]);
+
 
   const fetchSetupStatus = async (showLoader = true) => {
     if (!user) return;
@@ -122,16 +146,22 @@ export default function Setup() {
     refreshStatus();
   };
 
-  const completedSteps = setupStatus ? 
+  const { isReadThrough: erpReadThrough, vendor: erpVendor } = useDataSourceMode();
+  // G6: ERP read-through orgs (JobBOSS/SAP) never write to queue_items, so treat the
+  // "first work order" step as auto-complete — their orders live in the source system.
+  const workOrdersStepDone = !!setupStatus?.hasWorkOrders || erpReadThrough;
+
+  const completedSteps = setupStatus ?
     (setupStatus.hasOrganization ? 1 : 0) +
-    (setupStatus.hasTeams ? 1 : 0) + 
-    (setupStatus.hasStations ? 1 : 0) + 
+    (setupStatus.hasTeams ? 1 : 0) +
+    (setupStatus.hasStations ? 1 : 0) +
     (setupStatus.hasTeamMembers ? 1 : 0) +
-    (setupStatus.hasWorkOrders ? 1 : 0) : 0;
+    (workOrdersStepDone ? 1 : 0) : 0;
 
   const progressPercent = (completedSteps / 5) * 100;
 
   const isSetupComplete = completedSteps === 5;
+
 
   if (authLoading || loading) {
     return (
@@ -349,36 +379,40 @@ export default function Setup() {
               </CardContent>
             </Card>
 
-            {/* Step 4: First Work Order */}
-            <Card className={setupStatus?.hasWorkOrders ? 'border-green-500/50' : ''}>
+            {/* Step 4: First Work Order (auto-complete for ERP read-through orgs) */}
+            <Card className={workOrdersStepDone ? 'border-green-500/50' : ''}>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2 text-base">
-                    {setupStatus?.hasWorkOrders ? (
+                    {workOrdersStepDone ? (
                       <CheckCircle2 className="w-5 h-5 text-green-500" />
                     ) : (
                       <ClipboardList className="w-5 h-5 text-muted-foreground" />
                     )}
-                    Create First Work Order
+                    {erpReadThrough ? 'Connect Work Orders' : 'Create First Work Order'}
                   </CardTitle>
-                  {setupStatus?.hasWorkOrders && (
+                  {erpReadThrough ? (
+                    <Badge variant="secondary">{erpVendor.toUpperCase()} managed</Badge>
+                  ) : setupStatus?.hasWorkOrders && (
                     <Badge variant="secondary">{setupStatus.workOrdersCount} active</Badge>
                   )}
                 </div>
                 <CardDescription>
-                  Move your first job through the production line to see the Digital Expeditor in action.
+                  {erpReadThrough
+                    ? `Your work orders live in ${erpVendor.toUpperCase()} and stream into JobLine in read-through mode.`
+                    : 'Move your first job through the production line to see the Digital Expeditor in action.'}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Button
-                  variant={setupStatus?.hasWorkOrders ? 'outline' : 'default'}
-                  onClick={() => navigate('/work-orders')}
-                  disabled={!setupStatus?.hasStations}
+                  variant={workOrdersStepDone ? 'outline' : 'default'}
+                  onClick={() => navigate(erpReadThrough ? '/queue' : '/work-orders')}
+                  disabled={!setupStatus?.hasStations && !erpReadThrough}
                 >
-                  {setupStatus?.hasWorkOrders ? 'Manage Work Orders' : 'Create First Work Order'}
+                  {erpReadThrough ? 'View ERP Queue' : (setupStatus?.hasWorkOrders ? 'Manage Work Orders' : 'Create First Work Order')}
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
-                {!setupStatus?.hasStations && (
+                {!setupStatus?.hasStations && !erpReadThrough && (
                   <p className="text-xs text-muted-foreground mt-2">
                     Add a station first to enable work order creation.
                   </p>

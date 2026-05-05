@@ -164,7 +164,7 @@ const Index = () => {
 
   const { user, loading: authLoading, isReady } = useAuth();
   const { currentTeam } = useCurrentTeam();
-  const { organization } = useOrgContext();
+  const { organization, loading: orgLoading } = useOrgContext();
   const { stations: dbStations, loading: stationsLoading } = useStations(currentTeam?.id, organization?.id);
   const {
     records: dbRecords,
@@ -304,7 +304,8 @@ const Index = () => {
     return handoffRecords.filter((r) => selectedTypes.includes(r.workCenterType));
   }, [selectedTypes, handoffRecords]);
 
-  const isLoading = stationsLoading || recordsLoading;
+  // B-G3: include orgLoading so the empty-state never flashes during cold-load org hydration
+  const isLoading = stationsLoading || recordsLoading || orgLoading;
   const hasData = stations.length > 0 || handoffRecords.length > 0;
   const isRoleResolving = authLoading || roleLoading || onboardingLoading;
 

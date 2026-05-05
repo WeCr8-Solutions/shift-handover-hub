@@ -13098,6 +13098,15 @@ export type Database = {
         }
         Returns: Json
       }
+      create_org_with_owner: {
+        Args: {
+          _description: string
+          _name: string
+          _requires_itar: boolean
+          _slug: string
+        }
+        Returns: string
+      }
       fetch_display_data: { Args: { _token: string }; Returns: Json }
       get_auth_user_id_by_email: { Args: { _email: string }; Returns: string }
       get_erp_persistence_mode: { Args: { _org_id: string }; Returns: string }

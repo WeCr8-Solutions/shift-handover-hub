@@ -5,6 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { useOrganization } from "@/hooks/useOrganization";
 import { StationQuickActions, type QuickActionTarget } from "./StationQuickActions";
 import { getPriorityBadgeColor, getPriorityContainerStyles } from "@/lib/status-colors";
 import {
@@ -204,6 +205,7 @@ function StatusAlert({ status, queueCount, operator }: { status: StatusLabel; qu
 // ── Main Component ──
 
 export function StationAlertTile({ station, onViewStation, onQuickAction }: StationAlertTileProps) {
+  const { organizationId } = useOrganization();
   const [isOpen, setIsOpen] = useState(false);
   const [alertData, setAlertData] = useState<StationAlertData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -219,21 +221,27 @@ export function StationAlertTile({ station, onViewStation, onQuickAction }: Stat
     if (!station.dbId) return;
     setLoading(true);
     try {
+      // B-G2: Defense-in-depth — explicit organization_id filter on top of RLS so a
+      // misconfigured policy can't silently leak cross-tenant rows. RLS remains the
+      // primary enforcement; this guards against masked bugs and FedRAMP audit findings.
+      const orgFilter = (q: any) => (organizationId ? q.eq("organization_id", organizationId) : q);
+
       const [activeRes, queueRes, routingRes, incomingRes] = await Promise.all([
-        supabase.from("queue_items")
+        orgFilter(supabase.from("queue_items")
           .select("id, title, work_order, part_number, status, started_at, estimated_duration, priority")
-          .eq("station_id", station.dbId).in("status", ["in_progress", "on_hold"])
+          .eq("station_id", station.dbId).in("status", ["in_progress", "on_hold"]))
           .order("status", { ascending: true }).limit(1).maybeSingle(),
-        supabase.from("queue_items")
+        orgFilter(supabase.from("queue_items")
           .select("id", { count: "exact", head: true })
-          .eq("station_id", station.dbId).in("status", ["pending", "queued"]),
-        supabase.from("work_order_routing")
+          .eq("station_id", station.dbId).in("status", ["pending", "queued"])),
+        orgFilter(supabase.from("work_order_routing")
           .select("id, step_number, queue_item_id, queue_items!inner ( id, work_order, title, priority )")
-          .eq("station_id", station.dbId).eq("status", "completed").limit(10),
-        supabase.from("work_order_routing")
+          .eq("station_id", station.dbId).eq("status", "completed")).limit(10),
+        orgFilter(supabase.from("work_order_routing")
           .select("id, step_number, queue_item_id, queue_items!inner ( id, work_order, title, priority, station_id )")
-          .eq("station_id", station.dbId).eq("status", "pending").limit(10),
+          .eq("station_id", station.dbId).eq("status", "pending")).limit(10),
       ]);
+
 
       const deliveries: StationAlertData["pendingDeliveries"] = [];
       if (routingRes.data) {
@@ -273,7 +281,7 @@ export function StationAlertTile({ station, onViewStation, onQuickAction }: Stat
     } finally {
       setLoading(false);
     }
-  }, [station.dbId]);
+  }, [station.dbId, organizationId]);
 
   useEffect(() => {
     if (isOpen && !alertData) fetchAlertData();

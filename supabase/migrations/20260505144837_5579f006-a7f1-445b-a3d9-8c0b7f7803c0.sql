@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.create_org_with_owner(text, text, text, boolean) FROM PUBLIC, anon;
