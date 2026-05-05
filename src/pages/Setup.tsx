@@ -69,7 +69,7 @@ export default function Setup() {
       const hasOrg = !!orgResult.data?.organization;
       const orgId = orgResult.data?.organization?.id;
 
-      const [teamsResult, stationsResult, membersResult] = await Promise.all([
+      const [teamsResult, stationsResult, membersResult, workOrdersResult] = await Promise.all([
         orgId
           ? supabase.from('teams').select('id', { count: 'exact', head: true }).eq('organization_id', orgId)
           : Promise.resolve({ count: 0 }),
@@ -79,6 +79,9 @@ export default function Setup() {
         orgId
           ? supabase.from('team_members').select('id', { count: 'exact', head: true }).eq('organization_id', orgId)
           : Promise.resolve({ count: 0 }),
+        orgId
+          ? supabase.from('work_orders').select('id', { count: 'exact', head: true }).eq('organization_id', orgId)
+          : Promise.resolve({ count: 0 }),
       ]);
 
       setSetupStatus({
@@ -87,9 +90,11 @@ export default function Setup() {
         hasTeams: (teamsResult.count || 0) > 0,
         hasStations: (stationsResult.count || 0) > 0,
         hasTeamMembers: (membersResult.count || 0) > 0,
+        hasWorkOrders: (workOrdersResult.count || 0) > 0,
         teamsCount: teamsResult.count || 0,
         stationsCount: stationsResult.count || 0,
         membersCount: membersResult.count || 0,
+        workOrdersCount: workOrdersResult.count || 0,
       });
 
       if (!hasOrg && (currentStep === 'organization-setup' || currentStep === 'welcome')) {
