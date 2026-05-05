@@ -56,6 +56,11 @@ export default function Auth() {
   const [resetSent, setResetSent] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
+  // Fire GA4 auth_visit event with traffic source attribution (flyer/QR/etc.)
+  useEffect(() => {
+    trackEvent("auth_visit", { source: getTrafficSource() });
+  }, []);
+
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
     const { error } = await lovable.auth.signInWithOAuth("google", {
