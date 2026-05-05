@@ -10,6 +10,7 @@ import { Header } from '@/components/Header';
 import { BulkUploadDialog } from '@/components/BulkUploadDialog';
 import { OrganizationSetup } from '@/components/onboarding/OrganizationSetup';
 import { useOnboardingContext } from '@/components/onboarding/OnboardingProvider';
+import { useDataSourceMode } from '@/hooks/useDataSourceMode';
 import { 
   ArrowRight, 
   Building2, 
