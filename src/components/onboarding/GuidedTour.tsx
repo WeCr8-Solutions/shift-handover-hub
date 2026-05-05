@@ -120,6 +120,13 @@ const TOUR_STEPS: Record<string, TourStep[]> = {
       title: "💾 Save as Template",
       placement: "left",
     },
+    {
+      target: '[data-tour="ai-planner"]',
+      content:
+        "Meet your AI Planning Assistant. Ask it 'what should we run next?', 'who's overloaded?', or 'where can I move this program?' — it analyzes your live shop floor and gives instant answers.",
+      title: "✨ AI Planning Assistant",
+      placement: "left",
+    },
   ],
   "/teams": [
     {
