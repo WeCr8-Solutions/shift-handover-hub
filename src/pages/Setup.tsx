@@ -80,7 +80,7 @@ export default function Setup() {
           ? supabase.from('team_members').select('id', { count: 'exact', head: true }).eq('organization_id', orgId)
           : Promise.resolve({ count: 0 }),
         orgId
-          ? supabase.from('work_orders').select('id', { count: 'exact', head: true }).eq('organization_id', orgId)
+          ? supabase.from('queue_items').select('id', { count: 'exact', head: true }).eq('organization_id', orgId)
           : Promise.resolve({ count: 0 }),
       ]);
 
