@@ -352,9 +352,17 @@ ORDER BY ordinal_position;`;
                 <div className="flex items-center gap-2">
               <Shield className="w-5 h-5 text-primary" />
               <div>
-                <CardTitle>RLS Health Check</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  RLS Health Check
+                  {scopedOrgId && (
+                    <span className="text-xs font-normal px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
+                      Scope: {scopedOrgId.slice(0, 8)}…
+                    </span>
+                  )}
+                </CardTitle>
                 <CardDescription>
                   Verify Row Level Security policies are correctly configured
+                  {scopedOrgId ? " (interpreted in selected org context)" : ""}
                 </CardDescription>
               </div>
             </div>
