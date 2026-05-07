@@ -13,6 +13,8 @@ import { Shield, LayoutDashboard, Users, Wrench, Briefcase, Activity, FileSpread
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { AdminComponentAccess } from "@/types/admin";
+import { OrgScopeSelect } from "@/components/admin/OrgScopeSelect";
+import { toast } from "sonner";
 
 // Lazy-load heavy admin panels (Phase 6 — code splitting)
 const UserManagement = lazy(() => import("@/components/admin/UserManagement").then(m => ({ default: m.UserManagement })));
