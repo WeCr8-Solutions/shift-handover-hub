@@ -263,6 +263,16 @@ export function OrgDetailView({ org, onBack, isPlatformAdmin, onDelete, onGrant,
               {isPlatformAdmin && (
                 <div className="flex flex-col sm:flex-row gap-2">
                   <Button
+                    variant="default"
+                    size="sm"
+                    className="gap-1.5 text-xs flex-1"
+                    onClick={handleOpenAsCustomer}
+                    disabled={openingAs || loading || members.length === 0}
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    {openingAs ? "Opening…" : "Open as Customer"}
+                  </Button>
+                  <Button
                     variant="outline"
                     size="sm"
                     className="gap-1.5 text-xs flex-1"
