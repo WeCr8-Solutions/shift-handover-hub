@@ -6,7 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Loader2, ArrowLeft, Crown, Users, Building2, Wrench, Plug, Gift, Trash2, Mail, Calendar, Shield } from "lucide-react";
+import { Loader2, ArrowLeft, Crown, Users, Building2, Wrench, Plug, Gift, Trash2, Mail, Calendar, Shield, Eye } from "lucide-react";
+import { useActAs } from "@/contexts/ActAsContext";
+import { toast } from "sonner";
 
 interface OrgMember {
   user_id: string;
