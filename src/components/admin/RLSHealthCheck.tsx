@@ -73,7 +73,12 @@ interface HistoricalRun {
   total: number;
 }
 
-export function RLSHealthCheck() {
+interface RLSHealthCheckProps {
+  /** When set, the health-check is interpreted in the context of this org. Optional. */
+  scopedOrgId?: string | null;
+}
+
+export function RLSHealthCheck({ scopedOrgId }: RLSHealthCheckProps = {}) {
   const [currentRun, setCurrentRun] = useState<RLSHealthRun | null>(null);
   const [historicalRuns, setHistoricalRuns] = useState<HistoricalRun[]>([]);
   const [loading, setLoading] = useState(false);
