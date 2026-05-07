@@ -163,8 +163,27 @@ export default function Admin() {
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <TourTriggerButton />
+            {hasPlatformAccess && (
+              <OrgScopeSelect
+                value={platformOrgOverride}
+                onChange={setPlatformOrgOverride}
+              />
+            )}
             {hasTestingAccess && <SeedTestDataButton />}
-            <Button variant="outline" size={isMobile ? "icon" : "default"} onClick={() => setBulkUploadOpen(true)} data-tour="bulk-upload">
+            <Button
+              variant="outline"
+              size={isMobile ? "icon" : "default"}
+              onClick={() => {
+                if (hasPlatformAccess && !scopedOrgId) {
+                  toast.error("Pick an organization first", {
+                    description: "Bulk upload writes into a single org. Use the scope selector above.",
+                  });
+                  return;
+                }
+                setBulkUploadOpen(true);
+              }}
+              data-tour="bulk-upload"
+            >
               <FileSpreadsheet className="w-4 h-4" />
               {!isMobile && <span className="ml-2">Bulk Upload</span>}
             </Button>
