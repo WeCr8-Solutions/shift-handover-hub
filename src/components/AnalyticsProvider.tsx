@@ -73,10 +73,14 @@ export function AnalyticsProvider({ children }: AnalyticsProviderProps) {
     });
   }, [location.pathname, location.search]);
 
-  // Identify user when authenticated
+  // Identify user when authenticated; clear on sign-out (per GA4 user_id guidance).
+  // Only sends `null` if the user was previously signed in during this session —
+  // never for users who have never signed in.
+  const wasSignedInRef = useRef(false);
   useEffect(() => {
     if (!ANALYTICS_ENABLED) return;
     if (user?.id) {
+      wasSignedInRef.current = true;
       identifyUser(user.id);
 
       setUserProperties({
@@ -85,6 +89,9 @@ export function AnalyticsProvider({ children }: AnalyticsProviderProps) {
         display_name: profile?.display_name || 'unknown',
         has_avatar: !!profile?.avatar_url,
       });
+    } else if (wasSignedInRef.current) {
+      // User signed out
+      clearUserId();
     }
   }, [user?.id, user?.email, profile?.display_name, profile?.avatar_url]);
 
