@@ -375,13 +375,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "api_request_logs_api_key_id_fkey"
-            columns: ["api_key_id"]
-            isOneToOne: false
-            referencedRelation: "organization_api_keys_safe"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "api_request_logs_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -12711,80 +12704,6 @@ export type Database = {
         }
         Relationships: []
       }
-      organization_api_keys_safe: {
-        Row: {
-          created_at: string | null
-          created_by: string | null
-          expires_at: string | null
-          id: string | null
-          is_active: boolean | null
-          key_prefix: string | null
-          last_used_at: string | null
-          name: string | null
-          organization_id: string | null
-          revoked_at: string | null
-          revoked_by: string | null
-          scopes: string[] | null
-        }
-        Insert: {
-          created_at?: string | null
-          created_by?: string | null
-          expires_at?: string | null
-          id?: string | null
-          is_active?: boolean | null
-          key_prefix?: string | null
-          last_used_at?: string | null
-          name?: string | null
-          organization_id?: string | null
-          revoked_at?: string | null
-          revoked_by?: string | null
-          scopes?: string[] | null
-        }
-        Update: {
-          created_at?: string | null
-          created_by?: string | null
-          expires_at?: string | null
-          id?: string | null
-          is_active?: boolean | null
-          key_prefix?: string | null
-          last_used_at?: string | null
-          name?: string | null
-          organization_id?: string | null
-          revoked_at?: string | null
-          revoked_by?: string | null
-          scopes?: string[] | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "organization_api_keys_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organization_billing_identifiers"
-            referencedColumns: ["organization_id"]
-          },
-          {
-            foreignKeyName: "organization_api_keys_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "organization_api_keys_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations_member_view"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "organization_api_keys_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations_safe"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       organization_billing_identifiers: {
         Row: {
           billing_email: string | null
@@ -12802,74 +12721,6 @@ export type Database = {
           stripe_customer_id?: string | null
         }
         Relationships: []
-      }
-      organization_integrations_safe: {
-        Row: {
-          created_at: string | null
-          created_by: string | null
-          error_message: string | null
-          id: string | null
-          last_sync_at: string | null
-          name: string | null
-          organization_id: string | null
-          provider: string | null
-          status: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          created_by?: string | null
-          error_message?: string | null
-          id?: string | null
-          last_sync_at?: string | null
-          name?: string | null
-          organization_id?: string | null
-          provider?: string | null
-          status?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          created_by?: string | null
-          error_message?: string | null
-          id?: string | null
-          last_sync_at?: string | null
-          name?: string | null
-          organization_id?: string | null
-          provider?: string | null
-          status?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "organization_integrations_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organization_billing_identifiers"
-            referencedColumns: ["organization_id"]
-          },
-          {
-            foreignKeyName: "organization_integrations_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "organization_integrations_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations_member_view"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "organization_integrations_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations_safe"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       organization_webhooks_safe: {
         Row: {
@@ -13264,6 +13115,38 @@ export type Database = {
         Returns: {
           billing_email: string
           stripe_customer_id: string
+        }[]
+      }
+      get_organization_api_keys_safe: {
+        Args: { _org_id: string }
+        Returns: {
+          created_at: string
+          created_by: string
+          expires_at: string
+          id: string
+          is_active: boolean
+          key_prefix: string
+          last_used_at: string
+          name: string
+          organization_id: string
+          revoked_at: string
+          revoked_by: string
+          scopes: string[]
+        }[]
+      }
+      get_organization_integrations_safe: {
+        Args: { _org_id: string }
+        Returns: {
+          created_at: string
+          created_by: string
+          error_message: string
+          id: string
+          last_sync_at: string
+          name: string
+          organization_id: string
+          provider: string
+          status: string
+          updated_at: string
         }[]
       }
       get_public_employer: {
