@@ -380,8 +380,13 @@ function QuickResetCard({
   );
 }
 
-export function UserJourneyDebugPanel() {
-  const { users, loading: usersLoading, fetchUsers } = useAllUsers();
+interface UserJourneyDebugPanelProps {
+  /** Optional org scope. When set, only users in this org are listed. */
+  scopedOrgId?: string | null;
+}
+
+export function UserJourneyDebugPanel({ scopedOrgId }: UserJourneyDebugPanelProps = {}) {
+  const { users, loading: usersLoading, fetchUsers } = useAllUsers({ organizationId: scopedOrgId ?? null });
   const [onboardingData, setOnboardingData] = useState<Record<string, UserOnboardingState>>({});
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);

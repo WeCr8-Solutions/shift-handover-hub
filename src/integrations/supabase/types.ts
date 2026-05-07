@@ -13117,6 +13117,38 @@ export type Database = {
           stripe_customer_id: string
         }[]
       }
+      get_organization_api_keys_safe: {
+        Args: { _org_id: string }
+        Returns: {
+          created_at: string
+          created_by: string
+          expires_at: string
+          id: string
+          is_active: boolean
+          key_prefix: string
+          last_used_at: string
+          name: string
+          organization_id: string
+          revoked_at: string
+          revoked_by: string
+          scopes: string[]
+        }[]
+      }
+      get_organization_integrations_safe: {
+        Args: { _org_id: string }
+        Returns: {
+          created_at: string
+          created_by: string
+          error_message: string
+          id: string
+          last_sync_at: string
+          name: string
+          organization_id: string
+          provider: string
+          status: string
+          updated_at: string
+        }[]
+      }
       get_public_employer: {
         Args: { _slug: string }
         Returns: {

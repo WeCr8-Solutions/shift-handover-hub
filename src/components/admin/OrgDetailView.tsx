@@ -6,7 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Loader2, ArrowLeft, Crown, Users, Building2, Wrench, Plug, Gift, Trash2, Mail, Calendar, Shield } from "lucide-react";
+import { Loader2, ArrowLeft, Crown, Users, Building2, Wrench, Plug, Gift, Trash2, Mail, Calendar, Shield, Eye } from "lucide-react";
+import { useActAs } from "@/contexts/ActAsContext";
+import { toast } from "sonner";
 
 interface OrgMember {
   user_id: string;
@@ -48,6 +50,34 @@ export function OrgDetailView({ org, onBack, isPlatformAdmin, onDelete, onGrant,
   const [stations, setStations] = useState<OrgStation[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
+  const [openingAs, setOpeningAs] = useState(false);
+  const { startActAs } = useActAs();
+
+  const handleOpenAsCustomer = async () => {
+    if (openingAs) return;
+    setOpeningAs(true);
+    try {
+      // Prefer owner; fall back to any admin
+      const owner = members.find((m) => m.role === "owner");
+      const fallback = members.find((m) => m.role === "admin");
+      const pick = owner || fallback;
+      if (!pick) {
+        toast.error("No org admin or owner available to act as.");
+        return;
+      }
+      await startActAs({
+        userId: pick.user_id,
+        displayName: pick.display_name || pick.email || "Org user",
+        email: pick.email || "",
+        organizationId: org.id,
+        organizationName: org.name,
+        roles: [],
+        orgRole: pick.role,
+      });
+    } finally {
+      setOpeningAs(false);
+    }
+  };
 
   useEffect(() => {
     const fetchOrgData = async () => {
@@ -232,6 +262,16 @@ export function OrgDetailView({ org, onBack, isPlatformAdmin, onDelete, onGrant,
 
               {isPlatformAdmin && (
                 <div className="flex flex-col sm:flex-row gap-2">
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="gap-1.5 text-xs flex-1"
+                    onClick={handleOpenAsCustomer}
+                    disabled={openingAs || loading || members.length === 0}
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    {openingAs ? "Opening…" : "Open as Customer"}
+                  </Button>
                   <Button
                     variant="outline"
                     size="sm"
