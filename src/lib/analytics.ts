@@ -109,6 +109,22 @@ export function identifyUser(userId: string) {
   }
 }
 
+/**
+ * Clear the user_id on sign-out per GA4 guidance.
+ * Sends null (NOT empty string / "null") so subsequent events are
+ * attributed to an anonymous session.
+ */
+export function clearUserId() {
+  if (shouldSkipTracking()) return;
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('set', { user_id: null });
+
+    if (import.meta.env.DEV) {
+      console.log('[Analytics] User ID cleared');
+    }
+  }
+}
+
 // ============================================
 // Pre-defined Event Tracking Functions
 // ============================================
