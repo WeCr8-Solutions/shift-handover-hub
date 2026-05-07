@@ -517,11 +517,11 @@ export default function Admin() {
               </TabsContent>
 
               <TabsContent value="rls-health">
-                <Suspense fallback={<AdminTabFallback />}><RLSHealthCheck /></Suspense>
+                <Suspense fallback={<AdminTabFallback />}><RLSHealthCheck scopedOrgId={scopedOrgId} /></Suspense>
               </TabsContent>
 
               <TabsContent value="user-journey">
-                <Suspense fallback={<AdminTabFallback />}><UserJourneyDebugPanel /></Suspense>
+                <Suspense fallback={<AdminTabFallback />}><UserJourneyDebugPanel scopedOrgId={scopedOrgId} /></Suspense>
               </TabsContent>
 
               <TabsContent value="machine-library">
