@@ -50,6 +50,34 @@ export function OrgDetailView({ org, onBack, isPlatformAdmin, onDelete, onGrant,
   const [stations, setStations] = useState<OrgStation[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
+  const [openingAs, setOpeningAs] = useState(false);
+  const { startActAs } = useActAs();
+
+  const handleOpenAsCustomer = async () => {
+    if (openingAs) return;
+    setOpeningAs(true);
+    try {
+      // Prefer owner; fall back to any admin
+      const owner = members.find((m) => m.role === "owner");
+      const fallback = members.find((m) => m.role === "admin");
+      const pick = owner || fallback;
+      if (!pick) {
+        toast.error("No org admin or owner available to act as.");
+        return;
+      }
+      await startActAs({
+        userId: pick.user_id,
+        displayName: pick.display_name || pick.email || "Org user",
+        email: pick.email || "",
+        organizationId: org.id,
+        organizationName: org.name,
+        roles: [],
+        orgRole: pick.role,
+      });
+    } finally {
+      setOpeningAs(false);
+    }
+  };
 
   useEffect(() => {
     const fetchOrgData = async () => {
