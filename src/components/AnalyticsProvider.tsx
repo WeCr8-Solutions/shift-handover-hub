@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import {
   trackPageView,
   identifyUser,
+  clearUserId,
   setUserProperties,
   trackPagePerformance,
   trackWebVitals,
