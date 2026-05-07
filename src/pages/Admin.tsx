@@ -66,8 +66,12 @@ export default function Admin() {
     loading: accessLoading
   } = useAdminAccess();
 
-  // Derive org scope: platform admins see everything (null), others see their org
-  const scopedOrgId = hasPlatformAccess ? null : organizationId;
+  // Platform admins can override scope to a specific customer org.
+  // Non-platform users are locked to their own org.
+  const [platformOrgOverride, setPlatformOrgOverride] = useState<string | null>(null);
+  const scopedOrgId = hasPlatformAccess
+    ? platformOrgOverride
+    : organizationId;
 
   const { stats, loading: statsLoading, lastUpdated: statsLastUpdated, fetchStats } = useSystemStats({ organizationId: scopedOrgId });
   const isMobile = useIsMobile();
@@ -94,8 +98,17 @@ export default function Admin() {
     if (accessLoading) return;
     if (hasAdminAccess && user) {
       accessConfirmedRef.current = true;
+      return;
     }
-    // Only redirect on initial load, not on tab-refocus re-evaluations
+    // Session-loss case: previously had access, now revoked → notify + redirect
+    if (!hasAdminAccess && user && accessConfirmedRef.current) {
+      toast.error("Admin access revoked", {
+        description: "Your role changed during this session. Returning to the dashboard.",
+      });
+      navigate("/");
+      return;
+    }
+    // Initial-load case: no access from the start → silent redirect
     if (!hasAdminAccess && user && !accessConfirmedRef.current) {
       navigate("/");
     }
