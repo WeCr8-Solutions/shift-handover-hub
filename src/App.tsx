@@ -179,21 +179,21 @@ const App = () => (
                   <Suspense fallback={<RouteFallback />}>
                   <Routes>
                     <Route path="/" element={<Landing />} />
-                    <Route path="/dashboard" element={<Index />} />
+                    <Route path="/dashboard" element={<RequireAuth><Index /></RequireAuth>} />
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
-                    <Route path="/teams" element={<Teams />} />
-                    <Route path="/profile" element={<Profile />} />
-                    <Route path="/admin" element={<Admin />} />
+                    <Route path="/teams" element={<RequireAuth><RequireOrg><Teams /></RequireOrg></RequireAuth>} />
+                    <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
+                    <Route path="/admin" element={<RequireAuth><RequireRole roles={["platform_admin","developer","org_admin","org_supervisor"]}><Admin /></RequireRole></RequireAuth>} />
                     <Route path="/field" element={<FieldView />} />
                     <Route path="/field/:token" element={<FieldView />} />
-                    <Route path="/testing" element={<Testing />} />
-                    <Route path="/queue" element={<Queue />} />
-                    <Route path="/history" element={<WorkOrderHistoryPage />} />
-                    <Route path="/quote-history" element={<QuoteHistoryPage />} />
-                    <Route path="/setup" element={<Setup />} />
+                    <Route path="/testing" element={<RequireAuth><RequireRole roles={["platform_admin","developer"]}><Testing /></RequireRole></RequireAuth>} />
+                    <Route path="/queue" element={<RequireAuth><RequireOrg><Queue /></RequireOrg></RequireAuth>} />
+                    <Route path="/history" element={<RequireAuth><RequireOrg><WorkOrderHistoryPage /></RequireOrg></RequireAuth>} />
+                    <Route path="/quote-history" element={<RequireAuth><RequireOrg><QuoteHistoryPage /></RequireOrg></RequireAuth>} />
+                    <Route path="/setup" element={<RequireAuth><Setup /></RequireAuth>} />
                     <Route path="/pricing" element={<Pricing />} />
-                    <Route path="/settings" element={<Settings />} />
+                    <Route path="/settings" element={<RequireAuth><Settings /></RequireAuth>} />
                     <Route path="/donation-success" element={<DonationSuccess />} />
                     <Route path="/demo" element={<Demo />} />
                     <Route path="/updates" element={<Updates />} />
