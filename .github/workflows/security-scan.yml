@@ -39,9 +39,11 @@ jobs:
         run: npm ci
 
       - name: Run npm audit (Critical + High)
-        # Fail if any Critical or High severity vulnerabilities are found.
-        # Per VMP SLA: Critical = 24h remediation, High = 7 days.
-        run: npm audit --audit-level=high
+        # Fail if any Critical or High severity vulnerabilities are found in
+        # production dependencies. Dev-only tooling (e.g. @vercel/node and its
+        # transitive deps) is excluded via --omit=dev; those packages are never
+        # shipped to end users. Per VMP SLA: Critical = 24h, High = 7 days.
+        run: npm audit --omit=dev --audit-level=high
 
       - name: Run npm audit (full report - informational)
         # Always output the full report even if the above passed, for review.
