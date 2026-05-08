@@ -2978,6 +2978,7 @@ export type Database = {
       }
       gca_certificates: {
         Row: {
+          acting_via_user_id: string | null
           amount_cents: number
           bank_id: string | null
           cert_id: string
@@ -3005,6 +3006,7 @@ export type Database = {
           valid_until: string | null
         }
         Insert: {
+          acting_via_user_id?: string | null
           amount_cents?: number
           bank_id?: string | null
           cert_id: string
@@ -3032,6 +3034,7 @@ export type Database = {
           valid_until?: string | null
         }
         Update: {
+          acting_via_user_id?: string | null
           amount_cents?: number
           bank_id?: string | null
           cert_id?: string
@@ -5419,6 +5422,7 @@ export type Database = {
       }
       oap_certificates: {
         Row: {
+          acting_via_user_id: string | null
           amount_cents: number
           cert_id: string
           created_at: string
@@ -5447,6 +5451,7 @@ export type Database = {
           vertical: Database["public"]["Enums"]["oap_vertical"]
         }
         Insert: {
+          acting_via_user_id?: string | null
           amount_cents?: number
           cert_id: string
           created_at?: string
@@ -5475,6 +5480,7 @@ export type Database = {
           vertical?: Database["public"]["Enums"]["oap_vertical"]
         }
         Update: {
+          acting_via_user_id?: string | null
           amount_cents?: number
           cert_id?: string
           created_at?: string
@@ -13670,11 +13676,14 @@ export type Database = {
         Args: { _cert_id: string }
         Returns: {
           cert_id: string
+          effective_status: string
           is_paid: boolean
           issued_at: string
           program_name: string
           recipient_name: string
           recipient_username: string
+          revoked_at: string
+          revoked_reason: string
           signed_by_name: string
           signed_by_signature_url: string
           signed_by_title: string
@@ -13707,11 +13716,14 @@ export type Database = {
         Args: { _cert_id: string }
         Returns: {
           cert_id: string
+          effective_status: string
           is_paid: boolean
           issued_at: string
           program_name: string
           recipient_name: string
           recipient_username: string
+          revoked_at: string
+          revoked_reason: string
           signed_by_name: string
           signed_by_signature_url: string
           signed_by_title: string
