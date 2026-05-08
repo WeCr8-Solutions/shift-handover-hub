@@ -20,6 +20,7 @@ import {
 import { BuyCertificateDialog } from "@/components/certificates/BuyCertificateDialog";
 import { PresetProfessionsShowcase } from "@/components/learning/PresetProfessionsShowcase";
 import { MediaOverlayDisplay } from "@/components/training/MediaOverlayDisplay";
+import { PermissionAwareEmpty } from "@/components/shared/PermissionAwareEmpty";
 
 export default function OapHub() {
   const { user } = useAuth();
