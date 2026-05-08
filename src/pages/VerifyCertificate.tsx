@@ -43,13 +43,9 @@ export default function VerifyCertificate() {
     });
   }, [certId, lookupCertificate]);
 
-  const status: "valid" | "expired" | "revoked" | "unknown" = !cert
+  const status: "valid" | "expired" | "revoked" | "suspended" | "unknown" = !cert
     ? "unknown"
-    : cert.status === "revoked"
-    ? "revoked"
-    : cert.validUntil && new Date(cert.validUntil) < new Date()
-    ? "expired"
-    : "valid";
+    : (cert.effectiveStatus ?? (cert.status === "revoked" ? "revoked" : "valid"));
 
   const StatusIcon =
     status === "valid" ? ShieldCheck : status === "expired" ? ShieldAlert : ShieldX;
@@ -59,7 +55,7 @@ export default function VerifyCertificate() {
       ? "text-emerald-600"
       : status === "expired"
       ? "text-amber-600"
-      : status === "revoked"
+      : status === "revoked" || status === "suspended"
       ? "text-destructive"
       : "text-muted-foreground";
 
