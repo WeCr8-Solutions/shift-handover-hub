@@ -107,17 +107,22 @@ export default function Auth() {
         setShowInviteRedemption(true);
         return;
       }
+      // F-8: Allowlist for ?redirect= param
+      const REDIRECT_ALLOWLIST = /^\/(dashboard|talent|oap|gcode-academy|gca|operator|settings|queue|teams|setup|verify|admin|employers)(\/.*)?$/;
       const redirectTo = searchParams.get("redirect");
-      if (redirectTo && redirectTo.startsWith("/") && !redirectTo.startsWith("//")) {
+      if (redirectTo && REDIRECT_ALLOWLIST.test(redirectTo)) {
         navigate(redirectTo, { replace: true });
         return;
       }
-      const { data: onboarding } = await supabase
-        .from("user_onboarding")
-        .select("is_complete, has_seen_welcome")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      navigate(onboarding?.is_complete ? "/dashboard" : "/setup", { replace: true });
+      // F-2/F-5: Server-authoritative routing
+      const { data, error } = await supabase.rpc("resolve_post_login_destination");
+      if (error) {
+        console.error("resolve_post_login_destination failed:", error);
+        navigate("/dashboard", { replace: true });
+        return;
+      }
+      const destination = (data as { destination?: string } | null)?.destination ?? "/dashboard";
+      navigate(destination, { replace: true });
     };
     checkOnboardingAndRedirect();
   }, [user, loading, navigate, inviteCode, searchParams]);
