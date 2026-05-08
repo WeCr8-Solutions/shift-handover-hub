@@ -7,6 +7,7 @@ import { useBackgroundRefresh } from "@/hooks/useBackgroundRefresh";
 import { useOrgRefreshInterval } from "@/hooks/useOrgRefreshInterval";
 import { RefreshIndicator } from "./RefreshIndicator";
 import { StationCheckIn } from "./StationCheckIn";
+import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { OperatorStationPanel } from "./OperatorStationPanel";
 import { NewHandoffForm } from "@/components/NewHandoffForm";
 import { JobPerformanceUpdateForm } from "@/components/JobPerformanceUpdateForm";
@@ -99,7 +100,11 @@ export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDas
 
   // Not checked in — show station selection
   if (!isCheckedIn) {
-    return <StationCheckIn onCheckIn={checkIn} />;
+    return (
+      <ErrorBoundary>
+        <StationCheckIn onCheckIn={checkIn} />
+      </ErrorBoundary>
+    );
   }
 
   // Defensive check: checked in but sessions not loaded yet

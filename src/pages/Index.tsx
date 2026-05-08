@@ -568,7 +568,21 @@ const Index = () => {
                                 </div>
                               </>
                             ) : (
-                              <p className="text-muted-foreground">No stations match the selected filters.</p>
+                              <>
+                                <Building2 className="w-12 h-12 text-muted-foreground mb-4" />
+                                <h3 className="font-semibold text-lg mb-2">Track your shop floor</h3>
+                                <p className="text-muted-foreground mb-4 max-w-md">
+                                  Manage shift handoffs, work queues, and station activity — all in one place.
+                                </p>
+                                <div className="flex gap-2">
+                                  <Button onClick={() => navigate("/auth?next=/setup")}>
+                                    Get started free
+                                  </Button>
+                                  <Button variant="outline" onClick={() => navigate("/pricing")}>
+                                    See plans
+                                  </Button>
+                                </div>
+                              </>
                             )}
                           </CardContent>
                         </Card>

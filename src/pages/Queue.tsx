@@ -29,6 +29,7 @@ import { NCRApprovalPanel } from "@/components/ncr/NCRApprovalPanel";
 import { QualityMetricsDashboard } from "@/components/ncr/QualityMetricsDashboard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -356,6 +357,22 @@ export default function Queue() {
 
           <TabsContent value="queue" className="mt-6 space-y-6">
             <DataSourceBanner />
+
+            {!hasAdminAccess && !accessLoading && activeSessions.length === 0 && !filters.station_id && (
+              <Card className="border-dashed">
+                <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                  <Wrench className="w-12 h-12 text-muted-foreground mb-4" />
+                  <h3 className="font-semibold text-lg mb-2">No active station</h3>
+                  <p className="text-muted-foreground mb-4 max-w-sm">
+                    Check in to a work station from the dashboard to view and manage your queue.
+                  </p>
+                  <Button variant="outline" onClick={() => navigate("/")}>
+                    Go to dashboard
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
             <QueueStatsCards stats={stats} />
 
             {smartAlerts.length > 0 && (

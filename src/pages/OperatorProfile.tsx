@@ -48,6 +48,7 @@ export default function OperatorProfile() {
   const VALID_TABS = ["basics", "resume", "certs", "skills", "work", "edu", "refs", "minisite"] as const;
   const tabParam = searchParams.get("tab");
   const activeTab = (VALID_TABS as readonly string[]).includes(tabParam ?? "") ? (tabParam as string) : "basics";
+
   const handleTabChange = (value: string) => {
     const next = new URLSearchParams(searchParams);
     next.set("tab", value);
@@ -55,6 +56,16 @@ export default function OperatorProfile() {
   };
   const { user, profile: authProfile, isReady } = useAuth();
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (tabParam && !(VALID_TABS as readonly string[]).includes(tabParam)) {
+      toast({ title: "Tab not found", description: `"${tabParam}" is not a valid section. Showing Basics instead.`, variant: "destructive" });
+      const next = new URLSearchParams(searchParams);
+      next.delete("tab");
+      setSearchParams(next, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const {
     profile,
     certifications,

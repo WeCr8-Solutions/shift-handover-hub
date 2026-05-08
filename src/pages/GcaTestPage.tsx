@@ -203,7 +203,7 @@ export default function GcaTestPage() {
           </Card>
         )}
 
-        {!isLoading && bankSlug && (
+        {!isLoading && bankSlug && !(isDefinitelyFree && bank?.is_pro_only) && (
           <GcaTestPlayer
             bankSlug={bankSlug}
             hasProAccess={hasProAccess}
