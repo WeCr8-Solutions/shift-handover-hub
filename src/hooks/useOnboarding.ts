@@ -24,6 +24,16 @@ function writeWelcomeSeenFallback(userId: string, value: boolean) {
   window.localStorage.removeItem(key);
 }
 
+async function resolveOnboardingPath(userId: string): Promise<'org' | 'talent'> {
+  const { data: orgRow } = await supabase
+    .from('organization_members')
+    .select('organization_id')
+    .eq('user_id', userId)
+    .limit(1)
+    .maybeSingle();
+  return orgRow ? 'org' : 'talent';
+}
+
 export type OnboardingStep = 
   | 'welcome'
   | 'organization-setup'
