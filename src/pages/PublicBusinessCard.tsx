@@ -65,26 +65,18 @@ export default function PublicBusinessCard() {
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const { data } = await supabase
-        .from("operator_profiles")
-        .select(
-          // NOTE: contact_email / contact_phone are NEVER selected publicly.
-          // All outreach happens through JobLine in-app messaging.
-          `user_id, card_slug, public_username, avatar_url, headline, bio,
-           location_city, location_region, location_country,
-           linkedin_url, portfolio_url,
-           vcard_full_name, vcard_title, vcard_company,
-           theme_color, accent_color, cta_label, cta_url,
-           open_to_work, profile_visibility`
-        )
-        .eq("card_slug", slug)
-        .eq("profile_visibility", "public")
-        .maybeSingle();
+      // Use SECURITY DEFINER RPC so anonymous visitors can resolve the card
+      // (base table SELECT is owner-only). RPC enforces public + discoverable + published
+      // and never returns contact_email/contact_phone/salary.
+      const { data, error } = await supabase
+        .rpc("get_public_operator_business_card", { _slug: slug });
       if (cancelled) return;
-      if (!data) {
+      const row = Array.isArray(data) ? data[0] : data;
+      if (error || !row) {
         setNotFound(true);
       } else {
-        setRow(data as unknown as CardRow);
+        // Default open_to_work to false — RPC does not return it (intentional minimization).
+        setRow({ ...(row as any), open_to_work: false, profile_visibility: "public" } as CardRow);
       }
       setLoading(false);
     })();

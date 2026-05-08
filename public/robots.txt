@@ -59,6 +59,12 @@ Disallow: /dev
 Disallow: /dev/
 Disallow: /functions/
 Disallow: /index
+# --- Talent: auth-only sub-routes (defense in depth on top of per-page noindex) ---
+Disallow: /talent/search
+Disallow: /talent/dashboard
+Disallow: /talent/inbox
+Disallow: /employer/
+Disallow: /employer/*
 
 # ===========================================
 # Search Engine Crawlers
