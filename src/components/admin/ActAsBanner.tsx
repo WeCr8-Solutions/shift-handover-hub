@@ -1,16 +1,27 @@
 import { useActAs } from "@/contexts/ActAsContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Eye, X, ShieldAlert, FlaskConical } from "lucide-react";
 
 export function ActAsBanner() {
-  const { target, isActingAs, mode, stopActAs } = useActAs();
+  const { target, isActingAs, mode, stopActAs, writeConfirm, resolveWriteConfirm } = useActAs();
 
   if (!isActingAs || !target) return null;
 
   const isTestMode = mode === "test";
 
   return (
+    <>
     <div
       className={`fixed top-0 left-0 right-0 z-[100] px-4 py-2 flex items-center justify-between gap-3 shadow-lg backdrop-blur-sm ${
         isTestMode
@@ -79,5 +90,30 @@ export function ActAsBanner() {
         </Button>
       </div>
     </div>
+
+    {/* F-20: Write-confirmation dialog for test mode */}
+    <AlertDialog open={writeConfirm.pending} onOpenChange={(open) => { if (!open) resolveWriteConfirm(false); }}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle className="flex items-center gap-2">
+            <FlaskConical className="w-5 h-5 text-violet-500" />
+            Confirm write in test mode
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            You are acting as <strong>{target?.displayName}</strong>. This action will be logged.
+            {writeConfirm.description && (
+              <span className="block mt-2 p-2 rounded bg-muted text-sm font-mono">
+                {writeConfirm.description}
+              </span>
+            )}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={() => resolveWriteConfirm(false)}>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={() => resolveWriteConfirm(true)}>Confirm</AlertDialogAction>
+        </AlertDialogFooter>
+          </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }

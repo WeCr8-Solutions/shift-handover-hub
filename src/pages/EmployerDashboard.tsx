@@ -33,6 +33,7 @@ import {
 import { Header } from "@/components/Header";
 import { Briefcase, Users, ExternalLink, Plus, Pencil, Trash2, Eye, MapPin, Building2, Loader2, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
+import { PermissionAwareEmpty } from "@/components/shared/PermissionAwareEmpty";
 
 type JobStatus = "draft" | "published" | "closed";
 type EmploymentType = "full_time" | "part_time" | "contract" | "internship";
@@ -207,14 +208,11 @@ export default function EmployerDashboard() {
       <div className="min-h-screen bg-background">
         <Header />
         <main className="container mx-auto px-4 py-12 max-w-2xl">
-          <Card>
-            <CardHeader>
-              <CardTitle>No organization</CardTitle>
-              <CardDescription>
-                You must belong to an organization to access the employer dashboard.
-              </CardDescription>
-            </CardHeader>
-          </Card>
+          <PermissionAwareEmpty
+            mode="permission"
+            title="Organization required"
+            description="You must belong to an organization to access the employer dashboard."
+          />
         </main>
       </div>
     );

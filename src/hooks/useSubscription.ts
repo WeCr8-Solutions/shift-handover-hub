@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useOrgContext } from '@/contexts/OrgContext';
 import { supabase } from '@/integrations/supabase/client';
 
 export type SubscriptionTier = 'single' | 'team' | 'enterprise' | 'gca_pro' | null;
@@ -110,6 +111,8 @@ export const ERP_ADDON_TIERS = {
 
 export function useSubscription() {
   const { user, session } = useAuth();
+  // F-6: include org ID so subscription re-fetches on org switch
+  const { organization } = useOrgContext();
   const [state, setState] = useState<SubscriptionState>({
     subscribed: false,
     tier: null,
@@ -129,11 +132,14 @@ export function useSubscription() {
       });
       return;
     }
+    // Pass org_id so the edge function can scope subscription to the active org
+    const orgId = organization?.id;
 
     setState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
       const { data, error } = await supabase.functions.invoke('check-subscription', {
+        body: orgId ? { org_id: orgId } : undefined,
         headers: session?.access_token
           ? { Authorization: `Bearer ${session.access_token}` }
           : undefined,
@@ -156,7 +162,7 @@ export function useSubscription() {
         error: error instanceof Error ? error.message : 'Failed to check subscription',
       }));
     }
-  }, [session?.access_token, user]);
+  }, [session?.access_token, user, organization?.id]);
 
   const createCheckout = useCallback(async (priceId: string, quantity?: number) => {
     if (!user) {

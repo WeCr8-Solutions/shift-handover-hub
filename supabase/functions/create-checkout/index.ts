@@ -26,9 +26,21 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    const { priceId, orgId, quantity } = await req.json();
+    const body = await req.json();
+    const { orgId, quantity } = body;
+    // F-13: Resolve GCA price IDs server-side so stale bundles can't attempt invalid checkouts.
+    // Client passes gca_interval ('monthly'|'annual'); server resolves the price ID.
+    // Clients may still pass priceId directly for non-GCA platform subscriptions.
+    const GCA_PRICE_MAP: Record<string, string> = {
+      monthly: Deno.env.get("GCA_PRICE_ID_MONTHLY") ?? "price_1TN4g9CyekafHX788v10vyWz",
+      annual:  Deno.env.get("GCA_PRICE_ID_ANNUAL")  ?? "price_1TN4jwCyekafHX785ZAg0oue",
+    };
+    const priceId: string | undefined =
+      body.gca_interval && GCA_PRICE_MAP[body.gca_interval]
+        ? GCA_PRICE_MAP[body.gca_interval]
+        : body.priceId;
     if (!priceId) throw new Error("Price ID is required");
-    logStep("Price ID received", { priceId, orgId, quantity });
+    logStep("Price ID resolved", { priceId, orgId, quantity, gca_interval: body.gca_interval ?? null });
 
     const authHeader = req.headers.get("Authorization")!;
     const token = authHeader.replace("Bearer ", "");
@@ -38,10 +50,7 @@ serve(async (req) => {
     logStep("User authenticated", { userId: user.id, email: user.email });
 
     // ── GCA BRANCH: standalone per-user subscription, no org ──
-    const GCA_PRICE_IDS = new Set([
-      "price_1TN4g9CyekafHX788v10vyWz", // monthly
-      "price_1TN4jwCyekafHX785ZAg0oue", // annual
-    ]);
+    const GCA_PRICE_IDS = new Set(Object.values(GCA_PRICE_MAP));
 
     if (!orgId && GCA_PRICE_IDS.has(priceId)) {
       logStep("GCA standalone checkout flow");

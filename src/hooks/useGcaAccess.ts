@@ -65,20 +65,16 @@ export function useGcaAccess(): GcaAccessState {
   const isDefinitelyFree = !isLoading && !hasProAccess;
 
   const startGcaCheckout = useCallback(async (interval: 'monthly' | 'annual') => {
-    const priceId = GCA_PRICES[interval].priceId;
-    if (!priceId) {
-      throw new Error(
-        'GCA Stripe price IDs are not configured yet. ' +
-        'Create the product in Stripe and add the price IDs to GCA_PRICES in useGcaAccess.ts.'
-      );
-    }
     if (!session?.access_token) {
       throw new Error('User must be signed in to start checkout.');
     }
 
+    // F-13: pass gca_interval so the edge function resolves the price ID server-side.
+    // Rotating Stripe price IDs only requires updating the edge function env vars,
+    // not a frontend redeploy.
     const { data, error } = await supabase.functions.invoke('create-checkout', {
       body: {
-        priceId,
+        gca_interval: interval,
         // No orgId: GCA is an individual subscription, not org-scoped.
       },
       headers: { Authorization: `Bearer ${session.access_token}` },

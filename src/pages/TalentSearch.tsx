@@ -20,6 +20,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Textarea } from "@/components/ui/textarea";
 import { withJoblineUtm } from "@/lib/talent/outboundLinks";
 import { MessageThread } from "@/components/talent/MessageThread";
+import { PermissionAwareEmpty } from "@/components/shared/PermissionAwareEmpty";
 
 export default function Talent() {
   const navigate = useNavigate();
@@ -43,16 +44,15 @@ export default function Talent() {
   if (!organization) {
     return (
       <div className="min-h-screen bg-background">
-        <Helmet>
-          <title>Talent Search — JobLine.ai</title>
-          <meta name="robots" content="noindex" />
-        </Helmet>
+        <Helmet><title>Talent Search — JobLine.ai</title><meta name="robots" content="noindex" /></Helmet>
         <Header />
-        <main className="container py-12 max-w-2xl text-center space-y-4">
-          <Globe className="w-12 h-12 text-muted-foreground mx-auto" />
-          <h1 className="text-2xl font-bold">Talent search</h1>
-          <p className="text-muted-foreground">You need to belong to an organization with an active subscription to browse the operators database.</p>
-          <Button onClick={() => navigate("/pricing")}>See pricing</Button>
+        <main className="container py-12 max-w-2xl">
+          <PermissionAwareEmpty
+            mode="tier"
+            title="Organization required"
+            description="You need to belong to an organization with an active subscription to browse the talent database."
+            action={{ label: "See pricing", href: "/pricing" }}
+          />
         </main>
       </div>
     );
@@ -61,14 +61,14 @@ export default function Talent() {
   if (!isAuthorized) {
     return (
       <div className="min-h-screen bg-background">
-        <Helmet>
-          <title>Talent Search — JobLine.ai</title>
-          <meta name="robots" content="noindex" />
-        </Helmet>
+        <Helmet><title>Talent Search — JobLine.ai</title><meta name="robots" content="noindex" /></Helmet>
         <Header />
-        <main className="container py-12 max-w-2xl text-center space-y-4">
-          <h1 className="text-2xl font-bold">Verified employer access required</h1>
-          <p className="text-muted-foreground">Only org owners, admins, and supervisors can access the talent database.</p>
+        <main className="container py-12 max-w-2xl">
+          <PermissionAwareEmpty
+            mode="permission"
+            title="Employer access required"
+            description="Only org owners, admins, and supervisors can access the talent database."
+          />
         </main>
       </div>
     );
@@ -161,7 +161,7 @@ export default function Talent() {
               {loading ? (
                 <Skeleton className="h-40 w-full" />
               ) : results.length === 0 ? (
-                <Card><CardContent className="py-12 text-center text-muted-foreground">No operators match those filters yet.</CardContent></Card>
+                <PermissionAwareEmpty mode="empty" title="No operators found" description="No operators match those filters yet. Try broadening your search." />
               ) : (
                 results.map((c) => (
                   <CandidateCard

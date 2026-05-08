@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, ReactNode, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -13,6 +13,12 @@ interface ActAsTarget {
   organizationName?: string;
   roles: string[];
   orgRole?: string;
+}
+
+interface WriteConfirmState {
+  pending: boolean;
+  description: string;
+  resolve: ((confirmed: boolean) => void) | null;
 }
 
 interface ActAsContextType {
@@ -32,6 +38,16 @@ interface ActAsContextType {
   effectiveUserId: string | null;
   /** Session ID for the current act-as session */
   sessionId: string | null;
+  /**
+   * F-20: In test mode, prompt the actor to confirm before performing a write.
+   * Resolves true if confirmed, false if cancelled.
+   * In non-test or non-actAs mode, resolves immediately with true.
+   */
+  confirmWrite: (description: string) => Promise<boolean>;
+  /** Internal: current write-confirm dialog state (consumed by ActAsBanner) */
+  writeConfirm: WriteConfirmState;
+  /** Internal: resolve the pending confirmation */
+  resolveWriteConfirm: (confirmed: boolean) => void;
 }
 
 const ActAsContext = createContext<ActAsContextType | undefined>(undefined);
@@ -43,6 +59,13 @@ export function ActAsProvider({ children }: { children: ReactNode }) {
   const [target, setTarget] = useState<ActAsTarget | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [mode, setMode] = useState<ActAsMode | null>(null);
+  // F-20: write confirmation state
+  const resolveRef = useRef<((v: boolean) => void) | null>(null);
+  const [writeConfirm, setWriteConfirm] = useState<WriteConfirmState>({
+    pending: false,
+    description: '',
+    resolve: null,
+  });
 
   const startActAs = useCallback(
     async (newTarget: ActAsTarget) => {
@@ -121,6 +144,20 @@ export function ActAsProvider({ children }: { children: ReactNode }) {
     toast.info("Returned to your own view.");
   }, [sessionId]);
 
+  const confirmWrite = useCallback(async (description: string): Promise<boolean> => {
+    if (!target || mode !== "test") return true;
+    return new Promise<boolean>((resolve) => {
+      resolveRef.current = resolve;
+      setWriteConfirm({ pending: true, description, resolve });
+    });
+  }, [target, mode]);
+
+  const resolveWriteConfirm = useCallback((confirmed: boolean) => {
+    resolveRef.current?.(confirmed);
+    resolveRef.current = null;
+    setWriteConfirm({ pending: false, description: '', resolve: null });
+  }, []);
+
   const effectiveUserId = target?.userId ?? user?.id ?? null;
   const canPerformActions = mode === "test";
 
@@ -135,6 +172,9 @@ export function ActAsProvider({ children }: { children: ReactNode }) {
         stopActAs,
         effectiveUserId,
         sessionId,
+        confirmWrite,
+        writeConfirm,
+        resolveWriteConfirm,
       }}
     >
       {children}

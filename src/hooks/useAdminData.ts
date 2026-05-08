@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { Database, Json } from "@/integrations/supabase/types";
 import { useActivityLog } from "@/hooks/useActivityLog";
 
@@ -90,6 +91,8 @@ export interface OrganizationWithStats {
 
 export function useAdminAccess() {
   const { user } = useAuth();
+  // F-6: re-fetch when active org changes so role state doesn't bleed across orgs
+  const { organization } = useOrgContext();
   // Platform-level roles (from user_roles table)
   const [isAdmin, setIsAdmin] = useState(false);
   const [isSupervisor, setIsSupervisor] = useState(false);
@@ -160,7 +163,7 @@ export function useAdminAccess() {
     };
 
     checkAccess();
-  }, [user]);
+  }, [user, organization?.id]);
 
   // Computed access levels combining platform and org roles
   const hasPlatformAdminAccess = isAdmin; // Global platform admin

@@ -3,8 +3,8 @@ import { Header } from "@/components/Header";
 import { OapEmployerPanel } from "@/components/oap/OapEmployerPanel";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { useOrganization } from "@/hooks/useOrganization";
-import { Card, CardContent } from "@/components/ui/card";
-import { Briefcase, ShieldAlert } from "lucide-react";
+import { Briefcase } from "lucide-react";
+import { PermissionAwareEmpty } from "@/components/shared/PermissionAwareEmpty";
 
 export default function OapEmployer() {
   const { organization } = useOrganization();
@@ -30,12 +30,11 @@ export default function OapEmployer() {
         </p>
 
         {!allowed ? (
-          <Card>
-            <CardContent className="py-6 flex items-center gap-2 text-sm text-muted-foreground">
-              <ShieldAlert className="w-4 h-4" />
-              Employer console is available to org admins and supervisors.
-            </CardContent>
-          </Card>
+          <PermissionAwareEmpty
+            mode="permission"
+            title="Employer access required"
+            description="The OAP Employer Console is available to org admins and supervisors."
+          />
         ) : (
           <OapEmployerPanel />
         )}

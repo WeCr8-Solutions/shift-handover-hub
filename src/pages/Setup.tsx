@@ -11,17 +11,18 @@ import { BulkUploadDialog } from '@/components/BulkUploadDialog';
 import { OrganizationSetup } from '@/components/onboarding/OrganizationSetup';
 import { useOnboardingContext } from '@/components/onboarding/OnboardingProvider';
 import { useDataSourceMode } from '@/hooks/useDataSourceMode';
-import { 
-  ArrowRight, 
-  Building2, 
-  Users, 
-  Wrench, 
-  FileSpreadsheet, 
+import {
+  ArrowRight,
+  Building2,
+  Users,
+  Wrench,
+  FileSpreadsheet,
   CheckCircle2,
   Sparkles,
   Play,
   LayoutDashboard,
-  ClipboardList
+  ClipboardList,
+  UserCircle2,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -49,6 +50,8 @@ export default function Setup() {
   const [loading, setLoading] = useState(true);
   const [bulkUploadOpen, setBulkUploadOpen] = useState(false);
   const [showOrgSetup, setShowOrgSetup] = useState(false);
+  // F-4: detect talent-only users who land on /setup without ?intent=create_org
+  const [hasTalentProfile, setHasTalentProfile] = useState(false);
 
   // G1: One-time "email verified" success toast when user lands from verification email
   useEffect(() => {
@@ -90,6 +93,13 @@ export default function Setup() {
         .select('organization:organizations(id, name)')
         .eq('user_id', user.id)
         .maybeSingle();
+
+      // F-4: check if this user has a talent profile (operator_profiles row)
+      const { count: talentCount } = await supabase
+        .from('operator_profiles')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id);
+      setHasTalentProfile((talentCount ?? 0) > 0);
 
       const hasOrg = !!orgResult.data?.organization;
       const orgId = orgResult.data?.organization?.id;
@@ -172,6 +182,60 @@ export default function Setup() {
             <div className="animate-pulse space-y-4">
               <div className="h-8 bg-secondary rounded w-1/2 mx-auto" />
               <div className="h-4 bg-secondary rounded w-3/4 mx-auto" />
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // F-4: talent-only user landing on /setup without explicit org-creation intent
+  // Show a chooser so they don't accidentally self-elevate to org_admin.
+  const intentParam = searchParams.get('intent');
+  if (
+    !loading &&
+    hasTalentProfile &&
+    !setupStatus?.hasOrganization &&
+    intentParam !== 'create_org'
+  ) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="container mx-auto px-4 py-12">
+          <div className="max-w-lg mx-auto space-y-6 text-center">
+            <h1 className="text-2xl font-bold">What would you like to do?</h1>
+            <p className="text-muted-foreground text-sm">
+              You already have a talent profile on JobLine. Choose how you'd like to continue.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
+              <Card
+                className="cursor-pointer hover:border-primary transition-colors"
+                onClick={() => navigate('/talent/dashboard')}
+              >
+                <CardContent className="pt-6 space-y-2">
+                  <UserCircle2 className="w-8 h-8 text-primary" />
+                  <CardTitle className="text-base">Continue as Talent</CardTitle>
+                  <CardDescription>
+                    View your operator profile, certifications, and job opportunities.
+                  </CardDescription>
+                </CardContent>
+              </Card>
+              <Card
+                className="cursor-pointer hover:border-primary transition-colors"
+                onClick={() => {
+                  const next = new URLSearchParams(searchParams);
+                  next.set('intent', 'create_org');
+                  setSearchParams(next, { replace: true });
+                }}
+              >
+                <CardContent className="pt-6 space-y-2">
+                  <Building2 className="w-8 h-8 text-primary" />
+                  <CardTitle className="text-base">Set up a Shop</CardTitle>
+                  <CardDescription>
+                    Create an organization to manage handoffs, teams, and job queues.
+                  </CardDescription>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </main>
