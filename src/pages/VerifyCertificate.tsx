@@ -43,13 +43,9 @@ export default function VerifyCertificate() {
     });
   }, [certId, lookupCertificate]);
 
-  const status: "valid" | "expired" | "revoked" | "unknown" = !cert
+  const status: "valid" | "expired" | "revoked" | "suspended" | "unknown" = !cert
     ? "unknown"
-    : cert.status === "revoked"
-    ? "revoked"
-    : cert.validUntil && new Date(cert.validUntil) < new Date()
-    ? "expired"
-    : "valid";
+    : (cert.effectiveStatus ?? (cert.status === "revoked" ? "revoked" : "valid"));
 
   const StatusIcon =
     status === "valid" ? ShieldCheck : status === "expired" ? ShieldAlert : ShieldX;
@@ -59,7 +55,7 @@ export default function VerifyCertificate() {
       ? "text-emerald-600"
       : status === "expired"
       ? "text-amber-600"
-      : status === "revoked"
+      : status === "revoked" || status === "suspended"
       ? "text-destructive"
       : "text-muted-foreground";
 
@@ -177,6 +173,34 @@ export default function VerifyCertificate() {
                     {cert.validUntil ? new Date(cert.validUntil).toLocaleDateString() : "Lifetime"}
                   </p>
                 </div>
+              </div>
+            )}
+
+            {cert && (status === "revoked" || status === "suspended") && (
+              <div className="p-3 rounded-md border border-destructive/40 bg-destructive/10 text-sm">
+                <p className="font-medium text-destructive">
+                  This certificate is {status}.
+                </p>
+                {cert.revokedAt && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Recorded {new Date(cert.revokedAt).toLocaleDateString()}
+                    {cert.revokedReason ? ` — ${cert.revokedReason}` : ""}
+                  </p>
+                )}
+                <p className="text-xs text-muted-foreground mt-1">
+                  Do not accept this credential as proof of qualification.
+                </p>
+              </div>
+            )}
+
+            {cert && status === "expired" && (
+              <div className="p-3 rounded-md border border-amber-500/40 bg-amber-500/10 text-sm">
+                <p className="font-medium text-amber-700 dark:text-amber-400">
+                  This certificate has expired.
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  The recipient must complete recertification to restore validity.
+                </p>
               </div>
             )}
 

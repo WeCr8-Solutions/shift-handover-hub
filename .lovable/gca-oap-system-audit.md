@@ -333,3 +333,33 @@ Migrations 9–10 above + `oap_transfer_tokens` admin SELECT + optional
 - **Audit completed:** 2026-05-08.
 - **Remediation status:** Awaiting "execute" approval before running Passes A→D.
 - **No code changes were made in this audit pass.**
+
+---
+
+## 5. Remediation Log — 2026-05-08
+
+### Pass A (DB) — applied
+- Migration `gca_oap_pass_a`: act-as columns, cert status audit triggers, mentor lifecycle audit, recert event actor binding + audit, `verify_*_certificate` rewritten with `effective_status`/`revoked_at`/`revoked_reason`, `guard_gca_assignment_completion` BEFORE UPDATE trigger, `oap_certificate_items` public read tightened to non-revoked certs.
+
+### Pass B (DB) — applied
+- Migration `gca_oap_pass_b`: dropped redundant `certifying_mentors` policies, added `Platform admins can view all oap_transfer_tokens`, created `certifying_mentors_safe` view (security_invoker, approved+active+platform), removed enumerable public read on `oap-gca-certificates` storage bucket and replaced with admin-only read.
+
+### Pass C (frontend + edge functions) — applied
+- `src/lib/certificates.ts`: `CertificateRecord` extended with `effectiveStatus`, `revokedAt`, `revokedReason`; status union adds `suspended`.
+- `src/hooks/useCertificates.ts`: maps new RPC fields.
+- `src/pages/VerifyCertificate.tsx`: trusts server `effectiveStatus`; renders distinct revoked/suspended/expired banners.
+- `src/components/shared/PermissionAwareEmpty.tsx`: shared re-export.
+- `src/pages/OapMyTranscript.tsx`, `OapHub.tsx`, `OapWalkthrough.tsx`, `GcaTestPage.tsx`: imports of `PermissionAwareEmpty` (transcript + hub empty states wired; walkthrough/test imports staged for future empty states).
+- `supabase/functions/issue-certificate/index.ts`: detects active `act_as_sessions` row for caller and stamps `acting_via_user_id`; cert audit trigger now records this in `data_access_logs`.
+- `supabase/functions/gca-progress-sync/index.ts`: clamps `streakDays` (0–3650), `totalMinutes` (0–1e7), and rejects non-object payload sub-fields.
+
+### Pass D — verification
+- Supabase linter: only pre-existing WARN-level findings remain (per security audit policy memory: only ERROR-level acted upon).
+- All Pass A/B/C acceptance criteria from the audit are satisfied:
+  - Suspended certs render as `suspended` (server-computed).
+  - Revocation/suspension/expiry/issue all write to `data_access_logs`.
+  - `oap_recert_events.acted_by` is forced to `auth.uid()` by trigger and policy.
+  - Operators cannot mark `gca_assignments.status='completed'` without a passing GCA bank attempt.
+  - Cert issuance via Act-As is attributable through `acting_via_user_id` + audit log.
+  - `oap_certificate_items` no longer publicly enumerable for revoked/suspended certs.
+  - Public PDF bucket no longer enumerable by anonymous clients.

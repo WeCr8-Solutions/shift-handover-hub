@@ -20,6 +20,7 @@ import {
   GraduationCap, ShieldCheck, Building2, Copy, Check, Plus, Send, Eye, EyeOff,
 } from "lucide-react";
 import { toast } from "sonner";
+import { PermissionAwareEmpty } from "@/components/shared/PermissionAwareEmpty";
 
 export default function OapMyTranscript() {
   const { user } = useAuth();
@@ -116,11 +117,15 @@ export default function OapMyTranscript() {
             <div className="space-y-3">
               <h2 className="text-lg font-semibold">Earned credentials</h2>
               {credentials.length === 0 ? (
-                <Card>
-                  <CardContent className="py-6 text-sm text-muted-foreground">
-                    No credentials yet. Complete an OAP role program at an employer or buy a $12 self-cert.
-                  </CardContent>
-                </Card>
+                <PermissionAwareEmpty
+                  mode={user ? "empty" : "permission"}
+                  title={user ? "No credentials yet" : "Sign in to view your transcript"}
+                  description={
+                    user
+                      ? "Complete an OAP role program at an employer or buy a $12 self-cert."
+                      : "Your earned OAP credentials are private to your account."
+                  }
+                />
               ) : (
                 credentials.map((c) => (
                   <Card key={c.id}>

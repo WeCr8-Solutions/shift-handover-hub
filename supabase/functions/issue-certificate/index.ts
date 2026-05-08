@@ -244,6 +244,20 @@ serve(async (req) => {
     }
 
 
+    // Detect Act-As impersonation so the cert is attributable to the real actor.
+    let actingViaUserId: string | null = null;
+    try {
+      const { data: actAs } = await supabaseAdmin
+        .from("act_as_sessions")
+        .select("actor_id")
+        .eq("target_user_id", caller.id)
+        .is("ended_at", null)
+        .order("started_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      actingViaUserId = (actAs as any)?.actor_id ?? null;
+    } catch (_e) { /* non-fatal */ }
+
     const table = body.program === "OAP" ? "oap_certificates" : "gca_certificates";
     const insertPayload: Record<string, unknown> = {
       cert_id: certId,
@@ -260,6 +274,7 @@ serve(async (req) => {
       signed_by_name: signedByName,
       signed_by_title: signedByTitle,
       signed_by_signature_url: signedBySignatureUrl,
+      acting_via_user_id: actingViaUserId,
     };
     if (body.program === "OAP") {
       insertPayload.organization_id = body.organizationId ?? null;

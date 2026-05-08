@@ -22,6 +22,7 @@ import {
   useSessionCheckoffs,
   type CheckoffResult,
 } from "@/hooks/useOapWalkthrough";
+import { PermissionAwareEmpty } from "@/components/shared/PermissionAwareEmpty";
 import {
   ClipboardCheck,
   CheckCircle2,
