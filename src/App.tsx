@@ -256,19 +256,19 @@ const App = () => (
                     <Route path="/oap/learn" element={<OapHub />} />
                     <Route path="/oap/learn/:courseSlug" element={<OapCoursePlayer />} />
                     <Route path="/oap/learn/:courseSlug/:lessonSlug" element={<OapCoursePlayer />} />
-                    <Route path="/oap/employer" element={<OapEmployer />} />
-                    <Route path="/gca/employer" element={<GcaEmployer />} />
-                    <Route path="/gca/test/:bankSlug" element={<GcaTestPage />} />
+                    <Route path="/oap/employer" element={<RequireAuth><RequireOrg><RequireRole roles={["org_admin","org_supervisor"]}><RequireSubscription><OapEmployer /></RequireSubscription></RequireRole></RequireOrg></RequireAuth>} />
+                    <Route path="/gca/employer" element={<RequireAuth><RequireOrg><RequireRole roles={["org_admin","org_supervisor"]}><RequireSubscription><GcaEmployer /></RequireSubscription></RequireRole></RequireOrg></RequireAuth>} />
+                    <Route path="/gca/test/:bankSlug" element={<RequireAuth><GcaTestPage /></RequireAuth>} />
                     <Route path="/gcode-academy/certificates" element={<CertificateLookup />} />
                     <Route path="/gcode-academy/certificates/verify" element={<CertificateLookup />} />
-                    <Route path="/oap/my-transcript" element={<OapMyTranscript />} />
+                    <Route path="/oap/my-transcript" element={<RequireAuth><OapMyTranscript /></RequireAuth>} />
                     <Route path="/oap/certificates" element={<CertificateLookup />} />
                     <Route path="/oap/certificates/verify" element={<CertificateLookup />} />
                     <Route path="/talent" element={<TalentLanding />} />
-                    <Route path="/talent/dashboard" element={<TalentDashboard />} />
+                    <Route path="/talent/dashboard" element={<RequireAuth><TalentDashboard /></RequireAuth>} />
                     <Route path="/talent/resume-builder" element={<ResumeBuilderLanding />} />
                     <Route path="/talent/browse" element={<TalentBrowse />} />
-                    <Route path="/talent/search" element={<TalentSearch />} />
+                    <Route path="/talent/search" element={<RequireAuth><RequireOrg><RequireRole roles={["org_admin","org_supervisor"]}><RequireSubscription><TalentSearch /></RequireSubscription></RequireRole></RequireOrg></RequireAuth>} />
                     <Route path="/talent/profile" element={<Navigate to="/operator/profile" replace />} />
                     <Route path="/talent/:username" element={<PublicTalentProfile />} />
                     <Route path="/operator/profile" element={<OperatorProfile />} />
