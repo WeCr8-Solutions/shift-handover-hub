@@ -61,7 +61,7 @@ async function callRpc(fnName, body) {
 async function probeRpc(fnName, sampleId) {
   // 1. Callable anonymously
   const probeId = sampleId ?? `${fnName.includes("oap") ? "OAP" : "GCA"}-NONE-0000`;
-  const { status, json } = await callRpc(fnName, { p_cert_id: probeId });
+  const { status, json } = await callRpc(fnName, { _cert_id: probeId });
 
   if (status !== 200) {
     fail(`${fnName} returned HTTP ${status} (expected 200) — public verify is broken`);
