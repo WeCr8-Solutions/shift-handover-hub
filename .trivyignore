@@ -22,3 +22,8 @@ GHSA-9wv6-86v2-598j
 GHSA-3ppc-4f35-3m26
 GHSA-7r86-cg39-jmmj
 GHSA-23c5-xmqv-rm74
+
+# basic-ftp (5.3.0) — via puppeteer devDependency
+# Chain: puppeteer → @puppeteer/browsers → proxy-agent → pac-proxy-agent → get-uri → basic-ftp
+# Never shipped to production. npm audit --omit=dev returns 0 vulnerabilities.
+CVE-2026-44240
