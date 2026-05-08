@@ -72,9 +72,24 @@ export default function GcaTestPage() {
       if (error) throw error;
       return data as string;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Test cloned into your organization. Find it in the GCA editor.");
       qc.invalidateQueries({ queryKey: ["gca-banks"] });
+      // F-12: audit admin/supervisor paywall bypass for cloning canonical Pro bank
+      if (!hasProAccess && organization?.id && bank?.id) {
+        try {
+          await supabase.from("data_access_logs").insert({
+            user_id: (await supabase.auth.getUser()).data.user?.id ?? null,
+            organization_id: organization.id,
+            table_name: "gca_question_banks",
+            record_id: bank.id,
+            operation: "admin_paywall_bypass_clone",
+            metadata: { bank_slug: bankSlug, reason: "admin_role_bypass" },
+          });
+        } catch (e) {
+          console.warn("Failed to log paywall bypass:", e);
+        }
+      }
     },
     onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Clone failed"),
   });
