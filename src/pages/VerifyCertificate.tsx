@@ -176,6 +176,34 @@ export default function VerifyCertificate() {
               </div>
             )}
 
+            {cert && (status === "revoked" || status === "suspended") && (
+              <div className="p-3 rounded-md border border-destructive/40 bg-destructive/10 text-sm">
+                <p className="font-medium text-destructive">
+                  This certificate is {status}.
+                </p>
+                {cert.revokedAt && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Recorded {new Date(cert.revokedAt).toLocaleDateString()}
+                    {cert.revokedReason ? ` — ${cert.revokedReason}` : ""}
+                  </p>
+                )}
+                <p className="text-xs text-muted-foreground mt-1">
+                  Do not accept this credential as proof of qualification.
+                </p>
+              </div>
+            )}
+
+            {cert && status === "expired" && (
+              <div className="p-3 rounded-md border border-amber-500/40 bg-amber-500/10 text-sm">
+                <p className="font-medium text-amber-700 dark:text-amber-400">
+                  This certificate has expired.
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  The recipient must complete recertification to restore validity.
+                </p>
+              </div>
+            )}
+
             <div className="flex flex-wrap items-center gap-2 pt-2 border-t">
               {cert && (
                 <>
