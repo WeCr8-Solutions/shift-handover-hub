@@ -21,6 +21,7 @@ export type Database = {
           ended_at: string | null
           id: string
           organization_id: string | null
+          purpose: string | null
           started_at: string
           target_display_name: string | null
           target_user_id: string
@@ -31,6 +32,7 @@ export type Database = {
           ended_at?: string | null
           id?: string
           organization_id?: string | null
+          purpose?: string | null
           started_at?: string
           target_display_name?: string | null
           target_user_id: string
@@ -41,6 +43,7 @@ export type Database = {
           ended_at?: string | null
           id?: string
           organization_id?: string | null
+          purpose?: string | null
           started_at?: string
           target_display_name?: string | null
           target_user_id?: string
@@ -10697,6 +10700,13 @@ export type Database = {
             referencedRelation: "talent_contact_requests"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "talent_message_replies_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "talent_contact_requests_safe"
+            referencedColumns: ["id"]
+          },
         ]
       }
       talent_saved_candidates: {
@@ -12991,6 +13001,74 @@ export type Database = {
         }
         Relationships: []
       }
+      talent_contact_requests_safe: {
+        Row: {
+          candidate_response: string | null
+          candidate_user_id: string | null
+          created_at: string | null
+          id: string | null
+          organization_id: string | null
+          organization_name: string | null
+          responded_at: string | null
+          sender_display_name: string | null
+          sender_user_id: string | null
+          subject: string | null
+        }
+        Insert: {
+          candidate_response?: string | null
+          candidate_user_id?: string | null
+          created_at?: string | null
+          id?: string | null
+          organization_id?: string | null
+          organization_name?: string | null
+          responded_at?: string | null
+          sender_display_name?: string | null
+          sender_user_id?: string | null
+          subject?: string | null
+        }
+        Update: {
+          candidate_response?: string | null
+          candidate_user_id?: string | null
+          created_at?: string | null
+          id?: string | null
+          organization_id?: string | null
+          organization_name?: string | null
+          responded_at?: string | null
+          sender_display_name?: string | null
+          sender_user_id?: string | null
+          subject?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "talent_contact_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "talent_contact_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "talent_contact_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "talent_contact_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       apply_ncr_disposition: {
@@ -13194,6 +13272,43 @@ export type Database = {
           title: string
         }[]
       }
+      get_public_operator_business_card: {
+        Args: { _slug: string }
+        Returns: {
+          accent_color: string
+          avatar_url: string
+          banner_url: string
+          bio: string
+          business_hours: Json
+          card_slug: string
+          cta_label: string
+          cta_url: string
+          facebook_url: string
+          gallery: Json
+          github_url: string
+          headline: string
+          id: string
+          instagram_url: string
+          latitude: number
+          linkedin_url: string
+          location_city: string
+          location_country: string
+          location_region: string
+          longitude: number
+          portfolio_url: string
+          public_username: string
+          services: Json
+          testimonials: Json
+          theme_color: string
+          twitter_url: string
+          user_id: string
+          vcard_company: string
+          vcard_full_name: string
+          vcard_title: string
+          website_url: string
+          youtube_url: string
+        }[]
+      }
       get_public_operator_cert_summary: {
         Args: { _username: string }
         Returns: {
@@ -13245,6 +13360,20 @@ export type Database = {
       get_public_talent_profile_bundle: {
         Args: { _username: string }
         Returns: Json
+      }
+      get_talent_message_body: {
+        Args: { _request_id: string }
+        Returns: {
+          candidate_response: string
+          candidate_response_message: string
+          candidate_user_id: string
+          created_at: string
+          id: string
+          message: string
+          organization_id: string
+          sender_user_id: string
+          subject: string
+        }[]
       }
       get_user_org_id: { Args: { _user_id: string }; Returns: string }
       grade_gca_attempt: {
