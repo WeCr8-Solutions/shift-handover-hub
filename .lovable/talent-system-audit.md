@@ -343,3 +343,38 @@ Add a `purpose` enum/free-text field to `act_as_sessions`.
 ---
 
 **Status of this document:** Findings only. No code or schema changes have been applied. Awaiting approval to proceed with Pass A.
+
+---
+
+## Remediation Log — 2026-05-08
+
+### Pass A — Applied
+- Migration `20260508` adds platform-admin SELECT policies on 14 talent tables (operator_certifications, operator_skills, operator_education, operator_work_history, operator_machine_proficiencies, operator_references, operator_recommendations, operator_resume_versions, operator_connections, operator_follows, oap_operator_credentials, talent_contact_requests, talent_message_replies, talent_saved_candidates, talent_saved_lists, org_messages).
+- Tightened public-child SELECT predicates with `is_discoverable=true AND public_published_at IS NOT NULL` on certifications, skills, education, work_history, machine_proficiencies.
+- Consolidated `operator_references` policies (dropped `op_ref_block_anon` + `op_ref_authenticated_owner_only`); added `op_ref_employer_select`.
+- Added `op_rec_public_select` and `op_rec_employer_select` to `operator_recommendations`, gated on `is_hidden_by_recipient=false`.
+- Replaced broad `op_files_public_profile_read` with scoped allowlist (avatar/banner files + `public/`+`gallery/` subfolders) plus discoverable+published gate. Resume PDFs in non-public paths can no longer leak.
+- Added `op_files_admin_read` for SDK admin storage support.
+- Dropped duplicate `operator_profiles_owner_*` storage policies (kept newer `op_files_*` set).
+
+### Pass B — Applied
+- Added `act_as_sessions.purpose` (text) for talent-vs-generic support tracking.
+- New SECURITY DEFINER RPC `get_public_operator_business_card(_slug)` for `/p/:slug`.
+- New view `talent_contact_requests_safe` (metadata only, no body).
+- New SECURITY DEFINER RPC `get_talent_message_body(_id)` — admins (non-party) reads write `data_access_logs` row with `operation='admin_read_body'`.
+- Rebuilt `operator_profiles_public` view to drop the `is_verified_employer` branch — contact_email/contact_phone/desired_salary_* are NEVER returned to anyone but the owner.
+
+### Pass C — Applied
+- `src/pages/PublicBusinessCard.tsx` now calls `get_public_operator_business_card` RPC (anon-safe).
+- New shared component `src/components/talent/PermissionAwareEmpty.tsx` for use on TalentBrowse / TalentSearch / references panels to distinguish empty vs forbidden vs tier-gated.
+- `public/robots.txt` adds explicit Disallow rules for `/talent/search`, `/talent/dashboard`, `/talent/inbox`, `/employer/`, `/employer/*` (defense in depth).
+
+### Linter
+Re-ran Supabase linter after each migration. Outstanding issues are all WARN level (pre-existing public bucket listing and SECURITY DEFINER public-execute warnings) — per project security policy, only ERROR-level findings are remediated.
+
+### Sign-off Checklist
+- [x] Pass A migration: admin SELECT + tightened public predicates + reference policy cleanup
+- [x] Pass A migration: storage bucket scoped read + admin SELECT
+- [x] Pass B migration: safe view + audited message-body RPC + business-card RPC + drop contact branch from public view
+- [x] Pass C frontend: switch business card to RPC, permission-aware empty states component, robots.txt hardening
+- [x] Re-ran `supabase--linter` after each pass
