@@ -221,3 +221,30 @@ Awaiting approval to execute remediation in passes:
 **Verification:** Supabase linter run after migration — no new ERROR-level findings introduced; all WARNs are pre-existing (per Security Audit Policy memory: ignore non-error warnings).
 
 **Pass B / Pass C:** Deferred to a follow-up turn (defense-in-depth + UX cleanup per audit doc — not started this turn due to time).
+
+---
+
+## Pass B/C Remediation Log (2026-05-08)
+
+**Migration `20260508_pass_b_c_hardening.sql`:**
+
+- `enforce_operator_profile_publishable` BEFORE INSERT OR UPDATE trigger (F-10) — blocks `is_discoverable=true` when `headline` is null/empty OR no `operator_skills` rows exist for the user; error message includes the failing field name in `HINT` for UI surfacing
+- `enforce_walkthrough_no_self_sign` BEFORE INSERT OR UPDATE trigger (F-16) — blocks `primary_mentor_id = operator_id` on `oap_walkthrough_sessions` with SQLSTATE 23000
+- `resolve_post_login_destination` RPC updated (F-18) — reads `organizations.subscription_status` + `trial_ends_at` for the org; returns `trial_expired: true` and routes to `/pricing` when trial has lapsed and plan is `none`
+
+**Frontend changes:**
+
+- `src/pages/Setup.tsx` (F-4) — detects talent-only users (has `operator_profiles` row, no `organization_members` row) and renders a two-card chooser ("Continue as Talent" → `/talent/dashboard` vs "Set up a Shop" → adds `?intent=create_org`) unless `?intent=create_org` is already present
+- `src/hooks/useSubscription.ts` + `src/hooks/useAdminData.ts` (F-6) — both now import `useOrgContext` and include `organization?.id` in their `useEffect`/`useCallback` dependency arrays; `check-subscription` also receives `org_id` in its body so org-scoped subscription state invalidates on org switch
+- `supabase/functions/create-checkout/index.ts` + `src/hooks/useGcaAccess.ts` (F-13) — edge function resolves GCA price IDs from `GCA_PRICE_ID_MONTHLY`/`GCA_PRICE_ID_ANNUAL` env vars (with hardcoded fallback); client now passes `gca_interval: 'monthly'|'annual'` instead of the raw `priceId` so rotating Stripe IDs only requires a server-side env update
+- `src/contexts/ActAsContext.tsx` + `src/components/admin/ActAsBanner.tsx` (F-20) — `ActAsContext` exposes `confirmWrite(description)` async function and `resolveWriteConfirm(confirmed)`; `ActAsBanner` renders a shadcn `AlertDialog` gated on `writeConfirm.pending`; write-critical surfaces call `confirmWrite()` before proceeding in test mode
+- F-21 (Pass C): `PermissionAwareEmpty` wired into all four outstanding employer surfaces:
+  - `TalentSearch.tsx` — no-org gate (`mode="tier"`) + role gate (`mode="permission"`) + empty results grid (`mode="empty"`)
+  - `EmployerDashboard.tsx` — no-org guard replaced with `mode="permission"`
+  - `GcaEmployer.tsx` — role guard replaced with `mode="permission"`
+  - `OapEmployer.tsx` — role guard replaced with `mode="permission"`
+- Removed unused imports (`Card`, `CardContent`, `ShieldAlert`, `Globe`) from pages where `PermissionAwareEmpty` replaced inline guards
+
+**Out of scope this pass (F-11):** Cache-Control on `/talent/:username` is a hosting layer concern (Lovable/Vercel); no actionable code change available.
+
+**All ERRORs (Pass A) and WARNs (Pass B) addressed. Only F-11 INFO remains (hosting limitation).**
