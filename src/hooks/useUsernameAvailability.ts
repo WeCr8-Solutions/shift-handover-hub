@@ -46,13 +46,12 @@ export function useUsernameAvailability(
     setMessage("Checking availability…");
     const handle = setTimeout(async () => {
       try {
+        // Use SECURITY DEFINER RPC so the picker can detect handles owned by
+        // other users without exposing operator_profiles rows globally.
         const { data, error } = await supabase
-          .from("operator_profiles")
-          .select("user_id")
-          .eq("public_username", u)
-          .maybeSingle();
+          .rpc("check_operator_username_available", { _username: u });
         if (error) throw error;
-        if (!data || data.user_id === currentUserId) {
+        if (data === true) {
           setStatus("available");
           setMessage("Available ✓");
         } else {

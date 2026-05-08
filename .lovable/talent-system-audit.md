@@ -378,3 +378,48 @@ Re-ran Supabase linter after each migration. Outstanding issues are all WARN lev
 - [x] Pass B migration: safe view + audited message-body RPC + business-card RPC + drop contact branch from public view
 - [x] Pass C frontend: switch business card to RPC, permission-aware empty states component, robots.txt hardening
 - [x] Re-ran `supabase--linter` after each pass
+
+---
+
+## Re-Audit — 2026-05-08 (Pass D)
+
+Re-ran `pg_policies`, `pg_proc`, and source greps after Pass A–C. Verified:
+- All 14 talent tables now carry `Platform admins can view all <table>` SELECT policies.
+- `op_files_public_profile_read` is scoped to avatar/banner files + `public/` and `gallery/` subfolders, gated on discoverable+published.
+- `op_files_admin_read` storage SELECT exists.
+- `operator_references` collapsed to `op_ref_owner_all` + `op_ref_employer_select` + admin SELECT.
+- `operator_recommendations` has `op_rec_public_select` + `op_rec_employer_select` + admin SELECT.
+- `operator_profiles_public` view masks contact/salary unless owner; verified-employer branch removed.
+- `get_public_operator_business_card`, `get_talent_message_body`, `talent_contact_requests_safe`, `act_as_sessions.purpose` all live.
+- `PublicBusinessCard.tsx` uses the RPC.
+
+### New gaps found in Pass D
+1. **Recruiter search returns nothing** — `useTalent.useTalentSearch` reads `operator_profiles` directly to enumerate `is_discoverable=true` candidates, but `operator_profiles` had no verified-employer SELECT policy (only owner + admin). All recruiter searches silently returned 0 rows.
+   **Fix:** Added `op_profile_employer_select` policy: verified employer can SELECT discoverable rows.
+2. **Username availability check exposed via base table** — `useUsernameAvailability` queried `operator_profiles` directly. With owner-only SELECT, the check was already broken for "is it taken by someone else". Worse, the previous broad public read on related views could have leaked username→user_id mapping.
+   **Fix:** New SECURITY DEFINER RPC `check_operator_username_available(_username)` returns boolean only.
+3. **Reply bodies not audit-logged** — `get_talent_message_body` audited request bodies, but admin reads of `talent_message_replies.body` were unaudited.
+   **Fix:** New SECURITY DEFINER RPC `get_talent_reply_body(_reply_id)` mirrors the audit pattern (admin non-party reads write `data_access_logs`).
+
+### Verified safe / no action needed
+- `issue-certificate` edge function uses caller's auth header for the user client — RLS already prevents cross-org cert issuance for non-admin callers.
+- `operator_profiles_public_view` continues to NULL out contact/salary; intentional.
+- `talent_message_replies` SELECT policy correctly chains through `talent_contact_requests` for both parties.
+- `org_messages` retains intra-org connection check; admin SELECT in place.
+
+### Files changed in Pass D
+- Migration: `op_profile_employer_select`, `check_operator_username_available()`, `get_talent_reply_body()`.
+- `src/hooks/useUsernameAvailability.ts` — switched to RPC.
+
+### Outstanding (deferred — non-blocking)
+- `useTalent.useTalentSearch` could move to a single SECURITY DEFINER RPC (cleaner & cheaper than 3-table join + N+1). Tracked but not required for security posture.
+- `operator_profiles_public_view` is now redundant with `operator_profiles_public`; consolidate in a future cleanup.
+
+### Linter
+Re-ran `supabase--linter` after Pass D migration. Only WARN-level pre-existing findings remain (public bucket listing on already-public buckets; SECURITY DEFINER public-execute on intentionally-anon RPCs). No new ERROR-level issues introduced.
+
+### Status
+- [x] Pass A — RLS + storage hardening
+- [x] Pass B — Safe views + audited RPCs
+- [x] Pass C — Frontend + SEO + audit UX
+- [x] Pass D — Re-audit gap fixes (recruiter search policy, username RPC, reply body audit)

@@ -13139,6 +13139,10 @@ export type Database = {
         Args: { _increment?: number; _limit_key: string; _org_id: string }
         Returns: boolean
       }
+      check_operator_username_available: {
+        Args: { _username: string }
+        Returns: boolean
+      }
       clone_gca_bank_to_org: {
         Args: {
           _organization_id: string
@@ -13373,6 +13377,17 @@ export type Database = {
           organization_id: string
           sender_user_id: string
           subject: string
+        }[]
+      }
+      get_talent_reply_body: {
+        Args: { _reply_id: string }
+        Returns: {
+          body: string
+          created_at: string
+          id: string
+          request_id: string
+          sender_role: string
+          sender_user_id: string
         }[]
       }
       get_user_org_id: { Args: { _user_id: string }; Returns: string }
