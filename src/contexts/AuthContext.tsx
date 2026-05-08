@@ -120,6 +120,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, [logActivity]);
 
+  // F-7: Periodic session heartbeat — detects revoked/deleted users between token refreshes.
+  // Runs every 5 minutes and on tab visibility change. On 401/invalid, force sign-out.
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+
+    const checkSession = async () => {
+      try {
+        const { data, error } = await supabase.auth.getUser();
+        if (cancelled) return;
+        if (error || !data?.user) {
+          console.warn("Session heartbeat: user no longer valid, signing out", error);
+          setUser(null);
+          setSession(null);
+          setProfile(null);
+          await supabase.auth.signOut({ scope: "local" }).catch(() => {});
+        }
+      } catch (e) {
+        console.warn("Session heartbeat failed (network):", e);
+      }
+    };
+
+    const interval = setInterval(checkSession, 5 * 60 * 1000);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void checkSession();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [user]);
+
   const signUp = async (email: string, password: string, displayName: string) => {
     const redirectUrl = `${window.location.origin}/setup?verified=1`;
     

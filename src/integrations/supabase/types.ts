@@ -5418,6 +5418,13 @@ export type Database = {
             referencedRelation: "oap_certificates"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "oap_certificate_items_certificate_id_fkey"
+            columns: ["certificate_id"]
+            isOneToOne: false
+            referencedRelation: "oap_certificates_effective"
+            referencedColumns: ["id"]
+          },
         ]
       }
       oap_certificates: {
@@ -12510,6 +12517,135 @@ export type Database = {
           },
         ]
       }
+      oap_certificates_effective: {
+        Row: {
+          acting_via_user_id: string | null
+          amount_cents: number | null
+          cert_id: string | null
+          created_at: string | null
+          effective_status: string | null
+          id: string | null
+          issued_at: string | null
+          organization_id: string | null
+          pdf_url: string | null
+          program_name: string | null
+          qr_token: string | null
+          recipient_email: string | null
+          recipient_name: string | null
+          recipient_username: string | null
+          revoked_at: string | null
+          revoked_reason: string | null
+          role_program_id: string | null
+          signed_by_name: string | null
+          signed_by_signature_url: string | null
+          signed_by_title: string | null
+          signed_by_user_id: string | null
+          status: string | null
+          stripe_session_id: string | null
+          updated_at: string | null
+          user_id: string | null
+          valid_from: string | null
+          valid_until: string | null
+          vertical: Database["public"]["Enums"]["oap_vertical"] | null
+        }
+        Insert: {
+          acting_via_user_id?: string | null
+          amount_cents?: number | null
+          cert_id?: string | null
+          created_at?: string | null
+          effective_status?: never
+          id?: string | null
+          issued_at?: string | null
+          organization_id?: string | null
+          pdf_url?: string | null
+          program_name?: string | null
+          qr_token?: string | null
+          recipient_email?: string | null
+          recipient_name?: string | null
+          recipient_username?: string | null
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          role_program_id?: string | null
+          signed_by_name?: string | null
+          signed_by_signature_url?: string | null
+          signed_by_title?: string | null
+          signed_by_user_id?: string | null
+          status?: string | null
+          stripe_session_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          valid_from?: string | null
+          valid_until?: string | null
+          vertical?: Database["public"]["Enums"]["oap_vertical"] | null
+        }
+        Update: {
+          acting_via_user_id?: string | null
+          amount_cents?: number | null
+          cert_id?: string | null
+          created_at?: string | null
+          effective_status?: never
+          id?: string | null
+          issued_at?: string | null
+          organization_id?: string | null
+          pdf_url?: string | null
+          program_name?: string | null
+          qr_token?: string | null
+          recipient_email?: string | null
+          recipient_name?: string | null
+          recipient_username?: string | null
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          role_program_id?: string | null
+          signed_by_name?: string | null
+          signed_by_signature_url?: string | null
+          signed_by_title?: string | null
+          signed_by_user_id?: string | null
+          status?: string | null
+          stripe_session_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          valid_from?: string | null
+          valid_until?: string | null
+          vertical?: Database["public"]["Enums"]["oap_vertical"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oap_certificates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "oap_certificates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oap_certificates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oap_certificates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oap_certificates_role_program_id_fkey"
+            columns: ["role_program_id"]
+            isOneToOne: false
+            referencedRelation: "oap_role_programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       oap_quiz_questions_admin: {
         Row: {
           choices: Json | null
@@ -13145,6 +13281,10 @@ export type Database = {
       }
     }
     Functions: {
+      admin_get_user_pipeline_summary: {
+        Args: { _user_id: string }
+        Returns: Json
+      }
       apply_ncr_disposition: {
         Args: { _approver_id: string; _ncr_id: string }
         Returns: undefined
@@ -13677,6 +13817,7 @@ export type Database = {
           recipient_name: string
         }[]
       }
+      mark_onboarding_complete: { Args: { _path: string }; Returns: Json }
       pass_work_order_to_next_step: {
         Args: {
           _actor_id: string
@@ -13734,6 +13875,8 @@ export type Database = {
         }
         Returns: string
       }
+      resolve_post_login_destination: { Args: never; Returns: Json }
+      sweep_expired_oap_certificates: { Args: never; Returns: number }
       users_are_connected: {
         Args: { _a: string; _b: string; _org_id: string }
         Returns: boolean

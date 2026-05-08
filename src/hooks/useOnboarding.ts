@@ -24,6 +24,16 @@ function writeWelcomeSeenFallback(userId: string, value: boolean) {
   window.localStorage.removeItem(key);
 }
 
+async function resolveOnboardingPath(userId: string): Promise<'org' | 'talent'> {
+  const { data: orgRow } = await supabase
+    .from('organization_members')
+    .select('organization_id')
+    .eq('user_id', userId)
+    .limit(1)
+    .maybeSingle();
+  return orgRow ? 'org' : 'talent';
+}
+
 export type OnboardingStep = 
   | 'welcome'
   | 'organization-setup'
@@ -150,72 +160,53 @@ export function useOnboarding() {
     if (!user) return;
 
     const newCompletedSteps = [...new Set([...state.completedSteps, stepId])];
-    
-    // Find the next incomplete core step, or mark complete
     const coreStepIds = CORE_STEPS.map(s => s.id);
     const nextCoreStep = coreStepIds.find(id => !newCompletedSteps.includes(id));
     const nextStep: OnboardingStep = nextCoreStep || 'complete';
     const isComplete = !nextCoreStep;
 
-    // Save snapshot for rollback
     const prevState = { ...state };
+    setState(prev => ({ ...prev, completedSteps: newCompletedSteps, currentStep: nextStep, isComplete }));
 
-    // Optimistic update
-    setState(prev => ({
-      ...prev,
-      completedSteps: newCompletedSteps,
-      currentStep: nextStep,
-      isComplete,
-    }));
-
-    const { error } = await supabase
-      .from('user_onboarding')
-      .update({
+    // F-1: completion via SECURITY DEFINER RPC; step-progress without completion via direct update
+    if (isComplete) {
+      const path: 'org' | 'talent' = await resolveOnboardingPath(user.id);
+      const { error } = await supabase.rpc('mark_onboarding_complete', { _path: path });
+      if (error) {
+        console.error('mark_onboarding_complete failed:', error);
+        setState(prev => ({ ...prev, completedSteps: prevState.completedSteps, currentStep: prevState.currentStep, isComplete: prevState.isComplete }));
+        toast.error(error.message || 'Failed to complete onboarding.');
+        return;
+      }
+      // Persist step list (allowed by trigger)
+      await supabase.from('user_onboarding').update({ completed_steps: newCompletedSteps, current_step: 'complete' }).eq('user_id', user.id);
+    } else {
+      const { error } = await supabase.from('user_onboarding').update({
         completed_steps: newCompletedSteps,
         current_step: nextStep,
-        is_complete: isComplete,
-        completed_at: isComplete ? new Date().toISOString() : null,
-      })
-      .eq('user_id', user.id);
-
-    if (error) {
-      console.error('Error updating onboarding:', error);
-      // Rollback on failure
-      setState(prev => ({
-        ...prev,
-        completedSteps: prevState.completedSteps,
-        currentStep: prevState.currentStep,
-        isComplete: prevState.isComplete,
-      }));
-      toast.error('Failed to save progress. Please try again.');
+      }).eq('user_id', user.id);
+      if (error) {
+        console.error('Error updating onboarding:', error);
+        setState(prev => ({ ...prev, completedSteps: prevState.completedSteps, currentStep: prevState.currentStep, isComplete: prevState.isComplete }));
+        toast.error('Failed to save progress. Please try again.');
+      }
     }
   }, [state, user]);
 
   const skipOnboarding = useCallback(async () => {
     if (!user) return;
-
     const prevState = { ...state };
     writeWelcomeSeenFallback(user.id, true);
     setState(prev => ({ ...prev, isComplete: true, currentStep: 'complete' }));
     setShowTour(false);
 
-    const { error } = await supabase
-      .from('user_onboarding')
-      .update({
-        is_complete: true,
-        current_step: 'complete',
-        completed_at: new Date().toISOString(),
-      })
-      .eq('user_id', user.id);
-
+    // F-1: server-side validated completion
+    const path: 'org' | 'talent' = await resolveOnboardingPath(user.id);
+    const { error } = await supabase.rpc('mark_onboarding_complete', { _path: path });
     if (error) {
       console.error('Error skipping onboarding:', error);
-      setState(prev => ({
-        ...prev,
-        isComplete: prevState.isComplete,
-        currentStep: prevState.currentStep,
-      }));
-      toast.error('Saved locally. Cloud sync will retry later.');
+      setState(prev => ({ ...prev, isComplete: prevState.isComplete, currentStep: prevState.currentStep }));
+      toast.error(error.message || 'Cannot complete onboarding yet — finish required setup first.');
     }
   }, [user, state]);
 

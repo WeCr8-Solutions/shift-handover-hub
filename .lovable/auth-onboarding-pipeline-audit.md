@@ -194,3 +194,30 @@ Awaiting approval to execute remediation in passes:
 - **Pass A** (ERROR): F-1, F-2, F-3, F-5, F-7, F-9, F-12, F-14, F-15, F-17, F-19
 - **Pass B** (WARN): F-4, F-6, F-8, F-10, F-13, F-16, F-18, F-20
 - **Pass C** (INFO + cleanup): F-11, F-21
+
+---
+
+## Pass A Remediation Log (2026-05-08)
+
+**Migration `20260508_pass_a_auth_onboarding`:**
+- `mark_onboarding_complete(_path text)` SECURITY DEFINER RPC — verifies org membership (path='org') or operator profile (path='talent') before completion
+- `guard_user_onboarding_completion` BEFORE UPDATE trigger on `user_onboarding` — blocks direct client toggling of `is_complete`/`completed_at`; only the RPC may set them (via session flag `app.via_onboarding_rpc`)
+- `resolve_post_login_destination()` SECURITY DEFINER STABLE RPC — returns `{destination, has_org, org_id, org_role, has_talent, onboarding_complete, plan}`
+- `enforce_employer_entitlement` BEFORE INSERT trigger applied to `job_postings`, `talent_saved_lists`, `talent_contact_requests` — rejects writes when org plan is free/null (platform admins exempt)
+- `enforce_recert_actor_and_log` extended — recorder must be owner/admin/supervisor of the operator's organization (platform admins exempt)
+- `oap_certificates_effective` view (security_invoker) exposes server-computed `effective_status` (revoked/suspended/expired/valid)
+- `sweep_expired_oap_certificates()` admin/service-role function flips `active → expired` when `valid_until < CURRENT_DATE`
+- `admin_get_user_pipeline_summary(_user_id uuid)` SECURITY DEFINER RPC — platform-admin-only consolidated view (onboarding, orgs+plans, talent profile, GCA cert counts by bank, OAP cert counts by effective status, user_roles); writes audit row to `data_access_logs`
+
+**Frontend changes:**
+- `src/contexts/AuthContext.tsx` — added 5-min + visibilitychange `auth.getUser()` heartbeat; force-signout on revoked session (F-7)
+- `src/pages/Auth.tsx` — replaced inline `user_onboarding` query with `resolve_post_login_destination` RPC; added `?redirect=` allowlist regex (F-2/F-8)
+- `src/pages/Index.tsx` — talent redirect now waits for `orgLoading=false` before triggering (F-5)
+- `src/hooks/useOnboarding.ts` — `completeStep` (when isComplete) and `skipOnboarding` now route through `mark_onboarding_complete` RPC; helper `resolveOnboardingPath` infers path from org membership (F-1)
+- `src/components/auth/RouteGuards.tsx` — new `RequireAuth`, `RequireOrg`, `RequireRole`, `RequireSubscription` HOCs with shared Forbidden/Loading panes (F-9)
+- `src/App.tsx` — wrapped `/dashboard`, `/teams`, `/admin`, `/testing`, `/queue`, `/history`, `/quote-history`, `/setup`, `/settings`, `/oap/employer`, `/gca/employer`, `/gca/test/:bankSlug`, `/oap/my-transcript`, `/talent/dashboard`, `/talent/search` with appropriate guards
+- `src/pages/GcaTestPage.tsx` — admin/supervisor paywall-bypass clone of canonical Pro bank now writes `data_access_logs` row with `operation='admin_paywall_bypass_clone'` (F-12)
+
+**Verification:** Supabase linter run after migration — no new ERROR-level findings introduced; all WARNs are pre-existing (per Security Audit Policy memory: ignore non-error warnings).
+
+**Pass B / Pass C:** Deferred to a follow-up turn (defense-in-depth + UX cleanup per audit doc — not started this turn due to time).
