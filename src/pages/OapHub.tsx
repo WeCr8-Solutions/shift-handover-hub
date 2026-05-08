@@ -173,9 +173,17 @@ export default function OapHub() {
             </Card>
           ))}
           {!isLoading && courses.length === 0 && (
-            <p className="text-sm text-muted-foreground col-span-full">
-              No sections published yet — check back soon.
-            </p>
+            <div className="col-span-full">
+              <PermissionAwareEmpty
+                mode={user ? "empty" : "permission"}
+                title={user ? "No published courses yet" : "Sign in to access OAP courses"}
+                description={
+                  user
+                    ? "Check back soon — new sections are published regularly."
+                    : "OAP course content is restricted to signed-in operators."
+                }
+              />
+            </div>
           )}
         </div>
 

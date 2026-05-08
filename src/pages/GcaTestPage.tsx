@@ -21,6 +21,7 @@ import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { useOrgContext } from "@/contexts/OrgContext";
+import { PermissionAwareEmpty } from "@/components/shared/PermissionAwareEmpty";
 
 interface BankMeta {
   id: string;
