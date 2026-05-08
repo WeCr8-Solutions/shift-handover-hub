@@ -80,6 +80,9 @@ export function useCertificates() {
       recipientEmail: null, // intentionally hidden on public verification
       organizationName: row.organization_name ?? null,
       status: row.status as CertificateRecord["status"],
+      effectiveStatus: row.effective_status as CertificateRecord["effectiveStatus"],
+      revokedAt: row.revoked_at ?? null,
+      revokedReason: row.revoked_reason ?? null,
       validFrom: row.valid_from,
       validUntil: row.valid_until,
       issuedAt: row.issued_at,

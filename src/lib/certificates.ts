@@ -50,7 +50,14 @@ export interface CertificateRecord {
   recipientUsername?: string | null;
   recipientEmail: string | null;
   organizationName?: string | null;
-  status: "active" | "revoked" | "expired";
+  status: "active" | "revoked" | "expired" | "suspended";
+  /**
+   * Server-computed normalized status. Always trust this for trust-signal UI;
+   * never re-derive expiry/revocation client-side.
+   */
+  effectiveStatus?: "valid" | "expired" | "revoked" | "suspended";
+  revokedAt?: string | null;
+  revokedReason?: string | null;
   validFrom: string; // ISO date
   validUntil: string | null; // ISO date or null = lifetime
   issuedAt: string;
