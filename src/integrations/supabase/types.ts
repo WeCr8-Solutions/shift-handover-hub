@@ -12259,6 +12259,74 @@ export type Database = {
           },
         ]
       }
+      certifying_mentors_safe: {
+        Row: {
+          approval_status: string | null
+          id: string | null
+          is_active: boolean | null
+          organization_id: string | null
+          programs: string[] | null
+          scope: string | null
+          signature_url: string | null
+          title: string | null
+          user_id: string | null
+          user_name: string | null
+        }
+        Insert: {
+          approval_status?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          organization_id?: string | null
+          programs?: string[] | null
+          scope?: string | null
+          signature_url?: string | null
+          title?: string | null
+          user_id?: string | null
+          user_name?: string | null
+        }
+        Update: {
+          approval_status?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          organization_id?: string | null
+          programs?: string[] | null
+          scope?: string | null
+          signature_url?: string | null
+          title?: string | null
+          user_id?: string | null
+          user_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certifying_mentors_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "certifying_mentors_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "certifying_mentors_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "certifying_mentors_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       erp_connections_safe: {
         Row: {
           api_base_url: string | null
