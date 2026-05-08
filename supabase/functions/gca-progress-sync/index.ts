@@ -71,16 +71,22 @@ serve(async (req) => {
 
     const p: ProgressPayload = progress || {};
 
+    // Defense-in-depth: clamp + sanitize. Untrusted client may inflate streaks/minutes.
+    const isPlainObject = (v: unknown): v is Record<string, unknown> =>
+      typeof v === "object" && v !== null && !Array.isArray(v);
+    const safeStreak = Math.max(0, Math.min(3650, typeof p.streakDays === "number" && Number.isFinite(p.streakDays) ? Math.floor(p.streakDays) : 0));
+    const safeMinutes = Math.max(0, Math.min(10_000_000, typeof p.totalMinutes === "number" && Number.isFinite(p.totalMinutes) ? Math.floor(p.totalMinutes) : 0));
+
     const { error: upsertErr } = await supabase
       .from("gca_progress")
       .upsert(
         {
           user_id: authUid,
-          completed_lessons: p.completedLessons ?? {},
-          test_scores: p.testScores ?? {},
-          milestones: p.milestones ?? {},
-          streak_days: typeof p.streakDays === "number" ? p.streakDays : 0,
-          total_minutes: typeof p.totalMinutes === "number" ? p.totalMinutes : 0,
+          completed_lessons: isPlainObject(p.completedLessons) ? p.completedLessons : {},
+          test_scores: isPlainObject(p.testScores) ? p.testScores : {},
+          milestones: isPlainObject(p.milestones) ? p.milestones : {},
+          streak_days: safeStreak,
+          total_minutes: safeMinutes,
           last_activity_at: new Date().toISOString(),
         },
         { onConflict: "user_id" }
