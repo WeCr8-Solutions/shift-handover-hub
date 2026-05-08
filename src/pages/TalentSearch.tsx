@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Search, MapPin, Linkedin, ShieldCheck, Award, BookmarkPlus, Send, Globe, UserPlus } from "lucide-react";
+import { Search, MapPin, Linkedin, ShieldCheck, Award, BookmarkPlus, Send, UserPlus } from "lucide-react";
 import { useTalentSearch, useSavedLists, useContactRequests, type TalentSearchFilters, type TalentCandidate } from "@/hooks/useTalent";
 import { OnboardCandidateDialog } from "@/components/talent/OnboardCandidateDialog";
 import { useOrgContext } from "@/contexts/OrgContext";

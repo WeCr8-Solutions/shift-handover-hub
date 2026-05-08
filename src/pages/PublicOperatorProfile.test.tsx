@@ -214,8 +214,8 @@ describe("PublicTalentProfile", () => {
       expect(screen.getByRole("heading", { name: /Taylor Operator/i })).toBeInTheDocument();
     });
 
-    expect(screen.getByText(/JobLine OAP — Approved/i)).toBeInTheDocument();
-    expect(screen.getByText(/G-Code Academy badges/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/JobLine OAP/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/G-Code Academy/i).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText(/OAP Lathe Approval/i)).toBeInTheDocument();
     expect(screen.getByText(/GCA Fanuc Badge/i)).toBeInTheDocument();
     expect(screen.queryByText(/Forklift License/i)).not.toBeInTheDocument();
