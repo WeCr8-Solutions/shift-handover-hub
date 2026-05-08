@@ -27,3 +27,13 @@ GHSA-23c5-xmqv-rm74
 # Chain: puppeteer → @puppeteer/browsers → proxy-agent → pac-proxy-agent → get-uri → basic-ftp
 # Never shipped to production. npm audit --omit=dev returns 0 vulnerabilities.
 CVE-2026-44240
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Secrets: suppress JWT false positives
+# ─────────────────────────────────────────────────────────────────────────────
+# jwt-token — Supabase anon key (role=anon, publishable by design).
+# The Supabase anon key is intentionally shipped in the browser bundle and
+# source-controlled in .env / api/ / scripts/. It is NOT a service-role key.
+# Per Supabase docs: "The anon key is safe to use in browser-side code."
+# RLS policies on the database enforce access control; the key itself is public.
+jwt-token
