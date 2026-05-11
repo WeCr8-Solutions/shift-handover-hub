@@ -189,12 +189,12 @@ export default function Setup() {
     );
   }
 
-  // F-4: talent-only user landing on /setup without explicit org-creation intent
-  // Show a chooser so they don't accidentally self-elevate to org_admin.
+  // F-4 + onboarding: show an intent chooser for any user without an organization
+  // who hasn't explicitly opted into org creation. Prevents brand-new talent signups
+  // from being dead-ended in the org wizard with no path to a Talent profile.
   const intentParam = searchParams.get('intent');
   if (
     !loading &&
-    hasTalentProfile &&
     !setupStatus?.hasOrganization &&
     intentParam !== 'create_org'
   ) {
@@ -203,9 +203,11 @@ export default function Setup() {
         <Header />
         <main className="container mx-auto px-4 py-12">
           <div className="max-w-lg mx-auto space-y-6 text-center">
-            <h1 className="text-2xl font-bold">What would you like to do?</h1>
+            <h1 className="text-2xl font-bold">How would you like to use JobLine?</h1>
             <p className="text-muted-foreground text-sm">
-              You already have a talent profile on JobLine. Choose how you'd like to continue.
+              {hasTalentProfile
+                ? "You already have a talent profile on JobLine. Choose how you'd like to continue."
+                : "Pick the path that fits you. You can always add the other later."}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
               <Card
