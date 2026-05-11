@@ -14,10 +14,12 @@ export async function login(page: Page, email: string, password: string) {
     await loginTab.click().catch(() => {});
   }
 
-  const emailInput = page.locator("#login-email");
+  // Auth.tsx now uses a unified form with #email / #password (hidden #login-email
+  // / #login-password are kept for backcompat only). Prefer the visible inputs.
+  const emailInput = page.locator("#email").first();
   await emailInput.waitFor({ state: "visible", timeout: 20_000 });
   await emailInput.fill(email);
-  await page.locator("#login-password").fill(password);
+  await page.locator("#password").first().fill(password);
 
   await Promise.all([
     page.waitForURL((url) => !url.pathname.startsWith("/auth"), {
