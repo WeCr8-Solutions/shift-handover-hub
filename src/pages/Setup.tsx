@@ -212,13 +212,15 @@ export default function Setup() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
               <Card
                 className="cursor-pointer hover:border-primary transition-colors"
-                onClick={() => navigate('/talent/dashboard')}
+                onClick={() => navigate(hasTalentProfile ? '/talent/dashboard' : '/talent/profile')}
               >
                 <CardContent className="pt-6 space-y-2">
                   <UserCircle2 className="w-8 h-8 text-primary" />
-                  <CardTitle className="text-base">Continue as Talent</CardTitle>
+                  <CardTitle className="text-base">{hasTalentProfile ? 'Continue as Talent' : "I'm an Operator (Talent Profile)"}</CardTitle>
                   <CardDescription>
-                    View your operator profile, certifications, and job opportunities.
+                    {hasTalentProfile
+                      ? 'View your operator profile, certifications, and job opportunities.'
+                      : 'Create a public-facing operator profile to showcase your skills and certifications to employers.'}
                   </CardDescription>
                 </CardContent>
               </Card>
