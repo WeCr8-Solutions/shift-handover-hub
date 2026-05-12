@@ -2,15 +2,25 @@ import { mkdirSync, appendFileSync, writeFileSync, existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
 /**
- * GapReport — a tiny JSON-lines logger so smoke tests can record every
- * missing UI element, broken state transition, or assertion failure
- * without aborting the run. The file is consumable by CI / other tools.
+ * GapReport — JSON-lines logger so smoke tests can record every missing UI
+ * element, broken state transition, perf miss, or assertion failure without
+ * aborting the run.
  *
- * Output: e2e-gap-report.json (array of records) + e2e-gap-report.ndjson (stream)
- *
+ * Output: e2e-gap-report.json (array) + e2e-gap-report.ndjson (stream)
  * Override path with E2E_GAP_REPORT_PATH.
  */
 export type GapSeverity = "info" | "warn" | "error";
+
+export type GapCategory =
+  | "dead_end"
+  | "perf"
+  | "rls"
+  | "missing_ui"
+  | "routing"
+  | "notification"
+  | "data"
+  | "auth"
+  | "other";
 
 export interface GapEntry {
   ts: string;
@@ -19,8 +29,16 @@ export interface GapEntry {
   severity: GapSeverity;
   message: string;
   scenario?: string;
+  category?: GapCategory;
   selector?: string;
   url?: string;
+  role?: string;
+  pathway?: string;
+  /** Free-form hint to help an agent locate the broken file/component. */
+  repairHint?: string;
+  /** Numeric perf miss when category=perf */
+  elapsedMs?: number;
+  budgetMs?: number;
   meta?: Record<string, unknown>;
 }
 
@@ -36,7 +54,6 @@ const buffer: GapEntry[] = [];
 function init() {
   if (initialized) return;
   mkdirSync(dirname(NDJSON_PATH), { recursive: true });
-  // Reset stream file each run; preserve aggregate JSON across resumes.
   writeFileSync(NDJSON_PATH, "");
   if (!existsSync(JSON_PATH)) writeFileSync(JSON_PATH, "[]");
   initialized = true;
@@ -44,13 +61,18 @@ function init() {
 
 export function recordGap(entry: Omit<GapEntry, "ts">) {
   init();
-  const full: GapEntry = { ts: new Date().toISOString(), ...entry };
+  const full: GapEntry = {
+    ts: new Date().toISOString(),
+    category: entry.category ?? "other",
+    ...entry,
+  };
   buffer.push(full);
   appendFileSync(NDJSON_PATH, JSON.stringify(full) + "\n");
-  // Mirror to console for live visibility.
   const tag = full.severity.toUpperCase();
   // eslint-disable-next-line no-console
-  console.log(`[GAP:${tag}] ${full.spec} › ${full.step}: ${full.message}`);
+  console.log(
+    `[GAP:${tag}] ${full.spec} › ${full.step} [${full.category}]: ${full.message}`,
+  );
 }
 
 export function flushGapReport() {
