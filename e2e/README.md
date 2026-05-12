@@ -11,6 +11,26 @@ Three suites simulating real shop usage against a deterministic seeded fixture:
 
 Plus existing `gca.spec.ts`, `oap.spec.ts`, and `status.spec.ts`.
 
+### Smoke matrix (modular, role × pathway)
+
+`smoke-matrix.spec.ts` runs a configurable grid of roles × pathways using
+the modular flow helpers in `e2e/flows/`. Every cell records gaps to
+`e2e-gap-report.json` and never breaks CI on missing UI — instead the
+`smoke:repair-queue` script emits `.lovable/smoke-repair-queue.md`, a
+checklist the Lovable agent can pick up to repair dead-ends quickly.
+
+```bash
+E2E_SEED_SECRET=<token> \
+E2E_SMOKE_ROLES=operator,supervisor,org_admin \
+E2E_SMOKE_PATHWAYS=nav,wo,handoff,ncr,quarantine,notifications,routing,talent,billing,admin \
+bun test:smoke:matrix
+
+bun smoke:repair-queue   # → .lovable/smoke-repair-queue.md
+```
+
+See `.lovable/smoke-matrix-spec.md` for the full pathway/role/scenario table
+and perf budgets.
+
 ## Portable smoke test (use anywhere)
 
 The `smoke-wo-handoff.spec.ts` spec is a self-contained smoke runner that

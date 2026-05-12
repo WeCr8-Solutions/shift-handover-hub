@@ -23,7 +23,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "test:smoke:matrix": "playwright test e2e/smoke-matrix.spec.ts",
+    "smoke:repair-queue": "node scripts/gap-report-to-tasks.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
