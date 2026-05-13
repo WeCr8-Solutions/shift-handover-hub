@@ -68,8 +68,12 @@ echo ""
 # Drop the target arg ($1) so it isn't re-passed to playwright as a test filter
 shift || true
 
-# Run the full matrix with serial workers (shared seed context)
-exec npx playwright test "$SCRIPT_DIR/../e2e/smoke-matrix.spec.ts" \
+# SUITES env var lets you pick which spec(s) to run. Default = smoke + usability.
+SUITES="${SUITES:-e2e/smoke-matrix.spec.ts e2e/usability-matrix.spec.ts}"
+
+# Run the chosen suites with serial workers (shared seed context)
+# shellcheck disable=SC2086
+exec npx playwright test $SUITES \
   --workers="${WORKERS:-1}" \
   --reporter=line \
   "$@"
