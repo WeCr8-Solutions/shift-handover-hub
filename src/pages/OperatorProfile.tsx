@@ -1073,8 +1073,15 @@ export default function OperatorProfile() {
                     </Button>
                     {profile?.resume_pdf_url && (
                       <>
-                        <Button variant="outline" size="sm" asChild>
-                          <a href={profile.resume_pdf_url} target="_blank" rel="noopener noreferrer">View resume</a>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={async () => {
+                            const fresh = await getOperatorProfileSignedUrl(profile.resume_pdf_url!, 60 * 10);
+                            window.open(fresh ?? profile.resume_pdf_url!, "_blank", "noopener,noreferrer");
+                          }}
+                        >
+                          View resume
                         </Button>
                         <Button variant="outline" size="sm" onClick={handleRemoveResume} disabled={autofilling || building}>
                           Remove resume
