@@ -1,13 +1,13 @@
 [
   {
-    "ts": "2026-05-13T20:13:42.949Z",
+    "ts": "2026-05-13T20:16:34.347Z",
     "category": "auth",
     "spec": "smoke-matrix",
-    "scenario": "wo_routed",
-    "role": "supervisor",
-    "pathway": "notifications",
+    "scenario": "wo_basic",
+    "role": "operator",
+    "pathway": "nav",
     "step": "login",
     "severity": "error",
-    "message": "Login failed: locator.fill: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#password').first()\u001b[22m\n"
+    "message": "Login failed: locator.fill: Test timeout of 120000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#password').first()\u001b[22m\n"
   }
 ]
