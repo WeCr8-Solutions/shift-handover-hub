@@ -55,12 +55,40 @@ See `e2e/helpers/perfBudget.ts → BUDGETS`. Misses log a `warn` gap with
 
 ## Run locally
 
+Use the **published** URL (`https://joblineai.lovable.app`) — never the
+`id-preview--*.lovable.app` URL, which sits behind the Lovable account gate
+and cannot be authenticated by Playwright. The `app.jobline.ai` custom
+domain is *not* wired for the auth flow; the canonical entry point is
+`https://jobline.ai/auth` (or `joblineai.lovable.app/auth`).
+
 ```bash
-E2E_BASE_URL=https://id-preview--059e6965-215c-439a-949e-fcc8a2e6d939.lovable.app \
+CHROMIUM_BIN=/bin/chromium \
+E2E_BASE_URL=https://joblineai.lovable.app \
 E2E_SEED_SECRET=<token> \
 E2E_SMOKE_ROLES=operator,supervisor,org_admin \
 E2E_SMOKE_PATHWAYS=nav,wo,handoff,ncr,notifications \
-bunx playwright test e2e/smoke-matrix.spec.ts
+bunx playwright test e2e/smoke-matrix.spec.ts --workers=1
 
 bun smoke:repair-queue
 ```
+
+The matrix is configured `mode: serial, timeout: 120_000` so cells share a
+single browser context and don't stampede the seed-e2e edge function.
+
+## Known infra gap (non-blocking)
+
+The matrix currently records `auth/login` gaps when the seeded
+`admin-e2e@jobline.test` / `operator-e2e@jobline.test` users cannot reach
+the dashboard within 30s of submitting the form. This is *not* an app bug;
+it indicates one of:
+
+1. `E2E_ADMIN_PASSWORD` / `E2E_OPERATOR_PASSWORD` not configured on the
+   `seed-e2e` edge function for the target environment.
+2. CAPTCHA / rate-limiter active on the published auth endpoint.
+3. The `resolve_post_login_destination` RPC returning `/auth` because the
+   seeded user has neither an org membership nor a talent profile in that
+   environment.
+
+Until the infra is wired, treat login gaps as informational. Real
+pathway coverage runs locally via `bun test:e2e` against the dev server.
+

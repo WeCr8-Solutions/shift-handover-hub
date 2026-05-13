@@ -6,7 +6,7 @@
  * of the marketing homepage.
  *
  * - jobline.ai / www.jobline.ai → / (marketing home, no rewrite)
- * - app.jobline.ai              → / (placeholder; app shell not bound yet)
+ * - app.jobline.ai              → /auth  (canonical app entry — sign in / sign up)
  * - dev.jobline.ai              → /dev   (Developer Portal)
  * - docs.jobline.ai             → /help  (Help Center / Docs)
  * - status.jobline.ai           → external UptimeRobot status page; if it ever lands here, send to /updates
@@ -28,7 +28,7 @@ const HOST_MAP: Record<string, SubdomainTarget> = {
     defaultPath: "/updates",
     externalUrl: "https://stats.uptimerobot.com/Ac1v7E00v2",
   },
-  "app.jobline.ai": { defaultPath: "/" },
+  "app.jobline.ai": { defaultPath: "/auth" },
 };
 
 export function applySubdomainRouting(): void {
