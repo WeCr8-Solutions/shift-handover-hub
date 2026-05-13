@@ -81,8 +81,7 @@ export function instrumentPage(page: Page, ctx: InstrumentCtx) {
     if (isNoise(url)) return;
     if (req.resourceType() === "image" || req.resourceType() === "font") return;
     const errText = req.failure()?.errorText ?? "failed";
-    // Aborted in-flight requests on navigation/unmount are normal — skip.
-    if (/ERR_ABORTED|NS_BINDING_ABORTED|net::ERR_ABORTED/i.test(errText)) return;
+    if (NETWORK_ABORT_PATTERNS.some((re) => re.test(errText))) return;
     recordGap({
       ...ctx,
       step: "requestfailed",
