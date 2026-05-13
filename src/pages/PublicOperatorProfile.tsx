@@ -27,6 +27,7 @@ import type { ServiceItem, GalleryItem, TestimonialItem, BusinessHours } from "@
 import { withJoblineUtm } from "@/lib/talent/outboundLinks";
 import { getSocialHref, openSocialLink } from "@/lib/talent/socialDeepLinks";
 import { getPublicTalentUrl } from "@/lib/talent/publicHost";
+import { getOperatorProfileSignedUrl } from "@/lib/operatorProfileFiles";
 import { formatDateRange } from "@/lib/talent/format";
 import { CertificateThumbnail, type CertCategory } from "@/components/certificates/CertificateThumbnail";
 import "@/styles/print-talent.css";
@@ -154,6 +155,7 @@ export default function PublicTalentProfile() {
   const [education, setEducation] = useState<EducationRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [resumeUrl, setResumeUrl] = useState<string | null>(null);
   const [miniSite, setMiniSite] = useState<{
     services: ServiceItem[];
     gallery: GalleryItem[];
@@ -192,6 +194,15 @@ export default function PublicTalentProfile() {
         return;
       }
       setProfile(row);
+      // Mint a fresh signed URL for the resume — relying on the cached value
+      // would break after 7 days. Storage RLS gates this on resume_public.
+      if (row.resume_pdf_url && row.resume_public) {
+        getOperatorProfileSignedUrl(row.resume_pdf_url).then((u) => {
+          if (!cancelled) setResumeUrl(u);
+        });
+      } else {
+        setResumeUrl(null);
+      }
       setCerts(bundle?.certs ?? []);
       setSkills(bundle?.skills ?? []);
       setMachines(bundle?.machines ?? []);
@@ -457,12 +468,13 @@ export default function PublicTalentProfile() {
                         {profile.github_url && show("github") && (
                           <SocialLink href={profile.github_url} icon={Github} label="GitHub" />
                         )}
-                        {profile.resume_pdf_url && profile.resume_public === true && (
+                        {resumeUrl && profile.resume_public === true && (
                           <a
-                            href={profile.resume_pdf_url}
+                            href={resumeUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+                            data-testid="public-resume-link"
                           >
                             <FileText className="w-4 h-4" /> Resume
                           </a>

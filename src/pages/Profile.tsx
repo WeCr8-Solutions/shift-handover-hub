@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Loader2, Save, Building2, Users, Shield, Briefcase, Sparkles, ExternalLink, Globe, Lock, ShieldCheck, ArrowRight, UserCircle2 } from "lucide-react";
+import { Loader2, Save, Building2, Users, Shield, Briefcase, Sparkles, ExternalLink, Globe, Lock, ShieldCheck, ArrowRight, UserCircle2, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { OnboardingProgress } from "@/components/onboarding";
 import { useOrgContext } from "@/contexts/OrgContext";
@@ -319,9 +319,20 @@ export default function Profile() {
                         Showcase verified certs, machines, and experience. Upload a resume for instant autofill.
                       </p>
                     </div>
-                    <Button onClick={() => navigate("/talent/profile")} size="sm" className="gap-2">
-                      <Sparkles className="w-4 h-4" /> Build Talent Profile
-                    </Button>
+                    <div className="flex flex-wrap justify-center gap-2">
+                      <Button onClick={() => navigate("/operator/profile")} size="sm" className="gap-2">
+                        <Sparkles className="w-4 h-4" /> Build Talent Profile
+                      </Button>
+                      <Button
+                        onClick={() => navigate("/operator/profile?tab=resume")}
+                        size="sm"
+                        variant="outline"
+                        className="gap-2"
+                        data-testid="profile-upload-resume"
+                      >
+                        <FileText className="w-4 h-4" /> Upload Resume
+                      </Button>
+                    </div>
                   </div>
                 ) : (
                   <>
@@ -369,7 +380,16 @@ export default function Profile() {
                       <Button onClick={() => navigate("/talent/dashboard")} size="sm" variant="default" className="gap-2">
                         Talent Dashboard <ArrowRight className="w-4 h-4" />
                       </Button>
-                      <Button onClick={() => navigate("/talent/profile")} size="sm" variant="outline" className="gap-2">
+                      <Button
+                        onClick={() => navigate("/operator/profile?tab=resume")}
+                        size="sm"
+                        variant="outline"
+                        className="gap-2"
+                        data-testid="profile-upload-resume"
+                      >
+                        <FileText className="w-4 h-4" /> Resume
+                      </Button>
+                      <Button onClick={() => navigate("/operator/profile")} size="sm" variant="outline" className="gap-2">
                         Edit Profile
                       </Button>
                       {publicUrl && (
