@@ -163,37 +163,41 @@ for (const vp of VIEWPORTS) {
         }
 
         // Mobile-only: top-level CTAs / nav must be reachable.
+        // We accept ANY of: hamburger toggle, visible nav links, or a primary CTA.
         if (vp.name === "mobile") {
           const hasMenu = await page
             .locator(
               'button[aria-label*="menu" i], [data-testid="mobile-menu"], button:has(svg.lucide-menu)',
             )
             .first()
-            .isVisible({ timeout: 2000 })
+            .isVisible({ timeout: 1500 })
             .catch(() => false);
-          const hasInteractive = await page
-            .locator('a, button')
+          const visibleNavLinks = await page
+            .locator('nav a:visible, header a:visible')
+            .count()
+            .catch(() => 0);
+          const hasPrimaryCTA = await page
+            .locator('a[href="/auth"]:visible, a[href*="dashboard"]:visible, button:visible')
             .first()
-            .isVisible()
+            .isVisible({ timeout: 1000 })
             .catch(() => false);
-          if (!hasMenu && !hasInteractive) {
+          if (!hasMenu && visibleNavLinks === 0 && !hasPrimaryCTA) {
             recordGap({
               ...ctx,
               step: `mobile ${route}`,
               severity: "warn",
               category: "missing_ui",
-              message: "No mobile menu or interactive element visible",
+              message: "No mobile menu, visible nav links, or CTA",
               url: page.url(),
-              repairHint: "Verify Header renders mobile hamburger menu.",
+              repairHint: "Verify Header renders mobile hamburger menu or inline nav.",
             });
           }
         }
 
-        // Test internal-link sanity: at least 1 nav link present on most public pages.
+        // Internal-link sanity: at least 1 nav link present on most public pages.
         if (route !== "/auth") {
           const navLinks = await page
-            .locator('nav a, header a')
-            .count()
+            .locator('nav a, header a, [role="navigation"] a').count()
             .catch(() => 0);
           if (navLinks === 0) {
             recordGap({
