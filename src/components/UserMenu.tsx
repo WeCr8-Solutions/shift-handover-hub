@@ -60,9 +60,13 @@ export function UserMenu() {
           <User className="mr-2 h-4 w-4" />
           <span>Profile</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate("/talent/profile")}>
+        <DropdownMenuItem onClick={() => navigate("/operator/profile")}>
           <IdCard className="mr-2 h-4 w-4" />
           <span>Talent Profile</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => navigate("/operator/profile?tab=resume")} data-testid="usermenu-resume">
+          <FileText className="mr-2 h-4 w-4" />
+          <span>Resume / Upload</span>
         </DropdownMenuItem>
         {hasTalentProfile && (
           <DropdownMenuItem onClick={() => navigate("/talent/dashboard")}>
