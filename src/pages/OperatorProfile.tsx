@@ -24,6 +24,7 @@ import { getPublicTalentUrl } from "@/lib/talent/publicHost";
 import { buildResumePdf } from "@/lib/talent/resumeBuilder";
 import { FilePicker } from "@/components/operator/FilePicker";
 import { useResumeVersions } from "@/hooks/useResumeVersions";
+import { getOperatorProfileSignedUrl } from "@/lib/operatorProfileFiles";
 
 
 const PROFICIENCY_LEVELS = ["beginner", "intermediate", "advanced", "expert"] as const;
