@@ -36,6 +36,10 @@ const NOISE_PATTERNS: RegExp[] = [
   /TypeError: Failed to fetch/i,
   /AbortError|signal is aborted|The user aborted a request/i,
   /ResizeObserver loop (limit exceeded|completed with undelivered notifications)/i,
+  /404 Error: User attempted to access non-existent route/i,
+  /React does not recognize the .* prop on a DOM element/i,
+  /React Router Future Flag Warning/i,
+  /Missing `Description` or `aria-describedby/i,
 ];
 
 const NETWORK_ABORT_PATTERNS: RegExp[] = [
