@@ -18,13 +18,14 @@ export type Pathway =
   | "oap"
   | "talent"
   | "billing"
-  | "admin";
+  | "admin"
+  | "handoff";
 
 export interface RoleEntry {
   role: Role;
   /** Which seeded user to log in as. */
   loginAs: "operator" | "admin";
-  /** Routes to nav-audit for dead-ends. */
+  /** Routes to nav-audit for dead-ends. Must match real routes mounted in src/App.tsx. */
   navRoutes: string[];
   /** Default scenarios this role exercises. */
   scenarios: SeedScenario[];
@@ -32,6 +33,14 @@ export interface RoleEntry {
   pathways: Pathway[];
 }
 
+/**
+ * IMPORTANT: Every path here MUST be mounted in src/App.tsx. If a route is
+ * removed from the app, remove it here too — the usability matrix asserts
+ * anonymous bounce → /auth, and a missing route renders 404 instead which
+ * fails the assertion.
+ *
+ * Last reconciled with src/App.tsx on 2026-05-13.
+ */
 export const ROLE_MATRIX: Record<Role, RoleEntry> = {
   operator: {
     role: "operator",
@@ -39,14 +48,13 @@ export const ROLE_MATRIX: Record<Role, RoleEntry> = {
     navRoutes: [
       "/dashboard",
       "/queue",
-      "/handoff",
-      "/operator-tools",
+      "/work-orders",
+      "/tools",
       "/oap",
-      "/gca",
-      "/notifications",
+      "/gcode-academy",
     ],
     scenarios: ["wo_basic", "handoff_chain", "ncr_path"],
-    pathways: ["wo", "handoff", "ncr", "notifications", "nav", "gca", "oap"] as Pathway[],
+    pathways: ["wo", "handoff", "ncr", "notifications", "nav", "gca", "oap"],
   },
   supervisor: {
     role: "supervisor",
@@ -56,9 +64,10 @@ export const ROLE_MATRIX: Record<Role, RoleEntry> = {
       "/queue",
       "/work-orders",
       "/work-orders/cancelled",
+      "/work-orders/completed",
+      "/work-orders/on-hold",
       "/teams",
-      "/handoff",
-      "/notifications",
+      "/admin",
     ],
     scenarios: ["wo_routed", "ncr_path"],
     pathways: ["wo", "routing", "ncr", "quarantine", "notifications", "nav"],
@@ -69,10 +78,8 @@ export const ROLE_MATRIX: Record<Role, RoleEntry> = {
     navRoutes: [
       "/dashboard",
       "/settings",
-      "/settings/integrations/native",
       "/teams",
-      "/billing",
-      "/admin/users",
+      "/admin",
     ],
     scenarios: ["wo_basic"],
     pathways: ["nav", "billing", "admin"],
@@ -80,14 +87,14 @@ export const ROLE_MATRIX: Record<Role, RoleEntry> = {
   platform_admin: {
     role: "platform_admin",
     loginAs: "admin",
-    navRoutes: ["/dev", "/admin/users", "/admin/orgs"],
+    navRoutes: ["/dev", "/admin", "/testing"],
     scenarios: ["wo_basic"],
     pathways: ["nav", "admin"],
   },
   talent: {
     role: "talent",
     loginAs: "operator",
-    navRoutes: ["/talent/dashboard", "/talent/profile", "/talent"],
+    navRoutes: ["/talent/dashboard", "/operator/profile", "/talent"],
     scenarios: ["wo_basic"],
     pathways: ["nav", "talent"],
   },

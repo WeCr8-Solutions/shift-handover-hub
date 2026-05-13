@@ -89,6 +89,10 @@ export default function Queue() {
     }
   }, [urlItemId]);
 
+  // Deep-link sentinel: emit a status attribute so E2E + UX can distinguish
+  // "drawer opened" from "item not visible due to RLS/filters".
+  // (Effect runs once items load; no toast spam — the empty drawer is the UX cue.)
+
   const [routingEditorItem, setRoutingEditorItem] = useState<{
     id: string;
     work_order: string;
@@ -243,8 +247,21 @@ export default function Queue() {
   };
 
 
+  const deepLinkState = !urlItemId
+    ? "none"
+    : selectedItem
+      ? "opened"
+      : loading
+        ? "loading"
+        : "not-found";
+
   return (
-    <div className="min-h-screen bg-background">
+    <div
+      className="min-h-screen bg-background"
+      data-testid="queue-page"
+      data-deep-link-state={deepLinkState}
+      data-deep-link-item={urlItemId ?? ""}
+    >
       <Header />
 
       <main className="container mx-auto space-y-6 px-4 py-6">

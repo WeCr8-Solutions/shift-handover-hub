@@ -68,8 +68,9 @@ echo ""
 # Drop the target arg ($1) so it isn't re-passed to playwright as a test filter
 shift || true
 
-# SUITES env var lets you pick which spec(s) to run. Default = smoke + usability.
-SUITES="${SUITES:-e2e/smoke-matrix.spec.ts e2e/usability-matrix.spec.ts}"
+# SUITES env var lets you pick which spec(s) to run.
+# Default = smoke + usability + regression (covers the e2e-failure-report.md fixes).
+SUITES="${SUITES:-e2e/smoke-matrix.spec.ts e2e/usability-matrix.spec.ts e2e/regression.spec.ts}"
 
 # Run the chosen suites with serial workers (shared seed context)
 # shellcheck disable=SC2086

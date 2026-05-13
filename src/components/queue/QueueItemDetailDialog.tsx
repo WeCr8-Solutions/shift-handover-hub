@@ -164,7 +164,12 @@ export function QueueItemDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto flex flex-col">
+      <DialogContent
+        data-testid="wo-drawer"
+        data-wo-id={item.id}
+        data-wo-code={item.work_order ?? ""}
+        className="max-w-2xl max-h-[90vh] overflow-y-auto flex flex-col"
+      >
         <QueueItemHeader
           item={item}
           assignedStation={assignedStation}

@@ -42,6 +42,8 @@ const PUBLIC_ROUTES = (
   .map((s) => s.trim())
   .filter(Boolean);
 
+// Routes here MUST exist in src/App.tsx — anon visits should bounce to /auth,
+// not 404. If you add a guarded route to App.tsx, mirror it here.
 const GUARDED_ROUTES = (
   process.env.E2E_USABILITY_BASE_GUARDED ??
   [
@@ -55,6 +57,9 @@ const GUARDED_ROUTES = (
     "/oap/employer",
     "/gca/employer",
     "/work-orders",
+    "/work-orders/completed",
+    "/work-orders/cancelled",
+    "/work-orders/on-hold",
     "/history",
   ].join(",")
 )

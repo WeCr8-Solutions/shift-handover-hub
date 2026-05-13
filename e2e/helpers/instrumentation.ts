@@ -15,14 +15,33 @@ export interface InstrumentCtx {
  * Filters out known noise: Vite HMR pings, third-party analytics, expected 401s
  * on guard-bouncing routes.
  */
+/**
+ * Console / network noise that we *intentionally* ignore. Each pattern below
+ * has a documented reason — never add a pattern just to silence a real failure.
+ *
+ *  - Vite HMR / dev-server pings — never represent app bugs
+ *  - Third-party analytics — out of our control + blocked by adblockers in CI
+ *  - React DevTools nag message
+ *  - Lovable preview shell `RESET_BLANK_CHECK` postMessage
+ *  - `TypeError: Failed to fetch` — React Query cancels in-flight queries on
+ *    unmount/navigation, surfacing as `pageerror`/console.error noise
+ *  - `AbortError` from fetch + supabase-js (same root cause)
+ */
 const NOISE_PATTERNS: RegExp[] = [
   /vite-ping|@vite\/client|hot-update/i,
-  /googletagmanager|google-analytics|doubleclick|gtag/i,
-  /sentry|posthog|hotjar|fullstory|datadoghq/i,
+  /googletagmanager|google-analytics|doubleclick|gtag|gtm\.js/i,
+  /sentry|posthog|hotjar|fullstory|datadoghq|cdn\.gpteng\.co/i,
   /Download the React DevTools/i,
   /Unknown message type: RESET_BLANK_CHECK/i,
-  // React Query aborts in-flight fetches on navigation — not real failures.
   /TypeError: Failed to fetch/i,
+  /AbortError|signal is aborted|The user aborted a request/i,
+  /ResizeObserver loop (limit exceeded|completed with undelivered notifications)/i,
+];
+
+const NETWORK_ABORT_PATTERNS: RegExp[] = [
+  /ERR_ABORTED|NS_BINDING_ABORTED|net::ERR_ABORTED/i,
+  /ERR_CANCELED|NS_BINDING_CANCELED/i,
+  /signal is aborted/i,
 ];
 
 function isNoise(text: string) {
@@ -62,8 +81,7 @@ export function instrumentPage(page: Page, ctx: InstrumentCtx) {
     if (isNoise(url)) return;
     if (req.resourceType() === "image" || req.resourceType() === "font") return;
     const errText = req.failure()?.errorText ?? "failed";
-    // Aborted in-flight requests on navigation/unmount are normal — skip.
-    if (/ERR_ABORTED|NS_BINDING_ABORTED|net::ERR_ABORTED/i.test(errText)) return;
+    if (NETWORK_ABORT_PATTERNS.some((re) => re.test(errText))) return;
     recordGap({
       ...ctx,
       step: "requestfailed",
