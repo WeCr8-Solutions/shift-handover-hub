@@ -65,8 +65,11 @@ echo "▶ Roles:    ${E2E_SMOKE_ROLES:-operator,supervisor}"
 echo "▶ Pathways: ${E2E_SMOKE_PATHWAYS:-wo,handoff,ncr,quarantine,notifications,nav,talent,billing,admin,routing}"
 echo ""
 
+# Drop the target arg ($1) so it isn't re-passed to playwright as a test filter
+shift || true
+
 # Run the full matrix with serial workers (shared seed context)
-npx playwright test "$SCRIPT_DIR/../e2e/smoke-matrix.spec.ts" \
+exec npx playwright test "$SCRIPT_DIR/../e2e/smoke-matrix.spec.ts" \
   --workers="${WORKERS:-1}" \
-  --reporter=html,line \
+  --reporter=line \
   "$@"
