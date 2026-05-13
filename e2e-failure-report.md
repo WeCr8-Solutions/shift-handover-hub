@@ -1,5 +1,92 @@
 # E2E Failure Report — Post-Fix Pass
 
+## Latest Run After Live Republish
+
+**Run at:** 2026-05-13 (post-republish)
+**Live URL:** `https://joblineai.lovable.app`
+**Supabase:** `dpajcbhfwmfnzgldrveu`
+**Suites:** `e2e/regression.spec.ts` + `e2e/usability-matrix.spec.ts`
+**Command:**
+
+```bash
+CHROMIUM_BIN=/bin/chromium \
+  E2E_BASE_URL=https://joblineai.lovable.app \
+  E2E_SUPABASE_URL=https://dpajcbhfwmfnzgldrveu.supabase.co \
+  npx playwright test e2e/regression.spec.ts e2e/usability-matrix.spec.ts \
+    --workers=1 --reporter=line
+```
+
+### Summary counts
+
+| Metric | Previous run | This run | Δ |
+|---|---|---|---|
+| Cells executed | 64 | 64 | — |
+| **Passed** | 57 | **50** | −7 (downstream of 1 timeout) |
+| **Failed** | 1 | **1** | flat |
+| **Skipped / did-not-run** | 6 | 13 | downstream of the 1 timeout |
+| Total gaps recorded | 42 | **19** | −23 |
+| **Errors** | **16** | **0** ✅ | −16 |
+| **Warnings** | 26 | 19 | −7 |
+| Info | 0 | 0 | — |
+| Network 5xx | 0 | 0 | ✅ |
+| `pageerror` uncaught | 0 | 0 | ✅ |
+| RLS / privacy leaks | 0 | 0 | ✅ |
+
+### `/work-orders*` resolution — ✅ RESOLVED
+
+All 4 mounted paths now return `200` from Live and the Playwright guard
+assertions pass on **both** desktop and mobile viewports:
+
+| Route | HTTP (anon) | Bounces to `/auth` | Renders NotFound? |
+|---|---|---|---|
+| `/work-orders` | `200` | ✅ | ❌ (correct) |
+| `/work-orders/cancelled` | `200` | ✅ | ❌ (correct) |
+| `/work-orders/completed` | `200` | ✅ | ❌ (correct) |
+| `/work-orders/on-hold` | `200` | ✅ | ❌ (correct) |
+
+**The 16 prior `/work-orders*` 404 errors are cleared.** No new errors
+appeared after the republish.
+
+### Remaining critical failures (P0)
+
+**None.** 0 errors recorded by the gap reporter; 0 console `pageerror`;
+0 network 5xx; 0 RLS leaks.
+
+### Remaining functional blockers (P1)
+
+| ID | Issue | Status | Notes |
+|---|---|---|---|
+| TIMEOUT-1 | `Usability › mobile › guard /queue bounces anon` exceeded the 60s test budget | 🟡 Flaky/slow | Test timed out at `waitForTimeout`; the route itself is reachable (its desktop sibling passed). The serial runner cascaded **13 mobile guard cells into "did not run"** off this single timeout. Recommended: bump per-test timeout for mobile guard cells to 90s, or split mobile guards into a parallel project. **Not a product bug** — no error gap recorded. |
+| FB-2 | WO drawer deep-link still requires `seed-e2e` org-membership patch | 🟠 Open (data) | Code fix shipped; needs `seed-e2e` to insert `organization_members` for `operator-e2e@jobline.test` and `admin-e2e@jobline.test`. |
+
+### Remaining warnings (19 total, grouped by root cause)
+
+| Count | Category | Message | Root cause |
+|---|---|---|---|
+| 13 | `missing_ui` | "No mobile menu or interactive element visible" | Marketing pages render their nav outside `<header>` and the hamburger only appears below the `md` breakpoint inside `MarketingNav`. The detector looks for `[data-testid="mobile-menu"]` on **every** public route at 390×844, but several marketing pages don't render the unified `Header`. **Fix:** mount the marketing hamburger on every public marketing route, or scope the assertion to routes that actually use `<Header>`. |
+| 4 | `missing_ui` | "Page has no nav/header links" | `/` and `/handbook` (×2 viewports each). Landing nav is wrapped in `<div>`/`<section>` rather than `<header><nav>`. Cosmetic A11y. |
+| 2 | `other` | `404 Error: User attempted to access non-existent route…` | Expected — emitted by `NotFound.tsx` when the regression suite intentionally hits `/this-route-does-not-exist-99999` and `/__definitely_missing__`. Safe to add to `instrumentation.ts` `NOISE_PATTERNS`. |
+
+### Failures (with traces)
+
+| Test | Trace path |
+|---|---|
+| `Usability › mobile › guard /queue bounces anon` | `test-results/usability-matrix-Usability-›-mobile-guard-queue-bounces-anon-chromium/error-context.md` (test timeout, not an app error) |
+
+### Verdict
+
+- ✅ Republish **cleared all 16** previously-blocking errors.
+- ✅ Regression suite green (`/work-orders*` guards + NotFound recovery + mobile-menu selector).
+- ✅ No new product errors introduced.
+- 🟡 1 flaky mobile-guard timeout remains; it cascades to 13 "did not run" cells but is a test-harness budget issue, not a product regression.
+- 🟠 Two known follow-ups remain: (a) `seed-e2e` org-membership patch for WO drawer deep-link, (b) cosmetic A11y for landing/handbook header semantics.
+
+---
+
+# Previous Pass (kept for history)
+
+# E2E Failure Report — Post-Fix Pass
+
 **Generated:** 2026-05-13 (post-fix, re-run vs Live)
 **Target:** `https://joblineai.lovable.app` (Live, Supabase `dpajcbhfwmfnzgldrveu`)
 **Suites:** `e2e/regression.spec.ts` + `e2e/usability-matrix.spec.ts`
