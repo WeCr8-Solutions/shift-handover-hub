@@ -319,9 +319,20 @@ export default function Profile() {
                         Showcase verified certs, machines, and experience. Upload a resume for instant autofill.
                       </p>
                     </div>
-                    <Button onClick={() => navigate("/talent/profile")} size="sm" className="gap-2">
-                      <Sparkles className="w-4 h-4" /> Build Talent Profile
-                    </Button>
+                    <div className="flex flex-wrap justify-center gap-2">
+                      <Button onClick={() => navigate("/operator/profile")} size="sm" className="gap-2">
+                        <Sparkles className="w-4 h-4" /> Build Talent Profile
+                      </Button>
+                      <Button
+                        onClick={() => navigate("/operator/profile?tab=resume")}
+                        size="sm"
+                        variant="outline"
+                        className="gap-2"
+                        data-testid="profile-upload-resume"
+                      >
+                        <FileText className="w-4 h-4" /> Upload Resume
+                      </Button>
+                    </div>
                   </div>
                 ) : (
                   <>
