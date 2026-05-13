@@ -1,6 +1,6 @@
 [
   {
-    "ts": "2026-05-13T20:42:25.413Z",
+    "ts": "2026-05-13T20:43:36.097Z",
     "category": "auth",
     "spec": "smoke-matrix",
     "scenario": "wo_basic",
@@ -8,10 +8,10 @@
     "pathway": "nav",
     "step": "login",
     "severity": "error",
-    "message": "Login failed: locator.fill: value: expected string, got undefined"
+    "message": "Login failed: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================"
   },
   {
-    "ts": "2026-05-13T20:42:26.781Z",
+    "ts": "2026-05-13T20:44:07.480Z",
     "category": "auth",
     "spec": "smoke-matrix",
     "scenario": "wo_basic",
@@ -19,6 +19,6 @@
     "pathway": "wo",
     "step": "login",
     "severity": "error",
-    "message": "Login failed: locator.fill: value: expected string, got undefined"
+    "message": "Login failed: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================"
   }
 ]
