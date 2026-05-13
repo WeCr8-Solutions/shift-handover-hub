@@ -194,6 +194,15 @@ export default function PublicTalentProfile() {
         return;
       }
       setProfile(row);
+      // Mint a fresh signed URL for the resume — relying on the cached value
+      // would break after 7 days. Storage RLS gates this on resume_public.
+      if (row.resume_pdf_url && row.resume_public) {
+        getOperatorProfileSignedUrl(row.resume_pdf_url).then((u) => {
+          if (!cancelled) setResumeUrl(u);
+        });
+      } else {
+        setResumeUrl(null);
+      }
       setCerts(bundle?.certs ?? []);
       setSkills(bundle?.skills ?? []);
       setMachines(bundle?.machines ?? []);
