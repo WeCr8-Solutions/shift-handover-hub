@@ -155,6 +155,7 @@ export default function PublicTalentProfile() {
   const [education, setEducation] = useState<EducationRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [resumeUrl, setResumeUrl] = useState<string | null>(null);
   const [miniSite, setMiniSite] = useState<{
     services: ServiceItem[];
     gallery: GalleryItem[];
