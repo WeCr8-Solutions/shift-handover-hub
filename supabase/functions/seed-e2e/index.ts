@@ -363,8 +363,8 @@ Deno.serve(async (req) => {
     return json({
       ok: true,
       scenario,
-      admin: { id: adminUser.id, email: ADMIN_EMAIL },
-      operator: { id: operatorUser.id, email: OPERATOR_EMAIL },
+      admin: { id: adminUser.id, email: ADMIN_EMAIL, password: ADMIN_PASSWORD },
+      operator: { id: operatorUser.id, email: OPERATOR_EMAIL, password: OPERATOR_PASSWORD },
       organization: { id: org!.id, slug: org!.slug, name: org!.name },
       team: { id: team!.id, name: team!.name },
       station: { id: station!.id, station_id: station!.station_id, name: station!.name },
