@@ -6,6 +6,7 @@ import {
   getGaps,
   recordGap,
 } from "./helpers/gapReport";
+import { instrumentPage } from "./helpers/instrumentation";
 import { ROLE_MATRIX, type Pathway, type Role } from "./helpers/roleMatrix";
 import { auditRoutes } from "./helpers/navAudit";
 
@@ -77,6 +78,8 @@ test.describe("Smoke matrix", () => {
           role,
           pathway,
         };
+
+        instrumentPage(page, ctx);
 
         const fx = await seedFixture(scenario);
         const creds =

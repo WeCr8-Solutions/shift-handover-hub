@@ -19,10 +19,10 @@ whenever a new pathway, role, or scenario is added.
 |---------|-------------|-----------------|
 | `nav` | `helpers/navAudit.ts` | Every role's sidebar routes render non-empty body, no 404 dead-end, no auth bounce |
 | `wo` | `flows/workOrder.ts` | open → start → pause → resume → complete |
-| `handoff` | `flows/handoff.ts` | Open `/handoff`, mount New Handoff form |
-| `ncr` | `flows/ncr.ts` | Submit NCR with qty + reason; verify qty integrity (Completed+Scrap+Rework=Original) |
-| `quarantine` | `flows/quarantine.ts` | `/quarantine` heading, locate WO row, disposition CTA |
-| `notifications` | `flows/notifications.ts` | Bell renders, panel opens (perf budget 2s), event copy present |
+| `handoff` | `flows/handoff.ts` | Open dashboard → station card → mount handoff form (handoff is **not** its own route) |
+| `ncr` | `flows/ncr.ts` | From `/queue?item=<id>` WO drawer → submit NCR → verify qty integrity (Completed+Scrap+Rework=Original) |
+| `quarantine` | `flows/quarantine.ts` | `/queue?status=quality_hold` filtered list, locate WO, disposition CTA |
+| `notifications` | `flows/notifications.ts` | Bell renders (`data-testid="notification-bell"`), panel opens (perf budget 2s), event copy present |
 | `routing` | `flows/routing.ts` | `pass_work_order_to_next_step` UI path, routing-proposal approval |
 | `talent` | `flows/talent.ts` | Public profile loads; **no email/phone leak** (RLS gap if so) |
 | `billing` | `flows/billing.ts` | Premium routes (`/talent/search`, `/oap/employer`) show upgrade wall to free tier |
@@ -49,9 +49,37 @@ See `e2e/helpers/perfBudget.ts → BUDGETS`. Misses log a `warn` gap with
 
 ## Output
 
-- `e2e-gap-report.json` — aggregate
-- `e2e-gap-report.ndjson` — stream
+- `e2e-gap-report.json` — aggregate gap entries (machine-readable)
+- `e2e-gap-report.ndjson` — streaming JSONL
+- `e2e-gap-summary.md` — categorized human report (Critical / Blockers / Warnings / Console-Net / Routes touched)
 - `.lovable/smoke-repair-queue.md` — agent-friendly checklist (run `bun smoke:repair-queue`)
+
+## Companion suite — `e2e/usability-matrix.spec.ts`
+
+Runs alongside the smoke matrix to catch usability blockers the role/pathway
+matrix doesn't cover:
+
+- **Public route health** (anon): `/`, `/pricing`, `/talent`, `/oap`,
+  `/gcode-academy`, `/handbook`, `/resources`, `/auth`, `/shift-handoff`,
+  `/manufacturing-visibility`, etc. — tested at **desktop (1366×768)** and
+  **mobile (390×844)** viewports.
+- **Route guard correctness** (anon): every guarded route
+  (`/dashboard`, `/queue`, `/teams`, `/admin`, `/settings`,
+  `/talent/dashboard`, `/talent/search`, `/oap/employer`, `/gca/employer`,
+  `/work-orders`, `/history`) MUST bounce anon users to `/auth` — never to
+  404 and never render protected content.
+- **404 recovery**: any unknown route renders a Home/Dashboard recovery link.
+- **Stuck-loading detection**: pages that show only "Loading…" after 1.5s
+  are flagged as dead-ends.
+- **Mobile critical actions**: ensures hamburger menu / interactive elements
+  are visible on `mobile` viewport.
+- **Console / network watchers**: every spec attaches `instrumentPage()`
+  which records `console.error`, `pageerror`, `requestfailed`, and HTTP 5xx
+  responses. Known noise (Vite HMR, GA, Sentry, RESET_BLANK_CHECK) is filtered.
+
+The usability suite uses **no seed** and is safe to run against any
+environment. It is added to the default `bun smoke:matrix` runner.
+
 
 ## Run locally
 
@@ -80,6 +108,19 @@ bunx playwright test e2e/smoke-matrix.spec.ts --workers=1
 bun smoke:repair-queue
 ```
 
+**One-command runner** (handles env wiring + runs both smoke + usability):
+```bash
+bun smoke:matrix          # → live (joblineai.lovable.app + Live Supabase)
+bun smoke:matrix:preview  # → id-preview Lovable URL + Test Supabase
+bun smoke:matrix:local    # → http://localhost:8080 + Test Supabase
+```
+
+To run only one spec:
+```bash
+SUITES=e2e/usability-matrix.spec.ts bun smoke:matrix
+SUITES=e2e/smoke-matrix.spec.ts     bun smoke:matrix
+```
+
 **CRITICAL:** `E2E_SUPABASE_URL` MUST match the backend the target frontend
 talks to. Mismatch → seeded users live in one project, frontend authenticates
 against another → `invalid_credentials` 400.
@@ -92,20 +133,33 @@ secrets you must republish before the Live matrix can authenticate.
 The matrix is configured `mode: serial, timeout: 120_000` so cells share a
 single browser context and don't stampede the seed-e2e edge function.
 
-## Known infra gap (non-blocking)
+## CI integration
 
-The matrix currently records `auth/login` gaps when the seeded
-`admin-e2e@jobline.test` / `operator-e2e@jobline.test` users cannot reach
-the dashboard within 30s of submitting the form. This is *not* an app bug;
-it indicates one of:
+Recommended CI flow:
 
-1. `E2E_ADMIN_PASSWORD` / `E2E_OPERATOR_PASSWORD` not configured on the
-   `seed-e2e` edge function for the target environment.
-2. CAPTCHA / rate-limiter active on the published auth endpoint.
-3. The `resolve_post_login_destination` RPC returning `/auth` because the
-   seeded user has neither an org membership nor a talent profile in that
-   environment.
+1. Build + publish step finishes.
+2. Job exports `E2E_SEED_SECRET`, `E2E_ADMIN_PASSWORD`, `E2E_OPERATOR_PASSWORD`
+   from the CI secret store.
+3. Run `bash scripts/smoke-matrix-run.sh live` (or `preview` for PR runs).
+4. Upload `e2e-gap-report.json`, `e2e-gap-summary.md`, and the Playwright
+   `playwright-report/` HTML as build artifacts.
+5. Optional gate: fail the job if `e2e-gap-summary.md` reports any
+   `## Critical failures` or `## Functional blockers` non-zero (parse JSON).
 
-Until the infra is wired, treat login gaps as informational. Real
-pathway coverage runs locally via `bun test:e2e` against the dev server.
+## Failure-mode taxonomy (gap categories)
+
+The gap report uses these `category` values — agents and humans triage by
+category first, severity second:
+
+| Category | Meaning | Typical fix |
+|----------|---------|-------------|
+| `dead_end` | Empty body, stuck loading, 404 with no recovery | Page component crash or guard sending to wrong place |
+| `auth` | Login broke, or guarded route did NOT bounce anon | RouteGuard / RequireAuth wrapper missing |
+| `routing` | Unexpected URL after navigation | Redirect / nav target wrong |
+| `missing_ui` | Expected button/CTA/form field absent | Likely role/permission gating or refactor broke selector |
+| `rls` | Public surface leaked private data | Tighten RLS or RPC contract immediately |
+| `data` | Failed network, 5xx, missing seeded row | Edge function / RPC / RLS investigation |
+| `perf` | Budget exceeded | Profile + optimize the slow flow |
+| `notification` | Expected event copy not in panel | Check process-notifications + RLS |
+| `other` | Console error, page exception, misc | Read message + URL |
 
