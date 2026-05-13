@@ -21,6 +21,8 @@ const NOISE_PATTERNS: RegExp[] = [
   /sentry|posthog|hotjar|fullstory|datadoghq/i,
   /Download the React DevTools/i,
   /Unknown message type: RESET_BLANK_CHECK/i,
+  // React Query aborts in-flight fetches on navigation — not real failures.
+  /TypeError: Failed to fetch/i,
 ];
 
 function isNoise(text: string) {
@@ -59,12 +61,15 @@ export function instrumentPage(page: Page, ctx: InstrumentCtx) {
     const url = req.url();
     if (isNoise(url)) return;
     if (req.resourceType() === "image" || req.resourceType() === "font") return;
+    const errText = req.failure()?.errorText ?? "failed";
+    // Aborted in-flight requests on navigation/unmount are normal — skip.
+    if (/ERR_ABORTED|NS_BINDING_ABORTED|net::ERR_ABORTED/i.test(errText)) return;
     recordGap({
       ...ctx,
       step: "requestfailed",
       severity: "warn",
       category: "data",
-      message: `${req.method()} ${url} — ${req.failure()?.errorText ?? "failed"}`,
+      message: `${req.method()} ${url} — ${errText}`,
       url: page.url(),
     });
   });
