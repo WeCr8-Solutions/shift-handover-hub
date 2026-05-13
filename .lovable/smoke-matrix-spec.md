@@ -55,22 +55,39 @@ See `e2e/helpers/perfBudget.ts → BUDGETS`. Misses log a `warn` gap with
 
 ## Run locally
 
-Use the **published** URL (`https://joblineai.lovable.app`) — never the
-`id-preview--*.lovable.app` URL, which sits behind the Lovable account gate
-and cannot be authenticated by Playwright. The `app.jobline.ai` custom
-domain is *not* wired for the auth flow; the canonical entry point is
-`https://jobline.ai/auth` (or `joblineai.lovable.app/auth`).
+There are TWO valid targets — pick one and pair the matching Supabase URL:
 
+**A. Test / Preview backend** (default — uses freshly-seeded data, may need
+republish after schema changes):
+```bash
+CHROMIUM_BIN=/bin/chromium \
+E2E_BASE_URL=https://id-preview--059e6965-215c-439a-949e-fcc8a2e6d939.lovable.app \
+E2E_SUPABASE_URL=https://kgrstnbxqdmadtoankqr.supabase.co \
+E2E_SEED_SECRET=<token> \
+bunx playwright test e2e/smoke-matrix.spec.ts --workers=1
+```
+Note: the `id-preview` URL sits behind the Lovable account gate; only the
+project owner / collaborators can authenticate.
+
+**B. Published / Live backend** (`joblineai.lovable.app`, `jobline.ai`):
 ```bash
 CHROMIUM_BIN=/bin/chromium \
 E2E_BASE_URL=https://joblineai.lovable.app \
+E2E_SUPABASE_URL=https://dpajcbhfwmfnzgldrveu.supabase.co \
 E2E_SEED_SECRET=<token> \
-E2E_SMOKE_ROLES=operator,supervisor,org_admin \
-E2E_SMOKE_PATHWAYS=nav,wo,handoff,ncr,notifications \
 bunx playwright test e2e/smoke-matrix.spec.ts --workers=1
 
 bun smoke:repair-queue
 ```
+
+**CRITICAL:** `E2E_SUPABASE_URL` MUST match the backend the target frontend
+talks to. Mismatch → seeded users live in one project, frontend authenticates
+against another → `invalid_credentials` 400.
+
+The Live backend requires `E2E_SEED_SECRET`, `E2E_ADMIN_PASSWORD`, and
+`E2E_OPERATOR_PASSWORD` to be present in the Live edge function env. They
+are copied from Test → Live on **publish**, so after rotating any of these
+secrets you must republish before the Live matrix can authenticate.
 
 The matrix is configured `mode: serial, timeout: 120_000` so cells share a
 single browser context and don't stampede the seed-e2e edge function.
