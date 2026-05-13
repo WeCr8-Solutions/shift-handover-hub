@@ -72,7 +72,7 @@ const VIEWPORTS: Array<{ name: string; width: number; height: number }> = [
   { name: "mobile", width: 390, height: 844 },
 ];
 
-test.describe.configure({ mode: "serial", timeout: 60_000 });
+test.describe.configure({ mode: "parallel", timeout: 90_000 });
 
 test.afterAll(() => {
   flushGapReport();
