@@ -225,8 +225,11 @@ for (const vp of VIEWPORTS) {
 
         // Ensure no session.
         await context.clearCookies();
-        await page.goto(route, { waitUntil: "domcontentloaded" }).catch(() => {});
-        await page.waitForTimeout(1500);
+        await page.goto(route, { waitUntil: "domcontentloaded", timeout: 15_000 }).catch(() => {});
+        // Wait for either redirect to /auth or login UI; cap at 4s instead of fixed 1.5s + bleed.
+        await page
+          .waitForURL(/\/auth(\?|$|#)/, { timeout: 4000 })
+          .catch(() => page.waitForTimeout(800));
 
         const url = page.url();
         const text = (await page.locator("body").innerText().catch(() => "")) ?? "";
