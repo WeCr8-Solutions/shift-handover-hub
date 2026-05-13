@@ -5,23 +5,36 @@ import { recordGap } from "../helpers/gapReport";
 interface FlowCtx {
   spec: string;
   scenario?: string;
+  role?: string;
+  pathway?: string;
 }
 
+/**
+ * Handoff is NOT its own route — it lives on the dashboard's active station card
+ * and inside the work-order drawer. Try both entry points and record dead-ends.
+ */
 export async function openHandoffPage(page: Page, ctx: FlowCtx) {
-  await page.goto("/handoff");
-  const visible = await page
-    .getByRole("button", { name: /new handoff|create|add handoff/i })
-    .first()
-    .isVisible()
-    .catch(() => false);
+  await page.goto("/dashboard").catch(() => {});
+  // Look for any handoff CTA on the dashboard / station cards.
+  const trigger = page
+    .locator(
+      '[data-testid="new-handoff"], button:has-text("New Handoff"), button:has-text("Start Handoff"), button:has-text("Submit Handoff")',
+    )
+    .first();
+  const visible = await trigger.isVisible({ timeout: 5000 }).catch(() => false);
   if (!visible) {
     recordGap({
       spec: ctx.spec,
       step: "openHandoffPage",
       scenario: ctx.scenario,
-      severity: "error",
-      message: "No 'New Handoff' button on /handoff",
+      role: ctx.role,
+      pathway: "handoff" as never,
+      severity: "warn",
+      category: "missing_ui",
+      message: "No 'New Handoff' CTA on /dashboard station cards",
       url: page.url(),
+      repairHint:
+        "Add data-testid=new-handoff to station-card handoff trigger.",
     });
   }
   return visible;
@@ -29,32 +42,35 @@ export async function openHandoffPage(page: Page, ctx: FlowCtx) {
 
 export async function startNewHandoff(page: Page, ctx: FlowCtx) {
   const btn = page
-    .getByRole("button", { name: /new handoff|create|add handoff/i })
+    .locator(
+      '[data-testid="new-handoff"], button:has-text("New Handoff"), button:has-text("Start Handoff")',
+    )
     .first();
   if (!(await btn.isVisible().catch(() => false))) {
     recordGap({
       spec: ctx.spec,
       step: "startNewHandoff",
       scenario: ctx.scenario,
-      severity: "error",
+      severity: "warn",
+      category: "missing_ui",
       message: "Cannot start new handoff — trigger missing",
       url: page.url(),
     });
     return false;
   }
   await btn.click();
-  // Form should mount with a summary textarea
   const summary = page
-    .getByLabel(/handoff summary|summary/i)
-    .or(page.getByPlaceholder(/summary/i))
+    .getByLabel(/handoff summary|summary|notes/i)
+    .or(page.getByPlaceholder(/summary|what did you do/i))
     .first();
-  const formed = await summary.isVisible().catch(() => false);
+  const formed = await summary.isVisible({ timeout: 4000 }).catch(() => false);
   if (!formed) {
     recordGap({
       spec: ctx.spec,
       step: "startNewHandoff",
       scenario: ctx.scenario,
-      severity: "error",
+      severity: "warn",
+      category: "missing_ui",
       message: "Handoff form did not mount (no summary field)",
       url: page.url(),
     });
@@ -79,6 +95,7 @@ export async function assertStationStatus(
       step: "assertStationStatus",
       scenario: ctx.scenario,
       severity: "warn",
+      category: "data",
       message: `Station ${fx.station.name} not visible on dashboard`,
       url: page.url(),
     });

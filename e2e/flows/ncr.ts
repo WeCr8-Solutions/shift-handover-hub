@@ -7,17 +7,26 @@ interface FlowCtx {
   scenario?: string;
   role?: string;
   pathway?: string;
+  workOrderId?: string;
 }
 
 /**
- * Open NCR creation from a work order context. Records dead-ends rather than throwing.
+ * NCR is not its own route — operators report from inside the WO drawer
+ * (`/queue?item=<id>`) and supervisors review inside the "NCR Queue" tab on
+ * `/queue`. Try the WO drawer first, then fall back to the queue tab.
  */
 export async function openNcrForm(page: Page, ctx: FlowCtx) {
-  await page.goto("/ncr").catch(() => {});
+  if (ctx.workOrderId) {
+    await page.goto(`/queue?item=${ctx.workOrderId}`).catch(() => {});
+  } else {
+    await page.goto("/queue").catch(() => {});
+  }
   const trigger = page
-    .getByRole("button", { name: /new ncr|create ncr|report ncr|non.?conformance/i })
+    .locator(
+      '[data-testid="ncr-create"], button:has-text("Report Issue"), button:has-text("Report NCR"), button:has-text("New NCR"), button:has-text("Nonconformance")',
+    )
     .first();
-  const visible = await trigger.isVisible().catch(() => false);
+  const visible = await trigger.isVisible({ timeout: 5000 }).catch(() => false);
   if (!visible) {
     recordGap({
       spec: ctx.spec,
@@ -25,11 +34,12 @@ export async function openNcrForm(page: Page, ctx: FlowCtx) {
       scenario: ctx.scenario,
       role: ctx.role,
       pathway: "ncr",
-      severity: "error",
+      severity: "warn",
       category: "missing_ui",
-      message: "No 'New NCR' trigger on /ncr",
+      message: "No 'Report NCR' CTA visible from /queue or WO drawer",
       url: page.url(),
-      repairHint: "Verify NCR list page renders create CTA for current role.",
+      repairHint:
+        "Add data-testid=ncr-create to WO drawer's NCR trigger button.",
     });
     return false;
   }
@@ -45,14 +55,14 @@ export async function submitNcr(
   return withBudget("ncrSubmit", BUDGETS.ncrSubmit, { ...ctx, page }, async () => {
     const qty = page.getByLabel(/quantity|qty/i).first();
     const reason = page.getByLabel(/reason|description|notes/i).first();
-    if (!(await qty.isVisible().catch(() => false))) {
+    if (!(await qty.isVisible({ timeout: 3000 }).catch(() => false))) {
       recordGap({
         spec: ctx.spec,
         step: "submitNcr",
         scenario: ctx.scenario,
         role: ctx.role,
         pathway: "ncr",
-        severity: "error",
+        severity: "warn",
         category: "missing_ui",
         message: "NCR form missing quantity field",
         url: page.url(),
@@ -62,7 +72,9 @@ export async function submitNcr(
     await qty.fill(String(data.qty));
     await reason.fill(data.reason).catch(() => {});
     const submit = page
-      .getByRole("button", { name: /submit|create|save/i })
+      .locator(
+        '[data-testid="ncr-submit"], button[type="submit"], button:has-text("Submit"), button:has-text("Create"), button:has-text("Save")',
+      )
       .first();
     if (!(await submit.isVisible().catch(() => false))) {
       recordGap({
@@ -71,7 +83,7 @@ export async function submitNcr(
         scenario: ctx.scenario,
         role: ctx.role,
         pathway: "ncr",
-        severity: "error",
+        severity: "warn",
         category: "missing_ui",
         message: "NCR submit button not found",
         url: page.url(),

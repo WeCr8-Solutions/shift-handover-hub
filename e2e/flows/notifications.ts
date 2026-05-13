@@ -21,9 +21,10 @@ export async function openBell(page: Page, ctx: FlowCtx) {
     { ...ctx, page },
     async () => {
       const bell = page
-        .getByRole("button", { name: /notification|bell|alerts/i })
+        .locator('[data-testid="notification-bell"]')
+        .or(page.getByRole("button", { name: /notification|bell|alerts/i }))
         .first();
-      if (!(await bell.isVisible().catch(() => false))) {
+      if (!(await bell.isVisible({ timeout: 4000 }).catch(() => false))) {
         recordGap({
           spec: ctx.spec,
           step: "openBell",
