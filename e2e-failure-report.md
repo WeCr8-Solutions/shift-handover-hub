@@ -1,3 +1,55 @@
+# E2E Failure Report — Mobile Guard Stabilization Pass
+
+## Latest Run (2026-05-13, post-stabilization + republish)
+
+**Live URL:** `https://joblineai.lovable.app`
+**Suites:** `e2e/regression.spec.ts` + `e2e/usability-matrix.spec.ts`
+**Workers:** 4 (parallel)  **Duration:** 42.1s  **Result: 64/64 passed ✅**
+
+| Metric | Prev run | This run | Δ |
+|---|---|---|---|
+| Cells executed | 64 | 64 | — |
+| **Passed** | 50 | **64** ✅ | +14 |
+| **Failed** | 1 | **0** ✅ | −1 |
+| Skipped / did-not-run | 13 | **0** ✅ | −13 |
+| Total gaps | 19 | **2** | −17 |
+| Errors | 0 | **0** ✅ | — |
+| Warnings | 19 | **2** | −17 |
+| `pageerror` uncaught | 0 | 0 | ✅ |
+| Network 5xx | 0 | 0 | ✅ |
+
+### Stabilization changes shipped
+
+1. `e2e/usability-matrix.spec.ts` → `mode: "parallel"`, `timeout: 90_000`.
+   Removes serial-cascade where one slow cell turned 13 others into "did not run".
+2. Guard tests: replaced fixed `waitForTimeout(1500)` with
+   `waitForURL(/\/auth/, {timeout: 4000})` race + 800ms fallback.
+3. `e2e/helpers/instrumentation.ts` noise patterns added:
+   - `404 Error: User attempted to access non-existent route` (NotFound emits this on purpose)
+   - `React does not recognize the .* prop on a DOM element` (Landing fetchPriority dev warning)
+   - `React Router Future Flag Warning`
+   - `Missing Description or aria-describedby` (Radix dev warning)
+4. Mobile-menu detector now accepts hamburger **OR** visible nav links **OR** primary CTA — pages without unified header (`/handbook`, `/verify`, etc.) no longer false-warn.
+
+### Remaining warnings (2)
+
+| Count | Route | Category | Message | Severity |
+|---|---|---|---|---|
+| 1 | `/handbook` (mobile + desktop) | `missing_ui` | "Page has no nav/header links" | Cosmetic A11y — wrap nav in `<header>/<nav>` |
+| 1 | `/` (mobile) | `missing_ui` | "Page has no nav/header links" | Landing nav lives in `<div>` — wrap in `<nav>` |
+
+Both are A11y semantics, not functional bugs. Listed as P2 follow-ups.
+
+### Verdict
+
+- ✅ Mobile guards fully stabilized; 0 timeouts, 0 cascades.
+- ✅ All `/work-orders*` guards green on desktop + mobile.
+- ✅ Regression suite green.
+- ✅ Test runtime cut from ~5min serial → 42s parallel.
+- 🟡 P2: wrap landing + handbook top nav in semantic `<header><nav>` to clear the last 2 warnings.
+
+---
+
 # E2E Failure Report — Post-Fix Pass
 
 ## Latest Run After Live Republish
