@@ -281,15 +281,15 @@ export function QueueItemActions({
     <>
       {/* Work Order Action Bar */}
       {isWorkOrder && (
-        <div className="flex flex-wrap gap-2 p-3 bg-muted/30 rounded-lg border">
+        <div className="flex flex-wrap gap-2 p-3 bg-muted/30 rounded-lg border" data-testid="wo-action-bar">
           {canStart && (
-            <Button onClick={handleStartWork} disabled={actionLoading === "start"} className="gap-2">
+            <Button onClick={handleStartWork} disabled={actionLoading === "start"} className="gap-2" data-testid="wo-start">
               {actionLoading === "start" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
               Start Work
             </Button>
           )}
           {canPause && (
-            <Button variant="outline" onClick={handlePauseWork} disabled={actionLoading === "pause"} className="gap-2">
+            <Button variant="outline" onClick={handlePauseWork} disabled={actionLoading === "pause"} className="gap-2" data-testid="wo-pause">
               {actionLoading === "pause" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Pause className="w-4 h-4" />}
               Pause
             </Button>
@@ -302,6 +302,7 @@ export function QueueItemActions({
                 variant="default"
                 onClick={handleCompleteWork}
                 disabled={actionLoading === "complete"}
+                data-testid={hasNextStep ? "wo-next-op" : "wo-complete"}
                 className={cn("gap-2", hasNextStep ? "bg-blue-600 hover:bg-blue-700" : "bg-green-600 hover:bg-green-700")}
               >
                 {actionLoading === "complete" ? <Loader2 className="w-4 h-4 animate-spin" /> : hasNextStep ? <ArrowRight className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
@@ -311,16 +312,16 @@ export function QueueItemActions({
           })()}
           <div className="flex-1" />
           {onOpenRouting && hasOrgSupervisorAccess && (
-            <Button variant="outline" onClick={() => onOpenRouting(item)} className="gap-2">
+            <Button variant="outline" onClick={() => onOpenRouting(item)} className="gap-2" data-testid="wo-edit-routing">
               <GitBranch className="w-4 h-4" />
               Edit Routing
             </Button>
           )}
-          <Button variant="outline" onClick={onOpenNCR} className="gap-2">
+          <Button variant="outline" onClick={onOpenNCR} className="gap-2" data-testid="ncr-create">
             <ShieldAlert className="w-4 h-4" />
             Report NCR
           </Button>
-          <Button variant="outline" onClick={handleCreateHandoff} className="gap-2">
+          <Button variant="outline" onClick={handleCreateHandoff} className="gap-2" data-testid="new-handoff">
             <FileText className="w-4 h-4" />
             Create Handoff
             <ArrowRight className="w-4 h-4" />
