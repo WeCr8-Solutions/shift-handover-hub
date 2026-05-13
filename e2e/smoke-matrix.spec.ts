@@ -48,6 +48,8 @@ const PATHWAYS = (process.env.E2E_SMOKE_PATHWAYS ??
   .map((s) => s.trim() as Pathway)
   .filter(Boolean);
 
+test.describe.configure({ mode: "serial", timeout: 120_000 });
+
 test.describe("Smoke matrix", () => {
   test.afterAll(() => {
     flushGapReport();
