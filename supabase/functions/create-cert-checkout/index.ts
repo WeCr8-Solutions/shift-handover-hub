@@ -52,6 +52,24 @@ serve(async (req) => {
     const emailOk = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(body.recipientEmail);
     if (!emailOk) throw new Error("recipientEmail is not a valid email address");
 
+    // SECURITY: Cert integrity gate. New cert checkouts must reference either
+    // a GCA bank (bankId) or an OAP role program (roleProgramId) so the
+    // stripe-webhook gate can verify the caller actually passed the test.
+    // Upgrade flows (upgradeCertId) are exempt because they reference an
+    // already-issued cert.
+    const isUpgrade = !!body.upgradeCertId?.trim();
+    if (!isUpgrade && !body.bankId && !body.roleProgramId) {
+      return new Response(
+        JSON.stringify({
+          error:
+            body.program === "GCA"
+              ? "bankId is required for GCA cert checkout"
+              : "roleProgramId is required for OAP cert checkout",
+        }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not configured");
 
