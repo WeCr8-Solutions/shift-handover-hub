@@ -247,8 +247,21 @@ export default function Queue() {
   };
 
 
+  const deepLinkState = !urlItemId
+    ? "none"
+    : selectedItem
+      ? "opened"
+      : loading
+        ? "loading"
+        : "not-found";
+
   return (
-    <div className="min-h-screen bg-background">
+    <div
+      className="min-h-screen bg-background"
+      data-testid="queue-page"
+      data-deep-link-state={deepLinkState}
+      data-deep-link-item={urlItemId ?? ""}
+    >
       <Header />
 
       <main className="container mx-auto space-y-6 px-4 py-6">
