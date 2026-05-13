@@ -1,6 +1,6 @@
 [
   {
-    "ts": "2026-05-13T21:42:00.491Z",
+    "ts": "2026-05-13T21:45:00.681Z",
     "category": "other",
     "spec": "regression",
     "role": "anon",
@@ -11,7 +11,7 @@
     "url": "https://joblineai.lovable.app/this-route-does-not-exist-99999"
   },
   {
-    "ts": "2026-05-13T21:42:06.924Z",
+    "ts": "2026-05-13T21:45:07.624Z",
     "category": "missing_ui",
     "spec": "usability",
     "role": "anon",
@@ -23,7 +23,7 @@
     "url": "https://joblineai.lovable.app/"
   },
   {
-    "ts": "2026-05-13T21:42:23.033Z",
+    "ts": "2026-05-13T21:45:24.896Z",
     "category": "missing_ui",
     "spec": "usability",
     "role": "anon",
@@ -35,7 +35,7 @@
     "url": "https://joblineai.lovable.app/handbook"
   },
   {
-    "ts": "2026-05-13T21:43:21.450Z",
+    "ts": "2026-05-13T21:46:23.607Z",
     "category": "missing_ui",
     "spec": "usability",
     "role": "anon",
@@ -48,7 +48,7 @@
     "repairHint": "Verify Header renders mobile hamburger menu."
   },
   {
-    "ts": "2026-05-13T21:43:21.455Z",
+    "ts": "2026-05-13T21:46:23.612Z",
     "category": "missing_ui",
     "spec": "usability",
     "role": "anon",
@@ -60,7 +60,7 @@
     "url": "https://joblineai.lovable.app/"
   },
   {
-    "ts": "2026-05-13T21:43:23.868Z",
+    "ts": "2026-05-13T21:46:26.116Z",
     "category": "missing_ui",
     "spec": "usability",
     "role": "anon",
@@ -73,7 +73,7 @@
     "repairHint": "Verify Header renders mobile hamburger menu."
   },
   {
-    "ts": "2026-05-13T21:43:26.391Z",
+    "ts": "2026-05-13T21:46:28.566Z",
     "category": "missing_ui",
     "spec": "usability",
     "role": "anon",
@@ -86,7 +86,7 @@
     "repairHint": "Verify Header renders mobile hamburger menu."
   },
   {
-    "ts": "2026-05-13T21:43:28.992Z",
+    "ts": "2026-05-13T21:46:31.116Z",
     "category": "missing_ui",
     "spec": "usability",
     "role": "anon",
@@ -99,7 +99,7 @@
     "repairHint": "Verify Header renders mobile hamburger menu."
   },
   {
-    "ts": "2026-05-13T21:43:31.617Z",
+    "ts": "2026-05-13T21:46:33.763Z",
     "category": "missing_ui",
     "spec": "usability",
     "role": "anon",
@@ -112,7 +112,7 @@
     "repairHint": "Verify Header renders mobile hamburger menu."
   },
   {
-    "ts": "2026-05-13T21:43:34.230Z",
+    "ts": "2026-05-13T21:46:36.397Z",
     "category": "missing_ui",
     "spec": "usability",
     "role": "anon",
@@ -125,7 +125,7 @@
     "repairHint": "Verify Header renders mobile hamburger menu."
   },
   {
-    "ts": "2026-05-13T21:43:36.755Z",
+    "ts": "2026-05-13T21:46:38.922Z",
     "category": "missing_ui",
     "spec": "usability",
     "role": "anon",
@@ -138,7 +138,7 @@
     "repairHint": "Verify Header renders mobile hamburger menu."
   },
   {
-    "ts": "2026-05-13T21:43:36.764Z",
+    "ts": "2026-05-13T21:46:38.927Z",
     "category": "missing_ui",
     "spec": "usability",
     "role": "anon",
@@ -150,7 +150,7 @@
     "url": "https://joblineai.lovable.app/handbook"
   },
   {
-    "ts": "2026-05-13T21:43:39.293Z",
+    "ts": "2026-05-13T21:46:41.389Z",
     "category": "missing_ui",
     "spec": "usability",
     "role": "anon",
@@ -163,7 +163,7 @@
     "repairHint": "Verify Header renders mobile hamburger menu."
   },
   {
-    "ts": "2026-05-13T21:43:41.856Z",
+    "ts": "2026-05-13T21:46:43.847Z",
     "category": "missing_ui",
     "spec": "usability",
     "role": "anon",
@@ -176,7 +176,7 @@
     "repairHint": "Verify Header renders mobile hamburger menu."
   },
   {
-    "ts": "2026-05-13T21:43:44.319Z",
+    "ts": "2026-05-13T21:46:46.206Z",
     "category": "missing_ui",
     "spec": "usability",
     "role": "anon",
@@ -189,7 +189,7 @@
     "repairHint": "Verify Header renders mobile hamburger menu."
   },
   {
-    "ts": "2026-05-13T21:43:49.195Z",
+    "ts": "2026-05-13T21:46:51.082Z",
     "category": "missing_ui",
     "spec": "usability",
     "role": "anon",
@@ -202,7 +202,7 @@
     "repairHint": "Verify Header renders mobile hamburger menu."
   },
   {
-    "ts": "2026-05-13T21:43:51.854Z",
+    "ts": "2026-05-13T21:46:53.622Z",
     "category": "missing_ui",
     "spec": "usability",
     "role": "anon",
@@ -215,7 +215,7 @@
     "repairHint": "Verify Header renders mobile hamburger menu."
   },
   {
-    "ts": "2026-05-13T21:43:54.417Z",
+    "ts": "2026-05-13T21:46:56.242Z",
     "category": "missing_ui",
     "spec": "usability",
     "role": "anon",
@@ -226,16 +226,5 @@
     "message": "No mobile menu or interactive element visible",
     "url": "https://joblineai.lovable.app/manufacturing-visibility",
     "repairHint": "Verify Header renders mobile hamburger menu."
-  },
-  {
-    "ts": "2026-05-13T21:44:31.073Z",
-    "category": "other",
-    "spec": "usability",
-    "role": "anon",
-    "pathway": "404",
-    "step": "console.error",
-    "severity": "warn",
-    "message": "404 Error: User attempted to access non-existent route: /this-route-definitely-does-not-exist-12345",
-    "url": "https://joblineai.lovable.app/this-route-definitely-does-not-exist-12345"
   }
 ]

@@ -1,7 +1,7 @@
 # E2E Gap Report Summary
 
-**Generated:** 2026-05-13T21:44:31.822Z
-**Total gaps:** 19 — 0 error / 19 warn / 0 info
+**Generated:** 2026-05-13T21:48:08.934Z
+**Total gaps:** 18 — 0 error / 18 warn / 0 info
 
 ## Critical failures (0)
 Auth bounces, RLS leaks, dead-end routes — fix first.
@@ -11,7 +11,7 @@ _None_
 Errors that break a core user task.
 _None_
 
-## Warnings & concerns (19)
+## Warnings & concerns (18)
 - **regression › console.error** [other] — 404 Error: User attempted to access non-existent route: /this-route-does-not-exist-99999
   - URL: `https://joblineai.lovable.app/this-route-does-not-exist-99999`
 - **usability › nav-links /** [missing_ui] — Page has no nav/header links
@@ -61,16 +61,12 @@ _None_
 - **usability › mobile /manufacturing-visibility** [missing_ui] — No mobile menu or interactive element visible
   - URL: `https://joblineai.lovable.app/manufacturing-visibility`
   - Fix: Verify Header renders mobile hamburger menu.
-- **usability › console.error** [other] — 404 Error: User attempted to access non-existent route: /this-route-definitely-does-not-exist-12345
-  - URL: `https://joblineai.lovable.app/this-route-definitely-does-not-exist-12345`
 
-## Console / network issues (2)
+## Console / network issues (1)
 - **regression › console.error** [other] — 404 Error: User attempted to access non-existent route: /this-route-does-not-exist-99999
   - URL: `https://joblineai.lovable.app/this-route-does-not-exist-99999`
-- **usability › console.error** [other] — 404 Error: User attempted to access non-existent route: /this-route-definitely-does-not-exist-12345
-  - URL: `https://joblineai.lovable.app/this-route-definitely-does-not-exist-12345`
 
-## Routes touched (15)
+## Routes touched (14)
 - `/`
 - `/auth`
 - `/gcode-academy`
@@ -84,9 +80,8 @@ _None_
 - `/shift-handoff`
 - `/talent`
 - `/talent/browse`
-- `/this-route-definitely-does-not-exist-12345`
 - `/this-route-does-not-exist-99999`
 
 ## Categories
 - **missing_ui**: 17
-- **other**: 2
+- **other**: 1
