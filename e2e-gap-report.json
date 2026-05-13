@@ -1,22 +1,11 @@
 [
   {
-    "ts": "2026-05-13T20:43:36.097Z",
+    "ts": "2026-05-13T20:45:09.463Z",
     "category": "auth",
     "spec": "smoke-matrix",
     "scenario": "wo_basic",
     "role": "operator",
     "pathway": "nav",
-    "step": "login",
-    "severity": "error",
-    "message": "Login failed: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================"
-  },
-  {
-    "ts": "2026-05-13T20:44:07.480Z",
-    "category": "auth",
-    "spec": "smoke-matrix",
-    "scenario": "wo_basic",
-    "role": "operator",
-    "pathway": "wo",
     "step": "login",
     "severity": "error",
     "message": "Login failed: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================"
