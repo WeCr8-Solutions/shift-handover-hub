@@ -459,12 +459,13 @@ export default function PublicTalentProfile() {
                         {profile.github_url && show("github") && (
                           <SocialLink href={profile.github_url} icon={Github} label="GitHub" />
                         )}
-                        {profile.resume_pdf_url && profile.resume_public === true && (
+                        {resumeUrl && profile.resume_public === true && (
                           <a
-                            href={profile.resume_pdf_url}
+                            href={resumeUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+                            data-testid="public-resume-link"
                           >
                             <FileText className="w-4 h-4" /> Resume
                           </a>
