@@ -380,7 +380,16 @@ export default function Profile() {
                       <Button onClick={() => navigate("/talent/dashboard")} size="sm" variant="default" className="gap-2">
                         Talent Dashboard <ArrowRight className="w-4 h-4" />
                       </Button>
-                      <Button onClick={() => navigate("/talent/profile")} size="sm" variant="outline" className="gap-2">
+                      <Button
+                        onClick={() => navigate("/operator/profile?tab=resume")}
+                        size="sm"
+                        variant="outline"
+                        className="gap-2"
+                        data-testid="profile-upload-resume"
+                      >
+                        <FileText className="w-4 h-4" /> Resume
+                      </Button>
+                      <Button onClick={() => navigate("/operator/profile")} size="sm" variant="outline" className="gap-2">
                         Edit Profile
                       </Button>
                       {publicUrl && (
