@@ -1,5 +1,8 @@
 import { request, type APIRequestContext } from "@playwright/test";
 
+// When targeting the published Live app (joblineai.lovable.app or jobline.ai),
+// you MUST set E2E_SUPABASE_URL=https://dpajcbhfwmfnzgldrveu.supabase.co.
+// The default below targets the Test/Preview backend.
 const SUPABASE_URL =
   process.env.E2E_SUPABASE_URL ?? "https://kgrstnbxqdmadtoankqr.supabase.co";
 const SEED_SECRET = process.env.E2E_SEED_SECRET ?? "";
