@@ -326,3 +326,29 @@ don't fail the build — review them in `e2e-gap-summary.md`.
 - `scripts/smoke-matrix-run.sh` — one-command runner.
 - `scripts/gap-report-to-tasks.mjs` — converts `e2e-gap-report.json` into a
   Lovable repair-queue checklist.
+
+## Mobile guard stabilization (2026-05-13)
+
+The mobile guard cells (`Usability › mobile › guard <route> bounces anon`) were
+flaky on Live with the previous serial config. Fixes shipped:
+
+1. `usability-matrix.spec.ts` now runs `mode: "parallel"` with `timeout: 90_000`
+   so a single slow cell can no longer cascade 13 cells into "did not run".
+2. Guard tests replaced fixed `waitForTimeout(1500)` with a 4s
+   `waitForURL(/\/auth/)` race + 800ms fallback — typical run drops from
+   ~1.5s to ~400ms per cell on Live.
+3. `helpers/instrumentation.ts` now filters `404 Error: User attempted...`
+   and known React Router / Radix / DOM-prop dev warnings as noise so the gap
+   report only carries actionable signal.
+4. The mobile-menu detector accepts a hamburger **OR** any visible nav links
+   **OR** a primary CTA — pages without a unified header (`/handbook`,
+   `/verify`, etc.) no longer false-warn as long as they expose interactive UI.
+
+Run just the mobile guards locally:
+
+```bash
+CHROMIUM_BIN=/bin/chromium \
+E2E_BASE_URL=https://joblineai.lovable.app \
+  bunx playwright test e2e/usability-matrix.spec.ts \
+    -g "mobile.*guard" --workers=4
+```
