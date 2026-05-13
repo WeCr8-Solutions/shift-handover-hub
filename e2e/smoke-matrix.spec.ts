@@ -79,6 +79,8 @@ test.describe("Smoke matrix", () => {
           pathway,
         };
 
+        instrumentPage(page, ctx);
+
         const fx = await seedFixture(scenario);
         const creds =
           entry.loginAs === "admin" ? fx.admin : fx.operator;
