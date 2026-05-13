@@ -24,6 +24,7 @@ import { getPublicTalentUrl } from "@/lib/talent/publicHost";
 import { buildResumePdf } from "@/lib/talent/resumeBuilder";
 import { FilePicker } from "@/components/operator/FilePicker";
 import { useResumeVersions } from "@/hooks/useResumeVersions";
+import { getOperatorProfileSignedUrl } from "@/lib/operatorProfileFiles";
 
 
 const PROFICIENCY_LEVELS = ["beginner", "intermediate", "advanced", "expert"] as const;
@@ -265,15 +266,18 @@ export default function OperatorProfile() {
   const handleAutoUpdateFromResume = async (
     opts: { resumeUrlOverride?: string; silent?: boolean } = {}
   ) => {
-    const resumeUrl = opts.resumeUrlOverride ?? profile?.resume_pdf_url;
-    if (!resumeUrl) {
+    const storedUrl = opts.resumeUrlOverride ?? profile?.resume_pdf_url;
+    if (!storedUrl) {
       toast({ title: "No resume uploaded", description: "Upload a PDF or DOCX first.", variant: "destructive" });
       return;
     }
     setAutofilling(true);
     try {
+      // Remint a fresh signed URL — stored URLs may have expired (7-day TTL),
+      // and parse-resume needs to fetch the file directly from Storage.
+      const freshUrl = (await getOperatorProfileSignedUrl(storedUrl, 60 * 10)) ?? storedUrl;
       const { data, error } = await supabase.functions.invoke("parse-resume", {
-        body: { resumeUrl },
+        body: { resumeUrl: freshUrl },
       });
       if (error) throw error;
       if (!data?.ok) throw new Error(data?.error ?? "Parse failed");
@@ -1069,8 +1073,15 @@ export default function OperatorProfile() {
                     </Button>
                     {profile?.resume_pdf_url && (
                       <>
-                        <Button variant="outline" size="sm" asChild>
-                          <a href={profile.resume_pdf_url} target="_blank" rel="noopener noreferrer">View resume</a>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={async () => {
+                            const fresh = await getOperatorProfileSignedUrl(profile.resume_pdf_url!, 60 * 10);
+                            window.open(fresh ?? profile.resume_pdf_url!, "_blank", "noopener,noreferrer");
+                          }}
+                        >
+                          View resume
                         </Button>
                         <Button variant="outline" size="sm" onClick={handleRemoveResume} disabled={autofilling || building}>
                           Remove resume
