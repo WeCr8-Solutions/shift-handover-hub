@@ -1,13 +1,28 @@
 # E2E Failure Report — Post-Fix Pass
 
-**Generated:** 2026-05-13 (post-fix)
+**Generated:** 2026-05-13 (post-fix, re-run vs Live)
 **Target:** `https://joblineai.lovable.app` (Live, Supabase `dpajcbhfwmfnzgldrveu`)
-**Suites:** `e2e/usability-matrix.spec.ts` + `e2e/smoke-matrix.spec.ts` + `e2e/regression.spec.ts`
-**Raw artifacts:** `e2e-gap-report.json`, `e2e-gap-report.ndjson`, `e2e-gap-summary.md`, `playwright-report/`
+**Suites:** `e2e/regression.spec.ts` + `e2e/usability-matrix.spec.ts`
+**Cells executed:** 64 — 57 passed, 1 failed (regression `/work-orders` bounce), 6 skipped (downstream of failure)
+**Raw artifacts:** `e2e-gap-report.json` (42 entries: 16 error / 26 warn / 0 info), `e2e-gap-report.ndjson`, `playwright-report/`
 
-> This document is the running record of the failure-report follow-up pass. The
-> original 62-cell baseline is preserved in `e2e-gap-report.json`. Sections 2–5
-> below now track **what was fixed**, **what's still open**, and **how to verify**.
+## Latest Run Snapshot (2026-05-13 re-run)
+
+| Bucket | Count | Detail |
+|---|---|---|
+| Errors — `/work-orders*` still 404 on Live | **16** (8 unique × 2 viewports) | Code is fixed in repo; Live shipping stale build. **Republish unblocks all 16.** |
+| Warns — "No mobile menu or interactive element visible" | **13** | App `Header` selector now matches; marketing `MarketingNav` fix is in repo, ships on republish. |
+| Warns — "Page has no nav/header links" | **4** | `/handbook` × 2 + 2 others. Cosmetic; landing nav lives outside `<header>/<nav>`. |
+| Warns — `404 Error: User attempted…` console (cascade of CF-1) | **8** | Resolves on republish. |
+| Network 5xx | **0** | ✅ |
+| `pageerror` uncaught | **0** | ✅ |
+| RLS / privacy leaks | **0** | ✅ Talent privacy assertions pass. |
+
+**Conclusion:** every error in this run is the same root cause — Live has not
+been republished since `/work-orders*` routes were mounted. Once republished,
+expected result is **0 errors / ~17 warns** (4 cosmetic nav-semantics +
+~13 mobile hamburger ones that resolve via the same publish).
+
 
 ---
 
