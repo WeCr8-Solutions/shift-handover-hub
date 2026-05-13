@@ -193,6 +193,10 @@ const App = () => (
                     <Route path="/field/:token" element={<FieldView />} />
                     <Route path="/testing" element={<RequireAuth><RequireRole roles={["platform_admin","developer"]}><Testing /></RequireRole></RequireAuth>} />
                     <Route path="/queue" element={<RequireAuth><RequireOrg><Queue /></RequireOrg></RequireAuth>} />
+                    <Route path="/work-orders" element={<RequireAuth><RequireOrg><WorkOrdersHub /></RequireOrg></RequireAuth>} />
+                    <Route path="/work-orders/completed" element={<RequireAuth><RequireOrg><CompletedWorkOrders /></RequireOrg></RequireAuth>} />
+                    <Route path="/work-orders/cancelled" element={<RequireAuth><RequireOrg><CancelledWorkOrders /></RequireOrg></RequireAuth>} />
+                    <Route path="/work-orders/on-hold" element={<RequireAuth><RequireOrg><OnHoldWorkOrders /></RequireOrg></RequireAuth>} />
                     <Route path="/history" element={<RequireAuth><RequireOrg><WorkOrderHistoryPage /></RequireOrg></RequireAuth>} />
                     <Route path="/quote-history" element={<RequireAuth><RequireOrg><QuoteHistoryPage /></RequireOrg></RequireAuth>} />
                     <Route path="/setup" element={<RequireAuth><Setup /></RequireAuth>} />
