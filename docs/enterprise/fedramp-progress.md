@@ -69,10 +69,11 @@ Legend: 🟢 done · 🟡 in progress · 🔴 not started
 - [ ] Complete control implementation summaries for already-built controls (RLS, audit, auth, encryption)
 - [ ] Document Customer Responsibility Matrix (CRM) for shared controls
 - [ ] Formalize Incident Response Plan + run one tabletop
-- [ ] Formalize Contingency Plan (backup/restore runbook, RTO/RPO documented)
-- [ ] Formalize Configuration Management Plan
+- [x] Formalize Contingency Plan (backup/restore runbook, RTO/RPO documented) — `backup-recovery-plan.md` + `backup-restore-test-runbook.md`
+- [ ] Execute first quarterly restore test under the new runbook (CP-4 evidence)
+- [x] Formalize Configuration Management Plan — `configuration-management-plan.md`
 - [ ] Complete Phase 1 status page migration (Upptime at `status.jobline.ai`)
-- [ ] Complete ITAR / US Person screening procedure document
+- [x] Complete ITAR / US Person screening procedure document — `itar-screening-procedure.md`
 - [ ] Quarterly evidence capture (uptime screenshots, access reviews, vuln scan reports)
 - [ ] Build target federal customer list, identify potential sponsors
 
