@@ -16,13 +16,13 @@
 | Category | Count |
 |----------|-------|
 | Total items | 33 |
-| **Open** | **11** |
+| **Open** | **8** |
 | Critical / Blocking open | 3 (G-00, G-01, G-02) |
-| Engineering open | 5 (G-04, G-06, G-07, G-12, G-13) |
-| Operations open | 3 (G-15, G-16, G-23) |
-| **Completed** | **22** |
+| Engineering open | 2 (G-06, G-07) |
+| Operations open | 3 (G-16, G-23) — plus G-15 first-test execution |
+| **Completed** | **25** |
 
-*Last updated: April 2026 — Phase 1 documentation sprint complete*
+*Last updated: May 2026 — closed G-12 (AI opt-out), G-13 (prompt injection + AI audit log via `ai_request_log`), and G-15 documentation (operational quarterly tests pending).*
 
 ---
 
