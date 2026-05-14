@@ -270,6 +270,40 @@ Deno.serve(async (req) => {
           },
           { role: "user", content: userContent },
         ],
+    // ── FedRAMP SI-3 / SI-10: prompt injection screen + audit log ────────
+    const screen = await screenPromptInjection(typeof userContent === "string" ? userContent : JSON.stringify(userContent));
+    const __t0 = Date.now();
+    if (screen.flagged) {
+      await logAiRequest({
+        organizationId: __orgId, userId: __userId, functionName: "parse-resume",
+        model: "google/gemini-2.5-flash", inputLength: screen.sanitized.length,
+        outputLength: 0, inputSha256: screen.inputSha256, flagged: true,
+        flagReasons: screen.reasons, latencyMs: 0, status: "blocked",
+        errorMessage: "prompt_injection_detected",
+      });
+      return new Response(
+        JSON.stringify({ error: "Resume content was flagged by safety screening. Please re-upload a standard resume." }),
+        { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    userContent = screen.sanitized;
+
+    const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          {
+            role: "system",
+            content:
+              "You parse manufacturing/CNC operator resumes. Extract every field you can confidently identify. Skip fields you cannot determine. Dates must be ISO YYYY-MM-DD (use the 1st of the month if only month/year given). Skills should be discrete tags, not sentences.",
+          },
+          { role: "user", content: userContent },
+        ],
         tools: [{
           type: "function",
           function: {
@@ -285,6 +319,16 @@ Deno.serve(async (req) => {
     if (!aiResp.ok) {
       const txt = await aiResp.text();
       console.error("AI gateway error", aiResp.status, txt);
+      const status =
+        aiResp.status === 429 ? "rate_limited" :
+        aiResp.status === 402 ? "credits_exhausted" : "error";
+      await logAiRequest({
+        organizationId: __orgId, userId: __userId, functionName: "parse-resume",
+        model: "google/gemini-2.5-flash", inputLength: screen.sanitized.length,
+        outputLength: 0, inputSha256: screen.inputSha256, flagged: false,
+        flagReasons: [], latencyMs: Date.now() - __t0, status,
+        errorMessage: `gateway_${aiResp.status}`,
+      });
       if (aiResp.status === 429) {
         return new Response(JSON.stringify({ error: "Rate limit exceeded, please try again in a minute." }), {
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -304,6 +348,14 @@ Deno.serve(async (req) => {
       throw new Error("AI returned no structured data");
     }
     const parsed = JSON.parse(toolCall.function.arguments);
+    const __outLen = toolCall.function.arguments.length;
+
+    await logAiRequest({
+      organizationId: __orgId, userId: __userId, functionName: "parse-resume",
+      model: "google/gemini-2.5-flash", inputLength: screen.sanitized.length,
+      outputLength: __outLen, inputSha256: screen.inputSha256, flagged: false,
+      flagReasons: [], latencyMs: Date.now() - __t0, status: "ok",
+    });
 
     return new Response(JSON.stringify({ ok: true, data: parsed }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
