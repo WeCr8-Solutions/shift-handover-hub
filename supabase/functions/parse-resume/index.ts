@@ -169,6 +169,38 @@ Deno.serve(async (req) => {
       });
     }
 
+    // ── FedRAMP G-12 / AC-20 / SA-9: org-level AI opt-out ────────────────
+    const { checkAiEnabled, screenPromptInjection, logAiRequest } = await import(
+      "../_shared/aiGuard.ts"
+    );
+    // Re-derive userId from the validated JWT for the gate + audit log.
+    let __userId: string | null = null;
+    let __orgId: string | null = null;
+    try {
+      const { createClient: __cc } = await import("https://esm.sh/@supabase/supabase-js@2");
+      const __uc = __cc(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        global: { headers: { Authorization: authHeader } },
+      });
+      const { data: __u } = await __uc.auth.getUser();
+      __userId = __u?.user?.id ?? null;
+    } catch { /* non-fatal */ }
+    if (__userId) {
+      const gate = await checkAiEnabled(__userId);
+      __orgId = gate.organizationId;
+      if (!gate.allowed) {
+        await logAiRequest({
+          organizationId: __orgId, userId: __userId, functionName: "parse-resume",
+          model: null, inputLength: 0, outputLength: 0, inputSha256: null,
+          flagged: false, flagReasons: [], latencyMs: 0, status: "blocked",
+          errorMessage: "ai_disabled_for_org",
+        });
+        return new Response(
+          JSON.stringify({ error: "AI features are disabled for your organization." }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+    }
+
     // ── SSRF guard: only allow our own Supabase Storage origin ────────────
     let parsedUrl: URL;
     try {
