@@ -254,22 +254,6 @@ Deno.serve(async (req) => {
       userContent = `Extract structured profile fields from this resume text:\n\n${text}`;
     }
 
-    const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          {
-            role: "system",
-            content:
-              "You parse manufacturing/CNC operator resumes. Extract every field you can confidently identify. Skip fields you cannot determine. Dates must be ISO YYYY-MM-DD (use the 1st of the month if only month/year given). Skills should be discrete tags, not sentences.",
-          },
-          { role: "user", content: userContent },
-        ],
     // ── FedRAMP SI-3 / SI-10: prompt injection screen + audit log ────────
     const screen = await screenPromptInjection(typeof userContent === "string" ? userContent : JSON.stringify(userContent));
     const __t0 = Date.now();
