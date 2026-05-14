@@ -112,8 +112,8 @@ Legend: 🟢 done · 🟡 in progress · 🔴 not started
 
 1. **Federal sponsor identification** — single biggest blocker. Even a small agency or DoD program office willing to sponsor an Agency ATO is the unlock. Without this, we cannot start.
 2. **SSP author bandwidth** — drafting NIST 800-53 control narratives is ~120–200 hours of focused work. Either internal (founder/eng lead) or contract a FedRAMP advisor (~$15–30k for SSP shell).
-3. **Backup/restore runbook** — required for CP control family. Need to document Supabase point-in-time restore procedure.
-4. **Formal IR Plan + tabletop** — required for IR control family. ~1 day workshop.
+3. ~~Backup/restore runbook~~ ✅ done — `backup-restore-test-runbook.md`. Need to **execute** first quarterly test.
+4. ~~Formal IR Plan~~ ✅ done — `incident-response-plan.md`. Annual tabletop still pending.
 
 ### Need after federal LOI
 
