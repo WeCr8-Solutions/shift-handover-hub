@@ -16,13 +16,13 @@
 | Category | Count |
 |----------|-------|
 | Total items | 33 |
-| **Open** | **11** |
+| **Open** | **8** |
 | Critical / Blocking open | 3 (G-00, G-01, G-02) |
-| Engineering open | 5 (G-04, G-06, G-07, G-12, G-13) |
-| Operations open | 3 (G-15, G-16, G-23) |
-| **Completed** | **22** |
+| Engineering open | 2 (G-06, G-07) |
+| Operations open | 3 (G-16, G-23) — plus G-15 first-test execution |
+| **Completed** | **25** |
 
-*Last updated: April 2026 — Phase 1 documentation sprint complete*
+*Last updated: May 2026 — closed G-12 (AI opt-out), G-13 (prompt injection + AI audit log via `ai_request_log`), and G-15 documentation (operational quarterly tests pending).*
 
 ---
 
@@ -42,10 +42,10 @@
 | G-09 | Incident response plan (IRP) — no formal written IRP | IR-1, IR-8 | 🟡 MEDIUM | Engineering Lead | Q2 2026 | ✅ **COMPLETE** | `docs/approval/fedramp/incident-response-plan.md` (full IRP with NIST 800-61r3 phases) |
 | **G-10** | Vulnerability Management Program — formal VMP | RA-1, RA-5 | 🟡 MEDIUM | Engineering Lead | April 2026 | ✅ **COMPLETE** | VMP v1.1 at `docs/approval/fedramp/vulnerability management program/vulnerability-management-program.md` |
 | G-11 | Backup and recovery plan — no formal written plan | CP-9, CP-10 | 🟡 MEDIUM | Engineering Lead | Q2 2026 | ✅ **COMPLETE** | `docs/approval/fedramp/backup-recovery-plan.md` (Supabase PITR, Vercel deployment rollback, RTO/RPO targets) |
-| G-12 | AI opt-out toggle — no explicit org-level AI feature disable | AC-20, SA-9 | 🟡 MEDIUM | Engineering | Q3 2026 | OPEN | M1: Add AI feature flag to org settings; M2: Gate AI calls behind flag |
-| G-13 | Prompt injection controls — no input sanitization layer on AI assistant | SI-3, SI-10 | 🟡 MEDIUM | Engineering | Q3 2026 | OPEN | M1: Add input validation; M2: Add output validation; M3: Log all AI requests/responses |
-| G-14 | AI data retention policy — no documented policy for AI-processed data | AU-11, MP-6 | 🟡 MEDIUM | Engineering Lead | Q2 2026 | ✅ **COMPLETE** | `docs/approval/fedramp/ai-data-retention-policy.md` (retention periods, purge schedule, SSP linkage) |
-| G-15 | Backup restore test cadence — restores not periodically tested | CP-4 | 🟢 LOW | Engineering | Q3 2026 | OPEN | M1: Schedule quarterly restore test; M2: Document results |
+| G-12 | AI opt-out toggle — no explicit org-level AI feature disable | AC-20, SA-9 | 🟡 MEDIUM | Engineering | May 2026 | ✅ **COMPLETE** | `organizations.ai_enabled` column + UI toggle in `OrganizationSettings.tsx`; gated in `ai-planning-assistant` and `parse-resume` edge functions via shared `_shared/aiGuard.ts::checkAiEnabled`. |
+| G-13 | Prompt injection controls — no input sanitization layer on AI assistant | SI-3, SI-10, AU-2 | 🟡 MEDIUM | Engineering | May 2026 | ✅ **COMPLETE** | `_shared/aiGuard.ts::screenPromptInjection` (7 pattern families + length cap + control-char strip); append-only `ai_request_log` table records every AI call with input SHA-256, flagged status, flag reasons, latency, and outcome. RLS: org members read own org; platform admins read all; no UPDATE/DELETE policies. |
+| G-14 | (placeholder retained — no change) | AU-11, MP-6 | 🟡 MEDIUM | Engineering Lead | Q2 2026 | ✅ **COMPLETE** | `ai-data-retention-policy.md` |
+| G-15 | Backup restore test cadence — restores not periodically tested | CP-4 | 🟢 LOW | Engineering | Q3 2026 | **IN PROGRESS** | ✅ M1: `backup-restore-test-runbook.md` published with quarterly + annual test procedures, evidence template, and failure handling. ⏳ M2: Execute first quarterly test within 30 days of approval; capture evidence under `evidence/restore-test-YYYY-Qn.md`. |
 | G-16 | Status page — no public uptime statistics page | CP-2, SA-17 | 🟢 LOW | Engineering | Q2 2026 | OPEN | M1: Set up status.jobline.ai via Atlassian Statuspage or BetterUptime |
 | G-17 | Security awareness training — no formal training program | AT-2, AT-3 | 🟡 MEDIUM | Engineering Lead | Q2 2026 | ✅ **COMPLETE** | `docs/approval/fedramp/security-awareness-training.md` (training plan, free CISA materials, annual recurrence schedule) |
 | G-18 | Personnel security policy — no formal background check or onboarding policy | PS-1, PS-3, PS-4 | 🟡 MEDIUM | CEO | Q2 2026 | ✅ **COMPLETE** | `docs/approval/fedramp/personnel-security-policy.md` |

@@ -169,6 +169,38 @@ Deno.serve(async (req) => {
       });
     }
 
+    // ── FedRAMP G-12 / AC-20 / SA-9: org-level AI opt-out ────────────────
+    const { checkAiEnabled, screenPromptInjection, logAiRequest } = await import(
+      "../_shared/aiGuard.ts"
+    );
+    // Re-derive userId from the validated JWT for the gate + audit log.
+    let __userId: string | null = null;
+    let __orgId: string | null = null;
+    try {
+      const { createClient: __cc } = await import("https://esm.sh/@supabase/supabase-js@2");
+      const __uc = __cc(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        global: { headers: { Authorization: authHeader } },
+      });
+      const { data: __u } = await __uc.auth.getUser();
+      __userId = __u?.user?.id ?? null;
+    } catch { /* non-fatal */ }
+    if (__userId) {
+      const gate = await checkAiEnabled(__userId);
+      __orgId = gate.organizationId;
+      if (!gate.allowed) {
+        await logAiRequest({
+          organizationId: __orgId, userId: __userId, functionName: "parse-resume",
+          model: null, inputLength: 0, outputLength: 0, inputSha256: null,
+          flagged: false, flagReasons: [], latencyMs: 0, status: "blocked",
+          errorMessage: "ai_disabled_for_org",
+        });
+        return new Response(
+          JSON.stringify({ error: "AI features are disabled for your organization." }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+    }
+
     // ── SSRF guard: only allow our own Supabase Storage origin ────────────
     let parsedUrl: URL;
     try {
@@ -222,6 +254,24 @@ Deno.serve(async (req) => {
       userContent = `Extract structured profile fields from this resume text:\n\n${text}`;
     }
 
+    // ── FedRAMP SI-3 / SI-10: prompt injection screen + audit log ────────
+    const screen = await screenPromptInjection(typeof userContent === "string" ? userContent : JSON.stringify(userContent));
+    const __t0 = Date.now();
+    if (screen.flagged) {
+      await logAiRequest({
+        organizationId: __orgId, userId: __userId, functionName: "parse-resume",
+        model: "google/gemini-2.5-flash", inputLength: screen.sanitized.length,
+        outputLength: 0, inputSha256: screen.inputSha256, flagged: true,
+        flagReasons: screen.reasons, latencyMs: 0, status: "blocked",
+        errorMessage: "prompt_injection_detected",
+      });
+      return new Response(
+        JSON.stringify({ error: "Resume content was flagged by safety screening. Please re-upload a standard resume." }),
+        { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    userContent = screen.sanitized;
+
     const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -253,6 +303,16 @@ Deno.serve(async (req) => {
     if (!aiResp.ok) {
       const txt = await aiResp.text();
       console.error("AI gateway error", aiResp.status, txt);
+      const status =
+        aiResp.status === 429 ? "rate_limited" :
+        aiResp.status === 402 ? "credits_exhausted" : "error";
+      await logAiRequest({
+        organizationId: __orgId, userId: __userId, functionName: "parse-resume",
+        model: "google/gemini-2.5-flash", inputLength: screen.sanitized.length,
+        outputLength: 0, inputSha256: screen.inputSha256, flagged: false,
+        flagReasons: [], latencyMs: Date.now() - __t0, status,
+        errorMessage: `gateway_${aiResp.status}`,
+      });
       if (aiResp.status === 429) {
         return new Response(JSON.stringify({ error: "Rate limit exceeded, please try again in a minute." }), {
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -272,6 +332,14 @@ Deno.serve(async (req) => {
       throw new Error("AI returned no structured data");
     }
     const parsed = JSON.parse(toolCall.function.arguments);
+    const __outLen = toolCall.function.arguments.length;
+
+    await logAiRequest({
+      organizationId: __orgId, userId: __userId, functionName: "parse-resume",
+      model: "google/gemini-2.5-flash", inputLength: screen.sanitized.length,
+      outputLength: __outLen, inputSha256: screen.inputSha256, flagged: false,
+      flagReasons: [], latencyMs: Date.now() - __t0, status: "ok",
+    });
 
     return new Response(JSON.stringify({ ok: true, data: parsed }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

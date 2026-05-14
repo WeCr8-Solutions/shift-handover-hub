@@ -213,6 +213,86 @@ export type Database = {
           },
         ]
       }
+      ai_request_log: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          flag_reasons: string[]
+          flagged: boolean
+          function_name: string
+          id: string
+          input_length: number
+          input_sha256: string | null
+          latency_ms: number | null
+          model: string | null
+          organization_id: string | null
+          output_length: number
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          flag_reasons?: string[]
+          flagged?: boolean
+          function_name: string
+          id?: string
+          input_length?: number
+          input_sha256?: string | null
+          latency_ms?: number | null
+          model?: string | null
+          organization_id?: string | null
+          output_length?: number
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          flag_reasons?: string[]
+          flagged?: boolean
+          function_name?: string
+          id?: string
+          input_length?: number
+          input_sha256?: string | null
+          latency_ms?: number | null
+          model?: string | null
+          organization_id?: string | null
+          output_length?: number
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_request_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "ai_request_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_request_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_request_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       announcement_reads: {
         Row: {
           announcement_id: string

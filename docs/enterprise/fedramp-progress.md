@@ -45,9 +45,10 @@ We **DO have** a phased plan that lets us continue serving commercial customers 
 | Encryption in transit | 🟢 Implemented | TLS 1.2+ enforced, HSTS via Cloudflare |
 | Encryption at rest | 🟢 Inherited | Supabase manages (commercial AWS today; GovCloud post-LOI) |
 | Secrets management | 🟢 Implemented | Lovable Cloud secrets vault; no secrets in code or repo |
-| ITAR controls | 🟡 Partial | `is_itar` org flag, US Person declaration gate, talent contact masking. Needs formal export-control screening doc. |
-| Incident Response (IR) Plan | 🔴 Draft only | Need formalized IRP doc + tabletop exercise |
-| Contingency Plan (CP) | 🟡 Partial | Status page runbook (CP-2) drafted; backup/restore runbook missing |
+| ITAR controls | 🟢 Implemented | `requires_us_person_declaration` org flag, US Person declaration gate, talent contact masking, `enforce_itar_read_through` trigger, formal procedure doc at `docs/approval/fedramp/itar-screening-procedure.md` |
+| AI safety controls (SI-3, SI-10, AU-2) | 🟢 Implemented | Org-level `ai_enabled` opt-out; `_shared/aiGuard.ts` prompt-injection screen + append-only `ai_request_log` audit table; gated in `ai-planning-assistant` and `parse-resume` |
+| Incident Response (IR) Plan | 🟢 Implemented | `docs/approval/fedramp/incident-response-plan.md` (NIST 800-61r3 phases). Tabletop pending annually. |
+| Contingency Plan (CP) | 🟢 Implemented | `iscp.md` + `backup-recovery-plan.md` + new `backup-restore-test-runbook.md` (CP-4 quarterly cadence) |
 | System Security Plan (SSP) | 🔴 Not started | Need to start NIST 800-53 Rev 5 control mapping |
 | 3PAO selected | 🔴 Not started | Defer until SSP draft exists |
 | Agency sponsor | 🔴 Not identified | Active prospecting via DoD primes, .mil shop networks |
@@ -68,10 +69,11 @@ Legend: 🟢 done · 🟡 in progress · 🔴 not started
 - [ ] Complete control implementation summaries for already-built controls (RLS, audit, auth, encryption)
 - [ ] Document Customer Responsibility Matrix (CRM) for shared controls
 - [ ] Formalize Incident Response Plan + run one tabletop
-- [ ] Formalize Contingency Plan (backup/restore runbook, RTO/RPO documented)
-- [ ] Formalize Configuration Management Plan
+- [x] Formalize Contingency Plan (backup/restore runbook, RTO/RPO documented) — `backup-recovery-plan.md` + `backup-restore-test-runbook.md`
+- [ ] Execute first quarterly restore test under the new runbook (CP-4 evidence)
+- [x] Formalize Configuration Management Plan — `configuration-management-plan.md`
 - [ ] Complete Phase 1 status page migration (Upptime at `status.jobline.ai`)
-- [ ] Complete ITAR / US Person screening procedure document
+- [x] Complete ITAR / US Person screening procedure document — `itar-screening-procedure.md`
 - [ ] Quarterly evidence capture (uptime screenshots, access reviews, vuln scan reports)
 - [ ] Build target federal customer list, identify potential sponsors
 
@@ -110,8 +112,8 @@ Legend: 🟢 done · 🟡 in progress · 🔴 not started
 
 1. **Federal sponsor identification** — single biggest blocker. Even a small agency or DoD program office willing to sponsor an Agency ATO is the unlock. Without this, we cannot start.
 2. **SSP author bandwidth** — drafting NIST 800-53 control narratives is ~120–200 hours of focused work. Either internal (founder/eng lead) or contract a FedRAMP advisor (~$15–30k for SSP shell).
-3. **Backup/restore runbook** — required for CP control family. Need to document Supabase point-in-time restore procedure.
-4. **Formal IR Plan + tabletop** — required for IR control family. ~1 day workshop.
+3. ~~Backup/restore runbook~~ ✅ done — `backup-restore-test-runbook.md`. Need to **execute** first quarterly test.
+4. ~~Formal IR Plan~~ ✅ done — `incident-response-plan.md`. Annual tabletop still pending.
 
 ### Need after federal LOI
 
