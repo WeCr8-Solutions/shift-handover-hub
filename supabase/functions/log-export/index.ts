@@ -180,6 +180,25 @@ serve(async (req: Request) => {
     return new Response(JSON.stringify({ ok: false, reason: "no_endpoint" }), { status: 200 });
   }
 
+  // SSRF guard: SIEM endpoints must be public HTTPS — block other schemes
+  // and RFC-1918 / link-local / loopback hostnames to prevent abuse of the
+  // edge function as an internal-network probe.
+  let parsedEndpoint: URL;
+  try {
+    parsedEndpoint = new URL(String(config.endpoint_url));
+  } catch {
+    return new Response(JSON.stringify({ error: "Invalid SIEM endpoint URL" }), { status: 422 });
+  }
+  if (parsedEndpoint.protocol !== "https:") {
+    return new Response(JSON.stringify({ error: "SIEM endpoint must use HTTPS" }), { status: 422 });
+  }
+  const host = parsedEndpoint.hostname;
+  const PRIVATE_HOST_RX =
+    /^(10\.|127\.|0\.|169\.254\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|localhost$|::1$|fc[0-9a-f]{2}:|fd[0-9a-f]{2}:|fe80:)/i;
+  if (PRIVATE_HOST_RX.test(host)) {
+    return new Response(JSON.stringify({ error: "Private/loopback SIEM endpoints are not allowed" }), { status: 422 });
+  }
+
   // Severity filter
   const eventSev = String(eventRecord.severity ?? "info");
   if (!severityMeetsMinimum(eventSev, String(config.min_severity ?? "info"))) {
