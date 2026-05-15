@@ -193,8 +193,12 @@ export default function PlanningCenter() {
           </Button>
         </header>
 
-        <Tabs defaultValue="capacity" className="space-y-4">
+        <Tabs defaultValue="all" className="space-y-4">
           <TabsList className="flex flex-wrap h-auto">
+            <TabsTrigger value="all" className="gap-1.5">
+              <ListChecks className="w-4 h-4" />
+              All
+            </TabsTrigger>
             {sections.map((s) => {
               const Icon = s.icon;
               return (
@@ -214,6 +218,63 @@ export default function PlanningCenter() {
               )}
             </TabsTrigger>
           </TabsList>
+
+          {/* "All" tab — render every section stacked so nothing is hidden */}
+          <TabsContent value="all" className="space-y-8">
+            {sections.map((section) => (
+              <section key={section.id} className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <section.icon className="w-5 h-5 text-primary" />
+                  <div>
+                    <h2 className="text-lg font-semibold leading-tight">{section.title}</h2>
+                    <p className="text-sm text-muted-foreground">{section.subtitle}</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {section.cards.map((card) => {
+                    const Icon = card.icon;
+                    return (
+                      <Link
+                        key={card.title}
+                        to={card.to}
+                        className="block focus:outline-none focus:ring-2 focus:ring-ring rounded-lg"
+                      >
+                        <Card className="h-full transition-shadow hover:shadow-md hover:border-primary/40">
+                          <CardHeader className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <div className="p-2 rounded-md bg-primary/10 text-primary">
+                                <Icon className="w-5 h-5" />
+                              </div>
+                              <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                            </div>
+                            <CardTitle className="text-base">{card.title}</CardTitle>
+                            <CardDescription className="text-xs leading-relaxed">
+                              {card.description}
+                            </CardDescription>
+                          </CardHeader>
+                        </Card>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </section>
+            ))}
+
+            {canUseAi && (
+              <section className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-primary" />
+                  <div>
+                    <h2 className="text-lg font-semibold leading-tight">AI Planning Assistant</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Live shop-floor context for sequencing, capacity, and what-if questions.
+                    </p>
+                  </div>
+                </div>
+                <PlanningAssistantPanel organizationId={organization!.id} />
+              </section>
+            )}
+          </TabsContent>
 
           {sections.map((section) => (
             <TabsContent key={section.id} value={section.id} className="space-y-4">
