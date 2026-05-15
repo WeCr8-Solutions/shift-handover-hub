@@ -27,6 +27,18 @@ Deno.serve(async (req) => {
     const { data: userData } = await userClient.auth.getUser();
     if (!userData?.user) return json({ error: "Unauthorized" }, 401);
 
+    // Authorization: verify the caller can see this manual under RLS BEFORE
+    // we use the service-role client for storage I/O. Prevents cross-org
+    // enumeration / DoS via PDF processing of other orgs' manuals.
+    const { data: authorizedManual, error: authErr } = await userClient
+      .from("machine_manuals")
+      .select("id")
+      .eq("id", manual_id)
+      .maybeSingle();
+    if (authErr || !authorizedManual) {
+      return json({ error: "Not found or access denied" }, 403);
+    }
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,

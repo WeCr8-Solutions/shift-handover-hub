@@ -261,6 +261,16 @@ Deno.serve(async (req) => {
     if (!membership) {
       return json(403, { ok: false, error: { code: "forbidden", message: "Not a member of organization" } });
     }
+    const ALLOWED_SYNC_ROLES = new Set(["owner", "admin", "supervisor"]);
+    if (!ALLOWED_SYNC_ROLES.has(String((membership as any).role))) {
+      return json(403, {
+        ok: false,
+        error: {
+          code: "insufficient_role",
+          message: "ERP sync requires owner, admin, or supervisor role",
+        },
+      });
+    }
 
     // Per-org connection lookup. Read full row from erp_connections (admin
     // client) so we can get the encrypted client_id/secret for production OAuth.
@@ -389,7 +399,11 @@ Deno.serve(async (req) => {
       const filterParts: string[] = [];
       const plant = defaultPlant || body.plant;
       if (plant) filterParts.push(`ProductionPlant eq '${plant.replace(/'/g, "''")}'`);
-      if (body.filter) filterParts.push(body.filter);
+      // Note: arbitrary `body.filter` strings are intentionally NOT forwarded
+      // to SAP OData. Allowing raw filter predicates would let any caller
+      // bypass the ProductionPlant scope and enumerate other plants/tenants.
+      // If structured filter parameters are needed in the future, add an
+      // allowlisted field/operator builder here.
 
       const result = await callSapOData(
         sapBase,
