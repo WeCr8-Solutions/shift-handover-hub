@@ -106,12 +106,25 @@ async function fetchCertSummary(username: string): Promise<CertSummary> {
   }
 }
 
+// Only allow loading avatar bytes from the project's Supabase storage host.
+// User-controlled avatar_url could otherwise be used for SSRF probes against
+// internal Vercel infrastructure or cloud metadata endpoints.
+const ALLOWED_AVATAR_HOSTS = new Set(["kgrstnbxqdmadtoankqr.supabase.co"]);
+
 async function fetchAvatarDataUrl(url: string | null): Promise<string | null> {
   if (!url) return null;
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return null;
+  }
+  if (parsed.protocol !== "https:") return null;
+  if (!ALLOWED_AVATAR_HOSTS.has(parsed.host)) return null;
   try {
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), 2500);
-    const res = await fetch(url, { signal: ctrl.signal });
+    const res = await fetch(parsed.toString(), { signal: ctrl.signal });
     clearTimeout(t);
     if (!res.ok) return null;
     const ct = res.headers.get("content-type") ?? "image/png";
