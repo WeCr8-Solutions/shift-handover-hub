@@ -230,7 +230,7 @@ serve(async (req: Request) => {
   let exportError: string | null = null;
 
   try {
-    const siemResp = await fetch(String(config.endpoint_url), {
+    const siemResp = await fetch(parsedEndpoint.toString(), {
       method: "POST",
       headers,
       body: body_str,
