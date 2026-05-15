@@ -399,7 +399,11 @@ Deno.serve(async (req) => {
       const filterParts: string[] = [];
       const plant = defaultPlant || body.plant;
       if (plant) filterParts.push(`ProductionPlant eq '${plant.replace(/'/g, "''")}'`);
-      if (body.filter) filterParts.push(body.filter);
+      // Note: arbitrary `body.filter` strings are intentionally NOT forwarded
+      // to SAP OData. Allowing raw filter predicates would let any caller
+      // bypass the ProductionPlant scope and enumerate other plants/tenants.
+      // If structured filter parameters are needed in the future, add an
+      // allowlisted field/operator builder here.
 
       const result = await callSapOData(
         sapBase,
