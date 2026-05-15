@@ -17,8 +17,6 @@ updates:
       time: '09:00'
       timezone: America/Chicago
     open-pull-requests-limit: 10
-    reviewers:
-      - WeCr8-Solutions/engineering
     labels:
       - dependencies
       - security
