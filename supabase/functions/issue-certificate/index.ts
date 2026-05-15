@@ -327,14 +327,14 @@ serve(async (req) => {
             subject: `Your ${body.program} certificate — ${body.programName}`,
             html: `
               <div style="font-family:-apple-system,Inter,sans-serif;max-width:560px;margin:auto;padding:24px;color:#0F172A">
-                <h2 style="margin:0 0 8px">Congratulations, ${body.recipientName}!</h2>
-                <p>Your <strong>${body.program === "OAP" ? "Operator Acceptance Program" : "G-Code Academy"}</strong> certificate for <strong>${body.programName}</strong> has been issued.</p>
+                <h2 style="margin:0 0 8px">Congratulations, ${esc(body.recipientName)}!</h2>
+                <p>Your <strong>${body.program === "OAP" ? "Operator Acceptance Program" : "G-Code Academy"}</strong> certificate for <strong>${esc(body.programName)}</strong> has been issued.</p>
                 <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:16px;margin:16px 0">
                   <div style="font-size:11px;color:#64748B;letter-spacing:.08em;text-transform:uppercase">Certificate ID</div>
-                  <div style="font-family:ui-monospace,monospace;font-size:18px;font-weight:600">${certId}</div>
+                  <div style="font-family:ui-monospace,monospace;font-size:18px;font-weight:600">${esc(certId)}</div>
                 </div>
-                <p>Verify or share at:<br/><a href="${verifyUrl}">${verifyUrl}</a></p>
-                ${talentUrl ? `<p>Your public operator profile:<br/><a href="${talentUrl}">${talentUrl}</a></p>` : ""}
+                <p>Verify or share at:<br/><a href="${esc(verifyUrl)}">${esc(verifyUrl)}</a></p>
+                ${talentUrl ? `<p>Your public operator profile:<br/><a href="${esc(talentUrl)}">${esc(talentUrl)}</a></p>` : ""}
                 <p style="font-size:12px;color:#64748B">JobLine.ai — Operator Acceptance Program & G-Code Academy</p>
               </div>
             `,
