@@ -17,8 +17,6 @@ import { ScrollToTop } from "@/components/ScrollToTop";
 import { USPersonDeclarationGate } from "@/components/compliance/USPersonDeclarationGate";
 import { RulesOfBehaviorGate } from "@/components/compliance/RulesOfBehaviorGate";
 import { ReleaseBadge } from "@/components/ReleaseBadge";
-import { CookieConsent } from "@/components/legal/CookieConsent";
-import { RequireAuth, RequireOrg, RequireRole, RequireSubscription } from "@/components/auth/RouteGuards";
 import { lazy, Suspense } from "react";
 
 // Eager: landing page (LCP-critical, most-visited route)
@@ -33,6 +31,13 @@ const Admin = lazy(() => import("./pages/Admin"));
 const FieldView = lazy(() => import("./pages/FieldView"));
 const Testing = lazy(() => import("./pages/Testing"));
 const Queue = lazy(() => import("./pages/Queue"));
+const QueueHub = lazy(() => import("./pages/QueueHub"));
+const PlanningCenter = lazy(() => import("./pages/PlanningCenter"));
+const WorkOrdersHub = lazy(() => import("./pages/WorkOrdersHub"));
+const CompletedWorkOrders = lazy(() => import("./pages/CompletedWorkOrders"));
+const CancelledWorkOrders = lazy(() => import("./pages/CancelledWorkOrders"));
+const OnHoldWorkOrders = lazy(() => import("./pages/OnHoldWorkOrders"));
+const QuotesHub = lazy(() => import("./pages/QuotesHub"));
 const Setup = lazy(() => import("./pages/Setup"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Settings = lazy(() => import("./pages/Settings"));
@@ -107,8 +112,6 @@ const BeginnersGuide = lazy(() => import("./pages/resources/BeginnersGuide"));
 const ManufacturingCareers = lazy(() => import("./pages/resources/ManufacturingCareers"));
 const SafetyCompliance = lazy(() => import("./pages/resources/SafetyCompliance"));
 const QualityInspection = lazy(() => import("./pages/resources/QualityInspection"));
-const MeasuringTools = lazy(() => import("./pages/resources/MeasuringTools"));
-const ToolProficiency = lazy(() => import("./pages/ToolProficiency"));
 const LeanManufacturing = lazy(() => import("./pages/resources/LeanManufacturing"));
 const FiveSMethodology = lazy(() => import("./pages/resources/FiveSMethodology"));
 const KanbanSortingTechniques = lazy(() => import("./pages/resources/KanbanSortingTechniques"));
@@ -129,13 +132,8 @@ const DevPortal = lazy(() => import("./pages/DevPortal"));
 const DevDocArticle = lazy(() => import("./pages/DevDocArticle"));
 const WorkOrderHistoryPage = lazy(() => import("./pages/WorkOrderHistoryPage"));
 const QuoteHistoryPage = lazy(() => import("./pages/QuoteHistoryPage"));
-const WorkOrdersHub = lazy(() => import("./pages/WorkOrdersHub"));
-const CompletedWorkOrders = lazy(() => import("./pages/CompletedWorkOrders"));
-const CancelledWorkOrders = lazy(() => import("./pages/CancelledWorkOrders"));
-const OnHoldWorkOrders = lazy(() => import("./pages/OnHoldWorkOrders"));
 const OperatorProfile = lazy(() => import("./pages/OperatorProfile"));
 const TalentLanding = lazy(() => import("./pages/TalentLanding"));
-const ResumeBuilderLanding = lazy(() => import("./pages/ResumeBuilderLanding"));
 const TalentBrowse = lazy(() => import("./pages/TalentBrowse"));
 const TalentSearch = lazy(() => import("./pages/TalentSearch"));
 const TalentDashboard = lazy(() => import("./pages/TalentDashboard"));
@@ -177,31 +175,33 @@ const App = () => (
                   <JobLineProvider>
                   <ActAsBanner />
                   <ReleaseBadge />
-                  <CookieConsent />
                   <GuidedTour />
                   <WelcomeModal />
                   <Suspense fallback={<RouteFallback />}>
                   <Routes>
                     <Route path="/" element={<Landing />} />
-                    <Route path="/dashboard" element={<RequireAuth><Index /></RequireAuth>} />
+                    <Route path="/dashboard" element={<Index />} />
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
-                    <Route path="/teams" element={<RequireAuth><RequireOrg><Teams /></RequireOrg></RequireAuth>} />
-                    <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
-                    <Route path="/admin" element={<RequireAuth><RequireRole roles={["platform_admin","developer","org_admin","org_supervisor"]}><Admin /></RequireRole></RequireAuth>} />
+                    <Route path="/teams" element={<Teams />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/admin" element={<Admin />} />
                     <Route path="/field" element={<FieldView />} />
                     <Route path="/field/:token" element={<FieldView />} />
                     <Route path="/testing" element={<RequireAuth><RequireRole roles={["platform_admin","developer"]}><Testing /></RequireRole></RequireAuth>} />
                     <Route path="/queue" element={<RequireAuth><RequireOrg><Queue /></RequireOrg></RequireAuth>} />
+                    <Route path="/queue-hub" element={<RequireAuth><RequireOrg><QueueHub /></RequireOrg></RequireAuth>} />
+                    <Route path="/planning-center" element={<RequireAuth><RequireOrg><PlanningCenter /></RequireOrg></RequireAuth>} />
                     <Route path="/work-orders" element={<RequireAuth><RequireOrg><WorkOrdersHub /></RequireOrg></RequireAuth>} />
                     <Route path="/work-orders/completed" element={<RequireAuth><RequireOrg><CompletedWorkOrders /></RequireOrg></RequireAuth>} />
                     <Route path="/work-orders/cancelled" element={<RequireAuth><RequireOrg><CancelledWorkOrders /></RequireOrg></RequireAuth>} />
                     <Route path="/work-orders/on-hold" element={<RequireAuth><RequireOrg><OnHoldWorkOrders /></RequireOrg></RequireAuth>} />
+                    <Route path="/quotes" element={<RequireAuth><RequireOrg><QuotesHub /></RequireOrg></RequireAuth>} />
                     <Route path="/history" element={<RequireAuth><RequireOrg><WorkOrderHistoryPage /></RequireOrg></RequireAuth>} />
                     <Route path="/quote-history" element={<RequireAuth><RequireOrg><QuoteHistoryPage /></RequireOrg></RequireAuth>} />
                     <Route path="/setup" element={<RequireAuth><Setup /></RequireAuth>} />
                     <Route path="/pricing" element={<Pricing />} />
-                    <Route path="/settings" element={<RequireAuth><Settings /></RequireAuth>} />
+                    <Route path="/settings" element={<Settings />} />
                     <Route path="/donation-success" element={<DonationSuccess />} />
                     <Route path="/demo" element={<Demo />} />
                     <Route path="/updates" element={<Updates />} />
@@ -264,19 +264,18 @@ const App = () => (
                     <Route path="/oap/learn" element={<OapHub />} />
                     <Route path="/oap/learn/:courseSlug" element={<OapCoursePlayer />} />
                     <Route path="/oap/learn/:courseSlug/:lessonSlug" element={<OapCoursePlayer />} />
-                    <Route path="/oap/employer" element={<RequireAuth><RequireOrg><RequireRole roles={["org_admin","org_supervisor"]}><RequireSubscription><OapEmployer /></RequireSubscription></RequireRole></RequireOrg></RequireAuth>} />
-                    <Route path="/gca/employer" element={<RequireAuth><RequireOrg><RequireRole roles={["org_admin","org_supervisor"]}><RequireSubscription><GcaEmployer /></RequireSubscription></RequireRole></RequireOrg></RequireAuth>} />
-                    <Route path="/gca/test/:bankSlug" element={<RequireAuth><GcaTestPage /></RequireAuth>} />
+                    <Route path="/oap/employer" element={<OapEmployer />} />
+                    <Route path="/gca/employer" element={<GcaEmployer />} />
+                    <Route path="/gca/test/:bankSlug" element={<GcaTestPage />} />
                     <Route path="/gcode-academy/certificates" element={<CertificateLookup />} />
                     <Route path="/gcode-academy/certificates/verify" element={<CertificateLookup />} />
-                    <Route path="/oap/my-transcript" element={<RequireAuth><OapMyTranscript /></RequireAuth>} />
+                    <Route path="/oap/my-transcript" element={<OapMyTranscript />} />
                     <Route path="/oap/certificates" element={<CertificateLookup />} />
                     <Route path="/oap/certificates/verify" element={<CertificateLookup />} />
                     <Route path="/talent" element={<TalentLanding />} />
-                    <Route path="/talent/dashboard" element={<RequireAuth><TalentDashboard /></RequireAuth>} />
-                    <Route path="/talent/resume-builder" element={<ResumeBuilderLanding />} />
+                    <Route path="/talent/dashboard" element={<TalentDashboard />} />
                     <Route path="/talent/browse" element={<TalentBrowse />} />
-                    <Route path="/talent/search" element={<RequireAuth><RequireOrg><RequireRole roles={["org_admin","org_supervisor"]}><RequireSubscription><TalentSearch /></RequireSubscription></RequireRole></RequireOrg></RequireAuth>} />
+                    <Route path="/talent/search" element={<TalentSearch />} />
                     <Route path="/talent/profile" element={<Navigate to="/operator/profile" replace />} />
                     <Route path="/talent/:username" element={<PublicTalentProfile />} />
                     <Route path="/operator/profile" element={<OperatorProfile />} />
@@ -286,8 +285,6 @@ const App = () => (
                     <Route path="/resources/careers" element={<ManufacturingCareers />} />
                     <Route path="/resources/safety" element={<SafetyCompliance />} />
                     <Route path="/resources/quality" element={<QualityInspection />} />
-                    <Route path="/resources/measuring-tools" element={<MeasuringTools />} />
-                    <Route path="/oap/proficiency" element={<ToolProficiency />} />
                     <Route path="/resources/lean" element={<LeanManufacturing />} />
                     <Route path="/resources/5s" element={<FiveSMethodology />} />
                     <Route path="/resources/kanban" element={<KanbanSortingTechniques />} />

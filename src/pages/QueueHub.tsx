@@ -2,7 +2,7 @@ import { HubLayout, HubCard } from "@/components/hubs/HubLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import { ListTodo, Kanban, Calendar, Sparkles, PlusCircle, ArrowRightLeft } from "lucide-react";
+import { ListTodo, Kanban, Calendar, Sparkles, PlusCircle, ArrowRightLeft, ShieldAlert, History } from "lucide-react";
 
 export default function QueueHub() {
   const { user } = useAuth();
@@ -45,6 +45,18 @@ export default function QueueHub() {
       description: "Vendor PO tracking, ship-out, and return windows.",
       to: "/queue?tab=outside-processing",
       icon: ArrowRightLeft,
+    },
+    {
+      title: "NCR / Quality",
+      description: "Non-conformance reports, approvals, and quality metrics.",
+      to: "/queue?tab=ncr",
+      icon: ShieldAlert,
+    },
+    {
+      title: "Work Order History",
+      description: "Search and export completed and closed items.",
+      to: "/queue?tab=history",
+      icon: History,
     },
     {
       title: "Planning Center",
