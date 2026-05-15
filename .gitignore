@@ -32,3 +32,7 @@ desktop/package-lock.json
 
 #Ignore vscode AI rules
 .github/instructions/codacy.instructions.md
+
+# Auto-generated release manifests (written by scripts/write-release.mjs at build time)
+public/release.json
+src/generated/release.ts

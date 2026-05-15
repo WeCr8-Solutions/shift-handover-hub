@@ -7,6 +7,22 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, "..");
 
+function safeGitHead() {
+  // Fallback: read .git/HEAD directly without requiring the git CLI.
+  // Works in shallow-clone build environments (e.g. Lovable) that lack git.
+  try {
+    const headPath = path.join(rootDir, ".git", "HEAD");
+    const headContent = readFileSync(headPath, "utf8").trim();
+    if (headContent.startsWith("ref: ")) {
+      const refFile = path.join(rootDir, ".git", headContent.slice(5));
+      return readFileSync(refFile, "utf8").trim();
+    }
+    return headContent; // detached HEAD — content is the SHA directly
+  } catch {
+    return null;
+  }
+}
+
 function safeGit(command) {
   try {
     return execSync(command, {
@@ -49,11 +65,13 @@ function resolveVersion(packageVersion, buildDate) {
 
 function resolveCommitSha() {
   const envCommit = firstNonEmpty(
+    process.env.VITE_COMMIT_SHA,
     process.env.VERCEL_GIT_COMMIT_SHA,
     process.env.CF_PAGES_COMMIT_SHA,
     process.env.GITHUB_SHA,
     process.env.CI_COMMIT_SHA,
     process.env.COMMIT_SHA,
+    process.env.GIT_COMMIT,
     process.env.SOURCE_COMMIT,
     process.env.LOVABLE_GIT_COMMIT_SHA,
     process.env.LOVABLE_COMMIT_SHA,
@@ -62,7 +80,7 @@ function resolveCommitSha() {
     process.env.RENDER_GIT_COMMIT,
   );
 
-  return (envCommit || safeGit("git rev-parse HEAD") || "unknown").slice(0, 12);
+  return (envCommit || safeGit("git rev-parse HEAD") || safeGitHead() || "unknown").slice(0, 12);
 }
 
 function detectDeployTarget() {
