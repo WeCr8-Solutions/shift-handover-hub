@@ -1,8 +1,8 @@
 {
-  "version": "2026.5.14",
-  "commitSha": "553e37cc8a07",
-  "shortSha": "553e37c",
-  "releaseStamp": "2026.5.14+553e37c",
-  "buildTime": "2026-05-14T13:59:10.815Z",
-  "deployTarget": "lovable"
+  "version": "0.0.0",
+  "commitSha": "3d9fce0341f1",
+  "shortSha": "3d9fce0",
+  "releaseStamp": "0.0.0+3d9fce0",
+  "buildTime": "2026-04-25T18:25:32.089Z",
+  "deployTarget": "local"
 }
