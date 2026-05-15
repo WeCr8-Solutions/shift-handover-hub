@@ -110,8 +110,8 @@ export default function Queue() {
     assigned_to?: string;
   }>({
     station_id: urlStationId || undefined,
-    item_type: urlType ? [urlType] : undefined,
-    status: urlStatus ? [urlStatus] : undefined,
+    item_type: urlTypes ?? undefined,
+    status: urlStatuses ?? undefined,
   });
 
   useEffect(() => {
