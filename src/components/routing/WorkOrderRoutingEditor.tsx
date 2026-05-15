@@ -189,20 +189,43 @@ export function WorkOrderRoutingEditor({
   useEffect(() => {
     const fetchStations = async () => {
       if (!organization?.id) return;
-      
+
       const { data, error } = await supabase
         .from('stations')
         .select('id, name, station_id, work_center, work_center_type')
         .eq('organization_id', organization.id)
         .eq('is_active', true)
         .order('work_center_type', { ascending: true });
-      
+
       if (!error && data) {
         setStations(data);
       }
     };
-    
+
     fetchStations();
+
+    if (!organization?.id) return;
+
+    // Subscribe to realtime updates for stations table
+    const channel = supabase
+      .channel(`stations-${organization.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'stations',
+          filter: `organization_id=eq.${organization.id}`,
+        },
+        () => {
+          fetchStations();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [organization?.id]);
 
   // Fetch org routing templates

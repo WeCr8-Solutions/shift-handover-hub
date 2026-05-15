@@ -139,7 +139,30 @@ export function CreateWorkOrderDialog({
     };
 
     fetchStations();
+
+    if (!open || !currentTeam?.id) {
+      return;
+    }
+
+    // Subscribe to realtime updates for stations
+    const channel = supabase
+      .channel(`stations-team-${currentTeam.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'stations',
+          filter: `team_id=eq.${currentTeam.id}`,
+        },
+        () => {
+          fetchStations();
+        }
+      )
+      .subscribe();
+
     return () => {
+      supabase.removeChannel(channel);
       cancelled = true;
     };
   }, [open, currentTeam?.id]);
