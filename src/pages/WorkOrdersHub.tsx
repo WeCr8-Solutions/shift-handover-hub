@@ -28,9 +28,15 @@ export default function WorkOrdersHub() {
     },
     {
       title: "Active Work Orders",
-      description: "View jobs currently in progress across all stations.",
-      to: "/queue?view=list&type=work_order&status=in_progress",
+      description: "All open jobs (pending, queued, in-progress, on-hold) across every type.",
+      to: "/queue?view=list&status=pending,queued,in_progress,on_hold",
       icon: ListTodo,
+    },
+    {
+      title: "Pending Approval",
+      description: "New work orders awaiting supervisor approval before release.",
+      to: "/queue?view=list&status=pending",
+      icon: ClipboardList,
     },
     {
       title: "Routing & Operations",

@@ -65,8 +65,10 @@ export default function Queue() {
   const urlWorkOrder = searchParams.get("wo");
   const urlView = searchParams.get("view") as QueueView | null;
   const urlTab = searchParams.get("tab") as QueueTab | null;
-  const urlType = searchParams.get("type") as QueueItemType | null;
-  const urlStatus = searchParams.get("status") as QueueStatus | null;
+  const urlTypeRaw = searchParams.get("type");
+  const urlStatusRaw = searchParams.get("status");
+  const urlTypes = urlTypeRaw ? (urlTypeRaw.split(",").filter(Boolean) as QueueItemType[]) : null;
+  const urlStatuses = urlStatusRaw ? (urlStatusRaw.split(",").filter(Boolean) as QueueStatus[]) : null;
   const urlAssistant = searchParams.get("assistant");
   const urlAction = searchParams.get("action");
 
@@ -108,8 +110,8 @@ export default function Queue() {
     assigned_to?: string;
   }>({
     station_id: urlStationId || undefined,
-    item_type: urlType ? [urlType] : undefined,
-    status: urlStatus ? [urlStatus] : undefined,
+    item_type: urlTypes ?? undefined,
+    status: urlStatuses ?? undefined,
   });
 
   useEffect(() => {
