@@ -107,7 +107,13 @@ function resolveCommitSha() {
     process.env.RENDER_GIT_COMMIT,
   );
 
-  return (envCommit || safeGit("git rev-parse HEAD") || safeGitHead() || "unknown").slice(0, 12);
+  const resolved =
+    envCommit ||
+    safeGit("git rev-parse HEAD") ||
+    safeGitHead() ||
+    previousCommitSha() ||
+    "unknown";
+  return resolved.slice(0, 12);
 }
 
 function detectDeployTarget() {
