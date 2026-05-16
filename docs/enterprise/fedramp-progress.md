@@ -160,6 +160,7 @@ Legend: 🟢 done · 🟡 in progress · 🔴 not started
 | 2026-04 | UptimeRobot Free → Upptime → Statping-ng (3-phase status page) | $0 today, branded URL in Q2, GovCloud-native at LOI. See `status-page-runbook.md` |
 | 2026-04 | Pursue Agency ATO over JAB P-ATO | JAB is impractical for early-stage SaaS; agency sponsorship is the realistic path |
 | 2026-04 | Target FedRAMP **Moderate** initially, plan upgrade path to **High** | Moderate covers most civilian federal workloads; High is a 12–18 month follow-on |
+| 2026-05-16 | Harden release-manifest SHA resolution with `__LOVABLE_REAL_GIT` + previous-manifest fallback | Lovable hosted builds were emitting `commitSha: "unknown"` because the sandboxed `git` wrapper failed and `.git/HEAD` is not a regular file; this regression broke build provenance shown in `ReleaseBadge` and `/release.json` |
 
 ---
 
