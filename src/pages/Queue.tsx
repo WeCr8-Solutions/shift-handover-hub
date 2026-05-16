@@ -5,6 +5,7 @@ import { useQueue, QueueStatus, QueueItemType } from "@/hooks/useQueue";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { useOrgContext } from "@/contexts/OrgContext";
 import { useOperatorSessions } from "@/hooks/useOperatorSessions";
+import { StationCheckIn } from "@/components/dashboard/StationCheckIn";
 import { useNCR } from "@/hooks/useNCR";
 import { useStations } from "@/hooks/useStations";
 import { useBackgroundRefresh } from "@/hooks/useBackgroundRefresh";
@@ -57,7 +58,8 @@ export default function Queue() {
   const { user, loading: authLoading, isReady } = useAuth();
   const { hasAdminAccess, loading: accessLoading } = useAdminAccess();
   const { organization } = useOrgContext();
-  const { activeSessions = [] } = useOperatorSessions();
+  const { activeSessions = [], checkIn: checkInToStation, refresh: refreshSessions } = useOperatorSessions();
+  const [checkInDialogOpen, setCheckInDialogOpen] = useState(false);
   const { stations = [] } = useStations(null, organization?.id);
 
   const urlStationId = searchParams.get("station");
@@ -225,7 +227,12 @@ export default function Queue() {
   const stats = {
     total: items.length,
     pending: items.filter((i) => i.status === "pending" || i.status === "queued").length,
+    pendingWorkOrders: items.filter(
+      (i) => (i.status === "pending" || i.status === "queued") && i.item_type === "work_order"
+    ).length,
+    quotes: items.filter((i) => i.item_type === "quote").length,
     inProgress: items.filter((i) => i.status === "in_progress").length,
+    onHold: items.filter((i) => i.status === "on_hold").length,
     completed: items.filter((i) => i.status === "completed").length,
     overdue: items.filter((i) => i.due_date && new Date(i.due_date) < new Date() && i.status !== "completed").length,
     fpy: totalOriginal > 0 ? ((totalCompleted - totalRework) / totalOriginal) * 100 : undefined,
@@ -385,9 +392,12 @@ export default function Queue() {
                   <p className="text-muted-foreground mb-4 max-w-sm">
                     Check in to a work station from the dashboard to view and manage your queue.
                   </p>
-                  <Button variant="outline" onClick={() => navigate("/")}>
-                    Go to dashboard
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button onClick={() => setCheckInDialogOpen(true)}>Check in now</Button>
+                    <Button variant="outline" onClick={() => navigate("/")}>
+                      Go to dashboard
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             )}
@@ -444,6 +454,8 @@ export default function Queue() {
                     onItemClick={setSelectedItemId}
                     onStatusChange={(itemId, newStatus) => updateItem(itemId, { status: newStatus })}
                     onReorder={reorderItems}
+                    requiresStationCheckIn={!hasAdminAccess && activeSessions.length === 0}
+                    onRequestStationCheckIn={() => setCheckInDialogOpen(true)}
                   />
                 )}
 
@@ -519,6 +531,25 @@ export default function Queue() {
               onClose={() => setRoutingEditorItem(null)}
             />
           )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={checkInDialogOpen} onOpenChange={setCheckInDialogOpen}>
+        <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Station Check-In Required</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            You must be checked in to a station before changing work order status. Select your station(s) and shift below.
+          </p>
+          <StationCheckIn
+            onCheckIn={async (stationIds, shift) => {
+              const res = await checkInToStation(stationIds, shift);
+              await refreshSessions?.();
+              setCheckInDialogOpen(false);
+              return res;
+            }}
+          />
         </DialogContent>
       </Dialog>
 

@@ -5,7 +5,10 @@ interface QueueStatsCardsProps {
   stats: {
     total: number;
     pending: number;
+    pendingWorkOrders?: number;
+    quotes?: number;
     inProgress: number;
+    onHold?: number;
     completed: number;
     overdue: number;
     scrapRate?: number;
@@ -24,8 +27,15 @@ export function QueueStatsCards({ stats }: QueueStatsCardsProps) {
       bgColor: "bg-primary/10",
     },
     {
-      label: "Pending",
-      value: stats.pending,
+      label: "Quote Requests",
+      value: stats.quotes ?? 0,
+      icon: Clock,
+      color: "text-amber-600",
+      bgColor: "bg-amber-100 dark:bg-amber-900/20",
+    },
+    {
+      label: "Pending Work Orders",
+      value: stats.pendingWorkOrders ?? stats.pending,
       icon: Clock,
       color: "text-yellow-600",
       bgColor: "bg-yellow-100 dark:bg-yellow-900/20",
@@ -36,6 +46,13 @@ export function QueueStatsCards({ stats }: QueueStatsCardsProps) {
       icon: PlayCircle,
       color: "text-blue-600",
       bgColor: "bg-blue-100 dark:bg-blue-900/20",
+    },
+    {
+      label: "On Hold",
+      value: stats.onHold ?? 0,
+      icon: Clock,
+      color: "text-orange-600",
+      bgColor: "bg-orange-100 dark:bg-orange-900/20",
     },
     {
       label: "Completed",
@@ -86,7 +103,7 @@ export function QueueStatsCards({ stats }: QueueStatsCardsProps) {
   const allCards = [...cards, ...qualityCards];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
       {allCards.map((card) => (
         <Card key={card.label}>
           <CardContent className="p-4">
