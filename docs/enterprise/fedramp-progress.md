@@ -54,6 +54,7 @@ We **DO have** a phased plan that lets us continue serving commercial customers 
 | Agency sponsor | 🔴 Not identified | Active prospecting via DoD primes, .mil shop networks |
 | GovCloud account | 🔴 Not opened | Trigger: signed federal LOI |
 | Continuous Monitoring (ConMon) | 🔴 Not started | Will inherit from GovCloud + SIEM in Phase 2 |
+| Release provenance (CM-2, SA-10) | 🟢 Implemented | `scripts/write-release.mjs` now resolves commit SHA from `__LOVABLE_REAL_GIT`, multiple git paths, `.git/HEAD`, and a previous-manifest fallback so the in-app `ReleaseBadge` + `/release.json` never regress to "unknown" on Lovable-hosted builds |
 
 Legend: 🟢 done · 🟡 in progress · 🔴 not started
 
