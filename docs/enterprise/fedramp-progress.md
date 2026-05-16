@@ -54,6 +54,7 @@ We **DO have** a phased plan that lets us continue serving commercial customers 
 | Agency sponsor | 🔴 Not identified | Active prospecting via DoD primes, .mil shop networks |
 | GovCloud account | 🔴 Not opened | Trigger: signed federal LOI |
 | Continuous Monitoring (ConMon) | 🔴 Not started | Will inherit from GovCloud + SIEM in Phase 2 |
+| Release provenance (CM-2, SA-10) | 🟢 Implemented | `scripts/write-release.mjs` now resolves commit SHA from `__LOVABLE_REAL_GIT`, multiple git paths, `.git/HEAD`, and a previous-manifest fallback so the in-app `ReleaseBadge` + `/release.json` never regress to "unknown" on Lovable-hosted builds |
 
 Legend: 🟢 done · 🟡 in progress · 🔴 not started
 
@@ -159,6 +160,7 @@ Legend: 🟢 done · 🟡 in progress · 🔴 not started
 | 2026-04 | UptimeRobot Free → Upptime → Statping-ng (3-phase status page) | $0 today, branded URL in Q2, GovCloud-native at LOI. See `status-page-runbook.md` |
 | 2026-04 | Pursue Agency ATO over JAB P-ATO | JAB is impractical for early-stage SaaS; agency sponsorship is the realistic path |
 | 2026-04 | Target FedRAMP **Moderate** initially, plan upgrade path to **High** | Moderate covers most civilian federal workloads; High is a 12–18 month follow-on |
+| 2026-05-16 | Harden release-manifest SHA resolution with `__LOVABLE_REAL_GIT` + previous-manifest fallback | Lovable hosted builds were emitting `commitSha: "unknown"` because the sandboxed `git` wrapper failed and `.git/HEAD` is not a regular file; this regression broke build provenance shown in `ReleaseBadge` and `/release.json` |
 
 ---
 

@@ -24,16 +24,43 @@ function safeGitHead() {
 }
 
 function safeGit(command) {
-  try {
-    return execSync(command, {
-      cwd: rootDir,
-      stdio: ["ignore", "pipe", "ignore"],
-    })
-      .toString()
-      .trim();
-  } catch {
-    return "unknown";
+  // Try multiple git binaries: Lovable's sandbox proxies `git` to a wrapper
+  // that may fail in hosted builds. `__LOVABLE_REAL_GIT` points at the real
+  // binary when present. Fall back to PATH and known absolute paths.
+  const candidates = [
+    process.env.__LOVABLE_REAL_GIT,
+    "git",
+    "/bin/git",
+    "/usr/bin/git",
+    "/usr/local/bin/git",
+  ].filter(Boolean);
+  for (const bin of candidates) {
+    try {
+      const cmd = command.replace(/^git\b/, bin);
+      const out = execSync(cmd, {
+        cwd: rootDir,
+        stdio: ["ignore", "pipe", "ignore"],
+      })
+        .toString()
+        .trim();
+      if (out) return out;
+    } catch {
+      // try next candidate
+    }
   }
+  return "unknown";
+}
+
+function previousCommitSha() {
+  // Last-resort fallback: preserve the SHA already committed to
+  // public/release.json so the live site never regresses to "unknown".
+  try {
+    const prev = JSON.parse(readFileSync(path.join(rootDir, "public", "release.json"), "utf8"));
+    if (typeof prev?.commitSha === "string" && prev.commitSha && prev.commitSha !== "unknown") {
+      return prev.commitSha;
+    }
+  } catch {}
+  return null;
 }
 
 function firstNonEmpty(...values) {
@@ -80,7 +107,15 @@ function resolveCommitSha() {
     process.env.RENDER_GIT_COMMIT,
   );
 
-  return (envCommit || safeGit("git rev-parse HEAD") || safeGitHead() || "unknown").slice(0, 12);
+  const gitSha = safeGit("git rev-parse HEAD");
+  const headSha = safeGitHead();
+  const resolved =
+    envCommit ||
+    (gitSha && gitSha !== "unknown" ? gitSha : null) ||
+    (headSha && headSha !== "unknown" ? headSha : null) ||
+    previousCommitSha() ||
+    "unknown";
+  return resolved.slice(0, 12);
 }
 
 function detectDeployTarget() {
