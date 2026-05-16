@@ -225,7 +225,12 @@ export default function Queue() {
   const stats = {
     total: items.length,
     pending: items.filter((i) => i.status === "pending" || i.status === "queued").length,
+    pendingWorkOrders: items.filter(
+      (i) => (i.status === "pending" || i.status === "queued") && i.item_type === "work_order"
+    ).length,
+    quotes: items.filter((i) => i.item_type === "quote").length,
     inProgress: items.filter((i) => i.status === "in_progress").length,
+    onHold: items.filter((i) => i.status === "on_hold").length,
     completed: items.filter((i) => i.status === "completed").length,
     overdue: items.filter((i) => i.due_date && new Date(i.due_date) < new Date() && i.status !== "completed").length,
     fpy: totalOriginal > 0 ? ((totalCompleted - totalRework) / totalOriginal) * 100 : undefined,
