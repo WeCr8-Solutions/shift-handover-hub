@@ -5,7 +5,10 @@ interface QueueStatsCardsProps {
   stats: {
     total: number;
     pending: number;
+    pendingWorkOrders?: number;
+    quotes?: number;
     inProgress: number;
+    onHold?: number;
     completed: number;
     overdue: number;
     scrapRate?: number;
