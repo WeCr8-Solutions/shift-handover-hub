@@ -451,6 +451,8 @@ export default function Queue() {
                     onItemClick={setSelectedItemId}
                     onStatusChange={(itemId, newStatus) => updateItem(itemId, { status: newStatus })}
                     onReorder={reorderItems}
+                    requiresStationCheckIn={!hasAdminAccess && activeSessions.length === 0}
+                    onRequestStationCheckIn={() => setCheckInDialogOpen(true)}
                   />
                 )}
 
