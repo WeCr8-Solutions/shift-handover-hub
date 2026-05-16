@@ -531,6 +531,25 @@ export default function Queue() {
         </DialogContent>
       </Dialog>
 
+      <Dialog open={checkInDialogOpen} onOpenChange={setCheckInDialogOpen}>
+        <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Station Check-In Required</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            You must be checked in to a station before changing work order status. Select your station(s) and shift below.
+          </p>
+          <StationCheckIn
+            onCheckIn={async (stationIds, shift) => {
+              const res = await checkInToStation(stationIds, shift);
+              await refreshSessions?.();
+              setCheckInDialogOpen(false);
+              return res;
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+
       {hasAdminAccess && organization && <PlanningAssistantModal organizationId={organization.id} />}
     </div>
   );
