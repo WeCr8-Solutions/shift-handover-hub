@@ -16,6 +16,9 @@ interface QueueKanbanBoardProps {
   onItemClick: (itemId: string) => void;
   onStatusChange: (itemId: string, newStatus: QueueStatus) => Promise<{ error: string | null }>;
   onReorder: (itemId: string, newPosition: number) => Promise<{ error: string | null }>;
+  /** When true, drag-to-change is blocked and onRequestStationCheckIn fires instead. */
+  requiresStationCheckIn?: boolean;
+  onRequestStationCheckIn?: () => void;
 }
 
 // Valid state transitions matching the DB trigger
