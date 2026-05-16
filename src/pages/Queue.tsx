@@ -5,6 +5,7 @@ import { useQueue, QueueStatus, QueueItemType } from "@/hooks/useQueue";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { useOrgContext } from "@/contexts/OrgContext";
 import { useOperatorSessions } from "@/hooks/useOperatorSessions";
+import { StationCheckIn } from "@/components/dashboard/StationCheckIn";
 import { useNCR } from "@/hooks/useNCR";
 import { useStations } from "@/hooks/useStations";
 import { useBackgroundRefresh } from "@/hooks/useBackgroundRefresh";
