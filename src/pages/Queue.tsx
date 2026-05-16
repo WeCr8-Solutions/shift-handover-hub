@@ -58,7 +58,8 @@ export default function Queue() {
   const { user, loading: authLoading, isReady } = useAuth();
   const { hasAdminAccess, loading: accessLoading } = useAdminAccess();
   const { organization } = useOrgContext();
-  const { activeSessions = [] } = useOperatorSessions();
+  const { activeSessions = [], checkIn: checkInToStation, refresh: refreshSessions } = useOperatorSessions();
+  const [checkInDialogOpen, setCheckInDialogOpen] = useState(false);
   const { stations = [] } = useStations(null, organization?.id);
 
   const urlStationId = searchParams.get("station");
