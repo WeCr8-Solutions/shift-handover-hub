@@ -107,10 +107,12 @@ function resolveCommitSha() {
     process.env.RENDER_GIT_COMMIT,
   );
 
+  const gitSha = safeGit("git rev-parse HEAD");
+  const headSha = safeGitHead();
   const resolved =
     envCommit ||
-    safeGit("git rev-parse HEAD") ||
-    safeGitHead() ||
+    (gitSha && gitSha !== "unknown" ? gitSha : null) ||
+    (headSha && headSha !== "unknown" ? headSha : null) ||
     previousCommitSha() ||
     "unknown";
   return resolved.slice(0, 12);
