@@ -392,9 +392,12 @@ export default function Queue() {
                   <p className="text-muted-foreground mb-4 max-w-sm">
                     Check in to a work station from the dashboard to view and manage your queue.
                   </p>
-                  <Button variant="outline" onClick={() => navigate("/")}>
-                    Go to dashboard
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button onClick={() => setCheckInDialogOpen(true)}>Check in now</Button>
+                    <Button variant="outline" onClick={() => navigate("/")}>
+                      Go to dashboard
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             )}
