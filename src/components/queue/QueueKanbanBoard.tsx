@@ -134,6 +134,8 @@ export function QueueKanbanBoard({
   onItemClick,
   onStatusChange,
   onReorder,
+  requiresStationCheckIn,
+  onRequestStationCheckIn,
 }: QueueKanbanBoardProps) {
   const [draggedItem, setDraggedItem] = useState<QueueItem | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<QueueStatus | null>(null);
@@ -141,6 +143,12 @@ export function QueueKanbanBoard({
   const dragOverItemRef = useRef<string | null>(null);
 
   const handleDragStart = (e: React.DragEvent, item: QueueItem) => {
+    if (requiresStationCheckIn) {
+      e.preventDefault();
+      toast.error("Check in to a station before changing work order status.");
+      onRequestStationCheckIn?.();
+      return;
+    }
     setDraggedItem(item);
     e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.setData("text/plain", item.id);
