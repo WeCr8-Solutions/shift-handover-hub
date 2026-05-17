@@ -79,6 +79,7 @@ export function IssueReportDialog({
     if (result.success) {
       setTitle("");
       setDescription("");
+      setWorkflow("");
       setSeverity("medium");
       onOpenChange(false);
     }
