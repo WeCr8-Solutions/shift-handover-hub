@@ -25,26 +25,52 @@ interface IssueReportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   prefillError?: Error;
+  /** Optional pre-filled title (e.g. "Dead end at /missing-route"). */
+  prefillTitle?: string;
+  /** Optional pre-filled description (e.g. attempted path, referrer). */
+  prefillDescription?: string;
+  /** Optional default severity. */
+  prefillSeverity?: "low" | "medium" | "high" | "critical";
+  /** Short label shown above the workflow prompt, e.g. "Dead end". */
+  contextLabel?: string;
 }
 
-export function IssueReportDialog({ open, onOpenChange, prefillError }: IssueReportDialogProps) {
+export function IssueReportDialog({
+  open,
+  onOpenChange,
+  prefillError,
+  prefillTitle,
+  prefillDescription,
+  prefillSeverity,
+  contextLabel,
+}: IssueReportDialogProps) {
   const { user, loading: authLoading } = useAuth();
   const { reportIssue, isReporting, consoleLogs, runtimeErrors, productionContext } = useIssueReporter();
-  
-  const [title, setTitle] = useState(prefillError?.message?.slice(0, 100) || "");
-  const [description, setDescription] = useState("");
+
+  const [title, setTitle] = useState(prefillTitle || prefillError?.message?.slice(0, 100) || "");
+  const [description, setDescription] = useState(prefillDescription || "");
+  const [workflow, setWorkflow] = useState("");
   const [severity, setSeverity] = useState<"low" | "medium" | "high" | "critical">(
-    prefillError ? "high" : "medium"
+    prefillSeverity || (prefillError ? "high" : "medium")
   );
   const [includeConsoleLogs, setIncludeConsoleLogs] = useState(true);
   const [includePage, setIncludePage] = useState(true);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    // Compose a workflow-aware description so admins see intent + context.
+    const composed = [
+      workflow.trim() && `**What I was trying to do:**\n${workflow.trim()}`,
+      description.trim() && `**Additional details:**\n${description.trim()}`,
+      contextLabel && `**Context:** ${contextLabel}`,
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+
     const result = await reportIssue({
       title,
-      description,
+      description: composed || description,
       severity,
       includeConsoleLogs,
       includePage,
@@ -53,6 +79,7 @@ export function IssueReportDialog({ open, onOpenChange, prefillError }: IssueRep
     if (result.success) {
       setTitle("");
       setDescription("");
+      setWorkflow("");
       setSeverity("medium");
       onOpenChange(false);
     }
@@ -130,6 +157,24 @@ export function IssueReportDialog({ open, onOpenChange, prefillError }: IssueRep
                 {warningCount} warning{warningCount > 1 ? "s" : ""}
               </Badge>
             )}
+            {contextLabel && (
+              <Badge variant="outline" className="gap-1 border-orange-500/40 text-orange-600">
+                {contextLabel}
+              </Badge>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="workflow">
+              What were you trying to do? <span className="text-muted-foreground">(workflow / intended action)</span>
+            </Label>
+            <Textarea
+              id="workflow"
+              value={workflow}
+              onChange={(e) => setWorkflow(e.target.value)}
+              placeholder="e.g. I was trying to open a work order from the dashboard to record a handoff, and the page came up blank."
+              rows={3}
+            />
           </div>
 
           <div className="space-y-2">
