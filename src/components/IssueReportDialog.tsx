@@ -157,6 +157,24 @@ export function IssueReportDialog({
                 {warningCount} warning{warningCount > 1 ? "s" : ""}
               </Badge>
             )}
+            {contextLabel && (
+              <Badge variant="outline" className="gap-1 border-orange-500/40 text-orange-600">
+                {contextLabel}
+              </Badge>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="workflow">
+              What were you trying to do? <span className="text-muted-foreground">(workflow / intended action)</span>
+            </Label>
+            <Textarea
+              id="workflow"
+              value={workflow}
+              onChange={(e) => setWorkflow(e.target.value)}
+              placeholder="e.g. I was trying to open a work order from the dashboard to record a handoff, and the page came up blank."
+              rows={3}
+            />
           </div>
 
           <div className="space-y-2">
