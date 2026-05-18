@@ -95,6 +95,7 @@ jobs:
           issue_title: 'ZAP Full Scan — ${{ github.run_id }}'
           fail_action: false
           allow_issue_writing: ${{ github.event_name == 'schedule' }}
+          artifact_name: zap-full-scan-${{ github.run_id }}
 
       - name: Upload Full Scan Report
         if: always()
