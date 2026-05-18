@@ -48,6 +48,7 @@ jobs:
           issue_title: 'ZAP Baseline Scan — ${{ github.run_id }}'
           fail_action: false          # Report findings; do not fail the build on baseline
           allow_issue_writing: true
+          artifact_name: zap-baseline-scan-${{ github.run_id }}
 
       - name: Upload Baseline Report
         if: always()
