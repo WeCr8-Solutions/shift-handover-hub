@@ -1110,7 +1110,7 @@ export default function Landing() {
                 <button onClick={() => { handleFooterLinkClick('privacy'); navigate('/privacy'); }} className="text-left hover:text-foreground transition-colors">Privacy</button>
                 <button onClick={() => { handleFooterLinkClick('terms'); navigate('/terms'); }} className="text-left hover:text-foreground transition-colors">Terms</button>
                 <button onClick={() => { handleFooterLinkClick('cookies'); navigate('/cookies'); }} className="text-left hover:text-foreground transition-colors">Cookies</button>
-                <a href="#" onClick={() => handleFooterLinkClick('contact')} className="hover:text-foreground transition-colors">Contact</a>
+                <a href="mailto:hello@jobline.ai" onClick={() => handleFooterLinkClick('contact')} className="hover:text-foreground transition-colors">Contact</a>
                 <SupportJoblineModal 
                   trigger={
                     <button 

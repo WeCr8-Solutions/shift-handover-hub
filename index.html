@@ -15,7 +15,7 @@
       // inline loader can read it before the React bundle hydrates.
       // VITE_DISABLE_ANALYTICS is replaced at build time by Vite.
       // Value is 'true' to disable (ITAR deployments) or '' / undefined to enable.
-      window.__ANALYTICS_ENABLED__ = '%VITE_DISABLE_ANALYTICS%' !== 'true';
+      window.__ANALYTICS_ENABLED__ = '%VITE_DISABLE_ANALYTICS%' !== 'true' && !['localhost', '127.0.0.1'].includes(window.location.hostname);
 
       window.addEventListener('load', function() {
         if (!window.__ANALYTICS_ENABLED__) return; // ITAR / self-hosted: skip all telemetry
@@ -68,6 +68,7 @@
         ['pointerdown','keydown','scroll','touchstart','mousemove'].forEach(function(ev){
           window.addEventListener(ev, loadThirdParty, { once: true, passive: true });
         });
+        window.setTimeout(loadThirdParty, 6000);
       });
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -267,6 +268,7 @@
         padding: 24px;
         background: rgba(10, 16, 24, 0.82);
         box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+        -webkit-backdrop-filter: blur(14px);
         backdrop-filter: blur(14px);
       }
 

@@ -108,6 +108,16 @@ const OapEmployer = lazy(() => import("./pages/OapEmployer"));
 const GcaEmployer = lazy(() => import("./pages/GcaEmployer"));
 const GcaTestPage = lazy(() => import("./pages/GcaTestPage"));
 const OapMyTranscript = lazy(() => import("./pages/OapMyTranscript"));
+const LearnIndex = lazy(() => import("./pages/learn/LearnIndex"));
+const LearnGlossary = lazy(() => import("./pages/learn/LearnGlossary"));
+const LearnTermDetail = lazy(() => import("./pages/learn/LearnTermDetail"));
+const LearnFundamentals = lazy(() => import("./pages/learn/fundamentals/LearnFundamentals"));
+const LearnProfessions = lazy(() => import("./pages/learn/professions/LearnProfessions"));
+const LearnProfessionDetail = lazy(() => import("./pages/learn/professions/LearnProfessionDetail"));
+const LearnTutorials = lazy(() => import("./pages/learn/tutorials/LearnTutorials"));
+const OpenClawInstallGuide = lazy(() => import("./pages/learn/tutorials/openclaw/OpenClawInstallGuide"));
+const HermesInstallGuide = lazy(() => import("./pages/learn/tutorials/hermes/HermesInstallGuide"));
+const NemoClawInstallGuide = lazy(() => import("./pages/learn/tutorials/nemoclaw/NemoClawInstallGuide"));
 const IndustryGlossary = lazy(() => import("./pages/resources/IndustryGlossary"));
 const BeginnersGuide = lazy(() => import("./pages/resources/BeginnersGuide"));
 const ManufacturingCareers = lazy(() => import("./pages/resources/ManufacturingCareers"));
@@ -127,6 +137,9 @@ const UseCases = lazy(() => import("./pages/UseCases"));
 const HelpArticle = lazy(() => import("./pages/HelpArticle"));
 const Tools = lazy(() => import("./pages/Tools"));
 const Status = lazy(() => import("./pages/Status"));
+const Terms = lazy(() => import("./pages/legal/Terms"));
+const Privacy = lazy(() => import("./pages/legal/Privacy"));
+const Cookies = lazy(() => import("./pages/legal/Cookies"));
 const IndustryPage = lazy(() => import("./pages/industries/IndustryPage"));
 const ERPGuidePart = lazy(() => import("./pages/resources/ERPGuidePart"));
 const DevPortal = lazy(() => import("./pages/DevPortal"));
@@ -166,7 +179,7 @@ const App = () => (
             <TooltipProvider>
               <Toaster />
               <Sonner />
-              <BrowserRouter>
+              <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
                 <AnalyticsProvider>
                   <ScrollToTop />
                   {/* Compliance gates — no-ops when the condition is not met */}
@@ -273,6 +286,16 @@ const App = () => (
                     <Route path="/oap/my-transcript" element={<OapMyTranscript />} />
                     <Route path="/oap/certificates" element={<CertificateLookup />} />
                     <Route path="/oap/certificates/verify" element={<CertificateLookup />} />
+                    <Route path="/learn" element={<LearnIndex />} />
+                    <Route path="/learn/glossary" element={<LearnGlossary />} />
+                    <Route path="/learn/glossary/:termId" element={<LearnTermDetail />} />
+                    <Route path="/learn/fundamentals" element={<LearnFundamentals />} />
+                    <Route path="/learn/professions" element={<LearnProfessions />} />
+                    <Route path="/learn/professions/:roleSlug" element={<LearnProfessionDetail />} />
+                    <Route path="/learn/tutorials" element={<LearnTutorials />} />
+                    <Route path="/learn/tutorials/openclaw-install" element={<OpenClawInstallGuide />} />
+                    <Route path="/learn/tutorials/hermes-install" element={<HermesInstallGuide />} />
+                    <Route path="/learn/tutorials/nemoclaw-install" element={<NemoClawInstallGuide />} />
                     <Route path="/talent" element={<TalentLanding />} />
                     <Route path="/talent/dashboard" element={<TalentDashboard />} />
                     <Route path="/talent/browse" element={<TalentBrowse />} />
@@ -299,6 +322,9 @@ const App = () => (
                     <Route path="/use-cases" element={<UseCases />} />
                     <Route path="/help" element={<Help />} />
                     <Route path="/help/:category/:slug" element={<HelpArticle />} />
+                    <Route path="/terms" element={<Terms />} />
+                    <Route path="/privacy" element={<Privacy />} />
+                    <Route path="/cookies" element={<Cookies />} />
                     <Route path="/tools" element={<Tools />} />
                     <Route path="/status" element={<Status />} />
                     <Route path="/industries" element={<Navigate to="/industries/job-shops" replace />} />
