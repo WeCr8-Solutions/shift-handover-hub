@@ -57,7 +57,7 @@ export function useLearnIdeaSubmit() {
         };
 
         const { error } = await supabase
-          .from("learning_ideas")
+          .from("learning_ideas" as any)
           .insert(row as unknown as Record<string, unknown>);
 
         if (error) {

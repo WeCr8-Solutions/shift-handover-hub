@@ -6,9 +6,16 @@ import { TERMS } from "@/lib/LearnGlossaryData";
 
 beforeAll(() => {
   global.IntersectionObserver = class IntersectionObserver {
+    root = null;
+    rootMargin = "0px";
+    thresholds = [];
+
     observe() {}
     unobserve() {}
     disconnect() {}
+    takeRecords() {
+      return [];
+    }
   } as typeof IntersectionObserver;
 });
 
