@@ -141,7 +141,6 @@ function ToolRow({ tool }: { tool: InspectionTool }) {
           <button
             type="button"
             className="w-full text-left p-4 flex items-center justify-between gap-3 hover:bg-muted/30 transition-colors rounded-md"
-            aria-expanded={open}
           >
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">

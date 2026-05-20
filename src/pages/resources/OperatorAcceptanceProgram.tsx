@@ -323,7 +323,7 @@ export default function OperatorAcceptanceProgram() {
         src="/oap/index.html"
         title="Operator Acceptance Program — CNC Onboarding by JobLine.ai"
         className="w-full border-0 shrink-0"
-        style={{ height: iframeHeight }}
+        height={iframeHeight}
         allow="clipboard-write"
         onLoad={() => {
           syncAuth();

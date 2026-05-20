@@ -310,7 +310,7 @@ export default function GCodeAcademy() {
         src="/gcode-academy/index.html"
         title="G-Code Academy — CNC Operator Training by JobLine.ai"
         className="w-full border-0 shrink-0"
-        style={{ height: iframeHeight }}
+        height={iframeHeight}
         allow="clipboard-write"
         onLoad={() => {
           syncAuthToGca();

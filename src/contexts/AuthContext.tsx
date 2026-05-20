@@ -180,7 +180,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       );
 
       // Fire GA4 sign_up conversion event
-      if (typeof window !== "undefined" && (window as any).gtag) {
+      if (
+        typeof window !== "undefined" &&
+        !(window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") &&
+        (window as any).gtag
+      ) {
         (window as any).gtag("event", "sign_up", {
           method: "email",
           user_id: data.user.id,

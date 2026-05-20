@@ -30,10 +30,10 @@ interface MarketingNavProps {
 
 type MenuKey = "products" | "industries" | "learn" | "talent" | "company" | null;
 
-const menuFallbackHref: Record<Exclude<MenuKey, null>, string> = {
+export const menuFallbackHref: Record<Exclude<MenuKey, null>, string> = {
   products: "/use-cases",
   industries: "/industries",
-  learn: "/resources",
+  learn: "/learn",
   talent: "/talent",
   company: "/",
 };

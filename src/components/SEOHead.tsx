@@ -17,6 +17,15 @@ const DEFAULT_DESCRIPTION = "Streamline CNC manufacturing operations with JobLin
 const DEFAULT_KEYWORDS = "manufacturing software, shift handoff, work order tracking, CNC machining, production management, machine shop software, manufacturing execution system, MES, digital expeditor, production scheduling, production control, shop floor management";
 const DEFAULT_OG_IMAGE = `${BASE_URL}/og-image.png`;
 
+function normalizeTitle(title?: string) {
+  if (!title) {
+    return DEFAULT_TITLE;
+  }
+
+  const trimmedTitle = title.trim();
+  return /\bJobLine\.ai\b/i.test(trimmedTitle) ? trimmedTitle : `${trimmedTitle} | JobLine.ai`;
+}
+
 export function SEOHead({
   title,
   description = DEFAULT_DESCRIPTION,
@@ -27,7 +36,7 @@ export function SEOHead({
   noindex = false,
   jsonLd,
 }: SEOHeadProps) {
-  const fullTitle = title ? `${title} | JobLine.ai` : DEFAULT_TITLE;
+  const fullTitle = normalizeTitle(title);
   const canonicalUrl = canonical ? `${BASE_URL}${canonical}` : undefined;
 
   return (

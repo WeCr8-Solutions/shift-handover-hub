@@ -1,5 +1,6 @@
 import {
   Cog,
+  Brain,
   ClipboardCheck,
   BarChart3,
   Wrench,
@@ -114,6 +115,7 @@ export const learnCategories: LearnCategory[] = [
   {
     heading: "Resources",
     items: [
+      { label: "Learning Center", href: "/learn", icon: Brain, desc: "AI literacy, glossary, and learning bridges into OAP and GCA" },
       { label: "Manufacturing Guides", href: "/resources/guides", icon: BookOpen, desc: "Expert insights & documentation" },
       { label: "Industry Glossary", href: "/resources/glossary", icon: BookA, desc: "Key terms & definitions" },
       { label: "ERP Selection Guide", href: "/resources/erp-guide", icon: FileText, desc: "Choose the right ERP for your shop" },

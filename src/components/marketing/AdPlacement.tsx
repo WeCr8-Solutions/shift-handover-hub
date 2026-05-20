@@ -94,9 +94,11 @@ export function AdPlacement({
 
   const blockedByRoute =
     typeof window !== "undefined" && isAuthedAppRoute(window.location.pathname);
+  const blockedOnLocalhost =
+    typeof window !== "undefined" && ["localhost", "127.0.0.1"].includes(window.location.hostname);
 
   useEffect(() => {
-    if (!ADS_ENABLED || blockedByRoute || pushed.current) return;
+    if (!ADS_ENABLED || blockedByRoute || blockedOnLocalhost || pushed.current) return;
     try {
       const adsbygoogle = (window as any).adsbygoogle || [];
       adsbygoogle.push({});
@@ -105,9 +107,9 @@ export function AdPlacement({
       // Ad blocker or script not loaded — fail silently
       console.debug("AdSense push failed:", e);
     }
-  }, [blockedByRoute]);
+  }, [blockedByRoute, blockedOnLocalhost]);
 
-  if (!ADS_ENABLED || blockedByRoute) return null;
+  if (!ADS_ENABLED || blockedByRoute || blockedOnLocalhost) return null;
 
   const formatClasses = {
     horizontal: "min-h-[90px] max-h-[120px]",
@@ -131,8 +133,7 @@ export function AdPlacement({
           {isInArticle ? (
             <ins
               ref={adRef}
-              className="adsbygoogle block w-full h-full"
-              style={{ display: "block", textAlign: "center" }}
+              className="adsbygoogle block h-full w-full text-center"
               data-ad-layout="in-article"
               data-ad-format="fluid"
               data-ad-client="ca-pub-3639153716376265"
@@ -142,7 +143,6 @@ export function AdPlacement({
             <ins
               ref={adRef}
               className="adsbygoogle block w-full h-full"
-              style={{ display: "block" }}
               data-ad-client="ca-pub-3639153716376265"
               data-ad-slot={resolvedSlot}
               data-ad-format={
