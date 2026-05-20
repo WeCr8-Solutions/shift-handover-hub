@@ -347,7 +347,7 @@ function PresetVerticalPanel({
               <Link
                 key={c.id}
                 to={`/oap/learn/${c.slug}`}
-                className="block text-xs px-2 py-1.5 rounded hover:bg-muted transition flex items-center justify-between gap-2"
+                className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded px-2 py-1.5 text-xs transition hover:bg-muted"
               >
                 <span className="truncate">
                   <Badge
@@ -390,7 +390,7 @@ function PresetVerticalPanel({
               <Link
                 key={b.id}
                 to={`/gca/test/${b.slug}`}
-                className="block text-xs px-2 py-1.5 rounded hover:bg-muted transition flex items-center justify-between gap-2"
+                className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded px-2 py-1.5 text-xs transition hover:bg-muted"
               >
                 <span className="truncate flex items-center gap-1.5">
                   <Badge
