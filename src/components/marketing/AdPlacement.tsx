@@ -3,12 +3,9 @@
  * Renders a styled container for Google AdSense.
  *
  * ⚠️  NEVER use this inside authenticated app pages (dashboard, queue, teams,
- *     settings, admin, profile, setup, handoff, etc.). Ads are restricted to:
- *     - Landing, Pricing, Blog, Demo, Start, Tools (public)
- *     - /features/*, /compare/*, /industries/*, /resources/* pages
- *     - /handbook, /handbook/:slug
- *     - /help, /help/:slug
- *     - /verify/:certId, /certificates (public lookup)
+ *     settings, admin, profile, setup, handoff, etc.). Ads are also suppressed
+ *     on thin, utility, or conversion-first public pages so review only sees
+ *     placements on content-heavy routes.
  *
  * Defense-in-depth:
  *  1. ITAR / self-hosted builds disable ads via VITE_DISABLE_ANALYTICS.
@@ -77,9 +74,30 @@ const AUTHED_APP_PREFIXES = [
   "/work-orders",
 ];
 
-function isAuthedAppRoute(pathname: string): boolean {
+const CONTENT_AD_EXACT_ROUTES = new Set([
+  "/blog",
+]);
+
+const CONTENT_AD_PREFIXES = [
+  "/blog/",
+  "/compare/",
+  "/features/",
+  "/industries/",
+  "/resources/",
+  "/handbook/",
+  "/help/",
+];
+
+export function isAuthedAppRoute(pathname: string): boolean {
   return AUTHED_APP_PREFIXES.some(
     (p) => pathname === p || pathname.startsWith(`${p}/`),
+  );
+}
+
+export function isAdEligibleContentRoute(pathname: string): boolean {
+  return (
+    CONTENT_AD_EXACT_ROUTES.has(pathname) ||
+    CONTENT_AD_PREFIXES.some((prefix) => pathname.startsWith(prefix))
   );
 }
 
@@ -91,14 +109,24 @@ export function AdPlacement({
 }: AdPlacementProps) {
   const adRef = useRef<HTMLModElement>(null);
   const pushed = useRef(false);
+  const pathname = typeof window !== "undefined" ? window.location.pathname : "";
 
-  const blockedByRoute =
-    typeof window !== "undefined" && isAuthedAppRoute(window.location.pathname);
+  const blockedByRoute = typeof window !== "undefined" && isAuthedAppRoute(pathname);
+  const blockedByEligibility =
+    typeof window !== "undefined" && !isAdEligibleContentRoute(pathname);
   const blockedOnLocalhost =
     typeof window !== "undefined" && ["localhost", "127.0.0.1"].includes(window.location.hostname);
 
   useEffect(() => {
-    if (!ADS_ENABLED || blockedByRoute || blockedOnLocalhost || pushed.current) return;
+    if (
+      !ADS_ENABLED ||
+      blockedByRoute ||
+      blockedByEligibility ||
+      blockedOnLocalhost ||
+      pushed.current
+    ) {
+      return;
+    }
     try {
       const adsbygoogle = (window as any).adsbygoogle || [];
       adsbygoogle.push({});
@@ -107,9 +135,9 @@ export function AdPlacement({
       // Ad blocker or script not loaded — fail silently
       console.debug("AdSense push failed:", e);
     }
-  }, [blockedByRoute, blockedOnLocalhost]);
+  }, [blockedByEligibility, blockedByRoute, blockedOnLocalhost]);
 
-  if (!ADS_ENABLED || blockedByRoute || blockedOnLocalhost) return null;
+  if (!ADS_ENABLED || blockedByRoute || blockedByEligibility || blockedOnLocalhost) return null;
 
   const formatClasses = {
     horizontal: "min-h-[90px] max-h-[120px]",
