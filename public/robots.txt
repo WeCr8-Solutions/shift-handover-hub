@@ -249,6 +249,59 @@ Disallow: /dev/
 Disallow: /index
 
 # ===========================================
+# Google AdSense Crawlers
+# Must have full access to public pages for ad serving + policy review.
+# ===========================================
+
+User-agent: Mediapartners-Google
+Allow: /
+Disallow: /dashboard
+Disallow: /admin
+Disallow: /teams
+Disallow: /queue
+Disallow: /settings
+Disallow: /profile
+Disallow: /setup
+Disallow: /display/
+Disallow: /functions/
+Disallow: /dev
+Disallow: /dev/
+Disallow: /auth
+Disallow: /reset-password
+
+User-agent: AdsBot-Google
+Allow: /
+Disallow: /dashboard
+Disallow: /admin
+Disallow: /teams
+Disallow: /queue
+Disallow: /settings
+Disallow: /profile
+Disallow: /setup
+Disallow: /display/
+Disallow: /functions/
+Disallow: /dev
+Disallow: /dev/
+Disallow: /auth
+Disallow: /reset-password
+
+User-agent: AdsBot-Google-Mobile
+Allow: /
+Disallow: /dashboard
+Disallow: /admin
+Disallow: /teams
+Disallow: /queue
+Disallow: /settings
+Disallow: /profile
+Disallow: /setup
+Disallow: /display/
+Disallow: /functions/
+Disallow: /dev
+Disallow: /dev/
+Disallow: /auth
+Disallow: /reset-password
+
+# ===========================================
 # SEO Research Crawlers
 # ===========================================
 
