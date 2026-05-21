@@ -45,6 +45,7 @@ const BlogAdmin = lazy(() => import("@/components/admin/BlogAdmin").then(m => ({
 const PromotionsHub = lazy(() => import("@/components/admin/PromotionsHub").then(m => ({ default: m.PromotionsHub })));
 const TrainingLibraryPanel = lazy(() => import("@/components/admin/training-library/TrainingLibraryPanel").then(m => ({ default: m.TrainingLibraryPanel })));
 const PlatformMentorRegistry = lazy(() => import("@/components/admin/mentors/PlatformMentorRegistry").then(m => ({ default: m.PlatformMentorRegistry })));
+const LearnIdeasReview = lazy(() => import("@/components/admin/LearnIdeasReview").then(m => ({ default: m.LearnIdeasReview })));
 
 const AdminTabFallback = () => <div className="p-6"><Skeleton className="h-64 w-full rounded-lg" /></div>;
 
@@ -234,6 +235,7 @@ export default function Admin() {
                 <SelectGroup>
                   <SelectLabel>Training</SelectLabel>
                   <SelectItem value="training-library">Training Library</SelectItem>
+                  {hasPlatformAccess && <SelectItem value="learn-ideas">Learn Ideas</SelectItem>}
                 </SelectGroup>
                 {hasPlatformAccess && (
                   <SelectGroup>
@@ -326,6 +328,12 @@ export default function Admin() {
                   <Library className="w-4 h-4" />
                   Library
                 </TabsTrigger>
+                {hasPlatformAccess && (
+                  <TabsTrigger value="learn-ideas" className="gap-2">
+                    <Lightbulb className="w-4 h-4" />
+                    Learn Ideas
+                  </TabsTrigger>
+                )}
                 {hasPlatformAccess && (
                   <TabsTrigger value="cert-mentors" className="gap-2">
                     <ShieldCheck className="w-4 h-4" />
@@ -459,6 +467,12 @@ export default function Admin() {
           <TabsContent value="training-library">
             <Suspense fallback={<AdminTabFallback />}><TrainingLibraryPanel access={access} /></Suspense>
           </TabsContent>
+
+          {hasPlatformAccess && (
+            <TabsContent value="learn-ideas">
+              <Suspense fallback={<AdminTabFallback />}><LearnIdeasReview /></Suspense>
+            </TabsContent>
+          )}
 
           {hasPlatformAccess && (
             <TabsContent value="cert-mentors">

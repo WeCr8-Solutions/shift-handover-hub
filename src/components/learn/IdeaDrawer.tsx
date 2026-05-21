@@ -69,6 +69,7 @@ export function IdeaDrawer({
   const [title, setTitle] = useState("");
   const [problem, setProblem] = useState("");
   const [solution, setSolution] = useState("");
+  const [website, setWebsite] = useState("");
 
   useEffect(() => {
     if (open) {
@@ -76,6 +77,7 @@ export function IdeaDrawer({
       setTitle("");
       setProblem("");
       setSolution("");
+      setWebsite("");
     }
   }, [open, termId]);
 
@@ -93,6 +95,8 @@ export function IdeaDrawer({
       title,
       problem,
       solution: solution || undefined,
+      honeypot: website,
+      sourcePath: window.location.pathname,
     });
 
     if (ok) {
@@ -161,6 +165,17 @@ export function IdeaDrawer({
                 onChange={(event) => setTitle(event.target.value)}
                 placeholder="Example: vision inspection helps catch repeat defects faster"
                 maxLength={120}
+              />
+            </div>
+
+            <div className="hidden" aria-hidden="true">
+              <Label htmlFor="idea-website">Website</Label>
+              <Input
+                id="idea-website"
+                value={website}
+                onChange={(event) => setWebsite(event.target.value)}
+                tabIndex={-1}
+                autoComplete="off"
               />
             </div>
 

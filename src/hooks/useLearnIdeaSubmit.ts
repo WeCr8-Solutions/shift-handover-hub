@@ -12,17 +12,8 @@ export interface LearnIdeaPayload {
   title: string;
   problem: string;
   solution?: string;
-}
-
-interface LearningIdeasInsert {
-  term_id: string;
-  term_name: string;
-  role: string | null;
-  title: string;
-  problem: string;
-  solution: string | null;
-  user_id: string | null;
-  org_id: string | null;
+  honeypot?: string;
+  sourcePath?: string;
 }
 
 export function useLearnIdeaSubmit() {
@@ -33,6 +24,15 @@ export function useLearnIdeaSubmit() {
 
   const submit = useCallback(
     async (payload: LearnIdeaPayload) => {
+      if (!user) {
+        toast({
+          title: "Sign in required",
+          description: "Create or sign in to a JobLine account before sending ideas to staff review.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
       if (!payload.title.trim() || !payload.problem.trim()) {
         toast({
           title: "Missing required fields",
@@ -45,28 +45,26 @@ export function useLearnIdeaSubmit() {
       setIsSubmitting(true);
 
       try {
-        const row: LearningIdeasInsert = {
-          term_id: payload.termId,
-          term_name: payload.termName,
-          role: payload.role?.trim() || null,
-          title: payload.title.trim(),
-          problem: payload.problem.trim(),
-          solution: payload.solution?.trim() || null,
-          user_id: user?.id ?? null,
-          org_id: organization?.id ?? null,
-        };
-
-        const { error } = await supabase
-          .from("learning_ideas" as any)
-          .insert(row as unknown as Record<string, unknown>);
+        const { error } = await (supabase as any).rpc("submit_learning_idea", {
+          _term_id: payload.termId,
+          _term_name: payload.termName,
+          _role: payload.role?.trim() || null,
+          _title: payload.title.trim(),
+          _problem: payload.problem.trim(),
+          _solution: payload.solution?.trim() || null,
+          _source_path: payload.sourcePath ?? window.location.pathname,
+          _honeypot: payload.honeypot ?? null,
+        });
 
         if (error) {
           throw error;
         }
 
         toast({
-          title: "Idea captured",
-          description: "Your workflow idea has been saved for follow-up.",
+          title: "Idea submitted",
+          description: organization?.id
+            ? "Your idea was sent to JobLine staff for admin review."
+            : "Your idea was sent to JobLine staff for platform review.",
         });
 
         return true;
@@ -82,7 +80,7 @@ export function useLearnIdeaSubmit() {
         setIsSubmitting(false);
       }
     },
-    [organization?.id, toast, user?.id],
+    [organization?.id, toast, user],
   );
 
   return { submit, isSubmitting };
