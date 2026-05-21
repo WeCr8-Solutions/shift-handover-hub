@@ -4650,6 +4650,78 @@ export type Database = {
           },
         ]
       }
+      learning_ideas: {
+        Row: {
+          created_at: string
+          honeypot: string | null
+          id: string
+          org_id: string | null
+          problem: string
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewer_id: string | null
+          reviewer_name: string | null
+          role: string | null
+          solution: string | null
+          source_path: string | null
+          spam_score: number
+          status: Database["public"]["Enums"]["learning_idea_status"]
+          submitter_email: string | null
+          submitter_name: string | null
+          term_id: string
+          term_name: string
+          title: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          honeypot?: string | null
+          id?: string
+          org_id?: string | null
+          problem: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          reviewer_name?: string | null
+          role?: string | null
+          solution?: string | null
+          source_path?: string | null
+          spam_score?: number
+          status?: Database["public"]["Enums"]["learning_idea_status"]
+          submitter_email?: string | null
+          submitter_name?: string | null
+          term_id: string
+          term_name: string
+          title: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          honeypot?: string | null
+          id?: string
+          org_id?: string | null
+          problem?: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          reviewer_name?: string | null
+          role?: string | null
+          solution?: string | null
+          source_path?: string | null
+          spam_score?: number
+          status?: Database["public"]["Enums"]["learning_idea_status"]
+          submitter_email?: string | null
+          submitter_name?: string | null
+          term_id?: string
+          term_name?: string
+          title?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       machine_manual_pages: {
         Row: {
           created_at: string
@@ -13956,6 +14028,19 @@ export type Database = {
         Returns: string
       }
       resolve_post_login_destination: { Args: never; Returns: Json }
+      submit_learning_idea: {
+        Args: {
+          _honeypot: string
+          _problem: string
+          _role: string
+          _solution: string
+          _source_path: string
+          _term_id: string
+          _term_name: string
+          _title: string
+        }
+        Returns: string
+      }
       sweep_expired_oap_certificates: { Args: never; Returns: number }
       users_are_connected: {
         Args: { _a: string; _b: string; _org_id: string }
@@ -14105,6 +14190,12 @@ export type Database = {
         | "resolved"
         | "closed"
         | "wont_fix"
+      learning_idea_status:
+        | "pending"
+        | "reviewed"
+        | "approved"
+        | "rejected"
+        | "spam"
       oap_checkoff_result: "pass" | "needs_practice" | "fail"
       oap_vertical:
         | "machining"
@@ -14354,6 +14445,13 @@ export const Constants = {
         "resolved",
         "closed",
         "wont_fix",
+      ],
+      learning_idea_status: [
+        "pending",
+        "reviewed",
+        "approved",
+        "rejected",
+        "spam",
       ],
       oap_checkoff_result: ["pass", "needs_practice", "fail"],
       oap_vertical: [
