@@ -33,7 +33,7 @@ beforeAll(() => {
     takeRecords() {
       return [];
     }
-  } as typeof IntersectionObserver;
+  } as unknown as typeof IntersectionObserver;
 });
 
 function renderPage(ui: React.ReactNode, path: string, routePath = "*") {

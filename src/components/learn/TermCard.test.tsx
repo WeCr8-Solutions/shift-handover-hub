@@ -16,7 +16,7 @@ beforeAll(() => {
     takeRecords() {
       return [];
     }
-  } as typeof IntersectionObserver;
+  } as unknown as typeof IntersectionObserver;
 });
 
 describe("TermCard", () => {
