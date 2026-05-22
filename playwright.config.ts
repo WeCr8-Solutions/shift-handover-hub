@@ -1,5 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const captureDemoArtifacts = process.env.PW_CAPTURE_DEMO === "1";
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
@@ -7,10 +9,12 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: "html",
+  outputDir: captureDemoArtifacts ? "tmp/recordings/playwright-artifacts" : "test-results",
   use: {
     baseURL: process.env.E2E_BASE_URL ?? "http://localhost:8080",
-    trace: "on-first-retry",
-    screenshot: "only-on-failure",
+    trace: captureDemoArtifacts ? "on" : "on-first-retry",
+    screenshot: captureDemoArtifacts ? "on" : "only-on-failure",
+    video: captureDemoArtifacts ? "on" : "off",
   },
   projects: [
     {

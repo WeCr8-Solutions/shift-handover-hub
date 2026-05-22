@@ -7,7 +7,10 @@ import { type Page, expect } from "@playwright/test";
 
 export async function visitVerifyPage(page: Page, certId: string) {
   await page.goto(`/verify/${certId}`);
-  await expect(page.getByText(/verified|valid/i)).toBeVisible({ timeout: 10_000 });
+  await expect(
+    page.getByRole("heading", { name: /certificate verified/i }),
+  ).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByText(/^valid$/i)).toBeVisible({ timeout: 10_000 });
 }
 
 export async function downloadCertificatePdf(page: Page) {
