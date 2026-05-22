@@ -59,6 +59,12 @@
           gs.src='https://www.googletagmanager.com/gtag/js?id=G-FDFFDKQS0Q';
           document.head.appendChild(gs);
 
+          // Google Ads (gtag.js) — explicit loader so Cloudflare Google Tag
+          // Gateway can detect and proxy the AW-17425064696 tag.
+          var aws=document.createElement('script');aws.async=true;
+          aws.src='https://www.googletagmanager.com/gtag/js?id=AW-17425064696';
+          document.head.appendChild(aws);
+
           // Google AdSense
           var as=document.createElement('script');as.async=true;
           as.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3639153716376265';
