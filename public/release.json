@@ -1,8 +1,8 @@
 {
   "version": "2026.5.23",
-  "commitSha": "c16237ce8c50",
-  "shortSha": "c16237c",
-  "releaseStamp": "2026.5.23+c16237c",
-  "buildTime": "2026-05-23T00:52:42.569Z",
+  "commitSha": "b58cccc9636f",
+  "shortSha": "b58cccc",
+  "releaseStamp": "2026.5.23+b58cccc",
+  "buildTime": "2026-05-23T01:55:33.664Z",
   "deployTarget": "lovable"
 }
