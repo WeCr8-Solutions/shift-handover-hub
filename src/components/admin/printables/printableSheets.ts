@@ -1,11 +1,14 @@
 /**
  * Self-contained printable marketing sheets for flyer drops.
- * Each function returns a complete HTML document (Letter size, 1" margins)
+ * Each function returns a complete HTML document (Letter size, 0.5" margins)
  * that can be opened in a new window and printed without depending on the
  * app's Tailwind/CSS pipeline.
  *
  * Keep pricing numbers in sync with src/hooks/useSubscription.ts PRICING_TIERS.
  */
+
+import { LOGO_DATA_URI, ICON_DATA_URI } from "./logoData";
+
 
 const SHARED_STYLES = `
   * { box-sizing: border-box; }
@@ -34,14 +37,25 @@ const SHARED_STYLES = `
     border-bottom: 3px solid #0f172a;
     padding-bottom: 12px;
     margin-bottom: 18px;
+    gap: 16px;
   }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .header-logo {
+    width: 56px;
+    height: 56px;
+    flex: 0 0 56px;
+    object-fit: contain;
+  }
+  .header-text { display: flex; flex-direction: column; }
   .brand {
     font-weight: 800;
     font-size: 26px;
     letter-spacing: -0.5px;
+    line-height: 1.1;
   }
   .brand .dot { color: #2563eb; }
-  .tagline { font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: 1px; }
+  .tagline { font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+
   .hero h1 {
     font-size: 30px;
     line-height: 1.15;
@@ -76,12 +90,15 @@ const SHARED_STYLES = `
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
+  .footer-brand { display: flex; align-items: center; gap: 8px; }
+  .footer-icon { width: 18px; height: 18px; object-fit: contain; }
 `;
 
 const FOOTER_HTML = `
   <div class="footer">
-    <div>
-      Sign up free at <span class="url">jobline.ai</span> &nbsp;·&nbsp; 14-day trial · No card required
+    <div class="footer-brand">
+      <img class="footer-icon" src="${ICON_DATA_URI}" alt="" />
+      <div>Sign up free at <span class="url">jobline.ai</span> &nbsp;·&nbsp; 14-day trial · No card required</div>
     </div>
     <div class="meta">
       Built for AS9100 / ISO 9001 / ITAR job shops
@@ -91,13 +108,17 @@ const FOOTER_HTML = `
 
 const HEADER_HTML = `
   <div class="header">
-    <div>
-      <div class="brand">Jobline<span class="dot">.ai</span></div>
-      <div class="tagline">The Digital Expeditor &amp; Smart Shift Handoff</div>
+    <div class="header-left">
+      <img class="header-logo" src="${LOGO_DATA_URI}" alt="Jobline.ai logo" />
+      <div class="header-text">
+        <div class="brand">Jobline<span class="dot">.ai</span></div>
+        <div class="tagline">The Digital Expeditor &amp; Smart Shift Handoff</div>
+      </div>
     </div>
     <div class="badge">Made for Machinists</div>
   </div>
 `;
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PRICING SHEET
