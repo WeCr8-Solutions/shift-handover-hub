@@ -48,10 +48,12 @@ import {
   Users,
   Link,
   XCircle,
+  Printer,
 } from "lucide-react";
 import { FLYER_ZONES, exportZonesToCsv, type FlyerZone } from "./flyerZoneData";
 import { FieldChecklist } from "./FieldChecklist";
 import { ContactsExportTab } from "./ContactsExportTab";
+import { PrintMaterials } from "./PrintMaterials";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -482,6 +484,10 @@ export function FlyerCampaigns() {
           <TabsTrigger value="contacts" className="gap-1.5">
             <ClipboardList className="w-3.5 h-3.5" />
             Contacts
+          </TabsTrigger>
+          <TabsTrigger value="print" className="gap-1.5">
+            <Printer className="w-3.5 h-3.5" />
+            Print Materials
           </TabsTrigger>
         </TabsList>
 
