@@ -120,8 +120,11 @@ serve(async (req) => {
       limit: 10,
     });
 
-    // Enterprise product ID
+    // Enterprise product (flat $399/mo base, includes 10 seats) + per-seat addon ($12/mo)
     const ENTERPRISE_PRODUCT_ID = "prod_TrQ3Y4BKSsc591";
+    const ENTERPRISE_SEAT_ADDON_PRICE_ID = "price_1Ta3zCCyekafHX78jX7Jp7Sm";
+    const INCLUDED_SEATS = 10;
+
     const enterpriseSub = subscriptions.data.find((sub: any) =>
       sub.items.data.some((item: any) => item.price.product === ENTERPRISE_PRODUCT_ID)
     );
@@ -133,22 +136,40 @@ serve(async (req) => {
       );
     }
 
-    const subItem = (enterpriseSub as any).items.data.find(
-      (item: any) => item.price.product === ENTERPRISE_PRODUCT_ID
-    )!;
+    // Locate (or note absence of) the seat-addon line item
+    const addonItem = (enterpriseSub as any).items.data.find(
+      (item: any) => item.price.id === ENTERPRISE_SEAT_ADDON_PRICE_ID
+    );
 
-    logStep("Updating subscription quantity", {
+    const addonQuantity = Math.max(0, quantity - INCLUDED_SEATS);
+
+    // Build subscription update for the seat addon only (base stays as-is)
+    const updateItems: any[] = [];
+    if (addonItem) {
+      if (addonQuantity === 0) {
+        updateItems.push({ id: addonItem.id, deleted: true });
+      } else if (addonItem.quantity !== addonQuantity) {
+        updateItems.push({ id: addonItem.id, quantity: addonQuantity });
+      }
+    } else if (addonQuantity > 0) {
+      updateItems.push({ price: ENTERPRISE_SEAT_ADDON_PRICE_ID, quantity: addonQuantity });
+    }
+
+    logStep("Adjusting seat addon", {
       subscriptionId: enterpriseSub.id,
-      itemId: subItem.id,
-      oldQuantity: subItem.quantity,
-      newQuantity: quantity,
+      totalSeats: quantity,
+      includedSeats: INCLUDED_SEATS,
+      addonQuantity,
+      hasExistingAddon: !!addonItem,
+      changes: updateItems.length,
     });
 
-    // Update Stripe subscription quantity with proration
-    await stripe.subscriptions.update(enterpriseSub.id, {
-      items: [{ id: subItem.id, quantity }],
-      proration_behavior: "create_prorations",
-    });
+    if (updateItems.length > 0) {
+      await stripe.subscriptions.update(enterpriseSub.id, {
+        items: updateItems,
+        proration_behavior: "create_prorations",
+      });
+    }
 
     // Update entitlements limits.users in DB
     const { data: currentEntitlements } = await supabaseClient

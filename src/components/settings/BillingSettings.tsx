@@ -213,7 +213,7 @@ export function BillingSettings() {
               Seat Management
             </CardTitle>
             <CardDescription>
-              Manage your Enterprise team seats. Base plan includes 10 seats, additional seats are $7.99/mo each.
+              Manage your Enterprise team seats. Base plan includes 10 seats, additional seats are $12/mo each.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

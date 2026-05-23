@@ -263,12 +263,12 @@ export function ERPConnectorSettings() {
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center">
-            <Button onClick={() => createCheckout("price_1SthDUCyekafHX78MIJEHfCG")} className="gap-2">
+            <Button onClick={() => createCheckout("price_1Ta3sYCyekafHX78598rf2kc")} className="gap-2">
               <CreditCard className="h-4 w-4" />
-              Upgrade to Enterprise — $49.99/mo
+              Upgrade to Enterprise — $399/mo
             </Button>
             <p className="mt-3 text-xs text-muted-foreground">
-              Enterprise includes 10 users, API access, and eligibility for ERP Connector add-ons ($100–$200/mo).
+              Enterprise includes 10 seats ($12/seat after), API access, and eligibility for ERP Connector add-ons ($100–$200/mo).
             </p>
           </CardContent>
         </Card>

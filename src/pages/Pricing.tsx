@@ -154,7 +154,7 @@ export default function Pricing() {
                     <p className="text-sm text-muted-foreground mt-2">
                       {key === 'single' && '1 user'}
                       {key === 'team' && 'Up to 10 users'}
-                      {key === 'enterprise' && 'Up to 25 users, $12/user after'}
+                      {key === 'enterprise' && 'Includes 10 seats, $12/seat/mo after'}
                     </p>
                   </div>
 
@@ -216,7 +216,7 @@ export default function Pricing() {
                 <h4 className="font-medium mb-1">What happens if I exceed my user limit?</h4>
                 <p className="text-sm text-muted-foreground">
                   We'll notify you and suggest upgrading to a plan that fits your team size.
-                  Enterprise plans can add users at $7.99/month each.
+                  Enterprise plans include 10 seats and can add more at $12/month per seat.
                 </p>
               </div>
               <div className="p-4 rounded-lg bg-secondary/30">
