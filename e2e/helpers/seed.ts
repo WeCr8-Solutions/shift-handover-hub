@@ -56,6 +56,18 @@ export async function seedFixture(
   }
   const fx = (await res.json()) as SeedFixture;
   fx.scenario = scenario;
+  // Passwords are no longer returned by the edge function (credential hygiene).
+  // CI runners must export E2E_ADMIN_PASSWORD / E2E_OPERATOR_PASSWORD; we hydrate
+  // them locally so existing specs keep working.
+  const adminPw = process.env.E2E_ADMIN_PASSWORD ?? "";
+  const operatorPw = process.env.E2E_OPERATOR_PASSWORD ?? "";
+  if (!adminPw || !operatorPw) {
+    throw new Error(
+      "E2E_ADMIN_PASSWORD and E2E_OPERATOR_PASSWORD env vars are required for e2e specs",
+    );
+  }
+  fx.admin = { ...fx.admin, password: adminPw };
+  fx.operator = { ...fx.operator, password: operatorPw };
   cache.set(scenario, fx);
   return fx;
 }
