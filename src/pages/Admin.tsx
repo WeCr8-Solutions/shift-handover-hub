@@ -376,6 +376,10 @@ export default function Admin() {
                       <Megaphone className="w-4 h-4" />
                       Promotions
                     </TabsTrigger>
+                    <TabsTrigger value="policy-notifications" className="gap-2">
+                      <Mail className="w-4 h-4" />
+                      Policy Notices
+                    </TabsTrigger>
                   </div>
                 </>
               )}
