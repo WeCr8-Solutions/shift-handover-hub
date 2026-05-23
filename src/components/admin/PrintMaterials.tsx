@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Printer, Download, FileText } from "lucide-react";
+import { Printer, Download, FileText, FileDown } from "lucide-react";
 import {
   getPricingSheetHtml,
   getFeaturesSheetHtml,
@@ -12,11 +12,13 @@ interface SheetCardProps {
   title: string;
   description: string;
   buildHtml: () => string;
-  filename: string;
+  /** Base filename without extension — matches the static PDF in /public/print/ */
+  slug: string;
 }
 
-function SheetCard({ title, description, buildHtml, filename }: SheetCardProps) {
+function SheetCard({ title, description, buildHtml, slug }: SheetCardProps) {
   const html = buildHtml();
+  const pdfUrl = `/print/${slug}.pdf`;
 
   return (
     <Card className="flex flex-col">
@@ -28,7 +30,6 @@ function SheetCard({ title, description, buildHtml, filename }: SheetCardProps) 
         <CardDescription className="text-xs">{description}</CardDescription>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col gap-3">
-        {/* Live preview rendered in a sandboxed iframe so it can't reach the parent app */}
         <div className="border rounded-md overflow-hidden bg-muted/30">
           <iframe
             title={`${title} preview`}
@@ -38,20 +39,33 @@ function SheetCard({ title, description, buildHtml, filename }: SheetCardProps) 
           />
         </div>
         <div className="flex flex-wrap gap-2">
+          <Button asChild className="gap-1.5">
+            <a href={pdfUrl} download={`${slug}.pdf`}>
+              <FileDown className="w-4 h-4" />
+              Download PDF
+            </a>
+          </Button>
+          <Button asChild variant="secondary" className="gap-1.5">
+            <a href={pdfUrl} target="_blank" rel="noopener noreferrer">
+              <FileText className="w-4 h-4" />
+              Open PDF
+            </a>
+          </Button>
           <Button
-            onClick={() => openAndPrint(html, filename.replace(/\.html$/, ""))}
+            variant="outline"
+            onClick={() => openAndPrint(html, slug)}
             className="gap-1.5"
           >
             <Printer className="w-4 h-4" />
             Print
           </Button>
           <Button
-            variant="outline"
-            onClick={() => downloadHtml(html, filename)}
+            variant="ghost"
+            onClick={() => downloadHtml(html, `${slug}.html`)}
             className="gap-1.5"
           >
             <Download className="w-4 h-4" />
-            Download HTML
+            HTML
           </Button>
         </div>
       </CardContent>
@@ -65,8 +79,10 @@ export function PrintMaterials() {
       <div className="rounded-md border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
         <p>
           Print-ready, single-page <strong>US&nbsp;Letter</strong> sheets sized for 0.5" margins.
-          Use <em>Print</em> to send straight to your printer, or <em>Download&nbsp;HTML</em> to
-          email a print shop. Pricing always reflects the current live plan prices.
+          <strong> Download PDF</strong> gives you a pixel-perfect file ready for any print
+          shop — fonts embedded, no overflow. Use <em>Print</em> for the live HTML version
+          or <em>HTML</em> to email the source. Regenerate PDFs after edits with{" "}
+          <code className="text-xs">bun scripts/generate-print-pdfs.mjs</code>.
         </p>
       </div>
 
@@ -75,13 +91,13 @@ export function PrintMaterials() {
           title="Pricing Sheet"
           description="Single, Team, Enterprise tiers + ERP add-ons. Print one per shop visit."
           buildHtml={getPricingSheetHtml}
-          filename="jobline-ai-pricing-sheet.html"
+          slug="jobline-ai-pricing-sheet"
         />
         <SheetCard
           title="Features Sheet"
           description="At-a-glance: handoff, OAP, GCA, AI Planning, ERP, machine monitoring, talent."
           buildHtml={getFeaturesSheetHtml}
-          filename="jobline-ai-features-sheet.html"
+          slug="jobline-ai-features-sheet"
         />
       </div>
     </div>
