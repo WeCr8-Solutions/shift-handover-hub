@@ -496,7 +496,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
   // ── GCA standalone (per-user, no org) ──
   if (productType === "gca" || (!orgId && session.metadata?.user_id)) {
     const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-    const productId = subscription.items.data[0]?.price.product as string;
+    const productId = findPlanItem(subscription)?.price.product as string;
     if (isGcaProduct(productId)) {
       await upsertGcaSubscription(subscription);
       logStep("GCA standalone checkout processed");
@@ -515,9 +515,10 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     .update({ stripe_customer_id: customerId })
     .eq("id", orgId);
 
-  // Fetch full subscription details
+  // Fetch full subscription details (may contain base plan + seat addon line items)
   const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-  const productId = subscription.items.data[0]?.price.product as string;
+  const planItem = findPlanItem(subscription);
+  const productId = planItem?.price.product as string;
 
   // GCA product purchased via org checkout? Treat as standalone GCA.
   if (isGcaProduct(productId)) {
@@ -535,18 +536,19 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
   }
 
   const plan = PRODUCT_TIERS[productId] || "single";
+  const seatQuantity = plan === "enterprise" ? computeEnterpriseSeats(subscription) : (planItem?.quantity || 1);
 
   // Upsert subscription record
   await supabaseAdmin.from("subscriptions").upsert({
     organization_id: orgId,
     stripe_subscription_id: subscriptionId,
     stripe_customer_id: customerId,
-    stripe_price_id: subscription.items.data[0]?.price.id,
+    stripe_price_id: planItem?.price.id,
     status: subscription.status,
     current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
     current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
     cancel_at_period_end: subscription.cancel_at_period_end,
-    quantity: subscription.items.data[0]?.quantity || 1,
+    quantity: seatQuantity,
     metadata: { product_id: productId, plan },
   }, { onConflict: "stripe_subscription_id" });
 
@@ -561,8 +563,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     })
     .eq("id", orgId);
 
-  // Update entitlements (with seat quantity for enterprise)
-  const seatQuantity = subscription.items.data[0]?.quantity || 1;
+  // Update entitlements (with computed seat quantity for enterprise)
   await updateOrgEntitlements(orgId, plan, undefined, plan === "enterprise" ? seatQuantity : undefined);
 
   logStep("Checkout session processed successfully", { orgId, plan, seatQuantity });
@@ -571,7 +572,8 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   logStep("Processing customer.subscription.updated", { subscriptionId: subscription.id });
 
-  const productId = subscription.items.data[0]?.price.product as string;
+  const planItem = findPlanItem(subscription);
+  const productId = planItem?.price.product as string;
 
   // Handle GCA standalone subscription
   if (isGcaProduct(productId)) {
@@ -597,18 +599,19 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   }
 
   const plan = PRODUCT_TIERS[productId] || "single";
+  const seatQuantity = plan === "enterprise" ? computeEnterpriseSeats(subscription) : (planItem?.quantity || 1);
 
   // Update subscription record
   await supabaseAdmin
     .from("subscriptions")
     .update({
-      stripe_price_id: subscription.items.data[0]?.price.id,
+      stripe_price_id: planItem?.price.id,
       status: subscription.status,
       current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
       current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
       cancel_at_period_end: subscription.cancel_at_period_end,
       canceled_at: subscription.canceled_at ? new Date(subscription.canceled_at * 1000).toISOString() : null,
-      quantity: subscription.items.data[0]?.quantity || 1,
+      quantity: seatQuantity,
       metadata: { product_id: productId, plan },
     })
     .eq("stripe_subscription_id", subscription.id);
@@ -627,8 +630,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     })
     .eq("id", subRecord.organization_id);
 
-  // Update entitlements (with seat quantity for enterprise)
-  const seatQuantity = subscription.items.data[0]?.quantity || 1;
+  // Update entitlements (with computed seat quantity for enterprise)
   await updateOrgEntitlements(subRecord.organization_id, plan, undefined, plan === "enterprise" ? seatQuantity : undefined);
 
   logStep("Subscription updated successfully", { orgId: subRecord.organization_id, plan, status: subscription.status, seatQuantity });
@@ -674,7 +676,7 @@ async function handleErpAddonSubscription(subscription: Stripe.Subscription, pro
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   logStep("Processing customer.subscription.deleted", { subscriptionId: subscription.id });
 
-  const productId = subscription.items.data[0]?.price.product as string;
+  const productId = findPlanItem(subscription)?.price.product as string;
 
   // Handle GCA standalone cancellation
   if (isGcaProduct(productId)) {
