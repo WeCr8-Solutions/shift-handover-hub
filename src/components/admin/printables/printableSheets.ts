@@ -39,22 +39,23 @@ const SHARED_STYLES = `
     margin-bottom: 18px;
     gap: 16px;
   }
-  .header-left { display: flex; align-items: center; gap: 12px; }
+  .header-left { display: flex; align-items: center; gap: 14px; }
   .header-logo {
-    width: 56px;
-    height: 56px;
-    flex: 0 0 56px;
+    height: 64px;
+    width: auto;
+    flex: 0 0 auto;
     object-fit: contain;
   }
-  .header-text { display: flex; flex-direction: column; }
-  .brand {
-    font-weight: 800;
-    font-size: 26px;
-    letter-spacing: -0.5px;
-    line-height: 1.1;
+  .tagline {
+    font-size: 12px;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    font-weight: 600;
+    border-left: 2px solid #cbd5e1;
+    padding-left: 14px;
   }
-  .brand .dot { color: #2563eb; }
-  .tagline { font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+
 
   .hero h1 {
     font-size: 30px;
@@ -109,15 +110,13 @@ const FOOTER_HTML = `
 const HEADER_HTML = `
   <div class="header">
     <div class="header-left">
-      <img class="header-logo" src="${LOGO_DATA_URI}" alt="Jobline.ai logo" />
-      <div class="header-text">
-        <div class="brand">Jobline<span class="dot">.ai</span></div>
-        <div class="tagline">The Digital Expeditor &amp; Smart Shift Handoff</div>
-      </div>
+      <img class="header-logo" src="${LOGO_DATA_URI}" alt="Jobline.ai" />
+      <div class="tagline">The Digital Expeditor &amp; Smart Shift Handoff</div>
     </div>
     <div class="badge">Made for Machinists</div>
   </div>
 `;
+
 
 
 // ─────────────────────────────────────────────────────────────────────────────
