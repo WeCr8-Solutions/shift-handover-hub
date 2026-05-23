@@ -8933,6 +8933,107 @@ export type Database = {
           },
         ]
       }
+      policy_change_announcements: {
+        Row: {
+          change_highlights: Json
+          created_at: string
+          created_by: string | null
+          effective_date: string
+          failed_count: number
+          full_policy_url: string | null
+          id: string
+          policy_type: Database["public"]["Enums"]["policy_change_type"]
+          recipient_count: number
+          scheduled_for: string | null
+          sent_at: string | null
+          sent_count: number
+          status: Database["public"]["Enums"]["policy_change_status"]
+          summary: string
+          title: string
+          updated_at: string
+          version_label: string
+        }
+        Insert: {
+          change_highlights?: Json
+          created_at?: string
+          created_by?: string | null
+          effective_date: string
+          failed_count?: number
+          full_policy_url?: string | null
+          id?: string
+          policy_type: Database["public"]["Enums"]["policy_change_type"]
+          recipient_count?: number
+          scheduled_for?: string | null
+          sent_at?: string | null
+          sent_count?: number
+          status?: Database["public"]["Enums"]["policy_change_status"]
+          summary: string
+          title: string
+          updated_at?: string
+          version_label: string
+        }
+        Update: {
+          change_highlights?: Json
+          created_at?: string
+          created_by?: string | null
+          effective_date?: string
+          failed_count?: number
+          full_policy_url?: string | null
+          id?: string
+          policy_type?: Database["public"]["Enums"]["policy_change_type"]
+          recipient_count?: number
+          scheduled_for?: string | null
+          sent_at?: string | null
+          sent_count?: number
+          status?: Database["public"]["Enums"]["policy_change_status"]
+          summary?: string
+          title?: string
+          updated_at?: string
+          version_label?: string
+        }
+        Relationships: []
+      }
+      policy_change_email_log: {
+        Row: {
+          announcement_id: string
+          created_at: string
+          error: string | null
+          id: string
+          recipient_email: string
+          sent_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          announcement_id: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          recipient_email: string
+          sent_at?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          announcement_id?: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          recipient_email?: string
+          sent_at?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "policy_change_email_log_announcement_id_fkey"
+            columns: ["announcement_id"]
+            isOneToOne: false
+            referencedRelation: "policy_change_announcements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profile_views: {
         Row: {
           created_at: string
@@ -13896,6 +13997,7 @@ export type Database = {
         Returns: boolean
       }
       is_paid_contact_employer: { Args: { _user_id: string }; Returns: boolean }
+      is_platform_admin_or_dev: { Args: { _user_id: string }; Returns: boolean }
       is_supervisor_for_team: {
         Args: { _team_id: string; _user_id: string }
         Returns: boolean
@@ -14281,6 +14383,18 @@ export type Database = {
         | "general"
       operator_profile_visibility: "private" | "employers_only" | "public"
       organization_kind: "manufacturer" | "employer" | "both"
+      policy_change_status:
+        | "draft"
+        | "scheduled"
+        | "sending"
+        | "sent"
+        | "cancelled"
+      policy_change_type:
+        | "terms"
+        | "privacy"
+        | "cookies"
+        | "billing"
+        | "combined"
       queue_item_type:
         | "work_order"
         | "station_task"
@@ -14539,6 +14653,20 @@ export const Constants = {
       ],
       operator_profile_visibility: ["private", "employers_only", "public"],
       organization_kind: ["manufacturer", "employer", "both"],
+      policy_change_status: [
+        "draft",
+        "scheduled",
+        "sending",
+        "sent",
+        "cancelled",
+      ],
+      policy_change_type: [
+        "terms",
+        "privacy",
+        "cookies",
+        "billing",
+        "combined",
+      ],
       queue_item_type: [
         "work_order",
         "station_task",
