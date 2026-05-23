@@ -266,7 +266,7 @@ export function BillingSettings() {
 
               {newSeatCount > 10 && (
                 <span className="text-xs text-muted-foreground">
-                  +{newSeatCount - 10} additional × $7.99 = ${((newSeatCount - 10) * 7.99).toFixed(2)}/mo extra
+                  +{newSeatCount - 10} additional × $12 = ${((newSeatCount - 10) * 12).toFixed(2)}/mo extra
                 </span>
               )}
             </div>

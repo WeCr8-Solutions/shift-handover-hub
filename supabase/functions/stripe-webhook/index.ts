@@ -40,6 +40,24 @@ const ERP_PRODUCT_TIERS: Record<string, string> = {
   "prod_U3eOQKkbY8NHrj": "unlimited",
 };
 
+// Enterprise per-seat addon price (line item on enterprise subscriptions beyond base 10 seats)
+const ENTERPRISE_SEAT_ADDON_PRICE_ID = "price_1Ta3zCCyekafHX78jX7Jp7Sm";
+const ENTERPRISE_INCLUDED_SEATS = 10;
+
+/** Pick the base plan item (skips per-seat addon) from a multi-item subscription. */
+function findPlanItem(sub: Stripe.Subscription): Stripe.SubscriptionItem | undefined {
+  return sub.items.data.find((i) => {
+    const pid = i.price.product as string;
+    return pid in PRODUCT_TIERS || pid in ERP_PRODUCT_TIERS;
+  }) ?? sub.items.data[0];
+}
+
+/** Total enterprise seats = 10 included + addon line-item quantity. */
+function computeEnterpriseSeats(sub: Stripe.Subscription): number {
+  const addon = sub.items.data.find((i) => i.price.id === ENTERPRISE_SEAT_ADDON_PRICE_ID);
+  return ENTERPRISE_INCLUDED_SEATS + (addon?.quantity ?? 0);
+}
+
 // Entitlements per plan
 const PLAN_ENTITLEMENTS: Record<string, { features: Record<string, boolean>; limits: Record<string, number> }> = {
   free: {
@@ -52,11 +70,11 @@ const PLAN_ENTITLEMENTS: Record<string, { features: Record<string, boolean>; lim
   },
   team: {
     features: { handoff_hub: true, work_orders: true, analytics: true, api_access: false, bulk_upload: true },
-    limits: { users: 4, work_orders_per_month: 2000, stations: 50 },
+    limits: { users: 10, work_orders_per_month: 2000, stations: 50 },
   },
   enterprise: {
     features: { handoff_hub: true, work_orders: true, analytics: true, api_access: true, bulk_upload: true },
-    limits: { users: 100, work_orders_per_month: 10000, stations: 200 },
+    limits: { users: ENTERPRISE_INCLUDED_SEATS, work_orders_per_month: 10000, stations: 200 },
   },
   gca_pro: {
     // Standalone GCA — does NOT grant org-level platform access.
