@@ -13824,6 +13824,7 @@ export type Database = {
         Args: { _team_id: string; _user_id: string }
         Returns: boolean
       }
+      is_paid_contact_employer: { Args: { _user_id: string }; Returns: boolean }
       is_supervisor_for_team: {
         Args: { _team_id: string; _user_id: string }
         Returns: boolean
