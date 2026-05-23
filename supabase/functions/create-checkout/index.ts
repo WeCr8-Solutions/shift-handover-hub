@@ -173,14 +173,25 @@ serve(async (req) => {
     }
 
     const origin = req.headers.get("origin") || "https://jobline.ai";
-    
-    // Enterprise price supports per-seat quantity (minimum 10)
-    const ENTERPRISE_PRICE_ID = "price_1SthDUCyekafHX78MIJEHfCG";
-    const lineQuantity = priceId === ENTERPRISE_PRICE_ID
-      ? Math.max(quantity || 10, 10)
-      : 1;
 
-    logStep("Line item quantity", { priceId, lineQuantity });
+    // Enterprise = flat base ($399/mo, includes 10 seats) + per-seat addon ($12/mo) for seats beyond 10
+    const ENTERPRISE_PRICE_ID = "price_1Ta3sYCyekafHX78598rf2kc";
+    const ENTERPRISE_SEAT_ADDON_PRICE_ID = "price_1Ta3zCCyekafHX78jX7Jp7Sm";
+    const ENTERPRISE_INCLUDED_SEATS = 10;
+
+    const requestedSeats = priceId === ENTERPRISE_PRICE_ID
+      ? Math.max(quantity || ENTERPRISE_INCLUDED_SEATS, ENTERPRISE_INCLUDED_SEATS)
+      : 1;
+    const addonSeats = priceId === ENTERPRISE_PRICE_ID
+      ? Math.max(0, requestedSeats - ENTERPRISE_INCLUDED_SEATS)
+      : 0;
+
+    const lineItems: { price: string; quantity: number }[] = [{ price: priceId, quantity: 1 }];
+    if (addonSeats > 0) {
+      lineItems.push({ price: ENTERPRISE_SEAT_ADDON_PRICE_ID, quantity: addonSeats });
+    }
+
+    logStep("Line items", { priceId, requestedSeats, addonSeats });
 
     // Check if org already has an active/trialing subscription (no double trial)
     let trialDays: number | undefined = 14;
@@ -202,7 +213,7 @@ serve(async (req) => {
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : billingEmail,
-      line_items: [{ price: priceId, quantity: lineQuantity }],
+      line_items: lineItems,
       mode: "subscription",
       payment_method_collection: "always",
       success_url: `${origin}/dashboard?subscription=success`,
