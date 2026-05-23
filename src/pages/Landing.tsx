@@ -276,7 +276,7 @@ export default function Landing() {
   };
 
   return (
-    <div className="min-h-screen bg-background [&>*:not(nav)]:max-w-[100vw]">
+    <div className="min-h-screen bg-background" style={{ overflowX: "clip" }}>
       <SEOHead
         title="Digital Expeditor & Smart Shift Handoff System"
         description="Streamline CNC manufacturing operations with JobLine.ai. Track work orders, manage shift handoffs, coordinate routing, and improve production floor communication. Built for machine shops and fabrication teams."
