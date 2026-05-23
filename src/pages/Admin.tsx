@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Shield, LayoutDashboard, Users, Wrench, Briefcase, Activity, FileSpreadsheet, Package, Route, Lightbulb, History, Bug, ShieldCheck, ListTodo, Settings2, Map, BookOpen, Cpu, MessageSquare, BellRing, Tv, Globe, Building, FileText, Megaphone, Library } from "lucide-react";
+import { Shield, LayoutDashboard, Users, Wrench, Briefcase, Activity, FileSpreadsheet, Package, Route, Lightbulb, History, Bug, ShieldCheck, ListTodo, Settings2, Map, BookOpen, Cpu, MessageSquare, BellRing, Tv, Globe, Building, FileText, Megaphone, Library, Mail } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { AdminComponentAccess } from "@/types/admin";
@@ -46,6 +46,7 @@ const PromotionsHub = lazy(() => import("@/components/admin/PromotionsHub").then
 const TrainingLibraryPanel = lazy(() => import("@/components/admin/training-library/TrainingLibraryPanel").then(m => ({ default: m.TrainingLibraryPanel })));
 const PlatformMentorRegistry = lazy(() => import("@/components/admin/mentors/PlatformMentorRegistry").then(m => ({ default: m.PlatformMentorRegistry })));
 const LearnIdeasReview = lazy(() => import("@/components/admin/LearnIdeasReview").then(m => ({ default: m.LearnIdeasReview })));
+const PolicyNotificationsManager = lazy(() => import("@/components/admin/PolicyNotificationsManager").then(m => ({ default: m.PolicyNotificationsManager })));
 
 const AdminTabFallback = () => <div className="p-6"><Skeleton className="h-64 w-full rounded-lg" /></div>;
 
@@ -247,6 +248,7 @@ export default function Admin() {
                     <SelectItem value="surveys">Surveys</SelectItem>
                     <SelectItem value="blog-admin">Blog</SelectItem>
                     <SelectItem value="flyer-campaigns">Promotions</SelectItem>
+                    <SelectItem value="policy-notifications">Policy Notices</SelectItem>
                   </SelectGroup>
                 )}
                 {hasTestingAccess && (
@@ -373,6 +375,10 @@ export default function Admin() {
                     <TabsTrigger value="flyer-campaigns" className="gap-2">
                       <Megaphone className="w-4 h-4" />
                       Promotions
+                    </TabsTrigger>
+                    <TabsTrigger value="policy-notifications" className="gap-2">
+                      <Mail className="w-4 h-4" />
+                      Policy Notices
                     </TabsTrigger>
                   </div>
                 </>
@@ -510,6 +516,10 @@ export default function Admin() {
 
               <TabsContent value="flyer-campaigns">
                 <Suspense fallback={<AdminTabFallback />}><PromotionsHub organizationId={scopedOrgId} /></Suspense>
+              </TabsContent>
+
+              <TabsContent value="policy-notifications">
+                <Suspense fallback={<AdminTabFallback />}><PolicyNotificationsManager /></Suspense>
               </TabsContent>
             </>
           )}
