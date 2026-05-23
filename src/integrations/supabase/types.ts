@@ -565,6 +565,77 @@ export type Database = {
           },
         ]
       }
+      billing_reminder_log: {
+        Row: {
+          error: string | null
+          id: string
+          metadata: Json | null
+          organization_id: string | null
+          period_anchor: string | null
+          reminder_type: string
+          sent_at: string
+          status: string
+          stripe_event_id: string | null
+          stripe_subscription_id: string | null
+          user_email: string
+        }
+        Insert: {
+          error?: string | null
+          id?: string
+          metadata?: Json | null
+          organization_id?: string | null
+          period_anchor?: string | null
+          reminder_type: string
+          sent_at?: string
+          status?: string
+          stripe_event_id?: string | null
+          stripe_subscription_id?: string | null
+          user_email: string
+        }
+        Update: {
+          error?: string | null
+          id?: string
+          metadata?: Json | null
+          organization_id?: string | null
+          period_anchor?: string | null
+          reminder_type?: string
+          sent_at?: string
+          status?: string
+          stripe_event_id?: string | null
+          stripe_subscription_id?: string | null
+          user_email?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_reminder_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "billing_reminder_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_reminder_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_reminder_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       blog_posts: {
         Row: {
           author: string
