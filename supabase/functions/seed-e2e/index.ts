@@ -363,8 +363,10 @@ Deno.serve(async (req) => {
     return json({
       ok: true,
       scenario,
-      admin: { id: adminUser.id, email: ADMIN_EMAIL, password: ADMIN_PASSWORD },
-      operator: { id: operatorUser.id, email: OPERATOR_EMAIL, password: OPERATOR_PASSWORD },
+      // Passwords are intentionally NOT returned. CI/runners must read
+      // E2E_ADMIN_PASSWORD / E2E_OPERATOR_PASSWORD directly from their env.
+      admin: { id: adminUser.id, email: ADMIN_EMAIL, role: "admin" },
+      operator: { id: operatorUser.id, email: OPERATOR_EMAIL, role: "operator" },
       organization: { id: org!.id, slug: org!.slug, name: org!.name },
       team: { id: team!.id, name: team!.name },
       station: { id: station!.id, station_id: station!.station_id, name: station!.name },
