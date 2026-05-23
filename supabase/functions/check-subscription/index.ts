@@ -16,6 +16,9 @@ const PRODUCT_TIERS: Record<string, string> = {
   "prod_ULmEqvUEDTTrpp": "gca_pro",
 };
 
+// Enterprise per-seat addon — never represents a tier, must be skipped when picking plan item.
+const ENTERPRISE_SEAT_ADDON_PRICE_ID = "price_1Ta3zCCyekafHX78jX7Jp7Sm";
+
 serve(async (req) => {
   const corsHeaders = buildCorsHeaders(req, {
     allowHeaders: "authorization, x-client-info, apikey, content-type",
