@@ -732,11 +732,61 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   logStep("Subscription deleted, org reverted to free", { orgId: subRecord.organization_id });
 }
 
-async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
+// ─── Billing reminder dispatch helpers ────────────────────────────────────────
+const APP_URL = Deno.env.get("APP_URL") || "https://jobline.ai";
+const INTERNAL_REMINDER_KEY = Deno.env.get("INTERNAL_REMINDER_KEY") || "";
+const SUPABASE_PROJECT_URL = Deno.env.get("SUPABASE_URL") ?? "";
+
+function fmtDateLong(iso: string | number): string {
+  const d = typeof iso === "number" ? new Date(iso * 1000) : new Date(iso);
+  return d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+}
+function fmtAnchor(iso: string | number): string {
+  const d = typeof iso === "number" ? new Date(iso * 1000) : new Date(iso);
+  return d.toISOString().slice(0, 10);
+}
+function fmtAmount(cents: number, currency: string): string {
+  try {
+    return new Intl.NumberFormat("en-US", { style: "currency", currency: currency.toUpperCase() }).format(cents / 100);
+  } catch {
+    return `$${(cents / 100).toFixed(2)}`;
+  }
+}
+
+async function getOrgOwnerEmail(orgId: string): Promise<string | null> {
+  const { data: owner } = await supabaseAdmin
+    .from("organization_members")
+    .select("user_id")
+    .eq("organization_id", orgId)
+    .eq("role", "owner")
+    .maybeSingle();
+  if (!owner?.user_id) return null;
+  const { data: u } = await supabaseAdmin.auth.admin.getUserById(owner.user_id);
+  return u?.user?.email ?? null;
+}
+
+async function dispatchReminder(body: Record<string, unknown>): Promise<void> {
+  if (!INTERNAL_REMINDER_KEY) {
+    logStep("INTERNAL_REMINDER_KEY missing — skipping reminder dispatch");
+    return;
+  }
+  try {
+    const res = await fetch(`${SUPABASE_PROJECT_URL}/functions/v1/send-billing-reminder`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-internal-key": INTERNAL_REMINDER_KEY },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) logStep("send-billing-reminder non-OK", { status: res.status, body: await res.text() });
+  } catch (e) {
+    logStep("send-billing-reminder dispatch error", { err: String(e) });
+  }
+}
+
+async function handleInvoicePaymentFailed(invoice: Stripe.Invoice, eventId: string) {
   logStep("Processing invoice.payment_failed", { invoiceId: invoice.id });
 
   const customerId = invoice.customer as string;
-  
+
   const { data: org } = await supabaseAdmin
     .from("organizations")
     .select("id")
@@ -748,30 +798,99 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
       .from("organizations")
       .update({ subscription_status: "past_due" })
       .eq("id", org.id);
-
     logStep("Set org to past_due", { orgId: org.id });
+
+    const email = await getOrgOwnerEmail(org.id);
+    if (email) {
+      await dispatchReminder({
+        type: "payment-failed",
+        to: email,
+        organizationId: org.id,
+        stripeSubscriptionId: invoice.subscription as string | null,
+        stripeEventId: eventId,
+        data: {
+          amount: fmtAmount(invoice.amount_due ?? 0, invoice.currency ?? "usd"),
+          currency: invoice.currency ?? "usd",
+          attemptCount: invoice.attempt_count ?? 1,
+          nextAttemptAt: invoice.next_payment_attempt ? fmtDateLong(invoice.next_payment_attempt) : undefined,
+          updatePaymentUrl: `${APP_URL}/settings/billing`,
+        },
+      });
+    }
   }
 }
 
 async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
   logStep("Processing invoice.payment_succeeded", { invoiceId: invoice.id });
-
   const customerId = invoice.customer as string;
-  
   const { data: org } = await supabaseAdmin
     .from("organizations")
     .select("id, subscription_status")
     .eq("stripe_customer_id", customerId)
     .maybeSingle();
-
   if (org && org.subscription_status === "past_due") {
     await supabaseAdmin
       .from("organizations")
       .update({ subscription_status: "active" })
       .eq("id", org.id);
-
     logStep("Restored org to active from past_due", { orgId: org.id });
   }
+}
+
+async function handleInvoiceUpcoming(invoice: Stripe.Invoice, eventId: string) {
+  logStep("Processing invoice.upcoming", { invoiceId: invoice.id });
+  if (!invoice.subscription) return;
+  const { data: subRow } = await supabaseAdmin
+    .from("subscriptions")
+    .select("organization_id, stripe_price_id")
+    .eq("stripe_subscription_id", invoice.subscription as string)
+    .maybeSingle();
+  if (!subRow?.organization_id) return;
+  const email = await getOrgOwnerEmail(subRow.organization_id);
+  if (!email) return;
+  const renewalIso = invoice.next_payment_attempt ?? invoice.period_end ?? Math.floor(Date.now() / 1000);
+  await dispatchReminder({
+    type: "renewal-upcoming",
+    to: email,
+    organizationId: subRow.organization_id,
+    stripeSubscriptionId: invoice.subscription as string,
+    stripeEventId: eventId,
+    periodAnchor: fmtAnchor(renewalIso),
+    data: {
+      planName: PRODUCT_TIERS[(invoice.lines.data[0]?.price?.product as string) ?? ""] ?? "Subscription",
+      amount: fmtAmount(invoice.amount_due ?? 0, invoice.currency ?? "usd"),
+      currency: invoice.currency ?? "usd",
+      renewalDate: fmtDateLong(renewalIso),
+      manageUrl: `${APP_URL}/settings/billing`,
+    },
+  });
+}
+
+async function handleTrialWillEnd(sub: Stripe.Subscription, eventId: string) {
+  logStep("Processing customer.subscription.trial_will_end", { subId: sub.id });
+  const { data: subRow } = await supabaseAdmin
+    .from("subscriptions")
+    .select("organization_id")
+    .eq("stripe_subscription_id", sub.id)
+    .maybeSingle();
+  const orgId = subRow?.organization_id;
+  if (!orgId || !sub.trial_end) return;
+  const email = await getOrgOwnerEmail(orgId);
+  if (!email) return;
+  const days = Math.max(1, Math.round((sub.trial_end * 1000 - Date.now()) / 86400_000));
+  await dispatchReminder({
+    type: "trial-ending",
+    to: email,
+    organizationId: orgId,
+    stripeSubscriptionId: sub.id,
+    stripeEventId: eventId,
+    periodAnchor: fmtAnchor(sub.trial_end),
+    data: {
+      daysRemaining: days,
+      trialEndsAt: fmtDateLong(sub.trial_end),
+      manageUrl: `${APP_URL}/pricing`,
+    },
+  });
 }
 
 serve(async (req) => {
@@ -814,8 +933,14 @@ serve(async (req) => {
       case "customer.subscription.deleted":
         await handleSubscriptionDeleted(event.data.object as Stripe.Subscription);
         break;
+      case "customer.subscription.trial_will_end":
+        await handleTrialWillEnd(event.data.object as Stripe.Subscription, event.id);
+        break;
+      case "invoice.upcoming":
+        await handleInvoiceUpcoming(event.data.object as Stripe.Invoice, event.id);
+        break;
       case "invoice.payment_failed":
-        await handleInvoicePaymentFailed(event.data.object as Stripe.Invoice);
+        await handleInvoicePaymentFailed(event.data.object as Stripe.Invoice, event.id);
         break;
       case "invoice.payment_succeeded":
         await handleInvoicePaymentSucceeded(event.data.object as Stripe.Invoice);
