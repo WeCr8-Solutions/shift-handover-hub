@@ -46,6 +46,7 @@ const PromotionsHub = lazy(() => import("@/components/admin/PromotionsHub").then
 const TrainingLibraryPanel = lazy(() => import("@/components/admin/training-library/TrainingLibraryPanel").then(m => ({ default: m.TrainingLibraryPanel })));
 const PlatformMentorRegistry = lazy(() => import("@/components/admin/mentors/PlatformMentorRegistry").then(m => ({ default: m.PlatformMentorRegistry })));
 const LearnIdeasReview = lazy(() => import("@/components/admin/LearnIdeasReview").then(m => ({ default: m.LearnIdeasReview })));
+const PolicyNotificationsManager = lazy(() => import("@/components/admin/PolicyNotificationsManager").then(m => ({ default: m.PolicyNotificationsManager })));
 
 const AdminTabFallback = () => <div className="p-6"><Skeleton className="h-64 w-full rounded-lg" /></div>;
 
