@@ -17,7 +17,7 @@ interface SubscriptionState {
 export const PRICING_TIERS = {
   single: {
     name: 'Single User',
-    price: 8.99,
+    price: 49,
     priceId: 'price_1SthCzCyekafHX78lL2vp30M',
     productId: 'prod_TrQ3QqbNqlmDiS',
     users: 1,
@@ -32,10 +32,10 @@ export const PRICING_TIERS = {
   },
   team: {
     name: 'Team',
-    price: 24.99,
+    price: 149,
     priceId: 'price_1SthDFCyekafHX78ukVYmJLp',
     productId: 'prod_TrQ3SzBnvfW4yA',
-    users: 4,
+    users: 10,
     features: [
       'Everything in Single User',
       '1 main user + 3 team members',
@@ -47,15 +47,15 @@ export const PRICING_TIERS = {
   },
   enterprise: {
     name: 'Enterprise',
-    price: 49.99,
+    price: 399,
     priceId: 'price_1SthDUCyekafHX78MIJEHfCG',
     productId: 'prod_TrQ3Y4BKSsc591',
-    users: 10,
-    additionalUserPrice: 7.99,
+    users: 25,
+    additionalUserPrice: 12,
     features: [
       'Everything in Team',
       '10+ users included',
-      '$7.99/additional user',
+      '$12/additional user',
       'Admin control panel',
       'Custom integrations',
       'Dedicated account manager',
