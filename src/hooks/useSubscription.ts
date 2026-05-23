@@ -18,7 +18,7 @@ export const PRICING_TIERS = {
   single: {
     name: 'Single User',
     price: 49,
-    priceId: 'price_1SthCzCyekafHX78lL2vp30M',
+    priceId: 'price_1Ta3rBCyekafHX78oWOWAMZ9',
     productId: 'prod_TrQ3QqbNqlmDiS',
     users: 1,
     features: [
@@ -33,7 +33,7 @@ export const PRICING_TIERS = {
   team: {
     name: 'Team',
     price: 149,
-    priceId: 'price_1SthDFCyekafHX78ukVYmJLp',
+    priceId: 'price_1Ta3rpCyekafHX78bTWZCgFH',
     productId: 'prod_TrQ3SzBnvfW4yA',
     users: 10,
     features: [
@@ -48,7 +48,7 @@ export const PRICING_TIERS = {
   enterprise: {
     name: 'Enterprise',
     price: 399,
-    priceId: 'price_1SthDUCyekafHX78MIJEHfCG',
+    priceId: 'price_1Ta3sYCyekafHX78598rf2kc',
     productId: 'prod_TrQ3Y4BKSsc591',
     users: 25,
     additionalUserPrice: 12,
