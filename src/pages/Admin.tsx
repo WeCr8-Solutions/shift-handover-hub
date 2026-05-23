@@ -517,6 +517,10 @@ export default function Admin() {
               <TabsContent value="flyer-campaigns">
                 <Suspense fallback={<AdminTabFallback />}><PromotionsHub organizationId={scopedOrgId} /></Suspense>
               </TabsContent>
+
+              <TabsContent value="policy-notifications">
+                <Suspense fallback={<AdminTabFallback />}><PolicyNotificationsManager /></Suspense>
+              </TabsContent>
             </>
           )}
 
