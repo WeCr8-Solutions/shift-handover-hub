@@ -933,8 +933,14 @@ serve(async (req) => {
       case "customer.subscription.deleted":
         await handleSubscriptionDeleted(event.data.object as Stripe.Subscription);
         break;
+      case "customer.subscription.trial_will_end":
+        await handleTrialWillEnd(event.data.object as Stripe.Subscription, event.id);
+        break;
+      case "invoice.upcoming":
+        await handleInvoiceUpcoming(event.data.object as Stripe.Invoice, event.id);
+        break;
       case "invoice.payment_failed":
-        await handleInvoicePaymentFailed(event.data.object as Stripe.Invoice);
+        await handleInvoicePaymentFailed(event.data.object as Stripe.Invoice, event.id);
         break;
       case "invoice.payment_succeeded":
         await handleInvoicePaymentSucceeded(event.data.object as Stripe.Invoice);
