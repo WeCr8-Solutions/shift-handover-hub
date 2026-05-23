@@ -248,6 +248,7 @@ export default function Admin() {
                     <SelectItem value="surveys">Surveys</SelectItem>
                     <SelectItem value="blog-admin">Blog</SelectItem>
                     <SelectItem value="flyer-campaigns">Promotions</SelectItem>
+                    <SelectItem value="policy-notifications">Policy Notices</SelectItem>
                   </SelectGroup>
                 )}
                 {hasTestingAccess && (
