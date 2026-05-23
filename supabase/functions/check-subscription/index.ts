@@ -172,7 +172,11 @@ serve(async (req) => {
     if (hasActiveSub) {
       const subscription = allSubs[0];
       subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
-      productId = subscription.items.data[0].price.product as string;
+      // Skip the per-seat addon line item when identifying the plan
+      const planItem = subscription.items.data.find(
+        (i) => i.price.id !== ENTERPRISE_SEAT_ADDON_PRICE_ID && (i.price.product as string) in PRODUCT_TIERS
+      ) ?? subscription.items.data[0];
+      productId = planItem.price.product as string;
       tier = PRODUCT_TIERS[productId] || null;
       cancelAtPeriodEnd = subscription.cancel_at_period_end;
       logStep("Active/trialing subscription found", { subscriptionId: subscription.id, tier, status: subscription.status, endDate: subscriptionEnd });
