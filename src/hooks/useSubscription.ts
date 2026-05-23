@@ -38,7 +38,7 @@ export const PRICING_TIERS = {
     users: 10,
     features: [
       'Everything in Single User',
-      '1 main user + 3 team members',
+      'Up to 10 users included',
       'Team management dashboard',
       'Shared station assignments',
       'Team analytics & reports',
@@ -50,12 +50,11 @@ export const PRICING_TIERS = {
     price: 399,
     priceId: 'price_1Ta3sYCyekafHX78598rf2kc',
     productId: 'prod_TrQ3Y4BKSsc591',
-    users: 25,
+    users: 10,
     additionalUserPrice: 12,
     features: [
       'Everything in Team',
-      '10+ users included',
-      '$12/additional user',
+      '10 seats included, $12/seat/mo after',
       'Admin control panel',
       'Custom integrations',
       'Dedicated account manager',
