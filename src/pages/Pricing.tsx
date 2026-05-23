@@ -153,8 +153,8 @@ export default function Pricing() {
                     </div>
                     <p className="text-sm text-muted-foreground mt-2">
                       {key === 'single' && '1 user'}
-                      {key === 'team' && '4 users (1 main + 3 team members)'}
-                      {key === 'enterprise' && '10+ users, $7.99/additional'}
+                      {key === 'team' && 'Up to 10 users'}
+                      {key === 'enterprise' && 'Up to 25 users, $12/user after'}
                     </p>
                   </div>
 
