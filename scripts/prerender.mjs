@@ -55,6 +55,15 @@ const ROUTES = [
   "/resources/quality",
   "/shift-handoff",
   "/machine-time-tracking",
+  // Talent / OAP / GCA marketing landings — must be prerendered so crawlers
+  // see route-specific og:image (Lovable static host serves the snapshot;
+  // without this, /talent, /oap, /gca fall back to dist/index.html which
+  // ships the default og-image.png and generic title).
+  "/talent",
+  "/oap",
+  "/gca",
+  "/gcode-academy",
+
   // Features
   "/features/ai-planning-assistant",
   "/features/cnc-operator-tools",
