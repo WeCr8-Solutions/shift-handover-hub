@@ -12,7 +12,13 @@ import {
   Loader2,
   CheckCircle2,
   Share2,
+  Users,
+  GraduationCap,
+  ClipboardCheck,
+  Brain,
+  ArrowRight,
 } from "lucide-react";
+
 import { toast } from "sonner";
 import { z } from "zod";
 import logo from "@/assets/jobline-logo.png";
