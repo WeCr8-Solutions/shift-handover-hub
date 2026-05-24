@@ -126,8 +126,10 @@ export default function TalentLanding() {
         description="Find verified CNC machinists and operators with portable OAP/GCA credentials, or build your own profile to record your career history and get hired."
         keywords="cnc machinist jobs, manufacturing operators, OAP certified, machinist resume, shop floor talent, CNC operator hiring, portable certifications"
         canonical="/talent"
+        ogImage="https://jobline.ai/talent-og.jpg"
         jsonLd={jsonLd}
       />
+
       <MarketingNav />
 
       {/* Hero */}
