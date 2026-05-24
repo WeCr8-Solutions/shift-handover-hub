@@ -357,12 +357,95 @@ export default function Start() {
           <ShopTypeHandoffDemo shopType={selectedType} />
         </section>
 
+        {/* ── Section 2.5: Explore the JobLine ecosystem ── */}
+        <section
+          data-track-section="explore_more"
+          className="w-full max-w-md mt-12 space-y-4"
+        >
+          <div className="text-center space-y-1">
+            <h2 className="text-lg font-bold text-foreground">
+              More ways to grow with JobLine
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Find work, get certified, and level up your shop.
+            </p>
+          </div>
+
+          <div className="space-y-2.5">
+            {[
+              {
+                to: "/talent",
+                icon: Users,
+                title: "Talent Network",
+                desc: "Get discovered by shops hiring CNC operators & machinists.",
+                cta: "Browse talent",
+              },
+              {
+                to: "/oap",
+                icon: ClipboardCheck,
+                title: "Operator Acceptance Program",
+                desc: "AS9100 / ISO 9001 operator certification with mentor sign-off.",
+                cta: "Explore OAP",
+              },
+              {
+                to: "/gcode-academy",
+                icon: GraduationCap,
+                title: "G-Code Academy",
+                desc: "Self-paced CNC training across Fanuc, Haas, Mazak & more.",
+                cta: "Start learning",
+              },
+              {
+                to: "/learn",
+                icon: Brain,
+                title: "Learning Center",
+                desc: "AI literacy, manufacturing glossary, and guided learning paths.",
+                cta: "Open Learn",
+              },
+            ].map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                onClick={() =>
+                  trackEvent("explore_link_click", {
+                    destination: item.to,
+                    type: selectedType,
+                    src,
+                    path: "/start",
+                  })
+                }
+                className="block group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl"
+              >
+                <Card className="border-border/60 transition-all group-hover:border-primary/40 group-hover:bg-muted/40">
+                  <CardContent className="flex items-center gap-3 p-4">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <item.icon className="w-5 h-5 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-sm text-foreground">
+                        {item.title}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {item.desc}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1 text-xs font-medium text-primary shrink-0">
+                      <span className="hidden sm:inline">{item.cta}</span>
+                      <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </section>
+
         {/* ── Section 3: Credibility ── */}
         <section className="w-full max-w-md mt-10 text-center">
           <p className="text-xs text-muted-foreground/70 leading-relaxed">
             Built for small shops that need clearer job visibility and better handoffs.
           </p>
         </section>
+
 
         {/* ── Section 4: Secondary Conversion ── */}
         <section ref={secondaryCtaRef} data-track-section="secondary_cta" className="w-full max-w-md mt-8 space-y-4">
