@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Shield, LayoutDashboard, Users, Wrench, Briefcase, Activity, FileSpreadsheet, Package, Route, Lightbulb, History, Bug, ShieldCheck, ListTodo, Settings2, Map, BookOpen, Cpu, MessageSquare, BellRing, Tv, Globe, Building, FileText, Megaphone, Library, Mail } from "lucide-react";
+import { Shield, LayoutDashboard, Users, Wrench, Briefcase, Activity, FileSpreadsheet, Package, Route, Lightbulb, History, Bug, ShieldCheck, ListTodo, Settings2, Map, BookOpen, Cpu, MessageSquare, BellRing, Tv, Globe, Building, FileText, Megaphone, Library, Mail, BarChart3, ClipboardCheck, CreditCard, UserCheck } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { AdminComponentAccess } from "@/types/admin";
@@ -47,6 +47,12 @@ const TrainingLibraryPanel = lazy(() => import("@/components/admin/training-libr
 const PlatformMentorRegistry = lazy(() => import("@/components/admin/mentors/PlatformMentorRegistry").then(m => ({ default: m.PlatformMentorRegistry })));
 const LearnIdeasReview = lazy(() => import("@/components/admin/LearnIdeasReview").then(m => ({ default: m.LearnIdeasReview })));
 const PolicyNotificationsManager = lazy(() => import("@/components/admin/PolicyNotificationsManager").then(m => ({ default: m.PolicyNotificationsManager })));
+const PolicyAcceptanceLedger = lazy(() => import("@/components/admin/PolicyAcceptanceLedger").then(m => ({ default: m.PolicyAcceptanceLedger })));
+const BillingBackOffice = lazy(() => import("@/components/admin/BillingBackOffice").then(m => ({ default: m.BillingBackOffice })));
+const EmailOperationsCenter = lazy(() => import("@/components/admin/EmailOperationsCenter").then(m => ({ default: m.EmailOperationsCenter })));
+const AdminAuditLog = lazy(() => import("@/components/admin/AdminAuditLog").then(m => ({ default: m.AdminAuditLog })));
+const TalentGovernance = lazy(() => import("@/components/admin/TalentGovernance").then(m => ({ default: m.TalentGovernance })));
+const ExecutiveOverview = lazy(() => import("@/components/admin/ExecutiveOverview").then(m => ({ default: m.ExecutiveOverview })));
 
 const AdminTabFallback = () => <div className="p-6"><Skeleton className="h-64 w-full rounded-lg" /></div>;
 
@@ -216,6 +222,7 @@ export default function Admin() {
                   <SelectLabel>General</SelectLabel>
                   <SelectItem value="overview">Overview</SelectItem>
                   {hasPlatformAccess && <SelectItem value="platform-overview">Platform</SelectItem>}
+                  {hasPlatformAccess && <SelectItem value="executive-overview">Executive</SelectItem>}
                 </SelectGroup>
                 <SelectGroup>
                   <SelectLabel>Organization</SelectLabel>
@@ -251,6 +258,21 @@ export default function Admin() {
                     <SelectItem value="policy-notifications">Policy Notices</SelectItem>
                   </SelectGroup>
                 )}
+                {hasPlatformAccess && (
+                  <SelectGroup>
+                    <SelectLabel>Operations</SelectLabel>
+                    <SelectItem value="policy-acceptance">Policy Ledger</SelectItem>
+                    <SelectItem value="billing-ops">Billing</SelectItem>
+                    <SelectItem value="email-ops">Email Ops</SelectItem>
+                  </SelectGroup>
+                )}
+                {hasPlatformAccess && (
+                  <SelectGroup>
+                    <SelectLabel>Governance</SelectLabel>
+                    <SelectItem value="audit-log">Audit Log</SelectItem>
+                    <SelectItem value="talent-governance">Talent</SelectItem>
+                  </SelectGroup>
+                )}
                 {hasTestingAccess && (
                   <SelectGroup>
                     <SelectLabel>Dev Tools</SelectLabel>
@@ -273,6 +295,12 @@ export default function Admin() {
                 <TabsTrigger value="platform-overview" className="gap-2">
                   <Globe className="w-4 h-4" />
                   Platform
+                </TabsTrigger>
+              )}
+              {hasPlatformAccess && (
+                <TabsTrigger value="executive-overview" className="gap-2">
+                  <BarChart3 className="w-4 h-4" />
+                  Executive
                 </TabsTrigger>
               )}
               <div className="w-px h-6 bg-border mx-1" />
@@ -379,6 +407,34 @@ export default function Admin() {
                     <TabsTrigger value="policy-notifications" className="gap-2">
                       <Mail className="w-4 h-4" />
                       Policy Notices
+                    </TabsTrigger>
+                  </div>
+                  <div className="w-px h-6 bg-border mx-1" />
+                  <div className="flex items-center gap-1 px-1 py-0.5 rounded bg-muted/50">
+                    <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider hidden lg:inline">Operations</span>
+                    <TabsTrigger value="policy-acceptance" className="gap-2">
+                      <ClipboardCheck className="w-4 h-4" />
+                      Policy Ledger
+                    </TabsTrigger>
+                    <TabsTrigger value="billing-ops" className="gap-2">
+                      <CreditCard className="w-4 h-4" />
+                      Billing
+                    </TabsTrigger>
+                    <TabsTrigger value="email-ops" className="gap-2">
+                      <Mail className="w-4 h-4" />
+                      Email Ops
+                    </TabsTrigger>
+                  </div>
+                  <div className="w-px h-6 bg-border mx-1" />
+                  <div className="flex items-center gap-1 px-1 py-0.5 rounded bg-muted/50">
+                    <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider hidden lg:inline">Governance</span>
+                    <TabsTrigger value="audit-log" className="gap-2">
+                      <Shield className="w-4 h-4" />
+                      Audit Log
+                    </TabsTrigger>
+                    <TabsTrigger value="talent-governance" className="gap-2">
+                      <UserCheck className="w-4 h-4" />
+                      Talent
                     </TabsTrigger>
                   </div>
                 </>
@@ -520,6 +576,30 @@ export default function Admin() {
 
               <TabsContent value="policy-notifications">
                 <Suspense fallback={<AdminTabFallback />}><PolicyNotificationsManager /></Suspense>
+              </TabsContent>
+
+              <TabsContent value="executive-overview">
+                <Suspense fallback={<AdminTabFallback />}><ExecutiveOverview /></Suspense>
+              </TabsContent>
+
+              <TabsContent value="policy-acceptance">
+                <Suspense fallback={<AdminTabFallback />}><PolicyAcceptanceLedger /></Suspense>
+              </TabsContent>
+
+              <TabsContent value="billing-ops">
+                <Suspense fallback={<AdminTabFallback />}><BillingBackOffice access={access} /></Suspense>
+              </TabsContent>
+
+              <TabsContent value="email-ops">
+                <Suspense fallback={<AdminTabFallback />}><EmailOperationsCenter /></Suspense>
+              </TabsContent>
+
+              <TabsContent value="audit-log">
+                <Suspense fallback={<AdminTabFallback />}><AdminAuditLog /></Suspense>
+              </TabsContent>
+
+              <TabsContent value="talent-governance">
+                <Suspense fallback={<AdminTabFallback />}><TalentGovernance /></Suspense>
               </TabsContent>
             </>
           )}

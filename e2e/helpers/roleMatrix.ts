@@ -89,7 +89,7 @@ export const ROLE_MATRIX: Record<Role, RoleEntry> = {
     loginAs: "admin",
     navRoutes: ["/dev", "/admin", "/testing"],
     scenarios: ["wo_basic"],
-    pathways: ["nav", "admin"],
+    pathways: ["nav", "admin", "billing"],
   },
   talent: {
     role: "talent",

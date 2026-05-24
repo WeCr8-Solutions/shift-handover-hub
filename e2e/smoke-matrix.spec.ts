@@ -24,7 +24,15 @@ import { openBell, assertHasNotification } from "./flows/notifications";
 import { passToNextStep } from "./flows/routing";
 import { assertEntitlementWall } from "./flows/billing";
 import { visitPublicTalent, assertContactPrivacy } from "./flows/talent";
-import { openAdminUsers } from "./flows/adminSupport";
+import {
+  openAdminUsers,
+  assertPolicyLedger,
+  assertBillingOps,
+  assertEmailOps,
+  assertAuditLog,
+  assertTalentGovernance,
+  assertExecutiveOverview,
+} from "./flows/adminSupport";
 
 /**
  * Modular smoke matrix.
@@ -145,6 +153,14 @@ test.describe("Smoke matrix", () => {
             break;
           case "admin":
             await openAdminUsers(page, ctx);
+            if (role === "platform_admin") {
+              await assertExecutiveOverview(page, ctx);
+              await assertPolicyLedger(page, ctx);
+              await assertBillingOps(page, ctx);
+              await assertEmailOps(page, ctx);
+              await assertAuditLog(page, ctx);
+              await assertTalentGovernance(page, ctx);
+            }
             break;
           default:
             recordGap({
