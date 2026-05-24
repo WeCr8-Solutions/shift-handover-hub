@@ -157,6 +157,83 @@ export type Database = {
           },
         ]
       }
+      admin_audit_events: {
+        Row: {
+          actor_email: string | null
+          actor_id: string
+          created_at: string
+          event_action: string
+          event_category: string
+          id: string
+          new_state: Json | null
+          organization_id: string | null
+          previous_state: Json | null
+          reason: string | null
+          target_id: string | null
+          target_label: string | null
+          target_type: string | null
+        }
+        Insert: {
+          actor_email?: string | null
+          actor_id: string
+          created_at?: string
+          event_action: string
+          event_category: string
+          id?: string
+          new_state?: Json | null
+          organization_id?: string | null
+          previous_state?: Json | null
+          reason?: string | null
+          target_id?: string | null
+          target_label?: string | null
+          target_type?: string | null
+        }
+        Update: {
+          actor_email?: string | null
+          actor_id?: string
+          created_at?: string
+          event_action?: string
+          event_category?: string
+          id?: string
+          new_state?: Json | null
+          organization_id?: string | null
+          previous_state?: Json | null
+          reason?: string | null
+          target_id?: string | null
+          target_label?: string | null
+          target_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_audit_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "admin_audit_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_audit_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_audit_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_chat_usage: {
         Row: {
           created_at: string
@@ -561,6 +638,145 @@ export type Database = {
             columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      billing_events: {
+        Row: {
+          amount_cents: number | null
+          created_at: string
+          currency: string | null
+          description: string
+          event_type: string
+          id: string
+          new_value: string | null
+          organization_id: string
+          performed_by: string | null
+          previous_value: string | null
+          reason: string | null
+          reference_id: string | null
+          seat_delta: number | null
+        }
+        Insert: {
+          amount_cents?: number | null
+          created_at?: string
+          currency?: string | null
+          description: string
+          event_type: string
+          id?: string
+          new_value?: string | null
+          organization_id: string
+          performed_by?: string | null
+          previous_value?: string | null
+          reason?: string | null
+          reference_id?: string | null
+          seat_delta?: number | null
+        }
+        Update: {
+          amount_cents?: number | null
+          created_at?: string
+          currency?: string | null
+          description?: string
+          event_type?: string
+          id?: string
+          new_value?: string | null
+          organization_id?: string
+          performed_by?: string | null
+          previous_value?: string | null
+          reason?: string | null
+          reference_id?: string | null
+          seat_delta?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "billing_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      billing_notes: {
+        Row: {
+          authored_by: string | null
+          created_at: string
+          id: string
+          is_pinned: boolean
+          note: string
+          note_type: string
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          authored_by?: string | null
+          created_at?: string
+          id?: string
+          is_pinned?: boolean
+          note: string
+          note_type?: string
+          organization_id: string
+          updated_at?: string
+        }
+        Update: {
+          authored_by?: string | null
+          created_at?: string
+          id?: string
+          is_pinned?: boolean
+          note?: string
+          note_type?: string
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_notes_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "billing_notes_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_notes_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_notes_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_safe"
             referencedColumns: ["id"]
           },
         ]
@@ -1881,6 +2097,56 @@ export type Database = {
           },
         ]
       }
+      email_delivery_events: {
+        Row: {
+          category: string | null
+          error_message: string | null
+          id: string
+          message_id: string | null
+          occurred_at: string
+          provider: string | null
+          provider_event_id: string | null
+          recipient_email: string
+          recipient_user_id: string | null
+          status: string
+          template_id: string | null
+        }
+        Insert: {
+          category?: string | null
+          error_message?: string | null
+          id?: string
+          message_id?: string | null
+          occurred_at?: string
+          provider?: string | null
+          provider_event_id?: string | null
+          recipient_email: string
+          recipient_user_id?: string | null
+          status: string
+          template_id?: string | null
+        }
+        Update: {
+          category?: string | null
+          error_message?: string | null
+          id?: string
+          message_id?: string | null
+          occurred_at?: string
+          provider?: string | null
+          provider_event_id?: string | null
+          recipient_email?: string
+          recipient_user_id?: string | null
+          status?: string
+          template_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_delivery_events_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "email_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_leads: {
         Row: {
           created_at: string
@@ -1926,6 +2192,84 @@ export type Database = {
           recipient?: string
           sent_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      email_suppressions: {
+        Row: {
+          email: string
+          id: string
+          notes: string | null
+          reason: string
+          suppressed_at: string
+          suppressed_by: string | null
+        }
+        Insert: {
+          email: string
+          id?: string
+          notes?: string | null
+          reason: string
+          suppressed_at?: string
+          suppressed_by?: string | null
+        }
+        Update: {
+          email?: string
+          id?: string
+          notes?: string | null
+          reason?: string
+          suppressed_at?: string
+          suppressed_by?: string | null
+        }
+        Relationships: []
+      }
+      email_templates: {
+        Row: {
+          body_html: string
+          body_text: string | null
+          category: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          name: string
+          notes: string | null
+          send_requires_approval: boolean
+          slug: string
+          subject: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          body_html: string
+          body_text?: string | null
+          category: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          send_requires_approval?: boolean
+          slug: string
+          subject: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          body_html?: string
+          body_text?: string | null
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          send_requires_approval?: boolean
+          slug?: string
+          subject?: string
+          updated_at?: string
+          version?: number
         }
         Relationships: []
       }
@@ -7658,6 +8002,83 @@ export type Database = {
           },
         ]
       }
+      org_health_snapshots: {
+        Row: {
+          active_user_count: number | null
+          created_at: string
+          has_past_due_invoice: boolean
+          health_score: number | null
+          id: string
+          last_active_at: string | null
+          organization_id: string
+          policy_acceptance_pct: number | null
+          risk_flags: string[] | null
+          seat_utilization_pct: number | null
+          snapshot_date: string
+          subscription_tier: string | null
+          work_order_count_30d: number | null
+        }
+        Insert: {
+          active_user_count?: number | null
+          created_at?: string
+          has_past_due_invoice?: boolean
+          health_score?: number | null
+          id?: string
+          last_active_at?: string | null
+          organization_id: string
+          policy_acceptance_pct?: number | null
+          risk_flags?: string[] | null
+          seat_utilization_pct?: number | null
+          snapshot_date?: string
+          subscription_tier?: string | null
+          work_order_count_30d?: number | null
+        }
+        Update: {
+          active_user_count?: number | null
+          created_at?: string
+          has_past_due_invoice?: boolean
+          health_score?: number | null
+          id?: string
+          last_active_at?: string | null
+          organization_id?: string
+          policy_acceptance_pct?: number | null
+          risk_flags?: string[] | null
+          seat_utilization_pct?: number | null
+          snapshot_date?: string
+          subscription_tier?: string | null
+          work_order_count_30d?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_health_snapshots_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "org_health_snapshots_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_health_snapshots_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_health_snapshots_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       org_inspection_tool_overrides: {
         Row: {
           created_at: string
@@ -7851,6 +8272,68 @@ export type Database = {
           },
           {
             foreignKeyName: "org_messages_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_support_notes: {
+        Row: {
+          authored_by: string | null
+          body: string
+          created_at: string
+          id: string
+          is_pinned: boolean
+          note_type: string
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          authored_by?: string | null
+          body: string
+          created_at?: string
+          id?: string
+          is_pinned?: boolean
+          note_type?: string
+          organization_id: string
+          updated_at?: string
+        }
+        Update: {
+          authored_by?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          is_pinned?: boolean
+          note_type?: string
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_support_notes_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "org_support_notes_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_support_notes_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_support_notes_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations_safe"
@@ -8933,6 +9416,69 @@ export type Database = {
           },
         ]
       }
+      policy_acceptances: {
+        Row: {
+          acceptance_method: string
+          accepted_at: string
+          id: string
+          organization_id: string | null
+          policy_version_id: string
+          user_id: string
+        }
+        Insert: {
+          acceptance_method?: string
+          accepted_at?: string
+          id?: string
+          organization_id?: string | null
+          policy_version_id: string
+          user_id: string
+        }
+        Update: {
+          acceptance_method?: string
+          accepted_at?: string
+          id?: string
+          organization_id?: string | null
+          policy_version_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "policy_acceptances_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "policy_acceptances_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "policy_acceptances_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "policy_acceptances_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "policy_acceptances_policy_version_id_fkey"
+            columns: ["policy_version_id"]
+            isOneToOne: false
+            referencedRelation: "policy_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       policy_change_announcements: {
         Row: {
           change_highlights: Json
@@ -9028,6 +9574,74 @@ export type Database = {
           {
             foreignKeyName: "policy_change_email_log_announcement_id_fkey"
             columns: ["announcement_id"]
+            isOneToOne: false
+            referencedRelation: "policy_change_announcements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      policy_versions: {
+        Row: {
+          approval_state: string
+          approved_at: string | null
+          approved_by: string | null
+          archived_at: string | null
+          change_highlights: string[] | null
+          created_at: string
+          created_by: string | null
+          effective_date: string
+          full_policy_url: string | null
+          id: string
+          linked_announcement_id: string | null
+          policy_type: string
+          published_at: string | null
+          summary: string | null
+          title: string
+          updated_at: string
+          version_label: string
+        }
+        Insert: {
+          approval_state?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          archived_at?: string | null
+          change_highlights?: string[] | null
+          created_at?: string
+          created_by?: string | null
+          effective_date: string
+          full_policy_url?: string | null
+          id?: string
+          linked_announcement_id?: string | null
+          policy_type: string
+          published_at?: string | null
+          summary?: string | null
+          title: string
+          updated_at?: string
+          version_label: string
+        }
+        Update: {
+          approval_state?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          archived_at?: string | null
+          change_highlights?: string[] | null
+          created_at?: string
+          created_by?: string | null
+          effective_date?: string
+          full_policy_url?: string | null
+          id?: string
+          linked_announcement_id?: string | null
+          policy_type?: string
+          published_at?: string | null
+          summary?: string | null
+          title?: string
+          updated_at?: string
+          version_label?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "policy_versions_linked_announcement_id_fkey"
+            columns: ["linked_announcement_id"]
             isOneToOne: false
             referencedRelation: "policy_change_announcements"
             referencedColumns: ["id"]
@@ -9764,6 +10378,77 @@ export type Database = {
             columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recruiter_messaging_limits: {
+        Row: {
+          created_at: string
+          daily_limit: number
+          id: string
+          is_suspended: boolean
+          notes: string | null
+          organization_id: string
+          suspended_at: string | null
+          suspended_by: string | null
+          suspension_reason: string | null
+          updated_at: string
+          weekly_limit: number
+        }
+        Insert: {
+          created_at?: string
+          daily_limit?: number
+          id?: string
+          is_suspended?: boolean
+          notes?: string | null
+          organization_id: string
+          suspended_at?: string | null
+          suspended_by?: string | null
+          suspension_reason?: string | null
+          updated_at?: string
+          weekly_limit?: number
+        }
+        Update: {
+          created_at?: string
+          daily_limit?: number
+          id?: string
+          is_suspended?: boolean
+          notes?: string | null
+          organization_id?: string
+          suspended_at?: string | null
+          suspended_by?: string | null
+          suspension_reason?: string | null
+          updated_at?: string
+          weekly_limit?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recruiter_messaging_limits_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "recruiter_messaging_limits_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recruiter_messaging_limits_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recruiter_messaging_limits_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_safe"
             referencedColumns: ["id"]
           },
         ]
@@ -10930,6 +11615,74 @@ export type Database = {
           },
         ]
       }
+      talent_abuse_reports: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          report_type: string
+          reported_by_user_id: string
+          reported_organization_id: string | null
+          resolution_notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          report_type: string
+          reported_by_user_id: string
+          reported_organization_id?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          report_type?: string
+          reported_by_user_id?: string
+          reported_organization_id?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "talent_abuse_reports_reported_organization_id_fkey"
+            columns: ["reported_organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "talent_abuse_reports_reported_organization_id_fkey"
+            columns: ["reported_organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "talent_abuse_reports_reported_organization_id_fkey"
+            columns: ["reported_organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "talent_abuse_reports_reported_organization_id_fkey"
+            columns: ["reported_organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       talent_contact_requests: {
         Row: {
           candidate_response: string
@@ -11045,6 +11798,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      talent_outreach_consents: {
+        Row: {
+          consent_type: string
+          consented: boolean
+          consented_at: string
+          id: string
+          notes: string | null
+          revoked_at: string | null
+          user_id: string
+        }
+        Insert: {
+          consent_type: string
+          consented?: boolean
+          consented_at?: string
+          id?: string
+          notes?: string | null
+          revoked_at?: string | null
+          user_id: string
+        }
+        Update: {
+          consent_type?: string
+          consented?: boolean
+          consented_at?: string
+          id?: string
+          notes?: string | null
+          revoked_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       talent_saved_candidates: {
         Row: {
