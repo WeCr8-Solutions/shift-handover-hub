@@ -38,6 +38,8 @@ type Meta = {
   image: string;
   url: string;
   type?: string;
+  /** Long-form, crawler-visible body content (plain text / minimal HTML). */
+  body?: string;
 };
 
 const DEFAULT_META: Meta = {
@@ -47,6 +49,24 @@ const DEFAULT_META: Meta = {
     "Streamline CNC manufacturing operations. Track work orders, manage shift handoffs, and improve production floor communication.",
   image: `${BASE}/og-image.png`,
   url: `${BASE}/`,
+  body: `
+    <h1>JobLine.ai — Digital Expeditor &amp; Smart Shift Handoff for Manufacturing</h1>
+    <p>JobLine.ai is a digital expeditor and shift-handoff platform built for CNC machine shops, precision manufacturers, and AS9100 / ISO 9001 / ITAR-aligned facilities. It replaces paper travelers, whiteboards, and tribal knowledge with structured work-order tracking, station-by-station routing, and auditable shift handoffs.</p>
+    <h2>Core Modules</h2>
+    <ul>
+      <li><strong>Shift Handoff</strong> — structured operator-to-operator notes tied to work orders, stations, and shift boundaries.</li>
+      <li><strong>Work Order Queue</strong> — Kanban, list, and calendar views with capacity planning and outside-processing (OP) tracking.</li>
+      <li><strong>Routing &amp; Operations</strong> — 8-step routing with quantity accounting (Completed + Scrap + Rework = Original).</li>
+      <li><strong>OAP — Operator Acceptance Program</strong> — AS9100 / ISO 9001 / OSHA-aligned operator certification with mentor sign-off.</li>
+      <li><strong>GCA — G-Code Academy</strong> — self-paced CNC training across Fanuc, Haas, Mazak, Siemens, Heidenhain; 10 verified question banks.</li>
+      <li><strong>Talent Network</strong> — free, verified shop-floor profiles with machines, controls, GD&amp;T skills, and OAP/GCA badges; employers can search and message verified operators.</li>
+      <li><strong>Quality / NCR</strong> — non-conformance reporting with quantity-integrity enforcement.</li>
+      <li><strong>AI Planning Assistant</strong> — context-aware routing analysis (Capability, Workload, Availability) with supervisor-approved routing changes.</li>
+      <li><strong>ERP Connectors</strong> — read-through (default) or write-through integration with JobBOSS and SAP S/4HANA; ITAR orgs forced to read-through.</li>
+    </ul>
+    <h2>Who It's For</h2>
+    <p>Small-to-mid CNC shops, aerospace and defense suppliers, ITAR-controlled facilities, and any precision manufacturer that needs clearer job visibility, traceable handoffs, and a hiring funnel for verified operators.</p>
+  `,
 };
 
 function metaForPath(pathname: string): Meta | null {
