@@ -126,6 +126,48 @@ A comprehensive guide to selecting and implementing a manufacturing ERP:
 - **Quality Teams**: Track rework, scrap, and quality holds
 - **Schedulers**: Coordinate work order flow and outside processing
 
+## Talent Network (Free Forever for Operators)
+
+A public talent marketplace where CNC operators, machinists, and programmers build verified shop-floor profiles and get discovered by hiring shops. Personal contact info (email, phone, address) is never public — outreach routes through in-app messaging.
+
+- **Talent Home** → https://jobline.ai/talent
+- **Browse Talent** → https://jobline.ai/talent/browse
+- **Resume Builder** → https://jobline.ai/talent/resume-builder
+- **Public Profiles** → https://jobline.ai/talent/:username (verified machines, controls, GD&T skills, OAP & GCA badges)
+
+## Operator Acceptance Program (OAP)
+
+AS9100 / ISO 9001 / OSHA-aligned operator certification system with mentor sign-off. Tracks tool proficiency, training media, and recertification events. Earn shareable verified certificates ($12 one-time, public verification at /verify/:certId).
+
+- **OAP Overview** → https://jobline.ai/oap
+- **OAP Courses** → https://jobline.ai/oap/courses
+- **About OAP** → https://jobline.ai/oap/about
+- **Tool Proficiency** → https://jobline.ai/oap/proficiency
+
+## G-Code Academy (GCA)
+
+Self-paced CNC operator training across Fanuc, Haas, Mazak, Siemens, and Okuma controls. 10 question banks with an in-app test player; mentor-verifiable scores.
+
+- **GCA Home** → https://jobline.ai/gcode-academy
+- **GCA Resource Hub** → https://jobline.ai/resources/gcode-academy
+
+## Learning Center
+
+AI literacy, manufacturing glossary, fundamentals, professions, and guided tutorials for shop-floor learners.
+
+- **Learn Hub** → https://jobline.ai/learn
+- **Glossary** → https://jobline.ai/learn/glossary
+- **Fundamentals** → https://jobline.ai/learn/fundamentals
+- **Professions** → https://jobline.ai/learn/professions
+- **Tutorials** → https://jobline.ai/learn/tutorials
+
+## Machinery's Handbook (Reference Layer)
+
+Canonical reference catalog for inspection tools, machining operations, GCA, OAP, and operator tools — citable across the platform via `<HandbookCite>`.
+
+- **Handbook Home** → https://jobline.ai/handbook
+- **Handbook Entry** → https://jobline.ai/handbook/:slug
+
 ## 📚 Free Resource Library
 
 - **Manufacturing Guides** → https://jobline.ai/resources/guides
