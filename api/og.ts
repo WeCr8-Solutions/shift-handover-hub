@@ -75,11 +75,30 @@ function metaForPath(pathname: string): Meta | null {
   if (pathname === "/talent" || pathname === "/talent/") {
     return {
       title:
-        "Talent Network — Verified Professionals & Credentials | JobLine.ai",
+        "Talent Network — Verified CNC Operators & Machinists | JobLine.ai",
       description:
-        "Discover verified professionals across every trade and discipline. Browse public profiles with skills, certifications, accomplishments, and work history.",
+        "Free, verified shop-floor profiles for CNC operators and machinists. Browse public profiles with machines run, controls, GD&T skills, OAP & GCA badges, and work history.",
       image: `${BASE}/talent-og.jpg`,
       url: `${BASE}/talent`,
+      body: `
+        <h1>JobLine.ai Talent Network — Verified CNC Operators &amp; Machinists</h1>
+        <p>The JobLine.ai Talent Network is a free-forever hiring marketplace for precision-manufacturing professionals. Operators build a verified shop-floor profile listing the machines they've run, the controls they know (Fanuc, Haas, Mazak, Siemens, Heidenhain, Okuma), their GD&amp;T proficiency, OAP (Operator Acceptance Program) certifications, and GCA (G-Code Academy) credentials.</p>
+        <h2>For Operators</h2>
+        <ul>
+          <li>Free public profile at <code>/talent/&lt;username&gt;</code> with three-tier visibility (private / employers-only / public).</li>
+          <li>Showcase verified credentials: OAP mentor sign-offs, GCA test scores, issued certificates with public verification URLs.</li>
+          <li>Personal contact info (email, phone, address) is never public — all outreach routes through in-app messaging.</li>
+          <li>Get discovered by hiring shops searching for specific machines, controls, or skills.</li>
+        </ul>
+        <h2>For Employers</h2>
+        <ul>
+          <li>Search verified operators by machine, control, location, and skill (authenticated, paid-tier).</li>
+          <li>Message candidates with accept-gated replies — operators control who can contact them.</li>
+          <li>Verify every credential against the public certificate registry at <code>/verify/&lt;certId&gt;</code>.</li>
+        </ul>
+        <h2>Privacy &amp; Trust</h2>
+        <p>Profiles default to private. Operators choose what to publish. Contact details are masked even on public profiles. ITAR-sensitive data is never exposed.</p>
+      `,
     };
   }
   if (pathname === "/oap" || pathname.startsWith("/oap/")) {
@@ -90,6 +109,23 @@ function metaForPath(pathname: string): Meta | null {
         "Structured CNC operator certification with mentor sign-off. Built for AS9100, ISO 9001, and OSHA-aligned shops.",
       image: `${BASE}/oap-og.jpg`,
       url: `${BASE}${pathname}`,
+      body: `
+        <h1>Operator Acceptance Program (OAP)</h1>
+        <p>The Operator Acceptance Program is JobLine.ai's structured CNC operator certification system, designed for shops operating under AS9100, ISO 9001, and OSHA-aligned quality frameworks. It replaces ad-hoc operator sign-offs with a documented, auditable certification pipeline.</p>
+        <h2>How It Works</h2>
+        <ul>
+          <li><strong>Course Library</strong> at <code>/oap/learn</code> — canonical, platform-curated CNC operator courses (machine safety, work-holding, tool offsets, in-process inspection, GD&amp;T fundamentals, etc.).</li>
+          <li><strong>Mentor Walkthrough</strong> at <code>/oap/walkthrough</code> — guided in-shop competency demonstration with mentor sign-off (pass / fail / needs-retest).</li>
+          <li><strong>Tool Proficiency Tests</strong> — measuring-tool (micrometer, caliper, indicator, gauge block) proficiency with printable Markdown backup and 4 canonical seeded templates.</li>
+          <li><strong>Transcript</strong> at <code>/oap/my-transcript</code> — operator's full certification history (noindex, private).</li>
+          <li><strong>Employer Console</strong> at <code>/oap/employer</code> — paid-tier dashboard for shops to issue, track, and audit operator certifications across their workforce.</li>
+          <li><strong>Public Certificate Verification</strong> at <code>/verify/&lt;certId&gt;</code> — anyone can verify the authenticity of an issued credential.</li>
+        </ul>
+        <h2>Pricing</h2>
+        <p>OAP self-study and walkthrough access is free for operators. Issued certificates are $12 (one-time, via Stripe). Employer console requires a paid org subscription.</p>
+        <h2>Compliance</h2>
+        <p>OAP is structured to satisfy AS9100 Rev D operator-qualification requirements, ISO 9001:2015 competency clauses (7.2), and OSHA general-duty operator-training expectations. Full audit trail via <code>oap_recert_events</code>. ITAR-controlled orgs get additional US-person declaration gating.</p>
+      `,
     };
   }
   if (
@@ -103,6 +139,32 @@ function metaForPath(pathname: string): Meta | null {
         "Self-paced CNC training across Fanuc, Haas, Siemens, Heidenhain, GD&T, and more. 10 question banks with verified credentials.",
       image: `${BASE}/gcode-academy-og.jpg`,
       url: `${BASE}${pathname}`,
+      body: `
+        <h1>G-Code Academy (GCA) — Self-Study CNC Operator Training</h1>
+        <p>The G-Code Academy is JobLine.ai's self-paced CNC operator training and credentialing platform. It covers G-code, M-code, machine controls, work-holding, and GD&amp;T across the major control dialects used in modern machine shops.</p>
+        <h2>Curriculum &amp; Question Banks (10 total)</h2>
+        <ul>
+          <li>Fanuc G-code &amp; M-code</li>
+          <li>Haas control specifics</li>
+          <li>Siemens (SINUMERIK) syntax</li>
+          <li>Heidenhain conversational &amp; ISO</li>
+          <li>VMC (vertical machining center) operations</li>
+          <li>Lathe / turning fundamentals</li>
+          <li>Swiss-type lathe</li>
+          <li>HMC (horizontal machining center)</li>
+          <li>GD&amp;T (geometric dimensioning &amp; tolerancing)</li>
+          <li>Interview / hiring readiness</li>
+        </ul>
+        <h2>How It Works</h2>
+        <ul>
+          <li><strong>Landing &amp; lessons</strong> at <code>/gcode-academy</code> — public, free reference content (curriculum, calculators, syntax sheets).</li>
+          <li><strong>In-app test player</strong> at <code>/gca/test/&lt;bankSlug&gt;</code> — proctored-style question banks; passing tests issues a verified credential that surfaces as a badge on the operator's Talent profile.</li>
+          <li><strong>VS Code extension</strong> — multi-dialect G-code syntax intelligence with real-time backend sync.</li>
+          <li><strong>Employer Console</strong> at <code>/gca/employer</code> — paid-tier dashboard to track team-wide GCA proficiency.</li>
+        </ul>
+        <h2>Pricing</h2>
+        <p>All study material and self-assessment is free. Verified credentials (badge-eligible) are $12 (one-time). Employer-side proficiency dashboards require a paid org subscription.</p>
+      `,
     };
   }
   if (pathname.startsWith("/verify/")) {
