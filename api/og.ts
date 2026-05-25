@@ -271,7 +271,25 @@ function rewriteMeta(html: string, meta: Meta): string {
     .replace(/<meta\s+property=["']og:[^"']+["'][^>]*>/gi, "")
     .replace(/<meta\s+name=["']twitter:[^"']+["'][^>]*>/gi, "");
 
-  return stripped.replace(/<head([^>]*)>/i, `<head$1>${injected}`);
+  let out = stripped.replace(/<head([^>]*)>/i, `<head$1>${injected}`);
+
+  // Inject crawler-visible body content so AI fetchers (Claude, ChatGPT, Perplexity, etc.)
+  // and non-OG search crawlers see real per-route content instead of the empty SPA shell.
+  // Wrapped in an aria-hidden container — real users get the SPA, which hydrates over it.
+  if (meta.body) {
+    const bodyBlock = `<div id="crawler-content" aria-hidden="true" style="position:absolute;left:-99999px;top:auto;width:1px;height:1px;overflow:hidden">${meta.body}</div>`;
+    // Place it inside <div id="root"> if present, otherwise right after <body>.
+    if (/<div\s+id=["']root["'][^>]*>/i.test(out)) {
+      out = out.replace(
+        /<div\s+id=["']root["'][^>]*>/i,
+        (m) => `${m}${bodyBlock}`,
+      );
+    } else {
+      out = out.replace(/<body([^>]*)>/i, `<body$1>${bodyBlock}`);
+    }
+  }
+
+  return out;
 }
 
 let cachedHtml: string | null = null;
