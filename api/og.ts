@@ -222,6 +222,13 @@ async function fetchTalentMeta(username: string): Promise<Meta | null> {
       image: `${BASE}/api/og-image?u=${encodeURIComponent(p.public_username ?? username)}`,
       url: `${BASE}/talent/${p.public_username}`,
       type: "profile",
+      body: `
+        <h1>${escapeAttr(headline)}${p.public_username ? ` (@${escapeAttr(p.public_username)})` : ""}</h1>
+        ${loc ? `<p><strong>Location:</strong> ${escapeAttr(loc)}</p>` : ""}
+        ${p.bio ? `<p>${escapeAttr(p.bio)}</p>` : ""}
+        <p>Verified talent profile on JobLine.ai. View machines run, controls, GD&amp;T skills, OAP &amp; GCA badges, and credentials at <code>jobline.ai/talent/${escapeAttr(p.public_username ?? username)}</code>.</p>
+        <p>Contact this operator through the in-app messaging system (personal email, phone, and address are never public).</p>
+      `,
     };
   } catch {
     return null;
