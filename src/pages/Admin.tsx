@@ -584,6 +584,10 @@ export default function Admin() {
                 <Suspense fallback={<AdminTabFallback />}><PolicyNotificationsManager /></Suspense>
               </TabsContent>
 
+              <TabsContent value="seo-diagnostics">
+                <Suspense fallback={<AdminTabFallback />}><SeoDiagnosticsPanel /></Suspense>
+              </TabsContent>
+
               <TabsContent value="executive-overview">
                 <Suspense fallback={<AdminTabFallback />}><ExecutiveOverview /></Suspense>
               </TabsContent>
