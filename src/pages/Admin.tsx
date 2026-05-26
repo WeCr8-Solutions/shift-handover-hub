@@ -410,6 +410,10 @@ export default function Admin() {
                       <Mail className="w-4 h-4" />
                       Policy Notices
                     </TabsTrigger>
+                    <TabsTrigger value="seo-diagnostics" className="gap-2">
+                      <Search className="w-4 h-4" />
+                      SEO
+                    </TabsTrigger>
                   </div>
                   <div className="w-px h-6 bg-border mx-1" />
                   <div className="flex items-center gap-1 px-1 py-0.5 rounded bg-muted/50">
