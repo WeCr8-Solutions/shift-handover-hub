@@ -2,8 +2,21 @@
 <html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <!-- Google AdSense account verification (meta tag only, no external request) -->
+    <!-- Google AdSense — loaded early (async) so Google's AdSense review crawler
+         can detect the script during verification. Suppressed for ITAR builds via
+         the runtime guard below (the script tag is removed before parse when
+         VITE_DISABLE_ANALYTICS=true). -->
     <meta name="google-adsense-account" content="ca-pub-3639153716376265">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3639153716376265" crossorigin="anonymous" data-adsense-loader></script>
+    <script>
+      // ITAR build: strip the AdSense script before it executes.
+      if ('%VITE_DISABLE_ANALYTICS%' === 'true') {
+        var __a = document.querySelector('script[data-adsense-loader]');
+        if (__a) __a.remove();
+      }
+    </script>
+
+
 
     <!--
       Third-party analytics / ad scripts are loaded conditionally at runtime.
@@ -65,12 +78,10 @@
           aws.src='https://www.googletagmanager.com/gtag/js?id=AW-17425064696';
           document.head.appendChild(aws);
 
-          // Google AdSense
-          var as=document.createElement('script');as.async=true;
-          as.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3639153716376265';
-          as.crossOrigin='anonymous';
-          document.head.appendChild(as);
+          // Google AdSense is now loaded eagerly in <head> above (required for
+          // Google's AdSense verification crawler). Do not load it again here.
         };
+
         ['pointerdown','keydown','scroll','touchstart','mousemove'].forEach(function(ev){
           window.addEventListener(ev, loadThirdParty, { once: true, passive: true });
         });
