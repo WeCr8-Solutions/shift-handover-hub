@@ -106,12 +106,13 @@ export function SEOHead({
       <meta name="geo.placename" content="United States" />
       {canonicalUrl && <link rel="alternate" hrefLang="en" href={canonicalUrl} />}
 
-      {/* JSON-LD */}
-      {jsonLd && (
-        <script type="application/ld+json">
-          {JSON.stringify(Array.isArray(jsonLd) ? jsonLd : jsonLd)}
-        </script>
-      )}
+      {/* JSON-LD — emit one <script> per entry so Google parses each schema as its own item */}
+      {jsonLd &&
+        (Array.isArray(jsonLd) ? jsonLd : [jsonLd]).map((entry, i) => (
+          <script key={i} type="application/ld+json">
+            {JSON.stringify(entry)}
+          </script>
+        ))}
     </Helmet>
   );
 }
