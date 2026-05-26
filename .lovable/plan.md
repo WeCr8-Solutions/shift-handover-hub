@@ -1,84 +1,58 @@
-# Terms & Policy Change Notification System
+## What I found (web search + code audit)
 
-Build an admin-managed system to notify all users when Terms of Service, Privacy Policy, Cookie Policy, or Payment/Billing terms change. These are legally-required transactional notifications (per CAN-SPAM / GDPR / our own ToS), not marketing — each user receives one notification per published change because they have an active account governed by those terms.
+**Web search results**
+- `site:jobline.ai` returns **only the homepage** — Google has indexed 1 page out of 213 in your sitemap.
+- Brand search "jobline.ai" surfaces unrelated "Jobline" / "QuickJobLine" / "Jobright" career sites — your brand is being out-ranked on its own name.
+- Long-tail searches ("digital expeditor shift handoff CNC", "JobLine G-Code VS Code") never surface jobline.ai. The VS Code blog post (and `/talent`, `/oap`, `/gcode-academy`, `/verify`, `/blog/*`, `/handbook/*`, `/help/*`, `/resources/*`, `/features/*`, `/compare/*`, `/industries/*`) are essentially invisible.
 
-## 1. Database
+**Root cause in the code**
+- `scripts/prerender.mjs` only prerenders **53 routes**. Your `public/sitemap.xml` advertises **213**. Googlebot fetches the unrendered routes, sees an empty `<div id="root">`, and parks them in "Discovered – currently not indexed". That's why nothing ranks.
+- Specifically missing from prerender:
+  - All 13 `/blog/*` posts (including the VS Code launch post)
+  - All 18+ `/features/*` long-tail pages (digital-expeditor, dnc-software, mes-software, oee-software, job-shop-erp, etc.)
+  - All `/compare/*` competitor-alternative pages (jobboss, epicor, proshop, e2-shop, global-shop, spreadsheet)
+  - All `/handbook/*`, all `/help/*` (80+ pages), all `/resources/*` sub-pages, `/learn/glossary/*`, `/learn/professions/*`, `/industries/*` long-tail, `/talent/browse`, `/verify`, `/manuals`, `/manufacturing-visibility`, `/updates`, `/start`, `/use-cases`
+- Homepage `<title>` doesn't lead with the brand token, which makes the cold "jobline.ai" brand search lose to identically-named career sites.
 
-New migration adds two tables:
+---
 
-**`policy_change_announcements`** — admin-authored announcement records
-- `id`, `policy_type` (enum: `terms`, `privacy`, `cookies`, `billing`, `combined`)
-- `version_label` (e.g. "v2.3 — 2026-05-23"), `effective_date`
-- `title`, `summary` (short blurb shown in email), `change_highlights` (bullet list / markdown of what changed), `full_policy_url`
-- `status` (`draft`, `scheduled`, `sending`, `sent`, `cancelled`), `scheduled_for`, `sent_at`
-- `created_by`, `created_at`, `updated_at`
-- RLS: platform admins + developers full CRUD; org admins read-only (so they can see what was sent to their users)
+## Plan
 
-**`policy_change_email_log`** — per-recipient send log (dedupe + audit)
-- `id`, `announcement_id`, `user_id`, `recipient_email`
-- `status` (`pending`, `sent`, `failed`, `suppressed`), `error`, `sent_at`
-- Unique constraint on `(announcement_id, user_id)` → idempotency
+### 1. Prerender every sitemap URL (the single biggest win)
+Refactor `scripts/prerender.mjs` so the route list is **derived from `public/sitemap.xml`** (parse `<loc>` entries, strip base URL) instead of a hand-maintained array. Result: all 213 routes ship real HTML to crawlers automatically, and the two lists can never drift again. Keep the existing puppeteer + `vite preview` flow, concurrency, and safe-fail behavior.
 
-## 2. Transactional Email Template
+### 2. Strengthen brand signals in `index.html`
+- Lead `<title>` with the brand: `JobLine.ai — Digital Expeditor & Shift Handoff Software for CNC Shops`.
+- Add `alternateName` ("JobLine", "Jobline.ai") and `sameAs` (GitHub `WeCr8`, VS Code Marketplace listing, LinkedIn if available) to the existing `Organization` JSON-LD so Google's Knowledge Graph disambiguates you from the unrelated "Jobline" career sites.
+- Add a `SoftwareApplication` `sameAs` entry pointing at the VS Code Marketplace listing to help the extension surface for brand queries.
 
-`supabase/functions/_shared/transactional-email-templates/policy-change-notification.tsx` — React Email component, brand-styled (white body, JobLine blue CTAs, logo header), registered in `registry.ts`.
+### 3. Tighten per-page titles for the highest-intent routes
+For the routes most likely to convert (`/talent`, `/oap`, `/gcode-academy`, `/verify`, `/features/vscode-gcode`, `/blog/jobline-gcode-vs-code-extension-available`, `/shift-handoff`, `/machine-time-tracking`), audit and where needed update each page's `<SEOHead>` so the title leads with the unique value prop + "JobLine.ai" — these are the pages that should rank for their long-tail terms once prerendered.
 
-Props: `recipientName`, `policyType`, `versionLabel`, `effectiveDate`, `title`, `summary`, `changeHighlights[]`, `fullPolicyUrl`, `manageAccountUrl`.
+### 4. Add internal link discoverability
+Add a small **prerendered `/sitemap` HTML page** (human-readable list of all public routes, grouped by section) and link to it from the footer. This gives crawlers a single hop to every URL, accelerating discovery beyond what XML sitemaps alone do.
 
-Subject: `Important update to our {policyType} — effective {effectiveDate}`.
+### 5. Submit to Google after deploy
+Use the Google Search Console connector (already documented in your prompt context) to:
+- Verify `https://jobline.ai/` via META tag (auto-injected through `index.html`).
+- Submit `https://jobline.ai/sitemap-index.xml`.
+- Submit the homepage + top 10 routes for indexing via the URL Inspection / indexing API.
 
-## 3. Edge Functions
+I'll run this **after** the prerender/title changes ship so Google's first re-crawl sees real HTML.
 
-**`send-policy-change-notification`** (verify_jwt = true, admin-only)
-- Input: `{ announcementId }`
-- Verifies caller is platform admin / developer
-- Loads announcement, sets status → `sending`
-- Queries all active users (`profiles` joined with org filter — every user with a verified email)
-- For each user: insert `policy_change_email_log` row (unique constraint → skip duplicates), then invoke `send-transactional-email` with template `policy-change-notification` and `idempotencyKey = policy-${announcementId}-${userId}`
-- On completion sets status → `sent`, `sent_at = now()`
-- Streams progress back via response
+---
 
-**`scheduled-policy-change-cron`** (verify_jwt = false, called by pg_cron daily)
-- Finds announcements with `status='scheduled'` and `scheduled_for <= now()`
-- Invokes `send-policy-change-notification` for each
+## Technical notes
 
-## 4. Admin UI
+- Prerender route source: parse `public/sitemap.xml` with a regex on `<loc>https://jobline.ai(.+)</loc>`. No new deps.
+- Build time impact: prerendering ~210 routes at the existing 4-way concurrency is roughly ~3–5 min added to `postbuild`. Acceptable; gated behind the same "puppeteer optional, never throws" safety the script already has.
+- No changes to RLS, auth, edge functions, or business logic — pure SEO/build pipeline + a couple of head tags.
+- Files touched: `scripts/prerender.mjs`, `index.html`, a handful of `src/pages/*.tsx` `<SEOHead>` calls, and one new `src/pages/SitemapPage.tsx` route added to `App.tsx` + sitemap.xml + footer link.
 
-New tab/section in admin dashboard: **Policy Notifications** (`/admin/policy-notifications`), gated to platform admin + developer.
+---
 
-- **List view**: table of announcements (status badges, recipient count, sent date), filter by policy type
-- **Create/edit form**:
-  - Policy type selector
-  - Version label, effective date pickers
-  - Title, summary (textarea), change highlights (repeatable bullet list)
-  - Link to full policy page
-  - Schedule (now / specific date)
-  - Live preview pane (renders the React Email template with sample props)
-- **Actions**: Save Draft, Send Test (to current admin), Schedule, Send Now, Cancel Scheduled
-- **Detail view**: per-recipient send log table (filter pending/sent/failed/suppressed), retry-failed button
+## Out of scope (call out, don't do)
+- Building backlinks (the other half of ranking) — that's outreach work, not code.
+- Switching to SSR (TanStack Start / Next). Prerendering covers the SEO need without changing your stack.
 
-## 5. Triggers from Existing Policy Pages
-
-Optional convenience: on `/terms`, `/privacy`, `/cookies` admin edit views (if they exist as CMS-style content) add a "Create Policy Change Notification" button that pre-fills the form. If those pages are static MDX/TSX, skip this — admins create announcements manually.
-
-## 6. Wiring
-
-- Add route in `App.tsx` (lazy-loaded) for `/admin/policy-notifications`
-- Add nav link in admin sidebar gated by `useAdminAccess().isPlatformAdmin`
-- Update memory index with the new feature reference
-
-## Technical Notes
-
-- Uses the existing Lovable Email infrastructure (`send-transactional-email` + pgmq queue) — no new email provider
-- Each send is individually enqueued with a unique `idempotencyKey` → safe to retry, no duplicate emails per user
-- Suppression list is automatically honored (users who unsubscribed from transactional ≠ legal notices, but the queue checks `suppressed_emails` regardless; we may flag policy notices as "legally required" and bypass — TBD)
-- All emails are logged in both `policy_change_email_log` (our table) and `email_send_log` (system table)
-- Unique `(announcement_id, user_id)` constraint guarantees one email per user per announcement even if "Send Now" is clicked twice
-
-## Open Questions
-
-1. Should policy-change emails bypass the user-level suppression list? (My recommendation: **yes** — these are legally required account notifications, same as password reset.)
-2. Scope: send to **all platform users**, or per-org (org admin can send to their own org members)? My recommendation: **platform-wide only**, controlled by platform admin / developer — these are JobLine policy changes, not per-tenant terms.
-3. Should we also notify via in-app banner (using the existing `global_updates` acknowledgement modal) in addition to email? Recommended for major changes.
-
-Confirm and I'll build it.
+Ready to switch to build mode and execute steps 1–4, then run step 5 against Google Search Console.
