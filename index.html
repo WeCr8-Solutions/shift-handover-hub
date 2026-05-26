@@ -114,7 +114,10 @@
     <meta name="keywords" content="manufacturing software, shift handoff, work order tracking, CNC machining, production management, machine shop software, manufacturing execution system, MES, digital expeditor, production scheduling" />
     <meta name="author" content="JobLine.ai" />
     <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="https://jobline.ai/" />
+    <!-- Canonical is set per-route via react-helmet-async (SEOHead / page <Helmet>).
+         A static sitewide canonical would ship on every page (link tags don't dedupe by rel),
+         causing Google to mark deep routes as "Alternate page with proper canonical tag" → /. -->
+
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />

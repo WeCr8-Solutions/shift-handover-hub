@@ -14,7 +14,7 @@ export interface GuidePart {
 
 export const erpGuideParts: GuidePart[] = [
   {
-    id: "selection-mistakes",
+    id: "prevent-selection-mistakes",
     part: 1,
     title: "Avoid the 5 Costliest ERP Selection Mistakes",
     subtitle: "Learn the pitfalls that derail ERP projects before they start — and how to sidestep each one.",
@@ -28,7 +28,7 @@ export const erpGuideParts: GuidePart[] = [
     ],
   },
   {
-    id: "champion-erp",
+    id: "champion-new-erp",
     part: 2,
     title: "How to Champion a Manufacturing System Upgrade",
     subtitle: "Build executive buy-in and floor-level enthusiasm for your digital transformation.",
@@ -41,7 +41,7 @@ export const erpGuideParts: GuidePart[] = [
     ],
   },
   {
-    id: "functionality-needs",
+    id: "determine-functionality-needs",
     part: 3,
     title: "How to Determine Your System Functionality Needs",
     subtitle: "Map your shop's real workflows to the features that actually matter.",
@@ -54,7 +54,7 @@ export const erpGuideParts: GuidePart[] = [
     ],
   },
   {
-    id: "discovery-call",
+    id: "discovery-call-success",
     part: 4,
     title: "How to Run a Successful Vendor Discovery Call",
     subtitle: "Ask the right questions so you evaluate vendors on substance, not slide decks.",
@@ -67,7 +67,7 @@ export const erpGuideParts: GuidePart[] = [
     ],
   },
   {
-    id: "erp-budget",
+    id: "build-erp-budget",
     part: 5,
     title: "Plan and Build Your System Budget",
     subtitle: "Understand true cost of ownership — not just the sticker price.",

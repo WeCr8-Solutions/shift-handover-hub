@@ -41,6 +41,10 @@ export default function HandbookEntry() {
       <Helmet>
         <title>{`${ref.title} | Machinist's Reference | JobLine.ai`}</title>
         <meta name="description" content={ref.summary || `${ref.title} machinist handbook reference`} />
+        <link rel="canonical" href={`https://jobline.ai/handbook/${ref.slug}`} />
+        <meta property="og:url" content={`https://jobline.ai/handbook/${ref.slug}`} />
+        <meta property="og:title" content={`${ref.title} | Machinist's Reference`} />
+        <meta property="og:description" content={ref.summary || `${ref.title} machinist handbook reference`} />
         <script type="application/ld+json">{JSON.stringify(machineReadable)}</script>
       </Helmet>
 
