@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Shield, LayoutDashboard, Users, Wrench, Briefcase, Activity, FileSpreadsheet, Package, Route, Lightbulb, History, Bug, ShieldCheck, ListTodo, Settings2, Map, BookOpen, Cpu, MessageSquare, BellRing, Tv, Globe, Building, FileText, Megaphone, Library, Mail, BarChart3, ClipboardCheck, CreditCard, UserCheck } from "lucide-react";
+import { Shield, LayoutDashboard, Users, Wrench, Briefcase, Activity, FileSpreadsheet, Package, Route, Lightbulb, History, Bug, ShieldCheck, ListTodo, Settings2, Map, BookOpen, Cpu, MessageSquare, BellRing, Tv, Globe, Building, FileText, Megaphone, Library, Mail, BarChart3, ClipboardCheck, CreditCard, UserCheck, Search } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { AdminComponentAccess } from "@/types/admin";
@@ -53,6 +53,7 @@ const EmailOperationsCenter = lazy(() => import("@/components/admin/EmailOperati
 const AdminAuditLog = lazy(() => import("@/components/admin/AdminAuditLog").then(m => ({ default: m.AdminAuditLog })));
 const TalentGovernance = lazy(() => import("@/components/admin/TalentGovernance").then(m => ({ default: m.TalentGovernance })));
 const ExecutiveOverview = lazy(() => import("@/components/admin/ExecutiveOverview").then(m => ({ default: m.ExecutiveOverview })));
+const SeoDiagnosticsPanel = lazy(() => import("@/components/admin/seo-diagnostics/SeoDiagnosticsPanel").then(m => ({ default: m.SeoDiagnosticsPanel })));
 
 const AdminTabFallback = () => <div className="p-6"><Skeleton className="h-64 w-full rounded-lg" /></div>;
 
@@ -256,6 +257,7 @@ export default function Admin() {
                     <SelectItem value="blog-admin">Blog</SelectItem>
                     <SelectItem value="flyer-campaigns">Promotions</SelectItem>
                     <SelectItem value="policy-notifications">Policy Notices</SelectItem>
+                    <SelectItem value="seo-diagnostics">SEO Diagnostics</SelectItem>
                   </SelectGroup>
                 )}
                 {hasPlatformAccess && (
@@ -407,6 +409,10 @@ export default function Admin() {
                     <TabsTrigger value="policy-notifications" className="gap-2">
                       <Mail className="w-4 h-4" />
                       Policy Notices
+                    </TabsTrigger>
+                    <TabsTrigger value="seo-diagnostics" className="gap-2">
+                      <Search className="w-4 h-4" />
+                      SEO
                     </TabsTrigger>
                   </div>
                   <div className="w-px h-6 bg-border mx-1" />
@@ -576,6 +582,10 @@ export default function Admin() {
 
               <TabsContent value="policy-notifications">
                 <Suspense fallback={<AdminTabFallback />}><PolicyNotificationsManager /></Suspense>
+              </TabsContent>
+
+              <TabsContent value="seo-diagnostics">
+                <Suspense fallback={<AdminTabFallback />}><SeoDiagnosticsPanel /></Suspense>
               </TabsContent>
 
               <TabsContent value="executive-overview">
