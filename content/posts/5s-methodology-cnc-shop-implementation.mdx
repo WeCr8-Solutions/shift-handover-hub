@@ -1,0 +1,85 @@
+---
+title: "5S in a CNC Shop: A Practical Implementation Guide for Job Shops"
+slug: "5s-methodology-cnc-shop-implementation"
+publishedDate: "2026-05-08"
+author: "JobLine Team"
+authorTitle: "Lean Manufacturing Practice"
+excerpt: "5S sounds like a poster on the wall. Done right, it cuts setup time by 30% and eliminates the daily hunt for the right end mill. Here is what each S looks like on a real CNC floor."
+category: "Shop Floor"
+readTime: "9 min read"
+tags: ["5S", "lean", "kaizen", "setup reduction", "tool crib"]
+---
+
+## Why Most 5S Programs Fail in Machine Shops
+
+Most shops paint floor lines, label a few drawers, take a photo for the AS9100 auditor, and call it done. Six months later, the tool crib looks the same as it did before. The problem is not 5S — it is treating 5S as a one-time event instead of a daily discipline.
+
+This guide covers what each of the five S's looks like on a working CNC floor, with specifics for turning, milling, and grinding stations. For the theoretical foundation see our full [5S methodology reference](/resources/five-s-methodology). The umbrella WeCr8 research library is at [wecr8.info/blog](https://wecr8.info/blog).
+
+## Sort (Seiri)
+
+Walk every station and ask one question of every tool, fixture, gauge, and consumable: *was this used in the last 90 days?* If the answer is no, it does not belong at the station.
+
+**What "Sort" looks like at a Haas VF-2:**
+
+- Carbide inserts not run in 90 days go back to the tool crib.
+- Soft jaws for a part you ran once two years ago go into long-term storage with a part number tag.
+- The pile of personal coffee mugs and torn-up setup sheets goes in the trash.
+
+Red-tag everything ambiguous. Review red tags weekly. Anything still red after 30 days leaves the station.
+
+## Set in Order (Seiton)
+
+Every tool gets one home, and the home is labeled. This is where most shops invest in shadow boards, drawer foam, and color-coded tape — and where Kanban thinking pays off. For sorting and replenishment patterns, see [Kanban sorting techniques](/resources/kanban-sorting-techniques).
+
+Three rules that beat fancy storage:
+
+1. **Highest-frequency tools at the closest point to the spindle.** A 1/2" end mill used on 60% of jobs lives in the top drawer of the closest cart, not in the crib.
+2. **Tool numbers match the post-processor.** If your CAM calls T07, the holder is labeled T07. No translation layer.
+3. **Measuring tools live at the inspection point, not the operator's pocket.** A calibrated mic at every station beats one shared mic that wanders.
+
+See [measuring tools reference](/resources/measuring-tools) and [tool comparisons](/resources/tool-comparisons) for which gauges belong at which station.
+
+## Shine (Seiso)
+
+Cleaning is inspection. When an operator wipes down a machine, they see coolant leaks, way-cover damage, hydraulic seepage, and chip nests forming in places the way wipers miss. Make cleaning a 10-minute end-of-shift task documented in the digital handoff — covered in detail in [7 shift handoff best practices](/blog/shift-handoff-best-practices).
+
+A clean machine also runs hotter and steadier — coolant concentration stays correct, chip evacuation stays consistent, and the way surfaces last twice as long. The maintenance schedules for this live in your [equipment manual library](/manuals).
+
+## Standardize (Seiketsu)
+
+Standardization is where 5S either becomes culture or dies. The work is to write down what "good" looks like — visually, not in a binder.
+
+- A photo of the correctly set up cart at each station, posted at eye level.
+- A laminated card showing the correct insert and torque spec for the most common operation at that machine.
+- A digital handoff template that every operator on every shift fills in identically.
+
+For first-article and in-process documentation standards see [quality inspection fundamentals](/resources/quality-inspection) and [safety compliance basics](/resources/safety-compliance).
+
+## Sustain (Shitsuke)
+
+The fifth S is the one nobody finishes. Sustain means weekly audits, monthly photo comparisons, and immediate corrective action when a station drifts. It also means the supervisor and the owner do walk-throughs together, not separately.
+
+Three signals that Sustain is working:
+
+1. New operators on day one find the right tool in under 30 seconds.
+2. Setup times for repeat jobs drop 25–40% within the first quarter.
+3. End-of-shift handoffs take 5 minutes, not 25.
+
+## What 5S Looks Like at Scale
+
+In a single-machine shop, 5S is a weekend project. In a 20-machine shop, it requires the same information backbone that powers modern routing and quality systems. See our [beginners guide to digital manufacturing](/resources/beginners-guide) and [manufacturing guides hub](/resources/manufacturing-guides) for the surrounding context.
+
+Aerospace and medical device shops have extra documentation requirements layered on top of 5S — see [aerospace & defense operations](/industries/aerospace-defense) and [medical device manufacturing](/industries/medical-device).
+
+## Connect 5S to OEE
+
+5S is upstream of OEE. A shop that finishes Sort + Set in Order alone typically sees Availability climb 8–15 points within a quarter. See our [OEE bottleneck case study](/blog/oee-bottleneck-reduction-case-study) for the math behind that claim.
+
+## The Roots of This Work
+
+5S came from Toyota in the 1950s and was formalized by Hiroyuki Hirano. The thinkers profiled in our [manufacturing pioneers reference](/resources/manufacturing-pioneers) — Taiichi Ohno, Shigeo Shingo, Genichi Taguchi — built the entire system 5S sits inside. The full historical timeline lives at [wecr8.info/blog](https://wecr8.info/blog).
+
+## Make It Stick
+
+JobLine.ai bakes the standardization layer of 5S — digital handoffs, station templates, equipment manuals at the point of use — into the shop floor. [Start a trial](/) or browse [careers in modern manufacturing](/resources/manufacturing-careers).
