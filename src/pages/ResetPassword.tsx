@@ -17,6 +17,15 @@ const passwordSchema = z.string()
   .regex(/[0-9]/, "Must contain at least one number");
 
 export default function ResetPassword() {
+  // Don't index the password reset page.
+  useEffect(() => {
+    const tag = document.createElement("meta");
+    tag.name = "robots";
+    tag.content = "noindex, nofollow";
+    document.head.appendChild(tag);
+    return () => { document.head.removeChild(tag); };
+  }, []);
+
   const navigate = useNavigate();
   const { toast } = useToast();
   const [password, setPassword] = useState("");
