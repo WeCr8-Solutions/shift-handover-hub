@@ -763,64 +763,145 @@
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
+
+  <!-- ═══════════════════════════════════════════════
+       Top-level marketing surfaces
+       ═══════════════════════════════════════════════ -->
   <url>
-    <loc>https://jobline.ai/talent/resume-builder</loc>
-    <lastmod>2026-05-02</lastmod>
+    <loc>https://jobline.ai/use-cases</loc>
+    <lastmod>2026-05-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://jobline.ai/updates</loc>
+    <lastmod>2026-05-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://jobline.ai/start</loc>
+    <lastmod>2026-05-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://jobline.ai/employers</loc>
-    <lastmod>2026-05-02</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://jobline.ai/employers/browse</loc>
-    <lastmod>2026-05-02</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
+    <loc>https://jobline.ai/verify</loc>
+    <lastmod>2026-05-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
   </url>
 
   <!-- OAP — Operator Acceptance Program -->
   <url>
-    <loc>https://jobline.ai/oap/courses</loc>
+    <loc>https://jobline.ai/oap</loc>
     <lastmod>2026-04-19</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://jobline.ai/oap/about</loc>
-    <lastmod>2026-04-19</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://jobline.ai/oap/pricing</loc>
-    <lastmod>2026-04-19</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.9</priority>
   </url>
 
   <!-- GCA — G-Code Academy -->
   <url>
-    <loc>https://jobline.ai/gca</loc>
+    <loc>https://jobline.ai/gcode-academy</loc>
     <lastmod>2026-04-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://jobline.ai/gca/about</loc>
+    <loc>https://jobline.ai/resources/gcode-academy</loc>
     <lastmod>2026-04-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
-  <url>
-    <loc>https://jobline.ai/gca/banks</loc>
-    <lastmod>2026-04-19</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
+
+  <!-- ═══════════════════════════════════════════════
+       Learn — fundamentals, glossary, professions, tutorials
+       ═══════════════════════════════════════════════ -->
+  <url><loc>https://jobline.ai/learn/professions/cnc-operators</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://jobline.ai/learn/professions/supervisors-leads</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://jobline.ai/learn/professions/manufacturing-engineers</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://jobline.ai/learn/professions/quality-inspection</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://jobline.ai/learn/professions/automation-technicians</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://jobline.ai/learn/professions/ai-curious-shop-staff</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://jobline.ai/learn/glossary/token</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://jobline.ai/learn/glossary/context-window</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://jobline.ai/learn/glossary/prompt-workflow</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://jobline.ai/learn/glossary/environment</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://jobline.ai/learn/glossary/cli</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://jobline.ai/learn/glossary/ide</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://jobline.ai/learn/glossary/web-app</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://jobline.ai/learn/glossary/mobile-app</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://jobline.ai/learn/glossary/chat-agent</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://jobline.ai/learn/glossary/rag</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://jobline.ai/learn/glossary/vector-search</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://jobline.ai/learn/glossary/agent</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://jobline.ai/learn/glossary/mcp</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://jobline.ai/learn/glossary/hallucination</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://jobline.ai/learn/glossary/human-in-the-loop</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://jobline.ai/learn/glossary/human-on-the-loop</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+
+  <!-- ═══════════════════════════════════════════════
+       Help Center — full article catalog
+       ═══════════════════════════════════════════════ -->
+  <url><loc>https://jobline.ai/help/getting-started/creating-an-account</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/getting-started/joining-an-organization</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/getting-started/navigating-the-dashboard</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/getting-started/understanding-roles</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/getting-started/mobile-access</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/getting-started/onboarding-wizard</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/dashboard/operator-dashboard</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/dashboard/supervisor-dashboard</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/dashboard/background-refresh</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/dashboard/production-analytics</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/work-orders/creating-work-orders</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/work-orders/queue-views</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/work-orders/work-order-statuses</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/work-orders/routing-steps</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/work-orders/part-specs</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/work-orders/bulk-upload</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/shift-handoffs/creating-a-handoff</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/shift-handoffs/reviewing-handoffs</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/shift-handoffs/handoff-best-practices</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/shift-handoffs/shift-stats</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/teams-orgs/creating-an-organization</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/teams-orgs/inviting-members</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/teams-orgs/managing-teams</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/teams-orgs/role-permissions</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/teams-orgs/switching-teams</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/stations/setting-up-stations</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/stations/operator-check-in</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/stations/machine-profiles</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/stations/work-center-filtering</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/quality/filing-an-ncr</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/quality/ncr-approval-workflow</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/quality/quantity-tracking</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/quality/quality-dashboard</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/settings/profile-settings</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/settings/notification-preferences</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/settings/billing-subscriptions</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/settings/shift-configuration</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/settings/erp-connector</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/admin/user-management</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/admin/organization-oversight</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/admin/activity-logs</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/admin/system-updates</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/faq/common-errors</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/faq/data-export</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/faq/keyboard-shortcuts</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/faq/account-security</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/tools/tools-overview</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/tools/speed-feed-calculator</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/tools/tolerance-calculator</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/tools/unit-converter</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/tools/trig-calculator</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/tools/upcoming-tools</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://jobline.ai/help/use-cases/automotive-repair-shop</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://jobline.ai/help/use-cases/oil-change-quick-lube</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://jobline.ai/help/use-cases/fleet-maintenance</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://jobline.ai/help/use-cases/general-fabrication</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://jobline.ai/help/use-cases/cnc-machine-shop</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://jobline.ai/help/use-cases/body-shop-collision</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+
   <url>
     <loc>https://jobline.ai/resources/gcode-academy</loc>
     <lastmod>2026-04-19</lastmod>
