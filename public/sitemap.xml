@@ -975,6 +975,16 @@
     <lastmod>2026-04-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+
+  <!-- ═══════════════════════════════════════════════
+       Human-readable Site Map (HTML index of all routes)
+       ═══════════════════════════════════════════════ -->
+  <url>
+    <loc>https://jobline.ai/sitemap</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
   </url>
 
 </urlset>
+

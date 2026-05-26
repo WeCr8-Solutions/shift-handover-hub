@@ -132,6 +132,7 @@ const ToolComparisons = lazy(() => import("./pages/resources/ToolComparisons"));
 const ERPSelectionGuide = lazy(() => import("./pages/resources/ERPSelectionGuide"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Blog = lazy(() => import("./pages/Blog"));
+const SitemapPage = lazy(() => import("./pages/SitemapPage"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
 const Help = lazy(() => import("./pages/Help"));
 const UseCases = lazy(() => import("./pages/UseCases"));
@@ -323,6 +324,7 @@ const App = () => (
                     <Route path="/blog/:slug" element={<BlogPost />} />
                     <Route path="/use-cases" element={<UseCases />} />
                     <Route path="/help" element={<Help />} />
+                    <Route path="/sitemap" element={<SitemapPage />} />
                     <Route path="/help/:category/:slug" element={<HelpArticle />} />
                     <Route path="/terms" element={<Terms />} />
                     <Route path="/privacy" element={<Privacy />} />
