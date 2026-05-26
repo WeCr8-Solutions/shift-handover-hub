@@ -701,6 +701,10 @@ export function PromotionsHub({ organizationId = null }: { organizationId?: stri
             <Globe className="w-3.5 h-3.5" />
             Flyer Ops
           </TabsTrigger>
+          <TabsTrigger value="brand-system" className="gap-1.5">
+            <Sparkles className="w-3.5 h-3.5" />
+            Brand System
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="promotions" className="space-y-4">
