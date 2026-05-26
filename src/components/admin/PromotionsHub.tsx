@@ -927,6 +927,10 @@ export function PromotionsHub({ organizationId = null }: { organizationId?: stri
         <TabsContent value="flyer-ops">
           <FlyerCampaigns />
         </TabsContent>
+
+        <TabsContent value="brand-system">
+          <BrandSystemPanel />
+        </TabsContent>
       </Tabs>
 
       <Dialog open={qrDialogOpen} onOpenChange={setQrDialogOpen}>
