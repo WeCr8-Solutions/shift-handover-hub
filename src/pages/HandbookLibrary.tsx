@@ -41,6 +41,11 @@ export default function HandbookLibrary() {
 
   return (
     <div className="container max-w-6xl mx-auto px-4 py-8 space-y-6">
+      <SEOHead
+        title="Machinist's Reference — Feeds, Speeds, Threads, GD&T, Fits | JobLine.ai"
+        description="Searchable machinist handbook: feeds & speeds, thread standards, fits & tolerances, GD&T, surface finishes, safety standards. Free reference for CNC operators and machinists."
+        canonical="/handbook"
+      />
       <header className="space-y-2">
         <div className="flex items-center gap-2">
           <BookOpen className="h-6 w-6 text-primary" />
