@@ -98,6 +98,7 @@ const OAPLanding = lazy(() => import("./pages/OAPLanding"));
 const GCALanding = lazy(() => import("./pages/GCALanding"));
 const HandbookLibrary = lazy(() => import("./pages/HandbookLibrary"));
 const HandbookEntry = lazy(() => import("./pages/HandbookEntry"));
+const ManualsLibrary = lazy(() => import("./pages/ManualsLibrary"));
 const CertificateLookup = lazy(() => import("./pages/CertificateLookup"));
 const VerifyCertificate = lazy(() => import("./pages/VerifyCertificate"));
 const CertSuccess = lazy(() => import("./pages/CertSuccess"));
@@ -270,6 +271,7 @@ const App = () => (
                     <Route path="/oap/app" element={<Navigate to="/resources/oap" replace />} />
                     <Route path="/handbook" element={<HandbookLibrary />} />
                     <Route path="/handbook/:slug" element={<HandbookEntry />} />
+                    <Route path="/manuals" element={<ManualsLibrary />} />
                     <Route path="/verify" element={<CertificateLookup />} />
                     <Route path="/verify/:certId" element={<VerifyCertificate />} />
                     <Route path="/cert/success" element={<CertSuccess />} />
