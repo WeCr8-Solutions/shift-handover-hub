@@ -273,7 +273,7 @@ Canonical reference catalog for inspection tools, machining operations, GCA, OAP
       {"name": "Kanban & Sorting", "url": "https://jobline.ai/resources/kanban", "count": 12},
       {"name": "Manufacturing Pioneers", "url": "https://jobline.ai/resources/pioneers", "count": 25},
       {"name": "Tool Comparisons", "url": "https://jobline.ai/resources/comparisons"},
-      {"name": "ERP Selection Guide", "url": "https://jobline.ai/resources/erp-guide", "count": 7}
+      {"name": "ERP Selection Guide", "url": "https://jobline.ai/resources/erp-guide", "count": 5}
     ]
   },
   "handbook_reference_library": {
