@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { trackEvent } from "@/lib/analytics";
 import { FlyerCampaigns } from "./FlyerCampaigns";
+import { BrandSystemPanel } from "./brand-system/BrandSystemPanel";
 import { openSocialLink } from "@/lib/talent/socialDeepLinks";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
