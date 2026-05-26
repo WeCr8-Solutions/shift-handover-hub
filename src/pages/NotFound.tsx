@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Home, LayoutDashboard, Bug } from "lucide-react";
@@ -41,6 +42,12 @@ const NotFound = () => {
       data-testid="not-found"
       className="flex min-h-screen items-center justify-center bg-muted px-4"
     >
+      <Helmet>
+        <title>Page not found · JobLine.ai</title>
+        {/* Tell Google this is a missing page so it stops counting it as a soft 404
+            (the SPA can't return a real 404 status; noindex is the supported signal). */}
+        <meta name="robots" content="noindex, follow" />
+      </Helmet>
       <div className="text-center max-w-md">
         <h1 className="mb-2 text-6xl font-bold text-foreground">404</h1>
         <p className="mb-2 text-xl text-foreground">Page not found</p>

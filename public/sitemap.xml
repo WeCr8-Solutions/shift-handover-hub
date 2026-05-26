@@ -635,18 +635,8 @@
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
-  <url>
-    <loc>https://jobline.ai/resources/erp-guide/build-project-plan</loc>
-    <lastmod>2026-04-09</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://jobline.ai/resources/erp-guide/own-implementation-success</loc>
-    <lastmod>2026-04-09</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
+  <!-- build-project-plan & own-implementation-success removed: content not yet authored.
+       Re-add once corresponding entries exist in src/pages/resources/erpGuideData.ts. -->
 
   <!-- ═══════════════════════════════════════════════
        Blog & Help Center
