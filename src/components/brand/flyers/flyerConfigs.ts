@@ -93,7 +93,7 @@ export const FLYER_CONFIGS: Record<FlyerVariant, FlyerConfig> = {
     ],
     italic: "Practice. Test. Repeat. Get sharp.",
     ctaPrimary: "TRY A FREE TEST",
-    url: "https://jobline.ai/gca",
+    url: "https://jobline.ai/gcode-academy",
     footer: "BECAUSE GOOD OPERATORS NEVER STOP LEARNING.",
   },
   "shop-moving": {

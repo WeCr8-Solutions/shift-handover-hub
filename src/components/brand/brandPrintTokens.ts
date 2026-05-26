@@ -63,7 +63,13 @@ export const PrintDimensions = {
   businessCard: { width: 336, height: 192 },       // 3.5"x2"
 } as const;
 
-/** Brand font stack — loaded via Google Fonts CDN already in index.html */
+/**
+ * Brand font stack.
+ * Inter + JetBrains Mono are preloaded in index.html. Montserrat / Open Sans
+ * are listed as forward-looking display preferences and gracefully fall back
+ * to Inter when not loaded — keeps print mocks visually consistent with the
+ * live app while leaving the door open to load the print faces later.
+ */
 export const BrandFonts = {
   display: '"Montserrat", "Inter", system-ui, sans-serif',
   body: '"Open Sans", "Inter", system-ui, sans-serif',
