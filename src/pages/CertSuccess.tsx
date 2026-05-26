@@ -86,6 +86,7 @@ export default function CertSuccess() {
         title="Certificate Purchase Successful | JobLine.ai"
         description="Thank you for your JobLine certificate purchase. Your certificate is being issued."
         canonical="https://jobline.ai/cert/success"
+        noindex
       />
       <MarketingNav />
 

@@ -1,0 +1,34 @@
+/* TEAM */
+  Founder & Lead Developer: Zach Goodbody
+  Company: WeCr8 Solutions LLC
+  Site: https://wecr8.info
+  Contact: hello [at] jobline.ai
+  Location: United States
+
+/* THANKS */
+  Manufacturing operators, supervisors, and shop owners who shaped
+  every feature with real-floor feedback. AS9100, ISO 9001, and
+  ITAR-controlled shops who pressure-tested the routing, handoff,
+  and quantity-accounting workflows.
+
+/* SITE */
+  Last update: 2026-05-15
+  Standards: HTML5, CSS3, WCAG 2.1 AA
+  Components: React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui
+  Backend: Supabase (Postgres + RLS + Edge Functions)
+  Payments: Stripe
+  Email: Resend
+  Hosting: Vercel
+  Editor tooling: VS Code Extensions (jobline-gcode, jobline-machine)
+
+/* MISSION */
+  Replace paper handoff logs and tribal knowledge with a structured
+  digital expeditor for CNC machine shops, fabricators, and
+  precision manufacturing teams.
+
+                                    ___       _ _    _
+                                   |_  | ___ | | |  (_) _ __   ___
+                                    _| |/ _ \| | |  | || '_ \ / _ \
+                                   | | |  __/| | |__| || | | |  __/
+                                   \___/ \___||_|____/_||_| |_|\___|
+                                              jobline.ai

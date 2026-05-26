@@ -195,6 +195,39 @@ export default function BlogPost() {
           description={frontmatter.excerpt}
           keywords={`${frontmatter.category}, manufacturing`}
           canonical={`https://jobline.ai/blog/${frontmatter.slug}`}
+          article={{
+            publishedTime: new Date(frontmatter.publishedDate).toISOString(),
+            modifiedTime: new Date(frontmatter.publishedDate).toISOString(),
+            author: frontmatter.author,
+            section: frontmatter.category,
+          }}
+          jsonLd={{
+            "@context": "https://schema.org",
+            "@type": "Article",
+            headline: frontmatter.title,
+            description: frontmatter.excerpt,
+            datePublished: new Date(frontmatter.publishedDate).toISOString(),
+            dateModified: new Date(frontmatter.publishedDate).toISOString(),
+            author: {
+              "@type": "Organization",
+              name: frontmatter.author,
+              url: "https://jobline.ai/about",
+            },
+            publisher: {
+              "@type": "Organization",
+              name: "JobLine.ai",
+              url: "https://jobline.ai",
+              logo: {
+                "@type": "ImageObject",
+                url: "https://jobline.ai/logo.png",
+              },
+            },
+            mainEntityOfPage: {
+              "@type": "WebPage",
+              "@id": `https://jobline.ai/blog/${frontmatter.slug}`,
+            },
+            articleSection: frontmatter.category,
+          }}
         />
         <div className="min-h-screen bg-background text-foreground">
           <MarketingNav />
@@ -234,6 +267,42 @@ export default function BlogPost() {
           keywords={`${dbPost.category}, ${dbPost.tags.join(", ")}, manufacturing`}
           canonical={`https://jobline.ai/blog/${dbPost.slug}`}
           ogImage={dbPost.cover_image_url || undefined}
+          article={{
+            publishedTime: new Date(dbPost.published_date).toISOString(),
+            modifiedTime: new Date(dbPost.published_date).toISOString(),
+            author: dbPost.author,
+            section: dbPost.category,
+            tags: dbPost.tags,
+          }}
+          jsonLd={{
+            "@context": "https://schema.org",
+            "@type": "Article",
+            headline: dbPost.title,
+            description: dbPost.seo_description || dbPost.excerpt,
+            image: dbPost.cover_image_url || undefined,
+            datePublished: new Date(dbPost.published_date).toISOString(),
+            dateModified: new Date(dbPost.published_date).toISOString(),
+            author: {
+              "@type": "Organization",
+              name: dbPost.author,
+              url: "https://jobline.ai/about",
+            },
+            publisher: {
+              "@type": "Organization",
+              name: "JobLine.ai",
+              url: "https://jobline.ai",
+              logo: {
+                "@type": "ImageObject",
+                url: "https://jobline.ai/logo.png",
+              },
+            },
+            mainEntityOfPage: {
+              "@type": "WebPage",
+              "@id": `https://jobline.ai/blog/${dbPost.slug}`,
+            },
+            articleSection: dbPost.category,
+            keywords: dbPost.tags.join(", "),
+          }}
         />
         <div className="min-h-screen bg-background text-foreground">
           <MarketingNav />
