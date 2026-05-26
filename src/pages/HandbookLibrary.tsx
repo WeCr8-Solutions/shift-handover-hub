@@ -8,6 +8,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useHandbookCategories, useHandbookReferences } from "@/hooks/useHandbook";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
+import { SEOHead } from "@/components/SEOHead";
 
 const HANDBOOK_SEARCH_KEY = "handbook-library-search";
 const HANDBOOK_CATEGORY_KEY = "handbook-library-category";
