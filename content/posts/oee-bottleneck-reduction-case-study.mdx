@@ -1,0 +1,98 @@
+---
+title: "OEE Case Study: How a 12-Machine Job Shop Reclaimed 38 Points in 90 Days"
+slug: "oee-bottleneck-reduction-case-study"
+publishedDate: "2026-05-12"
+author: "JobLine Team"
+authorTitle: "Manufacturing Operations Research"
+excerpt: "A real-world bottleneck reduction study from a contract machining shop. Walk through the data, the theory of constraints decisions, and the digital handoff changes that lifted OEE from 41% to 79%."
+category: "Operations"
+readTime: "11 min read"
+tags: ["OEE", "bottleneck", "theory of constraints", "case study", "lean"]
+featured: true
+---
+
+## The Starting Point: 41% OEE and Nobody Knew Why
+
+A 12-machine contract shop in the Midwest — five Mazak turning centers, four Haas VF-series mills, two Doosan horizontals, and one Swiss — was quoting at $92/hour and losing money on roughly a third of jobs. Their MRP said the machines were "scheduled at 95% capacity." Their floor said otherwise.
+
+We ran a two-week Overall Equipment Effectiveness baseline using cycle data pulled from the controllers plus manual handoff notes. The verdict:
+
+- **Availability: 71%** — far below the 90% target
+- **Performance: 76%** — operators were running below posted feeds
+- **Quality: 76%** — rework and first-article rejects were eating margin
+- **Composite OEE: 41%** — world-class is 85%, industry-typical is 60%
+
+For a primer on what these numbers mean and how to calculate them on your floor, see our [OEE & lean manufacturing reference](/resources/lean-manufacturing) and the [industry glossary](/resources/industry-glossary). The umbrella research notes from our parent company are at [wecr8.info/blog](https://wecr8.info/blog).
+
+## Finding the Real Bottleneck
+
+The MRP flagged the horizontals as the constraint. The data told a different story. When we mapped every minute of every shift across two weeks, **the bottleneck was the shift change itself** — not any single machine.
+
+Three patterns emerged:
+
+1. **First-hour-of-shift production was 47% lower than mid-shift.** Operators were spending the first 45–60 minutes hunting for tooling, re-reading travelers, and calling the previous shift on cell phones.
+2. **Quality escapes clustered in the first two hours after a handoff.** The same parts machined mid-shift had a 0.4% reject rate; the same parts started in the first two hours after a handoff hit 3.1%.
+3. **The Swiss sat idle 31% of the time** — not because of capacity but because its dedicated operator was the only person who could read the setup sheets, and he worked one shift.
+
+Classic theory-of-constraints work would have us elevate the Swiss. The real fix was upstream: information transfer. For the underlying methodology see [5S methodology for CNC shops](/resources/five-s-methodology) and [Kanban sorting techniques](/resources/kanban-sorting-techniques).
+
+## The 90-Day Intervention
+
+We made four changes, in order, and measured the OEE delta after each.
+
+### Day 1–14: Standardized Digital Handoffs
+
+Every operator submitted a structured handoff at end of shift using a templated form: parts completed, scrap, rework, tool wear, fixture condition, open quality issues, and a photo of the current setup. The template is the same one documented in [7 shift handoff best practices](/blog/shift-handoff-best-practices).
+
+**Result after two weeks: Availability climbed from 71% to 84%.** First-hour productivity gap closed from 47% to 18%.
+
+### Day 15–35: Visual Routing on the Floor
+
+Travelers moved from paper folders to station displays. Each work order showed the next operation, the previous operator's notes, and quantity accounting (completed + scrap + rework = original). Quantity accounting is non-negotiable under AS9100 and ISO 9001 — see [quality inspection fundamentals](/resources/quality-inspection) for the audit trail rationale.
+
+**Result: Quality climbed from 76% to 89%.** First-article rework rate dropped 62%.
+
+### Day 36–65: Cross-Training Around the Swiss
+
+Two mill operators were trained on the Swiss using documented setup sheets backed by the manufacturer manuals housed in the shop's [equipment manual library](/manuals). Setup tribal knowledge moved into reusable references.
+
+**Result: Swiss utilization climbed from 69% to 91%.**
+
+### Day 66–90: Bottleneck Buffer Management
+
+With the information-transfer problem solved, we identified the new bottleneck — the horizontals — and applied a TOC buffer: every job that fed a horizontal got a 4-hour material/tooling readiness check before release. Jobs that weren't ready stayed in the queue.
+
+**Result: Performance climbed from 76% to 93%.**
+
+## The Final Numbers
+
+| Metric | Baseline | Day 90 | Delta |
+|---|---|---|---|
+| Availability | 71% | 94% | +23 pts |
+| Performance | 76% | 93% | +17 pts |
+| Quality | 76% | 91% | +15 pts |
+| **OEE** | **41%** | **79%** | **+38 pts** |
+| Quoted rate | $92/hr | $108/hr | +17% |
+| Gross margin on machining | 11% | 27% | +16 pts |
+
+The shop didn't buy a single new machine. They didn't hire. They reorganized information flow and applied theory of constraints to the right bottleneck.
+
+## What Industry Pioneers Got Right (And What They Missed)
+
+Shigeo Shingo, Eliyahu Goldratt, and the early lean thinkers identified the principles — single-minute exchange of die, theory of constraints, visual management. Their work, profiled in our [manufacturing pioneers reference](/resources/manufacturing-pioneers), assumed information traveled at the speed of paper. It doesn't anymore. The modern bottleneck in most small-to-mid job shops is not metal removal — it's the shift handoff.
+
+If you're an aerospace or defense contractor, the stakes are higher. See [aerospace & defense manufacturing operations](/industries/aerospace-defense) for AS9100-specific guidance.
+
+## Where to Start On Your Own Floor
+
+1. Measure baseline OEE for two weeks — actual run time, not scheduled.
+2. Map your information flow at every shift change. Where do operators wait?
+3. Standardize handoffs before you buy any new equipment.
+4. Apply [5S methodology](/resources/five-s-methodology) to your tool cribs and setup carts.
+5. Only after steps 1–4, elevate your true mechanical bottleneck.
+
+For ERP-side guidance, see our [ERP selection guide](/resources/erp-selection-guide). For careers in this work, see [manufacturing careers](/resources/manufacturing-careers). And for the broader WeCr8 Solutions research catalog, visit [wecr8.info/blog](https://wecr8.info/blog).
+
+## Try the Methodology
+
+JobLine.ai implements every change described above out of the box — structured handoffs, station displays, quantity accounting, manual library, and TOC-aware routing. [See the platform](/) or [browse the feature set](/features).

@@ -1,0 +1,85 @@
+---
+title: "AS9100 Routing in Practice: How One Aerospace Shop Cut Audit Findings to Zero"
+slug: "aerospace-as9100-routing-case-study"
+publishedDate: "2026-05-15"
+author: "JobLine Team"
+authorTitle: "Quality Systems Practice"
+excerpt: "An aerospace machining sub-tier went from 14 audit findings in 2023 to zero in 2025. The fix was not a binder — it was rebuilding their routing and quantity accounting from the operator outward."
+category: "Industry Trends"
+readTime: "10 min read"
+tags: ["AS9100", "aerospace", "quality", "routing", "ITAR", "case study"]
+---
+
+## Background: 14 Findings, Three Major
+
+In 2023, a 30-person aerospace sub-tier supplying landing-gear components received 14 findings during their AS9100 surveillance audit — three major. The findings clustered into three areas:
+
+1. **Quantity accounting gaps** — counts at routing transfer points did not reconcile.
+2. **Inadequate first-article evidence** — operators were not consistently recording in-process inspection data.
+3. **Missing ITAR access controls** — drawings were viewable by personnel without verified US person status.
+
+The shop's quality manager was experienced and conscientious. The problem was not people. The problem was that the routing system — paper travelers, an Excel scrap log, and a network-share drawing folder — could not enforce the controls AS9100 Rev D and Section 8.5.4 of the standard required.
+
+For background on aerospace operations see [aerospace & defense manufacturing](/industries/aerospace-defense) and [quality inspection fundamentals](/resources/quality-inspection). The parent company research catalog is at [wecr8.info/blog](https://wecr8.info/blog).
+
+## The Three Things That Had to Change
+
+### 1. Quantity Accounting Enforced at Every Operation
+
+AS9100 expects that for every operation, the operator records completed + scrap + rework, and that the total equals the quantity received from the prior operation. Paper travelers let operators write any number. They had to enforce the equation at submit time.
+
+The fix: every operation submit form computed completed + scrap + rework = original quantity, and refused to advance the work order if the math did not balance. Scrap and rework required a reason code drawn from a controlled vocabulary. The same logic is documented in our [quality inspection reference](/resources/quality-inspection).
+
+**Result: Quantity accounting findings went to zero across the next two audits.**
+
+### 2. First-Article and In-Process Inspection at the Point of Work
+
+First-article was being done — the evidence was just scattered across operator notebooks, a digital camera SD card, and the inspection bench. Auditors could not reconstruct who measured what, when.
+
+The fix: every operation step had inspection prompts tied to the controlled drawing revision. Operators measured, recorded, and attached photo evidence at the station. The inspection record was timestamped, attributable to a named operator, and immutable after submit.
+
+Critical sub-rule: any operator performing first-article inspection had to be currently qualified on the operation type. Qualification was tracked through the [Operator Acceptance Program](/resources/operator-acceptance-program) — the same kind of structured certification used for AS9100 personnel competency requirements.
+
+### 3. Document and Drawing Access Locked to US Person Status
+
+ITAR (22 CFR §120.15) requires that controlled technical data be accessible only to verified US persons or appropriately authorized foreign nationals. The network share could not enforce this — anyone with a login could open any drawing.
+
+The fix: every controlled drawing carried an ITAR classification flag. Access required a verified US person declaration on the user record. Foreign-national personnel were blocked at the file level, not by policy memo. Audit logs recorded every view of every controlled drawing.
+
+This is the same access pattern used by the [G-Code Academy](/gca) for controlled-program training material. For ITAR-aware shops see also the broader [industrial manufacturing](/industries/industrial-manufacturing) and [contract manufacturer](/industries/contract-manufacturer) guidance.
+
+## Results Across Two Audit Cycles
+
+| Audit | Year | Findings | Major | Minor | Observations |
+|---|---|---|---|---|---|
+| Surveillance | 2023 | 14 | 3 | 8 | 3 |
+| Recertification | 2024 | 4 | 0 | 2 | 2 |
+| Surveillance | 2025 | 0 | 0 | 0 | 0 |
+
+The 2025 auditor's verbal feedback was that the digital evidence trail made the audit faster than any previous visit — they sampled more records in less time and found nothing to chase.
+
+## What This Looks Like Day to Day
+
+For the operator: every operation has a clear submit form with inspection prompts pre-loaded for the current drawing revision. Quantity entered must balance. Scrap requires a reason. The system will not let them advance otherwise.
+
+For the supervisor: the [shift handoff](/blog/shift-handoff-best-practices) carries forward open inspections, rework queue, and any flagged nonconformances. Nothing is verbal-only.
+
+For the quality manager: the audit trail is queryable by job, operator, operation, drawing revision, and date. No hunting through binders.
+
+For the owner: cost-per-part is visible by job, by shift, by operation. The same data backs the [OEE bottleneck case study](/blog/oee-bottleneck-reduction-case-study) approach for ongoing improvement.
+
+## How This Connects to the Broader Methodology
+
+The same principles apply to ISO 9001 shops, IATF 16949 automotive shops, and ISO 13485 medical device shops — see [medical device manufacturing](/industries/medical-device) and [industry glossary](/resources/industry-glossary) for the standard-by-standard differences.
+
+The setup discipline behind a clean audit also requires the floor-level habits in our [5S CNC implementation guide](/blog/5s-methodology-cnc-shop-implementation) and the inspection equipment maintained per [measuring tools reference](/resources/measuring-tools).
+
+For controlled-document and equipment evidence, see the [equipment manual library](/manuals) and the [manufacturing guides hub](/resources/manufacturing-guides).
+
+## The People Behind the Standards
+
+AS9100 grew out of the same quality-engineering tradition built by W. Edwards Deming, Joseph Juran, Walter Shewhart, and Genichi Taguchi — profiled in our [manufacturing pioneers reference](/resources/manufacturing-pioneers). The control-chart and acceptance-sampling math underneath modern aerospace audits is their work, applied at scale. More historical context lives at [wecr8.info/blog](https://wecr8.info/blog).
+
+## Want the Same Result?
+
+JobLine.ai was designed against AS9100, ISO 9001, and ITAR controls from day one. [See the platform](/) or [explore aerospace-specific features](/industries/aerospace-defense). For careers building this work, see [manufacturing careers](/resources/manufacturing-careers).
