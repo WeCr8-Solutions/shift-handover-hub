@@ -64,7 +64,7 @@ export function VisitorSurveyModal() {
       trackEvent("survey_shown", { source_page: window.location.pathname });
     };
 
-    const timer = setTimeout(fire, 15000);
+    const timer = setTimeout(fire, 60000);
     const onScroll = () => {
       if (window.scrollY > 400) fire();
     };
