@@ -53,6 +53,7 @@ const EmailOperationsCenter = lazy(() => import("@/components/admin/EmailOperati
 const AdminAuditLog = lazy(() => import("@/components/admin/AdminAuditLog").then(m => ({ default: m.AdminAuditLog })));
 const TalentGovernance = lazy(() => import("@/components/admin/TalentGovernance").then(m => ({ default: m.TalentGovernance })));
 const ExecutiveOverview = lazy(() => import("@/components/admin/ExecutiveOverview").then(m => ({ default: m.ExecutiveOverview })));
+const SeoDiagnosticsPanel = lazy(() => import("@/components/admin/seo-diagnostics/SeoDiagnosticsPanel").then(m => ({ default: m.SeoDiagnosticsPanel })));
 
 const AdminTabFallback = () => <div className="p-6"><Skeleton className="h-64 w-full rounded-lg" /></div>;
 
