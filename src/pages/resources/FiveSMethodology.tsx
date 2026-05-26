@@ -172,6 +172,7 @@ export default function FiveSMethodology() {
       <SEOHead
         title="5S Methodology Guide — Sort, Set, Shine, Standardize, Sustain | JobLine.ai"
         description="Free interactive 5S methodology guide: Sort (Seiri), Set in Order (Seiton), Shine (Seiso), Standardize (Seiketsu), Sustain (Shitsuke), red tag systems, floor marking, visual management, and audit checklists."
+        canonical="/resources/lean/5s-methodology"
       />
       <div className="min-h-screen bg-background">
         <MarketingNav />

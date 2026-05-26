@@ -174,6 +174,7 @@ export default function IndustryGlossary() {
       <SEOHead
         title="Manufacturing & CNC Glossary — 90+ Terms Explained | JobLine.ai Resources"
         description="Comprehensive glossary of manufacturing terms, CNC machining definitions, quality management concepts, lean manufacturing, GD&T, and production planning terminology for machinists and engineers."
+        canonical="/learn/glossary"
       />
       <div className="min-h-screen bg-background">
         <MarketingNav />

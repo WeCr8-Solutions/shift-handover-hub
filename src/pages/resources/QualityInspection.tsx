@@ -175,6 +175,7 @@ export default function QualityInspection() {
       <SEOHead
         title="Quality & Inspection Guide — SPC, GD&T, CMM, FAI | JobLine.ai"
         description="Free interactive guide to manufacturing quality and inspection: GD&T, SPC control charts, CMM operations, first article inspection, Gage R&R, calibration, surface finish, and process capability for quality professionals."
+        canonical="/resources/quality"
       />
       <div className="min-h-screen bg-background">
         <MarketingNav />

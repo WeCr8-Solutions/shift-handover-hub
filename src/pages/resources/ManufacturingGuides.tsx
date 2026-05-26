@@ -140,6 +140,7 @@ export default function ManufacturingGuides() {
       <SEOHead
         title="Manufacturing Guides & Best Practices — {guides.length} Expert Guides | JobLine.ai Resources"
         description="Expert guides on shift handoffs, work order management, CNC operations, quality management, NCR workflows, scheduling, downtime tracking, and lean manufacturing for job shops and production teams."
+        canonical="/resources/guides"
       />
       <div className="min-h-screen bg-background">
         <MarketingNav />

@@ -182,6 +182,7 @@ export default function BeginnersGuide() {
       <SEOHead
         title="Beginner's Guide to Manufacturing — Learn Shop Floor Basics | JobLine.ai"
         description="Free beginner's guide to manufacturing: CNC basics, blueprint reading, quality inspection, shop floor safety, lean manufacturing, work orders, tooling, and essential metrics for new machinists and operators."
+        canonical="/resources/beginners"
       />
       <div className="min-h-screen bg-background">
         <MarketingNav />

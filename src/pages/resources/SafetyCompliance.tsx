@@ -181,6 +181,7 @@ export default function SafetyCompliance() {
       <SEOHead
         title="Shop Floor Safety & Compliance Guide — OSHA, LOTO, PPE | JobLine.ai"
         description="Free interactive guide to manufacturing safety and compliance: OSHA regulations, lockout/tagout, PPE requirements, chemical safety, machine guarding, ergonomics, and emergency procedures for shop floor workers."
+        canonical="/resources/safety"
       />
       <div className="min-h-screen bg-background">
         <MarketingNav />

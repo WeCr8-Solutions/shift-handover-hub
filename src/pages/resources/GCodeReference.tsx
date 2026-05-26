@@ -296,6 +296,7 @@ export default function GCodeReference() {
       <SEOHead
         title="Complete G-Code & M-Code Reference for CNC Machinists | JobLine.ai"
         description="Comprehensive G-code and M-code command reference for CNC milling and turning. Covers G00–G187 motion codes, M00–M99 machine codes, canned cycles, cutter compensation, coordinate systems, and turning-specific codes."
+        canonical="/resources/gcode"
       />
       <div className="min-h-screen bg-background">
         <MarketingNav />

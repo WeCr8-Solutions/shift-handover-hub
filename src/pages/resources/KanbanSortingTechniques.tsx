@@ -172,6 +172,7 @@ export default function KanbanSortingTechniques() {
       <SEOHead
         title="Kanban & Sorting Techniques — Pull Systems, FIFO, WIP Control | JobLine.ai"
         description="Free interactive guide to kanban systems, FIFO lanes, supermarket pull systems, heijunka leveling, WIP limits, ABC analysis, CONWIP, milk runs, and priority sequencing for manufacturing."
+        canonical="/resources/kanban"
       />
       <div className="min-h-screen bg-background">
         <MarketingNav />
