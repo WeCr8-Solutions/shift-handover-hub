@@ -183,6 +183,7 @@ export default function LeanManufacturing() {
       <SEOHead
         title="Lean Manufacturing Toolkit — 5S, Kaizen, Six Sigma, TPM | JobLine.ai"
         description="Free interactive lean manufacturing guide: 5S, value stream mapping, kanban, kaizen, SMED, TPM, OEE, Six Sigma DMAIC, poka-yoke, and gemba walks for continuous improvement teams."
+        canonical="/resources/lean"
       />
       <div className="min-h-screen bg-background">
         <MarketingNav />

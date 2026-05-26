@@ -105,6 +105,7 @@ export default function ToolComparisons() {
       <SEOHead
         title="Manufacturing Tool Comparisons | JobLine.ai Resources"
         description="Compare shop-floor software approaches: JobLine.ai vs generic MES platforms vs spreadsheet workflows. Use practical criteria for handoffs, routing, quality, and rollout speed."
+        canonical="/resources/comparisons"
       />
       <div className="min-h-screen bg-background">
         <MarketingNav />

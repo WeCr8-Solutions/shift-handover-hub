@@ -197,6 +197,7 @@ export default function ManufacturingCareers() {
       <SEOHead
         title="Manufacturing Career Paths — CNC, Quality, Engineering & More | JobLine.ai"
         description="Explore manufacturing careers: CNC machinist, quality inspector, manufacturing engineer, production supervisor, welding technician, robotics, and supply chain. Salary ranges, skills, certifications, and advancement paths."
+        canonical="/resources/careers"
       />
       <div className="min-h-screen bg-background">
         <MarketingNav />

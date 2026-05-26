@@ -52,6 +52,7 @@ export default function Tools() {
       <SEOHead
         title="Operator Tools | JobLine"
         description="Free machining calculators and manufacturing tools — SFM calculator, tolerance stackup, unit converter, and more."
+        canonical="/tools"
       />
       <div className="min-h-screen bg-background">
         <Header />

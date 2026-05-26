@@ -38,6 +38,15 @@ function GoogleIcon({ className }: { className?: string }) {
 }
 
 export default function Auth() {
+  // Tell Google not to index the auth page (Googlebot executes JS and honors meta-robots set this way).
+  useEffect(() => {
+    const tag = document.createElement("meta");
+    tag.name = "robots";
+    tag.content = "noindex, nofollow";
+    document.head.appendChild(tag);
+    return () => { document.head.removeChild(tag); };
+  }, []);
+
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user, signIn, signUp, loading } = useAuth();

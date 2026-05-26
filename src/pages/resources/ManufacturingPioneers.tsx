@@ -307,6 +307,7 @@ export default function ManufacturingPioneers() {
       <SEOHead
         title="Industrial & Manufacturing Pioneers — Carnegie, Rockefeller, Von Braun & More | JobLine.ai"
         description="Explore 25+ pioneers who shaped industry: Andrew Carnegie (steel), John D. Rockefeller (oil), Wernher von Braun (space), Henry Ford, Taiichi Ohno, Deming, Tesla, Edison, Katherine Johnson, and more. Free interactive resource with biographies and Wikipedia references."
+        canonical="/resources/pioneers"
       />
       <div className="min-h-screen bg-background">
         <MarketingNav />
