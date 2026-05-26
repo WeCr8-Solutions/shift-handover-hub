@@ -119,29 +119,28 @@
     <link rel="alternate" hreflang="en" href="https://jobline.ai/" />
     
     <!-- Primary Meta Tags -->
-    <title>JobLine.ai — Digital Expeditor & Shift Handoff Software for CNC Shops</title>
-    <meta name="title" content="JobLine.ai — Digital Expeditor & Shift Handoff Software for CNC Shops" />
-    <meta name="description" content="JobLine.ai is the digital expeditor and smart shift handoff system for CNC machine shops. Work orders, routing, OAP, G-Code Academy, talent network, and a free VS Code G-code extension — built for AS9100/ISO 9001 manufacturers." />
-    <meta name="keywords" content="JobLine, JobLine.ai, Jobline ai, digital expeditor, shift handoff, CNC machine shop software, work order tracking, manufacturing execution system, MES, JobBOSS alternative, ProShop alternative, Epicor alternative, G-code VS Code extension, DNC software, AS9100, ISO 9001, ITAR" />
+    <title>JobLine.ai — Digital Expeditor for CNC Shops</title>
+    <meta name="title" content="JobLine.ai — Digital Expeditor for CNC Shops" />
+    <meta name="description" content="Digital expeditor and shift handoff system for CNC shops. Work orders, routing, OAP, G-Code Academy, and a free VS Code G-code extension." />
+    <meta name="keywords" content="JobLine, JobLine.ai, digital expeditor, shift handoff, CNC machine shop software, work order tracking, MES, JobBOSS alternative, ProShop alternative, Epicor alternative, G-code VS Code extension, DNC software, AS9100, ISO 9001, ITAR" />
     <meta name="author" content="JobLine.ai" />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
-    <!-- Canonical is set per-route via react-helmet-async (SEOHead / page <Helmet>). -->
+    <!-- Canonical and per-route og:url are set via react-helmet-async (SEOHead). -->
 
 
-    <!-- Open Graph / Facebook -->
+    <!-- Open Graph / Facebook — sitewide fallback for non-JS social crawlers.
+         og:url is intentionally omitted so per-route Helmet tags own it. -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://jobline.ai/" />
-    <meta property="og:title" content="JobLine.ai — Digital Expeditor & Shift Handoff Software for CNC Shops" />
-    <meta property="og:description" content="The digital expeditor and smart shift handoff system for CNC machine shops. Work orders, routing, OAP, G-Code Academy, and a free VS Code G-code extension." />
+    <meta property="og:title" content="JobLine.ai — Digital Expeditor for CNC Shops" />
+    <meta property="og:description" content="Digital expeditor and shift handoff for CNC shops. Work orders, routing, OAP, G-Code Academy, and a free VS Code G-code extension." />
     <meta property="og:site_name" content="JobLine.ai" />
     <meta property="og:image" content="https://jobline.ai/og-image.png" />
     <meta property="og:locale" content="en_US" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:url" content="https://jobline.ai/" />
-    <meta name="twitter:title" content="JobLine.ai — Digital Expeditor & Shift Handoff Software for CNC Shops" />
-    <meta name="twitter:description" content="The digital expeditor and smart shift handoff system for CNC machine shops. Free VS Code G-code extension included." />
+    <meta name="twitter:title" content="JobLine.ai — Digital Expeditor for CNC Shops" />
+    <meta name="twitter:description" content="Digital expeditor and shift handoff for CNC shops. Free VS Code G-code extension included." />
     <meta name="twitter:image" content="https://jobline.ai/og-image.png" />
 
     <!-- Additional SEO -->
@@ -228,38 +227,9 @@
     }
     </script>
 
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "What is JobLine.ai?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "JobLine.ai is a digital expeditor and smart shift handoff system designed for manufacturing operations. It helps machine shops, fabrication facilities, and production teams track work orders, manage shift handoffs, coordinate routing, and improve communication."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Who uses JobLine.ai?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "JobLine.ai is used by machine shop owners, production supervisors, CNC operators, quality teams, and schedulers in industries like CNC machining, sheet metal fabrication, aerospace manufacturing, and precision engineering."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "What are the main features of JobLine.ai?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Key features include work order queue management with priority scheduling, structured shift handoff forms, multi-operation routing with outside processing support, real-time station status monitoring, and team-based organization management."
-          }
-        }
-      ]
-    }
-    </script>
+    <!-- FAQPage schema removed from the sitewide head: the landing page does not
+         render these Q&A blocks verbatim. FAQPage JSON-LD lives on /pricing
+         (src/pages/Pricing.tsx) where the visible FAQ matches the schema. -->
   </head>
 
   <body>

@@ -111,7 +111,7 @@ export default function Blog() {
   const pageTitle =
     "Manufacturing Blog — Shift Handover, CNC & Shop Floor Insights";
   const pageDescription =
-    "Practical guides for manufacturing teams: shift handover best practices, CNC programming tips, machine intelligence, and shop floor operations from the JobLine.ai team.";
+    "Practical guides for CNC shops: shift handover, work order routing, machine intelligence, and shop floor operations from JobLine.ai.";
 
   return (
     <>

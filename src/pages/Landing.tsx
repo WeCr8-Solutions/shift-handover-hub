@@ -279,7 +279,7 @@ export default function Landing() {
     <div className="min-h-screen bg-background" style={{ overflowX: "clip" }}>
       <SEOHead
         title="Digital Expeditor & Smart Shift Handoff System"
-        description="Streamline CNC manufacturing operations with JobLine.ai. Track work orders, manage shift handoffs, coordinate routing, and improve production floor communication. Built for machine shops and fabrication teams."
+        description="JobLine.ai is the digital expeditor for CNC shops: track work orders, coordinate routing, and run smoother shift handoffs."
         keywords="manufacturing software, shift handoff, work order tracking, CNC machining, production management, machine shop software, manufacturing execution system, MES, digital expeditor, production scheduling, production control, shop floor management, shift change software"
         canonical="/"
         jsonLd={{

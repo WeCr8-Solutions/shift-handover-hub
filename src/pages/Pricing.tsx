@@ -74,10 +74,48 @@ export default function Pricing() {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Pricing - Manufacturing Software Plans"
-        description="Simple, transparent pricing for manufacturing teams. Start with a 14-day free trial. Plans for individual operators, teams, and enterprise machine shops."
+        title="Pricing — Manufacturing Software Plans"
+        description="Transparent pricing for CNC shops. 14-day free trial. Plans for individual operators, teams, and enterprise machine shops."
         keywords="manufacturing software pricing, shift handoff software cost, machine shop software pricing, production management pricing"
         canonical="/pricing"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: [
+            {
+              "@type": "Question",
+              name: "Can I change plans anytime?",
+              acceptedAnswer: {
+                "@type": "Answer",
+                text: "Yes — you can upgrade, downgrade, or cancel your subscription at any time. Changes take effect at the end of your billing cycle.",
+              },
+            },
+            {
+              "@type": "Question",
+              name: "What happens if I exceed my user limit?",
+              acceptedAnswer: {
+                "@type": "Answer",
+                text: "We'll notify you and suggest upgrading to a plan that fits your team size. Enterprise plans include 10 seats and can add more at $12/month per seat.",
+              },
+            },
+            {
+              "@type": "Question",
+              name: "Is there a free trial?",
+              acceptedAnswer: {
+                "@type": "Answer",
+                text: "Yes — all plans come with a 14-day free trial to start.",
+              },
+            },
+            {
+              "@type": "Question",
+              name: "Are talent profiles really free?",
+              acceptedAnswer: {
+                "@type": "Answer",
+                text: "Yes — operator talent profiles are always free, with no trial or subscription required. Build a verified shop-floor profile, earn OAP/GCA badges, and get discovered by hiring shops at no cost.",
+              },
+            },
+          ],
+        }}
       />
       <MarketingNav />
 
