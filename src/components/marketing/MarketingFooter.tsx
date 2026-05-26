@@ -33,6 +33,7 @@ const footerLinks = {
     { label: "Book a Demo", to: "/demo" },
     { label: "Pricing", to: "/pricing" },
     { label: "Help Center", to: "/help" },
+    { label: "Site Map", to: "/sitemap" },
     { label: "Sign Up Free", to: "/auth" },
   ],
 };
