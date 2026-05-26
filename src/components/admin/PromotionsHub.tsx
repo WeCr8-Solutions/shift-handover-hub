@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { trackEvent } from "@/lib/analytics";
 import { FlyerCampaigns } from "./FlyerCampaigns";
+import { BrandSystemPanel } from "./brand-system/BrandSystemPanel";
 import { openSocialLink } from "@/lib/talent/socialDeepLinks";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -700,6 +701,10 @@ export function PromotionsHub({ organizationId = null }: { organizationId?: stri
             <Globe className="w-3.5 h-3.5" />
             Flyer Ops
           </TabsTrigger>
+          <TabsTrigger value="brand-system" className="gap-1.5">
+            <Sparkles className="w-3.5 h-3.5" />
+            Brand System
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="promotions" className="space-y-4">
@@ -921,6 +926,10 @@ export function PromotionsHub({ organizationId = null }: { organizationId?: stri
 
         <TabsContent value="flyer-ops">
           <FlyerCampaigns />
+        </TabsContent>
+
+        <TabsContent value="brand-system">
+          <BrandSystemPanel />
         </TabsContent>
       </Tabs>
 
