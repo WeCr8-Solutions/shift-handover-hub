@@ -79,7 +79,17 @@ export function MarketingFooter() {
               </button>
             </nav>
             <p>© 2026 JobLine.ai. All rights reserved.</p>
-            <p>A product of WeCr8 Solutions LLC</p>
+            <p>
+              A product of WeCr8 Solutions LLC ·{" "}
+              <a
+                href="https://wecr8.info/blog"
+                target="_blank"
+                rel="noopener"
+                className="hover:text-foreground transition-colors underline underline-offset-2"
+              >
+                Parent company research & blog
+              </a>
+            </p>
           </div>
         </div>
       </div>
