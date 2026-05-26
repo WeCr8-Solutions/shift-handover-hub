@@ -78,12 +78,10 @@
           aws.src='https://www.googletagmanager.com/gtag/js?id=AW-17425064696';
           document.head.appendChild(aws);
 
-          // Google AdSense
-          var as=document.createElement('script');as.async=true;
-          as.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3639153716376265';
-          as.crossOrigin='anonymous';
-          document.head.appendChild(as);
+          // Google AdSense is now loaded eagerly in <head> above (required for
+          // Google's AdSense verification crawler). Do not load it again here.
         };
+
         ['pointerdown','keydown','scroll','touchstart','mousemove'].forEach(function(ev){
           window.addEventListener(ev, loadThirdParty, { once: true, passive: true });
         });
