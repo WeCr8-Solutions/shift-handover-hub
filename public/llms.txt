@@ -103,7 +103,7 @@ The VS Code extension you use at your desk connects to the platform running on y
 - **Semiconductor** → https://jobline.ai/industries/semiconductor
 - **EV & Battery** → https://jobline.ai/industries/ev-battery
 
-## ERP Selection Guide (7-Part Series)
+## ERP Selection Guide (5-Part Series)
 
 A comprehensive guide to selecting and implementing a manufacturing ERP:
 
@@ -112,10 +112,9 @@ A comprehensive guide to selecting and implementing a manufacturing ERP:
 3. **Determine ERP Functionality Needs** → https://jobline.ai/resources/erp-guide/determine-functionality-needs
 4. **Manufacturing Discovery Call Success** → https://jobline.ai/resources/erp-guide/discovery-call-success
 5. **Plan & Build Your ERP Budget** → https://jobline.ai/resources/erp-guide/build-erp-budget
-6. **Build an ERP Project Plan** → https://jobline.ai/resources/erp-guide/build-project-plan
-7. **Own Your Implementation Success** → https://jobline.ai/resources/erp-guide/own-implementation-success
 
 → Full guide hub: https://jobline.ai/resources/erp-guide
+
 
 ## Who Uses JobLine.ai?
 
