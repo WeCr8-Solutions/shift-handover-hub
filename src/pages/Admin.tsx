@@ -257,6 +257,7 @@ export default function Admin() {
                     <SelectItem value="blog-admin">Blog</SelectItem>
                     <SelectItem value="flyer-campaigns">Promotions</SelectItem>
                     <SelectItem value="policy-notifications">Policy Notices</SelectItem>
+                    <SelectItem value="seo-diagnostics">SEO Diagnostics</SelectItem>
                   </SelectGroup>
                 )}
                 {hasPlatformAccess && (
