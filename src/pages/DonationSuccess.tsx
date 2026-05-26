@@ -4,6 +4,7 @@ import { CheckCircle, Heart, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { trackEvent } from "@/lib/analytics";
+import { SEOHead } from "@/components/SEOHead";
 
 export default function DonationSuccess() {
   useEffect(() => {
@@ -12,6 +13,12 @@ export default function DonationSuccess() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <SEOHead
+        title="Thank You for Your Donation | JobLine.ai"
+        description="Your donation has been received."
+        canonical="/donation-success"
+        noindex
+      />
       <Card className="max-w-md w-full">
         <CardContent className="pt-8 pb-6 text-center space-y-6">
           <div className="flex justify-center">

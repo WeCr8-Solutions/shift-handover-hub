@@ -65,6 +65,7 @@ export default function VerifyCertificate() {
         title={`Verify Certificate ${certId ?? ""} — JobLine`}
         description="Public certificate verification for the JobLine Operator Acceptance Program and G-Code Academy."
         canonical={`/verify/${certId ?? ""}`}
+        noindex
       />
 
       <div className="container mx-auto px-4 py-12 max-w-3xl print:py-0 print:max-w-none">

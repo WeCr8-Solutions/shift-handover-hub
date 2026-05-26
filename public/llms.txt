@@ -327,4 +327,51 @@ Canonical reference catalog for inspection tools, machining operations, GCA, OAP
 
 ---
 
-*Last updated: April 23, 2026*
+## Authorship & E-E-A-T
+
+JobLine.ai is built and operated by **WeCr8 Solutions LLC**, a U.S. precision-manufacturing software company. All written content is reviewed by people with hands-on CNC, AS9100, and ISO 9001 experience — not generated speculatively.
+
+- **Publisher**: WeCr8 Solutions LLC — https://wecr8.info
+- **Lead author / founder**: Zach Goodbody — CNC programmer, shop-floor operator, and founder. Writes from direct experience running production on Haas, Mazak, Doosan, and Swiss platforms.
+- **Editorial standard**: Every article must cite a real shop scenario, a measurable outcome, or a public standard (AS9100, ISO 9001, ITAR, OSHA, ASME).
+- **Corrections policy**: Errors are corrected in-place with a visible "Last updated" date.
+- **Contact**: hello@jobline.ai · Security: security@jobline.ai · Press: press@jobline.ai
+- **Humans page**: https://jobline.ai/humans.txt
+- **Security policy**: https://jobline.ai/.well-known/security.txt
+
+## Recent Long-Form Posts (Editorial)
+
+These are full case studies and methodology guides — not marketing copy. Each cross-links to the Handbook, Resources, and Manuals libraries.
+
+- **OEE Case Study: Reclaiming 38 Points in 90 Days** — https://jobline.ai/blog/oee-bottleneck-reduction-case-study
+  Theory-of-constraints walkthrough on a 12-machine job shop (Mazak / Haas / Doosan / Swiss). Availability 71→94%, OEE 41→79%.
+- **5S Methodology for the Modern CNC Shop** — https://jobline.ai/blog/5s-methodology-cnc-shop-implementation
+  Practical 5S implementation tied to digital station boards and shift handoffs.
+- **AS9100 Routing & Quantity Accounting Case Study** — https://jobline.ai/blog/aerospace-as9100-routing-case-study
+  Aerospace compliance, ITAR handling, completed-plus-scrap-plus-rework integrity, and audit-trail design.
+- **Manufacturing Pioneers on the Modern Shop Floor** — https://jobline.ai/blog/manufacturing-pioneers-modern-shop-floor
+  Deming, Ohno, Goldratt, Shingo — how their principles map onto today's digital expeditor workflows.
+- **Manufacturing Careers: The People Behind the Machines** — https://jobline.ai/blog/manufacturing-careers-people-behind-machines
+  Operator → setup → programmer → supervisor progression, mapped to OAP and GCA certification paths.
+- **7 Shift Handoff Best Practices That Reduce Downtime by 40%** — https://jobline.ai/blog/shift-handoff-best-practices
+- **Work Order Routing Optimization** — https://jobline.ai/blog/work-order-routing-optimization
+- **Digital Expeditor Guide** — https://jobline.ai/blog/digital-expeditor-guide
+- **Production Scheduling for Small Shops** — https://jobline.ai/blog/production-scheduling-small-shops
+- **CNC Machine Utilization** — https://jobline.ai/blog/cnc-machine-utilization
+- **Manufacturing Quality & NCR Handling** — https://jobline.ai/blog/manufacturing-quality-ncr
+- **JobLine G-Code VS Code Extension — Now Available** — https://jobline.ai/blog/jobline-gcode-vs-code-extension-available
+- **Certificate Help & Verification** — https://jobline.ai/blog/help-certificates
+
+## Trust & Compliance Signals
+
+- AS9100 / ISO 9001 aware routing and quantity-accounting workflows
+- ITAR-controlled deployment mode (read-through ERP, no Supabase persistence for controlled data)
+- FedRAMP progress roadmap published at https://jobline.ai/dev
+- Legal: https://jobline.ai/terms · https://jobline.ai/privacy · https://jobline.ai/cookies
+- Cookie consent: Google Consent Mode v2, default-deny, GPC-honoring
+- Parent company research blog: https://wecr8.info/blog
+
+---
+
+*Last updated: May 15, 2026*
+
