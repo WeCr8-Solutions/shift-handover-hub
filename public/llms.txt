@@ -4,6 +4,30 @@
 
 ---
 
+## Pages
+
+- [Home](/): Digital expeditor and shift handoff for CNC shops.
+- [Pricing](/pricing): Plans for individual operators, teams, and enterprise shops.
+- [Book a Demo](/demo): Walk through the platform with the JobLine team.
+- [Blog](/blog): Case studies and methodology guides for shop floors.
+- [Help Center](/help): Product documentation and how-to guides.
+- [Resources Hub](/resources): Free manufacturing guides, glossary, and references.
+- [ERP Selection Guide](/resources/erp-guide): 5-part manufacturing ERP selection series.
+- [Machinery's Handbook](/handbook): Canonical reference for materials, threads, GD&T, formulas.
+- [Talent Network](/talent): Public CNC operator and machinist profiles.
+- [Operator Acceptance Program (OAP)](/oap): AS9100/ISO 9001 operator certification system.
+- [G-Code Academy (GCA)](/gcode-academy): Self-paced CNC operator training across major controls.
+- [Learning Center](/learn): AI literacy, manufacturing fundamentals, and tutorials.
+- [Machine Manuals](/manuals): Searchable library of public OEM machine and control manuals.
+- [VS Code G-Code Extension](/features/vscode-gcode): Multi-dialect G-code intelligence in VS Code.
+- [VS Code Machine Connect](/features/machine-connect): DNC connectivity (FTP/RS-232/CIFS/FOCAS2/MTConnect).
+- [Shift Handoff Software](/features/shift-handoff-software): Structured shift-to-shift knowledge transfer.
+- [Work Order Tracking](/features/work-order-tracking): Lifecycle tracking with priority scheduling.
+- [Industries](/industries/job-shops): Industry-specific landing pages (job shops, aerospace, medical, more).
+- [Certificate Verification](/verify): Public verification for OAP/GCA certificates.
+
+
+
 ## What is JobLine.ai?
 
 JobLine.ai is a digital expeditor and smart shift handoff system designed for manufacturing operations. It is a single platform with modular features — not multiple products. It helps machine shops, fabrication facilities, and production teams:
