@@ -101,6 +101,20 @@ export default function Blog() {
     );
   }, [mdxPosts, dbPosts]);
 
+  // GA4: blog_list_view — fire once when posts are first available
+  const didTrackListView = useRef(false);
+  useEffect(() => {
+    if (didTrackListView.current || loading) return;
+    if (allPosts.length === 0) return;
+    didTrackListView.current = true;
+    trackEvent("blog_list_view", {
+      post_count: allPosts.length,
+      mdx_count: mdxPosts.length,
+      db_count: dbPosts.length,
+      active_category: activeCategory,
+    });
+  }, [allPosts.length, loading, mdxPosts.length, dbPosts.length, activeCategory]);
+
   const filtered =
     activeCategory === "All"
       ? allPosts
