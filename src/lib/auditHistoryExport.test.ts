@@ -1,13 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { AuditBundle } from "@/hooks/useAuditExportBundle";
 
+const { saveAsMock, pdfSave } = vi.hoisted(() => ({
+  saveAsMock: vi.fn(),
+  pdfSave: vi.fn(),
+}));
+
 // jsdom doesn't implement URL.createObjectURL / msSaveBlob; stub file-saver so
 // we can assert what would be saved without touching the DOM download path.
-const saveAsMock = vi.fn();
 vi.mock("file-saver", () => ({ saveAs: saveAsMock }));
 
 // Stub jsPDF — we only need to assert `save()` is called with a sensible name.
-const pdfSave = vi.fn();
 vi.mock("jspdf", () => ({
   default: vi.fn().mockImplementation(() => ({
     setFont: vi.fn(),
