@@ -235,7 +235,7 @@ export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadD
               <Card className="bg-secondary/30">
                 <CardContent className="pt-4">
                   <p className="text-xs text-muted-foreground">
-                    <strong>Processing Order:</strong> Teams → Departments → Stations → Users → Work Orders
+                    <strong>Processing Order:</strong> Teams → Departments → Stations → Users → Work Orders → Routing Templates
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
                     Team names must match exactly across all sheets for proper linking.
