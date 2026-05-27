@@ -85,6 +85,47 @@ function seedBundle(): AuditBundle {
   };
 }
 
+// jsdom Blob doesn't round-trip binary parts through .text()/.arrayBuffer(),
+// so we wrap the global to capture the raw input parts at construction time.
+const RealBlob = globalThis.Blob;
+class CapturingBlob extends RealBlob {
+  __parts: any[];
+  constructor(parts: any[] = [], opts?: BlobPropertyBag) {
+    super(parts, opts);
+    this.__parts = parts;
+  }
+}
+(globalThis as any).Blob = CapturingBlob;
+
+async function readBlobText(blob: any): Promise<string> {
+  const parts = (blob.__parts ?? []) as any[];
+  let out = "";
+  for (const p of parts) {
+    if (typeof p === "string") out += p;
+    else if (p instanceof Uint8Array) out += new TextDecoder().decode(p);
+    else if (p instanceof ArrayBuffer) out += new TextDecoder().decode(new Uint8Array(p));
+  }
+  return out;
+}
+
+async function readBlobBytes(blob: any): Promise<Uint8Array> {
+  const parts = (blob.__parts ?? []) as any[];
+  const chunks: Uint8Array[] = [];
+  for (const p of parts) {
+    if (p instanceof Uint8Array) chunks.push(p);
+    else if (p instanceof ArrayBuffer) chunks.push(new Uint8Array(p));
+    else if (typeof p === "string") chunks.push(new TextEncoder().encode(p));
+  }
+  const total = chunks.reduce((s, c) => s + c.byteLength, 0);
+  const out = new Uint8Array(total);
+  let o = 0;
+  for (const c of chunks) {
+    out.set(c, o);
+    o += c.byteLength;
+  }
+  return out;
+}
+
 beforeEach(() => {
   saveAsMock.mockClear();
   pdfSave.mockClear();
