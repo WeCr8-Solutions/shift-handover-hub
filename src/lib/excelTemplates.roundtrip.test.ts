@@ -31,7 +31,12 @@ beforeAll(async () => {
       super(parts, opts);
       for (const p of parts) {
         if (p instanceof ArrayBuffer) capturedBuffers.push(p);
-        else if (ArrayBuffer.isView(p)) capturedBuffers.push(p.buffer as ArrayBuffer);
+        else if (ArrayBuffer.isView(p)) {
+          // Slice — Buffer.buffer may point into a shared pool.
+          capturedBuffers.push(
+            p.buffer.slice(p.byteOffset, p.byteOffset + p.byteLength) as ArrayBuffer,
+          );
+        }
       }
     }
   }
