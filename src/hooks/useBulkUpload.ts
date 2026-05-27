@@ -580,7 +580,7 @@ export function useBulkUpload() {
     await supabase.from('activity_logs').insert({
       user_id: user.id,
       activity_type: 'station_created',
-      description: `Bulk upload: ${result.teamsCreated} teams, ${result.departmentsCreated} departments, ${result.stationsCreated} stations, ${result.workOrdersCreated} work orders, ${result.usersAddedToOrg} users added, ${result.inviteCodesCreated} invites created`,
+      description: `Bulk upload: ${result.teamsCreated} teams, ${result.departmentsCreated} departments, ${result.stationsCreated} stations, ${result.workOrdersCreated} work orders, ${result.usersAddedToOrg} users added, ${result.inviteCodesCreated} invites created, ${result.routingTemplatesCreated} routing templates (${result.routingStepsCreated} steps)`,
       metadata: {
         organization_id: organization.id,
         teams_created: result.teamsCreated,
@@ -589,6 +589,8 @@ export function useBulkUpload() {
         work_orders_created: result.workOrdersCreated,
         users_added_to_org: result.usersAddedToOrg,
         invite_codes_created: result.inviteCodesCreated,
+        routing_templates_created: result.routingTemplatesCreated,
+        routing_steps_created: result.routingStepsCreated,
       },
     });
 
