@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { SEOHead } from "@/components/SEOHead";
-import { ArrowRight, CheckCircle2, XCircle, Zap, Sparkles } from "lucide-react";
+import { ArrowRight, CheckCircle2, XCircle, Zap, Sparkles, ShieldCheck, FileSpreadsheet, FileText, Database } from "lucide-react";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
