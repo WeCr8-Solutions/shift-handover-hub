@@ -1,10 +1,10 @@
 /**
- * @vitest-environment node
- *
  * E2E roundtrip: load the published static template and parse it back through
  * the in-app parser. Guards against sheet-name truncation collisions, header
  * drift, and sample rows the parser would reject.
  */
+// Polyfill stream/promises pipeline issues — ExcelJS load needs Node Buffer.
+import { Buffer as NodeBuffer } from 'node:buffer';
 import { describe, it, expect, beforeAll } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
