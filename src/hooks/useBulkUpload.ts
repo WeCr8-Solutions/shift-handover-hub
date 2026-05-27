@@ -211,6 +211,18 @@ export function useBulkUpload() {
       stationIdToUuid[station.station_id.toLowerCase()] = station.id;
     });
 
+    // Build a (teamId|name) -> departmentId map for department resolution.
+    const { data: orgDepartments } = await supabase
+      .from('departments')
+      .select('id, name, team_id')
+      .eq('organization_id', organization.id);
+    const departmentKey = (teamId: string, name: string) =>
+      `${teamId}::${name.toLowerCase()}`;
+    const departmentMap: Record<string, string> = {};
+    orgDepartments?.forEach(d => {
+      if (d.team_id) departmentMap[departmentKey(d.team_id, d.name)] = d.id;
+    });
+
     for (const station of data.stations) {
       currentItem++;
       setProgress({ stage: 'uploading', message: `Creating station: ${station.name}`, current: currentItem, total: totalItems });
@@ -225,12 +237,28 @@ export function useBulkUpload() {
         result.warnings.push(`Team "${station.team_name}" not found for station "${station.station_id}". Station will be created without team assignment.`);
       }
 
+      // Resolve department (optional, requires a resolved team).
+      let departmentId: string | null = null;
+      if (station.department && teamId) {
+        departmentId = departmentMap[departmentKey(teamId, station.department)] ?? null;
+        if (!departmentId) {
+          result.warnings.push(
+            `Department "${station.department}" not found for team "${station.team_name}" — station "${station.station_id}" created without a department.`,
+          );
+        }
+      } else if (station.department && !teamId) {
+        result.warnings.push(
+          `Department "${station.department}" requires a Team Name on station "${station.station_id}" — department not applied.`,
+        );
+      }
+
       const { data: newStation, error } = await supabase.from('stations').insert({
         station_id: station.station_id,
         name: station.name,
         work_center: station.work_center,
         work_center_type: station.work_center_type,
         team_id: teamId,
+        department_id: departmentId,
         is_active: station.is_active,
         organization_id: organization.id,
       })
