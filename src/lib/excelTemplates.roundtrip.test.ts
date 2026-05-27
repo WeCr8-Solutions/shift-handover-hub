@@ -21,29 +21,35 @@ import {
 let downloadedBuffer: ArrayBuffer | null = null;
 
 beforeAll(async () => {
-  // Capture the workbook buffer synchronously when downloadTemplate() wraps
-  // it in a Blob and calls URL.createObjectURL(blob).
-  const capturedBlobs: Blob[] = [];
-  const origCreate = URL.createObjectURL;
-  const origRevoke = URL.revokeObjectURL;
-  URL.createObjectURL = ((blob: Blob) => {
-    capturedBlobs.push(blob);
-    return 'blob:mock';
-  }) as typeof URL.createObjectURL;
-  URL.revokeObjectURL = (() => {}) as typeof URL.revokeObjectURL;
+  // downloadTemplate() wraps the workbook in `new Blob([buffer], ...)`.
+  // Capture the buffer by intercepting the Blob constructor — jsdom's Blob
+  // implementation lacks `.arrayBuffer()` so we can't rely on it.
+  const capturedBuffers: ArrayBuffer[] = [];
+  const OrigBlob = globalThis.Blob;
+  class CapturingBlob extends OrigBlob {
+    constructor(parts: BlobPart[], opts?: BlobPropertyBag) {
+      super(parts, opts);
+      for (const p of parts) {
+        if (p instanceof ArrayBuffer) capturedBuffers.push(p);
+        else if (ArrayBuffer.isView(p)) capturedBuffers.push(p.buffer as ArrayBuffer);
+      }
+    }
+  }
+  (globalThis as { Blob: typeof Blob }).Blob = CapturingBlob as typeof Blob;
 
-  const anchorClick = vi
-    .spyOn(HTMLAnchorElement.prototype, 'click')
-    .mockImplementation(() => {});
+  const origCreate = URL.createObjectURL;
+  URL.createObjectURL = (() => 'blob:mock') as typeof URL.createObjectURL;
+  URL.revokeObjectURL = (() => {}) as typeof URL.revokeObjectURL;
+  const anchorClick = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
 
   await downloadTemplate('all');
 
   anchorClick.mockRestore();
   URL.createObjectURL = origCreate;
-  URL.revokeObjectURL = origRevoke;
+  (globalThis as { Blob: typeof Blob }).Blob = OrigBlob;
 
-  expect(capturedBlobs.length).toBe(1);
-  downloadedBuffer = await capturedBlobs[0].arrayBuffer();
+  expect(capturedBuffers.length).toBeGreaterThan(0);
+  downloadedBuffer = capturedBuffers[0];
 });
 
 // jsdom's File/Blob lacks .arrayBuffer in some versions — wrap our buffer
