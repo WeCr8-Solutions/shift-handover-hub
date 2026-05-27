@@ -97,7 +97,7 @@ describe("exportAuditBundleToJSON", () => {
     const [blob, filename] = saveAsMock.mock.calls[0];
     expect(filename).toBe("JobLineAudit_acme-aerospace-inc_2026-04_bundle.json");
     expect(blob).toBeInstanceOf(Blob);
-    const text = await (blob as Blob).text();
+    const text = await new Response(blob as Blob).text();
     const parsed = JSON.parse(text);
     expect(parsed.meta.organization_name).toBe("Acme Aerospace, Inc.");
     expect(parsed.data.work_orders).toHaveLength(2);
@@ -110,7 +110,7 @@ describe("exportAuditBundleToQuickBooksCSV", () => {
     expect(saveAsMock).toHaveBeenCalledTimes(1);
     const [blob, filename] = saveAsMock.mock.calls[0];
     expect(filename).toBe("JobLineAudit_acme-aerospace-inc_2026-04_quickbooks.csv");
-    const csv = await (blob as Blob).text();
+    const csv = await new Response(blob as Blob).text();
     const lines = csv.split("\n");
     expect(lines[0]).toBe("Date,Invoice No,Customer,Item,Quantity,Memo");
     // first row -> completed_at present -> 04/14/2026
@@ -137,7 +137,7 @@ describe("exportAuditBundleToExcel", () => {
     expect(filename).toBe("JobLineAudit_acme-aerospace-inc_2026-04_bundle.xlsx");
     expect(blob).toBeInstanceOf(Blob);
     // xlsx is a zip; first bytes are "PK"
-    const buf = new Uint8Array(await (blob as Blob).arrayBuffer());
+    const buf = new Uint8Array(await new Response(blob as Blob).arrayBuffer());
     expect(buf[0]).toBe(0x50);
     expect(buf[1]).toBe(0x4b);
   });
@@ -151,7 +151,7 @@ describe("exportAuditBundleToCSVZip", () => {
     expect(blob).toBeInstanceOf(Blob);
     // unzip and inspect entries
     const JSZip = (await import("jszip")).default;
-    const z = await JSZip.loadAsync(await (blob as Blob).arrayBuffer());
+    const z = await JSZip.loadAsync(await new Response(blob as Blob).arrayBuffer());
     const names = Object.keys(z.files).sort();
     expect(names).toEqual(
       expect.arrayContaining([
