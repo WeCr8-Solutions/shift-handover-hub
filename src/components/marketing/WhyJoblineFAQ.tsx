@@ -43,6 +43,14 @@ const GENERAL_FAQS: FAQ[] = [
     q: "What's the real cost vs. a traditional ERP?",
     a: "Most small and mid-size shops pay less per month for JobLine.ai than a single hour of ERP consulting. There's a free trial, transparent monthly pricing on the /pricing page, and no implementation fees.",
   },
+  {
+    q: "Can JobLine.ai produce AS9100 or ISO 9001 audit evidence on demand?",
+    a: "Yes — that's a core capability. The Audit & History Center in /admin?tab=history bundles work orders, routing steps, shift handoffs, downtime events, NCRs, quality inspections, queue changes, and station sessions for any month, mapped to AS9100 / ISO 9001 / ITAR / FDA 21 CFR 820 clauses, and exports them as Excel, CSV bundle, QuickBooks CSV, JSON, or PDF in a single click. No SQL, no consultant.",
+  },
+  {
+    q: "Can we export by month for QuickBooks reconciliation or auditor binders?",
+    a: "Yes. Every export is month-scoped (or any custom range) and stamped with the organization, period, standard, and generator. QuickBooks-format CSV imports cleanly into invoicing; the Excel bundle is a one-file binder with one tab per record type plus a cover sheet that maps each clause to the evidence inside.",
+  },
 ];
 
 const VARIANT_EXTRA: Record<Exclude<CompareVariant, "general">, FAQ[]> = {
