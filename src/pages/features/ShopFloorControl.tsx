@@ -51,9 +51,9 @@ export default function ShopFloorControl() {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Shop Floor Control Software — Real-Time SFC for Job Shops"
-        description="Shop floor control software that lets operators update jobs in real time, gives supervisors live machine status, and captures downtime without hardware. Built for job shops and CNC machine shops."
-        keywords="shop floor control software, SFC software, production floor control, shop floor execution, SFC MES, manufacturing shop floor control, job shop SFC, real-time shop floor, shop floor visibility, production control"
+        title="Shop Floor Control & Paperless Shop Floor Software"
+        description="Shop floor control software for a paperless shop floor. Operators update jobs in real time, supervisors get live machine status, downtime is captured automatically — no hardware required."
+        keywords="shop floor control software, shop floor management software, paperless shop floor, digital shop floor, SFC software, production floor control, shop floor execution, job shop SFC, real-time shop floor, shop floor visibility"
         canonical="/features/shop-floor-control"
         jsonLd={jsonLd}
       />
