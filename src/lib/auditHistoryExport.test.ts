@@ -190,7 +190,7 @@ describe("exportAuditBundleToCSVZip", () => {
     expect(blob).toBeInstanceOf(Blob);
     // unzip and inspect entries
     const JSZip = (await import("jszip")).default;
-    const z = await JSZip.loadAsync((await readBlobBytes(blob)).buffer);
+    const z = await JSZip.loadAsync(await readBlobBytes(blob));
     const names = Object.keys(z.files).sort();
     expect(names).toEqual(
       expect.arrayContaining([
