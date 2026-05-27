@@ -19,6 +19,8 @@ export interface UploadResult {
   workOrdersCreated: number;
   usersAddedToOrg: number;
   inviteCodesCreated: number;
+  routingTemplatesCreated: number;
+  routingStepsCreated: number;
   errors: string[];
   warnings: string[];
 }
@@ -98,11 +100,13 @@ export function useBulkUpload() {
       workOrdersCreated: 0,
       usersAddedToOrg: 0,
       inviteCodesCreated: 0,
+      routingTemplatesCreated: 0,
+      routingStepsCreated: 0,
       errors: [],
       warnings: [],
     };
 
-    const totalItems = data.teams.length + data.departments.length + data.stations.length + data.users.length + data.workOrders.length;
+    const totalItems = data.teams.length + data.departments.length + data.stations.length + data.users.length + data.workOrders.length + (data.routingTemplates?.length ?? 0);
     let currentItem = 0;
 
     setProgress({ stage: 'uploading', message: 'Creating teams...', current: 0, total: totalItems });
@@ -494,11 +498,89 @@ export function useBulkUpload() {
       }
     }
 
-    // Log activity
+    // ========== STEP 6: Create routing templates (and their steps) ==========
+    if (data.routingTemplates && data.routingTemplates.length > 0) {
+      setProgress({ stage: 'uploading', message: 'Creating routing templates...', current: currentItem, total: totalItems });
+
+      // Preload existing template names for this org to avoid unique-constraint collisions
+      const { data: existingTemplates } = await supabase
+        .from('routing_templates')
+        .select('id, name')
+        .eq('organization_id', organization.id);
+      const templateNameToId: Record<string, string> = {};
+      existingTemplates?.forEach((t) => {
+        templateNameToId[t.name.toLowerCase()] = t.id;
+      });
+
+      for (const tmpl of data.routingTemplates) {
+        currentItem++;
+        setProgress({ stage: 'uploading', message: `Creating routing template: ${tmpl.template_name}`, current: currentItem, total: totalItems });
+
+        let templateId = templateNameToId[tmpl.template_name.toLowerCase()];
+
+        if (templateId) {
+          result.warnings.push(`Routing template "${tmpl.template_name}" already exists, skipping template (steps not modified).`);
+          continue;
+        }
+
+        const { data: newTemplate, error: tmplError } = await supabase
+          .from('routing_templates')
+          .insert({
+            organization_id: organization.id,
+            name: tmpl.template_name,
+            part_number_pattern: tmpl.part_number_pattern || null,
+            created_by: user.id,
+          })
+          .select('id')
+          .single();
+
+        if (tmplError || !newTemplate) {
+          result.errors.push(`Failed to create routing template "${tmpl.template_name}": ${tmplError?.message ?? 'unknown error'}`);
+          continue;
+        }
+
+        templateId = newTemplate.id;
+        templateNameToId[tmpl.template_name.toLowerCase()] = templateId;
+        result.routingTemplatesCreated++;
+
+        // Insert steps in a single batch (sorted by step_number for predictability)
+        const sortedSteps = [...tmpl.steps].sort((a, b) => a.step_number - b.step_number);
+        const stepRows = sortedSteps.map((s) => {
+          // outside_vendor isn't a column on routing_template_steps — fold it into instructions
+          const instructionParts: string[] = [];
+          if (s.instructions) instructionParts.push(s.instructions);
+          if (s.outside_vendor) instructionParts.push(`Vendor: ${s.outside_vendor}`);
+          return {
+            template_id: templateId!,
+            organization_id: organization.id,
+            step_number: s.step_number,
+            operation_name: s.operation_name,
+            operation_type: s.operation_type,
+            work_center_type: s.work_center_type || null,
+            estimated_duration: s.estimated_duration ?? null,
+            instructions: instructionParts.length > 0 ? instructionParts.join(' | ') : null,
+          };
+        });
+
+        if (stepRows.length > 0) {
+          const { error: stepsError, count } = await supabase
+            .from('routing_template_steps')
+            .insert(stepRows, { count: 'exact' });
+
+          if (stepsError) {
+            result.errors.push(`Created template "${tmpl.template_name}" but failed to insert steps: ${stepsError.message}`);
+          } else {
+            result.routingStepsCreated += count ?? stepRows.length;
+          }
+        }
+      }
+    }
+
+
     await supabase.from('activity_logs').insert({
       user_id: user.id,
       activity_type: 'station_created',
-      description: `Bulk upload: ${result.teamsCreated} teams, ${result.departmentsCreated} departments, ${result.stationsCreated} stations, ${result.workOrdersCreated} work orders, ${result.usersAddedToOrg} users added, ${result.inviteCodesCreated} invites created`,
+      description: `Bulk upload: ${result.teamsCreated} teams, ${result.departmentsCreated} departments, ${result.stationsCreated} stations, ${result.workOrdersCreated} work orders, ${result.usersAddedToOrg} users added, ${result.inviteCodesCreated} invites created, ${result.routingTemplatesCreated} routing templates (${result.routingStepsCreated} steps)`,
       metadata: {
         organization_id: organization.id,
         teams_created: result.teamsCreated,
@@ -507,6 +589,8 @@ export function useBulkUpload() {
         work_orders_created: result.workOrdersCreated,
         users_added_to_org: result.usersAddedToOrg,
         invite_codes_created: result.inviteCodesCreated,
+        routing_templates_created: result.routingTemplatesCreated,
+        routing_steps_created: result.routingStepsCreated,
       },
     });
 

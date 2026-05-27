@@ -112,7 +112,8 @@ export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadD
     parseResult.data.departments.length > 0 ||
     parseResult.data.stations.length > 0 ||
     parseResult.data.users.length > 0 ||
-    parseResult.data.workOrders.length > 0
+    parseResult.data.workOrders.length > 0 ||
+    (parseResult.data.routingTemplates?.length ?? 0) > 0
   );
 
   // Count cross-sheet warnings
@@ -234,7 +235,7 @@ export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadD
               <Card className="bg-secondary/30">
                 <CardContent className="pt-4">
                   <p className="text-xs text-muted-foreground">
-                    <strong>Processing Order:</strong> Teams → Departments → Stations → Users → Work Orders
+                    <strong>Processing Order:</strong> Teams → Departments → Stations → Users → Work Orders → Routing Templates
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
                     Team names must match exactly across all sheets for proper linking.
@@ -340,6 +341,9 @@ export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadD
                         )}
                         {parseResult.data.workOrders.length > 0 && (
                           <TabsTrigger value="workorders">Work Orders ({parseResult.data.workOrders.length})</TabsTrigger>
+                        )}
+                        {(parseResult.data.routingTemplates?.length ?? 0) > 0 && (
+                          <TabsTrigger value="routing">Routing ({parseResult.data.routingTemplates.length})</TabsTrigger>
                         )}
                       </TabsList>
 
@@ -481,6 +485,30 @@ export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadD
                           </div>
                         </ScrollArea>
                       </TabsContent>
+
+                      {(parseResult.data.routingTemplates?.length ?? 0) > 0 && (
+                        <TabsContent value="routing">
+                          <ScrollArea className="h-40">
+                            <div className="space-y-2">
+                              {parseResult.data.routingTemplates.map((tmpl, i) => (
+                                <div key={i} className="p-2 bg-secondary/30 rounded text-sm">
+                                  <div className="flex items-center justify-between">
+                                    <p className="font-medium truncate">{tmpl.template_name}</p>
+                                    <Badge variant="outline" className="text-xs">{tmpl.steps.length} steps</Badge>
+                                  </div>
+                                  {tmpl.part_number_pattern && (
+                                    <p className="text-xs text-muted-foreground">Pattern: {tmpl.part_number_pattern}</p>
+                                  )}
+                                  <p className="text-xs text-muted-foreground truncate">
+                                    {tmpl.steps.slice(0, 4).map(s => `${s.step_number}. ${s.operation_name}`).join(' → ')}
+                                    {tmpl.steps.length > 4 && ' …'}
+                                  </p>
+                                </div>
+                              ))}
+                            </div>
+                          </ScrollArea>
+                        </TabsContent>
+                      )}
                     </Tabs>
                   </CardContent>
                 </Card>
@@ -522,6 +550,10 @@ export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadD
                    <div className="p-3 bg-status-ok/10 rounded-lg text-center">
                      <p className="text-lg font-bold text-status-ok">{uploadResult.workOrdersCreated}</p>
                      <p className="text-xs text-muted-foreground">Work Orders</p>
+                  </div>
+                  <div className="p-3 bg-status-ok/10 rounded-lg text-center">
+                    <p className="text-lg font-bold text-status-ok">{uploadResult.routingTemplatesCreated}</p>
+                    <p className="text-xs text-muted-foreground">Routing ({uploadResult.routingStepsCreated} steps)</p>
                   </div>
                 </div>
 
