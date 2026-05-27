@@ -121,6 +121,13 @@ const sections = [
     count: "19 books · 7 roles",
   },
   {
+    title: "Why JobLine.ai",
+    description: "Why small and mid-size shops pick JobLine.ai over SAP, JobBOSS, Epicor, ProShop, Global Shop, E2 and spreadsheets. Side-by-side matrix, adaptability story, and an expanded FAQ with deep links to every comparison page.",
+    icon: GitCompare,
+    href: "/why-jobline",
+    count: "Decision hub",
+  },
+  {
     title: "Tool Comparisons",
     description: "Side-by-side comparisons of job-shop software approaches: JobLine.ai, generic MES suites, and spreadsheet/whiteboard workflows. Includes practical selection criteria for deployment speed, operator adoption, routing visibility, and quality traceability.",
     icon: GitCompare,
