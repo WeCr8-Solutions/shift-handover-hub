@@ -37,9 +37,9 @@ export default function DowntimeTracking() {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Manufacturing Downtime Tracking Software"
-        description="Track and reduce manufacturing downtime. Log events with reason codes, analyze trends, and integrate with shift handoffs and maintenance records. Built for CNC machine shops."
-        keywords="downtime tracking software, manufacturing downtime, machine downtime tracking, OEE tracking, downtime reporting, equipment downtime, production downtime analysis, unplanned downtime reduction"
+        title="CNC Downtime Tracking & Bottleneck Analysis Software"
+        description="CNC downtime tracking software with bottleneck analysis for manufacturing. Log downtime events with reason codes, surface CNC bottlenecks, and reduce unplanned downtime — no hardware required."
+        keywords="cnc downtime tracking, downtime tracking software, manufacturing downtime tracking, machine downtime tracking, cnc bottleneck, bottleneck analysis manufacturing, OEE tracking, equipment downtime, unplanned downtime reduction, production downtime analysis"
         canonical="/features/downtime-tracking"
         jsonLd={jsonLd}
       />
@@ -109,7 +109,7 @@ export default function DowntimeTracking() {
 
             <div className="text-center p-8 rounded-2xl bg-primary/5 border border-primary/20">
               <h2 className="text-2xl font-bold mb-3">Start tracking downtime today</h2>
-              <p className="text-muted-foreground mb-6">Free trial �.</p>
+              <p className="text-muted-foreground mb-6">Free trial — no credit card required.</p>
               <Button size="lg" onClick={() => navigate("/auth")} className="gap-2">
                 Get Started Free <ArrowRight className="w-5 h-5" />
               </Button>

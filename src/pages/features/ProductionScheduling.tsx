@@ -44,9 +44,9 @@ export default function ProductionScheduling() {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Production Scheduling Software for Manufacturing"
-        description="Production scheduling software for CNC machine shops. Visual calendar scheduling, priority queues, multi-operation routing, and real-time shop floor updates."
-        keywords="production scheduling software, manufacturing scheduling, shop scheduling software, production planning, manufacturing planning software, job shop scheduling, CNC scheduling"
+        title="Production Scheduling Software for Manufacturing & CNC Shops"
+        description="Production scheduling software for manufacturing and CNC machine shops. Visual calendar scheduling, capacity planning, priority queues, multi-operation routing, and real-time shop floor updates."
+        keywords="production scheduling software, manufacturing scheduling software, manufacturing scheduling, job shop scheduling software, cnc scheduling software, machine shop scheduling, production planning software, work center scheduling, capacity scheduling, shop scheduling software"
         canonical="/features/production-scheduling"
         jsonLd={jsonLd}
       />
@@ -113,7 +113,7 @@ export default function ProductionScheduling() {
 
             <div className="text-center p-8 rounded-2xl bg-primary/5 border border-primary/20">
               <h2 className="text-2xl font-bold mb-3">Schedule smarter, produce faster</h2>
-              <p className="text-muted-foreground mb-6">Free trial â€.</p>
+              <p className="text-muted-foreground mb-6">Free trial â€”.</p>
               <Button size="lg" onClick={() => navigate("/auth")} className="gap-2">
                 Get Started Free <ArrowRight className="w-5 h-5" />
               </Button>

@@ -80,9 +80,9 @@ export default function CNCMachineTracking() {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="CNC Machine Tracking Software - Real-Time Shop Floor Visibility"
-        description="Track every CNC machine's status, utilization, and performance in real time. Software-only CNC machine tracking — no hardware or sensors required. Built for machine shops and job shops."
-        keywords="CNC machine tracking, CNC tracking software, CNC machine monitoring, CNC status tracking, CNC machine utilization, machine tracking software, CNC shop tracking, machine shop monitoring software, CNC machine status"
+        title="CNC Machine Monitoring & Tracking Software — No Hardware"
+        description="CNC machine monitoring software with no sensors required. Track CNC machine status, utilization, downtime, and bottlenecks in real time. Built for machine shops and job shops."
+        keywords="CNC machine monitoring, machine monitoring software, CNC machine tracking, CNC tracking software, CNC machine utilization, CNC bottleneck, CNC downtime tracking, machine shop monitoring software, CNC production tracking, CNC job tracking"
         canonical="/features/cnc-machine-tracking"
         jsonLd={jsonLd}
       />
