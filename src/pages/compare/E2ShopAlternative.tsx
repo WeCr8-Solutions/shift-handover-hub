@@ -119,6 +119,7 @@ export default function E2ShopAlternative() {
             </div>
           </div>
         </section>
+        <section className="py-12"><div className="container mx-auto px-4 max-w-4xl"><WhyJoblineFAQ variant="e2" /></div></section>
         <AdPlacement format="horizontal" className="py-6" />
       </main>
       <MarketingFooter />
