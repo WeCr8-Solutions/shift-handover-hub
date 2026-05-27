@@ -55,7 +55,7 @@ describe('Excel bulk-import template roundtrip', () => {
   });
 
   it('re-parses cleanly with zero validation errors and full sample data', async () => {
-    const file = bufferToFile(downloadedBuffer!, 'JobLine_Setup_Template.xlsx');
+    const file = bufferToFile(templateBuffer, 'JobLine_Setup_Template.xlsx');
     const result = await parseExcelFile(file);
 
     expect(result.errors).toEqual([]);
@@ -72,7 +72,7 @@ describe('Excel bulk-import template roundtrip', () => {
   });
 
   it('parses sample work orders into the DB-ready shape used by useBulkUpload', async () => {
-    const file = bufferToFile(downloadedBuffer!, 'tpl.xlsx');
+    const file = bufferToFile(templateBuffer, 'tpl.xlsx');
     const { data } = await parseExcelFile(file);
     const first = data.workOrders[0];
     expect(first.work_order).toMatch(/^WO-/);
@@ -83,7 +83,7 @@ describe('Excel bulk-import template roundtrip', () => {
   });
 
   it('parses sample stations with team_name + department populated for uploader', async () => {
-    const file = bufferToFile(downloadedBuffer!, 'tpl.xlsx');
+    const file = bufferToFile(templateBuffer, 'tpl.xlsx');
     const { data } = await parseExcelFile(file);
     const cnc = data.stations.find(s => s.station_id === 'CNC-001');
     expect(cnc).toBeTruthy();
