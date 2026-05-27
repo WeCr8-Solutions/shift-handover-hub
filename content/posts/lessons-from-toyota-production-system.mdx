@@ -1,0 +1,71 @@
+---
+title: "Lessons from Toyota: What Ohno, Toyoda, and Shingo Would Tell Your CNC Shop in 2026"
+slug: "lessons-from-toyota-production-system"
+publishedDate: "2026-05-27"
+author: "Zach"
+excerpt: "The Toyota Production System wasn't invented for assembly lines — it was invented for a struggling job shop. Three pioneers, three lessons every modern CNC shop can put to work this quarter."
+category: "Lean"
+readTime: "6 min read"
+---
+
+## TPS was born in a job shop, not on an assembly line
+
+The myth: Toyota built the Toyota Production System for high-volume sedans. The reality: when Taiichi Ohno started, Toyota was a tiny post-war company building dozens of trucks a month with limited capital, limited material, and total uncertainty. That's a job shop. Everything TPS prescribes — small batches, fast changeovers, visual control, stop-the-line — was designed for **exactly the conditions a modern CNC shop lives in every day.**
+
+Three of the original pioneers, three practical lessons for 2026. Full biographies for each in our [manufacturing pioneers reference](/resources/pioneers).
+
+## Taiichi Ohno: stop the line, find the cause
+
+Ohno's most famous rule: when something goes wrong, **stop the line and fix the root cause before you start it again.** Most shops do the opposite — they push through, log nothing, and rediscover the same problem next week.
+
+**What it looks like in a 2026 CNC shop:**
+
+- An operator hits a tool break. Instead of swapping and continuing in silence, they tap [downtime tracking](/features/downtime-tracking) with a reason code. The supervisor sees it in the morning huddle and asks why.
+- Five "why" iterations later, you find the program rev is wrong. Now you've fixed 50 future tool breaks, not just this one.
+
+This is the entire premise behind our [CNC downtime tracking guide](/blog/cnc-downtime-tracking-complete-guide) — Ohno's discipline, just digitized.
+
+## Sakichi Toyoda: jidoka — build quality into the process
+
+Sakichi Toyoda (Taiichi's predecessor at the Toyoda Loom Works) invented **jidoka** — automation with a human touch. His looms stopped automatically when a thread broke, so one operator could tend many machines instead of watching one.
+
+**The 2026 translation:** the machines don't have to detect the defect themselves. The *process* has to. Specifically:
+
+- [First article inspection](/features/first-article-inspection) gated into the [work order routing](/features/work-center-scheduling) — the job can't advance to "produce 500 more" until first piece is signed off. We unpack this exact workflow in the [FAI in job shops post](/blog/first-article-inspection-job-shops).
+- [NCR software](/features/ncr-software) that automatically holds the work order on a quality failure. No one has to remember to stop.
+
+Jidoka isn't about expensive sensors. It's about designing your workflow so quality failures **can't** silently advance.
+
+## Shigeo Shingo: SMED — kill changeover time
+
+Shigeo Shingo gave the world **SMED — Single-Minute Exchange of Die.** His thesis was radical for 1960s manufacturing: changeover time isn't fixed. It's a process that can be analyzed, separated into internal (machine stopped) and external (machine running) work, and shrunk by 10x.
+
+**Where this applies in 2026:**
+
+- Most CNC shops still treat setup as a black box. Shingo would treat it as a process with measurable steps.
+- Track setup time separately from run time in your [machine monitoring](/features/machine-monitoring-software) data.
+- Pre-stage tooling, fixtures, and programs **while the previous job is still running** (external work). Use a [digital expeditor](/features/digital-expeditor) to make staging visible.
+- Aim for the bottleneck cell first — see the [CNC bottleneck analysis playbook](/blog/cnc-bottleneck-analysis-guide) on why.
+
+A shop that gets serious about SMED for one week typically cuts setup time 30–50% with zero capital spend. Shingo's playbook still works.
+
+## What these three have in common
+
+Pull out the lesson under the lessons:
+
+1. **Make problems visible.** Ohno's andon, Toyoda's stopping loom, Shingo's setup time analysis — all the same idea.
+2. **Stop pretending problems don't exist.** A defect that slips through is more expensive than one that stops the line.
+3. **Improve the process, not the operator.** Every TPS tool blames the system, never the worker.
+
+That third point is the hardest. Most shops still treat downtime, scrap, and missed dates as "Joe wasn't paying attention." TPS says: if Joe could mess it up, the process let him. Fix the process.
+
+## A 30-day TPS starter pack for your CNC shop
+
+- **Week 1** — Turn on [downtime tracking](/features/downtime-tracking) with five reason codes. Ohno's andon, digitized.
+- **Week 2** — Pick one bottleneck cell. Time-study three setups. Separate internal vs. external work. Shingo's SMED, abbreviated.
+- **Week 3** — Hard-gate [FAI](/features/first-article-inspection) on a high-mix part family. Jidoka, applied.
+- **Week 4** — Start a 15-minute daily huddle in front of yesterday's data. The kaizen loop that makes the other three stick.
+
+Skip the wall of value-stream maps. Three habits, four weeks. The same playbook we walk through in our [lean manufacturing for small CNC shops](/blog/lean-manufacturing-small-cnc-shops) post.
+
+The Toyota guys didn't have software. You do. Use it.
