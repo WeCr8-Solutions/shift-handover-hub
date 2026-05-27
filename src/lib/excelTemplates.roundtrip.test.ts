@@ -29,20 +29,11 @@ function bufferToFile(buf: ArrayBuffer, name = 'tpl.xlsx'): File {
 }
 
 
-// jsdom's File/Blob lacks .arrayBuffer in some versions — wrap our buffer
-// into a minimal File-shaped object that parseExcelFile() can consume.
-function bufferToFile(buf: ArrayBuffer, name = 'tpl.xlsx'): File {
-  return {
-    name,
-    arrayBuffer: async () => buf,
-  } as unknown as File;
-}
-
 describe('Excel bulk-import template roundtrip', () => {
   it('produces a workbook with all 7 expected sheets, none exceeding 31 chars', async () => {
-    expect(downloadedBuffer).toBeTruthy();
+    expect(templateBuffer).toBeTruthy();
     const wb = new ExcelJS.Workbook();
-    await wb.xlsx.load(downloadedBuffer!);
+    await wb.xlsx.load(templateBuffer);
     const names = wb.worksheets.map(ws => ws.name);
 
     // Core sheets users fill in
