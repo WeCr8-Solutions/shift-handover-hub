@@ -1,4 +1,6 @@
 /**
+ * @vitest-environment node
+ *
  * E2E roundtrip: load the published static template and parse it back through
  * the in-app parser. Guards against sheet-name truncation collisions, header
  * drift, and sample rows the parser would reject.
