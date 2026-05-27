@@ -50,6 +50,8 @@ const ShiftHandoffSoftware = lazy(() => import("./pages/features/ShiftHandoffSof
 const WorkOrderTracking = lazy(() => import("./pages/features/WorkOrderTracking"));
 const ProductionScheduling = lazy(() => import("./pages/features/ProductionScheduling"));
 const MachineShopSoftware = lazy(() => import("./pages/features/MachineShopSoftware"));
+const ManufacturingSchedulingSoftware = lazy(() => import("./pages/features/ManufacturingSchedulingSoftware"));
+const MachineMonitoringSoftware = lazy(() => import("./pages/features/MachineMonitoringSoftware"));
 const ProductionControl = lazy(() => import("./pages/features/ProductionControl"));
 const DigitalExpeditor = lazy(() => import("./pages/features/DigitalExpeditor"));
 const ManufacturingOversight = lazy(() => import("./pages/features/ManufacturingOversight"));
@@ -226,6 +228,8 @@ const App = () => (
                     <Route path="/features/shift-handoff-software" element={<ShiftHandoffSoftware />} />
                     <Route path="/features/work-order-tracking" element={<WorkOrderTracking />} />
                     <Route path="/features/production-scheduling" element={<ProductionScheduling />} />
+                    <Route path="/features/manufacturing-scheduling-software" element={<ManufacturingSchedulingSoftware />} />
+                    <Route path="/features/machine-monitoring-software" element={<MachineMonitoringSoftware />} />
                     <Route path="/features/machine-shop-software" element={<MachineShopSoftware />} />
                     <Route path="/features/production-control" element={<ProductionControl />} />
                     <Route path="/features/digital-expeditor" element={<DigitalExpeditor />} />

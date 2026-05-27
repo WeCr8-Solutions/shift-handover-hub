@@ -57,7 +57,19 @@
   </url>
   <url>
     <loc>https://jobline.ai/features/production-scheduling</loc>
-    <lastmod>2026-04-09</lastmod>
+    <lastmod>2026-05-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://jobline.ai/features/manufacturing-scheduling-software</loc>
+    <lastmod>2026-05-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://jobline.ai/features/machine-monitoring-software</loc>
+    <lastmod>2026-05-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
