@@ -31,7 +31,16 @@ export default function WorkOrderHistoryPage() {
       <Header />
       <main className="container py-6 space-y-6">
         {canAccess ? (
-          <WorkOrderHistory isAdmin={hasAdminAccess} showQuickBooksExport />
+          <>
+            <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <div className="font-semibold">Need station-level audit data?</div>
+                <p className="text-sm text-muted-foreground">Open the full Audit & History Center for AS9100 / ISO 9001 / ITAR bundles by month.</p>
+              </div>
+              <a href="/admin?tab=history&view=stations" className="text-sm font-medium text-primary hover:underline whitespace-nowrap">Open Audit Center →</a>
+            </div>
+            <WorkOrderHistory isAdmin={hasAdminAccess} showQuickBooksExport />
+          </>
         ) : (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <History className="w-12 h-12 text-muted-foreground mb-4" />

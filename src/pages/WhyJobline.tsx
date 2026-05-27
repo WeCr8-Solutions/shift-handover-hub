@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { SEOHead } from "@/components/SEOHead";
-import { ArrowRight, CheckCircle2, XCircle, Zap, Sparkles } from "lucide-react";
+import { ArrowRight, CheckCircle2, XCircle, Zap, Sparkles, ShieldCheck, FileSpreadsheet, FileText, Database } from "lucide-react";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
@@ -185,6 +185,53 @@ export default function WhyJobline() {
             </div>
           </div>
         </section>
+
+        <section id="audit-ready" className="py-12 bg-secondary/20 border-y border-border">
+          <div className="container mx-auto px-4 max-w-4xl">
+            <div className="flex items-center gap-2 mb-3">
+              <ShieldCheck className="w-6 h-6 text-primary" />
+              <span className="text-xs uppercase tracking-wider font-semibold text-primary">Audit-ready exports</span>
+            </div>
+            <h2 className="text-2xl font-bold mb-4">AS9100, ISO 9001 & ITAR audits — exported in one click</h2>
+            <p className="text-muted-foreground mb-6">
+              Every work order, routing step, shift handoff, downtime event, NCR, quality inspection, queue change, and
+              station session is captured automatically. When an AS9100 surveillance audit lands on the calendar, your
+              supervisor opens <Link to="/admin?tab=history" className="text-primary hover:underline">Admin → History</Link>,
+              picks the month, picks the standard, and exports the binder. No SQL, no consultant, no scrambling.
+            </p>
+            <div className="grid sm:grid-cols-2 gap-4 mb-6">
+              <div className="p-4 rounded-lg bg-card border border-border">
+                <h3 className="font-semibold mb-2 flex items-center gap-2"><Database className="w-4 h-4 text-primary" /> What's captured</h3>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>· Work orders & routing steps (8.5.1, 8.5.2)</li>
+                  <li>· Shift handoffs, operator sessions, downtime (8.5)</li>
+                  <li>· NCRs & quality inspections (8.7, 9.1, 10.2)</li>
+                  <li>· Queue changes — every action stamped by user (audit trail)</li>
+                </ul>
+              </div>
+              <div className="p-4 rounded-lg bg-card border border-border">
+                <h3 className="font-semibold mb-2 flex items-center gap-2"><FileText className="w-4 h-4 text-primary" /> How you export it</h3>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>· <strong>Excel</strong> — one sheet per record type + cover sheet with clause map</li>
+                  <li>· <strong>CSV bundle</strong> — .zip of one CSV per record type for ETQ, Greenlight Guru, eMaint</li>
+                  <li>· <strong>QuickBooks CSV</strong> — monthly reconciliation, drop-in import</li>
+                  <li>· <strong>JSON / PDF / Print HTML</strong> — for binder or downstream systems</li>
+                </ul>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2 mb-4">
+              {["Excel", "CSV bundle", "QuickBooks", "JSON", "PDF", "Print"].map((f) => (
+                <span key={f} className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">{f}</span>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Filter by month, station, team, or audit standard (AS9100 / ISO 9001 / ITAR / FDA 21 CFR 820). Deep-link
+              your auditor straight to the right view —{" "}
+              <code className="text-xs">/admin?tab=history&amp;month=2026-05&amp;std=AS9100&amp;view=stations</code>.
+            </p>
+          </div>
+        </section>
+
 
         <AdPlacement format="horizontal" className="py-4" />
 

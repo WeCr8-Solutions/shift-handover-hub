@@ -128,6 +128,13 @@ const sections = [
     count: "Decision hub",
   },
   {
+    title: "Audit & Compliance Exports",
+    description: "AS9100, ISO 9001, ITAR and FDA 21 CFR 820 evidence bundles — work orders, routing, handoffs, downtime, NCRs, quality, queue changes and station sessions exported by month as Excel, CSV bundle, QuickBooks CSV, JSON or PDF. Mapped to clauses, auditor-ready.",
+    icon: ShieldAlert,
+    href: "/why-jobline#audit-ready",
+    count: "AS9100 · ISO 9001 · ITAR",
+  },
+  {
     title: "Tool Comparisons",
     description: "Side-by-side comparisons of job-shop software approaches: JobLine.ai, generic MES suites, and spreadsheet/whiteboard workflows. Includes practical selection criteria for deployment speed, operator adoption, routing visibility, and quality traceability.",
     icon: GitCompare,

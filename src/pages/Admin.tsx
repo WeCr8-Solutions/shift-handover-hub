@@ -24,6 +24,7 @@ const ActivityLogs = lazy(() => import("@/components/admin/ActivityLogs").then(m
 const DataAccessLogs = lazy(() => import("@/components/admin/DataAccessLogs").then(m => ({ default: m.DataAccessLogs })));
 const WorkOrderManagement = lazy(() => import("@/components/admin/WorkOrderManagement").then(m => ({ default: m.WorkOrderManagement })));
 const WorkOrderHistory = lazy(() => import("@/components/admin/WorkOrderHistory").then(m => ({ default: m.WorkOrderHistory })));
+const AuditHistoryCenter = lazy(() => import("@/components/admin/AuditHistoryCenter").then(m => ({ default: m.AuditHistoryCenter })));
 const RoutingTemplateManagement = lazy(() => import("@/components/admin/RoutingTemplateManagement").then(m => ({ default: m.RoutingTemplateManagement })));
 const PerformanceUpdatesReview = lazy(() => import("@/components/admin/PerformanceUpdatesReview").then(m => ({ default: m.PerformanceUpdatesReview })));
 const IssuesManagement = lazy(() => import("@/components/admin/IssuesManagement").then(m => ({ default: m.IssuesManagement })));
@@ -497,7 +498,7 @@ export default function Admin() {
           </TabsContent>
 
           <TabsContent value="history">
-            <Suspense fallback={<AdminTabFallback />}><WorkOrderHistory isAdmin={access.isPlatformAdmin} /></Suspense>
+            <Suspense fallback={<AdminTabFallback />}><AuditHistoryCenter isAdmin={access.isPlatformAdmin} /></Suspense>
           </TabsContent>
 
           <TabsContent value="routing">
