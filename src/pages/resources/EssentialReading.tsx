@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { BookOpen, ExternalLink, ArrowRight } from "lucide-react";
+import { AMAZON_BOOKS, type AmazonBook, type BookRole, getAmazonUrl } from "@/lib/amazonBooks";
 
 /**
  * Essential Reading — curated manufacturing book library.
