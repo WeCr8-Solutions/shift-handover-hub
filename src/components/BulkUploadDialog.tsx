@@ -485,6 +485,30 @@ export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadD
                           </div>
                         </ScrollArea>
                       </TabsContent>
+
+                      {(parseResult.data.routingTemplates?.length ?? 0) > 0 && (
+                        <TabsContent value="routing">
+                          <ScrollArea className="h-40">
+                            <div className="space-y-2">
+                              {parseResult.data.routingTemplates.map((tmpl, i) => (
+                                <div key={i} className="p-2 bg-secondary/30 rounded text-sm">
+                                  <div className="flex items-center justify-between">
+                                    <p className="font-medium truncate">{tmpl.template_name}</p>
+                                    <Badge variant="outline" className="text-xs">{tmpl.steps.length} steps</Badge>
+                                  </div>
+                                  {tmpl.part_number_pattern && (
+                                    <p className="text-xs text-muted-foreground">Pattern: {tmpl.part_number_pattern}</p>
+                                  )}
+                                  <p className="text-xs text-muted-foreground truncate">
+                                    {tmpl.steps.slice(0, 4).map(s => `${s.step_number}. ${s.operation_name}`).join(' → ')}
+                                    {tmpl.steps.length > 4 && ' …'}
+                                  </p>
+                                </div>
+                              ))}
+                            </div>
+                          </ScrollArea>
+                        </TabsContent>
+                      )}
                     </Tabs>
                   </CardContent>
                 </Card>
