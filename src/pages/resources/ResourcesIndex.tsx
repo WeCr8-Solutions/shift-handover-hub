@@ -114,6 +114,13 @@ const sections = [
     count: "25+ figures",
   },
   {
+    title: "Essential Reading",
+    description: "Curated book library for every shop role — Machinery's Handbook, CNC Programming Handbook, Toyota Production System, The Goal, Deming, Juran, and more. Filter by profession: operator, machinist, quality, lean, supervisor, engineer, owner.",
+    icon: Library,
+    href: "/resources/essential-reading",
+    count: "19 books · 7 roles",
+  },
+  {
     title: "Tool Comparisons",
     description: "Side-by-side comparisons of job-shop software approaches: JobLine.ai, generic MES suites, and spreadsheet/whiteboard workflows. Includes practical selection criteria for deployment speed, operator adoption, routing visibility, and quality traceability.",
     icon: GitCompare,
