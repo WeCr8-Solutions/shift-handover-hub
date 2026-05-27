@@ -130,6 +130,7 @@ const LeanManufacturing = lazy(() => import("./pages/resources/LeanManufacturing
 const FiveSMethodology = lazy(() => import("./pages/resources/FiveSMethodology"));
 const KanbanSortingTechniques = lazy(() => import("./pages/resources/KanbanSortingTechniques"));
 const ManufacturingPioneers = lazy(() => import("./pages/resources/ManufacturingPioneers"));
+const EssentialReading = lazy(() => import("./pages/resources/EssentialReading"));
 const ToolComparisons = lazy(() => import("./pages/resources/ToolComparisons"));
 const ERPSelectionGuide = lazy(() => import("./pages/resources/ERPSelectionGuide"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
@@ -320,6 +321,7 @@ const App = () => (
                     <Route path="/resources/5s" element={<FiveSMethodology />} />
                     <Route path="/resources/kanban" element={<KanbanSortingTechniques />} />
                     <Route path="/resources/pioneers" element={<ManufacturingPioneers />} />
+                    <Route path="/resources/essential-reading" element={<EssentialReading />} />
                     <Route path="/resources/comparisons" element={<ToolComparisons />} />
                     <Route path="/resources/erp-guide" element={<ERPSelectionGuide />} />
                     <Route path="/resources/mes-vs-erp" element={<MesVsErp />} />

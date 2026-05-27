@@ -5,7 +5,7 @@ import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
-import { BookOpen, Code, BookA, ArrowRight, GitCompare, GraduationCap, Briefcase, ShieldAlert, ClipboardCheck, TrendingUp, LayoutGrid, Kanban, Users, FileText, School, Ruler, Gauge } from "lucide-react";
+import { BookOpen, Code, BookA, ArrowRight, GitCompare, GraduationCap, Briefcase, ShieldAlert, ClipboardCheck, TrendingUp, LayoutGrid, Kanban, Users, FileText, School, Ruler, Gauge, Library } from "lucide-react";
 
 const sections = [
   {
@@ -112,6 +112,13 @@ const sections = [
     icon: Users,
     href: "/resources/pioneers",
     count: "25+ figures",
+  },
+  {
+    title: "Essential Reading",
+    description: "Curated book library for every shop role — Machinery's Handbook, CNC Programming Handbook, Toyota Production System, The Goal, Deming, Juran, and more. Filter by profession: operator, machinist, quality, lean, supervisor, engineer, owner.",
+    icon: Library,
+    href: "/resources/essential-reading",
+    count: "19 books · 7 roles",
   },
   {
     title: "Tool Comparisons",
