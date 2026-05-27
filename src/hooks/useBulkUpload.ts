@@ -100,11 +100,13 @@ export function useBulkUpload() {
       workOrdersCreated: 0,
       usersAddedToOrg: 0,
       inviteCodesCreated: 0,
+      routingTemplatesCreated: 0,
+      routingStepsCreated: 0,
       errors: [],
       warnings: [],
     };
 
-    const totalItems = data.teams.length + data.departments.length + data.stations.length + data.users.length + data.workOrders.length;
+    const totalItems = data.teams.length + data.departments.length + data.stations.length + data.users.length + data.workOrders.length + (data.routingTemplates?.length ?? 0);
     let currentItem = 0;
 
     setProgress({ stage: 'uploading', message: 'Creating teams...', current: 0, total: totalItems });
