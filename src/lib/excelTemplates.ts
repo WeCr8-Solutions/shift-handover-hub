@@ -267,18 +267,24 @@ export async function downloadTemplate(templateType: 'stations' | 'users' | 'tea
       worksheet.getColumn(i + 1).width = Math.min(maxLen + 2, 50);
     });
 
-    // Add validation reference sheet for templates with valid values
+    // Add validation reference sheet for templates with valid values.
+    // Excel caps sheet names at 31 chars — keep the suffix short so names
+    // like "Routing Templates - Valid Values" (32) don't get truncated
+    // into a duplicate that breaks re-uploading the file.
     if (Object.keys(template.validValues).length > 0 && template.sheetName !== 'Instructions') {
-      const validationSheet = workbook.addWorksheet(`${template.sheetName} - Valid Values`);
+      const rawName = `${template.sheetName} - Valid Values`;
+      const validationSheetName =
+        rawName.length <= 31 ? rawName : `${template.sheetName} - Valid`.slice(0, 31);
+      const validationSheet = workbook.addWorksheet(validationSheetName);
       validationSheet.addRow(['Column', 'Valid Values']);
-      
+
       const valHeaderRow = validationSheet.getRow(1);
       valHeaderRow.font = { bold: true };
-      
+
       Object.entries(template.validValues).forEach(([column, values]) => {
         validationSheet.addRow([column, (values as string[]).join(', ')]);
       });
-      
+
       validationSheet.getColumn(1).width = 30;
       validationSheet.getColumn(2).width = 80;
     }
