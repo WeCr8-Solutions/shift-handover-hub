@@ -1,10 +1,11 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
 import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { supabase } from "@/integrations/supabase/client";
+import { trackEvent } from "@/lib/analytics";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -99,6 +100,20 @@ export default function Blog() {
         new Date(b.publishedDate).getTime() - new Date(a.publishedDate).getTime()
     );
   }, [mdxPosts, dbPosts]);
+
+  // GA4: blog_list_view — fire once when posts are first available
+  const didTrackListView = useRef(false);
+  useEffect(() => {
+    if (didTrackListView.current || loading) return;
+    if (allPosts.length === 0) return;
+    didTrackListView.current = true;
+    trackEvent("blog_list_view", {
+      post_count: allPosts.length,
+      mdx_count: mdxPosts.length,
+      db_count: dbPosts.length,
+      active_category: activeCategory,
+    });
+  }, [allPosts.length, loading, mdxPosts.length, dbPosts.length, activeCategory]);
 
   const filtered =
     activeCategory === "All"
