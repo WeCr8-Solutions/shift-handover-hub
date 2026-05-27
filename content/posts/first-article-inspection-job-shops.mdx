@@ -1,0 +1,83 @@
+---
+title: "First Article Inspection in Job Shops: A Practical FAI Workflow That Won't Slow You Down"
+slug: "first-article-inspection-job-shops"
+publishedDate: "2026-05-27"
+author: "Zach"
+excerpt: "AS9102-style first article inspection doesn't have to mean three hours of paperwork per part. A digital FAI workflow that keeps auditors happy and operators moving."
+category: "Quality"
+readTime: "5 min read"
+---
+
+## Why FAI feels like a tax
+
+First Article Inspection is the gate every part run is supposed to pass — verify the first piece off the machine matches the print before you make 499 more wrong ones. The aerospace and defense crowd standardized it as AS9102, and somewhere along the way it became a multi-page paperwork exercise that operators avoid until the auditor shows up.
+
+Done right, FAI is the cheapest insurance in the building. Done wrong, it's a bottleneck no one talks about.
+
+## What FAI actually requires
+
+Strip away the form numbers and FAI is three artifacts:
+
+1. **The print, ballooned** — every dimension numbered.
+2. **An inspection record** — measured value, tool used, accept/reject, who measured.
+3. **Traceability** — which raw material lot, which program rev, which operator.
+
+If your process produces those three things every time you run a new part or a changed revision, you have a real FAI program. Everything else is formatting.
+
+Background reading: our [quality inspection resource](/resources/quality), [measuring tools library](/resources/measuring-tools), and the [feature overview of first article inspection](/features/first-article-inspection).
+
+## The digital workflow that doesn't slow operators down
+
+The trick is to do FAI **inside the work order**, not in a separate paperwork stack. The flow that works:
+
+1. Operator runs first piece.
+2. Operator opens the FAI screen tied to that work order, sees the ballooned print, enters measurements as they go.
+3. Inspector signs off digitally — pass / hold / reject.
+4. Pass = the work order auto-releases for the rest of the batch. Hold = the work order can't advance.
+
+That last step is what makes it stick. If FAI is just a form, operators skip it. If FAI gates the [work order routing](/features/work-center-scheduling) advancing, it can't be skipped.
+
+This is exactly how [JobLine's FAI](/features/first-article-inspection) ties into [shop floor control](/features/shop-floor-control) — the inspection is a state transition, not a separate document.
+
+## When to require FAI
+
+You don't need a full AS9102 FAI on every part. A reasonable trigger list for a non-aerospace job shop:
+
+- First time you've ever run this part number.
+- Engineering revision change.
+- Material change (different alloy, different supplier lot).
+- Process change (new machine, new program rev, new fixture).
+- Lapse since the last run greater than 12 months.
+
+For aerospace, defense, or [AS9100-controlled](/blog/aerospace-as9100-routing-case-study) work, follow the customer's PO requirements — usually full AS9102 every time.
+
+## The handoff trap
+
+The number-one place FAI breaks down isn't the inspection itself — it's the shift change. First piece runs at 2:55pm, inspector goes home at 3, second-shift operator runs ten more pieces before realizing FAI was never signed off.
+
+Two fixes:
+
+- **Hard gate** in the routing system — work order can't advance to "produce" until FAI is signed.
+- **Explicit FAI status in the [shift handoff](/features/shift-handoff)** — outgoing operator must flag any pending first articles.
+
+This is the same handoff discipline that prevents [downtime-tracking gaps](/blog/cnc-downtime-tracking-complete-guide). Same root cause, same fix.
+
+## NCR integration
+
+When FAI fails, it becomes an NCR — non-conformance report. The two systems should talk:
+
+- FAI reject → NCR created automatically, work order put on hold.
+- NCR disposition (rework, scrap, use-as-is) updates the work order routing.
+
+Done well, you get end-to-end traceability without anyone typing the same data twice. Our [NCR feature](/features/ncr-software) and the [manufacturing quality / NCR post](/blog/manufacturing-quality-ncr) cover the disposition workflow in depth.
+
+## A 30-day rollout
+
+- **Week 1** — Pick one part family. Build the ballooned print library.
+- **Week 2** — Train operators on the digital FAI screen. No paper backup.
+- **Week 3** — Add the hard gate in routing. Watch what breaks; usually it's print availability.
+- **Week 4** — Expand to a second part family. Review FAI cycle time — target under 20 minutes for a typical 30-dim part.
+
+If your operators are spending 90 minutes on FAI, the problem is usually that the print isn't ballooned or the measurement tools aren't pre-staged. Fix the inputs, not the form.
+
+FAI isn't a tax. It's a gate that saves you from running 499 wrong parts. Digitize it once, gate the routing on it, and it stops being the thing everyone dreads.

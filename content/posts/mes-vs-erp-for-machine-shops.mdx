@@ -1,0 +1,83 @@
+---
+title: "MES vs ERP for Machine Shops: Which One Does a Job Shop Actually Need?"
+slug: "mes-vs-erp-for-machine-shops"
+publishedDate: "2026-05-27"
+author: "Zach"
+excerpt: "Most shops buy the wrong system because they confuse what MES and ERP actually do. A plain-English split — and the third option most job shops should consider first."
+category: "Manufacturing"
+readTime: "6 min read"
+---
+
+## The confusion costs shops six figures
+
+A shop owner walks into a software demo and gets pitched a $90k ERP. Another vendor walks in and pitches a $60k MES. Both vendors claim to solve the same problems — scheduling, quality, traceability, downtime. Both are right and both are wrong, because they don't do the same thing at all.
+
+The MES vs ERP question is one of the most expensive misunderstandings in manufacturing software. Here's the split in plain English, and the third path most job shops should try first.
+
+## ERP runs the business
+
+ERP — Enterprise Resource Planning — is the **office** system. It handles:
+
+- Quotes, orders, invoices
+- Purchasing and inventory
+- Job costing and accounting
+- Customer and vendor master data
+- Revenue recognition and financials
+
+It generally answers the question: *did we make money on this job?*
+
+It is **not** great at: real-time shop floor data, operator workflows, machine state, or anything that needs to update second-by-second.
+
+## MES runs the floor
+
+MES — Manufacturing Execution System — is the **shop floor** system. It handles:
+
+- Live work order status at every operation
+- Operator check-in / check-out
+- Machine state and [downtime tracking](/features/downtime-tracking)
+- Quality data and [first article inspection](/features/first-article-inspection)
+- [Routing](/features/work-center-scheduling) and station-by-station handoff
+
+It generally answers the question: *what is happening on the floor right now?*
+
+It is **not** great at: invoicing, AP/AR, full general ledger, or anything an accountant needs.
+
+## Where shops get burned
+
+The classic mistakes:
+
+1. **Buy an ERP and expect shop-floor visibility.** ERPs technically have a "work in process" module. Operators rarely use it because it wasn't built for them. Result: stale data and finger-pointing.
+2. **Buy an MES and expect accounting.** MES vendors will integrate to QuickBooks/SAP, but the financial side is always lighter than a real ERP.
+3. **Buy both at once.** A two-system rollout for a 25-person shop is a nine-month distraction. One of them ships, the other doesn't.
+
+If you want the long version of this decision tree, our [MES vs ERP resource](/resources/mes-vs-erp) and [ERP selection guide](/resources/erp-guide) walk through it step by step.
+
+## The third option: start where the pain is
+
+Most small CNC shops we talk to don't actually need a full MES *or* a full ERP on day one. They need:
+
+- A live [digital queue](/features/digital-expeditor) operators check on their phones.
+- Honest [downtime reason codes](/blog/cnc-downtime-tracking-complete-guide).
+- A [shift handoff](/features/shift-handoff) that survives the night.
+- [Production scheduling](/features/production-scheduling) that respects finite capacity.
+
+That's the shop-floor execution layer. It's lighter than an MES, integrates with whatever ERP or QuickBooks you already have, and it ships in days instead of months. Once that's solid, you can decide whether you need the full MES feature set or just a tighter ERP integration.
+
+For a deeper read on what "execution layer" actually means, see our [machine monitoring without hardware](/blog/machine-monitoring-without-hardware) and [CNC scheduling buyer's guide](/blog/cnc-scheduling-software-buyers-guide).
+
+## A decision shortcut
+
+If you can only buy one thing this year, ask yourself one question:
+
+> *"Where am I losing the most money — in the office or on the floor?"*
+
+- Losing money in the office (slow quotes, wrong invoices, lost POs)? → ERP first.
+- Losing money on the floor (downtime, missed dates, scrap, handoff failures)? → Execution-layer software (which may become MES later).
+
+Most shops underestimate the floor losses. Two weeks of [honest downtime data](/blog/cnc-downtime-tracking-complete-guide) usually settles the argument.
+
+## The integration question
+
+Whatever you pick, plan the integration before you sign. The execution layer should feed completed quantities, scrap, and labor hours to the ERP automatically — otherwise you're paying two people to type the same data twice. Modern systems handle this through APIs or pre-built connectors; legacy stacks need middleware. Confirm the path before you buy.
+
+MES vs ERP isn't really a competition. They're complementary, but most shops only need one of them well in year one — and almost always, the floor is where the bigger wins are hiding.
