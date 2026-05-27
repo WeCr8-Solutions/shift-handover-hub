@@ -19,6 +19,8 @@ export interface UploadResult {
   workOrdersCreated: number;
   usersAddedToOrg: number;
   inviteCodesCreated: number;
+  routingTemplatesCreated: number;
+  routingStepsCreated: number;
   errors: string[];
   warnings: string[];
 }
