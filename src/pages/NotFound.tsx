@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Home, LayoutDashboard, Bug } from "lucide-react";
 import { IssueReportDialog } from "@/components/IssueReportDialog";
 import { breadcrumbs } from "@/lib/issueReporter";
+import { trackEvent } from "@/lib/analytics";
 
 const NotFound = () => {
   const location = useLocation();
