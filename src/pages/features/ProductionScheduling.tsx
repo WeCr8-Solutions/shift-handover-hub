@@ -44,9 +44,9 @@ export default function ProductionScheduling() {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Production Scheduling Software for Manufacturing"
-        description="Production scheduling software for CNC machine shops. Visual calendar scheduling, priority queues, multi-operation routing, and real-time shop floor updates."
-        keywords="production scheduling software, manufacturing scheduling, shop scheduling software, production planning, manufacturing planning software, job shop scheduling, CNC scheduling"
+        title="Production Scheduling Software for Manufacturing & CNC Shops"
+        description="Production scheduling software for manufacturing and CNC machine shops. Visual calendar scheduling, capacity planning, priority queues, multi-operation routing, and real-time shop floor updates."
+        keywords="production scheduling software, manufacturing scheduling software, manufacturing scheduling, job shop scheduling software, cnc scheduling software, machine shop scheduling, production planning software, work center scheduling, capacity scheduling, shop scheduling software"
         canonical="/features/production-scheduling"
         jsonLd={jsonLd}
       />
