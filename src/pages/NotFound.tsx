@@ -25,7 +25,14 @@ const NotFound = () => {
         referrer: typeof document !== "undefined" ? document.referrer : "",
       },
     });
-  }, [location.pathname, location.search]);
+    // GA4: page_not_found
+    trackEvent("page_not_found", {
+      attempted_path: location.pathname,
+      search: location.search || "(none)",
+      referrer: typeof document !== "undefined" ? document.referrer || "(direct)" : "(unknown)",
+      signed_in: !!user,
+    });
+  }, [location.pathname, location.search, user]);
 
   const prefillTitle = `Dead end at ${location.pathname}`;
   const prefillDescription = [
