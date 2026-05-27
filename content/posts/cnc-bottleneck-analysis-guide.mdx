@@ -1,0 +1,55 @@
+---
+title: "CNC Bottleneck Analysis: Find Your Real Constraint in Under a Week"
+slug: "cnc-bottleneck-analysis-guide"
+publishedDate: "2026-05-27"
+author: "Zach"
+excerpt: "Theory of Constraints, applied to a real machine shop. How to spot the one work center that's capping your throughput and what to do about it without buying iron."
+category: "CNC"
+readTime: "5 min read"
+---
+
+## The bottleneck is almost never where you think
+
+Ask a shop owner where their bottleneck is, and you'll get a confident answer. Measure it for a week, and that answer is wrong about half the time. The loudest machine isn't always the constraint — sometimes it's the inspection bench, the deburr station, or a single experienced operator everyone routes work through.
+
+**CNC bottleneck analysis** is just the discipline of letting the data tell you, instead of the gut.
+
+## Two signals that prove a constraint
+
+A real bottleneck shows two fingerprints at the same time:
+
+1. **Queue grows in front of it.** WIP piles up while downstream stations run hungry.
+2. **It runs near 100% scheduled hours.** Everything else has slack; this one doesn't.
+
+If only one signal is true, you have a scheduling problem, not a capacity problem.
+
+## The data you need (and don't need)
+
+You don't need MES, ERP integration, or a $40k OEE platform to start. You need three things per job, per station:
+
+- Time the job arrived in queue
+- Time the job started running
+- Time it finished
+
+That's it. With those three timestamps you can compute queue time, run time, and utilization for every work center in the shop. Our [CNC machine tracking](/features/cnc-machine-tracking) captures this with one tap and feeds it into [work center scheduling](/features/work-center-scheduling) automatically.
+
+## The four moves once you've found it
+
+Once you've named the constraint, the playbook is well established (Goldratt's *Theory of Constraints* if you want the reading list):
+
+1. **Exploit it** — never let it starve. Material, tooling, and the program live ahead of the constraint, not behind it. A [digital expeditor](/features/digital-expeditor) is built for exactly this.
+2. **Subordinate everything else** — upstream stations only release work the constraint can absorb. Otherwise you're just building WIP.
+3. **Elevate it** — second shift, lights-out, or finally that new machine. But not before steps 1 and 2 are real.
+4. **Repeat** — the constraint will move. Plan on it.
+
+## Common false constraints
+
+- **The "slow" machine that's actually starved.** It's not slow — it's waiting on material 40% of the time. Fix the [downtime](/blog/cnc-downtime-tracking-complete-guide) before you blame the iron.
+- **Inspection.** Often a scheduling and batching problem, not a capacity problem.
+- **The Swiss/5-axis.** Sometimes real, sometimes just unbalanced loading. The numbers will tell you.
+
+## Where to go next
+
+If you're starting from zero, run [downtime tracking](/features/downtime-tracking) for two weeks first — you can't analyze constraints without clean data. From there, [manufacturing scheduling software](/features/manufacturing-scheduling-software) and a real [shop floor control](/features/shop-floor-control) loop turn the analysis into actual throughput.
+
+The bottleneck is paying for itself every hour it sits unmeasured. Start the clock.

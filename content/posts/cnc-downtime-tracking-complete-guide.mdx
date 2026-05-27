@@ -1,0 +1,56 @@
+---
+title: "CNC Downtime Tracking: A Practical Guide for Job Shops in 2026"
+slug: "cnc-downtime-tracking-complete-guide"
+publishedDate: "2026-05-27"
+author: "Zach"
+excerpt: "Stop guessing where your hours go. A no-hardware playbook for tracking CNC downtime by reason code, surfacing the real cost, and shrinking it within 30 days."
+category: "CNC"
+readTime: "5 min read"
+---
+
+## Why downtime is the cheapest capacity you'll ever buy
+
+Most shops chase new machines before they've measured the ones they own. The average CNC spindle in a job shop runs **35–55% of scheduled hours** — the rest is setup, waiting, walking, meetings, and unlogged "I'll fix it later." Before you quote a new VMC, prove how much capacity is already paid for and sitting idle.
+
+That starts with honest **CNC downtime tracking** — not a sensor project, just a reason code every time a machine stops.
+
+## The five reason codes that cover 95% of shops
+
+Keep the taxonomy short or operators won't use it:
+
+- **Setup** — fixtures, tool loading, first article
+- **Waiting on material or instructions** — usually the #1 hidden cost
+- **Waiting on inspection / QA**
+- **Unplanned maintenance** — crashes, tool breakage, alarms
+- **Idle / no work scheduled**
+
+Five buckets is enough to drive 80% of the improvement. Add sub-codes later once you trust the data.
+
+## How to capture it without buying hardware
+
+You don't need MTConnect, OPC-UA, or a $40k monitoring package to start. A one-tap status button at every station — phone, tablet, or shared shop-floor display — captures the same data operators already know.
+
+We built [JobLine's downtime tracking](/features/downtime-tracking) around this exact workflow, and it pairs with our [no-hardware machine monitoring](/features/machine-monitoring-software) when you're ready to layer in live signal.
+
+## Reading the data: where shops lose hours
+
+After two weeks of clean logs, the same three patterns show up almost everywhere:
+
+1. **Shift-change crater** — 45 to 90 minutes lost between shifts because the next operator doesn't know where the last one stopped. Fix with a structured [shift handoff](/features/shift-handoff).
+2. **Material-wait pileup** — jobs hit the floor before stock, tooling, or the program is staged.
+3. **One bottleneck machine** — usually a 5-axis or a Swiss — holds the whole queue.
+
+If you want to see those patterns visually, our [CNC bottleneck analysis guide](/blog/cnc-bottleneck-analysis-guide) walks through the same data from a constraint-theory angle.
+
+## A 30-day plan to cut downtime 20%
+
+- **Week 1** — turn on tracking, train operators, don't change anything else.
+- **Week 2** — review reason codes daily in the morning huddle.
+- **Week 3** — attack the top two reasons. Usually material staging and setup.
+- **Week 4** — re-measure. Most shops see 15–25% more spindle hours without buying a thing.
+
+## Where this fits in a bigger picture
+
+Downtime tracking is the on-ramp. Once you trust the numbers, layer in [production scheduling](/features/production-scheduling), [work center scheduling](/features/work-center-scheduling), and a [paperless shop floor](/features/shop-floor-control) so the next bottleneck doesn't catch you blind.
+
+Start with the reason codes. Everything else gets easier when you can see where the hours actually go.
