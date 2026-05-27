@@ -21,15 +21,16 @@ import {
 let downloadedBuffer: ArrayBuffer | null = null;
 
 beforeAll(async () => {
-  // Mock the browser download surface so downloadTemplate() runs in jsdom
-  // and we can capture the produced workbook buffer.
+  // Capture the workbook buffer synchronously when downloadTemplate() wraps
+  // it in a Blob and calls URL.createObjectURL(blob).
+  const capturedBlobs: Blob[] = [];
   const origCreate = URL.createObjectURL;
   const origRevoke = URL.revokeObjectURL;
-  URL.createObjectURL = vi.fn(async (blob: Blob) => {
-    downloadedBuffer = await blob.arrayBuffer();
+  URL.createObjectURL = ((blob: Blob) => {
+    capturedBlobs.push(blob);
     return 'blob:mock';
-  }) as unknown as typeof URL.createObjectURL;
-  URL.revokeObjectURL = vi.fn();
+  }) as typeof URL.createObjectURL;
+  URL.revokeObjectURL = (() => {}) as typeof URL.revokeObjectURL;
 
   const anchorClick = vi
     .spyOn(HTMLAnchorElement.prototype, 'click')
@@ -40,7 +41,19 @@ beforeAll(async () => {
   anchorClick.mockRestore();
   URL.createObjectURL = origCreate;
   URL.revokeObjectURL = origRevoke;
+
+  expect(capturedBlobs.length).toBe(1);
+  downloadedBuffer = await capturedBlobs[0].arrayBuffer();
 });
+
+// jsdom's File/Blob lacks .arrayBuffer in some versions — wrap our buffer
+// into a minimal File-shaped object that parseExcelFile() can consume.
+function bufferToFile(buf: ArrayBuffer, name = 'tpl.xlsx'): File {
+  return {
+    name,
+    arrayBuffer: async () => buf,
+  } as unknown as File;
+}
 
 describe('Excel bulk-import template roundtrip', () => {
   it('produces a workbook with all 7 expected sheets, none exceeding 31 chars', async () => {
