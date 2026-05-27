@@ -1,0 +1,61 @@
+---
+title: "CNC Scheduling Software: A Buyer's Guide for Job Shops Under 50 Machines"
+slug: "cnc-scheduling-software-buyers-guide"
+publishedDate: "2026-05-27"
+author: "Zach"
+excerpt: "What actually matters when you're picking CNC scheduling software in 2026 — finite vs infinite capacity, work center logic, and the features most shops never use."
+category: "Manufacturing"
+readTime: "6 min read"
+---
+
+## Why most CNC scheduling tools fail in real shops
+
+Most shops that buy scheduling software stop using it within 90 days. Not because the software is bad — because it was built for an MRP world where every job has a clean router, every operation has a standard time, and nothing ever surprises you. Real CNC shops live in the opposite world.
+
+A useful **CNC scheduling software** has to survive: a hot job that jumps the queue, a fixture that isn't ready, an operator out sick, and a vendor who's three days late on raw stock. Every week.
+
+## The five questions to ask any vendor
+
+Before the demo, write these down:
+
+1. **Finite or infinite capacity?** Infinite is a wishlist; finite respects the hours your machines actually have.
+2. **Can a supervisor drag a job to a different work center mid-shift?** If not, it's a planning tool, not a scheduling tool.
+3. **Does it model setup time separately from run time?** Setup is where small shops lose the day.
+4. **Does the operator see the schedule, or only the planner?** If only the planner, you've bought a Gantt chart.
+5. **What happens when a machine goes down?** Does the schedule re-flow automatically, or does someone rebuild it by hand?
+
+## Finite-capacity scheduling, explained simply
+
+Finite-capacity means each work center has a fixed daily budget — typically 8 hours per shift per machine — and the scheduler refuses to overcommit. When you try to add more work than the day holds, the schedule pushes it out instead of pretending it'll fit.
+
+That's the whole magic. It sounds obvious and almost nothing in the ERP world does it well. Our [manufacturing scheduling software](/features/manufacturing-scheduling-software) and [work center scheduling](/features/work-center-scheduling) are built finite-first because anything else lies to the operator.
+
+## Features most shops never use (skip them)
+
+Vendors love these. Operators never touch them.
+
+- **Genetic algorithms / AI optimization.** Pretty in demos. In the real world, the supervisor overrides them by 9:15am.
+- **Forward and backward scheduling combos.** Most shops only need forward.
+- **Multi-plant load balancing.** Not relevant under 50 machines.
+
+What you actually need:
+
+- A queue every operator can read on their phone — see how [operators interact with the queue](/features/digital-expeditor).
+- Honest reason codes when things stop — covered in [CNC downtime tracking](/blog/cnc-downtime-tracking-complete-guide).
+- A handoff at shift change so the schedule survives the night — [shift handoff](/features/shift-handoff).
+
+## Implementation reality check
+
+The shops that succeed share three habits:
+
+1. They start with **one work cell** — usually the bottleneck — and prove the workflow before rolling shop-wide.
+2. They keep the **router short.** Eight operations max. Fewer if you can.
+3. They review the schedule **once a day in the morning huddle**, not constantly.
+
+If your team can't commit to a daily 10-minute review, no software will save the schedule.
+
+## Where to start
+
+If you're scoping a project right now, the cheapest first step is two weeks of real data: turn on [machine monitoring](/features/machine-monitoring-software) and [downtime tracking](/features/downtime-tracking), then read the [bottleneck analysis playbook](/blog/cnc-bottleneck-analysis-guide). Almost every shop discovers the scheduling problem is actually a setup or material-staging problem — and that's a cheaper fix.
+
+When you do need the scheduler, you'll know exactly what to demand from it.

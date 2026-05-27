@@ -1,0 +1,58 @@
+---
+title: "CNC Machine Monitoring Without Hardware: How No-Sensor Tracking Hits 90% Accuracy"
+slug: "machine-monitoring-without-hardware"
+publishedDate: "2026-05-27"
+author: "Zach"
+excerpt: "MTConnect adapters and OPC-UA are great when you have the budget. When you don't, operator-driven machine monitoring gets you 90% of the insight at 5% of the cost."
+category: "CNC"
+readTime: "5 min read"
+---
+
+## The hardware-first trap
+
+Walk any manufacturing trade show and you'll be sold a $1,500-per-machine monitoring kit, a $40k platform fee, and an 18-month implementation. For a 200-machine plant with a dedicated controls engineer, fine. For a 12-machine job shop trying to figure out why Tuesday was slow, it's overkill.
+
+**CNC machine monitoring** doesn't have to mean hardware. It means knowing — accurately and on time — what every machine is doing right now and why.
+
+## What operator-driven monitoring captures
+
+Three states cover almost everything a supervisor needs:
+
+- **Running** — actively cutting
+- **Setup / paused** — operator at the machine, not cutting
+- **Down** — with a reason code (see [downtime tracking](/blog/cnc-downtime-tracking-complete-guide))
+
+When operators tap a status the moment it changes, accuracy lands at **90–95%** versus sensor-truth. The 5–10% gap almost never matters for decisions — supervisors don't act on minute-level data, they act on shift-level patterns.
+
+Our [machine monitoring software](/features/machine-monitoring-software) and [CNC machine tracking](/features/cnc-machine-tracking) are built around this workflow, and they work on a phone, a shared tablet, or a [shop floor display](/features/shop-floor-display).
+
+## When you actually need sensors
+
+Don't skip hardware forever. Add it when:
+
+- You need **cycle-time variance** under 30 seconds (high-volume Swiss, automation cells).
+- You're chasing **lights-out efficiency** and no one's at the machine to tap a button.
+- You need **alarm-level data** to predict maintenance.
+
+For 80% of job shops, none of those apply yet. Get the workflow right first; sensors are a layer, not a foundation.
+
+## What 90% accuracy buys you
+
+Two weeks of clean status data is enough to:
+
+- Spot the [real bottleneck](/blog/cnc-bottleneck-analysis-guide) instead of the loud one.
+- Cut shift-change losses with [structured handoffs](/features/shift-handoff).
+- Build a finite-capacity [production schedule](/features/production-scheduling) that doesn't lie.
+- Quote new work with real run times instead of estimates.
+
+That's a six-figure year of decisions for the price of a few tablets and an internet connection.
+
+## The honest tradeoff
+
+You give up: sub-minute precision, automatic state detection, and the ability to monitor unattended machines.
+
+You get: started this week, for almost nothing, with data your operators already trust because they entered it themselves.
+
+When the budget for sensors arrives, the workflow is already in place. When it doesn't, you're still measurably better than the shop next door.
+
+Start with the tap. The hardware can wait.
