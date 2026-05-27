@@ -23,7 +23,12 @@ let templateBuffer: ArrayBuffer;
 
 beforeAll(() => {
   const buf = readFileSync(resolve(process.cwd(), 'public/templates/JobLine_Setup_Template.xlsx'));
-  templateBuffer = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer;
+  // ExcelJS in jsdom prefers a fresh ArrayBuffer copy.
+  const copy = new Uint8Array(buf.byteLength);
+  copy.set(buf);
+  templateBuffer = copy.buffer;
+  // Touch NodeBuffer to keep import alive (used by ExcelJS internally).
+  void NodeBuffer;
 });
 
 function bufferToFile(buf: ArrayBuffer, name = 'tpl.xlsx'): File {
