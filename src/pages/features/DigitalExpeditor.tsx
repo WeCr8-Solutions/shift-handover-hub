@@ -125,7 +125,7 @@ export default function DigitalExpeditor() {
 
             <div className="text-center p-8 rounded-2xl bg-primary/5 border border-primary/20">
               <h2 className="text-2xl font-bold mb-3">Ready to digitize your expediting?</h2>
-              <p className="text-muted-foreground mb-6">Free trial â€. Set up in under 5 minutes.</p>
+              <p className="text-muted-foreground mb-6">Free trial â€” no credit card required. Set up in under 5 minutes.</p>
               <Button size="lg" onClick={() => navigate("/auth")} className="gap-2">
                 Get Started Free <ArrowRight className="w-5 h-5" />
               </Button>
