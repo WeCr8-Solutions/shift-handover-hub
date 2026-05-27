@@ -129,7 +129,7 @@ export function AuditHistoryCenter({ isAdmin = false }: Props) {
 
   const [exporting, setExporting] = useState(false);
 
-  const { data: stations = [] } = useStations(null, organization?.id || null);
+  const { stations = [] } = useStations(null, organization?.id || null);
 
   const { from, to } = useMemo(() => {
     if (range === "custom") {
