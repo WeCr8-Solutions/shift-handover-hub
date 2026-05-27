@@ -7,6 +7,7 @@ import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
+import { WhyJoblineFAQ } from "@/components/marketing/WhyJoblineFAQ";
 
 const painPoints = [
   { icon: Monitor, title: "Aging Desktop Interface", desc: "E2 Shop System's desktop-first UI was built for an era before mobile devices. Shop floor operators need modern tools that work on any device." },

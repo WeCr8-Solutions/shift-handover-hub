@@ -7,6 +7,7 @@ import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
+import { WhyJoblineFAQ } from "@/components/marketing/WhyJoblineFAQ";
 
 const painPoints = [
   { icon: Layers, title: "Enterprise Scale, SMB Budget", desc: "Epicor is designed for mid-to-large manufacturers with dedicated IT teams. SMBs and job shops are often left under-supported and over-billed." },

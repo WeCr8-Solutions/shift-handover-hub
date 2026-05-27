@@ -7,6 +7,7 @@ import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
+import { WhyJoblineFAQ } from "@/components/marketing/WhyJoblineFAQ";
 import { MockQueueBoard } from "@/components/marketing/MockAppPreviews";
 
 const painPoints = [

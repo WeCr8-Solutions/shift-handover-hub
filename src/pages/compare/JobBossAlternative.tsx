@@ -7,6 +7,7 @@ import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
+import { WhyJoblineFAQ } from "@/components/marketing/WhyJoblineFAQ";
 
 const painPoints = [
   { icon: Clock, title: "Months-Long Implementation", desc: "JobBOSS2 implementations routinely take 3–9 months with consultants, data migration, and training before you see any value." },
