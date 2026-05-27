@@ -1,14 +1,13 @@
 /**
- * E2E roundtrip: generate the bulk-import template and parse it back.
- * Guards against:
- *   • Sheet-name truncation collisions (Excel limit = 31 chars)
- *   • Header drift between download and parse
- *   • Sample rows that the parser would reject
+ * E2E roundtrip: load the published static template and parse it back through
+ * the in-app parser. Guards against sheet-name truncation collisions, header
+ * drift, and sample rows the parser would reject.
  */
-import { describe, it, expect, vi, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import ExcelJS from 'exceljs';
 import {
-  downloadTemplate,
   parseExcelFile,
   STATIONS_TEMPLATE,
   USERS_TEMPLATE,
@@ -18,47 +17,17 @@ import {
   ROUTING_TEMPLATE,
 } from './excelTemplates';
 
-let downloadedBuffer: ArrayBuffer | null = null;
+let templateBuffer: ArrayBuffer;
 
-beforeAll(async () => {
-  // Build the workbook the same way downloadTemplate('all') does, but write
-  // straight to an ArrayBuffer — avoids jsdom's Blob/anchor plumbing entirely
-  // and exercises the same template definitions the UI ships.
-  const { Workbook } = ExcelJS;
-  const wb = new Workbook();
-  const sheets = [
-    { sheetName: 'Instructions', headers: [], sampleData: [], validValues: {} },
-    TEAMS_TEMPLATE,
-    DEPARTMENTS_TEMPLATE,
-    STATIONS_TEMPLATE,
-    USERS_TEMPLATE,
-    WORK_ORDERS_TEMPLATE,
-    ROUTING_TEMPLATE,
-  ];
-  for (const t of sheets) {
-    if (t.sheetName === 'Instructions') {
-      wb.addWorksheet('Instructions').addRow(['(generated)']);
-      continue;
-    }
-    const ws = wb.addWorksheet(t.sheetName);
-    ws.addRow(t.headers as string[]);
-    for (const row of t.sampleData) ws.addRow(row as (string | number)[]);
-    if (Object.keys(t.validValues).length) {
-      const raw = `${t.sheetName} - Valid Values`;
-      const name = raw.length <= 31 ? raw : `${t.sheetName} - Valid`.slice(0, 31);
-      const vs = wb.addWorksheet(name);
-      vs.addRow(['Column', 'Valid Values']);
-      for (const [col, vals] of Object.entries(t.validValues)) {
-        vs.addRow([col, (vals as string[]).join(', ')]);
-      }
-    }
-  }
-  const buf = await wb.xlsx.writeBuffer();
-  // ExcelJS returns Buffer in Node — normalize to ArrayBuffer slice.
-  downloadedBuffer = ArrayBuffer.isView(buf)
-    ? (buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer)
-    : (buf as ArrayBuffer);
+beforeAll(() => {
+  const buf = readFileSync(resolve(process.cwd(), 'public/templates/JobLine_Setup_Template.xlsx'));
+  templateBuffer = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer;
 });
+
+function bufferToFile(buf: ArrayBuffer, name = 'tpl.xlsx'): File {
+  return { name, arrayBuffer: async () => buf } as unknown as File;
+}
+
 
 // jsdom's File/Blob lacks .arrayBuffer in some versions — wrap our buffer
 // into a minimal File-shaped object that parseExcelFile() can consume.
