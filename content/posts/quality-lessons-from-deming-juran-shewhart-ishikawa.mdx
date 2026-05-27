@@ -1,0 +1,78 @@
+---
+title: "Quality Lessons from Deming, Juran, Shewhart, and Ishikawa for Modern CNC Shops"
+slug: "quality-lessons-from-deming-juran-shewhart-ishikawa"
+publishedDate: "2026-05-27"
+author: "Zach"
+excerpt: "Four giants of quality, four habits a precision machining shop can adopt this month — without buying a single statistical software package."
+category: "Quality"
+readTime: "6 min read"
+---
+
+## Quality is a system, not an inspector
+
+If you've ever heard a shop owner say "we need to hire a better inspector," you've heard the exact mistake the four titans of quality spent their careers fighting. Quality isn't a checkpoint at the end of the line. It's a property of the system that produces the part. Get the system right and inspection becomes verification, not a save.
+
+Four pioneers, four habits any CNC shop can adopt. Each has a full profile in our [manufacturing pioneers reference](/resources/pioneers) and the [quality inspection guide](/resources/quality).
+
+## W. Edwards Deming: 94% of problems are the system
+
+Deming's most-quoted line: **94% of problems are caused by the system, only 6% by the worker.** He hammered this for 50 years and most shops still ignore it. When a part comes back defective, the first question is usually "who ran it?" Deming would ask "what about the process made this defect possible?"
+
+**What it looks like in a 2026 CNC shop:**
+
+- Every [NCR](/features/ncr-software) requires a process-level root cause, not a name. "Operator didn't check" is not a root cause; "the FAI gate wasn't enforced" is.
+- Recurring defects get a Pareto chart from real data, not a hunch. Our [manufacturing quality NCR post](/blog/manufacturing-quality-ncr) walks through the disposition workflow.
+- The morning huddle reviews **yesterday's top defect category**, not yesterday's worst employee.
+
+Deming would also tell you to drop the annual performance review and add a daily data review. Half of his 14 points are about removing fear so workers will report problems. A blame-free [shift handoff](/features/shift-handoff) is closer to his vision than any wall poster.
+
+## Walter Shewhart: distinguish common cause from special cause
+
+Shewhart was Deming's teacher and the inventor of the control chart. His core insight: **process variation has two kinds — common cause (inherent to the system) and special cause (something specific happened).** Treating them the same is how shops chase ghosts.
+
+**Practical translation:**
+
+- If your [downtime tracking](/features/downtime-tracking) shows machine X stops for tool breaks roughly twice a shift, every shift, that's common cause. Fix the process (tool selection, feeds and speeds, [program rev control](/blog/jobline-gcode-vs-code-extension-available)).
+- If machine X suddenly stops six times in one shift, that's special cause. Investigate that shift specifically (operator, material lot, fixture, program change).
+
+Most shops conflate these and either panic over normal variation or ignore real signals. Shewhart's discipline — plot the data, look for points outside the control limits — is the antidote.
+
+## Joseph Juran: the cost of poor quality is enormous and invisible
+
+Juran coined **Cost of Poor Quality (COPQ)** — and his estimate was that 15–40% of a manufacturer's total cost is the cost of getting it wrong. Scrap, rework, sorting, customer returns, expedited shipping, late penalties, lost reputation. Most shops don't measure it because no single line item adds up to it.
+
+**Where to find your COPQ in 2026:**
+
+- Scrap dollars per work order — most ERPs track this but no one reports it.
+- Rework hours separated from production hours in your [work order routing](/features/work-center-scheduling).
+- Late delivery penalties and expedited freight as separate GL lines.
+- Customer return rate per part number per quarter.
+
+Juran's other gift was the **Pareto principle applied to quality** — 80% of your COPQ comes from 20% of your part numbers (or operators, or machines). Find the top 20% and the improvement project picks itself. Our [bottleneck analysis post](/blog/cnc-bottleneck-analysis-guide) uses the same logic for throughput.
+
+## Kaoru Ishikawa: give every operator a quality toolkit
+
+Ishikawa believed quality couldn't live with the quality department — every operator needed the tools to investigate problems themselves. He simplified statistical methods into **the Seven Basic Quality Tools** that a shop-floor worker could learn in a day: check sheets, Pareto charts, fishbone (cause-and-effect) diagrams, histograms, scatter diagrams, flow charts, and control charts.
+
+**Modern translation:**
+
+- The [digital expeditor](/features/digital-expeditor) and [machine monitoring](/features/machine-monitoring-software) screens *are* the check sheets — every status tap is data.
+- A monthly Pareto of [NCR](/features/ncr-software) categories tells you what to attack.
+- Fishbone diagrams still work — print one, run it in front of the morning huddle when a category spikes.
+
+The deeper Ishikawa lesson: **train operators in quality tools, not just operations.** The [OAP — Operator Acceptance Program](/resources/operator-acceptance-program) and the [measuring tools library](/resources/measuring-tools) are exactly this idea — quality literacy as part of the operator skill set, not a separate department.
+
+## Four habits to start this month
+
+- **Week 1 (Deming)** — Every NCR root cause must be process-level. Reject "operator error" as a root cause for 30 days and see what surfaces.
+- **Week 2 (Shewhart)** — Pull two weeks of downtime data. Mark which reasons are common cause vs. special cause. Stop responding to common cause with special-cause investigations.
+- **Week 3 (Juran)** — Tally COPQ from scrap, rework, and late freight for the quarter. Identify the top 20% of part numbers driving it.
+- **Week 4 (Ishikawa)** — Train every operator on a one-page fishbone template. Use it in the next quality huddle.
+
+None of this requires statistical software, a Six Sigma belt, or a consultant. It requires honest data and a willingness to fix the system instead of the person.
+
+## Where quality fits in the bigger picture
+
+Quality, scheduling, and downtime are the same problem viewed from three angles. Once you've got the four habits above running, layer in [FAI at routing gates](/blog/first-article-inspection-job-shops), tie [NCRs to handoffs](/features/shift-handoff), and feed the data into [production scheduling](/features/production-scheduling) so defective lots don't ship dates the shop can't hit.
+
+Deming, Juran, Shewhart, and Ishikawa would all recognize the workflow. They'd just be amazed you can do it from a phone.
