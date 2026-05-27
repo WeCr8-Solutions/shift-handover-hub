@@ -112,7 +112,8 @@ export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadD
     parseResult.data.departments.length > 0 ||
     parseResult.data.stations.length > 0 ||
     parseResult.data.users.length > 0 ||
-    parseResult.data.workOrders.length > 0
+    parseResult.data.workOrders.length > 0 ||
+    (parseResult.data.routingTemplates?.length ?? 0) > 0
   );
 
   // Count cross-sheet warnings
