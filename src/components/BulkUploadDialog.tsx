@@ -342,6 +342,9 @@ export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadD
                         {parseResult.data.workOrders.length > 0 && (
                           <TabsTrigger value="workorders">Work Orders ({parseResult.data.workOrders.length})</TabsTrigger>
                         )}
+                        {(parseResult.data.routingTemplates?.length ?? 0) > 0 && (
+                          <TabsTrigger value="routing">Routing ({parseResult.data.routingTemplates.length})</TabsTrigger>
+                        )}
                       </TabsList>
 
                       <TabsContent value="summary" className="space-y-2">
