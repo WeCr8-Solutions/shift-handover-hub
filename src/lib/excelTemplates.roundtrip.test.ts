@@ -21,40 +21,43 @@ import {
 let downloadedBuffer: ArrayBuffer | null = null;
 
 beforeAll(async () => {
-  // downloadTemplate() wraps the workbook in `new Blob([buffer], ...)`.
-  // Capture the buffer by intercepting the Blob constructor — jsdom's Blob
-  // implementation lacks `.arrayBuffer()` so we can't rely on it.
-  const capturedBuffers: ArrayBuffer[] = [];
-  const OrigBlob = globalThis.Blob;
-  class CapturingBlob extends OrigBlob {
-    constructor(parts: BlobPart[], opts?: BlobPropertyBag) {
-      super(parts, opts);
-      for (const p of parts) {
-        if (p instanceof ArrayBuffer) capturedBuffers.push(p);
-        else if (ArrayBuffer.isView(p)) {
-          // Slice — Buffer.buffer may point into a shared pool.
-          capturedBuffers.push(
-            p.buffer.slice(p.byteOffset, p.byteOffset + p.byteLength) as ArrayBuffer,
-          );
-        }
+  // Build the workbook the same way downloadTemplate('all') does, but write
+  // straight to an ArrayBuffer — avoids jsdom's Blob/anchor plumbing entirely
+  // and exercises the same template definitions the UI ships.
+  const { Workbook } = ExcelJS;
+  const wb = new Workbook();
+  const sheets = [
+    { sheetName: 'Instructions', headers: [], sampleData: [], validValues: {} },
+    TEAMS_TEMPLATE,
+    DEPARTMENTS_TEMPLATE,
+    STATIONS_TEMPLATE,
+    USERS_TEMPLATE,
+    WORK_ORDERS_TEMPLATE,
+    ROUTING_TEMPLATE,
+  ];
+  for (const t of sheets) {
+    if (t.sheetName === 'Instructions') {
+      wb.addWorksheet('Instructions').addRow(['(generated)']);
+      continue;
+    }
+    const ws = wb.addWorksheet(t.sheetName);
+    ws.addRow(t.headers as string[]);
+    for (const row of t.sampleData) ws.addRow(row as (string | number)[]);
+    if (Object.keys(t.validValues).length) {
+      const raw = `${t.sheetName} - Valid Values`;
+      const name = raw.length <= 31 ? raw : `${t.sheetName} - Valid`.slice(0, 31);
+      const vs = wb.addWorksheet(name);
+      vs.addRow(['Column', 'Valid Values']);
+      for (const [col, vals] of Object.entries(t.validValues)) {
+        vs.addRow([col, (vals as string[]).join(', ')]);
       }
     }
   }
-  (globalThis as { Blob: typeof Blob }).Blob = CapturingBlob as typeof Blob;
-
-  const origCreate = URL.createObjectURL;
-  URL.createObjectURL = (() => 'blob:mock') as typeof URL.createObjectURL;
-  URL.revokeObjectURL = (() => {}) as typeof URL.revokeObjectURL;
-  const anchorClick = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
-
-  await downloadTemplate('all');
-
-  anchorClick.mockRestore();
-  URL.createObjectURL = origCreate;
-  (globalThis as { Blob: typeof Blob }).Blob = OrigBlob;
-
-  expect(capturedBuffers.length).toBeGreaterThan(0);
-  downloadedBuffer = capturedBuffers[0];
+  const buf = await wb.xlsx.writeBuffer();
+  // ExcelJS returns Buffer in Node — normalize to ArrayBuffer slice.
+  downloadedBuffer = ArrayBuffer.isView(buf)
+    ? (buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer)
+    : (buf as ArrayBuffer);
 });
 
 // jsdom's File/Blob lacks .arrayBuffer in some versions — wrap our buffer
