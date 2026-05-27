@@ -81,9 +81,7 @@ describe('Excel bulk-import template roundtrip', () => {
   });
 
   it('re-parses cleanly with zero validation errors and full sample data', async () => {
-    const file = new File([downloadedBuffer!], 'JobLine_Setup_Template.xlsx', {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    });
+    const file = bufferToFile(downloadedBuffer!, 'JobLine_Setup_Template.xlsx');
     const result = await parseExcelFile(file);
 
     expect(result.errors).toEqual([]);
