@@ -87,6 +87,8 @@ const E2ShopAlternative = lazy(() => import("./pages/compare/E2ShopAlternative")
 const GlobalShopAlternative = lazy(() => import("./pages/compare/GlobalShopAlternative"));
 const EpicorAlternative = lazy(() => import("./pages/compare/EpicorAlternative"));
 const SpreadsheetAlternative = lazy(() => import("./pages/compare/SpreadsheetAlternative"));
+const SAPAlternative = lazy(() => import("./pages/compare/SAPAlternative"));
+const WhyJobline = lazy(() => import("./pages/WhyJobline"));
 const MesVsErp = lazy(() => import("./pages/resources/MesVsErp"));
 const ShopFloorBuyersGuide = lazy(() => import("./pages/resources/ShopFloorBuyersGuide"));
 const Updates = lazy(() => import("./pages/Updates"));
@@ -268,6 +270,8 @@ const App = () => (
                     <Route path="/compare/global-shop-alternative" element={<GlobalShopAlternative />} />
                     <Route path="/compare/epicor-alternative" element={<EpicorAlternative />} />
                     <Route path="/compare/spreadsheet-alternative" element={<SpreadsheetAlternative />} />
+                    <Route path="/compare/sap-alternative" element={<SAPAlternative />} />
+                    <Route path="/why-jobline" element={<WhyJobline />} />
                     <Route path="/resources" element={<ResourcesIndex />} />
                     <Route path="/resources/guides" element={<ManufacturingGuides />} />
                     <Route path="/resources/gcode" element={<GCodeReference />} />

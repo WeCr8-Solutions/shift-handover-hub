@@ -7,6 +7,7 @@ import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
+import { WhyJoblineFAQ } from "@/components/marketing/WhyJoblineFAQ";
 
 const painPoints = [
   { icon: DollarSign, title: "Enterprise Pricing", desc: "ProShop ERP is a premium product with pricing to match — most small and mid-size shops are priced out before they even see a demo." },
@@ -119,6 +120,7 @@ export default function ProShopAlternative() {
             </div>
           </div>
         </section>
+        <section className="py-12"><div className="container mx-auto px-4 max-w-4xl"><WhyJoblineFAQ variant="proshop" /></div></section>
         <AdPlacement format="horizontal" className="py-6" />
       </main>
       <MarketingFooter />

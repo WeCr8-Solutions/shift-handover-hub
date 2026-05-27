@@ -7,6 +7,7 @@ import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
+import { WhyJoblineFAQ } from "@/components/marketing/WhyJoblineFAQ";
 
 const painPoints = [
   { icon: Clock, title: "Months-Long Implementation", desc: "JobBOSS2 implementations routinely take 3–9 months with consultants, data migration, and training before you see any value." },
@@ -149,6 +150,7 @@ export default function JobBossAlternative() {
             </div>
           </div>
         </section>
+        <section className="py-12"><div className="container mx-auto px-4 max-w-4xl"><WhyJoblineFAQ variant="jobboss" /></div></section>
         <AdPlacement format="horizontal" className="py-6" />
       </main>
       <MarketingFooter />

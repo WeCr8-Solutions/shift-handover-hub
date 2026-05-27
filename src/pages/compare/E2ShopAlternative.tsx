@@ -7,6 +7,7 @@ import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
+import { WhyJoblineFAQ } from "@/components/marketing/WhyJoblineFAQ";
 
 const painPoints = [
   { icon: Monitor, title: "Aging Desktop Interface", desc: "E2 Shop System's desktop-first UI was built for an era before mobile devices. Shop floor operators need modern tools that work on any device." },
@@ -118,6 +119,7 @@ export default function E2ShopAlternative() {
             </div>
           </div>
         </section>
+        <section className="py-12"><div className="container mx-auto px-4 max-w-4xl"><WhyJoblineFAQ variant="e2" /></div></section>
         <AdPlacement format="horizontal" className="py-6" />
       </main>
       <MarketingFooter />

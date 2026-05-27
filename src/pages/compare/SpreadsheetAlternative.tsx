@@ -7,6 +7,7 @@ import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { LeadCaptureBar } from "@/components/marketing/LeadCaptureBar";
 import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
+import { WhyJoblineFAQ } from "@/components/marketing/WhyJoblineFAQ";
 import { MockQueueBoard } from "@/components/marketing/MockAppPreviews";
 
 const painPoints = [
@@ -122,6 +123,7 @@ export default function SpreadsheetAlternative() {
             </div>
           </div>
         </section>
+        <section className="py-12"><div className="container mx-auto px-4 max-w-4xl"><WhyJoblineFAQ variant="spreadsheet" /></div></section>
         <AdPlacement format="horizontal" className="py-6" />
       </main>
       <MarketingFooter />
