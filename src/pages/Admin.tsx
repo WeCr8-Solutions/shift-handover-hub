@@ -498,7 +498,7 @@ export default function Admin() {
           </TabsContent>
 
           <TabsContent value="history">
-            <Suspense fallback={<AdminTabFallback />}><WorkOrderHistory isAdmin={access.isPlatformAdmin} /></Suspense>
+            <Suspense fallback={<AdminTabFallback />}><AuditHistoryCenter isAdmin={access.isPlatformAdmin} /></Suspense>
           </TabsContent>
 
           <TabsContent value="routing">
