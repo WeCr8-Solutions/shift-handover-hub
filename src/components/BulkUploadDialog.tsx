@@ -551,6 +551,10 @@ export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadD
                      <p className="text-lg font-bold text-status-ok">{uploadResult.workOrdersCreated}</p>
                      <p className="text-xs text-muted-foreground">Work Orders</p>
                   </div>
+                  <div className="p-3 bg-status-ok/10 rounded-lg text-center">
+                    <p className="text-lg font-bold text-status-ok">{uploadResult.routingTemplatesCreated}</p>
+                    <p className="text-xs text-muted-foreground">Routing ({uploadResult.routingStepsCreated} steps)</p>
+                  </div>
                 </div>
 
                 {uploadResult.warnings.length > 0 && (
