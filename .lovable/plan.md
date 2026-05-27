@@ -1,58 +1,82 @@
-## What I found (web search + code audit)
+## Goal
 
-**Web search results**
-- `site:jobline.ai` returns **only the homepage** — Google has indexed 1 page out of 213 in your sitemap.
-- Brand search "jobline.ai" surfaces unrelated "Jobline" / "QuickJobLine" / "Jobright" career sites — your brand is being out-ranked on its own name.
-- Long-tail searches ("digital expeditor shift handoff CNC", "JobLine G-Code VS Code") never surface jobline.ai. The VS Code blog post (and `/talent`, `/oap`, `/gcode-academy`, `/verify`, `/blog/*`, `/handbook/*`, `/help/*`, `/resources/*`, `/features/*`, `/compare/*`, `/industries/*`) are essentially invisible.
+Make it obvious — across the marketing surface — why a small/mid-size shop should pick JobLine.ai over SAP, JobBOSS, Epicor, ProShop, E2/Shoptech, Global Shop, and spreadsheets. Center the message on: speed to value, operator-first UX, ability to adapt to framework/process changes quickly, and price/risk fit for shops under ~50 machines.
 
-**Root cause in the code**
-- `scripts/prerender.mjs` only prerenders **53 routes**. Your `public/sitemap.xml` advertises **213**. Googlebot fetches the unrendered routes, sees an empty `<div id="root">`, and parks them in "Discovered – currently not indexed". That's why nothing ranks.
-- Specifically missing from prerender:
-  - All 13 `/blog/*` posts (including the VS Code launch post)
-  - All 18+ `/features/*` long-tail pages (digital-expeditor, dnc-software, mes-software, oee-software, job-shop-erp, etc.)
-  - All `/compare/*` competitor-alternative pages (jobboss, epicor, proshop, e2-shop, global-shop, spreadsheet)
-  - All `/handbook/*`, all `/help/*` (80+ pages), all `/resources/*` sub-pages, `/learn/glossary/*`, `/learn/professions/*`, `/industries/*` long-tail, `/talent/browse`, `/verify`, `/manuals`, `/manufacturing-visibility`, `/updates`, `/start`, `/use-cases`
-- Homepage `<title>` doesn't lead with the brand token, which makes the cold "jobline.ai" brand search lose to identically-named career sites.
+## What I'll build
 
----
+### 1. New hub page: `/why-jobline` (`src/pages/WhyJobline.tsx`)
 
-## Plan
+A single, SEO-optimized decision page with:
 
-### 1. Prerender every sitemap URL (the single biggest win)
-Refactor `scripts/prerender.mjs` so the route list is **derived from `public/sitemap.xml`** (parse `<loc>` entries, strip base URL) instead of a hand-maintained array. Result: all 213 routes ship real HTML to crawlers automatically, and the two lists can never drift again. Keep the existing puppeteer + `vite preview` flow, concurrency, and safe-fail behavior.
+- **Hero**: "Why small & mid-size shops choose JobLine.ai over SAP, JobBOSS, Epicor & spreadsheets."
+- **At-a-glance comparison matrix** — JobLine.ai vs. SAP / JobBOSS2 / Epicor Kinetic / ProShop / Global Shop / E2 / Spreadsheets across: time-to-value, cost band, operator UX, mobile/shop-floor, adapts to process change, AI assistant, ITAR posture, support model.
+- **"Built for small & mid-size shops"** section: under-50-machines focus, no consultants, no IT department required, owner/supervisor can self-serve.
+- **"Adapts as your shop changes"** section: routing, queues, handoff fields, dashboards, and integrations are config-not-code; ERP connectors (JobBOSS, SAP) are optional read-through/write-through; framework shifts (AS9100, ITAR/US-Person, FedRAMP path) ship as toggles, not 6-month re-implementations.
+- **Deep-link grid** to each `/compare/*` page with a one-line "best for shops escaping ___" pitch.
+- **Deep-link grid** to feature proof: `/features/manufacturing-scheduling-software`, `/features/work-center-scheduling`, `/features/digital-expeditor`, `/features/shift-handoff`, `/features/machine-monitoring-software`, `/features/job-shop-erp`.
+- **Expanded FAQ (15–18 Q&As)** with `FAQPage` JSON-LD covering: cost vs. SAP/JobBOSS, implementation time, do we replace ERP, QuickBooks coexistence, mobile/offline, ITAR/AS9100, multi-site, customization without code, AI assistant, switching cost, data export/lock-in, free trial mechanics, security/SOC posture, what JobLine.ai *isn't*, and the "we're small — can we adapt later?" question.
+- Internal links: every FAQ answer deep-links to the relevant feature or compare page (anchor IDs added below).
 
-### 2. Strengthen brand signals in `index.html`
-- Lead `<title>` with the brand: `JobLine.ai — Digital Expeditor & Shift Handoff Software for CNC Shops`.
-- Add `alternateName` ("JobLine", "Jobline.ai") and `sameAs` (GitHub `WeCr8`, VS Code Marketplace listing, LinkedIn if available) to the existing `Organization` JSON-LD so Google's Knowledge Graph disambiguates you from the unrelated "Jobline" career sites.
-- Add a `SoftwareApplication` `sameAs` entry pointing at the VS Code Marketplace listing to help the extension surface for brand queries.
+### 2. Shared FAQ component: `src/components/marketing/WhyJoblineFAQ.tsx`
 
-### 3. Tighten per-page titles for the highest-intent routes
-For the routes most likely to convert (`/talent`, `/oap`, `/gcode-academy`, `/verify`, `/features/vscode-gcode`, `/blog/jobline-gcode-vs-code-extension-available`, `/shift-handoff`, `/machine-time-tracking`), audit and where needed update each page's `<SEOHead>` so the title leads with the unique value prop + "JobLine.ai" — these are the pages that should rank for their long-tail terms once prerendered.
+Reusable accordion + `FAQPage` JSON-LD. Accepts a `variant` prop ("jobboss" | "sap" | "epicor" | "proshop" | "globalshop" | "e2" | "spreadsheet" | "general") so each compare page renders a tailored 8–10 Q&A block on top of its existing 4-question FAQ — without duplicating markup.
 
-### 4. Add internal link discoverability
-Add a small **prerendered `/sitemap` HTML page** (human-readable list of all public routes, grouped by section) and link to it from the footer. This gives crawlers a single hop to every URL, accelerating discovery beyond what XML sitemaps alone do.
+### 3. Compare-page upgrades (6 files in `src/pages/compare/`)
 
-### 5. Submit to Google after deploy
-Use the Google Search Console connector (already documented in your prompt context) to:
-- Verify `https://jobline.ai/` via META tag (auto-injected through `index.html`).
-- Submit `https://jobline.ai/sitemap-index.xml`.
-- Submit the homepage + top 10 routes for indexing via the URL Inspection / indexing API.
+For each of JobBoss, ProShop, E2Shop, GlobalShop, Epicor, Spreadsheet:
 
-I'll run this **after** the prerender/title changes ship so Google's first re-crawl sees real HTML.
+- Add an **"Adaptability & change management"** block: how JobLine.ai handles a new customer's flow, a new cert standard, or an org restructure in hours vs. months.
+- Add a **"Best fit / not for you"** honesty block (builds trust, reduces bounce).
+- Append the shared `WhyJoblineFAQ` with the matching variant (grows FAQ from ~4 to ~12 Q&As).
+- Add a **"Other alternatives we're compared to"** footer strip linking to the remaining 5 compare pages + `/why-jobline`.
+- Anchor IDs (`#cost`, `#implementation`, `#mobile`, `#adaptability`, `#itar`, `#faq`) for deep linking from the hub and FAQs.
 
----
+### 4. New SAP-specific compare page: `src/pages/compare/SAPAlternative.tsx`
 
-## Technical notes
+Currently we have a SAP *connector* but no SAP *alternative* marketing page, even though the user explicitly cited SAP. Mirrors the JobBOSS page structure, focused on shops who were sold S/4HANA Cloud or Business One and need a shop-floor execution layer instead. Routed at `/compare/sap-alternative`.
 
-- Prerender route source: parse `public/sitemap.xml` with a regex on `<loc>https://jobline.ai(.+)</loc>`. No new deps.
-- Build time impact: prerendering ~210 routes at the existing 4-way concurrency is roughly ~3–5 min added to `postbuild`. Acceptable; gated behind the same "puppeteer optional, never throws" safety the script already has.
-- No changes to RLS, auth, edge functions, or business logic — pure SEO/build pipeline + a couple of head tags.
-- Files touched: `scripts/prerender.mjs`, `index.html`, a handful of `src/pages/*.tsx` `<SEOHead>` calls, and one new `src/pages/SitemapPage.tsx` route added to `App.tsx` + sitemap.xml + footer link.
+### 5. Navigation & discovery
 
----
+- `src/pages/resources/ResourcesIndex.tsx`: add a "Why JobLine.ai" card at the top of the comparisons cluster pointing to `/why-jobline`.
+- `src/components/marketing/MarketingNav.tsx` (or equivalent): add "Why JobLine" link under the Compare / Resources menu.
+- `src/components/marketing/MarketingFooter.tsx`: add a "Compare" column listing all 7 compare pages + the hub.
+- `src/App.tsx`: lazy-load the two new routes (`/why-jobline`, `/compare/sap-alternative`).
 
-## Out of scope (call out, don't do)
-- Building backlinks (the other half of ranking) — that's outreach work, not code.
-- Switching to SSR (TanStack Start / Next). Prerendering covers the SEO need without changing your stack.
+### 6. SEO / discovery plumbing
 
-Ready to switch to build mode and execute steps 1–4, then run step 5 against Google Search Console.
+- `public/sitemap.xml`: add `/why-jobline` and `/compare/sap-alternative` with today's `lastmod`.
+- `public/sitemap-index.xml`: bump `lastmod`.
+- Run `node scripts/gsc-resubmit-sitemaps.mjs` to notify Google Search Console.
+- `SEOHead` on every new/edited page: unique title, meta description, canonical, and `FAQPage` + `WebPage` JSON-LD where relevant.
+
+## Out of scope (this pass)
+
+- No backend, DB, or auth changes — pure marketing/content surface.
+- No new images generated; reuse existing icon set (lucide).
+- Amazon links / admin registry already shipped — not touched.
+
+## Files
+
+**Create**
+- `src/pages/WhyJobline.tsx`
+- `src/pages/compare/SAPAlternative.tsx`
+- `src/components/marketing/WhyJoblineFAQ.tsx`
+
+**Edit**
+- `src/pages/compare/JobBossAlternative.tsx`
+- `src/pages/compare/ProShopAlternative.tsx`
+- `src/pages/compare/E2ShopAlternative.tsx`
+- `src/pages/compare/GlobalShopAlternative.tsx`
+- `src/pages/compare/EpicorAlternative.tsx`
+- `src/pages/compare/SpreadsheetAlternative.tsx`
+- `src/pages/resources/ResourcesIndex.tsx`
+- `src/components/marketing/MarketingNav.tsx`
+- `src/components/marketing/MarketingFooter.tsx`
+- `src/App.tsx`
+- `public/sitemap.xml`
+- `public/sitemap-index.xml`
+
+**Run**
+- `node scripts/gsc-resubmit-sitemaps.mjs`
+
+Confirm and I'll implement.
