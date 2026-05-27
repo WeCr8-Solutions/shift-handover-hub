@@ -284,7 +284,7 @@ export default function EssentialReading() {
       <SEOHead
         title="Essential Manufacturing Reading — Books by Role & Profession | JobLine.ai"
         description="Curated reading list for machinists, quality engineers, supervisors, and shop owners. Machinery's Handbook, Toyota Production System, The Goal, Deming, Juran, and more — organized by profession."
-        canonicalUrl="https://jobline.ai/resources/essential-reading"
+        canonical="https://jobline.ai/resources/essential-reading"
       />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemList) }} />
       <div className="min-h-screen bg-background">
