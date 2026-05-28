@@ -183,13 +183,18 @@ const testimonials = [
     company: "Delta Manufacturing",
   },
 ];
-
 export default function Landing() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [demoModalOpen, setDemoModalOpen] = useState(false);
+
+  // Engagement signal — fires `scroll_depth` at 50% and 90% (once per load).
+  useScrollDepthTracking("landing");
+
+
   const [demoModalOpen, setDemoModalOpen] = useState(false);
 
   useEffect(() => {
