@@ -171,7 +171,51 @@ export default function ResourcesIndex() {
               Free guides, references, and tools for manufacturing teams —
               from G-code commands and industry terminology to shift handoff best practices and lean manufacturing.
             </p>
-          </div>
+          <AdPlacement format="horizontal" className="mb-8" />
+
+          {/* Industry 4.0 featured callout — analytics shows technical buyers
+              follow this thread; surface it above the main grid so they land
+              on a depth page instead of bouncing. */}
+          <section
+            className="mb-10 rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 via-card to-card p-6 sm:p-8"
+            aria-labelledby="industry-40-heading"
+          >
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-primary/15 flex items-center justify-center flex-shrink-0">
+                <Cpu className="w-6 h-6 text-primary" aria-hidden="true" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <Badge variant="outline" className="mb-2 text-[10px] uppercase tracking-wider">
+                  Industry 4.0
+                </Badge>
+                <h2 id="industry-40-heading" className="text-xl sm:text-2xl font-bold tracking-tight">
+                  Smart Manufacturing & MES for Job Shops
+                </h2>
+                <p className="text-sm text-muted-foreground mt-2 leading-relaxed max-w-2xl">
+                  Practical guides for connecting machines, routing, and quality data —
+                  written for shop floors that need real ROI, not buzzwords.
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {[
+                    { label: "MES vs ERP", href: "/resources/mes-vs-erp" },
+                    { label: "Machine Monitoring", href: "/blog/machine-monitoring-without-hardware" },
+                    { label: "CNC Bottleneck Analysis", href: "/blog/cnc-bottleneck-analysis-guide" },
+                    { label: "ERP Selection Guide", href: "/resources/erp-guide" },
+                  ].map((link) => (
+                    <Link
+                      key={link.href}
+                      to={link.href}
+                      onClick={() => trackEvent("industry_40_link_click", { destination: link.href })}
+                      className="text-xs font-medium px-3 py-1.5 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                    >
+                      {link.label} →
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+
 
           <AdPlacement format="horizontal" className="mb-8" />
 
