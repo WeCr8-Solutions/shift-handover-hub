@@ -16,6 +16,8 @@ import { LeadCaptureModal } from "@/components/marketing/LeadCaptureModal";
 import { VisitorSurveyModal } from "@/components/marketing/VisitorSurveyModal";
 import { RotatingHeroBadge } from "@/components/marketing/RotatingHeroBadge";
 import { FreeTalentProfileBanner } from "@/components/marketing/FreeTalentProfileBanner";
+import { LandingNextStepsBand } from "@/components/marketing/LandingNextStepsBand";
+
 import { trackEvent, ConversionEvents } from "@/lib/analytics";
 import { getUtmParams } from "@/lib/utm";
 const demoVideo = "/jobline-demo-video.mp4";
