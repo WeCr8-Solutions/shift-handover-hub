@@ -612,6 +612,7 @@
     <lastmod>2026-04-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+  </url>
   <url>
     <loc>https://jobline.ai/resources/essential-reading</loc>
     <lastmod>2026-05-27</lastmod>
@@ -868,18 +869,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
-    <loc>https://jobline.ai/updates</loc>
-    <lastmod>2026-05-22</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://jobline.ai/start</loc>
-    <lastmod>2026-05-22</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
+  <!-- /updates and /start are authenticated/internal — disallowed in robots.txt, excluded from sitemap. -->
   <url>
     <loc>https://jobline.ai/verify</loc>
     <lastmod>2026-05-22</lastmod>
@@ -887,27 +877,8 @@
     <priority>0.6</priority>
   </url>
 
-  <!-- OAP — Operator Acceptance Program -->
-  <url>
-    <loc>https://jobline.ai/oap</loc>
-    <lastmod>2026-04-19</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
+  <!-- OAP/GCA entries appear earlier in this sitemap (deduped). -->
 
-  <!-- GCA — G-Code Academy -->
-  <url>
-    <loc>https://jobline.ai/gcode-academy</loc>
-    <lastmod>2026-04-19</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://jobline.ai/resources/gcode-academy</loc>
-    <lastmod>2026-04-19</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
 
   <!-- ═══════════════════════════════════════════════
        Learn — fundamentals, glossary, professions, tutorials
@@ -997,13 +968,6 @@
   <url><loc>https://jobline.ai/help/use-cases/cnc-machine-shop</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://jobline.ai/help/use-cases/body-shop-collision</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
 
-  <url>
-    <loc>https://jobline.ai/resources/gcode-academy</loc>
-    <lastmod>2026-04-19</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
   <!-- ═══════════════════════════════════════════════
        Machinery's Handbook Reference Library (200 curated entries, 8 categories)
        ═══════════════════════════════════════════════ -->
@@ -1070,6 +1034,8 @@
     <lastmod>2026-04-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+  </url>
+
 
   <!-- ═══════════════════════════════════════════════
        Human-readable Site Map (HTML index of all routes)
