@@ -19,6 +19,8 @@ import { FreeTalentProfileBanner } from "@/components/marketing/FreeTalentProfil
 import { LandingNextStepsBand } from "@/components/marketing/LandingNextStepsBand";
 
 import { trackEvent, ConversionEvents } from "@/lib/analytics";
+import { useScrollDepthTracking } from "@/hooks/useScrollDepthTracking";
+
 import { getUtmParams } from "@/lib/utm";
 const demoVideo = "/jobline-demo-video.mp4";
 import { 
