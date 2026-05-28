@@ -171,7 +171,10 @@ export default function ResourcesIndex() {
               Free guides, references, and tools for manufacturing teams —
               from G-code commands and industry terminology to shift handoff best practices and lean manufacturing.
             </p>
+          </div>
+
           <AdPlacement format="horizontal" className="mb-8" />
+
 
           {/* Industry 4.0 featured callout — analytics shows technical buyers
               follow this thread; surface it above the main grid so they land
