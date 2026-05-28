@@ -55,7 +55,9 @@ export function CertificatePdfDownloadButton({ targetElementId, fileName, varian
       const imgData = canvas.toDataURL("image/png");
       pdf.addImage(imgData, "PNG", offsetX, offsetY, drawW, drawH);
       pdf.save(fileName);
+      ConversionEvents.pdfDownload(fileName, window.location.pathname, "certificate_verify");
       toast.success("Certificate PDF downloaded");
+
     } catch (e) {
       console.error("[CertificatePdfDownloadButton] failed:", e);
       toast.error("Could not generate PDF — try the Print option instead.");
