@@ -539,14 +539,14 @@ export default function Landing() {
               </div>
             </div>
           </div>
+        </div>
+      </section>
 
       {/* Next Steps Band — drives pages/session and gives every visitor a deeper path */}
       <LandingNextStepsBand />
 
       {/* App Preview Sections */}
 
-
-      {/* App Preview Sections */}
       <section className="py-8 sm:py-12 md:py-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12">
