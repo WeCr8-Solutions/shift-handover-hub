@@ -2,9 +2,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
-import { trackEvent } from "@/lib/analytics";
+import { trackEvent, ConversionEvents } from "@/lib/analytics";
 import { getUtmParams } from "@/lib/utm";
 import { FileDown, CheckCircle2, Loader2 } from "lucide-react";
+
 import { toast } from "sonner";
 import { z } from "zod";
 
