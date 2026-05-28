@@ -871,19 +871,25 @@ export default function PublicTalentProfile() {
             variant="outline"
             className="flex-1"
             onClick={async () => {
-              const url = getPublicTalentUrl(profile.public_username);
+              const { withAppUtm, shareUtm } = await import("@/lib/withAppUtm");
+              const { trackEvent } = await import("@/lib/analytics");
+              const rawUrl = getPublicTalentUrl(profile.public_username);
+              const url = withAppUtm(rawUrl, shareUtm("talent_profile", profile.public_username));
+              const canNativeShare = typeof navigator.share === "function";
+              trackEvent("share_click", { surface: "public_talent_profile", method: canNativeShare ? "native" : "copy" });
               const shareData = {
                 title: `${fullName} · JobLine Talent`,
                 text: profile.headline ?? `${fullName} on JobLine`,
                 url,
               };
               try {
-                if (navigator.share) await navigator.share(shareData);
+                if (canNativeShare) await navigator.share(shareData);
                 else await navigator.clipboard.writeText(url);
               } catch {
                 /* dismissed */
               }
             }}
+
           >
             <Share2 className="w-4 h-4 mr-1.5" /> Share
           </Button>
