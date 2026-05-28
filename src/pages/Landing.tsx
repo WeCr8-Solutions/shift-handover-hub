@@ -195,8 +195,6 @@ export default function Landing() {
   useScrollDepthTracking("landing");
 
 
-  const [demoModalOpen, setDemoModalOpen] = useState(false);
-
   useEffect(() => {
     const interval = setInterval(() => {
       setActiveTestimonial((prev) => (prev + 1) % testimonials.length);
