@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Download, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { ConversionEvents } from "@/lib/analytics";
 
 interface Props {
   /** ID of a DOM element that contains the rendered <CertificateTemplate />. */
