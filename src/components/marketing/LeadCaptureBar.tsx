@@ -2,9 +2,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
-import { trackEvent } from "@/lib/analytics";
+import { trackEvent, ConversionEvents } from "@/lib/analytics";
 import { getUtmParams } from "@/lib/utm";
 import { FileDown, CheckCircle2, Loader2 } from "lucide-react";
+
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -37,7 +38,9 @@ export function LeadCaptureBar({ sourcePage = "landing", className = "" }: LeadC
         lead_type: "template_download",
       });
 
-      if (error) throw error;
+      trackEvent("lead_captured", { source_page: sourcePage, lead_type: "template_download", ...getUtmParams() });
+      ConversionEvents.templateDownload("JobLine_Setup_Template.xlsx", sourcePage, "lead_capture_bar");
+      setSubmitted(true);
 
       trackEvent("lead_captured", { source_page: sourcePage, lead_type: "template_download", ...getUtmParams() });
       setSubmitted(true);

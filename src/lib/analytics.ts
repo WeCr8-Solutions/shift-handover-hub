@@ -252,7 +252,27 @@ export const ConversionEvents = {
     trackEvent('video_play', { page_path: pagePath, source }),
   videoComplete: (pagePath: string, source: string) =>
     trackEvent('video_complete', { page_path: pagePath, source }),
+
+  // ── High-intent conversions (mark these as Key Events in GA4 Admin > Events) ──
+  // page_view should NOT be a key event for an industrial site — these are.
+
+  /** Template/spec-sheet/PDF download. fileName = bare filename, e.g. "JobLine_Setup_Template.xlsx". */
+  pdfDownload: (fileName: string, pagePath: string, source: string = 'unknown') =>
+    trackEvent('pdf_download', { file_name: fileName, page_path: pagePath, source }),
+
+  /** Free template download (Excel/PDF) — distinct from generic pdfDownload for lead-magnet attribution. */
+  templateDownload: (templateName: string, pagePath: string, source: string = 'lead_capture') =>
+    trackEvent('template_download', { template_name: templateName, page_path: pagePath, source }),
+
+  /** Any "Contact us" / message / inbound inquiry form submit (not Demo or Lead Capture). */
+  contactSubmit: (pagePath: string, formId: string = 'contact') =>
+    trackEvent('contact_submit', { page_path: pagePath, form_id: formId }),
+
+  /** Request for Quote (RFQ) flow initiated — top-of-funnel for industrial buyers. */
+  rfqStarted: (pagePath: string, source: string = 'unknown') =>
+    trackEvent('rfq_started', { page_path: pagePath, source }),
 };
+
 
 // Error Tracking
 export const ErrorEvents = {
