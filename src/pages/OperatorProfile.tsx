@@ -2222,9 +2222,13 @@ function ShareProfileCard({
 
   const copy = async () => {
     if (!publicUrl) return;
+    const { withAppUtm, shareUtm } = await import("@/lib/withAppUtm");
+    const { trackEvent } = await import("@/lib/analytics");
+    const taggedUrl = withAppUtm(publicUrl, shareUtm("own_talent_profile", username ?? undefined));
     try {
-      await navigator.clipboard.writeText(publicUrl);
-      toast({ title: "Link copied", description: publicUrl });
+      await navigator.clipboard.writeText(taggedUrl);
+      trackEvent("share_click", { surface: "own_talent_profile", method: "copy" });
+      toast({ title: "Link copied", description: taggedUrl });
     } catch {
       toast({ title: "Copy failed", variant: "destructive" });
     }
@@ -2232,9 +2236,13 @@ function ShareProfileCard({
 
   const nativeShare = async () => {
     if (!publicUrl) return;
-    if (navigator.share) {
+    if (typeof navigator.share === "function") {
+      const { withAppUtm, shareUtm } = await import("@/lib/withAppUtm");
+      const { trackEvent } = await import("@/lib/analytics");
+      const taggedUrl = withAppUtm(publicUrl, shareUtm("own_talent_profile", username ?? undefined));
+      trackEvent("share_click", { surface: "own_talent_profile", method: "native" });
       try {
-        await navigator.share({ title: shareText, text: shareText, url: publicUrl });
+        await navigator.share({ title: shareText, text: shareText, url: taggedUrl });
       } catch {
         /* user cancelled */
       }
@@ -2242,6 +2250,7 @@ function ShareProfileCard({
       copy();
     }
   };
+
 
   if (!isLive) {
     return (
