@@ -38,7 +38,9 @@ export function LeadCaptureBar({ sourcePage = "landing", className = "" }: LeadC
         lead_type: "template_download",
       });
 
-      if (error) throw error;
+      trackEvent("lead_captured", { source_page: sourcePage, lead_type: "template_download", ...getUtmParams() });
+      ConversionEvents.templateDownload("JobLine_Setup_Template.xlsx", sourcePage, "lead_capture_bar");
+      setSubmitted(true);
 
       trackEvent("lead_captured", { source_page: sourcePage, lead_type: "template_download", ...getUtmParams() });
       setSubmitted(true);
