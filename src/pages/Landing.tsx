@@ -19,6 +19,8 @@ import { FreeTalentProfileBanner } from "@/components/marketing/FreeTalentProfil
 import { LandingNextStepsBand } from "@/components/marketing/LandingNextStepsBand";
 
 import { trackEvent, ConversionEvents } from "@/lib/analytics";
+import { useScrollDepthTracking } from "@/hooks/useScrollDepthTracking";
+
 import { getUtmParams } from "@/lib/utm";
 const demoVideo = "/jobline-demo-video.mp4";
 import { 
@@ -181,7 +183,6 @@ const testimonials = [
     company: "Delta Manufacturing",
   },
 ];
-
 export default function Landing() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -189,6 +190,10 @@ export default function Landing() {
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [demoModalOpen, setDemoModalOpen] = useState(false);
+
+  // Engagement signal — fires `scroll_depth` at 50% and 90% (once per load).
+  useScrollDepthTracking("landing");
+
 
   useEffect(() => {
     const interval = setInterval(() => {

@@ -176,9 +176,13 @@ export default function TalentBrowse() {
     (verifiedOnly ? 1 : 0);
 
   const handleShare = async () => {
-    const url = window.location.href;
+    const { withAppUtm, shareUtm } = await import("@/lib/withAppUtm");
+    const { trackEvent } = await import("@/lib/analytics");
+    const url = withAppUtm(window.location.href, shareUtm("talent_search"));
+    const canNativeShare = typeof navigator.share === "function";
+    trackEvent("share_click", { surface: "talent_browse", method: canNativeShare ? "native" : "copy" });
     try {
-      if (navigator.share) {
+      if (canNativeShare) {
         await navigator.share({ title: "JobLine Talent Search", url });
       } else {
         await navigator.clipboard.writeText(url);
@@ -188,6 +192,8 @@ export default function TalentBrowse() {
       // user cancelled
     }
   };
+
+
 
   const jsonLd = {
     "@context": "https://schema.org",
