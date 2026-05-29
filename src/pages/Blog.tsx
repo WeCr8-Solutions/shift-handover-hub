@@ -50,7 +50,7 @@ const CATEGORIES = [
 export default function Blog() {
   const [mdxPosts, setMdxPosts] = useState<PostMeta[]>([]);
   const [dbPosts, setDbPosts] = useState<PostMeta[]>([]);
-  const [activeCategory, setActiveCategory] = useUrlState("category", "All");
+  const [activeCategory, setActiveCategory] = useUrlState<string>("category", "All");
   const [loading, setLoading] = useState(true);
 
   // Load MDX posts
