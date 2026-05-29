@@ -112,6 +112,49 @@ export function BlogAdmin() {
   const [saving, setSaving] = useState(false);
   const [tagInput, setTagInput] = useState("");
   const [uploading, setUploading] = useState<"cover" | "gallery" | "video" | null>(null);
+  const [draftRestored, setDraftRestored] = useState(false);
+
+  // Draft persistence: survive accidental refresh / tab close / browser Back
+  // while the editor dialog is open. Keyed per post id ("new" for unsaved).
+  const draftKey = (id: string | undefined) => `jobline:draft:blog:${id ?? "new"}`;
+
+  // Persist editingPost to sessionStorage on every change (debounced via rAF).
+  useEffect(() => {
+    if (!editingPost) return;
+    if (typeof sessionStorage === "undefined") return;
+    const raf = requestAnimationFrame(() => {
+      try {
+        sessionStorage.setItem(draftKey(editingPost.id as string | undefined), JSON.stringify(editingPost));
+      } catch {
+        /* quota — drop */
+      }
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [editingPost]);
+
+  // One-time draft restore on mount: if a "new" draft exists, reopen the editor.
+  useEffect(() => {
+    if (typeof sessionStorage === "undefined") return;
+    try {
+      const raw = sessionStorage.getItem(draftKey(undefined));
+      if (raw) {
+        const parsed = JSON.parse(raw) as Partial<BlogPost>;
+        if (parsed && (parsed.title || parsed.body || parsed.excerpt)) {
+          setEditingPost(parsed);
+          setDialogOpen(true);
+          setDraftRestored(true);
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const clearDraft = (id: string | undefined) => {
+    if (typeof sessionStorage === "undefined") return;
+    try { sessionStorage.removeItem(draftKey(id)); } catch { /* ignore */ }
+  };
 
   const coverInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
