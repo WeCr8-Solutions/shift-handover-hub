@@ -6,6 +6,7 @@ import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { supabase } from "@/integrations/supabase/client";
 import { trackEvent } from "@/lib/analytics";
+import { useUrlState } from "@/hooks/useUrlState";
 
 // ---------------------------------------------------------------------------
 // Types
