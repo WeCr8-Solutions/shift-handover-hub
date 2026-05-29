@@ -6,6 +6,7 @@ import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { supabase } from "@/integrations/supabase/client";
 import { trackEvent } from "@/lib/analytics";
+import { useUrlState } from "@/hooks/useUrlState";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -49,7 +50,7 @@ const CATEGORIES = [
 export default function Blog() {
   const [mdxPosts, setMdxPosts] = useState<PostMeta[]>([]);
   const [dbPosts, setDbPosts] = useState<PostMeta[]>([]);
-  const [activeCategory, setActiveCategory] = useState("All");
+  const [activeCategory, setActiveCategory] = useUrlState<string>("category", "All");
   const [loading, setLoading] = useState(true);
 
   // Load MDX posts

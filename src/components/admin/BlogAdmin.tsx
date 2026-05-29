@@ -112,6 +112,49 @@ export function BlogAdmin() {
   const [saving, setSaving] = useState(false);
   const [tagInput, setTagInput] = useState("");
   const [uploading, setUploading] = useState<"cover" | "gallery" | "video" | null>(null);
+  const [draftRestored, setDraftRestored] = useState(false);
+
+  // Draft persistence: survive accidental refresh / tab close / browser Back
+  // while the editor dialog is open. Keyed per post id ("new" for unsaved).
+  const draftKey = (id: string | undefined) => `jobline:draft:blog:${id ?? "new"}`;
+
+  // Persist editingPost to sessionStorage on every change (debounced via rAF).
+  useEffect(() => {
+    if (!editingPost) return;
+    if (typeof sessionStorage === "undefined") return;
+    const raf = requestAnimationFrame(() => {
+      try {
+        sessionStorage.setItem(draftKey(editingPost.id as string | undefined), JSON.stringify(editingPost));
+      } catch {
+        /* quota — drop */
+      }
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [editingPost]);
+
+  // One-time draft restore on mount: if a "new" draft exists, reopen the editor.
+  useEffect(() => {
+    if (typeof sessionStorage === "undefined") return;
+    try {
+      const raw = sessionStorage.getItem(draftKey(undefined));
+      if (raw) {
+        const parsed = JSON.parse(raw) as Partial<BlogPost>;
+        if (parsed && (parsed.title || parsed.body || parsed.excerpt)) {
+          setEditingPost(parsed);
+          setDialogOpen(true);
+          setDraftRestored(true);
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const clearDraft = (id: string | undefined) => {
+    if (typeof sessionStorage === "undefined") return;
+    try { sessionStorage.removeItem(draftKey(id)); } catch { /* ignore */ }
+  };
 
   const coverInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
@@ -211,6 +254,10 @@ export function BlogAdmin() {
       toast({ title: "Error saving post", description: error.message, variant: "destructive" });
     } else {
       toast({ title: editingPost.id ? "Post updated" : "Post created" });
+      // Clear both the per-id draft and the "new" draft slot.
+      clearDraft(editingPost.id as string | undefined);
+      clearDraft(undefined);
+      setDraftRestored(false);
       setDialogOpen(false);
       setEditingPost(null);
       fetchPosts();
@@ -496,12 +543,37 @@ export function BlogAdmin() {
         </div>
       )}
 
-      {/* Create/Edit Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog
+        open={dialogOpen}
+        onOpenChange={(open) => {
+          setDialogOpen(open);
+          // Closing via Esc / overlay click does NOT clear the draft —
+          // the user can reopen and keep working. Drafts only clear on
+          // explicit Save success or the Discard button.
+          if (!open) setDraftRestored(false);
+        }}
+      >
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingPost?.id ? "Edit Post" : "New Blog/Vlog Post"}</DialogTitle>
           </DialogHeader>
+          {draftRestored && (
+            <div className="rounded-md border border-primary/40 bg-primary/10 px-3 py-2 text-xs text-foreground flex items-center justify-between gap-3">
+              <span>Unsaved draft restored from your previous session.</span>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  clearDraft(editingPost?.id as string | undefined);
+                  clearDraft(undefined);
+                  setDraftRestored(false);
+                  setEditingPost(editingPost?.id ? editingPost : { ...emptyPost });
+                }}
+              >
+                Discard draft
+              </Button>
+            </div>
+          )}
           {editingPost && (
             <Tabs defaultValue="content" className="w-full">
               <TabsList className="grid grid-cols-4 w-full">
