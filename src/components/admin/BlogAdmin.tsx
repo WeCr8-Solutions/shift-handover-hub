@@ -543,12 +543,37 @@ export function BlogAdmin() {
         </div>
       )}
 
-      {/* Create/Edit Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog
+        open={dialogOpen}
+        onOpenChange={(open) => {
+          setDialogOpen(open);
+          // Closing via Esc / overlay click does NOT clear the draft —
+          // the user can reopen and keep working. Drafts only clear on
+          // explicit Save success or the Discard button.
+          if (!open) setDraftRestored(false);
+        }}
+      >
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingPost?.id ? "Edit Post" : "New Blog/Vlog Post"}</DialogTitle>
           </DialogHeader>
+          {draftRestored && (
+            <div className="rounded-md border border-primary/40 bg-primary/10 px-3 py-2 text-xs text-foreground flex items-center justify-between gap-3">
+              <span>Unsaved draft restored from your previous session.</span>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  clearDraft(editingPost?.id as string | undefined);
+                  clearDraft(undefined);
+                  setDraftRestored(false);
+                  setEditingPost(editingPost?.id ? editingPost : { ...emptyPost });
+                }}
+              >
+                Discard draft
+              </Button>
+            </div>
+          )}
           {editingPost && (
             <Tabs defaultValue="content" className="w-full">
               <TabsList className="grid grid-cols-4 w-full">
