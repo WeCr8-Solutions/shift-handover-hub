@@ -254,6 +254,10 @@ export function BlogAdmin() {
       toast({ title: "Error saving post", description: error.message, variant: "destructive" });
     } else {
       toast({ title: editingPost.id ? "Post updated" : "Post created" });
+      // Clear both the per-id draft and the "new" draft slot.
+      clearDraft(editingPost.id as string | undefined);
+      clearDraft(undefined);
+      setDraftRestored(false);
       setDialogOpen(false);
       setEditingPost(null);
       fetchPosts();
