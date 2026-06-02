@@ -4,7 +4,7 @@
  * `qrcode` dependency for the QR.
  */
 import { useEffect, useRef } from "react";
-import bwipjs from "bwip-js";
+import bwipjs from "bwip-js/browser";
 import QRCode from "qrcode";
 
 interface BarcodeProps {
