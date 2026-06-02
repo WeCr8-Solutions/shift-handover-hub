@@ -8991,6 +8991,80 @@ export type Database = {
           },
         ]
       }
+      organization_traveler_settings: {
+        Row: {
+          company_name_line: string | null
+          created_at: string
+          footer_text: string | null
+          id: string
+          logo_path: string | null
+          organization_id: string
+          paper_size: string
+          priority_color_map: Json
+          show_routing: boolean
+          show_serials: boolean
+          show_signoff: boolean
+          updated_at: string
+        }
+        Insert: {
+          company_name_line?: string | null
+          created_at?: string
+          footer_text?: string | null
+          id?: string
+          logo_path?: string | null
+          organization_id: string
+          paper_size?: string
+          priority_color_map?: Json
+          show_routing?: boolean
+          show_serials?: boolean
+          show_signoff?: boolean
+          updated_at?: string
+        }
+        Update: {
+          company_name_line?: string | null
+          created_at?: string
+          footer_text?: string | null
+          id?: string
+          logo_path?: string | null
+          organization_id?: string
+          paper_size?: string
+          priority_color_map?: Json
+          show_routing?: boolean
+          show_serials?: boolean
+          show_signoff?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_traveler_settings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "organization_traveler_settings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_traveler_settings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_traveler_settings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_usage: {
         Row: {
           created_at: string | null

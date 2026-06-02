@@ -15,6 +15,7 @@ import {
   Play, Pause, CheckCircle2, Loader2, ArrowRight, GitBranch,
   ShieldAlert, FileText, ArrowRightLeft,
 } from "lucide-react";
+import { PrintTravelerButton } from "@/components/work-orders/traveler/PrintTravelerButton";
 
 interface RoutingStepRow {
   id: string;
@@ -326,6 +327,7 @@ export function QueueItemActions({
             Create Handoff
             <ArrowRight className="w-4 h-4" />
           </Button>
+          <PrintTravelerButton workOrderId={item.id} priority={item.priority} />
         </div>
       )}
 
