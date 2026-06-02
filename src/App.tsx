@@ -35,6 +35,7 @@ const Queue = lazy(() => import("./pages/Queue"));
 const QueueHub = lazy(() => import("./pages/QueueHub"));
 const PlanningCenter = lazy(() => import("./pages/PlanningCenter"));
 const WorkOrdersHub = lazy(() => import("./pages/WorkOrdersHub"));
+const WorkOrderTraveler = lazy(() => import("./pages/WorkOrderTraveler"));
 const CompletedWorkOrders = lazy(() => import("./pages/CompletedWorkOrders"));
 const CancelledWorkOrders = lazy(() => import("./pages/CancelledWorkOrders"));
 const OnHoldWorkOrders = lazy(() => import("./pages/OnHoldWorkOrders"));
@@ -218,6 +219,7 @@ const App = () => (
                     <Route path="/work-orders/completed" element={<RequireAuth><RequireOrg><CompletedWorkOrders /></RequireOrg></RequireAuth>} />
                     <Route path="/work-orders/cancelled" element={<RequireAuth><RequireOrg><CancelledWorkOrders /></RequireOrg></RequireAuth>} />
                     <Route path="/work-orders/on-hold" element={<RequireAuth><RequireOrg><OnHoldWorkOrders /></RequireOrg></RequireAuth>} />
+                    <Route path="/work-orders/:id/traveler" element={<RequireAuth><RequireOrg><WorkOrderTraveler /></RequireOrg></RequireAuth>} />
                     <Route path="/quotes" element={<RequireAuth><RequireOrg><QuotesHub /></RequireOrg></RequireAuth>} />
                     <Route path="/history" element={<RequireAuth><RequireOrg><WorkOrderHistoryPage /></RequireOrg></RequireAuth>} />
                     <Route path="/quote-history" element={<RequireAuth><RequireOrg><QuoteHistoryPage /></RequireOrg></RequireAuth>} />
