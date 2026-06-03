@@ -24,6 +24,7 @@ import {
   Cog,
   Globe,
   IdCard,
+  Printer,
   type LucideIcon,
 } from "lucide-react";
 
@@ -66,6 +67,11 @@ const ERPConnectorSettings = lazy(() =>
 );
 const MarketplacePanel = lazy(() => import("./panels/MarketplacePanel"));
 const TalentProfileSettings = lazy(() => import("./panels/TalentProfileSettings"));
+const TravelerBrandingSettings = lazy(() =>
+  import("@/components/work-orders/traveler/TravelerBrandingSettings").then((m) => ({
+    default: m.TravelerBrandingSettings,
+  })),
+);
 
 // ---------- Types ----------
 
@@ -237,6 +243,17 @@ export const SETTINGS_MODULES: SettingsModule[] = [
     orgLevel: true,
     render: ({ canEditOrgSettings }) =>
       orgGated(canEditOrgSettings, withSuspense(<WorkCenterSettings />)),
+  },
+  {
+    id: "traveler-template",
+    label: "Traveler Template",
+    description: "Printable ISO 9001 work order traveler",
+    icon: Printer,
+    group: "production",
+    parentId: "manufacturing",
+    orgLevel: true,
+    render: ({ canEditOrgSettings }) =>
+      orgGated(canEditOrgSettings, withSuspense(<TravelerBrandingSettings />)),
   },
   {
     id: "alerts",
