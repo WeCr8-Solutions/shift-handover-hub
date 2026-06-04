@@ -69,14 +69,6 @@ export function PaymentPanel({ engagement }: { engagement: Engagement2 }) {
   const [payFile, setPayFile] = useState<File | null>(null);
   const [paySaving, setPaySaving] = useState(false);
 
-  const [signerName, setSignerName] = useState(engagement.contract_signer_name ?? "");
-  const [signerTitle, setSignerTitle] = useState(engagement.contract_signer_title ?? "");
-  const [signedDate, setSignedDate] = useState<string>(
-    engagement.contract_signed_at?.slice(0, 10) ?? new Date().toISOString().slice(0, 10),
-  );
-  const [contractFile, setContractFile] = useState<File | null>(null);
-  const [contractSaving, setContractSaving] = useState(false);
-
   const refresh = () => {
     qc.invalidateQueries({ queryKey: ["onboarding-engagement"] });
     qc.invalidateQueries({ queryKey: ["onboarding-engagements"] });
@@ -109,28 +101,6 @@ export function PaymentPanel({ engagement }: { engagement: Engagement2 }) {
     }
   }
 
-  async function recordContract() {
-    setContractSaving(true);
-    try {
-      let proofPath: string | null = null;
-      if (contractFile) proofPath = await uploadProof(engagement.organization_id, engagement.id, "contract", contractFile);
-      const { error } = await supabase.rpc("record_concierge_contract_signature" as any, {
-        p_engagement_id: engagement.id,
-        p_signer_name: signerName,
-        p_signer_title: signerTitle || null,
-        p_signed_at: new Date(signedDate).toISOString(),
-        p_contract_proof_path: proofPath,
-      });
-      if (error) throw error;
-      toast.success("Signed contract recorded");
-      setContractFile(null);
-      refresh();
-    } catch (e: any) {
-      toast.error(e?.message ?? "Failed to record signature");
-    } finally {
-      setContractSaving(false);
-    }
-  }
 
   return (
     <Card>
