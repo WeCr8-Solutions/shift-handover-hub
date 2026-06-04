@@ -6780,6 +6780,75 @@ export type Database = {
           },
         ]
       }
+      oap_recert_reminder_log: {
+        Row: {
+          due_at: string
+          enrollment_id: string
+          id: string
+          operator_user_id: string
+          organization_id: string
+          recipient_email: string
+          reminder_bucket: string
+          sent_at: string
+        }
+        Insert: {
+          due_at: string
+          enrollment_id: string
+          id?: string
+          operator_user_id: string
+          organization_id: string
+          recipient_email: string
+          reminder_bucket: string
+          sent_at?: string
+        }
+        Update: {
+          due_at?: string
+          enrollment_id?: string
+          id?: string
+          operator_user_id?: string
+          organization_id?: string
+          recipient_email?: string
+          reminder_bucket?: string
+          sent_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oap_recert_reminder_log_enrollment_id_fkey"
+            columns: ["enrollment_id"]
+            isOneToOne: false
+            referencedRelation: "oap_enrollments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oap_recert_reminder_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "oap_recert_reminder_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oap_recert_reminder_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oap_recert_reminder_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       oap_role_program_courses: {
         Row: {
           course_id: string
