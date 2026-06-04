@@ -1,17 +1,20 @@
 import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { AlertTriangle, AlertCircle, Info, Gift, Megaphone, Bell, BellRing, Check, ExternalLink, X, MessagesSquare, Inbox, Building2, Briefcase } from "lucide-react";
+import { AlertTriangle, AlertCircle, Info, Gift, Megaphone, Bell, BellRing, Check, CheckCheck, Clock, ExternalLink, X, MessagesSquare, Inbox, Building2, Briefcase } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useSmartAlerts, type SmartAlert, type SmartAlertSeverity } from "@/hooks/useSmartAlerts";
 import { useGlobalUpdates, type GlobalUpdate } from "@/hooks/useGlobalUpdates";
 import { useOrgContext } from "@/contexts/OrgContext";
 import { useOrgMessagesUnread } from "@/hooks/useOrgMessaging";
 import { useTalentInboxUnread } from "@/hooks/useTalentInboxUnread";
 import { useDeviceNotifications } from "@/hooks/useDeviceNotifications";
+import { useAlertSnooze, SNOOZE_OPTIONS } from "@/hooks/useAlertSnooze";
+import { useNotificationPrefs } from "@/hooks/useNotificationPrefs";
 import { differenceInDays } from "date-fns";
 
 const DISMISS_KEY_PREFIX = "complimentary_award_dismissed_";
@@ -28,7 +31,17 @@ const severityColor: Record<SmartAlertSeverity, string> = {
   info: "text-blue-500",
 };
 
-function SmartAlertItem({ alert, onNavigate }: { alert: SmartAlert; onNavigate: () => void }) {
+function SmartAlertItem({
+  alert,
+  onNavigate,
+  onSnooze,
+  onAck,
+}: {
+  alert: SmartAlert;
+  onNavigate: () => void;
+  onSnooze: (id: string, ms: number) => void;
+  onAck: (id: string) => void;
+}) {
   const navigate = useNavigate();
   const Icon = severityIcon[alert.severity];
 
@@ -40,27 +53,45 @@ function SmartAlertItem({ alert, onNavigate }: { alert: SmartAlert; onNavigate: 
   };
 
   return (
-    <button
-      onClick={handleClick}
-      className="w-full flex items-start gap-2.5 p-2.5 rounded-md hover:bg-secondary/60 transition-colors text-left"
-    >
-      <Icon className={`w-4 h-4 mt-0.5 shrink-0 ${severityColor[alert.severity]}`} />
-      <div className="flex-1 min-w-0">
-        <p className="text-xs font-medium leading-tight truncate">{alert.title}</p>
-        <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">{alert.detail}</p>
-        {alert.metricLabel && (
-          <span className="text-[10px] text-muted-foreground mt-1 inline-block">
-            {alert.metricLabel}: {alert.metric}
-          </span>
-        )}
+    <div className="w-full flex items-start gap-2.5 p-2.5 rounded-md hover:bg-secondary/60 transition-colors">
+      <button onClick={handleClick} className="flex items-start gap-2.5 flex-1 min-w-0 text-left">
+        <Icon className={`w-4 h-4 mt-0.5 shrink-0 ${severityColor[alert.severity]}`} />
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-medium leading-tight truncate">{alert.title}</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">{alert.detail}</p>
+          {alert.metricLabel && (
+            <span className="text-[10px] text-muted-foreground mt-1 inline-block">
+              {alert.metricLabel}: {alert.metric}
+            </span>
+          )}
+        </div>
+      </button>
+      <div className="flex items-center gap-1 shrink-0">
+        <Badge
+          variant={alert.severity === "critical" ? "destructive" : "secondary"}
+          className="text-[9px] mt-0.5"
+        >
+          {alert.severity}
+        </Badge>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="w-5 h-5" aria-label="Snooze alert">
+              <Clock className="w-3 h-3" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="z-[60]">
+            {SNOOZE_OPTIONS.map((o) => (
+              <DropdownMenuItem key={o.label} onClick={() => onSnooze(alert.id, o.ms)}>
+                Snooze {o.label}
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuItem onClick={() => onAck(alert.id)}>
+              <Check className="w-3 h-3 mr-1.5" /> Dismiss
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
-      <Badge
-        variant={alert.severity === "critical" ? "destructive" : "secondary"}
-        className="text-[9px] shrink-0 mt-0.5"
-      >
-        {alert.severity}
-      </Badge>
-    </button>
+    </div>
   );
 }
 
@@ -164,11 +195,13 @@ interface NotificationPanelProps {
 export function NotificationPanel({ onClose }: NotificationPanelProps) {
   const navigate = useNavigate();
   const { organization } = useOrgContext();
-  const { alerts } = useSmartAlerts();
+  const { alerts: allAlerts } = useSmartAlerts();
   const { updates, unreadCount, acknowledgedIds, acknowledgeUpdate } = useGlobalUpdates();
   const orgMessagesUnread = useOrgMessagesUnread();
   const talentInboxUnread = useTalentInboxUnread();
   const deviceNotif = useDeviceNotifications();
+  const { notifications: prefs } = useNotificationPrefs();
+  const { isSnoozed, snooze, acknowledge, acknowledgeMany } = useAlertSnooze();
   const [complimentaryDismissed, setComplimentaryDismissed] = useState(false);
 
   const isComplimentary = organization?.subscription_status === "complimentary";
@@ -187,6 +220,17 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
     setComplimentaryDismissed(true);
   };
 
+  // Filter alerts by station subscription preferences + snooze state
+  const alerts = useMemo(() => {
+    const subscribeAll = prefs?.subscribe_all_stations ?? true;
+    const subbed = new Set(prefs?.subscribed_station_ids ?? []);
+    return allAlerts.filter((a) => {
+      if (isSnoozed(a.id)) return false;
+      if (!subscribeAll && a.targetType === "station" && !subbed.has(a.targetId)) return false;
+      return true;
+    });
+  }, [allAlerts, prefs, isSnoozed]);
+
   const visibleUpdates = updates.filter((u) => u.is_visible_to_users && u.status === "live");
   const showComplimentary = isComplimentary && !complimentaryDismissed;
   const announcementCount = (showComplimentary ? 1 : 0);
@@ -196,6 +240,7 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
     navigate(path);
     onClose();
   };
+
 
   return (
     <div className="w-full">
@@ -268,12 +313,31 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
               </div>
             ) : (
               <div className="flex flex-col gap-1 mt-2">
+                <div className="flex items-center justify-between px-1 pb-1">
+                  <span className="text-[10px] text-muted-foreground">{alerts.length} active</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-5 text-[10px] px-1.5"
+                    onClick={() => acknowledgeMany(alerts.map((a) => a.id))}
+                  >
+                    <CheckCheck className="w-3 h-3 mr-1" />
+                    Dismiss all
+                  </Button>
+                </div>
                 {alerts.map((alert) => (
-                  <SmartAlertItem key={alert.id} alert={alert} onNavigate={onClose} />
+                  <SmartAlertItem
+                    key={alert.id}
+                    alert={alert}
+                    onNavigate={onClose}
+                    onSnooze={snooze}
+                    onAck={acknowledge}
+                  />
                 ))}
               </div>
             )}
           </TabsContent>
+
 
           <TabsContent value="messages" className="px-3 pb-3 mt-0">
             {messagesTotal === 0 ? (
@@ -380,6 +444,8 @@ export function useNotificationBadgeCount() {
   const { unreadCount } = useGlobalUpdates();
   const orgMessagesUnread = useOrgMessagesUnread();
   const talentInboxUnread = useTalentInboxUnread();
+  const { notifications: prefs } = useNotificationPrefs();
+  const { isSnoozed } = useAlertSnooze();
 
   const isComplimentary = organization?.subscription_status === "complimentary";
 
@@ -391,8 +457,18 @@ export function useNotificationBadgeCount() {
     if (localStorage.getItem(key) === "true") setComplimentaryDismissed(true);
   }, [organization]);
 
+  const visibleAlertCount = useMemo(() => {
+    const subscribeAll = prefs?.subscribe_all_stations ?? true;
+    const subbed = new Set(prefs?.subscribed_station_ids ?? []);
+    return alerts.filter((a) => {
+      if (isSnoozed(a.id)) return false;
+      if (!subscribeAll && a.targetType === "station" && !subbed.has(a.targetId)) return false;
+      return true;
+    }).length;
+  }, [alerts, prefs, isSnoozed]);
+
   return (
-    alerts.length +
+    visibleAlertCount +
     unreadCount +
     orgMessagesUnread +
     talentInboxUnread +
