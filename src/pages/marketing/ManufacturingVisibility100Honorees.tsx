@@ -135,9 +135,9 @@ export default function ManufacturingVisibility100Honorees() {
                     className="block group"
                   >
                     <Card className="hover:shadow-md hover:border-primary/40 transition-all">
-                      <CardContent className="py-4 flex items-start gap-4">
-                        <div className="flex flex-col items-center min-w-[64px]">
-                          <div className="text-3xl md:text-4xl font-bold tracking-tight tabular-nums">
+                      <CardContent className="py-3 sm:py-4 px-3 sm:px-6 flex items-start gap-3 sm:gap-4">
+                        <div className="flex flex-col items-center min-w-[44px] sm:min-w-[64px]">
+                          <div className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight tabular-nums">
                             {h.rank}
                           </div>
                           <MovementBadge movement={h.rank_movement} previous={h.previous_rank} current={h.rank} />
