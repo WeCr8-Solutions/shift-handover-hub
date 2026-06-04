@@ -156,6 +156,15 @@ export function NotificationSettings() {
         </CardContent>
       </Card>
 
+      <StationSubscriptionsCard
+        subscribeAll={settings.subscribe_all_stations}
+        subscribedIds={settings.subscribed_station_ids}
+        onChangeAll={(v) => setSettings(p => ({ ...p, subscribe_all_stations: v }))}
+        onChangeIds={(ids) => setSettings(p => ({ ...p, subscribed_station_ids: ids }))}
+      />
+
+
+
       <SettingsFooter
         isDirty={isDirty}
         isSaving={isSaving}
