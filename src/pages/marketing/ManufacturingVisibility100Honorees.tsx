@@ -145,7 +145,7 @@ export default function ManufacturingVisibility100Honorees() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
-                              <div className="font-semibold text-lg group-hover:text-primary transition-colors">
+                              <div className="font-semibold text-base sm:text-lg group-hover:text-primary transition-colors">
                                 {h.nominee_name}
                               </div>
                               {(h.nominee_role || h.nominee_company) && (
