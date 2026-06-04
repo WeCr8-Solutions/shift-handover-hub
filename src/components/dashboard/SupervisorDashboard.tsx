@@ -99,10 +99,12 @@ export function SupervisorDashboard({
   const orgName = organization?.name || "Organization";
   const scopeLabel = currentTeam?.name || `${orgName} · All Teams`;
 
-  // KPIs
+  // KPIs — only counts active stations so the denominator matches every chart
+  // (Status pie / Teams / Work Centers all filter on is_active=true).
   const kpis = useMemo(() => {
     let running = 0, down = 0, setup = 0, waiting = 0;
-    dbStations.forEach((s) => {
+    const activeStationsAll = dbStations.filter((s) => s.is_active);
+    activeStationsAll.forEach((s) => {
       const status = getStatusFromJobState(s.current_status?.current_job_state);
       switch (status) {
         case "running": running++; break;
@@ -111,7 +113,7 @@ export function SupervisorDashboard({
         case "waiting": waiting++; break;
       }
     });
-    return { running, down, setup, waiting, total: dbStations.length, handoffs: dbRecords.length };
+    return { running, down, setup, waiting, total: activeStationsAll.length, handoffs: dbRecords.length };
   }, [dbStations, dbRecords]);
 
   // Attention items
@@ -185,19 +187,20 @@ export function SupervisorDashboard({
     }));
   }, [dbRecords]);
 
-  // Utilization
+  // Utilization — denominator is active stations (matches kpis.total)
   const utilization = useMemo(() => {
-    const total = dbStations.length;
-    if (total === 0) return { pct: 0, running: 0, setup: 0, idle: 0, down: 0 };
-    const idle = total - kpis.running - kpis.setup - kpis.down - kpis.waiting;
+    const total = kpis.total;
+    if (total === 0) return { pct: 0, running: 0, setup: 0, waiting: 0, idle: 0, down: 0 };
+    const idle = Math.max(0, total - kpis.running - kpis.setup - kpis.down - kpis.waiting);
     return {
       pct: Math.round((kpis.running / total) * 100),
       running: Math.round((kpis.running / total) * 100),
       setup: Math.round((kpis.setup / total) * 100),
-      idle: Math.round((Math.max(0, idle) / total) * 100),
+      waiting: Math.round((kpis.waiting / total) * 100),
+      idle: Math.round((idle / total) * 100),
       down: Math.round((kpis.down / total) * 100),
     };
-  }, [dbStations.length, kpis]);
+  }, [kpis]);
 
   if (isLoading) {
     return (
@@ -381,6 +384,7 @@ export function SupervisorDashboard({
                 {[
                   { label: "Running", pct: `${utilization.running}%`, color: STATUS_CONFIG.running.bgClass },
                   { label: "Setup", pct: `${utilization.setup}%`, color: STATUS_CONFIG.setup.bgClass },
+                  { label: "Waiting", pct: `${utilization.waiting}%`, color: STATUS_CONFIG.waiting.bgClass },
                   { label: "Idle", pct: `${utilization.idle}%`, color: STATUS_CONFIG.idle.bgClass },
                   { label: "Down", pct: `${utilization.down}%`, color: STATUS_CONFIG.down.bgClass },
                 ].map((s) => (
@@ -452,7 +456,7 @@ export function SupervisorDashboard({
 
       {/* Production Analytics — lazy loaded */}
       <Suspense fallback={<div className="bg-card border border-border rounded-lg p-8 text-center text-muted-foreground text-sm">Loading analytics…</div>}>
-        <ProductionAnalytics stations={filteredStationsForAnalytics} handoffs={dbRecords} isRefreshing={isRefreshing} lastRefreshedAt={lastRefreshedAt} onRefresh={handleManualRefresh} />
+        <ProductionAnalytics stations={filteredStationsForAnalytics} allStations={dbStations} handoffs={dbRecords} isRefreshing={isRefreshing} lastRefreshedAt={lastRefreshedAt} onRefresh={handleManualRefresh} />
       </Suspense>
     </div>
   );
