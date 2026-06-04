@@ -26,6 +26,7 @@ export function NotificationSettings() {
     email_machine_down: true,
     email_shift_reminders: false,
     email_weekly_summary: true,
+    email_morning_brief: true,
     push_enabled: false,
     push_urgent_only: true,
     quiet_hours_start: "",
