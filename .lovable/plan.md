@@ -1,93 +1,136 @@
-# JobLine.ai Platform Audit & Competitive Roadmap
 
-## Deliverable
+# Onboarding Services (Platform-Admin Concierge Setup)
 
-A set of Markdown files under `.lovable/audits/2026-06-mes-erp/`, all codebase-grounded with `file:line` citations for every "current state" claim. No app code changes, no UI, no DB writes.
+A new platform-admin area where JobLine staff run a paid onboarding engagement for a customer org — collecting equipment, users, roles, stations, routing templates, ERP/ITAR posture, etc. — then flipping the org to "Production Ready" so the customer can log in and start using it.
+
+## Scope
+
+- **Who uses it:** Platform Admins + Developers only (gated by `useAdminAccess.isAdmin || isDeveloper`).
+- **Who it's for:** New customer orgs that purchased the onboarding SKU.
+- **Outcome:** Org marked `onboarding_status = 'ready_for_production'`, customer receives invite, all baseline data preloaded.
+
+Customer-facing self-serve onboarding (`/setup`, `OnboardingProvider`) is untouched — this is the *concierge* track that runs in parallel.
+
+## New Admin Surface
+
+Mounted under `/admin/onboarding-services` (new tab in `src/pages/Admin.tsx`, component in `src/components/admin/onboarding/`).
+
+### 1. Engagements list
+- Table of `onboarding_engagements` rows: org, plan tier, assigned JobLine specialist, status (`intake → in_progress → review → ready_for_production → live`), % complete, last activity.
+- Filters: status, assignee, ITAR flag.
+- "New engagement" → pick existing org or create org shell + owner placeholder.
+
+### 2. Engagement detail (tabbed checklist)
+Each tab is a discrete setup module with its own upload utility + completion gate:
+
+| Tab | What admin does | Writes to |
+|---|---|---|
+| **Org Profile** | Logo, address, ITAR flag, `requires_us_person_declaration`, subscription tier, seats | `organizations`, `organization_branding` |
+| **Equipment** | Bulk CSV/XLSX upload of machines (make, model, controller, axes, work envelope) + assign to stations | `equipment`, `verified_machine_library` link |
+| **Stations & Departments** | Upload or build dept → station tree | `departments`, `stations`, `station_machine_assignments` |
+| **Users & Roles** | CSV upload (email, role, dept, station). Generates invites in bulk, optional QR sheet PDF | `organization_invites`, `user_roles` (post-accept) |
+| **Routing Templates** | Upload starter routing templates (ops, std times) | `routing_templates`, `routing_template_steps` |
+| **Quality / Inspection** | Pick inspection tool catalog overrides, upload checkpoints | `org_inspection_tool_overrides`, `quality_checkpoints` |
+| **ERP / Integrations** | Configure JobBOSS / SAP / Native + persistence mode (ITAR forces read_through) | `erp_connections`, `organization_integrations` |
+| **Training & OAP** | Seed role programs, assign mandatory courses | `oap_role_programs`, `oap_enrollments` |
+| **Documents** | Drop AS9100 / ISO / ITAR policies, equipment manuals, setup sheets | `machine_manuals`, `setup_sheets`, new `onboarding_documents` bucket |
+| **Review & Handoff** | Checklist must be 100% green → "Mark Ready for Production" → triggers customer welcome email + activates org login |
+
+Each tab shows: required vs done count, last-uploaded-by, "needs customer info" notes field.
+
+### 3. Upload utilities
+Reuse existing `BulkUploadDialog` + `useBulkUploadCollisions`. Each module gets:
+- Template download (CSV)
+- Drag-drop with row-by-row validation preview
+- Collision/duplicate handling
+- Audit row written to `admin_audit_events`
+
+### 4. Selling it (the "service" part)
+- New Stripe product: **"Concierge Onboarding"** (one-time, e.g. $1,500 — tiered later).
+- Public marketing slot on `/pricing` (small card: "Want us to set it up for you?").
+- New page `/onboarding-service` describing scope + Stripe Checkout (`mode: payment`, reuse `create-payment` pattern).
+- On successful payment webhook → auto-create an `onboarding_engagements` row in `intake` status + notify ops via existing `notification_queue`.
+- Admin can also create an engagement manually for off-platform deals.
+
+## Data Model (new)
 
 ```text
-.lovable/audits/2026-06-mes-erp/
-  00-executive-summary.md          ← read-this-first, 2-3 pages
-  01-work-order-management.md      ← Audit Category 1
-  02-shop-floor-execution.md       ← Audit Category 2
-  03-department-audits.md          ← Audit Category 3 (all 13 personas)
-  04-competitive-matrix.md         ← Audit Category 4 (feature × competitor table)
-  05-intelligence-roadmap.md       ← Audit Category 5 (AI / integrations)
-  06-executive-review.md           ← Audit Category 6 (Q&A + top 25 gaps + top 10 differentiators)
-  07-roadmap-30-90-365.md          ← Balanced action lists per horizon
-  appendix-a-file-index.md         ← Master file:line citation index
-  appendix-b-data-model-map.md     ← Which of the 180+ tables back which capability
+onboarding_engagements
+  id, organization_id (FK), purchased_via ('stripe'|'manual'),
+  stripe_payment_intent_id, plan_tier, assigned_admin_id,
+  status, percent_complete, started_at, ready_at, went_live_at,
+  notes, organization_id NOT NULL
+
+onboarding_checklist_items
+  id, engagement_id, module_key, label, required bool,
+  status ('todo'|'in_progress'|'blocked'|'done'),
+  completed_by, completed_at, customer_blocker_note
+
+onboarding_documents (storage bucket, private, org-scoped path)
+  {org_id}/{engagement_id}/{module}/{file}
 ```
 
-## Method
+Plus columns on `organizations`:
+- `onboarding_status` enum: `self_serve | concierge_intake | concierge_in_progress | ready_for_production | live`
+- `onboarding_engagement_id` (nullable FK)
 
-### Phase 1 — Inventory (read-only, ~40 min)
+Login gate: while `onboarding_status IN ('concierge_intake','concierge_in_progress')`, non-admin org members hitting `/dashboard` see a "Setup in progress with JobLine" splash (new component) instead of the dashboard. Platform admins always pass.
 
-1. Walk `src/pages/`, `src/components/`, `src/hooks/`, `supabase/functions/`, `supabase/migrations/` to map current surfaces.
-2. Cross-reference the 180+ tables in `supabase-tables` against UI surfaces — flag tables with no UI (latent capability) and UI screens with weak data (façade risk).
-3. Pull every memory under `mem://features/*` and `mem://technical/*` to avoid mis-claiming gaps for features that already exist.
-4. Read each persona's primary entry points:
-   - Operator: `src/pages/OperatorStation*`, handoff flow, `useHandoffRecords`
-   - Supervisor: `SupervisorDashboard`, `ProductionAnalytics`, queue management
-   - Engineer/Programmer: routing templates, setup_sheets, machine_manuals, VS Code extension
-   - Quality: `ncr_reports`, `quality_inspections`, `dimension_check_requests`, `routing_step_dimensions`
-   - Maintenance: `equipment`, `maintenance_records`, `downtime_events`
-   - Purchasing: `material_lots`, `delivery_requests`, outside processing
-   - Planning: `queue_items`, capacity planning, AI Planning Assistant
-   - HR/Talent: OAP, GCA, `operator_profiles`, certifications
-   - Executive: KPI dashboards, `org_health_snapshots`, `erp_usage_metering`
-5. Inventory existing ERP/MES integration surface: `erp_connections`, JobBOSS + SAP connectors, MTConnect/OPC-UA status (memory says machine_monitoring exists via WebSocket relay — verify scope).
+## RLS / Security (ITAR-safe)
 
-### Phase 2 — Persona Audits (~90 min)
+- All new tables: `organization_id` NOT NULL, RLS on, **platform-admin-only write**, org owners read-only on their own engagement.
+- `onboarding_documents` bucket: private, path-scoped `{org_id}/...`, policy uses `is_org_admin(org_id) OR is_platform_admin()`.
+- ITAR orgs: ERP tab disables `write_through` toggle (existing `enforce_itar_read_through` trigger already enforces server-side — UI mirrors it).
+- Every write logs to `admin_audit_events` with `action_type='onboarding.*'`.
+- `SECURITY DEFINER` helpers (`mark_engagement_ready`, `activate_org_for_production`) set `search_path = public`.
 
-For each of the 13 personas listed in the request, produce a section with:
-- **Today** — what exists, with `file:line` and table citations
-- **Friction** — concrete UX/data gaps (not vague "needs polish")
-- **Missing** — capabilities a comparable MES has
-- **Quick wins** — < 1 sprint
-- **Strategic** — > 1 quarter
+## Edge Functions
 
-### Phase 3 — Audit Categories 1 & 2 (Work Order + Shop Floor Execution, ~45 min)
+- `onboarding-checkout` — creates Stripe session for the service SKU.
+- `onboarding-webhook` *(or extend existing checkout webhook)* — on payment success, creates engagement + seeds default checklist from a template.
+- `onboarding-activate` — admin-invoked; verifies 100% checklist, flips org status, sends welcome email via existing `send-email`, triggers invite blast.
+- `onboarding-bulk-import` — server-side validator for large CSVs (>500 rows) to avoid client memory issues.
 
-Single tables-per-capability format covering creation → release → revision → routing → labor → setup → downtime → scrap → rework → completion → traveler replacement. Score each: Excels / Adequate / Incomplete / Missing.
+## UI Components (new)
 
-### Phase 4 — Competitive Matrix (~60 min)
+```
+src/components/admin/onboarding/
+  EngagementsList.tsx
+  EngagementDetail.tsx
+  modules/
+    OrgProfileModule.tsx
+    EquipmentModule.tsx
+    StationsModule.tsx
+    UsersRolesModule.tsx
+    RoutingModule.tsx
+    QualityModule.tsx
+    ERPModule.tsx
+    TrainingModule.tsx
+    DocumentsModule.tsx
+    ReviewHandoffModule.tsx
+  shared/
+    ModuleChecklistHeader.tsx
+    BulkTemplateDownloadButton.tsx
+    BlockerNoteField.tsx
+src/pages/OnboardingService.tsx     (public marketing + buy)
+src/components/onboarding/ConciergeInProgressSplash.tsx  (customer-side gate)
+```
 
-One large table: rows = ~60 capabilities (work orders, routing, scheduling, MRP, finite capacity, OEE, FAI, NCR/CAR, SPC, tool life, PM, MTConnect, OPC-UA, traceability, EDI, costing, GL, AP/AR, etc.); columns = JobLine + Epicor MES + SAP S/4 Mfg + Plex + Oracle Mfg Cloud + Infor CloudSuite + NetSuite Mfg. Cells = ✓ / Partial / ✗ + 1-line note. Competitor data from public docs and general knowledge — clearly marked as such, not codebase-grounded.
+Hooks: `useOnboardingEngagements`, `useEngagementChecklist`, `useEngagementUploads`.
 
-For every "Partial" or "✗" on JobLine: a Recommended Solution row with Priority (Critical/High/Medium/Low) + Effort (S/M/L/XL).
+## Out of Scope (this plan)
 
-### Phase 5 — Intelligence Roadmap (~30 min)
+- Reworking the existing self-serve `/setup` flow.
+- Custom DocuSign/contract signing (use plain PDF upload for now).
+- Multi-specialist collaboration features beyond a single `assigned_admin_id`.
+- White-glove training scheduling (link out to Calendly for now).
 
-Status table for: AI scheduling (✓ Planning Assistant exists), predictive maintenance, ML recommendations, workforce skill tracking (✓ OAP/GCA), Talent integration (✓), Tooling Hero (gap), MTConnect (verify), OPC-UA (verify), JobBOSS (✓), Epicor (gap), SAP (✓ scaffold per memory).
+## Verification
 
-### Phase 6 — Executive Review + Roadmap (~30 min)
+- Unit: checklist completion math, ITAR ERP gate, RLS helper functions.
+- E2E (`e2e/onboarding-service.spec.ts`): admin creates engagement → uploads equipment CSV → marks ready → customer login splash disappears → dashboard loads.
+- Manual: Stripe test-mode purchase → engagement auto-created.
 
-- Why-buy answers for 20 / 100 / 500 person shops
-- Unique advantages vs MES
-- "Never copy from ERP" anti-features
-- Enterprise-sales gates
-- **Top 25 missing features** ranked
-- **Top 10 differentiators** that make JobLine category-defining
-- **30-day actions**: bug-fix-class items, gaps near completion
-- **90-day actions**: feature-class items unlocking mid-market deals
-- **12-month strategic roadmap**: positioning shifts, integrations, enterprise-readiness gates
+---
 
-## Scope & Guardrails
-
-- **Read-only**: no migrations, no edits, no edge function changes.
-- **Codebase-grounded**: every JobLine "current state" claim cites `src/...` or table/migration. Competitor claims cite "public docs / general knowledge" — never invented features.
-- **No live DB queries** (per your "codebase-grounded" choice, not "codebase + live data").
-- **Personas covered exactly as requested** — all 13.
-- **Competitors covered exactly as requested** — all 6.
-- **Length budget**: ~25-40 KB per file, ~250 KB total. Skim-friendly with tables and bullets, not prose walls.
-
-## What this audit will NOT do
-
-- Will not estimate revenue or pricing strategy (out of scope).
-- Will not write any production code (plan mode → would be a separate build session).
-- Will not benchmark performance or load (no live data sample chosen).
-- Will not redesign UI (no design directions in scope).
-
-## After approval
-
-I'll execute Phases 1-6 in order in a single build session and report back with the file tree + a one-paragraph summary of headline findings. You can then queue follow-up build sessions against specific 30-day actions.
+Ready to build this out? I'd suggest sequencing as: (1) schema + RLS, (2) admin shell + engagements list, (3) modules one-by-one starting with Org Profile / Users / Equipment, (4) Stripe SKU + public page, (5) activation flow + customer splash, (6) E2E.
