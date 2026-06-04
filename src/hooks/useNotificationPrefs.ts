@@ -14,6 +14,8 @@ export interface NotificationPreferences {
   push_urgent_only: boolean;
   quiet_hours_start: string | null;
   quiet_hours_end: string | null;
+  subscribe_all_stations: boolean;
+  subscribed_station_ids: string[];
 }
 
 export function useNotificationPrefs() {
@@ -34,7 +36,11 @@ export function useNotificationPrefs() {
         .maybeSingle();
 
       if (data) {
-        setNotifications(data as NotificationPreferences);
+        setNotifications({
+          ...(data as any),
+          subscribe_all_stations: (data as any).subscribe_all_stations ?? true,
+          subscribed_station_ids: (data as any).subscribed_station_ids ?? [],
+        } as NotificationPreferences);
       } else {
         setNotifications({
           user_id: user.id,
@@ -47,6 +53,8 @@ export function useNotificationPrefs() {
           push_urgent_only: true,
           quiet_hours_start: null,
           quiet_hours_end: null,
+          subscribe_all_stations: true,
+          subscribed_station_ids: [],
         });
       }
     } catch (error) {
