@@ -7,16 +7,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ShieldCheck, Wrench, Loader2 } from "lucide-react";
 
-const BLOCKED_STATUSES = new Set([
-  "concierge_intake",
-  "concierge_in_progress",
-  "ready_for_production",
-]);
+// Operators are blocked through ready_for_production so they don't begin work before
+// the JobLine team flips the engagement to live. Org admins are allowed in during
+// ready_for_production so they can do the final walkthrough.
+const BLOCK_OPERATORS = new Set(["concierge_intake", "concierge_in_progress", "ready_for_production"]);
+const BLOCK_ADMINS = new Set(["concierge_intake", "concierge_in_progress"]);
 
 /**
  * Customer-side gate shown while the JobLine team is configuring an org via
  * the Concierge Onboarding service. Platform admins (and the /onboarding-service,
- * /auth, /admin, /pricing pages) bypass the gate.
+ * /auth, /admin, /pricing, /onboarding-status pages) bypass the gate.
  */
 export function ConciergeInProgressSplash({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
@@ -24,30 +24,35 @@ export function ConciergeInProgressSplash({ children }: { children: React.ReactN
   const location = useLocation();
   const [status, setStatus] = useState<string | null>(null);
   const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
+  const [isOrgAdmin, setIsOrgAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
       if (!user || !activeOrgId) { setLoading(false); return; }
-      const [{ data: org }, { data: pa }] = await Promise.all([
+      const [{ data: org }, { data: pa }, { data: oa }] = await Promise.all([
         supabase.from("organizations").select("onboarding_status").eq("id", activeOrgId).maybeSingle(),
-        supabase.rpc("has_role" as any, { _user_id: user.id, _role: "platform_admin" }),
+        supabase.rpc("has_role" as any, { _user_id: user.id, _role: "admin" }),
+        supabase.from("organization_members").select("role").eq("user_id", user.id).eq("organization_id", activeOrgId).maybeSingle(),
       ]);
       if (cancelled) return;
       setStatus((org as any)?.onboarding_status ?? null);
       setIsPlatformAdmin(Boolean(pa));
+      setIsOrgAdmin(["admin", "owner"].includes(String((oa as any)?.role ?? "")));
       setLoading(false);
     }
     load();
     return () => { cancelled = true; };
   }, [user, activeOrgId]);
 
-  const bypassRoutes = ["/auth", "/admin", "/onboarding-service", "/pricing", "/", "/reset-password"];
+  const bypassRoutes = ["/auth", "/admin", "/onboarding-service", "/onboarding-status", "/pricing", "/", "/reset-password"];
   const shouldBypass = bypassRoutes.some((p) => location.pathname === p || location.pathname.startsWith(p + "/"));
 
   if (loading || !user || !activeOrgId || isPlatformAdmin || shouldBypass) return <>{children}</>;
-  if (!status || !BLOCKED_STATUSES.has(status)) return <>{children}</>;
+  if (!status) return <>{children}</>;
+  const blocked = isOrgAdmin ? BLOCK_ADMINS.has(status) : BLOCK_OPERATORS.has(status);
+  if (!blocked) return <>{children}</>;
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-background">
