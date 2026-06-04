@@ -78,6 +78,7 @@ serve(async (req) => {
         metadata: {
           product_type: "concierge_onboarding",
           org_id: orgId,
+          purchased_by: user.id,
         },
       },
     });

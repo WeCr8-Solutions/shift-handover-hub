@@ -15106,14 +15106,24 @@ export type Database = {
         }
         Returns: Json
       }
-      create_concierge_engagement_from_payment: {
-        Args: {
-          p_org_id: string
-          p_payment_intent_id: string
-          p_plan_tier?: string
-        }
-        Returns: string
-      }
+      create_concierge_engagement_from_payment:
+        | {
+            Args: {
+              p_org_id: string
+              p_payment_intent_id: string
+              p_plan_tier?: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              p_org_id: string
+              p_payment_intent_id: string
+              p_plan_tier?: string
+              p_purchased_by?: string
+            }
+            Returns: string
+          }
       create_org_with_owner: {
         Args: {
           _description: string

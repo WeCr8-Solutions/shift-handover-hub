@@ -492,14 +492,33 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
   if (productType === "concierge_onboarding") {
     if (!orgId) { logStep("CONCIERGE: missing org_id"); return; }
     const paymentIntentId = (session.payment_intent as string) ?? session.id;
+    const purchasedBy = session.metadata?.purchased_by ?? null;
+
+    // Persist the Stripe customer on the organization so future billing
+    // (subscriptions, ERP add-ons, invoices) is tied to the same customer
+    // record that paid for concierge onboarding.
+    if (customerId) {
+      const { error: orgUpdErr } = await supabaseAdmin
+        .from("organizations")
+        .update({ stripe_customer_id: customerId })
+        .eq("id", orgId)
+        .is("stripe_customer_id", null);
+      if (orgUpdErr) logStep("CONCIERGE: org stripe_customer_id update failed", { error: orgUpdErr.message });
+    }
+
     const { data: engagementId, error: rpcErr } = await supabaseAdmin.rpc(
       "create_concierge_engagement_from_payment",
-      { p_org_id: orgId, p_payment_intent_id: paymentIntentId, p_plan_tier: "standard" },
+      {
+        p_org_id: orgId,
+        p_payment_intent_id: paymentIntentId,
+        p_plan_tier: "standard",
+        p_purchased_by: purchasedBy,
+      },
     );
     if (rpcErr) {
-      logStep("CONCIERGE: RPC failed", { error: rpcErr.message });
+      logStep("CONCIERGE: RPC failed", { error: rpcErr.message, orgId, purchasedBy });
     } else {
-      logStep("CONCIERGE: engagement created", { engagementId, orgId });
+      logStep("CONCIERGE: engagement created", { engagementId, orgId, purchasedBy });
     }
     return;
   }
