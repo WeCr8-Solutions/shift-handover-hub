@@ -13,7 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import {
   Play, Pause, CheckCircle2, Loader2, ArrowRight, GitBranch,
-  ShieldAlert, FileText, ArrowRightLeft,
+  ShieldAlert, FileText, ArrowRightLeft, Copy,
 } from "lucide-react";
 import { PrintTravelerButton } from "@/components/work-orders/traveler/PrintTravelerButton";
 
@@ -57,6 +57,77 @@ export function QueueItemActions({
   const [convertWONumber, setConvertWONumber] = useState("");
   const [convertStationId, setConvertStationId] = useState<string | undefined>();
   const [converting, setConverting] = useState(false);
+  const [cloning, setCloning] = useState(false);
+
+  const handleCloneWorkOrder = async () => {
+    setCloning(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const { data: full, error: loadErr } = await supabase
+        .from("queue_items")
+        .select("*")
+        .eq("id", item.id)
+        .single();
+      if (loadErr || !full) throw loadErr || new Error("Work order not found");
+
+      // Strip identity / lifecycle / progress fields — keep production spec data
+      const {
+        id: _omitId, created_at: _omitCreated, updated_at: _omitUpdated,
+        completed_at: _omitCompleted, started_at: _omitStarted,
+        converted_to_work_order_id: _omitCw, source_quote_id: _omitSq,
+        converted_at: _omitCa, converted_by: _omitCb,
+        qty_completed: _omitQc, qty_scrap: _omitQs, qty_rework: _omitQr,
+        qty_open: _omitQo, parts_completed: _omitPc,
+        ...cloneable
+      } = full as Record<string, unknown>;
+
+      const baseWO = (item.work_order ?? "WO").toString();
+      const nextWO = `${baseWO}-COPY-${Date.now().toString(36).slice(-4).toUpperCase()}`;
+
+      const { data: newWO, error: insertErr } = await supabase
+        .from("queue_items")
+        .insert({
+          ...cloneable,
+          item_type: "work_order",
+          status: "pending",
+          work_order: nextWO,
+          qty_completed: 0,
+          qty_scrap: 0,
+          qty_rework: 0,
+          parts_completed: 0,
+          created_by: user?.id ?? (cloneable as { created_by?: string }).created_by,
+        } as never)
+        .select("id, work_order")
+        .single();
+      if (insertErr || !newWO) throw insertErr || new Error("Failed to clone work order");
+
+      // Copy routing steps — pending status, no completion metadata
+      const { data: routing } = await supabase
+        .from("work_order_routing")
+        .select("*")
+        .eq("queue_item_id", item.id);
+      if (routing && routing.length > 0) {
+        const newSteps = routing.map((r: Record<string, unknown>) => {
+          const { id: _id, queue_item_id: _q, created_at: _c, updated_at: _u,
+                  started_at: _s, completed_at: _co, completed_by: _cb,
+                  ...rest } = r;
+          return { ...rest, queue_item_id: newWO.id, status: "pending" };
+        });
+        await supabase.from("work_order_routing").insert(newSteps as never);
+      }
+
+      toast({
+        title: "Work Order Cloned",
+        description: `Created ${newWO.work_order}. Edit the WO number, qty, or due date as needed.`,
+      });
+      onReloadHistory();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Clone failed";
+      toast({ title: "Clone Failed", description: message, variant: "destructive" });
+    } finally {
+      setCloning(false);
+    }
+  };
 
   const isQuote = item.item_type === "quote";
   const isWorkOrder = item.item_type === "work_order";
