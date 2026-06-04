@@ -191,43 +191,43 @@ Deno.serve(async (req) => {
 
     const { data: profiles } = await admin
       .from("profiles")
-      .select("id, email, display_name")
-      .in("id", ids);
+      .select("user_id, email, display_name")
+      .in("user_id", ids);
 
     const { data: prefs } = await admin
       .from("notification_preferences")
-      .select("user_id, email_enabled, morning_brief_enabled")
+      .select("user_id, email_morning_brief")
       .in("user_id", ids);
-    const prefMap = new Map<string, { email_enabled: boolean; morning_brief_enabled?: boolean }>();
+    const prefMap = new Map<string, { email_morning_brief: boolean | null }>();
     for (const p of prefs ?? []) {
-      const row = p as { user_id: string; email_enabled: boolean; morning_brief_enabled?: boolean };
+      const row = p as { user_id: string; email_morning_brief: boolean | null };
       prefMap.set(row.user_id, row);
     }
 
     const html = renderHtml(brief);
     const subject = `[${o.name}] Morning brief — ${brief.open_wos} open, ${brief.overdue} overdue`;
+    const category = `morning_brief:${o.id}:${briefDate}`;
 
     for (const p of profiles ?? []) {
-      const profile = p as { id: string; email: string | null };
+      const profile = p as { user_id: string; email: string | null };
       if (!profile.email) continue;
-      const pref = prefMap.get(profile.id);
-      if (pref && pref.email_enabled === false) continue;
-      if (pref && pref.morning_brief_enabled === false) continue;
+      const pref = prefMap.get(profile.user_id);
+      if (pref && pref.email_morning_brief === false) continue;
 
       // Dedupe per (org, recipient, brief_date) via email_delivery_events.
       const { data: existing } = await admin
         .from("email_delivery_events")
         .select("id")
-        .eq("recipient", profile.email)
-        .eq("event_type", `morning_brief:${o.id}:${briefDate}`)
+        .eq("recipient_email", profile.email)
+        .eq("category", category)
         .limit(1);
       if (existing && existing.length > 0) continue;
 
       await sendEmail(profile.email, subject, html);
       await admin.from("email_delivery_events").insert({
-        recipient: profile.email,
-        event_type: `morning_brief:${o.id}:${briefDate}`,
-        subject,
+        recipient_email: profile.email,
+        recipient_user_id: profile.user_id,
+        category,
         status: "sent",
       });
       sent++;
