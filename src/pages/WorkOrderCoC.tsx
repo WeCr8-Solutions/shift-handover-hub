@@ -27,10 +27,16 @@ export default function WorkOrderCoC() {
     queryKey: ["coc-ncrs", id],
     queryFn: async () => {
       const { data } = await supabase
-        .from("ncrs")
-        .select("ncr_number, defect_description, status, disposition, quantity_affected")
+        .from("ncr_reports")
+        .select("ncr_number, description, authorization_status, disposition, quantity_affected")
         .eq("queue_item_id", id!);
-      return data ?? [];
+      return (data ?? []).map((n: any) => ({
+        ncr_number: n.ncr_number,
+        defect_description: n.description,
+        status: n.authorization_status,
+        disposition: n.disposition,
+        quantity_affected: n.quantity_affected,
+      }));
     },
   });
 
