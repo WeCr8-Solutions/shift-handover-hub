@@ -30,6 +30,7 @@ const Teams = lazy(() => import("./pages/Teams"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Admin = lazy(() => import("./pages/Admin"));
 const FieldView = lazy(() => import("./pages/FieldView"));
+const FloorMap = lazy(() => import("./pages/FloorMap"));
 const Testing = lazy(() => import("./pages/Testing"));
 const Queue = lazy(() => import("./pages/Queue"));
 const QueueHub = lazy(() => import("./pages/QueueHub"));
@@ -212,6 +213,7 @@ const App = () => (
                     <Route path="/admin" element={<Admin />} />
                     <Route path="/field" element={<FieldView />} />
                     <Route path="/field/:token" element={<FieldView />} />
+                    <Route path="/floor-map" element={<RequireAuth><RequireOrg><FloorMap /></RequireOrg></RequireAuth>} />
                     <Route path="/testing" element={<RequireAuth><RequireRole roles={["platform_admin","developer"]}><Testing /></RequireRole></RequireAuth>} />
                     <Route path="/queue" element={<RequireAuth><RequireOrg><Queue /></RequireOrg></RequireAuth>} />
                     <Route path="/queue-hub" element={<RequireAuth><RequireOrg><QueueHub /></RequireOrg></RequireAuth>} />
