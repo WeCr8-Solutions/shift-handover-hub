@@ -177,16 +177,15 @@ export default function ShopFloorDisplay() {
 }
 
 /* ── Status helpers ── */
+// Unified with src/components/dashboard/stationStatus.ts so the wall display
+// matches the in-app dashboard for Running / Setup / Waiting / Down / Idle.
+import { getStatusConfig, getStatusFromJobState, STATUS_CONFIG } from "@/components/dashboard/stationStatus";
 
 function getStatusInfo(state: string | null | undefined): { label: string; color: string; bg: string } {
-  if (!state) return { label: "Idle", color: "text-muted-foreground", bg: "bg-muted" };
-  const s = state.toLowerCase();
-  if (s.includes("running") || s.includes("production")) return { label: "Running", color: "text-primary", bg: "bg-primary" };
-  if (s.includes("setup") || s.includes("changeover")) return { label: "Setup", color: "text-chart-4", bg: "bg-chart-4" };
-  if (s.includes("down") || s.includes("fault")) return { label: "DOWN", color: "text-destructive", bg: "bg-destructive" };
-  if (s.includes("waiting") || s.includes("hold")) return { label: "Waiting", color: "text-chart-3", bg: "bg-chart-3" };
-  return { label: state, color: "text-muted-foreground", bg: "bg-muted" };
+  const cfg = getStatusConfig(state);
+  return { label: cfg.displayName, color: cfg.textClass, bg: cfg.bgClass };
 }
+
 
 const PRIORITY_COLORS: Record<string, string> = {
   critical: "bg-destructive text-destructive-foreground",
