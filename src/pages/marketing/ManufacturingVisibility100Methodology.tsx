@@ -49,27 +49,27 @@ export default function ManufacturingVisibility100Methodology() {
         <link rel="canonical" href={url} />
       </Helmet>
 
-      <div className="container mx-auto px-4 py-12 max-w-3xl">
+      <div className="container mx-auto px-4 py-8 sm:py-12 max-w-3xl">
         <Button asChild variant="ghost" size="sm" className="mb-6">
           <Link to="/manufacturing-100">
             <ArrowLeft className="mr-2 h-4 w-4" /> Back to the list
           </Link>
         </Button>
 
-        <h1 className="text-4xl font-bold mb-4">Methodology</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold mb-4">Methodology</h1>
         <p className="text-lg text-muted-foreground mb-10">
           The Manufacturing Visibility 100 ranks people, shops, educators, builders, and companies pushing manufacturing forward. The list rewards practical impact, not follower count.
         </p>
 
         <section className="mb-12">
-          <h2 className="text-2xl font-bold mb-4">Eligible nominees</h2>
+          <h2 className="text-xl sm:text-2xl font-bold mb-4">Eligible nominees</h2>
           <p className="text-muted-foreground">
             CNC programmers, machinists, manufacturing engineers, quality leaders, shop owners, tooling experts, automation integrators, manufacturing educators, technical content creators, MES / software builders, robotics and industrial-AI builders, and workforce-development leaders.
           </p>
         </section>
 
         <section className="mb-12">
-          <h2 className="text-2xl font-bold mb-4">Categories</h2>
+          <h2 className="text-xl sm:text-2xl font-bold mb-4">Categories</h2>
           <ol className="list-decimal pl-6 space-y-1 text-muted-foreground">
             {CATEGORIES.map((c) => (
               <li key={c}>{c}</li>
@@ -78,7 +78,7 @@ export default function ManufacturingVisibility100Methodology() {
         </section>
 
         <section className="mb-12">
-          <h2 className="text-2xl font-bold mb-4">Scoring — 100 points</h2>
+          <h2 className="text-xl sm:text-2xl font-bold mb-4">Scoring — 100 points</h2>
           <div className="space-y-3">
             {SCORE.map((s) => (
               <div key={s.l} className="flex gap-4 rounded-lg border border-border bg-card p-4">
@@ -111,7 +111,7 @@ export default function ManufacturingVisibility100Methodology() {
         </section>
 
         <section className="mb-12">
-          <h2 className="text-2xl font-bold mb-4">Process</h2>
+          <h2 className="text-xl sm:text-2xl font-bold mb-4">Process</h2>
           <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
             <li>Nominations open continuously; the candidate set freezes 6 weeks before publish.</li>
             <li>An editor pairs each top-50 entry with at least two pieces of public evidence.</li>

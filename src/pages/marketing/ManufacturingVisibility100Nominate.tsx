@@ -190,14 +190,14 @@ export default function ManufacturingVisibility100Nominate() {
         <link rel="canonical" href="https://jobline.ai/manufacturing-100/nominate" />
       </Helmet>
 
-      <div className="container mx-auto px-4 py-12 max-w-3xl">
+      <div className="container mx-auto px-4 py-8 sm:py-12 max-w-3xl">
         <Button asChild variant="ghost" size="sm" className="mb-6">
           <Link to="/manufacturing-100">
             <ArrowLeft className="mr-2 h-4 w-4" /> Back
           </Link>
         </Button>
 
-        <h1 className="text-4xl font-bold mb-3">Nominate someone</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold mb-3">Nominate someone</h1>
         <p className="text-muted-foreground mb-8">
           Nominations are free and reviewed editorially. Peer nominations carry more weight than self-nominations, but both are welcome. See the{" "}
           <Link to="/manufacturing-100/methodology" className="text-primary hover:underline">
