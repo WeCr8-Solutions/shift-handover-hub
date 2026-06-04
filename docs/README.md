@@ -38,6 +38,7 @@ It is the primary home for:
 - `integrations/` — integration-specific documentation
 - `mermaid/` — diagram-oriented assets and references
 - `prd/` — product requirement documents
+- `campaigns/` — editorial and marketing campaign docs (see `campaigns/manufacturing-visibility-100/` for the inaugural ranking-list campaign)
 
 ## Documentation Rules
 
