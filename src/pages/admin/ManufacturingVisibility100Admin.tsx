@@ -36,8 +36,27 @@ interface Nomination {
   notes: string | null;
   display_blurb: string | null;
   rank: number | null;
+  previous_rank: number | null;
   published_at: string | null;
+  slug: string | null;
+  score_impact: number | null;
+  score_innovation: number | null;
+  score_visibility: number | null;
+  score_education: number | null;
+  score_smb: number | null;
+  score_momentum: number | null;
+  score_total: number | null;
+  edition: string | null;
 }
+
+const SCORE_FIELDS: { key: keyof Nomination; label: string; max: number }[] = [
+  { key: "score_impact",     label: "Practical impact",      max: 25 },
+  { key: "score_innovation", label: "Modernization",         max: 20 },
+  { key: "score_visibility", label: "Public visibility",     max: 20 },
+  { key: "score_education",  label: "Education / mentorship", max: 15 },
+  { key: "score_smb",        label: "SMB relevance",         max: 10 },
+  { key: "score_momentum",   label: "Momentum (12 mo)",      max: 10 },
+];
 
 const STATUS_TABS: { value: Status | "all"; label: string }[] = [
   { value: "new", label: "New" },
@@ -269,16 +288,55 @@ export default function ManufacturingVisibility100Admin() {
                     />
                   </div>
 
-                  <div>
-                    <Label htmlFor="rank">Rank (optional)</Label>
-                    <Input
-                      id="rank"
-                      type="number"
-                      min={1}
-                      max={100}
-                      value={selected.rank ?? ""}
-                      onChange={(e) => setSelected({ ...selected, rank: e.target.value ? parseInt(e.target.value) : null })}
-                    />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="rank">Rank</Label>
+                      <Input
+                        id="rank"
+                        type="number"
+                        min={1}
+                        max={100}
+                        value={selected.rank ?? ""}
+                        onChange={(e) => setSelected({ ...selected, rank: e.target.value ? parseInt(e.target.value) : null })}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="prev-rank">Previous rank</Label>
+                      <Input
+                        id="prev-rank"
+                        type="number"
+                        min={1}
+                        max={100}
+                        value={selected.previous_rank ?? ""}
+                        onChange={(e) => setSelected({ ...selected, previous_rank: e.target.value ? parseInt(e.target.value) : null })}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="rounded-md border p-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs uppercase text-muted-foreground">Editorial scoring</Label>
+                      <span className="text-sm font-semibold tabular-nums">
+                        {SCORE_FIELDS.reduce((sum, f) => sum + (Number(selected[f.key]) || 0), 0)}/100
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {SCORE_FIELDS.map(f => (
+                        <div key={String(f.key)}>
+                          <Label htmlFor={String(f.key)} className="text-xs">
+                            {f.label} <span className="text-muted-foreground">(0–{f.max})</span>
+                          </Label>
+                          <Input
+                            id={String(f.key)}
+                            type="number"
+                            min={0}
+                            max={f.max}
+                            value={(selected[f.key] as number | null) ?? ""}
+                            onChange={(e) => setSelected({ ...selected, [f.key]: e.target.value === "" ? null : Math.min(f.max, Math.max(0, parseInt(e.target.value) || 0)) } as Nomination)}
+                          />
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
                   <div>
@@ -309,8 +367,15 @@ export default function ManufacturingVisibility100Admin() {
                     status: selected.status,
                     display_blurb: selected.display_blurb,
                     rank: selected.rank,
+                    previous_rank: selected.previous_rank,
                     notes: selected.notes,
-                  })}
+                    score_impact: selected.score_impact,
+                    score_innovation: selected.score_innovation,
+                    score_visibility: selected.score_visibility,
+                    score_education: selected.score_education,
+                    score_smb: selected.score_smb,
+                    score_momentum: selected.score_momentum,
+                  } as any)}
                   disabled={update.isPending}
                 >
                   {update.isPending ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-1" />}
