@@ -398,6 +398,19 @@ export function QueueItemActions({
             Create Handoff
             <ArrowRight className="w-4 h-4" />
           </Button>
+          {hasOrgSupervisorAccess && (
+            <Button
+              variant="outline"
+              onClick={handleCloneWorkOrder}
+              disabled={cloning}
+              className="gap-2"
+              data-testid="wo-clone"
+              title="Duplicate this work order's specs and routing as a new pending WO"
+            >
+              {cloning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Copy className="w-4 h-4" />}
+              Clone WO
+            </Button>
+          )}
           <PrintTravelerButton workOrderId={item.id} priority={item.priority} />
         </div>
       )}
