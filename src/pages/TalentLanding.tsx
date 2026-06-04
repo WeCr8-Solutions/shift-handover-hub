@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
+import { MfgVisibility100Callout } from "@/components/marketing/MfgVisibility100Callout";
 import { OapGcaTalentFlow } from "@/components/marketing/OapGcaTalentFlow";
 import { VerticalsShowcase } from "@/components/marketing/VerticalsShowcase";
 import { Button } from "@/components/ui/button";
@@ -423,6 +424,10 @@ export default function TalentLanding() {
             <Link to="/oap">Learn about OAP</Link>
           </Button>
         </div>
+      </section>
+
+      <section className="container py-10 max-w-4xl">
+        <MfgVisibility100Callout />
       </section>
 
       <MarketingFooter />

@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
+import { MfgVisibility100Callout } from "@/components/marketing/MfgVisibility100Callout";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -215,6 +216,10 @@ export default function LearnIndex() {
           </div>
         </section>
       </main>
+
+      <section className="container mx-auto px-4 py-10 max-w-5xl">
+        <MfgVisibility100Callout />
+      </section>
 
       <MarketingFooter />
     </div>
