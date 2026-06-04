@@ -9,6 +9,7 @@ import { TeamProvider } from "@/contexts/TeamContext";
 import { OrgProvider } from "@/contexts/OrgContext";
 import { ActAsProvider } from "@/contexts/ActAsContext";
 import { OnboardingProvider, GuidedTour, WelcomeModal } from "@/components/onboarding";
+import { ConciergeInProgressSplash } from "@/components/onboarding/ConciergeInProgressSplash";
 import { AnalyticsProvider } from "@/components/AnalyticsProvider";
 import { ActAsBanner } from "@/components/admin/ActAsBanner";
 import { JobLineProvider } from "@/components/providers/JobLineProvider";
