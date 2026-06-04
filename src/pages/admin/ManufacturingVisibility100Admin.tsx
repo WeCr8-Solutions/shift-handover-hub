@@ -328,7 +328,8 @@ export default function ManufacturingVisibility100Admin() {
               ) : filtered.length === 0 ? (
                 <p className="text-muted-foreground text-sm py-8 text-center">No nominations in this bucket.</p>
               ) : (
-                <Table>
+                <div className="-mx-3 sm:mx-0 overflow-x-auto">
+                  <Table className="min-w-[760px]">
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-[60px]">Rank</TableHead>
@@ -377,7 +378,8 @@ export default function ManufacturingVisibility100Admin() {
                       </TableRow>
                     ))}
                   </TableBody>
-                </Table>
+                  </Table>
+                </div>
               )}
             </TabsContent>
           </Tabs>
