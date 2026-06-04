@@ -346,7 +346,7 @@ export function computeLoadBalancerScores(input: LoadBalancerInput): LoadBalance
     const load = stationLoads[station.id];
     const avail = stationAvailability[station.id];
 
-    const workloadResult = scoreWorkload(load);
+    const workloadResult = scoreWorkload(load, station.daily_capacity_hours ?? 8);
     const capabilityResult = scoreCapability(profile, partRequirements);
     const availabilityResult = scoreAvailability(avail);
 
