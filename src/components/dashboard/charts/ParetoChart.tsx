@@ -69,15 +69,12 @@ export function ParetoChart({
 
   if (!data.length) {
     return (
-      <ChartEmptyState
-        message="No downtime recorded in this window."
-        sublabel="Log downtime from the station panel so this Pareto chart can highlight the biggest losses."
-      />
+      <ChartEmptyState message="No downtime recorded in this window. Log downtime from the station panel so this Pareto chart can highlight the biggest losses." />
     );
   }
 
   return (
-    <ChartContainer ariaLabel="Pareto chart of downtime reasons">
+    <ChartContainer subtitle="Top downtime reasons — bars show magnitude, line shows cumulative %">
       <ResponsiveContainer width="100%" height={280}>
         <ComposedChart data={data} margin={{ top: 8, right: 32, left: 0, bottom: 32 }}>
           <CartesianGrid {...CHART_GRID_PROPS} />
