@@ -1,64 +1,105 @@
-# Finalize Concierge Service — Wiring & Final Audit
+## Concierge Gap Closure Plan
 
-The schema, RPCs, storage bucket, Stripe webhook, `PaymentPanel`, and `ConciergeSalesPack` exist but are not wired in. This plan closes the remaining gaps so a salesperson can run a full paper flow end-to-end, and a customer can transition cleanly to production.
+User confirmed e-signature stays **paper wet-signature only** (no DocuSign etc.). Focus is on tightening the paper workflow, adding accounting export, customer-facing invoice PDF, refund flow, and a few related gaps surfaced during review.
 
-## 1. Route the printable sales pack
-- Add `/admin/concierge/print/:engagementId` route in `src/App.tsx`, lazy-loading `ConciergeSalesPack`.
-- Render outside the dashboard chrome (no nav, no `ConciergeInProgressSplash` wrap) so `window.print()` produces clean pages.
-- Guard with platform-admin check; redirect non-admins to `/admin`.
+---
 
-## 2. Wire `PaymentPanel` + "Print sales pack" into `EngagementDetail`
-- Add `PaymentPanel` above `ReadinessPanel` so payment/contract state is visible before readiness.
-- Add a header action group: **Print sales pack** (opens `/admin/concierge/print/:id` in new tab) and **New offline engagement** (already exists in `OnboardingServicesPanel`, leave it there).
-- Disable the **Mark ready** / **Activate** buttons with tooltip text when `payment_status ∉ ('paid','waived')` or (non-stripe AND `contract_signed_at IS NULL`), mirroring the RPC gate so admins see *why* before they click.
+### 1. Wet-signature workflow hardening (no e-sig integration)
 
-## 3. Surface payment/contract gating in `ReadinessPanel`
-- Extend `useProductionReadiness` consumer to also read `payment_status`, `payment_method`, `contract_signed_at`, `purchased_via` from the engagement (passed in as a prop, no new query).
-- Add two tiles: **Payment** (paid / invoiced / unpaid / waived) and **Signed contract** (on file / required / N/A for Stripe).
-- Add these as blockers in the on-screen list when missing.
+Reinforce the existing `contract_proof_path` + `contract_signed_at` flow.
 
-## 4. Marketing: secondary "Pay by check / Talk to sales" path
-- In `ConciergeCTA` (all three variants), add a small secondary link under the primary button: *"Prefer to pay by check or talk to a human? Contact sales →"* linking to `/concierge/sales`.
-- Create `src/pages/ConciergeSales.tsx` — short landing with: what's included, accepted offline payment methods (check, ACH, wire, PO), and a lead-capture form that writes to `email_leads` with `source='concierge_sales'` and includes company, contact name, phone, estimated shop size, ITAR posture. Add route in `App.tsx`.
+- `ConciergeSalesPack.tsx`: add a clearly labeled **"Wet Signature Required"** banner on the MSA cover page, signature/initial blocks on every page footer, a 2-party signature page (Customer + Jobline rep) with printed name / title / date / witness lines, and a "Contract ID: {engagementId}" + barcode/QR linking back to `/admin/concierge/engagements/:id` so the scanned PDF is traceable.
+- `PaymentPanel.tsx` → split into `PaymentPanel` + new `ContractPanel` (cleaner UX): upload scanned signed MSA, capture signer name/title/date, optional witness, validation that file is PDF/image, preview thumbnail.
+- New RPC `void_concierge_contract(engagement_id, reason)` for cases where a wrong PDF was uploaded — clears `contract_signed_at`, `contract_signer_*`, `contract_proof_path`, writes `admin_audit_events`.
 
-## 5. Onboarding → production transition UX
-- `ConciergeInProgressSplash` already gates customer login during setup. Add two states it doesn't yet handle:
-  - **Awaiting payment** (offline engagement, unpaid) → show "Your concierge setup is reserved. We'll begin once payment clears. Questions? sales@jobline.ai"
-  - **Awaiting signed contract** → show "We're waiting on your signed agreement. A sales rep will follow up."
-- On successful `activate_org_for_production`, fire the existing welcome email + show a one-time "Welcome to production" toast on first login (flag in `user_onboarding`).
+### 2. Accounting-system export (QuickBooks / generic)
 
-## 6. Final audit checklist (verification, no code)
-Run through these manually before declaring production-ready:
+New admin tab **Accounting Export** on the concierge engagement detail page.
 
-1. **Stripe path**: purchase → webhook stamps `payment_status='paid'`, `payment_method='stripe'`, `payment_received_at` → engagement appears in admin → checklist completes → ReadinessPanel green → Activate succeeds → customer logs in.
-2. **Offline path**: create offline engagement → print sales pack (11 pages render cleanly, no clipped text) → record check payment with proof upload → record signed contract with proof upload → checklist completes → Activate succeeds.
-3. **Negative gates**:
-   - Unpaid offline engagement → Mark ready blocked, button disabled with tooltip, RPC also rejects.
-   - Paid but no signed contract (non-stripe) → Activate blocked.
-   - ITAR org → `erp_persistence_mode` forced to `read_through`, US-Person declaration required tile shows.
-4. **RLS / multi-tenant**:
-   - Non-platform-admin cannot hit `/admin/concierge/print/:id`.
-   - Org admins can only read their own `concierge-contracts/<orgId>/` storage paths.
-   - `record_concierge_payment` / `record_concierge_contract_signature` reject non-platform-admin callers.
-5. **Audit trail**: each payment + contract action writes an `admin_audit_events` row tying actor → org → engagement → amount → method.
-6. **Marketing CTAs**: `ConciergeCTA` renders on `/pricing` (banner) and any other surface that imports it; secondary sales link routes to `/concierge/sales`; lead form writes to `email_leads`.
-7. **Print QA**: open the sales pack in Chrome print preview at Letter size — confirm MSA fits, signature blocks aren't split across pages, ITAR declaration is on its own page, worksheets have enough blank rows.
-8. **Mobile**: `PaymentPanel` and `ReadinessPanel` stack cleanly at 360px; sales pack route is desktop-only (add a print-only banner advising desktop).
+- Edge function `concierge-accounting-export` (admin-only, JWT verified) that returns:
+  - **QuickBooks IIF** format (`.iif`) — works with QB Desktop import.
+  - **QuickBooks Online–compatible CSV** (matches QBO's "Import invoices" template columns: InvoiceNo, Customer, InvoiceDate, DueDate, Item, Description, Qty, Rate, Amount, Tax, ServiceDate, Memo).
+  - Generic CSV (xero/wave/freshbooks friendly).
+- Export modes: **single engagement** or **date-range batch** (all paid engagements in window).
+- Writes `admin_audit_events` row per export (who, when, format, count, hash).
+- UI: `AccountingExportPanel.tsx` with format dropdown, date range, download buttons, and "last exported at" indicator per engagement (new column `exported_to_accounting_at timestamptz` on `onboarding_engagements`).
 
-## Files touched
+### 3. Customer-facing self-serve invoice PDF
 
-**New**
-- `src/pages/ConciergeSales.tsx`
+- Route: `/billing/concierge/invoice/:engagementId` (org-admin / billing role gated by RLS on engagement).
+- Component: `ConciergeInvoicePdf.tsx` — printable single-page invoice (Jobline header, bill-to org snapshot, line item: "Concierge Onboarding – {plan_tier}", amount, payment status badge, payment method, payment received date, contract status, "Paid" watermark when applicable, remittance instructions when unpaid).
+- Uses browser `window.print()` + print CSS (matches existing `ConciergeSalesPack` pattern — no server PDF lib).
+- Stripe purchases: link to Stripe-hosted receipt URL (already in `billing_events`).
+- Offline purchases: render the printable invoice with computed invoice number `INV-{YYYYMM}-{shortId}`.
+- Surfaced in:
+  - `EngagementDetail` admin view ("Download invoice" button).
+  - Org settings → Billing tab → "Concierge invoices" list.
+  - `ConciergeInProgressSplash` (when `payment_status='invoiced'` or `'unpaid'` for offline) → "View / print invoice" CTA.
 
-**Edited**
-- `src/App.tsx` — add `/admin/concierge/print/:engagementId` and `/concierge/sales` routes
-- `src/components/admin/onboarding/EngagementDetail.tsx` — mount `PaymentPanel`, add Print button, tooltip-disable gated actions
-- `src/components/admin/onboarding/ReadinessPanel.tsx` — accept engagement, render payment + contract tiles, extend blockers
-- `src/components/marketing/ConciergeCTA.tsx` — secondary "Contact sales" link in all three variants
-- `src/components/onboarding/ConciergeInProgressSplash.tsx` — awaiting-payment / awaiting-contract states
+### 4. Refund flow (manual via Stripe dashboard, tracked in app)
 
-## Out of scope
-- E-signature integration (paper wet signature only)
-- Accounting-system export (QuickBooks etc.)
-- Customer-facing self-serve invoice PDF generator
-- Refund flow (handled manually via Stripe dashboard for now)
+- New RPC `record_concierge_refund(engagement_id, amount_cents, reason, stripe_refund_id?, refund_method, proof_path?)`:
+  - Sets `payment_status='refunded'`, stamps `refunded_at`, `refunded_by`, `refund_amount_cents`, `refund_reason`, `refund_method`, `refund_reference`.
+  - Writes `admin_audit_events`.
+  - Auto-transitions engagement `status='cancelled'` if refund is full; logs partial otherwise.
+  - Deactivates org production access via existing `deactivate_org_for_production` helper when full refund + status=live.
+- Schema additions on `onboarding_engagements`: `refunded_at`, `refunded_by`, `refund_amount_cents`, `refund_reason`, `refund_method` (check, ach, stripe, wire, other), `refund_reference`, `refund_proof_path`.
+- Update `stripe-webhook` to handle `charge.refunded` and `refund.created` events → call `record_concierge_refund` automatically with `refund_method='stripe'` and the Stripe refund ID.
+- UI: `RefundPanel.tsx` mounted in admin `EngagementDetail` (platform admin only). Records manual refunds (check sent back, ACH return) with proof upload to existing `concierge-contracts` bucket under `refunds/{engagementId}/`.
+- `ReadinessPanel` + `ConciergeInProgressSplash`: surface "Refunded — concierge access revoked" state.
+
+### 5. Additional gaps surfaced during review
+
+a. **Receipt email automation**
+   - `send-concierge-receipt` edge function (Resend) triggered on `payment_status → paid` (DB trigger NOTIFY or webhook). Sends PDF-print-friendly HTML receipt to org primary contact + sales rep.
+
+b. **Sales rep attribution & commission tracking**
+   - Surface `sales_rep_id` in `EngagementsList` with filter ("My engagements" for sales reps).
+   - New view `concierge_sales_performance` (per rep: count, GMV, paid vs outstanding, refund rate) for platform admin reporting at `/admin/concierge/reporting`.
+
+c. **Tax / W-9 capture**
+   - Add `customer_tax_id`, `customer_billing_address` JSONB to engagement (needed for invoices & QuickBooks export).
+   - Capture on `ConciergeSales` lead form and offline-engagement creation.
+
+d. **Dunning / aging**
+   - `concierge_payment_aging` view (engagements with `payment_status IN ('unpaid','invoiced')` and age buckets 0-30/31-60/61-90/90+).
+   - `/admin/concierge/aging` page for collections.
+   - Optional weekly digest email to platform admins (cron edge function — opt-in, off by default).
+
+e. **Engagement audit timeline**
+   - New `ConciergeAuditTimeline.tsx` on `EngagementDetail` reading `admin_audit_events` filtered by `entity_type='onboarding_engagement'`. All RPCs above must write audit rows consistently — verify and backfill missing.
+
+f. **Org-admin self-serve concierge tab**
+   - `/settings/billing/concierge` page showing engagement status, payment status, downloadable invoice + receipt, signed contract download (RLS-restricted), refund history. Read-only for org admins; no admin actions exposed.
+
+### 6. End-to-end audit checklist (manual, post-build)
+
+Run each scenario in dev and confirm UI + DB + audit-log state:
+
+1. **Stripe happy path**: purchase → webhook stamps paid + receipt email fires → invoice PDF renders "Paid" → Readiness green → Activate → org goes live → accounting export contains row.
+2. **Offline happy path**: sales rep creates offline engagement (captures tax ID/address) → prints sales pack with sig blocks → records check payment + uploads scan → uploads signed MSA → Activate succeeds → invoice PDF available to org admin → accounting export available.
+3. **Negative gates**: unpaid offline blocks Mark Ready (tooltip); paid but no signed contract blocks Activate (tooltip); contract voided removes Activate access.
+4. **Refund — Stripe**: trigger refund in Stripe dashboard → webhook fires → engagement flips to refunded + cancelled + org deactivated + audit row written.
+5. **Refund — offline**: admin records refund check → same end state → proof stored under `concierge-contracts/refunds/`.
+6. **Accounting export**: single + date-range exports for QBO CSV, QB IIF, generic CSV all parse and total correctly; `exported_to_accounting_at` updates.
+7. **Self-serve invoice**: org admin can view own invoice; cannot view another org's; unauthenticated cannot view.
+8. **RLS sweep**: `concierge-contracts` bucket — org admin can read own `payments/`, `contracts/`, `refunds/` paths only; non-admin org members blocked.
+9. **Audit completeness**: every state-changing RPC writes exactly one `admin_audit_events` row; timeline renders chronologically.
+10. **ITAR sanity**: confirm none of the new exports / invoices leak controlled tech data; PDFs contain only commercial billing info.
+
+---
+
+### Technical details
+
+**New / modified files**
+- DB migration: add refund + accounting + tax-id columns to `onboarding_engagements`; new RPCs `record_concierge_refund`, `void_concierge_contract`; views `concierge_sales_performance`, `concierge_payment_aging`; storage policy update for `concierge-contracts/refunds/`.
+- Edge functions: `concierge-accounting-export` (new), `send-concierge-receipt` (new), `stripe-webhook` (handle refund events).
+- Components: `ContractPanel.tsx`, `AccountingExportPanel.tsx`, `RefundPanel.tsx`, `ConciergeInvoicePdf.tsx`, `ConciergeAuditTimeline.tsx`, org-admin `ConciergeBillingTab.tsx`.
+- Pages: `/billing/concierge/invoice/:engagementId`, `/admin/concierge/reporting`, `/admin/concierge/aging`, `/settings/billing/concierge`.
+- Updates: `EngagementDetail.tsx`, `EngagementsList.tsx`, `ConciergeSalesPack.tsx`, `ConciergeSales.tsx`, `ConciergeInProgressSplash.tsx`, `ReadinessPanel.tsx`, `useOnboardingEngagements.ts`.
+- Memory: update `mem://features/concierge/service-and-sales-flow` with refund + accounting + invoice surfaces.
+
+**Explicitly out of scope** (per user)
+- Any e-signature SaaS integration (DocuSign, HelloSign, Adobe Sign). Wet signature only.
+- Automatic refund processing from inside the app (refunds initiated in Stripe dashboard or recorded manually).
+- Direct QuickBooks API push (file export only).
