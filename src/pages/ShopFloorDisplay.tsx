@@ -177,16 +177,15 @@ export default function ShopFloorDisplay() {
 }
 
 /* ── Status helpers ── */
+// Unified with src/components/dashboard/stationStatus.ts so the wall display
+// matches the in-app dashboard for Running / Setup / Waiting / Down / Idle.
+import { getStatusConfig, getStatusFromJobState, STATUS_CONFIG } from "@/components/dashboard/stationStatus";
 
 function getStatusInfo(state: string | null | undefined): { label: string; color: string; bg: string } {
-  if (!state) return { label: "Idle", color: "text-muted-foreground", bg: "bg-muted" };
-  const s = state.toLowerCase();
-  if (s.includes("running") || s.includes("production")) return { label: "Running", color: "text-primary", bg: "bg-primary" };
-  if (s.includes("setup") || s.includes("changeover")) return { label: "Setup", color: "text-chart-4", bg: "bg-chart-4" };
-  if (s.includes("down") || s.includes("fault")) return { label: "DOWN", color: "text-destructive", bg: "bg-destructive" };
-  if (s.includes("waiting") || s.includes("hold")) return { label: "Waiting", color: "text-chart-3", bg: "bg-chart-3" };
-  return { label: state, color: "text-muted-foreground", bg: "bg-muted" };
+  const cfg = getStatusConfig(state);
+  return { label: cfg.displayName, color: cfg.textClass, bg: cfg.bgClass };
 }
+
 
 const PRIORITY_COLORS: Record<string, string> = {
   critical: "bg-destructive text-destructive-foreground",
@@ -218,15 +217,16 @@ function SupervisorDisplay({ config, stations, queueItems, lastRefresh }: {
   const hasMultipleTeams = teamGroups.size > 1;
 
   const kpis = useMemo(() => {
-    let running = 0, down = 0, setup = 0, idle = 0;
+    let running = 0, down = 0, setup = 0, waiting = 0, idle = 0;
     stations.forEach(s => {
-      const info = getStatusInfo(s.current_status?.current_job_state);
-      if (info.label === "Running") running++;
-      else if (info.label === "DOWN") down++;
-      else if (info.label === "Setup") setup++;
+      const status = getStatusFromJobState(s.current_status?.current_job_state);
+      if (status === "running") running++;
+      else if (status === "down") down++;
+      else if (status === "setup") setup++;
+      else if (status === "waiting") waiting++;
       else idle++;
     });
-    return { running, down, setup, idle, total: stations.length };
+    return { running, down, setup, waiting, idle, total: stations.length };
   }, [stations]);
 
   const overdueItems = queueItems.filter(q => q.due_date && new Date(q.due_date) < new Date());
@@ -256,12 +256,13 @@ function SupervisorDisplay({ config, stations, queueItems, lastRefresh }: {
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-5 gap-3">
+      <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
         {[
-          { label: "Running", value: kpis.running, color: "text-primary", bg: "bg-primary" },
-          { label: "Setup", value: kpis.setup, color: "text-chart-4", bg: "bg-chart-4" },
-          { label: "Down", value: kpis.down, color: "text-destructive", bg: "bg-destructive" },
-          { label: "Idle", value: kpis.idle, color: "text-muted-foreground", bg: "bg-muted" },
+          { label: "Running", value: kpis.running, color: STATUS_CONFIG.running.textClass, bg: STATUS_CONFIG.running.bgClass },
+          { label: "Setup", value: kpis.setup, color: STATUS_CONFIG.setup.textClass, bg: STATUS_CONFIG.setup.bgClass },
+          { label: "Waiting", value: kpis.waiting, color: STATUS_CONFIG.waiting.textClass, bg: STATUS_CONFIG.waiting.bgClass },
+          { label: "Down", value: kpis.down, color: STATUS_CONFIG.down.textClass, bg: STATUS_CONFIG.down.bgClass },
+          { label: "Idle", value: kpis.idle, color: STATUS_CONFIG.idle.textClass, bg: STATUS_CONFIG.idle.bgClass },
           { label: "WOs Active", value: queueItems.length, color: "text-primary", bg: "bg-primary" },
         ].map(k => (
           <div key={k.label} className="bg-card border border-border rounded-lg p-3">
@@ -274,6 +275,7 @@ function SupervisorDisplay({ config, stations, queueItems, lastRefresh }: {
         ))}
       </div>
 
+
       {/* Alert banner */}
       {(kpis.down > 0 || overdueItems.length > 0) && (
         <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3 flex items-center gap-3">
@@ -285,6 +287,7 @@ function SupervisorDisplay({ config, stations, queueItems, lastRefresh }: {
           </div>
         </div>
       )}
+
 
       {/* Main grid */}
       <div className="grid lg:grid-cols-3 gap-4">
@@ -365,23 +368,21 @@ function SupervisorDisplay({ config, stations, queueItems, lastRefresh }: {
 
 /* ── Station Cell (shared) ── */
 function StationCell({ station }: { station: StationData }) {
-  const info = getStatusInfo(station.current_status?.current_job_state);
+  const status = getStatusFromJobState(station.current_status?.current_job_state);
+  const cfg = STATUS_CONFIG[status];
   const progress = station.current_status?.parts_required
     ? Math.round(((station.current_status?.parts_complete || 0) / station.current_status.parts_required) * 100)
     : 0;
 
   return (
-    <div className="bg-card p-3 space-y-1.5">
-      <div className="flex items-center justify-between">
+    <div className={cn("bg-card p-3 space-y-1.5 border-l-2", cfg.borderClass)}>
+      <div className="flex items-center justify-between gap-2">
         <span className="font-semibold text-sm truncate">{station.name}</span>
-        <Badge className={cn("text-[9px]",
-          info.bg === "bg-destructive" ? "bg-destructive text-destructive-foreground" :
-          info.bg === "bg-primary" ? "bg-primary text-primary-foreground" :
-          "bg-secondary text-secondary-foreground"
-        )}>
-          {info.label}
+        <Badge className={cn("text-[9px] shrink-0 text-white border-transparent", cfg.bgClass)}>
+          {cfg.displayName}
         </Badge>
       </div>
+
       <p className="text-xs text-muted-foreground truncate">
         {station.current_status?.current_job_work_order || "No active job"}
       </p>
@@ -432,8 +433,9 @@ function OperatorDisplay({ config, stations, queueItems, lastRefresh }: {
   const criticalAlerts = useMemo(() => {
     const alerts: string[] = [];
     stations.forEach(s => {
-      const info = getStatusInfo(s.current_status?.current_job_state);
-      if (info.label === "DOWN") alerts.push(`${s.name} is DOWN`);
+      if (getStatusFromJobState(s.current_status?.current_job_state) === "down") {
+        alerts.push(`${s.name} is DOWN`);
+      }
     });
     queueItems.forEach(q => {
       if (q.due_date && new Date(q.due_date) < new Date() && q.priority === "critical") {
@@ -471,7 +473,8 @@ function OperatorDisplay({ config, stations, queueItems, lastRefresh }: {
       {/* Large station cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
         {stations.map(station => {
-          const info = getStatusInfo(station.current_status?.current_job_state);
+          const status = getStatusFromJobState(station.current_status?.current_job_state);
+          const cfg = STATUS_CONFIG[status];
           const stationQueue = queueByStation[station.id] || [];
           const queued = stationQueue.filter(q => q.status === "queued").length;
           const inProgress = stationQueue.filter(q => q.status === "in_progress").length;
@@ -485,23 +488,17 @@ function OperatorDisplay({ config, stations, queueItems, lastRefresh }: {
               key={station.id}
               className={cn(
                 "bg-card border-2 rounded-xl p-5 space-y-3",
-                info.label === "DOWN" ? "border-destructive" :
-                info.label === "Running" ? "border-primary/50" :
-                "border-border"
+                cfg.borderClass,
               )}
             >
               {/* Station name + status */}
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <h2 className="text-xl font-bold truncate">{station.name}</h2>
-                <Badge className={cn(
-                  "text-sm px-3 py-1",
-                  info.label === "DOWN" ? "bg-destructive text-destructive-foreground" :
-                  info.label === "Running" ? "bg-primary text-primary-foreground" :
-                  "bg-secondary text-secondary-foreground"
-                )}>
-                  {info.label}
+                <Badge className={cn("text-sm px-3 py-1 shrink-0 text-white border-transparent", cfg.bgClass)}>
+                  {cfg.displayName}
                 </Badge>
               </div>
+
 
               {/* Team name */}
               {station.team_name && (

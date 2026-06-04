@@ -36,6 +36,13 @@ export function DashboardKPICards({ kpis, statusFilter, onStatusFilterChange }: 
       filterKey: "setup" as StatusLabel,
     },
     {
+      label: "Waiting",
+      value: kpis.waiting,
+      color: STATUS_CONFIG.waiting.bgClass,
+      textColor: STATUS_CONFIG.waiting.textClass,
+      filterKey: "waiting" as StatusLabel,
+    },
+    {
       label: "Down",
       value: kpis.down,
       color: STATUS_CONFIG.down.bgClass,
@@ -60,7 +67,8 @@ export function DashboardKPICards({ kpis, statusFilter, onStatusFilterChange }: 
 
   return (
     <>
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-6 gap-3">
+
         {cards.map((kpi) => {
           const isActive = kpi.filterKey && statusFilter === kpi.filterKey;
           return (
