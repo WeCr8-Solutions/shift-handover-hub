@@ -9,6 +9,7 @@ import { TeamProvider } from "@/contexts/TeamContext";
 import { OrgProvider } from "@/contexts/OrgContext";
 import { ActAsProvider } from "@/contexts/ActAsContext";
 import { OnboardingProvider, GuidedTour, WelcomeModal } from "@/components/onboarding";
+import { ConciergeInProgressSplash } from "@/components/onboarding/ConciergeInProgressSplash";
 import { AnalyticsProvider } from "@/components/AnalyticsProvider";
 import { ActAsBanner } from "@/components/admin/ActAsBanner";
 import { JobLineProvider } from "@/components/providers/JobLineProvider";
@@ -43,6 +44,7 @@ const CancelledWorkOrders = lazy(() => import("./pages/CancelledWorkOrders"));
 const OnHoldWorkOrders = lazy(() => import("./pages/OnHoldWorkOrders"));
 const QuotesHub = lazy(() => import("./pages/QuotesHub"));
 const Setup = lazy(() => import("./pages/Setup"));
+const OnboardingService = lazy(() => import("./pages/OnboardingService"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Settings = lazy(() => import("./pages/Settings"));
 const DonationSuccess = lazy(() => import("./pages/DonationSuccess"));
@@ -198,6 +200,7 @@ const App = () => (
                   <MFAEnrollmentGate>
                   <USPersonDeclarationGate>
                   <JobLineProvider>
+                  <ConciergeInProgressSplash>
                   <ActAsBanner />
                   <ReleaseBadge />
                   <GuidedTour />
@@ -229,6 +232,7 @@ const App = () => (
                     <Route path="/quote-history" element={<RequireAuth><RequireOrg><QuoteHistoryPage /></RequireOrg></RequireAuth>} />
                     <Route path="/setup" element={<RequireAuth><Setup /></RequireAuth>} />
                     <Route path="/pricing" element={<Pricing />} />
+                    <Route path="/onboarding-service" element={<OnboardingService />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/donation-success" element={<DonationSuccess />} />
                     <Route path="/demo" element={<Demo />} />
@@ -359,6 +363,7 @@ const App = () => (
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                   </Suspense>
+                  </ConciergeInProgressSplash>
                   </JobLineProvider>
                   </USPersonDeclarationGate>
                   </MFAEnrollmentGate>
