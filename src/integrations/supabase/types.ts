@@ -7539,15 +7539,27 @@ export type Database = {
       onboarding_engagements: {
         Row: {
           assigned_admin_id: string | null
+          contract_proof_path: string | null
+          contract_signed_at: string | null
+          contract_signer_name: string | null
+          contract_signer_title: string | null
           created_at: string
           created_by: string | null
           id: string
           notes: string | null
           organization_id: string
+          payment_amount_cents: number
+          payment_method: string | null
+          payment_proof_path: string | null
+          payment_received_at: string | null
+          payment_recorded_by: string | null
+          payment_reference: string | null
+          payment_status: string
           percent_complete: number
           plan_tier: string
           purchased_via: string
           ready_at: string | null
+          sales_rep_id: string | null
           started_at: string
           status: string
           stripe_payment_intent_id: string | null
@@ -7556,15 +7568,27 @@ export type Database = {
         }
         Insert: {
           assigned_admin_id?: string | null
+          contract_proof_path?: string | null
+          contract_signed_at?: string | null
+          contract_signer_name?: string | null
+          contract_signer_title?: string | null
           created_at?: string
           created_by?: string | null
           id?: string
           notes?: string | null
           organization_id: string
+          payment_amount_cents?: number
+          payment_method?: string | null
+          payment_proof_path?: string | null
+          payment_received_at?: string | null
+          payment_recorded_by?: string | null
+          payment_reference?: string | null
+          payment_status?: string
           percent_complete?: number
           plan_tier?: string
           purchased_via?: string
           ready_at?: string | null
+          sales_rep_id?: string | null
           started_at?: string
           status?: string
           stripe_payment_intent_id?: string | null
@@ -7573,15 +7597,27 @@ export type Database = {
         }
         Update: {
           assigned_admin_id?: string | null
+          contract_proof_path?: string | null
+          contract_signed_at?: string | null
+          contract_signer_name?: string | null
+          contract_signer_title?: string | null
           created_at?: string
           created_by?: string | null
           id?: string
           notes?: string | null
           organization_id?: string
+          payment_amount_cents?: number
+          payment_method?: string | null
+          payment_proof_path?: string | null
+          payment_received_at?: string | null
+          payment_recorded_by?: string | null
+          payment_reference?: string | null
+          payment_status?: string
           percent_complete?: number
           plan_tier?: string
           purchased_via?: string
           ready_at?: string | null
+          sales_rep_id?: string | null
           started_at?: string
           status?: string
           stripe_payment_intent_id?: string | null
@@ -15124,6 +15160,15 @@ export type Database = {
             }
             Returns: string
           }
+      create_offline_concierge_engagement: {
+        Args: {
+          p_notes?: string
+          p_org_id: string
+          p_plan_tier?: string
+          p_sales_rep_id?: string
+        }
+        Returns: string
+      }
       create_org_with_owner: {
         Args: {
           _description: string
@@ -15566,6 +15611,28 @@ export type Database = {
       }
       realtime_topic_org_id: { Args: { _topic: string }; Returns: string }
       realtime_topic_uuid_suffix: { Args: { _topic: string }; Returns: string }
+      record_concierge_contract_signature: {
+        Args: {
+          p_contract_proof_path?: string
+          p_engagement_id: string
+          p_signed_at: string
+          p_signer_name: string
+          p_signer_title: string
+        }
+        Returns: string
+      }
+      record_concierge_payment: {
+        Args: {
+          p_amount_cents: number
+          p_engagement_id: string
+          p_method: string
+          p_proof_path?: string
+          p_received_at: string
+          p_reference: string
+          p_status?: string
+        }
+        Returns: string
+      }
       redeem_invite_code: {
         Args: { _code: string; _user_id: string }
         Returns: Json
