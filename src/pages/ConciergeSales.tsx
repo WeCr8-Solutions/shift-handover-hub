@@ -53,9 +53,10 @@ export default function ConciergeSales() {
     }
     setSubmitting(true);
     try {
-      const { error } = await supabase.from("email_leads" as any).insert({
+      const { error } = await supabase.from("email_leads").insert({
         email: form.email.trim(),
-        source: "concierge_sales",
+        source_page: "/concierge/sales",
+        lead_type: "concierge_sales",
         metadata: {
           company: form.company.trim(),
           contact_name: form.contact_name.trim(),
@@ -64,7 +65,7 @@ export default function ConciergeSales() {
           itar: form.itar,
           notes: form.notes.trim() || null,
         },
-      });
+      } as any);
       if (error) throw error;
       setSubmitted(true);
       toast.success("Thanks — a sales rep will reach out within one business day.");
