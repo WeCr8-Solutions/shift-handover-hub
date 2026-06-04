@@ -252,6 +252,19 @@ export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDas
       {/* Performance update modal */}
       {showPerformance && <JobPerformanceUpdateForm onClose={() => setShowPerformance(false)} />}
 
+      {/* Quick Status (mid-shift) dialog */}
+      {quickStatusStationId && (
+        <QuickStatusDialog
+          open={!!quickStatusStationId}
+          onOpenChange={(open) => {
+            if (!open) setQuickStatusStationId(null);
+          }}
+          stationId={quickStatusStationId}
+          stationName={quickStatusStationName}
+          onSaved={refreshSessions}
+        />
+      )}
+
       {/* End Shift Confirmation Dialog */}
       <AlertDialog open={showEndShiftConfirm} onOpenChange={setShowEndShiftConfirm}>
         <AlertDialogContent>
