@@ -5868,6 +5868,7 @@ export type Database = {
           created_at: string
           email_handoff_alerts: boolean | null
           email_machine_down: boolean | null
+          email_morning_brief: boolean
           email_quality_alerts: boolean | null
           email_shift_reminders: boolean | null
           email_weekly_summary: boolean | null
@@ -5885,6 +5886,7 @@ export type Database = {
           created_at?: string
           email_handoff_alerts?: boolean | null
           email_machine_down?: boolean | null
+          email_morning_brief?: boolean
           email_quality_alerts?: boolean | null
           email_shift_reminders?: boolean | null
           email_weekly_summary?: boolean | null
@@ -5902,6 +5904,7 @@ export type Database = {
           created_at?: string
           email_handoff_alerts?: boolean | null
           email_machine_down?: boolean | null
+          email_morning_brief?: boolean
           email_quality_alerts?: boolean | null
           email_shift_reminders?: boolean | null
           email_weekly_summary?: boolean | null
