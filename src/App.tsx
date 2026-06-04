@@ -200,6 +200,7 @@ const App = () => (
                   <MFAEnrollmentGate>
                   <USPersonDeclarationGate>
                   <JobLineProvider>
+                  <ConciergeInProgressSplash>
                   <ActAsBanner />
                   <ReleaseBadge />
                   <GuidedTour />
