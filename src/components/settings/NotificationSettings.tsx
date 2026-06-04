@@ -30,6 +30,8 @@ export function NotificationSettings() {
     push_urgent_only: true,
     quiet_hours_start: "",
     quiet_hours_end: "",
+    subscribe_all_stations: true,
+    subscribed_station_ids: [] as string[],
   });
 
   const [initialSettings, setInitialSettings] = useState(settings);
@@ -46,6 +48,8 @@ export function NotificationSettings() {
         push_urgent_only: notifications.push_urgent_only,
         quiet_hours_start: notifications.quiet_hours_start || "",
         quiet_hours_end: notifications.quiet_hours_end || "",
+        subscribe_all_stations: notifications.subscribe_all_stations ?? true,
+        subscribed_station_ids: notifications.subscribed_station_ids ?? [],
       };
       setSettings(loaded);
       setInitialSettings(loaded);
