@@ -114,10 +114,13 @@ export default function ConciergeSalesPack() {
         <>
           {/* 1. Cover */}
           <PrintPage title="Cover">
-            <div className="flex flex-col items-center justify-center text-center pt-16 space-y-6">
+            <div className="flex flex-col items-center justify-center text-center pt-12 space-y-6">
               <div className="text-5xl font-bold tracking-tight">Concierge Onboarding</div>
               <div className="text-xl">White-glove setup for your CNC shop</div>
-              <div className="border-t border-b border-black/30 py-6 mt-12 w-full max-w-md">
+              <div className="inline-block bg-black text-white text-xs uppercase tracking-widest px-3 py-1 rounded">
+                Wet-signature contract package
+              </div>
+              <div className="border-t border-b border-black/30 py-6 mt-8 w-full max-w-md">
                 <div className="grid grid-cols-2 gap-y-2 text-sm text-left">
                   <div className="font-semibold">Customer</div><div>{orgName}</div>
                   <div className="font-semibold">Plan</div><div className="capitalize">{tier} — {amount}</div>
@@ -126,14 +129,14 @@ export default function ConciergeSalesPack() {
                   <div className="font-semibold">Engagement ID</div><div>{engagement?.id ?? "(assigned at signing)"}</div>
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground mt-16 max-w-md">
-                Return completed worksheets to onboarding@jobline.ai or upload via the Concierge workspace.
+              <p className="text-xs text-black/70 mt-4 max-w-md">
+                <b>Instructions to signer:</b> initial every page in the bottom-right corner, then sign and date the final Signature Page. Return all pages to onboarding@jobline.ai or upload via the Concierge workspace.
               </p>
             </div>
           </PrintPage>
 
           {/* 2. Master Services Agreement */}
-          <PrintPage title="Master Services Agreement">
+          <PrintPage title="Master Services Agreement" initials>
             <h1 className="text-2xl font-bold mb-2">Concierge Onboarding Services Agreement</h1>
             <p className="text-xs mb-4">Between JobLine AI, Inc. ("JobLine") and the Customer identified on the Cover Page ("Customer"), effective on the Effective Date below.</p>
 
@@ -197,7 +200,7 @@ export default function ConciergeSalesPack() {
           </PrintPage>
 
           {/* 4. ITAR / US-Person Declaration */}
-          <PrintPage title="ITAR / US-Person Declaration">
+          <PrintPage title="ITAR / US-Person Declaration" initials>
             <h1 className="text-2xl font-bold mb-3">ITAR / US-Person Declaration</h1>
             <p className="text-xs mb-3">Required if Customer handles ITAR-controlled work. Check one and sign.</p>
             <div className="space-y-3 text-xs">
