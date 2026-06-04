@@ -3,10 +3,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Mail, Smartphone, Moon, BellRing, ShieldOff } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Mail, Smartphone, Moon, BellRing, ShieldOff, Factory } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNotificationPrefs } from "@/hooks/useNotificationPrefs";
 import { useDeviceNotifications } from "@/hooks/useDeviceNotifications";
+import { useStations } from "@/hooks/useStations";
 import { SettingsSkeleton } from "./SettingsSkeleton";
 import { SettingsFooter } from "./SettingsFooter";
 import { SettingsSwitchRow } from "./SettingsSwitchRow";
