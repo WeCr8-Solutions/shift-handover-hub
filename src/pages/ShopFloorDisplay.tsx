@@ -217,15 +217,16 @@ function SupervisorDisplay({ config, stations, queueItems, lastRefresh }: {
   const hasMultipleTeams = teamGroups.size > 1;
 
   const kpis = useMemo(() => {
-    let running = 0, down = 0, setup = 0, idle = 0;
+    let running = 0, down = 0, setup = 0, waiting = 0, idle = 0;
     stations.forEach(s => {
-      const info = getStatusInfo(s.current_status?.current_job_state);
-      if (info.label === "Running") running++;
-      else if (info.label === "DOWN") down++;
-      else if (info.label === "Setup") setup++;
+      const status = getStatusFromJobState(s.current_status?.current_job_state);
+      if (status === "running") running++;
+      else if (status === "down") down++;
+      else if (status === "setup") setup++;
+      else if (status === "waiting") waiting++;
       else idle++;
     });
-    return { running, down, setup, idle, total: stations.length };
+    return { running, down, setup, waiting, idle, total: stations.length };
   }, [stations]);
 
   const overdueItems = queueItems.filter(q => q.due_date && new Date(q.due_date) < new Date());
@@ -255,12 +256,13 @@ function SupervisorDisplay({ config, stations, queueItems, lastRefresh }: {
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-5 gap-3">
+      <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
         {[
-          { label: "Running", value: kpis.running, color: "text-primary", bg: "bg-primary" },
-          { label: "Setup", value: kpis.setup, color: "text-chart-4", bg: "bg-chart-4" },
-          { label: "Down", value: kpis.down, color: "text-destructive", bg: "bg-destructive" },
-          { label: "Idle", value: kpis.idle, color: "text-muted-foreground", bg: "bg-muted" },
+          { label: "Running", value: kpis.running, color: STATUS_CONFIG.running.textClass, bg: STATUS_CONFIG.running.bgClass },
+          { label: "Setup", value: kpis.setup, color: STATUS_CONFIG.setup.textClass, bg: STATUS_CONFIG.setup.bgClass },
+          { label: "Waiting", value: kpis.waiting, color: STATUS_CONFIG.waiting.textClass, bg: STATUS_CONFIG.waiting.bgClass },
+          { label: "Down", value: kpis.down, color: STATUS_CONFIG.down.textClass, bg: STATUS_CONFIG.down.bgClass },
+          { label: "Idle", value: kpis.idle, color: STATUS_CONFIG.idle.textClass, bg: STATUS_CONFIG.idle.bgClass },
           { label: "WOs Active", value: queueItems.length, color: "text-primary", bg: "bg-primary" },
         ].map(k => (
           <div key={k.label} className="bg-card border border-border rounded-lg p-3">
@@ -272,6 +274,7 @@ function SupervisorDisplay({ config, stations, queueItems, lastRefresh }: {
           </div>
         ))}
       </div>
+
 
       {/* Alert banner */}
       {(kpis.down > 0 || overdueItems.length > 0) && (
