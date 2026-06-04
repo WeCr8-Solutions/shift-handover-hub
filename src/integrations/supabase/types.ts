@@ -2181,6 +2181,7 @@ export type Database = {
           email: string
           id: string
           lead_type: string | null
+          metadata: Json
           source_page: string | null
         }
         Insert: {
@@ -2188,6 +2189,7 @@ export type Database = {
           email: string
           id?: string
           lead_type?: string | null
+          metadata?: Json
           source_page?: string | null
         }
         Update: {
@@ -2195,6 +2197,7 @@ export type Database = {
           email?: string
           id?: string
           lead_type?: string | null
+          metadata?: Json
           source_page?: string | null
         }
         Relationships: []
