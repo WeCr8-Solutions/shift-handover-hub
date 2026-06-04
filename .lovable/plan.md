@@ -1,41 +1,55 @@
-## Review result: `operator-profiles` storage policies
+## Dashboard graph audit — findings + fixes
 
-The scanner-flagged policy `op_files_public_read_user_scoped` **does not exist** in the live database. The current bucket is `public=false` and has 7 well-scoped policies:
+Audited every chart on Supervisor / Index dashboard against its data source. Below is what each graph shows, the data path, and the bug (if any). Fixes are scoped to data shaping only — no schema changes.
 
-| Policy | Cmd | Effect |
+### Surfaces audited
+
+| Graph / KPI | File | Source data |
 |---|---|---|
-| `op_files_admin_read` | SELECT | Platform admins read anything in the bucket |
-| `op_files_owner_read` | SELECT | Owner reads files under their own `{uid}/...` folder |
-| `op_files_public_profile_read` | SELECT (anon+auth) | Public reads only when path is `{uid}/public/...` or `{uid}/gallery/...` or matches `avatar*`/`banner*`, **and** the profile is `visibility='public' + is_discoverable + public_published_at IS NOT NULL` |
-| `op_files_public_resume_read` | SELECT (anon+auth) | Public resume reads only when path is `{uid}/resume/...` **and** profile is public **and** `resume_public=true` |
-| `op_files_user_insert` | INSERT | Owner can write only under `{uid}/...` |
-| `op_files_user_update` | UPDATE | Owner can update only under `{uid}/...` |
-| `op_files_user_delete` | DELETE | Owner can delete only under `{uid}/...` |
+| KPI cards (Running / Setup / Waiting / Idle / Down / Total) | `DashboardKPICards.tsx` via `SupervisorDashboard.kpis` | `stations` + `current_station_status` |
+| Output bar chart | `charts/OutputChart.tsx` | `stations` + `handoff_records` |
+| Status pie | `charts/StatusPieChart.tsx` | `stations` |
+| Teams stacked bar | `charts/StackedStatusChart.tsx` | `stations` grouped by team |
+| Work Centers stacked bar | `charts/StackedStatusChart.tsx` | `stations` grouped by work_center |
+| Trend area chart | `charts/TrendAreaChart.tsx` | `handoff_records` (hourly today, else 7-day) |
+| Utilization bar (Supervisor header) | `SupervisorDashboard.utilization` | `stations` + `kpis` |
+| Shift stats (Active / Handoffs / Parts / Issues) | `useShiftStats` | aggregate queries on `stations` + `handoff_records` |
 
-Verdict: **no permissive UUID-path-only read policy exists**, the visibility gate is enforced, and code paths (`src/lib/operatorProfileFiles.ts`, `useResumeVersions`, `useOperatorProfile`, `OperatorProfile.tsx`) all use the same `{uid}/...` convention. The scanner finding was stale and already marked fixed.
+### Bugs found
 
-## Recommended hardening (only gap worth closing)
+**B1 — Output chart double-counts parts.** `useStationOutputData` first adds `current_status.parts_complete` per station (live cumulative counter), then on the same map key adds `handoff_records.parts_completed_this_shift` for that station's handoffs. Both numbers describe the same physical parts, so totals are inflated and "Yield" denominator is wrong. → Use **handoffs only** as the production-sum source; reserve `parts_complete` as a fallback only when a station has no handoffs.
 
-The bucket itself has no `file_size_limit` or `allowed_mime_types`, so a compromised or careless owner could upload arbitrary file types/sizes (e.g. executables, multi-GB blobs) inside their own folder, which then become reachable through the public-profile read policy if they drop them under `/public/`.
+**B2 — Status-filtered Output chart shows ghost rows.** When `statusFilter !== 'all'`, `SupervisorDashboard` filters stations but still passes the full `dbRecords`. The Output hook then creates orphan `handoff-${machine_id}` entries with `status='idle'` for handoffs whose station was filtered out. → Pre-filter handoffs to the same station set passed into analytics.
 
-Add bucket-level constraints (defense in depth — RLS stays as-is):
+**B3 — Status pie collapses to a single slice while a status filter is active.** Today the pie consumes `filteredStationsForAnalytics`, so picking "Running" leaves the pie showing only Running. The pie IS the status legend; it should always reflect the full active-station distribution. → Pass `dbStations` to the pie regardless of `statusFilter`. Output / Teams / Work Centers continue to honor the filter.
 
-- `file_size_limit`: **10 MB** per object (covers high-quality avatars, banners, gallery photos, PDFs).
-- `allowed_mime_types`: `image/png`, `image/jpeg`, `image/webp`, `image/gif`, `application/pdf`.
+**B4 — Handoff ↔ station match is fragile string-equality.** `useStationOutputData` matches via `s.station_id === h.machine_id || s.name === h.machine_id`. `handoff_records.station_id` is a real FK now. → Prefer `s.id === h.station_id`, fall back to the existing two checks.
 
-If a heavier resume or larger gallery image is ever needed, raise the limit explicitly later.
+**B5 — Team-scoped handoff query is broken.** `useHandoffRecords` builds `.or(`team_id.eq.X,and(team_id.is.null,station_id.in.(select id from stations where team_id='X'))`)`. PostgREST does not support raw SQL subqueries inside `.or()` — this throws and silently falls back to the org-only query, so the "team" filter on handoffs has been a no-op. → Replace with a real two-step approach: first fetch the team's station IDs, then `.or('team_id.eq.X,station_id.in.(id1,id2,…)')` using a real id list (escaped) or just `team_id.eq.X` if no legacy rows exist.
 
-## What I will change (when you switch to build mode)
+**B6 — KPI vs. Status-pie active-station denominator mismatch.** KPI counter iterates ALL `dbStations` (no `is_active` filter), while Status pie / Teams / Work Centers only count `is_active=true`. A retired station with `current_job_state=null` quietly inflates the Idle KPI but is excluded from every chart. → Filter `is_active=true` in the KPI memo too, and surface the inactive count separately if non-zero.
 
-1. **One migration** updating `storage.buckets` for `operator-profiles` only:
-   - `UPDATE storage.buckets SET file_size_limit = 10485760, allowed_mime_types = ARRAY['image/png','image/jpeg','image/webp','image/gif','application/pdf'] WHERE id = 'operator-profiles';`
-2. **No RLS policy changes** — current policies are correct.
-3. **No app code changes** — uploaders already use compatible types, but I will add a friendly client-side error message in `src/lib/operatorProfileFiles.ts` if the bucket rejects a file (size or MIME) so the user sees "File too large / unsupported type" instead of a raw Supabase error.
+**B7 — Yield chip is meaningless when parts inflate.** Same fix as B1 — recompute `totalParts`/`totalScrap` from the corrected handoff-only sum.
 
-## Out of scope (intentionally)
+**B8 — Utilization "Idle %" can show negative-clamped zeros that hide Waiting stations.** `idle = total - running - setup - down - waiting`, fine, but the bar groups Waiting under Idle visually because the Utilization bar only renders Running / Setup / Idle / Down. → Add a Waiting segment to the utilization bar so the math matches the KPI cards.
 
-- Tightening the public-path regex (current `avatar*`/`banner*` matcher is safe because the EXISTS clause still pins it to the owner's `user_id` and a published public profile).
-- Adding org-scoped policies — operator profiles are user-owned, not org-owned, by design.
-- Changing the resume-public flow.
+**B9 — Trend mode-switch is silent.** When today has zero handoffs, the chart silently switches to a 7-day view with no label. → Add a small "Last 7 days" / "Today (hourly)" badge above the chart so users know which window they're seeing.
 
-Approve this plan and I'll apply the migration + the small uploader error-message tweak.
+**B10 — `useShiftStats.partsProduced` diverges from Output chart.** Different aggregation (today only, all handoffs) than the Output chart (recent 100 handoffs). Today this is acceptable but should be documented. → Add a code comment + tooltip on the shift stat clarifying "Parts produced today (all shifts)".
+
+### Out of scope
+
+- No schema or RLS changes.
+- No new endpoints; everything is computed client-side from current `stations` + `handoff_records` queries.
+- Admin Executive Overview, Visitor Survey Analytics, Email Operations Center charts — not part of the production dashboard the user asked about.
+
+### Implementation order
+
+1. Fix `useStationOutputData` (B1, B2, B4) and re-derive `totalParts/totalScrap/yieldRate` (B7).
+2. Decouple Status pie from `statusFilter` in `SupervisorDashboard.tsx` (B3).
+3. Fix `useHandoffRecords` team scoping (B5).
+4. Tighten KPI denominator (B6) and add Waiting segment to utilization bar (B8).
+5. Add Trend window badge (B9) and Shift stats tooltip (B10).
+6. Update / add ProductionAnalytics tests to cover B1–B4 and B6.
+
+Approve and I'll apply the fixes in one pass.
