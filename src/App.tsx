@@ -362,6 +362,7 @@ const App = () => (
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                   </Suspense>
+                  </ConciergeInProgressSplash>
                   </JobLineProvider>
                   </USPersonDeclarationGate>
                   </MFAEnrollmentGate>
