@@ -7,6 +7,7 @@ import { useSettingsForm } from "@/hooks/useSettingsForm";
 import { SettingsSkeleton } from "./SettingsSkeleton";
 import { SettingsFooter } from "./SettingsFooter";
 import { SettingsSwitchRow } from "./SettingsSwitchRow";
+import { DowntimeReasonsCard } from "./DowntimeReasonsCard";
 
 type ManufacturingSettingsState = {
   defaultCycleTimeMinutes: number;
@@ -258,6 +259,8 @@ export function ManufacturingSettings() {
           )}
         </CardContent>
       </Card>
+
+      <DowntimeReasonsCard />
 
       <SettingsFooter
         isDirty={isDirty}
