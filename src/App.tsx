@@ -53,6 +53,8 @@ const ConciergeReporting = lazy(() => import("./pages/admin/ConciergeReporting")
 const ManufacturingVisibility100 = lazy(() => import("./pages/marketing/ManufacturingVisibility100"));
 const ManufacturingVisibility100Methodology = lazy(() => import("./pages/marketing/ManufacturingVisibility100Methodology"));
 const ManufacturingVisibility100Nominate = lazy(() => import("./pages/marketing/ManufacturingVisibility100Nominate"));
+const ManufacturingVisibility100Honorees = lazy(() => import("./pages/marketing/ManufacturingVisibility100Honorees"));
+const ManufacturingVisibility100Admin = lazy(() => import("./pages/admin/ManufacturingVisibility100Admin"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Settings = lazy(() => import("./pages/Settings"));
 const DonationSuccess = lazy(() => import("./pages/DonationSuccess"));
