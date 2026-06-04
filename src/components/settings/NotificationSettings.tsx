@@ -269,3 +269,80 @@ function DeviceAlertsCard() {
     </Card>
   );
 }
+
+interface StationSubscriptionsCardProps {
+  subscribeAll: boolean;
+  subscribedIds: string[];
+  onChangeAll: (v: boolean) => void;
+  onChangeIds: (ids: string[]) => void;
+}
+
+function StationSubscriptionsCard({ subscribeAll, subscribedIds, onChangeAll, onChangeIds }: StationSubscriptionsCardProps) {
+  const { stations, loading } = useStations();
+
+  const toggle = (id: string) => {
+    if (subscribedIds.includes(id)) {
+      onChangeIds(subscribedIds.filter((s) => s !== id));
+    } else {
+      onChangeIds([...subscribedIds, id]);
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Factory className="w-5 h-5" />
+          Station Subscriptions
+        </CardTitle>
+        <CardDescription>
+          Choose which work centers you want station-level alerts (bottlenecks, no-operator, machine-down) for.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <SettingsSwitchRow
+          label="Subscribe to all stations"
+          description="Receive alerts for every station in the organization."
+          checked={subscribeAll}
+          onCheckedChange={onChangeAll}
+          bordered
+        />
+        {!subscribeAll && (
+          <div className="space-y-2 rounded-md border p-3 bg-muted/20">
+            <Label className="text-xs text-muted-foreground">
+              Only alert me about these stations
+            </Label>
+            {loading ? (
+              <p className="text-xs text-muted-foreground">Loading stations…</p>
+            ) : stations.length === 0 ? (
+              <p className="text-xs text-muted-foreground">No stations available.</p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-64 overflow-y-auto">
+                {stations.map((s) => (
+                  <label
+                    key={s.id}
+                    className="flex items-center gap-2 rounded-md border px-2.5 py-1.5 hover:bg-secondary/40 cursor-pointer"
+                  >
+                    <Checkbox
+                      checked={subscribedIds.includes(s.id)}
+                      onCheckedChange={() => toggle(s.id)}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-medium truncate">{s.name}</p>
+                      <p className="text-[10px] text-muted-foreground truncate">
+                        {s.work_center}
+                      </p>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            )}
+            <p className="text-[11px] text-muted-foreground">
+              Work-order-level alerts (overdue, on hold, high priority) are unaffected by this filter.
+            </p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
