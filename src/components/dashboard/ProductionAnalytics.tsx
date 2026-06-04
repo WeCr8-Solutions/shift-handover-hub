@@ -288,6 +288,13 @@ export function ProductionAnalytics({
 
       {/* Chart Area */}
       <div className="bg-card border border-border rounded-lg p-4 overflow-hidden">
+        {chartView === "trend" && (
+          <div className="flex justify-end mb-2">
+            <Badge variant="outline" className="text-[10px]">
+              {trendData.mode === "hourly" ? "Today · hourly" : "Last 7 days"}
+            </Badge>
+          </div>
+        )}
         {chartView === "output" && <OutputChart data={stationOutputData} prefersReducedMotion={prefersReducedMotion} />}
         {chartView === "status" && <StatusPieChart data={statusDistribution} activeStationCount={activeCount} prefersReducedMotion={prefersReducedMotion} />}
         {chartView === "team" && <StackedStatusChart data={teamData} dataKey="team" subtitle="Station status by team" emptyMessage="No teams configured." ariaLabel="Stacked bar chart showing station status by team" prefersReducedMotion={prefersReducedMotion} />}
