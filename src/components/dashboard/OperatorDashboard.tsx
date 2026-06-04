@@ -15,11 +15,13 @@ import { useHandoffRecords } from "@/hooks/useStations";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useOrgContext } from "@/contexts/OrgContext";
 import { getCurrentShift } from "@/lib/mockData";
-import { LogOut, Loader2, Clock, ArrowLeft, Info } from "lucide-react";
+import { LogOut, Loader2, Clock, ArrowLeft, Info, Radio } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ComplimentaryAwardBanner } from "@/components/ComplimentaryAwardBanner";
 import { OperatorMyNumbers } from "./OperatorMyNumbers";
+import { AcknowledgeHandoffCard } from "./AcknowledgeHandoffCard";
+import { QuickStatusDialog } from "@/components/handoff/QuickStatusDialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -60,6 +62,8 @@ export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDas
   const [handoffStationId, setHandoffStationId] = useState<string | undefined>();
   const [endingShift, setEndingShift] = useState(false);
   const [showEndShiftConfirm, setShowEndShiftConfirm] = useState(false);
+  const [quickStatusStationId, setQuickStatusStationId] = useState<string | null>(null);
+  const [quickStatusStationName, setQuickStatusStationName] = useState<string>("");
 
   const handleEndShiftClick = () => {
     setShowEndShiftConfirm(true);
