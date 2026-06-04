@@ -614,6 +614,20 @@ export function OperatorStationPanel({
                 </div>
               )}
 
+              {/* Setup / Run phase tracking — Roadmap item #19 */}
+              <SetupRunControls
+                queueItemId={activeOrder.id}
+                stationId={stationId}
+                currentPhase={(activeOrder.current_phase as "setup" | "run" | "idle" | null) ?? null}
+                setupStartedAt={activeOrder.setup_started_at}
+                runStartedAt={activeOrder.run_started_at}
+                setupActualMinutes={activeOrder.setup_actual_minutes}
+                runActualMinutes={activeOrder.run_actual_minutes}
+                setupPlannedMinutes={activeOrder.setup_time_minutes}
+                onChanged={fetchOrders}
+              />
+
+
               {/* Routing timeline — horizontally scrollable */}
               {routingInfo && routingInfo.allSteps.length > 0 && (
                 <div className="space-y-1.5">
