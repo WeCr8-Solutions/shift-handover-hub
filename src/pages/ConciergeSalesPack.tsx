@@ -54,7 +54,7 @@ function WorksheetTable({ columns, rows = 10 }: { columns: string[]; rows?: numb
 export default function ConciergeSalesPack() {
   const { engagementId } = useParams<{ engagementId?: string }>();
   const { user, loading: authLoading } = useAuth();
-  const { isPlatformAdmin, isDeveloper, loading: rolesLoading } = useUserRoles();
+  const { isAdmin: isPlatformAdmin, isDeveloper, loading: rolesLoading } = useAdminAccess();
   const { data: engagement, isLoading } = useEngagement(engagementId ?? null);
 
   useEffect(() => { document.title = "Concierge Sales Pack · JobLine.ai"; }, []);
