@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useOrganization } from "@/hooks/useOrganization";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+
+const SALES_LINK = (
+  <Link to="/concierge/sales" className="text-xs text-muted-foreground hover:text-primary underline underline-offset-2">
+    Prefer to pay by check or talk to a human? Contact sales →
+  </Link>
+);
 
 const INCLUDES = [
   "Equipment & stations configured",
