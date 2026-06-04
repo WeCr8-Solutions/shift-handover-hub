@@ -18,6 +18,7 @@
 - [Operator Acceptance Program (OAP)](/oap): AS9100/ISO 9001 operator certification system.
 - [G-Code Academy (GCA)](/gcode-academy): Self-paced CNC operator training across major controls.
 - [Learning Center](/learn): AI literacy, manufacturing fundamentals, and tutorials.
+- [Manufacturing Visibility 100](/manufacturing-100): Annual recognition list — programmers, operators, shops, educators, builders. Nominations open.
 - [Machine Manuals](/manuals): Searchable library of public OEM machine and control manuals.
 - [VS Code G-Code Extension](/features/vscode-gcode): Multi-dialect G-code intelligence in VS Code.
 - [VS Code Machine Connect](/features/machine-connect): DNC connectivity (FTP/RS-232/CIFS/FOCAS2/MTConnect).
