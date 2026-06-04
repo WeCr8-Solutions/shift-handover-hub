@@ -117,7 +117,7 @@ export default function ManufacturingVisibility100Detail() {
         </div>
       </section>
 
-      <section className="container max-w-3xl py-10 space-y-8">
+      <section className="container max-w-3xl px-4 py-8 sm:py-10 space-y-6 sm:space-y-8">
         {h.display_blurb && (
           <div>
             <h2 className="text-xs uppercase tracking-wide text-muted-foreground mb-2">Why they're on the list</h2>
