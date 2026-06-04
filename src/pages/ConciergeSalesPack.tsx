@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
 import { useEngagement } from "@/hooks/useOnboardingEngagements";
 import { useAuth } from "@/contexts/AuthContext";
-import { useUserRoles } from "@/hooks/useUserRoles";
+import { useAdminAccess } from "@/hooks/useAdminData";
 import { Skeleton } from "@/components/ui/skeleton";
 
 /**
