@@ -35,6 +35,7 @@ interface StationData {
 interface HandoffRecord {
   id: string;
   machine_id: string;
+  station_id?: string | null;
   primary_state: string;
   parts_completed_this_shift: number;
   shift: string;
@@ -49,6 +50,8 @@ interface HandoffRecord {
 
 interface ProductionAnalyticsProps {
   stations: StationData[];
+  /** Unfiltered active-station set used by the Status pie so it always shows the full distribution. Falls back to `stations`. */
+  allStations?: StationData[];
   handoffs: HandoffRecord[];
   isRefreshing?: boolean;
   lastRefreshedAt?: Date | null;
@@ -92,31 +95,65 @@ function useReducedMotion() {
 
 function useStationOutputData(stations: StationData[], filteredHandoffs: HandoffRecord[]) {
   return useMemo(() => {
-    const map = new Map<string, OutputEntry>();
-
+    // Lookup tables for fast handoff↔station matching. Prefer the FK `station_id`,
+    // fall back to legacy machine_id / name matches for older handoff records.
+    const stationById = new Map<string, StationData>();
+    const stationByStationId = new Map<string, StationData>();
+    const stationByName = new Map<string, StationData>();
     stations.forEach((s) => {
-      if (!s.is_active) return;
-      const status = getStatusFromJobState(s.current_status?.current_job_state);
-      const existing = map.get(s.id) || {
-        name: s.name, teamName: s.team?.name || "Unassigned",
-        workCenter: s.work_center || "—", status, parts: 0, scrap: 0, rework: 0,
-      };
-      existing.parts = safeAdd(existing.parts, s.current_status?.parts_complete);
-      map.set(s.id, existing);
+      stationById.set(s.id, s);
+      if (s.station_id) stationByStationId.set(s.station_id, s);
+      if (s.name) stationByName.set(s.name, s);
     });
 
+    const map = new Map<string, OutputEntry>();
+    const stationHasHandoff = new Set<string>();
+
+    // 1) Sum production from handoffs — authoritative shift output.
+    //    Only credit handoffs whose station is in the visible set so a status
+    //    filter doesn't surface ghost rows for filtered-out stations.
     filteredHandoffs.forEach((h) => {
-      const match = stations.find((s) => s.station_id === h.machine_id || s.name === h.machine_id);
-      const key = match?.id || `handoff-${h.machine_id}`;
-      const status = match ? getStatusFromJobState(match.current_status?.current_job_state) : "idle" as StatusLabel;
-      const existing = map.get(key) || {
-        name: h.machine_id, teamName: match?.team?.name || "—",
-        workCenter: match?.work_center || "—", status, parts: 0, scrap: 0, rework: 0,
+      const match =
+        (h.station_id && stationById.get(h.station_id)) ||
+        stationByStationId.get(h.machine_id) ||
+        stationByName.get(h.machine_id);
+      if (!match || !match.is_active) return;
+
+      stationHasHandoff.add(match.id);
+      const status = getStatusFromJobState(match.current_status?.current_job_state);
+      const existing = map.get(match.id) || {
+        name: match.name,
+        teamName: match.team?.name || "Unassigned",
+        workCenter: match.work_center || "—",
+        status,
+        parts: 0,
+        scrap: 0,
+        rework: 0,
       };
       existing.parts = safeAdd(existing.parts, h.parts_completed_this_shift);
       existing.scrap = safeAdd(existing.scrap, h.scrap_count);
       existing.rework = safeAdd(existing.rework, h.rework_count);
-      map.set(key, existing);
+      map.set(match.id, existing);
+    });
+
+    // 2) For active stations with NO handoff in the current window, fall back
+    //    to the live `parts_complete` counter so a running station still appears.
+    //    This avoids the previous double-count (handoff sum + live counter).
+    stations.forEach((s) => {
+      if (!s.is_active) return;
+      if (stationHasHandoff.has(s.id)) return;
+      const liveParts = s.current_status?.parts_complete ?? 0;
+      if (liveParts <= 0) return;
+      const status = getStatusFromJobState(s.current_status?.current_job_state);
+      map.set(s.id, {
+        name: s.name,
+        teamName: s.team?.name || "Unassigned",
+        workCenter: s.work_center || "—",
+        status,
+        parts: liveParts,
+        scrap: 0,
+        rework: 0,
+      });
     });
 
     return Array.from(map.values()).sort((a, b) => b.parts - a.parts).slice(0, 15);
