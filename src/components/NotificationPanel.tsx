@@ -1,17 +1,20 @@
 import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { AlertTriangle, AlertCircle, Info, Gift, Megaphone, Bell, BellRing, Check, ExternalLink, X, MessagesSquare, Inbox, Building2, Briefcase } from "lucide-react";
+import { AlertTriangle, AlertCircle, Info, Gift, Megaphone, Bell, BellRing, Check, CheckCheck, Clock, ExternalLink, X, MessagesSquare, Inbox, Building2, Briefcase } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useSmartAlerts, type SmartAlert, type SmartAlertSeverity } from "@/hooks/useSmartAlerts";
 import { useGlobalUpdates, type GlobalUpdate } from "@/hooks/useGlobalUpdates";
 import { useOrgContext } from "@/contexts/OrgContext";
 import { useOrgMessagesUnread } from "@/hooks/useOrgMessaging";
 import { useTalentInboxUnread } from "@/hooks/useTalentInboxUnread";
 import { useDeviceNotifications } from "@/hooks/useDeviceNotifications";
+import { useAlertSnooze, SNOOZE_OPTIONS } from "@/hooks/useAlertSnooze";
+import { useNotificationPrefs } from "@/hooks/useNotificationPrefs";
 import { differenceInDays } from "date-fns";
 
 const DISMISS_KEY_PREFIX = "complimentary_award_dismissed_";
