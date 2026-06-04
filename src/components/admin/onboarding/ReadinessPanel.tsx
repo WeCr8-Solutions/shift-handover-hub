@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, AlertTriangle, Loader2, ShieldCheck } from "lucide-react";
-import { useProductionReadiness } from "@/hooks/useOnboardingEngagements";
+import { CheckCircle2, AlertTriangle, Loader2, ShieldCheck, DollarSign, FileSignature } from "lucide-react";
+import { useProductionReadiness, type Engagement } from "@/hooks/useOnboardingEngagements";
 
 const COUNT_LABELS: Record<string, string> = {
   departments: "Departments",
@@ -15,7 +15,7 @@ const COUNT_LABELS: Record<string, string> = {
   erp_connections: "ERP connections",
 };
 
-export function ReadinessPanel({ organizationId }: { organizationId: string }) {
+export function ReadinessPanel({ organizationId, engagement }: { organizationId: string; engagement?: Engagement }) {
   const { data, isLoading, refetch, isFetching } = useProductionReadiness(organizationId);
 
   if (isLoading) {
