@@ -110,7 +110,7 @@ export default function ManufacturingVisibility100Honorees() {
         </div>
       </section>
 
-      <section className="container max-w-5xl py-12">
+      <section className="container max-w-5xl px-4 py-10 sm:py-12">
         {isLoading ? (
           <div className="flex items-center justify-center py-16">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
