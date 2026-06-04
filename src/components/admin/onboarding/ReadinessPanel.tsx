@@ -29,7 +29,17 @@ export function ReadinessPanel({ organizationId, engagement }: { organizationId:
   }
   if (!data) return null;
 
-  const ready = data.ready;
+  const paymentOk = engagement ? ["paid", "waived"].includes(engagement.payment_status) : true;
+  const contractOk = engagement
+    ? engagement.purchased_via === "stripe" ||
+      engagement.payment_status === "waived" ||
+      !!engagement.contract_signed_at
+    : true;
+  const ready = data.ready && paymentOk && contractOk;
+  const extraBlockers: string[] = [];
+  if (engagement && !paymentOk) extraBlockers.push(`Payment status is ${engagement.payment_status}`);
+  if (engagement && !contractOk) extraBlockers.push("Signed contract is not on file");
+  const allBlockers = [...data.blockers, ...extraBlockers];
 
   return (
     <Card>
