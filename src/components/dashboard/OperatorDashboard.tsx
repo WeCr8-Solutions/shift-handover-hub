@@ -152,6 +152,11 @@ export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDas
       {/* Personal KPIs — last 7 days */}
       <OperatorMyNumbers />
 
+      {/* Pending acknowledgements from prior shift */}
+      <AcknowledgeHandoffCard stationIds={activeSessions.map((s) => s.station_id)} />
+
+
+
 
       {/* Top bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -164,12 +169,27 @@ export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDas
             {activeSessions.length} station{activeSessions.length !== 1 ? "s" : ""}
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <RefreshIndicator
             isRefreshing={isRefreshing}
             lastRefreshedAt={lastRefreshedAt}
             onRefresh={handleManualRefresh}
           />
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => {
+              const first = activeSessions[0];
+              setQuickStatusStationId(first.station_id);
+              setQuickStatusStationName(first.station?.name || "Station");
+            }}
+            data-testid="quick-status-trigger"
+            aria-label="Post a quick mid-shift status update"
+          >
+            <Radio className="w-4 h-4" />
+            Quick Status
+          </Button>
           <Button
             variant="destructive"
             size="sm"
