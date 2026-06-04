@@ -1,102 +1,91 @@
-## Audit findings — what blocks "production-ready on first login"
+## Goal
+Allow JobLine sales to close concierge engagements in person — print a contract + intake pack, accept payment by check, credit card, ACH/wire, or other, and ensure the org cannot enter production until that payment is recorded as **paid**.
 
-The concierge plumbing exists (engagement, checklist, splash, Stripe checkout, activation RPC), but several **silent-failure** gaps mean an org can be flipped to `live` while still being functionally empty. Cleared in order of severity:
+## What's missing today
+- `onboarding_engagements` only knows about Stripe payment intents (`purchased_via` in `stripe|manual|complimentary`, plus `stripe_payment_intent_id`). There's no payment-state field, no amount, no method, no proof-of-payment artifact.
+- `mark_engagement_ready` / `activate_org_for_production` gate on readiness checklist + production readiness RPC but do **not** require payment-paid.
+- There's no printable contract/intake packet. `ConciergeCTA` and `OnboardingService` only route through Stripe Checkout.
+- No sales-facing "create offline engagement" workflow for platform admins.
 
-### Critical gaps
+## Deliverables
 
-1. **Uploads never parse into the database.** `UploadUtility` only drops the CSV/XLSX into the `onboarding-documents` storage bucket. Nothing inserts rows into `equipment`, `stations`, `departments`, `organization_invites`, `routing_templates`, `quality_checkpoints`, or `oap_role_programs`. A platform admin can mark every checklist item "Done" while the org has 0 machines, 0 stations, 0 users → customer logs in to a blank app, no KPIs possible.
-2. **`mark_engagement_ready` only checks checklist booleans, not data presence.** It should fail if the org has 0 stations, 0 active members, no subscription, no branding, or (for non-ITAR orgs that chose ERP) no `erp_connections` row. Currently nothing prevents flipping an empty org to `ready_for_production`.
-3. **Several modules have no `templateColumns`.** `org_profile`, `quality`, `erp`, `documents`, `review` show no upload UI at all. Existing templates are also thin (equipment missing `serial_number`/`controller_family`/`machine_type`, users missing `team`/`send_invite_now`, routing missing dimension/quality columns).
-4. **Required vs optional mismatch.** `training` and `erp` are `required=false`, but without users + assigned OAP role programs there is zero operator activity → zero KPI signal. Training should be required.
-5. **Subscription tier is never verified.** Concierge is a $1,500 one-time fee; the org still needs an active `subscriptions` row (single/team/enterprise) for entitlements. Activation today doesn't check this — the customer logs in and immediately hits paywalls.
-6. **No customer-facing kickoff email** after Stripe payment, and **no internal notification** to JobLine team that an engagement was created.
-7. **`/setup` self-serve is not gated.** A customer mid-concierge can race the JobLine team by starting parallel setup. Splash blocks the dashboard but not `/setup`.
-8. **Splash over-blocks `ready_for_production`.** Org admins should be allowed to log in for the final walkthrough; only operators should stay blocked.
+### 1. Schema additions (single migration)
+Add to `onboarding_engagements`:
+- `payment_status text not null default 'unpaid'` — `unpaid | invoiced | paid | refunded | waived`
+- `payment_method text` — `stripe | check | credit_card_offline | ach | wire | other | complimentary`
+- `payment_reference text` — check #, auth code, wire confirmation, PO #
+- `payment_amount_cents int` (default 150000)
+- `payment_received_at timestamptz`
+- `payment_recorded_by uuid references auth.users(id)`
+- `payment_proof_path text` — Supabase Storage path to scanned check / receipt / signed contract
+- `contract_signed_at timestamptz`, `contract_signer_name text`, `contract_signer_title text`
+- `sales_rep_id uuid references auth.users(id)` — internal owner
 
-### Day-one KPI gaps (causes empty dashboards on activation)
+Backfill existing Stripe rows: `payment_status='paid'`, `payment_method='stripe'`, `payment_received_at=created_at`.
 
-9. **No baseline `current_station_status` rows.** Floor Map + KPI cards render zeros because no station has ever emitted a status. Need to seed `idle` for every station at activation.
-10. **No baseline org defaults.** `org_downtime_reasons`, default shift schedule, work-center config, notification thresholds, and morning brief recipient list are all empty — the `morning-brief-cron` and notifications send nothing.
-11. **No data audit at activation.** Customer can't see a "what was set up for you" report on first login.
-12. **Checklist completions are not audited.** Status changes go through client-side RLS; for SOC every transition should land in `admin_audit_events`.
+Stripe webhook sets the same fields when `concierge_onboarding` checkout completes.
 
----
+### 2. New RPCs (SECURITY DEFINER, search_path=public, platform-admin only)
+- `create_offline_concierge_engagement(p_org_id, p_plan_tier, p_sales_rep_id, p_notes)` — seeds engagement in `intake` with `purchased_via='manual'`, `payment_status='unpaid'`. Calls `seed_onboarding_checklist`. Logs to `admin_audit_events`.
+- `record_concierge_payment(p_engagement_id, p_method, p_reference, p_amount_cents, p_received_at, p_proof_path)` — flips `payment_status='paid'`, stores method/reference/proof, writes audit row. Rejects unknown methods.
+- `record_concierge_contract_signature(p_engagement_id, p_signer_name, p_signer_title, p_signed_at)` — stamps signed-contract metadata + audit row.
 
-## Plan (build mode)
+### 3. Gate production on payment
+Update `mark_engagement_ready` and `activate_org_for_production`:
+- Refuse if `payment_status <> 'paid'` (allow `complimentary` for platform-admin grants).
+- Refuse activation if `contract_signed_at is null` (require signed contract on file).
+- Existing readiness/blockers checks remain.
 
-### A. Database — `supabase/migrations/<ts>_concierge_readiness.sql`
+`ConciergeInProgressSplash` already blocks ops; no client change needed for the hard gate — UI just needs to show a "Payment required" reason when applicable.
 
-1. **Production readiness check RPC** `public.verify_org_production_ready(p_org_id uuid) returns jsonb` (SECURITY DEFINER, admin/developer only). Returns `{ ready: bool, blockers: [...] }` and counts:
-   - `>= 1` department, `>= 1` station, `>= 1` equipment row
-   - `>= 1` active org admin + `>= 1` operator member
-   - `>= 1` routing_template with steps
-   - `>= 1` quality_checkpoint (or explicit "skip quality" flag in org_profile)
-   - `subscriptions.status IN ('active','trialing')`
-   - `organization_branding` row exists
-   - ITAR orgs: `requires_us_person_declaration` set and `erp_persistence_mode='read_through'`
-   - Non-ITAR orgs that selected ERP: `erp_connections` row exists
-2. **Strengthen `mark_engagement_ready`** to call `verify_org_production_ready` and refuse if `ready=false`, returning the blocker list in the error.
-3. **`seed_org_production_defaults(p_org_id uuid)`** SECURITY DEFINER — called by `activate_org_for_production`:
-   - Insert `current_station_status` (`idle`) for every station that has none.
-   - Insert default `org_downtime_reasons` (Tooling, Material, Maintenance, Setup, Quality Hold, Other) if table empty for org.
-   - Insert default `shift_schedules` (Day 06:00–14:30, Swing 14:00–22:30) if none.
-   - Insert default `notification_preferences` row for every org admin.
-   - Insert default `work_center_config` rows for every distinct station type.
-4. **Audit trigger** on `onboarding_checklist_items` → inserts `admin_audit_events('onboarding.checklist_item_updated', …)` on status change.
-5. **Mark `training` required** in `seed_onboarding_checklist` (it's the only path to OAP role assignments).
-6. Storage RLS sanity: confirm platform admin can `INSERT` into `onboarding-documents` (current policies are SELECT-only); add the missing INSERT/UPDATE/DELETE policy scoped to platform admin role.
+### 4. Storage
+New private bucket `concierge-contracts` (org-admin + platform-admin read on rows where `engagement.organization_id = their org`; platform-admin write). Stores signed contracts, scanned checks, wire receipts.
 
-### B. Edge function — `supabase/functions/onboarding-bulk-import/index.ts` (new)
+### 5. Printable Concierge Sales Pack
+New route `/admin/concierge/print/:engagementId?` (platform-admin only) that renders a print-optimized, single-page-per-section document with these sections, each on its own page (`@media print { page-break-after: always }`):
 
-Single entry point the admin upload utility calls after writing the storage file. Body: `{ engagement_id, module_key, storage_path, dry_run }`. JWT-verified, gated to `has_role('admin'|'developer')`. Validates and inserts into the right table per `module_key`:
+1. **Cover** — JobLine logo, org name, sales rep, date, plan tier, $1,500.
+2. **Master Services Agreement** — concierge SOW: scope, deliverables (equipment/users/routing/ERP/OAP/ITAR/walkthrough), $1,500 fee, payment terms (NET 0 — production access blocked until paid), data handling (ITAR posture acknowledgment), confidentiality, term/termination, signature block (customer name/title/date + JobLine rep).
+3. **Payment instructions** — Stripe link (QR to `/onboarding-service`), check payable to "JobLine AI, Inc." with mailing address, ACH/wire routing placeholder, "Other / PO" line. Reminder that production is gated.
+4. **ITAR / US-Person declaration** — checkbox + signature (mirrors existing in-app gate).
+5. **Equipment intake worksheet** — table to write equipment name, make, model, serial, controller, work-center type (matches `equipment` columns the bulk-importer accepts).
+6. **Stations & departments worksheet** — same for `stations` (with department name column).
+7. **Users & roles worksheet** — name, email, role (admin/supervisor/operator), shift, primary station.
+8. **Routing templates worksheet** — template name + ordered step list with operation type + standard hours.
+9. **Quality / inspection notes** — free-form.
+10. **ERP integration questionnaire** — JobBOSS / SAP / Native, persistence mode (read-through forced for ITAR).
+11. **Go-live checklist** — mirrors the 10 in-app checklist modules so the sales rep can tick alongside the customer.
 
-- `equipment` → `equipment` (idempotent on `(org_id, asset_tag)`)
-- `stations` → `departments` (upsert) + `stations` (idempotent on `(org_id, name)`)
-- `users_roles` → `organization_invites` with `send_invite_now` flag; can dispatch invite emails via existing `send-email`
-- `routing` → `routing_templates` + `routing_template_steps`
-- `training` → `oap_role_program_courses` enrollments
+Implementation: React component using existing print CSS pattern (`window.print()`), no PDF library — the browser handles PDF export. Each worksheet table renders blank rows the salesman can hand-fill, plus a footer note "Return completed sheets to onboarding@jobline.ai or upload via the Concierge workspace."
 
-Returns `{ inserted, skipped, errors[] }`. **Dry-run mode** validates without writing so the admin sees a preview before committing. Logs the import to `admin_audit_events`.
+### 6. Admin UI additions (inside existing `OnboardingServicesPanel` / `EngagementDetail`)
+- **"New offline engagement"** button beside existing list → modal: org picker (existing orgs), plan tier, sales rep (defaults to current user), notes. Calls `create_offline_concierge_engagement`. Auto-opens print view on success.
+- **"Print sales pack"** button on every engagement detail → opens `/admin/concierge/print/:id` in a new tab.
+- **Payment panel** on `EngagementDetail`:
+  - Status badge (unpaid / invoiced / paid / waived).
+  - "Record payment" form: method dropdown (check/credit/ACH/wire/other), reference field, amount (default $1,500), received date, file upload → `concierge-contracts/{orgId}/{engagementId}/payment-proof-...`.
+  - "Record signed contract" form: signer name, title, signed date, upload signed PDF.
+  - On save → corresponding RPC; rows appear in `admin_audit_events`.
+- **Readiness panel** already exists — extend to surface "Payment outstanding" and "Contract not on file" as blockers alongside the data-readiness ones.
 
-### C. Frontend — `UploadUtility` and module templates
+### 7. Marketing surface
+- Add a secondary CTA on `ConciergeCTA` (banner + card variants) labeled "Prefer to pay by check or talk to a human?" linking to a new `/concierge/sales` landing page that briefly explains the offline path and exposes a "Request a sales contact" form (writes to existing `email_leads` table with `source='concierge_sales'`).
+- Pricing page banner unchanged; the new CTA appears beside the Stripe button.
 
-- After upload, call `onboarding-bulk-import` with `dry_run=true`; show a preview dialog with row counts + errors, then re-call with `dry_run=false` when the admin clicks "Import".
-- Fill in missing `templateColumns` for all 10 modules and expand existing ones to match the real schemas (equipment +`serial_number`,`controller_family`,`machine_type`,`hours_meter`; users +`team`,`phone`,`send_invite_now`; routing +`dimension_spec`,`quality_checkpoint`).
-- New **"Live data" panel** in `EngagementDetail` calling `verify_org_production_ready` so admins see real counts (machines, users, routing templates, subscription tier, ITAR posture) — not just checklist booleans.
-- "Mark ready" button disabled until both required-checklist-done **and** `verify_org_production_ready.ready=true`; show the blocker list inline.
+### 8. End-to-end verification
+- Manual flow: create offline engagement → print pack → record check payment + signed contract → fill checklist → readiness green → activation succeeds.
+- Negative tests: try to `mark_engagement_ready` with `payment_status='unpaid'` → expect failure; try `activate_org_for_production` without signed contract → expect failure.
+- Stripe flow regression: webhook still flips `payment_status='paid'` and `payment_method='stripe'`; activation continues to work.
+- Splash gate: org with `concierge_intake` + unpaid still blocks operators; admin sees clear "payment required" messaging.
 
-### D. Activation + customer experience
+## Technical notes (for engineering review)
+- All new RPCs `SECURITY DEFINER SET search_path = public`; `REVOKE ALL FROM PUBLIC` + explicit grants. Payment/contract RPCs grant to `authenticated` but gate inside on `has_role('admin') OR has_role('developer')` (platform admins only — not org admins, since this is a sales-side action).
+- Storage RLS on `concierge-contracts`: platform admin full access; org admins read-only for objects under their `orgId/` prefix.
+- Stripe webhook updates: in the existing `productType === 'concierge_onboarding'` branch, also set `payment_status='paid'`, `payment_method='stripe'`, `payment_amount_cents=session.amount_total`, `payment_received_at=now()` on the engagement row.
+- No changes to `ConciergeCTA` payment logic; only adds the "talk to sales" secondary CTA.
+- Print view uses Tailwind `print:` utilities; no new dependency.
 
-- `activate_org_for_production` now also runs `seed_org_production_defaults` and dispatches a customer kickoff email via `send-email` ("Your facility is live — here's what we set up for you" with counts + a deep link to `/dashboard`).
-- New `OnboardingSummaryCard` shown once on `/dashboard` after `onboarding_status` flips to `live` (dismissable, stored on `user_org_preferences`).
-- Update `ConciergeInProgressSplash`: allow members with `is_org_admin` to pass during `ready_for_production` (operators stay blocked until `live`).
-- Add a `<Navigate to="/onboarding-status" />` guard on `/setup` while engagement is active so customers don't race the team. Add a tiny `/onboarding-status` page showing percent complete + ETA.
-- `stripe-webhook` concierge branch: after creating engagement, post a notification to platform admins (insert into `announcements` scoped to admin role, plus `send-email` to the JobLine onboarding inbox via the `noreply@jobline.ai` sender).
-
-### E. Stripe / billing safety
-
-- `create-concierge-checkout` validates the org has either an active subscription or also bundles the customer's chosen tier into the same checkout (extra line item). Until tier resolution is decided, just refuse checkout with a clear "Pick a subscription tier first" error and link to `/pricing`.
-
-### F. E2E — `e2e/concierge-readiness.spec.ts` (extend existing spec)
-
-1. Marketing page renders + CTA (already covered).
-2. **Dry-run import preview**: upload a sample equipment CSV, expect preview dialog with row counts.
-3. **Activation blocked** when `verify_org_production_ready` reports blockers (mock via seeded fixture lacking stations).
-4. **Activation succeeds** with seeded fixture → org flips to `live`, `current_station_status` rows exist for every station, default downtime reasons seeded, kickoff email enqueued (assert via `email_send_log`).
-5. **Splash behaviour**: operator blocked during `ready_for_production`, org admin passes.
-6. `/setup` redirects to `/onboarding-status` while engagement active.
-
-### Out of scope (call out, do not build)
-
-- White-label customer onboarding portal (customers self-uploading their own data).
-- Replacing self-serve `/setup` — concierge is a parallel path, not a rewrite.
-- Multi-engagement-per-org workflows.
-- Stripe subscription auto-selection (we'll require the customer to pick a tier first; bundling can come later).
-
-### Verification
-
-- `verify_org_production_ready` returns `ready=true` for a seeded fixture org and `ready=false` with itemized blockers for an empty org.
-- Dry-run CSV import for equipment, stations, users, routing all report correct counts without writing.
-- After activation: `SELECT COUNT(*) FROM current_station_status WHERE organization_id=$1` equals station count; `org_downtime_reasons` ≥ 6; `email_send_log` shows the kickoff message queued.
-- Customer login as operator while `ready_for_production` still shows splash; login as org admin loads dashboard with KPI cards rendering non-zero counts (Idle = station count, Running/Setup/Down = 0).
-- E2E spec passes in CI.
+## Out of scope
+- No e-signature integration (DocuSign etc.) — wet signature on the printed contract is acceptable for v1.
+- No accounting-system push (QuickBooks invoice creation) — sales records the payment manually after deposit.
+- No customer-facing invoice generator — `/concierge/sales` lead form is the only customer touchpoint for the offline path in v1.
