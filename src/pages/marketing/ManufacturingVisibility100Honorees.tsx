@@ -6,24 +6,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loader2, ExternalLink, Award, ArrowUp, ArrowDown, Minus, Sparkles } from "lucide-react";
-
-interface Honoree {
-  id: string;
-  slug: string | null;
-  nominee_name: string;
-  nominee_company: string | null;
-  nominee_role: string | null;
-  nominee_linkedin: string | null;
-  nominee_website: string | null;
-  category: string;
-  display_blurb: string;
-  rank: number | null;
-  previous_rank: number | null;
-  rank_movement: string | null;
-  score_total: number | null;
-  edition: string | null;
-  published_at: string;
-}
+import {
+  mergeManufacturing100Honorees,
+  type Manufacturing100Honoree as Honoree,
+} from "@/lib/manufacturing100Honorees";
 
 function MovementBadge({ movement, previous, current }: { movement: string | null; previous: number | null; current: number | null }) {
   if (!movement || !current) return null;
@@ -65,7 +51,7 @@ export default function ManufacturingVisibility100Honorees() {
         .order("rank", { ascending: true, nullsFirst: false })
         .order("nominee_name", { ascending: true });
       if (error) throw error;
-      return (data ?? []) as unknown as Honoree[];
+      return mergeManufacturing100Honorees((data ?? []) as unknown as Honoree[]);
     },
   });
 
