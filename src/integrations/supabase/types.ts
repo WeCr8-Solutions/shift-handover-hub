@@ -5680,6 +5680,7 @@ export type Database = {
           category: string
           consent: boolean
           created_at: string
+          display_blurb: string | null
           evidence_links: Json
           id: string
           interest_flags: Json
@@ -5692,6 +5693,8 @@ export type Database = {
           nominee_role: string | null
           nominee_website: string | null
           notes: string | null
+          published_at: string | null
+          rank: number | null
           reason: string
           reviewed_at: string | null
           reviewed_by: string | null
@@ -5704,6 +5707,7 @@ export type Database = {
           category: string
           consent: boolean
           created_at?: string
+          display_blurb?: string | null
           evidence_links?: Json
           id?: string
           interest_flags?: Json
@@ -5716,6 +5720,8 @@ export type Database = {
           nominee_role?: string | null
           nominee_website?: string | null
           notes?: string | null
+          published_at?: string | null
+          rank?: number | null
           reason: string
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -5728,6 +5734,7 @@ export type Database = {
           category?: string
           consent?: boolean
           created_at?: string
+          display_blurb?: string | null
           evidence_links?: Json
           id?: string
           interest_flags?: Json
@@ -5740,6 +5747,8 @@ export type Database = {
           nominee_role?: string | null
           nominee_website?: string | null
           notes?: string | null
+          published_at?: string | null
+          rank?: number | null
           reason?: string
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -14352,6 +14361,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      mfg_100_honorees: {
+        Row: {
+          category: string | null
+          display_blurb: string | null
+          id: string | null
+          nominee_company: string | null
+          nominee_linkedin: string | null
+          nominee_name: string | null
+          nominee_role: string | null
+          nominee_website: string | null
+          published_at: string | null
+          rank: number | null
+        }
+        Insert: {
+          category?: string | null
+          display_blurb?: never
+          id?: string | null
+          nominee_company?: string | null
+          nominee_linkedin?: string | null
+          nominee_name?: string | null
+          nominee_role?: string | null
+          nominee_website?: string | null
+          published_at?: string | null
+          rank?: number | null
+        }
+        Update: {
+          category?: string | null
+          display_blurb?: never
+          id?: string | null
+          nominee_company?: string | null
+          nominee_linkedin?: string | null
+          nominee_name?: string | null
+          nominee_role?: string | null
+          nominee_website?: string | null
+          published_at?: string | null
+          rank?: number | null
+        }
+        Relationships: []
       }
       oap_certificates_effective: {
         Row: {
