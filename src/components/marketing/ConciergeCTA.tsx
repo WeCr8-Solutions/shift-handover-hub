@@ -167,6 +167,7 @@ export function ConciergeCTA({
             )}
           </Button>
         </div>
+        <div className="pt-1">{SALES_LINK}</div>
       </CardContent>
     </Card>
   );
