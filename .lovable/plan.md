@@ -1,55 +1,93 @@
-## Dashboard graph audit — findings + fixes
+# JobLine.ai Platform Audit & Competitive Roadmap
 
-Audited every chart on Supervisor / Index dashboard against its data source. Below is what each graph shows, the data path, and the bug (if any). Fixes are scoped to data shaping only — no schema changes.
+## Deliverable
 
-### Surfaces audited
+A set of Markdown files under `.lovable/audits/2026-06-mes-erp/`, all codebase-grounded with `file:line` citations for every "current state" claim. No app code changes, no UI, no DB writes.
 
-| Graph / KPI | File | Source data |
-|---|---|---|
-| KPI cards (Running / Setup / Waiting / Idle / Down / Total) | `DashboardKPICards.tsx` via `SupervisorDashboard.kpis` | `stations` + `current_station_status` |
-| Output bar chart | `charts/OutputChart.tsx` | `stations` + `handoff_records` |
-| Status pie | `charts/StatusPieChart.tsx` | `stations` |
-| Teams stacked bar | `charts/StackedStatusChart.tsx` | `stations` grouped by team |
-| Work Centers stacked bar | `charts/StackedStatusChart.tsx` | `stations` grouped by work_center |
-| Trend area chart | `charts/TrendAreaChart.tsx` | `handoff_records` (hourly today, else 7-day) |
-| Utilization bar (Supervisor header) | `SupervisorDashboard.utilization` | `stations` + `kpis` |
-| Shift stats (Active / Handoffs / Parts / Issues) | `useShiftStats` | aggregate queries on `stations` + `handoff_records` |
+```text
+.lovable/audits/2026-06-mes-erp/
+  00-executive-summary.md          ← read-this-first, 2-3 pages
+  01-work-order-management.md      ← Audit Category 1
+  02-shop-floor-execution.md       ← Audit Category 2
+  03-department-audits.md          ← Audit Category 3 (all 13 personas)
+  04-competitive-matrix.md         ← Audit Category 4 (feature × competitor table)
+  05-intelligence-roadmap.md       ← Audit Category 5 (AI / integrations)
+  06-executive-review.md           ← Audit Category 6 (Q&A + top 25 gaps + top 10 differentiators)
+  07-roadmap-30-90-365.md          ← Balanced action lists per horizon
+  appendix-a-file-index.md         ← Master file:line citation index
+  appendix-b-data-model-map.md     ← Which of the 180+ tables back which capability
+```
 
-### Bugs found
+## Method
 
-**B1 — Output chart double-counts parts.** `useStationOutputData` first adds `current_status.parts_complete` per station (live cumulative counter), then on the same map key adds `handoff_records.parts_completed_this_shift` for that station's handoffs. Both numbers describe the same physical parts, so totals are inflated and "Yield" denominator is wrong. → Use **handoffs only** as the production-sum source; reserve `parts_complete` as a fallback only when a station has no handoffs.
+### Phase 1 — Inventory (read-only, ~40 min)
 
-**B2 — Status-filtered Output chart shows ghost rows.** When `statusFilter !== 'all'`, `SupervisorDashboard` filters stations but still passes the full `dbRecords`. The Output hook then creates orphan `handoff-${machine_id}` entries with `status='idle'` for handoffs whose station was filtered out. → Pre-filter handoffs to the same station set passed into analytics.
+1. Walk `src/pages/`, `src/components/`, `src/hooks/`, `supabase/functions/`, `supabase/migrations/` to map current surfaces.
+2. Cross-reference the 180+ tables in `supabase-tables` against UI surfaces — flag tables with no UI (latent capability) and UI screens with weak data (façade risk).
+3. Pull every memory under `mem://features/*` and `mem://technical/*` to avoid mis-claiming gaps for features that already exist.
+4. Read each persona's primary entry points:
+   - Operator: `src/pages/OperatorStation*`, handoff flow, `useHandoffRecords`
+   - Supervisor: `SupervisorDashboard`, `ProductionAnalytics`, queue management
+   - Engineer/Programmer: routing templates, setup_sheets, machine_manuals, VS Code extension
+   - Quality: `ncr_reports`, `quality_inspections`, `dimension_check_requests`, `routing_step_dimensions`
+   - Maintenance: `equipment`, `maintenance_records`, `downtime_events`
+   - Purchasing: `material_lots`, `delivery_requests`, outside processing
+   - Planning: `queue_items`, capacity planning, AI Planning Assistant
+   - HR/Talent: OAP, GCA, `operator_profiles`, certifications
+   - Executive: KPI dashboards, `org_health_snapshots`, `erp_usage_metering`
+5. Inventory existing ERP/MES integration surface: `erp_connections`, JobBOSS + SAP connectors, MTConnect/OPC-UA status (memory says machine_monitoring exists via WebSocket relay — verify scope).
 
-**B3 — Status pie collapses to a single slice while a status filter is active.** Today the pie consumes `filteredStationsForAnalytics`, so picking "Running" leaves the pie showing only Running. The pie IS the status legend; it should always reflect the full active-station distribution. → Pass `dbStations` to the pie regardless of `statusFilter`. Output / Teams / Work Centers continue to honor the filter.
+### Phase 2 — Persona Audits (~90 min)
 
-**B4 — Handoff ↔ station match is fragile string-equality.** `useStationOutputData` matches via `s.station_id === h.machine_id || s.name === h.machine_id`. `handoff_records.station_id` is a real FK now. → Prefer `s.id === h.station_id`, fall back to the existing two checks.
+For each of the 13 personas listed in the request, produce a section with:
+- **Today** — what exists, with `file:line` and table citations
+- **Friction** — concrete UX/data gaps (not vague "needs polish")
+- **Missing** — capabilities a comparable MES has
+- **Quick wins** — < 1 sprint
+- **Strategic** — > 1 quarter
 
-**B5 — Team-scoped handoff query is broken.** `useHandoffRecords` builds `.or(`team_id.eq.X,and(team_id.is.null,station_id.in.(select id from stations where team_id='X'))`)`. PostgREST does not support raw SQL subqueries inside `.or()` — this throws and silently falls back to the org-only query, so the "team" filter on handoffs has been a no-op. → Replace with a real two-step approach: first fetch the team's station IDs, then `.or('team_id.eq.X,station_id.in.(id1,id2,…)')` using a real id list (escaped) or just `team_id.eq.X` if no legacy rows exist.
+### Phase 3 — Audit Categories 1 & 2 (Work Order + Shop Floor Execution, ~45 min)
 
-**B6 — KPI vs. Status-pie active-station denominator mismatch.** KPI counter iterates ALL `dbStations` (no `is_active` filter), while Status pie / Teams / Work Centers only count `is_active=true`. A retired station with `current_job_state=null` quietly inflates the Idle KPI but is excluded from every chart. → Filter `is_active=true` in the KPI memo too, and surface the inactive count separately if non-zero.
+Single tables-per-capability format covering creation → release → revision → routing → labor → setup → downtime → scrap → rework → completion → traveler replacement. Score each: Excels / Adequate / Incomplete / Missing.
 
-**B7 — Yield chip is meaningless when parts inflate.** Same fix as B1 — recompute `totalParts`/`totalScrap` from the corrected handoff-only sum.
+### Phase 4 — Competitive Matrix (~60 min)
 
-**B8 — Utilization "Idle %" can show negative-clamped zeros that hide Waiting stations.** `idle = total - running - setup - down - waiting`, fine, but the bar groups Waiting under Idle visually because the Utilization bar only renders Running / Setup / Idle / Down. → Add a Waiting segment to the utilization bar so the math matches the KPI cards.
+One large table: rows = ~60 capabilities (work orders, routing, scheduling, MRP, finite capacity, OEE, FAI, NCR/CAR, SPC, tool life, PM, MTConnect, OPC-UA, traceability, EDI, costing, GL, AP/AR, etc.); columns = JobLine + Epicor MES + SAP S/4 Mfg + Plex + Oracle Mfg Cloud + Infor CloudSuite + NetSuite Mfg. Cells = ✓ / Partial / ✗ + 1-line note. Competitor data from public docs and general knowledge — clearly marked as such, not codebase-grounded.
 
-**B9 — Trend mode-switch is silent.** When today has zero handoffs, the chart silently switches to a 7-day view with no label. → Add a small "Last 7 days" / "Today (hourly)" badge above the chart so users know which window they're seeing.
+For every "Partial" or "✗" on JobLine: a Recommended Solution row with Priority (Critical/High/Medium/Low) + Effort (S/M/L/XL).
 
-**B10 — `useShiftStats.partsProduced` diverges from Output chart.** Different aggregation (today only, all handoffs) than the Output chart (recent 100 handoffs). Today this is acceptable but should be documented. → Add a code comment + tooltip on the shift stat clarifying "Parts produced today (all shifts)".
+### Phase 5 — Intelligence Roadmap (~30 min)
 
-### Out of scope
+Status table for: AI scheduling (✓ Planning Assistant exists), predictive maintenance, ML recommendations, workforce skill tracking (✓ OAP/GCA), Talent integration (✓), Tooling Hero (gap), MTConnect (verify), OPC-UA (verify), JobBOSS (✓), Epicor (gap), SAP (✓ scaffold per memory).
 
-- No schema or RLS changes.
-- No new endpoints; everything is computed client-side from current `stations` + `handoff_records` queries.
-- Admin Executive Overview, Visitor Survey Analytics, Email Operations Center charts — not part of the production dashboard the user asked about.
+### Phase 6 — Executive Review + Roadmap (~30 min)
 
-### Implementation order
+- Why-buy answers for 20 / 100 / 500 person shops
+- Unique advantages vs MES
+- "Never copy from ERP" anti-features
+- Enterprise-sales gates
+- **Top 25 missing features** ranked
+- **Top 10 differentiators** that make JobLine category-defining
+- **30-day actions**: bug-fix-class items, gaps near completion
+- **90-day actions**: feature-class items unlocking mid-market deals
+- **12-month strategic roadmap**: positioning shifts, integrations, enterprise-readiness gates
 
-1. Fix `useStationOutputData` (B1, B2, B4) and re-derive `totalParts/totalScrap/yieldRate` (B7).
-2. Decouple Status pie from `statusFilter` in `SupervisorDashboard.tsx` (B3).
-3. Fix `useHandoffRecords` team scoping (B5).
-4. Tighten KPI denominator (B6) and add Waiting segment to utilization bar (B8).
-5. Add Trend window badge (B9) and Shift stats tooltip (B10).
-6. Update / add ProductionAnalytics tests to cover B1–B4 and B6.
+## Scope & Guardrails
 
-Approve and I'll apply the fixes in one pass.
+- **Read-only**: no migrations, no edits, no edge function changes.
+- **Codebase-grounded**: every JobLine "current state" claim cites `src/...` or table/migration. Competitor claims cite "public docs / general knowledge" — never invented features.
+- **No live DB queries** (per your "codebase-grounded" choice, not "codebase + live data").
+- **Personas covered exactly as requested** — all 13.
+- **Competitors covered exactly as requested** — all 6.
+- **Length budget**: ~25-40 KB per file, ~250 KB total. Skim-friendly with tables and bullets, not prose walls.
+
+## What this audit will NOT do
+
+- Will not estimate revenue or pricing strategy (out of scope).
+- Will not write any production code (plan mode → would be a separate build session).
+- Will not benchmark performance or load (no live data sample chosen).
+- Will not redesign UI (no design directions in scope).
+
+## After approval
+
+I'll execute Phases 1-6 in order in a single build session and report back with the file tree + a one-paragraph summary of headline findings. You can then queue follow-up build sessions against specific 30-day actions.
