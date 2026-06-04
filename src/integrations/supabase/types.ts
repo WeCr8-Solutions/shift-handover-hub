@@ -15606,6 +15606,10 @@ export type Database = {
         Args: { p_engagement_id: string }
         Returns: undefined
       }
+      seed_org_production_defaults: {
+        Args: { p_org_id: string }
+        Returns: undefined
+      }
       submit_learning_idea: {
         Args: {
           _honeypot: string
@@ -15706,6 +15710,7 @@ export type Database = {
           vertical: string
         }[]
       }
+      verify_org_production_ready: { Args: { p_org_id: string }; Returns: Json }
     }
     Enums: {
       activity_type:
