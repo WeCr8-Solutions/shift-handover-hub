@@ -1,61 +1,41 @@
-# Work Order Traveler — Printable ISO 9001 Sheet
+## Review result: `operator-profiles` storage policies
 
-Add a printable physical traveler for each work order so the shop floor gets a paper packet that satisfies ISO 9001 traceability (barcodes, signatures, revision, serial numbers).
+The scanner-flagged policy `op_files_public_read_user_scoped` **does not exist** in the live database. The current bucket is `public=false` and has 7 well-scoped policies:
 
-## What gets built
+| Policy | Cmd | Effect |
+|---|---|---|
+| `op_files_admin_read` | SELECT | Platform admins read anything in the bucket |
+| `op_files_owner_read` | SELECT | Owner reads files under their own `{uid}/...` folder |
+| `op_files_public_profile_read` | SELECT (anon+auth) | Public reads only when path is `{uid}/public/...` or `{uid}/gallery/...` or matches `avatar*`/`banner*`, **and** the profile is `visibility='public' + is_discoverable + public_published_at IS NOT NULL` |
+| `op_files_public_resume_read` | SELECT (anon+auth) | Public resume reads only when path is `{uid}/resume/...` **and** profile is public **and** `resume_public=true` |
+| `op_files_user_insert` | INSERT | Owner can write only under `{uid}/...` |
+| `op_files_user_update` | UPDATE | Owner can update only under `{uid}/...` |
+| `op_files_user_delete` | DELETE | Owner can delete only under `{uid}/...` |
 
-**1. Org-level traveler branding (reusable)**
-- New table `organization_traveler_settings` (org-scoped, RLS): logo path, company name line, footer text, default paper size (Letter/A4), show/hide sections toggles.
-- New private storage bucket `traveler-branding` with org-scoped RLS (path `{org_id}/logo.*`). Upload once, reused on every print.
-- Settings UI lives at **Settings → Work Orders → Traveler Template** (Org Admin / Supervisor): logo upload + preview, header/footer text, default paper color mapping per priority.
+Verdict: **no permissive UUID-path-only read policy exists**, the visibility gate is enforced, and code paths (`src/lib/operatorProfileFiles.ts`, `useResumeVersions`, `useOperatorProfile`, `OperatorProfile.tsx`) all use the same `{uid}/...` convention. The scanner finding was stale and already marked fixed.
 
-**2. Priority → paper color picker**
-- At print time, supervisor picks priority color (Critical=Red, Urgent=Orange, High=Yellow, Normal=White, Low=Blue) — defaults pulled from the WO's priority but overridable.
-- Renders as a colored top band + side stripe so it's visible even on white paper, and is labeled "Print on RED paper" so the operator knows which tray to pull from.
+## Recommended hardening (only gap worth closing)
 
-**3. The traveler layout** (single page, A4/Letter, print-optimized CSS)
-- **Header band**: company logo (left), "WORK ORDER TRAVELER" title, priority color stripe, ISO 9001 doc-control footer (rev, printed-by, printed-at).
-- **Barcodes (top right)**: Work Order # as Code128 + QR (QR encodes a deep link to the WO in-app for scan-to-open on a tablet). Part Number as Code128.
-- **Work Order Info**: WO number, first operation number, release date, due date, group, counter, order qty, start date.
-- **Part Info**: part number, part description/name, material group.
-- **Product Grouping** section.
-- **Routing / Operations table**: step #, op name, station, est. duration, operator sign-off box, qty good / qty scrap / date.
-- **Serial Numbers**: pulled from `work_order_serials` if any are assigned; otherwise renders blank numbered rows = order qty (up to a cap).
-- **Comments / Special Instructions** (free text from WO + a blank ruled area for floor notes).
-- **Sign-off block**: Released by / Inspected by / Closed by with date lines (ISO 9001).
+The bucket itself has no `file_size_limit` or `allowed_mime_types`, so a compromised or careless owner could upload arbitrary file types/sizes (e.g. executables, multi-GB blobs) inside their own folder, which then become reachable through the public-profile read policy if they drop them under `/public/`.
 
-**4. Print entry point**
-- "Print Traveler" button on the Work Order detail page and as a bulk action in the queue list.
-- Opens `/work-orders/:id/traveler?color=red` in a new tab → auto-triggers `window.print()` after fonts/barcodes render. Dedicated route uses a `<PrintLayout>` shell (no app chrome, `@media print` rules).
+Add bucket-level constraints (defense in depth — RLS stays as-is):
 
-## Technical notes
+- `file_size_limit`: **10 MB** per object (covers high-quality avatars, banners, gallery photos, PDFs).
+- `allowed_mime_types`: `image/png`, `image/jpeg`, `image/webp`, `image/gif`, `application/pdf`.
 
-- Barcodes: `bwip-js` for Code128, `qrcode` (already common in this stack) for the QR — both render to `<canvas>` client-side, no server round-trip.
-- Pure frontend feature; only backend additions are the settings table + storage bucket. No changes to existing WO data model.
-- Reuses `useUnifiedQueue` / existing WO fetch hooks — read-only against `queue_items`, `work_order_routing`, `work_order_serials` (if missing, falls back to empty serial slots).
-- Uses semantic tokens from `index.css` for screen preview; print CSS uses explicit CMYK-safe hex for the priority stripe so colors are predictable on a real printer.
-- ITAR orgs: traveler footer auto-stamps "ITAR — US Persons Only" when `requires_us_person_declaration=true`.
-- Route is auth + org-scoped; no public access.
+If a heavier resume or larger gallery image is ever needed, raise the limit explicitly later.
 
-## Files
+## What I will change (when you switch to build mode)
 
-New:
-- `supabase/migrations/<ts>_traveler_settings.sql` — table + bucket policies
-- `src/components/work-orders/traveler/TravelerSheet.tsx` — the printable layout
-- `src/components/work-orders/traveler/TravelerBarcodes.tsx` — Code128 + QR
-- `src/components/work-orders/traveler/TravelerBrandingSettings.tsx` — org admin upload UI
-- `src/pages/WorkOrderTraveler.tsx` — `/work-orders/:id/traveler` print route
-- `src/hooks/useTravelerSettings.ts`
-- `src/hooks/useWorkOrderTraveler.ts` — fetches WO + routing + serials in one query
+1. **One migration** updating `storage.buckets` for `operator-profiles` only:
+   - `UPDATE storage.buckets SET file_size_limit = 10485760, allowed_mime_types = ARRAY['image/png','image/jpeg','image/webp','image/gif','application/pdf'] WHERE id = 'operator-profiles';`
+2. **No RLS policy changes** — current policies are correct.
+3. **No app code changes** — uploaders already use compatible types, but I will add a friendly client-side error message in `src/lib/operatorProfileFiles.ts` if the bucket rejects a file (size or MIME) so the user sees "File too large / unsupported type" instead of a raw Supabase error.
 
-Edited:
-- `src/App.tsx` — lazy route
-- Work Order detail page — "Print Traveler" button + color picker dialog
-- Queue list — bulk "Print Travelers" action
-- Settings nav — add Traveler Template entry
+## Out of scope (intentionally)
 
-## Open questions
+- Tightening the public-path regex (current `avatar*`/`banner*` matcher is safe because the EXISTS clause still pins it to the owner's `user_id` and a published public profile).
+- Adding org-scoped policies — operator profiles are user-owned, not org-owned, by design.
+- Changing the resume-public flow.
 
-1. Do you already track serial numbers per WO anywhere (a `work_order_serials` table, or in `queue_items.metadata`)? If not, I'll render blank numbered rows = order qty and add the table in a follow-up.
-2. Paper size default — Letter (US) or A4? I'll default to Letter and make it org-configurable.
-3. Should the QR code deep-link open the operator station view, or the supervisor WO detail view? I'll default to operator station for shop-floor scanning.
+Approve this plan and I'll apply the migration + the small uploader error-message tweak.

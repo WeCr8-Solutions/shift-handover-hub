@@ -188,6 +188,16 @@ export function useOperatorProfile(targetUserId?: string) {
    */
   const uploadFile = useCallback(async (file: File, folder: "resume" | "certs" | "avatar" | "banner"): Promise<string> => {
     if (!user?.id) throw new Error("Not authenticated");
+    // Bucket-level guardrails (mirror storage.buckets config for fast UX):
+    //   max 10 MB, types: png/jpeg/webp/gif/pdf. Server enforces the same.
+    const MAX_BYTES = 10 * 1024 * 1024;
+    const ALLOWED = new Set(["image/png", "image/jpeg", "image/webp", "image/gif", "application/pdf"]);
+    if (file.size > MAX_BYTES) {
+      throw new Error(`File is too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Max is 10 MB.`);
+    }
+    if (file.type && !ALLOWED.has(file.type)) {
+      throw new Error(`Unsupported file type "${file.type}". Allowed: PNG, JPEG, WEBP, GIF, or PDF.`);
+    }
     const ext = file.name.split(".").pop() ?? "bin";
     const path = `${user.id}/${folder}/${crypto.randomUUID()}.${ext}`;
     const { error } = await supabase.storage.from("operator-profiles").upload(path, file, {
@@ -195,7 +205,16 @@ export function useOperatorProfile(targetUserId?: string) {
       upsert: false,
       contentType: file.type,
     });
-    if (error) throw error;
+    if (error) {
+      const msg = error.message?.toLowerCase() ?? "";
+      if (msg.includes("exceeded") || msg.includes("size")) {
+        throw new Error("File is too large. Max upload size is 10 MB.");
+      }
+      if (msg.includes("mime") || msg.includes("type")) {
+        throw new Error("Unsupported file type. Allowed: PNG, JPEG, WEBP, GIF, or PDF.");
+      }
+      throw error;
+    }
     const { data, error: signErr } = await supabase.storage
       .from("operator-profiles")
       .createSignedUrl(path, 60 * 60 * 24 * 7); // 7 days
