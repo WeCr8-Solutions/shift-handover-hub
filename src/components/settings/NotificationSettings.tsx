@@ -45,6 +45,7 @@ export function NotificationSettings() {
         email_machine_down: notifications.email_machine_down,
         email_shift_reminders: notifications.email_shift_reminders,
         email_weekly_summary: notifications.email_weekly_summary,
+        email_morning_brief: (notifications as { email_morning_brief?: boolean }).email_morning_brief ?? true,
         push_enabled: notifications.push_enabled,
         push_urgent_only: notifications.push_urgent_only,
         quiet_hours_start: notifications.quiet_hours_start || "",
@@ -113,6 +114,7 @@ export function NotificationSettings() {
           <SettingsSwitchRow label="Machine Down Alerts" description="Notify when a machine goes down" checked={settings.email_machine_down} onCheckedChange={(v) => setSettings(p => ({ ...p, email_machine_down: v }))} bordered />
           <SettingsSwitchRow label="Shift Reminders" description="Get reminders before your shift starts" checked={settings.email_shift_reminders} onCheckedChange={(v) => setSettings(p => ({ ...p, email_shift_reminders: v }))} bordered />
           <SettingsSwitchRow label="Weekly Summary" description="Receive a weekly production summary" checked={settings.email_weekly_summary} onCheckedChange={(v) => setSettings(p => ({ ...p, email_weekly_summary: v }))} bordered />
+          <SettingsSwitchRow label="Morning Brief" description="Daily digest of open WOs, bottlenecks, and downtime" checked={settings.email_morning_brief} onCheckedChange={(v) => setSettings(p => ({ ...p, email_morning_brief: v }))} bordered />
         </CardContent>
       </Card>
 
