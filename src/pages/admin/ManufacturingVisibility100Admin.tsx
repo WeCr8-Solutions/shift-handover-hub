@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,7 +12,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, ExternalLink, CheckCircle2, XCircle, Eye } from "lucide-react";
+import {
+  Loader2, ExternalLink, CheckCircle2, XCircle, Eye, Plus, Trash2, Rocket, Search,
+} from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 
@@ -47,6 +49,7 @@ interface Nomination {
   score_momentum: number | null;
   score_total: number | null;
   edition: string | null;
+  archived_at: string | null;
 }
 
 const SCORE_FIELDS: { key: keyof Nomination; label: string; max: number }[] = [
@@ -75,21 +78,66 @@ const STATUS_COLORS: Record<Status, string> = {
   declined: "bg-muted text-muted-foreground",
 };
 
+const CATEGORIES = [
+  "smb_owner",
+  "machinist",
+  "educator",
+  "creator",
+  "founder",
+  "executive",
+  "engineer",
+  "advocate",
+  "other",
+];
+
+const EMPTY_NEW: Partial<Nomination> = {
+  nominee_name: "",
+  nominee_company: "",
+  nominee_role: "",
+  nominee_linkedin: "",
+  nominee_website: "",
+  category: "smb_owner",
+  reason: "",
+  display_blurb: "",
+  edition: "2026",
+  status: "shortlisted",
+};
+
 export default function ManufacturingVisibility100Admin() {
   const [tab, setTab] = useState<Status | "all">("new");
   const [selected, setSelected] = useState<Nomination | null>(null);
+  const [creating, setCreating] = useState<Partial<Nomination> | null>(null);
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState<"recent" | "score" | "rank">("recent");
+  const [edition, setEdition] = useState<string>("2026");
   const qc = useQueryClient();
 
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["mfg-100-nominations", tab],
     queryFn: async (): Promise<Nomination[]> => {
-      let q = supabase.from("mfg_100_nominations" as any).select("*").order("created_at", { ascending: false });
+      let q = supabase.from("mfg_100_nominations" as any).select("*").is("archived_at", null);
       if (tab !== "all") q = q.eq("status", tab);
       const { data, error } = await q;
       if (error) throw error;
       return (data ?? []) as unknown as Nomination[];
     },
   });
+
+  const filtered = useMemo(() => {
+    const s = search.trim().toLowerCase();
+    const arr = s
+      ? rows.filter(r =>
+          [r.nominee_name, r.nominee_company, r.nominee_role, r.category, r.nominator_name, r.nominator_email]
+            .filter(Boolean)
+            .some(v => String(v).toLowerCase().includes(s)),
+        )
+      : rows;
+    return [...arr].sort((a, b) => {
+      if (sort === "score") return (b.score_total ?? 0) - (a.score_total ?? 0);
+      if (sort === "rank")  return (a.rank ?? 999) - (b.rank ?? 999);
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+  }, [rows, search, sort]);
 
   const update = useMutation({
     mutationFn: async (patch: Partial<Nomination> & { id: string }) => {
@@ -103,19 +151,90 @@ export default function ManufacturingVisibility100Admin() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["mfg-100-nominations"] });
+      qc.invalidateQueries({ queryKey: ["mfg-100-counts"] });
       toast.success("Nomination updated");
       setSelected(null);
     },
     onError: (e: any) => toast.error(e?.message ?? "Update failed"),
   });
 
+  const create = useMutation({
+    mutationFn: async (payload: Partial<Nomination>) => {
+      const { data: u } = await supabase.auth.getUser();
+      const editorEmail = u.user?.email ?? "editor@jobline.ai";
+      const editorName  = u.user?.user_metadata?.full_name ?? "Editorial Team";
+      const insert: any = {
+        nominee_name: payload.nominee_name?.trim(),
+        nominee_company: payload.nominee_company || null,
+        nominee_role: payload.nominee_role || null,
+        nominee_linkedin: payload.nominee_linkedin || null,
+        nominee_website: payload.nominee_website || null,
+        category: payload.category || "smb_owner",
+        reason: payload.reason?.trim() || "Added directly by editorial team.",
+        display_blurb: payload.display_blurb || null,
+        edition: payload.edition || "2026",
+        status: payload.status || "shortlisted",
+        nominator_name: editorName,
+        nominator_email: editorEmail,
+        consent: true,
+        evidence_links: [],
+        interest_flags: { editor_added: true },
+      };
+      const { error } = await supabase.from("mfg_100_nominations" as any).insert(insert);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["mfg-100-nominations"] });
+      qc.invalidateQueries({ queryKey: ["mfg-100-counts"] });
+      toast.success("Honoree added");
+      setCreating(null);
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Create failed"),
+  });
+
+  const archive = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("mfg_100_nominations" as any)
+        .update({ archived_at: new Date().toISOString() } as any)
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["mfg-100-nominations"] });
+      qc.invalidateQueries({ queryKey: ["mfg-100-counts"] });
+      toast.success("Archived");
+      setSelected(null);
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Archive failed"),
+  });
+
+  const publishEdition = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.rpc("mfg_100_publish_edition" as any, { _edition: edition } as any);
+      if (error) throw error;
+      return data as number;
+    },
+    onSuccess: (n) => {
+      qc.invalidateQueries({ queryKey: ["mfg-100-nominations"] });
+      qc.invalidateQueries({ queryKey: ["mfg-100-counts"] });
+      toast.success(`Published ${n ?? 0} honorees for ${edition}`);
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Publish failed"),
+  });
+
   const counts = useQuery({
     queryKey: ["mfg-100-counts"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("mfg_100_nominations" as any).select("status");
+      const { data, error } = await supabase
+        .from("mfg_100_nominations" as any)
+        .select("status, archived_at");
       if (error) throw error;
       const c: Record<string, number> = {};
-      (data ?? []).forEach((r: any) => { c[r.status] = (c[r.status] || 0) + 1; });
+      (data ?? []).forEach((r: any) => {
+        if (r.archived_at) return;
+        c[r.status] = (c[r.status] || 0) + 1;
+      });
       return c;
     },
   });
@@ -127,11 +246,34 @@ export default function ManufacturingVisibility100Admin() {
         <meta name="robots" content="noindex" />
       </Helmet>
 
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Manufacturing Visibility 100</h1>
-        <p className="text-muted-foreground mt-1">
-          Review nominations, move them through the editorial pipeline, and publish honorees.
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Manufacturing Visibility 100</h1>
+          <p className="text-muted-foreground mt-1">
+            Review nominations, add honorees directly, rank them, and publish the edition.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Input
+            value={edition}
+            onChange={(e) => setEdition(e.target.value)}
+            className="w-24"
+            aria-label="Edition"
+          />
+          <Button
+            variant="outline"
+            onClick={() => publishEdition.mutate()}
+            disabled={publishEdition.isPending}
+          >
+            {publishEdition.isPending
+              ? <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+              : <Rocket className="h-4 w-4 mr-1" />}
+            Publish edition
+          </Button>
+          <Button onClick={() => setCreating({ ...EMPTY_NEW })}>
+            <Plus className="h-4 w-4 mr-1" /> Add honoree
+          </Button>
+        </div>
       </div>
 
       <Card>
@@ -149,7 +291,27 @@ export default function ManufacturingVisibility100Admin() {
             )}
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative flex-1 min-w-[220px]">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search nominee, company, nominator…"
+                className="pl-8"
+              />
+            </div>
+            <Select value={sort} onValueChange={(v) => setSort(v as any)}>
+              <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="recent">Most recent</SelectItem>
+                <SelectItem value="score">Highest score</SelectItem>
+                <SelectItem value="rank">Lowest rank #</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
             <TabsList className="flex-wrap h-auto">
               {STATUS_TABS.map(s => (
@@ -162,7 +324,7 @@ export default function ManufacturingVisibility100Admin() {
                 <div className="flex items-center justify-center py-12">
                   <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                 </div>
-              ) : rows.length === 0 ? (
+              ) : filtered.length === 0 ? (
                 <p className="text-muted-foreground text-sm py-8 text-center">No nominations in this bucket.</p>
               ) : (
                 <Table>
@@ -179,7 +341,7 @@ export default function ManufacturingVisibility100Admin() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {rows.map(n => (
+                    {filtered.map(n => (
                       <TableRow key={n.id}>
                         <TableCell className="font-semibold tabular-nums">
                           {n.rank ? `#${n.rank}` : <span className="text-muted-foreground">—</span>}
@@ -221,6 +383,7 @@ export default function ManufacturingVisibility100Admin() {
         </CardContent>
       </Card>
 
+      {/* ---------- Review dialog ---------- */}
       <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           {selected && (
@@ -268,21 +431,41 @@ export default function ManufacturingVisibility100Admin() {
                 </div>
 
                 <div className="pt-3 border-t space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="status">Status</Label>
+                      <Select
+                        value={selected.status}
+                        onValueChange={(v) => setSelected({ ...selected, status: v as Status })}
+                      >
+                        <SelectTrigger id="status"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="new">New</SelectItem>
+                          <SelectItem value="under_review">Under review</SelectItem>
+                          <SelectItem value="shortlisted">Shortlisted</SelectItem>
+                          <SelectItem value="published">Published</SelectItem>
+                          <SelectItem value="declined">Declined</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="edition-sel">Edition</Label>
+                      <Input
+                        id="edition-sel"
+                        value={selected.edition ?? ""}
+                        onChange={(e) => setSelected({ ...selected, edition: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
                   <div>
-                    <Label htmlFor="status">Status</Label>
-                    <Select
-                      value={selected.status}
-                      onValueChange={(v) => setSelected({ ...selected, status: v as Status })}
-                    >
-                      <SelectTrigger id="status"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="new">New</SelectItem>
-                        <SelectItem value="under_review">Under review</SelectItem>
-                        <SelectItem value="shortlisted">Shortlisted</SelectItem>
-                        <SelectItem value="published">Published</SelectItem>
-                        <SelectItem value="declined">Declined</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Label htmlFor="slug">Slug</Label>
+                    <Input
+                      id="slug"
+                      value={selected.slug ?? ""}
+                      onChange={(e) => setSelected({ ...selected, slug: e.target.value })}
+                      placeholder="auto-generated from name if blank"
+                    />
                   </div>
 
                   <div>
@@ -360,7 +543,20 @@ export default function ManufacturingVisibility100Admin() {
                 </div>
               </div>
 
-              <DialogFooter className="gap-2">
+              <DialogFooter className="gap-2 flex-wrap">
+                <Button
+                  variant="ghost"
+                  className="text-destructive hover:text-destructive"
+                  onClick={() => {
+                    if (confirm(`Archive "${selected.nominee_name}"? This removes them from the editorial pipeline.`)) {
+                      archive.mutate(selected.id);
+                    }
+                  }}
+                  disabled={archive.isPending}
+                >
+                  <Trash2 className="h-4 w-4 mr-1" /> Archive
+                </Button>
+                <div className="flex-1" />
                 <Button variant="ghost" onClick={() => setSelected(null)}>Cancel</Button>
                 <Button
                   variant="outline"
@@ -377,6 +573,8 @@ export default function ManufacturingVisibility100Admin() {
                     rank: selected.rank,
                     previous_rank: selected.previous_rank,
                     notes: selected.notes,
+                    slug: selected.slug || null,
+                    edition: selected.edition,
                     score_impact: selected.score_impact,
                     score_innovation: selected.score_innovation,
                     score_visibility: selected.score_visibility,
@@ -388,6 +586,107 @@ export default function ManufacturingVisibility100Admin() {
                 >
                   {update.isPending ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-1" />}
                   Save
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* ---------- Manual add dialog ---------- */}
+      <Dialog open={!!creating} onOpenChange={(o) => !o && setCreating(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          {creating && (
+            <>
+              <DialogHeader>
+                <DialogTitle>Add honoree directly</DialogTitle>
+                <DialogDescription>
+                  Editorial entries skip the public nomination form and land straight in the pipeline.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-3 text-sm">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="c-name">Name *</Label>
+                    <Input id="c-name" value={creating.nominee_name ?? ""} onChange={(e) => setCreating({ ...creating, nominee_name: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label htmlFor="c-role">Role / title</Label>
+                    <Input id="c-role" value={creating.nominee_role ?? ""} onChange={(e) => setCreating({ ...creating, nominee_role: e.target.value })} />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="c-company">Company / shop</Label>
+                    <Input id="c-company" value={creating.nominee_company ?? ""} onChange={(e) => setCreating({ ...creating, nominee_company: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label htmlFor="c-cat">Category</Label>
+                    <Select value={creating.category ?? "smb_owner"} onValueChange={(v) => setCreating({ ...creating, category: v })}>
+                      <SelectTrigger id="c-cat"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="c-li">LinkedIn URL</Label>
+                    <Input id="c-li" value={creating.nominee_linkedin ?? ""} onChange={(e) => setCreating({ ...creating, nominee_linkedin: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label htmlFor="c-web">Website</Label>
+                    <Input id="c-web" value={creating.nominee_website ?? ""} onChange={(e) => setCreating({ ...creating, nominee_website: e.target.value })} />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="c-reason">Why they belong on the list</Label>
+                  <Textarea id="c-reason" rows={3} value={creating.reason ?? ""} onChange={(e) => setCreating({ ...creating, reason: e.target.value })} />
+                </div>
+
+                <div>
+                  <Label htmlFor="c-blurb">Public blurb (optional)</Label>
+                  <Textarea id="c-blurb" rows={2} value={creating.display_blurb ?? ""} onChange={(e) => setCreating({ ...creating, display_blurb: e.target.value })} />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="c-ed">Edition</Label>
+                    <Input id="c-ed" value={creating.edition ?? "2026"} onChange={(e) => setCreating({ ...creating, edition: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label htmlFor="c-status">Initial status</Label>
+                    <Select value={creating.status ?? "shortlisted"} onValueChange={(v) => setCreating({ ...creating, status: v as Status })}>
+                      <SelectTrigger id="c-status"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="shortlisted">Shortlisted</SelectItem>
+                        <SelectItem value="under_review">Under review</SelectItem>
+                        <SelectItem value="published">Published</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button variant="ghost" onClick={() => setCreating(null)}>Cancel</Button>
+                <Button
+                  onClick={() => {
+                    if (!creating.nominee_name?.trim()) {
+                      toast.error("Name is required");
+                      return;
+                    }
+                    create.mutate(creating);
+                  }}
+                  disabled={create.isPending}
+                >
+                  {create.isPending ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Plus className="h-4 w-4 mr-1" />}
+                  Add to pipeline
                 </Button>
               </DialogFooter>
             </>
