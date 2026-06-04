@@ -44,6 +44,7 @@ const CancelledWorkOrders = lazy(() => import("./pages/CancelledWorkOrders"));
 const OnHoldWorkOrders = lazy(() => import("./pages/OnHoldWorkOrders"));
 const QuotesHub = lazy(() => import("./pages/QuotesHub"));
 const Setup = lazy(() => import("./pages/Setup"));
+const OnboardingService = lazy(() => import("./pages/OnboardingService"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Settings = lazy(() => import("./pages/Settings"));
 const DonationSuccess = lazy(() => import("./pages/DonationSuccess"));
