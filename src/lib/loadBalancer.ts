@@ -66,6 +66,8 @@ export interface StationInfo {
   work_center_type: string;
   work_center: string;
   is_active: boolean;
+  /** Optional override of the 8h default daily capacity (hours). */
+  daily_capacity_hours?: number | null;
 }
 
 export interface StationLoad {
