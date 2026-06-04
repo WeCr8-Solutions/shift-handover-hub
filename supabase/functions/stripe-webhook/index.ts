@@ -493,10 +493,8 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     if (!orgId) { logStep("CONCIERGE: missing org_id"); return; }
     const paymentIntentId = (session.payment_intent as string) ?? session.id;
     const purchasedBy = session.metadata?.purchased_by ?? null;
+    const amountTotal = session.amount_total ?? 150000;
 
-    // Persist the Stripe customer on the organization so future billing
-    // (subscriptions, ERP add-ons, invoices) is tied to the same customer
-    // record that paid for concierge onboarding.
     if (customerId) {
       const { error: orgUpdErr } = await supabaseAdmin
         .from("organizations")
@@ -517,9 +515,22 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     );
     if (rpcErr) {
       logStep("CONCIERGE: RPC failed", { error: rpcErr.message, orgId, purchasedBy });
-    } else {
-      logStep("CONCIERGE: engagement created", { engagementId, orgId, purchasedBy });
+      return;
     }
+    logStep("CONCIERGE: engagement created", { engagementId, orgId, purchasedBy });
+
+    // Stamp payment fields directly — Stripe purchases are already paid.
+    const { error: payErr } = await supabaseAdmin
+      .from("onboarding_engagements")
+      .update({
+        payment_status: "paid",
+        payment_method: "stripe",
+        payment_reference: paymentIntentId,
+        payment_amount_cents: amountTotal,
+        payment_received_at: new Date().toISOString(),
+      })
+      .eq("id", engagementId as unknown as string);
+    if (payErr) logStep("CONCIERGE: payment stamp failed", { error: payErr.message });
     return;
   }
 
