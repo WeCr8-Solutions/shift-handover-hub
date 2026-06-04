@@ -1,14 +1,16 @@
 import { useMemo, useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { RefreshIndicator } from "./RefreshIndicator";
-import { BarChart3, PieChart as PieChartIcon, TrendingUp, Filter, Activity, Users, Wrench } from "lucide-react";
+import { BarChart3, PieChart as PieChartIcon, TrendingUp, Filter, Activity, Users, Wrench, AlertOctagon } from "lucide-react";
 import {
   STATUS_CONFIG, STATUS_COLORS, getStatusFromJobState, type StatusLabel,
 } from "./stationStatus";
 import {
-  OutputChart, StatusPieChart, StackedStatusChart, TrendAreaChart,
+  OutputChart, StatusPieChart, StackedStatusChart, TrendAreaChart, ParetoChart,
   StatChip, ToggleChipGroup, formatCount, safeAdd, type OutputEntry,
 } from "./charts";
+import { useDowntimeAnalytics } from "@/hooks/useDowntimeAnalytics";
+import { useDowntimeReasons } from "@/hooks/useDowntimeReasons";
 
 // ─── Types ─────────────────────────────────────────────────
 
@@ -59,7 +61,7 @@ interface ProductionAnalyticsProps {
 }
 
 type ShiftFilter = "all" | "Day" | "Swing" | "Night";
-type ChartView = "output" | "status" | "team" | "workcenter" | "trend";
+type ChartView = "output" | "status" | "team" | "workcenter" | "trend" | "pareto";
 
 // ─── Filter configs ────────────────────────────────────────
 
@@ -76,6 +78,7 @@ const CHART_VIEW_OPTIONS = [
   { key: "team" as ChartView, icon: Users, label: "Teams" },
   { key: "workcenter" as ChartView, icon: Wrench, label: "Work Ctrs" },
   { key: "trend" as ChartView, icon: TrendingUp, label: "Trend" },
+  { key: "pareto" as ChartView, icon: AlertOctagon, label: "Pareto" },
 ] as const;
 
 // ─── Data hooks ────────────────────────────────────────────
@@ -248,6 +251,8 @@ export function ProductionAnalytics({
   const workCenterData = useGroupedStatusData(stations, "workCenter");
   const statusDistribution = useStatusDistribution(stationsForPie);
   const trendData = useTrendData(filteredHandoffs);
+  const { events: downtimeEvents } = useDowntimeAnalytics(30);
+  const { reasons: downtimeReasons } = useDowntimeReasons();
 
   const totalParts = stationOutputData.reduce((s, d) => s + d.parts, 0);
   const totalScrap = stationOutputData.reduce((s, d) => s + d.scrap, 0);
@@ -295,11 +300,17 @@ export function ProductionAnalytics({
             </Badge>
           </div>
         )}
+        {chartView === "pareto" && (
+          <div className="flex justify-end mb-2">
+            <Badge variant="outline" className="text-[10px]">Last 30 days · downtime reasons</Badge>
+          </div>
+        )}
         {chartView === "output" && <OutputChart data={stationOutputData} prefersReducedMotion={prefersReducedMotion} />}
         {chartView === "status" && <StatusPieChart data={statusDistribution} activeStationCount={activeCount} prefersReducedMotion={prefersReducedMotion} />}
         {chartView === "team" && <StackedStatusChart data={teamData} dataKey="team" subtitle="Station status by team" emptyMessage="No teams configured." ariaLabel="Stacked bar chart showing station status by team" prefersReducedMotion={prefersReducedMotion} />}
         {chartView === "workcenter" && <StackedStatusChart data={workCenterData} dataKey="workCenter" subtitle="Station status by work center" emptyMessage="No work centers configured." ariaLabel="Stacked bar chart showing station status by work center" prefersReducedMotion={prefersReducedMotion} rotateLabels />}
         {chartView === "trend" && <TrendAreaChart data={trendData.data} mode={trendData.mode} prefersReducedMotion={prefersReducedMotion} />}
+        {chartView === "pareto" && <ParetoChart events={downtimeEvents} reasons={downtimeReasons} prefersReducedMotion={prefersReducedMotion} />}
       </div>
     </div>
   );

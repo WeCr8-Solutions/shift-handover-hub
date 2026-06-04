@@ -15,11 +15,13 @@ import { useHandoffRecords } from "@/hooks/useStations";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useOrgContext } from "@/contexts/OrgContext";
 import { getCurrentShift } from "@/lib/mockData";
-import { LogOut, Loader2, Clock, ArrowLeft, Info } from "lucide-react";
+import { LogOut, Loader2, Clock, ArrowLeft, Info, Radio } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ComplimentaryAwardBanner } from "@/components/ComplimentaryAwardBanner";
 import { OperatorMyNumbers } from "./OperatorMyNumbers";
+import { AcknowledgeHandoffCard } from "./AcknowledgeHandoffCard";
+import { QuickStatusDialog } from "@/components/handoff/QuickStatusDialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -60,6 +62,8 @@ export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDas
   const [handoffStationId, setHandoffStationId] = useState<string | undefined>();
   const [endingShift, setEndingShift] = useState(false);
   const [showEndShiftConfirm, setShowEndShiftConfirm] = useState(false);
+  const [quickStatusStationId, setQuickStatusStationId] = useState<string | null>(null);
+  const [quickStatusStationName, setQuickStatusStationName] = useState<string>("");
 
   const handleEndShiftClick = () => {
     setShowEndShiftConfirm(true);
@@ -148,6 +152,11 @@ export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDas
       {/* Personal KPIs — last 7 days */}
       <OperatorMyNumbers />
 
+      {/* Pending acknowledgements from prior shift */}
+      <AcknowledgeHandoffCard stationIds={activeSessions.map((s) => s.station_id)} />
+
+
+
 
       {/* Top bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -160,12 +169,27 @@ export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDas
             {activeSessions.length} station{activeSessions.length !== 1 ? "s" : ""}
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <RefreshIndicator
             isRefreshing={isRefreshing}
             lastRefreshedAt={lastRefreshedAt}
             onRefresh={handleManualRefresh}
           />
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => {
+              const first = activeSessions[0];
+              setQuickStatusStationId(first.station_id);
+              setQuickStatusStationName(first.station?.name || "Station");
+            }}
+            data-testid="quick-status-trigger"
+            aria-label="Post a quick mid-shift status update"
+          >
+            <Radio className="w-4 h-4" />
+            Quick Status
+          </Button>
           <Button
             variant="destructive"
             size="sm"
@@ -227,6 +251,19 @@ export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDas
 
       {/* Performance update modal */}
       {showPerformance && <JobPerformanceUpdateForm onClose={() => setShowPerformance(false)} />}
+
+      {/* Quick Status (mid-shift) dialog */}
+      {quickStatusStationId && (
+        <QuickStatusDialog
+          open={!!quickStatusStationId}
+          onOpenChange={(open) => {
+            if (!open) setQuickStatusStationId(null);
+          }}
+          stationId={quickStatusStationId}
+          stationName={quickStatusStationName}
+          onSaved={refreshSessions}
+        />
+      )}
 
       {/* End Shift Confirmation Dialog */}
       <AlertDialog open={showEndShiftConfirm} onOpenChange={setShowEndShiftConfirm}>
