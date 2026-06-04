@@ -40,7 +40,7 @@ export function CertificateOfConformance({
   const { workOrder: wo, routing } = data;
   const meta = (wo.metadata as Record<string, any>) ?? {};
 
-  const completed = useMemo(() => routing.filter((r) => r.operation_type !== "outside" || r.station_name), [routing]);
+  const completed = useMemo(() => routing, [routing]);
   const certNumber = `COC-${(wo.work_order ?? wo.id.slice(0, 8)).toUpperCase()}-${new Date().getFullYear()}`;
   const printedAt = new Date().toLocaleString();
 
