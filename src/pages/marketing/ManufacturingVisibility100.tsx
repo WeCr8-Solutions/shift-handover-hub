@@ -81,27 +81,27 @@ export default function ManufacturingVisibility100() {
 
       {/* Hero */}
       <section className="relative overflow-hidden border-b border-border bg-gradient-to-b from-primary/5 to-background">
-        <div className="container mx-auto px-4 py-20 md:py-28 max-w-5xl">
-          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground mb-6">
+        <div className="container mx-auto px-4 py-12 sm:py-20 md:py-28 max-w-5xl">
+          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground mb-5 sm:mb-6">
             <Sparkles className="h-3.5 w-3.5 text-primary" />
             Inaugural edition · 2026
           </div>
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight mb-4 sm:mb-6">
             The Manufacturing Visibility 100
           </h1>
-          <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mb-8">
+          <p className="text-base sm:text-xl md:text-2xl text-muted-foreground max-w-3xl mb-6 sm:mb-8">
             100 people, shops, builders, and educators pushing modern manufacturing forward — recognized on practical impact, not follower count.
           </p>
-          <div className="flex flex-wrap gap-3">
-            <Button asChild size="lg">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3">
+            <Button asChild size="lg" className="w-full sm:w-auto">
               <Link to="/manufacturing-100/nominate">
                 Nominate someone <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg">
+            <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
               <Link to="/manufacturing-100/honorees">View honorees</Link>
             </Button>
-            <Button asChild variant="ghost" size="lg">
+            <Button asChild variant="ghost" size="lg" className="w-full sm:w-auto">
               <Link to="/manufacturing-100/methodology">Read the methodology</Link>
             </Button>
           </div>
