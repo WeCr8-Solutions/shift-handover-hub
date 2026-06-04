@@ -16,6 +16,7 @@ import {
   ShieldAlert, FileText, ArrowRightLeft, Copy,
 } from "lucide-react";
 import { PrintTravelerButton } from "@/components/work-orders/traveler/PrintTravelerButton";
+import { PrintCoCButton } from "@/components/work-orders/coc/PrintCoCButton";
 
 interface RoutingStepRow {
   id: string;
@@ -412,6 +413,7 @@ export function QueueItemActions({
             </Button>
           )}
           <PrintTravelerButton workOrderId={item.id} priority={item.priority} />
+          <PrintCoCButton workOrderId={item.id} disabled={item.status !== "completed"} />
         </div>
       )}
 

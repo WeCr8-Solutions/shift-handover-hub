@@ -5,10 +5,11 @@ import { Header } from "@/components/Header";
 import { TeamManagement } from "@/components/TeamManagement";
 import { OrganizationMemberManager } from "@/components/OrganizationMemberManager";
 import { InviteCodeGenerator } from "@/components/InviteCodeGenerator";
+import { SkillsGapMatrix } from "@/components/teams/SkillsGapMatrix";
 import { TourTriggerButton } from "@/components/onboarding";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, UsersRound, QrCode } from "lucide-react";
+import { Users, UsersRound, QrCode, Target } from "lucide-react";
 
 export default function Teams() {
   const navigate = useNavigate();
@@ -65,6 +66,10 @@ export default function Teams() {
               <QrCode className="w-4 h-4" />
               Invite Codes
             </TabsTrigger>
+            <TabsTrigger value="skills" className="gap-2">
+              <Target className="w-4 h-4" />
+              Skills Gap
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="teams" data-tour="team-list">
@@ -77,6 +82,10 @@ export default function Teams() {
 
           <TabsContent value="invites">
             <InviteCodeGenerator />
+          </TabsContent>
+
+          <TabsContent value="skills">
+            <SkillsGapMatrix />
           </TabsContent>
         </Tabs>
       </main>
