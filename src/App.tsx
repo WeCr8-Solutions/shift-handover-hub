@@ -232,6 +232,7 @@ const App = () => (
                     <Route path="/quote-history" element={<RequireAuth><RequireOrg><QuoteHistoryPage /></RequireOrg></RequireAuth>} />
                     <Route path="/setup" element={<RequireAuth><Setup /></RequireAuth>} />
                     <Route path="/pricing" element={<Pricing />} />
+                    <Route path="/onboarding-service" element={<OnboardingService />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/donation-success" element={<DonationSuccess />} />
                     <Route path="/demo" element={<Demo />} />
