@@ -19,6 +19,7 @@ import { LogOut, Loader2, Clock, ArrowLeft, Info } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ComplimentaryAwardBanner } from "@/components/ComplimentaryAwardBanner";
+import { OperatorMyNumbers } from "./OperatorMyNumbers";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -143,6 +144,10 @@ export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDas
 
       {/* Complimentary Access Alert */}
       <ComplimentaryAwardBanner />
+
+      {/* Personal KPIs — last 7 days */}
+      <OperatorMyNumbers />
+
 
       {/* Top bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
