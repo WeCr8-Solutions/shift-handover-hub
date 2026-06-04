@@ -94,15 +94,18 @@ export function ConciergeCTA({
                 <div className="text-xs text-muted-foreground">one-time fee</div>
               </div>
             )}
-            <Button size="lg" onClick={buy} disabled={loading} className="gap-2">
-              {loading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <>
-                  Get Concierge Setup <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </Button>
+            <div className="flex flex-col items-start sm:items-end gap-1">
+              <Button size="lg" onClick={buy} disabled={loading} className="gap-2">
+                {loading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <>
+                    Get Concierge Setup <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </Button>
+              {SALES_LINK}
+            </div>
           </div>
         </div>
       </section>
@@ -116,7 +119,8 @@ export function ConciergeCTA({
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium truncate">White-glove concierge setup available</p>
           <p className="text-xs text-muted-foreground truncate">
-            We configure your shop so you skip the trial-and-error.
+            We configure your shop so you skip the trial-and-error.{" "}
+            <Link to="/concierge/sales" className="underline hover:text-primary">Or pay by check.</Link>
           </p>
         </div>
         <Button size="sm" onClick={buy} disabled={loading}>
