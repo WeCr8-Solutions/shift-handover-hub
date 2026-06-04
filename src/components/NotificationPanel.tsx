@@ -195,11 +195,13 @@ interface NotificationPanelProps {
 export function NotificationPanel({ onClose }: NotificationPanelProps) {
   const navigate = useNavigate();
   const { organization } = useOrgContext();
-  const { alerts } = useSmartAlerts();
+  const { alerts: allAlerts } = useSmartAlerts();
   const { updates, unreadCount, acknowledgedIds, acknowledgeUpdate } = useGlobalUpdates();
   const orgMessagesUnread = useOrgMessagesUnread();
   const talentInboxUnread = useTalentInboxUnread();
   const deviceNotif = useDeviceNotifications();
+  const { notifications: prefs } = useNotificationPrefs();
+  const { isSnoozed, snooze, acknowledge, acknowledgeMany } = useAlertSnooze();
   const [complimentaryDismissed, setComplimentaryDismissed] = useState(false);
 
   const isComplimentary = organization?.subscription_status === "complimentary";
@@ -218,6 +220,17 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
     setComplimentaryDismissed(true);
   };
 
+  // Filter alerts by station subscription preferences + snooze state
+  const alerts = useMemo(() => {
+    const subscribeAll = prefs?.subscribe_all_stations ?? true;
+    const subbed = new Set(prefs?.subscribed_station_ids ?? []);
+    return allAlerts.filter((a) => {
+      if (isSnoozed(a.id)) return false;
+      if (!subscribeAll && a.targetType === "station" && !subbed.has(a.targetId)) return false;
+      return true;
+    });
+  }, [allAlerts, prefs, isSnoozed]);
+
   const visibleUpdates = updates.filter((u) => u.is_visible_to_users && u.status === "live");
   const showComplimentary = isComplimentary && !complimentaryDismissed;
   const announcementCount = (showComplimentary ? 1 : 0);
@@ -227,6 +240,7 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
     navigate(path);
     onClose();
   };
+
 
   return (
     <div className="w-full">
@@ -299,12 +313,31 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
               </div>
             ) : (
               <div className="flex flex-col gap-1 mt-2">
+                <div className="flex items-center justify-between px-1 pb-1">
+                  <span className="text-[10px] text-muted-foreground">{alerts.length} active</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-5 text-[10px] px-1.5"
+                    onClick={() => acknowledgeMany(alerts.map((a) => a.id))}
+                  >
+                    <CheckCheck className="w-3 h-3 mr-1" />
+                    Dismiss all
+                  </Button>
+                </div>
                 {alerts.map((alert) => (
-                  <SmartAlertItem key={alert.id} alert={alert} onNavigate={onClose} />
+                  <SmartAlertItem
+                    key={alert.id}
+                    alert={alert}
+                    onNavigate={onClose}
+                    onSnooze={snooze}
+                    onAck={acknowledge}
+                  />
                 ))}
               </div>
             )}
           </TabsContent>
+
 
           <TabsContent value="messages" className="px-3 pb-3 mt-0">
             {messagesTotal === 0 ? (
