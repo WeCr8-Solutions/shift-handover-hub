@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
     const { data: isAdmin } = await a.rpc('has_role', { _user_id: user.id, _role: 'admin' })
     const { data: eng } = await a
       .from('onboarding_engagements')
-      .select('id, organization_id, plan_tier, payment_status, payment_method, payment_amount_cents, payment_received_at, invoice_number, assigned_admin_id, sales_rep_id, organizations:organization_id(name, owner_id)')
+      .select('id, organization_id, plan_tier, payment_status, payment_method, payment_amount_cents, payment_received_at, invoice_number, assigned_admin_id, sales_rep_id, organizations:organization_id(name)')
       .eq('id', engagementId)
       .maybeSingle()
     if (!eng) {
@@ -94,25 +94,37 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Engagement not paid' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
-    // Resolve recipient
+    // Resolve recipient: explicit `to` wins, else the first org owner/admin's profile email.
     let recipient = to?.trim() ?? ''
     if (!recipient) {
-      const ownerId = (eng.organizations as any)?.owner_id
-      if (ownerId) {
-        const { data: ownerUser } = await a.auth.admin.getUserById(ownerId)
-        recipient = ownerUser?.user?.email ?? ''
+      const { data: ownerMember } = await a
+        .from('organization_members')
+        .select('user_id')
+        .eq('organization_id', eng.organization_id)
+        .in('role', ['owner', 'admin'])
+        .order('role', { ascending: true })
+        .limit(1)
+        .maybeSingle()
+      if (ownerMember?.user_id) {
+        const { data: prof } = await a
+          .from('profiles')
+          .select('email')
+          .eq('user_id', ownerMember.user_id)
+          .maybeSingle()
+        recipient = prof?.email ?? ''
       }
     }
     if (!recipient) {
       return new Response(JSON.stringify({ error: 'No recipient email' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
-    // Idempotency: skip if already sent
+    // Idempotency: skip if already sent for this engagement
     const idemKey = `concierge_receipt:${engagementId}`
     const { data: prior } = await a
       .from('email_delivery_events')
       .select('id')
-      .eq('idempotency_key', idemKey)
+      .eq('message_id', idemKey)
+      .eq('status', 'sent')
       .maybeSingle()
     if (prior) {
       return new Response(JSON.stringify({ ok: true, skipped: 'already_sent' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
@@ -136,13 +148,12 @@ Deno.serve(async (req) => {
     })
 
     await a.from('email_delivery_events').insert({
-      idempotency_key: idemKey,
+      message_id: idemKey,
       recipient_email: recipient,
-      email_type: 'concierge_receipt',
+      category: 'concierge_receipt',
       provider: 'resend',
-      provider_message_id: (result as any)?.data?.id ?? null,
+      provider_event_id: (result as any)?.data?.id ?? null,
       status: 'sent',
-      payload: { engagementId },
     } as any)
 
     return new Response(JSON.stringify({ ok: true, id: (result as any)?.data?.id ?? null }), {
