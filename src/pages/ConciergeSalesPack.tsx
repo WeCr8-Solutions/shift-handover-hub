@@ -16,14 +16,33 @@ import { Skeleton } from "@/components/ui/skeleton";
  */
 const blankRows = (n: number) => Array.from({ length: n });
 
-function PrintPage({ title, children }: { title: string; children: React.ReactNode }) {
+function PrintPage({
+  title,
+  children,
+  initials = false,
+}: { title: string; children: React.ReactNode; initials?: boolean }) {
   return (
-    <section className="page bg-white text-black mx-auto my-8 p-10 max-w-[8.5in] min-h-[10.5in] border print:border-0 print:my-0 print:p-[0.75in] print:break-after-page">
+    <section className="page bg-white text-black mx-auto my-8 p-10 max-w-[8.5in] min-h-[10.5in] border print:border-0 print:my-0 print:p-[0.75in] print:break-after-page relative">
       <header className="flex items-center justify-between border-b border-black/30 pb-3 mb-6">
         <div className="font-bold text-lg tracking-tight">JobLine.ai · Concierge Onboarding</div>
         <div className="text-xs uppercase tracking-wider">{title}</div>
       </header>
       {children}
+      {initials && (
+        <footer className="absolute bottom-6 left-10 right-10 flex items-end justify-between text-[10px] text-black/60 print:bottom-[0.5in] print:left-[0.75in] print:right-[0.75in]">
+          <div>Confidential — JobLine AI, Inc. & Customer</div>
+          <div className="flex items-end gap-6">
+            <div className="text-right">
+              <div className="border-b border-black w-16 h-5" />
+              <div>Customer initials</div>
+            </div>
+            <div className="text-right">
+              <div className="border-b border-black w-16 h-5" />
+              <div>JobLine initials</div>
+            </div>
+          </div>
+        </footer>
+      )}
     </section>
   );
 }
