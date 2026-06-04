@@ -5675,6 +5675,81 @@ export type Database = {
           },
         ]
       }
+      mfg_100_nominations: {
+        Row: {
+          category: string
+          consent: boolean
+          created_at: string
+          evidence_links: Json
+          id: string
+          interest_flags: Json
+          ip_hash: string | null
+          nominator_email: string
+          nominator_name: string
+          nominee_company: string | null
+          nominee_linkedin: string | null
+          nominee_name: string
+          nominee_role: string | null
+          nominee_website: string | null
+          notes: string | null
+          reason: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          source: string
+          status: string
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          category: string
+          consent: boolean
+          created_at?: string
+          evidence_links?: Json
+          id?: string
+          interest_flags?: Json
+          ip_hash?: string | null
+          nominator_email: string
+          nominator_name: string
+          nominee_company?: string | null
+          nominee_linkedin?: string | null
+          nominee_name: string
+          nominee_role?: string | null
+          nominee_website?: string | null
+          notes?: string | null
+          reason: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source?: string
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          category?: string
+          consent?: boolean
+          created_at?: string
+          evidence_links?: Json
+          id?: string
+          interest_flags?: Json
+          ip_hash?: string | null
+          nominator_email?: string
+          nominator_name?: string
+          nominee_company?: string | null
+          nominee_linkedin?: string | null
+          nominee_name?: string
+          nominee_role?: string | null
+          nominee_website?: string | null
+          notes?: string | null
+          reason?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source?: string
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       ncr_audit_log: {
         Row: {
           action: string

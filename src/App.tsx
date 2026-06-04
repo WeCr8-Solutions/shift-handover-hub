@@ -50,6 +50,9 @@ const ConciergeSalesPack = lazy(() => import("./pages/ConciergeSalesPack"));
 const ConciergeInvoicePdf = lazy(() => import("./pages/ConciergeInvoicePdf"));
 const ConciergeBillingTab = lazy(() => import("./pages/billing/ConciergeBillingTab"));
 const ConciergeReporting = lazy(() => import("./pages/admin/ConciergeReporting"));
+const ManufacturingVisibility100 = lazy(() => import("./pages/marketing/ManufacturingVisibility100"));
+const ManufacturingVisibility100Methodology = lazy(() => import("./pages/marketing/ManufacturingVisibility100Methodology"));
+const ManufacturingVisibility100Nominate = lazy(() => import("./pages/marketing/ManufacturingVisibility100Nominate"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Settings = lazy(() => import("./pages/Settings"));
 const DonationSuccess = lazy(() => import("./pages/DonationSuccess"));
@@ -239,6 +242,9 @@ const App = () => (
                     <Route path="/pricing" element={<Pricing />} />
                     <Route path="/onboarding-service" element={<OnboardingService />} />
                     <Route path="/concierge/sales" element={<ConciergeSales />} />
+                    <Route path="/manufacturing-100" element={<ManufacturingVisibility100 />} />
+                    <Route path="/manufacturing-100/methodology" element={<ManufacturingVisibility100Methodology />} />
+                    <Route path="/manufacturing-100/nominate" element={<ManufacturingVisibility100Nominate />} />
                     <Route path="/admin/concierge/print/:engagementId" element={<RequireAuth><RequireRole roles={["platform_admin","developer"]}><ConciergeSalesPack /></RequireRole></RequireAuth>} />
                     <Route path="/admin/concierge/reporting" element={<RequireAuth><RequireRole roles={["platform_admin","developer"]}><ConciergeReporting /></RequireRole></RequireAuth>} />
                     <Route path="/billing/concierge/invoice/:engagementId" element={<RequireAuth><ConciergeInvoicePdf /></RequireAuth>} />

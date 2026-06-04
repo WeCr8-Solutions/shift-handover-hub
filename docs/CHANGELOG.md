@@ -1,6 +1,26 @@
 # Docs Directory Changelog
 
+## 2026-06-04
+
+### Added Manufacturing Visibility 100 campaign docs
+
+What changed:
+
+- Added `docs/campaigns/manufacturing-visibility-100/` with 9 files (README + 01–08 numbered docs) for the inaugural annual recognition list.
+- Source seed: `manufacturing_100_agent_plan.zip` (June 2026). The curated docs in this folder supersede the seed for any operational decision.
+
+Why it changed:
+
+- JobLine.ai is launching an editorially-reviewed annual ranking list to build authority, leads, and audience for JobLine.ai, Talent, OAP, and GCA.
+
+Impact:
+
+- `docs/` now hosts campaign-level documentation under a new `campaigns/` subdirectory.
+- Public surfaces shipped alongside: `/manufacturing-100`, `/manufacturing-100/methodology`, `/manufacturing-100/nominate`.
+- Backend table `public.mfg_100_nominations` is live with developer-only review access.
+
 ## 2026-05-23
+
 
 ### Added admin platform operations roadmap and local docs governance
 
