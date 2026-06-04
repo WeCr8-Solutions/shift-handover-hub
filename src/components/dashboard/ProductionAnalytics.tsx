@@ -228,7 +228,7 @@ function useTrendData(filteredHandoffs: HandoffRecord[]) {
 // ─── Main Component ────────────────────────────────────────
 
 export function ProductionAnalytics({
-  stations, handoffs, isRefreshing = false, lastRefreshedAt = null, onRefresh,
+  stations, allStations, handoffs, isRefreshing = false, lastRefreshedAt = null, onRefresh,
 }: ProductionAnalyticsProps) {
   const [shiftFilter, setShiftFilter] = useState<ShiftFilter>("all");
   const [chartView, setChartView] = useState<ChartView>("output");
@@ -239,16 +239,20 @@ export function ProductionAnalytics({
     [handoffs, shiftFilter],
   );
 
+  // Status pie always reflects the full active-station set, independent of any
+  // status filter applied by the parent — the pie IS the status legend.
+  const stationsForPie = allStations ?? stations;
+
   const stationOutputData = useStationOutputData(stations, filteredHandoffs);
   const teamData = useGroupedStatusData(stations, "team");
   const workCenterData = useGroupedStatusData(stations, "workCenter");
-  const statusDistribution = useStatusDistribution(stations);
+  const statusDistribution = useStatusDistribution(stationsForPie);
   const trendData = useTrendData(filteredHandoffs);
 
   const totalParts = stationOutputData.reduce((s, d) => s + d.parts, 0);
   const totalScrap = stationOutputData.reduce((s, d) => s + d.scrap, 0);
   const yieldRate = totalParts > 0 ? Math.round(((totalParts - totalScrap) / totalParts) * 100) : 100;
-  const activeCount = stations.filter((s) => s.is_active).length;
+  const activeCount = stationsForPie.filter((s) => s.is_active).length;
 
   return (
     <div className="space-y-4 overflow-hidden">
