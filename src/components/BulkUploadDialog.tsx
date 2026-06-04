@@ -56,6 +56,9 @@ export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadD
   } = useBulkUpload();
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [dryRun, setDryRun] = useState(false);
+  const collisions = useBulkUploadCollisions(parseResult?.data ?? null);
+
   
   const hasOrgAccess = canBulkUpload();
 
