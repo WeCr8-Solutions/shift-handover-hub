@@ -488,6 +488,22 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     return;
   }
 
+  // ── Concierge Onboarding (one-time) ──
+  if (productType === "concierge_onboarding") {
+    if (!orgId) { logStep("CONCIERGE: missing org_id"); return; }
+    const paymentIntentId = (session.payment_intent as string) ?? session.id;
+    const { data: engagementId, error: rpcErr } = await supabaseAdmin.rpc(
+      "create_concierge_engagement_from_payment",
+      { p_org_id: orgId, p_payment_intent_id: paymentIntentId, p_plan_tier: "standard" },
+    );
+    if (rpcErr) {
+      logStep("CONCIERGE: RPC failed", { error: rpcErr.message });
+    } else {
+      logStep("CONCIERGE: engagement created", { engagementId, orgId });
+    }
+    return;
+  }
+
   if (!subscriptionId) {
     logStep("Missing subscription in session");
     return;
