@@ -288,6 +288,7 @@ function SupervisorDisplay({ config, stations, queueItems, lastRefresh }: {
         </div>
       )}
 
+
       {/* Main grid */}
       <div className="grid lg:grid-cols-3 gap-4">
         {/* Station Grid */}
