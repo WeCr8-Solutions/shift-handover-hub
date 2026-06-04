@@ -33,6 +33,7 @@ const MODULE_HELP: Record<string, { description: string; templateColumns?: strin
 export function EngagementDetail({ engagementId, onBack }: { engagementId: string; onBack: () => void }) {
   const { data: engagement, isLoading: loadingE } = useEngagement(engagementId);
   const { data: items, isLoading: loadingI } = useChecklist(engagementId);
+  const { data: readiness } = useProductionReadiness(engagement?.organization_id ?? null);
   const markReady = useMarkReady();
   const activate = useActivateOrg();
 
@@ -51,6 +52,13 @@ export function EngagementDetail({ engagementId, onBack }: { engagementId: strin
     );
   }
 
+  const readyBlocked = requiredOpen > 0 || (readiness ? !readiness.ready : false);
+  const readyLabel = requiredOpen > 0
+    ? `${requiredOpen} item${requiredOpen === 1 ? "" : "s"} left`
+    : readiness && !readiness.ready
+      ? `${readiness.blockers.length} blocker${readiness.blockers.length === 1 ? "" : "s"}`
+      : "Mark ready for production";
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -61,11 +69,10 @@ export function EngagementDetail({ engagementId, onBack }: { engagementId: strin
           {engagement.status !== "ready_for_production" && engagement.status !== "live" && (
             <Button
               onClick={() => markReady.mutate(engagementId)}
-              disabled={requiredOpen > 0 || markReady.isPending}
+              disabled={readyBlocked || markReady.isPending}
               className="gap-2"
             >
-              <CheckCircle2 className="w-4 h-4" />
-              {requiredOpen > 0 ? `${requiredOpen} item${requiredOpen === 1 ? "" : "s"} left` : "Mark ready for production"}
+              <CheckCircle2 className="w-4 h-4" /> {readyLabel}
             </Button>
           )}
           {engagement.status === "ready_for_production" && (
@@ -75,6 +82,9 @@ export function EngagementDetail({ engagementId, onBack }: { engagementId: strin
           )}
         </div>
       </div>
+
+      <ReadinessPanel organizationId={engagement.organization_id} />
+
 
       <Card>
         <CardHeader>
