@@ -198,3 +198,21 @@ export function useOrgsForOnboarding() {
     },
   });
 }
+
+export interface ReadinessResult {
+  ready: boolean;
+  blockers: string[];
+  counts: Record<string, number | boolean | string>;
+}
+
+export function useProductionReadiness(orgId: string | null) {
+  return useQuery({
+    queryKey: ["onboarding-readiness", orgId],
+    enabled: !!orgId,
+    queryFn: async (): Promise<ReadinessResult | null> => {
+      const { data, error } = await supabase.rpc("verify_org_production_ready" as any, { p_org_id: orgId });
+      if (error) throw error;
+      return data as unknown as ReadinessResult;
+    },
+  });
+}
