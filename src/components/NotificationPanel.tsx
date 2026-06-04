@@ -31,7 +31,17 @@ const severityColor: Record<SmartAlertSeverity, string> = {
   info: "text-blue-500",
 };
 
-function SmartAlertItem({ alert, onNavigate }: { alert: SmartAlert; onNavigate: () => void }) {
+function SmartAlertItem({
+  alert,
+  onNavigate,
+  onSnooze,
+  onAck,
+}: {
+  alert: SmartAlert;
+  onNavigate: () => void;
+  onSnooze: (id: string, ms: number) => void;
+  onAck: (id: string) => void;
+}) {
   const navigate = useNavigate();
   const Icon = severityIcon[alert.severity];
 
@@ -43,27 +53,45 @@ function SmartAlertItem({ alert, onNavigate }: { alert: SmartAlert; onNavigate: 
   };
 
   return (
-    <button
-      onClick={handleClick}
-      className="w-full flex items-start gap-2.5 p-2.5 rounded-md hover:bg-secondary/60 transition-colors text-left"
-    >
-      <Icon className={`w-4 h-4 mt-0.5 shrink-0 ${severityColor[alert.severity]}`} />
-      <div className="flex-1 min-w-0">
-        <p className="text-xs font-medium leading-tight truncate">{alert.title}</p>
-        <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">{alert.detail}</p>
-        {alert.metricLabel && (
-          <span className="text-[10px] text-muted-foreground mt-1 inline-block">
-            {alert.metricLabel}: {alert.metric}
-          </span>
-        )}
+    <div className="w-full flex items-start gap-2.5 p-2.5 rounded-md hover:bg-secondary/60 transition-colors">
+      <button onClick={handleClick} className="flex items-start gap-2.5 flex-1 min-w-0 text-left">
+        <Icon className={`w-4 h-4 mt-0.5 shrink-0 ${severityColor[alert.severity]}`} />
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-medium leading-tight truncate">{alert.title}</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">{alert.detail}</p>
+          {alert.metricLabel && (
+            <span className="text-[10px] text-muted-foreground mt-1 inline-block">
+              {alert.metricLabel}: {alert.metric}
+            </span>
+          )}
+        </div>
+      </button>
+      <div className="flex items-center gap-1 shrink-0">
+        <Badge
+          variant={alert.severity === "critical" ? "destructive" : "secondary"}
+          className="text-[9px] mt-0.5"
+        >
+          {alert.severity}
+        </Badge>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="w-5 h-5" aria-label="Snooze alert">
+              <Clock className="w-3 h-3" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="z-[60]">
+            {SNOOZE_OPTIONS.map((o) => (
+              <DropdownMenuItem key={o.label} onClick={() => onSnooze(alert.id, o.ms)}>
+                Snooze {o.label}
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuItem onClick={() => onAck(alert.id)}>
+              <Check className="w-3 h-3 mr-1.5" /> Dismiss
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
-      <Badge
-        variant={alert.severity === "critical" ? "destructive" : "secondary"}
-        className="text-[9px] shrink-0 mt-0.5"
-      >
-        {alert.severity}
-      </Badge>
-    </button>
+    </div>
   );
 }
 
