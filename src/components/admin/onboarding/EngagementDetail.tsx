@@ -5,7 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ArrowLeft, CheckCircle2, Rocket, ShieldAlert } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { ArrowLeft, CheckCircle2, Printer, Rocket, ShieldAlert } from "lucide-react";
+import { Link } from "react-router-dom";
 import {
   useChecklist,
   useEngagement,
@@ -16,6 +18,7 @@ import {
 import { ChecklistModule } from "./ChecklistModule";
 import { UploadUtility } from "./UploadUtility";
 import { ReadinessPanel } from "./ReadinessPanel";
+import { PaymentPanel } from "./PaymentPanel";
 
 const MODULE_HELP: Record<string, { description: string; templateColumns?: string[] }> = {
   org_profile:  { description: "Capture company name, address, branding, ITAR posture, subscription tier, and seat count." },
@@ -52,38 +55,92 @@ export function EngagementDetail({ engagementId, onBack }: { engagementId: strin
     );
   }
 
-  const readyBlocked = requiredOpen > 0 || (readiness ? !readiness.ready : false);
+  const paymentOk = ["paid", "waived"].includes(engagement.payment_status);
+  const contractOk =
+    engagement.purchased_via === "stripe" ||
+    engagement.payment_status === "waived" ||
+    !!engagement.contract_signed_at;
+  const readyBlocked = requiredOpen > 0 || (readiness ? !readiness.ready : false) || !paymentOk || !contractOk;
+  const activateBlocked = !paymentOk || !contractOk;
+
+  const blockReasons: string[] = [];
+  if (requiredOpen > 0) blockReasons.push(`${requiredOpen} required checklist item${requiredOpen === 1 ? "" : "s"} open`);
+  if (readiness && !readiness.ready) blockReasons.push("Production readiness checks failing");
+  if (!paymentOk) blockReasons.push(`Payment status: ${engagement.payment_status}`);
+  if (!contractOk) blockReasons.push("Signed contract not on file");
+
   const readyLabel = requiredOpen > 0
     ? `${requiredOpen} item${requiredOpen === 1 ? "" : "s"} left`
-    : readiness && !readiness.ready
-      ? `${readiness.blockers.length} blocker${readiness.blockers.length === 1 ? "" : "s"}`
-      : "Mark ready for production";
+    : !paymentOk
+      ? "Payment required"
+      : !contractOk
+        ? "Signed contract required"
+        : readiness && !readiness.ready
+          ? `${readiness.blockers.length} blocker${readiness.blockers.length === 1 ? "" : "s"}`
+          : "Mark ready for production";
+
+  const MarkReadyBtn = (
+    <Button
+      onClick={() => markReady.mutate(engagementId)}
+      disabled={readyBlocked || markReady.isPending}
+      className="gap-2"
+    >
+      <CheckCircle2 className="w-4 h-4" /> {readyLabel}
+    </Button>
+  );
+  const ActivateBtn = (
+    <Button
+      onClick={() => activate.mutate(engagementId)}
+      disabled={activate.isPending || activateBlocked}
+      className="gap-2"
+    >
+      <Rocket className="w-4 h-4" /> Activate customer login
+    </Button>
+  );
 
   return (
+    <TooltipProvider delayDuration={150}>
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
         <Button variant="ghost" size="sm" onClick={onBack} className="gap-2">
           <ArrowLeft className="w-4 h-4" /> Back to engagements
         </Button>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button variant="outline" size="sm" asChild className="gap-2">
+            <Link to={`/admin/concierge/print/${engagementId}`} target="_blank" rel="noopener">
+              <Printer className="w-4 h-4" /> Print sales pack
+            </Link>
+          </Button>
           {engagement.status !== "ready_for_production" && engagement.status !== "live" && (
-            <Button
-              onClick={() => markReady.mutate(engagementId)}
-              disabled={readyBlocked || markReady.isPending}
-              className="gap-2"
-            >
-              <CheckCircle2 className="w-4 h-4" /> {readyLabel}
-            </Button>
+            blockReasons.length > 0 ? (
+              <Tooltip>
+                <TooltipTrigger asChild><span>{MarkReadyBtn}</span></TooltipTrigger>
+                <TooltipContent className="max-w-xs">
+                  <ul className="text-xs space-y-0.5">
+                    {blockReasons.map((r) => <li key={r}>• {r}</li>)}
+                  </ul>
+                </TooltipContent>
+              </Tooltip>
+            ) : MarkReadyBtn
           )}
           {engagement.status === "ready_for_production" && (
-            <Button onClick={() => activate.mutate(engagementId)} disabled={activate.isPending} className="gap-2">
-              <Rocket className="w-4 h-4" /> Activate customer login
-            </Button>
+            activateBlocked ? (
+              <Tooltip>
+                <TooltipTrigger asChild><span>{ActivateBtn}</span></TooltipTrigger>
+                <TooltipContent className="max-w-xs">
+                  <ul className="text-xs space-y-0.5">
+                    {blockReasons.map((r) => <li key={r}>• {r}</li>)}
+                  </ul>
+                </TooltipContent>
+              </Tooltip>
+            ) : ActivateBtn
           )}
         </div>
       </div>
 
-      <ReadinessPanel organizationId={engagement.organization_id} />
+      <PaymentPanel engagement={engagement as any} />
+
+      <ReadinessPanel organizationId={engagement.organization_id} engagement={engagement} />
 
 
       <Card>
@@ -142,5 +199,6 @@ export function EngagementDetail({ engagementId, onBack }: { engagementId: strin
         ))}
       </Tabs>
     </div>
+    </TooltipProvider>
   );
 }

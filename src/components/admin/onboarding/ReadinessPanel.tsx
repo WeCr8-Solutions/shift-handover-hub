@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, AlertTriangle, Loader2, ShieldCheck } from "lucide-react";
-import { useProductionReadiness } from "@/hooks/useOnboardingEngagements";
+import { CheckCircle2, AlertTriangle, Loader2, ShieldCheck, DollarSign, FileSignature } from "lucide-react";
+import { useProductionReadiness, type Engagement } from "@/hooks/useOnboardingEngagements";
 
 const COUNT_LABELS: Record<string, string> = {
   departments: "Departments",
@@ -15,7 +15,7 @@ const COUNT_LABELS: Record<string, string> = {
   erp_connections: "ERP connections",
 };
 
-export function ReadinessPanel({ organizationId }: { organizationId: string }) {
+export function ReadinessPanel({ organizationId, engagement }: { organizationId: string; engagement?: Engagement }) {
   const { data, isLoading, refetch, isFetching } = useProductionReadiness(organizationId);
 
   if (isLoading) {
@@ -29,7 +29,17 @@ export function ReadinessPanel({ organizationId }: { organizationId: string }) {
   }
   if (!data) return null;
 
-  const ready = data.ready;
+  const paymentOk = engagement ? ["paid", "waived"].includes(engagement.payment_status) : true;
+  const contractOk = engagement
+    ? engagement.purchased_via === "stripe" ||
+      engagement.payment_status === "waived" ||
+      !!engagement.contract_signed_at
+    : true;
+  const ready = data.ready && paymentOk && contractOk;
+  const extraBlockers: string[] = [];
+  if (engagement && !paymentOk) extraBlockers.push(`Payment status is ${engagement.payment_status}`);
+  if (engagement && !contractOk) extraBlockers.push("Signed contract is not on file");
+  const allBlockers = [...data.blockers, ...extraBlockers];
 
   return (
     <Card>
@@ -72,15 +82,43 @@ export function ReadinessPanel({ organizationId }: { organizationId: string }) {
             <span className="text-xs text-muted-foreground">ERP persistence</span>
             <Badge variant="outline">{String((data.counts as any)?.erp_persistence_mode ?? "—")}</Badge>
           </div>
+          {engagement && (
+            <>
+              <div className="rounded border p-2 flex items-center justify-between">
+                <span className="text-xs text-muted-foreground flex items-center gap-1"><DollarSign className="w-3 h-3" /> Payment</span>
+                <Badge
+                  variant="outline"
+                  className={paymentOk ? "text-status-ok border-status-ok/40" : "text-destructive border-destructive/40"}
+                >
+                  {engagement.payment_status}
+                </Badge>
+              </div>
+              <div className="rounded border p-2 flex items-center justify-between">
+                <span className="text-xs text-muted-foreground flex items-center gap-1"><FileSignature className="w-3 h-3" /> Contract</span>
+                <Badge
+                  variant="outline"
+                  className={contractOk ? "text-status-ok border-status-ok/40" : "text-destructive border-destructive/40"}
+                >
+                  {engagement.purchased_via === "stripe"
+                    ? "N/A (Stripe)"
+                    : engagement.contract_signed_at
+                      ? "On file"
+                      : engagement.payment_status === "waived"
+                        ? "Waived"
+                        : "Required"}
+                </Badge>
+              </div>
+            </>
+          )}
         </div>
 
-        {!ready && data.blockers.length > 0 && (
+        {!ready && allBlockers.length > 0 && (
           <div className="rounded border border-destructive/40 p-3 space-y-1">
             <div className="flex items-center gap-2 text-xs font-medium text-destructive">
               <AlertTriangle className="w-3.5 h-3.5" /> Blockers
             </div>
             <ul className="text-xs space-y-0.5">
-              {data.blockers.map((b, i) => (
+              {allBlockers.map((b, i) => (
                 <li key={i} className="flex items-start gap-2"><span>•</span>{b}</li>
               ))}
             </ul>
