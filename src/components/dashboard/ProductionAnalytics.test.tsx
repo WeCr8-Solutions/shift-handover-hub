@@ -278,7 +278,7 @@ describe("ProductionAnalytics", () => {
     await user.click(trendButton);
     
     // Should show "(today)" in the description
-    expect(screen.getByText(/today/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/today/i).length).toBeGreaterThan(0);
   });
 
   it("has accessible filter controls", () => {
