@@ -298,6 +298,73 @@ export default function ConciergeSalesPack() {
               <div>Date</div>
             </div>
           </PrintPage>
+
+          {/* 12. Final Signature Page (2-party wet signature) */}
+          <PrintPage title="Signature Page">
+            <h1 className="text-2xl font-bold mb-2">Signature Page</h1>
+            <p className="text-xs mb-6">
+              By signing below, both parties acknowledge they have read and agree to the Master Services Agreement, ITAR / US-Person Declaration (if applicable), and all attached worksheets included in this Concierge Onboarding package.
+            </p>
+
+            <div className="grid grid-cols-2 gap-10 text-xs mt-10">
+              <div className="space-y-6">
+                <div className="font-semibold uppercase tracking-wider text-[10px]">Customer</div>
+                <div>
+                  <div className="border-b border-black h-12" />
+                  <div className="mt-1">Signature</div>
+                </div>
+                <div>
+                  <div className="border-b border-black h-8" />
+                  <div className="mt-1">Printed name</div>
+                </div>
+                <div>
+                  <div className="border-b border-black h-8" />
+                  <div className="mt-1">Title</div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <div className="border-b border-black h-8" />
+                    <div className="mt-1">Date</div>
+                  </div>
+                  <div>
+                    <div className="border-b border-black h-8" />
+                    <div className="mt-1">Company</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <div className="font-semibold uppercase tracking-wider text-[10px]">JobLine AI, Inc.</div>
+                <div>
+                  <div className="border-b border-black h-12" />
+                  <div className="mt-1">Signature</div>
+                </div>
+                <div>
+                  <div className="border-b border-black h-8" />
+                  <div className="mt-1">Printed name</div>
+                </div>
+                <div>
+                  <div className="border-b border-black h-8" />
+                  <div className="mt-1">Title</div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <div className="border-b border-black h-8" />
+                    <div className="mt-1">Date</div>
+                  </div>
+                  <div>
+                    <div className="border-b border-black h-8" />
+                    <div className="mt-1">Witness (optional)</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-10 border border-black/40 p-3 text-[11px]">
+              <b>For sales rep:</b> after both parties have signed, scan the entire package (including this page and all initialled pages) to a single PDF and upload it via the Concierge workspace → <i>Wet-signature contract</i> panel. Reference engagement ID:{" "}
+              <span className="font-mono">{engagement?.id ?? "(blank until assigned)"}</span>
+            </div>
+          </PrintPage>
         </>
       )}
     </div>
