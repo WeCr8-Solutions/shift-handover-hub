@@ -597,19 +597,69 @@ export function BulkUploadDialog({ open, onOpenChange, onComplete }: BulkUploadD
           )}
         </div>
 
+        {/* Dry-run collision summary */}
+        {hasData && parseResult?.errors.length === 0 && !uploadResult && (
+          <div className="rounded-lg border bg-secondary/30 p-3 text-xs space-y-2">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-status-ok" />
+                <span className="font-medium">Pre-flight collision check</span>
+                {collisions.loading && <Loader2 className="w-3 h-3 animate-spin" />}
+              </div>
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  className="accent-primary"
+                  checked={dryRun}
+                  onChange={(e) => setDryRun(e.target.checked)}
+                  data-testid="bulk-upload-dry-run"
+                />
+                <span>Validate only (don&rsquo;t write to database)</span>
+              </label>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Badge variant="outline" className="border-status-ok/40 text-status-ok">
+                {collisions.totalNew} new
+              </Badge>
+              <Badge variant="outline" className="border-warning/40 text-warning">
+                {collisions.totalSkip} will be skipped
+              </Badge>
+              {collisions.teamDuplicates.length > 0 && (
+                <Badge variant="outline" className="text-[10px]">Teams: {collisions.teamDuplicates.slice(0,3).join(', ')}{collisions.teamDuplicates.length > 3 ? '…' : ''}</Badge>
+              )}
+              {collisions.stationDuplicates.length > 0 && (
+                <Badge variant="outline" className="text-[10px]">Stations: {collisions.stationDuplicates.slice(0,3).join(', ')}{collisions.stationDuplicates.length > 3 ? '…' : ''}</Badge>
+              )}
+              {collisions.workOrderDuplicates.length > 0 && (
+                <Badge variant="outline" className="text-[10px]">WOs: {collisions.workOrderDuplicates.slice(0,3).join(', ')}{collisions.workOrderDuplicates.length > 3 ? '…' : ''}</Badge>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Footer Actions */}
         <div className="flex justify-end gap-2 pt-4 border-t">
           {progress.stage === 'complete' ? (
             <Button onClick={handleClose}>Done</Button>
           ) : (
             <>
-              <Button variant="outline" onClick={handleClose}>Cancel</Button>
+              <Button variant="outline" onClick={handleClose}>{dryRun ? 'Close' : 'Cancel'}</Button>
               {hasData && parseResult?.errors.length === 0 && (
-                <Button onClick={handleUpload} disabled={progress.stage === 'uploading'}>
+                <Button
+                  onClick={dryRun ? handleClose : handleUpload}
+                  disabled={progress.stage === 'uploading'}
+                  variant={dryRun ? 'secondary' : 'default'}
+                  data-testid="bulk-upload-submit"
+                >
                   {progress.stage === 'uploading' ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                       Uploading...
+                    </>
+                  ) : dryRun ? (
+                    <>
+                      <CheckCircle2 className="w-4 h-4 mr-2" />
+                      Looks Good (no changes)
                     </>
                   ) : (
                     <>
