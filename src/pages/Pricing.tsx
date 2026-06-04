@@ -240,6 +240,11 @@ export default function Pricing() {
             })}
           </div>
 
+          {/* Concierge Onboarding CTA */}
+          <div className="mt-12 max-w-4xl mx-auto">
+            <ConciergeCTA variant="banner" />
+          </div>
+
           {/* FAQ / Notes */}
           <div className="mt-16 text-center max-w-2xl mx-auto">
             <h3 className="text-xl font-semibold mb-4">Frequently Asked Questions</h3>
