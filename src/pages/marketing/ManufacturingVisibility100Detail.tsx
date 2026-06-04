@@ -66,7 +66,7 @@ export default function ManufacturingVisibility100Detail() {
       </Helmet>
 
       <section className="border-b">
-        <div className="container max-w-3xl py-10 md:py-14">
+        <div className="container max-w-3xl px-4 py-8 sm:py-10 md:py-14">
           <Button asChild variant="ghost" size="sm" className="mb-4 -ml-3">
             <Link to="/manufacturing-100/honorees">
               <ArrowLeft className="h-4 w-4 mr-1" /> Back to the list
@@ -78,16 +78,16 @@ export default function ManufacturingVisibility100Detail() {
             <span>Manufacturing Visibility 100 · Edition {h.edition ?? "2026"}</span>
           </div>
 
-          <div className="flex items-start gap-6">
+          <div className="flex items-start gap-4 sm:gap-6">
             {h.rank && (
-              <div className="text-5xl md:text-7xl font-bold tracking-tight tabular-nums leading-none">
+              <div className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight tabular-nums leading-none shrink-0">
                 #{h.rank}
               </div>
             )}
             <div className="flex-1 min-w-0 pt-1">
-              <h1 className="text-3xl md:text-4xl font-bold tracking-tight">{h.nominee_name}</h1>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight break-words">{h.nominee_name}</h1>
               {(h.nominee_role || h.nominee_company) && (
-                <p className="text-lg text-muted-foreground mt-1">
+                <p className="text-base sm:text-lg text-muted-foreground mt-1">
                   {[h.nominee_role, h.nominee_company].filter(Boolean).join(" · ")}
                 </p>
               )}
