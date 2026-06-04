@@ -7506,6 +7506,13 @@ export type Database = {
             foreignKeyName: "onboarding_checklist_items_engagement_id_fkey"
             columns: ["engagement_id"]
             isOneToOne: false
+            referencedRelation: "concierge_payment_aging"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "onboarding_checklist_items_engagement_id_fkey"
+            columns: ["engagement_id"]
+            isOneToOne: false
             referencedRelation: "onboarding_engagements"
             referencedColumns: ["id"]
           },
@@ -7548,7 +7555,11 @@ export type Database = {
           contract_signer_title: string | null
           created_at: string
           created_by: string | null
+          customer_billing_address: Json | null
+          customer_tax_id: string | null
+          exported_to_accounting_at: string | null
           id: string
+          invoice_number: string | null
           notes: string | null
           organization_id: string
           payment_amount_cents: number
@@ -7562,6 +7573,13 @@ export type Database = {
           plan_tier: string
           purchased_via: string
           ready_at: string | null
+          refund_amount_cents: number | null
+          refund_method: string | null
+          refund_proof_path: string | null
+          refund_reason: string | null
+          refund_reference: string | null
+          refunded_at: string | null
+          refunded_by: string | null
           sales_rep_id: string | null
           started_at: string
           status: string
@@ -7577,7 +7595,11 @@ export type Database = {
           contract_signer_title?: string | null
           created_at?: string
           created_by?: string | null
+          customer_billing_address?: Json | null
+          customer_tax_id?: string | null
+          exported_to_accounting_at?: string | null
           id?: string
+          invoice_number?: string | null
           notes?: string | null
           organization_id: string
           payment_amount_cents?: number
@@ -7591,6 +7613,13 @@ export type Database = {
           plan_tier?: string
           purchased_via?: string
           ready_at?: string | null
+          refund_amount_cents?: number | null
+          refund_method?: string | null
+          refund_proof_path?: string | null
+          refund_reason?: string | null
+          refund_reference?: string | null
+          refunded_at?: string | null
+          refunded_by?: string | null
           sales_rep_id?: string | null
           started_at?: string
           status?: string
@@ -7606,7 +7635,11 @@ export type Database = {
           contract_signer_title?: string | null
           created_at?: string
           created_by?: string | null
+          customer_billing_address?: Json | null
+          customer_tax_id?: string | null
+          exported_to_accounting_at?: string | null
           id?: string
+          invoice_number?: string | null
           notes?: string | null
           organization_id?: string
           payment_amount_cents?: number
@@ -7620,6 +7653,13 @@ export type Database = {
           plan_tier?: string
           purchased_via?: string
           ready_at?: string | null
+          refund_amount_cents?: number | null
+          refund_method?: string | null
+          refund_proof_path?: string | null
+          refund_reason?: string | null
+          refund_reference?: string | null
+          refunded_at?: string | null
+          refunded_by?: string | null
           sales_rep_id?: string | null
           started_at?: string
           status?: string
@@ -13998,6 +14038,63 @@ export type Database = {
           },
         ]
       }
+      concierge_payment_aging: {
+        Row: {
+          age_bucket: string | null
+          age_days: number | null
+          id: string | null
+          invoice_number: string | null
+          organization_id: string | null
+          organization_name: string | null
+          payment_amount_cents: number | null
+          payment_status: string | null
+          sales_rep_id: string | null
+          started_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "onboarding_engagements_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "onboarding_engagements_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "onboarding_engagements_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "onboarding_engagements_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      concierge_sales_performance: {
+        Row: {
+          engagement_count: number | null
+          outstanding_cents: number | null
+          outstanding_count: number | null
+          paid_cents: number | null
+          paid_count: number | null
+          refunded_cents: number | null
+          refunded_count: number | null
+          sales_rep_id: string | null
+        }
+        Relationships: []
+      }
       erp_connections_safe: {
         Row: {
           api_base_url: string | null
@@ -15597,6 +15694,10 @@ export type Database = {
           recipient_name: string
         }[]
       }
+      mark_concierge_exported_to_accounting: {
+        Args: { p_engagement_ids: string[]; p_format: string }
+        Returns: number
+      }
       mark_engagement_ready: {
         Args: { p_engagement_id: string }
         Returns: string
@@ -15633,6 +15734,17 @@ export type Database = {
           p_received_at: string
           p_reference: string
           p_status?: string
+        }
+        Returns: string
+      }
+      record_concierge_refund: {
+        Args: {
+          p_amount_cents: number
+          p_engagement_id: string
+          p_method?: string
+          p_proof_path?: string
+          p_reason: string
+          p_reference?: string
         }
         Returns: string
       }
@@ -15791,6 +15903,10 @@ export type Database = {
         }[]
       }
       verify_org_production_ready: { Args: { p_org_id: string }; Returns: Json }
+      void_concierge_contract: {
+        Args: { p_engagement_id: string; p_reason: string }
+        Returns: string
+      }
     }
     Enums: {
       activity_type:

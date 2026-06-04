@@ -31,6 +31,16 @@ export interface Engagement {
   contract_signer_title: string | null;
   contract_proof_path: string | null;
   sales_rep_id: string | null;
+  invoice_number: string | null;
+  refunded_at: string | null;
+  refund_amount_cents: number | null;
+  refund_reason: string | null;
+  refund_method: string | null;
+  refund_reference: string | null;
+  refund_proof_path: string | null;
+  exported_to_accounting_at: string | null;
+  customer_tax_id: string | null;
+  customer_billing_address: Record<string, string> | null;
   organizations?: { id: string; name: string; slug: string; requires_us_person_declaration: boolean | null } | null;
 }
 

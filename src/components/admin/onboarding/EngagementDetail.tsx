@@ -19,6 +19,9 @@ import { ChecklistModule } from "./ChecklistModule";
 import { UploadUtility } from "./UploadUtility";
 import { ReadinessPanel } from "./ReadinessPanel";
 import { PaymentPanel } from "./PaymentPanel";
+import { RefundPanel } from "./RefundPanel";
+import { AccountingExportPanel } from "./AccountingExportPanel";
+import { ConciergeAuditTimeline } from "./ConciergeAuditTimeline";
 
 const MODULE_HELP: Record<string, { description: string; templateColumns?: string[] }> = {
   org_profile:  { description: "Capture company name, address, branding, ITAR posture, subscription tier, and seat count." },
@@ -140,7 +143,18 @@ export function EngagementDetail({ engagementId, onBack }: { engagementId: strin
 
       <PaymentPanel engagement={engagement as any} />
 
+      <RefundPanel engagement={engagement as any} />
+
+      <AccountingExportPanel
+        engagementId={engagement.id}
+        lastExportedAt={(engagement as any).exported_to_accounting_at}
+      />
+
       <ReadinessPanel organizationId={engagement.organization_id} engagement={engagement} />
+
+      <ConciergeAuditTimeline engagementId={engagement.id} />
+
+
 
 
       <Card>

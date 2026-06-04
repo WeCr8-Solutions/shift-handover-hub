@@ -615,6 +615,53 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
   logStep("Checkout session processed successfully", { orgId, plan, seatQuantity });
 }
 
+// ── Concierge refund (Stripe-side) ──
+// Match by stripe_payment_intent_id stored on the engagement row.
+async function handleChargeRefunded(charge: Stripe.Charge) {
+  const pi = typeof charge.payment_intent === "string"
+    ? charge.payment_intent
+    : charge.payment_intent?.id;
+  if (!pi) { logStep("REFUND: no payment_intent on charge", { chargeId: charge.id }); return; }
+
+  const { data: engagement } = await supabaseAdmin
+    .from("onboarding_engagements")
+    .select("id, payment_amount_cents, refund_amount_cents")
+    .eq("stripe_payment_intent_id", pi)
+    .maybeSingle();
+  if (!engagement) {
+    logStep("REFUND: no engagement matches payment_intent — non-concierge charge", { pi });
+    return;
+  }
+
+  const refundedTotal = charge.amount_refunded ?? 0; // cents, cumulative
+  const alreadyRecorded = (engagement as { refund_amount_cents: number | null }).refund_amount_cents ?? 0;
+  const delta = refundedTotal - alreadyRecorded;
+  if (delta <= 0) {
+    logStep("REFUND: delta already recorded, skipping", { pi, refundedTotal, alreadyRecorded });
+    return;
+  }
+
+  const latest = charge.refunds?.data?.[0];
+  const reason = latest?.reason ?? "stripe_dashboard_refund";
+  const refId = latest?.id ?? null;
+
+  const { error } = await supabaseAdmin.rpc("record_concierge_refund", {
+    p_engagement_id: (engagement as { id: string }).id,
+    p_amount_cents: delta,
+    p_reason: reason,
+    p_method: "stripe",
+    p_reference: refId,
+    p_proof_path: null,
+  });
+  if (error) {
+    logStep("REFUND: RPC failed", { error: error.message, pi });
+    return;
+  }
+  logStep("REFUND: concierge engagement updated", {
+    engagementId: (engagement as { id: string }).id, delta, refundedTotal,
+  });
+}
+
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   logStep("Processing customer.subscription.updated", { subscriptionId: subscription.id });
 
@@ -990,6 +1037,10 @@ serve(async (req) => {
         break;
       case "invoice.payment_succeeded":
         await handleInvoicePaymentSucceeded(event.data.object as Stripe.Invoice);
+        break;
+      case "charge.refunded":
+      case "charge.refund.updated":
+        await handleChargeRefunded(event.data.object as Stripe.Charge);
         break;
       default:
         logStep("Unhandled event type", { type: event.type });
