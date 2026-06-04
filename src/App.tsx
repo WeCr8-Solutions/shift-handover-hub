@@ -242,6 +242,9 @@ const App = () => (
                     <Route path="/pricing" element={<Pricing />} />
                     <Route path="/onboarding-service" element={<OnboardingService />} />
                     <Route path="/concierge/sales" element={<ConciergeSales />} />
+                    <Route path="/manufacturing-100" element={<ManufacturingVisibility100 />} />
+                    <Route path="/manufacturing-100/methodology" element={<ManufacturingVisibility100Methodology />} />
+                    <Route path="/manufacturing-100/nominate" element={<ManufacturingVisibility100Nominate />} />
                     <Route path="/admin/concierge/print/:engagementId" element={<RequireAuth><RequireRole roles={["platform_admin","developer"]}><ConciergeSalesPack /></RequireRole></RequireAuth>} />
                     <Route path="/admin/concierge/reporting" element={<RequireAuth><RequireRole roles={["platform_admin","developer"]}><ConciergeReporting /></RequireRole></RequireAuth>} />
                     <Route path="/billing/concierge/invoice/:engagementId" element={<RequireAuth><ConciergeInvoicePdf /></RequireAuth>} />
