@@ -5681,6 +5681,7 @@ export type Database = {
           consent: boolean
           created_at: string
           display_blurb: string | null
+          edition: string
           evidence_links: Json
           id: string
           interest_flags: Json
@@ -5693,11 +5694,21 @@ export type Database = {
           nominee_role: string | null
           nominee_website: string | null
           notes: string | null
+          previous_rank: number | null
           published_at: string | null
           rank: number | null
+          rank_movement: string | null
           reason: string
           reviewed_at: string | null
           reviewed_by: string | null
+          score_education: number | null
+          score_impact: number | null
+          score_innovation: number | null
+          score_momentum: number | null
+          score_smb: number | null
+          score_total: number | null
+          score_visibility: number | null
+          slug: string | null
           source: string
           status: string
           updated_at: string
@@ -5708,6 +5719,7 @@ export type Database = {
           consent: boolean
           created_at?: string
           display_blurb?: string | null
+          edition?: string
           evidence_links?: Json
           id?: string
           interest_flags?: Json
@@ -5720,11 +5732,21 @@ export type Database = {
           nominee_role?: string | null
           nominee_website?: string | null
           notes?: string | null
+          previous_rank?: number | null
           published_at?: string | null
           rank?: number | null
+          rank_movement?: string | null
           reason: string
           reviewed_at?: string | null
           reviewed_by?: string | null
+          score_education?: number | null
+          score_impact?: number | null
+          score_innovation?: number | null
+          score_momentum?: number | null
+          score_smb?: number | null
+          score_total?: number | null
+          score_visibility?: number | null
+          slug?: string | null
           source?: string
           status?: string
           updated_at?: string
@@ -5735,6 +5757,7 @@ export type Database = {
           consent?: boolean
           created_at?: string
           display_blurb?: string | null
+          edition?: string
           evidence_links?: Json
           id?: string
           interest_flags?: Json
@@ -5747,11 +5770,21 @@ export type Database = {
           nominee_role?: string | null
           nominee_website?: string | null
           notes?: string | null
+          previous_rank?: number | null
           published_at?: string | null
           rank?: number | null
+          rank_movement?: string | null
           reason?: string
           reviewed_at?: string | null
           reviewed_by?: string | null
+          score_education?: number | null
+          score_impact?: number | null
+          score_innovation?: number | null
+          score_momentum?: number | null
+          score_smb?: number | null
+          score_total?: number | null
+          score_visibility?: number | null
+          slug?: string | null
           source?: string
           status?: string
           updated_at?: string
@@ -14366,38 +14399,59 @@ export type Database = {
         Row: {
           category: string | null
           display_blurb: string | null
+          edition: string | null
+          evidence_links: Json | null
           id: string | null
           nominee_company: string | null
           nominee_linkedin: string | null
           nominee_name: string | null
           nominee_role: string | null
           nominee_website: string | null
+          previous_rank: number | null
           published_at: string | null
           rank: number | null
+          rank_movement: string | null
+          reason: string | null
+          score_total: number | null
+          slug: string | null
         }
         Insert: {
           category?: string | null
           display_blurb?: never
+          edition?: string | null
+          evidence_links?: Json | null
           id?: string | null
           nominee_company?: string | null
           nominee_linkedin?: string | null
           nominee_name?: string | null
           nominee_role?: string | null
           nominee_website?: string | null
+          previous_rank?: number | null
           published_at?: string | null
           rank?: number | null
+          rank_movement?: string | null
+          reason?: string | null
+          score_total?: number | null
+          slug?: string | null
         }
         Update: {
           category?: string | null
           display_blurb?: never
+          edition?: string | null
+          evidence_links?: Json | null
           id?: string | null
           nominee_company?: string | null
           nominee_linkedin?: string | null
           nominee_name?: string | null
           nominee_role?: string | null
           nominee_website?: string | null
+          previous_rank?: number | null
           published_at?: string | null
           rank?: number | null
+          rank_movement?: string | null
+          reason?: string | null
+          score_total?: number | null
+          slug?: string | null
         }
         Relationships: []
       }
@@ -15826,6 +15880,7 @@ export type Database = {
         Returns: string
       }
       mark_onboarding_complete: { Args: { _path: string }; Returns: Json }
+      mfg_100_slugify: { Args: { input: string }; Returns: string }
       pass_work_order_to_next_step: {
         Args: {
           _actor_id: string
@@ -15939,6 +15994,7 @@ export type Database = {
         Returns: string
       }
       sweep_expired_oap_certificates: { Args: never; Returns: number }
+      unaccent_safe: { Args: { input: string }; Returns: string }
       users_are_connected: {
         Args: { _a: string; _b: string; _org_id: string }
         Returns: boolean
