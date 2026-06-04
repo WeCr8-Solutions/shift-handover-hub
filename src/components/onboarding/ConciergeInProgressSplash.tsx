@@ -20,7 +20,7 @@ const BLOCKED_STATUSES = new Set([
  */
 export function ConciergeInProgressSplash({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
-  const { activeOrgId } = useOrganization();
+  const { organizationId: activeOrgId } = useOrganization();
   const location = useLocation();
   const [status, setStatus] = useState<string | null>(null);
   const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
