@@ -1,12 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@/test/test-utils";
+import { render, screen, mockOrg } from "@/test/test-utils";
 import { AcknowledgeHandoffCard } from "./AcknowledgeHandoffCard";
+
+vi.mock("@/hooks/useUserOrganization", () => ({
+  useUserOrganization: () => mockOrg,
+}));
 
 const mockHook = vi.fn();
 
 vi.mock("@/hooks/useHandoffAck", () => ({
   useHandoffAck: (...args: unknown[]) => mockHook(...args),
 }));
+
 
 describe("AcknowledgeHandoffCard", () => {
   beforeEach(() => {

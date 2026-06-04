@@ -1,6 +1,11 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@/test/test-utils";
+import { render, screen, mockOrg } from "@/test/test-utils";
 import { ParetoChart } from "./ParetoChart";
+
+vi.mock("@/hooks/useUserOrganization", () => ({
+  useUserOrganization: () => mockOrg,
+}));
+
 
 // Recharts depends on ResizeObserver (provided by setup) + a sized parent in jsdom.
 // We assert via the empty-state branch and the headings/labels in data branch.
