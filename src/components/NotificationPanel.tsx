@@ -444,6 +444,8 @@ export function useNotificationBadgeCount() {
   const { unreadCount } = useGlobalUpdates();
   const orgMessagesUnread = useOrgMessagesUnread();
   const talentInboxUnread = useTalentInboxUnread();
+  const { notifications: prefs } = useNotificationPrefs();
+  const { isSnoozed } = useAlertSnooze();
 
   const isComplimentary = organization?.subscription_status === "complimentary";
 
@@ -455,8 +457,18 @@ export function useNotificationBadgeCount() {
     if (localStorage.getItem(key) === "true") setComplimentaryDismissed(true);
   }, [organization]);
 
+  const visibleAlertCount = useMemo(() => {
+    const subscribeAll = prefs?.subscribe_all_stations ?? true;
+    const subbed = new Set(prefs?.subscribed_station_ids ?? []);
+    return alerts.filter((a) => {
+      if (isSnoozed(a.id)) return false;
+      if (!subscribeAll && a.targetType === "station" && !subbed.has(a.targetId)) return false;
+      return true;
+    }).length;
+  }, [alerts, prefs, isSnoozed]);
+
   return (
-    alerts.length +
+    visibleAlertCount +
     unreadCount +
     orgMessagesUnread +
     talentInboxUnread +
