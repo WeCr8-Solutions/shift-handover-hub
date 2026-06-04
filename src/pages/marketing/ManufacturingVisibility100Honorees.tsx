@@ -28,7 +28,7 @@ export default function ManufacturingVisibility100Honorees() {
         .from("mfg_100_honorees" as any)
         .select("*")
         .order("rank", { ascending: true, nullsFirst: false })
-        .order("published_at", { ascending: false });
+        .order("nominee_name", { ascending: true });
       if (error) throw error;
       return (data ?? []) as unknown as Honoree[];
     },

@@ -18,6 +18,7 @@ CNC programmers, machinists, manufacturing engineers, quality leaders, shop owne
 8. Workforce Development Leaders
 9. Rising Manufacturing Professionals
 10. Legacy Builders
+11. Industry Catalysts — Leaders whose platforms, capital, or public influence move manufacturing forward indirectly: AI compute, semiconductors, space and EV scale-up, supply-chain operating systems, foundational tooling. Inclusion in this bucket explicitly acknowledges that the impact is adjacent rather than on the shop floor.
 
 ## Scoring model — 100 points total
 

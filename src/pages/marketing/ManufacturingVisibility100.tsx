@@ -15,6 +15,7 @@ const CATEGORIES = [
   { name: "Workforce Development Leaders", desc: "Apprenticeship, training, and pipeline builders." },
   { name: "Rising Manufacturing Professionals", desc: "Early-career operators and engineers worth watching." },
   { name: "Legacy Builders", desc: "Veterans whose work still shapes how the industry runs." },
+  { name: "Industry Catalysts", desc: "Leaders whose platforms, capital, or public influence move manufacturing forward indirectly — AI compute, semiconductors, space and EV scale-up, supply-chain operating systems." },
 ];
 
 const SCORING = [
@@ -107,6 +108,16 @@ export default function ManufacturingVisibility100() {
         </div>
       </section>
 
+      {/* Inaugural list live banner */}
+      <section className="border-b border-border bg-primary/5">
+        <div className="container mx-auto px-4 py-4 max-w-5xl flex flex-wrap items-center justify-between gap-3 text-sm">
+          <span className="font-medium">The inaugural editorial list is live across eleven categories.</span>
+          <Link to="/manufacturing-100/honorees" className="text-primary hover:underline inline-flex items-center gap-1">
+            See the honorees <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+      </section>
+
       {/* Why this list */}
       <section className="container mx-auto px-4 py-16 max-w-5xl">
         <h2 className="text-3xl font-bold mb-10">Why this list exists</h2>
@@ -145,7 +156,7 @@ export default function ManufacturingVisibility100() {
       {/* Categories */}
       <section className="border-y border-border bg-muted/30">
         <div className="container mx-auto px-4 py-16 max-w-5xl">
-          <h2 className="text-3xl font-bold mb-2">Ten categories</h2>
+          <h2 className="text-3xl font-bold mb-2">Eleven categories</h2>
           <p className="text-muted-foreground mb-10">
             Each nominee is reviewed inside one category. Category leaders also appear on the main 100.
           </p>

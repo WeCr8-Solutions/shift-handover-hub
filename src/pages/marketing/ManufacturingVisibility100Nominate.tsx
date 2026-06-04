@@ -30,6 +30,7 @@ const CATEGORIES = [
   "Workforce Development Leaders",
   "Rising Manufacturing Professionals",
   "Legacy Builders",
+  "Industry Catalysts",
 ];
 
 const optionalUrl = z
