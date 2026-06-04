@@ -43,6 +43,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { OperatorStationKanban } from "@/components/operator/OperatorStationKanban";
+import { SetupRunControls } from "@/components/operator/SetupRunControls";
 import { useDimensions } from "@/hooks/useDimensions";
 import { useDimensionRequests } from "@/hooks/useDimensionRequests";
 import { DimensionCheckForm } from "@/components/dimensions/DimensionCheckForm";
@@ -79,6 +80,11 @@ interface WorkOrder {
   tags: string[] | null;
   is_rework: boolean | null;
   assigned_to: string | null;
+  current_phase: string | null;
+  setup_started_at: string | null;
+  run_started_at: string | null;
+  setup_actual_minutes: number | null;
+  run_actual_minutes: number | null;
 }
 
 interface RoutingStep {
@@ -220,7 +226,7 @@ export function OperatorStationPanel({
     if (!stationId || !user) return;
     const { data, error } = await supabase
       .from("queue_items")
-      .select("id, title, work_order, part_number, operation_number, status, priority, position, quantity, started_at, due_date, description, qty_original, qty_completed, qty_scrap, qty_rework, qty_open, quantity_locked, estimated_duration, setup_time_minutes, first_article_minutes, cycle_time_minutes, material_type, part_weight_lbs, tags, is_rework, assigned_to")
+      .select("id, title, work_order, part_number, operation_number, status, priority, position, quantity, started_at, due_date, description, qty_original, qty_completed, qty_scrap, qty_rework, qty_open, quantity_locked, estimated_duration, setup_time_minutes, first_article_minutes, cycle_time_minutes, material_type, part_weight_lbs, tags, is_rework, assigned_to, current_phase, setup_started_at, run_started_at, setup_actual_minutes, run_actual_minutes")
       .eq("station_id", stationId)
       .in("status", ["pending", "queued", "in_progress", "on_hold"])
       .order("position", { ascending: true });
@@ -607,6 +613,20 @@ export function OperatorStationPanel({
                   {activeOrder.estimated_duration && <span className="font-medium">Total: {activeOrder.estimated_duration}m</span>}
                 </div>
               )}
+
+              {/* Setup / Run phase tracking — Roadmap item #19 */}
+              <SetupRunControls
+                queueItemId={activeOrder.id}
+                stationId={stationId}
+                currentPhase={(activeOrder.current_phase as "setup" | "run" | "idle" | null) ?? null}
+                setupStartedAt={activeOrder.setup_started_at}
+                runStartedAt={activeOrder.run_started_at}
+                setupActualMinutes={activeOrder.setup_actual_minutes}
+                runActualMinutes={activeOrder.run_actual_minutes}
+                setupPlannedMinutes={activeOrder.setup_time_minutes}
+                onChanged={fetchOrders}
+              />
+
 
               {/* Routing timeline — horizontally scrollable */}
               {routingInfo && routingInfo.allSteps.length > 0 && (

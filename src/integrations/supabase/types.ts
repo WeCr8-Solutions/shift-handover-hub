@@ -1645,6 +1645,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "delivery_requests_queue_item_id_fkey"
+            columns: ["queue_item_id"]
+            isOneToOne: false
+            referencedRelation: "wo_performance_summary"
+            referencedColumns: ["queue_item_id"]
+          },
+          {
             foreignKeyName: "delivery_requests_routing_step_id_fkey"
             columns: ["routing_step_id"]
             isOneToOne: false
@@ -1871,6 +1878,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "dimension_check_requests_queue_item_id_fkey"
+            columns: ["queue_item_id"]
+            isOneToOne: false
+            referencedRelation: "wo_performance_summary"
+            referencedColumns: ["queue_item_id"]
+          },
+          {
             foreignKeyName: "dimension_check_requests_routing_step_id_fkey"
             columns: ["routing_step_id"]
             isOneToOne: false
@@ -1964,6 +1978,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "queue_items"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dimension_readings_queue_item_id_fkey"
+            columns: ["queue_item_id"]
+            isOneToOne: false
+            referencedRelation: "wo_performance_summary"
+            referencedColumns: ["queue_item_id"]
           },
           {
             foreignKeyName: "dimension_readings_routing_step_id_fkey"
@@ -2094,6 +2115,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "queue_items"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "downtime_events_work_order_id_fkey"
+            columns: ["work_order_id"]
+            isOneToOne: false
+            referencedRelation: "wo_performance_summary"
+            referencedColumns: ["queue_item_id"]
           },
         ]
       }
@@ -5813,11 +5841,25 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "ncr_reports_queue_item_id_fkey"
+            columns: ["queue_item_id"]
+            isOneToOne: false
+            referencedRelation: "wo_performance_summary"
+            referencedColumns: ["queue_item_id"]
+          },
+          {
             foreignKeyName: "ncr_reports_rework_wo_id_fkey"
             columns: ["rework_wo_id"]
             isOneToOne: false
             referencedRelation: "queue_items"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ncr_reports_rework_wo_id_fkey"
+            columns: ["rework_wo_id"]
+            isOneToOne: false
+            referencedRelation: "wo_performance_summary"
+            referencedColumns: ["queue_item_id"]
           },
         ]
       }
@@ -5826,6 +5868,7 @@ export type Database = {
           created_at: string
           email_handoff_alerts: boolean | null
           email_machine_down: boolean | null
+          email_morning_brief: boolean
           email_quality_alerts: boolean | null
           email_shift_reminders: boolean | null
           email_weekly_summary: boolean | null
@@ -5843,6 +5886,7 @@ export type Database = {
           created_at?: string
           email_handoff_alerts?: boolean | null
           email_machine_down?: boolean | null
+          email_morning_brief?: boolean
           email_quality_alerts?: boolean | null
           email_shift_reminders?: boolean | null
           email_weekly_summary?: boolean | null
@@ -5860,6 +5904,7 @@ export type Database = {
           created_at?: string
           email_handoff_alerts?: boolean | null
           email_machine_down?: boolean | null
+          email_morning_brief?: boolean
           email_quality_alerts?: boolean | null
           email_shift_reminders?: boolean | null
           email_weekly_summary?: boolean | null
@@ -10178,6 +10223,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "quality_inspections_queue_item_id_fkey"
+            columns: ["queue_item_id"]
+            isOneToOne: false
+            referencedRelation: "wo_performance_summary"
+            referencedColumns: ["queue_item_id"]
+          },
+          {
             foreignKeyName: "quality_inspections_station_id_fkey"
             columns: ["station_id"]
             isOneToOne: false
@@ -10249,6 +10301,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "queue_items"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "queue_item_comments_queue_item_id_fkey"
+            columns: ["queue_item_id"]
+            isOneToOne: false
+            referencedRelation: "wo_performance_summary"
+            referencedColumns: ["queue_item_id"]
           },
         ]
       }
@@ -10322,6 +10381,13 @@ export type Database = {
             referencedRelation: "queue_items"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "queue_item_history_queue_item_id_fkey"
+            columns: ["queue_item_id"]
+            isOneToOne: false
+            referencedRelation: "wo_performance_summary"
+            referencedColumns: ["queue_item_id"]
+          },
         ]
       }
       queue_items: {
@@ -10379,8 +10445,14 @@ export type Database = {
           quantity: number | null
           quantity_locked: boolean | null
           required_tolerance: string | null
+          run_actual_minutes: number | null
+          run_ended_at: string | null
+          run_started_at: string | null
           scheduled_end: string | null
           scheduled_start: string | null
+          setup_actual_minutes: number | null
+          setup_ended_at: string | null
+          setup_started_at: string | null
           setup_time_minutes: number | null
           source_quote_id: string | null
           source_system: string | null
@@ -10448,8 +10520,14 @@ export type Database = {
           quantity?: number | null
           quantity_locked?: boolean | null
           required_tolerance?: string | null
+          run_actual_minutes?: number | null
+          run_ended_at?: string | null
+          run_started_at?: string | null
           scheduled_end?: string | null
           scheduled_start?: string | null
+          setup_actual_minutes?: number | null
+          setup_ended_at?: string | null
+          setup_started_at?: string | null
           setup_time_minutes?: number | null
           source_quote_id?: string | null
           source_system?: string | null
@@ -10517,8 +10595,14 @@ export type Database = {
           quantity?: number | null
           quantity_locked?: boolean | null
           required_tolerance?: string | null
+          run_actual_minutes?: number | null
+          run_ended_at?: string | null
+          run_started_at?: string | null
           scheduled_end?: string | null
           scheduled_start?: string | null
+          setup_actual_minutes?: number | null
+          setup_ended_at?: string | null
+          setup_started_at?: string | null
           setup_time_minutes?: number | null
           source_quote_id?: string | null
           source_system?: string | null
@@ -10539,6 +10623,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "queue_items"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "queue_items_converted_to_work_order_id_fkey"
+            columns: ["converted_to_work_order_id"]
+            isOneToOne: false
+            referencedRelation: "wo_performance_summary"
+            referencedColumns: ["queue_item_id"]
           },
           {
             foreignKeyName: "queue_items_organization_id_fkey"
@@ -10576,6 +10667,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "queue_items_parent_work_order_id_fkey"
+            columns: ["parent_work_order_id"]
+            isOneToOne: false
+            referencedRelation: "wo_performance_summary"
+            referencedColumns: ["queue_item_id"]
+          },
+          {
             foreignKeyName: "queue_items_part_catalog_id_fkey"
             columns: ["part_catalog_id"]
             isOneToOne: false
@@ -10588,6 +10686,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "queue_items"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "queue_items_source_quote_id_fkey"
+            columns: ["source_quote_id"]
+            isOneToOne: false
+            referencedRelation: "wo_performance_summary"
+            referencedColumns: ["queue_item_id"]
           },
           {
             foreignKeyName: "queue_items_station_id_fkey"
@@ -11122,6 +11227,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "queue_items"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "setup_sheets_queue_item_id_fkey"
+            columns: ["queue_item_id"]
+            isOneToOne: false
+            referencedRelation: "wo_performance_summary"
+            referencedColumns: ["queue_item_id"]
           },
           {
             foreignKeyName: "setup_sheets_routing_step_id_fkey"
@@ -13432,6 +13544,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "work_order_routing_queue_item_id_fkey"
+            columns: ["queue_item_id"]
+            isOneToOne: false
+            referencedRelation: "wo_performance_summary"
+            referencedColumns: ["queue_item_id"]
+          },
+          {
             foreignKeyName: "work_order_routing_station_id_fkey"
             columns: ["station_id"]
             isOneToOne: false
@@ -14608,6 +14727,89 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wo_performance_summary: {
+        Row: {
+          completed_at: string | null
+          current_operator_name: string | null
+          current_phase: string | null
+          cycle_time_minutes: number | null
+          due_date: string | null
+          first_article_minutes: number | null
+          operation_number: string | null
+          organization_id: string | null
+          part_number: string | null
+          pct_complete: number | null
+          priority: Database["public"]["Enums"]["queue_priority"] | null
+          qty_completed: number | null
+          qty_open: number | null
+          qty_original: number | null
+          qty_rework: number | null
+          qty_scrap: number | null
+          queue_item_id: string | null
+          run_actual_minutes: number | null
+          run_ended_at: string | null
+          run_started_at: string | null
+          schedule_status: string | null
+          setup_actual_minutes: number | null
+          setup_ended_at: string | null
+          setup_planned_minutes: number | null
+          setup_started_at: string | null
+          setup_variance_pct: number | null
+          started_at: string | null
+          station_id: string | null
+          station_name: string | null
+          station_state: string | null
+          status: Database["public"]["Enums"]["queue_status"] | null
+          team_id: string | null
+          work_center: string | null
+          work_center_type: string | null
+          work_order: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "queue_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "queue_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "queue_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "queue_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "queue_items_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "stations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "queue_items_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
             referencedColumns: ["id"]
           },
         ]

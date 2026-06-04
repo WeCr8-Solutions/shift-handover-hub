@@ -10,6 +10,7 @@ export interface NotificationPreferences {
   email_machine_down: boolean;
   email_shift_reminders: boolean;
   email_weekly_summary: boolean;
+  email_morning_brief?: boolean;
   push_enabled: boolean;
   push_urgent_only: boolean;
   quiet_hours_start: string | null;
