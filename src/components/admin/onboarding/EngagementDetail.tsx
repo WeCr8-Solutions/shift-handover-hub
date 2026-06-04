@@ -11,18 +11,20 @@ import {
   useEngagement,
   useMarkReady,
   useActivateOrg,
+  useProductionReadiness,
 } from "@/hooks/useOnboardingEngagements";
 import { ChecklistModule } from "./ChecklistModule";
 import { UploadUtility } from "./UploadUtility";
+import { ReadinessPanel } from "./ReadinessPanel";
 
 const MODULE_HELP: Record<string, { description: string; templateColumns?: string[] }> = {
   org_profile:  { description: "Capture company name, address, branding, ITAR posture, subscription tier, and seat count." },
-  equipment:    { description: "Bulk upload machines and link to verified library entries.", templateColumns: ["asset_tag","make","model","controller","axes","work_envelope_x","work_envelope_y","work_envelope_z","location","notes"] },
-  stations:     { description: "Define departments and stations, then map equipment to stations.", templateColumns: ["department","station_name","station_type","capacity","shift_pattern"] },
-  users_roles:  { description: "Generate invites for operators, supervisors, and admins.", templateColumns: ["email","first_name","last_name","role","department","default_station"] },
-  routing:      { description: "Load starter routing templates with operations and standard times.", templateColumns: ["template_name","step_number","operation","work_center","setup_minutes","run_minutes_per_unit"] },
-  quality:      { description: "Configure quality checkpoints and pick inspection tool overrides." },
-  erp:          { description: "Configure ERP connector (Native, JobBOSS, or SAP). ITAR orgs are locked to read-through." },
+  equipment:    { description: "Bulk upload machines and link to verified library entries.", templateColumns: ["asset_tag","name","equipment_type","manufacturer","model","serial_number","controller","machine_type","location","notes"] },
+  stations:     { description: "Define departments and stations, then map equipment to stations.", templateColumns: ["department","station_name","station_id","station_type","capacity","shift_pattern"] },
+  users_roles:  { description: "Generate invites for operators, supervisors, and admins.", templateColumns: ["email","first_name","last_name","role","department","default_station","phone","send_invite_now"] },
+  routing:      { description: "Load starter routing templates with operations and standard times.", templateColumns: ["template_name","step_number","operation","work_center","setup_minutes","run_minutes_per_unit","dimension_spec","quality_checkpoint"] },
+  quality:      { description: "Configure quality checkpoints and pick inspection tool overrides.", templateColumns: ["checkpoint_name","operation_after","tool_required","frequency","sample_size"] },
+  erp:          { description: "Configure ERP connector (Native, JobBOSS, or SAP). ITAR orgs are locked to read-through.", templateColumns: ["system","base_url","auth_method","persistence_mode","notes"] },
   training:     { description: "Seed role programs and assign mandatory OAP courses.", templateColumns: ["email","program","required_by"] },
   documents:    { description: "Upload AS9100 / ISO / ITAR policies, equipment manuals, setup sheets." },
   review:       { description: "Final verification before flipping the org to ready-for-production." },
