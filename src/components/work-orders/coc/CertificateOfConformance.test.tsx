@@ -42,7 +42,7 @@ describe("CertificateOfConformance", () => {
     expect(screen.getByText(/CERTIFICATE OF CONFORMANCE/i)).toBeInTheDocument();
     expect(screen.getByText(/Statement of Conformance/i)).toBeInTheDocument();
     expect(screen.getByText(/Mill-3/)).toBeInTheDocument();
-    expect(screen.getByText(/PO PO-77/)).toBeInTheDocument();
+    expect(screen.getByText((_, el) => el?.textContent === "PO PO-77")).toBeInTheDocument();
   });
 
   it("shows ITAR banner when flagged", () => {
