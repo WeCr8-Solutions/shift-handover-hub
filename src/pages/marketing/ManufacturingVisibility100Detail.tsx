@@ -6,25 +6,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loader2, ExternalLink, Award, ArrowUp, ArrowDown, Sparkles, ArrowLeft } from "lucide-react";
-
-interface Honoree {
-  id: string;
-  slug: string | null;
-  nominee_name: string;
-  nominee_company: string | null;
-  nominee_role: string | null;
-  nominee_linkedin: string | null;
-  nominee_website: string | null;
-  category: string;
-  display_blurb: string;
-  reason: string | null;
-  evidence_links: any;
-  rank: number | null;
-  previous_rank: number | null;
-  rank_movement: string | null;
-  score_total: number | null;
-  edition: string | null;
-}
+import {
+  findManufacturing100HonoreeBySlug,
+  type Manufacturing100Honoree as Honoree,
+} from "@/lib/manufacturing100Honorees";
 
 export default function ManufacturingVisibility100Detail() {
   const { slug } = useParams<{ slug: string }>();
@@ -39,7 +24,7 @@ export default function ManufacturingVisibility100Detail() {
         .eq("slug", slug)
         .maybeSingle();
       if (error) throw error;
-      return (data as unknown as Honoree) ?? null;
+      return findManufacturing100HonoreeBySlug(slug, data ? [data as unknown as Honoree] : []);
     },
     enabled: !!slug,
   });
