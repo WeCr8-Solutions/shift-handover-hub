@@ -1,131 +1,94 @@
+## Goal
 
-# Seed the Manufacturing Visibility 100 launch list
+Make the Manufacturing Visibility 100 pipeline production-correct end-to-end (public nominate → admin review → score → rank → publish → public list/detail), and finish the admin ranking workspace so an editor can run a full audit and ship an edition without leaving the page.
 
-Ship a defensible starter list of ~25 honorees, published immediately, unranked alphabetical within category, plus a new 11th "Industry Catalysts" bucket for adjacent-impact leaders.
+## What I verified
 
-## 1. Add the 11th category: Industry Catalysts
+- Public form `/manufacturing-100/nominate` inserts into `mfg_100_nominations` with Zod validation + consent. RLS allows anon INSERT (consent=true). OK.
+- Admin page `/admin/manufacturing-100` (platform_admin + developer only) lists nominations, opens a review dialog with status, blurb, rank, previous_rank, 6 score fields, and notes. OK as a baseline.
+- DB: `mfg_100_nominations` has status check, score-bounds check, generated `score_total` (0–100) and `rank_movement` ('new'|'up'|'down'|'same'), unique slug, slug-from-name trigger. View `mfg_100_honorees` filters `status='published' AND published_at IS NOT NULL`. Grants in migrations look correct.
+- Live data gap: the 38 seeded honorees only exist in the dev DB. Live still has zero rows in `mfg_100_nominations`. The static fallback in `src/lib/manufacturing100Honorees.ts` is masking this on the public pages, but the admin pipeline on Live is empty and the "live" list never updates.
+- Admin UX gaps: no category filter, no sort by score, no search, no quick-rerank, no "view on site" link, no slug editor, no edition selector, no bulk publish, no "X of 100 published" progress, no duplicate/spam guard signal, no audit/history, no email notification when a nomination comes in.
 
-Update three places where the category list lives:
+## Plan
 
-- `src/pages/marketing/ManufacturingVisibility100.tsx` — extend `CATEGORIES` array, change "Ten categories" heading + intro copy to "Eleven categories".
-- `src/pages/marketing/ManufacturingVisibility100Nominate.tsx` — extend `CATEGORIES` dropdown list.
-- `docs/campaigns/manufacturing-visibility-100/03-ranking-methodology.md` — add the new bucket with editorial definition.
+### 1. Backfill Live so the live pipeline matches dev
 
-Definition copy:
-> **Industry Catalysts** — Leaders whose platforms, capital, or public influence move manufacturing forward indirectly: AI compute, semiconductors, space and EV scale-up, supply-chain operating systems, foundational tooling.
+Add an idempotent seed migration that upserts the 38 editorial honorees into `mfg_100_nominations` (keyed on `slug`) so Live, dev, and the static fallback all agree. Idempotent = safe to re-run.
 
-No DB schema change — `category` is free-text TEXT NOT NULL.
+After this, the static fallback in `src/lib/manufacturing100Honorees.ts` becomes a true editorial source-of-truth backstop, not a cover for missing data.
 
-## 2. Sort honorees alphabetically when unranked
+### 2. End-to-end submission hardening
 
-`src/pages/marketing/ManufacturingVisibility100Honorees.tsx` currently orders by `rank` then `published_at desc`. Change to:
+- Add lightweight server-side dedupe: unique index on `(lower(nominator_email), lower(nominee_name), edition)` to prevent accidental double-submits.
+- Add `submission_count` rate-limit guard via existing `email_rate_limits` table (10/hr per email).
+- Notify editors: edge function `mfg-100-nomination-notify` triggered from the client immediately after a successful insert. Sends a Resend email to the editorial address with nominee + nominator + category + reason + evidence links. Idempotency keyed on nomination id.
+- Improve the success state with a "We'll email you if shortlisted" line and copy the methodology link.
 
-```
-.order("rank", { ascending: true, nullsFirst: false })
-.order("nominee_name", { ascending: true })
-```
+### 3. Public read path
 
-So unranked rows fall back to alphabetical, which matches the editorial decision.
+- Confirm `mfg_100_honorees` view has `GRANT SELECT TO anon, authenticated` applied on Live (re-issue grant in the seed migration to be safe).
+- `ManufacturingVisibility100Honorees.tsx` keeps using the view; merge logic stays as a backstop only.
+- Add `noindex` removal check on `/manufacturing-100/honorees` and `/manufacturing-100/:slug` (currently public — OK).
 
-## 3. Refresh the candidate pool (build-mode research)
+### 4. Admin ranking workspace (the audit-ready UI)
 
-Before seeding, run 3–4 targeted `websearch--web_search` passes to validate spelling, current roles/companies, and surface anyone missing. Categories I want to sanity-check:
+Refactor `ManufacturingVisibility100Admin.tsx` into a real editorial workbench:
 
-- Shop-Floor / CNC / CAM (Titan Gilroy, John Saunders, Marc Lecuyer, Karen Bischoff, NYC CNC, Edge Precision)
-- Manufacturing software builders (Jon Hirschtick, Ric Fulop, Carl Bass, Bre Pettis, Vicki Holt, Brad Cleveland)
-- Automation/Robotics (Marc Raibert, Melonee Wise, Rodney Brooks)
-- Educators / workforce (Mike Rowe, Titans of CNC Academy, SME leadership)
+**Header / KPIs**
+- "Edition {edition}" selector (defaults to current `2026`).
+- Progress strip: `Published X/100 · Shortlisted Y · Under review Z · New W · Avg score · Last published`.
+- Buttons: "Open public list" (target=_blank), "Open methodology", "Export edition CSV".
 
-Anything web research can't confidently verify gets dropped — we'd rather ship 22 solid picks than 25 with one wrong title.
+**Filters + list**
+- Status tabs (existing) + category multi-select + free-text search (name/company/email) + sort dropdown (Newest, Score desc, Rank asc, Updated).
+- Table: add columns Score breakdown (tooltip), Rank movement chip, Slug, "View public" inline link when published.
+- Inline rank editor in the row (no need to open dialog for a small bump).
 
-## 4. Seed ~25 honorees (status = published)
+**Ranking page (new tab "Ranking")**
+- Drag-and-drop ranked list (1..N) using `@dnd-kit/sortable` (already in repo if available, otherwise add). Persists `rank` and recomputes `previous_rank` from the snapshot at the start of the session.
+- "Auto-rank by score_total" button (assigns 1..N by descending score, ties broken by visibility then created_at).
+- "Publish edition" button: sets `status='published'` and `published_at=now()` for every shortlisted row in current edition that has a rank, in one transaction (via `mfg_100_publish_edition` RPC).
 
-One `supabase--insert` call with a single multi-row `INSERT`. Each row writes:
+**Review dialog upgrades**
+- Slug editor (validated `^[a-z0-9-]+$`, unique check) — currently only auto-generated.
+- "Generate blurb from reason" helper (deterministic: first 2 sentences, trimmed to 280 chars; no AI needed).
+- Show evidence links as clickable chips and live LinkedIn/website badges.
+- Show duplicate hint if same nominee_name already exists in the edition.
+- Show "Submitted by" history if the same nominator has prior submissions.
 
-- `nominee_name`, `nominee_company`, `nominee_role`
-- `nominee_linkedin`, `nominee_website` where verifiable
-- `category` (one of the eleven)
-- `reason` (internal editorial note, ~1 sentence)
-- `display_blurb` (public-facing, ~1 sentence — this is what renders on /honorees)
-- `nominator_name = 'Jobline Editorial'`, `nominator_email = 'editorial@jobline.ai'`
-- `consent = true`, `source = 'editorial_seed'`
-- `status = 'published'`, `published_at = now()`, `reviewed_at = now()`
-- `rank = NULL` (unranked starter)
-- `evidence_links = '[]'::jsonb`, `interest_flags = '{}'::jsonb`
+**Audit + safety**
+- New `mfg_100_audit_log` table (id, nomination_id, actor_id, action, before jsonb, after jsonb, created_at). Trigger captures status, rank, score, blurb, slug changes. Admin-only SELECT. Surfaced as a collapsible "History" panel in the review dialog.
+- Soft-delete: add `archived_at` column + `Archive` action (hides from all queries; recoverable from "Archived" tab).
 
-Indicative spread (final list confirmed after the research pass):
+### 5. Routes + nav
 
-```text
-Industry Catalysts (5)
-  Jeff Bezos       — Blue Origin scale + Amazon supply chain
-  Tim Cook         — Apple supply-chain operating system
-  Pat Gelsinger    — Intel manufacturing renaissance
-  Jensen Huang     — NVIDIA compute powering smart manufacturing
-  Elon Musk        — Tesla / SpaceX vertical-integration scale
-  Lisa Su          — AMD semiconductor leadership
+- `/admin/manufacturing-100` already wired; add link to it from the existing admin dashboard sidebar/menu (look up where other admin links live and match style).
+- Keep noindex on admin page (already set).
 
-CNC and CAM Leaders (3)
-  Titan Gilroy     — Titans of CNC Academy
-  John Saunders    — NYC CNC, education + practitioner
-  Marc Lecuyer     — Edge Precision (5-axis aerospace)
+### 6. QA / E2E checks I'll run before handoff
 
-Manufacturing Software Builders (4)
-  Jon Hirschtick   — Onshape / cloud CAD
-  Ric Fulop        — Desktop Metal / additive
-  Carl Bass        — former Autodesk CEO, fabrication
-  Bre Pettis       — Bantam Tools (desktop CNC)
-
-Automation and Robotics Leaders (3)
-  Marc Raibert     — Boston Dynamics founder
-  Melonee Wise     — Fetch / Agility Robotics
-  Rodney Brooks    — Rethink Robotics, iRobot
-
-Manufacturing Educators (2)
-  Mike Rowe        — mikeroweWORKS foundation, skilled trades advocacy
-  Edge Factor / Jeremy Bout — manufacturing storytelling
-
-Tooling and Metrology Leaders (2)
-  Jacob Harpaz     — Iscar / IMC Group leadership
-  Hitoshi Suzuki   — Mitsubishi Materials cutting tools
-
-Small and Mid-Size Shop Leaders (2)
-  Karen Bischoff   — Bischoff Tool & Die
-  Justin Quinn     — Falcon Industries
-
-Workforce Development Leaders (2)
-  Jay Timmons      — NAM CEO
-  Carolyn Lee      — Manufacturing Institute
-
-Legacy Builders (2)
-  Morris Chang     — TSMC founder
-  Mike Payne       — co-founder PTC / SolidWorks
-
-Shop-Floor Innovators — 0 for launch (better seeded with real community nominations as they come in)
-Rising Manufacturing Professionals — 0 for launch (same reasoning)
-```
-
-Two categories deliberately ship empty: Shop-Floor Innovators and Rising Pros. Both should grow organically from real nominations so they don't read as the editor's friends. Honorees page already handles per-category emptiness gracefully (only categories with entries render).
-
-## 5. SEO + content cross-links
-
-- `public/sitemap.xml`: bump `/manufacturing-100` and `/manufacturing-100/honorees` `lastmod` to today.
-- `public/llms.txt`: add a one-liner that the inaugural honoree list is now live.
-- Add a callout strip on `/manufacturing-100` landing ("Inaugural list now live →") linking to /honorees, only when honorees count > 0 (already true after seed).
-
-## 6. Memory + docs
-
-- Update `mem://features/marketing/manufacturing-visibility-100` to record: 11 categories, editorial-seed source convention, starter list size, intentionally-empty buckets.
-- Append a `docs/campaigns/manufacturing-visibility-100/CHANGELOG.md` entry: "v0.1 — inaugural list published, 11th category added".
-
-## Out of scope (intentionally deferred)
-
-- Per-honoree detail pages — not enough editorial copy per person to justify standalone routes yet.
-- Headshots / og:image generation — the honoree cards work fine text-only; image rights for living public figures need separate sign-off.
-- Outreach emails to honorees — would require a notify-honoree edge function; flag for a later pass once the list is reviewed in public.
-- Scoring engine, badges, sponsor kit — still in Phase 4–8 per the original campaign docs.
+1. Anon submission via `/manufacturing-100/nominate` → row appears in admin "New" tab on Live.
+2. Editor moves row New → Under review → Shortlisted, scores it, sets blurb + slug.
+3. Editor drag-ranks in the Ranking tab, hits "Publish edition".
+4. Row appears on `/manufacturing-100/honorees` and at `/manufacturing-100/{slug}` with correct rank, movement chip, blurb, JSON-LD.
+5. Re-publish with a different rank → `rank_movement` flips correctly.
+6. Decline → row leaves public list immediately.
+7. Audit log shows every transition with actor + before/after.
+8. Duplicate submission from same email+nominee is rejected with a friendly toast.
+9. Resend email lands in editor inbox within ~10s of submission.
+10. `mfg_100_honorees` view returns rows for an unauthenticated session (curl with anon key).
 
 ## Technical notes
 
-- Single `supabase--insert` call with multi-row `INSERT` — no schema migration needed.
-- `mfg_100_honorees` view already projects exactly the public-safe fields and is `security_invoker = true`, so seeded rows surface automatically.
-- All edits stay frontend + data; no edge function or RLS changes.
+- All schema work goes through one migration: dedupe index, `archived_at`, audit table + trigger, `mfg_100_publish_edition(_edition text, _ids uuid[])` RPC, and a re-affirming `GRANT SELECT ON public.mfg_100_honorees TO anon, authenticated`. Audit table includes GRANTs to `authenticated` (SELECT via `has_role admin/developer` policy) and `service_role` (ALL).
+- Seed migration is separate and idempotent (`INSERT ... ON CONFLICT (slug) DO UPDATE`).
+- Edge function `mfg-100-nomination-notify`: `verify_jwt=false`, accepts `{ nomination_id }`, re-reads the row server-side using service role, sends via Resend (`RESEND_API_KEY` already configured).
+- Admin DnD: prefer existing `@dnd-kit` usage in the repo for consistency; fall back to a simple up/down button pair if not installed.
+- No changes to the static fallback contract — `mergeManufacturing100Honorees` keeps deduping by slug so the live view always wins once populated.
+
+## Out of scope
+
+- Public voting / community ranking.
+- Multi-edition archive pages (current edition only; `edition` selector lays groundwork).
+- Auto-scoring from LinkedIn/YouTube — manual editorial scoring stays the source of truth.
