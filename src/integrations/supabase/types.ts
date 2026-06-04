@@ -5825,6 +5825,8 @@ export type Database = {
           push_urgent_only: boolean | null
           quiet_hours_end: string | null
           quiet_hours_start: string | null
+          subscribe_all_stations: boolean
+          subscribed_station_ids: string[]
           updated_at: string
           user_id: string
         }
@@ -5840,6 +5842,8 @@ export type Database = {
           push_urgent_only?: boolean | null
           quiet_hours_end?: string | null
           quiet_hours_start?: string | null
+          subscribe_all_stations?: boolean
+          subscribed_station_ids?: string[]
           updated_at?: string
           user_id: string
         }
@@ -5855,6 +5859,8 @@ export type Database = {
           push_urgent_only?: boolean | null
           quiet_hours_end?: string | null
           quiet_hours_start?: string | null
+          subscribe_all_stations?: boolean
+          subscribed_station_ids?: string[]
           updated_at?: string
           user_id?: string
         }
