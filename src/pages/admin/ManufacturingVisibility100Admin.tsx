@@ -388,7 +388,7 @@ export default function ManufacturingVisibility100Admin() {
 
       {/* ---------- Review dialog ---------- */}
       <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto w-[calc(100vw-1rem)] p-4 sm:p-6">
           {selected && (
             <>
               <DialogHeader>
@@ -420,7 +420,7 @@ export default function ManufacturingVisibility100Admin() {
                   </div>
                 )}
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {selected.nominee_linkedin && (
                     <a href={selected.nominee_linkedin} target="_blank" rel="noopener noreferrer" className="text-primary text-sm hover:underline inline-flex items-center gap-1">
                       <ExternalLink className="h-3 w-3" /> LinkedIn
@@ -434,7 +434,7 @@ export default function ManufacturingVisibility100Admin() {
                 </div>
 
                 <div className="pt-3 border-t space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <Label htmlFor="status">Status</Label>
                       <Select
@@ -482,7 +482,7 @@ export default function ManufacturingVisibility100Admin() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <Label htmlFor="rank">Rank</Label>
                       <Input
@@ -514,7 +514,7 @@ export default function ManufacturingVisibility100Admin() {
                         {SCORE_FIELDS.reduce((sum, f) => sum + (Number(selected[f.key]) || 0), 0)}/100
                       </span>
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {SCORE_FIELDS.map(f => (
                         <div key={String(f.key)}>
                           <Label htmlFor={String(f.key)} className="text-xs">
@@ -598,7 +598,7 @@ export default function ManufacturingVisibility100Admin() {
 
       {/* ---------- Manual add dialog ---------- */}
       <Dialog open={!!creating} onOpenChange={(o) => !o && setCreating(null)}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto w-[calc(100vw-1rem)] p-4 sm:p-6">
           {creating && (
             <>
               <DialogHeader>
@@ -609,7 +609,7 @@ export default function ManufacturingVisibility100Admin() {
               </DialogHeader>
 
               <div className="space-y-3 text-sm">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <Label htmlFor="c-name">Name *</Label>
                     <Input id="c-name" value={creating.nominee_name ?? ""} onChange={(e) => setCreating({ ...creating, nominee_name: e.target.value })} />
@@ -620,7 +620,7 @@ export default function ManufacturingVisibility100Admin() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <Label htmlFor="c-company">Company / shop</Label>
                     <Input id="c-company" value={creating.nominee_company ?? ""} onChange={(e) => setCreating({ ...creating, nominee_company: e.target.value })} />
@@ -636,7 +636,7 @@ export default function ManufacturingVisibility100Admin() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <Label htmlFor="c-li">LinkedIn URL</Label>
                     <Input id="c-li" value={creating.nominee_linkedin ?? ""} onChange={(e) => setCreating({ ...creating, nominee_linkedin: e.target.value })} />
@@ -657,7 +657,7 @@ export default function ManufacturingVisibility100Admin() {
                   <Textarea id="c-blurb" rows={2} value={creating.display_blurb ?? ""} onChange={(e) => setCreating({ ...creating, display_blurb: e.target.value })} />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <Label htmlFor="c-ed">Edition</Label>
                     <Input id="c-ed" value={creating.edition ?? "2026"} onChange={(e) => setCreating({ ...creating, edition: e.target.value })} />
