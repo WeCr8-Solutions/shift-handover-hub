@@ -168,8 +168,10 @@ export default function ManufacturingVisibility100Admin() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-[60px]">Rank</TableHead>
                       <TableHead>Nominee</TableHead>
                       <TableHead>Category</TableHead>
+                      <TableHead className="w-[70px]">Score</TableHead>
                       <TableHead>Nominator</TableHead>
                       <TableHead>Submitted</TableHead>
                       <TableHead>Status</TableHead>
@@ -179,6 +181,9 @@ export default function ManufacturingVisibility100Admin() {
                   <TableBody>
                     {rows.map(n => (
                       <TableRow key={n.id}>
+                        <TableCell className="font-semibold tabular-nums">
+                          {n.rank ? `#${n.rank}` : <span className="text-muted-foreground">—</span>}
+                        </TableCell>
                         <TableCell>
                           <div className="font-medium">{n.nominee_name}</div>
                           {n.nominee_company && (
@@ -186,6 +191,9 @@ export default function ManufacturingVisibility100Admin() {
                           )}
                         </TableCell>
                         <TableCell><Badge variant="outline">{n.category}</Badge></TableCell>
+                        <TableCell className="tabular-nums text-sm">
+                          {n.score_total != null && n.score_total > 0 ? `${n.score_total}/100` : <span className="text-muted-foreground">—</span>}
+                        </TableCell>
                         <TableCell>
                           <div className="text-sm">{n.nominator_name}</div>
                           <div className="text-xs text-muted-foreground">{n.nominator_email}</div>
