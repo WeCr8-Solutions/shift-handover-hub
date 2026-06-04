@@ -20,6 +20,17 @@ export interface Engagement {
   went_live_at: string | null;
   created_at: string;
   updated_at: string;
+  payment_status: "unpaid" | "invoiced" | "paid" | "refunded" | "waived";
+  payment_method: string | null;
+  payment_reference: string | null;
+  payment_amount_cents: number;
+  payment_received_at: string | null;
+  payment_proof_path: string | null;
+  contract_signed_at: string | null;
+  contract_signer_name: string | null;
+  contract_signer_title: string | null;
+  contract_proof_path: string | null;
+  sales_rep_id: string | null;
   organizations?: { id: string; name: string; slug: string; requires_us_person_declaration: boolean | null } | null;
 }
 
