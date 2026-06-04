@@ -5675,8 +5675,54 @@ export type Database = {
           },
         ]
       }
+      mfg_100_audit_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          after: Json | null
+          before: Json | null
+          created_at: string
+          id: string
+          nomination_id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          after?: Json | null
+          before?: Json | null
+          created_at?: string
+          id?: string
+          nomination_id: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          after?: Json | null
+          before?: Json | null
+          created_at?: string
+          id?: string
+          nomination_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mfg_100_audit_log_nomination_id_fkey"
+            columns: ["nomination_id"]
+            isOneToOne: false
+            referencedRelation: "mfg_100_honorees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mfg_100_audit_log_nomination_id_fkey"
+            columns: ["nomination_id"]
+            isOneToOne: false
+            referencedRelation: "mfg_100_nominations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mfg_100_nominations: {
         Row: {
+          archived_at: string | null
           category: string
           consent: boolean
           created_at: string
@@ -5715,6 +5761,7 @@ export type Database = {
           user_agent: string | null
         }
         Insert: {
+          archived_at?: string | null
           category: string
           consent: boolean
           created_at?: string
@@ -5753,6 +5800,7 @@ export type Database = {
           user_agent?: string | null
         }
         Update: {
+          archived_at?: string | null
           category?: string
           consent?: boolean
           created_at?: string
@@ -15880,6 +15928,11 @@ export type Database = {
         Returns: string
       }
       mark_onboarding_complete: { Args: { _path: string }; Returns: Json }
+      mfg_100_apply_ranking: {
+        Args: { _edition: string; _ranking: Json }
+        Returns: number
+      }
+      mfg_100_publish_edition: { Args: { _edition: string }; Returns: number }
       mfg_100_slugify: { Args: { input: string }; Returns: string }
       pass_work_order_to_next_step: {
         Args: {
