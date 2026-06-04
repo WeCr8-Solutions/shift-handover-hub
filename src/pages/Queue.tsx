@@ -13,6 +13,7 @@ import { useSmartAlerts } from "@/hooks/useSmartAlerts";
 import { useOrgRefreshInterval } from "@/hooks/useOrgRefreshInterval";
 import { useModuleContext } from "@/hooks/useModuleContext";
 import { RefreshIndicator } from "@/components/dashboard/RefreshIndicator";
+import { QRScanButton } from "@/components/QRScanButton";
 import { Header } from "@/components/Header";
 import { QueueKanbanBoard } from "@/components/queue/QueueKanbanBoard";
 import { QueueListView } from "@/components/queue/QueueListView";
@@ -340,6 +341,7 @@ export default function Queue() {
               onRefresh={handleManualRefresh}
             />
 
+            <QRScanButton />
             <Button onClick={() => setCreateDialogOpen(true)} data-tour="add-queue-item">
               <Plus className="mr-2 h-4 w-4" />
               Add Item
