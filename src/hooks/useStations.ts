@@ -124,6 +124,19 @@ async function fetchStationsData(userId: string, teamId?: string | null, orgId?:
 }
 
 async function fetchHandoffData(userId: string, teamId?: string | null, orgId?: string | null): Promise<HandoffRecord[]> {
+  // When a team is selected, pre-fetch that team's station IDs so we can
+  // include legacy handoffs (team_id IS NULL but station belongs to the team).
+  // PostgREST does NOT support raw SQL subqueries inside `.or()`, so the
+  // previous implementation silently failed and fell back to org-only.
+  let teamStationIds: string[] = [];
+  if (teamId) {
+    const { data: teamStations } = await supabase
+      .from("stations")
+      .select("id")
+      .eq("team_id", teamId);
+    teamStationIds = (teamStations || []).map((s: any) => s.id);
+  }
+
   let query = supabase
     .from("handoff_records")
     .select("*")
@@ -134,10 +147,14 @@ async function fetchHandoffData(userId: string, teamId?: string | null, orgId?: 
     query = query.eq("organization_id", orgId);
   }
 
-  // When a team is selected, include handoffs that either match the team directly
-  // OR have null team_id but belong to a station in that team (legacy records)
   if (teamId) {
-    query = query.or(`team_id.eq.${teamId},and(team_id.is.null,station_id.in.(select id from stations where team_id='${teamId}'))`);
+    if (teamStationIds.length > 0) {
+      // Match handoffs with team_id directly OR legacy rows whose station is in the team.
+      const idList = teamStationIds.map((id) => `"${id}"`).join(",");
+      query = query.or(`team_id.eq.${teamId},station_id.in.(${idList})`);
+    } else {
+      query = query.eq("team_id", teamId);
+    }
   }
 
   const { data, error } = await query;
