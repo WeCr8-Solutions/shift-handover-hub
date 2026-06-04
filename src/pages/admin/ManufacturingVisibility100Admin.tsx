@@ -240,24 +240,24 @@ export default function ManufacturingVisibility100Admin() {
   });
 
   return (
-    <div className="container max-w-7xl py-8 space-y-6">
+    <div className="container max-w-7xl px-3 sm:px-6 py-4 sm:py-8 space-y-4 sm:space-y-6">
       <Helmet>
         <title>Manufacturing 100 — Nominations Review</title>
         <meta name="robots" content="noindex" />
       </Helmet>
 
-      <div className="flex flex-wrap items-start justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-start sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Manufacturing Visibility 100</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Manufacturing Visibility 100</h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">
             Review nominations, add honorees directly, rank them, and publish the edition.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Input
             value={edition}
             onChange={(e) => setEdition(e.target.value)}
-            className="w-24"
+            className="w-20 sm:w-24"
             aria-label="Edition"
           />
           <Button
@@ -268,7 +268,8 @@ export default function ManufacturingVisibility100Admin() {
             {publishEdition.isPending
               ? <Loader2 className="h-4 w-4 mr-1 animate-spin" />
               : <Rocket className="h-4 w-4 mr-1" />}
-            Publish edition
+            <span className="hidden sm:inline">Publish edition</span>
+            <span className="sm:hidden">Publish</span>
           </Button>
           <Button onClick={() => setCreating({ ...EMPTY_NEW })}>
             <Plus className="h-4 w-4 mr-1" /> Add honoree
