@@ -199,5 +199,6 @@ export function EngagementDetail({ engagementId, onBack }: { engagementId: strin
         ))}
       </Tabs>
     </div>
+    </TooltipProvider>
   );
 }
