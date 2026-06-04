@@ -433,8 +433,9 @@ function OperatorDisplay({ config, stations, queueItems, lastRefresh }: {
   const criticalAlerts = useMemo(() => {
     const alerts: string[] = [];
     stations.forEach(s => {
-      const info = getStatusInfo(s.current_status?.current_job_state);
-      if (info.label === "DOWN") alerts.push(`${s.name} is DOWN`);
+      if (getStatusFromJobState(s.current_status?.current_job_state) === "down") {
+        alerts.push(`${s.name} is DOWN`);
+      }
     });
     queueItems.forEach(q => {
       if (q.due_date && new Date(q.due_date) < new Date() && q.priority === "critical") {
@@ -472,7 +473,8 @@ function OperatorDisplay({ config, stations, queueItems, lastRefresh }: {
       {/* Large station cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
         {stations.map(station => {
-          const info = getStatusInfo(station.current_status?.current_job_state);
+          const status = getStatusFromJobState(station.current_status?.current_job_state);
+          const cfg = STATUS_CONFIG[status];
           const stationQueue = queueByStation[station.id] || [];
           const queued = stationQueue.filter(q => q.status === "queued").length;
           const inProgress = stationQueue.filter(q => q.status === "in_progress").length;
@@ -486,23 +488,17 @@ function OperatorDisplay({ config, stations, queueItems, lastRefresh }: {
               key={station.id}
               className={cn(
                 "bg-card border-2 rounded-xl p-5 space-y-3",
-                info.label === "DOWN" ? "border-destructive" :
-                info.label === "Running" ? "border-primary/50" :
-                "border-border"
+                cfg.borderClass,
               )}
             >
               {/* Station name + status */}
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <h2 className="text-xl font-bold truncate">{station.name}</h2>
-                <Badge className={cn(
-                  "text-sm px-3 py-1",
-                  info.label === "DOWN" ? "bg-destructive text-destructive-foreground" :
-                  info.label === "Running" ? "bg-primary text-primary-foreground" :
-                  "bg-secondary text-secondary-foreground"
-                )}>
-                  {info.label}
+                <Badge className={cn("text-sm px-3 py-1 shrink-0 text-white border-transparent", cfg.bgClass)}>
+                  {cfg.displayName}
                 </Badge>
               </div>
+
 
               {/* Team name */}
               {station.team_name && (
