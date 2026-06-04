@@ -98,6 +98,9 @@ export default function ManufacturingVisibility100() {
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg">
+              <Link to="/manufacturing-100/honorees">View honorees</Link>
+            </Button>
+            <Button asChild variant="ghost" size="lg">
               <Link to="/manufacturing-100/methodology">Read the methodology</Link>
             </Button>
           </div>

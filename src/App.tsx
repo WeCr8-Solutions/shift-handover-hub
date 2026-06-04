@@ -53,6 +53,8 @@ const ConciergeReporting = lazy(() => import("./pages/admin/ConciergeReporting")
 const ManufacturingVisibility100 = lazy(() => import("./pages/marketing/ManufacturingVisibility100"));
 const ManufacturingVisibility100Methodology = lazy(() => import("./pages/marketing/ManufacturingVisibility100Methodology"));
 const ManufacturingVisibility100Nominate = lazy(() => import("./pages/marketing/ManufacturingVisibility100Nominate"));
+const ManufacturingVisibility100Honorees = lazy(() => import("./pages/marketing/ManufacturingVisibility100Honorees"));
+const ManufacturingVisibility100Admin = lazy(() => import("./pages/admin/ManufacturingVisibility100Admin"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Settings = lazy(() => import("./pages/Settings"));
 const DonationSuccess = lazy(() => import("./pages/DonationSuccess"));
@@ -245,8 +247,11 @@ const App = () => (
                     <Route path="/manufacturing-100" element={<ManufacturingVisibility100 />} />
                     <Route path="/manufacturing-100/methodology" element={<ManufacturingVisibility100Methodology />} />
                     <Route path="/manufacturing-100/nominate" element={<ManufacturingVisibility100Nominate />} />
+                    <Route path="/manufacturing-100/honorees" element={<ManufacturingVisibility100Honorees />} />
+                    <Route path="/admin/manufacturing-100" element={<RequireAuth><RequireRole roles={["platform_admin","developer"]}><ManufacturingVisibility100Admin /></RequireRole></RequireAuth>} />
                     <Route path="/admin/concierge/print/:engagementId" element={<RequireAuth><RequireRole roles={["platform_admin","developer"]}><ConciergeSalesPack /></RequireRole></RequireAuth>} />
                     <Route path="/admin/concierge/reporting" element={<RequireAuth><RequireRole roles={["platform_admin","developer"]}><ConciergeReporting /></RequireRole></RequireAuth>} />
+
                     <Route path="/billing/concierge/invoice/:engagementId" element={<RequireAuth><ConciergeInvoicePdf /></RequireAuth>} />
                     <Route path="/settings/billing/concierge" element={<RequireAuth><RequireOrg><ConciergeBillingTab /></RequireOrg></RequireAuth>} />
                     <Route path="/settings" element={<Settings />} />
