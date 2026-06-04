@@ -368,23 +368,21 @@ function SupervisorDisplay({ config, stations, queueItems, lastRefresh }: {
 
 /* ── Station Cell (shared) ── */
 function StationCell({ station }: { station: StationData }) {
-  const info = getStatusInfo(station.current_status?.current_job_state);
+  const status = getStatusFromJobState(station.current_status?.current_job_state);
+  const cfg = STATUS_CONFIG[status];
   const progress = station.current_status?.parts_required
     ? Math.round(((station.current_status?.parts_complete || 0) / station.current_status.parts_required) * 100)
     : 0;
 
   return (
-    <div className="bg-card p-3 space-y-1.5">
-      <div className="flex items-center justify-between">
+    <div className={cn("bg-card p-3 space-y-1.5 border-l-2", cfg.borderClass)}>
+      <div className="flex items-center justify-between gap-2">
         <span className="font-semibold text-sm truncate">{station.name}</span>
-        <Badge className={cn("text-[9px]",
-          info.bg === "bg-destructive" ? "bg-destructive text-destructive-foreground" :
-          info.bg === "bg-primary" ? "bg-primary text-primary-foreground" :
-          "bg-secondary text-secondary-foreground"
-        )}>
-          {info.label}
+        <Badge className={cn("text-[9px] shrink-0 text-white border-transparent", cfg.bgClass)}>
+          {cfg.displayName}
         </Badge>
       </div>
+
       <p className="text-xs text-muted-foreground truncate">
         {station.current_status?.current_job_work_order || "No active job"}
       </p>
