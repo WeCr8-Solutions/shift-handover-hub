@@ -19,6 +19,7 @@ import { ChecklistModule } from "./ChecklistModule";
 import { UploadUtility } from "./UploadUtility";
 import { ReadinessPanel } from "./ReadinessPanel";
 import { PaymentPanel } from "./PaymentPanel";
+import { ContractPanel } from "./ContractPanel";
 import { RefundPanel } from "./RefundPanel";
 import { AccountingExportPanel } from "./AccountingExportPanel";
 import { ConciergeAuditTimeline } from "./ConciergeAuditTimeline";
@@ -142,6 +143,8 @@ export function EngagementDetail({ engagementId, onBack }: { engagementId: strin
       </div>
 
       <PaymentPanel engagement={engagement as any} />
+
+      <ContractPanel engagement={engagement as any} />
 
       <RefundPanel engagement={engagement as any} />
 

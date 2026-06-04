@@ -38,6 +38,12 @@ export default function ConciergeSales() {
     phone: "",
     shop_size: "",
     itar: false,
+    tax_id: "",
+    billing_street: "",
+    billing_city: "",
+    billing_state: "",
+    billing_postal: "",
+    billing_country: "USA",
     notes: "",
   });
 
@@ -63,6 +69,14 @@ export default function ConciergeSales() {
           phone: form.phone.trim() || null,
           shop_size: form.shop_size || null,
           itar: form.itar,
+          tax_id: form.tax_id.trim() || null,
+          billing_address: (form.billing_street || form.billing_city || form.billing_state || form.billing_postal) ? {
+            street: form.billing_street.trim() || null,
+            city: form.billing_city.trim() || null,
+            state: form.billing_state.trim() || null,
+            postal_code: form.billing_postal.trim() || null,
+            country: form.billing_country.trim() || "USA",
+          } : null,
           notes: form.notes.trim() || null,
         },
       } as any);
@@ -199,6 +213,34 @@ export default function ConciergeSales() {
                       <Label htmlFor="itar" className="text-xs font-normal leading-snug">
                         Our shop handles ITAR-controlled work and requires US-Person verification.
                       </Label>
+                    </div>
+                    <div className="col-span-2 pt-2 border-t">
+                      <Label className="text-xs font-semibold">Billing details (for invoice/PO)</Label>
+                      <p className="text-xs text-muted-foreground">Optional — speeds up invoicing if you're paying by check, ACH, or PO.</p>
+                    </div>
+                    <div className="col-span-2">
+                      <Label className="text-xs">Tax ID / EIN</Label>
+                      <Input value={form.tax_id} onChange={(e) => update("tax_id", e.target.value)} placeholder="XX-XXXXXXX" />
+                    </div>
+                    <div className="col-span-2">
+                      <Label className="text-xs">Billing street</Label>
+                      <Input value={form.billing_street} onChange={(e) => update("billing_street", e.target.value)} />
+                    </div>
+                    <div>
+                      <Label className="text-xs">City</Label>
+                      <Input value={form.billing_city} onChange={(e) => update("billing_city", e.target.value)} />
+                    </div>
+                    <div>
+                      <Label className="text-xs">State / Region</Label>
+                      <Input value={form.billing_state} onChange={(e) => update("billing_state", e.target.value)} />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Postal code</Label>
+                      <Input value={form.billing_postal} onChange={(e) => update("billing_postal", e.target.value)} />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Country</Label>
+                      <Input value={form.billing_country} onChange={(e) => update("billing_country", e.target.value)} />
                     </div>
                     <div className="col-span-2">
                       <Label className="text-xs">Notes</Label>

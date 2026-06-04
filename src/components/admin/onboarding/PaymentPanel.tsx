@@ -69,14 +69,6 @@ export function PaymentPanel({ engagement }: { engagement: Engagement2 }) {
   const [payFile, setPayFile] = useState<File | null>(null);
   const [paySaving, setPaySaving] = useState(false);
 
-  const [signerName, setSignerName] = useState(engagement.contract_signer_name ?? "");
-  const [signerTitle, setSignerTitle] = useState(engagement.contract_signer_title ?? "");
-  const [signedDate, setSignedDate] = useState<string>(
-    engagement.contract_signed_at?.slice(0, 10) ?? new Date().toISOString().slice(0, 10),
-  );
-  const [contractFile, setContractFile] = useState<File | null>(null);
-  const [contractSaving, setContractSaving] = useState(false);
-
   const refresh = () => {
     qc.invalidateQueries({ queryKey: ["onboarding-engagement"] });
     qc.invalidateQueries({ queryKey: ["onboarding-engagements"] });
@@ -109,28 +101,6 @@ export function PaymentPanel({ engagement }: { engagement: Engagement2 }) {
     }
   }
 
-  async function recordContract() {
-    setContractSaving(true);
-    try {
-      let proofPath: string | null = null;
-      if (contractFile) proofPath = await uploadProof(engagement.organization_id, engagement.id, "contract", contractFile);
-      const { error } = await supabase.rpc("record_concierge_contract_signature" as any, {
-        p_engagement_id: engagement.id,
-        p_signer_name: signerName,
-        p_signer_title: signerTitle || null,
-        p_signed_at: new Date(signedDate).toISOString(),
-        p_contract_proof_path: proofPath,
-      });
-      if (error) throw error;
-      toast.success("Signed contract recorded");
-      setContractFile(null);
-      refresh();
-    } catch (e: any) {
-      toast.error(e?.message ?? "Failed to record signature");
-    } finally {
-      setContractSaving(false);
-    }
-  }
 
   return (
     <Card>
@@ -209,39 +179,20 @@ export function PaymentPanel({ engagement }: { engagement: Engagement2 }) {
           </Button>
         </div>
 
-        {/* Record contract */}
+        {/* Contract recording lives in the dedicated ContractPanel below. */}
         <div className="space-y-3">
-          <h4 className="text-sm font-semibold">Record signed contract</h4>
+          <h4 className="text-sm font-semibold">Wet-signature contract</h4>
+          <p className="text-xs text-muted-foreground">
+            Upload the signed Master Services Agreement scan in the <b>Wet-signature contract</b> panel below.
+            That panel also supports voiding an incorrect upload with an audited reason.
+          </p>
           {engagement.contract_signed_at && (
-            <p className="text-xs text-muted-foreground">
-              Signed by {engagement.contract_signer_name}
-              {engagement.contract_signer_title && <> ({engagement.contract_signer_title})</>}
-              {" · "}{new Date(engagement.contract_signed_at).toLocaleDateString()}
+            <p className="text-xs">
+              <span className="inline-flex items-center gap-1 rounded border border-status-ok/40 text-status-ok px-2 py-0.5">
+                <FileSignature className="w-3 h-3" /> On file — {new Date(engagement.contract_signed_at).toLocaleDateString()}
+              </span>
             </p>
           )}
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <Label className="text-xs">Signer name</Label>
-              <Input value={signerName} onChange={(e) => setSignerName(e.target.value)} placeholder="Jane Smith" />
-            </div>
-            <div>
-              <Label className="text-xs">Title</Label>
-              <Input value={signerTitle} onChange={(e) => setSignerTitle(e.target.value)} placeholder="VP Operations" />
-            </div>
-            <div>
-              <Label className="text-xs">Signed date</Label>
-              <Input type="date" value={signedDate} onChange={(e) => setSignedDate(e.target.value)} />
-            </div>
-            <div>
-              <Label className="text-xs">Scan upload</Label>
-              <Input type="file" accept="image/*,application/pdf"
-                onChange={(e) => setContractFile(e.target.files?.[0] ?? null)} />
-            </div>
-          </div>
-          <Button onClick={recordContract} disabled={contractSaving || !signerName.trim()} className="w-full">
-            {contractSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-            Save signature
-          </Button>
         </div>
       </CardContent>
     </Card>

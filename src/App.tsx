@@ -48,6 +48,7 @@ const OnboardingService = lazy(() => import("./pages/OnboardingService"));
 const ConciergeSales = lazy(() => import("./pages/ConciergeSales"));
 const ConciergeSalesPack = lazy(() => import("./pages/ConciergeSalesPack"));
 const ConciergeInvoicePdf = lazy(() => import("./pages/ConciergeInvoicePdf"));
+const ConciergeBillingTab = lazy(() => import("./pages/billing/ConciergeBillingTab"));
 const ConciergeReporting = lazy(() => import("./pages/admin/ConciergeReporting"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Settings = lazy(() => import("./pages/Settings"));
@@ -241,6 +242,7 @@ const App = () => (
                     <Route path="/admin/concierge/print/:engagementId" element={<RequireAuth><RequireRole roles={["platform_admin","developer"]}><ConciergeSalesPack /></RequireRole></RequireAuth>} />
                     <Route path="/admin/concierge/reporting" element={<RequireAuth><RequireRole roles={["platform_admin","developer"]}><ConciergeReporting /></RequireRole></RequireAuth>} />
                     <Route path="/billing/concierge/invoice/:engagementId" element={<RequireAuth><ConciergeInvoicePdf /></RequireAuth>} />
+                    <Route path="/settings/billing/concierge" element={<RequireAuth><RequireOrg><ConciergeBillingTab /></RequireOrg></RequireAuth>} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/donation-success" element={<DonationSuccess />} />
                     <Route path="/demo" element={<Demo />} />

@@ -16,14 +16,33 @@ import { Skeleton } from "@/components/ui/skeleton";
  */
 const blankRows = (n: number) => Array.from({ length: n });
 
-function PrintPage({ title, children }: { title: string; children: React.ReactNode }) {
+function PrintPage({
+  title,
+  children,
+  initials = false,
+}: { title: string; children: React.ReactNode; initials?: boolean }) {
   return (
-    <section className="page bg-white text-black mx-auto my-8 p-10 max-w-[8.5in] min-h-[10.5in] border print:border-0 print:my-0 print:p-[0.75in] print:break-after-page">
+    <section className="page bg-white text-black mx-auto my-8 p-10 max-w-[8.5in] min-h-[10.5in] border print:border-0 print:my-0 print:p-[0.75in] print:break-after-page relative">
       <header className="flex items-center justify-between border-b border-black/30 pb-3 mb-6">
         <div className="font-bold text-lg tracking-tight">JobLine.ai · Concierge Onboarding</div>
         <div className="text-xs uppercase tracking-wider">{title}</div>
       </header>
       {children}
+      {initials && (
+        <footer className="absolute bottom-6 left-10 right-10 flex items-end justify-between text-[10px] text-black/60 print:bottom-[0.5in] print:left-[0.75in] print:right-[0.75in]">
+          <div>Confidential — JobLine AI, Inc. & Customer</div>
+          <div className="flex items-end gap-6">
+            <div className="text-right">
+              <div className="border-b border-black w-16 h-5" />
+              <div>Customer initials</div>
+            </div>
+            <div className="text-right">
+              <div className="border-b border-black w-16 h-5" />
+              <div>JobLine initials</div>
+            </div>
+          </div>
+        </footer>
+      )}
     </section>
   );
 }
@@ -95,10 +114,13 @@ export default function ConciergeSalesPack() {
         <>
           {/* 1. Cover */}
           <PrintPage title="Cover">
-            <div className="flex flex-col items-center justify-center text-center pt-16 space-y-6">
+            <div className="flex flex-col items-center justify-center text-center pt-12 space-y-6">
               <div className="text-5xl font-bold tracking-tight">Concierge Onboarding</div>
               <div className="text-xl">White-glove setup for your CNC shop</div>
-              <div className="border-t border-b border-black/30 py-6 mt-12 w-full max-w-md">
+              <div className="inline-block bg-black text-white text-xs uppercase tracking-widest px-3 py-1 rounded">
+                Wet-signature contract package
+              </div>
+              <div className="border-t border-b border-black/30 py-6 mt-8 w-full max-w-md">
                 <div className="grid grid-cols-2 gap-y-2 text-sm text-left">
                   <div className="font-semibold">Customer</div><div>{orgName}</div>
                   <div className="font-semibold">Plan</div><div className="capitalize">{tier} — {amount}</div>
@@ -107,14 +129,14 @@ export default function ConciergeSalesPack() {
                   <div className="font-semibold">Engagement ID</div><div>{engagement?.id ?? "(assigned at signing)"}</div>
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground mt-16 max-w-md">
-                Return completed worksheets to onboarding@jobline.ai or upload via the Concierge workspace.
+              <p className="text-xs text-black/70 mt-4 max-w-md">
+                <b>Instructions to signer:</b> initial every page in the bottom-right corner, then sign and date the final Signature Page. Return all pages to onboarding@jobline.ai or upload via the Concierge workspace.
               </p>
             </div>
           </PrintPage>
 
           {/* 2. Master Services Agreement */}
-          <PrintPage title="Master Services Agreement">
+          <PrintPage title="Master Services Agreement" initials>
             <h1 className="text-2xl font-bold mb-2">Concierge Onboarding Services Agreement</h1>
             <p className="text-xs mb-4">Between JobLine AI, Inc. ("JobLine") and the Customer identified on the Cover Page ("Customer"), effective on the Effective Date below.</p>
 
@@ -178,7 +200,7 @@ export default function ConciergeSalesPack() {
           </PrintPage>
 
           {/* 4. ITAR / US-Person Declaration */}
-          <PrintPage title="ITAR / US-Person Declaration">
+          <PrintPage title="ITAR / US-Person Declaration" initials>
             <h1 className="text-2xl font-bold mb-3">ITAR / US-Person Declaration</h1>
             <p className="text-xs mb-3">Required if Customer handles ITAR-controlled work. Check one and sign.</p>
             <div className="space-y-3 text-xs">
@@ -274,6 +296,73 @@ export default function ConciergeSalesPack() {
               <div>Customer sign-off</div>
               <div className="border-b border-black h-8 mt-4 w-48" />
               <div>Date</div>
+            </div>
+          </PrintPage>
+
+          {/* 12. Final Signature Page (2-party wet signature) */}
+          <PrintPage title="Signature Page">
+            <h1 className="text-2xl font-bold mb-2">Signature Page</h1>
+            <p className="text-xs mb-6">
+              By signing below, both parties acknowledge they have read and agree to the Master Services Agreement, ITAR / US-Person Declaration (if applicable), and all attached worksheets included in this Concierge Onboarding package.
+            </p>
+
+            <div className="grid grid-cols-2 gap-10 text-xs mt-10">
+              <div className="space-y-6">
+                <div className="font-semibold uppercase tracking-wider text-[10px]">Customer</div>
+                <div>
+                  <div className="border-b border-black h-12" />
+                  <div className="mt-1">Signature</div>
+                </div>
+                <div>
+                  <div className="border-b border-black h-8" />
+                  <div className="mt-1">Printed name</div>
+                </div>
+                <div>
+                  <div className="border-b border-black h-8" />
+                  <div className="mt-1">Title</div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <div className="border-b border-black h-8" />
+                    <div className="mt-1">Date</div>
+                  </div>
+                  <div>
+                    <div className="border-b border-black h-8" />
+                    <div className="mt-1">Company</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <div className="font-semibold uppercase tracking-wider text-[10px]">JobLine AI, Inc.</div>
+                <div>
+                  <div className="border-b border-black h-12" />
+                  <div className="mt-1">Signature</div>
+                </div>
+                <div>
+                  <div className="border-b border-black h-8" />
+                  <div className="mt-1">Printed name</div>
+                </div>
+                <div>
+                  <div className="border-b border-black h-8" />
+                  <div className="mt-1">Title</div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <div className="border-b border-black h-8" />
+                    <div className="mt-1">Date</div>
+                  </div>
+                  <div>
+                    <div className="border-b border-black h-8" />
+                    <div className="mt-1">Witness (optional)</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-10 border border-black/40 p-3 text-[11px]">
+              <b>For sales rep:</b> after both parties have signed, scan the entire package (including this page and all initialled pages) to a single PDF and upload it via the Concierge workspace → <i>Wet-signature contract</i> panel. Reference engagement ID:{" "}
+              <span className="font-mono">{engagement?.id ?? "(blank until assigned)"}</span>
             </div>
           </PrintPage>
         </>
