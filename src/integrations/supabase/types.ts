@@ -7452,6 +7452,173 @@ export type Database = {
           },
         ]
       }
+      onboarding_checklist_items: {
+        Row: {
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          customer_blocker_note: string | null
+          engagement_id: string
+          id: string
+          label: string
+          module_key: string
+          organization_id: string
+          required: boolean
+          sort_order: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          customer_blocker_note?: string | null
+          engagement_id: string
+          id?: string
+          label: string
+          module_key: string
+          organization_id: string
+          required?: boolean
+          sort_order?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          customer_blocker_note?: string | null
+          engagement_id?: string
+          id?: string
+          label?: string
+          module_key?: string
+          organization_id?: string
+          required?: boolean
+          sort_order?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "onboarding_checklist_items_engagement_id_fkey"
+            columns: ["engagement_id"]
+            isOneToOne: false
+            referencedRelation: "onboarding_engagements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "onboarding_checklist_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "onboarding_checklist_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "onboarding_checklist_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "onboarding_checklist_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      onboarding_engagements: {
+        Row: {
+          assigned_admin_id: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          notes: string | null
+          organization_id: string
+          percent_complete: number
+          plan_tier: string
+          purchased_via: string
+          ready_at: string | null
+          started_at: string
+          status: string
+          stripe_payment_intent_id: string | null
+          updated_at: string
+          went_live_at: string | null
+        }
+        Insert: {
+          assigned_admin_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          organization_id: string
+          percent_complete?: number
+          plan_tier?: string
+          purchased_via?: string
+          ready_at?: string | null
+          started_at?: string
+          status?: string
+          stripe_payment_intent_id?: string | null
+          updated_at?: string
+          went_live_at?: string | null
+        }
+        Update: {
+          assigned_admin_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          organization_id?: string
+          percent_complete?: number
+          plan_tier?: string
+          purchased_via?: string
+          ready_at?: string | null
+          started_at?: string
+          status?: string
+          stripe_payment_intent_id?: string | null
+          updated_at?: string
+          went_live_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "onboarding_engagements_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "onboarding_engagements_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "onboarding_engagements_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "onboarding_engagements_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       operator_certifications: {
         Row: {
           attachment_url: string | null
@@ -9434,6 +9601,8 @@ export type Database = {
           mfa_required: boolean
           name: string
           oap_default_recert_months: number | null
+          onboarding_engagement_id: string | null
+          onboarding_status: Database["public"]["Enums"]["org_onboarding_status"]
           organization_kind: Database["public"]["Enums"]["organization_kind"]
           public_employer: boolean
           public_slug: string | null
@@ -9480,6 +9649,8 @@ export type Database = {
           mfa_required?: boolean
           name: string
           oap_default_recert_months?: number | null
+          onboarding_engagement_id?: string | null
+          onboarding_status?: Database["public"]["Enums"]["org_onboarding_status"]
           organization_kind?: Database["public"]["Enums"]["organization_kind"]
           public_employer?: boolean
           public_slug?: string | null
@@ -9526,6 +9697,8 @@ export type Database = {
           mfa_required?: boolean
           name?: string
           oap_default_recert_months?: number | null
+          onboarding_engagement_id?: string | null
+          onboarding_status?: Database["public"]["Enums"]["org_onboarding_status"]
           organization_kind?: Database["public"]["Enums"]["organization_kind"]
           public_employer?: boolean
           public_slug?: string | null
@@ -14816,6 +14989,10 @@ export type Database = {
       }
     }
     Functions: {
+      activate_org_for_production: {
+        Args: { p_engagement_id: string }
+        Returns: string
+      }
       admin_get_user_pipeline_summary: {
         Args: { _user_id: string }
         Returns: Json
@@ -15354,6 +15531,10 @@ export type Database = {
           recipient_name: string
         }[]
       }
+      mark_engagement_ready: {
+        Args: { p_engagement_id: string }
+        Returns: string
+      }
       mark_onboarding_complete: { Args: { _path: string }; Returns: Json }
       pass_work_order_to_next_step: {
         Args: {
@@ -15413,6 +15594,10 @@ export type Database = {
         Returns: string
       }
       resolve_post_login_destination: { Args: never; Returns: Json }
+      seed_onboarding_checklist: {
+        Args: { p_engagement_id: string }
+        Returns: undefined
+      }
       submit_learning_idea: {
         Args: {
           _honeypot: string
@@ -15593,6 +15778,12 @@ export type Database = {
         | "hvac"
         | "general"
       operator_profile_visibility: "private" | "employers_only" | "public"
+      org_onboarding_status:
+        | "self_serve"
+        | "concierge_intake"
+        | "concierge_in_progress"
+        | "ready_for_production"
+        | "live"
       organization_kind: "manufacturer" | "employer" | "both"
       policy_change_status:
         | "draft"
@@ -15863,6 +16054,13 @@ export const Constants = {
         "general",
       ],
       operator_profile_visibility: ["private", "employers_only", "public"],
+      org_onboarding_status: [
+        "self_serve",
+        "concierge_intake",
+        "concierge_in_progress",
+        "ready_for_production",
+        "live",
+      ],
       organization_kind: ["manufacturer", "employer", "both"],
       policy_change_status: [
         "draft",

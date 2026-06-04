@@ -55,6 +55,7 @@ const AdminAuditLog = lazy(() => import("@/components/admin/AdminAuditLog").then
 const TalentGovernance = lazy(() => import("@/components/admin/TalentGovernance").then(m => ({ default: m.TalentGovernance })));
 const ExecutiveOverview = lazy(() => import("@/components/admin/ExecutiveOverview").then(m => ({ default: m.ExecutiveOverview })));
 const SeoDiagnosticsPanel = lazy(() => import("@/components/admin/seo-diagnostics/SeoDiagnosticsPanel").then(m => ({ default: m.SeoDiagnosticsPanel })));
+const OnboardingServicesPanel = lazy(() => import("@/components/admin/onboarding/OnboardingServicesPanel").then(m => ({ default: m.OnboardingServicesPanel })));
 
 const AdminTabFallback = () => <div className="p-6"><Skeleton className="h-64 w-full rounded-lg" /></div>;
 
@@ -471,6 +472,10 @@ export default function Admin() {
                       <Cpu className="w-4 h-4" />
                       Library
                     </TabsTrigger>
+                    <TabsTrigger value="onboarding-services" className="gap-2">
+                      <Briefcase className="w-4 h-4" />
+                      Onboarding
+                    </TabsTrigger>
                   </div>
                 </>
               )}
@@ -486,6 +491,12 @@ export default function Admin() {
               </div>
             </Suspense>
           </TabsContent>
+
+          {hasTestingAccess && (
+            <TabsContent value="onboarding-services">
+              <Suspense fallback={<AdminTabFallback />}><OnboardingServicesPanel access={access} /></Suspense>
+            </TabsContent>
+          )}
 
           {hasPlatformAccess && (
             <TabsContent value="platform-overview">
