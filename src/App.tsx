@@ -247,8 +247,11 @@ const App = () => (
                     <Route path="/manufacturing-100" element={<ManufacturingVisibility100 />} />
                     <Route path="/manufacturing-100/methodology" element={<ManufacturingVisibility100Methodology />} />
                     <Route path="/manufacturing-100/nominate" element={<ManufacturingVisibility100Nominate />} />
+                    <Route path="/manufacturing-100/honorees" element={<ManufacturingVisibility100Honorees />} />
+                    <Route path="/admin/manufacturing-100" element={<RequireAuth><RequireRole roles={["platform_admin","developer"]}><ManufacturingVisibility100Admin /></RequireRole></RequireAuth>} />
                     <Route path="/admin/concierge/print/:engagementId" element={<RequireAuth><RequireRole roles={["platform_admin","developer"]}><ConciergeSalesPack /></RequireRole></RequireAuth>} />
                     <Route path="/admin/concierge/reporting" element={<RequireAuth><RequireRole roles={["platform_admin","developer"]}><ConciergeReporting /></RequireRole></RequireAuth>} />
+
                     <Route path="/billing/concierge/invoice/:engagementId" element={<RequireAuth><ConciergeInvoicePdf /></RequireAuth>} />
                     <Route path="/settings/billing/concierge" element={<RequireAuth><RequireOrg><ConciergeBillingTab /></RequireOrg></RequireAuth>} />
                     <Route path="/settings" element={<Settings />} />
