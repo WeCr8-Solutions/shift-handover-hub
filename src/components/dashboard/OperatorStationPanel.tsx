@@ -47,6 +47,8 @@ import { useDimensions } from "@/hooks/useDimensions";
 import { useDimensionRequests } from "@/hooks/useDimensionRequests";
 import { DimensionCheckForm } from "@/components/dimensions/DimensionCheckForm";
 import { RequestDimensionCheckButton } from "@/components/dimensions/RequestDimensionCheckButton";
+import { CreateNCRDialog } from "@/components/ncr/CreateNCRDialog";
+import { useNCR } from "@/hooks/useNCR";
 import { format, isPast, formatDistanceToNow } from "date-fns";
 
 interface WorkOrder {
@@ -136,6 +138,18 @@ export function OperatorStationPanel({
     loaded: boolean;
   }>({ qtyCompleted: 0, qtyScrap: 0, qtyRework: 0, qtyOriginal: 0, loaded: false });
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+
+  // Scrap → NCR prompt state (item 8 — quick win from MES audit)
+  const [scrapNcrPrompt, setScrapNcrPrompt] = useState<{
+    queueItemId: string;
+    workOrderNumber: string;
+    partNumber: string | null;
+    operationNumber: string | null;
+    scrapQty: number;
+  } | null>(null);
+  const { createNCR, uploadNCRImage } = useNCR(
+    scrapNcrPrompt ? { queue_item_id: scrapNcrPrompt.queueItemId } : undefined,
+  );
 
   const activeOrder = orders.find((o) => o.status === "in_progress") ?? null;
   const queuedOrders = orders.filter((o) => o.status === "pending" || o.status === "queued");
@@ -347,6 +361,17 @@ export function OperatorStationPanel({
             label: "View Work Order",
             onClick: () => handleNavigateToOrder(deliverOrder.id),
           },
+        });
+      }
+
+      // Item 8 — if scrap was reported, prompt operator to file an NCR.
+      if (completionData.qtyScrap > 0 && deliverOrder.work_order) {
+        setScrapNcrPrompt({
+          queueItemId: deliverOrder.id,
+          workOrderNumber: deliverOrder.work_order,
+          partNumber: deliverOrder.part_number,
+          operationNumber: deliverOrder.operation_number,
+          scrapQty: completionData.qtyScrap,
         });
       }
     } catch {
@@ -936,6 +961,30 @@ export function OperatorStationPanel({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Item 8 — Scrap → NCR auto-prompt */}
+      {scrapNcrPrompt && (
+        <CreateNCRDialog
+          open={true}
+          onOpenChange={(open) => {
+            if (!open) setScrapNcrPrompt(null);
+          }}
+          workOrderNumber={scrapNcrPrompt.workOrderNumber}
+          partNumber={scrapNcrPrompt.partNumber}
+          queueItemId={scrapNcrPrompt.queueItemId}
+          qtyOpen={scrapNcrPrompt.scrapQty}
+          operationNumbers={scrapNcrPrompt.operationNumber ? [scrapNcrPrompt.operationNumber] : []}
+          onUploadImage={uploadNCRImage}
+          onSubmit={async (input) => {
+            const res = await createNCR({ ...input, quantity_affected: input.quantity_affected || scrapNcrPrompt.scrapQty });
+            if (!res.error) {
+              toast.success("NCR filed — quality team notified.");
+              setScrapNcrPrompt(null);
+            }
+            return res;
+          }}
+        />
+      )}
     </>
   );
 }

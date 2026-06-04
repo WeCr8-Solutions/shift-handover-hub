@@ -66,6 +66,8 @@ export interface StationInfo {
   work_center_type: string;
   work_center: string;
   is_active: boolean;
+  /** Optional override of the 8h default daily capacity (hours). */
+  daily_capacity_hours?: number | null;
 }
 
 export interface StationLoad {
@@ -132,25 +134,30 @@ const WEIGHTS = {
 // Scoring helpers
 // ---------------------------------------------------------------------------
 
-function scoreWorkload(load: StationLoad | undefined): { score: number; warnings: string[] } {
+function scoreWorkload(
+  load: StationLoad | undefined,
+  dailyCapacityHours: number = 8,
+): { score: number; warnings: string[] } {
   if (!load) return { score: 95, warnings: [] }; // No load = great
 
   const warnings: string[] = [];
   const hours = load.est_total_minutes / 60;
+  const capacity = Math.max(0.5, dailyCapacityHours);
 
-  // Score decreases as hours pile up
-  // 0h = 100, 8h = 60, 16h = 30, 24h+ = 10
-  let score = Math.max(10, 100 - hours * 5);
+  // Score decreases as the queue approaches/exceeds the station's daily capacity.
+  // ratio 0 = 100, ratio 1 = 60, ratio 2 = 30, ratio 3+ = 10.
+  const ratio = hours / capacity;
+  let score = Math.max(10, 100 - ratio * 40);
 
   if (load.queued_items > 5) {
     warnings.push(`${load.queued_items} items already queued`);
     score = Math.max(10, score - 5);
   }
 
-  if (hours > 16) {
-    warnings.push(`${Math.round(hours)}h estimated backlog`);
-  } else if (hours > 8) {
-    warnings.push(`${Math.round(hours)}h estimated backlog (over one shift)`);
+  if (ratio > 2) {
+    warnings.push(`${Math.round(hours)}h backlog vs ${capacity}h/day capacity`);
+  } else if (ratio > 1) {
+    warnings.push(`${Math.round(hours)}h backlog (over one day at ${capacity}h/day)`);
   }
 
   return { score: Math.round(score), warnings };
@@ -339,7 +346,7 @@ export function computeLoadBalancerScores(input: LoadBalancerInput): LoadBalance
     const load = stationLoads[station.id];
     const avail = stationAvailability[station.id];
 
-    const workloadResult = scoreWorkload(load);
+    const workloadResult = scoreWorkload(load, station.daily_capacity_hours ?? 8);
     const capabilityResult = scoreCapability(profile, partRequirements);
     const availabilityResult = scoreAvailability(avail);
 

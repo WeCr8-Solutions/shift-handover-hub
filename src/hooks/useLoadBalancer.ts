@@ -35,7 +35,7 @@ export function useLoadBalancer() {
 
         let stationsQuery = supabase
           .from("stations")
-          .select("id, station_id, name, work_center, work_center_type, is_active")
+          .select("id, station_id, name, work_center, work_center_type, is_active, daily_capacity_hours")
           .eq("organization_id", orgId)
           .eq("is_active", true);
 
@@ -94,6 +94,7 @@ export function useLoadBalancer() {
           work_center_type: s.work_center_type,
           work_center: s.work_center,
           is_active: s.is_active,
+          daily_capacity_hours: s.daily_capacity_hours ?? 8,
         }));
 
         // Build machine profiles

@@ -393,6 +393,7 @@ export function TeamStationManager({
   const [editName, setEditName] = useState("");
   const [editWorkCenter, setEditWorkCenter] = useState("");
   const [editWorkCenterType, setEditWorkCenterType] = useState<WorkCenterType>("CNC Mill");
+  const [editDailyCapacityHours, setEditDailyCapacityHours] = useState<number>(8);
   const [isSaving, setIsSaving] = useState(false);
 
   // Reassign state
@@ -451,6 +452,7 @@ export function TeamStationManager({
     setEditName(station.name);
     setEditWorkCenter(station.work_center);
     setEditWorkCenterType(station.work_center_type);
+    setEditDailyCapacityHours(Number((station as { daily_capacity_hours?: number }).daily_capacity_hours ?? 8));
   };
 
   const handleSaveEdit = async () => {
@@ -462,7 +464,8 @@ export function TeamStationManager({
         name: editName,
         work_center: editWorkCenter,
         work_center_type: editWorkCenterType,
-      })
+        daily_capacity_hours: editDailyCapacityHours,
+      } as never)
       .eq("id", editingStation.id);
     setIsSaving(false);
 
@@ -782,6 +785,21 @@ export function TeamStationManager({
                 value={editWorkCenterType}
                 onValueChange={(v) => setEditWorkCenterType(v as WorkCenterType)}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Daily Capacity (hours)</Label>
+              <Input
+                type="number"
+                min={1}
+                max={24}
+                step={0.5}
+                value={editDailyCapacityHours}
+                onChange={(e) => setEditDailyCapacityHours(Math.max(1, Math.min(24, parseFloat(e.target.value) || 8)))}
+              />
+              <p className="text-xs text-muted-foreground">
+                Used by the load balancer and capacity views. Default 8h (one shift). Increase for multi-shift coverage.
+              </p>
             </div>
 
             {/* Machine Profile Section */}
