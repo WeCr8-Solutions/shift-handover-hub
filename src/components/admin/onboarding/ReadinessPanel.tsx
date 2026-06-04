@@ -82,15 +82,43 @@ export function ReadinessPanel({ organizationId, engagement }: { organizationId:
             <span className="text-xs text-muted-foreground">ERP persistence</span>
             <Badge variant="outline">{String((data.counts as any)?.erp_persistence_mode ?? "—")}</Badge>
           </div>
+          {engagement && (
+            <>
+              <div className="rounded border p-2 flex items-center justify-between">
+                <span className="text-xs text-muted-foreground flex items-center gap-1"><DollarSign className="w-3 h-3" /> Payment</span>
+                <Badge
+                  variant="outline"
+                  className={paymentOk ? "text-status-ok border-status-ok/40" : "text-destructive border-destructive/40"}
+                >
+                  {engagement.payment_status}
+                </Badge>
+              </div>
+              <div className="rounded border p-2 flex items-center justify-between">
+                <span className="text-xs text-muted-foreground flex items-center gap-1"><FileSignature className="w-3 h-3" /> Contract</span>
+                <Badge
+                  variant="outline"
+                  className={contractOk ? "text-status-ok border-status-ok/40" : "text-destructive border-destructive/40"}
+                >
+                  {engagement.purchased_via === "stripe"
+                    ? "N/A (Stripe)"
+                    : engagement.contract_signed_at
+                      ? "On file"
+                      : engagement.payment_status === "waived"
+                        ? "Waived"
+                        : "Required"}
+                </Badge>
+              </div>
+            </>
+          )}
         </div>
 
-        {!ready && data.blockers.length > 0 && (
+        {!ready && allBlockers.length > 0 && (
           <div className="rounded border border-destructive/40 p-3 space-y-1">
             <div className="flex items-center gap-2 text-xs font-medium text-destructive">
               <AlertTriangle className="w-3.5 h-3.5" /> Blockers
             </div>
             <ul className="text-xs space-y-0.5">
-              {data.blockers.map((b, i) => (
+              {allBlockers.map((b, i) => (
                 <li key={i} className="flex items-start gap-2"><span>•</span>{b}</li>
               ))}
             </ul>
