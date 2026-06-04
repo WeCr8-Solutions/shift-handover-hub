@@ -18,6 +18,7 @@ import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { FreeTalentProfileBanner } from "@/components/marketing/FreeTalentProfileBanner";
+import { ConciergeCTA } from "@/components/marketing/ConciergeCTA";
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { ConversionEvents } from '@/lib/analytics';
@@ -237,6 +238,11 @@ export default function Pricing() {
                 </div>
               );
             })}
+          </div>
+
+          {/* Concierge Onboarding CTA */}
+          <div className="mt-12 max-w-4xl mx-auto">
+            <ConciergeCTA variant="banner" />
           </div>
 
           {/* FAQ / Notes */}
