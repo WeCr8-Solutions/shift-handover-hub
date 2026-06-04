@@ -81,27 +81,27 @@ export default function ManufacturingVisibility100() {
 
       {/* Hero */}
       <section className="relative overflow-hidden border-b border-border bg-gradient-to-b from-primary/5 to-background">
-        <div className="container mx-auto px-4 py-20 md:py-28 max-w-5xl">
-          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground mb-6">
+        <div className="container mx-auto px-4 py-12 sm:py-20 md:py-28 max-w-5xl">
+          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground mb-5 sm:mb-6">
             <Sparkles className="h-3.5 w-3.5 text-primary" />
             Inaugural edition · 2026
           </div>
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight mb-4 sm:mb-6">
             The Manufacturing Visibility 100
           </h1>
-          <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mb-8">
+          <p className="text-base sm:text-xl md:text-2xl text-muted-foreground max-w-3xl mb-6 sm:mb-8">
             100 people, shops, builders, and educators pushing modern manufacturing forward — recognized on practical impact, not follower count.
           </p>
-          <div className="flex flex-wrap gap-3">
-            <Button asChild size="lg">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3">
+            <Button asChild size="lg" className="w-full sm:w-auto">
               <Link to="/manufacturing-100/nominate">
                 Nominate someone <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg">
+            <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
               <Link to="/manufacturing-100/honorees">View honorees</Link>
             </Button>
-            <Button asChild variant="ghost" size="lg">
+            <Button asChild variant="ghost" size="lg" className="w-full sm:w-auto">
               <Link to="/manufacturing-100/methodology">Read the methodology</Link>
             </Button>
           </div>
@@ -119,8 +119,8 @@ export default function ManufacturingVisibility100() {
       </section>
 
       {/* Why this list */}
-      <section className="container mx-auto px-4 py-16 max-w-5xl">
-        <h2 className="text-3xl font-bold mb-10">Why this list exists</h2>
+      <section className="container mx-auto px-4 py-10 sm:py-16 max-w-5xl">
+        <h2 className="text-2xl sm:text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 sm:mb-10">Why this list exists</h2>
         <div className="grid md:grid-cols-3 gap-6">
           {[
             {
@@ -155,8 +155,8 @@ export default function ManufacturingVisibility100() {
 
       {/* Categories */}
       <section className="border-y border-border bg-muted/30">
-        <div className="container mx-auto px-4 py-16 max-w-5xl">
-          <h2 className="text-3xl font-bold mb-2">Eleven categories</h2>
+        <div className="container mx-auto px-4 py-10 sm:py-16 max-w-5xl">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-2">Eleven categories</h2>
           <p className="text-muted-foreground mb-10">
             Each nominee is reviewed inside one category. Category leaders also appear on the main 100.
           </p>
@@ -175,8 +175,8 @@ export default function ManufacturingVisibility100() {
       </section>
 
       {/* Scoring */}
-      <section className="container mx-auto px-4 py-16 max-w-5xl">
-        <h2 className="text-3xl font-bold mb-2">How scoring works</h2>
+      <section className="container mx-auto px-4 py-10 sm:py-16 max-w-5xl">
+        <h2 className="text-2xl sm:text-3xl font-bold mb-2">How scoring works</h2>
         <p className="text-muted-foreground mb-10">
           Each nominee gets a 0–100 score across six components. A human editor reviews every rank before publish.
         </p>
@@ -200,7 +200,7 @@ export default function ManufacturingVisibility100() {
 
       {/* Guardrails */}
       <section className="border-y border-border bg-muted/30">
-        <div className="container mx-auto px-4 py-16 max-w-5xl">
+        <div className="container mx-auto px-4 py-10 sm:py-16 max-w-5xl">
           <div className="flex items-center gap-3 mb-2">
             <ShieldCheck className="h-7 w-7 text-primary" />
             <h2 className="text-3xl font-bold">Editorial guardrails</h2>
@@ -220,9 +220,9 @@ export default function ManufacturingVisibility100() {
       </section>
 
       {/* CTA band */}
-      <section className="container mx-auto px-4 py-20 max-w-5xl">
+      <section className="container mx-auto px-4 py-12 sm:py-20 max-w-5xl">
         <div className="rounded-2xl border border-border bg-gradient-to-br from-primary/10 to-card p-10 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Know someone who should be on the list?</h2>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">Know someone who should be on the list?</h2>
           <p className="text-muted-foreground text-lg mb-6 max-w-2xl mx-auto">
             Peer nominations carry more editorial weight than self-nominations. It takes 90 seconds.
           </p>
@@ -236,8 +236,8 @@ export default function ManufacturingVisibility100() {
 
       {/* FAQ */}
       <section className="border-t border-border bg-muted/30">
-        <div className="container mx-auto px-4 py-16 max-w-3xl">
-          <h2 className="text-3xl font-bold mb-8">FAQ</h2>
+        <div className="container mx-auto px-4 py-10 sm:py-16 max-w-3xl">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">FAQ</h2>
           <div className="space-y-4">
             {FAQ.map((f) => (
               <Card key={f.q}>

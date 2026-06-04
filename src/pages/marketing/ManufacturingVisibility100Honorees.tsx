@@ -85,32 +85,32 @@ export default function ManufacturingVisibility100Honorees() {
       </Helmet>
 
       <section className="border-b">
-        <div className="container max-w-5xl py-16 md:py-24">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+        <div className="container max-w-5xl px-4 py-10 sm:py-16 md:py-24">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3 sm:mb-4">
             <Award className="h-4 w-4" />
             <span>Edition {edition} · Ranked editorial list</span>
           </div>
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight">
             Manufacturing Visibility 100
           </h1>
-          <p className="mt-4 text-lg text-muted-foreground max-w-2xl">
+          <p className="mt-4 text-base sm:text-lg text-muted-foreground max-w-2xl">
             The {ranked.length} people moving precision manufacturing forward right now — ranked by editorial scoring across impact, innovation, visibility, education, SMB relevance, and momentum.
           </p>
           <p className="mt-3 text-sm text-muted-foreground max-w-2xl">
             Disagree with a placement? <Link to="/manufacturing-100/nominate" className="text-primary hover:underline">Nominate someone better.</Link> Pushback is the point.
           </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Button asChild>
+          <div className="mt-6 flex flex-col sm:flex-row sm:flex-wrap gap-3">
+            <Button asChild className="w-full sm:w-auto">
               <Link to="/manufacturing-100/nominate">Submit a nomination</Link>
             </Button>
-            <Button asChild variant="outline">
+            <Button asChild variant="outline" className="w-full sm:w-auto">
               <Link to="/manufacturing-100/methodology">How we scored</Link>
             </Button>
           </div>
         </div>
       </section>
 
-      <section className="container max-w-5xl py-12">
+      <section className="container max-w-5xl px-4 py-10 sm:py-12">
         {isLoading ? (
           <div className="flex items-center justify-center py-16">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -135,9 +135,9 @@ export default function ManufacturingVisibility100Honorees() {
                     className="block group"
                   >
                     <Card className="hover:shadow-md hover:border-primary/40 transition-all">
-                      <CardContent className="py-4 flex items-start gap-4">
-                        <div className="flex flex-col items-center min-w-[64px]">
-                          <div className="text-3xl md:text-4xl font-bold tracking-tight tabular-nums">
+                      <CardContent className="py-3 sm:py-4 px-3 sm:px-6 flex items-start gap-3 sm:gap-4">
+                        <div className="flex flex-col items-center min-w-[44px] sm:min-w-[64px]">
+                          <div className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight tabular-nums">
                             {h.rank}
                           </div>
                           <MovementBadge movement={h.rank_movement} previous={h.previous_rank} current={h.rank} />
@@ -145,7 +145,7 @@ export default function ManufacturingVisibility100Honorees() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
-                              <div className="font-semibold text-lg group-hover:text-primary transition-colors">
+                              <div className="font-semibold text-base sm:text-lg group-hover:text-primary transition-colors">
                                 {h.nominee_name}
                               </div>
                               {(h.nominee_role || h.nominee_company) && (
