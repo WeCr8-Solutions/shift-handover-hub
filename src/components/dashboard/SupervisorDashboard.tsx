@@ -20,6 +20,7 @@ import {
   Plus,
   Monitor,
   Users,
+  Map,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -268,6 +269,10 @@ export function SupervisorDashboard({
           <Button variant="outline" size="sm" className="gap-2" onClick={onCreateWorkOrder}>
             <Package className="w-4 h-4" />
             <span className="hidden sm:inline">Work Order</span>
+          </Button>
+          <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate("/floor-map")}>
+            <Map className="w-4 h-4" />
+            <span className="hidden sm:inline">Floor Map</span>
           </Button>
           {onSwitchToOperatorView && (
             <Button variant="secondary" size="sm" className="gap-2" onClick={onSwitchToOperatorView}>
