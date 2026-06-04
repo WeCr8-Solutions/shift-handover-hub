@@ -11506,6 +11506,7 @@ export type Database = {
       stations: {
         Row: {
           created_at: string
+          daily_capacity_hours: number
           department_id: string | null
           id: string
           is_active: boolean
@@ -11519,6 +11520,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          daily_capacity_hours?: number
           department_id?: string | null
           id?: string
           is_active?: boolean
@@ -11532,6 +11534,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          daily_capacity_hours?: number
           department_id?: string | null
           id?: string
           is_active?: boolean
