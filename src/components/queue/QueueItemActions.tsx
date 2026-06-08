@@ -530,6 +530,37 @@ export function QueueItemActions({
           )}
         </div>
       )}
+
+      <AlertDialog
+        open={handoffPrompt.open}
+        onOpenChange={(o) => setHandoffPrompt((p) => ({ ...p, open: o }))}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {handoffPrompt.finalCompletion ? "Work Order Completed" : "Operation Complete"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {handoffPrompt.finalCompletion ? (
+                <>Create a final shift handoff for <strong>{item.work_order}</strong> to log completion?</>
+              ) : (
+                <>
+                  Create a handoff to pass <strong>{item.work_order}</strong> to{" "}
+                  <strong>{handoffPrompt.nextStationName || "the next station"}</strong>
+                  {handoffPrompt.nextOperationName ? <> for <strong>{handoffPrompt.nextOperationName}</strong></> : null}?
+                  <span className="block mt-2 text-xs">Work order, part number, and next-op details will be auto-filled.</span>
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Not now</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmHandoffPrompt}>
+              Create Handoff
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
