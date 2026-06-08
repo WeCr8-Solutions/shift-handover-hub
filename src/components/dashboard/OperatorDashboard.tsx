@@ -1,4 +1,8 @@
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
+
+const OperatorProductionAnalytics = lazy(() =>
+  import("./ProductionAnalytics").then((m) => ({ default: m.ProductionAnalytics })),
+);
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,7 +15,7 @@ import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { OperatorStationPanel } from "./OperatorStationPanel";
 import { NewHandoffForm } from "@/components/NewHandoffForm";
 import { JobPerformanceUpdateForm } from "@/components/JobPerformanceUpdateForm";
-import { useHandoffRecords } from "@/hooks/useStations";
+import { useHandoffRecords, useStations } from "@/hooks/useStations";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useOrgContext } from "@/contexts/OrgContext";
 import { getCurrentShift } from "@/lib/mockData";
@@ -43,7 +47,8 @@ export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDas
   const { currentTeam } = useCurrentTeam();
   const { organization } = useOrgContext();
   const { activeSessions, loading, isCheckedIn, checkIn, checkOut, refresh: refreshSessions } = useOperatorSessions();
-  const { createHandoffRecord, refreshRecords } = useHandoffRecords(currentTeam?.id, organization?.id);
+  const { createHandoffRecord, refreshRecords, records: dbRecords } = useHandoffRecords(currentTeam?.id, organization?.id);
+  const { stations: dbStations } = useStations(currentTeam?.id, organization?.id);
 
   // Org-configured background refresh — extended to 10min since realtime handles freshness
   const refreshIntervalMs = Math.max(useOrgRefreshInterval(), 600_000);
@@ -239,6 +244,19 @@ export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDas
           ))}
         </Tabs>
       )}
+
+      {/* Shop Production Analytics — read-only for operators, populates as data grows */}
+      <Suspense
+        fallback={
+          <div className="bg-card border border-border rounded-lg p-6 text-center text-muted-foreground text-sm">
+            Loading shop analytics…
+          </div>
+        }
+      >
+        <OperatorProductionAnalytics stations={dbStations} handoffs={dbRecords} />
+      </Suspense>
+
+
 
       {/* Handoff modal */}
       {showHandoff && (

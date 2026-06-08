@@ -1,6 +1,7 @@
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
+import { Users } from "lucide-react";
 import { STATUS_COLORS } from "../stationStatus";
 import {
   CHART_AXIS_STYLE, CHART_GRID_PROPS, CHART_AXIS_LINE, CHART_TOOLTIP_STYLE,
@@ -24,7 +25,12 @@ export function StackedStatusChart({
   return (
     <ChartContainer subtitle={subtitle}>
       {data.length === 0 ? (
-        <ChartEmptyState message={emptyMessage} />
+        <ChartEmptyState
+          icon={Users}
+          title="Awaiting structure"
+          message={emptyMessage}
+          hint="Assign stations to a team or work center"
+        />
       ) : (
         <ScrollableChartWrapper minWidth={Math.max(500, data.length * 80)}>
           <ResponsiveContainer width="100%" height={280}>

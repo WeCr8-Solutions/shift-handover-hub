@@ -11,6 +11,7 @@ import {
 } from "./charts";
 import { useDowntimeAnalytics } from "@/hooks/useDowntimeAnalytics";
 import { useDowntimeReasons } from "@/hooks/useDowntimeReasons";
+import { AnalyticsOnboardingBanner } from "./AnalyticsOnboardingBanner";
 
 // ─── Types ─────────────────────────────────────────────────
 
@@ -259,8 +260,17 @@ export function ProductionAnalytics({
   const yieldRate = totalParts > 0 ? Math.round(((totalParts - totalScrap) / totalParts) * 100) : 100;
   const activeCount = stationsForPie.filter((s) => s.is_active).length;
 
+  const showOnboarding = activeCount === 0 || filteredHandoffs.length === 0 || totalParts === 0;
+
   return (
     <div className="space-y-4 overflow-hidden">
+      {showOnboarding && (
+        <AnalyticsOnboardingBanner
+          activeStations={activeCount}
+          handoffs={filteredHandoffs.length}
+          parts={totalParts}
+        />
+      )}
       {/* Header */}
       <div className="flex flex-col gap-3">
         <div className="flex items-center gap-2 flex-wrap">

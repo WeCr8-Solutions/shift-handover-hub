@@ -1,6 +1,7 @@
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
+import { TrendingUp } from "lucide-react";
 import { STATUS_COLORS } from "../stationStatus";
 import {
   CHART_AXIS_STYLE, CHART_GRID_PROPS, CHART_AXIS_LINE, CHART_TOOLTIP_STYLE,
@@ -30,7 +31,12 @@ export function TrendAreaChart({ data, mode, prefersReducedMotion }: TrendAreaCh
   return (
     <ChartContainer subtitle={subtitle}>
       {isEmpty ? (
-        <ChartEmptyState message="No handoff data in this period. Submit handoffs to see trend metrics." />
+        <ChartEmptyState
+          icon={TrendingUp}
+          title="Trend will build automatically"
+          message="Every handoff your operators submit becomes a point on this chart — daily for the last week, hourly once today has activity."
+          hint="Submit a handoff to start the trendline"
+        />
       ) : (
         <div className="overflow-x-auto scrollbar-none">
           <div className="min-w-[500px]">

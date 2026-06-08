@@ -1,4 +1,5 @@
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
+import { Factory } from "lucide-react";
 import { ChartContainer, ChartEmptyState, CHART_TOOLTIP_STYLE } from "./chart-primitives";
 
 interface StatusSlice {
@@ -19,7 +20,12 @@ export function StatusPieChart({ data, activeStationCount, prefersReducedMotion 
   return (
     <ChartContainer subtitle="Current station status distribution">
       {data.length === 0 ? (
-        <ChartEmptyState message="No active stations." />
+        <ChartEmptyState
+          icon={Factory}
+          title="No active stations yet"
+          message="Add your first station and operators will start populating live status here as they check in."
+          hint="Settings → Stations to add one"
+        />
       ) : (
         <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-8">
           <div className="w-full sm:w-1/2 max-w-[260px]">
