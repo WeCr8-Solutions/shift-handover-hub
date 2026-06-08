@@ -32,7 +32,10 @@ import { useAdminAccess } from "@/hooks/useAdminData";
 import { useOrgContext } from "@/contexts/OrgContext";
 import { useModuleContext } from "@/hooks/useModuleContext";
 
-import { mockStations, mockHandoffRecords } from "@/lib/mockData";
+// NOTE: mock station / handoff data is intentionally NOT imported here.
+// Unauthenticated visitors must never see content that resembles another
+// organization's live data. The /demo route is the only place sample data
+// is allowed.
 import { type WorkCenterType, type StationInfo, type ShiftHandoffRecord } from "@/types/handoff";
 
 import { Button } from "@/components/ui/button";
