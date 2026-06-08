@@ -79,7 +79,7 @@ export function useEngagement(engagementId: string | null) {
     queryFn: async (): Promise<Engagement | null> => {
       const { data, error } = await supabase
         .from("onboarding_engagements" as any)
-        .select("*, organizations:organization_id(id,name,slug,requires_us_person_declaration)")
+        .select("*, organizations:organization_id(id,name,slug,requires_us_person_declaration,billing_email,logo_url,subscription_tier)")
         .eq("id", engagementId!)
         .maybeSingle();
       if (error) throw error;

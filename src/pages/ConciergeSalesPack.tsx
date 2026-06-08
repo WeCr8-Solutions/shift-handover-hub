@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Printer } from "lucide-react";
+import { Printer, ArrowLeft } from "lucide-react";
 import { useEngagement } from "@/hooks/useOnboardingEngagements";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAccess } from "@/hooks/useAdminData";
@@ -75,6 +75,7 @@ function WorksheetTable({ columns, rows = 10 }: { columns: string[]; rows?: numb
 
 export default function ConciergeSalesPack({ publicMode = false }: { publicMode?: boolean }) {
   const { engagementId } = useParams<{ engagementId?: string }>();
+  const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { isAdmin: isPlatformAdmin, isDeveloper, loading: rolesLoading } = useAdminAccess();
   const hasStaffAccess = !!user && (isPlatformAdmin || isDeveloper);
@@ -83,9 +84,22 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
   useEffect(() => { document.title = "Concierge Sales Pack · JobLine.ai"; }, []);
 
   const today = useMemo(() => new Date().toLocaleDateString(), []);
-  const orgName = engagement?.organizations?.name ?? "_________________________";
+  const org = engagement?.organizations as any;
+  const orgName = org?.name ?? "_________________________";
+  const billingEmail = org?.billing_email ?? "_________________________";
   const tier = engagement?.plan_tier ?? "standard";
   const amount = tier === "enterprise" ? "$4,500" : tier === "complimentary" ? "Complimentary" : "$1,500";
+  const billingAddress = (engagement as any)?.customer_billing_address as { line1?: string; line2?: string; city?: string; state?: string; postal_code?: string; country?: string } | null | undefined;
+  const formattedAddress = billingAddress
+    ? [billingAddress.line1, billingAddress.line2, [billingAddress.city, billingAddress.state, billingAddress.postal_code].filter(Boolean).join(", "), billingAddress.country].filter(Boolean).join(" · ")
+    : "_________________________";
+  const taxId = (engagement as any)?.customer_tax_id ?? "_________________________";
+  const invoiceNumber = (engagement as any)?.invoice_number ?? "(assigned on invoice)";
+  const backTarget = engagementId ? `/admin?tab=concierge&engagement=${engagementId}` : "/admin?tab=concierge";
+  const handleBack = () => {
+    if (window.history.length > 1) navigate(-1);
+    else navigate(backTarget);
+  };
 
   const SECTIONS: { key: string; label: string }[] = [
     { key: "cover", label: "Cover" },
@@ -135,8 +149,13 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
 
       <div className="no-print sticky top-0 z-10 bg-background border-b px-4 py-3 space-y-3">
         <div className="flex items-center justify-between gap-3 flex-wrap">
-          <div className="text-sm text-muted-foreground">
-            Select sections + printer options below, then print the pack or download individual files from the library.
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="ghost" onClick={handleBack} className="gap-1">
+              <ArrowLeft className="w-4 h-4" /> Back
+            </Button>
+            <div className="text-sm text-muted-foreground">
+              {engagement ? <>Pack for <b>{orgName}</b> — {tier} ({amount})</> : "Select sections + printer options, then print or download below."}
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <Button size="sm" variant="outline" onClick={() => setAll(true)}>Select all</Button>
@@ -224,10 +243,14 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
               <div className="border-t border-b border-black/30 py-6 mt-8 w-full max-w-md">
                 <div className="grid grid-cols-2 gap-y-2 text-sm text-left">
                   <div className="font-semibold">Customer</div><div>{orgName}</div>
+                  <div className="font-semibold">Billing email</div><div className="break-all">{billingEmail}</div>
+                  <div className="font-semibold">Billing address</div><div>{formattedAddress}</div>
+                  <div className="font-semibold">Tax ID / EIN</div><div>{taxId}</div>
                   <div className="font-semibold">Plan</div><div className="capitalize">{tier} — {amount}</div>
+                  <div className="font-semibold">Invoice #</div><div>{invoiceNumber}</div>
                   <div className="font-semibold">Date</div><div>{today}</div>
                   <div className="font-semibold">Sales rep</div><div>_________________________</div>
-                  <div className="font-semibold">Engagement ID</div><div>{engagement?.id ?? "(assigned at signing)"}</div>
+                  <div className="font-semibold">Engagement ID</div><div className="font-mono text-xs">{engagement?.id ?? "(assigned at signing)"}</div>
                 </div>
               </div>
               <p className="text-xs text-black/70 mt-4 max-w-md">
