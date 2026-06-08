@@ -129,6 +129,7 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
     { key: "equipment", label: "Equipment Intake" },
     { key: "stations", label: "Stations & Departments" },
     { key: "users", label: "Users & Roles" },
+    { key: "subscription", label: "Subscription & Seats" },
     { key: "routing", label: "Routing Templates" },
     { key: "quality", label: "Quality & Inspection" },
     { key: "erp", label: "ERP Integration" },
