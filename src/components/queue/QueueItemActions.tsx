@@ -155,7 +155,7 @@ export function QueueItemActions({
     if (item.status === "pending") {
       const { error: queueError } = await onUpdate(item.id, { status: "queued" });
       if (queueError) {
-        toast({ title: "Transition Blocked", description: queueError, variant: "destructive" });
+        woToast.blocked("Transition blocked", queueError, wo);
         setActionLoading(null);
         return;
       }
@@ -163,9 +163,9 @@ export function QueueItemActions({
     const { error } = await onUpdate(item.id, { status: "in_progress", started_at: new Date().toISOString() });
     setActionLoading(null);
     if (error) {
-      toast({ title: "Transition Blocked", description: error, variant: "destructive" });
+      woToast.blocked("Transition blocked", error, wo);
     } else {
-      toast({ title: "Work Started", description: "Timer is now tracking this work order" });
+      woToast.success("Work started", wo, "Timer is now tracking this work order");
       onReloadHistory();
     }
   };
@@ -175,8 +175,9 @@ export function QueueItemActions({
     const { error } = await onUpdate(item.id, { status: "on_hold" });
     setActionLoading(null);
     if (error) {
-      toast({ title: "Error", description: error, variant: "destructive" });
+      woToast.error("Failed to pause work", error, wo);
     } else {
+      woToast.success("Work paused", wo);
       onReloadHistory();
     }
   };
@@ -192,11 +193,11 @@ export function QueueItemActions({
 
     if (qtyOriginal > 0 && (qtyCompleted + qtyScrap + qtyRework) < qtyOriginal) {
       const unaccounted = qtyOriginal - qtyCompleted - qtyScrap - qtyRework;
-      toast({
-        title: "Quantity Check Required",
-        description: `${unaccounted} parts unaccounted for. Completed: ${qtyCompleted}, Scrap: ${qtyScrap}, Rework: ${qtyRework} of ${qtyOriginal} total. Update quantities before advancing.`,
-        variant: "destructive",
-      });
+      woToast.blocked(
+        "Quantity check required",
+        `${unaccounted} parts unaccounted for. Completed: ${qtyCompleted}, Scrap: ${qtyScrap}, Rework: ${qtyRework} of ${qtyOriginal} total. Update quantities before advancing.`,
+        wo,
+      );
       setActionLoading(null);
       return;
     }
@@ -209,12 +210,20 @@ export function QueueItemActions({
         .maybeSingle();
 
       if (stationStatus?.current_job_state === "Waiting on QA") {
-        toast({ title: "Quality Sign-off Required", description: "Station is still 'Waiting on QA'. QA must be resolved before advancing.", variant: "destructive" });
+        woToast.blocked(
+          "Quality sign-off required",
+          "Station is still 'Waiting on QA'. QA must be resolved before advancing.",
+          wo,
+        );
         setActionLoading(null);
         return;
       }
       if (stationStatus?.current_job_state === "First Article in Process") {
-        toast({ title: "First Article Pending", description: "First article inspection must be completed and approved before advancing to next operation.", variant: "destructive" });
+        woToast.blocked(
+          "First article pending",
+          "First article inspection must be completed and approved before advancing to next operation.",
+          wo,
+        );
         setActionLoading(null);
         return;
       }
@@ -225,7 +234,7 @@ export function QueueItemActions({
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
-          toast({ title: "Error", description: "Authentication required", variant: "destructive" });
+          woToast.error("Authentication required", undefined, wo);
           setActionLoading(null);
           return;
         }
@@ -239,7 +248,7 @@ export function QueueItemActions({
         });
 
         if (error) {
-          toast({ title: "Transition Blocked", description: error.message, variant: "destructive" });
+          woToast.blocked("Transition blocked", error.message, wo);
         } else {
           const action = (result as any)?.action;
           const nextStationName = (result as any)?.next_station_name as string | undefined;
@@ -247,7 +256,7 @@ export function QueueItemActions({
           const nextOperationName = (result as any)?.next_operation_name as string | undefined;
           const nextOperationNumber = (result as any)?.next_operation_number as string | undefined;
           if (action === "advanced") {
-            toast({ title: "Operation Complete", description: `Advanced to ${nextStationName || "next station"}` });
+            woToast.success("Operation complete", wo, `Advanced to ${nextStationName || "next station"}`);
             setHandoffPrompt({
               open: true,
               nextStationId: nextStationId ?? null,
@@ -257,22 +266,22 @@ export function QueueItemActions({
               finalCompletion: false,
             });
           } else {
-            toast({ title: "Work Order Completed!", description: "All operations finished" });
+            woToast.success("Work order completed!", wo, "All operations finished");
             setHandoffPrompt({ open: true, finalCompletion: true });
           }
           onReloadHistory();
           onReloadRouting();
         }
       } catch {
-        toast({ title: "Error", description: "Failed to advance work order", variant: "destructive" });
+        woToast.error("Failed to advance work order", undefined, wo);
       }
     } else {
       // No routing — simple completion
       const { error } = await onUpdate(item.id, { status: "completed", completed_at: new Date().toISOString() });
       if (error) {
-        toast({ title: "Error", description: error, variant: "destructive" });
+        woToast.error("Failed to complete", error, wo);
       } else {
-        toast({ title: "Work Order Completed!", description: "All operations finished" });
+        woToast.success("Work order completed!", wo, "All operations finished");
         onReloadHistory();
         setHandoffPrompt({ open: true, finalCompletion: true });
       }
