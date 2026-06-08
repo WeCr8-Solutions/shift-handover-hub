@@ -8,6 +8,7 @@ import { template as passwordReset } from './password-reset.tsx'
 import { template as teamInvite } from './team-invite.tsx'
 import { template as promoCode } from './promo-code.tsx'
 import { template as handoffNotification } from './handoff-notification.tsx'
+import { template as conciergeGoLive } from './concierge-go-live.tsx'
 
 export interface TemplateEntry {
   component: React.ComponentType<any>
@@ -25,4 +26,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'team-invite': teamInvite,
   'promo-code': promoCode,
   'handoff-notification': handoffNotification,
+  'concierge-go-live': conciergeGoLive,
 }
