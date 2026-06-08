@@ -16,6 +16,18 @@ export interface ConciergePrefillData {
   quality: string[][]; // checkpoint_name, operation_after, tool_required, frequency, sample_size
   erp: { connector: string | null; baseUrl: string | null; persistenceMode: string | null } | null;
   intake: Record<string, any>; // module_key -> payload
+  subscription: {
+    plan: string;
+    status: string;
+    tier: string;
+    seatLimit: number | null;
+    seatsUsed: number;
+    openSeats: number | null;
+    pendingInvites: number;
+    periodEnd: string | null;
+    cancelAtPeriodEnd: boolean;
+    seatAssignments: string[][]; // seat_number, email, name, role, assigned (Y/N), notes
+  };
 }
 
 const EMPTY: ConciergePrefillData = {
@@ -26,6 +38,18 @@ const EMPTY: ConciergePrefillData = {
   quality: [],
   erp: null,
   intake: {},
+  subscription: {
+    plan: "free",
+    status: "unknown",
+    tier: "free",
+    seatLimit: null,
+    seatsUsed: 0,
+    openSeats: null,
+    pendingInvites: 0,
+    periodEnd: null,
+    cancelAtPeriodEnd: false,
+    seatAssignments: [],
+  },
 };
 
 export function useConciergePrefill(organizationId: string | null | undefined, engagementId: string | null | undefined) {
