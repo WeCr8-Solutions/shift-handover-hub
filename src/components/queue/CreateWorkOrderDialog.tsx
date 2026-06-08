@@ -247,16 +247,20 @@ export function CreateWorkOrderDialog({
 
         if (result?.error) {
           console.error("Create item error:", result.error);
-          toast.error(result.error);
+          woToast.error("Create failed", result.error, formData.work_order);
           return;
         }
 
-        toast.success(isQuote ? "Quote created — pending approval" : "Work order created successfully!");
+        woToast.success(
+          isQuote ? "Quote created" : "Work order created",
+          formData.work_order,
+          isQuote ? "Pending approval" : undefined,
+        );
         onOpenChange(false);
         onSuccess?.();
       } catch (error) {
         console.error("Create work order error:", error);
-        toast.error("Failed to create work order");
+        woToast.error("Failed to create work order", undefined, formData.work_order);
       } finally {
         setLoading(false);
       }
