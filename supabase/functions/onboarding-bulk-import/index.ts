@@ -281,12 +281,24 @@ Deno.serve(async (req) => {
             if (tErr) { result.errors.push({ row: 0, message: `Template ${tplName}: ${tErr.message}` }); continue; }
             tplId = (nt as any).id;
           }
+          // Pre-load existing step numbers for dedupe
+          const { data: existingSteps } = await admin
+            .from("routing_template_steps")
+            .select("step_number")
+            .eq("template_id", tplId);
+          const usedSteps = new Set<number>((existingSteps ?? []).map((s: any) => Number(s.step_number)));
           for (let idx = 0; idx < steps.length; idx++) {
             const s = steps[idx];
+            const stepNo = Number(s.step_number || idx + 1);
+            if (usedSteps.has(stepNo)) {
+              result.errors.push({ row: idx + 2, message: `Template "${tplName}" step ${stepNo} already exists` });
+              result.skipped++; continue;
+            }
+            usedSteps.add(stepNo);
             const { error } = await admin.from("routing_template_steps").insert({
               template_id: tplId,
               organization_id: orgId,
-              step_number: Number(s.step_number || idx + 1),
+              step_number: stepNo,
               operation_type: s.operation || "general",
               operation_name: s.operation || `Step ${idx + 1}`,
               work_center_type: s.work_center || null,
