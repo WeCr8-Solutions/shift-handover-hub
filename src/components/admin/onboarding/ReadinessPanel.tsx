@@ -1,7 +1,11 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, AlertTriangle, Loader2, ShieldCheck, DollarSign, FileSignature } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { CheckCircle2, AlertTriangle, Loader2, ShieldCheck, DollarSign, FileSignature, FlaskConical, X } from "lucide-react";
 import { useProductionReadiness, type Engagement } from "@/hooks/useOnboardingEngagements";
+import { supabase } from "@/integrations/supabase/client";
+import { woToast } from "@/lib/woToast";
 
 const COUNT_LABELS: Record<string, string> = {
   departments: "Departments",
@@ -13,7 +17,12 @@ const COUNT_LABELS: Record<string, string> = {
   branding: "Branding",
   subscriptions: "Active subscription",
   erp_connections: "ERP connections",
+  stations_with_equipment: "Stations w/ equipment",
+  members_signed_in: "Members signed in",
+  queue_items_with_routing: "Queue items routed",
 };
+
+interface SmokeStep { name: string; ok: boolean; detail?: string }
 
 export function ReadinessPanel({ organizationId, engagement }: { organizationId: string; engagement?: Engagement }) {
   const { data, isLoading, refetch, isFetching } = useProductionReadiness(organizationId);
