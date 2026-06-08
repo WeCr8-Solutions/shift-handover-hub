@@ -1,153 +1,102 @@
-# Concierge Onboarding — Audit & Completion Plan
 
-## Audit results (what already exists)
+# Concierge Phase 2 — Basic shop scaffold + employee onboarding
 
-**Admin workspace (`/admin/onboarding`)** — mature
-- `EngagementsList` + `EngagementDetail` with payment, contract, refund, accounting export, audit timeline
-- `ChecklistModule` × 10 fixed modules (org_profile, equipment, stations, users_roles, routing, quality, erp, training, documents, review)
-- `ReadinessPanel` powered by `verify_org_production_ready` RPC (counts depts, stations, equipment, admins, operators, routing, branding, subscription, ERP, ITAR persistence)
-- Gating RPCs `mark_engagement_ready` and `activate_org_for_production` enforce payment + contract + checklist + readiness before flipping `organizations.onboarding_status = 'live'`
-- `seed_org_production_defaults` runs on activation
+Goal: give every new concierge org (starting with Aymar Engineering) a minimal, sensible shop structure they can use on day one — without forcing CNC-only assumptions — plus a clean way to add employees via QR + email invite.
 
-**Customer surface** — thin
-- `OnboardingService.tsx` (marketing/checkout) + `ConciergeInProgressSplash` (lockout)
-- **Gap:** no structured customer intake form, no per-module visibility into what JobLine is configuring, no progress percentage, no "your blockers" surface, no release certificate
-- Welcome modal + `OrganizationSetup` exist for self-serve but aren't wired to an active concierge engagement
+## 1. Canonical "Basic Shop" department template
 
-**E2E** — partial
-- `concierge-onboarding.spec.ts` (39 lines): only marketing page + banner + auth-gate smoke
-- `concierge-gap-closure.spec.ts` (45 lines): sales, MSA print, invoice, billing-tab auth gates
-- **Gap:** no E2E of the actual intake flow, no readiness-RPC assertion, no station/equipment smoke, no release/activation flow
-
-**Operational gaps**
-1. No customer-facing intake wizard — JobLine ops must gather equipment list, users, ITAR posture, ERP choice through email/calls
-2. `ChecklistModule` is admin-only; customer can't see status or unblock items themselves
-3. No automated "is the shop actually working?" smoke after activation — readiness RPC counts rows but doesn't exercise a real handoff/WO path
-4. No release email + certificate when org goes live
-5. `verify_org_production_ready` doesn't check: at least one operator has logged in once, at least one station has equipment mapped, at least one queue item exists
-
-## Plan — 5 phases, each independently shippable
-
-### Phase 1 — Customer Intake Wizard (`/onboarding/intake`)
-
-Multi-step wizard mirroring the 10 checklist modules but **customer-facing**, persisting answers into a new `onboarding_intake_responses` table (one row per engagement).
-
-Steps (matches existing `module_key`s 1:1):
-1. **Company profile** — confirm name, address, AS9100/ISO/ITAR posture, subscription tier confirmation
-2. **Equipment** — CSV upload (template auto-downloaded) or manual rows; rows go to `equipment` via `onboarding-bulk-import`
-3. **Stations & departments** — same pattern
-4. **Users & roles** — email + role + default station; triggers invite generation when customer clicks "Send invites"
-5. **Routing templates** — pick from library or upload CSV
-6. **Quality** — pick checkpoint templates
-7. **ERP** — Native / JobBOSS / SAP, with persistence-mode locked to read-through for ITAR
-8. **Training programs** — pick OAP role programs per operator
-9. **Documents** — upload policies, manuals, setup sheets (storage bucket already exists)
-10. **Review & submit** — final confirmation, marks `org_profile` checklist item done and sets engagement `status='in_progress'`
-
-UX rules:
-- Step navigation with save-on-change (no "Next" required to persist)
-- Side rail shows engagement % complete, blockers (`customer_blocker_note` from admin checklist), and "JobLine is reviewing" banner per step
-- Each step has a "Need help" button → opens email/Slack thread, captured in `admin_audit_events`
-- Mobile-first single-column layout, sticky progress header
-- Replaces `ConciergeInProgressSplash` for `org_admin/owner` (they now see the wizard); operators still see splash
-
-New RPC: `submit_intake_step(p_engagement_id, p_module_key, p_payload jsonb)` — validates module key, writes to `onboarding_intake_responses`, advances the matching checklist item from `todo` → `in_progress`, records an audit event.
-
-### Phase 2 — Admin workspace polish
-
-Small but visible improvements to the existing `/admin/onboarding`:
-- **Customer responses tab** in `EngagementDetail` — read-only view of what the customer submitted per module, with diff if they edit
-- **Bulk-assign** dropdown to assign multiple engagements to a concierge operator
-- **Filter bar** on `EngagementsList` (status, ITAR, payment_status, assigned_admin)
-- **Stuck engagements widget** at top — engagements with no activity > 7 days
-- **Quick-actions menu** on each row: "Open intake as customer" (impersonation via existing `act_as_sessions`), "Send reminder email", "Mark blocked"
-
-### Phase 3 — Production readiness deepening
-
-Extend `verify_org_production_ready` to actually exercise the system, not just count rows:
+Reusable across tenants (not Aymar-specific). Five departments, easy to extend later (water jet, punch press, etc.):
 
 ```text
-new checks:
-  - ≥ 1 station has equipment assigned (station_machine_assignments)
-  - ≥ 1 operator has logged in at least once (auth.users.last_sign_in_at)
-  - ≥ 1 queue_items row exists with a routing template applied
-  - branding has logo URL set (not just a row)
-  - if subscription tier is Team/Enterprise: ≥ 2 active stations
+Office              → 1 station   (Front Office)
+CNC Operations      → 1 station per registered machine
+                      (Milling, Turning, 5-Axis, Honing auto-grouped by equipment_type)
+Welding & Assembly  → 2 stations  (Weld Bay, Assembly Bench)
+Shipping & Receiving→ 2 stations  (Receiving, Shipping)
+Quality / Inspection→ 1 station   (CMM / Inspection Bench)
 ```
 
-Add an admin-only "Smoke test" button on `ReadinessPanel` → calls new edge function `concierge-smoke-test` which:
-1. Creates a draft `queue_items` row with `source='concierge_smoke'`
-2. Walks it through pending → queued → in_progress → completed via the state-machine
-3. Writes a synthetic `handoff_records` entry
-4. Deletes the smoke artifacts and returns pass/fail per step
-5. Result rendered as a checklist with green/red per step
+Implementation:
+- New SECURITY DEFINER RPC `seed_basic_shop_scaffold(p_org_id, p_engagement_id)`:
+  - Creates the 5 departments (idempotent on `(organization_id, name)`).
+  - Creates stations per the rules above. For CNC Ops it iterates `equipment` rows for the org and creates one station per machine, named `<manufacturer> <model> (<serial last 4>)`.
+  - Inserts `station_machine_assignments` linking each station to its equipment row.
+  - Marks the `stations` checklist item as `done`.
+- Exposed as a one-click "Seed basic shop" button in the admin `ReadinessPanel` and in the customer Intake wizard's Stations step.
+- Future expansion: a small "Add department" picker with presets (`water_jet`, `punch_press`, `laser`, `paint`, `heat_treat`) — adds department + 1 station, no code change needed.
 
-### Phase 4 — Release-to-customer flow
+Aymar specifically: after seeding, they'll have **Office, 11 CNC stations grouped by mill/lathe/5-axis/honing, 2 Weld/Assembly, 2 Ship/Receive, 1 Inspection** — 17 stations total, all wired to the imported machines.
 
-When admin clicks **Activate customer login**:
-1. Existing `activate_org_for_production` RPC runs (unchanged)
-2. New trigger enqueues `release-to-customer` edge function
-3. Edge function:
-   - Sends "Your shop is live" email to org admins via existing email queue (template: `concierge-go-live`)
-   - Generates a **Release Certificate PDF** (org name, go-live date, readiness snapshot, signed by JobLine ops) — stored in `concierge` storage bucket, linked on engagement detail
-   - Posts to org's webhook URL if configured
-4. Customer sees a one-time **"You're live!"** modal on next login with link to the certificate and the activation checklist
+## 2. Employee onboarding — QR + email invite
 
-### Phase 5 — End-to-end testing
+The org already has `organization_invites` (15-day QR tokens) and an invite-redemption RPC. Gaps to close so a non-technical admin can actually use it:
 
-Replace the 39-line marketing smoke with real workflow coverage. New/updated specs under `e2e/`:
+- **Intake wizard "Users & roles" step** (`users_roles` module):
+  - Quick form: email + role (`org_admin` | `supervisor` | `operator`) + optional department.
+  - On submit → creates invite via existing flow, fires the email (see §3), and shows the QR code + shareable URL inline.
+  - Bulk paste: paste a CSV/newline list of emails → generates invites in one shot.
+  - Live list of pending invites with "resend email" and "copy QR link" actions.
+- **Printable QR sheet**: "Print station QR pack" generates an 8.5×11 PDF (one QR per pending operator) so the admin can hand them out on the shop floor — useful when operators don't check email.
+- Checklist auto-advances `users_roles` to `done` once ≥1 org admin + ≥1 operator have redeemed.
 
-- `concierge-intake-wizard.spec.ts` — full 10-step wizard as a seeded org_admin, with API fixture seeding (Supabase service-role calls in `e2e/helpers/concierge.ts`)
-- `concierge-admin-flow.spec.ts` — seeded platform admin: create engagement, record payment, mark each checklist item done, mark ready, activate, assert org `onboarding_status='live'`
-- `concierge-readiness-smoke.spec.ts` — calls `concierge-smoke-test` edge function for a seeded org, asserts every step is green
-- `concierge-release.spec.ts` — asserts release certificate is generated, accessible to org admin, NOT accessible to other orgs
-- `concierge-itar.spec.ts` — ITAR org cannot toggle ERP write-through, intake step 7 hides the option
+## 3. Email wiring for invites + go-live
 
-Each spec uses a `beforeAll` that seeds a throwaway org via `supabase.rpc('e2e_seed_concierge_org')` (new SECURITY DEFINER, gated to test env only) and `afterAll` that tears it down. Specs run against the Lovable preview URL via the existing `playwright.config.ts`.
+Today the release-to-customer function is a stub. We need real transactional email:
 
-Add to `playwright.config.ts`: `reporter: ['html', 'github']` and a `concierge` project group so CI can run only this suite.
+- Confirm/configure Lovable Emails domain (`notify.jobline.ai` or similar) via the email setup dialog if not yet active.
+- Scaffold transactional email infra (queue + send function).
+- Add three React Email templates:
+  - `org-invite` — "You've been invited to join {orgName}" with QR + redeem link.
+  - `concierge-welcome` — sent when engagement is created (to the org admin).
+  - `concierge-go-live` — sent by `release-to-customer` when admin activates.
+- Wire `organization_invites` insert trigger → `send-transactional-email` with `templateName='org-invite'` and idempotency key `invite-<id>`.
 
-## Technical notes
+## 4. Code/data fixes surfaced during the Aymar import
 
-**New DB migration**
+- `useOrgsForOnboarding` lists *all* orgs regardless of engagement state — filter out orgs that already have an active engagement so `NewEngagementDialog` doesn't double-book.
+- `seed_onboarding_checklist` requires `auth.uid()` admin role, but the engagement-creation path already inserts the engagement client-side and then calls the RPC — fine for admins, but breaks for Stripe-purchased engagements created by `stripe-webhook` (service role). Make the RPC accept service role too (`OR auth.role() = 'service_role'`).
+- `verify_org_production_ready` should count departments + stations from the new scaffold so the Aymar engagement's readiness % updates correctly.
+- `ReadinessPanel` shows a dead "Seed defaults" button when no engagement is active — gate it behind `engagement.status IN ('in_progress','review')`.
+
+## 5. Multi-tenant guardrails
+
+- All new RPCs `SECURITY DEFINER` with `SET search_path = public` and explicit `organization_id` checks (matches existing project memory rule).
+- Idempotency: re-running `seed_basic_shop_scaffold` for the same org is a no-op (uses `ON CONFLICT DO NOTHING` on `(organization_id, name)` and `(station_id, equipment_id)`).
+- Aymar (non-ITAR) and any future ITAR org both work — no ERP writes, no cross-org data.
+
+## 6. E2E coverage (Playwright)
+
+Append one new spec — `concierge-basic-scaffold.spec.ts`:
+1. Platform admin creates engagement for a test org with seeded equipment.
+2. Clicks "Seed basic shop" → asserts 5 departments + ≥6 stations exist.
+3. Adds operator invite → asserts invite row + email queued.
+4. Marks ready → activates → asserts go-live email enqueued.
+
+## Files to add / edit
+
 ```text
-CREATE TABLE public.onboarding_intake_responses (
-  id, engagement_id (FK), organization_id, module_key,
-  payload jsonb, submitted_by, submitted_at, version int
-);
-GRANT … TO authenticated, service_role;
-RLS: org_admin/owner of engagement.organization_id OR platform admin
+NEW  supabase/migrations/<ts>_basic_shop_scaffold.sql      -- seed_basic_shop_scaffold RPC + checklist auto-tick
+NEW  supabase/functions/_shared/transactional-email-templates/org-invite.tsx
+NEW  supabase/functions/_shared/transactional-email-templates/concierge-welcome.tsx
+NEW  supabase/functions/_shared/transactional-email-templates/concierge-go-live.tsx
+NEW  src/components/onboarding/intake/steps/StationsStep.tsx      -- "Seed basic shop" + add-department picker
+NEW  src/components/onboarding/intake/steps/UsersRolesStep.tsx    -- invite form, bulk paste, pending list, print QR sheet
+NEW  src/components/admin/onboarding/SeedBasicShopButton.tsx
+NEW  e2e/concierge-basic-scaffold.spec.ts
+EDIT supabase/functions/release-to-customer/index.ts              -- send go-live template
+EDIT src/components/admin/onboarding/ReadinessPanel.tsx           -- add seed + gate broken buttons
+EDIT src/hooks/useOnboardingEngagements.ts                        -- filter active orgs in useOrgsForOnboarding
+EDIT supabase/migrations/<ts>_readiness_v2.sql                    -- extend verify_org_production_ready w/ dept+station counts
 ```
 
-**New RPCs (all SECURITY DEFINER, `SET search_path = public`)**
-- `submit_intake_step(p_engagement_id, p_module_key, p_payload)`
-- `e2e_seed_concierge_org(p_seed_name)` — guarded by `current_setting('app.env') = 'test'`
-- Extend `verify_org_production_ready` (5 new checks above)
+## Out of scope (next phase)
+- Water jet / punch press as first-class equipment types (today they go in as generic equipment + a manually-added department).
+- Per-machine routing templates (CNC mill vs lathe).
+- Operator skill-matrix prefill from machine assignments.
 
-**New edge functions**
-- `concierge-smoke-test` — synthetic WO run, JWT-verified, requires platform admin
-- `release-to-customer` — triggered from activation; sends email + generates certificate PDF (jsPDF, already in deps)
-
-**New customer page**
-- `src/pages/OnboardingIntake.tsx` + 10 step components under `src/components/onboarding/intake/`
-- Route `/onboarding/intake` gated to org admin/owner with active engagement
-- `ConciergeInProgressSplash` updated to redirect admins to the intake wizard instead of showing the splash
-
-**Files touched**
-- New: ~14 customer-side files, 2 edge functions, 1 migration, 5 E2E specs
-- Edited: `EngagementDetail.tsx` (Customer responses tab), `EngagementsList.tsx` (filters + bulk actions), `ReadinessPanel.tsx` (smoke test button), `ConciergeInProgressSplash.tsx` (redirect logic), `playwright.config.ts`
-
-**Out of scope (call out + defer)**
-- Live machine-monitoring connectivity smoke (relay infra is optional per memory; would gate orgs that never connect machines)
-- Stripe webhook replay UI
-- Multi-language support for customer wizard
-
-## Suggested rollout order
-
-1. Phase 1 (intake wizard) — biggest customer impact, ship first
-2. Phase 3 (readiness deepening + smoke test) — gives ops confidence in "ready" button
-3. Phase 4 (release flow + certificate) — makes activation feel like a milestone
-4. Phase 2 (admin polish) — quality-of-life for ops
-5. Phase 5 (E2E) — locks everything in before next release
-
-Each phase is independently shippable and reversible.
+## Order of execution
+1. Migration + RPC (`seed_basic_shop_scaffold`, readiness v2, `seed_onboarding_checklist` service-role allow).
+2. Email domain check → scaffold templates → wire invite + go-live triggers.
+3. UI: `StationsStep`, `UsersRolesStep`, admin "Seed basic shop" button, fix `useOrgsForOnboarding`.
+4. Run scaffold against Aymar's engagement to validate end-to-end (17 stations + machine links).
+5. E2E spec.
