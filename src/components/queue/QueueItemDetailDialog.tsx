@@ -168,7 +168,7 @@ export function QueueItemDetailDialog({
         data-testid="wo-drawer"
         data-wo-id={item.id}
         data-wo-code={item.work_order ?? ""}
-        className="max-w-2xl max-h-[90vh] overflow-y-auto flex flex-col"
+        className="max-w-2xl w-[calc(100vw-1rem)] max-h-[95vh] sm:max-h-[90vh] overflow-y-auto p-4 sm:p-6"
       >
         <QueueItemHeader
           item={item}
@@ -202,17 +202,17 @@ export function QueueItemDetailDialog({
           />
         )}
 
-        <div className="flex-1 overflow-hidden min-h-0">
-          <Tabs defaultValue="details" className="h-full flex flex-col">
+        <div>
+          <Tabs defaultValue="details">
             <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="details">Details</TabsTrigger>
               <TabsTrigger value="routing" className="gap-1" data-tour="routing-tab">
                 <GitBranch className="w-4 h-4" />
-                Routing
+                <span className="hidden sm:inline">Routing</span>
               </TabsTrigger>
               <TabsTrigger value="ncr" className="gap-1">
                 <ShieldAlert className="w-4 h-4" />
-                NCR ({ncrs.length})
+                <span className="hidden sm:inline">NCR</span> ({ncrs.length})
               </TabsTrigger>
               <TabsTrigger value="comments" className="gap-1">
                 <MessageSquare className="w-4 h-4" />
@@ -220,11 +220,11 @@ export function QueueItemDetailDialog({
               </TabsTrigger>
               <TabsTrigger value="history" className="gap-1">
                 <History className="w-4 h-4" />
-                History
+                <span className="hidden sm:inline">History</span>
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="details" className="flex-1 overflow-auto mt-4 space-y-4">
+            <TabsContent value="details" className="mt-4 space-y-4">
               <QueueItemDetailsTab
                 item={item}
                 assignedStation={assignedStation}
@@ -236,7 +236,7 @@ export function QueueItemDetailDialog({
               />
             </TabsContent>
 
-            <TabsContent value="routing" className="flex-1 overflow-auto mt-4">
+            <TabsContent value="routing" className="mt-4">
               <QueueItemRoutingTab
                 item={item}
                 routingSteps={routingSteps}
@@ -247,7 +247,7 @@ export function QueueItemDetailDialog({
               />
             </TabsContent>
 
-            <TabsContent value="ncr" className="flex-1 overflow-auto mt-4">
+            <TabsContent value="ncr" className="mt-4">
               <NCRListView ncrs={ncrs} />
               {ncrs.length === 0 && (
                 <div className="text-center py-8 space-y-3">
@@ -261,7 +261,7 @@ export function QueueItemDetailDialog({
               )}
             </TabsContent>
 
-            <TabsContent value="comments" className="flex-1 flex flex-col overflow-hidden mt-4">
+            <TabsContent value="comments" className="mt-4">
               <QueueItemCommentsTab
                 comments={comments}
                 onAddComment={onAddComment}
@@ -270,11 +270,12 @@ export function QueueItemDetailDialog({
               />
             </TabsContent>
 
-            <TabsContent value="history" className="flex-1 overflow-auto mt-4">
+            <TabsContent value="history" className="mt-4">
               <QueueItemHistoryTab history={history} />
             </TabsContent>
           </Tabs>
         </div>
+
 
         {item && (
           <CreateNCRDialog
