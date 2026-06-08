@@ -199,7 +199,9 @@ export function CreateWorkOrderDialog({
       e.preventDefault();
 
       if (!isValid) {
-        toast.error(itemType === "quote" ? "Quote number is required" : "Work order number is required");
+        woToast.error(
+          itemType === "quote" ? "Quote number required" : "Work order number required",
+        );
         return;
       }
 
@@ -207,7 +209,7 @@ export function CreateWorkOrderDialog({
       if (hasRouting) {
         const invalidSteps = routingSteps.filter((s) => !s.operation_name.trim());
         if (invalidSteps.length > 0) {
-          toast.error("All routing steps must have an operation name");
+          woToast.error("Routing incomplete", "All routing steps must have an operation name");
           return;
         }
       }
