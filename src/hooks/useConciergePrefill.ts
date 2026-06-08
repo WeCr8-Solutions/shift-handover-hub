@@ -141,6 +141,62 @@ export function useConciergePrefill(organizationId: string | null | undefined, e
             }
           : null,
         intake,
+        subscription: (() => {
+          const ent = entRes.data as any;
+          const sub = subRes.data as any;
+          const org = orgRes.data as any;
+          const tier = org?.subscription_tier ?? ent?.plan ?? "free";
+          const plan = ent?.plan ?? tier;
+          const status = sub?.status ?? org?.subscription_status ?? "trial";
+          const seatLimit = ent?.limits?.users ?? sub?.quantity ?? null;
+          const memberCount = (memRes.data ?? []).length;
+          const activeInvites = (inviteRes.data ?? []).filter((i: any) => i.is_active && (!i.max_uses || i.uses_count < i.max_uses));
+          const pendingInvites = activeInvites.length;
+          const openSeats = seatLimit != null ? Math.max(0, seatLimit - memberCount) : null;
+          // Build seat-by-seat ledger: filled seats first, then open seats up to limit
+          const filledSeats: string[][] = (memRes.data ?? []).map((m: any, i: number) => {
+            const p = profileMap.get(m.user_id);
+            return [
+              String(i + 1),
+              p?.email ?? "(no email)",
+              p?.display_name ?? "",
+              m.role ?? "",
+              "Y",
+              "",
+            ];
+          });
+          const inviteRows: string[][] = activeInvites.map((inv: any, i: number) => [
+            String(filledSeats.length + i + 1),
+            inv.invited_email ?? "(open invite link)",
+            "",
+            inv.org_role ?? "",
+            "Invite sent",
+            inv.expires_at ? `Expires ${new Date(inv.expires_at).toLocaleDateString()}` : "",
+          ]);
+          const openCount = seatLimit != null
+            ? Math.max(0, seatLimit - filledSeats.length - inviteRows.length)
+            : 0;
+          const openRows: string[][] = Array.from({ length: openCount }, (_, i) => [
+            String(filledSeats.length + inviteRows.length + i + 1),
+            "",
+            "",
+            "",
+            "N — Open seat",
+            "",
+          ]);
+          return {
+            plan,
+            status,
+            tier,
+            seatLimit,
+            seatsUsed: memberCount,
+            openSeats,
+            pendingInvites,
+            periodEnd: sub?.current_period_end ?? null,
+            cancelAtPeriodEnd: !!sub?.cancel_at_period_end,
+            seatAssignments: [...filledSeats, ...inviteRows, ...openRows],
+          };
+        })(),
       };
     },
   });
