@@ -149,8 +149,13 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
 
       <div className="no-print sticky top-0 z-10 bg-background border-b px-4 py-3 space-y-3">
         <div className="flex items-center justify-between gap-3 flex-wrap">
-          <div className="text-sm text-muted-foreground">
-            Select sections + printer options below, then print the pack or download individual files from the library.
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="ghost" onClick={handleBack} className="gap-1">
+              <ArrowLeft className="w-4 h-4" /> Back
+            </Button>
+            <div className="text-sm text-muted-foreground">
+              {engagement ? <>Pack for <b>{orgName}</b> — {tier} ({amount})</> : "Select sections + printer options, then print or download below."}
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <Button size="sm" variant="outline" onClick={() => setAll(true)}>Select all</Button>
