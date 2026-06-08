@@ -45,6 +45,7 @@ const OnHoldWorkOrders = lazy(() => import("./pages/OnHoldWorkOrders"));
 const QuotesHub = lazy(() => import("./pages/QuotesHub"));
 const Setup = lazy(() => import("./pages/Setup"));
 const OnboardingService = lazy(() => import("./pages/OnboardingService"));
+const OnboardingIntake = lazy(() => import("./pages/OnboardingIntake"));
 const ConciergeSales = lazy(() => import("./pages/ConciergeSales"));
 const ConciergeSalesPack = lazy(() => import("./pages/ConciergeSalesPack"));
 const ConciergeInvoicePdf = lazy(() => import("./pages/ConciergeInvoicePdf"));
@@ -244,6 +245,7 @@ const App = () => (
                     <Route path="/setup" element={<RequireAuth><Setup /></RequireAuth>} />
                     <Route path="/pricing" element={<Pricing />} />
                     <Route path="/onboarding-service" element={<OnboardingService />} />
+                    <Route path="/onboarding/intake" element={<RequireAuth><RequireOrg><OnboardingIntake /></RequireOrg></RequireAuth>} />
                     <Route path="/concierge/sales" element={<ConciergeSales />} />
                     <Route path="/manufacturing-100" element={<ManufacturingVisibility100 />} />
                     <Route path="/manufacturing-100/methodology" element={<ManufacturingVisibility100Methodology />} />
