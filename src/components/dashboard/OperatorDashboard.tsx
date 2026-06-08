@@ -11,7 +11,7 @@ import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { OperatorStationPanel } from "./OperatorStationPanel";
 import { NewHandoffForm } from "@/components/NewHandoffForm";
 import { JobPerformanceUpdateForm } from "@/components/JobPerformanceUpdateForm";
-import { useHandoffRecords } from "@/hooks/useStations";
+import { useHandoffRecords, useStations } from "@/hooks/useStations";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useOrgContext } from "@/contexts/OrgContext";
 import { getCurrentShift } from "@/lib/mockData";
