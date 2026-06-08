@@ -49,6 +49,7 @@ export function CustomerSuccessPanel() {
             />
           ) : (
             <>
+              <ConciergeQuickActions />
               <ConciergeKpiStrip />
               <EngagementsList />
             </>
