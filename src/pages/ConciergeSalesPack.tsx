@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DocumentLibrary } from "@/components/admin/concierge/DocumentLibrary";
+import { useConciergePrefill } from "@/hooks/useConciergePrefill";
 
 /**
  * Printable Concierge Sales Pack — platform-admin only.
