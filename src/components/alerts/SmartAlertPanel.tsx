@@ -121,6 +121,7 @@ export function SmartAlertPanel({
   };
 
   if (alerts.length === 0 && !loading) return null;
+  if (visibleAlerts.length === 0 && !loading) return null;
 
   const isSidebar = variant === "sidebar";
   const compact = isSidebar;
@@ -128,13 +129,18 @@ export function SmartAlertPanel({
   return (
     <div className={cn("bg-card border border-border rounded-lg overflow-hidden", className)}>
       {/* Header */}
-      <div className="px-4 py-3 border-b border-border bg-secondary/30">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <BellRing className="w-4 h-4 text-primary" />
-            <span className="font-medium text-sm">Smart Alerts</span>
+      <button
+        type="button"
+        onClick={() => setCollapsed((c) => !c)}
+        className="w-full px-4 py-3 border-b border-border bg-secondary/30 hover:bg-secondary/50 transition-colors"
+        aria-expanded={!collapsed}
+      >
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <BellRing className="w-4 h-4 text-primary flex-shrink-0" />
+            <span className="font-medium text-sm truncate">Smart Alerts</span>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 flex-shrink-0">
             {sevCounts.critical > 0 && (
               <Badge className="bg-red-500 text-white text-[9px] px-1.5 py-0">{sevCounts.critical}</Badge>
             )}
@@ -144,9 +150,16 @@ export function SmartAlertPanel({
             {sevCounts.info > 0 && (
               <Badge variant="secondary" className="text-[9px] px-1.5 py-0">{sevCounts.info}</Badge>
             )}
+            {collapsed
+              ? <ChevronDown className="w-4 h-4 text-muted-foreground" />
+              : <ChevronUp className="w-4 h-4 text-muted-foreground" />}
           </div>
         </div>
-      </div>
+      </button>
+
+      {!collapsed && (
+      <>
+
 
       {/* Filter row (full variant) */}
       {!isSidebar && activeTypes.length > 1 && (
