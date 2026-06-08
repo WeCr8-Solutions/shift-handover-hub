@@ -278,16 +278,15 @@ export function OwnerInvitePanel({ engagementId, organizationId, organizationNam
           <div className="flex items-start justify-between gap-3 flex-wrap">
             <div className="space-y-1">
               <div className="font-medium flex items-center gap-2">
-                Team invites
+                Team members ({team.length})
                 {ownerReady ? (
-                  <Badge className="gap-1 bg-status-ok/15 text-status-ok border-status-ok/30 text-[10px]">Unlocked</Badge>
+                  <Badge className="gap-1 bg-status-ok/15 text-status-ok border-status-ok/30 text-[10px]">Invites unlocked</Badge>
                 ) : (
                   <Badge variant="outline" className="text-[10px]">Locked until owner signs in</Badge>
                 )}
               </div>
               <div className="text-xs text-muted-foreground">
-                {team.length} recipient{team.length === 1 ? "" : "s"}:{" "}
-                {team.map((u) => u.email).join(", ") || "none yet"}
+                Captured from the Users &amp; Roles intake module.
               </div>
             </div>
             <Button
@@ -295,12 +294,105 @@ export function OwnerInvitePanel({ engagementId, organizationId, organizationNam
               disabled={!ownerReady || sendingTeam || team.length === 0}
               variant={ownerReady ? "default" : "outline"}
               className="gap-2"
+              size="sm"
             >
               <Send className="w-4 h-4" />
-              {sendingTeam ? "Queuing…" : `Send to all team (${team.length})`}
+              {sendingTeam ? "Queuing…" : `Send to all (${team.length})`}
             </Button>
           </div>
+
+          {team.length === 0 ? (
+            <div className="text-xs text-muted-foreground italic border-t pt-3">
+              No supervisors or operators captured yet. Add them in the Users &amp; Roles intake module above.
+            </div>
+          ) : (
+            <ul className="divide-y border-t -mx-4 px-4">
+              {team.map((u) => {
+                const st = teamStatus?.[u.email!.toLowerCase()];
+                const statusBadge = st?.joined && st?.acknowledged ? (
+                  <Badge className="gap-1 bg-status-ok/15 text-status-ok border-status-ok/30 text-[10px]">
+                    <CheckCircle2 className="w-3 h-3" /> Active
+                  </Badge>
+                ) : st?.joined ? (
+                  <Badge variant="secondary" className="gap-1 text-[10px]">
+                    <Clock className="w-3 h-3" /> Joined, not acknowledged
+                  </Badge>
+                ) : st?.signedUp ? (
+                  <Badge variant="secondary" className="gap-1 text-[10px]">
+                    <Clock className="w-3 h-3" /> Account created
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="gap-1 text-[10px]">
+                    <Clock className="w-3 h-3" /> Not claimed
+                  </Badge>
+                );
+                const sendOne = async () => {
+                  if (!ownerReady) {
+                    toast.error("Owner must sign in first");
+                    return;
+                  }
+                  setSendingMember(u.email!);
+                  try {
+                    const { error } = await supabase.functions.invoke("send-transactional-email", {
+                      body: {
+                        templateName: "claim-account",
+                        recipientEmail: u.email!,
+                        idempotencyKey: `concierge-team-${engagementId}-${u.email!.toLowerCase()}`,
+                        templateData: {
+                          recipientName: u.name ?? u.email!.split("@")[0],
+                          organizationName: organizationName ?? "your shop",
+                          inviteCode: u.invite_code ?? "",
+                          inviteUrl: `https://jobline.ai/auth?invite=${encodeURIComponent(u.invite_code ?? "")}`,
+                          role: (u.role ?? "team member").replace(/\b\w/g, (c) => c.toUpperCase()),
+                          inviterName: `${owner?.name ?? "Owner"} (via Jobline.ai concierge)`,
+                        },
+                      },
+                    });
+                    if (error) throw error;
+                    toast.success(`Invite queued for ${u.email}`);
+                  } catch (e: any) {
+                    toast.error("Failed to queue", { description: e?.message });
+                  } finally {
+                    setSendingMember(null);
+                  }
+                };
+                return (
+                  <li key={u.email} className="py-2.5 flex items-center justify-between gap-3 flex-wrap">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium text-sm">{u.name ?? u.email}</span>
+                        <Badge variant="outline" className="capitalize text-[10px]">{u.role}</Badge>
+                        {u.app_role && (
+                          <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                            {u.app_role}
+                          </Badge>
+                        )}
+                        {statusBadge}
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-0.5">
+                        {u.email}
+                        {u.invite_code && (
+                          <> · code <code className="font-mono">{u.invite_code}</code></>
+                        )}
+                      </div>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={sendOne}
+                      disabled={!ownerReady || sendingMember === u.email}
+                      className="gap-1 h-7 text-xs"
+                    >
+                      <Send className="w-3 h-3" />
+                      {sendingMember === u.email ? "Queuing…" : "Send invite"}
+                    </Button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </div>
+
 
         {/* QR + share */}
         <div className="rounded-lg border p-4 space-y-3">
