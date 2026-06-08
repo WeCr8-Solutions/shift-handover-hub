@@ -214,10 +214,11 @@ export function useOrgsForOnboarding() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("organizations")
-        .select("id, name, slug, onboarding_status, requires_us_person_declaration")
+        .select("id, name, slug, onboarding_status, onboarding_engagement_id, requires_us_person_declaration")
         .order("name", { ascending: true });
       if (error) throw error;
-      return data ?? [];
+      // Hide orgs that already have an open engagement
+      return (data ?? []).filter((o: any) => !o.onboarding_engagement_id);
     },
   });
 }

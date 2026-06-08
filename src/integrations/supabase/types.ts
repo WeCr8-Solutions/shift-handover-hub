@@ -16107,6 +16107,10 @@ export type Database = {
         Returns: string
       }
       resolve_post_login_destination: { Args: never; Returns: Json }
+      seed_basic_shop_scaffold: {
+        Args: { p_engagement_id?: string; p_org_id: string }
+        Returns: Json
+      }
       seed_onboarding_checklist: {
         Args: { p_engagement_id: string }
         Returns: undefined
