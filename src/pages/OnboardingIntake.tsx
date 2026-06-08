@@ -19,6 +19,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { SeedBasicShopButton } from "@/components/admin/onboarding/SeedBasicShopButton";
+import { InviteCodeGenerator } from "@/components/InviteCodeGenerator";
 
 interface FormState {
   org_profile: { confirmed_name: string; address: string; itar: boolean; quality_systems: string };
@@ -232,26 +234,22 @@ function StepFields({
       );
     case "stations":
       return (
-        <>
-          <div><Label># of work stations</Label>
-            <Input type="number" value={form.stations.count}
-              onChange={(e) => upd("stations", { count: e.target.value })} /></div>
-          <div><Label>Departments (one per line)</Label>
-            <Textarea rows={4} placeholder={"Milling\nTurning\nInspection\nFinishing"}
-              value={form.stations.departments}
-              onChange={(e) => upd("stations", { departments: e.target.value })} /></div>
-        </>
+        <StationsStepFields form={form} upd={upd} />
       );
     case "users_roles":
       return (
         <>
-          <div><Label>People to invite (email, role per line)</Label>
-            <Textarea rows={6} placeholder={"jane@shop.com, operator\njohn@shop.com, supervisor"}
-              value={form.users_roles.invitees}
-              onChange={(e) => upd("users_roles", { invitees: e.target.value })} /></div>
           <p className="text-xs text-muted-foreground">
-            We'll generate invites you can hand out as QR codes or email after activation.
+            Generate invite codes below. Each invite shows a QR code you can print or share, and a link
+            you can email. Operators redeem at <code>/auth?invite=CODE</code>.
           </p>
+          <InviteCodeGenerator />
+          <div>
+            <Label className="text-xs">Notes for the concierge team about your roster</Label>
+            <Textarea rows={3} className="mt-1" placeholder="e.g. Jane is shift lead; John handles inspection."
+              value={form.users_roles.invitees}
+              onChange={(e) => upd("users_roles", { invitees: e.target.value })} />
+          </div>
         </>
       );
     case "routing":

@@ -6,6 +6,7 @@ import { CheckCircle2, AlertTriangle, Loader2, ShieldCheck, DollarSign, FileSign
 import { useProductionReadiness, type Engagement } from "@/hooks/useOnboardingEngagements";
 import { supabase } from "@/integrations/supabase/client";
 import { woToast } from "@/lib/woToast";
+import { SeedBasicShopButton } from "./SeedBasicShopButton";
 
 const COUNT_LABELS: Record<string, string> = {
   departments: "Departments",
@@ -161,16 +162,20 @@ export function ReadinessPanel({ organizationId, engagement }: { organizationId:
         )}
 
         <div className="border-t pt-3 space-y-2">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="text-xs font-medium flex items-center gap-2">
               <FlaskConical className="w-3.5 h-3.5" /> Production smoke test
             </div>
-            <Button size="sm" variant="outline" onClick={runSmoke} disabled={smokeRunning || !ready}>
-              {smokeRunning ? <Loader2 className="w-3 h-3 animate-spin" /> : "Run smoke test"}
-            </Button>
+            <div className="flex items-center gap-2">
+              <SeedBasicShopButton organizationId={organizationId} engagementId={engagement?.id ?? null} />
+              <Button size="sm" variant="outline" onClick={runSmoke} disabled={smokeRunning || !ready}>
+                {smokeRunning ? <Loader2 className="w-3 h-3 animate-spin" /> : "Run smoke test"}
+              </Button>
+            </div>
           </div>
           <p className="text-xs text-muted-foreground">
-            Creates a synthetic work order, walks it pending → completed, and cleans up. Verifies the shop actually works end-to-end.
+            "Seed basic shop" creates a default team, 5 departments, and one station per registered machine — safe to re-run.
+            The smoke test creates a synthetic work order pending → completed and cleans up.
           </p>
           {smoke && (
             <ul className="text-xs space-y-1 mt-2">
