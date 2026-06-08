@@ -59,11 +59,11 @@ export function useConciergePrefill(organizationId: string | null | undefined, e
     queryFn: async (): Promise<ConciergePrefillData> => {
       if (!organizationId) return EMPTY;
 
-      const [eqRes, stRes, deptRes, memRes, rtRes, rsRes, qcRes, erpRes, intakeRes] = await Promise.all([
+      const [eqRes, stRes, deptRes, memRes, rtRes, rsRes, qcRes, erpRes, intakeRes, subRes, entRes, orgRes, inviteRes] = await Promise.all([
         supabase.from("equipment").select("asset_tag,name,equipment_type,manufacturer,model,serial_number,metadata").eq("organization_id", organizationId).order("asset_tag"),
         supabase.from("stations").select("station_id,name,work_center_type,daily_capacity_hours,department_id").eq("organization_id", organizationId).order("name"),
         supabase.from("departments").select("id,name").eq("organization_id", organizationId),
-        supabase.from("organization_members").select("user_id,role").eq("organization_id", organizationId),
+        supabase.from("organization_members").select("user_id,role,joined_at").eq("organization_id", organizationId).order("joined_at"),
         supabase.from("routing_templates").select("id,name").eq("organization_id", organizationId).order("name"),
         supabase.from("routing_template_steps").select("template_id,step_number,operation_name,work_center_type,setup_time_minutes,cycle_time_minutes,instructions").eq("organization_id", organizationId).order("step_number"),
         supabase.from("quality_checkpoints").select("name,checkpoint_type,required_for_work_centers,checklist_items").eq("organization_id", organizationId),
@@ -71,6 +71,10 @@ export function useConciergePrefill(organizationId: string | null | undefined, e
         engagementId
           ? supabase.from("onboarding_intake_responses").select("module_key,payload").eq("engagement_id", engagementId)
           : Promise.resolve({ data: [] as any[], error: null }),
+        supabase.from("subscriptions").select("status,quantity,current_period_end,cancel_at_period_end,stripe_price_id").eq("organization_id", organizationId).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+        supabase.from("entitlements").select("plan,limits").eq("organization_id", organizationId).maybeSingle(),
+        supabase.from("organizations").select("subscription_tier,subscription_status").eq("id", organizationId).maybeSingle(),
+        supabase.from("organization_invites").select("invited_email,org_role,expires_at,uses_count,max_uses,is_active").eq("organization_id", organizationId),
       ]);
 
       const deptMap = new Map<string, string>((deptRes.data ?? []).map((d: any) => [d.id, d.name]));
