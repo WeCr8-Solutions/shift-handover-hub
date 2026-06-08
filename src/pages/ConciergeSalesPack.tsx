@@ -86,6 +86,31 @@ export default function ConciergeSalesPack() {
   const tier = engagement?.plan_tier ?? "standard";
   const amount = tier === "enterprise" ? "$4,500" : tier === "complimentary" ? "Complimentary" : "$1,500";
 
+  const SECTIONS: { key: string; label: string }[] = [
+    { key: "cover", label: "Cover" },
+    { key: "msa", label: "Master Services Agreement" },
+    { key: "payment", label: "Payment Instructions" },
+    { key: "itar", label: "ITAR / US-Person Declaration" },
+    { key: "equipment", label: "Equipment Intake" },
+    { key: "stations", label: "Stations & Departments" },
+    { key: "users", label: "Users & Roles" },
+    { key: "routing", label: "Routing Templates" },
+    { key: "quality", label: "Quality & Inspection" },
+    { key: "erp", label: "ERP Integration" },
+    { key: "golive", label: "Go-Live Checklist" },
+    { key: "signature", label: "Signature Page" },
+  ];
+  const [selected, setSelected] = useState<Record<string, boolean>>(
+    () => Object.fromEntries(SECTIONS.map((s) => [s.key, true]))
+  );
+  const [paperSize, setPaperSize] = useState<"Letter" | "A4" | "Legal">("Letter");
+  const [orientation, setOrientation] = useState<"portrait" | "landscape">("portrait");
+  const [copies, setCopies] = useState(1);
+  const isOn = (key: string) => selected[key] !== false;
+  const toggle = (key: string) => setSelected((s) => ({ ...s, [key]: !isOn(key) }));
+  const setAll = (val: boolean) =>
+    setSelected(Object.fromEntries(SECTIONS.map((s) => [s.key, val])));
+
   if (authLoading || rolesLoading) return <Skeleton className="h-screen w-full" />;
   if (!user || !(isPlatformAdmin || isDeveloper)) {
     return (
@@ -95,20 +120,80 @@ export default function ConciergeSalesPack() {
     );
   }
 
+  const handlePrint = () => {
+    for (let i = 0; i < Math.max(1, copies); i++) window.print();
+  };
+
   return (
     <div className="min-h-screen bg-muted/30 print:bg-white">
       <Helmet>
         <meta name="robots" content="noindex,nofollow" />
-        <style>{`@media print { @page { size: Letter; margin: 0; } body { background: white; } .no-print { display: none !important; } }`}</style>
+        <style>{`@media print { @page { size: ${paperSize} ${orientation}; margin: 0; } body { background: white; } .no-print { display: none !important; } }`}</style>
       </Helmet>
 
-      <div className="no-print sticky top-0 z-10 bg-background border-b px-4 py-2 flex items-center justify-between">
-        <div className="text-sm text-muted-foreground">
-          Print preview · use the Document Library below to download individual PDF / DOCX / Excel files, or use your browser's print dialog to export the full pack.
+      <div className="no-print sticky top-0 z-10 bg-background border-b px-4 py-3 space-y-3">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="text-sm text-muted-foreground">
+            Select sections + printer options below, then print the pack or download individual files from the library.
+          </div>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" onClick={() => setAll(true)}>Select all</Button>
+            <Button size="sm" variant="outline" onClick={() => setAll(false)}>Clear</Button>
+            <Button size="sm" onClick={handlePrint} className="gap-2">
+              <Printer className="w-4 h-4" /> Print selected
+            </Button>
+          </div>
         </div>
-        <Button size="sm" onClick={() => window.print()} className="gap-2">
-          <Printer className="w-4 h-4" /> Print full pack
-        </Button>
+
+        <div className="flex flex-wrap gap-x-4 gap-y-2">
+          {SECTIONS.map((s) => (
+            <label key={s.key} className="flex items-center gap-2 text-xs">
+              <Checkbox checked={isOn(s.key)} onCheckedChange={() => toggle(s.key)} />
+              <span>{s.label}</span>
+            </label>
+          ))}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-4 text-xs border-t pt-2">
+          <div className="font-semibold text-muted-foreground uppercase tracking-wider">Printer</div>
+          <Label className="flex items-center gap-2">
+            Paper
+            <select
+              value={paperSize}
+              onChange={(e) => setPaperSize(e.target.value as "Letter" | "A4" | "Legal")}
+              className="border rounded px-2 py-1 bg-background"
+            >
+              <option value="Letter">Letter (8.5×11)</option>
+              <option value="A4">A4</option>
+              <option value="Legal">Legal (8.5×14)</option>
+            </select>
+          </Label>
+          <Label className="flex items-center gap-2">
+            Orientation
+            <select
+              value={orientation}
+              onChange={(e) => setOrientation(e.target.value as "portrait" | "landscape")}
+              className="border rounded px-2 py-1 bg-background"
+            >
+              <option value="portrait">Portrait</option>
+              <option value="landscape">Landscape</option>
+            </select>
+          </Label>
+          <Label className="flex items-center gap-2">
+            Copies
+            <input
+              type="number"
+              min={1}
+              max={10}
+              value={copies}
+              onChange={(e) => setCopies(Math.max(1, Math.min(10, Number(e.target.value) || 1)))}
+              className="border rounded px-2 py-1 w-16 bg-background"
+            />
+          </Label>
+          <span className="text-muted-foreground">
+            Tip: in the print dialog choose <b>two-sided</b> + <b>scale 100%</b> for wet-signature packs.
+          </span>
+        </div>
       </div>
 
       <div className="no-print max-w-6xl mx-auto px-4 pt-4">
@@ -119,6 +204,7 @@ export default function ConciergeSalesPack() {
           description="Per-document preview and download (PDF, editable DOCX, and Excel worksheets matching the in-app intake fields). Use these for paper onboarding or to email a customer pack ahead of the kickoff call."
         />
       </div>
+
 
       {isLoading && engagementId ? (
         <div className="p-8"><Skeleton className="h-96 w-full" /></div>
