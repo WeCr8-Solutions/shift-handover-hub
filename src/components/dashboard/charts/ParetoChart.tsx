@@ -70,7 +70,12 @@ export function ParetoChart({
 
   if (!data.length) {
     return (
-      <ChartEmptyState message="No downtime recorded in this window. Log downtime from the station panel so this Pareto chart can highlight the biggest losses." />
+      <ChartEmptyState
+        icon={AlertOctagon}
+        title="No downtime recorded yet"
+        message="Once operators log downtime from the station panel, this Pareto chart will rank the biggest losses by reason."
+        hint="Log downtime to populate"
+      />
     );
   }
 
