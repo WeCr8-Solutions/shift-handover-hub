@@ -181,7 +181,11 @@ export function QueueKanbanBoard({
     if (draggedItem.status !== targetStatus) {
       const validTargets = VALID_TRANSITIONS[draggedItem.status] || [];
       if (!validTargets.includes(targetStatus)) {
-        toast.error(`Cannot move from "${draggedItem.status.replace("_", " ")}" to "${targetStatus.replace("_", " ")}". Valid targets: ${validTargets.map(s => s.replace("_", " ")).join(", ") || "none"}`);
+        woToast.blocked(
+          "Invalid status transition",
+          `Cannot move from "${draggedItem.status.replace("_", " ")}" to "${targetStatus.replace("_", " ")}". Valid targets: ${validTargets.map(s => s.replace("_", " ")).join(", ") || "none"}`,
+          draggedItem.work_order,
+        );
         handleDragEnd();
         return;
       }
