@@ -83,3 +83,19 @@ project_id = "kgrstnbxqdmadtoankqr"
   # Service-role function used only by Playwright e2e suite to provision fixtures.
   [functions.seed-e2e]
     verify_jwt = false
+
+  # Lovable Emails: transactional sender (validates caller JWT, then enqueues)
+  [functions.send-transactional-email]
+    verify_jwt = true
+
+  # Lovable Emails: template preview endpoint (gated by LOVABLE_API_KEY in code)
+  [functions.preview-transactional-email]
+    verify_jwt = false
+
+  # Lovable Emails: one-click unsubscribe handler (token-validated in code)
+  [functions.handle-email-unsubscribe]
+    verify_jwt = false
+
+  # Lovable Emails: bounce/complaint webhook (HMAC-verified in code)
+  [functions.handle-email-suppression]
+    verify_jwt = false
