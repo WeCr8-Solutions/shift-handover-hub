@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { QueueItem, QueueStatus, UpdateQueueItemInput } from "@/hooks/useQueue";
 import { Station } from "@/hooks/useStations";
-import { useToast } from "@/hooks/use-toast";
+import { woToast } from "@/lib/woToast";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
