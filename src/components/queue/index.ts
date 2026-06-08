@@ -1,6 +1,7 @@
 export * from "./QueueStatsCards";
 export * from "./QueueFilters";
 export * from "./QueueKanbanBoard";
+export * from "./MobileQueueKanban";
 export * from "./QueueListView";
 export * from "./QueueCalendarView";
 export * from "./CreateQueueItemDialog";

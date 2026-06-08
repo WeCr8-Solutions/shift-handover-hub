@@ -16,6 +16,8 @@ import { RefreshIndicator } from "@/components/dashboard/RefreshIndicator";
 import { QRScanButton } from "@/components/QRScanButton";
 import { Header } from "@/components/Header";
 import { QueueKanbanBoard } from "@/components/queue/QueueKanbanBoard";
+import { MobileQueueKanban } from "@/components/queue/MobileQueueKanban";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { QueueListView } from "@/components/queue/QueueListView";
 import { QueueCalendarView } from "@/components/queue/QueueCalendarView";
 import { QueueFilters } from "@/components/queue/QueueFilters";
@@ -58,6 +60,7 @@ export default function Queue() {
   const [searchParams] = useSearchParams();
   const { user, loading: authLoading, isReady } = useAuth();
   const { hasAdminAccess, loading: accessLoading } = useAdminAccess();
+  const isMobile = useIsMobile();
   const { organization } = useOrgContext();
   const { activeSessions = [], checkIn: checkInToStation, refresh: refreshSessions } = useOperatorSessions();
   const [checkInDialogOpen, setCheckInDialogOpen] = useState(false);
@@ -451,14 +454,24 @@ export default function Queue() {
             ) : (
               <>
                 {view === "kanban" && (
-                  <QueueKanbanBoard
-                    itemsByStatus={itemsByStatus}
-                    onItemClick={setSelectedItemId}
-                    onStatusChange={(itemId, newStatus) => updateItem(itemId, { status: newStatus })}
-                    onReorder={reorderItems}
-                    requiresStationCheckIn={!hasAdminAccess && activeSessions.length === 0}
-                    onRequestStationCheckIn={() => setCheckInDialogOpen(true)}
-                  />
+                  isMobile ? (
+                    <MobileQueueKanban
+                      itemsByStatus={itemsByStatus}
+                      onItemClick={setSelectedItemId}
+                      onStatusChange={(itemId, newStatus) => updateItem(itemId, { status: newStatus })}
+                      requiresStationCheckIn={!hasAdminAccess && activeSessions.length === 0}
+                      onRequestStationCheckIn={() => setCheckInDialogOpen(true)}
+                    />
+                  ) : (
+                    <QueueKanbanBoard
+                      itemsByStatus={itemsByStatus}
+                      onItemClick={setSelectedItemId}
+                      onStatusChange={(itemId, newStatus) => updateItem(itemId, { status: newStatus })}
+                      onReorder={reorderItems}
+                      requiresStationCheckIn={!hasAdminAccess && activeSessions.length === 0}
+                      onRequestStationCheckIn={() => setCheckInDialogOpen(true)}
+                    />
+                  )
                 )}
 
                 {view === "list" && (
