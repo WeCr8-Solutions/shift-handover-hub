@@ -63,6 +63,14 @@ export function QueueItemActions({
   const [convertStationId, setConvertStationId] = useState<string | undefined>();
   const [converting, setConverting] = useState(false);
   const [cloning, setCloning] = useState(false);
+  const [handoffPrompt, setHandoffPrompt] = useState<{
+    open: boolean;
+    nextStationId?: string | null;
+    nextStationName?: string | null;
+    nextOperationName?: string | null;
+    nextOperationNumber?: string | null;
+    finalCompletion: boolean;
+  }>({ open: false, finalCompletion: false });
 
   const handleCloneWorkOrder = async () => {
     setCloning(true);
