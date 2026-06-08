@@ -17,8 +17,10 @@ export function ShiftStats() {
   const { records: dbRecords, loading: recordsLoading } = useHandoffRecords(currentTeam?.id, organization?.id);
 
   // Use database data when logged in, mock data when not
+  // Use database data when logged in. Unauthenticated visitors see EMPTY
+  // arrays so they never see content that resembles another org's live data.
   const stations = useMemo(() => {
-    if (!user) return mockStations;
+    if (!user) return [];
     return dbStations.map((s) => ({
       ...s,
       currentJob: s.current_status ? {
@@ -28,7 +30,7 @@ export function ShiftStats() {
   }, [user, dbStations]);
 
   const handoffRecords = useMemo(() => {
-    if (!user) return mockHandoffRecords;
+    if (!user) return [];
     return dbRecords;
   }, [user, dbRecords]);
 
