@@ -395,14 +395,14 @@ export function QueueItemActions({
         .eq("id", item.id);
       if (updateErr) throw updateErr;
 
-      toast({ title: "Quote Converted", description: `Now tracking as Work Order: ${convertWONumber}` });
+      woToast.success("Quote converted", convertWONumber, `Now tracking as Work Order: ${convertWONumber}`);
       setConvertDialogOpen(false);
       setConvertWONumber("");
       setConvertStationId(undefined);
       onReloadHistory();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Conversion failed";
-      toast({ title: "Error", description: message, variant: "destructive" });
+      woToast.error("Conversion failed", message, wo);
     } finally {
       setConverting(false);
     }
