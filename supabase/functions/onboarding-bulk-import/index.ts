@@ -153,15 +153,72 @@ Deno.serve(async (req) => {
         break;
       }
       case "users_roles": {
+        // Pre-load existing invites + members so we can dedupe by email
+        const { data: existingInvites } = await admin
+          .from("organization_invites")
+          .select("invited_email")
+          .eq("organization_id", orgId)
+          .eq("is_active", true);
+        const inviteEmails = new Set(
+          (existingInvites ?? [])
+            .map((r: any) => (r.invited_email ?? "").toLowerCase())
+            .filter(Boolean),
+        );
+        // Members table holds user_id; resolve emails via profiles
+        const { data: members } = await admin
+          .from("organization_members")
+          .select("user_id")
+          .eq("organization_id", orgId);
+        const memberIds = (members ?? []).map((m: any) => m.user_id).filter(Boolean);
+        let memberEmails = new Set<string>();
+        if (memberIds.length) {
+          const { data: profs } = await admin
+            .from("profiles").select("email").in("user_id", memberIds);
+          memberEmails = new Set(
+            (profs ?? []).map((p: any) => (p.email ?? "").toLowerCase()).filter(Boolean),
+          );
+        }
+
+        // Load existing intake payload so we can merge instead of overwrite
+        const { data: prior } = await admin
+          .from("onboarding_intake_responses")
+          .select("payload")
+          .eq("engagement_id", engagement_id)
+          .eq("module_key", "users_roles")
+          .maybeSingle();
+        const payload: any = (prior?.payload as any) ?? {};
+        payload.supervisors = Array.isArray(payload.supervisors) ? payload.supervisors : [];
+        payload.operators = Array.isArray(payload.operators) ? payload.operators : [];
+        const intakeEmails = new Set<string>();
+        if (payload.owner?.email) intakeEmails.add(String(payload.owner.email).toLowerCase());
+        for (const u of [...payload.supervisors, ...payload.operators]) {
+          if (u?.email) intakeEmails.add(String(u.email).toLowerCase());
+        }
+
+        const seenInBatch = new Set<string>();
         for (let i = 0; i < rows.length; i++) {
           const r = rows[i];
           if (!required(r, ["email", "role"], i, result.errors)) { result.skipped++; continue; }
+          const email = r.email.trim().toLowerCase();
+          if (seenInBatch.has(email)) {
+            result.errors.push({ row: i + 2, message: `Duplicate email in upload: ${email}` });
+            result.skipped++; continue;
+          }
+          seenInBatch.add(email);
+          if (memberEmails.has(email)) {
+            result.errors.push({ row: i + 2, message: `${email} is already a member of this org` });
+            result.skipped++; continue;
+          }
+          if (inviteEmails.has(email)) {
+            result.errors.push({ row: i + 2, message: `${email} already has an active invite` });
+            result.skipped++; continue;
+          }
           if (dry_run) { result.inserted++; continue; }
           const code = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`.toUpperCase();
           const { error } = await admin.from("organization_invites").insert({
             organization_id: orgId,
             invite_code: code,
-            invited_email: r.email,
+            invited_email: email,
             org_role: r.role === "admin" ? "admin" : "member",
             app_role: ["admin","supervisor","operator","developer"].includes(r.role) ? r.role : "operator",
             created_by: uid,
@@ -169,8 +226,39 @@ Deno.serve(async (req) => {
             max_uses: 1,
             expires_at: new Date(Date.now() + 15 * 86400 * 1000).toISOString(),
           });
-          if (error) { result.errors.push({ row: i + 2, message: error.message }); result.skipped++; }
-          else result.inserted++;
+          if (error) { result.errors.push({ row: i + 2, message: error.message }); result.skipped++; continue; }
+          inviteEmails.add(email);
+
+          // Merge into intake payload (dedupe by email) so the editor reflects imports
+          if (!intakeEmails.has(email)) {
+            const member = {
+              name: (r.first_name || r.last_name) ? `${r.first_name ?? ""} ${r.last_name ?? ""}`.trim() : email.split("@")[0],
+              email,
+              role: r.role,
+              app_role: ["admin","supervisor","operator","developer"].includes(r.role) ? r.role : "operator",
+              invite_code: code,
+            };
+            if (r.role === "admin" && !payload.owner) payload.owner = member;
+            else if (r.role === "supervisor") payload.supervisors.push(member);
+            else payload.operators.push(member);
+            intakeEmails.add(email);
+          }
+          result.inserted++;
+        }
+
+        if (!dry_run && result.inserted > 0) {
+          await admin
+            .from("onboarding_intake_responses")
+            .upsert(
+              {
+                engagement_id,
+                organization_id: orgId,
+                module_key: "users_roles",
+                payload,
+                submitted_by: uid,
+              },
+              { onConflict: "engagement_id,module_key" } as any,
+            );
         }
         break;
       }
