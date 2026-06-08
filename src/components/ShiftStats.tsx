@@ -3,7 +3,9 @@ import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useStations, useHandoffRecords } from "@/hooks/useStations";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrgContext } from "@/contexts/OrgContext";
-import { mockStations, mockHandoffRecords } from "@/lib/mockData";
+// Mock station/handoff data intentionally not imported — unauthenticated
+// visitors should see a zeroed dashboard, not anything that resembles a real
+// org. Sample data is reserved for the /demo route only.
 import { useMemo } from "react";
 import { getStatusFromJobState } from "@/components/dashboard/stationStatus";
 
@@ -15,8 +17,10 @@ export function ShiftStats() {
   const { records: dbRecords, loading: recordsLoading } = useHandoffRecords(currentTeam?.id, organization?.id);
 
   // Use database data when logged in, mock data when not
+  // Use database data when logged in. Unauthenticated visitors see EMPTY
+  // arrays so they never see content that resembles another org's live data.
   const stations = useMemo(() => {
-    if (!user) return mockStations;
+    if (!user) return [];
     return dbStations.map((s) => ({
       ...s,
       currentJob: s.current_status ? {
@@ -26,7 +30,7 @@ export function ShiftStats() {
   }, [user, dbStations]);
 
   const handoffRecords = useMemo(() => {
-    if (!user) return mockHandoffRecords;
+    if (!user) return [];
     return dbRecords;
   }, [user, dbRecords]);
 
