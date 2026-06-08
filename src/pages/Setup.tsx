@@ -74,13 +74,12 @@ export default function Setup() {
     // `isReady` is true once initial getSession() resolves; only then is `!user` authoritative.
     if (isReady && !user) {
       navigate('/auth');
-      return;
     }
-    // Respect "Don't show again" — redirect to dashboard
-    if (isReady && !onboardingLoading && user && setupWizardDismissed) {
-      navigate('/dashboard', { replace: true });
-    }
-  }, [isReady, onboardingLoading, user, setupWizardDismissed, navigate]);
+    // NOTE: We intentionally do NOT auto-redirect dismissed users back to /dashboard here.
+    // Index.tsx is the single owner of the dashboard↔setup decision; bouncing here while
+    // useOnboarding is hydrating caused an onboarding-flash loop where the welcome view
+    // appeared, disappeared, and reappeared on each remount.
+  }, [isReady, user, navigate]);
 
 
   const fetchSetupStatus = async (showLoader = true) => {
