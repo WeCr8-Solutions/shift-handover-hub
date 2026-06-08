@@ -202,9 +202,9 @@ export function QueueListView({ items, onItemClick, onStatusChange, onDelete, on
             )
             .eq("id", pendingAction.item.id);
           if (error) {
-            toast.error(error.message);
+            woToast.error(pendingAction.mode === "cancel" ? "Cancel failed" : "Hold failed", error.message, pendingAction.item.work_order);
           } else {
-            toast.success(pendingAction.mode === "cancel" ? "Work order cancelled" : "Work order placed on hold");
+            woToast.success(pendingAction.mode === "cancel" ? "Work order cancelled" : "Work order placed on hold", pendingAction.item.work_order);
           }
         }}
       />
