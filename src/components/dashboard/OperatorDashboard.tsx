@@ -241,6 +241,19 @@ export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDas
         </Tabs>
       )}
 
+      {/* Shop Production Analytics — read-only for operators, populates as data grows */}
+      <Suspense
+        fallback={
+          <div className="bg-card border border-border rounded-lg p-6 text-center text-muted-foreground text-sm">
+            Loading shop analytics…
+          </div>
+        }
+      >
+        <OperatorProductionAnalytics stations={dbStations} handoffs={dbRecords} />
+      </Suspense>
+
+
+
       {/* Handoff modal */}
       {showHandoff && (
         <NewHandoffForm
