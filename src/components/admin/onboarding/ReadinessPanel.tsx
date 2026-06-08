@@ -7,6 +7,7 @@ import { useProductionReadiness, type Engagement } from "@/hooks/useOnboardingEn
 import { supabase } from "@/integrations/supabase/client";
 import { woToast } from "@/lib/woToast";
 import { SeedBasicShopButton } from "./SeedBasicShopButton";
+import { BlockerActions } from "./BlockerActions";
 
 const COUNT_LABELS: Record<string, string> = {
   departments: "Departments",
@@ -144,16 +145,19 @@ export function ReadinessPanel({ organizationId, engagement }: { organizationId:
         </div>
 
         {!ready && allBlockers.length > 0 && (
-          <div className="rounded border border-destructive/40 p-3 space-y-1">
-            <div className="flex items-center gap-2 text-xs font-medium text-destructive">
-              <AlertTriangle className="w-3.5 h-3.5" /> Blockers
-            </div>
-            <ul className="text-xs space-y-0.5">
-              {allBlockers.map((b, i) => (
-                <li key={i} className="flex items-start gap-2"><span>•</span>{b}</li>
-              ))}
-            </ul>
-          </div>
+          <BlockerActions
+            organizationId={organizationId}
+            blockers={allBlockers}
+            onScrollTo={(id) => {
+              const el = document.getElementById(id);
+              if (el) {
+                el.scrollIntoView({ behavior: "smooth", block: "start" });
+                el.classList.add("ring-2", "ring-primary");
+                setTimeout(() => el.classList.remove("ring-2", "ring-primary"), 1600);
+              }
+            }}
+            onChanged={() => refetch()}
+          />
         )}
         {ready && (
           <div className="rounded border border-status-ok/40 p-3 text-xs flex items-center gap-2 text-status-ok">
