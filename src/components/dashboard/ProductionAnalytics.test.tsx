@@ -19,6 +19,14 @@ vi.mock("recharts", () => ({
   Legend: () => null,
 }));
 
+vi.mock("@/hooks/useDowntimeAnalytics", () => ({
+  useDowntimeAnalytics: () => ({ events: [], loading: false, refresh: vi.fn() }),
+}));
+
+vi.mock("@/contexts/OrgContext", () => ({
+  useOrgContext: () => ({ organization: { id: "org-1" }, organizations: [], setActiveOrg: vi.fn(), loading: false }),
+}));
+
 import { ProductionAnalytics } from "./ProductionAnalytics";
 
 const mockStations = [
