@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,11 +6,28 @@ import { cn } from "@/lib/utils";
 import { SmartAlertCard } from "./SmartAlertCard";
 import type { SmartAlert, SmartAlertType, SmartAlertSeverity } from "@/hooks/useSmartAlerts";
 import {
-  AlertTriangle,
   Filter,
   ChevronDown,
+  ChevronUp,
   BellRing,
 } from "lucide-react";
+
+const DISMISS_KEY = "dismissed_smart_alerts_v1";
+const DISMISS_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
+
+function loadDismissed(): Record<string, number> {
+  try {
+    const raw = localStorage.getItem(DISMISS_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as Record<string, number>;
+    const now = Date.now();
+    return Object.fromEntries(Object.entries(parsed).filter(([, ts]) => now - ts < DISMISS_TTL_MS));
+  } catch { return {}; }
+}
+
+function persistDismissed(map: Record<string, number>) {
+  try { localStorage.setItem(DISMISS_KEY, JSON.stringify(map)); } catch { /* ignore */ }
+}
 
 const TYPE_LABELS: Record<SmartAlertType, string> = {
   overdue: "Overdue",
