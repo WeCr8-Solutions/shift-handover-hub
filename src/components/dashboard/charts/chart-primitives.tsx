@@ -43,12 +43,29 @@ export function safeAdd(a: number, b: number | null | undefined): number {
 
 interface ChartEmptyStateProps {
   message: string;
+  /** Optional Lucide icon to anchor the empty state visually. */
+  icon?: LucideIcon;
+  /** Optional short headline above the message. */
+  title?: string;
+  /** Optional CTA hint (e.g. "Add your first station") rendered as a subtle pill. */
+  hint?: string;
 }
 
-export function ChartEmptyState({ message }: ChartEmptyStateProps) {
+export function ChartEmptyState({ message, icon: Icon, title, hint }: ChartEmptyStateProps) {
   return (
-    <div className="flex items-center justify-center h-48 text-sm text-muted-foreground">
-      {message}
+    <div className="flex flex-col items-center justify-center text-center h-56 px-6 gap-3 rounded-md bg-muted/30 border border-dashed border-border">
+      {Icon ? (
+        <div className="rounded-full bg-primary/10 p-3 text-primary">
+          <Icon className="w-6 h-6" aria-hidden="true" />
+        </div>
+      ) : null}
+      {title ? <p className="text-sm font-semibold text-foreground">{title}</p> : null}
+      <p className="text-xs text-muted-foreground max-w-xs leading-relaxed">{message}</p>
+      {hint ? (
+        <span className="inline-flex items-center text-[10px] font-medium uppercase tracking-wider text-primary bg-primary/10 rounded-full px-2.5 py-1">
+          {hint}
+        </span>
+      ) : null}
     </div>
   );
 }
