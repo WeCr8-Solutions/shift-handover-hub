@@ -125,7 +125,8 @@ export function QueueListView({ items, onItemClick, onStatusChange, onDelete, on
                           return;
                         }
                         const result = await onStatusChange(item.id, next);
-                        if (result.error) toast.error(result.error);
+                        if (result.error) woToast.error("Status update failed", result.error, item.work_order);
+                        else woToast.success(`Status → ${next.replace("_", " ")}`, item.work_order);
                       }}
                     >
                       <SelectTrigger className="h-6 w-6 p-0 border-0 bg-transparent [&>svg]:hidden">
