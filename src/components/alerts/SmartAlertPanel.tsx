@@ -94,12 +94,12 @@ export function SmartAlertPanel({
   const visible = expanded ? filtered : filtered.slice(0, maxVisible);
   const hasMore = filtered.length > maxVisible;
 
-  // Severity summary
+  // Severity summary (excludes dismissed)
   const sevCounts = useMemo(() => {
     const m = { critical: 0, warning: 0, info: 0 };
-    alerts.forEach((a) => m[a.severity]++);
+    visibleAlerts.forEach((a) => m[a.severity]++);
     return m;
-  }, [alerts]);
+  }, [visibleAlerts]);
 
   // Active type tabs
   const activeTypes = useMemo(() => {
