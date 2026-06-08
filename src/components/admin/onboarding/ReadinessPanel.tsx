@@ -7,6 +7,7 @@ import { useProductionReadiness, type Engagement } from "@/hooks/useOnboardingEn
 import { supabase } from "@/integrations/supabase/client";
 import { woToast } from "@/lib/woToast";
 import { SeedBasicShopButton } from "./SeedBasicShopButton";
+import { BlockerActions } from "./BlockerActions";
 
 const COUNT_LABELS: Record<string, string> = {
   departments: "Departments",
