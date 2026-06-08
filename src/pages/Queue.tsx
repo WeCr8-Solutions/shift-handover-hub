@@ -16,6 +16,8 @@ import { RefreshIndicator } from "@/components/dashboard/RefreshIndicator";
 import { QRScanButton } from "@/components/QRScanButton";
 import { Header } from "@/components/Header";
 import { QueueKanbanBoard } from "@/components/queue/QueueKanbanBoard";
+import { MobileQueueKanban } from "@/components/queue/MobileQueueKanban";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { QueueListView } from "@/components/queue/QueueListView";
 import { QueueCalendarView } from "@/components/queue/QueueCalendarView";
 import { QueueFilters } from "@/components/queue/QueueFilters";
