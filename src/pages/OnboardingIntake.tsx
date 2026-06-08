@@ -234,7 +234,23 @@ function StepFields({
       );
     case "stations":
       return (
-        <StationsStepFields form={form} upd={upd} />
+        <>
+          <div className="rounded border bg-muted/30 p-3 space-y-2">
+            <div className="text-sm font-medium">Quick start: basic shop layout</div>
+            <p className="text-xs text-muted-foreground">
+              One click creates a sensible default: Office, CNC Operations, Welding &amp; Assembly,
+              Shipping &amp; Receiving, and Quality / Inspection — plus one station per machine you've imported.
+              Safe to re-run.
+            </p>
+          </div>
+          <div><Label># of work stations (optional override)</Label>
+            <Input type="number" value={form.stations.count}
+              onChange={(e) => upd("stations", { count: e.target.value })} /></div>
+          <div><Label>Additional departments beyond the defaults (one per line)</Label>
+            <Textarea rows={3} placeholder={"Water Jet\nPunch Press\nPaint Booth"}
+              value={form.stations.departments}
+              onChange={(e) => upd("stations", { departments: e.target.value })} /></div>
+        </>
       );
     case "users_roles":
       return (
