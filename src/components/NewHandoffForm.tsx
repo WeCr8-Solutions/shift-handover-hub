@@ -319,12 +319,21 @@ export function NewHandoffForm({ onClose, onSubmit, initialStationId, prefillDat
         // Station will be handled by initialStationId effect if both are set
         handleStationChange(prefillData.station_id);
       }
-      if (Object.keys(updates).length > 0) {
-        setFormData(prev => ({ ...prev, ...updates }));
+      if (prefillData.next_station_name || prefillData.next_operation_name) {
+        const nextOpParts = [
+          prefillData.next_operation_number ? `Op ${prefillData.next_operation_number}` : null,
+          prefillData.next_operation_name,
+        ].filter(Boolean).join(" — ");
+        const nextStation = prefillData.next_station_name ? `Next station: ${prefillData.next_station_name}` : "";
+        const nextOp = nextOpParts ? `Next operation: ${nextOpParts}` : "";
+        const handoffNote = [nextStation, nextOp].filter(Boolean).join(". ");
+        if (handoffNote) {
+          updates.handoffSummary = `${handoffNote}.\n\n`;
+        }
       }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [prefillData, stations.length]);
+      if (Object.keys(updates).length > 0) {
+        setFormData(prev => ({ ...prev, ...updates, handoffSummary: updates.handoffSummary ? `${updates.handoffSummary}${prev.handoffSummary || ""}` : prev.handoffSummary }));
+      }
 
   const updateField = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
