@@ -25,7 +25,12 @@ export function StackedStatusChart({
   return (
     <ChartContainer subtitle={subtitle}>
       {data.length === 0 ? (
-        <ChartEmptyState message={emptyMessage} />
+        <ChartEmptyState
+          icon={Users}
+          title="Awaiting structure"
+          message={emptyMessage}
+          hint="Assign stations to a team or work center"
+        />
       ) : (
         <ScrollableChartWrapper minWidth={Math.max(500, data.length * 80)}>
           <ResponsiveContainer width="100%" height={280}>
