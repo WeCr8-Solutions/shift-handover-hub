@@ -327,7 +327,7 @@ export function QueueItemActions({
 
   const handleConvertToWorkOrder = async () => {
     if (!convertWONumber.trim()) {
-      toast({ title: "Error", description: "Please enter a work order number", variant: "destructive" });
+      woToast.error("Work order number required", "Please enter a work order number", wo);
       return;
     }
     setConverting(true);
