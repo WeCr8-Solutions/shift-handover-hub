@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { FileText, FileSpreadsheet, FileSignature, Eye, Download, Loader2, Package } from "lucide-react";
+import { FileText, FileSpreadsheet, FileSignature, Eye, Download, Loader2, Package, Printer } from "lucide-react";
 import { toast } from "sonner";
 import JSZip from "jszip";
 import {
@@ -36,7 +36,7 @@ const KIND_ICON: Record<string, any> = {
 
 export function DocumentLibrary({ audience, engagement, title, description }: Props) {
   const ctx = useMemo(() => engagement ? engagementContext(engagement) : defaultContext(), [engagement]);
-  const [previewBlob, setPreviewBlob] = useState<{ url: string; title: string } | null>(null);
+  const [previewBlob, setPreviewBlob] = useState<{ url: string; title: string; filename: string; format: DocumentFormat } | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [bundling, setBundling] = useState(false);
 
@@ -51,15 +51,50 @@ export function DocumentLibrary({ audience, engagement, title, description }: Pr
     return out;
   }, [docs]);
 
+  function printBlobUrl(url: string) {
+    const frame = document.createElement("iframe");
+    frame.src = url;
+    frame.title = "document-print-frame";
+    frame.style.position = "fixed";
+    frame.style.right = "0";
+    frame.style.bottom = "0";
+    frame.style.width = "0";
+    frame.style.height = "0";
+    frame.style.border = "0";
+    document.body.appendChild(frame);
+    frame.onload = () => {
+      window.setTimeout(() => {
+        frame.contentWindow?.focus();
+        frame.contentWindow?.print();
+        window.setTimeout(() => frame.remove(), 1500);
+      }, 250);
+    };
+  }
+
   async function handlePreview(doc: ConciergeDocument) {
     setBusy(`${doc.key}:preview`);
     try {
       const fmt: DocumentFormat = doc.formats.includes("pdf") ? "pdf" : doc.formats[0];
       const blob = await renderDocument(doc, fmt, ctx);
       const url = URL.createObjectURL(blob);
-      setPreviewBlob({ url, title: doc.title });
+      setPreviewBlob({ url, title: doc.title, filename: filenameFor(doc, fmt, ctx), format: fmt });
     } catch (e: any) {
       toast.error(`Preview failed: ${e?.message ?? e}`);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function handlePrintDoc(doc: ConciergeDocument) {
+    setBusy(`${doc.key}:print`);
+    try {
+      const fmt: DocumentFormat = doc.formats.includes("pdf") ? "pdf" : doc.formats[0];
+      const blob = await renderDocument(doc, fmt, ctx);
+      const url = URL.createObjectURL(blob);
+      printBlobUrl(url);
+      window.setTimeout(() => URL.revokeObjectURL(url), 30000);
+    } catch (e: any) {
+      toast.error(`Print failed: ${e?.message ?? e}`);
     } finally {
       setBusy(null);
     }
