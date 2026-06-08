@@ -85,13 +85,13 @@ export function CreateQueueItemDialog({ open, onOpenChange, onCreate, preselecte
     e.preventDefault();
     
     if (!formData.title.trim()) {
-      toast({ title: "Error", description: "Title is required", variant: "destructive" });
+      woToast.error("Title required");
       return;
     }
 
     // For work orders, require station assignment (quotes don't need one)
     if (formData.item_type === "work_order" && !formData.station_id) {
-      toast({ title: "Error", description: "Please assign a machine/station for the work order", variant: "destructive" });
+      woToast.error("Station required", "Please assign a machine/station for the work order");
       return;
     }
 
@@ -104,10 +104,10 @@ export function CreateQueueItemDialog({ open, onOpenChange, onCreate, preselecte
     setLoading(false);
 
     if (error) {
-      toast({ title: "Error", description: error, variant: "destructive" });
+      woToast.error("Create failed", error, formData.work_order);
     } else {
       const typeLabel = formData.item_type === "work_order" ? "Work order" : formData.item_type === "quote" ? "Quote" : "Queue item";
-      toast({ title: "Success", description: `${typeLabel} created` });
+      woToast.success(`${typeLabel} created`, formData.work_order || undefined);
       onOpenChange(false);
       // Reset form
       setFormData({
