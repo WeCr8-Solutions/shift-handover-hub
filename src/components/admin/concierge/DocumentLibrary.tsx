@@ -12,7 +12,6 @@ import {
   engagementContext, defaultContext,
   type ConciergeDocument, type DocumentAudience, type DocumentFormat,
 } from "@/lib/concierge/documentRegistry";
-import { supabase } from "@/integrations/supabase/client";
 
 interface Props {
   audience: DocumentAudience | "all";
@@ -52,15 +51,6 @@ export function DocumentLibrary({ audience, engagement, title, description }: Pr
     return out;
   }, [docs]);
 
-  async function logDownload(doc: ConciergeDocument, format: DocumentFormat) {
-    try {
-      await supabase.rpc("log_admin_event" as any, {
-        p_action: "concierge_document_download",
-        p_metadata: { key: doc.key, format, engagement_id: engagement?.id ?? null },
-      }).then(() => {/* swallow rpc-missing */}, () => {/* ignore */});
-    } catch {/* no-op — audit is best-effort */}
-  }
-
   async function handlePreview(doc: ConciergeDocument) {
     setBusy(`${doc.key}:preview`);
     try {
@@ -80,7 +70,6 @@ export function DocumentLibrary({ audience, engagement, title, description }: Pr
     try {
       const blob = await renderDocument(doc, format, ctx);
       downloadBlob(blob, filenameFor(doc, format, ctx));
-      void logDownload(doc, format);
       toast.success(`${doc.title} downloaded`);
     } catch (e: any) {
       toast.error(`Download failed: ${e?.message ?? e}`);
