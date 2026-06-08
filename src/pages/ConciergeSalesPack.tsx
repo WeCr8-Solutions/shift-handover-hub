@@ -75,6 +75,7 @@ function WorksheetTable({ columns, rows = 10 }: { columns: string[]; rows?: numb
 
 export default function ConciergeSalesPack({ publicMode = false }: { publicMode?: boolean }) {
   const { engagementId } = useParams<{ engagementId?: string }>();
+  const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { isAdmin: isPlatformAdmin, isDeveloper, loading: rolesLoading } = useAdminAccess();
   const hasStaffAccess = !!user && (isPlatformAdmin || isDeveloper);
@@ -83,9 +84,22 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
   useEffect(() => { document.title = "Concierge Sales Pack · JobLine.ai"; }, []);
 
   const today = useMemo(() => new Date().toLocaleDateString(), []);
-  const orgName = engagement?.organizations?.name ?? "_________________________";
+  const org = engagement?.organizations as any;
+  const orgName = org?.name ?? "_________________________";
+  const billingEmail = org?.billing_email ?? "_________________________";
   const tier = engagement?.plan_tier ?? "standard";
   const amount = tier === "enterprise" ? "$4,500" : tier === "complimentary" ? "Complimentary" : "$1,500";
+  const billingAddress = (engagement as any)?.customer_billing_address as { line1?: string; line2?: string; city?: string; state?: string; postal_code?: string; country?: string } | null | undefined;
+  const formattedAddress = billingAddress
+    ? [billingAddress.line1, billingAddress.line2, [billingAddress.city, billingAddress.state, billingAddress.postal_code].filter(Boolean).join(", "), billingAddress.country].filter(Boolean).join(" · ")
+    : "_________________________";
+  const taxId = (engagement as any)?.customer_tax_id ?? "_________________________";
+  const invoiceNumber = (engagement as any)?.invoice_number ?? "(assigned on invoice)";
+  const backTarget = engagementId ? `/admin?tab=concierge&engagement=${engagementId}` : "/admin?tab=concierge";
+  const handleBack = () => {
+    if (window.history.length > 1) navigate(-1);
+    else navigate(backTarget);
+  };
 
   const SECTIONS: { key: string; label: string }[] = [
     { key: "cover", label: "Cover" },
