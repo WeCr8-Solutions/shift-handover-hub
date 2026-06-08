@@ -13,7 +13,7 @@ import { useStations, Station } from "@/hooks/useStations";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useOrgContext } from "@/contexts/OrgContext";
 import { useQuoteSystem } from "@/hooks/useQuoteSystem";
-import { useToast } from "@/hooks/use-toast";
+import { woToast } from "@/lib/woToast";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { CalendarIcon, Loader2, Wrench, Factory, Circle } from "lucide-react";
