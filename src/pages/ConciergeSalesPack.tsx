@@ -129,6 +129,7 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
     { key: "equipment", label: "Equipment Intake" },
     { key: "stations", label: "Stations & Departments" },
     { key: "users", label: "Users & Roles" },
+    { key: "subscription", label: "Subscription & Seats" },
     { key: "routing", label: "Routing Templates" },
     { key: "quality", label: "Quality & Inspection" },
     { key: "erp", label: "ERP Integration" },
@@ -397,6 +398,52 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
             </p>
             <WorksheetTable rows={18} data={prefill?.users} columns={["email","first_name","last_name","role","department","default_station","phone","send_invite_now"]} />
           </PrintPage>)}
+
+          {/* 7b. Subscription & Seats */}
+          {isOn("subscription") && (
+          <PrintPage title="Subscription & Seats">
+            <h1 className="text-xl font-bold mb-3">Subscription plan &amp; seat allocation</h1>
+            {prefill ? (
+              <div className="grid grid-cols-2 gap-3 text-xs mb-4">
+                <div className="border border-black/40 p-3 rounded">
+                  <div className="font-semibold uppercase tracking-wider text-[10px] text-black/60">Plan</div>
+                  <div className="text-base font-bold capitalize">{prefill.subscription.plan}</div>
+                  <div>Tier: <b className="capitalize">{prefill.subscription.tier}</b></div>
+                  <div>Status: <b className="capitalize">{prefill.subscription.status}</b></div>
+                  {prefill.subscription.periodEnd && (
+                    <div>Renews: <b>{new Date(prefill.subscription.periodEnd).toLocaleDateString()}</b>{prefill.subscription.cancelAtPeriodEnd ? " (cancels at period end)" : ""}</div>
+                  )}
+                </div>
+                <div className="border border-black/40 p-3 rounded">
+                  <div className="font-semibold uppercase tracking-wider text-[10px] text-black/60">Seats</div>
+                  <div className="text-base font-bold">
+                    {prefill.subscription.seatsUsed}
+                    {prefill.subscription.seatLimit != null ? ` / ${prefill.subscription.seatLimit}` : ""}
+                    <span className="text-xs font-normal text-black/60"> used</span>
+                  </div>
+                  <div>Open seats: <b>{prefill.subscription.openSeats ?? "unlimited"}</b></div>
+                  <div>Pending invites: <b>{prefill.subscription.pendingInvites}</b></div>
+                </div>
+              </div>
+            ) : (
+              <p className="text-xs mb-4">Subscription details unavailable — verify with customer.</p>
+            )}
+            <p className="text-xs mb-2">
+              Seat ledger — every seat on the plan, who's assigned, and whether it's open for a new operator.
+              Use this to plan invites during the kickoff call.
+            </p>
+            <WorksheetTable
+              rows={Math.max(8, prefill?.subscription.seatAssignments.length ?? 0)}
+              data={prefill?.subscription.seatAssignments}
+              columns={["seat #","email","name","role","assigned","notes"]}
+            />
+            {prefill?.subscription.seatLimit != null && prefill.subscription.seatsUsed + prefill.subscription.pendingInvites > prefill.subscription.seatLimit && (
+              <p className="text-xs mt-3 border border-black/60 p-2">
+                <b>Over-seat warning:</b> {prefill.subscription.seatsUsed + prefill.subscription.pendingInvites} members + invites exceeds the {prefill.subscription.seatLimit}-seat limit. Customer must upgrade plan or reclaim seats before go-live.
+              </p>
+            )}
+          </PrintPage>)}
+
 
           {/* 8. Routing templates */}
           {isOn("routing") && (

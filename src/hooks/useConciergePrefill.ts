@@ -16,6 +16,18 @@ export interface ConciergePrefillData {
   quality: string[][]; // checkpoint_name, operation_after, tool_required, frequency, sample_size
   erp: { connector: string | null; baseUrl: string | null; persistenceMode: string | null } | null;
   intake: Record<string, any>; // module_key -> payload
+  subscription: {
+    plan: string;
+    status: string;
+    tier: string;
+    seatLimit: number | null;
+    seatsUsed: number;
+    openSeats: number | null;
+    pendingInvites: number;
+    periodEnd: string | null;
+    cancelAtPeriodEnd: boolean;
+    seatAssignments: string[][]; // seat_number, email, name, role, assigned (Y/N), notes
+  };
 }
 
 const EMPTY: ConciergePrefillData = {
@@ -26,6 +38,18 @@ const EMPTY: ConciergePrefillData = {
   quality: [],
   erp: null,
   intake: {},
+  subscription: {
+    plan: "free",
+    status: "unknown",
+    tier: "free",
+    seatLimit: null,
+    seatsUsed: 0,
+    openSeats: null,
+    pendingInvites: 0,
+    periodEnd: null,
+    cancelAtPeriodEnd: false,
+    seatAssignments: [],
+  },
 };
 
 export function useConciergePrefill(organizationId: string | null | undefined, engagementId: string | null | undefined) {
@@ -35,11 +59,11 @@ export function useConciergePrefill(organizationId: string | null | undefined, e
     queryFn: async (): Promise<ConciergePrefillData> => {
       if (!organizationId) return EMPTY;
 
-      const [eqRes, stRes, deptRes, memRes, rtRes, rsRes, qcRes, erpRes, intakeRes] = await Promise.all([
+      const [eqRes, stRes, deptRes, memRes, rtRes, rsRes, qcRes, erpRes, intakeRes, subRes, entRes, orgRes, inviteRes] = await Promise.all([
         supabase.from("equipment").select("asset_tag,name,equipment_type,manufacturer,model,serial_number,metadata").eq("organization_id", organizationId).order("asset_tag"),
         supabase.from("stations").select("station_id,name,work_center_type,daily_capacity_hours,department_id").eq("organization_id", organizationId).order("name"),
         supabase.from("departments").select("id,name").eq("organization_id", organizationId),
-        supabase.from("organization_members").select("user_id,role").eq("organization_id", organizationId),
+        supabase.from("organization_members").select("user_id,role,joined_at").eq("organization_id", organizationId).order("joined_at"),
         supabase.from("routing_templates").select("id,name").eq("organization_id", organizationId).order("name"),
         supabase.from("routing_template_steps").select("template_id,step_number,operation_name,work_center_type,setup_time_minutes,cycle_time_minutes,instructions").eq("organization_id", organizationId).order("step_number"),
         supabase.from("quality_checkpoints").select("name,checkpoint_type,required_for_work_centers,checklist_items").eq("organization_id", organizationId),
@@ -47,6 +71,10 @@ export function useConciergePrefill(organizationId: string | null | undefined, e
         engagementId
           ? supabase.from("onboarding_intake_responses").select("module_key,payload").eq("engagement_id", engagementId)
           : Promise.resolve({ data: [] as any[], error: null }),
+        supabase.from("subscriptions").select("status,quantity,current_period_end,cancel_at_period_end,stripe_price_id").eq("organization_id", organizationId).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+        supabase.from("entitlements").select("plan,limits").eq("organization_id", organizationId).maybeSingle(),
+        supabase.from("organizations").select("subscription_tier,subscription_status").eq("id", organizationId).maybeSingle(),
+        supabase.from("organization_invites").select("invited_email,org_role,expires_at,uses_count,max_uses,is_active").eq("organization_id", organizationId),
       ]);
 
       const deptMap = new Map<string, string>((deptRes.data ?? []).map((d: any) => [d.id, d.name]));
@@ -113,6 +141,62 @@ export function useConciergePrefill(organizationId: string | null | undefined, e
             }
           : null,
         intake,
+        subscription: (() => {
+          const ent = entRes.data as any;
+          const sub = subRes.data as any;
+          const org = orgRes.data as any;
+          const tier = org?.subscription_tier ?? ent?.plan ?? "free";
+          const plan = ent?.plan ?? tier;
+          const status = sub?.status ?? org?.subscription_status ?? "trial";
+          const seatLimit = ent?.limits?.users ?? sub?.quantity ?? null;
+          const memberCount = (memRes.data ?? []).length;
+          const activeInvites = (inviteRes.data ?? []).filter((i: any) => i.is_active && (!i.max_uses || i.uses_count < i.max_uses));
+          const pendingInvites = activeInvites.length;
+          const openSeats = seatLimit != null ? Math.max(0, seatLimit - memberCount) : null;
+          // Build seat-by-seat ledger: filled seats first, then open seats up to limit
+          const filledSeats: string[][] = (memRes.data ?? []).map((m: any, i: number) => {
+            const p = profileMap.get(m.user_id);
+            return [
+              String(i + 1),
+              p?.email ?? "(no email)",
+              p?.display_name ?? "",
+              m.role ?? "",
+              "Y",
+              "",
+            ];
+          });
+          const inviteRows: string[][] = activeInvites.map((inv: any, i: number) => [
+            String(filledSeats.length + i + 1),
+            inv.invited_email ?? "(open invite link)",
+            "",
+            inv.org_role ?? "",
+            "Invite sent",
+            inv.expires_at ? `Expires ${new Date(inv.expires_at).toLocaleDateString()}` : "",
+          ]);
+          const openCount = seatLimit != null
+            ? Math.max(0, seatLimit - filledSeats.length - inviteRows.length)
+            : 0;
+          const openRows: string[][] = Array.from({ length: openCount }, (_, i) => [
+            String(filledSeats.length + inviteRows.length + i + 1),
+            "",
+            "",
+            "",
+            "N — Open seat",
+            "",
+          ]);
+          return {
+            plan,
+            status,
+            tier,
+            seatLimit,
+            seatsUsed: memberCount,
+            openSeats,
+            pendingInvites,
+            periodEnd: sub?.current_period_end ?? null,
+            cancelAtPeriodEnd: !!sub?.cancel_at_period_end,
+            seatAssignments: [...filledSeats, ...inviteRows, ...openRows],
+          };
+        })(),
       };
     },
   });
