@@ -65,13 +65,31 @@ export function SmartAlertPanel({
   const [typeFilter, setTypeFilter] = useState<SmartAlertType | "all">("all");
   const [sevFilter, setSevFilter] = useState<SmartAlertSeverity | "all">("all");
   const [expanded, setExpanded] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  const [dismissed, setDismissed] = useState<Record<string, number>>(() => loadDismissed());
+
+  useEffect(() => {
+    const handler = () => setDismissed(loadDismissed());
+    window.addEventListener("storage", handler);
+    return () => window.removeEventListener("storage", handler);
+  }, []);
+
+  const handleDismiss = useCallback((a: SmartAlert) => {
+    setDismissed((prev) => {
+      const next = { ...prev, [a.id]: Date.now() };
+      persistDismissed(next);
+      return next;
+    });
+  }, []);
+
+  const visibleAlerts = useMemo(() => alerts.filter((a) => !dismissed[a.id]), [alerts, dismissed]);
 
   const filtered = useMemo(() => {
-    let items = alerts;
+    let items = visibleAlerts;
     if (typeFilter !== "all") items = items.filter((a) => a.type === typeFilter);
     if (sevFilter !== "all") items = items.filter((a) => a.severity === sevFilter);
     return items;
-  }, [alerts, typeFilter, sevFilter]);
+  }, [visibleAlerts, typeFilter, sevFilter]);
 
   const visible = expanded ? filtered : filtered.slice(0, maxVisible);
   const hasMore = filtered.length > maxVisible;
