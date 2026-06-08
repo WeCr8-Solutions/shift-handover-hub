@@ -6,7 +6,7 @@ import { QueueItem, QueueStatus } from "@/hooks/useQueue";
 import { cn } from "@/lib/utils";
 import { LayoutList, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { woToast } from "@/lib/woToast";
 import { WorkOrderAlertTile } from "./WorkOrderAlertTile";
 import { getQueueStatusBadgeColor } from "@/lib/status-colors";
 import { CancelHoldDialog, CancelHoldMode } from "./CancelHoldDialog";
