@@ -334,6 +334,11 @@ export function NewHandoffForm({ onClose, onSubmit, initialStationId, prefillDat
       if (Object.keys(updates).length > 0) {
         setFormData(prev => ({ ...prev, ...updates, handoffSummary: updates.handoffSummary ? `${updates.handoffSummary}${prev.handoffSummary || ""}` : prev.handoffSummary }));
       }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefillData, stations.length]);
+
+
 
   const updateField = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
