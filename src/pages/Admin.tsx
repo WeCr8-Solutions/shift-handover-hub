@@ -474,7 +474,7 @@ export default function Admin() {
                     </TabsTrigger>
                     <TabsTrigger value="onboarding-services" className="gap-2">
                       <Briefcase className="w-4 h-4" />
-                      Onboarding
+                      Customer Success
                     </TabsTrigger>
                   </div>
                 </>
