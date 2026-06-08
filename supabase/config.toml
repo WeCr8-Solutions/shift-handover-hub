@@ -29,6 +29,10 @@ project_id = "kgrstnbxqdmadtoankqr"
   [functions.auth-email-hook]
     verify_jwt = false
 
+  # Email queue worker (invoked by pg_cron via authenticated net.http_post)
+  [functions.process-email-queue]
+    verify_jwt = true
+
   # Auth: None — intentionally public. Stripe payment confirmation only.
   [functions.create-donation]
     verify_jwt = false
