@@ -129,14 +129,15 @@ export function QueueItemActions({
         await supabase.from("work_order_routing").insert(newSteps as never);
       }
 
-      toast({
-        title: "Work Order Cloned",
-        description: `Created ${newWO.work_order}. Edit the WO number, qty, or due date as needed.`,
-      });
+      woToast.success(
+        "Work order cloned",
+        wo,
+        `Created ${newWO.work_order}. Edit the WO number, qty, or due date as needed.`,
+      );
       onReloadHistory();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Clone failed";
-      toast({ title: "Clone Failed", description: message, variant: "destructive" });
+      woToast.error("Clone failed", message, wo);
     } finally {
       setCloning(false);
     }
