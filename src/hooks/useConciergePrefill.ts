@@ -107,9 +107,9 @@ export function useConciergePrefill(organizationId: string | null | undefined, e
         ]),
         erp: erpRes.data
           ? {
-              connector: (erpRes.data as any).erp_system ?? null,
-              baseUrl: (erpRes.data as any).base_url ?? null,
-              persistenceMode: (erpRes.data as any).sync_status ?? null,
+              connector: (erpRes.data as any).erp_vendor ?? null,
+              baseUrl: (erpRes.data as any).api_base_url ?? null,
+              persistenceMode: (erpRes.data as any).erp_persistence_mode ?? null,
             }
           : null,
         intake,
