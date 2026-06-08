@@ -194,10 +194,11 @@ export function QueueKanbanBoard({
     const columnItems = itemsByStatus[targetStatus] || [];
     
     // If dropping in a different column, change status first
-    if (draggedItem.status !== targetStatus) {
+    const movedColumn = draggedItem.status !== targetStatus;
+    if (movedColumn) {
       const result = await onStatusChange(draggedItem.id, targetStatus);
       if (result.error) {
-        toast.error(result.error);
+        woToast.error("Status update failed", result.error, draggedItem.work_order);
         handleDragEnd();
         return;
       }
@@ -220,6 +221,10 @@ export function QueueKanbanBoard({
     // Only reorder if position actually changes
     if (Math.abs(draggedItem.position - newPosition) > 0.001) {
       await onReorder(draggedItem.id, newPosition);
+    }
+
+    if (movedColumn) {
+      woToast.success(`Moved to ${targetStatus.replace("_", " ")}`, draggedItem.work_order);
     }
 
     handleDragEnd();
