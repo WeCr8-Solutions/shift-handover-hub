@@ -3,7 +3,9 @@ import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useStations, useHandoffRecords } from "@/hooks/useStations";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrgContext } from "@/contexts/OrgContext";
-import { mockStations, mockHandoffRecords } from "@/lib/mockData";
+// Mock station/handoff data intentionally not imported — unauthenticated
+// visitors should see a zeroed dashboard, not anything that resembles a real
+// org. Sample data is reserved for the /demo route only.
 import { useMemo } from "react";
 import { getStatusFromJobState } from "@/components/dashboard/stationStatus";
 
