@@ -95,6 +95,14 @@ vi.mock("@/components/dimensions/RequestDimensionCheckButton", () => ({
   RequestDimensionCheckButton: () => null,
 }));
 
+vi.mock("@/contexts/OrgContext", () => ({
+  useOrgContext: () => ({ organization: { id: "org-1" }, organizations: [], setActiveOrg: vi.fn(), loading: false }),
+}));
+
+vi.mock("@/hooks/useNCR", () => ({
+  useNCR: () => ({ ncrs: [], loading: false, createNCR: vi.fn(), refresh: vi.fn() }),
+}));
+
 import { OperatorStationPanel } from "./OperatorStationPanel";
 import { toast } from "sonner";
 
