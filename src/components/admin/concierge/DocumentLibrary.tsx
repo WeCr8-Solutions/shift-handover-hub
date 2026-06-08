@@ -195,6 +195,12 @@ export function DocumentLibrary({ audience, engagement, title, description }: Pr
                             {busy === `${doc.key}:preview` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Eye className="w-3.5 h-3.5" />}
                             Preview
                           </Button>
+                          <Button size="sm" variant="outline" className="gap-1.5"
+                            onClick={() => handlePrintDoc(doc)}
+                            disabled={busy === `${doc.key}:print`}>
+                            {busy === `${doc.key}:print` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Printer className="w-3.5 h-3.5" />}
+                            Print
+                          </Button>
                           {doc.formats.map((f) => (
                             <Button key={f} size="sm" variant="secondary" className="gap-1.5"
                               onClick={() => handleDownload(doc, f)}
@@ -218,8 +224,18 @@ export function DocumentLibrary({ audience, engagement, title, description }: Pr
         if (!open && previewBlob) { URL.revokeObjectURL(previewBlob.url); setPreviewBlob(null); }
       }}>
         <DialogContent className="max-w-5xl h-[85vh] flex flex-col p-0 gap-0">
-          <DialogHeader className="px-4 py-3 border-b">
+          <DialogHeader className="px-4 py-3 border-b flex-row items-center justify-between space-y-0">
             <DialogTitle>{previewBlob?.title} — preview</DialogTitle>
+            {previewBlob && (
+              <div className="flex items-center gap-2 pr-8">
+                <Button size="sm" variant="outline" className="gap-1.5" onClick={() => printBlobUrl(previewBlob.url)}>
+                  <Printer className="w-3.5 h-3.5" /> Print
+                </Button>
+                <Button size="sm" className="gap-1.5" onClick={() => downloadBlob(previewBlob.url, previewBlob.filename)}>
+                  <Download className="w-3.5 h-3.5" /> Download
+                </Button>
+              </div>
+            )}
           </DialogHeader>
           {previewBlob && (
             <iframe title="document-preview" src={previewBlob.url} className="flex-1 w-full" />
