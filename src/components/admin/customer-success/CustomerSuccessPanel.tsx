@@ -7,6 +7,7 @@ import { ConciergeKpiStrip } from "./ConciergeKpiStrip";
 import { CustomersLaunchpad } from "./CustomersLaunchpad";
 import { SelfServeList } from "./SelfServeList";
 import { SelfServeAssistDrawer } from "./SelfServeAssistDrawer";
+import { ConciergeQuickActions } from "./ConciergeQuickActions";
 
 export function CustomerSuccessPanel() {
   const [tab, setTab] = useState<string>("customers");
@@ -48,6 +49,7 @@ export function CustomerSuccessPanel() {
             />
           ) : (
             <>
+              <ConciergeQuickActions />
               <ConciergeKpiStrip />
               <EngagementsList />
             </>
