@@ -145,7 +145,7 @@ export function QueueKanbanBoard({
   const handleDragStart = (e: React.DragEvent, item: QueueItem) => {
     if (requiresStationCheckIn) {
       e.preventDefault();
-      toast.error("Check in to a station before changing work order status.");
+      woToast.blocked("Check-in required", "Check in to a station before changing work order status.");
       onRequestStationCheckIn?.();
       return;
     }
