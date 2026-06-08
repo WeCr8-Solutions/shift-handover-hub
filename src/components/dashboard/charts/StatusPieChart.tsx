@@ -1,4 +1,5 @@
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
+import { Factory } from "lucide-react";
 import { ChartContainer, ChartEmptyState, CHART_TOOLTIP_STYLE } from "./chart-primitives";
 
 interface StatusSlice {
