@@ -73,11 +73,12 @@ function WorksheetTable({ columns, rows = 10 }: { columns: string[]; rows?: numb
   );
 }
 
-export default function ConciergeSalesPack() {
+export default function ConciergeSalesPack({ publicMode = false }: { publicMode?: boolean }) {
   const { engagementId } = useParams<{ engagementId?: string }>();
   const { user, loading: authLoading } = useAuth();
   const { isAdmin: isPlatformAdmin, isDeveloper, loading: rolesLoading } = useAdminAccess();
-  const { data: engagement, isLoading } = useEngagement(engagementId ?? null);
+  const hasStaffAccess = !!user && (isPlatformAdmin || isDeveloper);
+  const { data: engagement, isLoading } = useEngagement(hasStaffAccess ? engagementId ?? null : null);
 
   useEffect(() => { document.title = "Concierge Sales Pack · JobLine.ai"; }, []);
 
@@ -110,9 +111,10 @@ export default function ConciergeSalesPack() {
   const toggle = (key: string) => setSelected((s) => ({ ...s, [key]: !isOn(key) }));
   const setAll = (val: boolean) =>
     setSelected(Object.fromEntries(SECTIONS.map((s) => [s.key, val])));
+  const isGenericPublicPack = publicMode && !engagementId;
 
-  if (authLoading || rolesLoading) return <Skeleton className="h-screen w-full" />;
-  if (!user || !(isPlatformAdmin || isDeveloper)) {
+  if (!isGenericPublicPack && (authLoading || rolesLoading)) return <Skeleton className="h-screen w-full" />;
+  if (!isGenericPublicPack && !hasStaffAccess) {
     return (
       <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">
         Restricted to JobLine platform admins.
@@ -198,7 +200,7 @@ export default function ConciergeSalesPack() {
 
       <div className="no-print max-w-6xl mx-auto px-4 pt-4">
         <DocumentLibrary
-          audience="all"
+          audience={hasStaffAccess ? "all" : "customer"}
           engagement={engagement}
           title="Download & review materials"
           description="Per-document preview and download (PDF, editable DOCX, and Excel worksheets matching the in-app intake fields). Use these for paper onboarding or to email a customer pack ahead of the kickoff call."

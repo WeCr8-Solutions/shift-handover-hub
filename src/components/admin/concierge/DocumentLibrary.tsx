@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { FileText, FileSpreadsheet, FileSignature, Eye, Download, Loader2, Package } from "lucide-react";
+import { FileText, FileSpreadsheet, FileSignature, Eye, Download, Loader2, Package, Printer } from "lucide-react";
 import { toast } from "sonner";
 import JSZip from "jszip";
 import {
@@ -12,7 +12,6 @@ import {
   engagementContext, defaultContext,
   type ConciergeDocument, type DocumentAudience, type DocumentFormat,
 } from "@/lib/concierge/documentRegistry";
-import { supabase } from "@/integrations/supabase/client";
 
 interface Props {
   audience: DocumentAudience | "all";
@@ -37,7 +36,7 @@ const KIND_ICON: Record<string, any> = {
 
 export function DocumentLibrary({ audience, engagement, title, description }: Props) {
   const ctx = useMemo(() => engagement ? engagementContext(engagement) : defaultContext(), [engagement]);
-  const [previewBlob, setPreviewBlob] = useState<{ url: string; title: string } | null>(null);
+  const [previewBlob, setPreviewBlob] = useState<{ url: string; title: string; filename: string; format: DocumentFormat } | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [bundling, setBundling] = useState(false);
 
@@ -52,13 +51,33 @@ export function DocumentLibrary({ audience, engagement, title, description }: Pr
     return out;
   }, [docs]);
 
-  async function logDownload(doc: ConciergeDocument, format: DocumentFormat) {
-    try {
-      await supabase.rpc("log_admin_event" as any, {
-        p_action: "concierge_document_download",
-        p_metadata: { key: doc.key, format, engagement_id: engagement?.id ?? null },
-      }).then(() => {/* swallow rpc-missing */}, () => {/* ignore */});
-    } catch {/* no-op — audit is best-effort */}
+  function printBlobUrl(url: string) {
+    const frame = document.createElement("iframe");
+    frame.src = url;
+    frame.title = "document-print-frame";
+    frame.style.position = "fixed";
+    frame.style.right = "0";
+    frame.style.bottom = "0";
+    frame.style.width = "0";
+    frame.style.height = "0";
+    frame.style.border = "0";
+    document.body.appendChild(frame);
+    frame.onload = () => {
+      window.setTimeout(() => {
+        frame.contentWindow?.focus();
+        frame.contentWindow?.print();
+        window.setTimeout(() => frame.remove(), 1500);
+      }, 250);
+    };
+  }
+
+  function downloadObjectUrl(url: string, filename: string) {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   }
 
   async function handlePreview(doc: ConciergeDocument) {
@@ -67,9 +86,24 @@ export function DocumentLibrary({ audience, engagement, title, description }: Pr
       const fmt: DocumentFormat = doc.formats.includes("pdf") ? "pdf" : doc.formats[0];
       const blob = await renderDocument(doc, fmt, ctx);
       const url = URL.createObjectURL(blob);
-      setPreviewBlob({ url, title: doc.title });
+      setPreviewBlob({ url, title: doc.title, filename: filenameFor(doc, fmt, ctx), format: fmt });
     } catch (e: any) {
       toast.error(`Preview failed: ${e?.message ?? e}`);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function handlePrintDoc(doc: ConciergeDocument) {
+    setBusy(`${doc.key}:print`);
+    try {
+      const fmt: DocumentFormat = doc.formats.includes("pdf") ? "pdf" : doc.formats[0];
+      const blob = await renderDocument(doc, fmt, ctx);
+      const url = URL.createObjectURL(blob);
+      printBlobUrl(url);
+      window.setTimeout(() => URL.revokeObjectURL(url), 30000);
+    } catch (e: any) {
+      toast.error(`Print failed: ${e?.message ?? e}`);
     } finally {
       setBusy(null);
     }
@@ -80,7 +114,6 @@ export function DocumentLibrary({ audience, engagement, title, description }: Pr
     try {
       const blob = await renderDocument(doc, format, ctx);
       downloadBlob(blob, filenameFor(doc, format, ctx));
-      void logDownload(doc, format);
       toast.success(`${doc.title} downloaded`);
     } catch (e: any) {
       toast.error(`Download failed: ${e?.message ?? e}`);
@@ -171,6 +204,12 @@ export function DocumentLibrary({ audience, engagement, title, description }: Pr
                             {busy === `${doc.key}:preview` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Eye className="w-3.5 h-3.5" />}
                             Preview
                           </Button>
+                          <Button size="sm" variant="outline" className="gap-1.5"
+                            onClick={() => handlePrintDoc(doc)}
+                            disabled={busy === `${doc.key}:print`}>
+                            {busy === `${doc.key}:print` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Printer className="w-3.5 h-3.5" />}
+                            Print
+                          </Button>
                           {doc.formats.map((f) => (
                             <Button key={f} size="sm" variant="secondary" className="gap-1.5"
                               onClick={() => handleDownload(doc, f)}
@@ -194,8 +233,18 @@ export function DocumentLibrary({ audience, engagement, title, description }: Pr
         if (!open && previewBlob) { URL.revokeObjectURL(previewBlob.url); setPreviewBlob(null); }
       }}>
         <DialogContent className="max-w-5xl h-[85vh] flex flex-col p-0 gap-0">
-          <DialogHeader className="px-4 py-3 border-b">
+          <DialogHeader className="px-4 py-3 border-b flex-row items-center justify-between space-y-0">
             <DialogTitle>{previewBlob?.title} — preview</DialogTitle>
+            {previewBlob && (
+              <div className="flex items-center gap-2 pr-8">
+                <Button size="sm" variant="outline" className="gap-1.5" onClick={() => printBlobUrl(previewBlob.url)}>
+                  <Printer className="w-3.5 h-3.5" /> Print
+                </Button>
+                <Button size="sm" className="gap-1.5" onClick={() => downloadObjectUrl(previewBlob.url, previewBlob.filename)}>
+                  <Download className="w-3.5 h-3.5" /> Download
+                </Button>
+              </div>
+            )}
           </DialogHeader>
           {previewBlob && (
             <iframe title="document-preview" src={previewBlob.url} className="flex-1 w-full" />
