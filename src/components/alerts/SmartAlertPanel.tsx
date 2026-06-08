@@ -233,6 +233,7 @@ export function SmartAlertPanel({
             alert={alert}
             onClick={handleClick}
             compact={compact}
+            onDismiss={handleDismiss}
           />
         ))}
 
@@ -259,6 +260,8 @@ export function SmartAlertPanel({
           </Button>
         )}
       </div>
+      </>
+      )}
     </div>
   );
 }
