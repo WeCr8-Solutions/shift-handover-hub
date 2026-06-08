@@ -173,6 +173,13 @@ export function EngagementDetail({ engagementId, onBack }: { engagementId: strin
         />
       </div>
 
+      <InvitesRolesBoard
+        engagementId={engagement.id}
+        organizationId={engagement.organization_id}
+        organizationName={engagement.organizations?.name ?? undefined}
+      />
+
+
       <ConciergeAuditTimeline engagementId={engagement.id} />
 
 
