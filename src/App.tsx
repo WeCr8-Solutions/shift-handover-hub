@@ -27,6 +27,7 @@ import Landing from "./pages/Landing";
 // All other pages: lazy-loaded for route-based code splitting
 const Index = lazy(() => import("./pages/Index"));
 const Auth = lazy(() => import("./pages/Auth"));
+const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 const Teams = lazy(() => import("./pages/Teams"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Admin = lazy(() => import("./pages/Admin"));
@@ -222,6 +223,7 @@ const App = () => (
                     <Route path="/" element={<Landing />} />
                     <Route path="/dashboard" element={<Index />} />
                     <Route path="/auth" element={<Auth />} />
+                    <Route path="/unsubscribe" element={<Unsubscribe />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/teams" element={<Teams />} />
                     <Route path="/profile" element={<Profile />} />
