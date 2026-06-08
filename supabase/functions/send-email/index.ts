@@ -1,14 +1,9 @@
-import React from 'https://esm.sh/react@18.3.1'
-import { Resend } from 'https://esm.sh/resend@4.0.0'
-import { render } from 'https://esm.sh/@react-email/render@0.0.17?deps=react@18.3.1,react-dom@18.3.1'
+// send-email: thin compatibility wrapper that keeps the existing app API
+// (type/to/data) but forwards delivery to the unified Lovable Emails
+// transactional sender. Auth + per-user/per-recipient rate-limiting + content
+// authorization checks remain here; rendering and actual send move to
+// supabase/functions/send-transactional-email + the shared template registry.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.1'
-import { WelcomeEmail } from './_templates/welcome.tsx'
-import { PasswordResetEmail } from './_templates/password-reset.tsx'
-import { TeamInviteEmail } from './_templates/team-invite.tsx'
-import { PromoCodeEmail } from './_templates/promo-code.tsx'
-import { HandoffNotificationEmail } from './_templates/handoff-notification.tsx'
-
-const resend = new Resend(Deno.env.get('RESEND_API_KEY') as string)
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
