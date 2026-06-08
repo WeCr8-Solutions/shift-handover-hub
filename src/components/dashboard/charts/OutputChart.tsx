@@ -1,6 +1,7 @@
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
+import { BarChart3 } from "lucide-react";
 import { STATUS_COLORS, STATUS_CONFIG, type StatusLabel } from "../stationStatus";
 import {
   CHART_AXIS_STYLE, CHART_GRID_PROPS, CHART_AXIS_LINE,
