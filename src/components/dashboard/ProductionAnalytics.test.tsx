@@ -216,7 +216,7 @@ describe("ProductionAnalytics", () => {
       stations: [], 
       handoffs: [] 
     });
-    expect(screen.getByText(/no production data/i)).toBeInTheDocument();
+    expect(screen.getByText(/output is ready to track/i)).toBeInTheDocument();
   });
 
   it("shows empty state for status view with no active stations", async () => {
