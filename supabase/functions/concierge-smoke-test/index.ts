@@ -59,18 +59,18 @@ Deno.serve(async (req) => {
       return json({ ok: false, steps, message: "Org missing prerequisites; cannot run smoke test." });
     }
 
-    // Step 2: create a synthetic queue item
+    // Step 2: create a synthetic queue item + routing row
     const woNumber = `SMOKE-${Date.now()}`;
     const { data: qi, error: qiErr } = await admin
       .from("queue_items")
       .insert({
         organization_id: organizationId,
-        wo_number: woNumber,
+        work_order: woNumber,
         part_number: "SMOKE-001",
-        part_description: "Concierge smoke test (auto-generated, safe to delete)",
+        title: "Concierge smoke test (auto, safe to delete)",
         quantity: 1,
+        qty_original: 1,
         status: "pending",
-        routing_template_id: routing.id,
         source_system: "concierge_smoke",
       })
       .select("id").single();
@@ -80,6 +80,18 @@ Deno.serve(async (req) => {
     }
     steps.push({ name: "Create smoke work order", ok: true, detail: woNumber });
     cleanup.push(() => admin.from("queue_items").delete().eq("id", qi.id));
+
+    // Apply routing step pointing at the picked station
+    const { error: rErr } = await admin.from("work_order_routing").insert({
+      queue_item_id: qi.id,
+      organization_id: organizationId,
+      step_number: 1,
+      operation_type: "internal",
+      operation_name: "Smoke test op",
+      station_id: station.id,
+      status: "pending",
+    });
+    steps.push({ name: "Apply routing step", ok: !rErr, detail: rErr?.message });
 
     // Step 3: walk through states
     const transitions: Array<{ to: string }> = [
