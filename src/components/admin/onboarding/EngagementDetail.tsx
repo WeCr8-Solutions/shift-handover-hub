@@ -24,6 +24,7 @@ import { RefundPanel } from "./RefundPanel";
 import { AccountingExportPanel } from "./AccountingExportPanel";
 import { ConciergeAuditTimeline } from "./ConciergeAuditTimeline";
 import { OwnerInvitePanel } from "./OwnerInvitePanel";
+import { InvitesRolesBoard } from "./InvitesRolesBoard";
 import { IntakeMembersEditor } from "./IntakeMembersEditor";
 import { IntakeErpEditor } from "./IntakeErpEditor";
 
