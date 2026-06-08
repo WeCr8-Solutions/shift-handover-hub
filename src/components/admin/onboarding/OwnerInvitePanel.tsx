@@ -50,7 +50,8 @@ export function OwnerInvitePanel({ engagementId, organizationId, organizationNam
     },
   });
 
-  // Owner readiness = is the owner in organization_members + has signed in?
+  // Owner readiness = profile exists for the owner email AND member of org
+  // AND has acknowledged the rules-of-behavior (proxy for "acknowledged account needs").
   const { data: ownerStatus, refetch: refetchOwner } = useQuery({
     queryKey: ["concierge-owner-status", organizationId, intake?.owner?.email],
     enabled: !!intake?.owner?.email,
@@ -58,22 +59,22 @@ export function OwnerInvitePanel({ engagementId, organizationId, organizationNam
       const email = intake!.owner!.email!.toLowerCase();
       const { data: prof } = await supabase
         .from("profiles")
-        .select("id, email, full_name, last_sign_in_at")
+        .select("user_id, email, display_name, rob_accepted_at")
         .ilike("email", email)
         .maybeSingle();
-      if (!prof) return { signedUp: false, signedIn: false, joined: false };
+      if (!prof || !prof.user_id) return { signedUp: false, joined: false, acknowledged: false };
       const { data: mem } = await supabase
         .from("organization_members")
         .select("user_id, role")
         .eq("organization_id", organizationId)
-        .eq("user_id", prof.id)
+        .eq("user_id", prof.user_id)
         .maybeSingle();
       return {
         signedUp: true,
-        signedIn: !!prof.last_sign_in_at,
         joined: !!mem,
         role: mem?.role,
-        lastSignIn: prof.last_sign_in_at,
+        acknowledged: !!prof.rob_accepted_at,
+        acknowledgedAt: prof.rob_accepted_at,
       };
     },
   });
@@ -86,7 +87,7 @@ export function OwnerInvitePanel({ engagementId, organizationId, organizationNam
     return all.filter((u) => u.email);
   }, [intake]);
 
-  const ownerReady = !!ownerStatus?.joined && !!ownerStatus?.signedIn;
+  const ownerReady = !!ownerStatus?.joined && !!ownerStatus?.acknowledged;
 
   const shareUrl = `https://jobline.ai/auth?invite=${encodeURIComponent(owner?.invite_code ?? "")}`;
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(shareUrl)}`;
@@ -203,11 +204,15 @@ export function OwnerInvitePanel({ engagementId, organizationId, organizationNam
                 <Badge variant="outline" className="text-[10px]">Owner</Badge>
                 {ownerReady ? (
                   <Badge className="gap-1 bg-status-ok/15 text-status-ok border-status-ok/30 text-[10px]">
-                    <CheckCircle2 className="w-3 h-3" /> Signed in
+                    <CheckCircle2 className="w-3 h-3" /> Signed in &amp; acknowledged
+                  </Badge>
+                ) : ownerStatus?.joined ? (
+                  <Badge variant="secondary" className="gap-1 text-[10px]">
+                    <Clock className="w-3 h-3" /> Joined, awaiting account acknowledgement
                   </Badge>
                 ) : ownerStatus?.signedUp ? (
                   <Badge variant="secondary" className="gap-1 text-[10px]">
-                    <Clock className="w-3 h-3" /> Account created, awaiting sign-in
+                    <Clock className="w-3 h-3" /> Account created, not yet linked to org
                   </Badge>
                 ) : (
                   <Badge variant="secondary" className="gap-1 text-[10px]">
