@@ -77,7 +77,13 @@ export function OutputChart({ data, prefersReducedMotion }: OutputChartProps) {
   return (
     <ChartContainer subtitle="Parts completed by station">
       {data.length === 0 ? (
-        <ChartEmptyState message="No production data yet. Submit handoffs to see output metrics." />
+        <ChartEmptyState
+          icon={BarChart3}
+          title="Output is ready to track"
+          message="Parts-per-station builds up automatically as operators submit shift handoffs."
+          hint="Submit a handoff to populate"
+        />
+
       ) : (
         <ScrollableChartWrapper minWidth={Math.max(600, data.length * 60)}>
           <ResponsiveContainer width="100%" height={300}>
