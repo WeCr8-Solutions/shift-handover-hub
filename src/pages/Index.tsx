@@ -212,6 +212,10 @@ const Index = () => {
     part_number?: string;
     operation_number?: string;
     station_id?: string;
+    next_station_id?: string | null;
+    next_station_name?: string | null;
+    next_operation_name?: string | null;
+    next_operation_number?: string | null;
   } | null>(null);
 
   // Open Create dialog from hub deep links: /?new=work_order or /?new=quote
