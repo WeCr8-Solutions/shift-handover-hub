@@ -124,7 +124,9 @@ export function OwnerInvitePanel({ engagementId, organizationId, organizationNam
     },
   });
 
+  const ownerReady = !!ownerStatus?.joined && !!ownerStatus?.acknowledged;
 
+  const [sendingMember, setSendingMember] = useState<string | null>(null);
 
   const shareUrl = `https://jobline.ai/auth?invite=${encodeURIComponent(owner?.invite_code ?? "")}`;
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(shareUrl)}`;
