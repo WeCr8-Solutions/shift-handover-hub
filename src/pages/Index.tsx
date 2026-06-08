@@ -284,14 +284,16 @@ const Index = () => {
     return map;
   }, [dbStations]);
 
-  // Use database data when logged in, mock data when not
+  // Use database data when logged in. Unauthenticated visitors see EMPTY arrays
+  // so they never see another org's data (or anything that looks like one).
+  // Sample/demo data is reserved for the dedicated /demo route only.
   const stations: StationInfo[] = useMemo(() => {
-    if (!user) return mockStations;
+    if (!user) return [];
     return dbStations.map(toStationInfo);
   }, [user, dbStations]);
 
   const handoffRecords: ShiftHandoffRecord[] = useMemo(() => {
-    if (!user) return mockHandoffRecords;
+    if (!user) return [];
     return dbRecords.map(toHandoffRecord);
   }, [user, dbRecords]);
 
