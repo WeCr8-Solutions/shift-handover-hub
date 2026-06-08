@@ -1,80 +1,85 @@
+# Admin: Concierge vs Onboarding distinction + customer assist views
 
-## Goal
+## Problem
+Today `/admin` → **Onboarding** tab only shows `onboarding_engagements` (paid concierge customers). There's no way to see:
+- Self-serve orgs that signed up and are working through their own checklist
+- A unified "all customers" launchpad to jump into any account and help with setup
+- Which engagement is concierge-paid vs free trial vs complimentary
 
-Return Aymar Engineering (and the rest of the app) to working Lovable Emails on the existing `notify.wecr8.info` sender domain. Nothing in code needs to change — the infrastructure (queue, `send-transactional-email`, `auth-email-hook`, templates) is already wired up. The only blocker is DNS: the subdomain delegation drifted at the `wecr8.info` registrar, so Lovable can no longer manage SPF/DKIM/MX for it.
+The two flows are genuinely different and need to live side-by-side, not be conflated.
 
-## What "drifted" means here
+## What you'll see in the admin dashboard after this
 
-When Lovable Emails was first set up, two NS records were added at the `wecr8.info` DNS host pointing the `notify` subdomain at Lovable:
-
-```text
-notify.wecr8.info.   NS   ns3.lovable.cloud.
-notify.wecr8.info.   NS   ns4.lovable.cloud.
-```
-
-Those records are no longer present (or one was removed / replaced), so Lovable can't serve the SPF, DKIM, DMARC, and MX records it manages inside that delegated zone. Until both NS records are back, every email — invites, auth, app notifications — will sit in the queue and fail.
-
-This is the only thing broken. The Cloud → Emails page still shows the domain, the queue worker (`process-email-queue`) is healthy, and templates are deployed.
-
-## Plan
-
-### Step 1 — Restore the two NS records (user action, at the registrar)
-
-This must happen at whatever DNS provider hosts `wecr8.info` (likely the registrar where the domain was purchased). I cannot push DNS changes from inside the app.
-
-1. Log in to the DNS host for `wecr8.info`.
-2. Open the DNS / zone editor for that domain.
-3. Delete any conflicting records on the exact host `notify` (A, AAAA, CNAME, MX, TXT, SPF). The `notify` host must contain only the two NS records below.
-4. Add (or restore) these two records:
+Rename the existing **Onboarding** tab to **Customer Success** with three sub-tabs:
 
 ```text
-Type: NS   Host/Name: notify   Value: ns3.lovable.cloud.   TTL: default
-Type: NS   Host/Name: notify   Value: ns4.lovable.cloud.   TTL: default
+/admin → Customer Success
+  ├── Customers          ← NEW launchpad: every org, filter by status, jump in
+  ├── Concierge          ← existing EngagementsList (paid setup engagements)
+  └── Self-Serve Setup   ← NEW: orgs without an engagement, with their progress
 ```
 
-Most registrars want the host as just `notify` (they append `.wecr8.info` automatically). If yours requires the full name, use `notify.wecr8.info`.
+### 1. Customers (launchpad)
+Single table of every organization with columns:
+- Org name + ITAR badge
+- **Setup path**: `Concierge` / `Self-serve` / `Complimentary` (derived)
+- Subscription status + tier
+- Setup progress % (from engagement OR from `user_onboarding`/readiness)
+- Owner email
+- Last activity
+- Actions: **Assist setup** (opens the right detail view), **Act-as** (existing impersonation), **Open billing**
 
-5. Save.
+Filters: setup path, status, ITAR, has-blockers, no-activity-7d.
 
-### Step 2 — Re-verify inside the app
+### 2. Concierge (unchanged)
+Existing `EngagementsList` + `EngagementDetail`. Just relabeled and scoped to engagements where `purchased_via in ('stripe','offline')` or `payment_status='paid'`.
 
-After saving the records:
+Add a small header KPI strip: # active engagements, # awaiting payment, # awaiting contract, # ready to activate, MRR-equivalent.
 
-1. Open **Cloud → Emails → Manage Domains**.
-2. Find `notify.wecr8.info` and click **Verify Domain**.
-3. Status moves through `awaiting_dns` → `active_provisioning` → `active`. Usually minutes; can take up to 72h if the registrar is slow to publish.
+### 3. Self-Serve Setup (NEW)
+For orgs that signed up without buying concierge. Shows:
+- Org + owner
+- Welcome modal completed? (from `user_onboarding`)
+- Checklist completion % (derived from same `useProductionReadiness` hook the concierge panel already uses against the org)
+- Trial days remaining
+- Blockers list (no equipment, no stations, no users invited, no routing, etc.)
+- Action: **Open assist drawer** — re-uses `ReadinessPanel` + a lightweight version of the checklist modules so an admin can fill gaps for the customer without converting them to a paid engagement
+- Action: **Convert to concierge** — creates an `onboarding_engagements` row pre-populated for the org (uses existing `NewEngagementDialog` with org pre-selected)
 
-While it's still `awaiting_dns`, queued emails will keep retrying automatically — no need to re-send anything by hand.
+## Technical sketch
 
-### Step 3 — Validate end-to-end (after domain shows Active)
+**New files**
+- `src/components/admin/customer-success/CustomerSuccessPanel.tsx` — top-level with the 3 sub-tabs; replaces direct render of `EngagementsList` in `OnboardingServicesPanel`
+- `src/components/admin/customer-success/CustomersLaunchpad.tsx` — unified org table
+- `src/components/admin/customer-success/SelfServeList.tsx` — orgs without engagements
+- `src/components/admin/customer-success/SelfServeAssistDrawer.tsx` — wraps `ReadinessPanel` + reusable readiness gaps; "Convert to concierge" button
+- `src/components/admin/customer-success/ConciergeKpiStrip.tsx` — small KPI cards above existing list
+- `src/hooks/useAdminCustomers.ts` — joins `organizations` + `onboarding_engagements` + `user_onboarding` + `subscriptions` into one row per org; classifies setup_path
 
-I'll run these checks on your behalf once status is green:
+**Edited**
+- `src/components/admin/onboarding/OnboardingServicesPanel.tsx` — render `CustomerSuccessPanel` instead of `EngagementsList`
+- `src/pages/Admin.tsx` — rename the "Onboarding" tab label to "Customer Success" (route key unchanged so deep links still work)
 
-1. Confirm `email_send_state` has the right `from_domain` / `sender_domain` (Lovable scaffold values, not a stale third-party host).
-2. Re-trigger one invite email for Aymar (Brandon's `AYMAR-OWNER-BA01`) using the existing `send-transactional-email` function with `idempotencyKey` so it doesn't double-send.
-3. Look at `email_send_log` — expect a row with `status = 'sent'` and a Mailgun `message_id`.
-4. Spot-check `process-email-queue` and `auth-email-hook` logs for any 401/403 (would indicate the service-role key was rotated; the fix is one tool call to refresh the Vault secret).
+**Data**
+No schema changes. All needed tables already exist: `organizations`, `onboarding_engagements`, `user_onboarding`, `subscriptions`, `organization_members`. Platform-admin RLS already grants global SELECT.
 
-### Step 4 — Hand back to customer onboarding
+**Setup-path derivation (in the hook)**
+- engagement exists AND `payment_status in ('paid','waived')` → `Concierge`
+- engagement exists AND `payment_status='pending'` → `Concierge (unpaid)`
+- no engagement AND `subscription_status='complimentary'` → `Complimentary`
+- otherwise → `Self-serve`
 
-Once mail is flowing again:
+**Access**
+Platform-admin + developer only — same gate as today's `OnboardingServicesPanel`.
 
-- The three pending Aymar invites (Brandon / Jaime / Cory) will deliver automatically the next time the queue worker fires (every ~5s), because they were enqueued, not failed-out.
-- I'll mark the `users_roles` onboarding checklist note to reflect "invites delivered, awaiting redemption."
+## Out of scope
+- No changes to the customer-facing concierge flow, intake wizard, billing tab, or splash screens
+- No DB migrations
+- No changes to Aymar Engineering's existing engagement record
 
-## What I will NOT do
-
-- Switch you to Resend, SendGrid, Mailgun direct, Brevo, or any other third-party provider. You were on Lovable Emails and that's still the right path.
-- Delete or recreate the email queue / tables / templates. Infrastructure is fine; only DNS is broken.
-- Disable Lovable Emails. Disabling does not remove the NS records and would only make things worse.
-
-## Technical notes
-
-- DNS delegation model: Lovable owns the zone for `notify.wecr8.info` and manages SPF/DKIM/DMARC/MX inside it. That's why we only need NS records at the registrar — never raw SPF/DKIM strings.
-- The `wecr8.info` apex zone is untouched. This only affects the `notify` subdomain. Your website, root MX, and anything else on `wecr8.info` are not impacted by this change.
-- If the verify keeps failing after 1–2 hours: confirm with `dig NS notify.wecr8.info @8.8.8.8` that both `ns3.lovable.cloud` and `ns4.lovable.cloud` are returned. If only one shows, the registrar saved only one record — add the second.
-- If you've moved DNS to Cloudflare or a similar proxy, NS records must be added at whoever is actually authoritative for `wecr8.info` (check the apex `NS` records first).
-
-## Open question
-
-If you'd prefer to send from a different subdomain or a different root domain (e.g. `mail.jobline.ai` so it matches the product), say the word and I'll swap the plan to "remove the drifted domain and re-add a fresh one" instead of restoring `notify.wecr8.info`. Otherwise the above is the fastest path back.
+## How to verify
+1. `/admin` → tab now reads **Customer Success**
+2. **Customers** sub-tab lists Aymar Engineering as `Concierge` and any other test orgs as `Self-serve` / `Complimentary`
+3. Click **Assist setup** on a self-serve org → drawer opens with readiness gaps; **Convert to concierge** creates an engagement and jumps to existing `EngagementDetail`
+4. **Concierge** sub-tab still shows the existing engagements table with the new KPI strip on top
+5. Deep link `/admin/concierge/reporting` still works
