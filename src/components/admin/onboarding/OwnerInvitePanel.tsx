@@ -87,7 +87,44 @@ export function OwnerInvitePanel({ engagementId, organizationId, organizationNam
     return all.filter((u) => u.email);
   }, [intake]);
 
-  const ownerReady = !!ownerStatus?.joined && !!ownerStatus?.acknowledged;
+  // Per-team-member account status (joined? acknowledged?)
+  const teamEmails = useMemo(() => team.map((u) => u.email!.toLowerCase()), [team]);
+  const { data: teamStatus } = useQuery({
+    queryKey: ["concierge-team-status", organizationId, teamEmails.join(",")],
+    enabled: teamEmails.length > 0,
+    queryFn: async () => {
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("user_id, email, rob_accepted_at")
+        .in("email", teamEmails);
+      const profMap = new Map((profs ?? []).map((p) => [p.email.toLowerCase(), p]));
+      const userIds = (profs ?? []).map((p) => p.user_id);
+      let memMap = new Map<string, string>();
+      if (userIds.length) {
+        const { data: mems } = await supabase
+          .from("organization_members")
+          .select("user_id, role")
+          .eq("organization_id", organizationId)
+          .in("user_id", userIds);
+        memMap = new Map((mems ?? []).map((m) => [m.user_id, m.role]));
+      }
+      return teamEmails.reduce<Record<string, { signedUp: boolean; joined: boolean; acknowledged: boolean; role?: string }>>(
+        (acc, email) => {
+          const p = profMap.get(email);
+          acc[email] = {
+            signedUp: !!p,
+            joined: !!(p && memMap.get(p.user_id)),
+            acknowledged: !!(p?.rob_accepted_at),
+            role: p ? memMap.get(p.user_id) : undefined,
+          };
+          return acc;
+        },
+        {},
+      );
+    },
+  });
+
+
 
   const shareUrl = `https://jobline.ai/auth?invite=${encodeURIComponent(owner?.invite_code ?? "")}`;
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(shareUrl)}`;
