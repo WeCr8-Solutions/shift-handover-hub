@@ -77,9 +77,7 @@ export function SelfServeAssistDrawer({
             </CardContent>
           </Card>
 
-          {organizationId && (
-            <ReadinessPanel organizationId={organizationId} engagement={null as any} />
-          )}
+          {organizationId && <ReadinessPanel organizationId={organizationId} />}
 
           <Card>
             <CardHeader className="pb-2">
