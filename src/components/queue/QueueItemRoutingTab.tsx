@@ -7,7 +7,7 @@ import { QueueItem, RoutingStepInput } from "@/hooks/useQueue";
 import { Station } from "@/hooks/useStations";
 import { useOrgContext } from "@/contexts/OrgContext";
 import { useAdminAccess } from "@/hooks/useAdminData";
-import { useToast } from "@/hooks/use-toast";
+import { woToast } from "@/lib/woToast";
 import { useDimensions } from "@/hooks/useDimensions";
 import { useSetupSheets } from "@/hooks/useSetupSheets";
 import { supabase } from "@/integrations/supabase/client";
@@ -89,7 +89,7 @@ export function QueueItemRoutingTab({
 }: QueueItemRoutingTabProps) {
   const { organization } = useOrgContext();
   const { hasAdminAccess, hasOrgSupervisorAccess, hasDimensionAccess } = useAdminAccess();
-  const { toast } = useToast();
+  
   const [addingRouting, setAddingRouting] = useState(false);
   const [newRoutingSteps, setNewRoutingSteps] = useState<RoutingStepInput[]>([]);
   const [savingRouting, setSavingRouting] = useState(false);
@@ -128,12 +128,12 @@ export function QueueItemRoutingTab({
         await supabase.from("queue_items").update({ station_id: firstStationId }).eq("id", item.id);
       }
 
-      toast({ title: "Routing Saved", description: `${newRoutingSteps.length} routing step(s) added to this work order.` });
+      woToast.success("Routing saved", item.work_order, `${newRoutingSteps.length} routing step(s) added.`);
       setAddingRouting(false);
       setNewRoutingSteps([]);
       onReloadRouting();
     } catch (err: any) {
-      toast({ title: "Error", description: err.message || "Failed to save routing", variant: "destructive" });
+      woToast.error("Failed to save routing", err.message, item.work_order);
     } finally {
       setSavingRouting(false);
     }

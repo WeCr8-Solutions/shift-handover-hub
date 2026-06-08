@@ -13,7 +13,7 @@ import { Loader2, Package, Wrench, Hash, Calendar as CalendarIcon, Clock, AlertT
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { toast } from "sonner";
+import { woToast } from "@/lib/woToast";
 import { format } from "date-fns";
 import { PartSpecsSection, PartSpecsData } from "./PartSpecsSection";
 import { RoutingSection } from "./RoutingSection";
@@ -129,7 +129,7 @@ export function CreateWorkOrderDialog({
         }
       } catch (error) {
         if (!cancelled) {
-          toast.error("Failed to load stations");
+          woToast.error("Failed to load stations");
         }
       } finally {
         if (!cancelled) {
@@ -198,7 +198,9 @@ export function CreateWorkOrderDialog({
       e.preventDefault();
 
       if (!isValid) {
-        toast.error(itemType === "quote" ? "Quote number is required" : "Work order number is required");
+        woToast.error(
+          itemType === "quote" ? "Quote number required" : "Work order number required",
+        );
         return;
       }
 
@@ -206,7 +208,7 @@ export function CreateWorkOrderDialog({
       if (hasRouting) {
         const invalidSteps = routingSteps.filter((s) => !s.operation_name.trim());
         if (invalidSteps.length > 0) {
-          toast.error("All routing steps must have an operation name");
+          woToast.error("Routing incomplete", "All routing steps must have an operation name");
           return;
         }
       }
@@ -244,16 +246,20 @@ export function CreateWorkOrderDialog({
 
         if (result?.error) {
           console.error("Create item error:", result.error);
-          toast.error(result.error);
+          woToast.error("Create failed", result.error, formData.work_order);
           return;
         }
 
-        toast.success(isQuote ? "Quote created — pending approval" : "Work order created successfully!");
+        woToast.success(
+          isQuote ? "Quote created" : "Work order created",
+          formData.work_order,
+          isQuote ? "Pending approval" : undefined,
+        );
         onOpenChange(false);
         onSuccess?.();
       } catch (error) {
         console.error("Create work order error:", error);
-        toast.error("Failed to create work order");
+        woToast.error("Failed to create work order", undefined, formData.work_order);
       } finally {
         setLoading(false);
       }

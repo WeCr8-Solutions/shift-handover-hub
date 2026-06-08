@@ -6,7 +6,7 @@ import { QueueItem, QueueStatus } from "@/hooks/useQueue";
 import { cn } from "@/lib/utils";
 import { LayoutList, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { woToast } from "@/lib/woToast";
 import { WorkOrderAlertTile } from "./WorkOrderAlertTile";
 import { getQueueStatusBadgeColor } from "@/lib/status-colors";
 import { CancelHoldDialog, CancelHoldMode } from "./CancelHoldDialog";
@@ -125,7 +125,8 @@ export function QueueListView({ items, onItemClick, onStatusChange, onDelete, on
                           return;
                         }
                         const result = await onStatusChange(item.id, next);
-                        if (result.error) toast.error(result.error);
+                        if (result.error) woToast.error("Status update failed", result.error, item.work_order);
+                        else woToast.success(`Status → ${next.replace("_", " ")}`, item.work_order);
                       }}
                     >
                       <SelectTrigger className="h-6 w-6 p-0 border-0 bg-transparent [&>svg]:hidden">
@@ -201,9 +202,9 @@ export function QueueListView({ items, onItemClick, onStatusChange, onDelete, on
             )
             .eq("id", pendingAction.item.id);
           if (error) {
-            toast.error(error.message);
+            woToast.error(pendingAction.mode === "cancel" ? "Cancel failed" : "Hold failed", error.message, pendingAction.item.work_order);
           } else {
-            toast.success(pendingAction.mode === "cancel" ? "Work order cancelled" : "Work order placed on hold");
+            woToast.success(pendingAction.mode === "cancel" ? "Work order cancelled" : "Work order placed on hold", pendingAction.item.work_order);
           }
         }}
       />

@@ -6,7 +6,7 @@ import { QueueItem, QueueStatus, QueuePriority } from "@/hooks/useQueue";
 import { cn } from "@/lib/utils";
 import { Clock, User, Package, AlertTriangle, GripVertical } from "lucide-react";
 import { format } from "date-fns";
-import { toast } from "sonner";
+import { woToast } from "@/lib/woToast";
 import { StationQuickActions, type QuickActionTarget } from "@/components/dashboard/StationQuickActions";
 import { getPriorityBadgeColor, getQueueStatusColumnColor } from "@/lib/status-colors";
 import { ItemTypeBadge } from "@/components/queue/ItemTypeBadge";
@@ -145,7 +145,7 @@ export function QueueKanbanBoard({
   const handleDragStart = (e: React.DragEvent, item: QueueItem) => {
     if (requiresStationCheckIn) {
       e.preventDefault();
-      toast.error("Check in to a station before changing work order status.");
+      woToast.blocked("Check-in required", "Check in to a station before changing work order status.");
       onRequestStationCheckIn?.();
       return;
     }
@@ -181,7 +181,11 @@ export function QueueKanbanBoard({
     if (draggedItem.status !== targetStatus) {
       const validTargets = VALID_TRANSITIONS[draggedItem.status] || [];
       if (!validTargets.includes(targetStatus)) {
-        toast.error(`Cannot move from "${draggedItem.status.replace("_", " ")}" to "${targetStatus.replace("_", " ")}". Valid targets: ${validTargets.map(s => s.replace("_", " ")).join(", ") || "none"}`);
+        woToast.blocked(
+          "Invalid status transition",
+          `Cannot move from "${draggedItem.status.replace("_", " ")}" to "${targetStatus.replace("_", " ")}". Valid targets: ${validTargets.map(s => s.replace("_", " ")).join(", ") || "none"}`,
+          draggedItem.work_order,
+        );
         handleDragEnd();
         return;
       }
@@ -190,10 +194,11 @@ export function QueueKanbanBoard({
     const columnItems = itemsByStatus[targetStatus] || [];
     
     // If dropping in a different column, change status first
-    if (draggedItem.status !== targetStatus) {
+    const movedColumn = draggedItem.status !== targetStatus;
+    if (movedColumn) {
       const result = await onStatusChange(draggedItem.id, targetStatus);
       if (result.error) {
-        toast.error(result.error);
+        woToast.error("Status update failed", result.error, draggedItem.work_order);
         handleDragEnd();
         return;
       }
@@ -216,6 +221,10 @@ export function QueueKanbanBoard({
     // Only reorder if position actually changes
     if (Math.abs(draggedItem.position - newPosition) > 0.001) {
       await onReorder(draggedItem.id, newPosition);
+    }
+
+    if (movedColumn) {
+      woToast.success(`Moved to ${targetStatus.replace("_", " ")}`, draggedItem.work_order);
     }
 
     handleDragEnd();
