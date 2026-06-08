@@ -26,6 +26,27 @@ interface SmokeStep { name: string; ok: boolean; detail?: string }
 
 export function ReadinessPanel({ organizationId, engagement }: { organizationId: string; engagement?: Engagement }) {
   const { data, isLoading, refetch, isFetching } = useProductionReadiness(organizationId);
+  const [smoke, setSmoke] = useState<{ ok: boolean; steps: SmokeStep[] } | null>(null);
+  const [smokeRunning, setSmokeRunning] = useState(false);
+
+  async function runSmoke() {
+    setSmokeRunning(true);
+    setSmoke(null);
+    try {
+      const { data: res, error } = await supabase.functions.invoke("concierge-smoke-test", {
+        body: { organizationId },
+      });
+      if (error) throw error;
+      setSmoke(res as any);
+      if ((res as any)?.ok) woToast.success("Smoke test passed");
+      else woToast.blocked("Smoke test found issues", "Review the steps below");
+    } catch (e: any) {
+      woToast.error(e?.message ?? "Smoke test failed");
+    } finally {
+      setSmokeRunning(false);
+    }
+  }
+
 
   if (isLoading) {
     return (
@@ -138,6 +159,34 @@ export function ReadinessPanel({ organizationId, engagement }: { organizationId:
             <CheckCircle2 className="w-4 h-4" /> All required data is present. Ready to activate.
           </div>
         )}
+
+        <div className="border-t pt-3 space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="text-xs font-medium flex items-center gap-2">
+              <FlaskConical className="w-3.5 h-3.5" /> Production smoke test
+            </div>
+            <Button size="sm" variant="outline" onClick={runSmoke} disabled={smokeRunning || !ready}>
+              {smokeRunning ? <Loader2 className="w-3 h-3 animate-spin" /> : "Run smoke test"}
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Creates a synthetic work order, walks it pending → completed, and cleans up. Verifies the shop actually works end-to-end.
+          </p>
+          {smoke && (
+            <ul className="text-xs space-y-1 mt-2">
+              {smoke.steps.map((s, i) => (
+                <li key={i} className="flex items-start gap-2">
+                  {s.ok
+                    ? <CheckCircle2 className="w-3.5 h-3.5 text-status-ok mt-0.5 flex-shrink-0" />
+                    : <X className="w-3.5 h-3.5 text-destructive mt-0.5 flex-shrink-0" />}
+                  <span className={s.ok ? "" : "text-destructive"}>
+                    {s.name}{s.detail ? ` — ${s.detail}` : ""}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
