@@ -1,6 +1,7 @@
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
+import { TrendingUp } from "lucide-react";
 import { STATUS_COLORS } from "../stationStatus";
 import {
   CHART_AXIS_STYLE, CHART_GRID_PROPS, CHART_AXIS_LINE, CHART_TOOLTIP_STYLE,
