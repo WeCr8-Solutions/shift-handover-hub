@@ -7,7 +7,7 @@ import { QueueItem, RoutingStepInput } from "@/hooks/useQueue";
 import { Station } from "@/hooks/useStations";
 import { useOrgContext } from "@/contexts/OrgContext";
 import { useAdminAccess } from "@/hooks/useAdminData";
-import { useToast } from "@/hooks/use-toast";
+import { woToast } from "@/lib/woToast";
 import { useDimensions } from "@/hooks/useDimensions";
 import { useSetupSheets } from "@/hooks/useSetupSheets";
 import { supabase } from "@/integrations/supabase/client";
