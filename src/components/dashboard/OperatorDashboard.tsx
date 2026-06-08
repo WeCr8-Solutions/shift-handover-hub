@@ -1,4 +1,8 @@
 import { useState, lazy, Suspense } from "react";
+
+const OperatorProductionAnalytics = lazy(() =>
+  import("./ProductionAnalytics").then((m) => ({ default: m.ProductionAnalytics })),
+);
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
