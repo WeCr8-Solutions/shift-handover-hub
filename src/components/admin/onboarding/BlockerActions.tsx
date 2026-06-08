@@ -73,7 +73,7 @@ export function BlockerActions({ organizationId, blockers, onScrollTo, onChanged
     if (!confirm("Grant complimentary Team-tier access to this organization?")) return;
     setBusy("subscription");
     try {
-      const { error } = await supabase.rpc("admin_grant_complimentary_access", {
+      const { error } = await (supabase.rpc as any)("admin_grant_complimentary_access", {
         p_org_id: organizationId,
         p_tier: "team",
       });
