@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DocumentLibrary } from "@/components/admin/concierge/DocumentLibrary";
+import { useConciergePrefill } from "@/hooks/useConciergePrefill";
 
 /**
  * Printable Concierge Sales Pack — platform-admin only.
@@ -50,7 +51,14 @@ function PrintPage({
   );
 }
 
-function WorksheetTable({ columns, rows = 10 }: { columns: string[]; rows?: number }) {
+function WorksheetTable({
+  columns,
+  rows = 10,
+  data,
+}: { columns: string[]; rows?: number; data?: string[][] }) {
+  const filled = data ?? [];
+  const minRows = Math.max(rows, filled.length);
+  const blanks = Math.max(0, minRows - filled.length);
   return (
     <table className="w-full border-collapse text-xs">
       <thead>
@@ -61,8 +69,15 @@ function WorksheetTable({ columns, rows = 10 }: { columns: string[]; rows?: numb
         </tr>
       </thead>
       <tbody>
-        {blankRows(rows).map((_, r) => (
-          <tr key={r}>
+        {filled.map((row, r) => (
+          <tr key={`d-${r}`}>
+            {columns.map((c, ci) => (
+              <td key={c} className="border border-black/30 h-7 px-2 align-top">{row[ci] || "\u00A0"}</td>
+            ))}
+          </tr>
+        ))}
+        {blankRows(blanks).map((_, r) => (
+          <tr key={`b-${r}`}>
             {columns.map((c) => (
               <td key={c} className="border border-black/30 h-7 px-2 align-top">&nbsp;</td>
             ))}
@@ -73,6 +88,7 @@ function WorksheetTable({ columns, rows = 10 }: { columns: string[]; rows?: numb
   );
 }
 
+
 export default function ConciergeSalesPack({ publicMode = false }: { publicMode?: boolean }) {
   const { engagementId } = useParams<{ engagementId?: string }>();
   const navigate = useNavigate();
@@ -80,6 +96,10 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
   const { isAdmin: isPlatformAdmin, isDeveloper, loading: rolesLoading } = useAdminAccess();
   const hasStaffAccess = !!user && (isPlatformAdmin || isDeveloper);
   const { data: engagement, isLoading } = useEngagement(hasStaffAccess ? engagementId ?? null : null);
+  const { data: prefill } = useConciergePrefill(
+    hasStaffAccess ? (engagement?.organizations as any)?.id ?? null : null,
+    hasStaffAccess ? engagementId ?? null : null,
+  );
 
   useEffect(() => { document.title = "Concierge Sales Pack · JobLine.ai"; }, []);
 
@@ -346,39 +366,58 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
           {isOn("equipment") && (
           <PrintPage title="Equipment Intake">
             <h1 className="text-xl font-bold mb-3">Equipment & machine registry</h1>
-            <p className="text-xs mb-3">List every machine. Use one row per asset. Sales rep will upload these as the equipment CSV.</p>
-            <WorksheetTable rows={18} columns={["asset_tag","name","equipment_type","manufacturer","model","serial_number","controller","machine_type"]} />
+            <p className="text-xs mb-3">
+              {prefill?.equipment.length
+                ? <>Prefilled with <b>{prefill.equipment.length}</b> machine{prefill.equipment.length === 1 ? "" : "s"} on file for {orgName}. Verify & annotate corrections in the margin.</>
+                : "List every machine. Use one row per asset. Sales rep will upload these as the equipment CSV."}
+            </p>
+            <WorksheetTable rows={18} data={prefill?.equipment} columns={["asset_tag","name","equipment_type","manufacturer","model","serial_number","controller","machine_type"]} />
           </PrintPage>)}
 
           {/* 6. Stations & Departments */}
           {isOn("stations") && (
           <PrintPage title="Stations & Departments">
             <h1 className="text-xl font-bold mb-3">Departments & stations</h1>
-            <p className="text-xs mb-3">Each station belongs to one department. Capacity is concurrent jobs; shift pattern is "day", "swing", or "24/7".</p>
-            <WorksheetTable rows={18} columns={["department","station_name","station_id","station_type","capacity","shift_pattern"]} />
+            <p className="text-xs mb-3">
+              {prefill?.stations.length
+                ? <>Prefilled with <b>{prefill.stations.length}</b> station{prefill.stations.length === 1 ? "" : "s"} across <b>{new Set(prefill.stations.map(r => r[0]).filter(Boolean)).size}</b> departments. Confirm shift patterns ("day", "swing", or "24/7") in the last column.</>
+                : `Each station belongs to one department. Capacity is concurrent jobs; shift pattern is "day", "swing", or "24/7".`}
+            </p>
+            <WorksheetTable rows={18} data={prefill?.stations} columns={["department","station_name","station_id","station_type","capacity","shift_pattern"]} />
           </PrintPage>)}
 
           {/* 7. Users & Roles */}
           {isOn("users") && (
           <PrintPage title="Users & Roles">
             <h1 className="text-xl font-bold mb-3">Users, roles & invites</h1>
-            <p className="text-xs mb-3">Roles: <b>admin</b>, <b>supervisor</b>, <b>operator</b>. Mark "Send invite now" Y/N; QR/email invites expire in 15 days.</p>
-            <WorksheetTable rows={18} columns={["email","first_name","last_name","role","department","default_station","phone","send_invite_now"]} />
+            <p className="text-xs mb-3">
+              {prefill?.users.length
+                ? <>Prefilled with <b>{prefill.users.length}</b> existing member{prefill.users.length === 1 ? "" : "s"}. Add any net-new invites below; QR/email invites expire in 15 days.</>
+                : <>Roles: <b>admin</b>, <b>supervisor</b>, <b>operator</b>. Mark "Send invite now" Y/N; QR/email invites expire in 15 days.</>}
+            </p>
+            <WorksheetTable rows={18} data={prefill?.users} columns={["email","first_name","last_name","role","department","default_station","phone","send_invite_now"]} />
           </PrintPage>)}
 
           {/* 8. Routing templates */}
           {isOn("routing") && (
           <PrintPage title="Routing Templates">
             <h1 className="text-xl font-bold mb-3">Routing templates</h1>
-            <p className="text-xs mb-3">Group by template_name. Operations: turning, milling, drilling, grinding, finishing, inspection, assembly, packout.</p>
-            <WorksheetTable rows={20} columns={["template_name","step_number","operation","work_center","setup_minutes","run_minutes_per_unit","dimension_spec","quality_checkpoint"]} />
+            <p className="text-xs mb-3">
+              {prefill?.routing.length
+                ? <>Prefilled with <b>{prefill.routing.length}</b> step{prefill.routing.length === 1 ? "" : "s"} across configured templates. Add new templates in blank rows below.</>
+                : "Group by template_name. Operations: turning, milling, drilling, grinding, finishing, inspection, assembly, packout."}
+            </p>
+            <WorksheetTable rows={20} data={prefill?.routing} columns={["template_name","step_number","operation","work_center","setup_minutes","run_minutes_per_unit","dimension_spec","quality_checkpoint"]} />
           </PrintPage>)}
 
           {/* 9. Quality / Inspection */}
           {isOn("quality") && (
           <PrintPage title="Quality & Inspection">
             <h1 className="text-xl font-bold mb-3">Quality checkpoints &amp; inspection tools</h1>
-            <WorksheetTable rows={12} columns={["checkpoint_name","operation_after","tool_required","frequency","sample_size"]} />
+            {prefill?.quality.length
+              ? <p className="text-xs mb-3">Prefilled with <b>{prefill.quality.length}</b> checkpoint{prefill.quality.length === 1 ? "" : "s"} on file.</p>
+              : null}
+            <WorksheetTable rows={12} data={prefill?.quality} columns={["checkpoint_name","operation_after","tool_required","frequency","sample_size"]} />
             <h2 className="text-sm font-semibold mt-6 mb-2">Notes</h2>
             <div className="border border-black/40 h-40" />
           </PrintPage>)}
@@ -387,14 +426,22 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
           {isOn("erp") && (
           <PrintPage title="ERP Integration">
             <h1 className="text-xl font-bold mb-3">ERP connector questionnaire</h1>
+            {prefill?.erp ? (
+              <div className="border border-black/40 p-3 text-xs mb-4 bg-black/5">
+                <div className="font-semibold mb-1">Current on-file configuration</div>
+                <div>Connector: <b className="capitalize">{prefill.erp.connector ?? "—"}</b></div>
+                <div>Base URL: <b>{prefill.erp.baseUrl ?? "—"}</b></div>
+                <div>Persistence mode: <b className="capitalize">{prefill.erp.persistenceMode?.replace("_", "-") ?? "—"}</b></div>
+              </div>
+            ) : null}
             <div className="space-y-3 text-xs">
               <label className="flex items-center gap-2"><span className="border border-black w-4 h-4 inline-block" /> Native (no ERP — JobLine is the system of record)</label>
               <label className="flex items-center gap-2"><span className="border border-black w-4 h-4 inline-block" /> JobBOSS</label>
               <label className="flex items-center gap-2"><span className="border border-black w-4 h-4 inline-block" /> SAP S/4HANA</label>
               <div className="mt-4">
-                <div>Base URL: ______________________________________________</div>
+                <div>Base URL: {prefill?.erp?.baseUrl ?? "______________________________________________"}</div>
                 <div className="mt-2">Auth method: ______________________________________________</div>
-                <div className="mt-2">Persistence mode: <label className="ml-2"><input type="checkbox" /> read-through (ITAR default)</label> <label className="ml-4"><input type="checkbox" /> write-through (non-ITAR only)</label></div>
+                <div className="mt-2">Persistence mode: <label className="ml-2"><input type="checkbox" defaultChecked={prefill?.erp?.persistenceMode === "read_through"} /> read-through (ITAR default)</label> <label className="ml-4"><input type="checkbox" defaultChecked={prefill?.erp?.persistenceMode === "write_through"} /> write-through (non-ITAR only)</label></div>
               </div>
               <div className="mt-4">Notes: ____________________________________________________________</div>
               <div>____________________________________________________________</div>
