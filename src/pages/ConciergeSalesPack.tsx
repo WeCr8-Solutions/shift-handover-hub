@@ -77,7 +77,8 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
   const { engagementId } = useParams<{ engagementId?: string }>();
   const { user, loading: authLoading } = useAuth();
   const { isAdmin: isPlatformAdmin, isDeveloper, loading: rolesLoading } = useAdminAccess();
-  const { data: engagement, isLoading } = useEngagement(engagementId ?? null);
+  const hasStaffAccess = !!user && (isPlatformAdmin || isDeveloper);
+  const { data: engagement, isLoading } = useEngagement(hasStaffAccess ? engagementId ?? null : null);
 
   useEffect(() => { document.title = "Concierge Sales Pack · JobLine.ai"; }, []);
 
@@ -111,7 +112,6 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
   const setAll = (val: boolean) =>
     setSelected(Object.fromEntries(SECTIONS.map((s) => [s.key, val])));
   const isGenericPublicPack = publicMode && !engagementId;
-  const hasStaffAccess = !!user && (isPlatformAdmin || isDeveloper);
 
   if (!isGenericPublicPack && (authLoading || rolesLoading)) return <Skeleton className="h-screen w-full" />;
   if (!isGenericPublicPack && !hasStaffAccess) {
