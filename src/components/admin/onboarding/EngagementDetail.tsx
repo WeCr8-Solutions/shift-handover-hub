@@ -116,7 +116,7 @@ export function EngagementDetail({ engagementId, onBack }: { engagementId: strin
         </Button>
         <div className="flex items-center gap-2 flex-wrap">
           <Button variant="outline" size="sm" asChild className="gap-2">
-            <Link to={`/admin/concierge/print/${engagementId}`} target="_blank" rel="noopener">
+            <Link to={`/admin/concierge/print/${engagementId}`}>
               <Printer className="w-4 h-4" /> Print sales pack
             </Link>
           </Button>

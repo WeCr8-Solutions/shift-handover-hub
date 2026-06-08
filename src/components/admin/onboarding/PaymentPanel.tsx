@@ -121,7 +121,7 @@ export function PaymentPanel({ engagement }: { engagement: Engagement2 }) {
             </CardDescription>
           </div>
           <Button variant="outline" size="sm" asChild className="gap-2">
-            <Link to={`/admin/concierge/print/${engagement.id}`} target="_blank" rel="noopener">
+            <Link to={`/admin/concierge/print/${engagement.id}`}>
               <Printer className="w-4 h-4" /> Print sales pack
             </Link>
           </Button>
