@@ -164,11 +164,6 @@ export function ReadinessPanel({ organizationId, engagement }: { organizationId:
             <CheckCircle2 className="w-4 h-4" /> All required data is present. Ready to activate.
           </div>
         )}
-        {ready && (
-          <div className="rounded border border-status-ok/40 p-3 text-xs flex items-center gap-2 text-status-ok">
-            <CheckCircle2 className="w-4 h-4" /> All required data is present. Ready to activate.
-          </div>
-        )}
 
         <div className="border-t pt-3 space-y-2">
           <div className="flex items-center justify-between flex-wrap gap-2">
