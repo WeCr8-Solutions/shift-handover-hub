@@ -143,9 +143,13 @@ export function EngagementDetail({ engagementId, onBack }: { engagementId: strin
         </div>
       </div>
 
-      <PaymentPanel engagement={engagement as any} />
+      <div id="payment-panel" className="rounded transition-shadow">
+        <PaymentPanel engagement={engagement as any} />
+      </div>
 
-      <ContractPanel engagement={engagement as any} />
+      <div id="contract-panel" className="rounded transition-shadow">
+        <ContractPanel engagement={engagement as any} />
+      </div>
 
       <RefundPanel engagement={engagement as any} />
 
@@ -154,13 +158,17 @@ export function EngagementDetail({ engagementId, onBack }: { engagementId: strin
         lastExportedAt={(engagement as any).exported_to_accounting_at}
       />
 
-      <ReadinessPanel organizationId={engagement.organization_id} engagement={engagement} />
+      <div id="readiness-panel" className="rounded transition-shadow">
+        <ReadinessPanel organizationId={engagement.organization_id} engagement={engagement} />
+      </div>
 
-      <OwnerInvitePanel
-        engagementId={engagement.id}
-        organizationId={engagement.organization_id}
-        organizationName={engagement.organizations?.name ?? undefined}
-      />
+      <div id="owner-invite-panel" className="rounded transition-shadow">
+        <OwnerInvitePanel
+          engagementId={engagement.id}
+          organizationId={engagement.organization_id}
+          organizationName={engagement.organizations?.name ?? undefined}
+        />
+      </div>
 
       <ConciergeAuditTimeline engagementId={engagement.id} />
 
