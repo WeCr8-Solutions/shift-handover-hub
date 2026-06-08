@@ -128,12 +128,12 @@ export function QueueItemRoutingTab({
         await supabase.from("queue_items").update({ station_id: firstStationId }).eq("id", item.id);
       }
 
-      toast({ title: "Routing Saved", description: `${newRoutingSteps.length} routing step(s) added to this work order.` });
+      woToast.success("Routing saved", item.work_order, `${newRoutingSteps.length} routing step(s) added.`);
       setAddingRouting(false);
       setNewRoutingSteps([]);
       onReloadRouting();
     } catch (err: any) {
-      toast({ title: "Error", description: err.message || "Failed to save routing", variant: "destructive" });
+      woToast.error("Failed to save routing", err.message, item.work_order);
     } finally {
       setSavingRouting(false);
     }
