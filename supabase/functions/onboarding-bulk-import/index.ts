@@ -136,7 +136,10 @@ Deno.serve(async (req) => {
           }
           const { data: dup } = await admin
             .from("stations").select("id").eq("organization_id", orgId).eq("name", r.station_name).maybeSingle();
-          if (dup) { result.skipped++; continue; }
+          if (dup) {
+            result.errors.push({ row: i + 2, message: `Station "${r.station_name}" already exists` });
+            result.skipped++; continue;
+          }
           const { error } = await admin.from("stations").insert({
             organization_id: orgId,
             department_id: deptId,
