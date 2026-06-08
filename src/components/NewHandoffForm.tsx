@@ -170,6 +170,10 @@ interface NewHandoffFormProps {
     part_number?: string;
     operation_number?: string;
     station_id?: string;
+    next_station_id?: string | null;
+    next_station_name?: string | null;
+    next_operation_name?: string | null;
+    next_operation_number?: string | null;
   };
 }
 
