@@ -50,7 +50,14 @@ function PrintPage({
   );
 }
 
-function WorksheetTable({ columns, rows = 10 }: { columns: string[]; rows?: number }) {
+function WorksheetTable({
+  columns,
+  rows = 10,
+  data,
+}: { columns: string[]; rows?: number; data?: string[][] }) {
+  const filled = data ?? [];
+  const minRows = Math.max(rows, filled.length);
+  const blanks = Math.max(0, minRows - filled.length);
   return (
     <table className="w-full border-collapse text-xs">
       <thead>
@@ -61,8 +68,15 @@ function WorksheetTable({ columns, rows = 10 }: { columns: string[]; rows?: numb
         </tr>
       </thead>
       <tbody>
-        {blankRows(rows).map((_, r) => (
-          <tr key={r}>
+        {filled.map((row, r) => (
+          <tr key={`d-${r}`}>
+            {columns.map((c, ci) => (
+              <td key={c} className="border border-black/30 h-7 px-2 align-top">{row[ci] || "\u00A0"}</td>
+            ))}
+          </tr>
+        ))}
+        {blankRows(blanks).map((_, r) => (
+          <tr key={`b-${r}`}>
             {columns.map((c) => (
               <td key={c} className="border border-black/30 h-7 px-2 align-top">&nbsp;</td>
             ))}
@@ -73,6 +87,8 @@ function WorksheetTable({ columns, rows = 10 }: { columns: string[]; rows?: numb
   );
 }
 
+import { useConciergePrefill } from "@/hooks/useConciergePrefill";
+
 export default function ConciergeSalesPack({ publicMode = false }: { publicMode?: boolean }) {
   const { engagementId } = useParams<{ engagementId?: string }>();
   const navigate = useNavigate();
@@ -80,6 +96,10 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
   const { isAdmin: isPlatformAdmin, isDeveloper, loading: rolesLoading } = useAdminAccess();
   const hasStaffAccess = !!user && (isPlatformAdmin || isDeveloper);
   const { data: engagement, isLoading } = useEngagement(hasStaffAccess ? engagementId ?? null : null);
+  const { data: prefill } = useConciergePrefill(
+    hasStaffAccess ? (engagement?.organizations as any)?.id ?? null : null,
+    hasStaffAccess ? engagementId ?? null : null,
+  );
 
   useEffect(() => { document.title = "Concierge Sales Pack · JobLine.ai"; }, []);
 
