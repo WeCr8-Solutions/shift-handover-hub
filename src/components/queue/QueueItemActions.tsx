@@ -55,7 +55,7 @@ export function QueueItemActions({
   onCloseDialog,
 }: QueueItemActionsProps) {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const wo = item.work_order ?? null;
   const { hasAdminAccess, hasOrgSupervisorAccess } = useAdminAccess();
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [convertDialogOpen, setConvertDialogOpen] = useState(false);
