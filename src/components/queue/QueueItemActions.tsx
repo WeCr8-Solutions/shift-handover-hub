@@ -5,6 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { QueueItem, QueueStatus, UpdateQueueItemInput } from "@/hooks/useQueue";
 import { Station } from "@/hooks/useStations";
 import { useToast } from "@/hooks/use-toast";
@@ -59,6 +63,14 @@ export function QueueItemActions({
   const [convertStationId, setConvertStationId] = useState<string | undefined>();
   const [converting, setConverting] = useState(false);
   const [cloning, setCloning] = useState(false);
+  const [handoffPrompt, setHandoffPrompt] = useState<{
+    open: boolean;
+    nextStationId?: string | null;
+    nextStationName?: string | null;
+    nextOperationName?: string | null;
+    nextOperationNumber?: string | null;
+    finalCompletion: boolean;
+  }>({ open: false, finalCompletion: false });
 
   const handleCloneWorkOrder = async () => {
     setCloning(true);
@@ -229,10 +241,23 @@ export function QueueItemActions({
           toast({ title: "Transition Blocked", description: error.message, variant: "destructive" });
         } else {
           const action = (result as any)?.action;
+          const nextStationName = (result as any)?.next_station_name as string | undefined;
+          const nextStationId = (result as any)?.next_station_id as string | undefined;
+          const nextOperationName = (result as any)?.next_operation_name as string | undefined;
+          const nextOperationNumber = (result as any)?.next_operation_number as string | undefined;
           if (action === "advanced") {
-            toast({ title: "Operation Complete", description: `Advanced to ${(result as any)?.next_station_name || "next station"}` });
+            toast({ title: "Operation Complete", description: `Advanced to ${nextStationName || "next station"}` });
+            setHandoffPrompt({
+              open: true,
+              nextStationId: nextStationId ?? null,
+              nextStationName: nextStationName ?? null,
+              nextOperationName: nextOperationName ?? null,
+              nextOperationNumber: nextOperationNumber ?? null,
+              finalCompletion: false,
+            });
           } else {
             toast({ title: "Work Order Completed!", description: "All operations finished" });
+            setHandoffPrompt({ open: true, finalCompletion: true });
           }
           onReloadHistory();
           onReloadRouting();
@@ -248,22 +273,47 @@ export function QueueItemActions({
       } else {
         toast({ title: "Work Order Completed!", description: "All operations finished" });
         onReloadHistory();
+        setHandoffPrompt({ open: true, finalCompletion: true });
       }
     }
     setActionLoading(null);
   };
 
-  const handleCreateHandoff = () => {
+  const handleCreateHandoff = (overrides?: {
+    station_id?: string | null;
+    operation_number?: string | null;
+    next_station_id?: string | null;
+    next_station_name?: string | null;
+    next_operation_name?: string | null;
+    next_operation_number?: string | null;
+  }) => {
     sessionStorage.setItem("handoff_prefill", JSON.stringify({
       work_order: item.work_order,
       part_number: item.part_number,
-      operation_number: item.operation_number,
-      station_id: item.station_id,
+      operation_number: overrides?.operation_number ?? item.operation_number,
+      station_id: overrides?.station_id ?? item.station_id,
+      next_station_id: overrides?.next_station_id ?? null,
+      next_station_name: overrides?.next_station_name ?? null,
+      next_operation_name: overrides?.next_operation_name ?? null,
+      next_operation_number: overrides?.next_operation_number ?? null,
     }));
     sessionStorage.setItem("auto_open_handoff", "true");
     onCloseDialog();
     navigate("/dashboard");
   };
+
+  const handleConfirmHandoffPrompt = () => {
+    handleCreateHandoff({
+      station_id: item.station_id,
+      operation_number: item.operation_number,
+      next_station_id: handoffPrompt.nextStationId,
+      next_station_name: handoffPrompt.nextStationName,
+      next_operation_name: handoffPrompt.nextOperationName,
+      next_operation_number: handoffPrompt.nextOperationNumber,
+    });
+    setHandoffPrompt((p) => ({ ...p, open: false }));
+  };
+
 
   const handleConvertToWorkOrder = async () => {
     if (!convertWONumber.trim()) {
@@ -394,7 +444,7 @@ export function QueueItemActions({
             <ShieldAlert className="w-4 h-4" />
             Report NCR
           </Button>
-          <Button variant="outline" onClick={handleCreateHandoff} className="gap-2" data-testid="new-handoff">
+          <Button variant="outline" onClick={() => handleCreateHandoff()} className="gap-2" data-testid="new-handoff">
             <FileText className="w-4 h-4" />
             Create Handoff
             <ArrowRight className="w-4 h-4" />
@@ -480,6 +530,37 @@ export function QueueItemActions({
           )}
         </div>
       )}
+
+      <AlertDialog
+        open={handoffPrompt.open}
+        onOpenChange={(o) => setHandoffPrompt((p) => ({ ...p, open: o }))}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {handoffPrompt.finalCompletion ? "Work Order Completed" : "Operation Complete"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {handoffPrompt.finalCompletion ? (
+                <>Create a final shift handoff for <strong>{item.work_order}</strong> to log completion?</>
+              ) : (
+                <>
+                  Create a handoff to pass <strong>{item.work_order}</strong> to{" "}
+                  <strong>{handoffPrompt.nextStationName || "the next station"}</strong>
+                  {handoffPrompt.nextOperationName ? <> for <strong>{handoffPrompt.nextOperationName}</strong></> : null}?
+                  <span className="block mt-2 text-xs">Work order, part number, and next-op details will be auto-filled.</span>
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Not now</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmHandoffPrompt}>
+              Create Handoff
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

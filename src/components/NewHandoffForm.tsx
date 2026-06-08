@@ -170,6 +170,10 @@ interface NewHandoffFormProps {
     part_number?: string;
     operation_number?: string;
     station_id?: string;
+    next_station_id?: string | null;
+    next_station_name?: string | null;
+    next_operation_name?: string | null;
+    next_operation_number?: string | null;
   };
 }
 
@@ -315,12 +319,26 @@ export function NewHandoffForm({ onClose, onSubmit, initialStationId, prefillDat
         // Station will be handled by initialStationId effect if both are set
         handleStationChange(prefillData.station_id);
       }
+      if (prefillData.next_station_name || prefillData.next_operation_name) {
+        const nextOpParts = [
+          prefillData.next_operation_number ? `Op ${prefillData.next_operation_number}` : null,
+          prefillData.next_operation_name,
+        ].filter(Boolean).join(" — ");
+        const nextStation = prefillData.next_station_name ? `Next station: ${prefillData.next_station_name}` : "";
+        const nextOp = nextOpParts ? `Next operation: ${nextOpParts}` : "";
+        const handoffNote = [nextStation, nextOp].filter(Boolean).join(". ");
+        if (handoffNote) {
+          updates.handoffSummary = `${handoffNote}.\n\n`;
+        }
+      }
       if (Object.keys(updates).length > 0) {
-        setFormData(prev => ({ ...prev, ...updates }));
+        setFormData(prev => ({ ...prev, ...updates, handoffSummary: updates.handoffSummary ? `${updates.handoffSummary}${prev.handoffSummary || ""}` : prev.handoffSummary }));
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prefillData, stations.length]);
+
+
 
   const updateField = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
