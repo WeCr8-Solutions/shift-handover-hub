@@ -130,7 +130,7 @@ export function CreateWorkOrderDialog({
         }
       } catch (error) {
         if (!cancelled) {
-          toast.error("Failed to load stations");
+          woToast.error("Failed to load stations");
         }
       } finally {
         if (!cancelled) {
