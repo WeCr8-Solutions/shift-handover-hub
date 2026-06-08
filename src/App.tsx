@@ -52,6 +52,8 @@ const ConciergeSalesPack = lazy(() => import("./pages/ConciergeSalesPack"));
 const ConciergeInvoicePdf = lazy(() => import("./pages/ConciergeInvoicePdf"));
 const ConciergeBillingTab = lazy(() => import("./pages/billing/ConciergeBillingTab"));
 const ConciergeReporting = lazy(() => import("./pages/admin/ConciergeReporting"));
+const ConciergeLibrary = lazy(() => import("./pages/admin/ConciergeLibrary"));
+const ConciergeDocumentsCustomer = lazy(() => import("./pages/settings/ConciergeDocuments"));
 const ManufacturingVisibility100 = lazy(() => import("./pages/marketing/ManufacturingVisibility100"));
 const ManufacturingVisibility100Methodology = lazy(() => import("./pages/marketing/ManufacturingVisibility100Methodology"));
 const ManufacturingVisibility100Nominate = lazy(() => import("./pages/marketing/ManufacturingVisibility100Nominate"));
