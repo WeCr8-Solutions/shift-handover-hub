@@ -1,7 +1,9 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { Printer } from "lucide-react";
 import { useEngagement } from "@/hooks/useOnboardingEngagements";
 import { useAuth } from "@/contexts/AuthContext";
@@ -84,6 +86,31 @@ export default function ConciergeSalesPack() {
   const tier = engagement?.plan_tier ?? "standard";
   const amount = tier === "enterprise" ? "$4,500" : tier === "complimentary" ? "Complimentary" : "$1,500";
 
+  const SECTIONS: { key: string; label: string }[] = [
+    { key: "cover", label: "Cover" },
+    { key: "msa", label: "Master Services Agreement" },
+    { key: "payment", label: "Payment Instructions" },
+    { key: "itar", label: "ITAR / US-Person Declaration" },
+    { key: "equipment", label: "Equipment Intake" },
+    { key: "stations", label: "Stations & Departments" },
+    { key: "users", label: "Users & Roles" },
+    { key: "routing", label: "Routing Templates" },
+    { key: "quality", label: "Quality & Inspection" },
+    { key: "erp", label: "ERP Integration" },
+    { key: "golive", label: "Go-Live Checklist" },
+    { key: "signature", label: "Signature Page" },
+  ];
+  const [selected, setSelected] = useState<Record<string, boolean>>(
+    () => Object.fromEntries(SECTIONS.map((s) => [s.key, true]))
+  );
+  const [paperSize, setPaperSize] = useState<"Letter" | "A4" | "Legal">("Letter");
+  const [orientation, setOrientation] = useState<"portrait" | "landscape">("portrait");
+  const [copies, setCopies] = useState(1);
+  const isOn = (key: string) => selected[key] !== false;
+  const toggle = (key: string) => setSelected((s) => ({ ...s, [key]: !isOn(key) }));
+  const setAll = (val: boolean) =>
+    setSelected(Object.fromEntries(SECTIONS.map((s) => [s.key, val])));
+
   if (authLoading || rolesLoading) return <Skeleton className="h-screen w-full" />;
   if (!user || !(isPlatformAdmin || isDeveloper)) {
     return (
@@ -93,20 +120,80 @@ export default function ConciergeSalesPack() {
     );
   }
 
+  const handlePrint = () => {
+    for (let i = 0; i < Math.max(1, copies); i++) window.print();
+  };
+
   return (
     <div className="min-h-screen bg-muted/30 print:bg-white">
       <Helmet>
         <meta name="robots" content="noindex,nofollow" />
-        <style>{`@media print { @page { size: Letter; margin: 0; } body { background: white; } .no-print { display: none !important; } }`}</style>
+        <style>{`@media print { @page { size: ${paperSize} ${orientation}; margin: 0; } body { background: white; } .no-print { display: none !important; } }`}</style>
       </Helmet>
 
-      <div className="no-print sticky top-0 z-10 bg-background border-b px-4 py-2 flex items-center justify-between">
-        <div className="text-sm text-muted-foreground">
-          Print preview · use the Document Library below to download individual PDF / DOCX / Excel files, or use your browser's print dialog to export the full pack.
+      <div className="no-print sticky top-0 z-10 bg-background border-b px-4 py-3 space-y-3">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="text-sm text-muted-foreground">
+            Select sections + printer options below, then print the pack or download individual files from the library.
+          </div>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" onClick={() => setAll(true)}>Select all</Button>
+            <Button size="sm" variant="outline" onClick={() => setAll(false)}>Clear</Button>
+            <Button size="sm" onClick={handlePrint} className="gap-2">
+              <Printer className="w-4 h-4" /> Print selected
+            </Button>
+          </div>
         </div>
-        <Button size="sm" onClick={() => window.print()} className="gap-2">
-          <Printer className="w-4 h-4" /> Print full pack
-        </Button>
+
+        <div className="flex flex-wrap gap-x-4 gap-y-2">
+          {SECTIONS.map((s) => (
+            <label key={s.key} className="flex items-center gap-2 text-xs">
+              <Checkbox checked={isOn(s.key)} onCheckedChange={() => toggle(s.key)} />
+              <span>{s.label}</span>
+            </label>
+          ))}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-4 text-xs border-t pt-2">
+          <div className="font-semibold text-muted-foreground uppercase tracking-wider">Printer</div>
+          <Label className="flex items-center gap-2">
+            Paper
+            <select
+              value={paperSize}
+              onChange={(e) => setPaperSize(e.target.value as "Letter" | "A4" | "Legal")}
+              className="border rounded px-2 py-1 bg-background"
+            >
+              <option value="Letter">Letter (8.5×11)</option>
+              <option value="A4">A4</option>
+              <option value="Legal">Legal (8.5×14)</option>
+            </select>
+          </Label>
+          <Label className="flex items-center gap-2">
+            Orientation
+            <select
+              value={orientation}
+              onChange={(e) => setOrientation(e.target.value as "portrait" | "landscape")}
+              className="border rounded px-2 py-1 bg-background"
+            >
+              <option value="portrait">Portrait</option>
+              <option value="landscape">Landscape</option>
+            </select>
+          </Label>
+          <Label className="flex items-center gap-2">
+            Copies
+            <input
+              type="number"
+              min={1}
+              max={10}
+              value={copies}
+              onChange={(e) => setCopies(Math.max(1, Math.min(10, Number(e.target.value) || 1)))}
+              className="border rounded px-2 py-1 w-16 bg-background"
+            />
+          </Label>
+          <span className="text-muted-foreground">
+            Tip: in the print dialog choose <b>two-sided</b> + <b>scale 100%</b> for wet-signature packs.
+          </span>
+        </div>
       </div>
 
       <div className="no-print max-w-6xl mx-auto px-4 pt-4">
@@ -118,11 +205,13 @@ export default function ConciergeSalesPack() {
         />
       </div>
 
+
       {isLoading && engagementId ? (
         <div className="p-8"><Skeleton className="h-96 w-full" /></div>
       ) : (
         <>
           {/* 1. Cover */}
+          {isOn("cover") && (
           <PrintPage title="Cover">
             <div className="flex flex-col items-center justify-center text-center pt-12 space-y-6">
               <div className="text-5xl font-bold tracking-tight">Concierge Onboarding</div>
@@ -143,9 +232,10 @@ export default function ConciergeSalesPack() {
                 <b>Instructions to signer:</b> initial every page in the bottom-right corner, then sign and date the final Signature Page. Return all pages to onboarding@jobline.ai or upload via the Concierge workspace.
               </p>
             </div>
-          </PrintPage>
+          </PrintPage>)}
 
           {/* 2. Master Services Agreement */}
+          {isOn("msa") && (
           <PrintPage title="Master Services Agreement" initials>
             <h1 className="text-2xl font-bold mb-2">Concierge Onboarding Services Agreement</h1>
             <p className="text-xs mb-4">Between JobLine AI, Inc. ("JobLine") and the Customer identified on the Cover Page ("Customer"), effective on the Effective Date below.</p>
@@ -179,9 +269,10 @@ export default function ConciergeSalesPack() {
                 <div className="mt-1">Date</div>
               </div>
             </div>
-          </PrintPage>
+          </PrintPage>)}
 
           {/* 3. Payment instructions */}
+          {isOn("payment") && (
           <PrintPage title="Payment Instructions">
             <h1 className="text-2xl font-bold mb-4">How to pay</h1>
             <p className="text-xs mb-4">Total due: <b>{amount}</b>. Production access is blocked until payment is recorded.</p>
@@ -207,9 +298,10 @@ export default function ConciergeSalesPack() {
             <div className="mt-6 border border-black/40 p-3 text-xs">
               <b>Sales rep — for internal use:</b> after deposit, log into the Concierge workspace, open this engagement, and record the payment on the "Payment & Contract" panel. Upload a scan/photo of the check or wire receipt as proof.
             </div>
-          </PrintPage>
+          </PrintPage>)}
 
           {/* 4. ITAR / US-Person Declaration */}
+          {isOn("itar") && (
           <PrintPage title="ITAR / US-Person Declaration" initials>
             <h1 className="text-2xl font-bold mb-3">ITAR / US-Person Declaration</h1>
             <p className="text-xs mb-3">Required if Customer handles ITAR-controlled work. Check one and sign.</p>
@@ -223,45 +315,51 @@ export default function ConciergeSalesPack() {
               <div className="border-b border-black h-8 mt-4 w-48" />
               <div>Date</div>
             </div>
-          </PrintPage>
+          </PrintPage>)}
 
           {/* 5. Equipment */}
+          {isOn("equipment") && (
           <PrintPage title="Equipment Intake">
             <h1 className="text-xl font-bold mb-3">Equipment & machine registry</h1>
             <p className="text-xs mb-3">List every machine. Use one row per asset. Sales rep will upload these as the equipment CSV.</p>
             <WorksheetTable rows={18} columns={["asset_tag","name","equipment_type","manufacturer","model","serial_number","controller","machine_type"]} />
-          </PrintPage>
+          </PrintPage>)}
 
           {/* 6. Stations & Departments */}
+          {isOn("stations") && (
           <PrintPage title="Stations & Departments">
             <h1 className="text-xl font-bold mb-3">Departments & stations</h1>
             <p className="text-xs mb-3">Each station belongs to one department. Capacity is concurrent jobs; shift pattern is "day", "swing", or "24/7".</p>
             <WorksheetTable rows={18} columns={["department","station_name","station_id","station_type","capacity","shift_pattern"]} />
-          </PrintPage>
+          </PrintPage>)}
 
           {/* 7. Users & Roles */}
+          {isOn("users") && (
           <PrintPage title="Users & Roles">
             <h1 className="text-xl font-bold mb-3">Users, roles & invites</h1>
             <p className="text-xs mb-3">Roles: <b>admin</b>, <b>supervisor</b>, <b>operator</b>. Mark "Send invite now" Y/N; QR/email invites expire in 15 days.</p>
             <WorksheetTable rows={18} columns={["email","first_name","last_name","role","department","default_station","phone","send_invite_now"]} />
-          </PrintPage>
+          </PrintPage>)}
 
           {/* 8. Routing templates */}
+          {isOn("routing") && (
           <PrintPage title="Routing Templates">
             <h1 className="text-xl font-bold mb-3">Routing templates</h1>
             <p className="text-xs mb-3">Group by template_name. Operations: turning, milling, drilling, grinding, finishing, inspection, assembly, packout.</p>
             <WorksheetTable rows={20} columns={["template_name","step_number","operation","work_center","setup_minutes","run_minutes_per_unit","dimension_spec","quality_checkpoint"]} />
-          </PrintPage>
+          </PrintPage>)}
 
           {/* 9. Quality / Inspection */}
+          {isOn("quality") && (
           <PrintPage title="Quality & Inspection">
             <h1 className="text-xl font-bold mb-3">Quality checkpoints &amp; inspection tools</h1>
             <WorksheetTable rows={12} columns={["checkpoint_name","operation_after","tool_required","frequency","sample_size"]} />
             <h2 className="text-sm font-semibold mt-6 mb-2">Notes</h2>
             <div className="border border-black/40 h-40" />
-          </PrintPage>
+          </PrintPage>)}
 
           {/* 10. ERP integration */}
+          {isOn("erp") && (
           <PrintPage title="ERP Integration">
             <h1 className="text-xl font-bold mb-3">ERP connector questionnaire</h1>
             <div className="space-y-3 text-xs">
@@ -276,9 +374,10 @@ export default function ConciergeSalesPack() {
               <div className="mt-4">Notes: ____________________________________________________________</div>
               <div>____________________________________________________________</div>
             </div>
-          </PrintPage>
+          </PrintPage>)}
 
           {/* 11. Go-live checklist */}
+          {isOn("golive") && (
           <PrintPage title="Go-Live Checklist">
             <h1 className="text-xl font-bold mb-3">Go-live checklist</h1>
             <p className="text-xs mb-3">Mirrors the in-app concierge checklist. Tick alongside customer on walkthrough.</p>
@@ -307,9 +406,10 @@ export default function ConciergeSalesPack() {
               <div className="border-b border-black h-8 mt-4 w-48" />
               <div>Date</div>
             </div>
-          </PrintPage>
+          </PrintPage>)}
 
           {/* 12. Final Signature Page (2-party wet signature) */}
+          {isOn("signature") && (
           <PrintPage title="Signature Page">
             <h1 className="text-2xl font-bold mb-2">Signature Page</h1>
             <p className="text-xs mb-6">
@@ -374,7 +474,7 @@ export default function ConciergeSalesPack() {
               <b>For sales rep:</b> after both parties have signed, scan the entire package (including this page and all initialled pages) to a single PDF and upload it via the Concierge workspace → <i>Wet-signature contract</i> panel. Reference engagement ID:{" "}
               <span className="font-mono">{engagement?.id ?? "(blank until assigned)"}</span>
             </div>
-          </PrintPage>
+          </PrintPage>)}
         </>
       )}
     </div>
