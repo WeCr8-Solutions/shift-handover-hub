@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +30,7 @@ export function UploadUtility({
   templateColumns: string[];
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const qc = useQueryClient();
   const [uploading, setUploading] = useState(false);
   const [lastFile, setLastFile] = useState<string | null>(null);
   const [preview, setPreview] = useState<{ path: string; result: ImportResult } | null>(null);
@@ -82,7 +84,14 @@ export function UploadUtility({
       });
       if (error) throw error;
       const res = data as ImportResult;
-      toast.success(`Imported ${res.inserted} row${res.inserted === 1 ? "" : "s"}`);
+      const skippedMsg = res.skipped > 0 ? ` · ${res.skipped} skipped (duplicates / errors)` : "";
+      toast.success(`Imported ${res.inserted} row${res.inserted === 1 ? "" : "s"}${skippedMsg}`);
+      // Refresh editors that mirror imported data
+      qc.invalidateQueries({ queryKey: ["intake-users-roles", engagementId] });
+      qc.invalidateQueries({ queryKey: ["onboarding-users-roles", engagementId] });
+      qc.invalidateQueries({ queryKey: ["concierge-owner-status"] });
+      qc.invalidateQueries({ queryKey: ["concierge-team-status"] });
+      qc.invalidateQueries({ queryKey: ["onboarding-readiness"] });
       setPreview(null);
     } catch (e: any) {
       toast.error(e?.message ?? "Import failed");
