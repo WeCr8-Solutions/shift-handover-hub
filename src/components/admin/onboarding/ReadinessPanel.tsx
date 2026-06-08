@@ -26,6 +26,35 @@ const COUNT_LABELS: Record<string, string> = {
 
 interface SmokeStep { name: string; ok: boolean; detail?: string }
 
+function scrollToId(id: string) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.scrollIntoView({ behavior: "smooth", block: "start" });
+  el.classList.add("ring-2", "ring-primary");
+  setTimeout(() => el.classList.remove("ring-2", "ring-primary"), 1600);
+}
+
+function tileScrollTarget(key: string): string {
+  switch (key) {
+    case "admins":
+    case "members_signed_in":
+      return "owner-invite-panel";
+    case "operators":
+      return "invites-roles-board";
+    case "subscriptions":
+      return "payment-panel";
+    case "departments":
+    case "stations":
+    case "equipment":
+    case "stations_with_equipment":
+    case "routing_templates":
+    case "queue_items_with_routing":
+    case "branding":
+    default:
+      return "readiness-panel";
+  }
+}
+
 export function ReadinessPanel({ organizationId, engagement }: { organizationId: string; engagement?: Engagement }) {
   const { data, isLoading, refetch, isFetching } = useProductionReadiness(organizationId);
   const [smoke, setSmoke] = useState<{ ok: boolean; steps: SmokeStep[] } | null>(null);
