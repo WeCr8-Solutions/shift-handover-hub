@@ -43,7 +43,7 @@ export function useConciergePrefill(organizationId: string | null | undefined, e
         supabase.from("routing_templates").select("id,name").eq("organization_id", organizationId).order("name"),
         supabase.from("routing_template_steps").select("template_id,step_number,operation_name,work_center_type,setup_time_minutes,cycle_time_minutes,instructions").eq("organization_id", organizationId).order("step_number"),
         supabase.from("quality_checkpoints").select("name,checkpoint_type,required_for_work_centers,checklist_items").eq("organization_id", organizationId),
-        supabase.from("erp_connections").select("erp_system,base_url,sync_status,is_active").eq("organization_id", organizationId).maybeSingle(),
+        supabase.from("erp_connections").select("erp_vendor,api_base_url,erp_persistence_mode,is_active").eq("organization_id", organizationId).maybeSingle(),
         engagementId
           ? supabase.from("onboarding_intake_responses").select("module_key,payload").eq("engagement_id", engagementId)
           : Promise.resolve({ data: [] as any[], error: null }),
