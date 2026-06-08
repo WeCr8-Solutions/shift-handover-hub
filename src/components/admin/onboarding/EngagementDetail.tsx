@@ -23,6 +23,7 @@ import { ContractPanel } from "./ContractPanel";
 import { RefundPanel } from "./RefundPanel";
 import { AccountingExportPanel } from "./AccountingExportPanel";
 import { ConciergeAuditTimeline } from "./ConciergeAuditTimeline";
+import { OwnerInvitePanel } from "./OwnerInvitePanel";
 
 const MODULE_HELP: Record<string, { description: string; templateColumns?: string[] }> = {
   org_profile:  { description: "Capture company name, address, branding, ITAR posture, subscription tier, and seat count." },
@@ -154,6 +155,12 @@ export function EngagementDetail({ engagementId, onBack }: { engagementId: strin
       />
 
       <ReadinessPanel organizationId={engagement.organization_id} engagement={engagement} />
+
+      <OwnerInvitePanel
+        engagementId={engagement.id}
+        organizationId={engagement.organization_id}
+        organizationName={engagement.organizations?.name ?? undefined}
+      />
 
       <ConciergeAuditTimeline engagementId={engagement.id} />
 

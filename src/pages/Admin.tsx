@@ -265,6 +265,7 @@ export default function Admin() {
                 {hasPlatformAccess && (
                   <SelectGroup>
                     <SelectLabel>Operations</SelectLabel>
+                    <SelectItem value="onboarding-services">Concierge & Customer Success</SelectItem>
                     <SelectItem value="policy-acceptance">Policy Ledger</SelectItem>
                     <SelectItem value="billing-ops">Billing</SelectItem>
                     <SelectItem value="email-ops">Email Ops</SelectItem>
@@ -420,6 +421,10 @@ export default function Admin() {
                   <div className="w-px h-6 bg-border mx-1" />
                   <div className="flex items-center gap-1 px-1 py-0.5 rounded bg-muted/50">
                     <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider hidden lg:inline">Operations</span>
+                    <TabsTrigger value="onboarding-services" className="gap-2">
+                      <Briefcase className="w-4 h-4" />
+                      Concierge
+                    </TabsTrigger>
                     <TabsTrigger value="policy-acceptance" className="gap-2">
                       <ClipboardCheck className="w-4 h-4" />
                       Policy Ledger
@@ -472,14 +477,16 @@ export default function Admin() {
                       <Cpu className="w-4 h-4" />
                       Library
                     </TabsTrigger>
-                    <TabsTrigger value="onboarding-services" className="gap-2">
-                      <Briefcase className="w-4 h-4" />
-                      Customer Success
-                    </TabsTrigger>
                   </div>
                 </>
               )}
             </TabsList>
+          )}
+
+          {hasPlatformAccess && (
+            <TabsContent value="onboarding-services">
+              <Suspense fallback={<AdminTabFallback />}><OnboardingServicesPanel access={access} /></Suspense>
+            </TabsContent>
           )}
 
           <TabsContent value="overview" className="space-y-4">
@@ -492,11 +499,6 @@ export default function Admin() {
             </Suspense>
           </TabsContent>
 
-          {hasTestingAccess && (
-            <TabsContent value="onboarding-services">
-              <Suspense fallback={<AdminTabFallback />}><OnboardingServicesPanel access={access} /></Suspense>
-            </TabsContent>
-          )}
 
           {hasPlatformAccess && (
             <TabsContent value="platform-overview">
