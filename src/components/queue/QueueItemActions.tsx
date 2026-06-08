@@ -241,10 +241,23 @@ export function QueueItemActions({
           toast({ title: "Transition Blocked", description: error.message, variant: "destructive" });
         } else {
           const action = (result as any)?.action;
+          const nextStationName = (result as any)?.next_station_name as string | undefined;
+          const nextStationId = (result as any)?.next_station_id as string | undefined;
+          const nextOperationName = (result as any)?.next_operation_name as string | undefined;
+          const nextOperationNumber = (result as any)?.next_operation_number as string | undefined;
           if (action === "advanced") {
-            toast({ title: "Operation Complete", description: `Advanced to ${(result as any)?.next_station_name || "next station"}` });
+            toast({ title: "Operation Complete", description: `Advanced to ${nextStationName || "next station"}` });
+            setHandoffPrompt({
+              open: true,
+              nextStationId: nextStationId ?? null,
+              nextStationName: nextStationName ?? null,
+              nextOperationName: nextOperationName ?? null,
+              nextOperationNumber: nextOperationNumber ?? null,
+              finalCompletion: false,
+            });
           } else {
             toast({ title: "Work Order Completed!", description: "All operations finished" });
+            setHandoffPrompt({ open: true, finalCompletion: true });
           }
           onReloadHistory();
           onReloadRouting();
@@ -260,22 +273,47 @@ export function QueueItemActions({
       } else {
         toast({ title: "Work Order Completed!", description: "All operations finished" });
         onReloadHistory();
+        setHandoffPrompt({ open: true, finalCompletion: true });
       }
     }
     setActionLoading(null);
   };
 
-  const handleCreateHandoff = () => {
+  const handleCreateHandoff = (overrides?: {
+    station_id?: string | null;
+    operation_number?: string | null;
+    next_station_id?: string | null;
+    next_station_name?: string | null;
+    next_operation_name?: string | null;
+    next_operation_number?: string | null;
+  }) => {
     sessionStorage.setItem("handoff_prefill", JSON.stringify({
       work_order: item.work_order,
       part_number: item.part_number,
-      operation_number: item.operation_number,
-      station_id: item.station_id,
+      operation_number: overrides?.operation_number ?? item.operation_number,
+      station_id: overrides?.station_id ?? item.station_id,
+      next_station_id: overrides?.next_station_id ?? null,
+      next_station_name: overrides?.next_station_name ?? null,
+      next_operation_name: overrides?.next_operation_name ?? null,
+      next_operation_number: overrides?.next_operation_number ?? null,
     }));
     sessionStorage.setItem("auto_open_handoff", "true");
     onCloseDialog();
     navigate("/dashboard");
   };
+
+  const handleConfirmHandoffPrompt = () => {
+    handleCreateHandoff({
+      station_id: item.station_id,
+      operation_number: item.operation_number,
+      next_station_id: handoffPrompt.nextStationId,
+      next_station_name: handoffPrompt.nextStationName,
+      next_operation_name: handoffPrompt.nextOperationName,
+      next_operation_number: handoffPrompt.nextOperationNumber,
+    });
+    setHandoffPrompt((p) => ({ ...p, open: false }));
+  };
+
 
   const handleConvertToWorkOrder = async () => {
     if (!convertWONumber.trim()) {
