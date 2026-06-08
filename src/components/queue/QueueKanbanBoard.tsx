@@ -6,7 +6,7 @@ import { QueueItem, QueueStatus, QueuePriority } from "@/hooks/useQueue";
 import { cn } from "@/lib/utils";
 import { Clock, User, Package, AlertTriangle, GripVertical } from "lucide-react";
 import { format } from "date-fns";
-import { toast } from "sonner";
+import { woToast } from "@/lib/woToast";
 import { StationQuickActions, type QuickActionTarget } from "@/components/dashboard/StationQuickActions";
 import { getPriorityBadgeColor, getQueueStatusColumnColor } from "@/lib/status-colors";
 import { ItemTypeBadge } from "@/components/queue/ItemTypeBadge";
