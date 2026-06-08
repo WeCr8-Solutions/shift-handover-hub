@@ -27,6 +27,7 @@ import { OwnerInvitePanel } from "./OwnerInvitePanel";
 import { InvitesRolesBoard } from "./InvitesRolesBoard";
 import { IntakeMembersEditor } from "./IntakeMembersEditor";
 import { IntakeErpEditor } from "./IntakeErpEditor";
+import { DocumentLibrary } from "@/components/admin/concierge/DocumentLibrary";
 
 const MODULE_HELP: Record<string, { description: string; templateColumns?: string[] }> = {
   org_profile:  { description: "Capture company name, address, branding, ITAR posture, subscription tier, and seat count." },
@@ -179,6 +180,7 @@ export function EngagementDetail({ engagementId, onBack }: { engagementId: strin
         organizationName={engagement.organizations?.name ?? undefined}
       />
 
+      <DocumentLibrary audience="all" engagement={engagement} />
 
       <ConciergeAuditTimeline engagementId={engagement.id} />
 

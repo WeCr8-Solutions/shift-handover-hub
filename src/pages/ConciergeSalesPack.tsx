@@ -7,6 +7,7 @@ import { useEngagement } from "@/hooks/useOnboardingEngagements";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DocumentLibrary } from "@/components/admin/concierge/DocumentLibrary";
 
 /**
  * Printable Concierge Sales Pack — platform-admin only.
@@ -101,11 +102,20 @@ export default function ConciergeSalesPack() {
 
       <div className="no-print sticky top-0 z-10 bg-background border-b px-4 py-2 flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
-          Print preview · use your browser's print dialog to export PDF.
+          Print preview · use the Document Library below to download individual PDF / DOCX / Excel files, or use your browser's print dialog to export the full pack.
         </div>
         <Button size="sm" onClick={() => window.print()} className="gap-2">
-          <Printer className="w-4 h-4" /> Print / Save PDF
+          <Printer className="w-4 h-4" /> Print full pack
         </Button>
+      </div>
+
+      <div className="no-print max-w-6xl mx-auto px-4 pt-4">
+        <DocumentLibrary
+          audience="all"
+          engagement={engagement}
+          title="Download & review materials"
+          description="Per-document preview and download (PDF, editable DOCX, and Excel worksheets matching the in-app intake fields). Use these for paper onboarding or to email a customer pack ahead of the kickoff call."
+        />
       </div>
 
       {isLoading && engagementId ? (
