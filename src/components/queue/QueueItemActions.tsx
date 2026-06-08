@@ -444,7 +444,7 @@ export function QueueItemActions({
             <ShieldAlert className="w-4 h-4" />
             Report NCR
           </Button>
-          <Button variant="outline" onClick={handleCreateHandoff} className="gap-2" data-testid="new-handoff">
+          <Button variant="outline" onClick={() => handleCreateHandoff()} className="gap-2" data-testid="new-handoff">
             <FileText className="w-4 h-4" />
             Create Handoff
             <ArrowRight className="w-4 h-4" />
