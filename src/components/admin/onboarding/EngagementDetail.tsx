@@ -24,6 +24,8 @@ import { RefundPanel } from "./RefundPanel";
 import { AccountingExportPanel } from "./AccountingExportPanel";
 import { ConciergeAuditTimeline } from "./ConciergeAuditTimeline";
 import { OwnerInvitePanel } from "./OwnerInvitePanel";
+import { IntakeMembersEditor } from "./IntakeMembersEditor";
+import { IntakeErpEditor } from "./IntakeErpEditor";
 
 const MODULE_HELP: Record<string, { description: string; templateColumns?: string[] }> = {
   org_profile:  { description: "Capture company name, address, branding, ITAR posture, subscription tier, and seat count." },
@@ -219,6 +221,20 @@ export function EngagementDetail({ engagementId, onBack }: { engagementId: strin
               description={MODULE_HELP[item.module_key]?.description ?? ""}
               itarLocked={isItar && item.module_key === "erp"}
             />
+            {item.module_key === "users_roles" && (
+              <IntakeMembersEditor
+                engagementId={engagement.id}
+                organizationId={engagement.organization_id}
+                organizationSlug={engagement.organizations?.slug}
+              />
+            )}
+            {item.module_key === "erp" && (
+              <IntakeErpEditor
+                engagementId={engagement.id}
+                organizationId={engagement.organization_id}
+                isItar={isItar}
+              />
+            )}
             {MODULE_HELP[item.module_key]?.templateColumns && (
               <UploadUtility
                 engagementId={engagement.id}
