@@ -71,6 +71,15 @@ export function DocumentLibrary({ audience, engagement, title, description }: Pr
     };
   }
 
+  function downloadObjectUrl(url: string, filename: string) {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
   async function handlePreview(doc: ConciergeDocument) {
     setBusy(`${doc.key}:preview`);
     try {
@@ -231,7 +240,7 @@ export function DocumentLibrary({ audience, engagement, title, description }: Pr
                 <Button size="sm" variant="outline" className="gap-1.5" onClick={() => printBlobUrl(previewBlob.url)}>
                   <Printer className="w-3.5 h-3.5" /> Print
                 </Button>
-                <Button size="sm" className="gap-1.5" onClick={() => downloadBlob(previewBlob.url, previewBlob.filename)}>
+                <Button size="sm" className="gap-1.5" onClick={() => downloadObjectUrl(previewBlob.url, previewBlob.filename)}>
                   <Download className="w-3.5 h-3.5" /> Download
                 </Button>
               </div>
