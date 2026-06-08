@@ -488,11 +488,6 @@ export default function Admin() {
               <Suspense fallback={<AdminTabFallback />}><OnboardingServicesPanel access={access} /></Suspense>
             </TabsContent>
           )}
-                  </div>
-                </>
-              )}
-            </TabsList>
-          )}
 
           <TabsContent value="overview" className="space-y-4">
             <Suspense fallback={<AdminTabFallback />}>
@@ -504,11 +499,6 @@ export default function Admin() {
             </Suspense>
           </TabsContent>
 
-          {hasTestingAccess && (
-            <TabsContent value="onboarding-services">
-              <Suspense fallback={<AdminTabFallback />}><OnboardingServicesPanel access={access} /></Suspense>
-            </TabsContent>
-          )}
 
           {hasPlatformAccess && (
             <TabsContent value="platform-overview">
