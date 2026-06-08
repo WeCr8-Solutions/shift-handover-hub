@@ -211,6 +211,7 @@ export default function ConciergeSalesPack() {
       ) : (
         <>
           {/* 1. Cover */}
+          {isOn("cover") && (
           <PrintPage title="Cover">
             <div className="flex flex-col items-center justify-center text-center pt-12 space-y-6">
               <div className="text-5xl font-bold tracking-tight">Concierge Onboarding</div>
@@ -231,9 +232,10 @@ export default function ConciergeSalesPack() {
                 <b>Instructions to signer:</b> initial every page in the bottom-right corner, then sign and date the final Signature Page. Return all pages to onboarding@jobline.ai or upload via the Concierge workspace.
               </p>
             </div>
-          </PrintPage>
+          </PrintPage>)}
 
           {/* 2. Master Services Agreement */}
+          {isOn("msa") && (
           <PrintPage title="Master Services Agreement" initials>
             <h1 className="text-2xl font-bold mb-2">Concierge Onboarding Services Agreement</h1>
             <p className="text-xs mb-4">Between JobLine AI, Inc. ("JobLine") and the Customer identified on the Cover Page ("Customer"), effective on the Effective Date below.</p>
@@ -267,9 +269,10 @@ export default function ConciergeSalesPack() {
                 <div className="mt-1">Date</div>
               </div>
             </div>
-          </PrintPage>
+          </PrintPage>)}
 
           {/* 3. Payment instructions */}
+          {isOn("payment") && (
           <PrintPage title="Payment Instructions">
             <h1 className="text-2xl font-bold mb-4">How to pay</h1>
             <p className="text-xs mb-4">Total due: <b>{amount}</b>. Production access is blocked until payment is recorded.</p>
@@ -295,9 +298,10 @@ export default function ConciergeSalesPack() {
             <div className="mt-6 border border-black/40 p-3 text-xs">
               <b>Sales rep — for internal use:</b> after deposit, log into the Concierge workspace, open this engagement, and record the payment on the "Payment & Contract" panel. Upload a scan/photo of the check or wire receipt as proof.
             </div>
-          </PrintPage>
+          </PrintPage>)}
 
           {/* 4. ITAR / US-Person Declaration */}
+          {isOn("itar") && (
           <PrintPage title="ITAR / US-Person Declaration" initials>
             <h1 className="text-2xl font-bold mb-3">ITAR / US-Person Declaration</h1>
             <p className="text-xs mb-3">Required if Customer handles ITAR-controlled work. Check one and sign.</p>
@@ -311,45 +315,51 @@ export default function ConciergeSalesPack() {
               <div className="border-b border-black h-8 mt-4 w-48" />
               <div>Date</div>
             </div>
-          </PrintPage>
+          </PrintPage>)}
 
           {/* 5. Equipment */}
+          {isOn("equipment") && (
           <PrintPage title="Equipment Intake">
             <h1 className="text-xl font-bold mb-3">Equipment & machine registry</h1>
             <p className="text-xs mb-3">List every machine. Use one row per asset. Sales rep will upload these as the equipment CSV.</p>
             <WorksheetTable rows={18} columns={["asset_tag","name","equipment_type","manufacturer","model","serial_number","controller","machine_type"]} />
-          </PrintPage>
+          </PrintPage>)}
 
           {/* 6. Stations & Departments */}
+          {isOn("stations") && (
           <PrintPage title="Stations & Departments">
             <h1 className="text-xl font-bold mb-3">Departments & stations</h1>
             <p className="text-xs mb-3">Each station belongs to one department. Capacity is concurrent jobs; shift pattern is "day", "swing", or "24/7".</p>
             <WorksheetTable rows={18} columns={["department","station_name","station_id","station_type","capacity","shift_pattern"]} />
-          </PrintPage>
+          </PrintPage>)}
 
           {/* 7. Users & Roles */}
+          {isOn("users") && (
           <PrintPage title="Users & Roles">
             <h1 className="text-xl font-bold mb-3">Users, roles & invites</h1>
             <p className="text-xs mb-3">Roles: <b>admin</b>, <b>supervisor</b>, <b>operator</b>. Mark "Send invite now" Y/N; QR/email invites expire in 15 days.</p>
             <WorksheetTable rows={18} columns={["email","first_name","last_name","role","department","default_station","phone","send_invite_now"]} />
-          </PrintPage>
+          </PrintPage>)}
 
           {/* 8. Routing templates */}
+          {isOn("routing") && (
           <PrintPage title="Routing Templates">
             <h1 className="text-xl font-bold mb-3">Routing templates</h1>
             <p className="text-xs mb-3">Group by template_name. Operations: turning, milling, drilling, grinding, finishing, inspection, assembly, packout.</p>
             <WorksheetTable rows={20} columns={["template_name","step_number","operation","work_center","setup_minutes","run_minutes_per_unit","dimension_spec","quality_checkpoint"]} />
-          </PrintPage>
+          </PrintPage>)}
 
           {/* 9. Quality / Inspection */}
+          {isOn("quality") && (
           <PrintPage title="Quality & Inspection">
             <h1 className="text-xl font-bold mb-3">Quality checkpoints &amp; inspection tools</h1>
             <WorksheetTable rows={12} columns={["checkpoint_name","operation_after","tool_required","frequency","sample_size"]} />
             <h2 className="text-sm font-semibold mt-6 mb-2">Notes</h2>
             <div className="border border-black/40 h-40" />
-          </PrintPage>
+          </PrintPage>)}
 
           {/* 10. ERP integration */}
+          {isOn("erp") && (
           <PrintPage title="ERP Integration">
             <h1 className="text-xl font-bold mb-3">ERP connector questionnaire</h1>
             <div className="space-y-3 text-xs">
@@ -364,9 +374,10 @@ export default function ConciergeSalesPack() {
               <div className="mt-4">Notes: ____________________________________________________________</div>
               <div>____________________________________________________________</div>
             </div>
-          </PrintPage>
+          </PrintPage>)}
 
           {/* 11. Go-live checklist */}
+          {isOn("golive") && (
           <PrintPage title="Go-Live Checklist">
             <h1 className="text-xl font-bold mb-3">Go-live checklist</h1>
             <p className="text-xs mb-3">Mirrors the in-app concierge checklist. Tick alongside customer on walkthrough.</p>
@@ -395,9 +406,10 @@ export default function ConciergeSalesPack() {
               <div className="border-b border-black h-8 mt-4 w-48" />
               <div>Date</div>
             </div>
-          </PrintPage>
+          </PrintPage>)}
 
           {/* 12. Final Signature Page (2-party wet signature) */}
+          {isOn("signature") && (
           <PrintPage title="Signature Page">
             <h1 className="text-2xl font-bold mb-2">Signature Page</h1>
             <p className="text-xs mb-6">
@@ -462,7 +474,7 @@ export default function ConciergeSalesPack() {
               <b>For sales rep:</b> after both parties have signed, scan the entire package (including this page and all initialled pages) to a single PDF and upload it via the Concierge workspace → <i>Wet-signature contract</i> panel. Reference engagement ID:{" "}
               <span className="font-mono">{engagement?.id ?? "(blank until assigned)"}</span>
             </div>
-          </PrintPage>
+          </PrintPage>)}
         </>
       )}
     </div>
