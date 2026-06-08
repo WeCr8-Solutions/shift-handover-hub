@@ -11,6 +11,7 @@ import {
 } from "./charts";
 import { useDowntimeAnalytics } from "@/hooks/useDowntimeAnalytics";
 import { useDowntimeReasons } from "@/hooks/useDowntimeReasons";
+import { AnalyticsOnboardingBanner } from "./AnalyticsOnboardingBanner";
 
 // ─── Types ─────────────────────────────────────────────────
 
