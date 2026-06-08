@@ -7863,6 +7863,88 @@ export type Database = {
           },
         ]
       }
+      onboarding_intake_responses: {
+        Row: {
+          created_at: string
+          engagement_id: string
+          id: string
+          module_key: string
+          organization_id: string
+          payload: Json
+          submitted_at: string
+          submitted_by: string | null
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          engagement_id: string
+          id?: string
+          module_key: string
+          organization_id: string
+          payload?: Json
+          submitted_at?: string
+          submitted_by?: string | null
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          engagement_id?: string
+          id?: string
+          module_key?: string
+          organization_id?: string
+          payload?: Json
+          submitted_at?: string
+          submitted_by?: string | null
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "onboarding_intake_responses_engagement_id_fkey"
+            columns: ["engagement_id"]
+            isOneToOne: false
+            referencedRelation: "concierge_payment_aging"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "onboarding_intake_responses_engagement_id_fkey"
+            columns: ["engagement_id"]
+            isOneToOne: false
+            referencedRelation: "onboarding_engagements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "onboarding_intake_responses_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "onboarding_intake_responses_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "onboarding_intake_responses_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "onboarding_intake_responses_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       operator_certifications: {
         Row: {
           attachment_url: string | null
@@ -16032,6 +16114,10 @@ export type Database = {
       seed_org_production_defaults: {
         Args: { p_org_id: string }
         Returns: undefined
+      }
+      submit_intake_step: {
+        Args: { p_engagement_id: string; p_module_key: string; p_payload: Json }
+        Returns: string
       }
       submit_learning_idea: {
         Args: {

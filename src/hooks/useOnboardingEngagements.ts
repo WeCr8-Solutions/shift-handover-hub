@@ -195,6 +195,8 @@ export function useActivateOrg() {
     mutationFn: async (engagementId: string) => {
       const { error } = await supabase.rpc("activate_org_for_production" as any, { p_engagement_id: engagementId });
       if (error) throw error;
+      // Fire-and-forget: release email + certificate snapshot. Don't fail activation if it errors.
+      try { await supabase.functions.invoke("release-to-customer", { body: { engagementId } }); } catch (_) { /* non-fatal */ }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["onboarding-engagements"] });

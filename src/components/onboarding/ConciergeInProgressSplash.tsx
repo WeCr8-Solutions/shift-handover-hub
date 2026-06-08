@@ -63,13 +63,21 @@ export function ConciergeInProgressSplash({ children }: { children: React.ReactN
     return () => { cancelled = true; };
   }, [user, activeOrgId]);
 
-  const bypassRoutes = ["/auth", "/admin", "/onboarding-service", "/onboarding-status", "/pricing", "/", "/reset-password", "/concierge"];
+  const bypassRoutes = ["/auth", "/admin", "/onboarding-service", "/onboarding-status", "/onboarding/intake", "/pricing", "/", "/reset-password", "/concierge"];
   const shouldBypass = bypassRoutes.some((p) => location.pathname === p || location.pathname.startsWith(p + "/"));
 
   if (loading || !user || !activeOrgId || isPlatformAdmin || shouldBypass) return <>{children}</>;
   if (!status) return <>{children}</>;
   const blocked = isOrgAdmin ? BLOCK_ADMINS.has(status) : BLOCK_OPERATORS.has(status);
   if (!blocked) return <>{children}</>;
+
+  // Org admin in active engagement → redirect to the intake wizard instead of the splash.
+  if (isOrgAdmin && (status === "concierge_intake" || status === "concierge_in_progress")) {
+    if (typeof window !== "undefined" && location.pathname !== "/onboarding/intake") {
+      window.location.replace("/onboarding/intake");
+    }
+    return null;
+  }
 
   // Derive the most informative awaiting-state for the splash
   const awaitingPayment =
