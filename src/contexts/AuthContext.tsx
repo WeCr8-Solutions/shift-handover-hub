@@ -130,17 +130,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const { data, error } = await supabase.auth.getUser();
         if (cancelled) return;
-        if (error || !data?.user) {
+        // Only sign out on a definitively invalid/revoked session.
+        // Transient network errors (preview fetch proxy, offline, print-dialog focus loss)
+        // must NOT log the user out — they previously did, which kicked users out of
+        // the Concierge sales pack mid-print/download.
+        const status = (error as any)?.status;
+        const name = (error as any)?.name;
+        const isAuthInvalid =
+          !!error && (status === 401 || status === 403 || name === "AuthSessionMissingError");
+        if (isAuthInvalid) {
           console.warn("Session heartbeat: user no longer valid, signing out", error);
           setUser(null);
           setSession(null);
           setProfile(null);
           await supabase.auth.signOut({ scope: "local" }).catch(() => {});
+        } else if (error) {
+          console.warn("Session heartbeat: transient error, keeping session", error);
         }
       } catch (e) {
         console.warn("Session heartbeat failed (network):", e);
       }
     };
+
 
     const interval = setInterval(checkSession, 5 * 60 * 1000);
     const onVisible = () => {
