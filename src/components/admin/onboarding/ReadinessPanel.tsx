@@ -26,6 +26,35 @@ const COUNT_LABELS: Record<string, string> = {
 
 interface SmokeStep { name: string; ok: boolean; detail?: string }
 
+function scrollToId(id: string) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.scrollIntoView({ behavior: "smooth", block: "start" });
+  el.classList.add("ring-2", "ring-primary");
+  setTimeout(() => el.classList.remove("ring-2", "ring-primary"), 1600);
+}
+
+function tileScrollTarget(key: string): string {
+  switch (key) {
+    case "admins":
+    case "members_signed_in":
+      return "owner-invite-panel";
+    case "operators":
+      return "invites-roles-board";
+    case "subscriptions":
+      return "payment-panel";
+    case "departments":
+    case "stations":
+    case "equipment":
+    case "stations_with_equipment":
+    case "routing_templates":
+    case "queue_items_with_routing":
+    case "branding":
+    default:
+      return "readiness-panel";
+  }
+}
+
 export function ReadinessPanel({ organizationId, engagement }: { organizationId: string; engagement?: Engagement }) {
   const { data, isLoading, refetch, isFetching } = useProductionReadiness(organizationId);
   const [smoke, setSmoke] = useState<{ ok: boolean; steps: SmokeStep[] } | null>(null);
@@ -93,30 +122,47 @@ export function ReadinessPanel({ organizationId, engagement }: { organizationId:
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3 text-sm">
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
           {Object.entries(COUNT_LABELS).map(([k, label]) => {
             const v = (data.counts as any)?.[k];
             const ok = typeof v === "number" ? v > 0 : !!v;
+            const target = tileScrollTarget(k);
             return (
-              <div key={k} className="rounded border p-2 flex items-center justify-between">
+              <button
+                key={k}
+                type="button"
+                onClick={() => scrollToId(target)}
+                title={ok ? `Open ${label.toLowerCase()} section` : `Resolve ${label.toLowerCase()}`}
+                className={`rounded border p-2 flex items-center justify-between text-left transition-colors hover:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-primary ${
+                  ok ? "" : "border-destructive/40"
+                }`}
+              >
                 <span className="text-xs text-muted-foreground">{label}</span>
                 <Badge variant={ok ? "secondary" : "outline"} className={ok ? "text-status-ok" : "text-destructive"}>
                   {typeof v === "number" ? v : String(v)}
                 </Badge>
-              </div>
+              </button>
             );
           })}
-          <div className="rounded border p-2 flex items-center justify-between">
+          <div className="rounded border p-2 flex items-center justify-between" title="Set by the customer in org settings">
             <span className="text-xs text-muted-foreground">ITAR posture</span>
             <Badge variant="outline">{(data.counts as any)?.itar ? "ITAR" : "Standard"}</Badge>
           </div>
-          <div className="rounded border p-2 flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => scrollToId("readiness-panel")}
+            className="rounded border p-2 flex items-center justify-between text-left hover:bg-muted/50"
+          >
             <span className="text-xs text-muted-foreground">ERP persistence</span>
             <Badge variant="outline">{String((data.counts as any)?.erp_persistence_mode ?? "—")}</Badge>
-          </div>
+          </button>
           {engagement && (
             <>
-              <div className="rounded border p-2 flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => scrollToId("payment-panel")}
+                className="rounded border p-2 flex items-center justify-between text-left hover:bg-muted/50"
+              >
                 <span className="text-xs text-muted-foreground flex items-center gap-1"><DollarSign className="w-3 h-3" /> Payment</span>
                 <Badge
                   variant="outline"
@@ -124,8 +170,12 @@ export function ReadinessPanel({ organizationId, engagement }: { organizationId:
                 >
                   {engagement.payment_status}
                 </Badge>
-              </div>
-              <div className="rounded border p-2 flex items-center justify-between">
+              </button>
+              <button
+                type="button"
+                onClick={() => scrollToId("contract-panel")}
+                className="rounded border p-2 flex items-center justify-between text-left hover:bg-muted/50"
+              >
                 <span className="text-xs text-muted-foreground flex items-center gap-1"><FileSignature className="w-3 h-3" /> Contract</span>
                 <Badge
                   variant="outline"
@@ -139,7 +189,7 @@ export function ReadinessPanel({ organizationId, engagement }: { organizationId:
                         ? "Waived"
                         : "Required"}
                 </Badge>
-              </div>
+              </button>
             </>
           )}
         </div>
