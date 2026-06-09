@@ -398,6 +398,17 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
                   <div className="font-semibold">Engagement ID</div><div className="font-mono text-xs break-all">{engagement?.id ?? "(assigned at signing)"}</div>
                 </div>
               </div>
+              {repTalentUrlTrimmed && (
+                <div className="flex items-center gap-4 mt-6 border border-black/30 p-3 rounded w-full max-w-md text-left">
+                  <QRCodeSVG value={repTalentUrlTrimmed} size={84} level="M" includeMargin={false} />
+                  <div className="text-xs">
+                    <div className="font-semibold">Your sales rep</div>
+                    <div>{printedSales || DEFAULT_SALES_REP}</div>
+                    <div className="text-black/60 break-all">{repTalentHandle}</div>
+                    <div className="text-[10px] text-black/50 mt-1">Scan to verify credentials, machine experience, and certifications on the JobLine Talent network.</div>
+                  </div>
+                </div>
+              )}
               <p className="text-xs text-black/70 mt-4 max-w-md">
                 <b>Instructions to signer:</b> initial every page in the bottom-right corner, then sign and date the final Signature Page. Return all pages to onboarding@jobline.ai or upload via the Concierge workspace.
               </p>
