@@ -187,6 +187,26 @@ export function useDeliveryRequests(): UseDeliveryRequestsResult {
     [fetchDeliveries],
   );
 
+  const acceptDelivery = useCallback(
+    async (id: string) => {
+      const { error: err } = await supabase.rpc("accept_delivery", { _delivery_id: id });
+      if (err) return { error: err.message };
+      await fetchDeliveries();
+      return { error: null };
+    },
+    [fetchDeliveries],
+  );
+
+  const forceAccept = useCallback(
+    async (id: string) => {
+      const { error: err } = await supabase.rpc("force_accept_delivery", { _delivery_id: id });
+      if (err) return { error: err.message };
+      await fetchDeliveries();
+      return { error: null };
+    },
+    [fetchDeliveries],
+  );
+
   const cancel = useCallback(
     async (id: string) => {
       const { error: err } = await supabase
@@ -200,5 +220,15 @@ export function useDeliveryRequests(): UseDeliveryRequestsResult {
     [fetchDeliveries],
   );
 
-  return { deliveries, loading, error, refetch: fetchDeliveries, markPickedUp, markDelivered, cancel };
+  return {
+    deliveries,
+    loading,
+    error,
+    refetch: fetchDeliveries,
+    markPickedUp,
+    markDelivered,
+    acceptDelivery,
+    forceAccept,
+    cancel,
+  };
 }
