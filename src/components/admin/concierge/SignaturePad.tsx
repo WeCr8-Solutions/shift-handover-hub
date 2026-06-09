@@ -174,14 +174,14 @@ export function SignaturePad({
   };
 
   const onDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (locked) return;
+    if (locked || readOnly) return;
     e.preventDefault();
     canvasRef.current?.setPointerCapture(e.pointerId);
     drawingRef.current = true;
     lastPointRef.current = pointFromEvent(e);
   };
   const onMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (locked || !drawingRef.current) return;
+    if (locked || readOnly || !drawingRef.current) return;
     const ctx = getCtx();
     const p = pointFromEvent(e);
     const last = lastPointRef.current;
@@ -195,7 +195,7 @@ export function SignaturePad({
     if (!hasInk) setHasInk(true);
   };
   const onUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (locked || !drawingRef.current) return;
+    if (locked || readOnly || !drawingRef.current) return;
     drawingRef.current = false;
     lastPointRef.current = null;
     try {
