@@ -45,7 +45,7 @@ test.describe("Org admin daily flow", () => {
     await test.step("create work order entry point", async () => {
       await page.goto("/queue");
       const newWo = page
-        .getByRole("button", { name: /new work order|add work order|create work|new item|create/i })
+        .getByRole("button", { name: /add item|new work order|add work order|create work/i })
         .first();
       await expect(newWo).toBeVisible({ timeout: 15_000 });
     });
