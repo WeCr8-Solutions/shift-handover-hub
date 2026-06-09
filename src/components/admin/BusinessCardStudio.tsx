@@ -69,6 +69,7 @@ export function BusinessCardStudio({
   const [tagline, setTagline] = useState("Digital Expeditor for Job Shops");
   const [accent, setAccent] = useState("#0F62FE");
   const [busy, setBusy] = useState(false);
+  const [showGuides, setShowGuides] = useState(true);
 
   const frontRef = useRef<HTMLDivElement>(null);
   const backRef = useRef<HTMLDivElement>(null);
