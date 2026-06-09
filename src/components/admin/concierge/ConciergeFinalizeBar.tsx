@@ -24,6 +24,7 @@ export function ConciergeFinalizeBar({ engagementId, canReopen, buildSnapshot, o
   const { query, saveDraft, finalize, reopen } = useConciergeFinalization(engagementId);
   const [confirmFinalize, setConfirmFinalize] = useState(false);
   const [reopenOpen, setReopenOpen] = useState(false);
+  const [sending, setSending] = useState(false);
   const [reopenReason, setReopenReason] = useState("");
 
   const row = query.data;
