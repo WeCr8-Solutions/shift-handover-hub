@@ -66,6 +66,12 @@ export interface SignaturePadProps {
   showPrintedNameBelow?: boolean;
   /** Optional override label for the lock button. */
   lockLabel?: string;
+  /**
+   * Hard-lock the pad. When true the canvas is non-interactive and no
+   * Clear / Sign & Lock controls render. Used by the Concierge finalize
+   * flow to guarantee no further edits after the master is sealed.
+   */
+  readOnly?: boolean;
 }
 
 export function SignaturePad({
@@ -75,6 +81,7 @@ export function SignaturePad({
   printedName,
   showPrintedNameBelow,
   lockLabel,
+  readOnly = false,
 }: SignaturePadProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const drawingRef = useRef(false);
