@@ -216,6 +216,15 @@ export function DocumentLibrary({ audience, engagement, title, description }: Pr
         </div>
       </CardHeader>
       <CardContent>
+        {engagementId && (
+          <div className="mb-4">
+            <CostEstimator value={costInputs} onChange={setCostInputs} />
+            <p className="text-[11px] text-muted-foreground mt-2">
+              Adjusting the cost arrangement re-prices the next saved version. Existing master copies
+              remain immutable for audit.
+            </p>
+          </div>
+        )}
         <Tabs defaultValue={kinds[0] ?? "contract"}>
           <TabsList className="flex flex-wrap h-auto justify-start">
             {kinds.map((k) => (
