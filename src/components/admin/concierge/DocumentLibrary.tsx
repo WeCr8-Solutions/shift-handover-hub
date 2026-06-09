@@ -330,6 +330,14 @@ export function DocumentLibrary({ audience, engagement, title, description }: Pr
           )}
         </DialogContent>
       </Dialog>
+
+      <DocumentVersionsDrawer
+        open={!!versionsFor}
+        onOpenChange={(o) => { if (!o) setVersionsFor(null); }}
+        engagementId={engagementId}
+        documentKey={versionsFor?.key ?? ""}
+        documentTitle={versionsFor?.title ?? ""}
+      />
     </Card>
   );
 }
