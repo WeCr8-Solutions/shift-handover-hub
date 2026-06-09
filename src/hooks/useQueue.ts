@@ -75,6 +75,8 @@ export interface QueueItem {
   on_hold_by?: string | null;
   on_hold_by_name?: string | null;
   hold_reason?: string | null;
+  // Physical-delivery tracking — true after routing-advance until parts arrive at next station
+  awaiting_delivery?: boolean | null;
 }
 
 export interface QueueItemComment {
