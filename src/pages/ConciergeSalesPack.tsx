@@ -744,18 +744,27 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
               </div>
             </div>
 
-            <div className="mt-8 grid grid-cols-2 gap-4 text-[11px] border border-black/40 p-3 break-words">
+            <div className="mt-8 grid grid-cols-[1fr_1fr_auto] gap-4 text-[11px] border border-black/40 p-3 break-words items-start">
               <div>
                 <div className="font-semibold uppercase tracking-wider text-[9px] text-black/60">Sales rep on this engagement</div>
                 <div>{printedSales || "—"}</div>
                 {staffEmail ? <div className="text-black/60 break-all">{staffEmail}</div> : null}
+                {repTalentUrlTrimmed && (
+                  <div className="text-black/60 break-all">{repTalentHandle}</div>
+                )}
               </div>
               <div>
                 <div className="font-semibold uppercase tracking-wider text-[9px] text-black/60">Billing email of record</div>
                 <div className="break-all">{effectiveBillingEmail}</div>
                 <div className="text-black/60">Invoice #: {invoiceNumber}</div>
               </div>
-              <div className="col-span-2">
+              {repTalentUrlTrimmed ? (
+                <div className="flex flex-col items-center text-center">
+                  <QRCodeSVG value={repTalentUrlTrimmed} size={72} level="M" includeMargin={false} />
+                  <div className="text-[9px] text-black/60 mt-1 leading-tight max-w-[90px]">Scan to verify rep credentials</div>
+                </div>
+              ) : null}
+              <div className="col-span-3">
                 <b>For sales rep:</b> after both parties have signed, scan the entire package (including this page and all initialled pages) to a single PDF and upload it via the Concierge workspace → <i>Wet-signature contract</i> panel. Reference engagement ID:{" "}
                 <span className="font-mono break-all">{engagement?.id ?? "(blank until assigned)"}</span>
               </div>
