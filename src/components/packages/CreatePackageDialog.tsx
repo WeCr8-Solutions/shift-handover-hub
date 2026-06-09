@@ -69,7 +69,7 @@ export function CreatePackageDialog({ open, onOpenChange, onCreated }: Props) {
           </div>
           <div>
             <Label>Customer</Label>
-            <CustomerCombobox value={customerId} onChange={setCustomerId} />
+            <CustomerCombobox value={customerId} onChange={(c) => setCustomerId(c?.id ?? null)} />
           </div>
           <div>
             <Label>Required ship date</Label>
