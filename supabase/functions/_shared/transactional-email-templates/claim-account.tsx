@@ -11,6 +11,8 @@ interface Props {
   organizationName?: string
   inviteCode?: string
   inviteUrl?: string
+  activationUrl?: string
+  backupClaimUrl?: string
   role?: string
   inviterName?: string
 }
@@ -19,7 +21,9 @@ const Email = ({
   recipientName,
   organizationName = 'your shop',
   inviteCode = '',
-  inviteUrl = 'https://jobline.ai/auth',
+  inviteUrl = 'https://app.jobline.ai/auth',
+  activationUrl = '',
+  backupClaimUrl = 'https://app.jobline.ai/claim/account-owner',
   role = 'team member',
   inviterName = 'Your Jobline.ai concierge team',
 }: Props) => (
@@ -40,7 +44,6 @@ const Email = ({
 
         <Text style={text}>
           Click the button below to create your password and join the shop.
-          You can also enter the invite code manually on the sign-in page.
         </Text>
 
         <Section style={card}>
@@ -61,6 +64,27 @@ const Email = ({
           and paste the code above.
         </Text>
 
+        {activationUrl ? (
+          <>
+            <Hr style={hr} />
+            <Heading as="h3" style={{ ...h1, fontSize: '16px', marginTop: '20px' }}>
+              Backup option (if the link/QR doesn't work)
+            </Heading>
+            <Text style={text}>
+              Paste this full URL into your browser — it's good for 24 hours and only works once:
+            </Text>
+            <Section style={card}>
+              <Text style={{ ...codeBox, fontSize: '11px', wordBreak: 'break-all' }}>{activationUrl}</Text>
+            </Section>
+            <Text style={muted}>
+              Or visit{' '}
+              <Link href={backupClaimUrl} style={{ color: '#0f172a' }}>{backupClaimUrl}</Link>{' '}
+              and paste the URL above along with this email address. You'll be asked to set
+              your password before you can sign anything or invite anyone else.
+            </Text>
+          </>
+        ) : null}
+
         <Hr style={hr} />
         <Text style={footer}>
           You received this because {inviterName} added you to {organizationName} on Jobline.ai.
@@ -80,7 +104,9 @@ export const template = {
     recipientName: 'Brandon',
     organizationName: 'Aymar Engineering',
     inviteCode: 'AYMAR-OWNER-BA01',
-    inviteUrl: 'https://jobline.ai/auth?invite=AYMAR-OWNER-BA01',
+    inviteUrl: 'https://app.jobline.ai/auth?invite=AYMAR-OWNER-BA01',
+    activationUrl: 'https://app.jobline.ai/activate?token=demo-token',
+    backupClaimUrl: 'https://app.jobline.ai/claim/account-owner',
     role: 'Org Admin',
     inviterName: 'Zach @ Jobline.ai concierge',
   },
