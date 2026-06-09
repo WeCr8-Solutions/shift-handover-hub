@@ -335,6 +335,8 @@ export function useOrganizationMembers(organizationId: string | null) {
     removeMember,
     assignAppRole,
     removeAppRole,
+    transferOwnership,
+    claimOwnership,
     refreshMembers: fetchMembers,
   };
 }
