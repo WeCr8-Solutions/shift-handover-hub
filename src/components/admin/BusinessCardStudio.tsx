@@ -353,17 +353,21 @@ function Field({
 function CardPreview({
   innerRef,
   children,
+  showGuides = true,
 }: {
   innerRef: React.RefObject<HTMLDivElement>;
   children: React.ReactNode;
+  showGuides?: boolean;
 }) {
-  // Render at true 3.5"x2" but down-scale visually with CSS transform so it fits.
+  // Render at true bleed size (3.625"x2.125") but downscale visually so it fits the panel.
+  const scale = 0.32;
   return (
     <div className="overflow-hidden rounded-md border bg-muted/30 p-2">
       <div
-        className="origin-top-left"
-        style={{ transform: "scale(0.32)", width: CARD_W_PX, height: CARD_H_PX }}
+        className="origin-top-left relative"
+        style={{ transform: `scale(${scale})`, width: CARD_W_PX, height: CARD_H_PX }}
       >
+        {/* Exported node: bleed-size, no on-screen guides baked in */}
         <div
           ref={innerRef}
           style={{ width: CARD_W_PX, height: CARD_H_PX }}
@@ -371,8 +375,41 @@ function CardPreview({
         >
           {children}
         </div>
+        {showGuides && (
+          <div
+            aria-hidden
+            style={{
+              position: "absolute",
+              inset: 0,
+              pointerEvents: "none",
+            }}
+          >
+            {/* Trim line (3.5"x2") */}
+            <div
+              style={{
+                position: "absolute",
+                top: BLEED_PX,
+                left: BLEED_PX,
+                width: CARD_W_PX - BLEED_PX * 2,
+                height: CARD_H_PX - BLEED_PX * 2,
+                outline: "3px solid rgba(29,68,184,0.8)",
+              }}
+            />
+            {/* Safety line (3.25"x1.75") */}
+            <div
+              style={{
+                position: "absolute",
+                top: SAFETY_PX,
+                left: SAFETY_PX,
+                width: CARD_W_PX - SAFETY_PX * 2,
+                height: CARD_H_PX - SAFETY_PX * 2,
+                outline: "3px dashed rgba(23,230,0,0.8)",
+              }}
+            />
+          </div>
+        )}
       </div>
-      <div style={{ height: CARD_H_PX * 0.32 - CARD_H_PX, marginTop: -8 }} />
+      <div style={{ height: CARD_H_PX * scale - CARD_H_PX, marginTop: -8 }} />
     </div>
   );
 }
