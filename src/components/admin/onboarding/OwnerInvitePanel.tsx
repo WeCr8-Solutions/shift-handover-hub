@@ -138,6 +138,30 @@ export function OwnerInvitePanel({ engagementId, organizationId, organizationNam
     if (!owner?.email) return;
     setSendingOwner(true);
     try {
+      // 1. Materialize intake invite_codes into real organization_invites so the link redeems
+      const { error: matErr } = await supabase.rpc("materialize_intake_invites" as any, {
+        p_engagement_id: engagementId,
+      } as any);
+      if (matErr) {
+        console.warn("materialize_intake_invites:", matErr.message);
+      }
+
+      // 2. Generate a fresh single-use activation token + backup claim URL
+      const { data: artifacts, error: artErr } = await supabase.rpc(
+        "generate_owner_claim_artifacts" as any,
+        { p_engagement_id: engagementId, p_owner_email: owner.email } as any,
+      );
+      if (artErr) throw artErr;
+      const a = (artifacts ?? {}) as {
+        ok?: boolean;
+        invite_url?: string;
+        backup_claim_url?: string;
+        activation_url?: string;
+        invite_code?: string;
+      };
+      if (!a.ok) throw new Error("Could not generate claim artifacts");
+
+      // 3. Send the email with BOTH the QR/invite link and the paste-fallback claim URL
       const { error } = await supabase.functions.invoke("send-transactional-email", {
         body: {
           templateName: "claim-account",
@@ -146,17 +170,21 @@ export function OwnerInvitePanel({ engagementId, organizationId, organizationNam
           templateData: {
             recipientName: owner.name ?? owner.email.split("@")[0],
             organizationName: organizationName ?? "your shop",
-            inviteCode: owner.invite_code ?? "",
-            inviteUrl: shareUrl,
+            inviteCode: a.invite_code ?? owner.invite_code ?? "",
+            inviteUrl: a.invite_url ?? shareUrl,
+            activationUrl: a.activation_url ?? "",
+            backupClaimUrl: a.backup_claim_url ?? "https://app.jobline.ai/claim/account-owner",
             role: "Org Owner",
             inviterName: "Jobline.ai Concierge",
           },
         },
       });
       if (error) throw error;
-      toast.success(`Claim-account email queued for ${owner.email}`);
+      toast.success(`Claim email queued for ${owner.email}`, {
+        description: "Owner can use the QR/link or paste the backup token into /claim/account-owner.",
+      });
     } catch (e: any) {
-      toast.error("Failed to queue owner email", { description: e?.message });
+      toast.error("Failed to send claim email", { description: e?.message });
     } finally {
       setSendingOwner(false);
       refetchOwner();
@@ -171,6 +199,8 @@ export function OwnerInvitePanel({ engagementId, organizationId, organizationNam
       return;
     }
     setSendingTeam(true);
+    // Materialize all intake invite codes so team links also redeem
+    await supabase.rpc("materialize_intake_invites" as any, { p_engagement_id: engagementId } as any);
     let queued = 0;
     let failed = 0;
     for (const u of team) {

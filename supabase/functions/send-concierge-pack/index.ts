@@ -46,12 +46,12 @@ Deno.serve(async (req) => {
 
     const { data: engagement, error: engErr } = await admin
       .from('onboarding_engagements')
-      .select('id, customer_billing_email, customer_name, plan_tier, assigned_rep_id, organizations:organization_id(id,name), notes')
+      .select('id, plan_tier, assigned_admin_id, notes, organization_id, organizations:organization_id(id,name,billing_email)')
       .eq('id', engagementId)
       .maybeSingle()
     if (engErr || !engagement) return json({ error: 'Engagement not found' }, 404)
 
-    if (!isStaff && (engagement as any).assigned_rep_id !== uid) {
+    if (!isStaff && (engagement as any).assigned_admin_id !== uid) {
       return json({ error: 'Forbidden' }, 403)
     }
 
@@ -89,10 +89,25 @@ Deno.serve(async (req) => {
       }
     }
 
-    const recipient = toOverride || (engagement as any).customer_billing_email
-    if (!recipient) return json({ error: 'No billing email on engagement' }, 400)
+    let recipient = toOverride || (engagement as any).organizations?.billing_email || null
+    if (!recipient) {
+      // Final fallback: first org owner/admin's auth email
+      const { data: mems } = await admin
+        .from('organization_members')
+        .select('user_id, role')
+        .eq('organization_id', (engagement as any).organization_id)
+        .in('role', ['owner','admin'])
+        .limit(1)
+      if (mems && mems.length) {
+        const { data: authUser } = await admin.auth.admin.getUserById((mems[0] as any).user_id)
+        recipient = authUser?.user?.email ?? null
+      }
+    }
+    if (!recipient) {
+      return json({ error: 'No recipient resolvable: set organizations.billing_email or pass toOverride' }, 400)
+    }
 
-    const orgName = (engagement as any).organizations?.name ?? (engagement as any).customer_name ?? 'your shop'
+    const orgName = (engagement as any).organizations?.name ?? 'your shop'
     const snapshot = (finalRow as any).snapshot ?? {}
 
     const sendRes = await admin.functions.invoke('send-transactional-email', {
