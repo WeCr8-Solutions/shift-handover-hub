@@ -501,7 +501,7 @@ function BackFace({ tagline, accent, qrUrl }: { tagline: string; accent: string;
         color: "#F8FAFC",
         fontFamily: "Inter, system-ui, sans-serif",
         boxSizing: "border-box",
-        padding: 24,
+        padding: 24 + SAFETY_PX,
       }}
     >
       <div style={{ fontSize: 56, fontWeight: 900, letterSpacing: -1 }}>
