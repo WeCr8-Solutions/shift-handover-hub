@@ -210,6 +210,9 @@ export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDas
         </div>
       </div>
 
+      {/* Physical-delivery handoff queue (in-transit parts + paperwork) */}
+      <DeliveryHandoffPanel />
+
       {/* Station panels */}
       {singleStation ? (
         <OperatorStationPanel
