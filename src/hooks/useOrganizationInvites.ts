@@ -213,6 +213,13 @@ export async function redeemInviteCode(code: string, userId: string) {
     return { error: new Error(result.error) };
   }
 
+  // Best-effort owner-claim audit stamp (no-op for non-owner roles / re-redemptions)
+  if (result.organization_id) {
+    try {
+      await supabase.rpc("stamp_owner_claimed" as any, { p_organization_id: result.organization_id } as any);
+    } catch { /* non-fatal */ }
+  }
+
   return {
     error: null,
     organizationId: result.organization_id,
