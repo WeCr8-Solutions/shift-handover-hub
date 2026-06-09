@@ -198,7 +198,7 @@ function QrPanel({ zone, url }: { zone: FlyerZone; url: string }) {
 
 export function FlyerCampaigns() {
   const { user, profile } = useAuth();
-  const [activeView, setActiveView] = useState("overview");
+  const [activeView, setActiveView] = useUrlState<string>("flyerView", "overview");
   const [dbZones, setDbZones] = useState<DbZone[]>([]);
   const [dropLogs, setDropLogs] = useState<DbDropLog[]>([]);
   const [campaignId, setCampaignId] = useState<string | null>(null);
