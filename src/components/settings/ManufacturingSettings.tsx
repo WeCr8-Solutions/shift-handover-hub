@@ -24,10 +24,18 @@ type ManufacturingSettingsState = {
   enableDelayCodes: boolean;
   requireDelayCode: boolean;
   workOrderPrefix: string;
+  workOrderSeparator: string;
+  workOrderPadding: number;
+  workOrderStartingNumber: number;
+  workOrderNumberFormat: "numeric" | "alphanumeric";
   partNumberFormat: string;
   autoGenerateWorkOrders: boolean;
   enableQuoteSystem: boolean;
   quoteNumberPrefix: string;
+  quoteNumberSeparator: string;
+  quoteNumberPadding: number;
+  quoteStartingNumber: number;
+  quoteNumberFormat: "numeric" | "alphanumeric";
   quoteValidityDays: number;
   quoteRequiresApproval: boolean;
   quoteAutoConvertOnApproval: boolean;
@@ -51,10 +59,18 @@ const DEFAULT_SETTINGS: ManufacturingSettingsState = {
   enableDelayCodes: true,
   requireDelayCode: true,
   workOrderPrefix: "WO",
+  workOrderSeparator: "-",
+  workOrderPadding: 4,
+  workOrderStartingNumber: 1001,
+  workOrderNumberFormat: "alphanumeric",
   partNumberFormat: "alphanumeric",
   autoGenerateWorkOrders: false,
   enableQuoteSystem: false,
   quoteNumberPrefix: "Q",
+  quoteNumberSeparator: "-",
+  quoteNumberPadding: 4,
+  quoteStartingNumber: 1001,
+  quoteNumberFormat: "alphanumeric",
   quoteValidityDays: 30,
   quoteRequiresApproval: true,
   quoteAutoConvertOnApproval: false,
@@ -62,6 +78,7 @@ const DEFAULT_SETTINGS: ManufacturingSettingsState = {
   requireEngineeringReview: false,
   performanceUpdateCategories: ["process_improvement", "safety", "quality", "tooling"],
 };
+
 
 export function ManufacturingSettings() {
   const { form, update, setForm, isDirty, isSaving, save, discard, loading } =
@@ -166,8 +183,17 @@ export function ManufacturingSettings() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label>Work Order Prefix</Label>
-              <Input value={form.workOrderPrefix} onChange={(e) => update("workOrderPrefix", e.target.value)} placeholder="WO" maxLength={5} />
+              <Label>Work Order Number Format</Label>
+              <Select
+                value={form.workOrderNumberFormat}
+                onValueChange={(v) => update("workOrderNumberFormat", v as "numeric" | "alphanumeric")}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="alphanumeric">Prefix + Number (WO-0001)</SelectItem>
+                  <SelectItem value="numeric">Numbers Only (000001)</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label>Part Number Format</Label>
@@ -181,6 +207,46 @@ export function ManufacturingSettings() {
               </Select>
             </div>
           </div>
+
+          {form.workOrderNumberFormat === "alphanumeric" && (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Work Order Prefix</Label>
+                <Input value={form.workOrderPrefix} onChange={(e) => update("workOrderPrefix", e.target.value)} placeholder="WO" maxLength={8} />
+              </div>
+              <div className="space-y-2">
+                <Label>Separator</Label>
+                <Input value={form.workOrderSeparator} onChange={(e) => update("workOrderSeparator", e.target.value)} placeholder="-" maxLength={3} />
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Number Padding (digits)</Label>
+              <Input type="number" min={1} max={10} value={form.workOrderPadding} onChange={(e) => update("workOrderPadding", Math.min(10, Math.max(1, parseInt(e.target.value, 10) || 4)))} />
+            </div>
+            <div className="space-y-2">
+              <Label>Starting Number</Label>
+              <Input type="number" min={1} value={form.workOrderStartingNumber} onChange={(e) => update("workOrderStartingNumber", Math.max(1, parseInt(e.target.value, 10) || 1001))} />
+            </div>
+          </div>
+
+          <div className="rounded-md border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+            Preview:{" "}
+            <span className="font-mono text-foreground">
+              {form.workOrderNumberFormat === "numeric"
+                ? String(form.workOrderStartingNumber).padStart(Math.max(form.workOrderPadding, 1), "0")
+                : `${form.workOrderPrefix}${form.workOrderSeparator}${String(form.workOrderStartingNumber).padStart(Math.max(form.workOrderPadding, 1), "0")}`}
+            </span>
+          </div>
+
+          <SettingsSwitchRow
+            label="Auto-generate work order numbers"
+            description="When creating a work order, the next number is filled in automatically. Operators can still override."
+            checked={form.autoGenerateWorkOrders}
+            onCheckedChange={(v) => update("autoGenerateWorkOrders", v)}
+          />
           <SettingsSwitchRow
             label="Enable Delay Codes"
             description="Track delays with standardized codes"
@@ -194,6 +260,7 @@ export function ManufacturingSettings() {
             onCheckedChange={(v) => update("requireDelayCode", v)}
           />
         </CardContent>
+
       </Card>
 
       <Card>
@@ -219,13 +286,17 @@ export function ManufacturingSettings() {
             <>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label>Quote Number Prefix</Label>
-                  <Input
-                    value={form.quoteNumberPrefix}
-                    onChange={(e) => update("quoteNumberPrefix", e.target.value)}
-                    placeholder="Q"
-                    maxLength={5}
-                  />
+                  <Label>Quote Number Format</Label>
+                  <Select
+                    value={form.quoteNumberFormat}
+                    onValueChange={(v) => update("quoteNumberFormat", v as "numeric" | "alphanumeric")}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="alphanumeric">Prefix + Number (Q-0001)</SelectItem>
+                      <SelectItem value="numeric">Numbers Only (000001)</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label>Quote Validity (days)</Label>
@@ -235,14 +306,42 @@ export function ManufacturingSettings() {
                     max={365}
                     value={form.quoteValidityDays}
                     onChange={(e) =>
-                      update(
-                        "quoteValidityDays",
-                        Math.min(365, Math.max(1, parseInt(e.target.value, 10) || 30)),
-                      )
+                      update("quoteValidityDays", Math.min(365, Math.max(1, parseInt(e.target.value, 10) || 30)))
                     }
                   />
                 </div>
               </div>
+              {form.quoteNumberFormat === "alphanumeric" && (
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label>Quote Prefix</Label>
+                    <Input value={form.quoteNumberPrefix} onChange={(e) => update("quoteNumberPrefix", e.target.value)} placeholder="Q" maxLength={8} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Separator</Label>
+                    <Input value={form.quoteNumberSeparator} onChange={(e) => update("quoteNumberSeparator", e.target.value)} placeholder="-" maxLength={3} />
+                  </div>
+                </div>
+              )}
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Number Padding (digits)</Label>
+                  <Input type="number" min={1} max={10} value={form.quoteNumberPadding} onChange={(e) => update("quoteNumberPadding", Math.min(10, Math.max(1, parseInt(e.target.value, 10) || 4)))} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Starting Number</Label>
+                  <Input type="number" min={1} value={form.quoteStartingNumber} onChange={(e) => update("quoteStartingNumber", Math.max(1, parseInt(e.target.value, 10) || 1001))} />
+                </div>
+              </div>
+              <div className="rounded-md border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+                Preview:{" "}
+                <span className="font-mono text-foreground">
+                  {form.quoteNumberFormat === "numeric"
+                    ? String(form.quoteStartingNumber).padStart(Math.max(form.quoteNumberPadding, 1), "0")
+                    : `${form.quoteNumberPrefix}${form.quoteNumberSeparator}${String(form.quoteStartingNumber).padStart(Math.max(form.quoteNumberPadding, 1), "0")}`}
+                </span>
+              </div>
+
               <SettingsSwitchRow
                 label="Require Approval Before Conversion"
                 description="Quotes must be approved before being converted to work orders"

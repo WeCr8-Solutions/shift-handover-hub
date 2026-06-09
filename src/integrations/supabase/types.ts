@@ -1882,6 +1882,80 @@ export type Database = {
           },
         ]
       }
+      customers: {
+        Row: {
+          address: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          name: string
+          notes: string | null
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          organization_id: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customers_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "customers_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customers_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customers_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       data_access_logs: {
         Row: {
           created_at: string
@@ -9620,6 +9694,56 @@ export type Database = {
           },
         ]
       }
+      org_numbering_counters: {
+        Row: {
+          kind: string
+          next_value: number
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          kind: string
+          next_value?: number
+          organization_id: string
+          updated_at?: string
+        }
+        Update: {
+          kind?: string
+          next_value?: number
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_numbering_counters_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "org_numbering_counters_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_numbering_counters_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_numbering_counters_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       org_support_notes: {
         Row: {
           authored_by: string | null
@@ -10770,6 +10894,8 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string | null
+          customer_id: string | null
+          default_quantity: number | null
           description: string | null
           id: string
           material_type: string | null
@@ -10787,6 +10913,8 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by?: string | null
+          customer_id?: string | null
+          default_quantity?: number | null
           description?: string | null
           id?: string
           material_type?: string | null
@@ -10804,6 +10932,8 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string | null
+          customer_id?: string | null
+          default_quantity?: number | null
           description?: string | null
           id?: string
           material_type?: string | null
@@ -10819,6 +10949,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "part_catalog_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "part_catalog_organization_id_fkey"
             columns: ["organization_id"]
@@ -11630,6 +11767,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           current_phase: string | null
+          customer_id: string | null
           cycle_time_minutes: number | null
           description: string | null
           due_date: string | null
@@ -11706,6 +11844,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           current_phase?: string | null
+          customer_id?: string | null
           cycle_time_minutes?: number | null
           description?: string | null
           due_date?: string | null
@@ -11782,6 +11921,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           current_phase?: string | null
+          customer_id?: string | null
           cycle_time_minutes?: number | null
           description?: string | null
           due_date?: string | null
@@ -11857,6 +11997,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "wo_performance_summary"
             referencedColumns: ["queue_item_id"]
+          },
+          {
+            foreignKeyName: "queue_items_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "queue_items_organization_id_fkey"
@@ -16471,6 +16618,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      generate_next_wo_number: {
+        Args: { _kind?: string; _organization_id: string }
+        Returns: string
       }
       generate_owner_claim_artifacts: {
         Args: { p_engagement_id: string; p_owner_email?: string }

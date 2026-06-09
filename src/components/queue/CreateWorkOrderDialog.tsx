@@ -8,8 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useQueue, QueuePriority, QueueItemType, RoutingStepInput } from "@/hooks/useQueue";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useQuoteSystem } from "@/hooks/useQuoteSystem";
+import { useGeneralSettings } from "@/hooks/useGeneralSettings";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Package, Wrench, Hash, Calendar as CalendarIcon, Clock, AlertTriangle, CheckCircle, FileQuestion } from "lucide-react";
+import { Loader2, Package, Wrench, Hash, Calendar as CalendarIcon, Clock, AlertTriangle, CheckCircle, FileQuestion, Sparkles } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -17,7 +19,10 @@ import { woToast } from "@/lib/woToast";
 import { format } from "date-fns";
 import { PartSpecsSection, PartSpecsData } from "./PartSpecsSection";
 import { RoutingSection } from "./RoutingSection";
+import { CustomerCombobox } from "./CustomerCombobox";
+import type { Customer } from "@/hooks/useCustomers";
 import { cn } from "@/lib/utils";
+
 
 interface Station {
   id: string;
@@ -44,11 +49,18 @@ export function CreateWorkOrderDialog({
   const { currentTeam } = useCurrentTeam();
   const { createItem } = useQueue();
   const { isQuoteSystemEnabled } = useQuoteSystem();
+  const { getSetting } = useGeneralSettings();
+  const { organization } = useOrgContext();
   const [loading, setLoading] = useState(false);
+  const [generatingNumber, setGeneratingNumber] = useState(false);
   const [stationsLoading, setStationsLoading] = useState(true);
   const [stations, setStations] = useState<Station[]>([]);
   const [routingSteps, setRoutingSteps] = useState<RoutingStepInput[]>([]);
   const [itemType, setItemType] = useState<QueueItemType>(initialItemType);
+  const [customerId, setCustomerId] = useState<string | null>(null);
+  const [partSuggestions, setPartSuggestions] = useState<Array<{ id: string; part_number: string; description: string | null; default_quantity: number | null; material_type: string | null; part_length_inches: number | null; part_width_inches: number | null; part_height_inches: number | null; part_weight_lbs: number | null; part_shape: string | null; required_tolerance: string | null; surface_finish: string | null }>>([]);
+  const [showPartSuggestions, setShowPartSuggestions] = useState(false);
+
 
   const defaultFormData = useMemo(
     () => ({
@@ -81,12 +93,34 @@ export function CreateWorkOrderDialog({
     surface_finish: "",
   });
 
+  const mfgPrefs = (getSetting("manufacturing_preferences") || {}) as Record<string, unknown>;
+  const autoGenerateOnOpen = Boolean(mfgPrefs.autoGenerateWorkOrders);
+
+  const generateNumber = useCallback(async () => {
+    if (!organization?.id) return;
+    setGeneratingNumber(true);
+    try {
+      const { data, error } = await (supabase.rpc as any)("generate_next_wo_number", {
+        _organization_id: organization.id,
+        _kind: itemType === "quote" ? "quote" : "work_order",
+      });
+      if (error) throw error;
+      if (data) setFormData((prev) => ({ ...prev, work_order: data as string }));
+    } catch (err) {
+      console.error("generate_next_wo_number failed", err);
+      woToast.error("Could not generate number", (err as Error).message);
+    } finally {
+      setGeneratingNumber(false);
+    }
+  }, [organization?.id, itemType]);
+
   // Reset form on open
   useEffect(() => {
     if (open) {
       setFormData(defaultFormData);
       setRoutingSteps([]);
       setItemType(initialItemType);
+      setCustomerId(null);
       setPartSpecs({
         material_type: "",
         part_length_inches: "",
@@ -98,8 +132,15 @@ export function CreateWorkOrderDialog({
         required_tolerance: "",
         surface_finish: "",
       });
+      // Auto-generate WO/Quote number if org has the preference enabled
+      if (autoGenerateOnOpen && organization?.id) {
+        void generateNumber();
+      }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, defaultFormData, initialItemType]);
+
+
 
   // Fetch stations
   useEffect(() => {
@@ -241,8 +282,10 @@ export function CreateWorkOrderDialog({
           part_catalog_id: partSpecs.part_catalog_id || undefined,
           required_tolerance: partSpecs.required_tolerance || undefined,
           surface_finish: partSpecs.surface_finish || undefined,
+          customer_id: customerId || undefined,
           routing_steps: hasRouting ? routingSteps : undefined,
         });
+
 
         if (result?.error) {
           console.error("Create item error:", result.error);
@@ -264,12 +307,63 @@ export function CreateWorkOrderDialog({
         setLoading(false);
       }
     },
-    [formData, partSpecs, routingSteps, hasRouting, itemType, createItem, isValid, onOpenChange, onSuccess],
+    [formData, partSpecs, routingSteps, hasRouting, itemType, createItem, isValid, onOpenChange, onSuccess, customerId],
   );
+
+  // Part-number autocomplete (org + optional customer scope)
+  useEffect(() => {
+    if (!organization?.id) return;
+    const term = formData.part_number.trim();
+    if (term.length < 1) {
+      setPartSuggestions([]);
+      return;
+    }
+    let cancelled = false;
+    const handle = setTimeout(async () => {
+      let query = (supabase as any)
+        .from("part_catalog")
+        .select("id, part_number, description, default_quantity, material_type, part_length_inches, part_width_inches, part_height_inches, part_weight_lbs, part_shape, required_tolerance, surface_finish, customer_id")
+        .eq("organization_id", organization.id)
+        .ilike("part_number", `%${term}%`)
+        .order("part_number")
+        .limit(8);
+      if (customerId) {
+        query = query.or(`customer_id.eq.${customerId},customer_id.is.null`);
+      }
+      const { data } = await query;
+      if (!cancelled) setPartSuggestions((data as any) || []);
+    }, 180);
+    return () => {
+      cancelled = true;
+      clearTimeout(handle);
+    };
+  }, [formData.part_number, organization?.id, customerId]);
+
+  const applyPartSuggestion = useCallback((p: typeof partSuggestions[number]) => {
+    setFormData((prev) => ({
+      ...prev,
+      part_number: p.part_number,
+      quantity: p.default_quantity ? String(p.default_quantity) : prev.quantity,
+    }));
+    setPartSpecs((prev) => ({
+      ...prev,
+      part_catalog_id: p.id,
+      material_type: p.material_type || prev.material_type,
+      part_length_inches: p.part_length_inches != null ? String(p.part_length_inches) : prev.part_length_inches,
+      part_width_inches: p.part_width_inches != null ? String(p.part_width_inches) : prev.part_width_inches,
+      part_height_inches: p.part_height_inches != null ? String(p.part_height_inches) : prev.part_height_inches,
+      part_weight_lbs: p.part_weight_lbs != null ? String(p.part_weight_lbs) : prev.part_weight_lbs,
+      part_shape: p.part_shape || prev.part_shape,
+      required_tolerance: p.required_tolerance || prev.required_tolerance,
+      surface_finish: p.surface_finish || prev.surface_finish,
+    }));
+    setShowPartSuggestions(false);
+  }, []);
 
   const updateFormField = useCallback((field: keyof typeof formData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   }, []);
+
 
   const isQuote = itemType === "quote";
 
@@ -329,20 +423,47 @@ export function CreateWorkOrderDialog({
             </div>
           )}
 
+          {/* Customer */}
+          <div className="space-y-2">
+            <Label>Customer (optional)</Label>
+            <CustomerCombobox
+              value={customerId}
+              onChange={(c: Customer | null) => setCustomerId(c?.id ?? null)}
+            />
+            <p className="text-xs text-muted-foreground">
+              Linking a customer lets you recall their parts and quantities next time.
+            </p>
+          </div>
+
           {/* Work Order / Quote Number */}
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
               <Hash className="w-4 h-4" />
               {isQuote ? "Quote #" : "Work Order #"} <span className="text-destructive">*</span>
             </Label>
-            <Input
-              value={formData.work_order}
-              onChange={(e) => updateFormField("work_order", e.target.value)}
-              placeholder={isQuote ? "Enter your quote number" : "Enter your work order number"}
-              className={!isValid ? "ring-2 ring-destructive/20" : ""}
-              required
-            />
+            <div className="flex gap-2">
+              <Input
+                value={formData.work_order}
+                onChange={(e) => updateFormField("work_order", e.target.value)}
+                placeholder={isQuote ? "Enter quote number" : "Enter work order number"}
+                className={!isValid ? "ring-2 ring-destructive/20" : ""}
+                required
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={generateNumber}
+                disabled={generatingNumber}
+                className="shrink-0 gap-1.5"
+                title="Generate the next number using your organization's numbering format"
+              >
+                {generatingNumber ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                Generate
+              </Button>
+            </div>
           </div>
+
 
           {/* Routing Section — used for both work orders (production routing) and quotes
               (estimation routing through engineering / programming / departments for accurate cost). */}
@@ -409,14 +530,41 @@ export function CreateWorkOrderDialog({
 
           {/* Part Number & Operation */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
+            <div className="space-y-2 relative">
               <Label>Part Number</Label>
               <Input
                 value={formData.part_number}
-                onChange={(e) => updateFormField("part_number", e.target.value)}
+                onChange={(e) => {
+                  updateFormField("part_number", e.target.value);
+                  setShowPartSuggestions(true);
+                }}
+                onFocus={() => setShowPartSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowPartSuggestions(false), 150)}
                 placeholder="e.g. PN-12345"
+                autoComplete="off"
               />
+              {showPartSuggestions && partSuggestions.length > 0 && (
+                <div className="absolute z-20 left-0 right-0 top-full mt-1 max-h-56 overflow-y-auto rounded-md border bg-popover shadow-md">
+                  {partSuggestions.map((p) => (
+                    <button
+                      type="button"
+                      key={p.id}
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => applyPartSuggestion(p)}
+                      className="w-full text-left px-2 py-1.5 text-xs hover:bg-accent border-b last:border-b-0"
+                    >
+                      <div className="font-mono text-sm">{p.part_number}</div>
+                      <div className="text-muted-foreground truncate">
+                        {p.description || "—"}
+                        {p.default_quantity ? ` • qty ${p.default_quantity}` : ""}
+                        {p.material_type ? ` • ${p.material_type}` : ""}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
+
             <div className="space-y-2">
               <Label>Operation #</Label>
               <Input
