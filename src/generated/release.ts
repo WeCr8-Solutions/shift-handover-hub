@@ -1,14 +1,14 @@
 export const releaseInfo = {
-  "version": "2026.6.8",
-  "commitSha": "f33c356f1db0",
-  "shortSha": "f33c356",
-  "releaseStamp": "2026.6.8+f33c356",
-  "buildTime": "2026-06-08T21:45:32.959Z",
+  "version": "2026.6.9",
+  "commitSha": "0e3ef752cb57",
+  "shortSha": "0e3ef75",
+  "releaseStamp": "2026.6.9+0e3ef75",
+  "buildTime": "2026-06-09T00:47:39.325Z",
   "deployTarget": "lovable"
 } as const;
 
-export const APP_VERSION = "2026.6.8";
-export const APP_COMMIT_SHA = "f33c356f1db0";
-export const APP_RELEASE_STAMP = "2026.6.8+f33c356";
-export const APP_BUILD_TIME = "2026-06-08T21:45:32.959Z";
+export const APP_VERSION = "2026.6.9";
+export const APP_COMMIT_SHA = "0e3ef752cb57";
+export const APP_RELEASE_STAMP = "2026.6.9+0e3ef75";
+export const APP_BUILD_TIME = "2026-06-09T00:47:39.325Z";
 export const APP_DEPLOY_TARGET = "lovable";
