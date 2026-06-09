@@ -195,6 +195,8 @@ export function DocumentLibrary({ audience, engagement, title, description }: Pr
     }
   }
 
+  const kinds = Object.keys(grouped);
+
   return (
     <Card>
       <CardHeader>
