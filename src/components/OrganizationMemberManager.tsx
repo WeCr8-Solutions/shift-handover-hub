@@ -130,6 +130,7 @@ export function OrganizationMemberManager({ onNavigateToInvites }: OrganizationM
     removeMember,
     assignAppRole,
     removeAppRole,
+    transferOwnership,
   } = useOrganizationMembers(organization?.id || null);
   const { sendTeamInviteEmail } = useEmail();
   const { mentors, designate, setActive } = useOapMentors();
