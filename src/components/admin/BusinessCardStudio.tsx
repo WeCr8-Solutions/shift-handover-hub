@@ -31,11 +31,19 @@ import { useCampaignMarketingAssets } from "@/hooks/useCampaignMarketingAssets";
  * `business_card` assets so reps can pull them back later in the ZIP package.
  */
 
-const CARD_W_IN = 3.5;
-const CARD_H_IN = 2;
-const PX_PER_IN = 300; // 300 dpi
-const CARD_W_PX = CARD_W_IN * PX_PER_IN;
-const CARD_H_PX = CARD_H_IN * PX_PER_IN;
+// US standard business card with VistaPrint-grade bleed/trim/safety zones.
+// See docs/marketing/business-cards/README.md for source templates + spec.
+const TRIM_W_IN = 3.5;
+const TRIM_H_IN = 2.0;
+const BLEED_IN = 0.125;            // 0.125" bleed on all sides
+const SAFETY_IN = 0.125;           // keep content 0.125" inside trim
+const BLEED_W_IN = TRIM_W_IN + BLEED_IN * 2;   // 3.625"
+const BLEED_H_IN = TRIM_H_IN + BLEED_IN * 2;   // 2.125"
+const PX_PER_IN = 300;             // 300 dpi print-ready
+const CARD_W_PX = BLEED_W_IN * PX_PER_IN;      // 1087.5 → rendered 1088
+const CARD_H_PX = BLEED_H_IN * PX_PER_IN;      // 637.5  → rendered 638
+const BLEED_PX = BLEED_IN * PX_PER_IN;         // 37.5
+const SAFETY_PX = (BLEED_IN + SAFETY_IN) * PX_PER_IN; // 75 from outer edge
 
 type CardKind = "rep" | "talent";
 
