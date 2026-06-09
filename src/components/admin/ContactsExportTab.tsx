@@ -110,6 +110,27 @@ export function ContactsExportTab({ campaignId }: Props) {
     toast.success(`Exported ${filtered.length} contacts`);
   }
 
+  async function exportVistaXlsx() {
+    const eligible = unique.filter(c => !!c.business_address);
+    if (eligible.length === 0) {
+      toast.error("No contacts have a mailing address.");
+      return;
+    }
+    const rows = eligible.map(c => {
+      const parsed = parseUsAddressLine(c.business_address ?? "");
+      return {
+        recipient: c.contact_name ?? "",
+        company: c.stop_name,
+        address: parsed.address,
+        city: parsed.city,
+        state: parsed.state,
+        zip: parsed.zip,
+      };
+    });
+    const count = await downloadVistaPrintXlsx(rows, "vista_postcard_list");
+    toast.success(`Vista Print list exported — ${count} recipients.`);
+  }
+
   if (!campaignId) {
     return <p className="text-sm text-muted-foreground p-4">No campaign selected.</p>;
   }
