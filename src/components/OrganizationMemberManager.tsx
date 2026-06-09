@@ -164,6 +164,8 @@ export function OrganizationMemberManager({ onNavigateToInvites }: OrganizationM
 
   // ── Remove-member confirmation ───────────────────────────────────────────
   const [memberToRemove, setMemberToRemove] = useState<OrganizationMember | null>(null);
+  // ── Transfer-ownership confirmation ──────────────────────────────────────
+  const [memberToPromote, setMemberToPromote] = useState<OrganizationMember | null>(null);
 
   // ── Filtered members (memoised) ──────────────────────────────────────────
   const filteredMembers = useMemo(() => {
