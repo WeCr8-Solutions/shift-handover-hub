@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { FileText, FileSpreadsheet, FileSignature, Eye, Download, Loader2, Package, Printer } from "lucide-react";
+import { FileText, FileSpreadsheet, FileSignature, Eye, Download, Loader2, Package, Printer, Save, History, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import JSZip from "jszip";
 import {
@@ -12,6 +12,9 @@ import {
   engagementContext, defaultContext,
   type ConciergeDocument, type DocumentAudience, type DocumentFormat,
 } from "@/lib/concierge/documentRegistry";
+import { useConciergeDocumentRecords } from "@/hooks/useConciergeDocumentRecords";
+import { DocumentVersionsDrawer } from "./DocumentVersionsDrawer";
+import { CostEstimator, computeCost, type CostInputs } from "./CostEstimator";
 
 interface Props {
   audience: DocumentAudience | "all";
