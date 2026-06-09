@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 const WELCOME_SEEN_STORAGE_PREFIX = 'jobline:onboarding:welcome-seen:';
+const SETUP_DISMISSED_STORAGE_PREFIX = 'jobline:onboarding:setup-dismissed:';
 
 function getWelcomeSeenStorageKey(userId: string) {
   return `${WELCOME_SEEN_STORAGE_PREFIX}${userId}`;
@@ -17,6 +18,25 @@ function readWelcomeSeenFallback(userId: string) {
 function writeWelcomeSeenFallback(userId: string, value: boolean) {
   if (typeof window === 'undefined') return;
   const key = getWelcomeSeenStorageKey(userId);
+  if (value) {
+    window.localStorage.setItem(key, 'true');
+    return;
+  }
+  window.localStorage.removeItem(key);
+}
+
+function getSetupDismissedStorageKey(userId: string) {
+  return `${SETUP_DISMISSED_STORAGE_PREFIX}${userId}`;
+}
+
+function readSetupDismissedFallback(userId: string) {
+  if (typeof window === 'undefined') return false;
+  return window.localStorage.getItem(getSetupDismissedStorageKey(userId)) === 'true';
+}
+
+function writeSetupDismissedFallback(userId: string, value: boolean) {
+  if (typeof window === 'undefined') return;
+  const key = getSetupDismissedStorageKey(userId);
   if (value) {
     window.localStorage.setItem(key, 'true');
     return;
@@ -106,6 +126,7 @@ export function useOnboarding() {
       }
 
       const localWelcomeSeen = readWelcomeSeenFallback(user.id);
+      const localSetupDismissed = readSetupDismissedFallback(user.id);
 
       const { data, error } = await supabase
         .from('user_onboarding')
@@ -121,8 +142,12 @@ export function useOnboarding() {
 
       if (data) {
         const hasSeenWelcome = Boolean(data.has_seen_welcome || localWelcomeSeen);
+        const setupWizardDismissed = Boolean(data.setup_wizard_dismissed || localSetupDismissed);
         if (hasSeenWelcome) {
           writeWelcomeSeenFallback(user.id, true);
+        }
+        if (setupWizardDismissed) {
+          writeSetupDismissedFallback(user.id, true);
         }
         setState({
           completedSteps: data.completed_steps || [],
@@ -130,7 +155,7 @@ export function useOnboarding() {
           isComplete: data.is_complete || false,
           isLoading: false,
           hasSeenWelcome,
-          setupWizardDismissed: data.setup_wizard_dismissed || false,
+          setupWizardDismissed,
         });
       } else {
         // Insert directly and tolerate duplicate rows from the new-user trigger.
@@ -148,7 +173,7 @@ export function useOnboarding() {
           isComplete: false,
           isLoading: false,
           hasSeenWelcome: localWelcomeSeen,
-          setupWizardDismissed: false,
+          setupWizardDismissed: localSetupDismissed,
         });
       }
     }
