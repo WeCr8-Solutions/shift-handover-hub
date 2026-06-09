@@ -33,12 +33,14 @@ Deno.serve(async (req) => {
       return json({ ok: true, throttled: true })
     }
 
-    // Find an invite or auth user to attach (no PII leak in response)
+    // Find a still-usable invite for this email to attach (no PII leak in response)
     const { data: invite } = await admin
       .from('organization_invites')
-      .select('id, organization_id')
-      .ilike('email', normalized)
-      .is('accepted_at', null)
+      .select('id, organization_id, max_uses, uses_count, is_active, expires_at')
+      .ilike('invited_email', normalized)
+      .eq('is_active', true)
+      .order('created_at', { ascending: false })
+      .limit(1)
       .maybeSingle()
 
     // Generate token (32 bytes base64url) and hash it
