@@ -62,6 +62,10 @@ export function QueueItemActions({
   const navigate = useNavigate();
   const wo = item.work_order ?? null;
   const { hasAdminAccess, hasOrgSupervisorAccess } = useAdminAccess();
+  const { organization } = useOrgContext();
+  const { getSetting } = useGeneralSettings();
+  const mfgPrefs = (getSetting("manufacturing_preferences") || {}) as Record<string, unknown>;
+  const autoConvertOnApproval = mfgPrefs.quoteAutoConvertOnApproval === true;
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [convertDialogOpen, setConvertDialogOpen] = useState(false);
   const [convertWONumber, setConvertWONumber] = useState("");
