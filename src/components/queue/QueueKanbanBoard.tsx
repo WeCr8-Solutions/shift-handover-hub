@@ -242,8 +242,28 @@ export function QueueKanbanBoard({
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-      {statusColumns.map((column) => {
+    <div className="space-y-3">
+      <div className="flex items-center justify-end">
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-1.5"
+          onClick={() => setShowArchived(archivedVisible ? "0" : "1")}
+        >
+          {archivedVisible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+          {archivedVisible ? "Hide" : "Show"} completed / cancelled
+          {!archivedVisible && archivedCount > 0 && (
+            <Badge variant="secondary" className="ml-1">{archivedCount}</Badge>
+          )}
+        </Button>
+      </div>
+      <div
+        className={cn(
+          "grid grid-cols-1 md:grid-cols-3 gap-4",
+          archivedVisible ? "lg:grid-cols-6" : "lg:grid-cols-4",
+        )}
+      >
+      {visibleColumns.map((column) => {
         const columnItems = (itemsByStatus[column.status] || []).sort((a, b) => a.position - b.position);
         const isDropTarget = dragOverColumn === column.status;
 
