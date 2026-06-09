@@ -856,7 +856,7 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
             </ul>
             <div className="mt-10 text-xs grid grid-cols-2 gap-8">
               <div>
-                <SignaturePad caption="Customer sign-off" storageKey={`sig:golive-customer:${engagementId ?? "blank"}`} />
+                <SignaturePad caption="Customer sign-off" storageKey={`sig:golive-customer:${engagementId ?? "blank"}`} readOnly={isFinalized} />
               </div>
               <div>
                 <SignaturePad
@@ -864,6 +864,7 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
                   storageKey={`sig:golive-jobline:${engagementId ?? "blank"}`}
                   printedName={printedJobLine}
                   showPrintedNameBelow
+                  readOnly={isFinalized}
                 />
                 <div className="border-b border-black h-7 mt-3 w-48 flex items-end px-1">{today}</div>
                 <div className="mt-1">Date</div>
@@ -882,7 +883,7 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
             <div className="grid grid-cols-2 gap-8 text-xs mt-8">
               <div className="space-y-4">
                 <div className="font-semibold uppercase tracking-wider text-[10px]">Customer</div>
-                <SignaturePad height={70} caption="Signature" storageKey={`sig:final-customer:${engagementId ?? "blank"}`} />
+                <SignaturePad height={70} caption="Signature" storageKey={`sig:final-customer:${engagementId ?? "blank"}`} readOnly={isFinalized} />
                 <div>
                   <div className="border-b border-black h-7" />
                   <div className="mt-1">Printed name</div>
@@ -910,6 +911,7 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
                   caption="Signature"
                   storageKey={`sig:final-jobline:${engagementId ?? "blank"}`}
                   printedName={printedJobLine}
+                  readOnly={isFinalized}
                 />
                 <div>
                   <div className="border-b border-black h-7 flex items-end px-1 break-words overflow-hidden">{jobLineRepName}</div>
