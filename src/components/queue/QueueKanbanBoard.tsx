@@ -101,6 +101,12 @@ function QueueCard({ item, onClick, isDragging, onDragStart, onDragEnd }: QueueC
               </span>
             )}
             {item.erp_source && <ItemTypeBadge type="erp" />}
+            {item.awaiting_delivery && (
+              <Badge variant="outline" className="text-[10px] gap-1 border-status-warning/50 text-status-warning">
+                <Truck className="w-3 h-3" />
+                Awaiting delivery
+              </Badge>
+            )}
           </div>
           <h4 className="font-medium text-sm truncate">{item.title}</h4>
           {item.work_order && (
