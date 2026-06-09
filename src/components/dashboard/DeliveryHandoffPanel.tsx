@@ -24,7 +24,8 @@ interface DeliveryHandoffPanelProps {
 }
 
 export function DeliveryHandoffPanel({ toStationId, compact = false }: DeliveryHandoffPanelProps) {
-  const { deliveries, loading, error, markPickedUp, markDelivered } = useDeliveryRequests();
+  const { deliveries, loading, error, markPickedUp, markDelivered, acceptDelivery } =
+    useDeliveryRequests();
   const [busyId, setBusyId] = useState<string | null>(null);
 
   const filtered = toStationId
@@ -44,7 +45,15 @@ export function DeliveryHandoffPanel({ toStationId, compact = false }: DeliveryH
     const { error: err } = await markDelivered(id);
     setBusyId(null);
     if (err) toast.error("Could not mark as delivered", { description: err });
-    else toast.success("Delivered — work order added to the WIP queue");
+    else toast.success("Dropped off — waiting on receiving station to accept");
+  };
+
+  const handleAccept = async (id: string) => {
+    setBusyId(id);
+    const { error: err } = await acceptDelivery(id);
+    setBusyId(null);
+    if (err) toast.error("Could not accept delivery", { description: err });
+    else toast.success("Accepted — work order is now active in your queue");
   };
 
   if (loading && filtered.length === 0) {
