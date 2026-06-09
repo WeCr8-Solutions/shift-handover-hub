@@ -79,7 +79,7 @@ const emptyByStatus: Record<QueueStatus, QueueItem[]> = {
 };
 
 describe("QueueKanbanBoard", () => {
-  it("renders all six status columns", () => {
+  it("renders the four default status columns and hides completed/cancelled by default", () => {
     render(
       <QueueKanbanBoard
         itemsByStatus={emptyByStatus}
@@ -92,8 +92,9 @@ describe("QueueKanbanBoard", () => {
     expect(screen.getByText("Queued")).toBeInTheDocument();
     expect(screen.getByText("In Progress")).toBeInTheDocument();
     expect(screen.getByText("On Hold")).toBeInTheDocument();
-    expect(screen.getByText("Completed")).toBeInTheDocument();
-    expect(screen.getByText("Cancelled")).toBeInTheDocument();
+    // Completed and Cancelled are hidden behind the "Show completed / cancelled" toggle
+    expect(screen.queryByText("Completed")).not.toBeInTheDocument();
+    expect(screen.queryByText("Cancelled")).not.toBeInTheDocument();
   });
 
   it("renders items in the correct column", () => {
