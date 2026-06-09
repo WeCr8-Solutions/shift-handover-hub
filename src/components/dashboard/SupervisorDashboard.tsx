@@ -84,7 +84,8 @@ export function SupervisorDashboard({
 
   const isLoading = stationsLoading || recordsLoading;
 
-  // Status filter  const [statusFilter, setStatusFilter] = useUrlState<StatusLabel | "all">("s", "all");
+  // Status filter
+  const [statusFilter, setStatusFilter] = useUrlState<StatusLabel | "all">("s", "all");
 
   // Smart alerts
   const { alerts: smartAlerts, loading: smartAlertsLoading } = useSmartAlerts({
