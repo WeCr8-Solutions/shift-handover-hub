@@ -227,7 +227,7 @@ const App = () => (
                   <Suspense fallback={<RouteFallback />}>
                   <Routes>
                     <Route path="/" element={<Landing />} />
-                    <Route path="/dashboard" element={<Index />} />
+                    <Route path="/dashboard" element={<OwnerSetupRedirect><Index /></OwnerSetupRedirect>} />
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/unsubscribe" element={<Unsubscribe />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
