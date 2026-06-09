@@ -154,6 +154,33 @@ export type Database = {
           },
         ]
       }
+      activation_token_audit: {
+        Row: {
+          attempted_email: string | null
+          created_at: string
+          id: string
+          outcome: string
+          token_hash: string | null
+          user_id: string | null
+        }
+        Insert: {
+          attempted_email?: string | null
+          created_at?: string
+          id?: string
+          outcome: string
+          token_hash?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          attempted_email?: string | null
+          created_at?: string
+          id?: string
+          outcome?: string
+          token_hash?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       activity_logs: {
         Row: {
           activity_type: Database["public"]["Enums"]["activity_type"]
@@ -15892,16 +15919,14 @@ export type Database = {
         }
         Returns: Json
       }
-      consume_activation_token:
-        | { Args: { _token: string }; Returns: Json }
-        | {
-            Args: {
-              p_dry_run?: boolean
-              p_expected_email?: string
-              p_token: string
-            }
-            Returns: Json
-          }
+      consume_activation_token: {
+        Args: {
+          p_dry_run?: boolean
+          p_expected_email?: string
+          p_token: string
+        }
+        Returns: Json
+      }
       create_concierge_engagement_from_payment:
         | {
             Args: {
