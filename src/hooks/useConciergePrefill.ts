@@ -28,6 +28,8 @@ export interface ConciergePrefillData {
     cancelAtPeriodEnd: boolean;
     seatAssignments: string[][]; // seat_number, email, name, role, assigned (Y/N), notes
   };
+  /** Current logged-in JobLine staff member generating the pack (autofills rep fields). */
+  currentStaff: { userId: string; email: string | null; displayName: string | null } | null;
 }
 
 const EMPTY: ConciergePrefillData = {
@@ -50,14 +52,31 @@ const EMPTY: ConciergePrefillData = {
     cancelAtPeriodEnd: false,
     seatAssignments: [],
   },
+  currentStaff: null,
 };
 
 export function useConciergePrefill(organizationId: string | null | undefined, engagementId: string | null | undefined) {
   return useQuery({
     queryKey: ["concierge-prefill", organizationId, engagementId],
-    enabled: !!organizationId,
+    enabled: true, // also fetch currentStaff for blank packs (no org)
     queryFn: async (): Promise<ConciergePrefillData> => {
-      if (!organizationId) return EMPTY;
+      // Always resolve current staff for rep autofill (works even with no org).
+      const { data: userResp } = await supabase.auth.getUser();
+      const authUser = userResp?.user ?? null;
+      let currentStaff: ConciergePrefillData["currentStaff"] = null;
+      if (authUser) {
+        const { data: staffProf } = await supabase
+          .from("profiles")
+          .select("user_id,email,display_name")
+          .eq("user_id", authUser.id)
+          .maybeSingle();
+        currentStaff = {
+          userId: authUser.id,
+          email: staffProf?.email ?? authUser.email ?? null,
+          displayName: staffProf?.display_name ?? null,
+        };
+      }
+      if (!organizationId) return { ...EMPTY, currentStaff };
 
       const [eqRes, stRes, deptRes, memRes, rtRes, rsRes, qcRes, erpRes, intakeRes, subRes, entRes, orgRes, inviteRes] = await Promise.all([
         supabase.from("equipment").select("asset_tag,name,equipment_type,manufacturer,model,serial_number,metadata").eq("organization_id", organizationId).order("asset_tag"),
@@ -197,6 +216,7 @@ export function useConciergePrefill(organizationId: string | null | undefined, e
             seatAssignments: [...filledSeats, ...inviteRows, ...openRows],
           };
         })(),
+        currentStaff,
       };
     },
   });

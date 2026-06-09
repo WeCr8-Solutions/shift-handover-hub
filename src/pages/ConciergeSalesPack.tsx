@@ -4,13 +4,19 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Printer, ArrowLeft } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Printer, ArrowLeft, UserCircle } from "lucide-react";
 import { useEngagement } from "@/hooks/useOnboardingEngagements";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DocumentLibrary } from "@/components/admin/concierge/DocumentLibrary";
 import { useConciergePrefill } from "@/hooks/useConciergePrefill";
+import { SignaturePad } from "@/components/admin/concierge/SignaturePad";
+
+const DEFAULT_SALES_REP = "Zach Goodbody";
+const DEFAULT_SALES_TITLE = "Sales Representative";
+const DEFAULT_JOBLINE_TITLE = "Concierge Onboarding Lead";
 
 /**
  * Printable Concierge Sales Pack — platform-admin only.
@@ -26,7 +32,7 @@ function PrintPage({
   initials = false,
 }: { title: string; children: React.ReactNode; initials?: boolean }) {
   return (
-    <section className="page bg-white text-black mx-auto my-8 p-10 max-w-[8.5in] min-h-[10.5in] border print:border-0 print:my-0 print:p-[0.75in] print:break-after-page relative">
+    <section className={`page bg-white text-black mx-auto my-8 p-10 max-w-[8.5in] min-h-[10.5in] border print:border-0 print:my-0 print:p-[0.75in] print:break-after-page relative break-words ${initials ? "pb-24 print:pb-[1.25in]" : ""}`}>
       <header className="flex items-center justify-between border-b border-black/30 pb-3 mb-6">
         <div className="font-bold text-lg tracking-tight">JobLine.ai · Concierge Onboarding</div>
         <div className="text-xs uppercase tracking-wider">{title}</div>
@@ -106,7 +112,7 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
   const today = useMemo(() => new Date().toLocaleDateString(), []);
   const org = engagement?.organizations as any;
   const orgName = org?.name ?? "_________________________";
-  const billingEmail = org?.billing_email ?? "_________________________";
+  // (billing email now sourced via effectiveBillingEmail below; can be overridden in the toolbar)
   const tier = engagement?.plan_tier ?? "standard";
   const amount = tier === "enterprise" ? "$4,500" : tier === "complimentary" ? "Complimentary" : "$1,500";
   const billingAddress = (engagement as any)?.customer_billing_address as { line1?: string; line2?: string; city?: string; state?: string; postal_code?: string; country?: string } | null | undefined;
@@ -120,6 +126,65 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
     if (window.history.length > 1) navigate(-1);
     else navigate(backTarget);
   };
+
+  // ---- Rep / billing autofill (persisted per-engagement in localStorage) ----
+  const repStorageKey = `concierge-rep:${engagementId ?? "blank"}`;
+  const billingStorageKey = `concierge-billing:${engagementId ?? "blank"}`;
+  const staffDisplayName = prefill?.currentStaff?.displayName || "";
+  const staffEmail = prefill?.currentStaff?.email || "";
+  const [salesRepName, setSalesRepName] = useState<string>(DEFAULT_SALES_REP);
+  const [salesRepTitle, setSalesRepTitle] = useState<string>(DEFAULT_SALES_TITLE);
+  const [jobLineRepName, setJobLineRepName] = useState<string>("");
+  const [jobLineRepTitle, setJobLineRepTitle] = useState<string>(DEFAULT_JOBLINE_TITLE);
+  const [billingEmailOverride, setBillingEmailOverride] = useState<string>("");
+  const [repLoaded, setRepLoaded] = useState(false);
+
+  // Load saved rep + billing state once per engagement
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(repStorageKey);
+      if (raw) {
+        const v = JSON.parse(raw);
+        if (v.salesRepName) setSalesRepName(v.salesRepName);
+        if (v.salesRepTitle) setSalesRepTitle(v.salesRepTitle);
+        if (v.jobLineRepName) setJobLineRepName(v.jobLineRepName);
+        if (v.jobLineRepTitle) setJobLineRepTitle(v.jobLineRepTitle);
+      }
+      const billing = localStorage.getItem(billingStorageKey);
+      if (billing) setBillingEmailOverride(billing);
+    } catch {}
+    setRepLoaded(true);
+  }, [repStorageKey, billingStorageKey]);
+
+  // Once staff profile loads, default the JobLine rep name to current user (only if user hasn't typed something)
+  useEffect(() => {
+    if (!repLoaded) return;
+    if (!jobLineRepName && staffDisplayName) setJobLineRepName(staffDisplayName);
+  }, [repLoaded, staffDisplayName, jobLineRepName]);
+
+  // Persist on change
+  useEffect(() => {
+    if (!repLoaded) return;
+    try {
+      localStorage.setItem(
+        repStorageKey,
+        JSON.stringify({ salesRepName, salesRepTitle, jobLineRepName, jobLineRepTitle }),
+      );
+    } catch {}
+  }, [repLoaded, repStorageKey, salesRepName, salesRepTitle, jobLineRepName, jobLineRepTitle]);
+  useEffect(() => {
+    if (!repLoaded) return;
+    try { localStorage.setItem(billingStorageKey, billingEmailOverride); } catch {}
+  }, [repLoaded, billingStorageKey, billingEmailOverride]);
+
+  const effectiveBillingEmail = billingEmailOverride || org?.billing_email || "_________________________";
+  const resetSalesRep = () => { setSalesRepName(DEFAULT_SALES_REP); setSalesRepTitle(DEFAULT_SALES_TITLE); };
+  const autofillJobLineRep = () => {
+    if (staffDisplayName) setJobLineRepName(staffDisplayName);
+    setJobLineRepTitle(DEFAULT_JOBLINE_TITLE);
+  };
+  const printedSales = salesRepName ? `${salesRepName}${salesRepTitle ? ` — ${salesRepTitle}` : ""}` : "";
+  const printedJobLine = jobLineRepName ? `${jobLineRepName}${jobLineRepTitle ? ` — ${jobLineRepTitle}` : ""}` : "";
 
   const SECTIONS: { key: string; label: string }[] = [
     { key: "cover", label: "Cover" },
@@ -236,7 +301,45 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
             Tip: in the print dialog choose <b>two-sided</b> + <b>scale 100%</b> for wet-signature packs.
           </span>
         </div>
+
+        {/* Rep + billing autofill — saves to this browser; presented at signing */}
+        <div className="border-t pt-2 flex flex-wrap items-end gap-3 text-xs">
+          <div className="font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+            <UserCircle className="w-3.5 h-3.5" /> Signers
+          </div>
+          <Label className="flex flex-col gap-1">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Sales rep name</span>
+            <Input value={salesRepName} onChange={(e) => setSalesRepName(e.target.value)} className="h-7 text-xs w-44" placeholder={DEFAULT_SALES_REP} />
+          </Label>
+          <Label className="flex flex-col gap-1">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Sales rep title</span>
+            <Input value={salesRepTitle} onChange={(e) => setSalesRepTitle(e.target.value)} className="h-7 text-xs w-44" placeholder={DEFAULT_SALES_TITLE} />
+          </Label>
+          <Button size="sm" variant="ghost" className="h-7 text-[10px]" onClick={resetSalesRep}>Reset → {DEFAULT_SALES_REP}</Button>
+          <Label className="flex flex-col gap-1">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">JobLine rep name</span>
+            <Input value={jobLineRepName} onChange={(e) => setJobLineRepName(e.target.value)} className="h-7 text-xs w-48" placeholder={staffDisplayName || "JobLine representative"} />
+          </Label>
+          <Label className="flex flex-col gap-1">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">JobLine rep title</span>
+            <Input value={jobLineRepTitle} onChange={(e) => setJobLineRepTitle(e.target.value)} className="h-7 text-xs w-48" placeholder={DEFAULT_JOBLINE_TITLE} />
+          </Label>
+          <Button size="sm" variant="ghost" className="h-7 text-[10px]" onClick={autofillJobLineRep} disabled={!staffDisplayName}>
+            Autofill from my profile{staffDisplayName ? ` (${staffDisplayName})` : ""}
+          </Button>
+          <Label className="flex flex-col gap-1">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Billing email</span>
+            <Input
+              type="email"
+              value={billingEmailOverride}
+              onChange={(e) => setBillingEmailOverride(e.target.value)}
+              className="h-7 text-xs w-56"
+              placeholder={org?.billing_email || "billing@customer.com"}
+            />
+          </Label>
+        </div>
       </div>
+
 
       <div className="no-print max-w-6xl mx-auto px-4 pt-4">
         <DocumentLibrary
@@ -262,16 +365,17 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
                 Wet-signature contract package
               </div>
               <div className="border-t border-b border-black/30 py-6 mt-8 w-full max-w-md">
-                <div className="grid grid-cols-2 gap-y-2 text-sm text-left">
-                  <div className="font-semibold">Customer</div><div>{orgName}</div>
-                  <div className="font-semibold">Billing email</div><div className="break-all">{billingEmail}</div>
-                  <div className="font-semibold">Billing address</div><div>{formattedAddress}</div>
-                  <div className="font-semibold">Tax ID / EIN</div><div>{taxId}</div>
+                <div className="grid grid-cols-[120px_1fr] gap-y-2 text-sm text-left">
+                  <div className="font-semibold">Customer</div><div className="break-words">{orgName}</div>
+                  <div className="font-semibold">Billing email</div><div className="break-all">{effectiveBillingEmail}</div>
+                  <div className="font-semibold">Billing address</div><div className="break-words">{formattedAddress}</div>
+                  <div className="font-semibold">Tax ID / EIN</div><div className="break-words">{taxId}</div>
                   <div className="font-semibold">Plan</div><div className="capitalize">{tier} — {amount}</div>
                   <div className="font-semibold">Invoice #</div><div>{invoiceNumber}</div>
                   <div className="font-semibold">Date</div><div>{today}</div>
-                  <div className="font-semibold">Sales rep</div><div>_________________________</div>
-                  <div className="font-semibold">Engagement ID</div><div className="font-mono text-xs">{engagement?.id ?? "(assigned at signing)"}</div>
+                  <div className="font-semibold">Sales rep</div><div className="break-words">{printedSales || "_________________________"}</div>
+                  <div className="font-semibold">JobLine rep</div><div className="break-words">{printedJobLine || "_________________________"}</div>
+                  <div className="font-semibold">Engagement ID</div><div className="font-mono text-xs break-all">{engagement?.id ?? "(assigned at signing)"}</div>
                 </div>
               </div>
               <p className="text-xs text-black/70 mt-4 max-w-md">
@@ -299,19 +403,22 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
 
             <div className="grid grid-cols-2 gap-8 mt-10 text-xs">
               <div>
-                <div className="border-b border-black h-10" />
-                <div className="mt-1">Customer signature</div>
+                <SignaturePad caption="Customer signature" storageKey={`sig:msa-customer:${engagementId ?? "blank"}`} />
                 <div className="mt-4 border-b border-black h-7" />
                 <div className="mt-1">Printed name &amp; title</div>
                 <div className="mt-4 border-b border-black h-7 w-32" />
                 <div className="mt-1">Effective date</div>
               </div>
               <div>
-                <div className="border-b border-black h-10" />
-                <div className="mt-1">JobLine representative signature</div>
-                <div className="mt-4 border-b border-black h-7" />
+                <SignaturePad
+                  caption="JobLine representative signature"
+                  storageKey={`sig:msa-jobline:${engagementId ?? "blank"}`}
+                  printedName={printedJobLine}
+                  showPrintedNameBelow
+                />
+                <div className="mt-4 border-b border-black h-7 flex items-end text-xs px-1">{printedJobLine}</div>
                 <div className="mt-1">Printed name &amp; title</div>
-                <div className="mt-4 border-b border-black h-7 w-32" />
+                <div className="mt-4 border-b border-black h-7 w-32 flex items-end text-xs px-1">{today}</div>
                 <div className="mt-1">Date</div>
               </div>
             </div>
@@ -321,28 +428,32 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
           {isOn("payment") && (
           <PrintPage title="Payment Instructions">
             <h1 className="text-2xl font-bold mb-4">How to pay</h1>
-            <p className="text-xs mb-4">Total due: <b>{amount}</b>. Production access is blocked until payment is recorded.</p>
-            <div className="grid grid-cols-2 gap-6 text-xs">
-              <div className="border border-black/40 p-4 rounded">
+            <p className="text-xs mb-4">
+              Total due: <b>{amount}</b>. Production access is blocked until payment is recorded.
+              {" "}Billing email on file: <b className="break-all">{effectiveBillingEmail}</b>
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div className="border border-black/40 p-3 rounded break-words">
                 <div className="font-semibold mb-1">Credit card (online)</div>
-                <p>Pay instantly at <b>https://jobline.ai/onboarding-service</b> after logging in. Stripe receipt issued automatically; engagement activates on webhook confirmation.</p>
+                <p>Pay instantly at <b className="break-all">https://jobline.ai/onboarding-service</b> after logging in. Stripe receipt issued automatically; engagement activates on webhook confirmation.</p>
               </div>
-              <div className="border border-black/40 p-4 rounded">
+              <div className="border border-black/40 p-3 rounded break-words">
                 <div className="font-semibold mb-1">Check</div>
                 <p>Payable to <b>JobLine AI, Inc.</b><br/>Mail to: JobLine AI, Inc.<br/>__________________________<br/>__________________________</p>
-                <p className="mt-2">Memo: Concierge — {orgName}</p>
+                <p className="mt-2">Memo: Concierge — <span className="break-words">{orgName}</span></p>
               </div>
-              <div className="border border-black/40 p-4 rounded">
+              <div className="border border-black/40 p-3 rounded break-words">
                 <div className="font-semibold mb-1">ACH / Wire</div>
-                <p>Bank: __________________________<br/>Routing: ______________ · Account: ______________<br/>Reference: Concierge — {orgName}</p>
+                <p>Bank: __________________________<br/>Routing: ______________ · Account: ______________<br/>Reference: Concierge — <span className="break-words">{orgName}</span></p>
               </div>
-              <div className="border border-black/40 p-4 rounded">
+              <div className="border border-black/40 p-3 rounded break-words">
                 <div className="font-semibold mb-1">Purchase order / Other</div>
-                <p>PO #: __________________________<br/>Approver: ______________________<br/>Email PO to <b>billing@jobline.ai</b>.</p>
+                <p>PO #: __________________________<br/>Approver: ______________________<br/>Email PO to <b className="break-all">billing@jobline.ai</b>.</p>
               </div>
             </div>
-            <div className="mt-6 border border-black/40 p-3 text-xs">
-              <b>Sales rep — for internal use:</b> after deposit, log into the Concierge workspace, open this engagement, and record the payment on the "Payment & Contract" panel. Upload a scan/photo of the check or wire receipt as proof.
+            <div className="mt-6 border border-black/40 p-3 text-xs break-words">
+              <b>Sales rep — for internal use:</b> after deposit, log into the Concierge workspace, open this engagement, and record the payment on the "Payment &amp; Contract" panel. Upload a scan/photo of the check or wire receipt as proof.
+              <div className="mt-2">Sales rep on this engagement: <b>{printedSales || "—"}</b></div>
             </div>
           </PrintPage>)}
 
@@ -355,11 +466,16 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
               <label className="flex items-start gap-2"><span className="border border-black w-4 h-4 inline-block mt-0.5" /> Customer is <b>not</b> ITAR-controlled. JobLine may persist ERP-sourced data normally.</label>
               <label className="flex items-start gap-2"><span className="border border-black w-4 h-4 inline-block mt-0.5" /> Customer <b>is</b> ITAR-controlled. JobLine must operate in read-through mode (no ERP-sourced persistence). All JobLine staff with access must be US persons.</label>
             </div>
-            <div className="mt-10 text-xs">
-              <div className="border-b border-black h-8" />
-              <div>Authorized signer (printed name &amp; title)</div>
-              <div className="border-b border-black h-8 mt-4 w-48" />
-              <div>Date</div>
+            <div className="mt-10 text-xs grid grid-cols-2 gap-8">
+              <div>
+                <SignaturePad caption="Authorized signer (printed name &amp; title)" storageKey={`sig:itar-customer:${engagementId ?? "blank"}`} />
+                <div className="border-b border-black h-7 mt-3" />
+                <div className="mt-1">Printed name &amp; title</div>
+              </div>
+              <div>
+                <div className="border-b border-black h-8 w-48 flex items-end px-1">{today}</div>
+                <div className="mt-1">Date</div>
+              </div>
             </div>
           </PrintPage>)}
 
@@ -519,11 +635,20 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
                 </li>
               ))}
             </ul>
-            <div className="mt-10 text-xs">
-              <div className="border-b border-black h-8" />
-              <div>Customer sign-off</div>
-              <div className="border-b border-black h-8 mt-4 w-48" />
-              <div>Date</div>
+            <div className="mt-10 text-xs grid grid-cols-2 gap-8">
+              <div>
+                <SignaturePad caption="Customer sign-off" storageKey={`sig:golive-customer:${engagementId ?? "blank"}`} />
+              </div>
+              <div>
+                <SignaturePad
+                  caption="JobLine concierge lead"
+                  storageKey={`sig:golive-jobline:${engagementId ?? "blank"}`}
+                  printedName={printedJobLine}
+                  showPrintedNameBelow
+                />
+                <div className="border-b border-black h-7 mt-3 w-48 flex items-end px-1">{today}</div>
+                <div className="mt-1">Date</div>
+              </div>
             </div>
           </PrintPage>)}
 
@@ -535,63 +660,74 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
               By signing below, both parties acknowledge they have read and agree to the Master Services Agreement, ITAR / US-Person Declaration (if applicable), and all attached worksheets included in this Concierge Onboarding package.
             </p>
 
-            <div className="grid grid-cols-2 gap-10 text-xs mt-10">
-              <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-8 text-xs mt-8">
+              <div className="space-y-4">
                 <div className="font-semibold uppercase tracking-wider text-[10px]">Customer</div>
+                <SignaturePad height={70} caption="Signature" storageKey={`sig:final-customer:${engagementId ?? "blank"}`} />
                 <div>
-                  <div className="border-b border-black h-12" />
-                  <div className="mt-1">Signature</div>
-                </div>
-                <div>
-                  <div className="border-b border-black h-8" />
+                  <div className="border-b border-black h-7" />
                   <div className="mt-1">Printed name</div>
                 </div>
                 <div>
-                  <div className="border-b border-black h-8" />
+                  <div className="border-b border-black h-7" />
                   <div className="mt-1">Title</div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <div className="border-b border-black h-8" />
+                    <div className="border-b border-black h-7 flex items-end px-1">{today}</div>
                     <div className="mt-1">Date</div>
                   </div>
                   <div>
-                    <div className="border-b border-black h-8" />
+                    <div className="border-b border-black h-7 flex items-end px-1 break-words overflow-hidden">{orgName}</div>
                     <div className="mt-1">Company</div>
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-4">
                 <div className="font-semibold uppercase tracking-wider text-[10px]">JobLine AI, Inc.</div>
+                <SignaturePad
+                  height={70}
+                  caption="Signature"
+                  storageKey={`sig:final-jobline:${engagementId ?? "blank"}`}
+                  printedName={printedJobLine}
+                />
                 <div>
-                  <div className="border-b border-black h-12" />
-                  <div className="mt-1">Signature</div>
-                </div>
-                <div>
-                  <div className="border-b border-black h-8" />
+                  <div className="border-b border-black h-7 flex items-end px-1 break-words overflow-hidden">{jobLineRepName}</div>
                   <div className="mt-1">Printed name</div>
                 </div>
                 <div>
-                  <div className="border-b border-black h-8" />
+                  <div className="border-b border-black h-7 flex items-end px-1 break-words overflow-hidden">{jobLineRepTitle}</div>
                   <div className="mt-1">Title</div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <div className="border-b border-black h-8" />
+                    <div className="border-b border-black h-7 flex items-end px-1">{today}</div>
                     <div className="mt-1">Date</div>
                   </div>
                   <div>
-                    <div className="border-b border-black h-8" />
+                    <div className="border-b border-black h-7" />
                     <div className="mt-1">Witness (optional)</div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="mt-10 border border-black/40 p-3 text-[11px]">
-              <b>For sales rep:</b> after both parties have signed, scan the entire package (including this page and all initialled pages) to a single PDF and upload it via the Concierge workspace → <i>Wet-signature contract</i> panel. Reference engagement ID:{" "}
-              <span className="font-mono">{engagement?.id ?? "(blank until assigned)"}</span>
+            <div className="mt-8 grid grid-cols-2 gap-4 text-[11px] border border-black/40 p-3 break-words">
+              <div>
+                <div className="font-semibold uppercase tracking-wider text-[9px] text-black/60">Sales rep on this engagement</div>
+                <div>{printedSales || "—"}</div>
+                {staffEmail ? <div className="text-black/60 break-all">{staffEmail}</div> : null}
+              </div>
+              <div>
+                <div className="font-semibold uppercase tracking-wider text-[9px] text-black/60">Billing email of record</div>
+                <div className="break-all">{effectiveBillingEmail}</div>
+                <div className="text-black/60">Invoice #: {invoiceNumber}</div>
+              </div>
+              <div className="col-span-2">
+                <b>For sales rep:</b> after both parties have signed, scan the entire package (including this page and all initialled pages) to a single PDF and upload it via the Concierge workspace → <i>Wet-signature contract</i> panel. Reference engagement ID:{" "}
+                <span className="font-mono break-all">{engagement?.id ?? "(blank until assigned)"}</span>
+              </div>
             </div>
           </PrintPage>)}
         </>
