@@ -30,6 +30,7 @@ const Index = lazy(() => import("./pages/Index"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 const Teams = lazy(() => import("./pages/Teams"));
+const CustomersPage = lazy(() => import("./pages/Customers"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Admin = lazy(() => import("./pages/Admin"));
 const FieldView = lazy(() => import("./pages/FieldView"));
