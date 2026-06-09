@@ -38,6 +38,8 @@ import {
   OWNER_SETUP_STEPS,
   type OwnerSetupStepId,
 } from "@/hooks/useOwnerSetupGate";
+import { DelegateSetupCard } from "@/components/onboarding/DelegateSetupCard";
+import { ConciergeActivityLogPanel } from "@/components/onboarding/ConciergeActivityLogPanel";
 
 interface StepMeta {
   id: OwnerSetupStepId;
@@ -302,7 +304,7 @@ export default function Welcome() {
           </button>
         </aside>
 
-        <main>
+        <main className="space-y-6">
           {showReview ? (
             <ReviewCard
               steps={gate.steps}
@@ -318,6 +320,8 @@ export default function Welcome() {
               onMarkComplete={handleMarkComplete}
             />
           )}
+          <DelegateSetupCard />
+          <ConciergeActivityLogPanel />
         </main>
       </div>
     </div>

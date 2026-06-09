@@ -1400,6 +1400,68 @@ export type Database = {
           },
         ]
       }
+      concierge_activity_log: {
+        Row: {
+          action: string
+          actor_role: string | null
+          actor_user_id: string | null
+          created_at: string
+          details: Json
+          id: string
+          organization_id: string
+          summary: string | null
+        }
+        Insert: {
+          action: string
+          actor_role?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          organization_id: string
+          summary?: string | null
+        }
+        Update: {
+          action?: string
+          actor_role?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          organization_id?: string
+          summary?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "concierge_activity_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "concierge_activity_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "concierge_activity_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "concierge_activity_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       concierge_document_records: {
         Row: {
           cost_snapshot: Json
@@ -9828,6 +9890,7 @@ export type Database = {
           max_uses: number | null
           org_role: string
           organization_id: string
+          setup_delegate: boolean
           team_id: string | null
           updated_at: string
           uses_count: number
@@ -9844,6 +9907,7 @@ export type Database = {
           max_uses?: number | null
           org_role?: string
           organization_id: string
+          setup_delegate?: boolean
           team_id?: string | null
           updated_at?: string
           uses_count?: number
@@ -9860,6 +9924,7 @@ export type Database = {
           max_uses?: number | null
           org_role?: string
           organization_id?: string
+          setup_delegate?: boolean
           team_id?: string | null
           updated_at?: string
           uses_count?: number
@@ -16226,6 +16291,14 @@ export type Database = {
         Args: { _count?: number; _metric: string; _org_id: string }
         Returns: undefined
       }
+      invite_setup_delegate: {
+        Args: {
+          p_email: string
+          p_full_name?: string
+          p_organization_id: string
+        }
+        Returns: Json
+      }
       is_dev_or_admin: { Args: { _user_id: string }; Returns: boolean }
       is_feature_enabled: {
         Args: { _feature_key: string; _org_id: string }
@@ -16392,6 +16465,15 @@ export type Database = {
           id: string
           relationship: string
         }[]
+      }
+      log_concierge_activity: {
+        Args: {
+          p_action: string
+          p_details?: Json
+          p_organization_id: string
+          p_summary?: string
+        }
+        Returns: Json
       }
       lookup_cert_by_stripe_session: {
         Args: { _session_id: string }
