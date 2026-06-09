@@ -42,6 +42,19 @@ export function DocumentLibrary({ audience, engagement, title, description }: Pr
   const [previewBlob, setPreviewBlob] = useState<{ url: string; title: string; filename: string; format: DocumentFormat } | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [bundling, setBundling] = useState(false);
+  const [versionsFor, setVersionsFor] = useState<ConciergeDocument | null>(null);
+
+  const engagementId: string | null = engagement?.id ?? null;
+  const orgId: string | null = (engagement?.organizations as any)?.id ?? engagement?.organization_id ?? null;
+  const { saveVersion } = useConciergeDocumentRecords(engagementId);
+
+  const initialTier = (engagement?.plan_tier as string) ?? "standard";
+  const [costInputs, setCostInputs] = useState<CostInputs>({
+    tierSlug: initialTier,
+    seats: 1,
+    addonSlugs: [],
+    conciergeFee: 0,
+  });
 
   const docs = useMemo(() => CONCIERGE_DOCUMENTS.filter((d) => {
     if (audience === "all") return true;
