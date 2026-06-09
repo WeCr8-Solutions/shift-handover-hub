@@ -2,8 +2,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Lock, RotateCcw, Save, ShieldCheck, Mail, Download } from "lucide-react";
+import { Lock, RotateCcw, Save, ShieldCheck, Mail, Download, Loader2 } from "lucide-react";
 import { useConciergeFinalization, type PackSnapshot } from "@/hooks/useConciergeFinalization";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 interface Props {
