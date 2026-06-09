@@ -13,6 +13,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DocumentLibrary } from "@/components/admin/concierge/DocumentLibrary";
 import { useConciergePrefill } from "@/hooks/useConciergePrefill";
 import { SignaturePad } from "@/components/admin/concierge/SignaturePad";
+import { EditableField } from "@/components/admin/concierge/EditableField";
+import { ConciergeHandoffPanel } from "@/components/admin/concierge/ConciergeHandoffPanel";
 import { QRCodeSVG } from "qrcode.react";
 
 const DEFAULT_SALES_REP = "Zach Goodbody";
@@ -358,6 +360,10 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
             />
           </Label>
         </div>
+
+        {engagement && hasStaffAccess ? (
+          <ConciergeHandoffPanel engagement={engagement} currentUserId={user?.id ?? null} />
+        ) : null}
       </div>
 
 
@@ -412,6 +418,16 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
               <p className="text-xs text-black/70 mt-4 max-w-md">
                 <b>Instructions to signer:</b> initial every page in the bottom-right corner, then sign and date the final Signature Page. Return all pages to onboarding@jobline.ai or upload via the Concierge workspace.
               </p>
+              <div className="w-full max-w-md text-left mt-6 border border-black/30 p-3 rounded">
+                <div className="text-[10px] uppercase tracking-wider font-semibold mb-1">Customer needs &amp; scope notes</div>
+                <EditableField
+                  fieldKey="cover-notes"
+                  engagementId={engagementId ?? "blank"}
+                  multiline
+                  minRows={4}
+                  placeholder="Captured live with the customer — pain points, deadlines, ITAR posture, integrations…"
+                />
+              </div>
             </div>
           </PrintPage>)}
 
@@ -452,6 +468,16 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
                 <div className="mt-4 border-b border-black h-7 w-32 flex items-end text-xs px-1">{today}</div>
                 <div className="mt-1">Date</div>
               </div>
+            </div>
+            <div className="mt-6 border border-black/30 p-3 rounded">
+              <div className="text-[10px] uppercase tracking-wider font-semibold mb-1">Addendum / custom terms (fill in with customer)</div>
+              <EditableField
+                fieldKey="msa-addendum"
+                engagementId={engagementId ?? "blank"}
+                multiline
+                minRows={4}
+                placeholder="Negotiated changes, custom SLAs, deliverable dates, ITAR carve-outs. Leave blank if standard MSA applies as-is."
+              />
             </div>
           </PrintPage>)}
 
