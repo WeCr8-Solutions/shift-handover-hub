@@ -260,12 +260,12 @@ export function SignaturePad({
           onPointerCancel={onUp}
           onPointerLeave={onUp}
         />
-        {!hasInk && !locked && (
+        {!hasInk && !locked && !readOnly && (
           <div className="no-print pointer-events-none absolute inset-0 flex items-center justify-center text-[10px] text-black/30 select-none">
             sign here (mouse, finger, or pen) — or leave blank to wet-sign on paper
           </div>
         )}
-        {!locked && hasInk && (
+        {!locked && !readOnly && hasInk && (
           <div className="no-print absolute right-1 top-1 flex gap-1">
             <Button
               type="button"
@@ -286,12 +286,12 @@ export function SignaturePad({
             </Button>
           </div>
         )}
-        {locked && (
+        {(locked || (readOnly && hasInk)) && (
           <div
             className="no-print absolute right-1 top-1 flex items-center gap-1 text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-1.5 py-0.5"
-            title={`Sealed ${lockedDate} · sha256 ${locked.sha256.slice(0, 12)}…`}
+            title={locked ? `Sealed ${lockedDate} · sha256 ${locked.sha256.slice(0, 12)}…` : "Locked by finalized master pack"}
           >
-            <ShieldCheck className="w-3 h-3" /> Sealed
+            <ShieldCheck className="w-3 h-3" /> {locked ? "Sealed" : "Locked"}
           </div>
         )}
         {tampered && (
