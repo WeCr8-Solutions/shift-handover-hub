@@ -171,10 +171,10 @@ Deno.serve(async (req) => {
     );
 
     // 2b. Mark welcome seen + setup wizard dismissed so the WelcomeModal and
-    //     the Index→/setup redirect don't intercept the dashboard for seeded users.
+    //     post-login destination RPC don't intercept workspace routes for seeded users.
     //     We deliberately don't toggle is_complete here — that path is guarded by
     //     the BEFORE UPDATE trigger which only allows the mark_onboarding_complete
-    //     RPC to set it, and the two flags above are sufficient to bypass the gate.
+    //     RPC to set it, and the two flags above are sufficient to bypass setup gates.
     await admin.from("user_onboarding").upsert(
       [
         {

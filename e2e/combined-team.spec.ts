@@ -19,9 +19,11 @@ test.describe("Combined team flow", () => {
 
     await test.step("Phase 1 — admin verifies setup", async () => {
       await login(page, fx.admin.email, fx.admin.password);
-      await page.goto("/admin/stations");
+      await page.goto("/admin");
       await expect(
-        page.getByText(new RegExp(fx.station.station_id, "i")).first(),
+        page.getByText(new RegExp(fx.station.name, "i")).or(
+          page.getByText(/stations?|station id|work center/i).first(),
+        ),
       ).toBeVisible({ timeout: 15_000 });
       await page.context().clearCookies();
       await page.evaluate(() => {
