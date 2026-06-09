@@ -82,12 +82,13 @@ export default function Queue() {
   const validTabs: QueueTab[] = ["queue", "outside-processing", "ncr", "history"];
   const validViews: QueueView[] = ["kanban", "list", "calendar"];
 
-  const [activeTab, setActiveTab] = useState<QueueTab>(
-    urlTab && validTabs.includes(urlTab) ? urlTab : "queue"
-  );
-  const [view, setView] = useState<QueueView>(
-    urlView && validViews.includes(urlView) ? urlView : "kanban"
-  );
+  const [activeTab, setActiveTabRaw] = useUrlState<QueueTab>("tab", "queue");
+  const [view, setViewRaw] = useUrlState<QueueView>("view", "kanban");
+  // Coerce invalid URL values back to defaults without breaking deep links.
+  const safeTab: QueueTab = validTabs.includes(activeTab) ? activeTab : "queue";
+  const safeView: QueueView = validViews.includes(view) ? view : "kanban";
+  const setActiveTab = (next: QueueTab) => setActiveTabRaw(next);
+  const setView = (next: QueueView) => setViewRaw(next);
   const [createDialogOpen, setCreateDialogOpen] = useState(urlAction === "new");
   const [selectedItemId, setSelectedItemId] = useState<string | null>(urlItemId);
 
