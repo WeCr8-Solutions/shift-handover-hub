@@ -127,6 +127,65 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
     else navigate(backTarget);
   };
 
+  // ---- Rep / billing autofill (persisted per-engagement in localStorage) ----
+  const repStorageKey = `concierge-rep:${engagementId ?? "blank"}`;
+  const billingStorageKey = `concierge-billing:${engagementId ?? "blank"}`;
+  const staffDisplayName = prefill?.currentStaff?.displayName || "";
+  const staffEmail = prefill?.currentStaff?.email || "";
+  const [salesRepName, setSalesRepName] = useState<string>(DEFAULT_SALES_REP);
+  const [salesRepTitle, setSalesRepTitle] = useState<string>(DEFAULT_SALES_TITLE);
+  const [jobLineRepName, setJobLineRepName] = useState<string>("");
+  const [jobLineRepTitle, setJobLineRepTitle] = useState<string>(DEFAULT_JOBLINE_TITLE);
+  const [billingEmailOverride, setBillingEmailOverride] = useState<string>("");
+  const [repLoaded, setRepLoaded] = useState(false);
+
+  // Load saved rep + billing state once per engagement
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(repStorageKey);
+      if (raw) {
+        const v = JSON.parse(raw);
+        if (v.salesRepName) setSalesRepName(v.salesRepName);
+        if (v.salesRepTitle) setSalesRepTitle(v.salesRepTitle);
+        if (v.jobLineRepName) setJobLineRepName(v.jobLineRepName);
+        if (v.jobLineRepTitle) setJobLineRepTitle(v.jobLineRepTitle);
+      }
+      const billing = localStorage.getItem(billingStorageKey);
+      if (billing) setBillingEmailOverride(billing);
+    } catch {}
+    setRepLoaded(true);
+  }, [repStorageKey, billingStorageKey]);
+
+  // Once staff profile loads, default the JobLine rep name to current user (only if user hasn't typed something)
+  useEffect(() => {
+    if (!repLoaded) return;
+    if (!jobLineRepName && staffDisplayName) setJobLineRepName(staffDisplayName);
+  }, [repLoaded, staffDisplayName, jobLineRepName]);
+
+  // Persist on change
+  useEffect(() => {
+    if (!repLoaded) return;
+    try {
+      localStorage.setItem(
+        repStorageKey,
+        JSON.stringify({ salesRepName, salesRepTitle, jobLineRepName, jobLineRepTitle }),
+      );
+    } catch {}
+  }, [repLoaded, repStorageKey, salesRepName, salesRepTitle, jobLineRepName, jobLineRepTitle]);
+  useEffect(() => {
+    if (!repLoaded) return;
+    try { localStorage.setItem(billingStorageKey, billingEmailOverride); } catch {}
+  }, [repLoaded, billingStorageKey, billingEmailOverride]);
+
+  const effectiveBillingEmail = billingEmailOverride || org?.billing_email || "_________________________";
+  const resetSalesRep = () => { setSalesRepName(DEFAULT_SALES_REP); setSalesRepTitle(DEFAULT_SALES_TITLE); };
+  const autofillJobLineRep = () => {
+    if (staffDisplayName) setJobLineRepName(staffDisplayName);
+    setJobLineRepTitle(DEFAULT_JOBLINE_TITLE);
+  };
+  const printedSales = salesRepName ? `${salesRepName}${salesRepTitle ? ` — ${salesRepTitle}` : ""}` : "";
+  const printedJobLine = jobLineRepName ? `${jobLineRepName}${jobLineRepTitle ? ` — ${jobLineRepTitle}` : ""}` : "";
+
   const SECTIONS: { key: string; label: string }[] = [
     { key: "cover", label: "Cover" },
     { key: "msa", label: "Master Services Agreement" },
