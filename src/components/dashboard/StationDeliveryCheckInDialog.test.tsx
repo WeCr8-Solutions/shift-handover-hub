@@ -5,14 +5,14 @@ import { StationDeliveryCheckInDialog } from "./StationDeliveryCheckInDialog";
 import type { DeliveryRequest } from "@/hooks/useDeliveryRequests";
 
 const acceptDelivery = vi.fn();
-const baseDelivery = {
+const baseDelivery: DeliveryRequest = {
   id: "d-1",
   organization_id: "org-1",
   queue_item_id: "qi-1",
   routing_step_id: null,
   from_station_id: "stn-a",
   to_station_id: "stn-b",
-  status: "awaiting_acceptance" as const,
+  status: "awaiting_acceptance",
   priority: "normal",
   quantity: 4,
   notes: null,
