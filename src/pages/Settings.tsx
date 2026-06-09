@@ -15,6 +15,7 @@ import { useOrgContext } from "@/contexts/OrgContext";
 import { useSmartAlerts } from "@/hooks/useSmartAlerts";
 import { useModuleContext } from "@/hooks/useModuleContext";
 import { LazyTabContent } from "@/components/settings/LazyTabContent";
+import { OrgAccessAlert } from "@/components/settings/OrgAccessAlert";
 import {
   SETTINGS_GROUPS,
   getVisibleModules,
