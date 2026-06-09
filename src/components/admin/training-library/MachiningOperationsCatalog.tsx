@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useUrlState } from "@/hooks/useUrlState";
 import { useMachiningOperations, type MachiningOperation } from "@/hooks/useMachiningOperations";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -27,10 +28,7 @@ const MACHINES = [
 
 export function MachiningOperationsCatalog({ isPlatformAdmin }: Props) {
   const { categories, operations, isLoading } = useMachiningOperations();
-  const [query, setQuery] = useState("");
-  const [categorySlug, setCategorySlug] = useState<string>("all");
-  const [profession, setProfession] = useState<string>("all");
-  const [machine, setMachine] = useState<string>("all");
+  const [query, setQuery] = useState("");  const [categorySlug, setCategorySlug] = useUrlState<string>("cat", "all");  const [profession, setProfession] = useUrlState<string>("prof", "all");  const [machine, setMachine] = useUrlState<string>("mach", "all");
 
   const filtered = useMemo(() => {
     return operations.filter((o) => {

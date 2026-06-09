@@ -10,6 +10,7 @@
  */
 
 import { useEffect, useMemo, useState } from "react";
+import { useUrlState } from "@/hooks/useUrlState";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -132,8 +133,7 @@ export function BrandVideoLibrary() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [url, setUrl] = useState("");
-  const [category, setCategory] = useState<BrandVideoCategory>("product");
-  const [filter, setFilter] = useState<BrandVideoCategory | "all">("all");
+  const [category, setCategory] = useState<BrandVideoCategory>("product");  const [filter, setFilter] = useUrlState<BrandVideoCategory | "all">("f", "all");
 
   useEffect(() => {
     setVideos(loadVideos());

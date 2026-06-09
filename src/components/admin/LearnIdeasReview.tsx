@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useUrlState } from "@/hooks/useUrlState";
 import { formatDistanceToNow } from "date-fns";
 import { Lightbulb, Loader2, Search, ShieldAlert, ShieldCheck, XCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -52,8 +53,7 @@ export function LearnIdeasReview() {
   const [loading, setLoading] = useState(true);
   const [selectedIdea, setSelectedIdea] = useState<LearnIdeaRecord | null>(null);
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
-  const [reviewNotes, setReviewNotes] = useState("");
-  const [statusFilter, setStatusFilter] = useState<LearnIdeaStatus | "all">("pending");
+  const [reviewNotes, setReviewNotes] = useState("");  const [statusFilter, setStatusFilter] = useUrlState<LearnIdeaStatus | "all">("s", "pending");
   const [searchQuery, setSearchQuery] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useUrlState } from "@/hooks/useUrlState";
 import { supabase } from "@/integrations/supabase/client";
 import { ActivityType } from "@/hooks/useActivityLog";
 import { useAdminAccess } from "@/hooks/useAdminData";
@@ -116,8 +117,7 @@ const activityLabels: Record<string, string> = {
 
 export function ActivityLogs() {
   const [logs, setLogs] = useState<ActivityLogEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<ActivityType | "all">("all");
+  const [loading, setLoading] = useState(true);  const [filter, setFilter] = useUrlState<ActivityType | "all">("act", "all");
   const { isAdmin, isDeveloper } = useAdminAccess();
   const hasFullAccess = isAdmin || isDeveloper;
 

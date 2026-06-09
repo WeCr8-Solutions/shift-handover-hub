@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useUrlState } from "@/hooks/useUrlState";
 import { supabase } from "@/integrations/supabase/client";
 import { UserWithRole, useAllUsers } from "@/hooks/useAdminData";
 import { ONBOARDING_STEPS, OnboardingStep } from "@/hooks/useOnboarding";
@@ -390,8 +391,7 @@ export function UserJourneyDebugPanel({ scopedOrgId }: UserJourneyDebugPanelProp
   const [onboardingData, setOnboardingData] = useState<Record<string, UserOnboardingState>>({});
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filterStatus, setFilterStatus] = useState<"all" | "issues" | "incomplete" | "complete">("all");
+  const [searchQuery, setSearchQuery] = useState("");  const [filterStatus, setFilterStatus] = useUrlState<"all" | "issues" | "incomplete" | "complete">("s", "all");
   const [selectedUser, setSelectedUser] = useState<UserWithJourney | null>(null);
   const { toast } = useToast();
 

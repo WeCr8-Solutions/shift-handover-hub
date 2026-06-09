@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useUrlState } from "@/hooks/useUrlState";
 import {
   useMachineLibrary,
   useStationMachineAssignment,
@@ -54,9 +55,7 @@ export function MachineProfileMarketplace({ stationId, stationName, open, onOpen
     useStationMachineAssignment(hasStation ? stationId! : null, orgId);
   const { toast } = useToast();
 
-  const [search, setSearch] = useState("");
-  const [filterManufacturer, setFilterManufacturer] = useState<string>("all");
-  const [filterType, setFilterType] = useState<string>("all");
+  const [search, setSearch] = useState("");  const [filterManufacturer, setFilterManufacturer] = useUrlState<string>("mfr", "all");  const [filterType, setFilterType] = useUrlState<string>("type", "all");
   const [verifyingId, setVerifyingId] = useState<string | null>(null);
   const [assigningId, setAssigningId] = useState<string | null>(null);
   const [detailMachine, setDetailMachine] = useState<MachineLibraryEntry | null>(null);

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useUrlState } from "@/hooks/useUrlState";
 import { UserWithRole, OrganizationWithUsers, useAllUsers } from "@/hooks/useAdminData";
 import { useAuth } from "@/contexts/AuthContext";
 import { useActAs } from "@/contexts/ActAsContext";
@@ -236,8 +237,7 @@ export function UserManagement({ isAdmin, isSupervisorOrAbove = false, access }:
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [updatingUser, setUpdatingUser] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>("grouped");
-  const [selectedOrg, setSelectedOrg] = useState<string>("all");
+  const [viewMode, setViewMode] = useState<ViewMode>("grouped");  const [selectedOrg, setSelectedOrg] = useUrlState<string>("umOrg", "all");
 
   // Filter users based on search and org
   const filterUsers = (userList: UserWithRole[]) => {

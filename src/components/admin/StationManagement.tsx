@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useUrlState } from "@/hooks/useUrlState";
 import { StationWithTeam, useAllStations, useAllTeams, useAllOrganizations } from "@/hooks/useAdminData";
 import type { AdminComponentAccess } from "@/types/admin";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -93,8 +94,7 @@ export function StationManagement({ isAdmin, access }: StationManagementProps) {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [editingStation, setEditingStation] = useState<StationWithTeam | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [viewMode, setViewMode] = useState<ViewMode>("grouped");
-  const [selectedOrg, setSelectedOrg] = useState<string>("all");
+  const [viewMode, setViewMode] = useState<ViewMode>("grouped");  const [selectedOrg, setSelectedOrg] = useUrlState<string>("smOrg", "all");
 
   // Form state
   const [formData, setFormData] = useState({

@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
+import { useUrlState } from "@/hooks/useUrlState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -25,8 +26,7 @@ export function ConsoleLogViewer({
   maxHeight = 300,
   defaultExpanded = false,
 }: ConsoleLogViewerProps) {
-  const [isOpen, setIsOpen] = useState(defaultExpanded);
-  const [levelFilter, setLevelFilter] = useState<LogLevel>("all");
+  const [isOpen, setIsOpen] = useState(defaultExpanded);  const [levelFilter, setLevelFilter] = useUrlState<LogLevel>("lvl", "all");
   const [copied, setCopied] = useState(false);
 
   const levelCounts = useMemo(() => {

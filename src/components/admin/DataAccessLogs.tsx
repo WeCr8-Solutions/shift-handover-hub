@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useUrlState } from "@/hooks/useUrlState";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import {
@@ -51,9 +52,7 @@ export function DataAccessLogs() {
   const { isAdmin } = useAdminAccess();
   const [logs, setLogs] = useState<DataAccessLogRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchUser, setSearchUser] = useState("");
-  const [filterTable, setFilterTable] = useState("all");
-  const [filterOp, setFilterOp] = useState("all");
+  const [searchUser, setSearchUser] = useState("");  const [filterTable, setFilterTable] = useUrlState<string>("tbl", "all");  const [filterOp, setFilterOp] = useUrlState<string>("op", "all");
 
   const fetchLogs = useCallback(async () => {
     setLoading(true);

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useUrlState } from "@/hooks/useUrlState";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -85,9 +86,7 @@ export function IssuesManagement() {
   const { user } = useAuth();
   const [issues, setIssues] = useState<Issue[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [severityFilter, setSeverityFilter] = useState<string>("all");
+  const [searchTerm, setSearchTerm] = useState("");  const [statusFilter, setStatusFilter] = useUrlState<string>("s", "all");  const [severityFilter, setSeverityFilter] = useUrlState<string>("sev", "all");
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [updating, setUpdating] = useState(false);

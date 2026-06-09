@@ -9,6 +9,7 @@
  */
 
 import { useState, useMemo } from "react";
+import { useUrlState } from "@/hooks/useUrlState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -118,8 +119,7 @@ function MonitorContent({ isAdmin }: { isAdmin: boolean }) {
   const { stations, loading: stationsLoading } = useAllStations();
   const { organizations } = useAllOrganizations();
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedOrg, setSelectedOrg] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");  const [selectedOrg, setSelectedOrg] = useUrlState<string>("mmOrg", "all");
   const [selectedStationId, setSelectedStationId] = useState<string | null>(null);
 
   // Get selected org ID for equipment fetch

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useUrlState } from "@/hooks/useUrlState";
 import { supabase } from "@/integrations/supabase/client";
 import {
   MANUFACTURERS,
@@ -93,9 +94,7 @@ export function MachineLibraryManagement() {
   const [purchaseCounts, setPurchaseCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [search, setSearch] = useState("");
-  const [filterManufacturer, setFilterManufacturer] = useState("all");
-  const [filterType, setFilterType] = useState("all");
+  const [search, setSearch] = useState("");  const [filterManufacturer, setFilterManufacturer] = useUrlState<string>("mfr", "all");  const [filterType, setFilterType] = useUrlState<string>("type", "all");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<MachineFormData>({ ...emptyForm });
