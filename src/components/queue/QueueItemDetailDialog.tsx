@@ -189,6 +189,7 @@ export function QueueItemDetailDialog({
           onUpdate={onUpdate}
           onReloadHistory={loadHistory}
           onReloadRouting={loadRouting}
+          onRefreshItems={onRefreshItems}
           onOpenRouting={onOpenRouting}
           onOpenNCR={() => setNcrDialogOpen(true)}
           onCloseDialog={() => onOpenChange(false)}
