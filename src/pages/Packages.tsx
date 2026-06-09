@@ -4,11 +4,13 @@ import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Plus, Package as PackageIcon, Calendar, Boxes } from "lucide-react";
+import { Plus, Package as PackageIcon, Calendar, Boxes, Hammer } from "lucide-react";
 import { usePackages } from "@/hooks/usePackages";
 import { useCustomers } from "@/hooks/useCustomers";
+import { useAdminAccess } from "@/hooks/useAdminData";
 import { PackageStatusBadge } from "@/components/packages/PackageStatusBadge";
 import { CreatePackageDialog } from "@/components/packages/CreatePackageDialog";
+import { PackageBuilderDialog } from "@/components/packages/PackageBuilderDialog";
 import { format } from "date-fns";
 
 export default function Packages() {
