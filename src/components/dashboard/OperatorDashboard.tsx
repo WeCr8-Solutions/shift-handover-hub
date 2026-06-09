@@ -13,6 +13,7 @@ import { RefreshIndicator } from "./RefreshIndicator";
 import { StationCheckIn } from "./StationCheckIn";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { OperatorStationPanel } from "./OperatorStationPanel";
+import { DeliveryHandoffPanel } from "./DeliveryHandoffPanel";
 import { NewHandoffForm } from "@/components/NewHandoffForm";
 import { JobPerformanceUpdateForm } from "@/components/JobPerformanceUpdateForm";
 import { useHandoffRecords, useStations } from "@/hooks/useStations";
@@ -208,6 +209,9 @@ export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDas
           </Button>
         </div>
       </div>
+
+      {/* Physical-delivery handoff queue (in-transit parts + paperwork) */}
+      <DeliveryHandoffPanel />
 
       {/* Station panels */}
       {singleStation ? (

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useUrlState } from "@/hooks/useUrlState";
 import { QueueItem, QueueStatus, QueuePriority } from "@/hooks/useQueue";
 import { cn } from "@/lib/utils";
-import { Clock, User, Package, AlertTriangle, GripVertical, Eye, EyeOff } from "lucide-react";
+import { Clock, User, Package, AlertTriangle, GripVertical, Eye, EyeOff, Truck } from "lucide-react";
 import { format } from "date-fns";
 import { woToast } from "@/lib/woToast";
 import { StationQuickActions, type QuickActionTarget } from "@/components/dashboard/StationQuickActions";
@@ -101,6 +101,12 @@ function QueueCard({ item, onClick, isDragging, onDragStart, onDragEnd }: QueueC
               </span>
             )}
             {item.erp_source && <ItemTypeBadge type="erp" />}
+            {item.awaiting_delivery && (
+              <Badge variant="outline" className="text-[10px] gap-1 border-status-warning/50 text-status-warning">
+                <Truck className="w-3 h-3" />
+                Awaiting delivery
+              </Badge>
+            )}
           </div>
           <h4 className="font-medium text-sm truncate">{item.title}</h4>
           {item.work_order && (
