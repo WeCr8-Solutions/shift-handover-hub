@@ -224,7 +224,21 @@ export function useOrganizationMembers(organizationId: string | null) {
     };
   };
 
-  const updateMemberOrgRole = async (memberId: string, newRole: "admin" | "member") => {
+  const updateMemberOrgRole = async (
+    memberId: string,
+    newRole: "owner" | "admin" | "member",
+  ) => {
+    if (newRole === "owner") {
+      const target = members.find((m) => m.id === memberId);
+      if (!target) return { error: new Error("Member not found") };
+      const { error } = await (supabase as any).rpc("transfer_org_ownership", {
+        _organization_id: target.organization_id,
+        _to_user_id: target.user_id,
+      });
+      if (!error) await fetchMembers();
+      return { error };
+    }
+
     const { error } = await supabase
       .from("organization_members")
       .update({ role: newRole })
@@ -233,6 +247,23 @@ export function useOrganizationMembers(organizationId: string | null) {
     if (!error) {
       await fetchMembers();
     }
+    return { error };
+  };
+
+  const transferOwnership = async (organizationId: string, toUserId: string) => {
+    const { error } = await (supabase as any).rpc("transfer_org_ownership", {
+      _organization_id: organizationId,
+      _to_user_id: toUserId,
+    });
+    if (!error) await fetchMembers();
+    return { error };
+  };
+
+  const claimOwnership = async (organizationId: string) => {
+    const { error } = await (supabase as any).rpc("claim_org_ownership", {
+      _organization_id: organizationId,
+    });
+    if (!error) await fetchMembers();
     return { error };
   };
 
