@@ -159,7 +159,41 @@ export function DocumentLibrary({ audience, engagement, title, description }: Pr
     }
   }
 
-  const kinds = Object.keys(grouped);
+  async function handleSaveVersion(doc: ConciergeDocument, asMaster: boolean) {
+    if (!engagementId) {
+      toast.error("Open this from a specific engagement to save versions.");
+      return;
+    }
+    setBusy(`${doc.key}:save`);
+    try {
+      const fmt: DocumentFormat = doc.formats.includes("pdf") ? "pdf" : doc.formats[0];
+      const blob = await renderDocument(doc, fmt, ctx);
+      // Pull editable-field overrides for this engagement out of localStorage
+      const needs: Record<string, string> = {};
+      const suffix = `:${engagementId}`;
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (!key) continue;
+        if (key.startsWith("concierge-field:") && key.endsWith(suffix)) {
+          const v = localStorage.getItem(key);
+          if (v != null) needs[key.replace("concierge-field:", "").replace(suffix, "")] = v;
+        }
+      }
+      await saveVersion.mutateAsync({
+        orgId,
+        documentKey: doc.key,
+        format: fmt,
+        blob,
+        needsSnapshot: { fields: needs, contextSnapshot: ctx },
+        costSnapshot: computeCost(costInputs) as any,
+        isMaster: asMaster,
+      });
+    } catch (e: any) {
+      toast.error(`Save version failed: ${e?.message ?? e}`);
+    } finally {
+      setBusy(null);
+    }
+  }
 
   return (
     <Card>
