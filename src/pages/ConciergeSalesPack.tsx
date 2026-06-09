@@ -4,13 +4,19 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Printer, ArrowLeft } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Printer, ArrowLeft, UserCircle } from "lucide-react";
 import { useEngagement } from "@/hooks/useOnboardingEngagements";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAccess } from "@/hooks/useAdminData";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DocumentLibrary } from "@/components/admin/concierge/DocumentLibrary";
 import { useConciergePrefill } from "@/hooks/useConciergePrefill";
+import { SignaturePad } from "@/components/admin/concierge/SignaturePad";
+
+const DEFAULT_SALES_REP = "Zach Goodbody";
+const DEFAULT_SALES_TITLE = "Sales Representative";
+const DEFAULT_JOBLINE_TITLE = "Concierge Onboarding Lead";
 
 /**
  * Printable Concierge Sales Pack — platform-admin only.
