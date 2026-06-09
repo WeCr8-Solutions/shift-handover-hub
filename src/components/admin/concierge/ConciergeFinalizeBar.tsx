@@ -76,12 +76,18 @@ export function ConciergeFinalizeBar({ engagementId, canReopen, buildSnapshot, o
         <Button
           size="sm"
           variant="outline"
-          disabled={!isFinalized}
-          onClick={() => toast.info("Email send coming online once concierge-pack edge function is deployed.")}
+          disabled={!isFinalized || sending}
+          onClick={async () => {
+            setSending(true);
+            const { data, error } = await supabase.functions.invoke("send-concierge-pack", { body: { engagementId } });
+            setSending(false);
+            if (error || (data as any)?.error) toast.error((error?.message ?? (data as any)?.error) ?? "Send failed");
+            else toast.success(`Sealed pack emailed to ${(data as any)?.recipient ?? "billing contact"}.`);
+          }}
           title={isFinalized ? "Email sealed pack to billing contact" : "Save & Finalize first to lock the master copy."}
           className="h-7 text-[11px] gap-1"
         >
-          <Mail className="w-3.5 h-3.5" /> Email
+          {sending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Mail className="w-3.5 h-3.5" />} Email
         </Button>
         <Button
           size="sm"
