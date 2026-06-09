@@ -57,6 +57,7 @@ import { FieldChecklist } from "./FieldChecklist";
 import { ContactsExportTab } from "./ContactsExportTab";
 import { PrintMaterials } from "./PrintMaterials";
 import { CampaignMarketingGallery } from "./CampaignMarketingGallery";
+import { BusinessCardStudio } from "./BusinessCardStudio";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
