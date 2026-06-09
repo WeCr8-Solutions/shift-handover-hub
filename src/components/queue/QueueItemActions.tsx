@@ -631,6 +631,13 @@ export function QueueItemActions({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AddToPackageDialog
+        open={addToPackageOpen}
+        onOpenChange={setAddToPackageOpen}
+        itemIds={[item.id]}
+        onAdded={() => onRefreshItems?.()}
+      />
     </>
   );
 }
