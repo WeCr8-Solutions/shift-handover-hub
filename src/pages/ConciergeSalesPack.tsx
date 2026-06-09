@@ -347,6 +347,16 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
               placeholder={org?.billing_email || "billing@customer.com"}
             />
           </Label>
+          <Label className="flex flex-col gap-1">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Rep talent profile (QR)</span>
+            <Input
+              type="url"
+              value={repTalentUrl}
+              onChange={(e) => setRepTalentUrl(e.target.value)}
+              className="h-7 text-xs w-64"
+              placeholder={DEFAULT_REP_TALENT_URL}
+            />
+          </Label>
         </div>
       </div>
 
