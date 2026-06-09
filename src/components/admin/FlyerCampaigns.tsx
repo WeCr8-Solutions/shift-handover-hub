@@ -487,6 +487,10 @@ export function FlyerCampaigns() {
             <ClipboardList className="w-3.5 h-3.5" />
             Contacts
           </TabsTrigger>
+          <TabsTrigger value="gallery" className="gap-1.5">
+            <ImageIcon className="w-3.5 h-3.5" />
+            Gallery
+          </TabsTrigger>
           <TabsTrigger value="print" className="gap-1.5">
             <Printer className="w-3.5 h-3.5" />
             Print Materials
