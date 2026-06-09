@@ -423,20 +423,47 @@ export function CreateWorkOrderDialog({
             </div>
           )}
 
+          {/* Customer */}
+          <div className="space-y-2">
+            <Label>Customer (optional)</Label>
+            <CustomerCombobox
+              value={customerId}
+              onChange={(c: Customer | null) => setCustomerId(c?.id ?? null)}
+            />
+            <p className="text-xs text-muted-foreground">
+              Linking a customer lets you recall their parts and quantities next time.
+            </p>
+          </div>
+
           {/* Work Order / Quote Number */}
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
               <Hash className="w-4 h-4" />
               {isQuote ? "Quote #" : "Work Order #"} <span className="text-destructive">*</span>
             </Label>
-            <Input
-              value={formData.work_order}
-              onChange={(e) => updateFormField("work_order", e.target.value)}
-              placeholder={isQuote ? "Enter your quote number" : "Enter your work order number"}
-              className={!isValid ? "ring-2 ring-destructive/20" : ""}
-              required
-            />
+            <div className="flex gap-2">
+              <Input
+                value={formData.work_order}
+                onChange={(e) => updateFormField("work_order", e.target.value)}
+                placeholder={isQuote ? "Enter quote number" : "Enter work order number"}
+                className={!isValid ? "ring-2 ring-destructive/20" : ""}
+                required
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={generateNumber}
+                disabled={generatingNumber}
+                className="shrink-0 gap-1.5"
+                title="Generate the next number using your organization's numbering format"
+              >
+                {generatingNumber ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                Generate
+              </Button>
+            </div>
           </div>
+
 
           {/* Routing Section — used for both work orders (production routing) and quotes
               (estimation routing through engineering / programming / departments for accurate cost). */}
