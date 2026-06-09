@@ -294,12 +294,22 @@ export function BusinessCardStudio({
               </TabsContent>
             </Tabs>
 
+            <label className="flex items-center gap-2 text-xs text-muted-foreground">
+              <input
+                type="checkbox"
+                checked={showGuides}
+                onChange={(e) => setShowGuides(e.target.checked)}
+                className="h-3.5 w-3.5"
+              />
+              Show trim &amp; safety guides (preview only — never exported)
+            </label>
+
             <div className="flex flex-wrap gap-2">
               <Button onClick={downloadPngs} disabled={busy} size="sm" variant="secondary">
                 <FileImage className="w-3.5 h-3.5 mr-1.5" /> PNG (front + back)
               </Button>
               <Button onClick={downloadPdf} disabled={busy} size="sm" variant="secondary">
-                <FileText className="w-3.5 h-3.5 mr-1.5" /> PDF
+                <FileText className="w-3.5 h-3.5 mr-1.5" /> Print-ready PDF
               </Button>
               <Button onClick={printCard} disabled={busy} size="sm" variant="outline">
                 <Printer className="w-3.5 h-3.5 mr-1.5" /> Print
@@ -309,12 +319,11 @@ export function BusinessCardStudio({
                 {campaignId ? "Save to gallery" : "Save (pick campaign)"}
               </Button>
             </div>
-            {!campaignId && (
-              <p className="text-[11px] text-muted-foreground">
-                Open this from a campaign's tab to archive the rendered cards into its
-                gallery (downloadable later inside the ZIP package).
-              </p>
-            )}
+            <p className="text-[11px] text-muted-foreground">
+              Export size: 3.625″ × 2.125″ at 300 dpi with 0.125″ bleed (NA standard,
+              VistaPrint-compatible). Content sits inside the dashed 3.25″ × 1.75″ safety zone.
+              {!campaignId && " Open from a campaign tab to archive cards into its gallery."}
+            </p>
           </div>
         </CardContent>
       </Card>
