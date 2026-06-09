@@ -159,6 +159,7 @@ const ERPSelectionGuide = lazy(() => import("./pages/resources/ERPSelectionGuide
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Activate = lazy(() => import("./pages/Activate"));
 const ClaimAccountOwner = lazy(() => import("./pages/ClaimAccountOwner"));
+const Welcome = lazy(() => import("./pages/Welcome"));
 const Blog = lazy(() => import("./pages/Blog"));
 const SitemapPage = lazy(() => import("./pages/SitemapPage"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
