@@ -399,7 +399,7 @@ export function QueueItemActions({
           ...cloneable,
           item_type: "work_order",
           status: "pending",
-          work_order: convertWONumber.trim(),
+          work_order: targetWO,
           station_id: newStationId,
           source_quote_id: item.id,
           created_by: user?.id ?? (cloneable as { created_by?: string }).created_by,
