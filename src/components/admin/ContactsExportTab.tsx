@@ -11,7 +11,8 @@ import {
 } from "@/components/ui/select";
 import { Download, Mail, Phone, MapPin, CheckCircle2, FileSpreadsheet } from "lucide-react";
 import { toast } from "sonner";
-import { downloadVistaPrintXlsx, parseUsAddressLine } from "@/lib/vistaPrintExport";
+import { downloadVistaPrintXlsx, parseUsAddressLine, buildVistaPrintXlsx } from "@/lib/vistaPrintExport";
+import { useCampaignMarketingAssets } from "@/hooks/useCampaignMarketingAssets";
 
 interface ContactRecord {
   id: string;
