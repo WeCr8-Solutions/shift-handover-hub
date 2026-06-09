@@ -12,6 +12,7 @@ import { DashboardKPICards } from "./DashboardKPICards";
 import { DashboardAlertSection } from "./DashboardAlertSection";
 import { StationListTable } from "./StationListTable";
 import { ComplimentaryAwardBanner } from "@/components/ComplimentaryAwardBanner";
+import { DeliveryHandoffPanel } from "./DeliveryHandoffPanel";
 
 import {
   Factory,
