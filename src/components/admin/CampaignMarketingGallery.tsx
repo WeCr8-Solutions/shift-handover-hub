@@ -279,9 +279,20 @@ export function CampaignMarketingGallery({ campaignId }: Props) {
                 <SelectItem value="other">Other</SelectItem>
               </SelectContent>
             </Select>
+            <Button
+              size="sm" variant="outline"
+              onClick={downloadZipPackage}
+              disabled={exporting || filtered.length === 0}
+              className="gap-1.5"
+              title="Download all visible assets + manifest.csv as a ZIP"
+            >
+              <Package className="w-3.5 h-3.5" />
+              {exporting ? "Packaging…" : `ZIP (${filtered.length})`}
+            </Button>
             <Button size="sm" onClick={() => setUploadOpen(true)} className="gap-1.5">
               <Upload className="w-3.5 h-3.5" /> Upload
             </Button>
+
           </div>
         </div>
       </CardHeader>
