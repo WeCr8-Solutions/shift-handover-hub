@@ -10089,6 +10089,59 @@ export type Database = {
           },
         ]
       }
+      organization_setup_steps: {
+        Row: {
+          completed: boolean
+          completed_at: string
+          completed_by: string | null
+          organization_id: string
+          step: string
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string
+          completed_by?: string | null
+          organization_id: string
+          step: string
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string
+          completed_by?: string | null
+          organization_id?: string
+          step?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_setup_steps_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "organization_setup_steps_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_setup_steps_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_setup_steps_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_traveler_settings: {
         Row: {
           company_name_line: string | null
