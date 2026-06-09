@@ -9,8 +9,9 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Download, Mail, Phone, MapPin, CheckCircle2 } from "lucide-react";
+import { Download, Mail, Phone, MapPin, CheckCircle2, FileSpreadsheet } from "lucide-react";
 import { toast } from "sonner";
+import { downloadVistaPrintXlsx, parseUsAddressLine } from "@/lib/vistaPrintExport";
 
 interface ContactRecord {
   id: string;
