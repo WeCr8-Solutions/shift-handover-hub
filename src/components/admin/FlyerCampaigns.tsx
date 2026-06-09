@@ -888,6 +888,10 @@ ON CONFLICT (user_id, role) DO NOTHING;`}
           <CampaignMarketingGallery campaignId={campaignId} />
         </TabsContent>
 
+        <TabsContent value="cards">
+          <BusinessCardStudio campaignId={campaignId} />
+        </TabsContent>
+
         <TabsContent value="print">
           <PrintMaterials />
         </TabsContent>
