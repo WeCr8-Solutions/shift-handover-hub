@@ -25,8 +25,9 @@ interface DeliveryHandoffPanelProps {
 }
 
 export function DeliveryHandoffPanel({ toStationId, compact = false }: DeliveryHandoffPanelProps) {
-  const { deliveries, loading, error, markPickedUp, markDelivered, acceptDelivery } =
+  const { deliveries, loading, error, markPickedUp, markDelivered, acceptDelivery, forceAccept } =
     useDeliveryRequests();
+  const { hasOrgSupervisorAccess } = useAdminAccess();
   const [busyId, setBusyId] = useState<string | null>(null);
 
   const filtered = toStationId
