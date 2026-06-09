@@ -515,6 +515,7 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
                   multiline
                   minRows={4}
                   placeholder="Captured live with the customer — pain points, deadlines, ITAR posture, integrations…"
+                  readOnly={isFinalized}
                 />
               </div>
             </div>
@@ -636,6 +637,7 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
                 multiline
                 minRows={4}
                 placeholder="Negotiated changes, custom SLAs, deliverable dates, ITAR carve-outs. Leave blank if standard MSA applies as-is."
+                readOnly={isFinalized}
               />
             </div>
           </PrintPage>)}
