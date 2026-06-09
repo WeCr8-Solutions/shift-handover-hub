@@ -32,7 +32,7 @@ function PrintPage({
   initials = false,
 }: { title: string; children: React.ReactNode; initials?: boolean }) {
   return (
-    <section className="page bg-white text-black mx-auto my-8 p-10 max-w-[8.5in] min-h-[10.5in] border print:border-0 print:my-0 print:p-[0.75in] print:break-after-page relative">
+    <section className={`page bg-white text-black mx-auto my-8 p-10 max-w-[8.5in] min-h-[10.5in] border print:border-0 print:my-0 print:p-[0.75in] print:break-after-page relative break-words ${initials ? "pb-24 print:pb-[1.25in]" : ""}`}>
       <header className="flex items-center justify-between border-b border-black/30 pb-3 mb-6">
         <div className="font-bold text-lg tracking-tight">JobLine.ai · Concierge Onboarding</div>
         <div className="text-xs uppercase tracking-wider">{title}</div>
