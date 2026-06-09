@@ -13,10 +13,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DocumentLibrary } from "@/components/admin/concierge/DocumentLibrary";
 import { useConciergePrefill } from "@/hooks/useConciergePrefill";
 import { SignaturePad } from "@/components/admin/concierge/SignaturePad";
+import { QRCodeSVG } from "qrcode.react";
 
 const DEFAULT_SALES_REP = "Zach Goodbody";
-const DEFAULT_SALES_TITLE = "Sales Representative";
+const DEFAULT_SALES_TITLE = "CEO & Sales Representative";
 const DEFAULT_JOBLINE_TITLE = "Concierge Onboarding Lead";
+const DEFAULT_REP_TALENT_URL = "https://jobline.ai/talent/zachgoodbody";
 
 /**
  * Printable Concierge Sales Pack — platform-admin only.
@@ -137,6 +139,7 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
   const [jobLineRepName, setJobLineRepName] = useState<string>("");
   const [jobLineRepTitle, setJobLineRepTitle] = useState<string>(DEFAULT_JOBLINE_TITLE);
   const [billingEmailOverride, setBillingEmailOverride] = useState<string>("");
+  const [repTalentUrl, setRepTalentUrl] = useState<string>(DEFAULT_REP_TALENT_URL);
   const [repLoaded, setRepLoaded] = useState(false);
 
   // Load saved rep + billing state once per engagement
@@ -149,6 +152,7 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
         if (v.salesRepTitle) setSalesRepTitle(v.salesRepTitle);
         if (v.jobLineRepName) setJobLineRepName(v.jobLineRepName);
         if (v.jobLineRepTitle) setJobLineRepTitle(v.jobLineRepTitle);
+        if (typeof v.repTalentUrl === "string") setRepTalentUrl(v.repTalentUrl);
       }
       const billing = localStorage.getItem(billingStorageKey);
       if (billing) setBillingEmailOverride(billing);
@@ -168,23 +172,29 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
     try {
       localStorage.setItem(
         repStorageKey,
-        JSON.stringify({ salesRepName, salesRepTitle, jobLineRepName, jobLineRepTitle }),
+        JSON.stringify({ salesRepName, salesRepTitle, jobLineRepName, jobLineRepTitle, repTalentUrl }),
       );
     } catch {}
-  }, [repLoaded, repStorageKey, salesRepName, salesRepTitle, jobLineRepName, jobLineRepTitle]);
+  }, [repLoaded, repStorageKey, salesRepName, salesRepTitle, jobLineRepName, jobLineRepTitle, repTalentUrl]);
   useEffect(() => {
     if (!repLoaded) return;
     try { localStorage.setItem(billingStorageKey, billingEmailOverride); } catch {}
   }, [repLoaded, billingStorageKey, billingEmailOverride]);
 
   const effectiveBillingEmail = billingEmailOverride || org?.billing_email || "_________________________";
-  const resetSalesRep = () => { setSalesRepName(DEFAULT_SALES_REP); setSalesRepTitle(DEFAULT_SALES_TITLE); };
+  const resetSalesRep = () => {
+    setSalesRepName(DEFAULT_SALES_REP);
+    setSalesRepTitle(DEFAULT_SALES_TITLE);
+    setRepTalentUrl(DEFAULT_REP_TALENT_URL);
+  };
   const autofillJobLineRep = () => {
     if (staffDisplayName) setJobLineRepName(staffDisplayName);
     setJobLineRepTitle(DEFAULT_JOBLINE_TITLE);
   };
   const printedSales = salesRepName ? `${salesRepName}${salesRepTitle ? ` — ${salesRepTitle}` : ""}` : "";
   const printedJobLine = jobLineRepName ? `${jobLineRepName}${jobLineRepTitle ? ` — ${jobLineRepTitle}` : ""}` : "";
+  const repTalentUrlTrimmed = repTalentUrl.trim();
+  const repTalentHandle = repTalentUrlTrimmed.replace(/^https?:\/\//i, "");
 
   const SECTIONS: { key: string; label: string }[] = [
     { key: "cover", label: "Cover" },
@@ -337,6 +347,16 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
               placeholder={org?.billing_email || "billing@customer.com"}
             />
           </Label>
+          <Label className="flex flex-col gap-1">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Rep talent profile (QR)</span>
+            <Input
+              type="url"
+              value={repTalentUrl}
+              onChange={(e) => setRepTalentUrl(e.target.value)}
+              className="h-7 text-xs w-64"
+              placeholder={DEFAULT_REP_TALENT_URL}
+            />
+          </Label>
         </div>
       </div>
 
@@ -378,6 +398,17 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
                   <div className="font-semibold">Engagement ID</div><div className="font-mono text-xs break-all">{engagement?.id ?? "(assigned at signing)"}</div>
                 </div>
               </div>
+              {repTalentUrlTrimmed && (
+                <div className="flex items-center gap-4 mt-6 border border-black/30 p-3 rounded w-full max-w-md text-left">
+                  <QRCodeSVG value={repTalentUrlTrimmed} size={84} level="M" includeMargin={false} />
+                  <div className="text-xs">
+                    <div className="font-semibold">Your sales rep</div>
+                    <div>{printedSales || DEFAULT_SALES_REP}</div>
+                    <div className="text-black/60 break-all">{repTalentHandle}</div>
+                    <div className="text-[10px] text-black/50 mt-1">Scan to verify credentials, machine experience, and certifications on the JobLine Talent network.</div>
+                  </div>
+                </div>
+              )}
               <p className="text-xs text-black/70 mt-4 max-w-md">
                 <b>Instructions to signer:</b> initial every page in the bottom-right corner, then sign and date the final Signature Page. Return all pages to onboarding@jobline.ai or upload via the Concierge workspace.
               </p>
@@ -713,18 +744,27 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
               </div>
             </div>
 
-            <div className="mt-8 grid grid-cols-2 gap-4 text-[11px] border border-black/40 p-3 break-words">
+            <div className="mt-8 grid grid-cols-[1fr_1fr_auto] gap-4 text-[11px] border border-black/40 p-3 break-words items-start">
               <div>
                 <div className="font-semibold uppercase tracking-wider text-[9px] text-black/60">Sales rep on this engagement</div>
                 <div>{printedSales || "—"}</div>
                 {staffEmail ? <div className="text-black/60 break-all">{staffEmail}</div> : null}
+                {repTalentUrlTrimmed && (
+                  <div className="text-black/60 break-all">{repTalentHandle}</div>
+                )}
               </div>
               <div>
                 <div className="font-semibold uppercase tracking-wider text-[9px] text-black/60">Billing email of record</div>
                 <div className="break-all">{effectiveBillingEmail}</div>
                 <div className="text-black/60">Invoice #: {invoiceNumber}</div>
               </div>
-              <div className="col-span-2">
+              {repTalentUrlTrimmed ? (
+                <div className="flex flex-col items-center text-center">
+                  <QRCodeSVG value={repTalentUrlTrimmed} size={72} level="M" includeMargin={false} />
+                  <div className="text-[9px] text-black/60 mt-1 leading-tight max-w-[90px]">Scan to verify rep credentials</div>
+                </div>
+              ) : null}
+              <div className="col-span-3">
                 <b>For sales rep:</b> after both parties have signed, scan the entire package (including this page and all initialled pages) to a single PDF and upload it via the Concierge workspace → <i>Wet-signature contract</i> panel. Reference engagement ID:{" "}
                 <span className="font-mono break-all">{engagement?.id ?? "(blank until assigned)"}</span>
               </div>
