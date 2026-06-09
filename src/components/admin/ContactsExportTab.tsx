@@ -129,7 +129,28 @@ export function ContactsExportTab({ campaignId }: Props) {
         zip: parsed.zip,
       };
     });
+    const date = new Date().toISOString().slice(0, 10);
+    // Download for immediate use
     const count = await downloadVistaPrintXlsx(rows, "vista_postcard_list");
+    // Also archive to the campaign marketing gallery so the same list is preserved with date metadata
+    if (campaignId) {
+      try {
+        const blob = await buildVistaPrintXlsx(rows);
+        const filename = `vista_postcard_list_${date}.xlsx`;
+        await uploadAsset({
+          file: new File([blob], filename, {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          }),
+          filename,
+          kind: "mailing_list_xlsx",
+          title: `Vista Print list — ${date} (${count} recipients)`,
+          notes: `Auto-archived from Contacts export. Filter: ${exportType}.`,
+          usedOn: date,
+        });
+      } catch (e) {
+        console.warn("Gallery archive failed", e);
+      }
+    }
     toast.success(`Vista Print list exported — ${count} recipients.`);
   }
 
