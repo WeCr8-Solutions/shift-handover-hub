@@ -15,6 +15,7 @@ import { TOOL_REGISTRY, TOOL_CATEGORIES } from "@/components/tools";
 import { AdPlacement } from "@/components/marketing/AdPlacement";
 import { Search, Wrench, Loader2, ArrowLeft, BookOpen, ArrowRight } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useUrlState } from "@/hooks/useUrlState";
 
 const categoryColors: Record<string, string> = {
   machining: "bg-primary/10 text-primary border-primary/30",
