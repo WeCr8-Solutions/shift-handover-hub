@@ -66,6 +66,12 @@ export interface SignaturePadProps {
   showPrintedNameBelow?: boolean;
   /** Optional override label for the lock button. */
   lockLabel?: string;
+  /**
+   * Hard-lock the pad. When true the canvas is non-interactive and no
+   * Clear / Sign & Lock controls render. Used by the Concierge finalize
+   * flow to guarantee no further edits after the master is sealed.
+   */
+  readOnly?: boolean;
 }
 
 export function SignaturePad({
@@ -75,6 +81,7 @@ export function SignaturePad({
   printedName,
   showPrintedNameBelow,
   lockLabel,
+  readOnly = false,
 }: SignaturePadProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const drawingRef = useRef(false);
@@ -167,14 +174,14 @@ export function SignaturePad({
   };
 
   const onDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (locked) return;
+    if (locked || readOnly) return;
     e.preventDefault();
     canvasRef.current?.setPointerCapture(e.pointerId);
     drawingRef.current = true;
     lastPointRef.current = pointFromEvent(e);
   };
   const onMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (locked || !drawingRef.current) return;
+    if (locked || readOnly || !drawingRef.current) return;
     const ctx = getCtx();
     const p = pointFromEvent(e);
     const last = lastPointRef.current;
@@ -188,7 +195,7 @@ export function SignaturePad({
     if (!hasInk) setHasInk(true);
   };
   const onUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (locked || !drawingRef.current) return;
+    if (locked || readOnly || !drawingRef.current) return;
     drawingRef.current = false;
     lastPointRef.current = null;
     try {
@@ -253,12 +260,12 @@ export function SignaturePad({
           onPointerCancel={onUp}
           onPointerLeave={onUp}
         />
-        {!hasInk && !locked && (
+        {!hasInk && !locked && !readOnly && (
           <div className="no-print pointer-events-none absolute inset-0 flex items-center justify-center text-[10px] text-black/30 select-none">
             sign here (mouse, finger, or pen) — or leave blank to wet-sign on paper
           </div>
         )}
-        {!locked && hasInk && (
+        {!locked && !readOnly && hasInk && (
           <div className="no-print absolute right-1 top-1 flex gap-1">
             <Button
               type="button"
@@ -279,12 +286,12 @@ export function SignaturePad({
             </Button>
           </div>
         )}
-        {locked && (
+        {(locked || (readOnly && hasInk)) && (
           <div
             className="no-print absolute right-1 top-1 flex items-center gap-1 text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-1.5 py-0.5"
-            title={`Sealed ${lockedDate} · sha256 ${locked.sha256.slice(0, 12)}…`}
+            title={locked ? `Sealed ${lockedDate} · sha256 ${locked.sha256.slice(0, 12)}…` : "Locked by finalized master pack"}
           >
-            <ShieldCheck className="w-3 h-3" /> Sealed
+            <ShieldCheck className="w-3 h-3" /> {locked ? "Sealed" : "Locked"}
           </div>
         )}
         {tampered && (

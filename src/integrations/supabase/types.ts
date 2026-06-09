@@ -14,6 +14,81 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_activation_tokens: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          email: string
+          expires_at: string
+          id: string
+          invite_id: string | null
+          organization_id: string | null
+          token_hash: string
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          email: string
+          expires_at: string
+          id?: string
+          invite_id?: string | null
+          organization_id?: string | null
+          token_hash: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          email?: string
+          expires_at?: string
+          id?: string
+          invite_id?: string | null
+          organization_id?: string | null
+          token_hash?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_activation_tokens_invite_id_fkey"
+            columns: ["invite_id"]
+            isOneToOne: false
+            referencedRelation: "organization_invites"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "account_activation_tokens_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "account_activation_tokens_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "account_activation_tokens_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "account_activation_tokens_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       act_as_sessions: {
         Row: {
           actor_id: string
@@ -1291,6 +1366,106 @@ export type Database = {
           },
           {
             foreignKeyName: "company_social_profiles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      concierge_document_records: {
+        Row: {
+          cost_snapshot: Json
+          created_at: string
+          created_by: string | null
+          document_key: string
+          engagement_id: string
+          format: string
+          id: string
+          is_master: boolean
+          needs_snapshot: Json
+          notes: string | null
+          organization_id: string | null
+          storage_bucket: string
+          storage_path: string
+          superseded_at: string | null
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          cost_snapshot?: Json
+          created_at?: string
+          created_by?: string | null
+          document_key: string
+          engagement_id: string
+          format?: string
+          id?: string
+          is_master?: boolean
+          needs_snapshot?: Json
+          notes?: string | null
+          organization_id?: string | null
+          storage_bucket?: string
+          storage_path: string
+          superseded_at?: string | null
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          cost_snapshot?: Json
+          created_at?: string
+          created_by?: string | null
+          document_key?: string
+          engagement_id?: string
+          format?: string
+          id?: string
+          is_master?: boolean
+          needs_snapshot?: Json
+          notes?: string | null
+          organization_id?: string | null
+          storage_bucket?: string
+          storage_path?: string
+          superseded_at?: string | null
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "concierge_document_records_engagement_id_fkey"
+            columns: ["engagement_id"]
+            isOneToOne: false
+            referencedRelation: "concierge_payment_aging"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "concierge_document_records_engagement_id_fkey"
+            columns: ["engagement_id"]
+            isOneToOne: false
+            referencedRelation: "onboarding_engagements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "concierge_document_records_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "concierge_document_records_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "concierge_document_records_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "concierge_document_records_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations_safe"
@@ -15717,6 +15892,7 @@ export type Database = {
         }
         Returns: Json
       }
+      consume_activation_token: { Args: { _token: string }; Returns: Json }
       create_concierge_engagement_from_payment:
         | {
             Args: {
@@ -16053,6 +16229,7 @@ export type Database = {
         Returns: boolean
       }
       is_verified_employer: { Args: { _user_id: string }; Returns: boolean }
+      leave_organization: { Args: { _organization_id: string }; Returns: Json }
       list_public_employers: {
         Args: {
           _hiring_only?: boolean

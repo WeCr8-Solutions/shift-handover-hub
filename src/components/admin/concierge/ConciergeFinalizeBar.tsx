@@ -2,8 +2,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Lock, RotateCcw, Save, ShieldCheck } from "lucide-react";
+import { Lock, RotateCcw, Save, ShieldCheck, Mail, Download } from "lucide-react";
 import { useConciergeFinalization, type PackSnapshot } from "@/hooks/useConciergeFinalization";
+import { toast } from "sonner";
 
 interface Props {
   engagementId: string;
@@ -69,6 +70,26 @@ export function ConciergeFinalizeBar({ engagementId, canReopen, buildSnapshot, o
       <div className="flex items-center gap-2 ml-auto">
         <Button size="sm" variant="outline" onClick={handleSave} disabled={saveDraft.isPending || isFinalized} className="h-7 text-[11px] gap-1">
           <Save className="w-3.5 h-3.5" /> {saveDraft.isPending ? "Saving…" : "Save draft"}
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={!isFinalized}
+          onClick={() => toast.info("Email send coming online once concierge-pack edge function is deployed.")}
+          title={isFinalized ? "Email sealed pack to billing contact" : "Save & Finalize first to lock the master copy."}
+          className="h-7 text-[11px] gap-1"
+        >
+          <Mail className="w-3.5 h-3.5" /> Email
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={!isFinalized}
+          onClick={() => window.print()}
+          title={isFinalized ? "Export sealed pack as PDF via print dialog" : "Save & Finalize first to lock the master copy."}
+          className="h-7 text-[11px] gap-1"
+        >
+          <Download className="w-3.5 h-3.5" /> Export PDF
         </Button>
         {isFinalized ? (
           canReopen ? (
