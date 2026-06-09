@@ -90,7 +90,7 @@ export function InviteCodeGenerator({ defaultTeamId }: InviteCodeGeneratorProps 
   const { toast } = useToast();
   const { limits, plan } = useEntitlements();
 
-  const [activeTab, setActiveTab] = useState("invites");
+  const [activeTab, setActiveTab] = useUrlState<string>("inviteTab", "invites");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showQRDialog, setShowQRDialog] = useState(false);
   const [selectedInvite, setSelectedInvite] = useState<OrganizationInvite | null>(null);
