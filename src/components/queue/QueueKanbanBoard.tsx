@@ -143,6 +143,15 @@ export function QueueKanbanBoard({
   const [dragOverColumn, setDragOverColumn] = useState<QueueStatus | null>(null);
   const [dropIndicatorIndex, setDropIndicatorIndex] = useState<number | null>(null);
   const dragOverItemRef = useRef<string | null>(null);
+  // Completed / cancelled items are hidden by default so the active dashboard stays focused.
+  // Items needing further review (NCR / on_hold / QA states) remain visible regardless.
+  const [showArchived, setShowArchived] = useUrlState<string>("kbArch", "0");
+  const archivedVisible = showArchived === "1";
+  const visibleColumns = archivedVisible
+    ? statusColumns
+    : statusColumns.filter((c) => c.status !== "completed" && c.status !== "cancelled");
+  const archivedCount =
+    (itemsByStatus.completed?.length || 0) + (itemsByStatus.cancelled?.length || 0);
 
   const handleDragStart = (e: React.DragEvent, item: QueueItem) => {
     if (requiresStationCheckIn) {
