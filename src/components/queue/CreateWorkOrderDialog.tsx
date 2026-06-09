@@ -307,12 +307,63 @@ export function CreateWorkOrderDialog({
         setLoading(false);
       }
     },
-    [formData, partSpecs, routingSteps, hasRouting, itemType, createItem, isValid, onOpenChange, onSuccess],
+    [formData, partSpecs, routingSteps, hasRouting, itemType, createItem, isValid, onOpenChange, onSuccess, customerId],
   );
+
+  // Part-number autocomplete (org + optional customer scope)
+  useEffect(() => {
+    if (!organization?.id) return;
+    const term = formData.part_number.trim();
+    if (term.length < 1) {
+      setPartSuggestions([]);
+      return;
+    }
+    let cancelled = false;
+    const handle = setTimeout(async () => {
+      let query = (supabase as any)
+        .from("part_catalog")
+        .select("id, part_number, description, default_quantity, material_type, part_length_inches, part_width_inches, part_height_inches, part_weight_lbs, part_shape, required_tolerance, surface_finish, customer_id")
+        .eq("organization_id", organization.id)
+        .ilike("part_number", `%${term}%`)
+        .order("part_number")
+        .limit(8);
+      if (customerId) {
+        query = query.or(`customer_id.eq.${customerId},customer_id.is.null`);
+      }
+      const { data } = await query;
+      if (!cancelled) setPartSuggestions((data as any) || []);
+    }, 180);
+    return () => {
+      cancelled = true;
+      clearTimeout(handle);
+    };
+  }, [formData.part_number, organization?.id, customerId]);
+
+  const applyPartSuggestion = useCallback((p: typeof partSuggestions[number]) => {
+    setFormData((prev) => ({
+      ...prev,
+      part_number: p.part_number,
+      quantity: p.default_quantity ? String(p.default_quantity) : prev.quantity,
+    }));
+    setPartSpecs((prev) => ({
+      ...prev,
+      part_catalog_id: p.id,
+      material_type: p.material_type || prev.material_type,
+      part_length_inches: p.part_length_inches != null ? String(p.part_length_inches) : prev.part_length_inches,
+      part_width_inches: p.part_width_inches != null ? String(p.part_width_inches) : prev.part_width_inches,
+      part_height_inches: p.part_height_inches != null ? String(p.part_height_inches) : prev.part_height_inches,
+      part_weight_lbs: p.part_weight_lbs != null ? String(p.part_weight_lbs) : prev.part_weight_lbs,
+      part_shape: p.part_shape || prev.part_shape,
+      required_tolerance: p.required_tolerance || prev.required_tolerance,
+      surface_finish: p.surface_finish || prev.surface_finish,
+    }));
+    setShowPartSuggestions(false);
+  }, []);
 
   const updateFormField = useCallback((field: keyof typeof formData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   }, []);
+
 
   const isQuote = itemType === "quote";
 
