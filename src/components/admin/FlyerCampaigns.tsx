@@ -493,11 +493,16 @@ export function FlyerCampaigns() {
             <ImageIcon className="w-3.5 h-3.5" />
             Gallery
           </TabsTrigger>
+          <TabsTrigger value="cards" className="gap-1.5">
+            <CreditCard className="w-3.5 h-3.5" />
+            Business Cards
+          </TabsTrigger>
           <TabsTrigger value="print" className="gap-1.5">
             <Printer className="w-3.5 h-3.5" />
             Print Materials
           </TabsTrigger>
         </TabsList>
+
 
         {/* ─── Campaign Overview ─── */}
         <TabsContent value="overview">
