@@ -131,13 +131,13 @@ export function BusinessCardStudio({
       const pdf = new jsPDF({
         orientation: "landscape",
         unit: "in",
-        format: [CARD_W_IN, CARD_H_IN],
+        format: [BLEED_W_IN, BLEED_H_IN],
       });
-      pdf.addImage(await blobToDataUrl(front), "PNG", 0, 0, CARD_W_IN, CARD_H_IN);
-      pdf.addPage([CARD_W_IN, CARD_H_IN], "landscape");
-      pdf.addImage(await blobToDataUrl(back), "PNG", 0, 0, CARD_W_IN, CARD_H_IN);
-      pdf.save(`business-card-${slugify(fullName || "jobline")}.pdf`);
-      toast.success("PDF ready (front + back)");
+      pdf.addImage(await blobToDataUrl(front), "PNG", 0, 0, BLEED_W_IN, BLEED_H_IN);
+      pdf.addPage([BLEED_W_IN, BLEED_H_IN], "landscape");
+      pdf.addImage(await blobToDataUrl(back), "PNG", 0, 0, BLEED_W_IN, BLEED_H_IN);
+      pdf.save(`business-card-${slugify(fullName || "jobline")}-print-ready.pdf`);
+      toast.success("Print-ready PDF saved (3.625″×2.125″ with bleed)");
     } catch {
       toast.error("Failed to build PDF");
     } finally {
