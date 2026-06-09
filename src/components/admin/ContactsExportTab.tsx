@@ -40,6 +40,7 @@ export function ContactsExportTab({ campaignId }: Props) {
   const [contacts, setContacts] = useState<ContactRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [exportType, setExportType] = useState<ExportType>("all");
+  const { uploadAsset } = useCampaignMarketingAssets(campaignId);
 
   const load = useCallback(async () => {
     if (!campaignId) return;
