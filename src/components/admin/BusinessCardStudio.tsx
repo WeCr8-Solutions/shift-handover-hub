@@ -31,11 +31,19 @@ import { useCampaignMarketingAssets } from "@/hooks/useCampaignMarketingAssets";
  * `business_card` assets so reps can pull them back later in the ZIP package.
  */
 
-const CARD_W_IN = 3.5;
-const CARD_H_IN = 2;
-const PX_PER_IN = 300; // 300 dpi
-const CARD_W_PX = CARD_W_IN * PX_PER_IN;
-const CARD_H_PX = CARD_H_IN * PX_PER_IN;
+// US standard business card with VistaPrint-grade bleed/trim/safety zones.
+// See docs/marketing/business-cards/README.md for source templates + spec.
+const TRIM_W_IN = 3.5;
+const TRIM_H_IN = 2.0;
+const BLEED_IN = 0.125;            // 0.125" bleed on all sides
+const SAFETY_IN = 0.125;           // keep content 0.125" inside trim
+const BLEED_W_IN = TRIM_W_IN + BLEED_IN * 2;   // 3.625"
+const BLEED_H_IN = TRIM_H_IN + BLEED_IN * 2;   // 2.125"
+const PX_PER_IN = 300;             // 300 dpi print-ready
+const CARD_W_PX = BLEED_W_IN * PX_PER_IN;      // 1087.5 → rendered 1088
+const CARD_H_PX = BLEED_H_IN * PX_PER_IN;      // 637.5  → rendered 638
+const BLEED_PX = BLEED_IN * PX_PER_IN;         // 37.5
+const SAFETY_PX = (BLEED_IN + SAFETY_IN) * PX_PER_IN; // 75 from outer edge
 
 type CardKind = "rep" | "talent";
 
@@ -61,6 +69,7 @@ export function BusinessCardStudio({
   const [tagline, setTagline] = useState("Digital Expeditor for Job Shops");
   const [accent, setAccent] = useState("#0F62FE");
   const [busy, setBusy] = useState(false);
+  const [showGuides, setShowGuides] = useState(true);
 
   const frontRef = useRef<HTMLDivElement>(null);
   const backRef = useRef<HTMLDivElement>(null);
@@ -123,13 +132,13 @@ export function BusinessCardStudio({
       const pdf = new jsPDF({
         orientation: "landscape",
         unit: "in",
-        format: [CARD_W_IN, CARD_H_IN],
+        format: [BLEED_W_IN, BLEED_H_IN],
       });
-      pdf.addImage(await blobToDataUrl(front), "PNG", 0, 0, CARD_W_IN, CARD_H_IN);
-      pdf.addPage([CARD_W_IN, CARD_H_IN], "landscape");
-      pdf.addImage(await blobToDataUrl(back), "PNG", 0, 0, CARD_W_IN, CARD_H_IN);
-      pdf.save(`business-card-${slugify(fullName || "jobline")}.pdf`);
-      toast.success("PDF ready (front + back)");
+      pdf.addImage(await blobToDataUrl(front), "PNG", 0, 0, BLEED_W_IN, BLEED_H_IN);
+      pdf.addPage([BLEED_W_IN, BLEED_H_IN], "landscape");
+      pdf.addImage(await blobToDataUrl(back), "PNG", 0, 0, BLEED_W_IN, BLEED_H_IN);
+      pdf.save(`business-card-${slugify(fullName || "jobline")}-print-ready.pdf`);
+      toast.success("Print-ready PDF saved (3.625″×2.125″ with bleed)");
     } catch {
       toast.error("Failed to build PDF");
     } finally {
@@ -246,7 +255,7 @@ export function BusinessCardStudio({
                 <TabsTrigger value="both" className="flex-1">Both</TabsTrigger>
               </TabsList>
               <TabsContent value="front" className="pt-3">
-                <CardPreview innerRef={frontRef}>
+                <CardPreview innerRef={frontRef} showGuides={showGuides}>
                   <FrontFace
                     fullName={fullName}
                     title={title}
@@ -261,12 +270,12 @@ export function BusinessCardStudio({
                 </CardPreview>
               </TabsContent>
               <TabsContent value="back" className="pt-3">
-                <CardPreview innerRef={backRef}>
+                <CardPreview innerRef={backRef} showGuides={showGuides}>
                   <BackFace tagline={tagline} accent={accent} qrUrl={backUrl} />
                 </CardPreview>
               </TabsContent>
               <TabsContent value="both" className="pt-3 space-y-3">
-                <CardPreview innerRef={frontRef}>
+                <CardPreview innerRef={frontRef} showGuides={showGuides}>
                   <FrontFace
                     fullName={fullName}
                     title={title}
@@ -279,18 +288,28 @@ export function BusinessCardStudio({
                     kind={kind}
                   />
                 </CardPreview>
-                <CardPreview innerRef={backRef}>
+                <CardPreview innerRef={backRef} showGuides={showGuides}>
                   <BackFace tagline={tagline} accent={accent} qrUrl={backUrl} />
                 </CardPreview>
               </TabsContent>
             </Tabs>
+
+            <label className="flex items-center gap-2 text-xs text-muted-foreground">
+              <input
+                type="checkbox"
+                checked={showGuides}
+                onChange={(e) => setShowGuides(e.target.checked)}
+                className="h-3.5 w-3.5"
+              />
+              Show trim &amp; safety guides (preview only — never exported)
+            </label>
 
             <div className="flex flex-wrap gap-2">
               <Button onClick={downloadPngs} disabled={busy} size="sm" variant="secondary">
                 <FileImage className="w-3.5 h-3.5 mr-1.5" /> PNG (front + back)
               </Button>
               <Button onClick={downloadPdf} disabled={busy} size="sm" variant="secondary">
-                <FileText className="w-3.5 h-3.5 mr-1.5" /> PDF
+                <FileText className="w-3.5 h-3.5 mr-1.5" /> Print-ready PDF
               </Button>
               <Button onClick={printCard} disabled={busy} size="sm" variant="outline">
                 <Printer className="w-3.5 h-3.5 mr-1.5" /> Print
@@ -300,12 +319,11 @@ export function BusinessCardStudio({
                 {campaignId ? "Save to gallery" : "Save (pick campaign)"}
               </Button>
             </div>
-            {!campaignId && (
-              <p className="text-[11px] text-muted-foreground">
-                Open this from a campaign's tab to archive the rendered cards into its
-                gallery (downloadable later inside the ZIP package).
-              </p>
-            )}
+            <p className="text-[11px] text-muted-foreground">
+              Export size: 3.625″ × 2.125″ at 300 dpi with 0.125″ bleed (NA standard,
+              VistaPrint-compatible). Content sits inside the dashed 3.25″ × 1.75″ safety zone.
+              {!campaignId && " Open from a campaign tab to archive cards into its gallery."}
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -345,17 +363,21 @@ function Field({
 function CardPreview({
   innerRef,
   children,
+  showGuides = true,
 }: {
   innerRef: React.RefObject<HTMLDivElement>;
   children: React.ReactNode;
+  showGuides?: boolean;
 }) {
-  // Render at true 3.5"x2" but down-scale visually with CSS transform so it fits.
+  // Render at true bleed size (3.625"x2.125") but downscale visually so it fits the panel.
+  const scale = 0.32;
   return (
     <div className="overflow-hidden rounded-md border bg-muted/30 p-2">
       <div
-        className="origin-top-left"
-        style={{ transform: "scale(0.32)", width: CARD_W_PX, height: CARD_H_PX }}
+        className="origin-top-left relative"
+        style={{ transform: `scale(${scale})`, width: CARD_W_PX, height: CARD_H_PX }}
       >
+        {/* Exported node: bleed-size, no on-screen guides baked in */}
         <div
           ref={innerRef}
           style={{ width: CARD_W_PX, height: CARD_H_PX }}
@@ -363,8 +385,41 @@ function CardPreview({
         >
           {children}
         </div>
+        {showGuides && (
+          <div
+            aria-hidden
+            style={{
+              position: "absolute",
+              inset: 0,
+              pointerEvents: "none",
+            }}
+          >
+            {/* Trim line (3.5"x2") */}
+            <div
+              style={{
+                position: "absolute",
+                top: BLEED_PX,
+                left: BLEED_PX,
+                width: CARD_W_PX - BLEED_PX * 2,
+                height: CARD_H_PX - BLEED_PX * 2,
+                outline: "3px solid rgba(29,68,184,0.8)",
+              }}
+            />
+            {/* Safety line (3.25"x1.75") */}
+            <div
+              style={{
+                position: "absolute",
+                top: SAFETY_PX,
+                left: SAFETY_PX,
+                width: CARD_W_PX - SAFETY_PX * 2,
+                height: CARD_H_PX - SAFETY_PX * 2,
+                outline: "3px dashed rgba(23,230,0,0.8)",
+              }}
+            />
+          </div>
+        )}
       </div>
-      <div style={{ height: CARD_H_PX * 0.32 - CARD_H_PX, marginTop: -8 }} />
+      <div style={{ height: CARD_H_PX * scale - CARD_H_PX, marginTop: -8 }} />
     </div>
   );
 }
@@ -404,11 +459,12 @@ function FrontFace({
     >
       <div
         style={{
-          width: 18,
+          width: 18 + BLEED_PX,
+          paddingLeft: BLEED_PX,
           background: `linear-gradient(180deg, ${accent}, ${shade(accent, -25)})`,
         }}
       />
-      <div style={{ flex: 1, padding: 36, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+      <div style={{ flex: 1, padding: 36 + SAFETY_PX - BLEED_PX, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
         <div>
           <div style={{ fontSize: 14, letterSpacing: 2, color: accent, fontWeight: 700, textTransform: "uppercase" }}>
             {kind === "talent" ? "JobLine Talent" : "JobLine.ai"}
@@ -428,7 +484,7 @@ function FrontFace({
           {phone && <div>{phone}</div>}
         </div>
       </div>
-      <div style={{ width: 200, padding: 28, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10 }}>
+      <div style={{ width: 200 + BLEED_PX, paddingRight: BLEED_PX + 28, paddingTop: SAFETY_PX, paddingBottom: SAFETY_PX, paddingLeft: 28, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10 }}>
         <div style={{ background: "#fff", padding: 6, border: `2px solid ${accent}`, borderRadius: 8 }}>
           <QRCodeSVG value={qrUrl} size={140} level="M" fgColor="#0F172A" bgColor="#ffffff" />
         </div>
@@ -455,7 +511,7 @@ function BackFace({ tagline, accent, qrUrl }: { tagline: string; accent: string;
         color: "#F8FAFC",
         fontFamily: "Inter, system-ui, sans-serif",
         boxSizing: "border-box",
-        padding: 24,
+        padding: 24 + SAFETY_PX,
       }}
     >
       <div style={{ fontSize: 56, fontWeight: 900, letterSpacing: -1 }}>
