@@ -514,6 +514,10 @@ export function QueueItemActions({
               Clone WO
             </Button>
           )}
+          <Button variant="outline" onClick={() => setAddToPackageOpen(true)} className="gap-2">
+            <PackageIcon className="w-4 h-4" />
+            Add to Package
+          </Button>
           <PrintTravelerButton workOrderId={item.id} priority={item.priority} />
           <PrintCoCButton workOrderId={item.id} disabled={item.status !== "completed"} />
         </div>
