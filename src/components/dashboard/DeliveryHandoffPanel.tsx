@@ -132,24 +132,24 @@ interface DeliveryRowProps {
   onAccept: () => void;
 }
 
-interface DeliveryRowProps {
-  delivery: DeliveryRequest;
-  busy: boolean;
-  onPickup: () => void;
-  onDelivered: () => void;
-}
-
-function DeliveryRow({ delivery, busy, onPickup, onDelivered }: DeliveryRowProps) {
+function DeliveryRow({ delivery, busy, onPickup, onDelivered, onAccept }: DeliveryRowProps) {
   const isInTransit = delivery.status === "in_transit";
+  const isAwaitingAcceptance =
+    delivery.status === "awaiting_acceptance" || delivery.status === "delivered";
   const age = formatDistanceToNow(new Date(delivery.created_at), { addSuffix: true });
 
+  let badgeLabel = "Pending pickup";
+  if (isInTransit) badgeLabel = "In transit";
+  else if (isAwaitingAcceptance) badgeLabel = "Awaiting acceptance";
+
+  const containerClass = isAwaitingAcceptance
+    ? "border-status-warning bg-status-warning/10"
+    : isInTransit
+      ? "border-status-warning/50 bg-status-warning/5"
+      : "border-border bg-card";
+
   return (
-    <div
-      className={cn(
-        "rounded-md border p-3 space-y-2 transition-colors",
-        isInTransit ? "border-status-warning/50 bg-status-warning/5" : "border-border bg-card",
-      )}
-    >
+    <div className={cn("rounded-md border p-3 space-y-2 transition-colors", containerClass)}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
@@ -162,8 +162,11 @@ function DeliveryRow({ delivery, busy, onPickup, onDelivered }: DeliveryRowProps
                 · {delivery.part_number}
               </span>
             )}
-            <Badge variant={isInTransit ? "default" : "secondary"} className="text-[10px]">
-              {isInTransit ? "In transit" : "Pending pickup"}
+            <Badge
+              variant={isAwaitingAcceptance || isInTransit ? "default" : "secondary"}
+              className="text-[10px]"
+            >
+              {badgeLabel}
             </Badge>
           </div>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1 flex-wrap">
@@ -177,40 +180,60 @@ function DeliveryRow({ delivery, busy, onPickup, onDelivered }: DeliveryRowProps
               <Clock className="w-3 h-3" /> {age}
             </span>
           </div>
+          {isAwaitingAcceptance && delivery.delivered_by_name && (
+            <div className="text-xs text-muted-foreground mt-1">
+              Dropped off by <span className="font-medium">{delivery.delivered_by_name}</span>
+            </div>
+          )}
           {isInTransit && delivery.picked_up_by_name && (
             <div className="text-xs text-muted-foreground mt-1">
               Carried by <span className="font-medium">{delivery.picked_up_by_name}</span>
             </div>
           )}
-          {delivery.requested_by_name && !isInTransit && (
+          {delivery.requested_by_name && !isInTransit && !isAwaitingAcceptance && (
             <div className="text-xs text-muted-foreground mt-1">
               Released by <span className="font-medium">{delivery.requested_by_name}</span>
             </div>
           )}
         </div>
         <div className="flex flex-col gap-1.5 shrink-0">
-          {!isInTransit && (
+          {isAwaitingAcceptance ? (
             <Button
               size="sm"
-              variant="outline"
-              onClick={onPickup}
+              variant="default"
+              onClick={onAccept}
               disabled={busy}
               className="gap-1.5"
             >
-              <Truck className="w-3.5 h-3.5" />
-              Pick up
+              <PackageCheck className="w-3.5 h-3.5" />
+              Accept
             </Button>
+          ) : (
+            <>
+              {!isInTransit && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={onPickup}
+                  disabled={busy}
+                  className="gap-1.5"
+                >
+                  <Truck className="w-3.5 h-3.5" />
+                  Pick up
+                </Button>
+              )}
+              <Button
+                size="sm"
+                variant={isInTransit ? "default" : "secondary"}
+                onClick={onDelivered}
+                disabled={busy}
+                className="gap-1.5"
+              >
+                <PackageCheck className="w-3.5 h-3.5" />
+                Delivered
+              </Button>
+            </>
           )}
-          <Button
-            size="sm"
-            variant={isInTransit ? "default" : "secondary"}
-            onClick={onDelivered}
-            disabled={busy}
-            className="gap-1.5"
-          >
-            <PackageCheck className="w-3.5 h-3.5" />
-            Delivered
-          </Button>
         </div>
       </div>
     </div>
