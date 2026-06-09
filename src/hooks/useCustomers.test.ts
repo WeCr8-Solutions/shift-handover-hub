@@ -2,15 +2,19 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { useCustomers } from "./useCustomers";
 
+let nextResult: any = { data: [{ id: "c1", name: "Acme", is_active: true }], error: null };
+
 function makeBuilder() {
   const b: any = {};
-  b.select = vi.fn(() => b);
-  b.eq = vi.fn(() => b);
-  b.insert = vi.fn(() => b);
-  b.update = vi.fn(() => b);
+  const chain = () => b;
+  b.select = vi.fn(chain);
+  b.eq = vi.fn(chain);
+  b.insert = vi.fn(chain);
+  b.update = vi.fn(chain);
+  b.order = vi.fn(chain);
   b.single = vi.fn().mockResolvedValue({ data: { id: "c2", name: "Beta", is_active: true }, error: null });
-  b.order = vi.fn().mockResolvedValue({ data: [{ id: "c1", name: "Acme", is_active: true }], error: null });
-  b.then = undefined;
+  // Thenable so `await query` resolves
+  b.then = (onF: any, onR: any) => Promise.resolve(nextResult).then(onF, onR);
   return b;
 }
 
@@ -28,6 +32,7 @@ vi.mock("@/contexts/AuthContext", () => ({
 
 describe("useCustomers", () => {
   beforeEach(() => {
+    nextResult = { data: [{ id: "c1", name: "Acme", is_active: true }], error: null };
     builder = makeBuilder();
   });
 
@@ -50,8 +55,7 @@ describe("useCustomers", () => {
   it("deactivateCustomer marks is_active=false", async () => {
     const { result } = renderHook(() => useCustomers());
     await waitFor(() => expect(result.current.loading).toBe(false));
-    // Make the final eq() awaitable for the deactivate call
-    builder.eq = vi.fn().mockResolvedValueOnce({ error: null });
+    nextResult = { error: null };
     await act(async () => {
       await result.current.deactivateCustomer("c1");
     });

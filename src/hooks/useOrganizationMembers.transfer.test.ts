@@ -1,17 +1,20 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { useOrganizationMembers } from "./useOrganizationMembers";
 
 const rpc = vi.fn();
+let nextResult: any = { data: [], error: null };
 
 function makeBuilder() {
   const b: any = {};
-  b.select = vi.fn(() => b);
-  b.eq = vi.fn(() => b);
-  b.update = vi.fn(() => b);
-  b.in = vi.fn(() => b);
+  const chain = () => b;
+  b.select = vi.fn(chain);
+  b.eq = vi.fn(chain);
+  b.in = vi.fn(chain);
+  b.update = vi.fn(chain);
+  b.order = vi.fn(chain);
   b.maybeSingle = vi.fn().mockResolvedValue({ data: { role: "owner" }, error: null });
-  b.order = vi.fn().mockResolvedValue({ data: [], error: null });
+  b.then = (onF: any, onR: any) => Promise.resolve(nextResult).then(onF, onR);
   return b;
 }
 
@@ -32,6 +35,7 @@ describe("useOrganizationMembers ownership", () => {
   beforeEach(() => {
     builder = makeBuilder();
     rpc.mockReset();
+    nextResult = { data: [], error: null };
   });
 
   it("transferOwnership calls transfer_org_ownership RPC", async () => {
@@ -62,7 +66,7 @@ describe("useOrganizationMembers ownership", () => {
   it("updateMemberOrgRole('admin') uses the table update path", async () => {
     const { result } = renderHook(() => useOrganizationMembers("org-1"));
     await waitFor(() => expect(result.current.loading).toBe(false));
-    builder.eq = vi.fn().mockResolvedValueOnce({ error: null });
+    nextResult = { error: null };
     await act(async () => {
       await result.current.updateMemberOrgRole("member-id", "admin");
     });
