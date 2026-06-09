@@ -365,16 +365,17 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
                 Wet-signature contract package
               </div>
               <div className="border-t border-b border-black/30 py-6 mt-8 w-full max-w-md">
-                <div className="grid grid-cols-2 gap-y-2 text-sm text-left">
-                  <div className="font-semibold">Customer</div><div>{orgName}</div>
-                  <div className="font-semibold">Billing email</div><div className="break-all">{billingEmail}</div>
-                  <div className="font-semibold">Billing address</div><div>{formattedAddress}</div>
-                  <div className="font-semibold">Tax ID / EIN</div><div>{taxId}</div>
+                <div className="grid grid-cols-[120px_1fr] gap-y-2 text-sm text-left">
+                  <div className="font-semibold">Customer</div><div className="break-words">{orgName}</div>
+                  <div className="font-semibold">Billing email</div><div className="break-all">{effectiveBillingEmail}</div>
+                  <div className="font-semibold">Billing address</div><div className="break-words">{formattedAddress}</div>
+                  <div className="font-semibold">Tax ID / EIN</div><div className="break-words">{taxId}</div>
                   <div className="font-semibold">Plan</div><div className="capitalize">{tier} — {amount}</div>
                   <div className="font-semibold">Invoice #</div><div>{invoiceNumber}</div>
                   <div className="font-semibold">Date</div><div>{today}</div>
-                  <div className="font-semibold">Sales rep</div><div>_________________________</div>
-                  <div className="font-semibold">Engagement ID</div><div className="font-mono text-xs">{engagement?.id ?? "(assigned at signing)"}</div>
+                  <div className="font-semibold">Sales rep</div><div className="break-words">{printedSales || "_________________________"}</div>
+                  <div className="font-semibold">JobLine rep</div><div className="break-words">{printedJobLine || "_________________________"}</div>
+                  <div className="font-semibold">Engagement ID</div><div className="font-mono text-xs break-all">{engagement?.id ?? "(assigned at signing)"}</div>
                 </div>
               </div>
               <p className="text-xs text-black/70 mt-4 max-w-md">
