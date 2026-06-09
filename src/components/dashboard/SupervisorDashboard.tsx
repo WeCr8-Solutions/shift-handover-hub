@@ -358,6 +358,9 @@ export function SupervisorDashboard({
       {/* Complimentary Access Alert */}
       <ComplimentaryAwardBanner />
 
+      {/* Org-wide physical delivery oversight (pickup → transit → acceptance) */}
+      <DeliveryHandoffPanel />
+
       {/* Alerts */}
       <DashboardAlertSection
         woAlerts={woAlerts}
