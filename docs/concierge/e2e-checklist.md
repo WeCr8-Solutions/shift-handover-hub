@@ -244,3 +244,103 @@ block in the audit notes if missing. It uses three existing dev user IDs as
 the synthetic admin / owner / delegate, creates a throwaway org +
 engagement + intake response inside a transaction, walks the full chain
 end-to-end, and `ROLLBACK`s — leaving zero state behind.
+
+---
+
+## 8. Concierge power-up additions (2026-06-09)
+
+These three subsystems are now part of the standard flow. Verify each on
+the dev throwaway org before turning a real customer loose on them.
+
+### 8a. Documents library — categorized + uploadable
+
+Customer-facing page (`/concierge/documents`) and the admin engagement
+"Documents" tab both render four collapsible categories:
+
+1. **Contracts & Compliance** — MSA, NDA, ITAR, Payment receipts.
+   Source: `concierge_document_records` (admin-curated).
+2. **Intake Worksheets** — 7 existing tabs (Equipment / Stations / Users
+   & Roles / Routing / Quality / ERP / Training).
+3. **Machine Manuals** — uploadable; `concierge_uploaded_documents.category='manual'`.
+4. **SOPs & Procedures** — uploadable; `category='sop'`.
+5. **Reference Documents** — uploadable; `category='reference'`.
+
+| Action | Expected row |
+|---|---|
+| Admin uploads a manual | `concierge_uploaded_documents` row, `version=1`, `storage_path='<orgId>/uploads/manual/<id>-v1.<ext>'` in bucket `concierge-docs` |
+| Admin replaces a doc | New row with `version=N+1`; old row gets `superseded_by=<new_id>` |
+| Admin deletes a doc | Row deleted + storage object removed |
+| Org member opens doc | Signed-URL read via `concierge_uploads_read` storage policy |
+
+RLS: org members can `SELECT`; only org admins (+ platform admin/developer)
+can `INSERT/UPDATE/DELETE`. Storage policies mirror this and use
+`split_part(name,'/',1) = organization_id`.
+
+### 8b. OAP mentor policy (configurable bypass)
+
+Per-org row in `oap_mentor_policy`. Admin UI: engagement →
+"OAP Mentor Policy" card.
+
+| Toggle | Default | Effect |
+|---|---|---|
+| `org_role_auto_mentors` | `true` | owner / admin / supervisor can sign off any OAP |
+| `delay_day_fallback_enabled` | `true` | enables the elapsed-days override path |
+| `delay_days` | **30** (Aymar) | days of `started_at` elapsed before fallback triggers |
+| `allow_self_certify_on_delay` | `false` (Aymar: `true`) | also lets admin/supervisor act as mentor under the delay-day path |
+
+`public.can_certify_oap(_user_id, _enrollment_id)` returns
+`{ allowed, reason, ... }` and is the single decision point — every UI
+gate (`useCertifyingMentors`, mentor sign-off button) calls it. Order of
+checks: platform admin → not self → designated mentor → role auto-mentor
+→ delay-day override → `no_authority`.
+
+Verification SQL (dev):
+
+```sql
+SELECT public.can_certify_oap('<supervisor_uid>'::uuid, '<enrollment_id>'::uuid);
+-- expect: { "allowed": true, "reason": "role_auto_mentor", "role": "supervisor" }
+```
+
+### 8c. Intake tile grid — inline CRUD per module
+
+Engagement → each intake module renders `<IntakeTileGrid>` instead of a
+static worksheet. Behaviour:
+
+- Tile grid (1/2/3 cols responsive) of records from the live production
+  table (`equipment`, `stations`, `quality_checkpoints`,
+  `routing_templates`).
+- Add / Edit dialogs are generated from `INTAKE_MODULE_CONFIGS` in
+  `src/lib/concierge/intakeModuleSchema.ts`.
+- Bulk pre-import (`onboarding-bulk-import` edge function) still works
+  for the spreadsheet path.
+
+| Action | Expected row |
+|---|---|
+| Add station | `stations` row with `organization_id` = engagement org |
+| Edit equipment | `equipment` row updated, `updated_at` bumped |
+| Delete checkpoint | `quality_checkpoints` row deleted |
+
+All writes go through RLS on the live tables — concierge reps must be
+platform admin/developer or org admin to write.
+
+---
+
+## 9. Aymar Engineering — current state (2026-06-09)
+
+| Item | Value |
+|---|---|
+| `organizations.id` | `41f0e268-87d6-4981-b21e-a3c4e8245688` |
+| `billing_email` | `brandon@revgrips.com` |
+| Owner intake | `brandon@revgrips.com` |
+| Delegate intake | `jaimes@revgrips.com` |
+| `oap_mentor_policy.delay_days` | `30` |
+| `oap_mentor_policy.allow_self_certify_on_delay` | `true` |
+
+The owner claim email has been sent; the delegate invite is gated on the
+owner first completing sign-in (then the delegate appears in
+`DelegateSetupCard`). If the delegate row exists in the intake
+worksheet but the owner has not yet claimed, the admin panel will show
+"Waiting on owner claim" instead of a stale "Send delegate" button —
+this is intentional to avoid sending an org-scoped invite that cannot
+yet be redeemed.
+
