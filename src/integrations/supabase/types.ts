@@ -11788,6 +11788,8 @@ export type Database = {
           on_hold_by_name: string | null
           operation_number: string | null
           organization_id: string
+          package_id: string | null
+          package_sequence: number | null
           parent_work_order_id: string | null
           part_catalog_id: string | null
           part_height_inches: number | null
@@ -11865,6 +11867,8 @@ export type Database = {
           on_hold_by_name?: string | null
           operation_number?: string | null
           organization_id: string
+          package_id?: string | null
+          package_sequence?: number | null
           parent_work_order_id?: string | null
           part_catalog_id?: string | null
           part_height_inches?: number | null
@@ -11942,6 +11946,8 @@ export type Database = {
           on_hold_by_name?: string | null
           operation_number?: string | null
           organization_id?: string
+          package_id?: string | null
+          package_sequence?: number | null
           parent_work_order_id?: string | null
           part_catalog_id?: string | null
           part_height_inches?: number | null
@@ -12031,6 +12037,13 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "queue_items_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "work_order_packages"
             referencedColumns: ["id"]
           },
           {
@@ -14832,6 +14845,99 @@ export type Database = {
           },
         ]
       }
+      work_order_packages: {
+        Row: {
+          actual_ship_date: string | null
+          created_at: string
+          created_by: string | null
+          customer_id: string | null
+          description: string | null
+          id: string
+          is_quote: boolean
+          notes: string | null
+          organization_id: string
+          package_number: string
+          priority: string
+          promised_ship_date: string | null
+          required_ship_date: string | null
+          status: Database["public"]["Enums"]["package_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          actual_ship_date?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          description?: string | null
+          id?: string
+          is_quote?: boolean
+          notes?: string | null
+          organization_id: string
+          package_number: string
+          priority?: string
+          promised_ship_date?: string | null
+          required_ship_date?: string | null
+          status?: Database["public"]["Enums"]["package_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          actual_ship_date?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          description?: string | null
+          id?: string
+          is_quote?: boolean
+          notes?: string | null
+          organization_id?: string
+          package_number?: string
+          priority?: string
+          promised_ship_date?: string | null
+          required_ship_date?: string | null
+          status?: Database["public"]["Enums"]["package_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_order_packages_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_order_packages_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization_billing_identifiers"
+            referencedColumns: ["organization_id"]
+          },
+          {
+            foreignKeyName: "work_order_packages_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_order_packages_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_order_packages_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       work_order_routing: {
         Row: {
           completed_at: string | null
@@ -16413,6 +16519,10 @@ export type Database = {
         Args: { p_engagement_id: string }
         Returns: string
       }
+      add_items_to_package: {
+        Args: { _item_ids: string[]; _package_id: string }
+        Returns: number
+      }
       admin_get_user_pipeline_summary: {
         Args: { _user_id: string }
         Returns: Json
@@ -16480,6 +16590,10 @@ export type Database = {
       can_view_station_via_team: {
         Args: { _team_id: string; _user_id: string }
         Returns: boolean
+      }
+      cascade_package_due_date: {
+        Args: { _cascade?: boolean; _new_date: string; _package_id: string }
+        Returns: undefined
       }
       check_feature_access: {
         Args: { _feature: string; _org_id: string }
@@ -16622,6 +16736,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      generate_next_package_number: {
+        Args: { _organization_id: string }
+        Returns: string
       }
       generate_next_wo_number: {
         Args: { _kind?: string; _organization_id: string }
@@ -17149,6 +17267,10 @@ export type Database = {
         Args: { p_organization_id: string }
         Returns: Json
       }
+      mark_package_shipped: {
+        Args: { _package_id: string }
+        Returns: undefined
+      }
       materialize_intake_invites: {
         Args: { p_engagement_id: string }
         Returns: Json
@@ -17489,6 +17611,13 @@ export type Database = {
         | "ready_for_production"
         | "live"
       organization_kind: "manufacturer" | "employer" | "both"
+      package_status:
+        | "draft"
+        | "in_progress"
+        | "ready_to_ship"
+        | "shipped"
+        | "closed"
+        | "cancelled"
       policy_change_status:
         | "draft"
         | "scheduled"
@@ -17767,6 +17896,14 @@ export const Constants = {
         "live",
       ],
       organization_kind: ["manufacturer", "employer", "both"],
+      package_status: [
+        "draft",
+        "in_progress",
+        "ready_to_ship",
+        "shipped",
+        "closed",
+        "cancelled",
+      ],
       policy_change_status: [
         "draft",
         "scheduled",

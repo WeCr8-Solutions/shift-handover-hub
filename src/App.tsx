@@ -31,6 +31,8 @@ const Auth = lazy(() => import("./pages/Auth"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 const Teams = lazy(() => import("./pages/Teams"));
 const CustomersPage = lazy(() => import("./pages/Customers"));
+const Packages = lazy(() => import("./pages/Packages"));
+const PackageDetail = lazy(() => import("./pages/PackageDetail"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Admin = lazy(() => import("./pages/Admin"));
 const FieldView = lazy(() => import("./pages/FieldView"));
@@ -239,6 +241,8 @@ const App = () => (
                     <Route path="/welcome/:stepId" element={<RequireAuth><RequireOrg><Welcome /></RequireOrg></RequireAuth>} />
                     <Route path="/teams" element={<Teams />} />
                     <Route path="/customers" element={<RequireAuth><RequireOrg><CustomersPage /></RequireOrg></RequireAuth>} />
+                    <Route path="/packages" element={<RequireAuth><RequireOrg><Packages /></RequireOrg></RequireAuth>} />
+                    <Route path="/packages/:id" element={<RequireAuth><RequireOrg><PackageDetail /></RequireOrg></RequireAuth>} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/admin" element={<Admin />} />
                     <Route path="/field" element={<FieldView />} />

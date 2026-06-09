@@ -19,10 +19,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import {
   Play, Pause, CheckCircle2, Loader2, ArrowRight, GitBranch,
-  ShieldAlert, FileText, ArrowRightLeft, Copy,
+  ShieldAlert, FileText, ArrowRightLeft, Copy, Package as PackageIcon,
 } from "lucide-react";
 import { PrintTravelerButton } from "@/components/work-orders/traveler/PrintTravelerButton";
 import { PrintCoCButton } from "@/components/work-orders/coc/PrintCoCButton";
+import { AddToPackageDialog } from "@/components/packages/AddToPackageDialog";
 
 interface RoutingStepRow {
   id: string;
@@ -72,6 +73,7 @@ export function QueueItemActions({
   const [convertStationId, setConvertStationId] = useState<string | undefined>();
   const [converting, setConverting] = useState(false);
   const [cloning, setCloning] = useState(false);
+  const [addToPackageOpen, setAddToPackageOpen] = useState(false);
   const [handoffPrompt, setHandoffPrompt] = useState<{
     open: boolean;
     nextStationId?: string | null;
@@ -513,6 +515,10 @@ export function QueueItemActions({
               Clone WO
             </Button>
           )}
+          <Button variant="outline" onClick={() => setAddToPackageOpen(true)} className="gap-2">
+            <PackageIcon className="w-4 h-4" />
+            Add to Package
+          </Button>
           <PrintTravelerButton workOrderId={item.id} priority={item.priority} />
           <PrintCoCButton workOrderId={item.id} disabled={item.status !== "completed"} />
         </div>
@@ -625,6 +631,13 @@ export function QueueItemActions({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AddToPackageDialog
+        open={addToPackageOpen}
+        onOpenChange={setAddToPackageOpen}
+        itemIds={[item.id]}
+        onAdded={() => onRefreshItems?.()}
+      />
     </>
   );
 }

@@ -77,6 +77,9 @@ export interface QueueItem {
   hold_reason?: string | null;
   // Physical-delivery tracking — true after routing-advance until parts arrive at next station
   awaiting_delivery?: boolean | null;
+  // Package grouping (assemblies / tooling builds)
+  package_id?: string | null;
+  package_sequence?: number | null;
 }
 
 export interface QueueItemComment {
