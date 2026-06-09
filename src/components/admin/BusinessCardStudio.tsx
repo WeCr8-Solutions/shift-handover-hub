@@ -255,7 +255,7 @@ export function BusinessCardStudio({
                 <TabsTrigger value="both" className="flex-1">Both</TabsTrigger>
               </TabsList>
               <TabsContent value="front" className="pt-3">
-                <CardPreview innerRef={frontRef}>
+                <CardPreview innerRef={frontRef} showGuides={showGuides}>
                   <FrontFace
                     fullName={fullName}
                     title={title}
@@ -270,12 +270,12 @@ export function BusinessCardStudio({
                 </CardPreview>
               </TabsContent>
               <TabsContent value="back" className="pt-3">
-                <CardPreview innerRef={backRef}>
+                <CardPreview innerRef={backRef} showGuides={showGuides}>
                   <BackFace tagline={tagline} accent={accent} qrUrl={backUrl} />
                 </CardPreview>
               </TabsContent>
               <TabsContent value="both" className="pt-3 space-y-3">
-                <CardPreview innerRef={frontRef}>
+                <CardPreview innerRef={frontRef} showGuides={showGuides}>
                   <FrontFace
                     fullName={fullName}
                     title={title}
@@ -288,7 +288,7 @@ export function BusinessCardStudio({
                     kind={kind}
                   />
                 </CardPreview>
-                <CardPreview innerRef={backRef}>
+                <CardPreview innerRef={backRef} showGuides={showGuides}>
                   <BackFace tagline={tagline} accent={accent} qrUrl={backUrl} />
                 </CardPreview>
               </TabsContent>
