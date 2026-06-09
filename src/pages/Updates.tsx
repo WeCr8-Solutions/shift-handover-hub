@@ -9,6 +9,7 @@ import { SystemStatusIndicator } from "@/components/updates/SystemStatusIndicato
 import { Megaphone } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SEOHead } from "@/components/SEOHead";
+import { useUrlState } from "@/hooks/useUrlState";
 
 export default function Updates() {
   const navigate = useNavigate();
