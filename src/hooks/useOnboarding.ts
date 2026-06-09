@@ -203,8 +203,16 @@ export function useOnboarding() {
         toast.error(error.message || 'Failed to complete onboarding.');
         return;
       }
-      // Persist step list (allowed by trigger)
-      await supabase.from('user_onboarding').update({ completed_steps: newCompletedSteps, current_step: 'complete' }).eq('user_id', user.id);
+      // Persist step list after the RPC has marked completion.
+      await supabase.from('user_onboarding').update({
+        completed_steps: newCompletedSteps,
+        current_step: 'complete',
+        has_seen_welcome: true,
+        setup_wizard_dismissed: true,
+      }).eq('user_id', user.id);
+      writeWelcomeSeenFallback(user.id, true);
+      writeSetupDismissedFallback(user.id, true);
+      setState(prev => ({ ...prev, hasSeenWelcome: true, setupWizardDismissed: true }));
     } else {
       const { error } = await supabase.from('user_onboarding').update({
         completed_steps: newCompletedSteps,
@@ -222,7 +230,14 @@ export function useOnboarding() {
     if (!user) return;
     const prevState = { ...state };
     writeWelcomeSeenFallback(user.id, true);
-    setState(prev => ({ ...prev, isComplete: true, currentStep: 'complete' }));
+    writeSetupDismissedFallback(user.id, true);
+    setState(prev => ({
+      ...prev,
+      isComplete: true,
+      currentStep: 'complete',
+      hasSeenWelcome: true,
+      setupWizardDismissed: true,
+    }));
     setShowTour(false);
 
     // F-1: server-side validated completion
@@ -230,9 +245,21 @@ export function useOnboarding() {
     const { error } = await supabase.rpc('mark_onboarding_complete', { _path: path });
     if (error) {
       console.error('Error skipping onboarding:', error);
-      setState(prev => ({ ...prev, isComplete: prevState.isComplete, currentStep: prevState.currentStep }));
+      setState(prev => ({
+        ...prev,
+        isComplete: prevState.isComplete,
+        currentStep: prevState.currentStep,
+        hasSeenWelcome: true,
+        setupWizardDismissed: true,
+      }));
       toast.error(error.message || 'Cannot complete onboarding yet — finish required setup first.');
+      return;
     }
+
+    await supabase.from('user_onboarding').update({
+      has_seen_welcome: true,
+      setup_wizard_dismissed: true,
+    }).eq('user_id', user.id);
   }, [user, state]);
 
   const markWelcomeSeen = useCallback(async () => {
@@ -259,6 +286,7 @@ export function useOnboarding() {
     const prevState = { ...state };
     setShowTour(false);
     writeWelcomeSeenFallback(user.id, false);
+    writeSetupDismissedFallback(user.id, false);
 
     setState({
       completedSteps: [],
@@ -293,6 +321,7 @@ export function useOnboarding() {
   const dismissSetupWizard = useCallback(async () => {
     if (!user) return;
 
+    writeSetupDismissedFallback(user.id, true);
     setState(prev => ({ ...prev, setupWizardDismissed: true }));
 
     const { error } = await supabase
@@ -302,7 +331,8 @@ export function useOnboarding() {
 
     if (error) {
       console.error('Error dismissing setup wizard:', error);
-      setState(prev => ({ ...prev, setupWizardDismissed: false }));
+      // Keep the local fallback so users are not trapped in setup if this minor
+      // preference write is temporarily blocked by policy or connectivity.
       toast.error('Failed to save preference. Please try again.');
     }
   }, [user]);
