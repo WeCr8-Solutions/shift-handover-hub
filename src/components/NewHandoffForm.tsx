@@ -122,6 +122,10 @@ interface FormData {
   reworkCount: number;
   criticalDimsVerified: boolean;
   handoffSummary: string;
+  /** Qty originally ordered on the active work order (display-only). */
+  qtyOriginal: number;
+  /** Qty still open / needed to be produced (display-only). */
+  qtyOpen: number;
 }
 
 const getInitialFormData = (operatorName: string): FormData => ({
