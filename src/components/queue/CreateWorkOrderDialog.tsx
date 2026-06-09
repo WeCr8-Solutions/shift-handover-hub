@@ -8,8 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useQueue, QueuePriority, QueueItemType, RoutingStepInput } from "@/hooks/useQueue";
 import { useCurrentTeam } from "@/contexts/TeamContext";
 import { useQuoteSystem } from "@/hooks/useQuoteSystem";
+import { useGeneralSettings } from "@/hooks/useGeneralSettings";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Package, Wrench, Hash, Calendar as CalendarIcon, Clock, AlertTriangle, CheckCircle, FileQuestion } from "lucide-react";
+import { Loader2, Package, Wrench, Hash, Calendar as CalendarIcon, Clock, AlertTriangle, CheckCircle, FileQuestion, Sparkles } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -17,7 +19,10 @@ import { woToast } from "@/lib/woToast";
 import { format } from "date-fns";
 import { PartSpecsSection, PartSpecsData } from "./PartSpecsSection";
 import { RoutingSection } from "./RoutingSection";
+import { CustomerCombobox } from "./CustomerCombobox";
+import type { Customer } from "@/hooks/useCustomers";
 import { cn } from "@/lib/utils";
+
 
 interface Station {
   id: string;
