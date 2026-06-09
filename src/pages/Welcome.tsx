@@ -302,7 +302,7 @@ export default function Welcome() {
           </button>
         </aside>
 
-        <main>
+        <main className="space-y-6">
           {showReview ? (
             <ReviewCard
               steps={gate.steps}
@@ -318,6 +318,8 @@ export default function Welcome() {
               onMarkComplete={handleMarkComplete}
             />
           )}
+          <DelegateSetupCard />
+          <ConciergeActivityLogPanel />
         </main>
       </div>
     </div>
