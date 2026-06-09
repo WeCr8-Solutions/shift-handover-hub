@@ -49,11 +49,18 @@ export function CreateWorkOrderDialog({
   const { currentTeam } = useCurrentTeam();
   const { createItem } = useQueue();
   const { isQuoteSystemEnabled } = useQuoteSystem();
+  const { getSetting } = useGeneralSettings();
+  const { organization } = useOrgContext();
   const [loading, setLoading] = useState(false);
+  const [generatingNumber, setGeneratingNumber] = useState(false);
   const [stationsLoading, setStationsLoading] = useState(true);
   const [stations, setStations] = useState<Station[]>([]);
   const [routingSteps, setRoutingSteps] = useState<RoutingStepInput[]>([]);
   const [itemType, setItemType] = useState<QueueItemType>(initialItemType);
+  const [customerId, setCustomerId] = useState<string | null>(null);
+  const [partSuggestions, setPartSuggestions] = useState<Array<{ id: string; part_number: string; description: string | null; default_quantity: number | null; material_type: string | null; part_length_inches: number | null; part_width_inches: number | null; part_height_inches: number | null; part_weight_lbs: number | null; part_shape: string | null; required_tolerance: string | null; surface_finish: string | null }>>([]);
+  const [showPartSuggestions, setShowPartSuggestions] = useState(false);
+
 
   const defaultFormData = useMemo(
     () => ({
