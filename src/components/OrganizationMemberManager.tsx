@@ -270,7 +270,10 @@ export function OrganizationMemberManager({ onNavigateToInvites }: OrganizationM
   };
 
   // ── Member management actions ─────────────────────────────────────────────
-  const handleUpdateOrgRole = async (member: OrganizationMember, newRole: "admin" | "member") => {
+  const handleUpdateOrgRole = async (
+    member: OrganizationMember,
+    newRole: "owner" | "admin" | "member",
+  ) => {
     setUpdatingMember(member.id);
     const { error } = await updateMemberOrgRole(member.id, newRole);
     setUpdatingMember(null);
@@ -279,10 +282,17 @@ export function OrganizationMemberManager({ onNavigateToInvites }: OrganizationM
       toast({ title: "Failed to update role", description: error.message, variant: "destructive" });
     } else {
       toast({
-        title: "Role updated",
+        title: newRole === "owner" ? "Ownership transferred" : "Role updated",
         description: `${member.profile?.display_name}'s organization role has been updated.`,
       });
     }
+  };
+
+  const handleConfirmTransfer = async () => {
+    if (!memberToPromote) return;
+    const target = memberToPromote;
+    setMemberToPromote(null);
+    await handleUpdateOrgRole(target, "owner");
   };
 
   const handleToggleAppRole = async (member: OrganizationMember, role: AppRole) => {
