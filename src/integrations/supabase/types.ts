@@ -10242,6 +10242,7 @@ export type Database = {
       }
       organizations: {
         Row: {
+          activation_state: Database["public"]["Enums"]["org_activation_state"]
           ai_enabled: boolean
           billing_email: string | null
           created_at: string
@@ -10275,6 +10276,8 @@ export type Database = {
           oap_default_recert_months: number | null
           onboarding_engagement_id: string | null
           onboarding_status: Database["public"]["Enums"]["org_onboarding_status"]
+          opened_for_operations_at: string | null
+          opened_for_operations_by: string | null
           organization_kind: Database["public"]["Enums"]["organization_kind"]
           public_employer: boolean
           public_slug: string | null
@@ -10290,6 +10293,7 @@ export type Database = {
           verifier_tagline: string | null
         }
         Insert: {
+          activation_state?: Database["public"]["Enums"]["org_activation_state"]
           ai_enabled?: boolean
           billing_email?: string | null
           created_at?: string
@@ -10323,6 +10327,8 @@ export type Database = {
           oap_default_recert_months?: number | null
           onboarding_engagement_id?: string | null
           onboarding_status?: Database["public"]["Enums"]["org_onboarding_status"]
+          opened_for_operations_at?: string | null
+          opened_for_operations_by?: string | null
           organization_kind?: Database["public"]["Enums"]["organization_kind"]
           public_employer?: boolean
           public_slug?: string | null
@@ -10338,6 +10344,7 @@ export type Database = {
           verifier_tagline?: string | null
         }
         Update: {
+          activation_state?: Database["public"]["Enums"]["org_activation_state"]
           ai_enabled?: boolean
           billing_email?: string | null
           created_at?: string
@@ -10371,6 +10378,8 @@ export type Database = {
           oap_default_recert_months?: number | null
           onboarding_engagement_id?: string | null
           onboarding_status?: Database["public"]["Enums"]["org_onboarding_status"]
+          opened_for_operations_at?: string | null
+          opened_for_operations_by?: string | null
           organization_kind?: Database["public"]["Enums"]["organization_kind"]
           public_employer?: boolean
           public_slug?: string | null
@@ -13751,9 +13760,11 @@ export type Database = {
           completed_steps: string[] | null
           created_at: string | null
           current_step: string | null
+          explore_only: boolean
           has_seen_welcome: boolean | null
           id: string
           is_complete: boolean | null
+          owner_setup_steps: Json
           setup_wizard_dismissed: boolean
           started_at: string | null
           updated_at: string | null
@@ -13764,9 +13775,11 @@ export type Database = {
           completed_steps?: string[] | null
           created_at?: string | null
           current_step?: string | null
+          explore_only?: boolean
           has_seen_welcome?: boolean | null
           id?: string
           is_complete?: boolean | null
+          owner_setup_steps?: Json
           setup_wizard_dismissed?: boolean
           started_at?: string | null
           updated_at?: string | null
@@ -13777,9 +13790,11 @@ export type Database = {
           completed_steps?: string[] | null
           created_at?: string | null
           current_step?: string | null
+          explore_only?: boolean
           has_seen_welcome?: boolean | null
           id?: string
           is_complete?: boolean | null
+          owner_setup_steps?: Json
           setup_wizard_dismissed?: boolean
           started_at?: string | null
           updated_at?: string | null
@@ -16397,6 +16412,10 @@ export type Database = {
         Returns: string
       }
       mark_onboarding_complete: { Args: { _path: string }; Returns: Json }
+      mark_org_open_for_operations: {
+        Args: { p_organization_id: string }
+        Returns: Json
+      }
       mfg_100_apply_ranking: {
         Args: { _edition: string; _ranking: Json }
         Returns: number
@@ -16464,6 +16483,10 @@ export type Database = {
           p_reference?: string
         }
         Returns: string
+      }
+      record_owner_setup_step: {
+        Args: { p_done?: boolean; p_organization_id: string; p_step: string }
+        Returns: Json
       }
       redeem_invite_code: {
         Args: { _code: string; _user_id: string }
@@ -16713,6 +16736,7 @@ export type Database = {
         | "hvac"
         | "general"
       operator_profile_visibility: "private" | "employers_only" | "public"
+      org_activation_state: "claimed" | "in_setup" | "open_for_operations"
       org_onboarding_status:
         | "self_serve"
         | "concierge_intake"
@@ -16989,6 +17013,7 @@ export const Constants = {
         "general",
       ],
       operator_profile_visibility: ["private", "employers_only", "public"],
+      org_activation_state: ["claimed", "in_setup", "open_for_operations"],
       org_onboarding_status: [
         "self_serve",
         "concierge_intake",
