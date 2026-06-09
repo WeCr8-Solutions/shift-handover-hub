@@ -38,6 +38,8 @@ interface QueueItemActionsProps {
   onUpdate: (id: string, input: UpdateQueueItemInput) => Promise<{ error: string | null }>;
   onReloadHistory: () => void;
   onReloadRouting: () => void;
+  /** Refresh parent items list so station_id / status reflect server state after RPC advances. */
+  onRefreshItems?: () => void;
   onOpenRouting?: (item: { id: string; work_order?: string | null; part_number?: string | null }) => void;
   onOpenNCR: () => void;
   onCloseDialog: () => void;
@@ -50,6 +52,7 @@ export function QueueItemActions({
   onUpdate,
   onReloadHistory,
   onReloadRouting,
+  onRefreshItems,
   onOpenRouting,
   onOpenNCR,
   onCloseDialog,
@@ -271,18 +274,27 @@ export function QueueItemActions({
           }
           onReloadHistory();
           onReloadRouting();
+          // Refresh parent items list so the WO's new station_id / status (or completed_at)
+          // is reflected immediately in Kanban / list views without waiting for realtime.
+          onRefreshItems?.();
         }
       } catch {
         woToast.error("Failed to advance work order", undefined, wo);
       }
     } else {
-      // No routing — simple completion
-      const { error } = await onUpdate(item.id, { status: "completed", completed_at: new Date().toISOString() });
+      // No routing — simple completion. Stop the clock by clearing started_at
+      // alongside the completed_at stamp so dashboards don't keep ticking.
+      const { error } = await onUpdate(item.id, {
+        status: "completed",
+        completed_at: new Date().toISOString(),
+        started_at: null,
+      });
       if (error) {
         woToast.error("Failed to complete", error, wo);
       } else {
         woToast.success("Work order completed!", wo, "All operations finished");
         onReloadHistory();
+        onRefreshItems?.();
         setHandoffPrompt({ open: true, finalCompletion: true });
       }
     }
