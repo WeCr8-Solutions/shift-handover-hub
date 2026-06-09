@@ -282,13 +282,19 @@ export function QueueItemActions({
         woToast.error("Failed to advance work order", undefined, wo);
       }
     } else {
-      // No routing — simple completion
-      const { error } = await onUpdate(item.id, { status: "completed", completed_at: new Date().toISOString() });
+      // No routing — simple completion. Stop the clock by clearing started_at
+      // alongside the completed_at stamp so dashboards don't keep ticking.
+      const { error } = await onUpdate(item.id, {
+        status: "completed",
+        completed_at: new Date().toISOString(),
+        started_at: null,
+      });
       if (error) {
         woToast.error("Failed to complete", error, wo);
       } else {
         woToast.success("Work order completed!", wo, "All operations finished");
         onReloadHistory();
+        onRefreshItems?.();
         setHandoffPrompt({ open: true, finalCompletion: true });
       }
     }
