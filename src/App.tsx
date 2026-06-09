@@ -238,6 +238,7 @@ const App = () => (
                     <Route path="/welcome" element={<RequireAuth><RequireOrg><Welcome /></RequireOrg></RequireAuth>} />
                     <Route path="/welcome/:stepId" element={<RequireAuth><RequireOrg><Welcome /></RequireOrg></RequireAuth>} />
                     <Route path="/teams" element={<Teams />} />
+                    <Route path="/customers" element={<RequireAuth><RequireOrg><CustomersPage /></RequireOrg></RequireAuth>} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/admin" element={<Admin />} />
                     <Route path="/field" element={<FieldView />} />
