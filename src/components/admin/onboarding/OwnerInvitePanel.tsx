@@ -199,6 +199,8 @@ export function OwnerInvitePanel({ engagementId, organizationId, organizationNam
       return;
     }
     setSendingTeam(true);
+    // Materialize all intake invite codes so team links also redeem
+    await supabase.rpc("materialize_intake_invites" as any, { p_engagement_id: engagementId } as any);
     let queued = 0;
     let failed = 0;
     for (const u of team) {
