@@ -74,26 +74,30 @@ export function useOwnerSetupGate() {
     }
     const isOwnerAdmin = organizationRole === "owner" || organizationRole === "admin";
 
-    const [orgRes, onboardingRes] = await Promise.all([
+    const [orgRes, stepsRes, onboardingRes] = await Promise.all([
       (supabase.from("organizations") as any)
         .select("activation_state")
         .eq("id", organization.id)
         .maybeSingle(),
+      (supabase.from("organization_setup_steps") as any)
+        .select("step, completed")
+        .eq("organization_id", organization.id),
       (supabase.from("user_onboarding") as any)
-        .select("owner_setup_steps, explore_only")
+        .select("explore_only")
         .eq("user_id", user.id)
         .maybeSingle(),
     ]);
 
     const activationState: ActivationState =
       (orgRes.data?.activation_state as ActivationState) ?? "claimed";
-    const allSteps = (onboardingRes.data?.owner_setup_steps ?? {}) as Record<
-      string,
-      Record<string, boolean>
-    >;
-    const orgSteps = allSteps[organization.id] ?? {};
+
+    // Org-scoped steps (shared across owner + delegated admins)
     const steps: Record<OwnerSetupStepId, boolean> = { ...EMPTY_STEPS };
-    for (const k of OWNER_SETUP_STEPS) steps[k] = Boolean(orgSteps[k]);
+    for (const row of (stepsRes.data ?? []) as Array<{ step: string; completed: boolean }>) {
+      if ((OWNER_SETUP_STEPS as readonly string[]).includes(row.step)) {
+        steps[row.step as OwnerSetupStepId] = Boolean(row.completed);
+      }
+    }
 
     setState({
       loading: false,
