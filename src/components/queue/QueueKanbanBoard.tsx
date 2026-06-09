@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useUrlState } from "@/hooks/useUrlState";
 import { QueueItem, QueueStatus, QueuePriority } from "@/hooks/useQueue";
 import { cn } from "@/lib/utils";
-import { Clock, User, Package, AlertTriangle, GripVertical, Eye, EyeOff } from "lucide-react";
+import { Clock, User, Package, AlertTriangle, GripVertical, Eye, EyeOff, Truck } from "lucide-react";
 import { format } from "date-fns";
 import { woToast } from "@/lib/woToast";
 import { StationQuickActions, type QuickActionTarget } from "@/components/dashboard/StationQuickActions";
