@@ -156,6 +156,15 @@ export function ContactsExportTab({ campaignId }: Props) {
               <Download className="w-3.5 h-3.5" />
               Export CSV
             </Button>
+            <Button
+              size="sm"
+              onClick={exportVistaXlsx}
+              className="gap-1.5"
+              title={`Vista Print upload template — ${addressCount} address${addressCount === 1 ? "" : "es"} ready`}
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5" />
+              Vista Print XLSX ({addressCount})
+            </Button>
           </div>
         </div>
       </CardHeader>
