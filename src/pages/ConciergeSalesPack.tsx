@@ -610,7 +610,7 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
 
             <div className="grid grid-cols-2 gap-8 mt-10 text-xs">
               <div>
-                <SignaturePad caption="Customer signature" storageKey={`sig:msa-customer:${engagementId ?? "blank"}`} />
+                <SignaturePad caption="Customer signature" storageKey={`sig:msa-customer:${engagementId ?? "blank"}`} readOnly={isFinalized} />
                 <div className="mt-4 border-b border-black h-7" />
                 <div className="mt-1">Printed name &amp; title</div>
                 <div className="mt-4 border-b border-black h-7 w-32" />
@@ -622,6 +622,7 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
                   storageKey={`sig:msa-jobline:${engagementId ?? "blank"}`}
                   printedName={printedJobLine}
                   showPrintedNameBelow
+                  readOnly={isFinalized}
                 />
                 <div className="mt-4 border-b border-black h-7 flex items-end text-xs px-1">{printedJobLine}</div>
                 <div className="mt-1">Printed name &amp; title</div>
