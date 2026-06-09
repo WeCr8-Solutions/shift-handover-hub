@@ -301,7 +301,45 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
             Tip: in the print dialog choose <b>two-sided</b> + <b>scale 100%</b> for wet-signature packs.
           </span>
         </div>
+
+        {/* Rep + billing autofill — saves to this browser; presented at signing */}
+        <div className="border-t pt-2 flex flex-wrap items-end gap-3 text-xs">
+          <div className="font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+            <UserCircle className="w-3.5 h-3.5" /> Signers
+          </div>
+          <Label className="flex flex-col gap-1">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Sales rep name</span>
+            <Input value={salesRepName} onChange={(e) => setSalesRepName(e.target.value)} className="h-7 text-xs w-44" placeholder={DEFAULT_SALES_REP} />
+          </Label>
+          <Label className="flex flex-col gap-1">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Sales rep title</span>
+            <Input value={salesRepTitle} onChange={(e) => setSalesRepTitle(e.target.value)} className="h-7 text-xs w-44" placeholder={DEFAULT_SALES_TITLE} />
+          </Label>
+          <Button size="sm" variant="ghost" className="h-7 text-[10px]" onClick={resetSalesRep}>Reset → {DEFAULT_SALES_REP}</Button>
+          <Label className="flex flex-col gap-1">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">JobLine rep name</span>
+            <Input value={jobLineRepName} onChange={(e) => setJobLineRepName(e.target.value)} className="h-7 text-xs w-48" placeholder={staffDisplayName || "JobLine representative"} />
+          </Label>
+          <Label className="flex flex-col gap-1">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">JobLine rep title</span>
+            <Input value={jobLineRepTitle} onChange={(e) => setJobLineRepTitle(e.target.value)} className="h-7 text-xs w-48" placeholder={DEFAULT_JOBLINE_TITLE} />
+          </Label>
+          <Button size="sm" variant="ghost" className="h-7 text-[10px]" onClick={autofillJobLineRep} disabled={!staffDisplayName}>
+            Autofill from my profile{staffDisplayName ? ` (${staffDisplayName})` : ""}
+          </Button>
+          <Label className="flex flex-col gap-1">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Billing email</span>
+            <Input
+              type="email"
+              value={billingEmailOverride}
+              onChange={(e) => setBillingEmailOverride(e.target.value)}
+              className="h-7 text-xs w-56"
+              placeholder={org?.billing_email || "billing@customer.com"}
+            />
+          </Label>
+        </div>
       </div>
+
 
       <div className="no-print max-w-6xl mx-auto px-4 pt-4">
         <DocumentLibrary
