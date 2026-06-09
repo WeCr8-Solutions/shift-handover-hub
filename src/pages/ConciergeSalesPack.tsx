@@ -112,7 +112,7 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
   const today = useMemo(() => new Date().toLocaleDateString(), []);
   const org = engagement?.organizations as any;
   const orgName = org?.name ?? "_________________________";
-  const billingEmail = org?.billing_email ?? "_________________________";
+  // (billing email now sourced via effectiveBillingEmail below; can be overridden in the toolbar)
   const tier = engagement?.plan_tier ?? "standard";
   const amount = tier === "enterprise" ? "$4,500" : tier === "complimentary" ? "Complimentary" : "$1,500";
   const billingAddress = (engagement as any)?.customer_billing_address as { line1?: string; line2?: string; city?: string; state?: string; postal_code?: string; country?: string } | null | undefined;
