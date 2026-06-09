@@ -63,7 +63,8 @@ export function WorkOrderStatusList({ config }: { config: WorkOrderStatusListCon
   const navigate = useNavigate();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");  const [stationFilter, setStationFilter] = useUrlState<string>("station", "all");
+  const [search, setSearch] = useState("");
+  const [stationFilter, setStationFilter] = useUrlState<string>("station", "all");
 
   useEffect(() => {
     if (!user) navigate("/auth");

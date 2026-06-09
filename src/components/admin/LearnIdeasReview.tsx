@@ -53,7 +53,8 @@ export function LearnIdeasReview() {
   const [loading, setLoading] = useState(true);
   const [selectedIdea, setSelectedIdea] = useState<LearnIdeaRecord | null>(null);
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
-  const [reviewNotes, setReviewNotes] = useState("");  const [statusFilter, setStatusFilter] = useUrlState<LearnIdeaStatus | "all">("s", "pending");
+  const [reviewNotes, setReviewNotes] = useState("");
+  const [statusFilter, setStatusFilter] = useUrlState<LearnIdeaStatus | "all">("s", "pending");
   const [searchQuery, setSearchQuery] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 

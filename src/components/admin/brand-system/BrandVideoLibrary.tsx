@@ -133,7 +133,8 @@ export function BrandVideoLibrary() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [url, setUrl] = useState("");
-  const [category, setCategory] = useState<BrandVideoCategory>("product");  const [filter, setFilter] = useUrlState<BrandVideoCategory | "all">("f", "all");
+  const [category, setCategory] = useState<BrandVideoCategory>("product");
+  const [filter, setFilter] = useUrlState<BrandVideoCategory | "all">("f", "all");
 
   useEffect(() => {
     setVideos(loadVideos());

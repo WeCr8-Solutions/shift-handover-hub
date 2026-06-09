@@ -28,7 +28,8 @@ export function CustomersLaunchpad({
   onOpenSelfServe: (organizationId: string) => void;
 }) {
   const { data, isLoading } = useAdminCustomers();
-  const [q, setQ] = useState("");  const [filter, setFilter] = useUrlState<Filter>("f", "all");
+  const [q, setQ] = useState("");
+  const [filter, setFilter] = useUrlState<Filter>("f", "all");
 
   const rows = useMemo(() => {
     const list = data ?? [];

@@ -53,10 +53,12 @@ export function WorkOrderManagement({ isAdmin }: WorkOrderManagementProps) {
   const { organizations } = useAllOrganizations();
   const [workOrders, setWorkOrders] = useState<QueueItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");  const [statusFilter, setStatusFilter] = useUrlState<string>("woStatus", "all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useUrlState<string>("woStatus", "all");
   const [routingEditorItem, setRoutingEditorItem] = useState<QueueItem | null>(null);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<ViewMode>("grouped");  const [selectedOrg, setSelectedOrg] = useUrlState<string>("woOrg", "all");
+  const [viewMode, setViewMode] = useState<ViewMode>("grouped");
+  const [selectedOrg, setSelectedOrg] = useUrlState<string>("woOrg", "all");
 
   useEffect(() => {
     fetchWorkOrders();

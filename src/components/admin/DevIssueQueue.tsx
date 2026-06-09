@@ -128,7 +128,8 @@ export function DevIssueQueue() {
   const [loading, setLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState<DevQueueItem | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
-  const [updating, setUpdating] = useState<string | null>(null);  const [filter, setFilter] = useUrlState<string>("f", "active");
+  const [updating, setUpdating] = useState<string | null>(null);
+  const [filter, setFilter] = useUrlState<string>("f", "active");
   const [notes, setNotes] = useState("");
 
   // Lazy-fetch full diagnostic data only when detail dialog is open

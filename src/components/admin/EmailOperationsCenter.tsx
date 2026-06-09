@@ -61,7 +61,8 @@ const STATUS_ICON: Record<DeliveryStatus, React.ReactNode> = {
 
 export function EmailOperationsCenter() {
   const { user } = useAuth();
-  const qc = useQueryClient();  const [categoryFilter, setCategoryFilter] = useUrlState<string>("cat", "all");
+  const qc = useQueryClient();
+  const [categoryFilter, setCategoryFilter] = useUrlState<string>("cat", "all");
   const [suppressEmail, setSuppressEmail] = useState("");
   const [suppressDialogOpen, setSuppressDialogOpen] = useState(false);
 

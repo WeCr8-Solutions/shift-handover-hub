@@ -28,7 +28,10 @@ const MACHINES = [
 
 export function MachiningOperationsCatalog({ isPlatformAdmin }: Props) {
   const { categories, operations, isLoading } = useMachiningOperations();
-  const [query, setQuery] = useState("");  const [categorySlug, setCategorySlug] = useUrlState<string>("cat", "all");  const [profession, setProfession] = useUrlState<string>("prof", "all");  const [machine, setMachine] = useUrlState<string>("mach", "all");
+  const [query, setQuery] = useState("");
+  const [categorySlug, setCategorySlug] = useUrlState<string>("cat", "all");
+  const [profession, setProfession] = useUrlState<string>("prof", "all");
+  const [machine, setMachine] = useUrlState<string>("mach", "all");
 
   const filtered = useMemo(() => {
     return operations.filter((o) => {

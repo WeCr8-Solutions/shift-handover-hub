@@ -102,7 +102,8 @@ export function CampaignMarketingGallery({ campaignId }: Props) {
   const [utmTargetUrl, setUtmTargetUrl] = useState<string>("");
   const [saving, setSaving] = useState(false);
 
-  const [editing, setEditing] = useState<CampaignMarketingAsset | null>(null);  const [kindFilter, setKindFilter] = useUrlState<CampaignAssetKind | "all">("kind", "all");
+  const [editing, setEditing] = useState<CampaignMarketingAsset | null>(null);
+  const [kindFilter, setKindFilter] = useUrlState<CampaignAssetKind | "all">("kind", "all");
 
   const resetForm = useCallback(() => {
     setFile(null);

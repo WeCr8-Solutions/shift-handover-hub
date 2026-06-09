@@ -391,7 +391,8 @@ export function UserJourneyDebugPanel({ scopedOrgId }: UserJourneyDebugPanelProp
   const [onboardingData, setOnboardingData] = useState<Record<string, UserOnboardingState>>({});
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");  const [filterStatus, setFilterStatus] = useUrlState<"all" | "issues" | "incomplete" | "complete">("s", "all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterStatus, setFilterStatus] = useUrlState<"all" | "issues" | "incomplete" | "complete">("s", "all");
   const [selectedUser, setSelectedUser] = useState<UserWithJourney | null>(null);
   const { toast } = useToast();
 

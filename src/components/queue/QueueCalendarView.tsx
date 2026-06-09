@@ -114,7 +114,8 @@ function CalendarEntryCard({ entry, onClick }: { entry: CalendarEntry; onClick: 
 }
 
 export function QueueCalendarView({ items, onItemClick }: QueueCalendarViewProps) {
-  const [currentDate, setCurrentDate] = useState(new Date());  const [viewMode, setViewMode] = useUrlState<ViewMode>("cal", "week");
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [viewMode, setViewMode] = useUrlState<ViewMode>("cal", "week");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
 
   // Build all calendar entries from all date fields

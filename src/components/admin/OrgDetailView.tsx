@@ -49,7 +49,8 @@ export function OrgDetailView({ org, onBack, isPlatformAdmin, onDelete, onGrant,
   const [members, setMembers] = useState<OrgMember[]>([]);
   const [teams, setTeams] = useState<OrgTeam[]>([]);
   const [stations, setStations] = useState<OrgStation[]>([]);
-  const [loading, setLoading] = useState(true);  const [activeTab, setActiveTab] = useUrlState<string>("orgSub", "overview");
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useUrlState<string>("orgSub", "overview");
   const [openingAs, setOpeningAs] = useState(false);
   const { startActAs } = useActAs();
 

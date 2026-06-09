@@ -62,7 +62,9 @@ export function SmartAlertPanel({
   onNavigateToItem,
   className,
 }: SmartAlertPanelProps) {
-  const navigate = useNavigate();  const [typeFilter, setTypeFilter] = useUrlState<SmartAlertType | "all">("alertType", "all");  const [sevFilter, setSevFilter] = useUrlState<SmartAlertSeverity | "all">("alertSev", "all");
+  const navigate = useNavigate();
+  const [typeFilter, setTypeFilter] = useUrlState<SmartAlertType | "all">("alertType", "all");
+  const [sevFilter, setSevFilter] = useUrlState<SmartAlertSeverity | "all">("alertSev", "all");
   const [expanded, setExpanded] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [dismissed, setDismissed] = useState<Record<string, number>>(() => loadDismissed());
