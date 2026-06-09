@@ -305,6 +305,12 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
   }
 
   const handlePrint = () => {
+    if (engagementId && !isFinalized) {
+      const ok = window.confirm(
+        "This pack is still a DRAFT. Save & Finalize first to lock the master copy before printing. Print anyway?",
+      );
+      if (!ok) return;
+    }
     for (let i = 0; i < Math.max(1, copies); i++) window.print();
   };
 
@@ -328,11 +334,24 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
           <div className="flex items-center gap-2">
             <Button size="sm" variant="outline" onClick={() => setAll(true)}>Select all</Button>
             <Button size="sm" variant="outline" onClick={() => setAll(false)}>Clear</Button>
-            <Button size="sm" onClick={handlePrint} className="gap-2">
+            <Button
+              size="sm"
+              onClick={handlePrint}
+              className="gap-2"
+              title={engagementId && !isFinalized ? "Finalize & seal first to lock the master copy" : undefined}
+            >
               <Printer className="w-4 h-4" /> Print selected
             </Button>
           </div>
         </div>
+
+        {engagement && hasStaffAccess && engagementId ? (
+          <ConciergeFinalizeBar
+            engagementId={engagementId}
+            canReopen={isPlatformAdmin || isDeveloper}
+            buildSnapshot={buildSnapshot}
+          />
+        ) : null}
 
         <div className="flex flex-wrap gap-x-4 gap-y-2">
           {SECTIONS.map((s) => (
