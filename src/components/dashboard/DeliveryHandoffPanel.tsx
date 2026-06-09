@@ -124,9 +124,11 @@ export function DeliveryHandoffPanel({ toStationId, compact = false }: DeliveryH
             key={d.id}
             delivery={d}
             busy={busyId === d.id}
+            canForceAccept={hasOrgSupervisorAccess}
             onPickup={() => handlePickup(d.id)}
             onDelivered={() => handleDelivered(d.id)}
             onAccept={() => handleAccept(d.id)}
+            onForceAccept={() => handleForceAccept(d.id)}
           />
         ))}
       </CardContent>
@@ -137,12 +139,22 @@ export function DeliveryHandoffPanel({ toStationId, compact = false }: DeliveryH
 interface DeliveryRowProps {
   delivery: DeliveryRequest;
   busy: boolean;
+  canForceAccept: boolean;
   onPickup: () => void;
   onDelivered: () => void;
   onAccept: () => void;
+  onForceAccept: () => void;
 }
 
-function DeliveryRow({ delivery, busy, onPickup, onDelivered, onAccept }: DeliveryRowProps) {
+function DeliveryRow({
+  delivery,
+  busy,
+  canForceAccept,
+  onPickup,
+  onDelivered,
+  onAccept,
+  onForceAccept,
+}: DeliveryRowProps) {
   const isInTransit = delivery.status === "in_transit";
   const isAwaitingAcceptance =
     delivery.status === "awaiting_acceptance" || delivery.status === "delivered";
