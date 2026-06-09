@@ -449,7 +449,8 @@ function FrontFace({
     >
       <div
         style={{
-          width: 18,
+          width: 18 + BLEED_PX,
+          paddingLeft: BLEED_PX,
           background: `linear-gradient(180deg, ${accent}, ${shade(accent, -25)})`,
         }}
       />
