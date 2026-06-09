@@ -522,6 +522,7 @@ export default function Queue() {
         getComments={getComments}
         getHistory={getHistory}
         onOpenRouting={handleOpenRouting}
+        onRefreshItems={fetchItems}
       />
 
       <Dialog
