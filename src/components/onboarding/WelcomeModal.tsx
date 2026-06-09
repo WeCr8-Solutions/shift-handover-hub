@@ -117,11 +117,13 @@ export function WelcomeModal() {
     isLoading,
     showTour,
     hasSeenWelcome,
+    setupWizardDismissed,
     completeStep,
     markWelcomeSeen,
     goToStep,
     startTour,
     skipOnboarding,
+    dismissSetupWizard,
     getProgress,
     isStepCompleted,
   } = useOnboardingContext();
@@ -131,7 +133,9 @@ export function WelcomeModal() {
   const isItarOrg = !!organization?.requires_us_person_declaration;
   const [isOpen, setIsOpen] = useState(true);
 
-  // Gate: never show for unauthenticated users, on public landing page, or for returning/complete users
+  // Gate: never show for unauthenticated users, on public landing page, or for returning/complete users.
+  // setupWizardDismissed is the explicit "Don't show again" flag — honor it even if the
+  // server-side completion RPC failed (e.g. user hasn't created an org or talent profile yet).
   if (
     !user ||
     isLoading ||
@@ -139,6 +143,7 @@ export function WelcomeModal() {
     showTour ||
     currentStep === "complete" ||
     hasSeenWelcome ||
+    setupWizardDismissed ||
     isPublicFacingRoute(location.pathname) ||
     !isEligibleWelcomeRoute(location.pathname)
   ) {
@@ -171,9 +176,16 @@ export function WelcomeModal() {
   };
 
   const handleDontShowAgain = async () => {
-    await markWelcomeSeen();
-    await skipOnboarding();
+    // Hide locally first so the modal can't re-open between awaits.
     setIsOpen(false);
+    await markWelcomeSeen();
+    await dismissSetupWizard();
+    // Best-effort completion — safe to fail (user may not have org/talent yet).
+    try {
+      await skipOnboarding();
+    } catch {
+      /* no-op: setupWizardDismissed gate keeps the modal closed regardless */
+    }
   };
 
   const handleStepClick = async (stepId: string) => {
