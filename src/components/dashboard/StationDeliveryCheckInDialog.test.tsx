@@ -57,6 +57,24 @@ vi.mock("sonner", () => ({
   toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() },
 }));
 
+vi.mock("@/contexts/AuthContext", () => ({
+  useAuth: () => ({ user: { id: "u-1" }, session: {}, loading: false }),
+  AuthProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
+
+vi.mock("@/hooks/useUserOrganization", () => ({
+  useUserOrganization: () => ({
+    organization: { id: "org-1" },
+    organizationRole: "operator",
+    teams: [],
+    userRoles: [],
+    primaryRole: "operator",
+    primaryTeam: null,
+    loading: false,
+    refresh: async () => {},
+  }),
+}));
+
 describe("StationDeliveryCheckInDialog", () => {
   beforeEach(() => {
     acceptDelivery.mockReset();
