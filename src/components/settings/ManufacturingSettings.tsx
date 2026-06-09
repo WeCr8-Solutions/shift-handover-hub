@@ -64,7 +64,7 @@ const DEFAULT_SETTINGS: ManufacturingSettingsState = {
   workOrderStartingNumber: 1001,
   workOrderNumberFormat: "alphanumeric",
   partNumberFormat: "alphanumeric",
-  autoGenerateWorkOrders: false,
+  autoGenerateWorkOrders: true,
   enableQuoteSystem: false,
   quoteNumberPrefix: "Q",
   quoteNumberSeparator: "-",
