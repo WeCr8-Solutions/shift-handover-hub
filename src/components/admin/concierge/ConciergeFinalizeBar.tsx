@@ -71,6 +71,26 @@ export function ConciergeFinalizeBar({ engagementId, canReopen, buildSnapshot, o
         <Button size="sm" variant="outline" onClick={handleSave} disabled={saveDraft.isPending || isFinalized} className="h-7 text-[11px] gap-1">
           <Save className="w-3.5 h-3.5" /> {saveDraft.isPending ? "Saving…" : "Save draft"}
         </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={!isFinalized}
+          onClick={() => toast.info("Email send coming online once concierge-pack edge function is deployed.")}
+          title={isFinalized ? "Email sealed pack to billing contact" : "Save & Finalize first to lock the master copy."}
+          className="h-7 text-[11px] gap-1"
+        >
+          <Mail className="w-3.5 h-3.5" /> Email
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={!isFinalized}
+          onClick={() => window.print()}
+          title={isFinalized ? "Export sealed pack as PDF via print dialog" : "Save & Finalize first to lock the master copy."}
+          className="h-7 text-[11px] gap-1"
+        >
+          <Download className="w-3.5 h-3.5" /> Export PDF
+        </Button>
         {isFinalized ? (
           canReopen ? (
             <Button size="sm" variant="ghost" onClick={() => setReopenOpen(true)} className="h-7 text-[11px] gap-1">
