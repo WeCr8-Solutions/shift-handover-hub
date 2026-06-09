@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { FileText, FileSpreadsheet, FileSignature, Eye, Download, Loader2, Package, Printer } from "lucide-react";
+import { FileText, FileSpreadsheet, FileSignature, Eye, Download, Loader2, Package, Printer, Save, History, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import JSZip from "jszip";
 import {
@@ -12,6 +12,9 @@ import {
   engagementContext, defaultContext,
   type ConciergeDocument, type DocumentAudience, type DocumentFormat,
 } from "@/lib/concierge/documentRegistry";
+import { useConciergeDocumentRecords } from "@/hooks/useConciergeDocumentRecords";
+import { DocumentVersionsDrawer } from "./DocumentVersionsDrawer";
+import { CostEstimator, computeCost, type CostInputs } from "./CostEstimator";
 
 interface Props {
   audience: DocumentAudience | "all";
@@ -39,6 +42,19 @@ export function DocumentLibrary({ audience, engagement, title, description }: Pr
   const [previewBlob, setPreviewBlob] = useState<{ url: string; title: string; filename: string; format: DocumentFormat } | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [bundling, setBundling] = useState(false);
+  const [versionsFor, setVersionsFor] = useState<ConciergeDocument | null>(null);
+
+  const engagementId: string | null = engagement?.id ?? null;
+  const orgId: string | null = (engagement?.organizations as any)?.id ?? engagement?.organization_id ?? null;
+  const { saveVersion } = useConciergeDocumentRecords(engagementId);
+
+  const initialTier = (engagement?.plan_tier as string) ?? "standard";
+  const [costInputs, setCostInputs] = useState<CostInputs>({
+    tierSlug: initialTier,
+    seats: 1,
+    addonSlugs: [],
+    conciergeFee: 0,
+  });
 
   const docs = useMemo(() => CONCIERGE_DOCUMENTS.filter((d) => {
     if (audience === "all") return true;
@@ -143,6 +159,42 @@ export function DocumentLibrary({ audience, engagement, title, description }: Pr
     }
   }
 
+  async function handleSaveVersion(doc: ConciergeDocument, asMaster: boolean) {
+    if (!engagementId) {
+      toast.error("Open this from a specific engagement to save versions.");
+      return;
+    }
+    setBusy(`${doc.key}:save`);
+    try {
+      const fmt: DocumentFormat = doc.formats.includes("pdf") ? "pdf" : doc.formats[0];
+      const blob = await renderDocument(doc, fmt, ctx);
+      // Pull editable-field overrides for this engagement out of localStorage
+      const needs: Record<string, string> = {};
+      const suffix = `:${engagementId}`;
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (!key) continue;
+        if (key.startsWith("concierge-field:") && key.endsWith(suffix)) {
+          const v = localStorage.getItem(key);
+          if (v != null) needs[key.replace("concierge-field:", "").replace(suffix, "")] = v;
+        }
+      }
+      await saveVersion.mutateAsync({
+        orgId,
+        documentKey: doc.key,
+        format: fmt,
+        blob,
+        needsSnapshot: { fields: needs, contextSnapshot: ctx },
+        costSnapshot: computeCost(costInputs) as any,
+        isMaster: asMaster,
+      });
+    } catch (e: any) {
+      toast.error(`Save version failed: ${e?.message ?? e}`);
+    } finally {
+      setBusy(null);
+    }
+  }
+
   const kinds = Object.keys(grouped);
 
   return (
@@ -164,6 +216,15 @@ export function DocumentLibrary({ audience, engagement, title, description }: Pr
         </div>
       </CardHeader>
       <CardContent>
+        {engagementId && (
+          <div className="mb-4">
+            <CostEstimator value={costInputs} onChange={setCostInputs} />
+            <p className="text-[11px] text-muted-foreground mt-2">
+              Adjusting the cost arrangement re-prices the next saved version. Existing master copies
+              remain immutable for audit.
+            </p>
+          </div>
+        )}
         <Tabs defaultValue={kinds[0] ?? "contract"}>
           <TabsList className="flex flex-wrap h-auto justify-start">
             {kinds.map((k) => (
@@ -218,6 +279,24 @@ export function DocumentLibrary({ audience, engagement, title, description }: Pr
                               {f.toUpperCase()}
                             </Button>
                           ))}
+                          {engagementId && (
+                            <>
+                              <Button size="sm" variant="outline" className="gap-1.5"
+                                onClick={() => handleSaveVersion(doc, false)}
+                                disabled={busy === `${doc.key}:save` || saveVersion.isPending}>
+                                <Save className="w-3.5 h-3.5" /> Save version
+                              </Button>
+                              <Button size="sm" variant="outline" className="gap-1.5"
+                                onClick={() => handleSaveVersion(doc, true)}
+                                disabled={busy === `${doc.key}:save` || saveVersion.isPending}>
+                                <ShieldCheck className="w-3.5 h-3.5" /> Save as master
+                              </Button>
+                              <Button size="sm" variant="ghost" className="gap-1.5"
+                                onClick={() => setVersionsFor(doc)}>
+                                <History className="w-3.5 h-3.5" /> Versions
+                              </Button>
+                            </>
+                          )}
                         </div>
                       </CardContent>
                     </Card>
@@ -251,6 +330,14 @@ export function DocumentLibrary({ audience, engagement, title, description }: Pr
           )}
         </DialogContent>
       </Dialog>
+
+      <DocumentVersionsDrawer
+        open={!!versionsFor}
+        onOpenChange={(o) => { if (!o) setVersionsFor(null); }}
+        engagementId={engagementId}
+        documentKey={versionsFor?.key ?? ""}
+        documentTitle={versionsFor?.title ?? ""}
+      />
     </Card>
   );
 }

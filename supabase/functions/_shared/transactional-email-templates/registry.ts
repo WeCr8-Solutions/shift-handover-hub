@@ -9,6 +9,7 @@ import { template as teamInvite } from './team-invite.tsx'
 import { template as promoCode } from './promo-code.tsx'
 import { template as handoffNotification } from './handoff-notification.tsx'
 import { template as conciergeGoLive } from './concierge-go-live.tsx'
+import { template as conciergeFinalizedPack } from './concierge-finalized-pack.tsx'
 
 export interface TemplateEntry {
   component: React.ComponentType<any>
@@ -27,4 +28,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'promo-code': promoCode,
   'handoff-notification': handoffNotification,
   'concierge-go-live': conciergeGoLive,
+  'concierge-finalized-pack': conciergeFinalizedPack,
 }
