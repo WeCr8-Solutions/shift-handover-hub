@@ -24,10 +24,18 @@ type ManufacturingSettingsState = {
   enableDelayCodes: boolean;
   requireDelayCode: boolean;
   workOrderPrefix: string;
+  workOrderSeparator: string;
+  workOrderPadding: number;
+  workOrderStartingNumber: number;
+  workOrderNumberFormat: "numeric" | "alphanumeric";
   partNumberFormat: string;
   autoGenerateWorkOrders: boolean;
   enableQuoteSystem: boolean;
   quoteNumberPrefix: string;
+  quoteNumberSeparator: string;
+  quoteNumberPadding: number;
+  quoteStartingNumber: number;
+  quoteNumberFormat: "numeric" | "alphanumeric";
   quoteValidityDays: number;
   quoteRequiresApproval: boolean;
   quoteAutoConvertOnApproval: boolean;
@@ -51,10 +59,18 @@ const DEFAULT_SETTINGS: ManufacturingSettingsState = {
   enableDelayCodes: true,
   requireDelayCode: true,
   workOrderPrefix: "WO",
+  workOrderSeparator: "-",
+  workOrderPadding: 4,
+  workOrderStartingNumber: 1001,
+  workOrderNumberFormat: "alphanumeric",
   partNumberFormat: "alphanumeric",
   autoGenerateWorkOrders: false,
   enableQuoteSystem: false,
   quoteNumberPrefix: "Q",
+  quoteNumberSeparator: "-",
+  quoteNumberPadding: 4,
+  quoteStartingNumber: 1001,
+  quoteNumberFormat: "alphanumeric",
   quoteValidityDays: 30,
   quoteRequiresApproval: true,
   quoteAutoConvertOnApproval: false,
@@ -62,6 +78,7 @@ const DEFAULT_SETTINGS: ManufacturingSettingsState = {
   requireEngineeringReview: false,
   performanceUpdateCategories: ["process_improvement", "safety", "quality", "tooling"],
 };
+
 
 export function ManufacturingSettings() {
   const { form, update, setForm, isDirty, isSaving, save, discard, loading } =
