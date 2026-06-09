@@ -530,14 +530,41 @@ export function CreateWorkOrderDialog({
 
           {/* Part Number & Operation */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
+            <div className="space-y-2 relative">
               <Label>Part Number</Label>
               <Input
                 value={formData.part_number}
-                onChange={(e) => updateFormField("part_number", e.target.value)}
+                onChange={(e) => {
+                  updateFormField("part_number", e.target.value);
+                  setShowPartSuggestions(true);
+                }}
+                onFocus={() => setShowPartSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowPartSuggestions(false), 150)}
                 placeholder="e.g. PN-12345"
+                autoComplete="off"
               />
+              {showPartSuggestions && partSuggestions.length > 0 && (
+                <div className="absolute z-20 left-0 right-0 top-full mt-1 max-h-56 overflow-y-auto rounded-md border bg-popover shadow-md">
+                  {partSuggestions.map((p) => (
+                    <button
+                      type="button"
+                      key={p.id}
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => applyPartSuggestion(p)}
+                      className="w-full text-left px-2 py-1.5 text-xs hover:bg-accent border-b last:border-b-0"
+                    >
+                      <div className="font-mono text-sm">{p.part_number}</div>
+                      <div className="text-muted-foreground truncate">
+                        {p.description || "—"}
+                        {p.default_quantity ? ` • qty ${p.default_quantity}` : ""}
+                        {p.material_type ? ` • ${p.material_type}` : ""}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
+
             <div className="space-y-2">
               <Label>Operation #</Label>
               <Input
