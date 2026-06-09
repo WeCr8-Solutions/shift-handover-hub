@@ -687,7 +687,7 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
             </div>
             <div className="mt-10 text-xs grid grid-cols-2 gap-8">
               <div>
-                <SignaturePad caption="Authorized signer (printed name &amp; title)" storageKey={`sig:itar-customer:${engagementId ?? "blank"}`} />
+                <SignaturePad caption="Authorized signer (printed name &amp; title)" storageKey={`sig:itar-customer:${engagementId ?? "blank"}`} readOnly={isFinalized} />
                 <div className="border-b border-black h-7 mt-3" />
                 <div className="mt-1">Printed name &amp; title</div>
               </div>
