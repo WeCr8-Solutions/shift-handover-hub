@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { MemoryRouter } from "react-router-dom";
 
 // Mock recharts to avoid rendering issues in tests
 vi.mock("recharts", () => ({
@@ -127,7 +128,11 @@ function renderAnalytics(props?: Partial<React.ComponentProps<typeof ProductionA
   
   return {
     user: userEvent.setup(),
-    ...render(<ProductionAnalytics {...defaultProps} {...props} />),
+    ...render(
+      <MemoryRouter>
+        <ProductionAnalytics {...defaultProps} {...props} />
+      </MemoryRouter>
+    ),
   };
 }
 
