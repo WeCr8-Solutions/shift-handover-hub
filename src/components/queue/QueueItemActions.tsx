@@ -19,10 +19,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import {
   Play, Pause, CheckCircle2, Loader2, ArrowRight, GitBranch,
-  ShieldAlert, FileText, ArrowRightLeft, Copy,
+  ShieldAlert, FileText, ArrowRightLeft, Copy, Package as PackageIcon,
 } from "lucide-react";
 import { PrintTravelerButton } from "@/components/work-orders/traveler/PrintTravelerButton";
 import { PrintCoCButton } from "@/components/work-orders/coc/PrintCoCButton";
+import { AddToPackageDialog } from "@/components/packages/AddToPackageDialog";
 
 interface RoutingStepRow {
   id: string;
