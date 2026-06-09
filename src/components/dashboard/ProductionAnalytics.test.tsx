@@ -127,7 +127,11 @@ function renderAnalytics(props?: Partial<React.ComponentProps<typeof ProductionA
   
   return {
     user: userEvent.setup(),
-    ...render(<ProductionAnalytics {...defaultProps} {...props} />),
+    ...render(
+      <MemoryRouter>
+        <ProductionAnalytics {...defaultProps} {...props} />
+      </MemoryRouter>
+    ),
   };
 }
 
