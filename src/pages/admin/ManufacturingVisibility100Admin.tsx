@@ -105,12 +105,12 @@ const EMPTY_NEW: Partial<Nomination> = {
 };
 
 export default function ManufacturingVisibility100Admin() {
-  const [tab, setTab] = useState<Status | "all">("new");
+  const [tab, setTab] = useUrlState<Status | "all">("tab", "new");
   const [selected, setSelected] = useState<Nomination | null>(null);
   const [creating, setCreating] = useState<Partial<Nomination> | null>(null);
   const [search, setSearch] = useState("");
-  const [sort, setSort] = useState<"recent" | "score" | "rank">("recent");
-  const [edition, setEdition] = useState<string>("2026");
+  const [sort, setSort] = useUrlState<"recent" | "score" | "rank">("sort", "recent");
+  const [edition, setEdition] = useUrlState<string>("ed", "2026");
   const qc = useQueryClient();
 
   const { data: rows = [], isLoading } = useQuery({
