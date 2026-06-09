@@ -58,6 +58,14 @@ export function DeliveryHandoffPanel({ toStationId, compact = false }: DeliveryH
     else toast.success("Accepted — work order is now active in your queue");
   };
 
+  const handleForceAccept = async (id: string) => {
+    setBusyId(id);
+    const { error: err } = await forceAccept(id);
+    setBusyId(null);
+    if (err) toast.error("Could not override acceptance", { description: err });
+    else toast.success("Force-accepted on behalf of station");
+  };
+
   if (loading && filtered.length === 0) {
     return (
       <Card>
