@@ -50,12 +50,14 @@ import {
   XCircle,
   Printer,
   Image as ImageIcon,
+  CreditCard,
 } from "lucide-react";
 import { FLYER_ZONES, exportZonesToCsv, type FlyerZone } from "./flyerZoneData";
 import { FieldChecklist } from "./FieldChecklist";
 import { ContactsExportTab } from "./ContactsExportTab";
 import { PrintMaterials } from "./PrintMaterials";
 import { CampaignMarketingGallery } from "./CampaignMarketingGallery";
+import { BusinessCardStudio } from "./BusinessCardStudio";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -491,11 +493,16 @@ export function FlyerCampaigns() {
             <ImageIcon className="w-3.5 h-3.5" />
             Gallery
           </TabsTrigger>
+          <TabsTrigger value="cards" className="gap-1.5">
+            <CreditCard className="w-3.5 h-3.5" />
+            Business Cards
+          </TabsTrigger>
           <TabsTrigger value="print" className="gap-1.5">
             <Printer className="w-3.5 h-3.5" />
             Print Materials
           </TabsTrigger>
         </TabsList>
+
 
         {/* ─── Campaign Overview ─── */}
         <TabsContent value="overview">
@@ -879,6 +886,10 @@ ON CONFLICT (user_id, role) DO NOTHING;`}
 
         <TabsContent value="gallery">
           <CampaignMarketingGallery campaignId={campaignId} />
+        </TabsContent>
+
+        <TabsContent value="cards">
+          <BusinessCardStudio campaignId={campaignId} />
         </TabsContent>
 
         <TabsContent value="print">

@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import {
   Upload, Image as ImageIcon, FileSpreadsheet, FileText, Trash2,
-  ExternalLink, Pencil, Download, Package,
+  ExternalLink, Pencil, Download, Package, CreditCard, UserSquare,
 } from "lucide-react";
 import JSZip from "jszip";
 import { toast } from "sonner";
@@ -32,6 +32,8 @@ const KIND_LABEL: Record<CampaignAssetKind, string> = {
   flyer_image: "Flyer image",
   mailing_list_xlsx: "Mailing list (XLSX)",
   document: "Document",
+  business_card: "Business card",
+  talent_material: "Talent material",
   other: "Other",
 };
 
@@ -39,6 +41,8 @@ const KIND_ICON: Record<CampaignAssetKind, typeof ImageIcon> = {
   flyer_image: ImageIcon,
   mailing_list_xlsx: FileSpreadsheet,
   document: FileText,
+  business_card: CreditCard,
+  talent_material: UserSquare,
   other: FileText,
 };
 
@@ -206,6 +210,8 @@ export function CampaignMarketingGallery({ campaignId }: Props) {
         flyer_image: "flyers",
         mailing_list_xlsx: "mailing-lists",
         document: "documents",
+        business_card: "business-cards",
+        talent_material: "talent-materials",
         other: "other",
       };
       const manifest: string[] = [

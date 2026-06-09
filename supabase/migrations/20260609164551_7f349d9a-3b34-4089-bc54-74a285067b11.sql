@@ -1,0 +1,2 @@
+ALTER TABLE public.campaign_marketing_assets DROP CONSTRAINT IF EXISTS campaign_marketing_assets_kind_check;
+ALTER TABLE public.campaign_marketing_assets ADD CONSTRAINT campaign_marketing_assets_kind_check CHECK (kind = ANY (ARRAY['flyer_image'::text, 'mailing_list_xlsx'::text, 'document'::text, 'business_card'::text, 'talent_material'::text, 'other'::text]));

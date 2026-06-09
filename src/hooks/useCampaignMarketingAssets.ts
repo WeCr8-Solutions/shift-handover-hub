@@ -5,6 +5,8 @@ export type CampaignAssetKind =
   | "flyer_image"
   | "mailing_list_xlsx"
   | "document"
+  | "business_card"
+  | "talent_material"
   | "other";
 
 export interface CampaignMarketingAsset {
