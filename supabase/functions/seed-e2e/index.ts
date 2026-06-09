@@ -170,28 +170,24 @@ Deno.serve(async (req) => {
       { onConflict: "user_id" },
     );
 
-    // 2b. Mark onboarding complete + welcome seen so the setup wizard / welcome
-    //     modal don't intercept the dashboard for seeded users.
-    //     The guard trigger on user_onboarding blocks direct is_complete=true writes
-    //     unless app.via_onboarding_rpc is set, so flip that session flag first.
-    await admin.rpc("exec_sql_for_e2e_seed", {}).catch(() => {});
+    // 2b. Mark welcome seen + setup wizard dismissed so the WelcomeModal and
+    //     the Index→/setup redirect don't intercept the dashboard for seeded users.
+    //     We deliberately don't toggle is_complete here — that path is guarded by
+    //     the BEFORE UPDATE trigger which only allows the mark_onboarding_complete
+    //     RPC to set it, and the two flags above are sufficient to bypass the gate.
     await admin.from("user_onboarding").upsert(
       [
         {
           user_id: adminUser.id,
-          is_complete: true,
           current_step: "complete",
           has_seen_welcome: true,
           setup_wizard_dismissed: true,
-          completed_at: nowIso,
         },
         {
           user_id: operatorUser.id,
-          is_complete: true,
           current_step: "complete",
           has_seen_welcome: true,
           setup_wizard_dismissed: true,
-          completed_at: nowIso,
         },
       ],
       { onConflict: "user_id" },
