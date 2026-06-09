@@ -16,7 +16,7 @@ export default function Updates() {
   const { user, loading: authLoading, isReady } = useAuth();
   const { updates, loading, acknowledgedIds, acknowledgeUpdate, systemStatus } = useGlobalUpdates();
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("all");
+  const [category, setCategory] = useUrlState<string>("cat", "all");
 
   useEffect(() => {
     if (isReady && !user) navigate("/auth");
