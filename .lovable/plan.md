@@ -1,128 +1,90 @@
-# Concierge Power-Up: Docs Categories, OAP Bypass, Intake CRUD Tiles
+## Goal
+Extend the URL-state pattern (`useUrlState` / `useUrlStateNumber`) so every tabbed panel, filter, and view-mode in the app survives Back, refresh, and deep-link — closing the gaps left after the Admin / Customer Success / Flyer Campaigns pass.
 
-## 1. Concierge Documents — Categorized + Uploadable
+## Audit results
 
-**Customer-facing page** (`src/pages/settings/ConciergeDocuments.tsx`) + **admin engagement Documents tab** both get a new collapsible category layout:
+### Tier 1 — Top-level page tabs (highest impact, user explicitly hit these)
+| File | Local state | Proposed URL key(s) |
+|---|---|---|
+| `src/pages/Settings.tsx` | `activeTab` | `tab` |
+| `src/pages/Teams.tsx` | `activeTab` | `tab` |
+| `src/pages/Queue.tsx` | `activeTab` (QueueTab) | `tab` (align w/ existing queue keys) |
+| `src/pages/OperatorProfile.tsx` | `activeTab` + cert `filter` | `tab`, `cert` |
+| `src/pages/Tools.tsx` | `category` | `cat` |
+| `src/pages/Updates.tsx` | `category` | `cat` |
+| `src/pages/admin/ManufacturingVisibility100Admin.tsx` | `tab` | `tab` |
 
-- **Contracts & Compliance** — MSA, NDA, ITAR Declaration, Payment Instructions (existing, regrouped)
-- **Intake Worksheets** — the 7 existing worksheets (Equipment, Stations, Users, Routing, Quality, ERP, Training)
-- **Machine Manuals** *(new, uploadable)* — org-scoped PDFs (operator manuals, programming guides, maintenance), versioned, CRUD
-- **SOPs & Reference** *(new, uploadable)* — free-form titled/categorized docs (safety SOPs, quality procedures, training packets, custom forms), CRUD
+### Tier 2 — Admin child panels (nested under `/admin?tab=…`)
+Use a secondary key (`sub`, or panel-prefixed key) so they coexist with the parent `tab`.
+| File | Local state | Proposed key(s) |
+|---|---|---|
+| `src/components/admin/OrgDetailView.tsx` | `activeTab` | `orgSub` |
+| `src/components/admin/PromotionsHub.tsx` | `activeTab` | `promoSub` |
+| `src/components/admin/WorkOrderManagement.tsx` | `statusFilter`, `selectedOrg` | `woStatus`, `woOrg` |
+| `src/components/admin/UserManagement.tsx` | `selectedOrg` | `umOrg` |
+| `src/components/admin/StationManagement.tsx` | `selectedOrg` | `smOrg` |
+| `src/components/admin/MachineMonitorPanel.tsx` | `selectedOrg` | `mmOrg` |
+| `src/components/admin/ActivityLogs.tsx` | `filter` | `act` |
+| `src/components/admin/AdminAuditLog.tsx` | `categoryFilter` | `cat` |
+| `src/components/admin/AuditHistoryCenter.tsx` | `range` | `range` |
+| `src/components/admin/DataAccessLogs.tsx` | `filterTable`, `filterOp` | `tbl`, `op` |
+| `src/components/admin/DevIssueQueue.tsx` | `filter` | `f` |
+| `src/components/admin/EmailOperationsCenter.tsx` | `categoryFilter` | `cat` |
+| `src/components/admin/IssuesManagement.tsx` | `statusFilter`, `severityFilter` | `s`, `sev` |
+| `src/components/admin/LearnIdeasReview.tsx` | `statusFilter` | `s` |
+| `src/components/admin/MachineLibraryManagement.tsx` | `filterManufacturer`, `filterType` | `mfr`, `type` |
+| `src/components/admin/PerformanceUpdatesReview.tsx` | `statusFilter` | `s` |
+| `src/components/admin/SystemUpdatesManager.tsx` | `filterCategory` | `cat` |
+| `src/components/admin/UserJourneyDebugPanel.tsx` | `filterStatus` | `s` |
+| `src/components/admin/CampaignMarketingGallery.tsx` | `kindFilter` | `kind` |
+| `src/components/admin/ContactsExportTab.tsx` | `exportType` | `etype` |
+| `src/components/admin/ConsoleLogViewer.tsx` | `levelFilter` | `lvl` |
+| `src/components/admin/customer-success/CustomersLaunchpad.tsx` | `filter` | `f` |
+| `src/components/admin/training-library/InspectionToolsCatalog.tsx` | `categorySlug`, `profession` | `cat`, `prof` |
+| `src/components/admin/training-library/MachiningOperationsCatalog.tsx` | `categorySlug`, `profession`, `machine` | `cat`, `prof`, `mach` |
+| `src/components/admin/brand-system/BrandVideoLibrary.tsx` | `filter` | `f` |
 
-Each category is a `<Collapsible>` with chevron, count badge, and an "Upload" CTA on uploadable categories. Existing `DocumentLibrary` becomes a wrapper around new `<DocumentCategorySection>` components.
+### Tier 3 — App-wide panels outside `/admin`
+| File | Local state | Proposed key(s) |
+|---|---|---|
+| `src/components/alerts/SmartAlertPanel.tsx` | `typeFilter`, `sevFilter` | `t`, `sev` |
+| `src/components/dashboard/ProductionAnalytics.tsx` | `shiftFilter` | `shift` |
+| `src/components/dashboard/SupervisorDashboard.tsx` | `statusFilter` | `s` |
+| `src/components/queue/QueueCalendarView.tsx` | `viewMode` (day/week/month) | `cal` |
+| `src/components/work-orders/WorkOrderStatusList.tsx` | `stationFilter` | `station` |
+| `src/components/station/MachineProfileMarketplace.tsx` | `activeTab`, `filterManufacturer`, `filterType` | `tab`, `mfr`, `type` |
+| `src/components/oap/OapBrowseTemplatesDialog.tsx` | `vertical` | `vert` (dialog-scoped, optional) |
+| `src/components/InviteCodeGenerator.tsx` | `activeTab` | `inviteTab` |
+| `src/components/tools/TapDrillChart.tsx` | `tab` (thread family) | `thread` |
 
-**New table**: `concierge_uploaded_documents` (org-scoped) — separate from `concierge_document_records` (which is engagement-version-snapshots of system-generated docs). Stores: `organization_id`, `engagement_id?`, `category` (`manual` | `sop` | `reference`), `title`, `description`, `tags[]`, `storage_path`, `file_size`, `mime_type`, `version`, `superseded_by`, `uploaded_by`, audit timestamps. RLS: org members read; admins/concierge write/delete.
+### Intentionally skipped
+- `MarkdownEditor` edit/preview toggle — transient UI, not a "place I was".
+- `ERPConnectorSettings` `newJoblineStatus` — form field, not view state.
+- `LazyTabContent.test.tsx` — test fixture.
+- Open/close booleans for dialogs, popovers, menus.
+- `BlogAdmin` — already covered (draft persistence shipped earlier).
 
-**New storage bucket**: reuse existing `concierge-docs` bucket (private) with path `${orgId}/uploads/${category}/${id}-v${version}.${ext}`. RLS scoped to org membership.
+## Implementation approach
 
-**New hook**: `useConciergeUploads(orgId, category?)` — list/upload/delete/replace/signed-download, optimistic updates.
+1. **Reuse existing primitive.** Every change is a one-line swap: `useState(default)` → `useUrlState<T>("key", default)`. No new hooks, no new deps.
+2. **Key naming rules.**
+   - Top-level page → short canonical key (`tab`, `cat`, `range`).
+   - Admin child panel → panel-prefixed key (`woStatus`, `orgSub`, `promoSub`) so it coexists with `?tab=…` on `/admin`.
+   - Never collide with existing keys already used by deep-linking (verify against `mem://technical/routing/deep-linking`).
+3. **Defaults stay clean.** `useUrlState` already strips the param when value === default, so URLs only grow when the user actually changes something.
+4. **Type safety.** For unions (e.g. `QueueTab`, `ShiftFilter`), pass the generic explicitly: `useUrlState<QueueTab>("tab", "all")`.
+5. **No business-logic changes.** Pure presentation-state lift. Data hooks, RLS, queries untouched.
+6. **Verify via build.** Rely on the harness build to catch type regressions; no manual `tsc` runs.
 
-## 2. OAP Mentor Bypass — Configurable (3 modes, all on)
+## Rollout order
+1. Tier 1 (7 page-level tabs) — biggest UX win.
+2. Tier 2 (admin child panels) — finishes the admin audit.
+3. Tier 3 (operator/dashboard/marketplace) — wraps remaining surfaces.
 
-**Existing**: `certifying_mentors` table designates per-org mentors.
+Each tier is independent and shippable on its own.
 
-**Per-org settings** (new columns on `organizations` or new `oap_mentor_policy` table — going with the latter for cleanliness):
-
-- `org_role_auto_mentors` (`boolean`, default `true`) — owners & supervisors can sign off OAP without explicit mentor designation
-- `delay_day_fallback_enabled` (`boolean`, default `true`)
-- `delay_days` (`int`, default **30** for Aymar)
-- `allow_self_certify_on_delay` (`boolean`, default `false`) — when delay elapses, supervisor/owner can mark complete (never the operator themself)
-
-**Logic changes**:
-- `useCertifyingMentors` / `useOapMentors` — extend `isCertifyingMentor(userId, program)` helper to also return `true` when:
-  - User has `admin` or `supervisor` org role AND `org_role_auto_mentors = true`, OR
-  - The OAP enrollment is past `assigned_at + delay_days` AND requester is admin/supervisor AND `allow_self_certify_on_delay = true`
-- Surfaced in OAP enrollment UI as a yellow "Delay-day override available" banner with audit-stamped action
-- New Postgres function: `public.can_certify_oap(_user_id uuid, _enrollment_id uuid)` returns `boolean`, SECURITY DEFINER, `search_path = public`
-- Audit: every override writes to `oap_recert_events` with `event_type = 'override_signoff'` and reason
-
-**Admin UI**: new card in `OnboardingServicesPanel` → "OAP Mentor Policy" with the three toggles + delay-day slider (0–60). Defaults seeded for Aymar.
-
-## 3. Intake CRUD Tiles per Module
-
-**Replace/augment** the existing engagement intake panels with a unified `<IntakeTileGrid module={...} engagementId={...} orgId={...} />` component.
-
-For each of the 7 modules (Equipment, Stations, Users, Routing, Quality, ERP, Training):
-
-- Responsive card grid (1/2/3 cols) — one tile per record
-- Tile shows primary identifier (asset_tag, station_name, email, template_name, checkpoint_name, system name, training program), 2-3 secondary fields, and an actions menu
-- Inline edit dialog (uses `INTAKE_COLUMNS` schema as source of truth → auto-generated form fields per module)
-- Add tile (+) at end of grid
-- Delete with `SafeDeleteDialog`
-- Sort/filter chips at top (per module relevant fields)
-- Reads/writes the **live** production tables (not just `onboarding_intake_responses`):
-  - Equipment → `public.equipment`
-  - Stations → `public.stations` (+ `departments`)
-  - Users → `public.organization_invites` (pre-activation) + `public.profiles` (post)
-  - Routing → `public.routing_templates` + `public.routing_template_steps`
-  - Quality → `public.quality_checkpoints`
-  - ERP → `public.organization_integrations` / `erp_connections`
-  - Training → `public.oap_enrollments` (or `oap_role_program_courses`)
-
-**New hook**: `useIntakeModule(module, orgId)` — uniform CRUD across all 7, dispatches to the right table.
-
-Existing bulk-upload (`onboarding-bulk-import` edge function) remains — CSV import populates these tables; tile grid is the post-import edit surface.
-
-## 4. Technical Details (collapse-friendly)
-
-```text
-DB Migrations (one combined migration):
- ├ create table concierge_uploaded_documents (+ GRANT + RLS + trigger updated_at)
- ├ create table oap_mentor_policy (per-org, one row; + GRANT + RLS)
- ├ insert default policy row for Aymar (org_id 41f0e268…) with delay_days=30
- ├ create or replace function public.can_certify_oap(...) SECURITY DEFINER
- └ create or replace function public.list_org_uploaded_docs(orgId) SECURITY DEFINER
-
-Storage:
- └ reuse `concierge-docs` bucket; add storage.objects policy for uploads/ prefix
-   (org-member read, admin write/delete)
-
-New files:
- ├ src/components/admin/concierge/DocumentCategorySection.tsx
- ├ src/components/admin/concierge/UploadDocumentDialog.tsx
- ├ src/components/admin/concierge/UploadedDocumentTile.tsx
- ├ src/components/admin/onboarding/OapMentorPolicyCard.tsx
- ├ src/components/admin/onboarding/IntakeTileGrid.tsx
- ├ src/components/admin/onboarding/IntakeRecordTile.tsx
- ├ src/components/admin/onboarding/IntakeRecordDialog.tsx
- ├ src/hooks/useConciergeUploads.ts
- ├ src/hooks/useOapMentorPolicy.ts
- └ src/hooks/useIntakeModule.ts
-
-Modified:
- ├ src/components/admin/concierge/DocumentLibrary.tsx (wrap in categories)
- ├ src/pages/settings/ConciergeDocuments.tsx
- ├ src/pages/admin/ConciergeLibrary.tsx
- ├ src/hooks/useCertifyingMentors.ts (extend can-certify logic)
- ├ src/components/admin/onboarding/OnboardingServicesPanel.tsx (add policy card)
- └ src/components/admin/onboarding/EngagementDetail.tsx (swap intake panels for tile grid)
-
-Edge functions: none new. (can_certify_oap is a DB function called from client.)
-
-Docs:
- ├ docs/concierge/e2e-checklist.md — add "uploaded docs" + "OAP override" steps
- └ docs/concierge/handoff-e2e.md — mentor policy section
-```
-
-## 5. Aymar-Specific Seeding
-
-- Insert `oap_mentor_policy` row for Aymar with `delay_days=30`, all toggles on
-- No uploaded docs seeded (Brandon/Jaimes upload their own)
-- Existing concierge library unchanged — no disruption to Brandon's claim flow
-
-## 6. Out of Scope (this round)
-
-- Per-document approval/signature workflow (use existing concierge_pack_finalizations)
-- E-signature on uploaded SOPs
-- OCR/parsing of uploaded manuals (manuals just store + serve)
-- New Playwright E2E coverage (manual verification + SQL checks; can add later)
-
-## 7. Verification
-
-1. Migration apply (check linter)
-2. Build passes; types regenerate
-3. Manual: load `/settings/concierge-documents` → confirm 4 categories with chevrons
-4. Manual: as platform admin, open Aymar engagement → Documents tab → upload a manual + SOP → CRUD
-5. Manual: load OAP enrollment → confirm role-based and 30-day override paths
-6. SQL: confirm Aymar policy row exists
-7. SQL: confirm `can_certify_oap` returns true for Brandon (admin) on any Aymar OAP enrollment
+## Out of scope
+- Form-draft persistence for editors (Work Order create/edit, NCR, Handoff) — tracked separately under Phase 3 of `.lovable/navigation-state-rollout-plan.md`.
+- Scroll-position work — already handled globally by `ScrollToTop` + `navigationMemory`.
+- Cross-tab sync via `BroadcastChannel` — deferred.
+- New Playwright specs per surface — can follow once the lifts are in.
