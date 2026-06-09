@@ -25,15 +25,62 @@ function generateToken(): string {
     .join('')
 }
 
-// Auth note: this function uses verify_jwt = true in config.toml, so Supabase's
-// gateway validates the caller's JWT (anon or service_role) before the request
-// reaches this code. No in-function auth check is needed.
+// Auth note: although verify_jwt = true is set in config.toml, that only
+// validates JWT structure/signature — the public anon key (shipped to every
+// browser) passes that check. We therefore explicitly reject anon-role callers
+// here so this endpoint can only be invoked by:
+//   - the service_role key (internal callers: send-email, cron functions), OR
+//   - an authenticated user JWT.
+// Without this check, any visitor could mint any registered template to any
+// recipient, bypassing send-email's per-user rate limiting.
+function rejectAnonCaller(req: Request): Response | null {
+  const auth = req.headers.get("authorization") || "";
+  const token = auth.toLowerCase().startsWith("bearer ") ? auth.slice(7).trim() : "";
+  if (!token) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+  try {
+    const payload = token.split(".")[1];
+    if (!payload) throw new Error("malformed jwt");
+    // base64url -> base64
+    const b64 = payload.replace(/-/g, "+").replace(/_/g, "/").padEnd(
+      Math.ceil(payload.length / 4) * 4,
+      "=",
+    );
+    const claims = JSON.parse(atob(b64)) as { role?: string; sub?: string };
+    if (claims.role === "anon") {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    // Accept service_role and authenticated tokens only.
+    if (claims.role !== "service_role" && claims.role !== "authenticated") {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+  } catch {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+  return null;
+}
 
 Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
+
+  const authRejection = rejectAnonCaller(req);
+  if (authRejection) return authRejection;
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
