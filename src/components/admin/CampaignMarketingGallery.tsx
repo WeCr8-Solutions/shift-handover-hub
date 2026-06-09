@@ -13,8 +13,9 @@ import {
 } from "@/components/ui/select";
 import {
   Upload, Image as ImageIcon, FileSpreadsheet, FileText, Trash2,
-  ExternalLink, Pencil, Download,
+  ExternalLink, Pencil, Download, Package,
 } from "lucide-react";
+import JSZip from "jszip";
 import { toast } from "sonner";
 import {
   useCampaignMarketingAssets,
