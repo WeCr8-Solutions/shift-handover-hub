@@ -38,6 +38,8 @@ interface QueueItemActionsProps {
   onUpdate: (id: string, input: UpdateQueueItemInput) => Promise<{ error: string | null }>;
   onReloadHistory: () => void;
   onReloadRouting: () => void;
+  /** Refresh parent items list so station_id / status reflect server state after RPC advances. */
+  onRefreshItems?: () => void;
   onOpenRouting?: (item: { id: string; work_order?: string | null; part_number?: string | null }) => void;
   onOpenNCR: () => void;
   onCloseDialog: () => void;
@@ -50,6 +52,7 @@ export function QueueItemActions({
   onUpdate,
   onReloadHistory,
   onReloadRouting,
+  onRefreshItems,
   onOpenRouting,
   onOpenNCR,
   onCloseDialog,
