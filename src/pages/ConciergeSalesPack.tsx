@@ -520,6 +520,76 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
             </div>
           </PrintPage>)}
 
+          {/* 1b. Tier Comparison & Recommendation — sourced from src/content/subscription-tiers.md */}
+          {isOn("tiers") && (
+          <PrintPage title="Tier Comparison & Recommendation">
+            <h1 className="text-xl font-bold mb-1">Subscription tiers</h1>
+            <p className="text-xs mb-4 text-black/70">
+              Single source of truth: <span className="font-mono">subscription-tiers.md</span>. Edits there flow to <i>/pricing</i>, this pack, and exports.
+            </p>
+            <div className="grid grid-cols-3 gap-3">
+              {TIERS.map((t) => (
+                <TierCard key={t.slug} tier={t} recommended={recommendedTier === t.slug} />
+              ))}
+            </div>
+
+            {ADDONS.length > 0 && (
+              <>
+                <h2 className="text-sm font-semibold mt-6 mb-2 uppercase tracking-wider text-black/70">ERP add-ons</h2>
+                <div className="grid grid-cols-3 gap-3 text-xs">
+                  {ADDONS.map((a) => (
+                    <div key={a.slug} className="border border-black/30 rounded p-3">
+                      <div className="font-semibold">{a.name}</div>
+                      <div className="text-base font-bold mt-1">${a.price}<span className="text-[10px] font-normal text-black/60"> / mo</span></div>
+                      <div className="text-[10px] text-black/60 mb-1">
+                        {a.syncLimit == null ? "Unlimited syncs" : `Up to ${a.syncLimit.toLocaleString()} syncs/mo`}
+                      </div>
+                      <ul className="space-y-0.5">
+                        {a.benefits.map((b) => <li key={b}>• {b}</li>)}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+
+            <div className="mt-6 border border-black/40 p-3 rounded">
+              <div className="text-[10px] uppercase tracking-wider font-semibold mb-1">Recommended tier (rep selects with customer)</div>
+              <div className="flex flex-wrap gap-2 no-print mb-2">
+                {TIERS.map((t) => (
+                  <label key={t.slug} className="flex items-center gap-1 text-xs border rounded px-2 py-1 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="recommended-tier"
+                      value={t.slug}
+                      checked={recommendedTier === t.slug}
+                      onChange={() => setRecommendedTier(t.slug)}
+                      disabled={isFinalized}
+                    />
+                    {t.name}
+                  </label>
+                ))}
+                {recommendedTier && !isFinalized && (
+                  <Button size="sm" variant="ghost" className="h-7 text-[10px]" onClick={() => setRecommendedTier("")}>Clear</Button>
+                )}
+              </div>
+              <div className="text-xs mb-2">
+                <b>Recommendation:</b>{" "}
+                {recommendedTier ? `${TIER_MAP[recommendedTier]?.name} — $${TIER_MAP[recommendedTier]?.price}/mo · ${TIER_MAP[recommendedTier]?.seats} seat(s) included` : "_________________________"}
+              </div>
+              <EditableField
+                fieldKey="recommended-tier-rationale"
+                engagementId={engagementId ?? "blank"}
+                multiline
+                minRows={3}
+                placeholder="Why this tier? Seat count today, expected hires, ITAR posture, ERP needs…"
+                readOnly={isFinalized}
+              />
+            </div>
+          </PrintPage>)}
+
+
+
           {/* 2. Master Services Agreement */}
           {isOn("msa") && (
           <PrintPage title="Master Services Agreement" initials>
