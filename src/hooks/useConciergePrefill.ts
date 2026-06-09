@@ -216,6 +216,7 @@ export function useConciergePrefill(organizationId: string | null | undefined, e
             seatAssignments: [...filledSeats, ...inviteRows, ...openRows],
           };
         })(),
+        currentStaff,
       };
     },
   });
