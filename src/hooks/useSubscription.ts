@@ -2,6 +2,14 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOrgContext } from '@/contexts/OrgContext';
 import { supabase } from '@/integrations/supabase/client';
+import {
+  PRICING_TIERS_LEGACY,
+  ERP_ADDON_TIERS_LEGACY,
+  TIERS,
+  ADDONS,
+  TIER_META,
+  FAQ,
+} from '@/lib/subscriptionTiers';
 
 export type SubscriptionTier = 'single' | 'team' | 'enterprise' | 'gca_pro' | null;
 
@@ -13,100 +21,14 @@ interface SubscriptionState {
   error: string | null;
 }
 
-// Pricing tiers configuration
-export const PRICING_TIERS = {
-  single: {
-    name: 'Single User',
-    price: 49,
-    priceId: 'price_1Ta3rBCyekafHX78oWOWAMZ9',
-    productId: 'prod_TrQ3QqbNqlmDiS',
-    users: 1,
-    features: [
-      'Full dashboard access',
-      'Unlimited handoff submissions',
-      'Performance update tracking',
-      'Real-time station monitoring',
-      'Email notifications',
-      'Mobile-friendly interface',
-    ],
-  },
-  team: {
-    name: 'Team',
-    price: 149,
-    priceId: 'price_1Ta3rpCyekafHX78bTWZCgFH',
-    productId: 'prod_TrQ3SzBnvfW4yA',
-    users: 10,
-    features: [
-      'Everything in Single User',
-      'Up to 10 users included',
-      'Team management dashboard',
-      'Shared station assignments',
-      'Team analytics & reports',
-      'Priority email support',
-    ],
-  },
-  enterprise: {
-    name: 'Enterprise',
-    price: 399,
-    priceId: 'price_1Ta3sYCyekafHX78598rf2kc',
-    productId: 'prod_TrQ3Y4BKSsc591',
-    users: 10,
-    additionalUserPrice: 12,
-    features: [
-      'Everything in Team',
-      '10 seats included, $12/seat/mo after',
-      'Admin control panel',
-      'Custom integrations',
-      'Dedicated account manager',
-      'SSO & advanced security',
-      'API access',
-      'ERP Connector integration',
-    ],
-  },
-} as const;
+// Pricing tiers — sourced from `src/content/subscription-tiers.md` (single
+// source of truth). Re-exported with the legacy shape so existing imports
+// (`PRICING_TIERS.team.priceId`, `.features`, …) keep working unchanged.
+export const PRICING_TIERS = PRICING_TIERS_LEGACY;
+export { TIERS, ADDONS, TIER_META, FAQ };
+// ERP Connector add-on tiers — also sourced from markdown.
+export const ERP_ADDON_TIERS = ERP_ADDON_TIERS_LEGACY;
 
-// ERP Connector add-on tiers (Enterprise only)
-export const ERP_ADDON_TIERS = {
-  starter: {
-    name: 'ERP Starter',
-    price: 100,
-    priceId: 'price_1T5X5MCyekafHX78vbrkFIgd',
-    productId: 'prod_U3eObrQgIK5XOW',
-    syncLimit: 500,
-    features: [
-      'Up to 500 syncs/month',
-      'JobBOSS, Epicor, Plex connectors',
-      'Work order & routing sync',
-      'Status mapping',
-    ],
-  },
-  pro: {
-    name: 'ERP Pro',
-    price: 150,
-    priceId: 'price_1T5X5VCyekafHX78scWGJuEX',
-    productId: 'prod_U3eOU03pp8fNG0',
-    syncLimit: 2000,
-    features: [
-      'Up to 2,000 syncs/month',
-      'Everything in Starter',
-      'Priority sync intervals',
-      'Advanced work center mapping',
-    ],
-  },
-  unlimited: {
-    name: 'ERP Unlimited',
-    price: 200,
-    priceId: 'price_1T5X5WCyekafHX78FLLJtF9I',
-    productId: 'prod_U3eOQKkbY8NHrj',
-    syncLimit: -1,
-    features: [
-      'Unlimited syncs/month',
-      'Everything in Pro',
-      'Real-time sync',
-      'Dedicated ERP support',
-    ],
-  },
-} as const;
 
 export function useSubscription() {
   const { user, session } = useAuth();

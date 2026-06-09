@@ -15,6 +15,10 @@ import { useConciergePrefill } from "@/hooks/useConciergePrefill";
 import { SignaturePad } from "@/components/admin/concierge/SignaturePad";
 import { EditableField } from "@/components/admin/concierge/EditableField";
 import { ConciergeHandoffPanel } from "@/components/admin/concierge/ConciergeHandoffPanel";
+import { ConciergeFinalizeBar } from "@/components/admin/concierge/ConciergeFinalizeBar";
+import { TierCard } from "@/components/marketing/TierCard";
+import { TIERS, ADDONS, TIER_MAP } from "@/lib/subscriptionTiers";
+import { useConciergeFinalization, type PackSnapshot } from "@/hooks/useConciergeFinalization";
 import { QRCodeSVG } from "qrcode.react";
 
 const DEFAULT_SALES_REP = "Zach Goodbody";
@@ -198,8 +202,74 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
   const repTalentUrlTrimmed = repTalentUrl.trim();
   const repTalentHandle = repTalentUrlTrimmed.replace(/^https?:\/\//i, "");
 
+  // ---- Recommended tier (persisted per engagement) ----
+  const recommendedTierKey = `concierge-recommended-tier:${engagementId ?? "blank"}`;
+  const [recommendedTier, setRecommendedTier] = useState<string>("");
+  useEffect(() => {
+    try {
+      const v = localStorage.getItem(recommendedTierKey);
+      if (v) setRecommendedTier(v);
+    } catch {}
+  }, [recommendedTierKey]);
+  useEffect(() => {
+    try {
+      if (recommendedTier) localStorage.setItem(recommendedTierKey, recommendedTier);
+      else localStorage.removeItem(recommendedTierKey);
+    } catch {}
+  }, [recommendedTierKey, recommendedTier]);
+
+  // ---- Finalization (cloud-persisted draft + sealed master) ----
+  const finalization = useConciergeFinalization(engagementId ?? null);
+  const isFinalized = finalization.query.data?.status === "finalized";
+
+  /** Gather every persisted local field into a single snapshot for save/finalize. */
+  const buildSnapshot = (): PackSnapshot => {
+    const fields: Record<string, string> = {};
+    const signatures: PackSnapshot["signatures"] = {};
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (!key) continue;
+        const engagementSuffix = `:${engagementId ?? "blank"}`;
+        if (key.startsWith("concierge-field:") && key.endsWith(engagementSuffix.replace(":", ""))) {
+          // key shape: concierge-field:{engagementId}:{fieldKey}
+          const rest = key.slice("concierge-field:".length);
+          const colonIdx = rest.indexOf(":");
+          if (colonIdx < 0) continue;
+          const engId = rest.slice(0, colonIdx);
+          const fieldKey = rest.slice(colonIdx + 1);
+          if (engId !== (engagementId ?? "blank")) continue;
+          fields[fieldKey] = localStorage.getItem(key) ?? "";
+        }
+        if (key.startsWith("sig:") && key.endsWith(":locked")) {
+          try {
+            const env = JSON.parse(localStorage.getItem(key) ?? "{}");
+            signatures[key.slice(0, -":locked".length)] = env;
+          } catch {}
+        }
+      }
+    } catch {}
+    return {
+      selected,
+      paperSize,
+      orientation,
+      copies,
+      salesRepName,
+      salesRepTitle,
+      jobLineRepName,
+      jobLineRepTitle,
+      billingEmail: billingEmailOverride,
+      repTalentUrl,
+      recommendedTier,
+      fields,
+      signatures,
+      savedClientAt: new Date().toISOString(),
+    };
+  };
+
   const SECTIONS: { key: string; label: string }[] = [
     { key: "cover", label: "Cover" },
+    { key: "tiers", label: "Tier Comparison & Recommendation" },
     { key: "msa", label: "Master Services Agreement" },
     { key: "payment", label: "Payment Instructions" },
     { key: "itar", label: "ITAR / US-Person Declaration" },
@@ -235,6 +305,12 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
   }
 
   const handlePrint = () => {
+    if (engagementId && !isFinalized) {
+      const ok = window.confirm(
+        "This pack is still a DRAFT. Save & Finalize first to lock the master copy before printing. Print anyway?",
+      );
+      if (!ok) return;
+    }
     for (let i = 0; i < Math.max(1, copies); i++) window.print();
   };
 
@@ -258,11 +334,24 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
           <div className="flex items-center gap-2">
             <Button size="sm" variant="outline" onClick={() => setAll(true)}>Select all</Button>
             <Button size="sm" variant="outline" onClick={() => setAll(false)}>Clear</Button>
-            <Button size="sm" onClick={handlePrint} className="gap-2">
+            <Button
+              size="sm"
+              onClick={handlePrint}
+              className="gap-2"
+              title={engagementId && !isFinalized ? "Finalize & seal first to lock the master copy" : undefined}
+            >
               <Printer className="w-4 h-4" /> Print selected
             </Button>
           </div>
         </div>
+
+        {engagement && hasStaffAccess && engagementId ? (
+          <ConciergeFinalizeBar
+            engagementId={engagementId}
+            canReopen={isPlatformAdmin || isDeveloper}
+            buildSnapshot={buildSnapshot}
+          />
+        ) : null}
 
         <div className="flex flex-wrap gap-x-4 gap-y-2">
           {SECTIONS.map((s) => (
@@ -426,10 +515,81 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
                   multiline
                   minRows={4}
                   placeholder="Captured live with the customer — pain points, deadlines, ITAR posture, integrations…"
+                  readOnly={isFinalized}
                 />
               </div>
             </div>
           </PrintPage>)}
+
+          {/* 1b. Tier Comparison & Recommendation — sourced from src/content/subscription-tiers.md */}
+          {isOn("tiers") && (
+          <PrintPage title="Tier Comparison & Recommendation">
+            <h1 className="text-xl font-bold mb-1">Subscription tiers</h1>
+            <p className="text-xs mb-4 text-black/70">
+              Single source of truth: <span className="font-mono">subscription-tiers.md</span>. Edits there flow to <i>/pricing</i>, this pack, and exports.
+            </p>
+            <div className="grid grid-cols-3 gap-3">
+              {TIERS.map((t) => (
+                <TierCard key={t.slug} tier={t} recommended={recommendedTier === t.slug} />
+              ))}
+            </div>
+
+            {ADDONS.length > 0 && (
+              <>
+                <h2 className="text-sm font-semibold mt-6 mb-2 uppercase tracking-wider text-black/70">ERP add-ons</h2>
+                <div className="grid grid-cols-3 gap-3 text-xs">
+                  {ADDONS.map((a) => (
+                    <div key={a.slug} className="border border-black/30 rounded p-3">
+                      <div className="font-semibold">{a.name}</div>
+                      <div className="text-base font-bold mt-1">${a.price}<span className="text-[10px] font-normal text-black/60"> / mo</span></div>
+                      <div className="text-[10px] text-black/60 mb-1">
+                        {a.syncLimit == null ? "Unlimited syncs" : `Up to ${a.syncLimit.toLocaleString()} syncs/mo`}
+                      </div>
+                      <ul className="space-y-0.5">
+                        {a.benefits.map((b) => <li key={b}>• {b}</li>)}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+
+            <div className="mt-6 border border-black/40 p-3 rounded">
+              <div className="text-[10px] uppercase tracking-wider font-semibold mb-1">Recommended tier (rep selects with customer)</div>
+              <div className="flex flex-wrap gap-2 no-print mb-2">
+                {TIERS.map((t) => (
+                  <label key={t.slug} className="flex items-center gap-1 text-xs border rounded px-2 py-1 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="recommended-tier"
+                      value={t.slug}
+                      checked={recommendedTier === t.slug}
+                      onChange={() => setRecommendedTier(t.slug)}
+                      disabled={isFinalized}
+                    />
+                    {t.name}
+                  </label>
+                ))}
+                {recommendedTier && !isFinalized && (
+                  <Button size="sm" variant="ghost" className="h-7 text-[10px]" onClick={() => setRecommendedTier("")}>Clear</Button>
+                )}
+              </div>
+              <div className="text-xs mb-2">
+                <b>Recommendation:</b>{" "}
+                {recommendedTier ? `${TIER_MAP[recommendedTier]?.name} — $${TIER_MAP[recommendedTier]?.price}/mo · ${TIER_MAP[recommendedTier]?.seats} seat(s) included` : "_________________________"}
+              </div>
+              <EditableField
+                fieldKey="recommended-tier-rationale"
+                engagementId={engagementId ?? "blank"}
+                multiline
+                minRows={3}
+                placeholder="Why this tier? Seat count today, expected hires, ITAR posture, ERP needs…"
+                readOnly={isFinalized}
+              />
+            </div>
+          </PrintPage>)}
+
+
 
           {/* 2. Master Services Agreement */}
           {isOn("msa") && (
@@ -477,6 +637,7 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
                 multiline
                 minRows={4}
                 placeholder="Negotiated changes, custom SLAs, deliverable dates, ITAR carve-outs. Leave blank if standard MSA applies as-is."
+                readOnly={isFinalized}
               />
             </div>
           </PrintPage>)}

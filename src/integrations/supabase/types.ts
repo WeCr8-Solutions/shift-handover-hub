@@ -1298,6 +1298,63 @@ export type Database = {
           },
         ]
       }
+      concierge_pack_finalizations: {
+        Row: {
+          created_at: string
+          engagement_id: string
+          finalized_at: string | null
+          finalized_by: string | null
+          pack_hash: string | null
+          reopen_reason: string | null
+          reopened_at: string | null
+          reopened_by: string | null
+          snapshot: Json
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          engagement_id: string
+          finalized_at?: string | null
+          finalized_by?: string | null
+          pack_hash?: string | null
+          reopen_reason?: string | null
+          reopened_at?: string | null
+          reopened_by?: string | null
+          snapshot?: Json
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          engagement_id?: string
+          finalized_at?: string | null
+          finalized_by?: string | null
+          pack_hash?: string | null
+          reopen_reason?: string | null
+          reopened_at?: string | null
+          reopened_by?: string | null
+          snapshot?: Json
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "concierge_pack_finalizations_engagement_id_fkey"
+            columns: ["engagement_id"]
+            isOneToOne: true
+            referencedRelation: "concierge_payment_aging"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "concierge_pack_finalizations_engagement_id_fkey"
+            columns: ["engagement_id"]
+            isOneToOne: true
+            referencedRelation: "onboarding_engagements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       current_station_status: {
         Row: {
           condition_notes: string | null
