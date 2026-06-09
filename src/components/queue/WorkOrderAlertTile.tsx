@@ -265,6 +265,13 @@ export function WorkOrderAlertTile({ item, stationName, stationCode, workCenterT
                       <Plug className="w-2.5 h-2.5" />
                     </Badge>
                   )}
+                  {item.package_id && (
+                    <PackageChip
+                      packageId={item.package_id}
+                      packageNumber={(item as any).package_number ?? null}
+                      sequence={item.package_sequence ?? null}
+                    />
+                  )}
                 </div>
                 <div className="flex items-center gap-1">
                   {item.work_order && (
