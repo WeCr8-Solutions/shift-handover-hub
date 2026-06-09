@@ -332,6 +332,7 @@ export function QueueKanbanBoard({
           </Card>
         );
       })}
+      </div>
     </div>
   );
 }
