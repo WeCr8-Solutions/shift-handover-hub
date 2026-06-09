@@ -15,6 +15,10 @@ import { useConciergePrefill } from "@/hooks/useConciergePrefill";
 import { SignaturePad } from "@/components/admin/concierge/SignaturePad";
 import { EditableField } from "@/components/admin/concierge/EditableField";
 import { ConciergeHandoffPanel } from "@/components/admin/concierge/ConciergeHandoffPanel";
+import { ConciergeFinalizeBar } from "@/components/admin/concierge/ConciergeFinalizeBar";
+import { TierCard } from "@/components/marketing/TierCard";
+import { TIERS, ADDONS, TIER_MAP } from "@/lib/subscriptionTiers";
+import { useConciergeFinalization, type PackSnapshot } from "@/hooks/useConciergeFinalization";
 import { QRCodeSVG } from "qrcode.react";
 
 const DEFAULT_SALES_REP = "Zach Goodbody";
@@ -200,6 +204,7 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
 
   const SECTIONS: { key: string; label: string }[] = [
     { key: "cover", label: "Cover" },
+    { key: "tiers", label: "Tier Comparison & Recommendation" },
     { key: "msa", label: "Master Services Agreement" },
     { key: "payment", label: "Payment Instructions" },
     { key: "itar", label: "ITAR / US-Person Declaration" },
