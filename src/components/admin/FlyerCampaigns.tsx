@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useUrlState } from "@/hooks/useUrlState";
 import { QRCodeSVG } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -197,7 +198,7 @@ function QrPanel({ zone, url }: { zone: FlyerZone; url: string }) {
 
 export function FlyerCampaigns() {
   const { user, profile } = useAuth();
-  const [activeView, setActiveView] = useState("overview");
+  const [activeView, setActiveView] = useUrlState<string>("flyerView", "overview");
   const [dbZones, setDbZones] = useState<DbZone[]>([]);
   const [dropLogs, setDropLogs] = useState<DbDropLog[]>([]);
   const [campaignId, setCampaignId] = useState<string | null>(null);

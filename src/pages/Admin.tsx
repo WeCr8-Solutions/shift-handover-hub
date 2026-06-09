@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { AdminComponentAccess } from "@/types/admin";
 import { OrgScopeSelect } from "@/components/admin/OrgScopeSelect";
 import { toast } from "sonner";
+import { useUrlState } from "@/hooks/useUrlState";
 
 // Lazy-load heavy admin panels (Phase 6 — code splitting)
 const UserManagement = lazy(() => import("@/components/admin/UserManagement").then(m => ({ default: m.UserManagement })));
@@ -87,7 +88,7 @@ export default function Admin() {
   const { stats, loading: statsLoading, lastUpdated: statsLastUpdated, fetchStats } = useSystemStats({ organizationId: scopedOrgId });
   const isMobile = useIsMobile();
   const [bulkUploadOpen, setBulkUploadOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useUrlState<string>("tab", "overview");
 
   // Build structured access object for child components
   const access: AdminComponentAccess = {
