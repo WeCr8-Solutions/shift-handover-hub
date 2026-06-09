@@ -635,11 +635,20 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
                 </li>
               ))}
             </ul>
-            <div className="mt-10 text-xs">
-              <div className="border-b border-black h-8" />
-              <div>Customer sign-off</div>
-              <div className="border-b border-black h-8 mt-4 w-48" />
-              <div>Date</div>
+            <div className="mt-10 text-xs grid grid-cols-2 gap-8">
+              <div>
+                <SignaturePad caption="Customer sign-off" storageKey={`sig:golive-customer:${engagementId ?? "blank"}`} />
+              </div>
+              <div>
+                <SignaturePad
+                  caption="JobLine concierge lead"
+                  storageKey={`sig:golive-jobline:${engagementId ?? "blank"}`}
+                  printedName={printedJobLine}
+                  showPrintedNameBelow
+                />
+                <div className="border-b border-black h-7 mt-3 w-48 flex items-end px-1">{today}</div>
+                <div className="mt-1">Date</div>
+              </div>
             </div>
           </PrintPage>)}
 
@@ -651,63 +660,74 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
               By signing below, both parties acknowledge they have read and agree to the Master Services Agreement, ITAR / US-Person Declaration (if applicable), and all attached worksheets included in this Concierge Onboarding package.
             </p>
 
-            <div className="grid grid-cols-2 gap-10 text-xs mt-10">
-              <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-8 text-xs mt-8">
+              <div className="space-y-4">
                 <div className="font-semibold uppercase tracking-wider text-[10px]">Customer</div>
+                <SignaturePad height={70} caption="Signature" storageKey={`sig:final-customer:${engagementId ?? "blank"}`} />
                 <div>
-                  <div className="border-b border-black h-12" />
-                  <div className="mt-1">Signature</div>
-                </div>
-                <div>
-                  <div className="border-b border-black h-8" />
+                  <div className="border-b border-black h-7" />
                   <div className="mt-1">Printed name</div>
                 </div>
                 <div>
-                  <div className="border-b border-black h-8" />
+                  <div className="border-b border-black h-7" />
                   <div className="mt-1">Title</div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <div className="border-b border-black h-8" />
+                    <div className="border-b border-black h-7 flex items-end px-1">{today}</div>
                     <div className="mt-1">Date</div>
                   </div>
                   <div>
-                    <div className="border-b border-black h-8" />
+                    <div className="border-b border-black h-7 flex items-end px-1 break-words overflow-hidden">{orgName}</div>
                     <div className="mt-1">Company</div>
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-4">
                 <div className="font-semibold uppercase tracking-wider text-[10px]">JobLine AI, Inc.</div>
+                <SignaturePad
+                  height={70}
+                  caption="Signature"
+                  storageKey={`sig:final-jobline:${engagementId ?? "blank"}`}
+                  printedName={printedJobLine}
+                />
                 <div>
-                  <div className="border-b border-black h-12" />
-                  <div className="mt-1">Signature</div>
-                </div>
-                <div>
-                  <div className="border-b border-black h-8" />
+                  <div className="border-b border-black h-7 flex items-end px-1 break-words overflow-hidden">{jobLineRepName}</div>
                   <div className="mt-1">Printed name</div>
                 </div>
                 <div>
-                  <div className="border-b border-black h-8" />
+                  <div className="border-b border-black h-7 flex items-end px-1 break-words overflow-hidden">{jobLineRepTitle}</div>
                   <div className="mt-1">Title</div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <div className="border-b border-black h-8" />
+                    <div className="border-b border-black h-7 flex items-end px-1">{today}</div>
                     <div className="mt-1">Date</div>
                   </div>
                   <div>
-                    <div className="border-b border-black h-8" />
+                    <div className="border-b border-black h-7" />
                     <div className="mt-1">Witness (optional)</div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="mt-10 border border-black/40 p-3 text-[11px]">
-              <b>For sales rep:</b> after both parties have signed, scan the entire package (including this page and all initialled pages) to a single PDF and upload it via the Concierge workspace → <i>Wet-signature contract</i> panel. Reference engagement ID:{" "}
-              <span className="font-mono">{engagement?.id ?? "(blank until assigned)"}</span>
+            <div className="mt-8 grid grid-cols-2 gap-4 text-[11px] border border-black/40 p-3 break-words">
+              <div>
+                <div className="font-semibold uppercase tracking-wider text-[9px] text-black/60">Sales rep on this engagement</div>
+                <div>{printedSales || "—"}</div>
+                {staffEmail ? <div className="text-black/60 break-all">{staffEmail}</div> : null}
+              </div>
+              <div>
+                <div className="font-semibold uppercase tracking-wider text-[9px] text-black/60">Billing email of record</div>
+                <div className="break-all">{effectiveBillingEmail}</div>
+                <div className="text-black/60">Invoice #: {invoiceNumber}</div>
+              </div>
+              <div className="col-span-2">
+                <b>For sales rep:</b> after both parties have signed, scan the entire package (including this page and all initialled pages) to a single PDF and upload it via the Concierge workspace → <i>Wet-signature contract</i> panel. Reference engagement ID:{" "}
+                <span className="font-mono break-all">{engagement?.id ?? "(blank until assigned)"}</span>
+              </div>
             </div>
           </PrintPage>)}
         </>
