@@ -436,7 +436,7 @@ export function QueueItemActions({
         .eq("id", item.id);
       if (updateErr) throw updateErr;
 
-      woToast.success("Quote converted", convertWONumber, `Now tracking as Work Order: ${convertWONumber}`);
+      woToast.success("Quote converted", targetWO, `Now tracking as Work Order: ${targetWO}`);
       setConvertDialogOpen(false);
       setConvertWONumber("");
       setConvertStationId(undefined);
