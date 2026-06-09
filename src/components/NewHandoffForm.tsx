@@ -1040,10 +1040,31 @@ export function NewHandoffForm({ onClose, onSubmit, initialStationId, prefillDat
                 </div>
               )}
 
-              <div className="section-header mt-6">Quality Status</div>
+              <div className="section-header mt-6 flex items-center justify-between">
+                <span>Quality Status</span>
+                {formData.qtyOriginal > 0 && (
+                  <span className="text-xs font-normal text-muted-foreground">
+                    Qty needed:{" "}
+                    <span className="font-mono font-semibold text-foreground">
+                      {formData.qtyOpen}
+                    </span>{" "}
+                    of{" "}
+                    <span className="font-mono font-semibold text-foreground">
+                      {formData.qtyOriginal}
+                    </span>
+                  </span>
+                )}
+              </div>
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label>Parts Completed</Label>
+                  <Label>
+                    Parts Completed
+                    {formData.qtyOpen > 0 && (
+                      <span className="ml-1 text-xs text-muted-foreground">
+                        (of {formData.qtyOpen} needed)
+                      </span>
+                    )}
+                  </Label>
                   <Input
                     type="number"
                     min={0}
