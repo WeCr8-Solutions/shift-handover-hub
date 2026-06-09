@@ -13,6 +13,7 @@ import { ArrowRight, PackageCheck, Truck, Package, Clock } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useState } from "react";
 import { useDeliveryRequests, type DeliveryRequest } from "@/hooks/useDeliveryRequests";
+import { useAdminAccess } from "@/hooks/useAdminData";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -24,7 +25,9 @@ interface DeliveryHandoffPanelProps {
 }
 
 export function DeliveryHandoffPanel({ toStationId, compact = false }: DeliveryHandoffPanelProps) {
-  const { deliveries, loading, error, markPickedUp, markDelivered } = useDeliveryRequests();
+  const { deliveries, loading, error, markPickedUp, markDelivered, acceptDelivery, forceAccept } =
+    useDeliveryRequests();
+  const { hasOrgSupervisorAccess } = useAdminAccess();
   const [busyId, setBusyId] = useState<string | null>(null);
 
   const filtered = toStationId
@@ -44,7 +47,23 @@ export function DeliveryHandoffPanel({ toStationId, compact = false }: DeliveryH
     const { error: err } = await markDelivered(id);
     setBusyId(null);
     if (err) toast.error("Could not mark as delivered", { description: err });
-    else toast.success("Delivered — work order added to the WIP queue");
+    else toast.success("Dropped off — waiting on receiving station to accept");
+  };
+
+  const handleAccept = async (id: string) => {
+    setBusyId(id);
+    const { error: err } = await acceptDelivery(id);
+    setBusyId(null);
+    if (err) toast.error("Could not accept delivery", { description: err });
+    else toast.success("Accepted — work order is now active in your queue");
+  };
+
+  const handleForceAccept = async (id: string) => {
+    setBusyId(id);
+    const { error: err } = await forceAccept(id);
+    setBusyId(null);
+    if (err) toast.error("Could not override acceptance", { description: err });
+    else toast.success("Force-accepted on behalf of station");
   };
 
   if (loading && filtered.length === 0) {
@@ -105,8 +124,11 @@ export function DeliveryHandoffPanel({ toStationId, compact = false }: DeliveryH
             key={d.id}
             delivery={d}
             busy={busyId === d.id}
+            canForceAccept={hasOrgSupervisorAccess}
             onPickup={() => handlePickup(d.id)}
             onDelivered={() => handleDelivered(d.id)}
+            onAccept={() => handleAccept(d.id)}
+            onForceAccept={() => handleForceAccept(d.id)}
           />
         ))}
       </CardContent>
@@ -117,21 +139,39 @@ export function DeliveryHandoffPanel({ toStationId, compact = false }: DeliveryH
 interface DeliveryRowProps {
   delivery: DeliveryRequest;
   busy: boolean;
+  canForceAccept: boolean;
   onPickup: () => void;
   onDelivered: () => void;
+  onAccept: () => void;
+  onForceAccept: () => void;
 }
 
-function DeliveryRow({ delivery, busy, onPickup, onDelivered }: DeliveryRowProps) {
+function DeliveryRow({
+  delivery,
+  busy,
+  canForceAccept,
+  onPickup,
+  onDelivered,
+  onAccept,
+  onForceAccept,
+}: DeliveryRowProps) {
   const isInTransit = delivery.status === "in_transit";
+  const isAwaitingAcceptance =
+    delivery.status === "awaiting_acceptance" || delivery.status === "delivered";
   const age = formatDistanceToNow(new Date(delivery.created_at), { addSuffix: true });
 
+  let badgeLabel = "Pending pickup";
+  if (isInTransit) badgeLabel = "In transit";
+  else if (isAwaitingAcceptance) badgeLabel = "Awaiting acceptance";
+
+  const containerClass = isAwaitingAcceptance
+    ? "border-status-warning bg-status-warning/10"
+    : isInTransit
+      ? "border-status-warning/50 bg-status-warning/5"
+      : "border-border bg-card";
+
   return (
-    <div
-      className={cn(
-        "rounded-md border p-3 space-y-2 transition-colors",
-        isInTransit ? "border-status-warning/50 bg-status-warning/5" : "border-border bg-card",
-      )}
-    >
+    <div className={cn("rounded-md border p-3 space-y-2 transition-colors", containerClass)}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
@@ -144,8 +184,11 @@ function DeliveryRow({ delivery, busy, onPickup, onDelivered }: DeliveryRowProps
                 · {delivery.part_number}
               </span>
             )}
-            <Badge variant={isInTransit ? "default" : "secondary"} className="text-[10px]">
-              {isInTransit ? "In transit" : "Pending pickup"}
+            <Badge
+              variant={isAwaitingAcceptance || isInTransit ? "default" : "secondary"}
+              className="text-[10px]"
+            >
+              {badgeLabel}
             </Badge>
           </div>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1 flex-wrap">
@@ -159,40 +202,74 @@ function DeliveryRow({ delivery, busy, onPickup, onDelivered }: DeliveryRowProps
               <Clock className="w-3 h-3" /> {age}
             </span>
           </div>
+          {isAwaitingAcceptance && delivery.delivered_by_name && (
+            <div className="text-xs text-muted-foreground mt-1">
+              Dropped off by <span className="font-medium">{delivery.delivered_by_name}</span>
+            </div>
+          )}
           {isInTransit && delivery.picked_up_by_name && (
             <div className="text-xs text-muted-foreground mt-1">
               Carried by <span className="font-medium">{delivery.picked_up_by_name}</span>
             </div>
           )}
-          {delivery.requested_by_name && !isInTransit && (
+          {delivery.requested_by_name && !isInTransit && !isAwaitingAcceptance && (
             <div className="text-xs text-muted-foreground mt-1">
               Released by <span className="font-medium">{delivery.requested_by_name}</span>
             </div>
           )}
         </div>
         <div className="flex flex-col gap-1.5 shrink-0">
-          {!isInTransit && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={onPickup}
-              disabled={busy}
-              className="gap-1.5"
-            >
-              <Truck className="w-3.5 h-3.5" />
-              Pick up
-            </Button>
+          {isAwaitingAcceptance ? (
+            <>
+              <Button
+                size="sm"
+                variant="default"
+                onClick={onAccept}
+                disabled={busy}
+                className="gap-1.5"
+              >
+                <PackageCheck className="w-3.5 h-3.5" />
+                Accept
+              </Button>
+              {canForceAccept && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={onForceAccept}
+                  disabled={busy}
+                  className="gap-1.5 text-xs h-7"
+                  title="Accept on behalf of the receiving station (supervisor override)"
+                >
+                  Force accept
+                </Button>
+              )}
+            </>
+          ) : (
+            <>
+              {!isInTransit && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={onPickup}
+                  disabled={busy}
+                  className="gap-1.5"
+                >
+                  <Truck className="w-3.5 h-3.5" />
+                  Pick up
+                </Button>
+              )}
+              <Button
+                size="sm"
+                variant={isInTransit ? "default" : "secondary"}
+                onClick={onDelivered}
+                disabled={busy}
+                className="gap-1.5"
+              >
+                <PackageCheck className="w-3.5 h-3.5" />
+                Delivered
+              </Button>
+            </>
           )}
-          <Button
-            size="sm"
-            variant={isInTransit ? "default" : "secondary"}
-            onClick={onDelivered}
-            disabled={busy}
-            className="gap-1.5"
-          >
-            <PackageCheck className="w-3.5 h-3.5" />
-            Delivered
-          </Button>
         </div>
       </div>
     </div>

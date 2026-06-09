@@ -2023,6 +2023,10 @@ export type Database = {
       }
       delivery_requests: {
         Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          accepted_by_name: string | null
+          accepted_via: string | null
           created_at: string | null
           delivered_at: string | null
           delivered_by: string | null
@@ -2046,6 +2050,10 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          accepted_by_name?: string | null
+          accepted_via?: string | null
           created_at?: string | null
           delivered_at?: string | null
           delivered_by?: string | null
@@ -2069,6 +2077,10 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          accepted_by_name?: string | null
+          accepted_via?: string | null
           created_at?: string | null
           delivered_at?: string | null
           delivered_by?: string | null
@@ -16178,6 +16190,78 @@ export type Database = {
       }
     }
     Functions: {
+      _finalize_delivery_acceptance: {
+        Args: { _actor_id: string; _delivery_id: string; _via: string }
+        Returns: {
+          accepted_at: string | null
+          accepted_by: string | null
+          accepted_by_name: string | null
+          accepted_via: string | null
+          created_at: string | null
+          delivered_at: string | null
+          delivered_by: string | null
+          delivered_by_name: string | null
+          estimated_delivery_time: string | null
+          from_station_id: string | null
+          id: string
+          notes: string | null
+          organization_id: string
+          picked_up_at: string | null
+          picked_up_by: string | null
+          picked_up_by_name: string | null
+          priority: string | null
+          quantity: number | null
+          queue_item_id: string | null
+          requested_by: string | null
+          requested_by_name: string | null
+          routing_step_id: string | null
+          status: string
+          to_station_id: string | null
+          updated_at: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "delivery_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      accept_delivery: {
+        Args: { _delivery_id: string }
+        Returns: {
+          accepted_at: string | null
+          accepted_by: string | null
+          accepted_by_name: string | null
+          accepted_via: string | null
+          created_at: string | null
+          delivered_at: string | null
+          delivered_by: string | null
+          delivered_by_name: string | null
+          estimated_delivery_time: string | null
+          from_station_id: string | null
+          id: string
+          notes: string | null
+          organization_id: string
+          picked_up_at: string | null
+          picked_up_by: string | null
+          picked_up_by_name: string | null
+          priority: string | null
+          quantity: number | null
+          queue_item_id: string | null
+          requested_by: string | null
+          requested_by_name: string | null
+          routing_step_id: string | null
+          status: string
+          to_station_id: string | null
+          updated_at: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "delivery_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       activate_org_for_production: {
         Args: { p_engagement_id: string }
         Returns: string
@@ -16352,6 +16436,42 @@ export type Database = {
         Returns: number
       }
       fetch_display_data: { Args: { _token: string }; Returns: Json }
+      force_accept_delivery: {
+        Args: { _delivery_id: string }
+        Returns: {
+          accepted_at: string | null
+          accepted_by: string | null
+          accepted_by_name: string | null
+          accepted_via: string | null
+          created_at: string | null
+          delivered_at: string | null
+          delivered_by: string | null
+          delivered_by_name: string | null
+          estimated_delivery_time: string | null
+          from_station_id: string | null
+          id: string
+          notes: string | null
+          organization_id: string
+          picked_up_at: string | null
+          picked_up_by: string | null
+          picked_up_by_name: string | null
+          priority: string | null
+          quantity: number | null
+          queue_item_id: string | null
+          requested_by: string | null
+          requested_by_name: string | null
+          routing_step_id: string | null
+          status: string
+          to_station_id: string | null
+          updated_at: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "delivery_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       generate_owner_claim_artifacts: {
         Args: { p_engagement_id: string; p_owner_email?: string }
         Returns: Json
@@ -16796,6 +16916,10 @@ export type Database = {
       mark_delivery_delivered: {
         Args: { _delivery_id: string }
         Returns: {
+          accepted_at: string | null
+          accepted_by: string | null
+          accepted_by_name: string | null
+          accepted_via: string | null
           created_at: string | null
           delivered_at: string | null
           delivered_by: string | null
@@ -16828,6 +16952,10 @@ export type Database = {
       mark_delivery_picked_up: {
         Args: { _delivery_id: string }
         Returns: {
+          accepted_at: string | null
+          accepted_by: string | null
+          accepted_by_name: string | null
+          accepted_via: string | null
           created_at: string | null
           delivered_at: string | null
           delivered_by: string | null

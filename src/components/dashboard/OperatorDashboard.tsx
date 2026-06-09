@@ -14,6 +14,7 @@ import { StationCheckIn } from "./StationCheckIn";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { OperatorStationPanel } from "./OperatorStationPanel";
 import { DeliveryHandoffPanel } from "./DeliveryHandoffPanel";
+import { StationDeliveryCheckInDialog } from "./StationDeliveryCheckInDialog";
 import { NewHandoffForm } from "@/components/NewHandoffForm";
 import { JobPerformanceUpdateForm } from "@/components/JobPerformanceUpdateForm";
 import { useHandoffRecords, useStations } from "@/hooks/useStations";
@@ -212,6 +213,11 @@ export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDas
 
       {/* Physical-delivery handoff queue (in-transit parts + paperwork) */}
       <DeliveryHandoffPanel />
+
+      {/* Auto-prompt operator to verify deliveries dropped off while away */}
+      <StationDeliveryCheckInDialog
+        stationIds={activeSessions.map((s) => s.station_id)}
+      />
 
       {/* Station panels */}
       {singleStation ? (

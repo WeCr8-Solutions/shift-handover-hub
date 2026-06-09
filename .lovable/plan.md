@@ -1,90 +1,64 @@
-## Goal
-Extend the URL-state pattern (`useUrlState` / `useUrlStateNumber`) so every tabbed panel, filter, and view-mode in the app survives Back, refresh, and deep-link — closing the gaps left after the Admin / Customer Success / Flyer Campaigns pass.
+# Delivery Acceptance & Kanban Check-In
 
-## Audit results
+Builds on the existing `delivery_requests` flow (pending → in_transit → delivered) so receiving stations explicitly **accept** work into their Kanban, and supervisors/owners never lose sight of items stuck in limbo.
 
-### Tier 1 — Top-level page tabs (highest impact, user explicitly hit these)
-| File | Local state | Proposed URL key(s) |
-|---|---|---|
-| `src/pages/Settings.tsx` | `activeTab` | `tab` |
-| `src/pages/Teams.tsx` | `activeTab` | `tab` |
-| `src/pages/Queue.tsx` | `activeTab` (QueueTab) | `tab` (align w/ existing queue keys) |
-| `src/pages/OperatorProfile.tsx` | `activeTab` + cert `filter` | `tab`, `cert` |
-| `src/pages/Tools.tsx` | `category` | `cat` |
-| `src/pages/Updates.tsx` | `category` | `cat` |
-| `src/pages/admin/ManufacturingVisibility100Admin.tsx` | `tab` | `tab` |
+## Behavior
 
-### Tier 2 — Admin child panels (nested under `/admin?tab=…`)
-Use a secondary key (`sub`, or panel-prefixed key) so they coexist with the parent `tab`.
-| File | Local state | Proposed key(s) |
-|---|---|---|
-| `src/components/admin/OrgDetailView.tsx` | `activeTab` | `orgSub` |
-| `src/components/admin/PromotionsHub.tsx` | `activeTab` | `promoSub` |
-| `src/components/admin/WorkOrderManagement.tsx` | `statusFilter`, `selectedOrg` | `woStatus`, `woOrg` |
-| `src/components/admin/UserManagement.tsx` | `selectedOrg` | `umOrg` |
-| `src/components/admin/StationManagement.tsx` | `selectedOrg` | `smOrg` |
-| `src/components/admin/MachineMonitorPanel.tsx` | `selectedOrg` | `mmOrg` |
-| `src/components/admin/ActivityLogs.tsx` | `filter` | `act` |
-| `src/components/admin/AdminAuditLog.tsx` | `categoryFilter` | `cat` |
-| `src/components/admin/AuditHistoryCenter.tsx` | `range` | `range` |
-| `src/components/admin/DataAccessLogs.tsx` | `filterTable`, `filterOp` | `tbl`, `op` |
-| `src/components/admin/DevIssueQueue.tsx` | `filter` | `f` |
-| `src/components/admin/EmailOperationsCenter.tsx` | `categoryFilter` | `cat` |
-| `src/components/admin/IssuesManagement.tsx` | `statusFilter`, `severityFilter` | `s`, `sev` |
-| `src/components/admin/LearnIdeasReview.tsx` | `statusFilter` | `s` |
-| `src/components/admin/MachineLibraryManagement.tsx` | `filterManufacturer`, `filterType` | `mfr`, `type` |
-| `src/components/admin/PerformanceUpdatesReview.tsx` | `statusFilter` | `s` |
-| `src/components/admin/SystemUpdatesManager.tsx` | `filterCategory` | `cat` |
-| `src/components/admin/UserJourneyDebugPanel.tsx` | `filterStatus` | `s` |
-| `src/components/admin/CampaignMarketingGallery.tsx` | `kindFilter` | `kind` |
-| `src/components/admin/ContactsExportTab.tsx` | `exportType` | `etype` |
-| `src/components/admin/ConsoleLogViewer.tsx` | `levelFilter` | `lvl` |
-| `src/components/admin/customer-success/CustomersLaunchpad.tsx` | `filter` | `f` |
-| `src/components/admin/training-library/InspectionToolsCatalog.tsx` | `categorySlug`, `profession` | `cat`, `prof` |
-| `src/components/admin/training-library/MachiningOperationsCatalog.tsx` | `categorySlug`, `profession`, `machine` | `cat`, `prof`, `mach` |
-| `src/components/admin/brand-system/BrandVideoLibrary.tsx` | `filter` | `f` |
+1. **Auto-add to Kanban on routing advance** (current behavior, kept)
+   - Work order already lands in the next station's Kanban column with an "Awaiting delivery" badge and `awaiting_delivery = true`.
 
-### Tier 3 — App-wide panels outside `/admin`
-| File | Local state | Proposed key(s) |
-|---|---|---|
-| `src/components/alerts/SmartAlertPanel.tsx` | `typeFilter`, `sevFilter` | `t`, `sev` |
-| `src/components/dashboard/ProductionAnalytics.tsx` | `shiftFilter` | `shift` |
-| `src/components/dashboard/SupervisorDashboard.tsx` | `statusFilter` | `s` |
-| `src/components/queue/QueueCalendarView.tsx` | `viewMode` (day/week/month) | `cal` |
-| `src/components/work-orders/WorkOrderStatusList.tsx` | `stationFilter` | `station` |
-| `src/components/station/MachineProfileMarketplace.tsx` | `activeTab`, `filterManufacturer`, `filterType` | `tab`, `mfr`, `type` |
-| `src/components/oap/OapBrowseTemplatesDialog.tsx` | `vertical` | `vert` (dialog-scoped, optional) |
-| `src/components/InviteCodeGenerator.tsx` | `activeTab` | `inviteTab` |
-| `src/components/tools/TapDrillChart.tsx` | `tab` (thread family) | `thread` |
+2. **New "Awaiting acceptance" state**
+   - When a delivery is marked **Delivered** by the carrier, status becomes `awaiting_acceptance` (instead of immediately clearing the flag).
+   - The receiving operator sees the WO in their Kanban with a yellow **"Accept delivery"** badge/button.
+   - Clicking **Accept** runs a new `accept_delivery` RPC that:
+     - Sets delivery `status = 'accepted'`, captures `accepted_by` / `accepted_by_name` / `accepted_at`.
+     - Clears `queue_items.awaiting_delivery`.
+     - Writes a `queue_item_history` row ("Received and accepted at <station> by <user>").
 
-### Intentionally skipped
-- `MarkdownEditor` edit/preview toggle — transient UI, not a "place I was".
-- `ERPConnectorSettings` `newJoblineStatus` — form field, not view state.
-- `LazyTabContent.test.tsx` — test fixture.
-- Open/close booleans for dialogs, popovers, menus.
-- `BlogAdmin` — already covered (draft persistence shipped earlier).
+3. **Auto check-in on station login**
+   - When a user opens their operator station view, any deliveries to that station in `awaiting_acceptance` older than X minutes (configurable, default 0 — i.e. immediately) prompt a single "Confirm received" dialog listing all pending items. Accepting them in bulk runs the same RPC per item.
+   - Prevents lost paperwork when no one was at the station during drop-off.
 
-## Implementation approach
+4. **Supervisor / Owner visibility**
+   - `DeliveryHandoffPanel` extended with a new tab/filter: **Awaiting acceptance** alongside Pending / In transit.
+   - New **Supervisor Delivery Watch** card on Supervisor & Admin dashboards listing every delivery in any non-final state, with age, from→to stations, carrier, and a "Force accept" action (org admin / supervisor only) for cases where the operator has left for the day.
+   - Aging highlighting: warning at >30 min, destructive at >2 h since `delivered_at`.
 
-1. **Reuse existing primitive.** Every change is a one-line swap: `useState(default)` → `useUrlState<T>("key", default)`. No new hooks, no new deps.
-2. **Key naming rules.**
-   - Top-level page → short canonical key (`tab`, `cat`, `range`).
-   - Admin child panel → panel-prefixed key (`woStatus`, `orgSub`, `promoSub`) so it coexists with `?tab=…` on `/admin`.
-   - Never collide with existing keys already used by deep-linking (verify against `mem://technical/routing/deep-linking`).
-3. **Defaults stay clean.** `useUrlState` already strips the param when value === default, so URLs only grow when the user actually changes something.
-4. **Type safety.** For unions (e.g. `QueueTab`, `ShiftFilter`), pass the generic explicitly: `useUrlState<QueueTab>("tab", "all")`.
-5. **No business-logic changes.** Pure presentation-state lift. Data hooks, RLS, queries untouched.
-6. **Verify via build.** Rely on the harness build to catch type regressions; no manual `tsc` runs.
+5. **Kanban indicators**
+   - Existing "Awaiting delivery" badge (Truck icon) stays for `pending`/`in_transit`.
+   - New "Awaiting acceptance" badge (PackageCheck + amber) for `awaiting_acceptance` rows.
 
-## Rollout order
-1. Tier 1 (7 page-level tabs) — biggest UX win.
-2. Tier 2 (admin child panels) — finishes the admin audit.
-3. Tier 3 (operator/dashboard/marketplace) — wraps remaining surfaces.
+## Technical changes
 
-Each tier is independent and shippable on its own.
+### DB migration
+- `ALTER TABLE delivery_requests` — extend allowed `status` values via CHECK or enum: add `awaiting_acceptance`, `accepted`.
+- Add columns: `accepted_by uuid`, `accepted_by_name text`, `accepted_at timestamptz`.
+- Update `mark_delivery_delivered` RPC to set `status = 'awaiting_acceptance'` and leave `queue_items.awaiting_delivery = true`.
+- New RPC `accept_delivery(_delivery_id uuid)`:
+  - Verifies caller is org member (or station member).
+  - Sets `status = 'accepted'`, stamps acceptor.
+  - Clears `queue_items.awaiting_delivery`.
+  - Inserts `queue_item_history` audit row.
+- New RPC `force_accept_delivery(_delivery_id uuid)` restricted to supervisor/org_admin via `has_org_role` check; same effect but records `accepted_by_role = 'override'`.
+- `useDeliveryRequests` `ACTIVE_STATUSES` extended to include `awaiting_acceptance`.
+
+### Frontend
+- `useDeliveryRequests.ts` — add `markAccepted(id)` and `forceAccept(id)`; surface `accepted_*` fields.
+- `DeliveryHandoffPanel.tsx` — render `awaiting_acceptance` rows with an **Accept delivery** primary button; carrier rows keep Delivered button.
+- `QueueKanbanBoard.tsx` — second badge variant for `awaiting_acceptance`, with inline Accept button when current user is assigned to that station.
+- New `StationCheckInDialog.tsx` — mounted in `OperatorDashboard` / station view; opens once per session when there are unaccepted deliveries for the active station.
+- New `SupervisorDeliveryWatch.tsx` card — included in `SupervisorDashboard` and Admin dashboard; lists all active deliveries org-wide with age + override action.
+
+### Files touched
+- New migration (status/columns + RPCs).
+- `src/hooks/useDeliveryRequests.ts`
+- `src/components/dashboard/DeliveryHandoffPanel.tsx`
+- `src/components/dashboard/OperatorDashboard.tsx` (mount check-in dialog)
+- `src/components/dashboard/SupervisorDashboard.tsx` (add watch card)
+- `src/components/queue/QueueKanbanBoard.tsx` (new badge + inline accept)
+- New: `src/components/dashboard/StationCheckInDialog.tsx`
+- New: `src/components/dashboard/SupervisorDeliveryWatch.tsx`
 
 ## Out of scope
-- Form-draft persistence for editors (Work Order create/edit, NCR, Handoff) — tracked separately under Phase 3 of `.lovable/navigation-state-rollout-plan.md`.
-- Scroll-position work — already handled globally by `ScrollToTop` + `navigationMemory`.
-- Cross-tab sync via `BroadcastChannel` — deferred.
-- New Playwright specs per surface — can follow once the lifts are in.
+- Email / push notifications for aged deliveries (can follow in a later pass).
+- Changes to the routing engine itself.

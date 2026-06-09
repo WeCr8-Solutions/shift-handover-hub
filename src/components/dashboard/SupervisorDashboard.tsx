@@ -12,6 +12,7 @@ import { DashboardKPICards } from "./DashboardKPICards";
 import { DashboardAlertSection } from "./DashboardAlertSection";
 import { StationListTable } from "./StationListTable";
 import { ComplimentaryAwardBanner } from "@/components/ComplimentaryAwardBanner";
+import { DeliveryHandoffPanel } from "./DeliveryHandoffPanel";
 
 import {
   Factory,
@@ -356,6 +357,9 @@ export function SupervisorDashboard({
 
       {/* Complimentary Access Alert */}
       <ComplimentaryAwardBanner />
+
+      {/* Org-wide physical delivery oversight (pickup → transit → acceptance) */}
+      <DeliveryHandoffPanel />
 
       {/* Alerts */}
       <DashboardAlertSection
