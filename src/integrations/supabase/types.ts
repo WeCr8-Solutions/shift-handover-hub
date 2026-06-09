@@ -15892,7 +15892,16 @@ export type Database = {
         }
         Returns: Json
       }
-      consume_activation_token: { Args: { _token: string }; Returns: Json }
+      consume_activation_token:
+        | { Args: { _token: string }; Returns: Json }
+        | {
+            Args: {
+              p_dry_run?: boolean
+              p_expected_email?: string
+              p_token: string
+            }
+            Returns: Json
+          }
       create_concierge_engagement_from_payment:
         | {
             Args: {
