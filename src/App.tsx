@@ -19,6 +19,7 @@ import { USPersonDeclarationGate } from "@/components/compliance/USPersonDeclara
 import { RulesOfBehaviorGate } from "@/components/compliance/RulesOfBehaviorGate";
 import { ReleaseBadge } from "@/components/ReleaseBadge";
 import { RequireAuth, RequireOrg, RequireRole, RequireSubscription } from "@/components/auth/RouteGuards";
+import { OwnerSetupRedirect } from "@/components/onboarding/OwnerSetupRedirect";
 import { lazy, Suspense } from "react";
 
 // Eager: landing page (LCP-critical, most-visited route)
