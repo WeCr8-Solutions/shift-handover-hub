@@ -220,16 +220,30 @@ function DeliveryRow({
         </div>
         <div className="flex flex-col gap-1.5 shrink-0">
           {isAwaitingAcceptance ? (
-            <Button
-              size="sm"
-              variant="default"
-              onClick={onAccept}
-              disabled={busy}
-              className="gap-1.5"
-            >
-              <PackageCheck className="w-3.5 h-3.5" />
-              Accept
-            </Button>
+            <>
+              <Button
+                size="sm"
+                variant="default"
+                onClick={onAccept}
+                disabled={busy}
+                className="gap-1.5"
+              >
+                <PackageCheck className="w-3.5 h-3.5" />
+                Accept
+              </Button>
+              {canForceAccept && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={onForceAccept}
+                  disabled={busy}
+                  className="gap-1.5 text-xs h-7"
+                  title="Accept on behalf of the receiving station (supervisor override)"
+                >
+                  Force accept
+                </Button>
+              )}
+            </>
           ) : (
             <>
               {!isInTransit && (
