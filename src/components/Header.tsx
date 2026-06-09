@@ -192,6 +192,7 @@ export function Header() {
               {user && <NavIconButton to="/planning-center" icon={Sparkles} label="Planning Center" />}
               <NavIconButton to="/tools" icon={Wrench} label="Operator Tools" />
               {hasOrgSupervisorAccess && <NavIconButton to="/teams" icon={Users} label="Team Management" />}
+              {hasOrgSupervisorAccess && <NavIconButton to="/customers" icon={IdCard} label="Customers" />}
               {(hasOrgAdminAccess || hasOrgSupervisorAccess) && <NavIconButton to="/oap/employer" icon={ClipboardCheck} label="OAP Employer Console" />}
               {(hasOrgAdminAccess || hasOrgSupervisorAccess) && <NavIconButton to="/gca/employer" icon={GraduationCap} label="GCA Employer Console" />}
               {user && (
