@@ -403,19 +403,22 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
 
             <div className="grid grid-cols-2 gap-8 mt-10 text-xs">
               <div>
-                <div className="border-b border-black h-10" />
-                <div className="mt-1">Customer signature</div>
+                <SignaturePad caption="Customer signature" storageKey={`sig:msa-customer:${engagementId ?? "blank"}`} />
                 <div className="mt-4 border-b border-black h-7" />
                 <div className="mt-1">Printed name &amp; title</div>
                 <div className="mt-4 border-b border-black h-7 w-32" />
                 <div className="mt-1">Effective date</div>
               </div>
               <div>
-                <div className="border-b border-black h-10" />
-                <div className="mt-1">JobLine representative signature</div>
-                <div className="mt-4 border-b border-black h-7" />
+                <SignaturePad
+                  caption="JobLine representative signature"
+                  storageKey={`sig:msa-jobline:${engagementId ?? "blank"}`}
+                  printedName={printedJobLine}
+                  showPrintedNameBelow
+                />
+                <div className="mt-4 border-b border-black h-7 flex items-end text-xs px-1">{printedJobLine}</div>
                 <div className="mt-1">Printed name &amp; title</div>
-                <div className="mt-4 border-b border-black h-7 w-32" />
+                <div className="mt-4 border-b border-black h-7 w-32 flex items-end text-xs px-1">{today}</div>
                 <div className="mt-1">Date</div>
               </div>
             </div>
@@ -425,28 +428,32 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
           {isOn("payment") && (
           <PrintPage title="Payment Instructions">
             <h1 className="text-2xl font-bold mb-4">How to pay</h1>
-            <p className="text-xs mb-4">Total due: <b>{amount}</b>. Production access is blocked until payment is recorded.</p>
-            <div className="grid grid-cols-2 gap-6 text-xs">
-              <div className="border border-black/40 p-4 rounded">
+            <p className="text-xs mb-4">
+              Total due: <b>{amount}</b>. Production access is blocked until payment is recorded.
+              {" "}Billing email on file: <b className="break-all">{effectiveBillingEmail}</b>
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div className="border border-black/40 p-3 rounded break-words">
                 <div className="font-semibold mb-1">Credit card (online)</div>
-                <p>Pay instantly at <b>https://jobline.ai/onboarding-service</b> after logging in. Stripe receipt issued automatically; engagement activates on webhook confirmation.</p>
+                <p>Pay instantly at <b className="break-all">https://jobline.ai/onboarding-service</b> after logging in. Stripe receipt issued automatically; engagement activates on webhook confirmation.</p>
               </div>
-              <div className="border border-black/40 p-4 rounded">
+              <div className="border border-black/40 p-3 rounded break-words">
                 <div className="font-semibold mb-1">Check</div>
                 <p>Payable to <b>JobLine AI, Inc.</b><br/>Mail to: JobLine AI, Inc.<br/>__________________________<br/>__________________________</p>
-                <p className="mt-2">Memo: Concierge — {orgName}</p>
+                <p className="mt-2">Memo: Concierge — <span className="break-words">{orgName}</span></p>
               </div>
-              <div className="border border-black/40 p-4 rounded">
+              <div className="border border-black/40 p-3 rounded break-words">
                 <div className="font-semibold mb-1">ACH / Wire</div>
-                <p>Bank: __________________________<br/>Routing: ______________ · Account: ______________<br/>Reference: Concierge — {orgName}</p>
+                <p>Bank: __________________________<br/>Routing: ______________ · Account: ______________<br/>Reference: Concierge — <span className="break-words">{orgName}</span></p>
               </div>
-              <div className="border border-black/40 p-4 rounded">
+              <div className="border border-black/40 p-3 rounded break-words">
                 <div className="font-semibold mb-1">Purchase order / Other</div>
-                <p>PO #: __________________________<br/>Approver: ______________________<br/>Email PO to <b>billing@jobline.ai</b>.</p>
+                <p>PO #: __________________________<br/>Approver: ______________________<br/>Email PO to <b className="break-all">billing@jobline.ai</b>.</p>
               </div>
             </div>
-            <div className="mt-6 border border-black/40 p-3 text-xs">
-              <b>Sales rep — for internal use:</b> after deposit, log into the Concierge workspace, open this engagement, and record the payment on the "Payment & Contract" panel. Upload a scan/photo of the check or wire receipt as proof.
+            <div className="mt-6 border border-black/40 p-3 text-xs break-words">
+              <b>Sales rep — for internal use:</b> after deposit, log into the Concierge workspace, open this engagement, and record the payment on the "Payment &amp; Contract" panel. Upload a scan/photo of the check or wire receipt as proof.
+              <div className="mt-2">Sales rep on this engagement: <b>{printedSales || "—"}</b></div>
             </div>
           </PrintPage>)}
 
