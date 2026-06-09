@@ -146,11 +146,50 @@ Deno.serve(async (req) => {
     const adminUser = await getOrCreateUser(admin, ADMIN_EMAIL, ADMIN_PASSWORD, "E2E Admin");
     const operatorUser = await getOrCreateUser(admin, OPERATOR_EMAIL, OPERATOR_PASSWORD, "E2E Operator");
 
-    // 2. Profiles (upsert)
+    // 2. Profiles (upsert) — pre-accept Rules of Behavior so the FedRAMP gate
+    //    doesn't block the daily-flow specs (a dedicated spec covers the gate itself).
+    const nowIso = new Date().toISOString();
+    const ROB_VERSION = "1.0-2026-04";
     await admin.from("profiles").upsert(
       [
-        { user_id: adminUser.id, email: ADMIN_EMAIL, display_name: "E2E Admin" },
-        { user_id: operatorUser.id, email: OPERATOR_EMAIL, display_name: "E2E Operator" },
+        {
+          user_id: adminUser.id,
+          email: ADMIN_EMAIL,
+          display_name: "E2E Admin",
+          rob_accepted_at: nowIso,
+          rob_version: ROB_VERSION,
+        },
+        {
+          user_id: operatorUser.id,
+          email: OPERATOR_EMAIL,
+          display_name: "E2E Operator",
+          rob_accepted_at: nowIso,
+          rob_version: ROB_VERSION,
+        },
+      ],
+      { onConflict: "user_id" },
+    );
+
+    // 2b. Mark onboarding complete + welcome seen so the setup wizard / welcome
+    //     modal don't intercept the dashboard for seeded users.
+    await admin.from("user_onboarding").upsert(
+      [
+        {
+          user_id: adminUser.id,
+          is_complete: true,
+          current_step: "complete",
+          has_seen_welcome: true,
+          setup_wizard_dismissed: true,
+          completed_at: nowIso,
+        },
+        {
+          user_id: operatorUser.id,
+          is_complete: true,
+          current_step: "complete",
+          has_seen_welcome: true,
+          setup_wizard_dismissed: true,
+          completed_at: nowIso,
+        },
       ],
       { onConflict: "user_id" },
     );
