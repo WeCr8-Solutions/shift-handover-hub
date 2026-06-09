@@ -270,6 +270,24 @@ export function DocumentLibrary({ audience, engagement, title, description }: Pr
                               {f.toUpperCase()}
                             </Button>
                           ))}
+                          {engagementId && (
+                            <>
+                              <Button size="sm" variant="outline" className="gap-1.5"
+                                onClick={() => handleSaveVersion(doc, false)}
+                                disabled={busy === `${doc.key}:save` || saveVersion.isPending}>
+                                <Save className="w-3.5 h-3.5" /> Save version
+                              </Button>
+                              <Button size="sm" variant="outline" className="gap-1.5"
+                                onClick={() => handleSaveVersion(doc, true)}
+                                disabled={busy === `${doc.key}:save` || saveVersion.isPending}>
+                                <ShieldCheck className="w-3.5 h-3.5" /> Save as master
+                              </Button>
+                              <Button size="sm" variant="ghost" className="gap-1.5"
+                                onClick={() => setVersionsFor(doc)}>
+                                <History className="w-3.5 h-3.5" /> Versions
+                              </Button>
+                            </>
+                          )}
                         </div>
                       </CardContent>
                     </Card>
