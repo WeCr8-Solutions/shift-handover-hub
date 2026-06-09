@@ -161,6 +161,8 @@ const getInitialFormData = (operatorName: string): FormData => ({
   reworkCount: 0,
   criticalDimsVerified: false,
   handoffSummary: "",
+  qtyOriginal: 0,
+  qtyOpen: 0,
 });
 
 interface NewHandoffFormProps {
