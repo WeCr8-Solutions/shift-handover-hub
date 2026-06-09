@@ -94,7 +94,8 @@ export function CreateWorkOrderDialog({
   });
 
   const mfgPrefs = (getSetting("manufacturing_preferences") || {}) as Record<string, unknown>;
-  const autoGenerateOnOpen = Boolean(mfgPrefs.autoGenerateWorkOrders);
+  // Auto-generate by default — only skip when org explicitly disables it.
+  const autoGenerateOnOpen = mfgPrefs.autoGenerateWorkOrders !== false;
 
   const generateNumber = useCallback(async () => {
     if (!organization?.id) return;
@@ -132,13 +133,20 @@ export function CreateWorkOrderDialog({
         required_tolerance: "",
         surface_finish: "",
       });
-      // Auto-generate WO/Quote number if org has the preference enabled
       if (autoGenerateOnOpen && organization?.id) {
         void generateNumber();
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, defaultFormData, initialItemType]);
+
+  // Re-generate when toggling between Quote and Work Order so the displayed
+  // number matches the selected kind's prefix and sequence.
+  useEffect(() => {
+    if (!open || !autoGenerateOnOpen || !organization?.id) return;
+    void generateNumber();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [itemType]);
 
 
 

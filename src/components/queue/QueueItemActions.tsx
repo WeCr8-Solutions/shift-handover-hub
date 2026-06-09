@@ -13,6 +13,8 @@ import { QueueItem, QueueStatus, UpdateQueueItemInput } from "@/hooks/useQueue";
 import { Station } from "@/hooks/useStations";
 import { woToast } from "@/lib/woToast";
 import { useAdminAccess } from "@/hooks/useAdminData";
+import { useGeneralSettings } from "@/hooks/useGeneralSettings";
+import { useOrgContext } from "@/contexts/OrgContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import {
@@ -60,6 +62,10 @@ export function QueueItemActions({
   const navigate = useNavigate();
   const wo = item.work_order ?? null;
   const { hasAdminAccess, hasOrgSupervisorAccess } = useAdminAccess();
+  const { organization } = useOrgContext();
+  const { getSetting } = useGeneralSettings();
+  const mfgPrefs = (getSetting("manufacturing_preferences") || {}) as Record<string, unknown>;
+  const autoConvertOnApproval = mfgPrefs.quoteAutoConvertOnApproval === true;
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [convertDialogOpen, setConvertDialogOpen] = useState(false);
   const [convertWONumber, setConvertWONumber] = useState("");
@@ -337,8 +343,31 @@ export function QueueItemActions({
   };
 
 
-  const handleConvertToWorkOrder = async () => {
-    if (!convertWONumber.trim()) {
+  const fetchNextWONumber = async (): Promise<string> => {
+    if (!organization?.id) return "";
+    const { data, error } = await (supabase.rpc as any)("generate_next_wo_number", {
+      _organization_id: organization.id,
+      _kind: "work_order",
+    });
+    if (error) {
+      console.error("generate_next_wo_number failed", error);
+      return "";
+    }
+    return (data as string) || "";
+  };
+
+  const handleOpenConvertDialog = async () => {
+    setConvertWONumber(item.work_order || "");
+    setConvertStationId(item.station_id || undefined);
+    setConvertDialogOpen(true);
+    // Always suggest the next sequential WO# from org numbering settings.
+    const next = await fetchNextWONumber();
+    if (next) setConvertWONumber(next);
+  };
+
+  const handleConvertToWorkOrder = async (overrideWONumber?: string) => {
+    const targetWO = (overrideWONumber ?? convertWONumber).trim();
+    if (!targetWO) {
       woToast.error("Work order number required", "Please enter a work order number", wo);
       return;
     }
@@ -370,7 +399,7 @@ export function QueueItemActions({
           ...cloneable,
           item_type: "work_order",
           status: "pending",
-          work_order: convertWONumber.trim(),
+          work_order: targetWO,
           station_id: newStationId,
           source_quote_id: item.id,
           created_by: user?.id ?? (cloneable as { created_by?: string }).created_by,
@@ -407,7 +436,7 @@ export function QueueItemActions({
         .eq("id", item.id);
       if (updateErr) throw updateErr;
 
-      woToast.success("Quote converted", convertWONumber, `Now tracking as Work Order: ${convertWONumber}`);
+      woToast.success("Quote converted", targetWO, `Now tracking as Work Order: ${targetWO}`);
       setConvertDialogOpen(false);
       setConvertWONumber("");
       setConvertStationId(undefined);
@@ -493,12 +522,25 @@ export function QueueItemActions({
       {isQuote && (
         <div className="space-y-3">
           <div className="flex flex-wrap gap-2 p-3 bg-amber-500/10 rounded-lg border border-amber-500/30" data-tour="quote-convert-bar">
+            {autoConvertOnApproval && (
+              <Button
+                onClick={async () => {
+                  const next = await fetchNextWONumber();
+                  if (!next) {
+                    woToast.error("Could not generate WO #", "Check numbering settings", wo);
+                    return;
+                  }
+                  await handleConvertToWorkOrder(next);
+                }}
+                disabled={converting}
+                className="gap-2 bg-green-600 hover:bg-green-700"
+              >
+                {converting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                Approve &amp; Convert
+              </Button>
+            )}
             <Button
-              onClick={() => {
-                setConvertWONumber(item.work_order || "");
-                setConvertStationId(item.station_id || undefined);
-                setConvertDialogOpen(true);
-              }}
+              onClick={handleOpenConvertDialog}
               className="gap-2 bg-primary hover:bg-primary/90"
             >
               <ArrowRightLeft className="w-4 h-4" />
@@ -541,7 +583,7 @@ export function QueueItemActions({
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button onClick={handleConvertToWorkOrder} disabled={converting} className="gap-2">
+                <Button onClick={() => handleConvertToWorkOrder()} disabled={converting} className="gap-2">
                   {converting && <Loader2 className="w-4 h-4 animate-spin" />}
                   <CheckCircle2 className="w-4 h-4" />
                   Confirm Conversion
