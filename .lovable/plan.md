@@ -1,189 +1,102 @@
-## Goal
+# Plan — Concierge wrap-up + portable profiles + pricing refactor
 
-1. One **Markdown file** is the single source of truth for subscription tiers (name, price, seats, benefits, add-ons). Pricing page, Concierge Sales Pack (screen + print), DOCX/PDF exports, and `/help` docs all render from it — edit once, reflects everywhere.
-2. The Concierge Sales Pack gets a **Finalize & Save** step. The pack can be saved as a draft at any time and must be finalized before Print / Email / Export — finalizing locks editable fields and signatures so the saved master can't be tampered with.
+Five tightly scoped workstreams. All edits respect existing finalization lock (no edits after seal) and multi-tenant RLS.
 
-## Where tiers live today
+## 1. Editable Concierge Document Library + cost arrangement re-pricing
 
-- Hardcoded in `src/hooks/useSubscription.ts` (`PRICING_TIERS`, `ERP_ADDON_TIERS`).
-- Duplicated copy on `/pricing` (`"1 user"`, `"Up to 10 users"`, `"$12/seat/mo after"`).
-- Copy-pasted again inside `src/lib/concierge/templates/contracts.ts` and the printable sheets.
-- Sales Pack `Subscription & Seats` page only shows the *current* org's usage — it does NOT walk the rep through all tiers / benefits.
+**Goal:** After a doc is generated/uploaded, allow the rep to edit the captured "needs" and adjust scope/cost without losing the prior signed/finalized version.
 
-The plan removes those duplicates.
+- **DB migration** `concierge_document_records`:
+  - `engagement_id`, `document_key`, `version` (int), `format`, `storage_path` (Supabase Storage `concierge-docs/<org>/<engagement>/<doc>-v{n}.<ext>`), `needs_snapshot` jsonb, `cost_snapshot` jsonb, `is_master` bool, `created_by`, `created_at`, `superseded_at`.
+  - RLS: org admins + assigned concierge rep can read/write; finalized masters are immutable (trigger blocks update when `is_master=true`).
+  - GRANTs to `authenticated` + `service_role`.
+  - New private storage bucket `concierge-docs` with org-scoped path RLS.
+- **`DocumentLibrary.tsx`**:
+  - "Save to record" button per doc → uploads the rendered blob + a `needs_snapshot` (pulled from `EditableField` localStorage by `engagementId`) + `cost_snapshot` (current tier/seats/add-ons from `useSubscription` + `subscriptionTiers.ts`).
+  - "Versions" drawer listing prior records (download / preview / mark as master).
+  - "Edit needs & re-price" panel: inline `EditableField`s for scope notes + a small `CostEstimator` component that recomputes monthly/annual totals from tier + seat count + ERP add-on + concierge fee. Save creates a new version (v+1), keeps prior version read-only.
+- **`CostEstimator.tsx`** (new): pure-function pricing from `subscriptionTiers.ts` + inputs (tier, seats, addons, one-time fees). No Stripe writes — quote only; rep can later push to Stripe via existing flow.
 
-## 1 · Canonical Markdown source
+## 2. Finalization: propagate `readOnly={isFinalized}` + gate Email/Export
 
-New file `src/content/subscription-tiers.md` (authored once, edited by ops):
+- Pass `readOnly={isFinalized}` to **every** `SignaturePad` and remaining `EditableField` in `ConciergeSalesPack.tsx` (MSA customer, MSA Jobline rep, ITAR, Go-Live, final, page-907 signer — currently missing the prop).
+- `SignaturePad`: when `readOnly` is true + a sealed signature exists, render the saved image only (no clear / re-sign controls). Already partially supported — verify and lock.
+- `ConciergeFinalizeBar.tsx`: add **Email** and **Export PDF** buttons next to Print. Both disabled until `isFinalized`. Same tooltip.
+  - **Export PDF**: `window.print()` to PDF (existing pattern) — or reuse `documentRegistry` renderer for the master snapshot.
+  - **Email**: invokes new edge function below.
 
-```text
----
-currency: USD
-billing: monthly
-trial_days: 14
----
+## 3. Email send template for finalized pack
 
-# single
-name: Single User
-price: 49
-seats: 1
-tagline: One operator, full dashboard.
-benefits:
-  - Full dashboard access
-  - Unlimited handoff submissions
-  - Performance update tracking
-  - Real-time station monitoring
-  - Email notifications
-  - Mobile-friendly interface
+- New edge function `send-concierge-pack` (auth-gated, org-admin or assigned rep only):
+  - Input: `engagementId`, optional `toOverride` (billing email).
+  - Loads `concierge_pack_finalizations` master snapshot + latest `concierge_document_records` for the engagement; refuses if not finalized.
+  - Sends via existing `send-transactional-email` infra with a new template `concierge-finalized-pack.tsx` in `_shared/transactional-email-templates/`:
+    - Subject: "Your Jobline Concierge package — sealed copy"
+    - Body: org name, tier summary, signer names, sealed-on date, secure download link to each doc (signed URL, 7-day expiry).
+  - Registry update in `registry.ts`.
+- Toast + audit row appended to `onboarding_engagements.notes` on send.
 
-# team
-name: Team
-price: 149
-seats: 10
-popular: true
-…
-```
+## 4. Portable talent profile + secure org join / re-join
 
-Plus an `## Add-ons` section for `ERP Starter / Pro / Unlimited` and a `## FAQ` section reused by Pricing JSON-LD.
+**Goal:** A manufacturing pro keeps their `operator_profiles` row across orgs; when they leave one shop they can join another without losing GCA/OAP credentials. Employer-side data stays org-scoped.
 
-### Parser
+- **QR invite hardening** (existing `organization_invites`):
+  - Confirm `redeem_invite` RPC writes `organization_members(org_id, user_id, role)` to the **invite's** org (not the user's previously-active org). Add server-side assertion + audit row in `invite_redemptions`.
+  - On redeem, do **not** delete prior `organization_members` rows — user can belong to multiple orgs over time; `useOrganization` already handles active-org switching.
+- **Leave org flow** (`/settings/team` for the user):
+  - "Leave organization" button → RPC `leave_organization(org_id)` removes the membership row, clears that org from `user_org_preferences.active_org_id` if matched, but **preserves** `operator_profiles`, GCA attempts, OAP credentials (already user-scoped, not org-scoped).
+  - Employer-only data (job_performance_updates, handoff_records, queue_items) stays with the org per existing RLS — user can no longer read it after leaving. Confirmed by current policies.
+- **Secure activation link fallback** (email never arrived):
+  - New RPC `request_activation_link(email)` → generates a single-use token row in `oap_transfer_tokens`-style table (`account_activation_tokens`: `token_hash`, `email`, `expires_at` 24h, `used_at`).
+  - Edge function `request-activation-link` (public, rate-limited 3/hr/IP via `email_rate_limits`) sends a transactional email with `/activate?token=...`.
+  - `/activate` page validates token via RPC `consume_activation_token(token)` → returns the auth user + redirects to set-password / sign-in. No PII exposed in the URL.
+  - Admin button "Resend activation link" on org member list invokes the same function for a specific invited member.
 
-`src/lib/subscriptionTiers.ts`:
+## 5. `/pricing` refactor to `<TierCard>`
 
-- `import md from "@/content/subscription-tiers.md?raw"` (Vite SPA friendly — no runtime fs).
-- Parse front-matter + each `# slug` block into:
-  ```text
-  TierDoc { slug, name, price, seats, tagline, benefits[], popular?, additionalSeatPrice? }
-  ```
-- Export `TIERS: TierDoc[]`, `ADDONS: AddonDoc[]`, `FAQ: { q, a }[]`, `META`.
-- Provide `mergeWithStripe(TIERS)` that overlays Stripe `priceId / productId` from a small `tierIds.ts` constant so secrets / env-specific IDs stay in code, not in customer-editable Markdown.
+- Replace the inline tier grid in `src/pages/Pricing.tsx` with `<TierCard tier={t} />` mapped from `TIERS` (from `subscriptionTiers.ts`).
+- Keep current CTA logic (`handleSubscribe`, `currentTier`, "Current plan" badge) by passing it down as props (`ctaLabel`, `onCtaClick`, `highlighted`, `disabled`).
+- Add ERP add-on row underneath using the same `TierCard` variant or a dedicated `<AddonCard>`.
+- Verify `/pricing`, Sales Pack tier-comparison page, and printable sheets all render identical cards from the same markdown source.
 
-### Refactor consumers
+## Technical notes
 
-- `src/hooks/useSubscription.ts` — `PRICING_TIERS` is re-exported as the merged object (same shape; same `priceId` keys preserved).
-- `src/pages/Pricing.tsx` — drop the hardcoded `"1 user"` / `"Up to 10 users"` strings; pull from `TIERS`. JSON-LD FAQ pulled from the `## FAQ` section.
-- `src/components/EntitlementGate.tsx`, `src/components/machine/MachineMonitoringGate.tsx`, `src/components/settings/ERPConnectorSettings.tsx`, `src/components/admin/printables/printableSheets.ts` — all read from the merged object (no behaviour change, just less duplication).
-- `src/lib/concierge/templates/contracts.ts` and `documentRegistry.ts` — tier comparison table inside the DOCX/PDF is generated from `TIERS` so saved exports always match the live Markdown.
+- New tables → migration with `CREATE TABLE` + `GRANT` + RLS + policies (per project rules).
+- Storage bucket `concierge-docs` is **private**; downloads use signed URLs only.
+- ITAR orgs: concierge email links use signed URLs with short TTL; no doc content embedded in the email body.
+- All new RPCs `SECURITY DEFINER` with `SET search_path = public`.
+- No changes to `useSubscription` public API; pricing data already flows from `subscription-tiers.md`.
 
-## 2 · Tier walkthrough in the Sales Pack
+## Files
 
-In `src/pages/ConciergeSalesPack.tsx`:
+**Create**
+- `supabase/migrations/<ts>_concierge_doc_records_and_activation.sql`
+- `src/components/admin/concierge/CostEstimator.tsx`
+- `src/components/admin/concierge/DocumentVersionsDrawer.tsx`
+- `src/hooks/useConciergeDocumentRecords.ts`
+- `src/hooks/useAccountActivation.ts`
+- `src/pages/Activate.tsx` + route entry
+- `supabase/functions/send-concierge-pack/index.ts`
+- `supabase/functions/request-activation-link/index.ts`
+- `supabase/functions/_shared/transactional-email-templates/concierge-finalized-pack.tsx`
 
-- New print section **“Tier Comparison & Recommendation”** (added to the `SECTIONS` list, on by default):
-  - Side-by-side card grid rendered from `TIERS` — name, price, seats, benefits, popular badge.
-  - `Add-ons` row for ERP tiers.
-  - A `<EditableField>` "Recommended tier & rationale" (auto-save per engagement) so the rep types why they're proposing Team vs Enterprise; prints inline.
-- Existing **Subscription & Seats** page keeps the live seat ledger (data from `useConciergePrefill`) but now also shows the tier card pulled from Markdown above the ledger so screen + print + DOCX all read identically.
+**Edit**
+- `src/components/admin/concierge/DocumentLibrary.tsx` (save versions, edit needs, re-price)
+- `src/components/admin/concierge/ConciergeFinalizeBar.tsx` (Email + Export buttons)
+- `src/components/admin/concierge/SignaturePad.tsx` (strict readOnly lock)
+- `src/pages/ConciergeSalesPack.tsx` (propagate `readOnly={isFinalized}` everywhere)
+- `src/pages/Pricing.tsx` (use `<TierCard>`)
+- `src/components/marketing/TierCard.tsx` (CTA props)
+- `supabase/functions/_shared/transactional-email-templates/registry.ts`
+- `src/App.tsx` (add `/activate` route)
+- `src/pages/settings/Team*.tsx` (Leave org + Resend activation buttons)
 
-This page is rendered using the **same React components** that power `/pricing`, factored out as `<TierCard tier={…} />` in `src/components/marketing/TierCard.tsx`, so the marketing page and the sales pack can't drift.
+## Acceptance
 
-## 3 · Finalize & Save (before Print / Email / Export)
-
-### Data model
-
-New table:
-
-```text
-public.concierge_pack_finalizations
-  engagement_id uuid PK references onboarding_engagements(id)
-  snapshot jsonb NOT NULL              -- full pack state (see below)
-  status text NOT NULL                 -- 'draft' | 'finalized'
-  finalized_by uuid, finalized_at timestamptz
-  reopened_by uuid, reopened_at timestamptz, reopen_reason text
-  pack_hash text                       -- sha256 of the snapshot for tamper detection
-  created_at / updated_at
-```
-
-`snapshot` contains: selected sections, paper/orientation/copies, rep + JobLine signer info, billing email, rep talent URL, all `EditableField` values keyed by `fieldKey`, sealed-signature envelopes, recommended tier + rationale.
-
-GRANTs + RLS:
-
-- `GRANT SELECT, INSERT, UPDATE ON public.concierge_pack_finalizations TO authenticated;`
-- RLS: platform admins + the assigned engagement admin can read/write.
-
-### UI
-
-`src/components/admin/concierge/ConciergeFinalizeBar.tsx` (new), mounted in the Sales Pack toolbar:
-
-- **Save draft** — writes/upserts the snapshot with `status='draft'`. Toast: "Draft saved. Resume anytime from this engagement."
-- **Finalize & Save Master** — confirmation modal listing what's locked (rep info, customer-needs fields, signatures, tier selection). On confirm: writes snapshot with `status='finalized'`, computes `pack_hash`, sets `finalized_by/_at`. Pushes the snapshot into the engagement's audit `notes` (`[finalize] ts — user — fields=N — hash=…`).
-- After finalize the bar collapses to a **green "Finalized {date} by {name}"** card with **Print**, **Email to customer**, **Export PDF/DOCX** buttons enabled. **Re-open** button (admin-only, prompts for a reason → unsets `finalized_*`, records reopen audit).
-
-### Locking
-
-- `EditableField` already accepts `readOnly` — pass `readOnly={isFinalized}` from the page so every field collapses to its printed text after finalize.
-- `SignaturePad` already supports a sealed lock; finalize sets `lockKey` for any pad whose canvas has ink that isn't already sealed, so accepting "Finalize" also seals every signature in one shot.
-- `Print` / `Email` / `Export` buttons in the toolbar are disabled in `draft` mode and surface a tooltip: *"Save & Finalize first to lock the master copy."*
-
-### Email & export wiring
-
-- **Email**: reuse the existing `send-email` edge function with a new template (subject = `Concierge contract — {orgName}`, body links to the print URL + attaches the PDF the rep generated). The Email button is the *send* trigger, not the *generate* — generation still uses `window.print()` to PDF or the existing DOCX exporter in `documentRegistry.ts`. Email queue is logged to `email_send_log`.
-- **Export PDF/DOCX**: existing `DocumentLibrary` flow stays; we just guard the buttons with `isFinalized`.
-
-## Technical details
-
-### Files added
-
-```text
-src/content/subscription-tiers.md                 # canonical tier source
-src/lib/subscriptionTiers.ts                      # parser + types + mergeWithStripe
-src/lib/tierIds.ts                                # stripe priceId/productId overlay
-src/components/marketing/TierCard.tsx             # shared card used by /pricing + sales pack
-src/components/admin/concierge/ConciergeFinalizeBar.tsx
-src/hooks/useConciergeFinalization.ts             # load / save / finalize / reopen
-supabase/migrations/<ts>_concierge_pack_finalizations.sql
-```
-
-### Files modified
-
-```text
-src/hooks/useSubscription.ts                      # PRICING_TIERS now mergeWithStripe(TIERS)
-src/pages/Pricing.tsx                             # render TierCard list, FAQ from md
-src/pages/ConciergeSalesPack.tsx                  # add Tier section, finalize bar, gate print/email/export
-src/lib/concierge/templates/contracts.ts          # tier table from TIERS
-src/lib/concierge/documentRegistry.ts             # uses same source
-src/components/admin/concierge/EditableField.tsx  # already supports readOnly — wired from page
-src/components/admin/concierge/SignaturePad.tsx   # already supports lock — finalize triggers it
-src/components/EntitlementGate.tsx
-src/components/machine/MachineMonitoringGate.tsx
-src/components/settings/ERPConnectorSettings.tsx
-src/components/admin/printables/printableSheets.ts
-```
-
-### Vite raw-md import
-
-Tier markdown is loaded via `?raw` — no runtime `fs`, fully compatible with the SPA constraint.
-
-### Migration sketch
-
-```text
-CREATE TABLE public.concierge_pack_finalizations (
-  engagement_id uuid PRIMARY KEY REFERENCES public.onboarding_engagements(id) ON DELETE CASCADE,
-  snapshot jsonb NOT NULL,
-  status text NOT NULL DEFAULT 'draft' CHECK (status IN ('draft','finalized')),
-  finalized_by uuid, finalized_at timestamptz,
-  reopened_by uuid, reopened_at timestamptz, reopen_reason text,
-  pack_hash text,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now()
-);
-GRANT SELECT, INSERT, UPDATE ON public.concierge_pack_finalizations TO authenticated;
-GRANT ALL ON public.concierge_pack_finalizations TO service_role;
-ALTER TABLE public.concierge_pack_finalizations ENABLE ROW LEVEL SECURITY;
--- policies: assigned admin OR has_role('admin'|'developer') can SELECT/UPSERT; only
--- has_role('admin'|'developer') can UPDATE rows already in 'finalized' state (reopen).
-```
-
-## Acceptance criteria
-
-- Editing a value in `src/content/subscription-tiers.md` changes the displayed tier on `/pricing`, in the Sales Pack on-screen, in the printed Tier Comparison page, and in the DOCX export — without touching any TS file.
-- The Sales Pack toolbar shows **Save draft** at all times and **Finalize & Save Master** when at least one signature is captured or the rep clicks anyway after a confirm.
-- After finalize, all `EditableField`s, signatures, and signer-info inputs are read-only; Print / Email / Export buttons become enabled.
-- Re-open requires an admin confirmation and a reason, and the reason lands in engagement `notes` + the finalization audit columns.
-- Reloading the page after Save Draft restores every editable field, rep info, and unsigned-but-typed values.
-- allow for full concierge CRUD until setup is accepted by owner in case other seat and users emails were incorrect or other issue
-
-## Out of scope
-
-- Storing the rendered PDF itself in Cloud storage — print/PDF still uses the browser's print dialog; emailing the PDF requires the rep to attach the generated file in the existing DocumentLibrary flow.
-- Changing Stripe pricing — `priceId` / `productId` stay in `tierIds.ts`; the markdown only owns customer-facing copy.
+- Doc can be edited & saved with new version after generation; prior masters remain immutable.
+- Re-pricing reflects in the Cost Estimator and is captured in the new version snapshot.
+- Email/Export only enabled after Finalize; email contains signed download links.
+- Every signature / editable field on the sales pack locks after seal.
+- User can leave Org A and accept Org B's QR invite — their operator profile/credentials persist; Org A data is inaccessible.
+- A user who never received the activation email can request a fresh secure link, valid 24h, single-use.
+- `/pricing`, Sales Pack tier page, and printable sheets all render the same `<TierCard>` from `subscription-tiers.md`.
