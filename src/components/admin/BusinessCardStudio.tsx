@@ -454,7 +454,7 @@ function FrontFace({
           background: `linear-gradient(180deg, ${accent}, ${shade(accent, -25)})`,
         }}
       />
-      <div style={{ flex: 1, padding: 36, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+      <div style={{ flex: 1, padding: 36 + SAFETY_PX - BLEED_PX, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
         <div>
           <div style={{ fontSize: 14, letterSpacing: 2, color: accent, fontWeight: 700, textTransform: "uppercase" }}>
             {kind === "talent" ? "JobLine Talent" : "JobLine.ai"}
