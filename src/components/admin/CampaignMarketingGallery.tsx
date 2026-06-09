@@ -13,8 +13,9 @@ import {
 } from "@/components/ui/select";
 import {
   Upload, Image as ImageIcon, FileSpreadsheet, FileText, Trash2,
-  ExternalLink, Pencil, Download,
+  ExternalLink, Pencil, Download, Package,
 } from "lucide-react";
+import JSZip from "jszip";
 import { toast } from "sonner";
 import {
   useCampaignMarketingAssets,
@@ -190,6 +191,68 @@ export function CampaignMarketingGallery({ campaignId }: Props) {
   }
 
   const filtered = kindFilter === "all" ? assets : assets.filter(a => a.kind === kindFilter);
+  const [exporting, setExporting] = useState(false);
+
+  async function downloadZipPackage() {
+    if (filtered.length === 0) {
+      toast.error("Nothing to export.");
+      return;
+    }
+    setExporting(true);
+    const t = toast.loading(`Packaging ${filtered.length} asset(s)…`);
+    try {
+      const zip = new JSZip();
+      const folders: Record<CampaignAssetKind, string> = {
+        flyer_image: "flyers",
+        mailing_list_xlsx: "mailing-lists",
+        document: "documents",
+        other: "other",
+      };
+      const manifest: string[] = [
+        "title,kind,used_on,zone_number,utm_content,utm_target_url,filename,bytes,notes",
+      ];
+      const csvEscape = (v: unknown) => {
+        const s = v == null ? "" : String(v);
+        return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+      };
+
+      for (const a of filtered) {
+        const url = await signedUrl(a.storage_path, 60 * 15);
+        if (!url) continue;
+        const res = await fetch(url);
+        if (!res.ok) continue;
+        const blob = await res.blob();
+        const baseName = a.storage_path.split("/").pop() ?? `${a.id}`;
+        const safeTitle = a.title.replace(/[^\w.\-]+/g, "_").slice(0, 60);
+        const filename = `${safeTitle || a.id}__${baseName}`;
+        zip.folder(folders[a.kind])!.file(filename, blob);
+        manifest.push([
+          a.title, a.kind, a.used_on ?? "", a.zone_number ?? "",
+          a.utm_content ?? "", a.utm_target_url ?? "",
+          `${folders[a.kind]}/${filename}`, a.byte_size ?? "", a.notes ?? "",
+        ].map(csvEscape).join(","));
+      }
+      zip.file("manifest.csv", manifest.join("\n"));
+      zip.file("README.txt",
+        `Campaign marketing package\nGenerated: ${new Date().toISOString()}\nAssets: ${filtered.length}\nFilter: ${kindFilter}\n\nFolders:\n- flyers/         Flyer images\n- mailing-lists/  Vista Print XLSX mailing lists\n- documents/      Supporting docs (PDF, DOCX, etc.)\n- other/          Misc assets\n\nSee manifest.csv for full metadata including UTM tagging and zone numbers.\n`,
+      );
+      const out = await zip.generateAsync({ type: "blob" });
+      const stamp = new Date().toISOString().slice(0, 10);
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(out);
+      a.download = `campaign_package_${stamp}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(a.href);
+      toast.success(`Downloaded ${filtered.length} asset(s).`, { id: t });
+    } catch (e) {
+      toast.error("Export failed: " + (e as Error).message, { id: t });
+    } finally {
+      setExporting(false);
+    }
+  }
+
 
   if (!campaignId) {
     return <p className="text-sm text-muted-foreground p-4">No campaign selected.</p>;
@@ -216,9 +279,20 @@ export function CampaignMarketingGallery({ campaignId }: Props) {
                 <SelectItem value="other">Other</SelectItem>
               </SelectContent>
             </Select>
+            <Button
+              size="sm" variant="outline"
+              onClick={downloadZipPackage}
+              disabled={exporting || filtered.length === 0}
+              className="gap-1.5"
+              title="Download all visible assets + manifest.csv as a ZIP"
+            >
+              <Package className="w-3.5 h-3.5" />
+              {exporting ? "Packaging…" : `ZIP (${filtered.length})`}
+            </Button>
             <Button size="sm" onClick={() => setUploadOpen(true)} className="gap-1.5">
               <Upload className="w-3.5 h-3.5" /> Upload
             </Button>
+
           </div>
         </div>
       </CardHeader>
