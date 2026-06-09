@@ -364,7 +364,7 @@ export function NewHandoffForm({ onClose, onSubmit, initialStationId, prefillDat
       // Auto-fill from active queue item at this station
       const { data: activeItem } = await supabase
         .from("queue_items")
-        .select("work_order, part_number, operation_number, quantity, qty_completed, parts_completed")
+        .select("work_order, part_number, operation_number, quantity, qty_original, qty_completed, qty_open, parts_completed")
         .eq("station_id", stationDbId)
         .eq("status", "in_progress")
         .limit(1)
@@ -383,11 +383,20 @@ export function NewHandoffForm({ onClose, onSubmit, initialStationId, prefillDat
         if (activeItem.operation_number) updates.operationNumber = activeItem.operation_number;
         // Pre-fill parts completed from the work order's tracked count
         updates.partsCompleted = activeItem.qty_completed || activeItem.parts_completed || 0;
+        // Show operator how many parts are still required for this WO.
+        const original = activeItem.qty_original ?? activeItem.quantity ?? 0;
+        const completed = activeItem.qty_completed ?? activeItem.parts_completed ?? 0;
+        updates.qtyOriginal = original;
+        updates.qtyOpen = activeItem.qty_open ?? Math.max(0, original - completed);
         toast.info(`Auto-filled from active work order: ${activeItem.work_order || activeItem.part_number}`);
       } else if (stationStatus) {
         if (stationStatus.current_job_work_order) updates.workOrder = stationStatus.current_job_work_order;
         if (stationStatus.current_job_part_number) updates.partNumber = stationStatus.current_job_part_number;
         if (stationStatus.parts_complete) updates.partsCompleted = stationStatus.parts_complete;
+        if (stationStatus.parts_required != null) {
+          updates.qtyOriginal = stationStatus.parts_required;
+          updates.qtyOpen = Math.max(0, (stationStatus.parts_required ?? 0) - (stationStatus.parts_complete ?? 0));
+        }
       }
 
       // Auto-fill job state from station status
