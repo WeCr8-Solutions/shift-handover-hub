@@ -522,12 +522,25 @@ export function QueueItemActions({
       {isQuote && (
         <div className="space-y-3">
           <div className="flex flex-wrap gap-2 p-3 bg-amber-500/10 rounded-lg border border-amber-500/30" data-tour="quote-convert-bar">
+            {autoConvertOnApproval && (
+              <Button
+                onClick={async () => {
+                  const next = await fetchNextWONumber();
+                  if (!next) {
+                    woToast.error("Could not generate WO #", "Check numbering settings", wo);
+                    return;
+                  }
+                  await handleConvertToWorkOrder(next);
+                }}
+                disabled={converting}
+                className="gap-2 bg-green-600 hover:bg-green-700"
+              >
+                {converting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                Approve &amp; Convert
+              </Button>
+            )}
             <Button
-              onClick={() => {
-                setConvertWONumber(item.work_order || "");
-                setConvertStationId(item.station_id || undefined);
-                setConvertDialogOpen(true);
-              }}
+              onClick={handleOpenConvertDialog}
               className="gap-2 bg-primary hover:bg-primary/90"
             >
               <ArrowRightLeft className="w-4 h-4" />
