@@ -8,9 +8,10 @@ import { CustomersLaunchpad } from "./CustomersLaunchpad";
 import { SelfServeList } from "./SelfServeList";
 import { SelfServeAssistDrawer } from "./SelfServeAssistDrawer";
 import { ConciergeQuickActions } from "./ConciergeQuickActions";
+import { useUrlState } from "@/hooks/useUrlState";
 
 export function CustomerSuccessPanel() {
-  const [tab, setTab] = useState<string>("customers");
+  const [tab, setTab] = useUrlState<string>("sub", "customers");
   const [conciergeEngagementId, setConciergeEngagementId] = useState<string | null>(null);
   const [assistOrgId, setAssistOrgId] = useState<string | null>(null);
 
