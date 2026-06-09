@@ -73,6 +73,7 @@ export function QueueItemActions({
   const [convertStationId, setConvertStationId] = useState<string | undefined>();
   const [converting, setConverting] = useState(false);
   const [cloning, setCloning] = useState(false);
+  const [addToPackageOpen, setAddToPackageOpen] = useState(false);
   const [handoffPrompt, setHandoffPrompt] = useState<{
     open: boolean;
     nextStationId?: string | null;
