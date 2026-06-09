@@ -583,7 +583,7 @@ export function QueueItemActions({
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button onClick={handleConvertToWorkOrder} disabled={converting} className="gap-2">
+                <Button onClick={() => handleConvertToWorkOrder()} disabled={converting} className="gap-2">
                   {converting && <Loader2 className="w-4 h-4 animate-spin" />}
                   <CheckCircle2 className="w-4 h-4" />
                   Confirm Conversion
