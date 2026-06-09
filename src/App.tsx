@@ -19,6 +19,7 @@ import { USPersonDeclarationGate } from "@/components/compliance/USPersonDeclara
 import { RulesOfBehaviorGate } from "@/components/compliance/RulesOfBehaviorGate";
 import { ReleaseBadge } from "@/components/ReleaseBadge";
 import { RequireAuth, RequireOrg, RequireRole, RequireSubscription } from "@/components/auth/RouteGuards";
+import { OwnerSetupRedirect } from "@/components/onboarding/OwnerSetupRedirect";
 import { lazy, Suspense } from "react";
 
 // Eager: landing page (LCP-critical, most-visited route)
@@ -159,6 +160,7 @@ const ERPSelectionGuide = lazy(() => import("./pages/resources/ERPSelectionGuide
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Activate = lazy(() => import("./pages/Activate"));
 const ClaimAccountOwner = lazy(() => import("./pages/ClaimAccountOwner"));
+const Welcome = lazy(() => import("./pages/Welcome"));
 const Blog = lazy(() => import("./pages/Blog"));
 const SitemapPage = lazy(() => import("./pages/SitemapPage"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
@@ -225,13 +227,15 @@ const App = () => (
                   <Suspense fallback={<RouteFallback />}>
                   <Routes>
                     <Route path="/" element={<Landing />} />
-                    <Route path="/dashboard" element={<Index />} />
+                    <Route path="/dashboard" element={<OwnerSetupRedirect><Index /></OwnerSetupRedirect>} />
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/unsubscribe" element={<Unsubscribe />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/activate" element={<Activate />} />
                     <Route path="/claim/account-owner" element={<ClaimAccountOwner />} />
                     <Route path="/claim" element={<ClaimAccountOwner />} />
+                    <Route path="/welcome" element={<RequireAuth><RequireOrg><Welcome /></RequireOrg></RequireAuth>} />
+                    <Route path="/welcome/:stepId" element={<RequireAuth><RequireOrg><Welcome /></RequireOrg></RequireAuth>} />
                     <Route path="/teams" element={<Teams />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/admin" element={<Admin />} />

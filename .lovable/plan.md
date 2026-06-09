@@ -1,102 +1,101 @@
-# Plan — Concierge wrap-up + portable profiles + pricing refactor
 
-Five tightly scoped workstreams. All edits respect existing finalization lock (no edits after seal) and multi-tenant RLS.
+# Post-Claim Owner Onboarding — "Open for Operations" Flow
 
-## 1. Editable Concierge Document Library + cost arrangement re-pricing
+Goal: after an owner finishes `/activate` or `/claim/account-owner` and sets a password, they land on a guided setup that walks them through everything required to run a real shop. The dashboard and member-invite features stay gated behind it so the first experience is intentional, professional, and complete.
 
-**Goal:** After a doc is generated/uploaded, allow the rep to edit the captured "needs" and adjust scope/cost without losing the prior signed/finalized version.
+## The Journey
 
-- **DB migration** `concierge_document_records`:
-  - `engagement_id`, `document_key`, `version` (int), `format`, `storage_path` (Supabase Storage `concierge-docs/<org>/<engagement>/<doc>-v{n}.<ext>`), `needs_snapshot` jsonb, `cost_snapshot` jsonb, `is_master` bool, `created_by`, `created_at`, `superseded_at`.
-  - RLS: org admins + assigned concierge rep can read/write; finalized masters are immutable (trigger blocks update when `is_master=true`).
-  - GRANTs to `authenticated` + `service_role`.
-  - New private storage bucket `concierge-docs` with org-scoped path RLS.
-- **`DocumentLibrary.tsx`**:
-  - "Save to record" button per doc → uploads the rendered blob + a `needs_snapshot` (pulled from `EditableField` localStorage by `engagementId`) + `cost_snapshot` (current tier/seats/add-ons from `useSubscription` + `subscriptionTiers.ts`).
-  - "Versions" drawer listing prior records (download / preview / mark as master).
-  - "Edit needs & re-price" panel: inline `EditableField`s for scope notes + a small `CostEstimator` component that recomputes monthly/annual totals from tier + seat count + ERP add-on + concierge fee. Save creates a new version (v+1), keeps prior version read-only.
-- **`CostEstimator.tsx`** (new): pure-function pricing from `subscriptionTiers.ts` + inputs (tier, seats, addons, one-time fees). No Stripe writes — quote only; rep can later push to Stripe via existing flow.
+```text
+QR / Email / Paste Claim
+        │
+        ▼
+   /auth set-password ──▶ /welcome   (new gated wrapper)
+                              │
+       ┌──────────────────────┴────────────────────────┐
+       │                                               │
+       ▼                                               ▼
+  Setup Checklist (6 required + 3 optional)     "Skip & explore" (read-only)
+       │
+       ▼
+  All required done  ──▶  /dashboard  + invites unlocked
+```
 
-## 2. Finalization: propagate `readOnly={isFinalized}` + gate Email/Export
+## The 6 required steps (in order)
 
-- Pass `readOnly={isFinalized}` to **every** `SignaturePad` and remaining `EditableField` in `ConciergeSalesPack.tsx` (MSA customer, MSA Jobline rep, ITAR, Go-Live, final, page-907 signer — currently missing the prop).
-- `SignaturePad`: when `readOnly` is true + a sealed signature exists, render the saved image only (no clear / re-sign controls). Already partially supported — verify and lock.
-- `ConciergeFinalizeBar.tsx`: add **Email** and **Export PDF** buttons next to Print. Both disabled until `isFinalized`. Same tooltip.
-  - **Export PDF**: `window.print()` to PDF (existing pattern) — or reuse `documentRegistry` renderer for the master snapshot.
-  - **Email**: invokes new edge function below.
+1. **Verify owner identity & profile**
+   Confirm name, phone, role title, headshot. Accept TOS + Privacy + ITAR/US-Person declaration if org flagged. Sets `profiles.completed_at` + `policy_acceptances` row.
 
-## 3. Email send template for finalized pack
+2. **Confirm organization basics**
+   Legal name, DBA, address, NAICS, ITAR flag, time zone, default shift schedule. Writes to `organizations` + `shift_schedules`.
 
-- New edge function `send-concierge-pack` (auth-gated, org-admin or assigned rep only):
-  - Input: `engagementId`, optional `toOverride` (billing email).
-  - Loads `concierge_pack_finalizations` master snapshot + latest `concierge_document_records` for the engagement; refuses if not finalized.
-  - Sends via existing `send-transactional-email` infra with a new template `concierge-finalized-pack.tsx` in `_shared/transactional-email-templates/`:
-    - Subject: "Your Jobline Concierge package — sealed copy"
-    - Body: org name, tier summary, signer names, sealed-on date, secure download link to each doc (signed URL, 7-day expiry).
-  - Registry update in `registry.ts`.
-- Toast + audit row appended to `onboarding_engagements.notes` on send.
+3. **Pick your data source**
+   Native (Lovable Cloud) / JobBOSS / SAP — same picker already in `WelcomeModal` data-source step. Sets `organizations.erp_persistence_mode`. ITAR orgs locked to read_through.
 
-## 4. Portable talent profile + secure org join / re-join
+4. **Build the shop floor**
+   Departments → Teams → Stations (with a "Quick-start: import from JobBOSS work centers" or "Seed a typical 3-station shop" shortcut using the existing `SeedBasicShopButton`). Routing templates step is offered but optional.
 
-**Goal:** A manufacturing pro keeps their `operator_profiles` row across orgs; when they leave one shop they can join another without losing GCA/OAP credentials. Employer-side data stays org-scoped.
+5. **Concierge document review**
+   Surface unsealed concierge docs (MSA, ITAR, Go-Live). Owner reviews + e-signs. Pulls from `concierge_pack_finalizations` / `concierge_document_records`. Only required if the org has a concierge engagement; auto-skipped otherwise.
 
-- **QR invite hardening** (existing `organization_invites`):
-  - Confirm `redeem_invite` RPC writes `organization_members(org_id, user_id, role)` to the **invite's** org (not the user's previously-active org). Add server-side assertion + audit row in `invite_redemptions`.
-  - On redeem, do **not** delete prior `organization_members` rows — user can belong to multiple orgs over time; `useOrganization` already handles active-org switching.
-- **Leave org flow** (`/settings/team` for the user):
-  - "Leave organization" button → RPC `leave_organization(org_id)` removes the membership row, clears that org from `user_org_preferences.active_org_id` if matched, but **preserves** `operator_profiles`, GCA attempts, OAP credentials (already user-scoped, not org-scoped).
-  - Employer-only data (job_performance_updates, handoff_records, queue_items) stays with the org per existing RLS — user can no longer read it after leaving. Confirmed by current policies.
-- **Secure activation link fallback** (email never arrived):
-  - New RPC `request_activation_link(email)` → generates a single-use token row in `oap_transfer_tokens`-style table (`account_activation_tokens`: `token_hash`, `email`, `expires_at` 24h, `used_at`).
-  - Edge function `request-activation-link` (public, rate-limited 3/hr/IP via `email_rate_limits`) sends a transactional email with `/activate?token=...`.
-  - `/activate` page validates token via RPC `consume_activation_token(token)` → returns the auth user + redirects to set-password / sign-in. No PII exposed in the URL.
-  - Admin button "Resend activation link" on org member list invokes the same function for a specific invited member.
+6. **Billing & seats**
+   Confirm tier, seat count, billing email, payment method status. If trial, show days remaining + "Add card to keep service after trial." Hits existing `organization_billing` view.
 
-## 5. `/pricing` refactor to `<TierCard>`
+After step 6 the owner sees a confirmation screen: **"You're open for operations"** with three CTAs — *Invite your team*, *Connect your first machine*, *Open dashboard*.
 
-- Replace the inline tier grid in `src/pages/Pricing.tsx` with `<TierCard tier={t} />` mapped from `TIERS` (from `subscriptionTiers.ts`).
-- Keep current CTA logic (`handleSubscribe`, `currentTier`, "Current plan" badge) by passing it down as props (`ctaLabel`, `onCtaClick`, `highlighted`, `disabled`).
-- Add ERP add-on row underneath using the same `TierCard` variant or a dedicated `<AddonCard>`.
-- Verify `/pricing`, Sales Pack tier-comparison page, and printable sheets all render identical cards from the same markdown source.
+## Optional "Pro" steps (post-launch, surfaced as suggestions on the dashboard)
 
-## Technical notes
+- Connect ERP credentials (deep link to `/settings/integrations/{native,jobboss,sap}`)
+- Configure shift handoff template
+- Add first work order / import existing
+- Connect machine monitoring relay
 
-- New tables → migration with `CREATE TABLE` + `GRANT` + RLS + policies (per project rules).
-- Storage bucket `concierge-docs` is **private**; downloads use signed URLs only.
-- ITAR orgs: concierge email links use signed URLs with short TTL; no doc content embedded in the email body.
-- All new RPCs `SECURITY DEFINER` with `SET search_path = public`.
-- No changes to `useSubscription` public API; pricing data already flows from `subscription-tiers.md`.
+These remain in the existing `PRO_STEPS` list — surfaced on the dashboard's `OnboardingProgress` widget, not blocking.
+
+## Gating model
+
+- New helper `useOwnerSetupGate()` reads `user_onboarding` + `organization_members.role` + `organizations.activation_state`.
+  - If user is **owner/admin** and `core_steps_complete = false`, every protected route renders `<OwnerSetupRedirect />` that pushes to `/welcome`.
+  - Non-owner members are not gated (they just see whatever their org admin has set up).
+- "Invite team members" button on `/teams` is disabled with tooltip "Finish setup to unlock invites" until step 6 is done. Same for "Add work order" on `/queue`.
+- Owner can always click **Skip & explore** which sets `user_onboarding.explore_only = true`. Dashboard renders in a read-only banner: "Setup paused — invites stay locked until you finish setup." One-click resume.
+
+## Smooth-transition UX details
+
+- One full-screen page `/welcome` with a left rail (the 6 steps with checkmarks + ETA per step) and a right pane (the active step's form). Same look as `WelcomeModal` extracted into a page so it can survive refreshes and deep links (`/welcome/step/shop-setup`).
+- Progress is saved on every field change — owner can close the tab and resume.
+- Each step shows a **"Why this matters"** sidebar tip (1 sentence) plus a *Skip for now* link on the 3 optional sub-tasks within a step.
+- Concierge-served orgs get a **green "Your concierge prepared this for you"** badge on steps 2, 3, 4 with pre-filled answers ready to confirm.
+- Completion fires the existing celebration animation, then `confetti` once and a transactional email "You're live on JobLine.ai — share with your team" with a deep link to `/teams?invite=open`.
 
 ## Files
 
-**Create**
-- `supabase/migrations/<ts>_concierge_doc_records_and_activation.sql`
-- `src/components/admin/concierge/CostEstimator.tsx`
-- `src/components/admin/concierge/DocumentVersionsDrawer.tsx`
-- `src/hooks/useConciergeDocumentRecords.ts`
-- `src/hooks/useAccountActivation.ts`
-- `src/pages/Activate.tsx` + route entry
-- `supabase/functions/send-concierge-pack/index.ts`
-- `supabase/functions/request-activation-link/index.ts`
-- `supabase/functions/_shared/transactional-email-templates/concierge-finalized-pack.tsx`
+**New**
+- `src/pages/Welcome.tsx` — gated setup shell with stepper + outlet
+- `src/pages/welcome/StepOwnerProfile.tsx`
+- `src/pages/welcome/StepOrganization.tsx`
+- `src/pages/welcome/StepDataSource.tsx` (extracted from existing modal logic)
+- `src/pages/welcome/StepShopFloor.tsx` (wraps `SeedBasicShopButton` + existing team/station forms)
+- `src/pages/welcome/StepConciergeReview.tsx`
+- `src/pages/welcome/StepBilling.tsx`
+- `src/pages/welcome/StepReady.tsx` (the "open for operations" confirmation)
+- `src/components/onboarding/OwnerSetupRedirect.tsx`
+- `src/hooks/useOwnerSetupGate.ts`
+- `supabase/functions/_shared/transactional-email-templates/owner-setup-complete.tsx`
+- One migration: add `user_onboarding.explore_only`, `organizations.activation_state ENUM('claimed','in_setup','open_for_operations')`, RPC `mark_org_open_for_operations()` (owner-only, requires all 6 core flags true), audit row in `organization_audit_events`.
 
 **Edit**
-- `src/components/admin/concierge/DocumentLibrary.tsx` (save versions, edit needs, re-price)
-- `src/components/admin/concierge/ConciergeFinalizeBar.tsx` (Email + Export buttons)
-- `src/components/admin/concierge/SignaturePad.tsx` (strict readOnly lock)
-- `src/pages/ConciergeSalesPack.tsx` (propagate `readOnly={isFinalized}` everywhere)
-- `src/pages/Pricing.tsx` (use `<TierCard>`)
-- `src/components/marketing/TierCard.tsx` (CTA props)
-- `supabase/functions/_shared/transactional-email-templates/registry.ts`
-- `src/App.tsx` (add `/activate` route)
-- `src/pages/settings/Team*.tsx` (Leave org + Resend activation buttons)
+- `src/App.tsx` — add `/welcome` + `/welcome/step/:stepId`, wrap protected routes with `<OwnerSetupRedirect />`.
+- `src/hooks/useOnboarding.ts` — add `core_steps_complete` derived flag + `explore_only`.
+- `src/components/onboarding/WelcomeModal.tsx` — keep for returning users; route owners with `activation_state='claimed'` to `/welcome` instead of opening the modal.
+- `src/pages/Teams.tsx` — disable invite buttons when `!isOpenForOperations`.
+- `src/pages/Queue.tsx` — same gate on "Add work order".
+- `supabase/functions/_shared/transactional-email-templates/registry.ts` — register the new completion email.
 
 ## Acceptance
 
-- Doc can be edited & saved with new version after generation; prior masters remain immutable.
-- Re-pricing reflects in the Cost Estimator and is captured in the new version snapshot.
-- Email/Export only enabled after Finalize; email contains signed download links.
-- Every signature / editable field on the sales pack locks after seal.
-- User can leave Org A and accept Org B's QR invite — their operator profile/credentials persist; Org A data is inaccessible.
-- A user who never received the activation email can request a fresh secure link, valid 24h, single-use.
-- `/pricing`, Sales Pack tier page, and printable sheets all render the same `<TierCard>` from `subscription-tiers.md`.
+- A new owner who just claimed via QR, email, or `/claim/account-owner` lands on `/welcome` and cannot reach `/dashboard`, `/queue`, or send invites until the 6 required steps are green.
+- Concierge-prepared answers pre-fill and only require confirmation.
+- Owner can skip-and-explore but invites + work-order creation stay locked with a clear tooltip and a one-click resume.
+- Refreshing the browser at any step returns the owner to the exact same step with form values intact.
+- `organizations.activation_state` flips `claimed → in_setup → open_for_operations`; the transition is audited.
+- Members who join after step 6 are completed see a clean, configured dashboard from minute one.
