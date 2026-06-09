@@ -234,6 +234,9 @@ export default function Profile() {
                     )}
                   </div>
                 </div>
+                <div className="mt-3 flex justify-end">
+                  <LeaveOrgButton organizationId={organization.id} organizationName={organization.name} />
+                </div>
               </div>
             ) : (
               <div className="p-4 rounded-lg border border-dashed bg-muted/30 text-center">
