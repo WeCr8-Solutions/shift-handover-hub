@@ -87,7 +87,7 @@ export default function Admin() {
   const { stats, loading: statsLoading, lastUpdated: statsLastUpdated, fetchStats } = useSystemStats({ organizationId: scopedOrgId });
   const isMobile = useIsMobile();
   const [bulkUploadOpen, setBulkUploadOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useUrlState("tab", "overview");
 
   // Build structured access object for child components
   const access: AdminComponentAccess = {
