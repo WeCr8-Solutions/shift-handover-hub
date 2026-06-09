@@ -32,6 +32,8 @@ const KIND_LABEL: Record<CampaignAssetKind, string> = {
   flyer_image: "Flyer image",
   mailing_list_xlsx: "Mailing list (XLSX)",
   document: "Document",
+  business_card: "Business card",
+  talent_material: "Talent material",
   other: "Other",
 };
 
@@ -39,6 +41,8 @@ const KIND_ICON: Record<CampaignAssetKind, typeof ImageIcon> = {
   flyer_image: ImageIcon,
   mailing_list_xlsx: FileSpreadsheet,
   document: FileText,
+  business_card: CreditCard,
+  talent_material: UserSquare,
   other: FileText,
 };
 
