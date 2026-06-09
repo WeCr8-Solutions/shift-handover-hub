@@ -183,8 +183,17 @@ export function ManufacturingSettings() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label>Work Order Prefix</Label>
-              <Input value={form.workOrderPrefix} onChange={(e) => update("workOrderPrefix", e.target.value)} placeholder="WO" maxLength={5} />
+              <Label>Work Order Number Format</Label>
+              <Select
+                value={form.workOrderNumberFormat}
+                onValueChange={(v) => update("workOrderNumberFormat", v as "numeric" | "alphanumeric")}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="alphanumeric">Prefix + Number (WO-0001)</SelectItem>
+                  <SelectItem value="numeric">Numbers Only (000001)</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label>Part Number Format</Label>
@@ -198,6 +207,46 @@ export function ManufacturingSettings() {
               </Select>
             </div>
           </div>
+
+          {form.workOrderNumberFormat === "alphanumeric" && (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Work Order Prefix</Label>
+                <Input value={form.workOrderPrefix} onChange={(e) => update("workOrderPrefix", e.target.value)} placeholder="WO" maxLength={8} />
+              </div>
+              <div className="space-y-2">
+                <Label>Separator</Label>
+                <Input value={form.workOrderSeparator} onChange={(e) => update("workOrderSeparator", e.target.value)} placeholder="-" maxLength={3} />
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Number Padding (digits)</Label>
+              <Input type="number" min={1} max={10} value={form.workOrderPadding} onChange={(e) => update("workOrderPadding", Math.min(10, Math.max(1, parseInt(e.target.value, 10) || 4)))} />
+            </div>
+            <div className="space-y-2">
+              <Label>Starting Number</Label>
+              <Input type="number" min={1} value={form.workOrderStartingNumber} onChange={(e) => update("workOrderStartingNumber", Math.max(1, parseInt(e.target.value, 10) || 1001))} />
+            </div>
+          </div>
+
+          <div className="rounded-md border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+            Preview:{" "}
+            <span className="font-mono text-foreground">
+              {form.workOrderNumberFormat === "numeric"
+                ? String(form.workOrderStartingNumber).padStart(Math.max(form.workOrderPadding, 1), "0")
+                : `${form.workOrderPrefix}${form.workOrderSeparator}${String(form.workOrderStartingNumber).padStart(Math.max(form.workOrderPadding, 1), "0")}`}
+            </span>
+          </div>
+
+          <SettingsSwitchRow
+            label="Auto-generate work order numbers"
+            description="When creating a work order, the next number is filled in automatically. Operators can still override."
+            checked={form.autoGenerateWorkOrders}
+            onCheckedChange={(v) => update("autoGenerateWorkOrders", v)}
+          />
           <SettingsSwitchRow
             label="Enable Delay Codes"
             description="Track delays with standardized codes"
@@ -211,6 +260,7 @@ export function ManufacturingSettings() {
             onCheckedChange={(v) => update("requireDelayCode", v)}
           />
         </CardContent>
+
       </Card>
 
       <Card>
