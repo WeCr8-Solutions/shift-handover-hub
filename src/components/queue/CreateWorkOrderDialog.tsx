@@ -93,12 +93,34 @@ export function CreateWorkOrderDialog({
     surface_finish: "",
   });
 
+  const mfgPrefs = (getSetting("manufacturing_preferences") || {}) as Record<string, unknown>;
+  const autoGenerateOnOpen = Boolean(mfgPrefs.autoGenerateWorkOrders);
+
+  const generateNumber = useCallback(async () => {
+    if (!organization?.id) return;
+    setGeneratingNumber(true);
+    try {
+      const { data, error } = await (supabase.rpc as any)("generate_next_wo_number", {
+        _organization_id: organization.id,
+        _kind: itemType === "quote" ? "quote" : "work_order",
+      });
+      if (error) throw error;
+      if (data) setFormData((prev) => ({ ...prev, work_order: data as string }));
+    } catch (err) {
+      console.error("generate_next_wo_number failed", err);
+      woToast.error("Could not generate number", (err as Error).message);
+    } finally {
+      setGeneratingNumber(false);
+    }
+  }, [organization?.id, itemType]);
+
   // Reset form on open
   useEffect(() => {
     if (open) {
       setFormData(defaultFormData);
       setRoutingSteps([]);
       setItemType(initialItemType);
+      setCustomerId(null);
       setPartSpecs({
         material_type: "",
         part_length_inches: "",
@@ -110,8 +132,15 @@ export function CreateWorkOrderDialog({
         required_tolerance: "",
         surface_finish: "",
       });
+      // Auto-generate WO/Quote number if org has the preference enabled
+      if (autoGenerateOnOpen && organization?.id) {
+        void generateNumber();
+      }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, defaultFormData, initialItemType]);
+
+
 
   // Fetch stations
   useEffect(() => {
