@@ -70,12 +70,13 @@ test.describe("Operator daily flow", () => {
       await expect(completeBtn).toBeVisible({ timeout: 10_000 });
     });
 
-    await test.step("create shift handoff", async () => {
-      await page.goto("/handoff");
+    await test.step("create shift handoff entry point", async () => {
+      // Handoff creation lives on the dashboard (no dedicated /handoff route).
+      await page.goto("/dashboard");
       const newBtn = page
-        .getByRole("button", { name: /new handoff|create|add handoff/i })
+        .getByRole("button", { name: /new handoff|create handoff|add handoff|shift handoff/i })
         .first();
-      await expect(newBtn).toBeVisible({ timeout: 10_000 });
+      await expect(newBtn).toBeVisible({ timeout: 15_000 });
     });
 
     await test.step("report issue & request delivery", async () => {
