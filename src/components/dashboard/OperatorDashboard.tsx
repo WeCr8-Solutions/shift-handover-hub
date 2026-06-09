@@ -214,6 +214,11 @@ export function OperatorDashboard({ isAdminView, onBackToOverview }: OperatorDas
       {/* Physical-delivery handoff queue (in-transit parts + paperwork) */}
       <DeliveryHandoffPanel />
 
+      {/* Auto-prompt operator to verify deliveries dropped off while away */}
+      <StationDeliveryCheckInDialog
+        stationIds={activeSessions.map((s) => s.station_id)}
+      />
+
       {/* Station panels */}
       {singleStation ? (
         <OperatorStationPanel
