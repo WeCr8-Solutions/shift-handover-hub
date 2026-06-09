@@ -88,7 +88,7 @@ describe("StationDeliveryCheckInDialog", () => {
   });
 
   it("includes deliveries still in legacy 'delivered' status", async () => {
-    mockDeliveries = [{ ...baseDelivery, status: "delivered" }];
+    mockDeliveries = [{ ...baseDelivery, status: "delivered" as const }];
     render(<StationDeliveryCheckInDialog stationIds={["stn-b"]} />);
     await waitFor(() =>
       expect(screen.getByText(/Confirm received deliveries/i)).toBeInTheDocument(),
