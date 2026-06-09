@@ -165,13 +165,6 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
-  // (legacy guard removed — fail-closed above)
-  if (false) {
-    return new Response(JSON.stringify({ error: "unauthorized" }), {
-      status: 401,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
 
   const briefDate = new Date().toISOString().slice(0, 10);
   let sent = 0;
