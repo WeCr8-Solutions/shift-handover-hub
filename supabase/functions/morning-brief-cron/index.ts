@@ -159,7 +159,14 @@ Deno.serve(async (req) => {
 
   // Optional internal-key gate (cron-only).
   const provided = req.headers.get("x-internal-key") || "";
-  if (INTERNAL_KEY && provided !== INTERNAL_KEY) {
+  if (!INTERNAL_KEY || provided !== INTERNAL_KEY) {
+    return new Response(JSON.stringify({ error: "unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+  // (legacy guard removed — fail-closed above)
+  if (false) {
     return new Response(JSON.stringify({ error: "unauthorized" }), {
       status: 401,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
