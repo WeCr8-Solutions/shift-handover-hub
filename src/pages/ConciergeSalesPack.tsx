@@ -13,6 +13,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DocumentLibrary } from "@/components/admin/concierge/DocumentLibrary";
 import { useConciergePrefill } from "@/hooks/useConciergePrefill";
 import { SignaturePad } from "@/components/admin/concierge/SignaturePad";
+import { EditableField } from "@/components/admin/concierge/EditableField";
+import { ConciergeHandoffPanel } from "@/components/admin/concierge/ConciergeHandoffPanel";
 import { QRCodeSVG } from "qrcode.react";
 
 const DEFAULT_SALES_REP = "Zach Goodbody";
@@ -358,6 +360,10 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
             />
           </Label>
         </div>
+
+        {engagement && hasStaffAccess ? (
+          <ConciergeHandoffPanel engagement={engagement} currentUserId={user?.id ?? null} />
+        ) : null}
       </div>
 
 
