@@ -8,7 +8,10 @@
  * `/pricing`, the Concierge Sales Pack, DOCX exports, and `/help` docs will
  * all update from the same source.
  */
-import rawMd from "@/content/subscription-tiers.md?raw";
+// Loaded as raw text. The file uses a `.md.txt` extension to bypass the
+// project's MDX rollup plugin, which otherwise compiles `.md` to JSX and
+// breaks `?raw` string imports.
+import rawMd from "@/content/subscription-tiers.md.txt?raw";
 import { TIER_STRIPE_IDS, ERP_ADDON_STRIPE_IDS } from "@/lib/tierIds";
 
 export interface TierMeta {
