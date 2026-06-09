@@ -13,10 +13,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DocumentLibrary } from "@/components/admin/concierge/DocumentLibrary";
 import { useConciergePrefill } from "@/hooks/useConciergePrefill";
 import { SignaturePad } from "@/components/admin/concierge/SignaturePad";
+import { QRCodeSVG } from "qrcode.react";
 
 const DEFAULT_SALES_REP = "Zach Goodbody";
-const DEFAULT_SALES_TITLE = "Sales Representative";
+const DEFAULT_SALES_TITLE = "CEO & Sales Representative";
 const DEFAULT_JOBLINE_TITLE = "Concierge Onboarding Lead";
+const DEFAULT_REP_TALENT_URL = "https://jobline.ai/talent/zachgoodbody";
 
 /**
  * Printable Concierge Sales Pack — platform-admin only.
