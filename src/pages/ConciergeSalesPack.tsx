@@ -466,11 +466,16 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
               <label className="flex items-start gap-2"><span className="border border-black w-4 h-4 inline-block mt-0.5" /> Customer is <b>not</b> ITAR-controlled. JobLine may persist ERP-sourced data normally.</label>
               <label className="flex items-start gap-2"><span className="border border-black w-4 h-4 inline-block mt-0.5" /> Customer <b>is</b> ITAR-controlled. JobLine must operate in read-through mode (no ERP-sourced persistence). All JobLine staff with access must be US persons.</label>
             </div>
-            <div className="mt-10 text-xs">
-              <div className="border-b border-black h-8" />
-              <div>Authorized signer (printed name &amp; title)</div>
-              <div className="border-b border-black h-8 mt-4 w-48" />
-              <div>Date</div>
+            <div className="mt-10 text-xs grid grid-cols-2 gap-8">
+              <div>
+                <SignaturePad caption="Authorized signer (printed name &amp; title)" storageKey={`sig:itar-customer:${engagementId ?? "blank"}`} />
+                <div className="border-b border-black h-7 mt-3" />
+                <div className="mt-1">Printed name &amp; title</div>
+              </div>
+              <div>
+                <div className="border-b border-black h-8 w-48 flex items-end px-1">{today}</div>
+                <div className="mt-1">Date</div>
+              </div>
             </div>
           </PrintPage>)}
 
