@@ -233,6 +233,8 @@ const App = () => (
                     <Route path="/activate" element={<Activate />} />
                     <Route path="/claim/account-owner" element={<ClaimAccountOwner />} />
                     <Route path="/claim" element={<ClaimAccountOwner />} />
+                    <Route path="/welcome" element={<RequireAuth><RequireOrg><Welcome /></RequireOrg></RequireAuth>} />
+                    <Route path="/welcome/:stepId" element={<RequireAuth><RequireOrg><Welcome /></RequireOrg></RequireAuth>} />
                     <Route path="/teams" element={<Teams />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/admin" element={<Admin />} />
