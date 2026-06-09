@@ -11606,6 +11606,7 @@ export type Database = {
         Row: {
           assigned_by: string | null
           assigned_to: string | null
+          awaiting_delivery: boolean
           cancellation_reason: string | null
           cancelled_at: string | null
           cancelled_by: string | null
@@ -11681,6 +11682,7 @@ export type Database = {
         Insert: {
           assigned_by?: string | null
           assigned_to?: string | null
+          awaiting_delivery?: boolean
           cancellation_reason?: string | null
           cancelled_at?: string | null
           cancelled_by?: string | null
@@ -11756,6 +11758,7 @@ export type Database = {
         Update: {
           assigned_by?: string | null
           assigned_to?: string | null
+          awaiting_delivery?: boolean
           cancellation_reason?: string | null
           cancelled_at?: string | null
           cancelled_by?: string | null
@@ -16789,6 +16792,70 @@ export type Database = {
       mark_concierge_exported_to_accounting: {
         Args: { p_engagement_ids: string[]; p_format: string }
         Returns: number
+      }
+      mark_delivery_delivered: {
+        Args: { _delivery_id: string }
+        Returns: {
+          created_at: string | null
+          delivered_at: string | null
+          delivered_by: string | null
+          delivered_by_name: string | null
+          estimated_delivery_time: string | null
+          from_station_id: string | null
+          id: string
+          notes: string | null
+          organization_id: string
+          picked_up_at: string | null
+          picked_up_by: string | null
+          picked_up_by_name: string | null
+          priority: string | null
+          quantity: number | null
+          queue_item_id: string | null
+          requested_by: string | null
+          requested_by_name: string | null
+          routing_step_id: string | null
+          status: string
+          to_station_id: string | null
+          updated_at: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "delivery_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      mark_delivery_picked_up: {
+        Args: { _delivery_id: string }
+        Returns: {
+          created_at: string | null
+          delivered_at: string | null
+          delivered_by: string | null
+          delivered_by_name: string | null
+          estimated_delivery_time: string | null
+          from_station_id: string | null
+          id: string
+          notes: string | null
+          organization_id: string
+          picked_up_at: string | null
+          picked_up_by: string | null
+          picked_up_by_name: string | null
+          priority: string | null
+          quantity: number | null
+          queue_item_id: string | null
+          requested_by: string | null
+          requested_by_name: string | null
+          routing_step_id: string | null
+          status: string
+          to_station_id: string | null
+          updated_at: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "delivery_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       mark_engagement_ready: {
         Args: { p_engagement_id: string }
