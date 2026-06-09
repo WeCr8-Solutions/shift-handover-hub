@@ -695,21 +695,20 @@ export function OrganizationMemberManager({ onNavigateToInvites }: OrganizationM
                                   variant="ghost"
                                   size="icon"
                                   className="h-8 w-8"
-                                  disabled={isOwner && isSelf}
                                   aria-label={`Actions for ${member.profile?.display_name}`}
                                 >
                                   <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end" className="w-56">
+                                <DropdownMenuLabel>Organization Role</DropdownMenuLabel>
                                 {!isOwner && (
                                   <>
-                                    <DropdownMenuLabel>Organization Role</DropdownMenuLabel>
                                     <DropdownMenuItem
                                       onClick={() => handleUpdateOrgRole(member, "admin")}
                                       disabled={member.role === "admin"}
                                     >
-                                       <Shield className="w-4 h-4 mr-2 text-role-org-admin" />
+                                      <Shield className="w-4 h-4 mr-2 text-role-org-admin" />
                                       Make Admin
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
@@ -719,10 +718,23 @@ export function OrganizationMemberManager({ onNavigateToInvites }: OrganizationM
                                       <Users className="w-4 h-4 mr-2" />
                                       Make Member
                                     </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
                                   </>
                                 )}
-                                <DropdownMenuLabel>App Roles</DropdownMenuLabel>
+                                {/* Transfer ownership: current user must be owner; target must not be owner or self */}
+                                {organizationRole === "owner" && !isOwner && !isSelf && (
+                                  <DropdownMenuItem onClick={() => setMemberToPromote(member)}>
+                                    <Crown className="w-4 h-4 mr-2 text-warning" />
+                                    Transfer Ownership
+                                  </DropdownMenuItem>
+                                )}
+                                {isOwner && (
+                                  <DropdownMenuItem disabled>
+                                    <Crown className="w-4 h-4 mr-2 text-warning" />
+                                    Owner (transfer required to change)
+                                  </DropdownMenuItem>
+                                )}
+                                <DropdownMenuSeparator />
+                                <DropdownMenuLabel>App Roles (multi-select)</DropdownMenuLabel>
                                 <DropdownMenuItem onClick={() => handleToggleAppRole(member, "supervisor")}>
                                   <UserCog className="w-4 h-4 mr-2 text-role-supervisor" />
                                   {member.app_roles?.includes("supervisor") ? "Remove Supervisor" : "Assign Supervisor"}
