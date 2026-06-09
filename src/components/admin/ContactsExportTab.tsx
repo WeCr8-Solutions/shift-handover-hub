@@ -9,8 +9,9 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Download, Mail, Phone, MapPin, CheckCircle2 } from "lucide-react";
+import { Download, Mail, Phone, MapPin, CheckCircle2, FileSpreadsheet } from "lucide-react";
 import { toast } from "sonner";
+import { downloadVistaPrintXlsx, parseUsAddressLine } from "@/lib/vistaPrintExport";
 
 interface ContactRecord {
   id: string;
@@ -109,6 +110,27 @@ export function ContactsExportTab({ campaignId }: Props) {
     toast.success(`Exported ${filtered.length} contacts`);
   }
 
+  async function exportVistaXlsx() {
+    const eligible = unique.filter(c => !!c.business_address);
+    if (eligible.length === 0) {
+      toast.error("No contacts have a mailing address.");
+      return;
+    }
+    const rows = eligible.map(c => {
+      const parsed = parseUsAddressLine(c.business_address ?? "");
+      return {
+        recipient: c.contact_name ?? "",
+        company: c.stop_name,
+        address: parsed.address,
+        city: parsed.city,
+        state: parsed.state,
+        zip: parsed.zip,
+      };
+    });
+    const count = await downloadVistaPrintXlsx(rows, "vista_postcard_list");
+    toast.success(`Vista Print list exported — ${count} recipients.`);
+  }
+
   if (!campaignId) {
     return <p className="text-sm text-muted-foreground p-4">No campaign selected.</p>;
   }
@@ -133,6 +155,15 @@ export function ContactsExportTab({ campaignId }: Props) {
             <Button size="sm" variant="outline" onClick={exportCsv} className="gap-1.5">
               <Download className="w-3.5 h-3.5" />
               Export CSV
+            </Button>
+            <Button
+              size="sm"
+              onClick={exportVistaXlsx}
+              className="gap-1.5"
+              title={`Vista Print upload template — ${addressCount} address${addressCount === 1 ? "" : "es"} ready`}
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5" />
+              Vista Print XLSX ({addressCount})
             </Button>
           </div>
         </div>
