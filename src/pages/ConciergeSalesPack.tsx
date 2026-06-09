@@ -202,6 +202,71 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
   const repTalentUrlTrimmed = repTalentUrl.trim();
   const repTalentHandle = repTalentUrlTrimmed.replace(/^https?:\/\//i, "");
 
+  // ---- Recommended tier (persisted per engagement) ----
+  const recommendedTierKey = `concierge-recommended-tier:${engagementId ?? "blank"}`;
+  const [recommendedTier, setRecommendedTier] = useState<string>("");
+  useEffect(() => {
+    try {
+      const v = localStorage.getItem(recommendedTierKey);
+      if (v) setRecommendedTier(v);
+    } catch {}
+  }, [recommendedTierKey]);
+  useEffect(() => {
+    try {
+      if (recommendedTier) localStorage.setItem(recommendedTierKey, recommendedTier);
+      else localStorage.removeItem(recommendedTierKey);
+    } catch {}
+  }, [recommendedTierKey, recommendedTier]);
+
+  // ---- Finalization (cloud-persisted draft + sealed master) ----
+  const finalization = useConciergeFinalization(engagementId ?? null);
+  const isFinalized = finalization.query.data?.status === "finalized";
+
+  /** Gather every persisted local field into a single snapshot for save/finalize. */
+  const buildSnapshot = (): PackSnapshot => {
+    const fields: Record<string, string> = {};
+    const signatures: PackSnapshot["signatures"] = {};
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (!key) continue;
+        const engagementSuffix = `:${engagementId ?? "blank"}`;
+        if (key.startsWith("concierge-field:") && key.endsWith(engagementSuffix.replace(":", ""))) {
+          // key shape: concierge-field:{engagementId}:{fieldKey}
+          const rest = key.slice("concierge-field:".length);
+          const colonIdx = rest.indexOf(":");
+          if (colonIdx < 0) continue;
+          const engId = rest.slice(0, colonIdx);
+          const fieldKey = rest.slice(colonIdx + 1);
+          if (engId !== (engagementId ?? "blank")) continue;
+          fields[fieldKey] = localStorage.getItem(key) ?? "";
+        }
+        if (key.startsWith("sig:") && key.endsWith(":locked")) {
+          try {
+            const env = JSON.parse(localStorage.getItem(key) ?? "{}");
+            signatures[key.slice(0, -":locked".length)] = env;
+          } catch {}
+        }
+      }
+    } catch {}
+    return {
+      selected,
+      paperSize,
+      orientation,
+      copies,
+      salesRepName,
+      salesRepTitle,
+      jobLineRepName,
+      jobLineRepTitle,
+      billingEmail: billingEmailOverride,
+      repTalentUrl,
+      recommendedTier,
+      fields,
+      signatures,
+      savedClientAt: new Date().toISOString(),
+    };
+  };
+
   const SECTIONS: { key: string; label: string }[] = [
     { key: "cover", label: "Cover" },
     { key: "tiers", label: "Tier Comparison & Recommendation" },
