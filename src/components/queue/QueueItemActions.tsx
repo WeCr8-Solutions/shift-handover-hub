@@ -274,6 +274,9 @@ export function QueueItemActions({
           }
           onReloadHistory();
           onReloadRouting();
+          // Refresh parent items list so the WO's new station_id / status (or completed_at)
+          // is reflected immediately in Kanban / list views without waiting for realtime.
+          onRefreshItems?.();
         }
       } catch {
         woToast.error("Failed to advance work order", undefined, wo);
