@@ -114,7 +114,8 @@ export function PerformanceUpdatesReview({ isAdmin }: PerformanceUpdatesReviewPr
   const [assignTeamId, setAssignTeamId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Filters  const [statusFilter, setStatusFilter] = useUrlState<string>("s", "pending");
+  // Filters
+  const [statusFilter, setStatusFilter] = useUrlState<string>("s", "pending");
   const [searchQuery, setSearchQuery] = useState("");
 
   const fetchData = useCallback(async () => {
