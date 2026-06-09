@@ -183,10 +183,3 @@ export default function Pricing() {
     </div>
   );
 }
-
-      </section>
-
-      <MarketingFooter />
-    </div>
-  );
-}
