@@ -176,9 +176,16 @@ export function WelcomeModal() {
   };
 
   const handleDontShowAgain = async () => {
-    await markWelcomeSeen();
-    await skipOnboarding();
+    // Hide locally first so the modal can't re-open between awaits.
     setIsOpen(false);
+    await markWelcomeSeen();
+    await dismissSetupWizard();
+    // Best-effort completion — safe to fail (user may not have org/talent yet).
+    try {
+      await skipOnboarding();
+    } catch {
+      /* no-op: setupWizardDismissed gate keeps the modal closed regardless */
+    }
   };
 
   const handleStepClick = async (stepId: string) => {
