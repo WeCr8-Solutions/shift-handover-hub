@@ -282,8 +282,10 @@ export function CreateWorkOrderDialog({
           part_catalog_id: partSpecs.part_catalog_id || undefined,
           required_tolerance: partSpecs.required_tolerance || undefined,
           surface_finish: partSpecs.surface_finish || undefined,
+          customer_id: customerId || undefined,
           routing_steps: hasRouting ? routingSteps : undefined,
         });
+
 
         if (result?.error) {
           console.error("Create item error:", result.error);
