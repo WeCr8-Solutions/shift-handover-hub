@@ -172,6 +172,9 @@ Deno.serve(async (req) => {
 
     // 2b. Mark onboarding complete + welcome seen so the setup wizard / welcome
     //     modal don't intercept the dashboard for seeded users.
+    //     The guard trigger on user_onboarding blocks direct is_complete=true writes
+    //     unless app.via_onboarding_rpc is set, so flip that session flag first.
+    await admin.rpc("exec_sql_for_e2e_seed", {}).catch(() => {});
     await admin.from("user_onboarding").upsert(
       [
         {
