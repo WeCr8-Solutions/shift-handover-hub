@@ -27,7 +27,7 @@ const categoryColors: Record<string, string> = {
 export default function Tools() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("all");
+  const [category, setCategory] = useUrlState<string>("cat", "all");
   const [activeTool, setActiveTool] = useState<string | null>(null);
   const isMobile = useIsMobile();
   const { hasPlatformAccess } = useAdminAccess();
