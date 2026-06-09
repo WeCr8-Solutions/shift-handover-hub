@@ -469,6 +469,16 @@ export default function ConciergeSalesPack({ publicMode = false }: { publicMode?
                 <div className="mt-1">Date</div>
               </div>
             </div>
+            <div className="mt-6 border border-black/30 p-3 rounded">
+              <div className="text-[10px] uppercase tracking-wider font-semibold mb-1">Addendum / custom terms (fill in with customer)</div>
+              <EditableField
+                fieldKey="msa-addendum"
+                engagementId={engagementId ?? "blank"}
+                multiline
+                minRows={4}
+                placeholder="Negotiated changes, custom SLAs, deliverable dates, ITAR carve-outs. Leave blank if standard MSA applies as-is."
+              />
+            </div>
           </PrintPage>)}
 
           {/* 3. Payment instructions */}
