@@ -50,6 +50,8 @@ interface QueueItemDetailDialogProps {
   getComments: (itemId: string) => Promise<{ data: QueueItemComment[] | null; error: string | null }>;
   getHistory: (itemId: string) => Promise<{ data: QueueItemHistory[] | null; error: string | null }>;
   onOpenRouting?: (item: { id: string; work_order?: string | null; part_number?: string | null }) => void;
+  /** Refresh the parent items list (e.g. after routing advancement) so station_id / status reflect server state immediately. */
+  onRefreshItems?: () => void;
 }
 
 export function QueueItemDetailDialog({
@@ -62,6 +64,7 @@ export function QueueItemDetailDialog({
   getComments,
   getHistory,
   onOpenRouting,
+  onRefreshItems,
 }: QueueItemDetailDialogProps) {
   const { currentTeam } = useCurrentTeam();
   const { organization } = useOrgContext();
@@ -78,12 +81,12 @@ export function QueueItemDetailDialog({
 
   const assignedStation = item?.station_id ? stations.find(s => s.id === item.station_id) ?? null : null;
 
+  // Parallelise all on-open fetches to cut perceived load time on the WO detail drawer.
+  // Previously these ran sequentially in the effect body which caused noticeable lag
+  // (comments → history → routing → user names, ~4 round-trips serialised).
   useEffect(() => {
     if (item && open) {
-      loadComments();
-      loadHistory();
-      loadRouting();
-      loadUserNames();
+      void Promise.all([loadComments(), loadHistory(), loadRouting(), loadUserNames()]);
     }
   }, [item, open]);
 
